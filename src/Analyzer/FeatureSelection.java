@@ -60,7 +60,7 @@ public class FeatureSelection {
 		//Start fetching particular features. How do we define the criterion?
 		int totalSize = featureStat.size();
 		int start = (int) (totalSize * 0.2);
-		int end = (int) (totalSize * 0.8);
+		int end = (int) (totalSize * 0.6);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	}
