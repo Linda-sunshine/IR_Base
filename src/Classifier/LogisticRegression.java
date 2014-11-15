@@ -65,10 +65,7 @@ public class LogisticRegression extends BaseClassifier{
 	//This function is used to get a part of the array.
 	public double[] trunc(double[] a, int index){
 		double[] b = new double[this.m_featureSize + 1];
-		for(int i = 0; i < (this.m_featureSize + 1); i++){
-			int index_a = index * (this.m_featureSize + 1);
-			b[i] = a[index_a];
-		}
+		System.arraycopy(a, index * (this.m_featureSize + 1), b, 0, this.m_featureSize + 1);		
 		return b;
 	}
 	
@@ -113,22 +110,20 @@ public class LogisticRegression extends BaseClassifier{
 		double Pij = 0;
 		double logPij = 0;
 		double Yi = 0;
-		
-		// L2 regularization.
-		for (int i = 0; i < beta.length; i++){
-			gs[i] = beta[0];
+		for(int i = 0; i < beta.length; i++){
+			gs[i] += 2 * lambda * beta[i];
 		}
-		
 		//The computation complexity is n*classNo.
 		for (_Doc doc: docs) {
 			for(int j = 0; j < this.m_classNo; j++){
-				logPij = calculatelogPij(doc.getYLabel(), beta, doc.getSparse());//logP(Y=yi|X=xi)
+				logPij = calculatelogPij(j, beta, doc.getSparse());//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (doc.getYLabel() == j){
 					//gValue = 1.0 - Pij;
 					gValue = Pij - 1.0;
 				} else
 					gValue = Pij;
+				
 				gs[j * (this.m_featureSize + 1)] += gValue;
 				//(Yij - Pij) * Xi
 				for(_SparseFeature sf: doc.getSparse()){
@@ -136,9 +131,6 @@ public class LogisticRegression extends BaseClassifier{
 					gs[j * (this.m_featureSize + 1) + index + 1] += gValue * sf.getNormValue();
 				}
 			}
-		}
-		for(int i = 0; i < beta.length; i++){
-			gs[i] += 2 * lambda * beta[i];
 		}
 		return gs;
 	}
@@ -177,9 +169,9 @@ public class LogisticRegression extends BaseClassifier{
 		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LRSelectedFeatures.txt";
 
 		String providedCV = "";
-		//String featureSelection = "";
+		String featureSelection = "";
 		//String providedCV = "Features.txt"; //Provided CV.
-		String featureSelection = "MI"; //Feature selection method.
+		//String featureSelection = "DF"; //Feature selection method.
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
 			
