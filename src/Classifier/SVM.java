@@ -1,7 +1,6 @@
 package Classifier;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import libsvm.svm;
@@ -88,7 +87,7 @@ public class SVM extends BaseClassifier{
 		param.nu = 0.5;
 		param.cache_size = 100;
 		param.C = C;
-		param.eps = 1e-3;
+		param.eps = 1e-6;
 		param.p = 0.1;
 		param.shrinking = 1;
 		param.probability = 0;
@@ -111,7 +110,6 @@ public class SVM extends BaseClassifier{
 				fid ++;
 			}
 			
-			Arrays.sort(instance);
 			problem.x[docId] = instance;
 			problem.y[docId] = 2.0 * temp.getYLabel() - 1;
 			docId ++;
@@ -132,17 +130,16 @@ public class SVM extends BaseClassifier{
 			int fid = 0;
 			for (_SparseFeature fv:temp.getSparse()) {
 				nodes[fid] = new svm_node();
-				nodes[fid].index = 1+fv.getIndex();
+				nodes[fid].index = 1 + fv.getIndex();
 				nodes[fid].value = fv.getNormValue();	
 				fid++;
 			}
 			
-			Arrays.sort(nodes);
 			double result = svm.svm_predict(model, nodes);
 			if (result>0)
-				TPTable[1][temp.getYLabel()] +=1;
+				TPTable[1][temp.getYLabel()] += 1;
 			else
-				TPTable[0][temp.getYLabel()] +=1;
+				TPTable[0][temp.getYLabel()] += 1;
 		}
 		PreRecOfOneFold = calculatePreRec(TPTable);
 		this.m_precisionsRecalls.add(PreRecOfOneFold);
@@ -226,6 +223,8 @@ public class SVM extends BaseClassifier{
 			featureSize = analyzer.getFeatureSize();
 			corpus = analyzer_2.returnCorpus(finalLocation); 
 		}
+		
+//		corpus.save2File("data/FVs/fvector.dat");
 		
 		double C = 1;
 		System.out.println("Start SVM, wait...");

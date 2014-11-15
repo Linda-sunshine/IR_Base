@@ -7,7 +7,7 @@ package structures;
  * @author lingong
  * Feature structure for sparse feature representation
  */
-public class _SparseFeature {
+public class _SparseFeature implements Comparable<_SparseFeature> {
 	private String content; //Content of the feature.
 	private int m_index; // Index of the feature
 	private double m_value; // Value of the feature (non-zero)
@@ -70,6 +70,11 @@ public class _SparseFeature {
 	public double setNormValue(double normValue){
 		this.m_norm_value = normValue;
 		return this.m_norm_value;
+	}
+
+	@Override
+	public int compareTo(_SparseFeature sfv) {
+		return m_index - sfv.m_index;
 	}
 	
 	

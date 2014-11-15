@@ -233,7 +233,8 @@ public class DocAnalyzer extends Analyzer {
 			}
 			//Create the sparse vector for the document.
 			doc.createSpVct(spVct);
-			doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
+			//doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
+			doc.L2Normalization(doc.getSparse());//Normalize the sparse vector.
 		}catch(Exception e){
 			e.printStackTrace();
 		}

@@ -4,6 +4,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -120,6 +121,8 @@ public class _Doc {
 				System.out.println("Error!! The index of sparse array out of bound!!");
 			}
 		}
+		
+		Arrays.sort(m_x_sparse);
 	}
 	
 	//Get the predicted result, which is used for comparison.
@@ -134,13 +137,22 @@ public class _Doc {
 	}
 	
 	//Calculate the sum of all the values of features.
-	public double sumOfFeatures(_SparseFeature[] fs){
+	public double sumOfFeatures(_SparseFeature[] fs) {
 		double sum = 0;
 		for (_SparseFeature feature: fs){
 			double value = feature.getValue();
 			sum += value;
 		}
 		return sum;
+	}
+	
+	public double sumOfFeaturesL2(_SparseFeature[] fs) {
+		double sum = 0;
+		for (_SparseFeature feature: fs){
+			double value = feature.getValue();
+			sum += value * value;
+		}
+		return Math.sqrt(sum);
 	}
 	
 	//L1 normalization.
@@ -162,5 +174,19 @@ public class _Doc {
 	}
 	
 	//L2 normalization.
-	
+	public void L2Normalization(_SparseFeature[] fs) {
+		double sum = sumOfFeaturesL2(fs);
+		if (sum>0) {
+			//L1 length normalization
+			for(_SparseFeature f: fs){
+				double normValue = f.getValue()/sum;
+				f.setNormValue(normValue);
+			}
+		}
+		else{
+			for(_SparseFeature f: fs){
+				f.setNormValue(0.0);
+			}
+		}
+	}
 }

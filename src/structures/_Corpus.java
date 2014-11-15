@@ -3,12 +3,14 @@
  */
 package structures;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
-
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 /**
  * @author lingong
@@ -73,6 +75,22 @@ public class _Corpus {
 	//Get the mask array of the corpus.
 	public int[] getMasks(){
 		return this.m_mask;
+	}
+	
+	public void save2File(String filename) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+			for(_Doc doc:m_collection) {
+				writer.write(String.format("%d", 2*doc.getYLabel()-1));
+				for(_SparseFeature fv:doc.getSparse()){
+					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getNormValue()));
+				}
+				writer.write('\n');
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
 	}
 	
 //	//Add one class member in the class member array.
