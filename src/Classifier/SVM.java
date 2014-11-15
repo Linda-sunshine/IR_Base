@@ -1,17 +1,18 @@
 package Classifier;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 
+import libsvm.svm;
+import libsvm.svm_model;
+import libsvm.svm_node;
+import libsvm.svm_parameter;
+import libsvm.svm_problem;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
-import utils.Utils;
 import Analyzer.DocAnalyzer;
-import libsvm.*;
 
 public class SVM extends BaseClassifier{
 	double m_C;
@@ -51,8 +52,9 @@ public class SVM extends BaseClassifier{
 			// Train the data set to get the parameter.
 			svm_model model = train(this.m_trainSet, this.m_C);
 			test(this.m_testSet, model);
+			
 			this.m_trainSet.clear();
-			// this.m_testSet.clear();
+			//this.m_testSet.clear(); // why did you design it in this way?
 		}
 		this.calculateMeanVariance(this.m_precisionsRecalls);
 	}
@@ -71,7 +73,7 @@ public class SVM extends BaseClassifier{
 	public svm_model train(ArrayList<_Doc> trainSet, double C) {
 		svm_model model = new svm_model();
 		svm_problem problem = new svm_problem();
-		problem.x = new svm_node[trainSet.size()][this.m_featureSize];
+		problem.x = new svm_node[trainSet.size()][];
 		problem.y = new double [trainSet.size()];
 		svm_parameter param = new svm_parameter();
 		
@@ -79,10 +81,10 @@ public class SVM extends BaseClassifier{
 		param = new svm_parameter();
 		// default values
 		param.svm_type = svm_parameter.C_SVC;
-		param.kernel_type = svm_parameter.RBF;
-		param.degree = 3;
+		param.kernel_type = svm_parameter.LINEAR; // Hongning: linear kernel is the general choice for text classification
+		param.degree = 1;
 		param.gamma = 0;	// 1/num_features
-		param.coef0 = 0;
+		param.coef0 = 0.2;
 		param.nu = 0.5;
 		param.cache_size = 100;
 		param.C = C;
@@ -91,23 +93,32 @@ public class SVM extends BaseClassifier{
 		param.shrinking = 1;
 		param.probability = 0;
 		param.nr_weight = 0;
-		param.weight_label = new int[0];
+		param.weight_label = new int[0];// Hongning:  why set it to 0-length array??
 		param.weight = new double[0];
 
 		//Construct the svm_problem by enumerating all docs.
-		for(int i = 0; i < trainSet.size() - 1; i++){
-			_Doc temp = trainSet.get(i);
-			for(int j = 0; j < temp.getSparse().length- 1; j++){
-				int index = temp.getSparse()[j].getIndex();
-				double value = temp.getSparse()[j].getNormValue();
-				svm_node node = new svm_node();
-				node.index = index;
-				node.value = value;
-				problem.x[i][j] = node;
+		int docId = 0, fid, fvSize = 0;
+		for(_Doc temp:trainSet){
+			svm_node[] instance = new svm_node[temp.getDocLength()];
+			fid = 0;
+			for(_SparseFeature fv:temp.getSparse()){
+				instance[fid] = new svm_node();
+				instance[fid].index = 1+fv.getIndex();
+				instance[fid].value = fv.getNormValue();
+				
+				if (fvSize<instance[fid].index)
+					fvSize = instance[fid].index;
+				fid ++;
 			}
-			problem.y[i] = temp.getYLabel();
-			problem.l = trainSet.size();
+			
+			Arrays.sort(instance);
+			problem.x[docId] = instance;
+			problem.y[docId] = 2.0 * temp.getYLabel() - 1;
+			docId ++;
 		}	
+		param.gamma = 1.0/fvSize;
+		
+		problem.l = docId;
 		model = svm.svm_train(problem, param);
 		return model;
 	}
@@ -116,20 +127,22 @@ public class SVM extends BaseClassifier{
 		double[][] TPTable = new double [this.m_classNo][this.m_classNo];
 		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
 		//Construct the svm_problem by enumerating all docs.
-		for (int i = 0; i < testSet.size() - 1; i++) {
-			_Doc temp = testSet.get(i);
-			svm_node[] nodes = new svm_node[temp.getSparse().length];
-			for (int j = 0; j < temp.getSparse().length - 1; j++) {
-				int index = temp.getSparse()[j].getIndex();
-				double value = temp.getSparse()[j].getNormValue();
-				svm_node node = new svm_node();
-				node.index = index;
-				node.value = value;	
-				nodes[j] = node;
+		for (_Doc temp:testSet) {
+			svm_node[] nodes = new svm_node[temp.getDocLength()];
+			int fid = 0;
+			for (_SparseFeature fv:temp.getSparse()) {
+				nodes[fid] = new svm_node();
+				nodes[fid].index = 1+fv.getIndex();
+				nodes[fid].value = fv.getNormValue();	
+				fid++;
 			}
+			
+			Arrays.sort(nodes);
 			double result = svm.svm_predict(model, nodes);
-			System.out.println("The current result is " + result);
-			TPTable[(int) result][temp.getYLabel()] +=1;
+			if (result>0)
+				TPTable[1][temp.getYLabel()] +=1;
+			else
+				TPTable[0][temp.getYLabel()] +=1;
 		}
 		PreRecOfOneFold = calculatePreRec(TPTable);
 		this.m_precisionsRecalls.add(PreRecOfOneFold);
@@ -145,14 +158,14 @@ public class SVM extends BaseClassifier{
 		//The parameters used in loading files.
 		String folder = "txt_sentoken";
 		String suffix = ".txt";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NBFinal.txt"; //The destination of storing the final features with stats.
-		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NBSelectedFeatures.txt";
+		String tokenModel = "data/Model/en-token.bin"; //Token model.
+		String finalLocation = "data/SVM/SVM-Final.txt"; //The destination of storing the final features with stats.
+		String featureLocation = "data/SVM/SVM-SelectedFeatures.txt";
 		
-		//String providedCV = "";
-		String featureSelection = "";
-		String providedCV = "Features.txt"; //Provided CV.
-		//String featureSelection = "MI"; //Feature selection method.
+		String providedCV = "";
+		//String featureSelection = "";
+		//String providedCV = "Features.txt"; //Provided CV.
+		String featureSelection = "MI"; //Feature selection method.
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
 			//Case 1: no provided CV, no feature selection.
@@ -214,10 +227,10 @@ public class SVM extends BaseClassifier{
 			corpus = analyzer_2.returnCorpus(finalLocation); 
 		}
 		
-		double C = 3;
+		double C = 1;
 		System.out.println("Start SVM, wait...");
 		SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
-		mySVM.crossValidation(10, corpus, classNumber);
+		mySVM.crossValidation(5, corpus, classNumber);
 		//ArrayList<_Doc> docs = corpus.getCollection();
 		//What is the l in problem???
 		

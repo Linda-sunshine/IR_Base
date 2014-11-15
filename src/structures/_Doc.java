@@ -84,6 +84,11 @@ public class _Doc {
 	public _SparseFeature[] getSparse(){
 		return this.m_x_sparse;
 	}
+	
+	//return the unique number of features in the doc
+	public int getDocLength() {
+		return m_x_sparse.length;
+	}
 		
 	//Given an index, find the corresponding value of the feature. 
 	public double findValueWithIndex(int index){
