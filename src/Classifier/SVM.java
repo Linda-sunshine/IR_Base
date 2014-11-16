@@ -156,8 +156,8 @@ public class SVM extends BaseClassifier{
 		String folder = "txt_sentoken";
 		String suffix = ".txt";
 		String tokenModel = "data/Model/en-token.bin"; //Token model.
-		String finalLocation = "data/SVM/SVM-Final.txt"; //The destination of storing the final features with stats.
-		String featureLocation = "data/SVM/SVM-SelectedFeatures.txt";
+		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/SVMFinal.txt"; //The destination of storing the final features with stats.
+		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/SVMSelectedFeatures.txt";
 		
 		String providedCV = "";
 		//String featureSelection = "";
@@ -223,20 +223,10 @@ public class SVM extends BaseClassifier{
 			featureSize = analyzer.getFeatureSize();
 			corpus = analyzer_2.returnCorpus(finalLocation); 
 		}
-		
 //		corpus.save2File("data/FVs/fvector.dat");
-		
 		double C = 1;
 		System.out.println("Start SVM, wait...");
 		SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
 		mySVM.crossValidation(5, corpus, classNumber);
-		//ArrayList<_Doc> docs = corpus.getCollection();
-		//What is the l in problem???
-		
-		//svm.svm_cross_validation(problem, parameter, int arg2, double[] arg3);
-		//Shall we translate the arg parameters to the libsvm or construct the new data structure?
-		System.out.println("Start training, wait...");
-		
-		System.out.println("Training finished!");
 	}
 }

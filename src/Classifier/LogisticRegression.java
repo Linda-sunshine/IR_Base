@@ -168,9 +168,9 @@ public class LogisticRegression extends BaseClassifier{
 		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LRFinal.txt"; //The destination of storing the final features.
 		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LRSelectedFeatures.txt";
 
-		String providedCV = "";
+		//String providedCV = "";
 		String featureSelection = "";
-		//String providedCV = "Features.txt"; //Provided CV.
+		String providedCV = "Features.txt"; //Provided CV.
 		//String featureSelection = "DF"; //Feature selection method.
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
