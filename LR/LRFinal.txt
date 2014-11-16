@@ -1,0 +1,15 @@
+
+feature: love	DF[0]:432	DF[1]:348	TTF[0]:862	TTF[1]:564
+feature: wonderful	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
+feature: best	DF[0]:481	DF[1]:357	TTF[0]:810	TTF[1]:493
+feature: great	DF[0]:427	DF[1]:294	TTF[0]:795	TTF[1]:417
+feature: superb	DF[0]:67	DF[1]:18	TTF[0]:75	TTF[1]:18
+feature: still	DF[0]:384	DF[1]:318	TTF[0]:587	TTF[1]:456
+feature: beautiful	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
+feature: bad	DF[0]:266	DF[1]:528	TTF[0]:370	TTF[1]:1086
+feature: worst	DF[0]:43	DF[1]:194	TTF[0]:48	TTF[1]:259
+feature: stupid	DF[0]:40	DF[1]:183	TTF[0]:47	TTF[1]:253
+feature: waste	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
+feature: boring	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
+feature: ?	DF[0]:545	DF[1]:683	TTF[0]:1570	TTF[1]:2201
+feature: !	DF[0]:279	DF[1]:384	TTF[0]:657	TTF[1]:1056

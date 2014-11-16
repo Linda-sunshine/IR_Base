@@ -56,5 +56,22 @@ public abstract class Analyzer {
 		this.m_selector = new FeatureSelection();
 	}
 	
+	//
+	public Analyzer(String tokenModel, int classNo, double startProb, double endProb) throws InvalidFormatException, FileNotFoundException, IOException{
+		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		this.m_classNo = classNo;
+		this.m_classMemberNo = new int[classNo];
+		
+		this.m_corpus = new _Corpus();
+		this.m_stemmer = new englishStemmer();
+		this.m_featureNames = new ArrayList<String>();
+		this.m_featureIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		this.m_featureStat = new HashMap<String, _stat>();
+		
+		this.m_selector = new FeatureSelection(startProb, endProb);
+	}
+	
+	
+	
 	//abstract protected _Corpus returnCorpus(String location, String fs) throws FileNotFoundException;
 }

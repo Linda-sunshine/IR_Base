@@ -165,13 +165,16 @@ public class LogisticRegression extends BaseClassifier{
 		String folder = "txt_sentoken";
 		String suffix = ".txt";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LRFinal.txt"; //The destination of storing the final features.
-		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LRSelectedFeatures.txt";
+		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRFinal.txt"; //The destination of storing the final features.
+		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRSelectedFeatures.txt";
 
 		//String providedCV = "";
 		String featureSelection = "";
 		String providedCV = "Features.txt"; //Provided CV.
-		//String featureSelection = "DF"; //Feature selection method.
+		//String featureSelection = "CHI"; //Feature selection method.
+		double startProb = 0.7; // Used in feature selection, the starting point of the features.
+		double endProb = 0.9; // Used in feature selection, the ending point of the feature.
+		
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
 			
@@ -208,7 +211,7 @@ public class LogisticRegression extends BaseClassifier{
 //				//analyzer_1.featureSelection(featureLocation); //Select the features.
 //			}
 			
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.featureSelection(featureLocation); //Select the features.
 			
@@ -221,7 +224,7 @@ public class LogisticRegression extends BaseClassifier{
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 4: provided CV, feature selection.
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, featureSelection);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb);
 			System.out.println("Case 4: provided CV, feature selection.");
 			System.out.println("Start loading file to do feature selection, wait...");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.

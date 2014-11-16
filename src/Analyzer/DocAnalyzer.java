@@ -21,9 +21,19 @@ import structures._SparseFeature;
 import structures._stat;
 
 public class DocAnalyzer extends Analyzer {
-	
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
+	//Constructor without feature selection probs.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, String fValue) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
+		if(providedCV != null)
+			this.LoadCV(providedCV);
+		if(fs != null){
+			this.m_isFetureSelected = true;
+			this.featureSelection = fs;
+		}	
+	}
+	//Constructor with feature selection probs.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, double sp, double ep, int Ngram, String fValue) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo, sp, ep);
 		if(providedCV != null)
 			this.LoadCV(providedCV);
 		if(fs != null){

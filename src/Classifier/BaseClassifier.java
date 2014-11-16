@@ -25,7 +25,7 @@ public abstract class BaseClassifier {
 	public void train(ArrayList<_Doc> trainSet){}
 	//Used in SVM to train data, will be overwritten. Since java does not accept functions with same parameters 
 	//and different return values, add a new variable.
-	public svm_model train(ArrayList<_Doc> trainSet, boolean svmFlag){
+	public svm_model train(ArrayList<_Doc> trainSet, boolean flag){
 		svm_model model = new svm_model();
 		return model;
 	}

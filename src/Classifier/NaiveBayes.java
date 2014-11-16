@@ -103,18 +103,21 @@ public class NaiveBayes extends BaseClassifier {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		_Corpus corpus = new _Corpus();
+		int Ngram = 1; //The default value is unigram. 
 		
 		//The parameters used in loading files.
 		String folder = "txt_sentoken";
 		String suffix = ".txt";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NBFinal.txt"; //The destination of storing the final features with stats.
-		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NBSelectedFeatures.txt";
+		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NB/NBFinal.txt"; //The destination of storing the final features with stats.
+		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/NB/NBSelectedFeatures.txt";
 		
 		String providedCV = "";
 		//String featureSelection = "";
 		//String providedCV = "Features.txt"; //Provided CV.
-		String featureSelection = "MI"; //Feature selection method.
+		String featureSelection = "IG"; //Feature selection method.
+		double startProb = 0.4; // Used in feature selection, the starting point of the features.
+		double endProb = 0.7; // Used in feature selection, the ending point of the feature.
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
 			
@@ -151,12 +154,12 @@ public class NaiveBayes extends BaseClassifier {
 //				//analyzer_1.featureSelection(featureLocation); //Select the features.
 //			}
 			
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.featureSelection(featureLocation); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null);
+			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null);//featureLocation contains the selected features.
 			analyzer_2.LoadDirectory(folder, suffix);
 			featureSize = analyzer.getFeatureSize();
 			corpus = analyzer_2.returnCorpus(finalLocation); 
@@ -164,7 +167,7 @@ public class NaiveBayes extends BaseClassifier {
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 4: provided CV, feature selection.
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, featureSelection);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, featureSelection, startProb, endProb);
 			System.out.println("Case 4: provided CV, feature selection.");
 			System.out.println("Start loading file to do feature selection, wait...");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
@@ -182,7 +185,6 @@ public class NaiveBayes extends BaseClassifier {
 		NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
 		System.out.println("Start cross validaiton, wait...");
 		myNB.crossValidation(10, corpus, classNumber);//Use the movie reviews for testing the codes.
-		
 	}
 
 }
