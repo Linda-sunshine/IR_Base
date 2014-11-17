@@ -107,8 +107,8 @@ public abstract class BaseClassifier {
 	public double[][] calculatePreRec(double[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
 		for (int i = 0; i < this.m_classNo; i++) {
-			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfColumn(tpTable, i);// Precision of the class.
-			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfRow(tpTable, i);// Recall of the class.
+			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfRow(tpTable, i);// Precision of the class.
+			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfColumn(tpTable, i);// Recall of the class.
 		}
 		return PreRecOfOneFold;
 	}

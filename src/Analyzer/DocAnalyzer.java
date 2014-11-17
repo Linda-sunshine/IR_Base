@@ -21,8 +21,11 @@ import structures._SparseFeature;
 import structures._stat;
 
 public class DocAnalyzer extends Analyzer {
-	//Constructor without feature selection probs.
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, String fValue) throws InvalidFormatException, FileNotFoundException, IOException{
+	private int m_Ngram; 
+	private String m_fValue;
+	
+	//Constructor.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
 		if(providedCV != null)
 			this.LoadCV(providedCV);
@@ -30,8 +33,22 @@ public class DocAnalyzer extends Analyzer {
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}	
+		this.m_Ngram = 1;
+		this.m_fValue = "TF";
+	}	
+	//Constructor with ngram and fValue.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, String fValue) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		if(providedCV != null)
+			this.LoadCV(providedCV);
+		if(fs != null){
+			this.m_isFetureSelected = true;
+			this.featureSelection = fs;
+		}
+		this.m_Ngram = Ngram;
+		this.m_fValue = fValue;
 	}
-	//Constructor with feature selection probs.
+	//Constructor with ngram, fValue and feature selection probs.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, double sp, double ep, int Ngram, String fValue) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, sp, ep);
 		if(providedCV != null)
@@ -39,9 +56,10 @@ public class DocAnalyzer extends Analyzer {
 		if(fs != null){
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
-		}	
+		}
+		this.m_Ngram = Ngram;
+		this.m_fValue = fValue;
 	}
-	
 	//Load the features from a file and store them in the m_featurNames.
 	public boolean LoadCV(String filename) {
 		int count = 0;
@@ -127,14 +145,57 @@ public class DocAnalyzer extends Analyzer {
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	public String[] TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source);
-		String token;
-		for(int i = 0; i < tokens.length; i++){
-			token = tokens[i];
-			token = Normalize(token);
-			token = SnowballStemming(token);
-			tokens[i] = token;
+		String[] Ngrams = null;
+		int tokenLength = tokens.length;
+		if(this.m_Ngram == 3){
+			if (tokenLength % 3 == 0){
+				int NgramLength = tokens.length/3;
+				Ngrams = new String[NgramLength];
+				for(int i = 0; i < Ngrams.length; i++){
+					String trigram = tokens[i*3].concat(tokens[i*3+1]).concat(tokens[i*3+2]);
+					Ngrams[i] = trigram;
+				}
+			} else if (tokenLength % 3 == 1){
+				int NgramLength = tokens.length/3 + 1;
+				Ngrams = new String[NgramLength];
+				for(int i = 0; i < Ngrams.length-1; i++){
+					String trigram = tokens[i*3].concat(tokens[i*3+1]).concat(tokens[i*3+2]);
+					Ngrams[i] = trigram;
+				}
+				Ngrams[NgramLength-1] = tokens[tokens.length-1];
+			} else if (tokenLength % 3 == 2){
+				int NgramLength = tokens.length/3 + 1;
+				Ngrams = new String[NgramLength];
+				for(int i = 0; i < Ngrams.length-1; i++){
+					String trigram = tokens[i*3].concat(tokens[i*3+1]).concat(tokens[i*3+2]);
+					Ngrams[i] = trigram;
+				}
+				Ngrams[NgramLength-1] = tokens[tokens.length-2].concat(tokens[tokens.length-1]);
+			}
+		} else if(this.m_Ngram == 2){
+			if (tokenLength % 2 == 0){
+				Ngrams = new String[tokens.length/2];
+				for(int i = 0; i < Ngrams.length; i++){
+					String bigram = tokens[i*2].concat(tokens[i*2+1]);
+					Ngrams[i] = bigram;
+				}
+			} else{
+				Ngrams = new String[tokens.length/2 + 1];
+				for(int i = 0; i < Ngrams.length-1; i++){
+					String bigram = tokens[i*2].concat(tokens[i*2+1]);
+					Ngrams[i] = bigram;
+				}
+				Ngrams[Ngrams.length-1] = tokens[tokens.length-1];
+			}
+		} else {Ngrams = tokens;}
+
+		for(int i = 0; i < Ngrams.length; i++){
+			String Ngram = Ngrams[i];
+			Ngram = Normalize(Ngram);
+			Ngram = SnowballStemming(Ngram);
+			Ngrams[i] = Ngram;
 		}
-		return tokens;
+		return Ngrams;
 	}
 	
 	//Load all the files in the directory.
@@ -159,7 +220,6 @@ public class DocAnalyzer extends Analyzer {
 				buffer.append(line);
 			}
 			reader.close();
-			
 			//At present, we just consider two classes. Just set the label directly.
 			//How to generalize it to several classes???? 
 			if(filename.contains("pos")){
@@ -172,13 +232,11 @@ public class DocAnalyzer extends Analyzer {
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
 				this.m_classMemberNo[1]++;
 			}
-			
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
 		}
 		this.m_corpus.sizeAddOne();
-		//System.out.println("Analyzing file " + this.m_corpus.getSize());
 	}
 	
 	//Add one more token to the current vocabulary.
@@ -281,6 +339,7 @@ public class DocAnalyzer extends Analyzer {
 		int start = spVct1[0].getIndex() > spVct2[0].getIndex() ? spVct1[0].getIndex() : spVct2[0].getIndex();
 		int end = spVct1[spVct1.length - 1].getIndex() < spVct2[spVct2.length - 1].getIndex() ? spVct1[spVct1.length - 1].getIndex() : spVct2[spVct2.length - 1].getIndex();
 		for(int i = start; i <= end; i ++){
+			//Have not finished.
 		}
 		return similarity;
 	}
@@ -291,8 +350,10 @@ public class DocAnalyzer extends Analyzer {
 		this.setFeatureConfiguration(); //Construct the table for features.
 		
 		if(this.m_isFetureSelected){
+			System.out.println("*******************************************************************");
 			if (this.featureSelection.equals("DF")){
 				System.out.println("DF is used to do feature selection!!");
+				//System.out.println("The start point is " + this.m_selector.m_startProb + " and the end point is " + this.m_selector.m_endProb);
 				this.m_featureNames = this.m_selector.DF(this.m_featureStat);
 			}
 			else if(this.featureSelection.equals("IG")){
@@ -302,7 +363,6 @@ public class DocAnalyzer extends Analyzer {
 			else if(this.featureSelection.equals("MI")){
 				System.out.println("MI is used to do feature selection!!");
 				this.m_featureNames = this.m_selector.MI(this.m_featureStat, this.m_classMemberNo);
-
 			}
 			else if(this.featureSelection.equals("CHI")){
 				System.out.println("CHI is used to do feature selection!!");
@@ -313,6 +373,7 @@ public class DocAnalyzer extends Analyzer {
 //				this.m_featureNames = this.m_selector.TS();
 //			}
 		}
+		System.out.println("Feature Selction: The start point is " + this.m_selector.m_startProb + " and the end point is " + this.m_selector.m_endProb);
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
 		System.out.println(this.m_featureNames.size() + " features are selected!");
 	}

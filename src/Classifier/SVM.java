@@ -169,6 +169,10 @@ public class SVM extends BaseClassifier{
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		_Corpus corpus = new _Corpus();
+		int Ngram = 1; //The default value is unigram. 
+		String featureValue = "tf"; //The way of calculating the feature value, which can also be tfidf, BM25
+		System.out.println(Ngram + " gram! " + featureValue + " is used to calculate feature value!");
+		System.out.println("*******************************************************************");
 		
 		//The parameters used in loading files.
 		String folder = "txt_sentoken";
@@ -207,18 +211,17 @@ public class SVM extends BaseClassifier{
 			System.out.println("Case 3: no provided CV, feature selection.");
 			System.out.println("Start loading files to do feature selection, wait...");
 			
-//			/*If the feature selection is TS, we need to load the directory three times.
-//			 * 1. Load all the docs, get all the terms in the docs. Calculate the current document's similarity with other documents, find a max one??
-//			 * 2. Load again to do feature selection.
-//			 * 3. Load again to do classfication.
-//			 * TS is not implemented yet due to the vague definition.*/
+//			If the feature selection is TS, we need to load the directory three times.
+//			1. Load all the docs, get all the terms in the docs. Calculate the current document's similarity with other documents, find a max one??
+//			2. Load again to do feature selection.
+//			3. Load again to do classfication.
 //			if(featureSelection.endsWith("TS")){
 //				DocAnalyzer analyzer_1 = new DocAnalyzer(tokenModel, classNumber, null, null);
 //				analyzer_1.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //				analyzer_1.calculateSimilarity();
 //				//analyzer_1.featureSelection(featureLocation); //Select the features.
 //			}
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb, Ngram, featureValue);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.featureSelection(featureLocation); //Select the features.
 			
@@ -230,7 +233,7 @@ public class SVM extends BaseClassifier{
 			
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			//Case 4: provided CV, feature selection.
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, startProb, endProb, Ngram, featureValue);
 			System.out.println("Case 4: provided CV, feature selection.");
 			System.out.println("Start loading file to do feature selection, wait...");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.

@@ -25,7 +25,7 @@ public abstract class Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
 	int[] m_classMemberNo; //Store the number of members in a class.
-
+	
 	//added by Hongning to manage feature vocabulary
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
