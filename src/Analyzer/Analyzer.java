@@ -37,9 +37,10 @@ public abstract class Analyzer {
 	protected boolean m_isFetureSelected = false; 
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
-	protected HashMap<String, Integer> m_featureIndex;//key: content of the feature; value: the index of the feature
+	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
+	protected HashMap<Integer, String> m_featureIndexName;//value: the index of the feature; key: content of the feature; 
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
-	protected FeatureSelection m_selector; //An instance of selecting different features.
+	//protected FeatureSelection m_selector; //An instance of selecting different features.
 	protected String featureSelection = "DF";
 	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -50,28 +51,9 @@ public abstract class Analyzer {
 		this.m_corpus = new _Corpus();
 		this.m_stemmer = new englishStemmer();
 		this.m_featureNames = new ArrayList<String>();
-		this.m_featureIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
-		
-		this.m_selector = new FeatureSelection();
-	}
-	
-	//
-	public Analyzer(String tokenModel, int classNo, double startProb, double endProb) throws InvalidFormatException, FileNotFoundException, IOException{
-		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		this.m_classNo = classNo;
-		this.m_classMemberNo = new int[classNo];
-		
-		this.m_corpus = new _Corpus();
-		this.m_stemmer = new englishStemmer();
-		this.m_featureNames = new ArrayList<String>();
-		this.m_featureIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
-		this.m_featureStat = new HashMap<String, _stat>();
-		
-		this.m_selector = new FeatureSelection(startProb, endProb);
-	}
-	
-	
-	
+	}	
 	//abstract protected _Corpus returnCorpus(String location, String fs) throws FileNotFoundException;
 }

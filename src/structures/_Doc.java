@@ -3,12 +3,10 @@
  */
 package structures;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 
 /**
  * @author lingong
@@ -108,7 +106,6 @@ public class _Doc {
 		m_x_sparse = new _SparseFeature[spVct.size()];
 		Iterator it = spVct.entrySet().iterator();
 		while(it.hasNext()){
-			//Is it correct???
 			Map.Entry pairs = (Map.Entry)it.next();
 			_SparseFeature sf = new _SparseFeature();
 			sf.setIndex((int) pairs.getKey());
@@ -117,11 +114,9 @@ public class _Doc {
 				this.m_x_sparse[i] = sf;
 				i++;
 			} 
-			else {
+			else
 				System.out.println("Error!! The index of sparse array out of bound!!");
-			}
 		}
-		
 		Arrays.sort(m_x_sparse);
 	}
 	
@@ -146,6 +141,7 @@ public class _Doc {
 		return sum;
 	}
 	
+	//L2 = sqrt(sum of fsValue*fsValue).
 	public double sumOfFeaturesL2(_SparseFeature[] fs) {
 		double sum = 0;
 		for (_SparseFeature feature: fs){
