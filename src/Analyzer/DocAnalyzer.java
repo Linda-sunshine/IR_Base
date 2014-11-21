@@ -113,7 +113,7 @@ public class DocAnalyzer extends Analyzer {
 	//Normalize.
 	public String Normalize(String token){
 		token = Normalizer.normalize(token, Normalizer.Form.NFKC);
-		token = token.replaceAll("^a-zA-Z", "");
+		token = token.replaceAll("\\W+", "");
 		token = token.toLowerCase();
 		return token;
 	}
@@ -132,7 +132,7 @@ public class DocAnalyzer extends Analyzer {
 		String[] tokens = Tokenizer(source); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < tokens.length; i++)
-			tokens[i] = SnowballStemming(Normalize(tokens[i]));		
+			tokens[i] = SnowballStemming(Normalize(tokens[i]));
 		
 		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
 		ArrayList<String> Ngrams = new ArrayList<String>();

@@ -37,7 +37,7 @@ public class LogisticRegression extends BaseClassifier{
 	 */
 	public void train(ArrayList<_Doc> docs){
 		int[] iflag = {0};
-		int[] iprint = { 1, 3 };
+		int[] iprint = { -1, 3 };
 		double[] diag = new double[this.m_beta.length];
 
 		try{
@@ -169,17 +169,20 @@ public class LogisticRegression extends BaseClassifier{
 		String folder = "txt_sentoken";
 		String suffix = ".txt";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRFinal.txt"; //The destination of storing the final features.
-		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRSelectedFeatures.txt";
+//		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRFinal.txt"; //The destination of storing the final features.
+//		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/LR/LRSelectedFeatures.txt";
 //		String finalLocation = "/home/lin/Lin'sWorkSpace/IR_Base/LR/LRFinal.txt";
 //		String featureLocation = "/home/lin/Lin'sWorkSpace/IR_Base/LR/LRSelectedFeatures.txt";
+		String finalLocation = "LR/LRFinal.txt"; //The destination of storing the final features.
+		String featureLocation = "LR/LRSelectedFeatures.txt";
 
+		
 		String providedCV = "";
 		//String featureSelection = "";
 		//String providedCV = "Features.txt"; //Provided CV.
 		String featureSelection = "MI"; //Feature selection method.
 		double startProb = 0.155; // Used in feature selection, the starting point of the features.
-		double endProb = 0.211; // Used in feature selection, the ending point of the feature.
+		double endProb = 0.8211; // Used in feature selection, the ending point of the feature.
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){
 			
@@ -217,6 +220,7 @@ public class LogisticRegression extends BaseClassifier{
 //				//analyzer_1.featureSelection(featureLocation); //Select the features.
 //			}
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, Ngram); 
+			
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.featureSelection(featureLocation, startProb, endProb); //Select the features.
 			
