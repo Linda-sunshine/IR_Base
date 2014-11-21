@@ -7,15 +7,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.lang.instrument.IllegalClassFormatException;
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.HashMap;
-<<<<<<< HEAD
-=======
-import java.util.IllegalFormatException;
-import java.util.Iterator;
-import java.util.Map;
->>>>>>> bf3c75820239635d46277c5cb36bf3e51f69486d
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
@@ -136,27 +130,30 @@ public class DocAnalyzer extends Analyzer {
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	public String[] TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < tokens.length; i++)
+			tokens[i] = SnowballStemming(Normalize(tokens[i]));		
+		
 		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
 		ArrayList<String> Ngrams = new ArrayList<String>();
+		
 		//Collect all the grams, Ngrams, N-1grams...
 		while(N > 0){
 			NgramNo = tokenLength - N + 1;
 			for(int i = 0; i < NgramNo; i++){
-				String Ngram = "";
-				for(int j = 0; j < N; j++)
-					Ngram = Ngram.concat(tokens[i+j]);//If n gram, concat them.
-				Ngrams.add(Ngram);
-			}  N--;
+				StringBuffer Ngram = new StringBuffer(128);
+				for(int j = 0; j < N; j++){
+					if (j==0)
+						Ngram.append(tokens[j]);
+					else
+						Ngram.append("-" + tokens[j]);
+				}
+				Ngrams.add(Ngram.toString());
+			}  
+			N--;
 		}
-		//Normalize them and stem them.
-		String[] ProcessedNgrams = new String[Ngrams.size()];
-		for(int i = 0; i < Ngrams.size(); i++){
-			String Ngram = Ngrams.get(i);
-			Ngram = Normalize(Ngram);
-			Ngram = SnowballStemming(Ngram);
-			ProcessedNgrams[i] = Ngram;
-		}
-		return ProcessedNgrams;
+		
+		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
 	
 	//Load all the files in the directory.
