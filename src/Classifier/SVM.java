@@ -252,7 +252,7 @@ public class SVM extends BaseClassifier{
 			corpus = analyzer_2.returnCorpus(finalLocation); 
 			analyzer_2.setFeatureValues(corpus, analyzer_2, featureValue);
 		}
-//		corpus.save2File("data/FVs/fvector.dat");
+		corpus.save2File("data/FVs/fvector.dat");
 		double C = 3;// The default value is 1.
 		System.out.println("Start SVM, wait...");
 		SVM mySVM = new SVM(corpus, classNumber, featureSize, C);

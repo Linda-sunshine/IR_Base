@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * @author lingong
@@ -104,9 +105,9 @@ public class _Doc {
 	public void createSpVct(HashMap<Integer, Double> spVct) {
 		int i = 0;
 		m_x_sparse = new _SparseFeature[spVct.size()];
-		Iterator it = spVct.entrySet().iterator();
+		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
 		while(it.hasNext()){
-			Map.Entry pairs = (Map.Entry)it.next();
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
 			_SparseFeature sf = new _SparseFeature();
 			sf.setIndex((int) pairs.getKey());
 			sf.setValue((double) pairs.getValue());

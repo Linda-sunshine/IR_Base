@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import libsvm.svm_model;
-
-import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;

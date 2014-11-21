@@ -81,7 +81,7 @@ public class _Corpus {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
 			for(_Doc doc:m_collection) {
-				writer.write(String.format("%d", 2*doc.getYLabel()-1));
+				writer.write(String.format("%d", doc.getYLabel()));
 				for(_SparseFeature fv:doc.getSparse()){
 					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getNormValue()));
 				}

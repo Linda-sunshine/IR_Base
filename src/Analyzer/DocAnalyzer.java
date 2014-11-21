@@ -144,9 +144,9 @@ public class DocAnalyzer extends Analyzer {
 				StringBuffer Ngram = new StringBuffer(128);
 				for(int j = 0; j < N; j++){
 					if (j==0)
-						Ngram.append(tokens[j]);
+						Ngram.append(tokens[i+j]);
 					else
-						Ngram.append("-" + tokens[j]);
+						Ngram.append("-" + tokens[i+j]);
 				}
 				Ngrams.add(Ngram.toString());
 			}  
@@ -346,8 +346,8 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
 	public _Corpus setFeatureValues(_Corpus c, DocAnalyzer analyzer, String fValue){
-		HashMap<String, _stat> featureStat = analyzer.m_featureStat;
-		HashMap<Integer, String> featureIndexName = analyzer.m_featureIndexName;
+		HashMap<String, _stat> featureStat = m_featureStat;
+		HashMap<Integer, String> featureIndexName = m_featureIndexName;
 		
 		ArrayList<_Doc> docs = c.getCollection(); //Get the collection of all the documents.
 		int N = docs.size();
@@ -358,7 +358,7 @@ public class DocAnalyzer extends Analyzer {
 				for(_SparseFeature sf: sfs){
 					String featureName = featureIndexName.get(sf.getIndex());
 					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue();
+					double TF = sf.getValue()/temp.getDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double TFIDF = TF * Math.log((N + 1)/DF);
 					sf.setValue(TFIDF);
