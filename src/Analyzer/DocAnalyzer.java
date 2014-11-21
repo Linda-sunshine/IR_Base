@@ -7,17 +7,27 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.lang.instrument.IllegalClassFormatException;
 import java.text.Normalizer;
 import java.util.HashMap;
+<<<<<<< HEAD
+=======
+import java.util.IllegalFormatException;
+import java.util.Iterator;
+import java.util.Map;
+>>>>>>> bf3c75820239635d46277c5cb36bf3e51f69486d
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._stat;
+import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
+	private int m_Ngram; 
 	
+	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
 		if(providedCV != null)
@@ -26,6 +36,19 @@ public class DocAnalyzer extends Analyzer {
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}	
+		this.m_Ngram = 1;
+		//this.m_fValue = "TF";
+	}	
+	//Constructor with ngram and fValue.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		if(providedCV != null)
+			this.LoadCV(providedCV);
+		if(fs != null){
+			this.m_isFetureSelected = true;
+			this.featureSelection = fs;
+		}
+		this.m_Ngram = Ngram;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.
@@ -51,7 +74,8 @@ public class DocAnalyzer extends Analyzer {
 		
 		//Set the index of the features.
 		for(String f: this.m_featureNames){
-			this.m_featureIndex.put(f, count);
+			this.m_featureNameIndex.put(f, count);
+			this.m_featureIndexName.put(count, f);
 			this.m_featureStat.put(f, new _stat(this.m_classNo));
 			count++;
 		}
@@ -109,18 +133,30 @@ public class DocAnalyzer extends Analyzer {
 			return m_stemmer.getCurrent();
 	}
 	
-	//Which way would be more effective?? tokenize one word, normalize one, stem one? tokenize all words, normalize all, stem all??
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	public String[] TokenizerNormalizeStemmer(String source){
-		String[] tokens = Tokenizer(source);
-		String token;
-		for(int i = 0; i < tokens.length; i++){
-			token = tokens[i];
-			token = Normalize(token);
-			token = SnowballStemming(token);
-			tokens[i] = token;
+		String[] tokens = Tokenizer(source); //Original tokens.
+		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
+		ArrayList<String> Ngrams = new ArrayList<String>();
+		//Collect all the grams, Ngrams, N-1grams...
+		while(N > 0){
+			NgramNo = tokenLength - N + 1;
+			for(int i = 0; i < NgramNo; i++){
+				String Ngram = "";
+				for(int j = 0; j < N; j++)
+					Ngram = Ngram.concat(tokens[i+j]);//If n gram, concat them.
+				Ngrams.add(Ngram);
+			}  N--;
 		}
-		return tokens;
+		//Normalize them and stem them.
+		String[] ProcessedNgrams = new String[Ngrams.size()];
+		for(int i = 0; i < Ngrams.size(); i++){
+			String Ngram = Ngrams.get(i);
+			Ngram = Normalize(Ngram);
+			Ngram = SnowballStemming(Ngram);
+			ProcessedNgrams[i] = Ngram;
+		}
+		return ProcessedNgrams;
 	}
 	
 	//Load all the files in the directory.
@@ -145,7 +181,6 @@ public class DocAnalyzer extends Analyzer {
 				buffer.append(line);
 			}
 			reader.close();
-			
 			//At present, we just consider two classes. Just set the label directly.
 			//How to generalize it to several classes???? 
 			if(filename.contains("pos")){
@@ -158,19 +193,18 @@ public class DocAnalyzer extends Analyzer {
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
 				this.m_classMemberNo[1]++;
 			}
-			
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
 		}
 		this.m_corpus.sizeAddOne();
-		//System.out.println("Analyzing file " + this.m_corpus.getSize());
 	}
 	
 	//Add one more token to the current vocabulary.
 	private void expandVocabulary(String token) {
 		m_featureNames.add(token); //Add the new feature.
-		m_featureIndex.put(token, (m_featureNames.size() - 1)); //set the index of the new feature.
+		m_featureNameIndex.put(token, (m_featureNames.size() - 1)); //set the index of the new feature.
+		m_featureIndexName.put((m_featureNames.size() - 1), token);
 	}
 
 	/*Analyze a document and add the analyzed document back to corpus.	
@@ -188,8 +222,8 @@ public class DocAnalyzer extends Analyzer {
 			for(String token:tokens) {
 				//CV is not loaded, take all the tokens as features.
 				if(!m_isCVLoaded){
-					if (m_featureIndex.containsKey(token)) {
-						index = m_featureIndex.get(token);
+					if (m_featureNameIndex.containsKey(token)) {
+						index = m_featureNameIndex.get(token);
 						if(spVct.containsKey(index)){
 							value = spVct.get(index) + 1;
 							spVct.put(index, value);
@@ -204,7 +238,7 @@ public class DocAnalyzer extends Analyzer {
 						//indicate we allow the analyzer to dynamically expand the feature vocabulary
 						expandVocabulary(token);//update the m_featureNames.
 						updateFeatureStat(token);
-						index = m_featureIndex.get(token);
+						index = m_featureNameIndex.get(token);
 						spVct.put(index, 1.0);
 						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
 						this.m_featureStat.get(token).addOneTTF(doc.getYLabel());					
@@ -212,8 +246,8 @@ public class DocAnalyzer extends Analyzer {
 				}
 				//CV is loaded.
 				else{
-					if (m_featureIndex.containsKey(token)) {
-						index = m_featureIndex.get(token);
+					if (m_featureNameIndex.containsKey(token)) {
+						index = m_featureNameIndex.get(token);
 						if(spVct.containsKey(index)){
 							value = spVct.get(index) + 1;
 							spVct.put(index, value);
@@ -249,7 +283,6 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Set the counts of every feature with respect to the collected class number.
 	public void setFeatureConfiguration() {
-		
 		//Initialize the counts of every feature.
 		for (String featureName: this.m_featureStat.keySet()){
 			this.m_featureStat.get(featureName).initCount(this.m_classNo);
@@ -267,38 +300,42 @@ public class DocAnalyzer extends Analyzer {
 		int start = spVct1[0].getIndex() > spVct2[0].getIndex() ? spVct1[0].getIndex() : spVct2[0].getIndex();
 		int end = spVct1[spVct1.length - 1].getIndex() < spVct2[spVct2.length - 1].getIndex() ? spVct1[spVct1.length - 1].getIndex() : spVct2[spVct2.length - 1].getIndex();
 		for(int i = start; i <= end; i ++){
+			//Have not finished.
 		}
 		return similarity;
 	}
 	
 	//Select the features and store them in a file.
-	public void featureSelection(String location) throws FileNotFoundException{
+	public void featureSelection(String location, double startProb, double endProb) throws FileNotFoundException{
+		FeatureSelection selector = new FeatureSelection(startProb, endProb);
 		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		this.setFeatureConfiguration(); //Construct the table for features.
 		
 		if(this.m_isFetureSelected){
+			System.out.println("*******************************************************************");
 			if (this.featureSelection.equals("DF")){
 				System.out.println("DF is used to do feature selection!!");
-				this.m_featureNames = this.m_selector.DF(this.m_featureStat);
+				//System.out.println("The start point is " + this.m_selector.m_startProb + " and the end point is " + this.m_selector.m_endProb);
+				this.m_featureNames = selector.DF(this.m_featureStat);
 			}
 			else if(this.featureSelection.equals("IG")){
 				System.out.println("IG is used to do feature selection!!");
-				this.m_featureNames = this.m_selector.IG(this.m_featureStat, this.m_classMemberNo);
+				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo);
 			}
 			else if(this.featureSelection.equals("MI")){
 				System.out.println("MI is used to do feature selection!!");
-				this.m_featureNames = this.m_selector.MI(this.m_featureStat, this.m_classMemberNo);
-
+				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo);
 			}
 			else if(this.featureSelection.equals("CHI")){
 				System.out.println("CHI is used to do feature selection!!");
-				this.m_featureNames = this.m_selector.CHI(this.m_featureStat, this.m_classMemberNo);
+				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo);
 			}
 //			else if(this.featureSelection.equals("TS")){
 //				System.out.println("TS is used to do feature selection!!");
 //				this.m_featureNames = this.m_selector.TS();
 //			}
 		}
+		System.out.println("Feature Selction: The start point is " + selector.m_startProb + " and the end point is " + selector.m_endProb);
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
 		System.out.println(this.m_featureNames.size() + " features are selected!");
 	}
@@ -308,6 +345,74 @@ public class DocAnalyzer extends Analyzer {
 		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		this.SaveCVStat(finalLocation);
 		return this.m_corpus; 
+	}
+	
+	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
+	public _Corpus setFeatureValues(_Corpus c, DocAnalyzer analyzer, String fValue){
+		HashMap<String, _stat> featureStat = analyzer.m_featureStat;
+		HashMap<Integer, String> featureIndexName = analyzer.m_featureIndexName;
+		
+		ArrayList<_Doc> docs = c.getCollection(); //Get the collection of all the documents.
+		int N = docs.size();
+		if (fValue.equals("TFIDF")){
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				for(_SparseFeature sf: sfs){
+					String featureName = featureIndexName.get(sf.getIndex());
+					_stat stat = featureStat.get(featureName);
+					double TF = sf.getValue();
+					double DF = Utils.sumOfArray(stat.getDF());
+					double TFIDF = TF * Math.log((N + 1)/DF);
+					sf.setValue(TFIDF);
+					//System.out.println("test");
+				}
+			}
+		}else if(fValue.equals("BM25")){
+			double k1 = 1.5; //[1.2, 2]
+			double b = 10; //(0, 1000]
+			//Iterate all the documents to get the average document length.
+			double navg = 0;
+			for(int k = 0; k < N; k++)
+				navg += docs.get(k).getDocLength();
+			navg = navg/N; 
+			
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				for(_SparseFeature sf: sfs){
+					String featureName = featureIndexName.get(sf.getIndex());
+					_stat stat = featureStat.get(featureName);
+					double TF = sf.getValue();
+					double DF = Utils.sumOfArray(stat.getDF());
+					double n = temp.getDocLength();
+					double BM25 = Math.log((N - DF + 0.5) / (DF + 0.5)) * TF * (k1 + 1) / (k1 * (1 - b + b * n / navg) + TF);
+					sf.setValue(BM25);
+				}
+			}
+		} else if(fValue.equals("PLN")){
+			double s = 0.5; //[0, 1]
+			//Iterate all the documents to get the average document length.
+			double navg = 0;
+			for(int k = 0; k < N; k++)
+				navg += docs.get(k).getDocLength();
+			navg = navg/N; 
+			
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				for(_SparseFeature sf: sfs){
+					String featureName = featureIndexName.get(sf.getIndex());
+					_stat stat = featureStat.get(featureName);
+					double TF = sf.getValue();
+					double DF = Utils.sumOfArray(stat.getDF());
+					double n = temp.getDocLength();
+					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n / navg)) * Math.log((N + 1) / DF);
+					sf.setValue(PLN);
+				}
+			}
+		} else return c;
+		return c;
 	}
 }	
 

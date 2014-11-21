@@ -12,6 +12,8 @@ import structures._stat;
 import utils.Utils;
 
 public class FeatureSelection {
+	double m_startProb;
+	double m_endProb;
 	
 	/*The logic for feature selection.
 	 * if (fs == true){
@@ -35,6 +37,17 @@ public class FeatureSelection {
 	 * 		}
 	 * }
 	 */
+	//Default setting of feature selection
+	public FeatureSelection(){
+		this.m_startProb = 0;
+		this.m_endProb = 1;
+	}
+	
+	//Given start and end of feature selection.
+	public FeatureSelection(double startProb, double endProb){
+		this.m_startProb = startProb;
+		this.m_endProb = endProb;
+	}
 
 	//Feature Selection -- DF.
 	public ArrayList<String> DF(HashMap<String, _stat> featureStat){
@@ -59,8 +72,8 @@ public class FeatureSelection {
 		
 		//Start fetching particular features. How do we define the criterion?
 		int totalSize = featureStat.size();
-		int start = (int) (totalSize * 0.2);
-		int end = (int) (totalSize * 0.6);
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	}
@@ -120,8 +133,8 @@ public class FeatureSelection {
 		
 		//Start fetching particular features. How do we define the criterion?
 		int totalSize = featureStat.size();
-		int start = (int) (totalSize * 0.2);
-		int end = (int) (totalSize * 0.8);
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	} 
@@ -163,8 +176,8 @@ public class FeatureSelection {
 		
 		//Start fetching particular features. How do we define the criterion?
 		int totalSize = featureStat.size();
-		int start = (int) (totalSize * 0.0);
-		int end = (int) (totalSize * 0.8);
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	}
@@ -209,8 +222,8 @@ public class FeatureSelection {
 		
 		//Start fetching particular features. How do we define the criterion?
 		int totalSize = featureStat.size();
-		int start = (int) (totalSize * .50);
-		int end = (int) (totalSize * 0.8);
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	}

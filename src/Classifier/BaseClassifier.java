@@ -25,7 +25,7 @@ public abstract class BaseClassifier {
 	public void train(ArrayList<_Doc> trainSet){}
 	//Used in SVM to train data, will be overwritten. Since java does not accept functions with same parameters 
 	//and different return values, add a new variable.
-	public svm_model train(ArrayList<_Doc> trainSet, boolean svmFlag){
+	public svm_model train(ArrayList<_Doc> trainSet, boolean flag){
 		svm_model model = new svm_model();
 		return model;
 	}
@@ -107,8 +107,8 @@ public abstract class BaseClassifier {
 	public double[][] calculatePreRec(double[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
 		for (int i = 0; i < this.m_classNo; i++) {
-			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfColumn(tpTable, i);// Precision of the class.
-			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfRow(tpTable, i);// Recall of the class.
+			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfRow(tpTable, i);// Precision of the class.
+			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfColumn(tpTable, i);// Recall of the class.
 		}
 		return PreRecOfOneFold;
 	}
