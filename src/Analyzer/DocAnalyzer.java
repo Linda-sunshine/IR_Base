@@ -8,13 +8,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.Normalizer;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
