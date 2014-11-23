@@ -109,7 +109,7 @@ public class LogisticRegression extends BaseClassifier{
 		double gValue = 0;
 		double Pij = 0;
 		double logPij = 0;
-		double Yi = 0;
+		//double Yi = 0;
 		for(int i = 0; i < beta.length; i++){
 			gs[i] += 2 * lambda * beta[i];
 		}

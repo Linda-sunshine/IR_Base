@@ -143,13 +143,16 @@ public class DocAnalyzer extends Analyzer {
 			for(int i = 0; i < NgramNo; i++){
 				StringBuffer Ngram = new StringBuffer(128);
 				for(int j = 0; j < N; j++){
-					if (j==0)
+					if (j==0){
 						Ngram.append(tokens[i+j]);
-					else
+						Ngrams.add(Ngram.toString());
+					}	
+					else{
 						Ngram.append("-" + tokens[i+j]);
+						Ngrams.add(Ngram.toString());
+					}
 				}
-				Ngrams.add(Ngram.toString());
-			}  
+			}
 			N--;
 		}
 		
