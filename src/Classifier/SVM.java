@@ -1,5 +1,4 @@
 package Classifier;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -11,7 +10,6 @@ import libsvm.svm_problem;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
-import Analyzer.DocAnalyzer;
 
 public class SVM extends BaseClassifier{
 	svm_parameter m_param; //Define it to be global variable.
@@ -99,15 +97,15 @@ public class SVM extends BaseClassifier{
 		this.calculateMeanVariance(this.m_precisionsRecalls);
 	}
 
-	// Calculate the precision and recall for one folder tests.
-	public double[][] calculatePreRec(double[][] tpTable) {
-		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
-		for (int i = 0; i < this.m_classNo; i++) {
-			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfColumn(tpTable, i);// Precision of the class.
-			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfRow(tpTable, i);// Recall of the class.
-		}
-		return PreRecOfOneFold;
-	}
+//	// Calculate the precision and recall for one folder tests.
+//	public double[][] calculatePreRec(double[][] tpTable) {
+//		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
+//		for (int i = 0; i < this.m_classNo; i++) {
+//			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfColumn(tpTable, i);// Precision of the class.
+//			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfRow(tpTable, i);// Recall of the class.
+//		}
+//		return PreRecOfOneFold;
+//	}
 
 	// Train the data set.
 	public svm_model train(ArrayList<_Doc> trainSet, boolean flag) {
@@ -161,101 +159,5 @@ public class SVM extends BaseClassifier{
 		}
 		PreRecOfOneFold = calculatePreRec(TPTable);
 		this.m_precisionsRecalls.add(PreRecOfOneFold);
-	}
-	
-	/*****************************Main function*******************************/
-	public static void main(String[] args) throws IOException{
-		
-		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 2; //Define the number of classes in this Naive Bayes.
-		_Corpus corpus = new _Corpus();
-		int Ngram = 2; //The default value is unigram. 
-		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be tfidf, BM25
-		System.out.println(Ngram + " gram! " + featureValue + " is used to calculate feature value!");
-		System.out.println("*******************************************************************");
-		
-		//The parameters used in loading files.
-		String folder = "txt_sentoken";
-		String suffix = ".txt";
-		String tokenModel = "data/Model/en-token.bin"; //Token model.
-		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/SVM/SVMFinal.txt"; //The destination of storing the final features with stats.
-		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/SVM/SVMSelectedFeatures.txt";
-//		String finalLocation = "/home/lin/Lin'sWorkSpace/IR_Base/SVM/SVMFinal.txt";
-//		String featureLocation = "/home/lin/Lin'sWorkSpace/IR_Base/SVM/SVMSelectedFeatures.txt";
-		
-		String providedCV = "";
-		//String featureSelection = "";
-		//String providedCV = "Features.txt"; //Provided CV.
-		String featureSelection = "IG"; //Feature selection method.
-		double startProb = 0.0; // Used in feature selection, the starting point of the features.
-		double endProb = 0.4; // Used in feature selection, the ending point of the feature.
-		
-		if( providedCV.isEmpty() && featureSelection.isEmpty()){
-			
-			//Case 1: no provided CV, no feature selection.
-			System.out.println("Case 1: no provided CV, no feature selection.");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, null);
-			System.out.println("Start loading files, wait...");
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			featureSize = analyzer.getFeatureSize();
-			corpus = analyzer.returnCorpus(finalLocation); 
-			analyzer.setFeatureValues(corpus, analyzer, featureValue);
-		} else if( !providedCV.isEmpty() && featureSelection.isEmpty()){
-			
-			//Case 2: provided CV, no feature selection.
-			System.out.println("Case 2: provided CV, no feature selection.");
-			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null);
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			featureSize = analyzer.getFeatureSize();
-			corpus = analyzer.returnCorpus(finalLocation); 
-			analyzer.setFeatureValues(corpus, analyzer, featureValue);
-		} else if(providedCV.isEmpty() && !featureSelection.isEmpty()){
-			
-			//Case 3: no provided CV, feature selection.
-			System.out.println("Case 3: no provided CV, feature selection.");
-			System.out.println("Start loading files to do feature selection, wait...");
-			
-//			If the feature selection is TS, we need to load the directory three times.
-//			1. Load all the docs, get all the terms in the docs. Calculate the current document's similarity with other documents, find a max one??
-//			2. Load again to do feature selection.
-//			3. Load again to do classfication.
-//			if(featureSelection.endsWith("TS")){
-//				DocAnalyzer analyzer_1 = new DocAnalyzer(tokenModel, classNumber, null, null);
-//				analyzer_1.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//				analyzer_1.calculateSimilarity();
-//				//analyzer_1.featureSelection(featureLocation); //Select the features.
-//			}
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, Ngram);
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, startProb, endProb); //Select the features.
-			
-			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null);
-			analyzer_2.LoadDirectory(folder, suffix);
-			featureSize = analyzer.getFeatureSize();
-			corpus = analyzer_2.returnCorpus(finalLocation); 
-			analyzer_2.setFeatureValues(corpus, analyzer_2, featureValue);
-		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
-			
-			//Case 4: provided CV, feature selection.
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, Ngram);
-			System.out.println("Case 4: provided CV, feature selection.");
-			System.out.println("Start loading file to do feature selection, wait...");
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, startProb, endProb); //Select the features.
-			
-			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null);
-			analyzer_2.LoadDirectory(folder, suffix);
-			featureSize = analyzer.getFeatureSize();
-			corpus = analyzer_2.returnCorpus(finalLocation); 
-			analyzer_2.setFeatureValues(corpus, analyzer_2, featureValue);
-		}
-		corpus.save2File("data/FVs/fvector.dat");
-		double C = 3;// The default value is 1.
-		System.out.println("Start SVM, wait...");
-		SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
-		mySVM.crossValidation(5, corpus, classNumber);
 	}
 }

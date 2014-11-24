@@ -50,7 +50,7 @@ public class DocAnalyzer extends Analyzer {
 		int count = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			StringBuffer buffer = new StringBuffer(1024);
+			//StringBuffer buffer = new StringBuffer(1024);
 			String line;
 
 			while ((line = reader.readLine()) != null) {
@@ -314,28 +314,18 @@ public class DocAnalyzer extends Analyzer {
 		if(this.m_isFetureSelected){
 			System.out.println("*******************************************************************");
 			if (this.featureSelection.equals("DF")){
-				System.out.println("DF is used to do feature selection!!");
-				//System.out.println("The start point is " + this.m_selector.m_startProb + " and the end point is " + this.m_selector.m_endProb);
 				this.m_featureNames = selector.DF(this.m_featureStat);
 			}
 			else if(this.featureSelection.equals("IG")){
-				System.out.println("IG is used to do feature selection!!");
 				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo);
 			}
 			else if(this.featureSelection.equals("MI")){
-				System.out.println("MI is used to do feature selection!!");
 				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo);
 			}
 			else if(this.featureSelection.equals("CHI")){
-				System.out.println("CHI is used to do feature selection!!");
 				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo);
 			}
-//			else if(this.featureSelection.equals("TS")){
-//				System.out.println("TS is used to do feature selection!!");
-//				this.m_featureNames = this.m_selector.TS();
-//			}
 		}
-		System.out.println("Feature Selction: The start point is " + selector.m_startProb + " and the end point is " + selector.m_endProb);
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
 		System.out.println(this.m_featureNames.size() + " features are selected!");
 	}
@@ -348,9 +338,9 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
-	public _Corpus setFeatureValues(_Corpus c, DocAnalyzer analyzer, String fValue){
-		HashMap<String, _stat> featureStat = m_featureStat;
-		HashMap<Integer, String> featureIndexName = m_featureIndexName;
+	public _Corpus setFeatureValues(_Corpus c, String fValue){
+		HashMap<String, _stat> featureStat = this.m_featureStat;
+		HashMap<Integer, String> featureIndexName = this.m_featureIndexName;
 		
 		ArrayList<_Doc> docs = c.getCollection(); //Get the collection of all the documents.
 		int N = docs.size();

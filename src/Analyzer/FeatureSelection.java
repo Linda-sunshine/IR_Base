@@ -5,9 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import structures._stat;
 import utils.Utils;
 
@@ -148,7 +145,8 @@ public class FeatureSelection {
 		double[] PrCi = new double [classMemberNo.length]; 
 		double[] ItCi = new double [classMemberNo.length];
 		double N = Utils.sumOfArray(classMemberNo);
-		double Iavg = 0, Imax = 0;
+		double Iavg = 0;
+		//double Imax = 0;
 		
 		for(int i = 0; i < classMemberNo.length; i++) PrCi[i] = classMemberNo[i] / N;
 		for(String f: featureStat.keySet()){
@@ -192,7 +190,8 @@ public class FeatureSelection {
 		double N = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classNo]; 
 		double[] X2tc = new double [classNo];
-		double X2avg = 0, X2max = 0;
+		double X2avg = 0;
+		//double X2max = 0;
 		for(int i = 0; i < classNo; i++) PrCi[i] = classMemberNo[i] / N;//Get the class probability.
 		
 		for(String f: featureStat.keySet()){
