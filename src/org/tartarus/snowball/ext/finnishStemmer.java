@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class finnishStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static finnishStemmer methodObject = new finnishStemmer ();
+private final static finnishStemmer methodObject = new finnishStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "pa", -1, 1, "", methodObject ),
@@ -137,7 +135,7 @@ private static final long serialVersionUID = 1L;
 
                 private static final char g_V1[] = {17, 65, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32 };
 
-                private static final char g_V2[] = {17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32 };
+                //private static final char g_V2[] = {17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32 };
 
                 private static final char g_particle_end[] = {17, 97, 24, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32 };
 
@@ -146,13 +144,13 @@ private static final long serialVersionUID = 1L;
         private int I_p2;
         private int I_p1;
 
-                private void copy_from(finnishStemmer other) {
-                    B_ending_removed = other.B_ending_removed;
-                    S_x = other.S_x;
-                    I_p2 = other.I_p2;
-                    I_p1 = other.I_p1;
-                    super.copy_from(other);
-                }
+//                private void copy_from(finnishStemmer other) {
+//                    B_ending_removed = other.B_ending_removed;
+//                    S_x = other.S_x;
+//                    I_p2 = other.I_p2;
+//                    I_p1 = other.I_p1;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_mark_regions() {
             int v_1;
@@ -413,19 +411,19 @@ private static final long serialVersionUID = 1L;
                     return true;
                 }
 
-                private boolean r_VI() {
-                    // (, line 93
-                    // literal, line 93
-                    if (!(eq_s_b(1, "i")))
-                    {
-                        return false;
-                    }
-                    if (!(in_grouping_b(g_V2, 97, 246)))
-                    {
-                        return false;
-                    }
-                    return true;
-                }
+//                private boolean r_VI() {
+//                    // (, line 93
+//                    // literal, line 93
+//                    if (!(eq_s_b(1, "i")))
+//                    {
+//                        return false;
+//                    }
+//                    if (!(in_grouping_b(g_V2, 97, 246)))
+//                    {
+//                        return false;
+//                    }
+//                    return true;
+//                }
 
                 private boolean r_case_ending() {
             int among_var;

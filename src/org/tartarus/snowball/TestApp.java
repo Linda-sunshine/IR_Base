@@ -1,7 +1,6 @@
 
 package org.tartarus.snowball;
 
-import java.lang.reflect.Method;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.BufferedReader;
@@ -18,13 +17,14 @@ public class TestApp {
         System.err.println("Usage: TestApp <algorithm> <input file> [-o <output file>]");
     }
 
-    public static void main(String [] args) throws Throwable {
+    @SuppressWarnings("resource")
+	public static void main(String [] args) throws Throwable {
 	if (args.length < 2) {
             usage();
             return;
         }
 
-	Class stemClass = Class.forName("org.tartarus.snowball.ext." +
+	Class<?> stemClass = Class.forName("org.tartarus.snowball.ext." +
 					args[0] + "Stemmer");
         SnowballStemmer stemmer = (SnowballStemmer) stemClass.newInstance();
 
@@ -54,7 +54,7 @@ public class TestApp {
 	    repeat = Integer.parseInt(args[4]);
 	}
 
-	Object [] emptyArgs = new Object[0];
+	//Object [] emptyArgs = new Object[0];
 	int character;
 	while ((character = reader.read()) != -1) {
 	    char ch = (char) character;

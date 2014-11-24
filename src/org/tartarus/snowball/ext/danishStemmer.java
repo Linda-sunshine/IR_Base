@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class danishStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static danishStemmer methodObject = new danishStemmer ();
+private final static danishStemmer methodObject = new danishStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "hed", -1, 1, "", methodObject ),
@@ -73,12 +71,12 @@ private static final long serialVersionUID = 1L;
         private int I_p1;
         private java.lang.StringBuilder S_ch = new java.lang.StringBuilder();
 
-                private void copy_from(danishStemmer other) {
-                    I_x = other.I_x;
-                    I_p1 = other.I_p1;
-                    S_ch = other.S_ch;
-                    super.copy_from(other);
-                }
+//                private void copy_from(danishStemmer other) {
+//                    I_x = other.I_x;
+//                    I_p1 = other.I_p1;
+//                    S_ch = other.S_ch;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_mark_regions() {
             int v_1;

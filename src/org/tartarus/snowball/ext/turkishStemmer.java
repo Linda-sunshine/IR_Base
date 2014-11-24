@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class turkishStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static turkishStemmer methodObject = new turkishStemmer ();
+private final static turkishStemmer methodObject = new turkishStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "m", -1, -1, "", methodObject ),
@@ -226,11 +224,11 @@ private static final long serialVersionUID = 1L;
         private boolean B_continue_stemming_noun_suffixes;
         private int I_strlen;
 
-                private void copy_from(turkishStemmer other) {
-                    B_continue_stemming_noun_suffixes = other.B_continue_stemming_noun_suffixes;
-                    I_strlen = other.I_strlen;
-                    super.copy_from(other);
-                }
+//                private void copy_from(turkishStemmer other) {
+//                    B_continue_stemming_noun_suffixes = other.B_continue_stemming_noun_suffixes;
+//                    I_strlen = other.I_strlen;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_check_vowel_harmony() {
             int v_1;

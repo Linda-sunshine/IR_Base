@@ -4,6 +4,7 @@
 package libsvm;
 public class svm_model implements java.io.Serializable
 {
+	private static final long serialVersionUID = 1L;
 	public svm_parameter param;	// parameter
 	public int nr_class;		// number of classes, = 2 in regression/one class svm
 	public int l;			// total #SV

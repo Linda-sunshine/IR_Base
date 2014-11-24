@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
@@ -92,24 +91,4 @@ public class _Corpus {
 			e.printStackTrace();
 		} 
 	}
-	
-//	//Add one class member in the class member array.
-//	public void addOneClassMember(int label){
-//		if(this.m_classMemberNo.containsKey(label)){
-//			this.m_classMemberNo.put(label, this.m_classMemberNo.get(label) + 1);
-//		} else{
-//			this.m_classMemberNo.put(label, 1);
-//		}	
-//	}
-//	
-//	//Get the number of the classes by analyzing all documents.
-//	public int getCorClassNo(){
-//		this.m_corClassNo = this.m_classMemberNo.size();
-//		return this.m_corClassNo;
-//	}
-//	
-//	//Get the hashmap containing the different class members.
-//	public HashMap<Integer, Integer> getClassMemeberNo(){
-//		return this.m_classMemberNo;
-//	}
 }

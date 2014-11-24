@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class norwegianStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static norwegianStemmer methodObject = new norwegianStemmer ();
+private final static norwegianStemmer methodObject = new norwegianStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "a", -1, 1, "", methodObject ),
@@ -73,11 +71,11 @@ private static final long serialVersionUID = 1L;
         private int I_x;
         private int I_p1;
 
-                private void copy_from(norwegianStemmer other) {
-                    I_x = other.I_x;
-                    I_p1 = other.I_p1;
-                    super.copy_from(other);
-                }
+//                private void copy_from(norwegianStemmer other) {
+//                    I_x = other.I_x;
+//                    I_p1 = other.I_p1;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_mark_regions() {
             int v_1;

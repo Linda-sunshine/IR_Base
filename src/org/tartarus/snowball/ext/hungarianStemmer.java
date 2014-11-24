@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class hungarianStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static hungarianStemmer methodObject = new hungarianStemmer ();
+private final static hungarianStemmer methodObject = new hungarianStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "cs", -1, -1, "", methodObject ),
@@ -236,11 +234,11 @@ private static final long serialVersionUID = 1L;
                 private static final char g_v[] = {17, 65, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 17, 36, 10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1 };
 
         private int I_p1;
-
-                private void copy_from(hungarianStemmer other) {
-                    I_p1 = other.I_p1;
-                    super.copy_from(other);
-                }
+//
+//                private void copy_from(hungarianStemmer other) {
+//                    I_p1 = other.I_p1;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_mark_regions() {
             int v_1;

@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class russianStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static russianStemmer methodObject = new russianStemmer ();
+private final static russianStemmer methodObject = new russianStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "\u0432", -1, 1, "", methodObject ),
@@ -177,11 +175,11 @@ private static final long serialVersionUID = 1L;
         private int I_p2;
         private int I_pV;
 
-                private void copy_from(russianStemmer other) {
-                    I_p2 = other.I_p2;
-                    I_pV = other.I_pV;
-                    super.copy_from(other);
-                }
+//                private void copy_from(russianStemmer other) {
+//                    I_p2 = other.I_p2;
+//                    I_pV = other.I_pV;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_mark_regions() {
             int v_1;

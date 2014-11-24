@@ -29,12 +29,13 @@ public class Main {
 		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/FinalFeatureStat.txt"; //The destination of storing the final features with stats.
 		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/SelectedFeatures.txt";
 
-//		String finalLocation = "/home/lin/Lin'sWorkSpace/IR_Base/NB/NBFinal.txt";
-//		String featureLocation = "/home/lin/Lin'sWorkSpace/IR_Base/NB/NBSelectedFeatures.txt";
+//		String finalLocation = "/home/lin/Lin'sWorkSpace/IR_Base/FinalFeatureStat.txt";
+//		String featureLocation = "/home/lin/Lin'sWorkSpace/IR_Base/SelectedFeatures.txt";
 
 		String providedCV = "";
 		//String featureSelection = "";
 		//String providedCV = "Features.txt"; //Provided CV.
+		
 		String featureSelection = "MI"; //Feature selection method.
 		double startProb = 0.8; // Used in feature selection, the starting point of the features.
 		double endProb = 0.95; // Used in feature selection, the ending point of the feature.

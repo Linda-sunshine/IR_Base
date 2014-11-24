@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class porterStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static porterStemmer methodObject = new porterStemmer ();
+private final static porterStemmer methodObject = new porterStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "s", -1, 3, "", methodObject ),
@@ -107,12 +105,12 @@ private static final long serialVersionUID = 1L;
         private int I_p2;
         private int I_p1;
 
-                private void copy_from(porterStemmer other) {
-                    B_Y_found = other.B_Y_found;
-                    I_p2 = other.I_p2;
-                    I_p1 = other.I_p1;
-                    super.copy_from(other);
-                }
+//                private void copy_from(porterStemmer other) {
+//                    B_Y_found = other.B_Y_found;
+//                    I_p2 = other.I_p2;
+//                    I_p1 = other.I_p1;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_shortv() {
                     // (, line 19
@@ -609,7 +607,8 @@ private static final long serialVersionUID = 1L;
                     return true;
                 }
 
-                public boolean stem() {
+                @SuppressWarnings("unused")
+				public boolean stem() {
             int v_1;
             int v_2;
             int v_3;

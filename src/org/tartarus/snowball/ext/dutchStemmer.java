@@ -11,9 +11,7 @@ import org.tartarus.snowball.Among;
 
 public class dutchStemmer extends org.tartarus.snowball.SnowballStemmer {
 
-private static final long serialVersionUID = 1L;
-
-        private final static dutchStemmer methodObject = new dutchStemmer ();
+private final static dutchStemmer methodObject = new dutchStemmer ();
 
                 private final static Among a_0[] = {
                     new Among ( "", -1, 6, "", methodObject ),
@@ -75,12 +73,12 @@ private static final long serialVersionUID = 1L;
         private int I_p1;
         private boolean B_e_found;
 
-                private void copy_from(dutchStemmer other) {
-                    I_p2 = other.I_p2;
-                    I_p1 = other.I_p1;
-                    B_e_found = other.B_e_found;
-                    super.copy_from(other);
-                }
+//                private void copy_from(dutchStemmer other) {
+//                    I_p2 = other.I_p2;
+//                    I_p1 = other.I_p1;
+//                    B_e_found = other.B_e_found;
+//                    super.copy_from(other);
+//                }
 
                 private boolean r_prelude() {
             int among_var;
