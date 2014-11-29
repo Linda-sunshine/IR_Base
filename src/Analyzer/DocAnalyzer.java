@@ -158,23 +158,13 @@ public class DocAnalyzer extends Analyzer {
 			for(int i = 0; i < NgramNo; i++){
 				StringBuffer Ngram = new StringBuffer(128);
 				for(int j = 0; j < N; j++){
-					if (j==0){
-						if(!tokens[i+j].equals("")){
-							Ngram.append(tokens[i+j]);
-							Ngrams.add(Ngram.toString());
-						}
-					}	
-					else{
-						if(!tokens[i+j].equals("")){
-							Ngram.append("-" + tokens[i+j]);
-							Ngrams.add(Ngram.toString());
-						}
-					}
+					if (j==0) Ngram.append(tokens[i+j]);
+					else Ngram.append("-" + tokens[i+j]);
 				}
+				Ngrams.add(Ngram.toString());
 			}
 			N--;
 		}
-		
 		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
 	
