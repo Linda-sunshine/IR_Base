@@ -45,7 +45,7 @@ public class FeatureSelection {
 		this.m_startProb = startProb;
 		this.m_endProb = endProb;
 	}
-
+	
 	//Feature Selection -- DF.
 	public ArrayList<String> DF(HashMap<String, _stat> featureStat){
 		HashMap<Integer, ArrayList<String>> featureDF = new HashMap<Integer, ArrayList<String>>();
@@ -54,14 +54,17 @@ public class FeatureSelection {
 		
 		for(String f: featureStat.keySet()){
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if(featureDF.containsKey(sumDF)){
-				featureDF.get(sumDF).add(f);
-			}else{
-				ArrayList<String> temp = new ArrayList<String>();
-				temp.add(f);
-				featureDF.put(sumDF, temp);
+			//Filter out the features below the threshold.
+			//if(sumDF > threshold){
+				if(featureDF.containsKey(sumDF)){
+					featureDF.get(sumDF).add(f);
+				}else{
+					ArrayList<String> temp = new ArrayList<String>();
+					temp.add(f);
+					featureDF.put(sumDF, temp);
+				}
 			}
-		}
+		//}
 		unsortedDF = featureDF.keySet();
 		ArrayList<Integer> sortedDF = new ArrayList<Integer>(unsortedDF);     
 		Collections.sort(sortedDF);//sort the DF

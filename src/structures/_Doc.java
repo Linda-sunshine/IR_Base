@@ -14,13 +14,16 @@ import java.util.Map.Entry;
  * General structure to present a document for DM/ML/IR
  */
 public class _Doc {
+	
 	private String m_name; // name of this document
 	private int m_ID; // unique id of the document in the collection
 	private String source; //The content of the source file.
 	private int m_y_label; // classification target, that is the index of the labels.
 	private int m_predict_label; //The predicted result.
-	
+	private double m_influence; //The influence value of the document.
 	private double m_y_value; // regression target, like linear regression only has one value.
+	private int m_totalLength; //The total length of the document.
+	private int m_timeStamp;
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
@@ -28,6 +31,9 @@ public class _Doc {
 	//Constructor.
 	public _Doc(){
 		this.m_predict_label = 0;
+		this.m_influence = 0;
+		this.m_totalLength = 0;
+		this.m_timeStamp = 0;
 	}
 	
 	//Constructor.
@@ -35,6 +41,9 @@ public class _Doc {
 		this.m_ID = ID;
 		this.source = source;
 		this.m_y_label = ylabel;
+		this.m_influence = 0;
+		this.m_totalLength = 0;
+		this.m_timeStamp = 0;
 	}
 	
 	//Get the name of the document.
@@ -87,7 +96,17 @@ public class _Doc {
 	
 	//return the unique number of features in the doc
 	public int getDocLength() {
-		return m_x_sparse.length;
+		return this.m_x_sparse.length;
+	}
+	
+	//Set the document's length, which is the total number of tokens.
+	public void setTotalLength(int l){
+		this.m_totalLength = l;
+	}
+	
+	//Get the total number of tokens in a document.
+	public int getTotalDocLength(){
+		return this.m_totalLength;
 	}
 		
 	//Given an index, find the corresponding value of the feature. 
@@ -99,6 +118,10 @@ public class _Doc {
 			} else value = 0;
 		}
 		return value;
+	}
+	
+	public void setInfluence(double influence){
+		this.m_influence = influence;
 	}
 	
 	//Create the sparse vector for the document.
@@ -120,6 +143,29 @@ public class _Doc {
 		}
 		Arrays.sort(m_x_sparse);
 	}
+	
+	//Create the sparse vector for the document.
+	public void createSpVctWithTime(HashMap<Integer, Double> spVct, int timeIndex) {
+		int i = 0;
+		m_x_sparse = new _SparseFeature[spVct.size() + 1];
+		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>) it.next();
+			_SparseFeature sf = new _SparseFeature();
+			sf.setIndex((int) pairs.getKey());
+			sf.setValue((double) pairs.getValue());
+			if (i < m_x_sparse.length) {
+				this.m_x_sparse[i] = sf;
+				i++;
+			} else
+				System.out.println("Error!! The index of sparse array out of bound!!");
+		}
+		_SparseFeature Influence = new _SparseFeature();
+		Influence.setIndex(timeIndex);
+		Influence.setValue(m_influence);
+		m_x_sparse[spVct.size() + 1] = Influence;
+		Arrays.sort(m_x_sparse);
+		}	
 	
 	//Get the predicted result, which is used for comparison.
 	public int getPredictLabel() {

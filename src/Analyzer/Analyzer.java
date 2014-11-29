@@ -25,7 +25,7 @@ public abstract class Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
 	int[] m_classMemberNo; //Store the number of members in a class.
-	
+	protected boolean m_timeFlag;
 	//added by Hongning to manage feature vocabulary
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
@@ -54,6 +54,7 @@ public abstract class Analyzer {
 		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
+		this.m_timeFlag = false;
 	}	
 	//abstract protected _Corpus returnCorpus(String location, String fs) throws FileNotFoundException;
 }

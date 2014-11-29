@@ -20,6 +20,7 @@ import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
 	private int m_Ngram; 
+	private int[] m_window;
 	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -43,6 +44,20 @@ public class DocAnalyzer extends Analyzer {
 			this.featureSelection = fs;
 		}
 		this.m_Ngram = Ngram;
+	}
+	
+	//Constructor with ngram and fValue.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, boolean timeFlag, int window) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		if(providedCV != null)
+			this.LoadCV(providedCV);
+		if(fs != null){
+			this.m_isFetureSelected = true;
+			this.featureSelection = fs;
+		}
+		this.m_Ngram = Ngram;
+		this.m_timeFlag = timeFlag;
+		this.m_window = new int[window];
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.
@@ -144,12 +159,16 @@ public class DocAnalyzer extends Analyzer {
 				StringBuffer Ngram = new StringBuffer(128);
 				for(int j = 0; j < N; j++){
 					if (j==0){
-						Ngram.append(tokens[i+j]);
-						Ngrams.add(Ngram.toString());
+						if(!tokens[i+j].equals("")){
+							Ngram.append(tokens[i+j]);
+							Ngrams.add(Ngram.toString());
+						}
 					}	
 					else{
-						Ngram.append("-" + tokens[i+j]);
-						Ngrams.add(Ngram.toString());
+						if(!tokens[i+j].equals("")){
+							Ngram.append("-" + tokens[i+j]);
+							Ngrams.add(Ngram.toString());
+						}
 					}
 				}
 			}
@@ -214,7 +233,9 @@ public class DocAnalyzer extends Analyzer {
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	public void AnalyzeDoc(_Doc doc) {
 		try{
+			//doc.setInfluence();
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());//Three-step analysis.
+			doc.setTotalLength(tokens.length); //set the length of the document.
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); //Collect the index and counts of features.
 			int index = 0;
 			double value = 0;
@@ -262,7 +283,11 @@ public class DocAnalyzer extends Analyzer {
 				}
 			}
 			//Create the sparse vector for the document.
-			doc.createSpVct(spVct);
+			if(this.m_timeFlag){
+				doc.createSpVctWithTime(spVct, this.m_featureNames.size());
+			} else{
+				doc.createSpVct(spVct);
+			}
 			//doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
 			doc.L2Normalization(doc.getSparse());//Normalize the sparse vector.
 		}catch(Exception e){
@@ -351,7 +376,7 @@ public class DocAnalyzer extends Analyzer {
 				for(_SparseFeature sf: sfs){
 					String featureName = featureIndexName.get(sf.getIndex());
 					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue()/temp.getDocLength();// normalized TF
+					double TF = sf.getValue()/temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double TFIDF = TF * Math.log((N + 1)/DF);
 					sf.setValue(TFIDF);
@@ -364,7 +389,7 @@ public class DocAnalyzer extends Analyzer {
 			//Iterate all the documents to get the average document length.
 			double navg = 0;
 			for(int k = 0; k < N; k++)
-				navg += docs.get(k).getDocLength();
+				navg += docs.get(k).getTotalDocLength();
 			navg = navg/N; 
 			
 			for(int i = 0; i < docs.size(); i++){
@@ -375,7 +400,7 @@ public class DocAnalyzer extends Analyzer {
 					_stat stat = featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
-					double n = temp.getDocLength();
+					double n = temp.getTotalDocLength();
 					double BM25 = Math.log((N - DF + 0.5) / (DF + 0.5)) * TF * (k1 + 1) / (k1 * (1 - b + b * n / navg) + TF);
 					sf.setValue(BM25);
 				}
@@ -385,7 +410,7 @@ public class DocAnalyzer extends Analyzer {
 			//Iterate all the documents to get the average document length.
 			double navg = 0;
 			for(int k = 0; k < N; k++)
-				navg += docs.get(k).getDocLength();
+				navg += docs.get(k).getTotalDocLength();
 			navg = navg/N; 
 			
 			for(int i = 0; i < docs.size(); i++){
@@ -396,7 +421,7 @@ public class DocAnalyzer extends Analyzer {
 					_stat stat = featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
-					double n = temp.getDocLength();
+					double n = temp.getTotalDocLength();
 					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n / navg)) * Math.log((N + 1) / DF);
 					sf.setValue(PLN);
 				}
@@ -404,5 +429,18 @@ public class DocAnalyzer extends Analyzer {
 		} else return c;
 		return c;
 	}
+//	//Take time into consideration.
+//	public void timeSeriesAnalysis(_Corpus c, int window){
+//		ArrayList<_Doc> docs = c.getCollection();
+//		int size = docs.size();
+//		for(int i = window; i < size; i++){
+//			double sum = 0;
+//			for(int j = 0; j < window; j++){
+//				sum += docs.get(i-1-j).getYLabel();
+//			}
+//			sum = sum / window;
+//			docs.get(i).setInfluence(sum);
+//		}
+//	}
 }	
 

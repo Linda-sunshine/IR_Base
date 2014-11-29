@@ -97,16 +97,6 @@ public class SVM extends BaseClassifier{
 		this.calculateMeanVariance(this.m_precisionsRecalls);
 	}
 
-//	// Calculate the precision and recall for one folder tests.
-//	public double[][] calculatePreRec(double[][] tpTable) {
-//		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
-//		for (int i = 0; i < this.m_classNo; i++) {
-//			PreRecOfOneFold[i][0] = tpTable[i][i] / sumOfColumn(tpTable, i);// Precision of the class.
-//			PreRecOfOneFold[i][1] = tpTable[i][i] / sumOfRow(tpTable, i);// Recall of the class.
-//		}
-//		return PreRecOfOneFold;
-//	}
-
 	// Train the data set.
 	public svm_model train(ArrayList<_Doc> trainSet, boolean flag) {
 		svm_model model = new svm_model();
@@ -117,7 +107,7 @@ public class SVM extends BaseClassifier{
 		//Construct the svm_problem by enumerating all docs.
 		int docId = 0, fid, fvSize = 0;
 		for(_Doc temp:trainSet){
-			svm_node[] instance = new svm_node[temp.getDocLength()];
+			svm_node[] instance = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
 			fid = 0;
 			for(_SparseFeature fv:temp.getSparse()){
 				instance[fid] = new svm_node();
@@ -132,6 +122,7 @@ public class SVM extends BaseClassifier{
 			problem.y[docId] = 2.0 * temp.getYLabel() - 1;
 			docId ++;
 		}	
+		
 		this.m_param.gamma = 1.0/fvSize;//Set the gamma of parameter.
 		problem.l = docId;
 		model = svm.svm_train(problem, this.m_param);
@@ -143,7 +134,7 @@ public class SVM extends BaseClassifier{
 		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
 		//Construct the svm_problem by enumerating all docs.
 		for (_Doc temp:testSet) {
-			svm_node[] nodes = new svm_node[temp.getDocLength()];
+			svm_node[] nodes = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
 			int fid = 0;
 			for (_SparseFeature fv:temp.getSparse()) {
 				nodes[fid] = new svm_node();
