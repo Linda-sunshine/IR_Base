@@ -32,7 +32,6 @@ public class DocAnalyzer extends Analyzer {
 			this.featureSelection = fs;
 		}	
 		this.m_Ngram = 1;
-		//this.m_fValue = "TF";
 	}	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -46,7 +45,7 @@ public class DocAnalyzer extends Analyzer {
 		this.m_Ngram = Ngram;
 	}
 	
-	//Constructor with ngram and fValue.
+	//Constructor with ngram and time series analysis.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, boolean timeFlag, int window) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
 		if(providedCV != null)
@@ -190,15 +189,12 @@ public class DocAnalyzer extends Analyzer {
 				buffer.append(line);
 			}
 			reader.close();
-			//At present, we just consider two classes. Just set the label directly.
 			//How to generalize it to several classes???? 
 			if(filename.contains("pos")){
 				//Collect the number of documents in one class.
-				//this.m_corpus.addOneClassMember(0);
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));
 				this.m_classMemberNo[0]++;
 			}else if(filename.contains("neg")){
-				//this.m_corpus.addOneClassMember(1);
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
 				this.m_classMemberNo[1]++;
 			}
@@ -222,8 +218,9 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	public void AnalyzeDoc(_Doc doc) {
+		ArrayList<_Doc> currentDocs = this.m_corpus.getCollection();
+		double influence = 0;
 		try{
-			//doc.setInfluence();
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());//Three-step analysis.
 			doc.setTotalLength(tokens.length); //set the length of the document.
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); //Collect the index and counts of features.
@@ -255,8 +252,7 @@ public class DocAnalyzer extends Analyzer {
 						this.m_featureStat.get(token).addOneTTF(doc.getYLabel());					
 						}
 				}
-				//CV is loaded.
-				else{
+				else{	//CV is loaded.
 					if (m_featureNameIndex.containsKey(token)) {
 						index = m_featureNameIndex.get(token);
 						if(spVct.containsKey(index)){
@@ -267,23 +263,30 @@ public class DocAnalyzer extends Analyzer {
 							spVct.put(index, 1.0);
 							this.m_featureStat.get(token).addOneDF(doc.getYLabel());
 							this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
-						}
-						//if the token is not in the vocabulary, nothing to do.
+						}//if the token is not in the vocabulary, nothing to do.
 					}
 				}
 			}
-			//Create the sparse vector for the document.
-			if(this.m_timeFlag){
-				doc.createSpVctWithTime(spVct, this.m_featureNames.size());
-			} else{
+			
+			if(!this.m_timeFlag){
 				doc.createSpVct(spVct);
+				m_corpus.addDoc(doc);
+			} else {
+				doc.createSpVct(spVct);
+				if(currentDocs.size() > m_window.length){
+					int startPointer = currentDocs.size() - m_window.length - 1;
+					for(int i = 0; i < this.m_window.length; i++){
+						_Doc temp = currentDocs.get(startPointer + i);
+						double similarity = Utils.calculateSimilarity(temp, doc);
+						influence += similarity * currentDocs.get(i).getYLabel();
+					}
+					doc.createSpVctWithTime(spVct, influence);
+					//doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
+					doc.L2Normalization(doc.getSparse());//Normalize the sparse vector.
+					m_corpus.addDoc(doc);
+				}
 			}
-			//doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
-			doc.L2Normalization(doc.getSparse());//Normalize the sparse vector.
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		m_corpus.addDoc(doc);
+		}catch(Exception e) {e.printStackTrace();}
 	}
 	
 	//With a new feature added into the vocabulary, add the stat into stat arraylist.
@@ -306,50 +309,30 @@ public class DocAnalyzer extends Analyzer {
 			this.m_featureStat.get(featureName).setCounts(this.m_classMemberNo);
 		}
 	}
-
-	//Calculate the similarity between two docs.
-	public double calculateSimilarity(_Doc d1, _Doc d2){
-		double similarity = 0;
-		_SparseFeature[] spVct1 = d1.getSparse();
-		_SparseFeature[] spVct2 = d2.getSparse();
-		int start = spVct1[0].getIndex() > spVct2[0].getIndex() ? spVct1[0].getIndex() : spVct2[0].getIndex();
-		int end = spVct1[spVct1.length - 1].getIndex() < spVct2[spVct2.length - 1].getIndex() ? spVct1[spVct1.length - 1].getIndex() : spVct2[spVct2.length - 1].getIndex();
-		for(int i = start; i <= end; i ++){
-			//Have not finished.
-		}
-		return similarity;
-	}
 	
 	//Select the features and store them in a file.
-	public void featureSelection(String location, double startProb, double endProb) throws FileNotFoundException{
-		FeatureSelection selector = new FeatureSelection(startProb, endProb);
+	public void featureSelection(String location, double startProb, double endProb, int threshold) throws FileNotFoundException{
+		FeatureSelector selector = new FeatureSelector(startProb, endProb);
 		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		this.setFeatureConfiguration(); //Construct the table for features.
 		
 		if(this.m_isFetureSelected){
 			System.out.println("*******************************************************************");
 			if (this.featureSelection.equals("DF")){
-				this.m_featureNames = selector.DF(this.m_featureStat);
+				this.m_featureNames = selector.DF(this.m_featureStat, threshold);
 			}
 			else if(this.featureSelection.equals("IG")){
-				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo);
+				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo, threshold);
 			}
 			else if(this.featureSelection.equals("MI")){
-				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo);
+				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo, threshold);
 			}
 			else if(this.featureSelection.equals("CHI")){
-				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo);
+				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo, threshold);
 			}
 		}
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
 		System.out.println(this.m_featureNames.size() + " features are selected!");
-	}
-	
-	//Return corpus without parameter and feature selection.
-	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException{
-		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
-		this.SaveCVStat(finalLocation);
-		return this.m_corpus; 
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
@@ -370,7 +353,6 @@ public class DocAnalyzer extends Analyzer {
 					double DF = Utils.sumOfArray(stat.getDF());
 					double TFIDF = TF * Math.log((N + 1)/DF);
 					sf.setValue(TFIDF);
-					//System.out.println("test");
 				}
 			}
 		}else if(fValue.equals("BM25")){
@@ -416,9 +398,10 @@ public class DocAnalyzer extends Analyzer {
 					sf.setValue(PLN);
 				}
 			}
-		} else return c;
+		} else return c; //If no feature value is selected, then the default is TF.
 		return c;
 	}
+	
 //	//Take time into consideration.
 //	public void timeSeriesAnalysis(_Corpus c, int window){
 //		ArrayList<_Doc> docs = c.getCollection();
@@ -432,5 +415,12 @@ public class DocAnalyzer extends Analyzer {
 //			docs.get(i).setInfluence(sum);
 //		}
 //	}
+	
+	//Return corpus without parameter and feature selection.
+	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
+		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		this.SaveCVStat(finalLocation);
+		return this.m_corpus;
+	}
 }	
 

@@ -1,5 +1,6 @@
 package utils;
 
+import structures._Doc;
 import structures._SparseFeature;
 
 public class Utils {
@@ -93,5 +94,18 @@ public class Utils {
 		for (double i : a)
 			sum += i;
 		return sum;
+	}
+	
+	//Calculate the similarity between two documents.
+	public static double calculateSimilarity(_Doc d1, _Doc d2){
+		double similarity = 0;
+		_SparseFeature[] spVct1 = d1.getSparse();
+		_SparseFeature[] spVct2 = d2.getSparse();
+		int start = spVct1[0].getIndex() > spVct2[0].getIndex() ? spVct1[0].getIndex() : spVct2[0].getIndex();
+		int end = spVct1[spVct1.length - 1].getIndex() < spVct2[spVct2.length - 1].getIndex() ? spVct1[spVct1.length - 1].getIndex() : spVct2[spVct2.length - 1].getIndex();
+		for(int i = start; i <= end; i ++){
+			similarity += 1;
+		}
+		return similarity;
 	}
 }

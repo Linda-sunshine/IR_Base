@@ -20,10 +20,10 @@ public class _Doc {
 	private String source; //The content of the source file.
 	private int m_y_label; // classification target, that is the index of the labels.
 	private int m_predict_label; //The predicted result.
-	private double m_influence; //The influence value of the document.
+	//private double m_influence; //The influence value of the document.
 	private double m_y_value; // regression target, like linear regression only has one value.
 	private int m_totalLength; //The total length of the document.
-	private int m_timeStamp;
+	//private int m_timeStamp;
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
@@ -31,9 +31,9 @@ public class _Doc {
 	//Constructor.
 	public _Doc(){
 		this.m_predict_label = 0;
-		this.m_influence = 0;
+		//this.m_influence = 0;
 		this.m_totalLength = 0;
-		this.m_timeStamp = 0;
+		//this.m_timeStamp = 0;
 	}
 	
 	//Constructor.
@@ -41,9 +41,9 @@ public class _Doc {
 		this.m_ID = ID;
 		this.source = source;
 		this.m_y_label = ylabel;
-		this.m_influence = 0;
+		//this.m_influence = 0;
 		this.m_totalLength = 0;
-		this.m_timeStamp = 0;
+		//this.m_timeStamp = 0;
 	}
 	
 	//Get the name of the document.
@@ -120,9 +120,9 @@ public class _Doc {
 		return value;
 	}
 	
-	public void setInfluence(double influence){
-		this.m_influence = influence;
-	}
+//	public void setInfluence(_Corpus c, int index){
+//		this.m_influence = influence;
+//	}
 	
 	//Create the sparse vector for the document.
 	public void createSpVct(HashMap<Integer, Double> spVct) {
@@ -145,7 +145,7 @@ public class _Doc {
 	}
 	
 	//Create the sparse vector for the document.
-	public void createSpVctWithTime(HashMap<Integer, Double> spVct, int timeIndex) {
+	public void createSpVctWithTime(HashMap<Integer, Double> spVct, double influence) {
 		int i = 0;
 		m_x_sparse = new _SparseFeature[spVct.size() + 1];
 		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
@@ -161,8 +161,8 @@ public class _Doc {
 				System.out.println("Error!! The index of sparse array out of bound!!");
 		}
 		_SparseFeature Influence = new _SparseFeature();
-		Influence.setIndex(timeIndex);
-		Influence.setValue(m_influence);
+		Influence.setIndex(spVct.size());
+		Influence.setValue(influence);
 		m_x_sparse[spVct.size() + 1] = Influence;
 		Arrays.sort(m_x_sparse);
 		}	

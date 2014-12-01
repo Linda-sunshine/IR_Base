@@ -40,7 +40,6 @@ public abstract class Analyzer {
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<Integer, String> m_featureIndexName;//value: the index of the feature; key: content of the feature; 
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
-	//protected FeatureSelection m_selector; //An instance of selecting different features.
 	protected String featureSelection = "DF";
 	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -56,5 +55,4 @@ public abstract class Analyzer {
 		this.m_featureStat = new HashMap<String, _stat>();
 		this.m_timeFlag = false;
 	}	
-	//abstract protected _Corpus returnCorpus(String location, String fs) throws FileNotFoundException;
 }
