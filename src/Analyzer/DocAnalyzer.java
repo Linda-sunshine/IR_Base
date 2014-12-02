@@ -21,6 +21,7 @@ import utils.Utils;
 public class DocAnalyzer extends Analyzer {
 	private int m_Ngram; 
 	private int[] m_window;
+	private int m_coldStart;
 	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -57,6 +58,7 @@ public class DocAnalyzer extends Analyzer {
 		this.m_Ngram = Ngram;
 		this.m_timeFlag = timeFlag;
 		this.m_window = new int[window];
+		this.m_coldStart = 0;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.
@@ -273,8 +275,9 @@ public class DocAnalyzer extends Analyzer {
 				m_corpus.addDoc(doc);
 			} else {
 				doc.createSpVct(spVct);
-				if(currentDocs.size() > m_window.length){
-					int startPointer = currentDocs.size() - m_window.length - 1;
+				this.m_coldStart++;
+				if(this.m_coldStart > m_window.length){
+					int startPointer = this.m_coldStart - m_window.length - 1;
 					for(int i = 0; i < this.m_window.length; i++){
 						_Doc temp = currentDocs.get(startPointer + i);
 						double similarity = Utils.calculateSimilarity(temp, doc);
