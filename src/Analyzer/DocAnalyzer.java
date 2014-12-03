@@ -140,7 +140,7 @@ public class DocAnalyzer extends Analyzer {
 		if(m_stemmer.stem())
 			return m_stemmer.getCurrent();
 		else
-			return m_stemmer.getCurrent();
+			return token;
 	}
 	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
@@ -159,8 +159,10 @@ public class DocAnalyzer extends Analyzer {
 			for(int i = 0; i < NgramNo; i++){
 				StringBuffer Ngram = new StringBuffer(128);
 				for(int j = 0; j < N; j++){
-					if (j==0) Ngram.append(tokens[i+j]);
-					else Ngram.append("-" + tokens[i+j]);
+					if (j==0) 
+						Ngram.append(tokens[i+j]);
+					else 
+						Ngram.append("-" + tokens[i+j]);
 				}
 				Ngrams.add(Ngram.toString());
 			}
@@ -252,29 +254,26 @@ public class DocAnalyzer extends Analyzer {
 						spVct.put(index, 1.0);
 						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
 						this.m_featureStat.get(token).addOneTTF(doc.getYLabel());					
-						}
-				}
-				else{	//CV is loaded.
-					if (m_featureNameIndex.containsKey(token)) {
-						index = m_featureNameIndex.get(token);
-						if(spVct.containsKey(index)){
-							value = spVct.get(index) + 1;
-							spVct.put(index, value);
-							this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
-						} else{
-							spVct.put(index, 1.0);
-							this.m_featureStat.get(token).addOneDF(doc.getYLabel());
-							this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
-						}//if the token is not in the vocabulary, nothing to do.
 					}
+				} else if (m_featureNameIndex.containsKey(token)) {//CV is loaded.
+					index = m_featureNameIndex.get(token);
+					if(spVct.containsKey(index)){
+						value = spVct.get(index) + 1;
+						spVct.put(index, value);
+						
+					} else {
+						spVct.put(index, 1.0);
+						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
+					}
+					this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
 				}
+				//if the token is not in the vocabulary, nothing to do.
 			}
 			
 			if(!this.m_timeFlag){
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
 			} else {
-				doc.createSpVct(spVct);
 				this.m_coldStart++;
 				if(this.m_coldStart > m_window.length){
 					int startPointer = this.m_coldStart - m_window.length - 1;

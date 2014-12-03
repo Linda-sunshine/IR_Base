@@ -16,7 +16,7 @@ import java.util.Random;
  * General structure of corpus of a set of documents
  */
 public class _Corpus {
-	private ArrayList<_Doc> m_collection; //All the documentations in the corpus.
+	private ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	private int m_size = 0; //The total documents the corpus has.
 	protected int m_corClassNo = 0;
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
