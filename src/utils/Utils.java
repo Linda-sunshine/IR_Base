@@ -101,11 +101,56 @@ public class Utils {
 		double similarity = 0;
 		_SparseFeature[] spVct1 = d1.getSparse();
 		_SparseFeature[] spVct2 = d2.getSparse();
-		int start = spVct1[0].getIndex() > spVct2[0].getIndex() ? spVct1[0].getIndex() : spVct2[0].getIndex();
-		int end = spVct1[spVct1.length - 1].getIndex() < spVct2[spVct2.length - 1].getIndex() ? spVct1[spVct1.length - 1].getIndex() : spVct2[spVct2.length - 1].getIndex();
-		for(int i = start; i <= end; i ++){
-			similarity += 1;
+		
+		int pointer1 = 0, pointer2 = 0;
+		while(pointer1 < spVct1.length && pointer2 < spVct2.length){
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if(temp1.getIndex() == temp2.getIndex()){
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} 
+			else if(temp1.getIndex() > temp2.getIndex()) pointer2++;
+			else pointer1++;
 		}
 		return similarity;
+	}
+	
+	//Calculate the similarity between two sparse vectors.
+	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+		
+	public static void main(String[] args){
+		_SparseFeature s1 = new _SparseFeature(1, 4);
+		_SparseFeature s2 = new _SparseFeature(5, 1);
+		_SparseFeature s3 = new _SparseFeature(6, 8);
+		_SparseFeature s4 = new _SparseFeature(9, 4);
+		_SparseFeature s5 = new _SparseFeature(1, 3);
+		_SparseFeature s6 = new _SparseFeature(2, 4);
+		_SparseFeature s7 = new _SparseFeature(5, 1);
+		_SparseFeature s8 = new _SparseFeature(9, 2);
+
+		_SparseFeature[] d1 = new _SparseFeature[] {s1, s2, s3, s4};
+		_SparseFeature[] d2 = new _SparseFeature[] {s5, s6, s7, s8};
+		double similarity = calculateSimilarity(d1, d2);
+		System.out.println(similarity);
+
+		
 	}
 }

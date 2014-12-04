@@ -29,6 +29,13 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 		this.m_norm_value = 0;
 	}
 	
+	public _SparseFeature(int index, double value){
+		this.content = "";
+		this.m_index = index;
+		this.m_value = value;
+		this.m_norm_value = 0;
+	}
+	
 	//Get the content of the feature.
 	public String getContent(){
 		return this.content;

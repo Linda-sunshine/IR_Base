@@ -6,8 +6,11 @@ package structures;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import utils.Utils;
 
 /**
  * @author lingong
@@ -20,10 +23,9 @@ public class _Doc {
 	private String source; //The content of the source file.
 	private int m_y_label; // classification target, that is the index of the labels.
 	private int m_predict_label; //The predicted result.
-	//private double m_influence; //The influence value of the document.
 	private double m_y_value; // regression target, like linear regression only has one value.
 	private int m_totalLength; //The total length of the document.
-	//private int m_timeStamp;
+	//private String m_timeStamp;
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
@@ -31,7 +33,6 @@ public class _Doc {
 	//Constructor.
 	public _Doc(){
 		this.m_predict_label = 0;
-		//this.m_influence = 0;
 		this.m_totalLength = 0;
 		//this.m_timeStamp = 0;
 	}
@@ -41,10 +42,17 @@ public class _Doc {
 		this.m_ID = ID;
 		this.source = source;
 		this.m_y_label = ylabel;
-		//this.m_influence = 0;
 		this.m_totalLength = 0;
 		//this.m_timeStamp = 0;
 	}
+	
+	public _Doc (int ID, String source, int ylabel, String timeStamp){
+		this.m_ID = ID;
+		this.source = source;
+		this.m_y_label = ylabel;
+		this.m_totalLength = 0;
+		//this.m_timeStamp = timeStamp;
+	}	
 	
 	//Get the name of the document.
 	public String getName(){
@@ -120,12 +128,8 @@ public class _Doc {
 		return value;
 	}
 	
-//	public void setInfluence(_Corpus c, int index){
-//		this.m_influence = influence;
-//	}
-	
 	//Create the sparse vector for the document.
-	public void createSpVct(HashMap<Integer, Double> spVct) {
+	public _SparseFeature[] createSpVct(HashMap<Integer, Double> spVct) {
 		int i = 0;
 		m_x_sparse = new _SparseFeature[spVct.size()];
 		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
@@ -142,30 +146,30 @@ public class _Doc {
 				System.out.println("Error!! The index of sparse array out of bound!!");
 		}
 		Arrays.sort(m_x_sparse);
+		return m_x_sparse;
 	}
 	
-	//Create the sparse vector for the document.
-	public void createSpVctWithTime(HashMap<Integer, Double> spVct, double influence) {
-		int i = 0;
-		m_x_sparse = new _SparseFeature[spVct.size() + 1];
-		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>) it.next();
-			_SparseFeature sf = new _SparseFeature();
-			sf.setIndex((int) pairs.getKey());
-			sf.setValue((double) pairs.getValue());
-			if (i < m_x_sparse.length) {
-				this.m_x_sparse[i] = sf;
-				i++;
-			} else
-				System.out.println("Error!! The index of sparse array out of bound!!");
+	//Create a sparse vector with time features.
+	public void createSpVctWithTime(LinkedList<Integer> YLabelQueue,LinkedList<_SparseFeature[]> SpVctQueue, int featureSize){
+		int featureLength = this.m_x_sparse.length;
+		int timeLength = YLabelQueue.size();
+		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength];
+		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);
+		Iterator<Integer> itLabel = YLabelQueue.iterator();
+		Iterator<_SparseFeature[]> itSpVct = SpVctQueue.iterator();
+		int count = 0;
+		while(itLabel.hasNext() && itSpVct.hasNext()){
+			int index = featureSize + count;
+			double value = itLabel.next();
+			value *= Utils.calculateSimilarity(itSpVct.next(), this.m_x_sparse);
+			_SparseFeature timeFeature = new _SparseFeature(index, value);
+			tempSparse[featureLength + count] = timeFeature; 
+			count++;
 		}
-		_SparseFeature Influence = new _SparseFeature();
-		Influence.setIndex(spVct.size());
-		Influence.setValue(influence);
-		m_x_sparse[spVct.size() + 1] = Influence;
-		Arrays.sort(m_x_sparse);
-		}	
+		this.m_x_sparse = new _SparseFeature[featureLength + timeLength];
+		this.m_x_sparse = tempSparse;
+		
+	}
 	
 	//Get the predicted result, which is used for comparison.
 	public int getPredictLabel() {

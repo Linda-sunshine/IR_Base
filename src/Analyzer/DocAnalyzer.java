@@ -10,6 +10,7 @@ import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
@@ -20,8 +21,9 @@ import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
 	private int m_Ngram; 
-	private int[] m_window;
-	private int m_coldStart;
+	private int m_window; //The length of the window which means how many labels will be taken into consideration.
+	private LinkedList<Integer> m_YLabelQueue;
+	private LinkedList<_SparseFeature[]> m_SpVctQueue;
 	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -34,6 +36,7 @@ public class DocAnalyzer extends Analyzer {
 		}	
 		this.m_Ngram = 1;
 	}	
+	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
@@ -57,8 +60,9 @@ public class DocAnalyzer extends Analyzer {
 		}
 		this.m_Ngram = Ngram;
 		this.m_timeFlag = timeFlag;
-		this.m_window = new int[window];
-		this.m_coldStart = 0;
+		this.m_window = window;
+		this.m_YLabelQueue = new LinkedList<Integer>();
+		this.m_SpVctQueue = new LinkedList<_SparseFeature[]>();
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.
@@ -206,7 +210,7 @@ public class DocAnalyzer extends Analyzer {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
 		}
-		this.m_corpus.sizeAddOne();
+		//this.m_corpus.sizeAddOne();
 	}
 	
 	//Add one more token to the current vocabulary.
@@ -222,8 +226,6 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	public void AnalyzeDoc(_Doc doc) {
-		ArrayList<_Doc> currentDocs = this.m_corpus.getCollection();
-		double influence = 0;
 		try{
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());//Three-step analysis.
 			doc.setTotalLength(tokens.length); //set the length of the document.
@@ -269,22 +271,25 @@ public class DocAnalyzer extends Analyzer {
 				}
 				//if the token is not in the vocabulary, nothing to do.
 			}
-			
+			//If the timeflag is not set.
 			if(!this.m_timeFlag){
 				doc.createSpVct(spVct);
+				doc.L2Normalization(doc.getSparse());
 				m_corpus.addDoc(doc);
-			} else {
-				this.m_coldStart++;
-				if(this.m_coldStart > m_window.length){
-					int startPointer = this.m_coldStart - m_window.length - 1;
-					for(int i = 0; i < this.m_window.length; i++){
-						_Doc temp = currentDocs.get(startPointer + i);
-						double similarity = Utils.calculateSimilarity(temp, doc);
-						influence += similarity * currentDocs.get(i).getYLabel();
-					}
-					doc.createSpVctWithTime(spVct, influence);
-					//doc.L1Normalization(doc.getSparse());//Normalize the sparse vector.
-					doc.L2Normalization(doc.getSparse());//Normalize the sparse vector.
+			} else { //If the timeflag is set.
+				if(this.m_YLabelQueue.size() < m_window){
+					this.m_YLabelQueue.add(doc.getYLabel());
+					this.m_SpVctQueue.add(doc.createSpVct(spVct));
+				}
+				else{
+					this.m_YLabelQueue.add(doc.getYLabel());
+					this.m_SpVctQueue.add(doc.createSpVct(spVct));
+					this.m_SpVctQueue.remove();
+					this.m_YLabelQueue.remove();
+				}
+				if(this.m_YLabelQueue.size() == m_window && this.m_SpVctQueue.size() == m_window){
+					doc.createSpVctWithTime(this.m_YLabelQueue, this.m_SpVctQueue, this.m_featureNames.size());
+					// doc.L2Normalization(doc.getSparse());//Normalize the sparse.
 					m_corpus.addDoc(doc);
 				}
 			}
@@ -403,20 +408,6 @@ public class DocAnalyzer extends Analyzer {
 		} else return c; //If no feature value is selected, then the default is TF.
 		return c;
 	}
-	
-//	//Take time into consideration.
-//	public void timeSeriesAnalysis(_Corpus c, int window){
-//		ArrayList<_Doc> docs = c.getCollection();
-//		int size = docs.size();
-//		for(int i = window; i < size; i++){
-//			double sum = 0;
-//			for(int j = 0; j < window; j++){
-//				sum += docs.get(i-1-j).getYLabel();
-//			}
-//			sum = sum / window;
-//			docs.get(i).setInfluence(sum);
-//		}
-//	}
 	
 	//Return corpus without parameter and feature selection.
 	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {

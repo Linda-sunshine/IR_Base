@@ -19,7 +19,7 @@ public class MovieReviewMain {
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
 		/*****The parameters used in loading files.*****/
-		String folder = "txt_sentoken";
+		String folder = "data/txt_sentoken";
 		String suffix = ".txt";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 //		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/FinalFeatureStat.txt"; //The destination of storing the final features with stats.
@@ -37,9 +37,9 @@ public class MovieReviewMain {
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		System.out.println("--------------------------------------------------------------------------------------");
-		/*****Paramters in time series analysis.*****/
-		int window = 7;
-		boolean timeFlag = true;
+//		/*****Paramters in time series analysis.*****/
+//		int window = 7;
+//		boolean timeFlag = true;
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){	
 			
@@ -54,7 +54,7 @@ public class MovieReviewMain {
 			
 			//Case 2: provided CV, no feature selection.
 			System.out.println("Case 2: provided CV, no feature selection. Start loading files, wait...");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, timeFlag, window);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			//featureSize = analyzer.getFeatureSize();
 			corpus = analyzer.returnCorpus(finalLocation); 
@@ -68,7 +68,7 @@ public class MovieReviewMain {
 			analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram, timeFlag, window);
+			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
 			//DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);//featureLocation contains the selected features.
 			analyzer_2.LoadDirectory(folder, suffix);
 			//featureSize = analyzer.getFeatureSize();
