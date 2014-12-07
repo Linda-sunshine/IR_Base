@@ -25,7 +25,7 @@ public class _Doc {
 	private int m_predict_label; //The predicted result.
 	private double m_y_value; // regression target, like linear regression only has one value.
 	private int m_totalLength; //The total length of the document.
-	//private String m_timeStamp;
+	private long m_timeStamp; //The timeStamp for this review.
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
@@ -43,15 +43,14 @@ public class _Doc {
 		this.source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
-		//this.m_timeStamp = 0;
 	}
 	
-	public _Doc (int ID, String source, int ylabel, String timeStamp){
+	public _Doc (int ID, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
-		//this.m_timeStamp = timeStamp;
+		this.m_timeStamp = timeStamp;
 	}	
 	
 	//Get the name of the document.
@@ -95,6 +94,16 @@ public class _Doc {
 	//Get the Y value, such as the result of linear regression.
 	public double getYValue(){
 		return this.m_y_value;
+	}
+	
+	//Get the time stamp of the document.
+	public long getTimeStamp(){
+		return this.m_timeStamp;
+	}
+	
+	//Set the time stamp for the document.
+	public void setTimeStamp(long t){
+		this.m_timeStamp = t;
 	}
 	
 	//Get the sparse vector of the document.

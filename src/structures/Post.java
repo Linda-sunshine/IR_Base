@@ -98,10 +98,16 @@ public class Post {
 		m_ID = ID;
 	}
 	//Constructor.
-	public Post(JSONObject json) {
+	public Post(JSONObject json) throws NumberFormatException {
 		try {
 			if (json.has("Overall")){
-				setLabel((int)Double.parseDouble(json.getString("Overall")));
+				if(json.getString("Overall").equals("None")){
+					System.out.println("Catch the bug!!");
+				}
+				double label = Double.parseDouble(json.getString("Overall"));
+				if(label <= 0 && label > 5){
+					System.out.println("Error label!!!");
+				} else setLabel((int)label);
 				//System.out.println("label is " + this.m_label);
 			}
 			if (json.has("Date")){
@@ -112,28 +118,10 @@ public class Post {
 				setContent(json.getString("Content"));
 				//System.out.println("content is " + this.m_content);
 			}
-			
-//			//Not used currently.
-//			if (json.has(m_ID)){
-//				m_ID = json.getString("postID");
-//				System.out.println("postID is " + this.m_ID);
-//			}
-//			if (json.has("Author")){
-//				setAuthor(json.getString("Author"));
-//				System.out.println("Author is " + this.m_author);
-//			}
-//			if (json.has("AuthorID")){
-//				setAuthorID(json.getString("AuthorID"));
-//				System.out.println("AuthorID is " + this.m_authorID);
-//			}
-//			if (json.has("replyTo"))
-//				setReplyToID(json.getString("replyTo"));
-//			
-//			if (json.has("Title")){
-//				setTitle(json.getString("Title"));
-//			}
 		} catch (JSONException e) {
-			//e.printStackTrace();
+			e.printStackTrace();
+		} catch (NumberFormatException e){
+			e.printStackTrace();
 		}
 	}
 	

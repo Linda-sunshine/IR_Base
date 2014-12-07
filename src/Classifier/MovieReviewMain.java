@@ -95,19 +95,19 @@ public class MovieReviewMain {
 			//Define a new naive bayes with the parameters.
 			System.out.println("Start naive bayes, wait...");
 			NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
-			myNB.crossValidation(10, corpus, classNumber);//Use the movie reviews for testing the codes.
+			myNB.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
 		} else if(classifier.equals("LR")){
 			double lambda = 0; //Define a new lambda.
 			//Define a new logistics regression with the parameters.
 			System.out.println("Start logistic regression, wait...");
 			LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize, lambda);
-			myLR.crossValidation(10, corpus, classNumber);//Use the movie reviews for testing the codes.
+			myLR.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
 		} else if(classifier.equals("SVM")){
 			//corpus.save2File("data/FVs/fvector.dat");
 			double C = 3;// The default value is 1.
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
-			mySVM.crossValidation(10, corpus, classNumber);
+			mySVM.crossValidation(10, corpus);
 		} else System.out.println("Have not developed yet!:(");
 	}
 }

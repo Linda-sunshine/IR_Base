@@ -65,7 +65,7 @@ public abstract class BaseClassifier {
 	}
 
 	//k-fold Cross Validation.
-	public void crossValidation(int k, _Corpus c, int class_number){
+	public void crossValidation(int k, _Corpus c){
 		c.shuffle(k);
 		int[] masks = c.getMasks();
 		HashMap<Integer, ArrayList<_Doc>> k_folder = new HashMap<Integer, ArrayList<_Doc>>();

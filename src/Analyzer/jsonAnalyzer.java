@@ -13,8 +13,12 @@ import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
+
 import opennlp.tools.util.InvalidFormatException;
 
 import json.JSONArray;
@@ -23,6 +27,7 @@ import json.JSONObject;
 
 
 import structures.Post;
+import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._stat;
@@ -44,13 +49,13 @@ public class jsonAnalyzer extends Analyzer{
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
 		if(providedCV != null)
-			this.LoadCV(providedCV);
+			super.LoadCV(providedCV);
 		if(fs != null){
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}	
 		this.m_Ngram = 1;
-		m_dateFormatter = new SimpleDateFormat("mmmmmmmmm dd,yyyy");//standard date format for this project
+		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}	
 	
 	//Constructor with ngram and fValue.
@@ -64,7 +69,7 @@ public class jsonAnalyzer extends Analyzer{
 		}
 		this.m_Ngram = Ngram;
 		m_threads = new ArrayList<JSONObject>();
-		m_dateFormatter = new SimpleDateFormat("mmmmmmmmm dd,yyyy");//standard date format for this project
+		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}
 
 	// Constructor with ngram and time series analysis.
@@ -82,39 +87,11 @@ public class jsonAnalyzer extends Analyzer{
 		this.m_YLabelQueue = new LinkedList<Integer>();
 		this.m_SpVctQueue = new LinkedList<_SparseFeature[]>();
 		m_threads = new ArrayList<JSONObject>();
-		m_dateFormatter = new SimpleDateFormat("mmmmmmmmm dd,yyyy");//standard date format for this project
+		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}
 	
-	//Load the features from a file and store them in the m_featurNames.@added by Lin.
-	public boolean LoadCV(String filename) {
-		int count = 0;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-
-			while ((line = reader.readLine()) != null) {
-				this.m_featureNames.add(line);
-			}
-			reader.close();
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
-			e.printStackTrace();
-			return false;
-		}
-		// Indicate we can only use the loaded features to construct the feature
-		m_isCVLoaded = true;
-
-		// Set the index of the features.
-		for (String f : this.m_featureNames) {
-			this.m_featureNameIndex.put(f, count);
-			this.m_featureIndexName.put(count, f);
-			this.m_featureStat.put(f, new _stat(this.m_classNo));
-			count++;
-		}
-		return true; // if loading is successful
-	}
-	
-	public void LoadDirectory(String folder, String suffix) {
+	//Load all the files in the directory.
+	public void LoadDirectory(String folder, String suffix) throws ParseException {
 		File dir = new File(folder);
 		for (File f : dir.listFiles()) {
 			if (f.isFile() && f.getName().endsWith(suffix)){
@@ -150,15 +127,19 @@ public class jsonAnalyzer extends Analyzer{
 	}
 	
 	//Analyze every review, parse it into a document.
-	public void AnalyzeThreadedDiscussion(JSONObject json) {		
+	public void AnalyzeThreadedDiscussion(JSONObject json) throws ParseException {		
 		try {
 			JSONArray jarray = json.getJSONArray("Reviews");
 			for(int i=0; i<jarray.length(); i++) {
 				Post post = new Post(jarray.getJSONObject(i));
-				checkPostFormat(post);
-				AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), post.getLabel(), post.getDate()));
-				System.out.println(post.getDate());
-				//this.m_classMemberNo[post.getLabel()-1]++;
+				if (checkPostFormat(post)){
+					long timeStamp = this.m_dateFormatter.parse(post.getDate()).getTime();
+					System.out.println(post.getLabel());
+					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
+					this.m_classMemberNo[post.getLabel()-1]++;
+				} else{
+					System.out.println("Wrong review!! Ignored!!");
+				}
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -166,22 +147,32 @@ public class jsonAnalyzer extends Analyzer{
 	}
 	
 	//check format for each post
-	private void checkPostFormat(Post p) {
-		if (p.getLabel() <= 0 || p.getLabel() > 5)
+	private boolean checkPostFormat(Post p) {
+		if (p.getLabel() <= 0 || p.getLabel() > 5){
 			System.err.println("[Error]Missing Lable or wrong label!!");
-		else if (p.getContent() == null)
+			return false;
+		}
+		else if (p.getContent() == null){
 			System.err.format("[Error]Missing content!!\n");
-		else if (p.getDate() == null)
+			return false;
+		}
+			
+		else if (p.getDate() == null){
 			System.err.format("[Error]Missing date!!\n");
+			return false;
+		}
 		else {
 			// to check if the date format is correct
 			try {
 				m_dateFormatter.parse(p.getDate());
-				System.out.println(m_dateFormatter);
+				System.out.println(p.getDate());
+				return true;
+				//System.out.println(m_dateFormatter);
 			} catch (ParseException e) {
 				System.err.format("[Error]Wrong date format!", p.getDate());
 			}
-		}
+			return true;
+		} 
 	}
 	
 	//Analyze the document as usual.
@@ -232,95 +223,45 @@ public class jsonAnalyzer extends Analyzer{
 				}
 				//if the token is not in the vocabulary, nothing to do.
 			}
-			/************************time series analysis***************************/
-			//If the timeflag is not set.
-			if(!this.m_timeFlag){
-				doc.createSpVct(spVct);
-				doc.L2Normalization(doc.getSparse());
-				m_corpus.addDoc(doc);
-				this.m_corpus.sizeAddOne();
-				this.m_classMemberNo[(doc.getYLabel()-1)]++;
-			}
-			//If the timeflag is set.
-			else { 
-				if(this.m_YLabelQueue.size() < m_window){
-					this.m_YLabelQueue.add(doc.getYLabel());
-					this.m_SpVctQueue.add(doc.createSpVct(spVct));
-				}
-				else{
-					this.m_YLabelQueue.add(doc.getYLabel());
-					this.m_SpVctQueue.add(doc.createSpVct(spVct));
-					this.m_SpVctQueue.remove();
-					this.m_YLabelQueue.remove();
-				}
-				if(this.m_YLabelQueue.size() == m_window && this.m_SpVctQueue.size() == m_window){
-					doc.createSpVctWithTime(this.m_YLabelQueue, this.m_SpVctQueue, this.m_featureNames.size());
-					// doc.L2Normalization(doc.getSparse());//Normalize the sparse.
-					m_corpus.addDoc(doc);
-					this.m_corpus.sizeAddOne();
-					this.m_classMemberNo[doc.getYLabel()-1]++;
-				}
-			}
+			doc.createSpVct(spVct);
+			doc.L2Normalization(doc.getSparse());
+			m_corpus.addDoc(doc);
+			this.m_corpus.sizeAddOne();
+			this.m_classMemberNo[doc.getYLabel()]++;
 		}catch(Exception e) {e.printStackTrace();}
 	}
 	
-	//Tokenizer.
-	public String[] Tokenizer(String source) {
-		String[] tokens = m_tokenizer.tokenize(source);
-		return tokens;
-	}
-	// Normalize.
-	public String Normalize(String token) {
-		token = Normalizer.normalize(token, Normalizer.Form.NFKC);
-		token = token.replaceAll("\\W+", "");
-		token = token.toLowerCase();
-		return token;
-	}
-	// Snowball Stemmer.
-	public String SnowballStemming(String token) {
-		m_stemmer.setCurrent(token);
-		if (m_stemmer.stem())
-			return m_stemmer.getCurrent();
-		else
-			return token;
-	}
-	// Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	public String[] TokenizerNormalizeStemmer(String source) {
-		String[] tokens = Tokenizer(source); // Original tokens.
-		// Normalize them and stem them.
-		for (int i = 0; i < tokens.length; i++)
-			tokens[i] = SnowballStemming(Normalize(tokens[i]));
-
-		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
-		ArrayList<String> Ngrams = new ArrayList<String>();
-
-		// Collect all the grams, Ngrams, N-1grams...
-		while (N > 0) {
-			NgramNo = tokenLength - N + 1;
-			for (int i = 0; i < NgramNo; i++) {
-				StringBuffer Ngram = new StringBuffer(128);
-				for (int j = 0; j < N; j++) {
-					if (j == 0)
-						Ngram.append(tokens[i + j]);
-					else
-						Ngram.append("-" + tokens[i + j]);
-				}
-				Ngrams.add(Ngram.toString());
+	//Sort the documents.
+	public void setTimeFeatures(){
+		ArrayList<_Doc> docs = new ArrayList<_Doc>(this.m_corpus.getCollection());
+		//Sort the documents according to time stamps.
+		Collections.sort(docs, new Comparator<_Doc>(){
+			public int compare(_Doc d1, _Doc d2){
+				if(d1.getTimeStamp() == d2.getTimeStamp())
+					return 0;
+					return d1.getTimeStamp() < d2.getTimeStamp() ? -1 : 1;
 			}
-			N--;
+		});
+		/************************time series analysis***************************/
+		for(int i = 0; i < docs.size(); i++){
+			_SparseFeature[] tempVct = docs.get(i).getSparse();
+			if(this.m_YLabelQueue.size() < m_window){
+				this.m_YLabelQueue.add(docs.get(i).getYLabel());
+				this.m_SpVctQueue.add(docs.get(i).getSparse());
+				this.m_corpus.removeDoc(i);
+				this.m_corpus.sizeMinusOne();
+				this.m_classMemberNo[docs.get(i).getYLabel()]--;
+			}
+			else{
+				if(this.m_YLabelQueue.size() == m_window && this.m_SpVctQueue.size() == m_window){
+					docs.get(i).createSpVctWithTime(this.m_YLabelQueue, this.m_SpVctQueue, this.m_featureNames.size());
+					// doc.L2Normalization(doc.getSparse());//Normalize the sparse.
+					this.m_YLabelQueue.remove();
+					this.m_SpVctQueue.remove();
+					this.m_YLabelQueue.add(docs.get(i).getYLabel());
+					this.m_SpVctQueue.add(tempVct);
+				}
+			}
 		}
-		return Ngrams.toArray(new String[Ngrams.size()]);
-	}
-	
-	//Add one more token to the current vocabulary.
-	private void expandVocabulary(String token) {
-		m_featureNames.add(token); // Add the new feature.
-		m_featureNameIndex.put(token, (m_featureNames.size() - 1)); // set the index of the new feature.
-		m_featureIndexName.put((m_featureNames.size() - 1), token);
-	}
-	
-	//With a new feature added into the vocabulary, add the stat into stat arraylist.
-	public void updateFeatureStat(String token){
-		this.m_featureStat.put(token, new _stat(this.m_classNo));
 	}
 }

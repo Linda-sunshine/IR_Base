@@ -20,7 +20,7 @@ import structures._stat;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
-	private int m_Ngram; 
+	
 	private int m_window; //The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<Integer> m_YLabelQueue;
 	private LinkedList<_SparseFeature[]> m_SpVctQueue;
@@ -34,31 +34,28 @@ public class DocAnalyzer extends Analyzer {
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}	
-		this.m_Ngram = 1;
 	}	
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
+		super(tokenModel, classNo, Ngram);
 		if(providedCV != null)
 			this.LoadCV(providedCV);
 		if(fs != null){
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}
-		this.m_Ngram = Ngram;
 	}
 	
 	//Constructor with ngram and time series analysis.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, boolean timeFlag, int window) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
+		super(tokenModel, classNo, Ngram);
 		if(providedCV != null)
 			this.LoadCV(providedCV);
 		if(fs != null){
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}
-		this.m_Ngram = Ngram;
 		this.m_timeFlag = timeFlag;
 		this.m_window = window;
 		this.m_YLabelQueue = new LinkedList<Integer>();
@@ -105,76 +102,7 @@ public class DocAnalyzer extends Analyzer {
 		writer.close();
 		return writer;
 	}
-	
-	//Save all the features and feature stat into a file.
-	public PrintWriter SaveCVStat(String finalLocation) throws FileNotFoundException{
-		//File file = new File(path);
-		PrintWriter writer = new PrintWriter(new File(finalLocation));
-		for(int i = 0; i < this.m_featureNames.size(); i++){
-			writer.print("\nfeature: " + this.m_featureNames.get(i));
-			_stat temp = this.m_featureStat.get(this.m_featureNames.get(i));
-			for(int j = 0; j < temp.getDF().length; j++){
-				writer.print("\tDF[" + j + "]:" + temp.getDF()[j]);
-			}
-			for(int j = 0; j < temp.getTTF().length; j++){
-				writer.print("\tTTF[" + j + "]:" + temp.getTTF()[j]);
-			}
-		}
-		writer.close();
-		return writer;
-	}
-	
-	//Tokenizer.
-	public String[] Tokenizer(String source){
-		String[] tokens = m_tokenizer.tokenize(source);
-		return tokens;
-	}
-	
-	//Normalize.
-	public String Normalize(String token){
-		token = Normalizer.normalize(token, Normalizer.Form.NFKC);
-		token = token.replaceAll("\\W+", "");
-		token = token.toLowerCase();
-		return token;
-	}
-	
-	//Snowball Stemmer.
-	public String SnowballStemming(String token){
-		m_stemmer.setCurrent(token);
-		if(m_stemmer.stem())
-			return m_stemmer.getCurrent();
-		else
-			return token;
-	}
-	
-	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	public String[] TokenizerNormalizeStemmer(String source){
-		String[] tokens = Tokenizer(source); //Original tokens.
-		//Normalize them and stem them.		
-		for(int i = 0; i < tokens.length; i++)
-			tokens[i] = SnowballStemming(Normalize(tokens[i]));
-		
-		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
-		ArrayList<String> Ngrams = new ArrayList<String>();
-		
-		//Collect all the grams, Ngrams, N-1grams...
-		while(N > 0){
-			NgramNo = tokenLength - N + 1;
-			for(int i = 0; i < NgramNo; i++){
-				StringBuffer Ngram = new StringBuffer(128);
-				for(int j = 0; j < N; j++){
-					if (j==0) 
-						Ngram.append(tokens[i+j]);
-					else 
-						Ngram.append("-" + tokens[i+j]);
-				}
-				Ngrams.add(Ngram.toString());
-			}
-			N--;
-		}
-		return Ngrams.toArray(new String[Ngrams.size()]);
-	}
-	
+
 	//Load all the files in the directory.
 	public void LoadDirectory(String folder, String suffix) throws IOException {
 		File dir = new File(folder);
@@ -211,13 +139,6 @@ public class DocAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 		//this.m_corpus.sizeAddOne();
-	}
-	
-	//Add one more token to the current vocabulary.
-	private void expandVocabulary(String token) {
-		m_featureNames.add(token); //Add the new feature.
-		m_featureNameIndex.put(token, (m_featureNames.size() - 1)); //set the index of the new feature.
-		m_featureIndexName.put((m_featureNames.size() - 1), token);
 	}
 
 	/*Analyze a document and add the analyzed document back to corpus.	
@@ -287,6 +208,7 @@ public class DocAnalyzer extends Analyzer {
 					this.m_SpVctQueue.remove();
 					this.m_YLabelQueue.remove();
 				}
+				//
 				if(this.m_YLabelQueue.size() == m_window && this.m_SpVctQueue.size() == m_window){
 					doc.createSpVctWithTime(this.m_YLabelQueue, this.m_SpVctQueue, this.m_featureNames.size());
 					// doc.L2Normalization(doc.getSparse());//Normalize the sparse.
@@ -294,11 +216,6 @@ public class DocAnalyzer extends Analyzer {
 				}
 			}
 		}catch(Exception e) {e.printStackTrace();}
-	}
-	
-	//With a new feature added into the vocabulary, add the stat into stat arraylist.
-	public void updateFeatureStat(String token){
-		this.m_featureStat.put(token, new _stat(this.m_classNo));
 	}
 	
 	//Return the total number of words in vocabulary.
@@ -340,80 +257,6 @@ public class DocAnalyzer extends Analyzer {
 		}
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
 		System.out.println(this.m_featureNames.size() + " features are selected!");
-	}
-	
-	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
-	public _Corpus setFeatureValues(_Corpus c, String fValue){
-		HashMap<String, _stat> featureStat = this.m_featureStat;
-		HashMap<Integer, String> featureIndexName = this.m_featureIndexName;
-		
-		ArrayList<_Doc> docs = c.getCollection(); //Get the collection of all the documents.
-		int N = docs.size();
-		if (fValue.equals("TFIDF")){
-			for(int i = 0; i < docs.size(); i++){
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf: sfs){
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue()/temp.getTotalDocLength();// normalized TF
-					double DF = Utils.sumOfArray(stat.getDF());
-					double TFIDF = TF * Math.log((N + 1)/DF);
-					sf.setValue(TFIDF);
-				}
-			}
-		}else if(fValue.equals("BM25")){
-			double k1 = 1.5; //[1.2, 2]
-			double b = 10; //(0, 1000]
-			//Iterate all the documents to get the average document length.
-			double navg = 0;
-			for(int k = 0; k < N; k++)
-				navg += docs.get(k).getTotalDocLength();
-			navg = navg/N; 
-			
-			for(int i = 0; i < docs.size(); i++){
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf: sfs){
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue();
-					double DF = Utils.sumOfArray(stat.getDF());
-					double n = temp.getTotalDocLength();
-					double BM25 = Math.log((N - DF + 0.5) / (DF + 0.5)) * TF * (k1 + 1) / (k1 * (1 - b + b * n / navg) + TF);
-					sf.setValue(BM25);
-				}
-			}
-		} else if(fValue.equals("PLN")){
-			double s = 0.5; //[0, 1]
-			//Iterate all the documents to get the average document length.
-			double navg = 0;
-			for(int k = 0; k < N; k++)
-				navg += docs.get(k).getTotalDocLength();
-			navg = navg/N; 
-			
-			for(int i = 0; i < docs.size(); i++){
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf: sfs){
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue();
-					double DF = Utils.sumOfArray(stat.getDF());
-					double n = temp.getTotalDocLength();
-					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n / navg)) * Math.log((N + 1) / DF);
-					sf.setValue(PLN);
-				}
-			}
-		} else return c; //If no feature value is selected, then the default is TF.
-		return c;
-	}
-	
-	//Return corpus without parameter and feature selection.
-	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
-		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
-		this.SaveCVStat(finalLocation);
-		return this.m_corpus;
 	}
 }	
 

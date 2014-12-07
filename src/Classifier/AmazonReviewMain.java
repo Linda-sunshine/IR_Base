@@ -1,13 +1,15 @@
 package Classifier;
 
 import java.io.IOException;
+import java.text.ParseException;
+
 import structures._Corpus;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 
 public class AmazonReviewMain {
 
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException, ParseException{
 		_Corpus corpus = new _Corpus();
 		
 		/*****Set these parameters before run the classifiers.*****/
@@ -15,7 +17,7 @@ public class AmazonReviewMain {
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "NB"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -31,7 +33,7 @@ public class AmazonReviewMain {
 		/*****Paramters in feature selection.*****/
 		//String providedCV = "";
 		String featureSelection = "";
-		String providedCV = "Features.txt"; //Provided CV.
+		String providedCV = "ReviewFeatures.txt"; //Provided CV.
 		//String featureSelection = "MI"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
@@ -40,8 +42,8 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/*****Paramters in time series analysis.*****/
-		int window = 7;
-		boolean timeFlag = true;
+		int window = 3;
+		boolean timeFlag = ;
 		
 		if( providedCV.isEmpty() && featureSelection.isEmpty()){	
 			
@@ -56,11 +58,12 @@ public class AmazonReviewMain {
 			
 			//Case 2: provided CV, no feature selection.
 			System.out.println("Case 2: provided CV, no feature selection. Start loading files, wait...");
-			jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, timeFlag, window);
+			jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, false, window);
 			jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			//featureSize = analyzer.getFeatureSize();
-//			corpus = jsonAnalyzer.returnCorpus(finalLocation); 
-//			jsonAnalyzer.setFeatureValues(corpus, featureValue);
+			jsonAnalyzer.setTimeFeatures();
+			jsonAnalyzer.setFeatureValues(corpus, featureValue);
+			corpus = jsonAnalyzer.returnCorpus(finalLocation);
 		} else if(providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 3: no provided CV, feature selection.
@@ -94,22 +97,26 @@ public class AmazonReviewMain {
 		
 		//Execute different classifiers.
 		if(classifier.equals("NB")){
+			
 			//Define a new naive bayes with the parameters.
 			System.out.println("Start naive bayes, wait...");
 			NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
-			myNB.crossValidation(10, corpus, classNumber);//Use the movie reviews for testing the codes.
+			myNB.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
 		} else if(classifier.equals("LR")){
-			double lambda = 0; //Define a new lambda.
+			
+			
 			//Define a new logistics regression with the parameters.
+			double lambda = 0; //Define a new lambda.
 			System.out.println("Start logistic regression, wait...");
 			LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize, lambda);
-			myLR.crossValidation(10, corpus, classNumber);//Use the movie reviews for testing the codes.
+			myLR.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
 		} else if(classifier.equals("SVM")){
+			
 			//corpus.save2File("data/FVs/fvector.dat");
 			double C = 3;// The default value is 1.
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
-			mySVM.crossValidation(10, corpus, classNumber);
+			mySVM.crossValidation(10, corpus);
 		} else System.out.println("Have not developed yet!:(");
 	}
 }

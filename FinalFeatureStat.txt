@@ -1,15 +1,15 @@
 
-feature: love	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: wonderful	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: best	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: great	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: superb	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: still	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: beautiful	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: bad	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: worst	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: stupid	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: waste	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: boring	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: ?	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
-feature: !	DF[0]:0	DF[1]:0	TTF[0]:0	TTF[1]:0
+feature: like	DF[0]:2791	DF[1]:2046	DF[2]:3184	DF[3]:7577	DF[4]:17747	TTF[0]:3963	TTF[1]:3273	TTF[2]:5701	TTF[3]:14371	TTF[4]:30003
+feature: good	DF[0]:2134	DF[1]:1584	DF[2]:2482	DF[3]:6220	DF[4]:13107	TTF[0]:2725	TTF[1]:2203	TTF[2]:3852	TTF[3]:9848	TTF[4]:18954
+feature: bad	DF[0]:1130	DF[1]:626	DF[2]:760	DF[3]:1265	DF[4]:1909	TTF[0]:1403	TTF[1]:795	TTF[2]:933	TTF[3]:1515	TTF[4]:2179
+feature: love	DF[0]:975	DF[1]:768	DF[2]:1366	DF[3]:5156	DF[4]:28877	TTF[0]:1133	TTF[1]:970	TTF[2]:1730	TTF[3]:6750	TTF[4]:39178
+feature: esay	DF[0]:0	DF[1]:0	DF[2]:1	DF[3]:0	DF[4]:0	TTF[0]:0	TTF[1]:0	TTF[2]:1	TTF[3]:0	TTF[4]:0
+feature: still	DF[0]:1786	DF[1]:993	DF[2]:1415	DF[3]:3692	DF[4]:7602	TTF[0]:2325	TTF[1]:1331	TTF[2]:2049	TTF[3]:5871	TTF[4]:10508
+feature: beautiful	DF[0]:0	DF[1]:0	DF[2]:0	DF[3]:0	DF[4]:10	TTF[0]:0	TTF[1]:0	TTF[2]:0	TTF[3]:0	TTF[4]:15
+feature: bad	DF[0]:1130	DF[1]:626	DF[2]:760	DF[3]:1265	DF[4]:1909	TTF[0]:1403	TTF[1]:795	TTF[2]:933	TTF[3]:1515	TTF[4]:2179
+feature: worst	DF[0]:522	DF[1]:146	DF[2]:97	DF[3]:134	DF[4]:128	TTF[0]:551	TTF[1]:155	TTF[2]:101	TTF[3]:151	TTF[4]:148
+feature: stupid	DF[0]:122	DF[1]:87	DF[2]:70	DF[3]:102	DF[4]:179	TTF[0]:129	TTF[1]:95	TTF[2]:82	TTF[3]:112	TTF[4]:194
+feature: waste	DF[0]:0	DF[1]:0	DF[2]:0	DF[3]:0	DF[4]:0	TTF[0]:0	TTF[1]:0	TTF[2]:0	TTF[3]:0	TTF[4]:0
+feature: boring	DF[0]:0	DF[1]:0	DF[2]:0	DF[3]:0	DF[4]:0	TTF[0]:0	TTF[1]:0	TTF[2]:0	TTF[3]:0	TTF[4]:0
+feature: ?	DF[0]:0	DF[1]:0	DF[2]:0	DF[3]:0	DF[4]:0	TTF[0]:0	TTF[1]:0	TTF[2]:0	TTF[3]:0	TTF[4]:0
+feature: !	DF[0]:0	DF[1]:0	DF[2]:0	DF[3]:0	DF[4]:0	TTF[0]:0	TTF[1]:0	TTF[2]:0	TTF[3]:0	TTF[4]:0

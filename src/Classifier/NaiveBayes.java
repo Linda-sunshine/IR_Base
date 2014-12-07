@@ -15,8 +15,8 @@ public class NaiveBayes extends BaseClassifier {
 	//Constructor.
 	public NaiveBayes(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
-		this.m_model = new double [classNumber][featureSize];
-		this.m_sstat = new double [classNumber][featureSize];
+		this.m_model = new double [this.m_classNo][featureSize];
+		this.m_sstat = new double [this.m_classNo][featureSize];
 		this.m_classProb = new double [this.m_classNo];
 		this.m_classMember = new double [this.m_classNo];
 	}

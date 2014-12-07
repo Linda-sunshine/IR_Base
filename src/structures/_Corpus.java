@@ -52,6 +52,11 @@ public class _Corpus {
 		this.m_size++;
 	}
 	
+	//The value of size is decreased by one.
+	public void sizeMinusOne(){
+		this.m_size--;
+	}
+	
 	/*
 	 rand.nextInt(k) will always generates a number between 0 ~ (k-1).
 	 Access the documents with the masks can help us split the whole whole 
@@ -66,9 +71,11 @@ public class _Corpus {
 	}
 	
 	//Add a new doc to the corpus.
-	public ArrayList<_Doc> addDoc(_Doc doc){
+	public void addDoc(_Doc doc){
 		this.m_collection.add(doc);
-		return this.m_collection;
+	}
+	public void removeDoc(int index){
+		this.m_collection.remove(index);
 	}
 	
 	//Get the mask array of the corpus.
