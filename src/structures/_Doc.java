@@ -170,7 +170,7 @@ public class _Doc {
 		while(itLabel.hasNext() && itSpVct.hasNext()){
 			int index = featureSize + count;
 			double value = itLabel.next();
-			value *= Utils.calculateSimilarity(itSpVct.next(), this.m_x_sparse);
+			//value *= Utils.calculateSimilarity(itSpVct.next(), this.m_x_sparse);
 			_SparseFeature timeFeature = new _SparseFeature(index, value);
 			tempSparse[featureLength + count] = timeFeature; 
 			count++;

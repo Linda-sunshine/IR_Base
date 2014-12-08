@@ -102,13 +102,13 @@ public class Post {
 		try {
 			if (json.has("Overall")){
 				if(json.getString("Overall").equals("None")){
-					System.out.println("Catch the bug!!");
+					System.err.println("Wrong rating");
+				} else{
+					double label = Double.parseDouble(json.getString("Overall"));
+					if(label <= 0 && label > 5){
+						System.err.println("Error label!!!");
+					} else setLabel((int)label);
 				}
-				double label = Double.parseDouble(json.getString("Overall"));
-				if(label <= 0 && label > 5){
-					System.out.println("Error label!!!");
-				} else setLabel((int)label);
-				//System.out.println("label is " + this.m_label);
 			}
 			if (json.has("Date")){
 				setDate(json.getString("Date"));
@@ -134,7 +134,6 @@ public class Post {
 		json.put("date", m_date);//must contain
 		json.put("title", m_title);//might be missing
 		json.put("content", m_content);//must contain
-		
 		return json;
 	}
 }

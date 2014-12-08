@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.Normalizer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -17,76 +16,52 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-
 import opennlp.tools.util.InvalidFormatException;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
-
-
 import structures.Post;
-import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
-import structures._stat;
 
 /**
  * @author hongning
  * Sample codes for demonstrating OpenNLP package usage 
  */
 public class jsonAnalyzer extends Analyzer{
-	int m_Ngram;
+	
 	private int m_window; //The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<Integer> m_YLabelQueue;
 	private LinkedList<_SparseFeature[]> m_SpVctQueue;
-	
-	ArrayList<JSONObject> m_threads;
 	SimpleDateFormat m_dateFormatter;
 
 	
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
-		if(providedCV != null)
-			super.LoadCV(providedCV);
-		if(fs != null){
+		if (!providedCV.equals(""))
+			this.LoadCV(providedCV);
+		if (!fs.equals("")) {
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
-		}	
-		this.m_Ngram = 1;
+		}
+		this.m_window = 0;
+		this.m_YLabelQueue = new LinkedList<Integer>();
+		this.m_SpVctQueue = new LinkedList<_SparseFeature[]>();
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}	
 	
 	//Constructor with ngram and fValue.
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
-		if (providedCV != null)
+		super(tokenModel, classNo, Ngram);
+		if (!providedCV.equals(""))
 			this.LoadCV(providedCV);
-		if (fs != null) {
+		if (!fs.equals("")) {
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}
-		this.m_Ngram = Ngram;
-		m_threads = new ArrayList<JSONObject>();
-		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
-	}
-
-	// Constructor with ngram and time series analysis.
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, boolean timeFlag, int window) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo);
-		if (providedCV != null)
-			this.LoadCV(providedCV);
-		if (fs != null) {
-			this.m_isFetureSelected = true;
-			this.featureSelection = fs;
-		}
-		this.m_Ngram = Ngram;
-		this.m_timeFlag = timeFlag;
-		this.m_window = window;
+		this.m_window = 0;
 		this.m_YLabelQueue = new LinkedList<Integer>();
 		this.m_SpVctQueue = new LinkedList<_SparseFeature[]>();
-		m_threads = new ArrayList<JSONObject>();
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}
 	
@@ -134,11 +109,11 @@ public class jsonAnalyzer extends Analyzer{
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = this.m_dateFormatter.parse(post.getDate()).getTime();
-					System.out.println(post.getLabel());
+					//System.out.println(post.getLabel());
 					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
 					this.m_classMemberNo[post.getLabel()-1]++;
 				} else{
-					System.out.println("Wrong review!! Ignored!!");
+					System.err.format("*******Wrong review!! Ignored!!******\n");
 				}
 			}
 		} catch (JSONException e) {
@@ -149,14 +124,13 @@ public class jsonAnalyzer extends Analyzer{
 	//check format for each post
 	private boolean checkPostFormat(Post p) {
 		if (p.getLabel() <= 0 || p.getLabel() > 5){
-			System.err.println("[Error]Missing Lable or wrong label!!");
+			System.err.format("[Error]Missing Lable or wrong label!!");
 			return false;
 		}
 		else if (p.getContent() == null){
 			System.err.format("[Error]Missing content!!\n");
 			return false;
-		}
-			
+		}	
 		else if (p.getDate() == null){
 			System.err.format("[Error]Missing date!!\n");
 			return false;
@@ -165,9 +139,8 @@ public class jsonAnalyzer extends Analyzer{
 			// to check if the date format is correct
 			try {
 				m_dateFormatter.parse(p.getDate());
-				System.out.println(p.getDate());
+				//System.out.println(p.getDate());
 				return true;
-				//System.out.println(m_dateFormatter);
 			} catch (ParseException e) {
 				System.err.format("[Error]Wrong date format!", p.getDate());
 			}
@@ -229,10 +202,12 @@ public class jsonAnalyzer extends Analyzer{
 			this.m_corpus.sizeAddOne();
 			this.m_classMemberNo[doc.getYLabel()]++;
 		}catch(Exception e) {e.printStackTrace();}
+		//System.out.print(".");
 	}
 	
 	//Sort the documents.
-	public void setTimeFeatures(){
+	public void setTimeFeatures(int window){
+		this.m_window = window;
 		ArrayList<_Doc> docs = new ArrayList<_Doc>(this.m_corpus.getCollection());
 		//Sort the documents according to time stamps.
 		Collections.sort(docs, new Comparator<_Doc>(){

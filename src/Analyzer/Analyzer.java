@@ -33,17 +33,15 @@ public abstract class Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
 	int[] m_classMemberNo; //Store the number of members in a class.
-	protected boolean m_timeFlag;
 	
 	//added by Hongning to manage feature vocabulary
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
-	protected boolean m_isCVLoaded = false; 
-	
+	protected boolean m_isCVLoaded; 
 	/* Indicate if the user has specified a feature selection method.
 	 * If the user do not provides a feature selection method, then all terms will be chosen as CV. 
 	 * So the default value is true.*/
-	protected boolean m_isFetureSelected = false; 
+	protected boolean m_isFetureSelected; 
 	private int m_Ngram; 
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
@@ -53,33 +51,39 @@ public abstract class Analyzer {
 	protected String featureSelection = "DF";
 	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
+		this.m_corpus = new _Corpus();
 		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		this.m_stemmer = new englishStemmer();
 		this.m_classNo = classNo;
 		this.m_classMemberNo = new int[classNo];
 		
-		this.m_corpus = new _Corpus();
-		this.m_stemmer = new englishStemmer();
+		this.m_isCVLoaded = false;
+		this.m_isFetureSelected = false;
+		this.m_Ngram = 1;
+		
 		this.m_featureNames = new ArrayList<String>();
 		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
-		this.m_timeFlag = false;
-		this.m_Ngram = 1;
+		this.featureSelection = "DF";
 	}	
 	
 	public Analyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
+		this.m_corpus = new _Corpus();
 		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		this.m_stemmer = new englishStemmer();
 		this.m_classNo = classNo;
 		this.m_classMemberNo = new int[classNo];
 		
-		this.m_corpus = new _Corpus();
-		this.m_stemmer = new englishStemmer();
+		this.m_isCVLoaded = false;
+		this.m_isFetureSelected = false;
+		this.m_Ngram = Ngram;
+		
 		this.m_featureNames = new ArrayList<String>();
 		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
-		this.m_timeFlag = false;
-		this.m_Ngram = Ngram;
+		this.featureSelection = "DF";
 	}	
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -211,8 +215,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = featureIndexName.get(sf.getIndex());
 					_stat stat = featureStat.get(featureName);
-					double TF = sf.getValue() / temp.getTotalDocLength();// normalized
-																			// TF
+					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double TFIDF = TF * Math.log((N + 1) / DF);
 					sf.setValue(TFIDF);
@@ -264,5 +267,53 @@ public abstract class Analyzer {
 		} else
 			return c; // If no feature value is selected, then the default is TF.
 		return c;
+	}
+	
+	//Set the counts of every feature with respect to the collected class number.
+	public void setFeatureConfiguration() {
+		// Initialize the counts of every feature.
+		for (String featureName : this.m_featureStat.keySet()) {
+			this.m_featureStat.get(featureName).initCount(this.m_classNo);
+		}
+		for (String featureName : this.m_featureStat.keySet()) {
+			this.m_featureStat.get(featureName).setCounts(this.m_classMemberNo);
+		}
+	}
+	
+	//Select the features and store them in a file.
+	public void featureSelection(String location, double startProb, double endProb, int threshold) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(startProb, endProb);
+		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		this.setFeatureConfiguration(); // Construct the table for features.
+
+		if (this.m_isFetureSelected) {
+			System.out.println("*******************************************************************");
+			if (this.featureSelection.equals("DF")) {
+				this.m_featureNames = selector.DF(this.m_featureStat, threshold);
+			} else if (this.featureSelection.equals("IG")) {
+				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo, threshold);
+			} else if (this.featureSelection.equals("MI")) {
+				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo, threshold);
+			} else if (this.featureSelection.equals("CHI")) {
+				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo, threshold);
+			}
+		}
+		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
+		System.out.println(this.m_featureNames.size() + " features are selected!");
+	}
+	
+	//Save all the features and feature stat into a file.
+	public PrintWriter SaveCV(String featureLocation) throws FileNotFoundException {
+		// File file = new File(path);
+		PrintWriter writer = new PrintWriter(new File(featureLocation));
+		for (int i = 0; i < this.m_featureNames.size(); i++)
+			writer.println(this.m_featureNames.get(i));
+		writer.close();
+		return writer;
+	}
+	
+	//Return the number of features.
+	public int getFeatureSize(){
+		return this.m_featureNames.size();
 	}
 }

@@ -80,11 +80,13 @@ public class FeatureSelector {
 				PrCiSum -= PrCi[i] * Math.log(PrCi[i]);
 			}
 		}
-			
+		int featureSize2 = 0; // Use this to filter features' DF < threshold.
 		for(String f: featureStat.keySet()){
+			
 			//Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
 			if (sumDF > threshold){
+				featureSize2++;
 				_stat temp = featureStat.get(f);
 				Prt = Utils.sumOfArray(temp.getDF()) / classMemberSum;
 				PrtNot = 1 - Prt;
@@ -108,17 +110,15 @@ public class FeatureSelector {
 					tempArray.add(f);
 					featureIG.put(Gt, tempArray);
 				}
-			} else System.out.println("No features found as for threshold " + threshold);
+			}
 		}
 		unsortedIG = featureIG.keySet();
 		ArrayList<Double> sortedIG = new ArrayList<Double>(unsortedIG);     
 		Collections.sort(sortedIG);//sort the DF
 		for(double IG : sortedIG) sortedFeatures.addAll(featureIG.get(IG));//sort the features according to sorted DF.
 			
-		//Start fetching particular features. How do we define the criterion?
-		int totalSize = featureStat.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
+		int start = (int) (featureSize2 * this.m_startProb);
+		int end = (int) (featureSize2 * this.m_endProb);
 		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 		return selectedFeatures;
 	} 
