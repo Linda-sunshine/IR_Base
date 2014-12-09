@@ -34,10 +34,10 @@ public class AmazonReviewMain {
 		double endProb = 1; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
-		System.out.println("--------------------------------------------------------------------------------------");
-		
 		/*****Parameters in time series analysis.*****/
-		int window = 7;
+		int window = 30;
+		System.out.println("Window length: " + window);
+		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/****Pre-process the data.*****/
 		//Feture selection.

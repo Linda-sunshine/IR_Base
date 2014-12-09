@@ -29,9 +29,9 @@ public class DocAnalyzer extends Analyzer {
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, Ngram);
-		if(providedCV != null)
+		if(!providedCV.equals(""))
 			this.LoadCV(providedCV);
-		if(fs != null){
+		if(!fs.equals("")){
 			this.m_isFetureSelected = true;
 			this.featureSelection = fs;
 		}

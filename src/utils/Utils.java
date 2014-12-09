@@ -116,7 +116,6 @@ public class Utils {
 	}
 	
 	//L2 normalization.
-	
 	//L2 = sqrt(sum of fsValue*fsValue).
 	static public double sumOfFeaturesL2(_SparseFeature[] fs) {
 		double sum = 0;
