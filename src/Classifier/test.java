@@ -72,6 +72,8 @@ public class test {
 	
 	public static void main(String [] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		System.out.println("testing the git config ...");
+		System.out.println("testing the git config ...");
+
 		test mytest = new test();
 		String test = "I am Lin,I like sunshine, sea, sky.";
 		String[] res = mytest.TokenizerNormalizeStemmer(test);
