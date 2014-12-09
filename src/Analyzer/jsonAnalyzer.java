@@ -38,6 +38,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 	}
 	
 	//Load a document and analyze it.
+	@Override
 	public void LoadDoc(String filename) {
 		try {
 			JSONObject json = LoadJson(filename);
