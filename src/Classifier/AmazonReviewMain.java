@@ -9,8 +9,6 @@ import Analyzer.jsonAnalyzer;
 public class AmazonReviewMain {
 
 	public static void main(String[] args) throws IOException, ParseException{
-		_Corpus corpus = new _Corpus();
-		
 		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
@@ -43,19 +41,20 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
+		System.out.println("Performing feature selection, wait...");
 		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+		
 		//Collect vectors for documents.
 		featureSelection = "";
 		featureSize = jsonAnalyzer.getFeatureSize();
-		System.out.println("Start loading files, wait...");
-		jsonAnalyzer jsonAnalyzer_2 = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
-		jsonAnalyzer_2.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		jsonAnalyzer_2.setFeatureValues(corpus, featureValue);
-		jsonAnalyzer_2.setTimeFeatures(window);
-		corpus = jsonAnalyzer_2.returnCorpus(finalLocation); 
-		
+		System.out.println("Creating feature vectors, wait...");
+		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		jsonAnalyzer.setFeatureValues(featureValue);
+		jsonAnalyzer.setTimeFeatures(window);
+		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.

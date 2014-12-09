@@ -7,9 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._stat;
+import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
 
@@ -26,17 +28,6 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, Ngram);
-		if(providedCV != null)
-			this.LoadCV(providedCV);
-		if(fs != null){
-			this.m_isFetureSelected = true;
-			this.featureSelection = fs;
-		}
-	}
-	
-	//Constructor with ngram and time series analysis.
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, boolean timeFlag, int window) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, Ngram);
 		if(providedCV != null)
 			this.LoadCV(providedCV);
@@ -167,9 +158,8 @@ public class DocAnalyzer extends Analyzer {
 				// if the token is not in the vocabulary, nothing to do.
 			}
 			doc.createSpVct(spVct);
-			doc.L2Normalization(doc.getSparse());
+			Utils.L2Normalization(doc.getSparse());
 			m_corpus.addDoc(doc);
-			this.m_corpus.sizeAddOne();
 			this.m_classMemberNo[doc.getYLabel()]++;
 		} catch (Exception e) {
 			e.printStackTrace();

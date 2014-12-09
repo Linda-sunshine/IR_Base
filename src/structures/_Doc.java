@@ -10,8 +10,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import utils.Utils;
-
 /**
  * @author lingong
  * General structure to present a document for DM/ML/IR
@@ -128,13 +126,11 @@ public class _Doc {
 		
 	//Given an index, find the corresponding value of the feature. 
 	public double findValueWithIndex(int index){
-		double value = 0;
 		for(_SparseFeature sf: this.m_x_sparse){
-			if(index == sf.getIndex()){
-				value = sf.getValue();
-			} else value = 0;
+			if(index == sf.getIndex())
+				return sf.getValue();
 		}
-		return value;
+		return 0;
 	}
 	
 	//Create the sparse vector for the document.
@@ -144,40 +140,28 @@ public class _Doc {
 		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			_SparseFeature sf = new _SparseFeature();
-			sf.setIndex((int) pairs.getKey());
-			sf.setValue((double) pairs.getValue());
-			if(i < m_x_sparse.length){
-				this.m_x_sparse[i] = sf;
-				i++;
-			} 
-			else
-				System.out.println("Error!! The index of sparse array out of bound!!");
+			this.m_x_sparse[i] = new _SparseFeature(pairs.getKey(), pairs.getValue());
+			i++;
 		}
 		Arrays.sort(m_x_sparse);
 		return m_x_sparse;
 	}
 	
 	//Create a sparse vector with time features.
-	public void createSpVctWithTime(LinkedList<Integer> YLabelQueue,LinkedList<_SparseFeature[]> SpVctQueue, int featureSize){
+	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize){
 		int featureLength = this.m_x_sparse.length;
-		int timeLength = YLabelQueue.size();
+		int timeLength = preDocs.size();
 		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength];
-		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);
-		Iterator<Integer> itLabel = YLabelQueue.iterator();
-		Iterator<_SparseFeature[]> itSpVct = SpVctQueue.iterator();
+		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);		
 		int count = 0;
-		while(itLabel.hasNext() && itSpVct.hasNext()){
+		for(_Doc doc:preDocs){
 			int index = featureSize + count;
-			double value = itLabel.next();
-			//value *= Utils.calculateSimilarity(itSpVct.next(), this.m_x_sparse);
-			_SparseFeature timeFeature = new _SparseFeature(index, value);
-			tempSparse[featureLength + count] = timeFeature; 
+			double value = doc.getYLabel();
+			//value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
+			tempSparse[featureLength + count] = new _SparseFeature(index, value);
 			count++;
-		}
-		this.m_x_sparse = new _SparseFeature[featureLength + timeLength];
+		}		
 		this.m_x_sparse = tempSparse;
-		
 	}
 	
 	//Get the predicted result, which is used for comparison.
@@ -189,60 +173,5 @@ public class _Doc {
 	public int setPredictLabel(int label){
 		this.m_predict_label = label;
 		return this.m_predict_label;
-	}
-	
-	//Calculate the sum of all the values of features.
-	public double sumOfFeatures(_SparseFeature[] fs) {
-		double sum = 0;
-		for (_SparseFeature feature: fs){
-			double value = feature.getValue();
-			sum += value;
-		}
-		return sum;
-	}
-	
-	//L2 = sqrt(sum of fsValue*fsValue).
-	public double sumOfFeaturesL2(_SparseFeature[] fs) {
-		double sum = 0;
-		for (_SparseFeature feature: fs){
-			double value = feature.getValue();
-			sum += value * value;
-		}
-		return Math.sqrt(sum);
-	}
-	
-	//L1 normalization.
-	//Set the normalized value back to the sparse feature.
-	public void L1Normalization(_SparseFeature[] fs) {
-		double sum = sumOfFeatures(fs);
-		if (sum>0) {
-			//L1 length normalization
-			for(_SparseFeature f: fs){
-				double normValue = f.getValue()/sum;
-				f.setNormValue(normValue);
-			}
-		}
-		else{
-			for(_SparseFeature f: fs){
-				f.setNormValue(0.0);
-			}
-		}
-	}
-	
-	//L2 normalization.
-	public void L2Normalization(_SparseFeature[] fs) {
-		double sum = sumOfFeaturesL2(fs);
-		if (sum>0) {
-			//L1 length normalization
-			for(_SparseFeature f: fs){
-				double normValue = f.getValue()/sum;
-				f.setNormValue(normValue);
-			}
-		}
-		else{
-			for(_SparseFeature f: fs){
-				f.setNormValue(0.0);
-			}
-		}
 	}
 }

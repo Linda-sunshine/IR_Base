@@ -9,7 +9,7 @@ public class Utils {
 	public static int maxOfArrayIndex(double[] probs){
 		int maxIndex = 0;
 		double maxValue = probs[0];
-		for(int i = 0; i < probs.length; i++){
+		for(int i = 1; i < probs.length; i++){
 			if(probs[i] > maxValue){
 				maxValue = probs[i];
 				maxIndex = i;
@@ -20,13 +20,7 @@ public class Utils {
 	
 	//Find the max value's index of an array, return Value of the maximum.
 	public static double maxOfArrayValue(double[] probs){
-		double maxValue = probs[0];
-		for(int i = 0; i < probs.length; i++){
-			if(probs[i] > maxValue){
-				maxValue = probs[i];
-			}
-		}
-		return maxValue;
+		return probs[maxOfArrayIndex(probs)];
 	}
 	
 	//This function is used to calculate the log of the sum of several values.
@@ -61,7 +55,7 @@ public class Utils {
 	public static double dotProduct(double[] beta, _SparseFeature[] sf){
 		double sum = beta[0];
 		for(int i = 0; i < sf.length; i++){
-			int index = sf[i].getIndex() + 1;
+			int index = sf[i].getIndex() + 1;//this design is very risky, you'd better double check the usage of this function!!
 			sum += beta[index] * sf[i].getNormValue();
 		}
 		return sum;
@@ -96,25 +90,62 @@ public class Utils {
 		return sum;
 	}
 	
+	//L1 normalization.
+	//Calculate the sum of all the values of features.
+	static public double sumOfFeatures(_SparseFeature[] fs) {
+		double sum = 0;
+		for (_SparseFeature feature: fs)
+			sum += Math.abs(feature.getValue());
+		return sum;
+	}
+	
+	//Set the normalized value back to the sparse feature.
+	static public void L1Normalization(_SparseFeature[] fs) {
+		double sum = sumOfFeatures(fs);
+		if (sum>0) {
+			//L1 length normalization
+			for(_SparseFeature f:fs){
+				double normValue = f.getValue()/sum;
+				f.setNormValue(normValue);
+			}
+		} else{
+			for(_SparseFeature f: fs){
+				f.setNormValue(0.0);
+			}
+		}
+	}
+	
+	//L2 normalization.
+	
+	//L2 = sqrt(sum of fsValue*fsValue).
+	static public double sumOfFeaturesL2(_SparseFeature[] fs) {
+		double sum = 0;
+		for (_SparseFeature feature: fs){
+			double value = feature.getValue();
+			sum += value * value;
+		}
+		return Math.sqrt(sum);
+	}
+	
+	static public void L2Normalization(_SparseFeature[] fs) {
+		double sum = sumOfFeaturesL2(fs);
+		if (sum>0) {
+			//L1 length normalization
+			for(_SparseFeature f: fs){
+				double normValue = f.getValue()/sum;
+				f.setNormValue(normValue);
+			}
+		}
+		else{
+			for(_SparseFeature f: fs){
+				f.setNormValue(0.0);
+			}
+		}
+	}
+	
 	//Calculate the similarity between two documents.
 	public static double calculateSimilarity(_Doc d1, _Doc d2){
-		double similarity = 0;
-		_SparseFeature[] spVct1 = d1.getSparse();
-		_SparseFeature[] spVct2 = d2.getSparse();
-		
-		int pointer1 = 0, pointer2 = 0;
-		while(pointer1 < spVct1.length && pointer2 < spVct2.length){
-			_SparseFeature temp1 = spVct1[pointer1];
-			_SparseFeature temp2 = spVct2[pointer2];
-			if(temp1.getIndex() == temp2.getIndex()){
-				similarity += temp1.getValue() * temp2.getValue();
-				pointer1++;
-				pointer2++;
-			} 
-			else if(temp1.getIndex() > temp2.getIndex()) pointer2++;
-			else pointer1++;
-		}
-		return similarity;
+		return calculateSimilarity(d1.getSparse(), d2.getSparse());
 	}
 	
 	//Calculate the similarity between two sparse vectors.

@@ -9,7 +9,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
@@ -50,6 +53,10 @@ public abstract class Analyzer {
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
 	protected String featureSelection = "DF";
 	
+	/** for time-series features **/
+	//The length of the window which means how many labels will be taken into consideration.
+	private LinkedList<_Doc> m_preDocs;	
+	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
 		this.m_corpus = new _Corpus();
 		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
@@ -66,6 +73,8 @@ public abstract class Analyzer {
 		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
 		this.featureSelection = "DF";
+		
+		this.m_preDocs = new LinkedList<_Doc>();
 	}	
 	
 	public Analyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -84,6 +93,8 @@ public abstract class Analyzer {
 		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
 		this.m_featureStat = new HashMap<String, _stat>();
 		this.featureSelection = "DF";
+		
+		this.m_preDocs = new LinkedList<_Doc>();
 	}	
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -203,18 +214,16 @@ public abstract class Analyzer {
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
-	public _Corpus setFeatureValues(_Corpus c, String fValue) {
-		HashMap<String, _stat> featureStat = this.m_featureStat;
-		HashMap<Integer, String> featureIndexName = this.m_featureIndexName;
-		ArrayList<_Doc> docs = c.getCollection(); // Get the collection of all the documents.
+	public void setFeatureValues(String fValue) {
+		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = docs.size();
 		if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
 				for (_SparseFeature sf : sfs) {
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
+					String featureName = m_featureIndexName.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double TFIDF = TF * Math.log((N + 1) / DF);
@@ -234,8 +243,8 @@ public abstract class Analyzer {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
 				for (_SparseFeature sf : sfs) {
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
+					String featureName = m_featureIndexName.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double n = temp.getTotalDocLength();
@@ -255,8 +264,8 @@ public abstract class Analyzer {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
 				for (_SparseFeature sf : sfs) {
-					String featureName = featureIndexName.get(sf.getIndex());
-					_stat stat = featureStat.get(featureName);
+					String featureName = m_featureIndexName.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double n = temp.getTotalDocLength();
@@ -264,9 +273,7 @@ public abstract class Analyzer {
 					sf.setValue(PLN);
 				}
 			}
-		} else
-			return c; // If no feature value is selected, then the default is TF.
-		return c;
+		}
 	}
 	
 	//Set the counts of every feature with respect to the collected class number.
@@ -315,5 +322,35 @@ public abstract class Analyzer {
 	//Return the number of features.
 	public int getFeatureSize(){
 		return this.m_featureNames.size();
+	}
+	
+	//Sort the documents.
+	public void setTimeFeatures(int window){
+		//Sort the documents according to time stamps.
+		ArrayList<_Doc> docs = m_corpus.getCollection();
+		
+		Collections.sort(docs, new Comparator<_Doc>(){
+			public int compare(_Doc d1, _Doc d2){
+				if(d1.getTimeStamp() == d2.getTimeStamp())
+					return 0;
+					return d1.getTimeStamp() < d2.getTimeStamp() ? -1 : 1;
+			}
+		});		
+		
+		/************************time series analysis***************************/
+		for(int i = 0; i < docs.size(); i++){
+			_Doc doc = docs.get(i);
+			if(m_preDocs.size() < window){
+				m_preDocs.add(doc);
+				this.m_corpus.removeDoc(i);
+				this.m_classMemberNo[doc.getYLabel()]--;
+				i--;
+			}
+			else{
+				doc.createSpVctWithTime(m_preDocs, this.m_featureNames.size());
+				m_preDocs.remove();
+				m_preDocs.add(doc);
+			}
+		}
 	}
 }

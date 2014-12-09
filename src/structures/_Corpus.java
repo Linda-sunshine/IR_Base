@@ -17,7 +17,6 @@ import java.util.Random;
  */
 public class _Corpus {
 	private ArrayList<_Doc> m_collection; //All the documents in the corpus.
-	private int m_size = 0; //The total documents the corpus has.
 	protected int m_corClassNo = 0;
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
 	private int[] m_mask; 
@@ -44,17 +43,7 @@ public class _Corpus {
 	
 	//Get the corpus's size, which is the total number of documents.
 	public int getSize(){
-		return this.m_size;
-	}
-	
-	//The value of size is increased by one.
-	public void sizeAddOne(){
-		this.m_size++;
-	}
-	
-	//The value of size is decreased by one.
-	public void sizeMinusOne(){
-		this.m_size--;
+		return m_collection.size();
 	}
 	
 	/*
@@ -72,10 +61,10 @@ public class _Corpus {
 	
 	//Add a new doc to the corpus.
 	public void addDoc(_Doc doc){
-		this.m_collection.add(doc);
+		m_collection.add(doc);
 	}
 	public void removeDoc(int index){
-		this.m_collection.remove(index);
+		m_collection.remove(index);
 	}
 	
 	//Get the mask array of the corpus.

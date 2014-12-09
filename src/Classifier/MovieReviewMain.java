@@ -48,8 +48,8 @@ public class MovieReviewMain {
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			//featureSize = analyzer.getFeatureSize();
-			corpus = analyzer.returnCorpus(finalLocation);
-			analyzer.setFeatureValues(corpus, featureValue);
+			analyzer.setFeatureValues(featureValue);
+			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if( !providedCV.isEmpty() && featureSelection.isEmpty()){
 			
 			//Case 2: provided CV, no feature selection.
@@ -57,8 +57,8 @@ public class MovieReviewMain {
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			//featureSize = analyzer.getFeatureSize();
+			analyzer.setFeatureValues(featureValue);
 			corpus = analyzer.returnCorpus(finalLocation); 
-			analyzer.setFeatureValues(corpus, featureValue);
 		} else if(providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 3: no provided CV, feature selection.
@@ -68,12 +68,12 @@ public class MovieReviewMain {
 			analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
+			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
 			//DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);//featureLocation contains the selected features.
-			analyzer_2.LoadDirectory(folder, suffix);
-			//featureSize = analyzer.getFeatureSize();
-			corpus = analyzer_2.returnCorpus(finalLocation); 
-			analyzer_2.setFeatureValues(corpus, featureValue);
+			analyzer.LoadDirectory(folder, suffix);
+			//featureSize = analyzer.getFeatureSize();			
+			analyzer.setFeatureValues(featureValue);
+			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 4: provided CV, feature selection.
@@ -83,11 +83,11 @@ public class MovieReviewMain {
 			analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
-			analyzer_2.LoadDirectory(folder, suffix);
-			//featureSize = analyzer.getFeatureSize();
-			corpus = analyzer_2.returnCorpus(finalLocation); 
-			analyzer_2.setFeatureValues(corpus, featureValue);
+			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
+			analyzer.LoadDirectory(folder, suffix);
+			//featureSize = analyzer.getFeatureSize();			
+			analyzer.setFeatureValues(featureValue);
+			corpus = analyzer.returnCorpus(finalLocation); 
 		} else System.out.println("The setting fails, please check the parameters!!");
 		
 		//Execute different classifiers.
