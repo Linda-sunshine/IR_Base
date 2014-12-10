@@ -78,7 +78,7 @@ public class _Corpus {
 			for(_Doc doc:m_collection) {
 				writer.write(String.format("%d", doc.getYLabel()));
 				for(_SparseFeature fv:doc.getSparse()){
-					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));
+					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));//index starts from 1
 				}
 				writer.write('\n');
 			}

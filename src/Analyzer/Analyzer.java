@@ -133,6 +133,7 @@ public abstract class Analyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
+		System.out.println();
 	}
 	
 	abstract public void LoadDoc(String filename);

@@ -294,7 +294,7 @@ public class LBFGS {
 
 			solution_cache = new double[n];
 			System.arraycopy( x, 0, solution_cache, 0, n );
-			System.out.println("soulution_cache is " + solution_cache);
+			//System.out.println("soulution_cache is " + solution_cache);
 
 			iter = 0;
 
@@ -342,7 +342,7 @@ public class LBFGS {
 			}
 
 			gnorm = Math.sqrt ( ddot ( n , g , 0, 1 , g , 0, 1 ) );
-			System.out.println("The value of gnorm is " + gnorm);
+			//System.out.println("The value of gnorm is " + gnorm);
 			stp1= 1/gnorm;
 			ftol= 0.0001; 
 			maxfev= 20;

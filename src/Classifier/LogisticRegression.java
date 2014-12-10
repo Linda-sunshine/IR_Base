@@ -36,11 +36,11 @@ public class LogisticRegression extends BaseClassifier{
 	public void train(ArrayList<_Doc> docs){
 		int[] iflag = {0};
 		int[] iprint = { -1, 3 };
-		double[] diag = new double[this.m_beta.length];
-
+		double[] diag = new double[m_beta.length];
+		int fSize = m_classNo * (m_featureSize + 1);
 		try{
 			do {
-				LBFGS.lbfgs( this.m_classNo * (this.m_featureSize + 1), 5, this.m_beta, calculateFunction(this.m_beta, this.m_trainSet, this.m_lambda), calculateGradient(this.m_beta, this.m_trainSet, this.m_lambda), false, diag, iprint, 1e-3, 1e-7, iflag);
+				LBFGS.lbfgs( fSize, 5, m_beta, calculateFunction(m_beta, m_trainSet, m_lambda), calculateGradient(m_beta, m_trainSet, m_lambda), false, diag, iprint, 1e-3, 1e-7, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -48,57 +48,54 @@ public class LogisticRegression extends BaseClassifier{
 	}
 	
 	//Calculate the value of the logit function.
-	public double logitFunction(double[] beta, _SparseFeature[] sf){
-		double sum = beta[0];
-		double lfValue = 0;
-		for(int i = 0; i < sf.length; i++){
-			int index = sf[i].getIndex() + 1;
-			sum += beta[index] * sf[i].getValue();
-		}
-		sum = Math.exp(-sum);
-		lfValue = 1 / ( 1 + sum );
-		return lfValue;
-	}
+//	public double logitFunction(double[] beta, _SparseFeature[] sf){
+//		double sum = beta[0];
+//		double lfValue = 0;
+//		for(int i = 0; i < sf.length; i++){
+//			int index = sf[i].getIndex() + 1;
+//			sum += beta[index] * sf[i].getValue();
+//		}
+//		sum = Math.exp(-sum);
+//		lfValue = 1 / ( 1 + sum );
+//		return lfValue;
+//	}
 	
 	//This function is used to get a part of the array.
-	public double[] trunc(double[] a, int index){
-		double[] b = new double[this.m_featureSize + 1];
-		System.arraycopy(a, index * (this.m_featureSize + 1), b, 0, this.m_featureSize + 1);		
-		return b;
-	}
+//	public double[] trunc(double[] a, int index){
+//		double[] b = new double[this.m_featureSize + 1];
+//		System.arraycopy(a, index * (this.m_featureSize + 1), b, 0, this.m_featureSize + 1);		
+//		return b;
+//	}
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
 	public double calculatelogPij(int Yi, double[] beta, _SparseFeature[] spXi){
-		int offset = 1;
-		double logPij = 0;
+		int offset = Yi * (m_featureSize + 1);
 		double[] xs = new double [this.m_classNo];
-		double numerator = Utils.dotProduct(trunc(beta, Yi), spXi, offset);
-		double denominator = 0;
+		//double numerator = Utils.dotProduct(trunc(beta, Yi), spXi, offset);
+		xs[Yi] = Utils.dotProduct(beta, spXi, offset);
 		for(int i = 0; i < this.m_classNo; i++){
-			xs[i] = Utils.dotProduct(trunc(beta, i), spXi, offset); 
+			//xs[i] = Utils.dotProduct(trunc(beta, i), spXi, offset); 
+			if (i!=Yi) {
+				offset = i * (m_featureSize + 1);
+				xs[i] = Utils.dotProduct(beta, spXi, offset);
+			}
 		}
-		denominator = Utils.logSumOfExponentials(xs);
-		logPij = numerator - denominator;
-		return logPij;
+		return xs[Yi] - Utils.logSumOfExponentials(xs);
 	}
 	
 	//This function is used to calculate the value with the new beta.
 	public double calculateFunction(double[] beta, ArrayList<_Doc> trainSet, double lambda) {
 		double totalSum = 0;
 		//Calculate the sum of 
-		for (_Doc doc: trainSet) {
-			int Yi = doc.getYLabel();
-			totalSum += calculatelogPij(Yi, beta, doc.getSparse());
-			if (Double.isInfinite(totalSum)) {
-				System.out.print("error!");
-			}
-		}
+		for (_Doc doc: trainSet)
+			totalSum += calculatelogPij(doc.getYLabel(), beta, doc.getSparse());
+		
 		// Add the L2 regularization.
 		double L2 = 0;
 		for (double b : beta)
-			L2 += lambda * b * b;
+			L2 += b * b;
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
-		return -totalSum + L2;
+		return lambda*L2 - totalSum;
 	}
 
 	// This function is used to calculate the gradient descent of x, which is a
@@ -118,7 +115,6 @@ public class LogisticRegression extends BaseClassifier{
 				logPij = calculatelogPij(j, beta, doc.getSparse());//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (doc.getYLabel() == j){
-					//gValue = 1.0 - Pij;
 					gValue = Pij - 1.0;
 				} else
 					gValue = Pij;

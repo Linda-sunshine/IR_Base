@@ -53,9 +53,9 @@ public class Utils {
 	
 	//The function defines the dot product of beta and sparse Vector of a document.
 	public static double dotProduct(double[] beta, _SparseFeature[] sf, int offset){
-		double sum = beta[0];
+		double sum = beta[offset];
 		for(int i = 0; i < sf.length; i++){
-			int index = sf[i].getIndex() + offset;//this design is very risky, you'd better double check the usage of this function!!
+			int index = sf[i].getIndex() + offset + 1;
 			sum += beta[index] * sf[i].getValue();
 		}
 		return sum;

@@ -15,7 +15,7 @@ public class AmazonReviewMain {
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -42,19 +42,19 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
-		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+//		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		featureSelection = "";
-		featureSize = jsonAnalyzer.getFeatureSize();
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		jsonAnalyzer.setFeatureValues(featureValue, norm);
 		jsonAnalyzer.setTimeFeatures(window);
+		featureSize = jsonAnalyzer.getFeatureSize();
 		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
 		
 		corpus.save2File("./fv.dat");
