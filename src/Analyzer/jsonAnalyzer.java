@@ -12,7 +12,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import json.JSONArray;
-import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.Post;
@@ -49,14 +48,10 @@ public class jsonAnalyzer extends DocAnalyzer{
 					long timeStamp = this.m_dateFormatter.parse(post.getDate()).getTime();
 					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
 					this.m_classMemberNo[post.getLabel()-1]++;
-				} else{
-					System.err.format("*******Wrong review!! Ignored!!******\n");
 				}
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (ParseException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.print('X');
 		}
 	}
 	
@@ -73,13 +68,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 			}
 			reader.close();
 			return new JSONObject(buffer.toString());
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!", filename);
-			e.printStackTrace();
-			return null;
-		} catch (JSONException e) {
-			System.err.format("[Error]Failed to parse json file %s!", filename);
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.print('X');
 			return null;
 		}
 	}
@@ -87,15 +77,18 @@ public class jsonAnalyzer extends DocAnalyzer{
 	//check format for each post
 	private boolean checkPostFormat(Post p) {
 		if (p.getLabel() <= 0 || p.getLabel() > 5){
-			System.err.format("[Error]Missing Lable or wrong label!!");
+			//System.err.format("[Error]Missing Lable or wrong label!!");
+			System.out.print('L');
 			return false;
 		}
 		else if (p.getContent() == null){
-			System.err.format("[Error]Missing content!!\n");
+			//System.err.format("[Error]Missing content!!\n");
+			System.out.print('C');
 			return false;
 		}	
 		else if (p.getDate() == null){
-			System.err.format("[Error]Missing date!!\n");
+			//System.err.format("[Error]Missing date!!\n");
+			System.out.print('d');
 			return false;
 		}
 		else {
@@ -105,7 +98,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 				//System.out.println(p.getDate());
 				return true;
 			} catch (ParseException e) {
-				System.err.format("[Error]Wrong date format!", p.getDate());
+				System.out.print('D');
 			}
 			return true;
 		} 

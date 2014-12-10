@@ -1,7 +1,6 @@
 package Analyzer;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._stat;
-import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
 
@@ -68,17 +66,6 @@ public class DocAnalyzer extends Analyzer {
 		return true; // if loading is successful
 	}
 
-	//Load all the files in the directory.
-	public void LoadDirectory(String folder, String suffix) throws IOException {
-		File dir = new File(folder);
-		for (File f : dir.listFiles()) {
-			if (f.isFile() && f.getName().endsWith(suffix)) {
-				LoadDoc(f.getAbsolutePath());
-			} else if (f.isDirectory())
-				LoadDirectory(f.getAbsolutePath(), suffix);
-		}
-	}
-
 	//Load a document and analyze it.
 	public void LoadDoc(String filename) {
 		try {
@@ -128,23 +115,19 @@ public class DocAnalyzer extends Analyzer {
 						if (spVct.containsKey(index)) {
 							value = spVct.get(index) + 1;
 							spVct.put(index, value);
-							this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
 						} else {
 							spVct.put(index, 1.0);
 							this.m_featureStat.get(token).addOneDF(doc.getYLabel());
-							this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
 						}
-					} else {
-						// indicate we allow the analyzer to dynamically expand the feature vocabulary
+					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 						expandVocabulary(token);// update the m_featureNames.
 						updateFeatureStat(token);
 						index = m_featureNameIndex.get(token);
 						spVct.put(index, 1.0);
 						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
-						this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
 					}
-					// CV is loaded.
-				} else if (m_featureNameIndex.containsKey(token)) {
+					this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
+				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {
 						value = spVct.get(index) + 1;
@@ -158,7 +141,6 @@ public class DocAnalyzer extends Analyzer {
 				// if the token is not in the vocabulary, nothing to do.
 			}
 			doc.createSpVct(spVct);
-			Utils.L2Normalization(doc.getSparse());
 			m_corpus.addDoc(doc);
 			this.m_classMemberNo[doc.getYLabel()]++;
 		} catch (Exception e) {

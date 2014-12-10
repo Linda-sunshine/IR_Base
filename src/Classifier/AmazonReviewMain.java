@@ -25,8 +25,8 @@ public class AmazonReviewMain {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 //		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/FinalFeatureStat.txt"; //The destination of storing the final features with stats.
 //		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/SelectedFeatures.txt";
-		String finalLocation = "/home/lin/Lin'sWorkSpace/IR_Base/FinalFeatureStat.txt";
-		String featureLocation = "/home/lin/Lin'sWorkSpace/IR_Base/SelectedFeatures.txt";
+		String finalLocation = "./FinalFeatureStat.txt";
+		String featureLocation = "./SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
 		String providedCV = "";
@@ -36,7 +36,7 @@ public class AmazonReviewMain {
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		/*****Parameters in time series analysis.*****/
-		int window = 30;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -56,6 +56,8 @@ public class AmazonReviewMain {
 		jsonAnalyzer.setFeatureValues(featureValue, norm);
 		jsonAnalyzer.setTimeFeatures(window);
 		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
+		
+		corpus.save2File("./fv.dat");
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.

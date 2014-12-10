@@ -90,9 +90,8 @@ public class Utils {
 		return sum;
 	}
 	
-	//L1 normalization.
-	//Calculate the sum of all the values of features.
-	static public double sumOfFeatures(_SparseFeature[] fs) {
+	//L1 normalization: fsValue/sum(abs(fsValue))
+	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;
 		for (_SparseFeature feature: fs)
 			sum += Math.abs(feature.getValue());
@@ -101,7 +100,7 @@ public class Utils {
 	
 	//Set the normalized value back to the sparse feature.
 	static public void L1Normalization(_SparseFeature[] fs) {
-		double sum = sumOfFeatures(fs);
+		double sum = sumOfFeaturesL1(fs);
 		if (sum>0) {
 			//L1 length normalization
 			for(_SparseFeature f:fs){
@@ -115,8 +114,7 @@ public class Utils {
 		}
 	}
 	
-	//L2 normalization.
-	//L2 = sqrt(sum of fsValue*fsValue).
+	//L2 normalization: fsValue/sqrt(sum of fsValue*fsValue)
 	static public double sumOfFeaturesL2(_SparseFeature[] fs) {
 		double sum = 0;
 		for (_SparseFeature feature: fs){
@@ -128,8 +126,7 @@ public class Utils {
 	
 	static public void L2Normalization(_SparseFeature[] fs) {
 		double sum = sumOfFeaturesL2(fs);
-		if (sum>0) {
-			//L1 length normalization
+		if (sum>0) {			
 			for(_SparseFeature f: fs){
 				double normValue = f.getValue()/sum;
 				f.setValue(normValue);

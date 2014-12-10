@@ -28,7 +28,6 @@ import structures._SparseFeature;
 import structures._stat;
 import utils.Utils;
 
-
 public abstract class Analyzer {
 	
 	protected _Corpus m_corpus;
@@ -125,19 +124,37 @@ public abstract class Analyzer {
 		return true; // if loading is successful
 	}
 	
+	//Load all the files in the directory.
+	public void LoadDirectory(String folder, String suffix) throws IOException {
+		File dir = new File(folder);
+		for (File f : dir.listFiles()) {
+			if (f.isFile() && f.getName().endsWith(suffix)) {
+				LoadDoc(f.getAbsolutePath());
+				
+				if (m_corpus.getSize() % 1000==0) {
+					System.out.print('.');
+					if (m_corpus.getSize() % 100000==0)
+						System.out.println();
+				}
+			} else if (f.isDirectory())
+				LoadDirectory(f.getAbsolutePath(), suffix);
+		}
+	}
+	
+	abstract public void LoadDoc(String filename);
+	
 	//Save all the features and feature stat into a file.
 	protected PrintWriter SaveCVStat(String finalLocation) throws FileNotFoundException{
 		//File file = new File(path);
 		PrintWriter writer = new PrintWriter(new File(finalLocation));
 		for(int i = 0; i < this.m_featureNames.size(); i++){
-			writer.print("\nfeature: " + this.m_featureNames.get(i));
+			writer.print(this.m_featureNames.get(i));
 			_stat temp = this.m_featureStat.get(this.m_featureNames.get(i));
-			for(int j = 0; j < temp.getDF().length; j++){
-				writer.print("\tDF[" + j + "]:" + temp.getDF()[j]);
-			}
-			for(int j = 0; j < temp.getTTF().length; j++){
-				writer.print("\tTTF[" + j + "]:" + temp.getTTF()[j]);
-			}
+			for(int j = 0; j < temp.getDF().length; j++)
+				writer.print("\t" + temp.getDF()[j]);
+			for(int j = 0; j < temp.getTTF().length; j++)
+				writer.print("\t" + temp.getTTF()[j]);
+			writer.println();
 		}
 		writer.close();
 		return writer;
@@ -287,17 +304,11 @@ public abstract class Analyzer {
 			System.out.println("No feature value is set, keep the raw count of every feature.");
 		}
 		if (norm == 1){
-			for(int i = 0; i < docs.size(); i++){
-				_Doc temp = docs.get(i);
-				_SparseFeature[] fs = temp.getSparse();
-				Utils.L1Normalization(fs);
-			}
+			for(_Doc d:docs)			
+				Utils.L1Normalization(d.getSparse());
 		} else if(norm == 2){
-			for(int i = 0; i < docs.size(); i++){
-				_Doc temp = docs.get(i);
-				_SparseFeature[] fs = temp.getSparse();
-				Utils.L2Normalization(fs);
-			}
+			for(_Doc d:docs)			
+				Utils.L2Normalization(d.getSparse());
 		} else {
 			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
 		}
@@ -308,9 +319,7 @@ public abstract class Analyzer {
 	public void setFeatureConfiguration() {
 		// Initialize the counts of every feature.
 		for (String featureName : this.m_featureStat.keySet()) {
-			this.m_featureStat.get(featureName).initCount(this.m_classNo);
-		}
-		for (String featureName : this.m_featureStat.keySet()) {
+			this.m_featureStat.get(featureName).initCount(this.m_classNo);		
 			this.m_featureStat.get(featureName).setCounts(this.m_classMemberNo);
 		}
 	}
@@ -354,6 +363,9 @@ public abstract class Analyzer {
 	
 	//Sort the documents.
 	public void setTimeFeatures(int window){
+		if (window<1)
+			return;
+		
 		//Sort the documents according to time stamps.
 		ArrayList<_Doc> docs = m_corpus.getCollection();
 		
@@ -380,5 +392,7 @@ public abstract class Analyzer {
 				m_preDocs.add(doc);
 			}
 		}
+		
+		System.out.println("Time-series feature set!");
 	}
 }

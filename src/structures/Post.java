@@ -102,11 +102,13 @@ public class Post {
 		try {
 			if (json.has("Overall")){
 				if(json.getString("Overall").equals("None")){
-					System.err.println("Wrong rating");
+					//System.err.println("Wrong rating");
+					System.out.print('R');
 				} else{
 					double label = Double.parseDouble(json.getString("Overall"));
 					if(label <= 0 && label > 5){
-						System.err.println("Error label!!!");
+						//System.err.println("Error label!!!");
+						System.out.print('L');
 					} else setLabel((int)label);
 				}
 			}
@@ -118,10 +120,8 @@ public class Post {
 				setContent(json.getString("Content"));
 				//System.out.println("content is " + this.m_content);
 			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		} catch (NumberFormatException e){
-			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.print('x');
 		}
 	}
 	
