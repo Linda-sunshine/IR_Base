@@ -112,7 +112,7 @@ public class SVM extends BaseClassifier{
 			for(_SparseFeature fv:temp.getSparse()){
 				instance[fid] = new svm_node();
 				instance[fid].index = 1+fv.getIndex();
-				instance[fid].value = fv.getNormValue();
+				instance[fid].value = fv.getValue();
 				
 				if (fvSize<instance[fid].index)
 					fvSize = instance[fid].index;
@@ -139,7 +139,7 @@ public class SVM extends BaseClassifier{
 			for (_SparseFeature fv:temp.getSparse()) {
 				nodes[fid] = new svm_node();
 				nodes[fid].index = 1 + fv.getIndex();
-				nodes[fid].value = fv.getNormValue();	
+				nodes[fid].value = fv.getValue();	
 				fid++;
 			}
 			double result = svm.svm_predict(model, nodes);

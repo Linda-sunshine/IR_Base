@@ -53,7 +53,7 @@ public class LogisticRegression extends BaseClassifier{
 		double lfValue = 0;
 		for(int i = 0; i < sf.length; i++){
 			int index = sf[i].getIndex() + 1;
-			sum += beta[index] * sf[i].getNormValue();
+			sum += beta[index] * sf[i].getValue();
 		}
 		sum = Math.exp(-sum);
 		lfValue = 1 / ( 1 + sum );
@@ -69,12 +69,13 @@ public class LogisticRegression extends BaseClassifier{
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
 	public double calculatelogPij(int Yi, double[] beta, _SparseFeature[] spXi){
+		int offset = 1;
 		double logPij = 0;
 		double[] xs = new double [this.m_classNo];
-		double numerator = Utils.dotProduct(trunc(beta, Yi), spXi);
+		double numerator = Utils.dotProduct(trunc(beta, Yi), spXi, offset);
 		double denominator = 0;
 		for(int i = 0; i < this.m_classNo; i++){
-			xs[i] = Utils.dotProduct(trunc(beta, i), spXi); 
+			xs[i] = Utils.dotProduct(trunc(beta, i), spXi, offset); 
 		}
 		denominator = Utils.logSumOfExponentials(xs);
 		logPij = numerator - denominator;
@@ -126,7 +127,7 @@ public class LogisticRegression extends BaseClassifier{
 				//(Yij - Pij) * Xi
 				for(_SparseFeature sf: doc.getSparse()){
 					int index = sf.getIndex();
-					gs[j * (this.m_featureSize + 1) + index + 1] += gValue * sf.getNormValue();
+					gs[j * (this.m_featureSize + 1) + index + 1] += gValue * sf.getValue();
 				}
 			}
 		}

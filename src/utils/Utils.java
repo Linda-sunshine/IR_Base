@@ -52,11 +52,11 @@ public class Utils {
 	}
 	
 	//The function defines the dot product of beta and sparse Vector of a document.
-	public static double dotProduct(double[] beta, _SparseFeature[] sf){
+	public static double dotProduct(double[] beta, _SparseFeature[] sf, int offset){
 		double sum = beta[0];
 		for(int i = 0; i < sf.length; i++){
-			int index = sf[i].getIndex() + 1;//this design is very risky, you'd better double check the usage of this function!!
-			sum += beta[index] * sf[i].getNormValue();
+			int index = sf[i].getIndex() + offset;//this design is very risky, you'd better double check the usage of this function!!
+			sum += beta[index] * sf[i].getValue();
 		}
 		return sum;
 	}
@@ -106,11 +106,11 @@ public class Utils {
 			//L1 length normalization
 			for(_SparseFeature f:fs){
 				double normValue = f.getValue()/sum;
-				f.setNormValue(normValue);
+				f.setValue(normValue);
 			}
 		} else{
 			for(_SparseFeature f: fs){
-				f.setNormValue(0.0);
+				f.setValue(0.0);
 			}
 		}
 	}
@@ -132,12 +132,12 @@ public class Utils {
 			//L1 length normalization
 			for(_SparseFeature f: fs){
 				double normValue = f.getValue()/sum;
-				f.setNormValue(normValue);
+				f.setValue(normValue);
 			}
 		}
 		else{
 			for(_SparseFeature f: fs){
-				f.setNormValue(0.0);
+				f.setValue(0.0);
 			}
 		}
 	}

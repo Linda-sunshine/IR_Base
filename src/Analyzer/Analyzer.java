@@ -214,10 +214,19 @@ public abstract class Analyzer {
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
-	public void setFeatureValues(String fValue) {
+	public void setFeatureValues(String fValue, int norm) {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = docs.size();
-		if (fValue.equals("TFIDF")) {
+		if (fValue.equals("TF")){
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				for(_SparseFeature sf: sfs){
+					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
+					sf.setValue(TF);
+				}
+			}
+		} else if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
@@ -273,7 +282,26 @@ public abstract class Analyzer {
 					sf.setValue(PLN);
 				}
 			}
+		} else {
+			//The default value is just keeping the raw count of every feature.
+			System.out.println("No feature value is set, keep the raw count of every feature.");
 		}
+		if (norm == 1){
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] fs = temp.getSparse();
+				Utils.L1Normalization(fs);
+			}
+		} else if(norm == 2){
+			for(int i = 0; i < docs.size(); i++){
+				_Doc temp = docs.get(i);
+				_SparseFeature[] fs = temp.getSparse();
+				Utils.L2Normalization(fs);
+			}
+		} else {
+			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
+		}
+		
 	}
 	
 	//Set the counts of every feature with respect to the collected class number.

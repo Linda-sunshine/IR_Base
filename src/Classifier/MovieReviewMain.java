@@ -14,6 +14,7 @@ public class MovieReviewMain {
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		int norm = 1;
 		String classifier = "SVM"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
@@ -47,8 +48,7 @@ public class MovieReviewMain {
 			System.out.println("Case 1: no provided CV, no feature selection.  Start loading files, wait...");
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			//featureSize = analyzer.getFeatureSize();
-			analyzer.setFeatureValues(featureValue);
+			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if( !providedCV.isEmpty() && featureSelection.isEmpty()){
 			
@@ -56,8 +56,7 @@ public class MovieReviewMain {
 			System.out.println("Case 2: provided CV, no feature selection. Start loading files, wait...");
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			//featureSize = analyzer.getFeatureSize();
-			analyzer.setFeatureValues(featureValue);
+			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if(providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
@@ -69,10 +68,8 @@ public class MovieReviewMain {
 			
 			System.out.println("Start loading files, wait...");
 			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
-			//DocAnalyzer analyzer_2 = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);//featureLocation contains the selected features.
 			analyzer.LoadDirectory(folder, suffix);
-			//featureSize = analyzer.getFeatureSize();			
-			analyzer.setFeatureValues(featureValue);
+			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
@@ -85,8 +82,7 @@ public class MovieReviewMain {
 			System.out.println("Start loading files, wait...");
 			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
 			analyzer.LoadDirectory(folder, suffix);
-			//featureSize = analyzer.getFeatureSize();			
-			analyzer.setFeatureValues(featureValue);
+			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
 		} else System.out.println("The setting fails, please check the parameters!!");
 		

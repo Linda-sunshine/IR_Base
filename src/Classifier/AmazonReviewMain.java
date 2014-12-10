@@ -14,7 +14,8 @@ public class AmazonReviewMain {
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-		String classifier = "NB"; //Which classifier to use.
+		int norm = 2;//The way of normalization.(only 1 and 2)
+		String classifier = "SVM"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -52,7 +53,7 @@ public class AmazonReviewMain {
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		jsonAnalyzer.setFeatureValues(featureValue);
+		jsonAnalyzer.setFeatureValues(featureValue, norm);
 		jsonAnalyzer.setTimeFeatures(window);
 		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
 		
