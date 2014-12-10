@@ -119,7 +119,7 @@ public class SVM extends BaseClassifier{
 				fid ++;
 			}
 			problem.x[docId] = instance;
-			problem.y[docId] = 2.0 * temp.getYLabel() - 1;
+			problem.y[docId] = temp.getYLabel();
 			docId ++;
 		}	
 		

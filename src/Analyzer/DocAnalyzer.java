@@ -140,9 +140,19 @@ public class DocAnalyzer extends Analyzer {
 				}
 				// if the token is not in the vocabulary, nothing to do.
 			}
-			doc.createSpVct(spVct);
-			m_corpus.addDoc(doc);
-			this.m_classMemberNo[doc.getYLabel()]++;
+			
+			if (spVct.size()>=5) {//temporary code for debugging purpose 
+				doc.createSpVct(spVct);
+				m_corpus.addDoc(doc);
+				this.m_classMemberNo[doc.getYLabel()]++;
+				
+				//print out progress
+				if (m_corpus.getSize() % 1000==0) {
+					System.out.print('.');
+					if (m_corpus.getSize() % 100000==0)
+						System.out.println();
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

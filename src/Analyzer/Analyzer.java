@@ -130,12 +130,6 @@ public abstract class Analyzer {
 		for (File f : dir.listFiles()) {
 			if (f.isFile() && f.getName().endsWith(suffix)) {
 				LoadDoc(f.getAbsolutePath());
-				
-				if (m_corpus.getSize() % 1000==0) {
-					System.out.print('.');
-					if (m_corpus.getSize() % 100000==0)
-						System.out.println();
-				}
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
