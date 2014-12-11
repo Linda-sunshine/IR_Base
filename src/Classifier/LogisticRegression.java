@@ -12,18 +12,21 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 public class LogisticRegression extends BaseClassifier{
 
 	double[] m_beta;
+	double[] m_g;
 	double m_lambda;
 	
 	public LogisticRegression(_Corpus c, int classNo, int featureSize){
 		super(c, classNo, featureSize);
-		this.m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
-		this.m_lambda = 0.5;//Initialize it to be 0.5.
+		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
+		m_g = new double[m_beta.length];
+		m_lambda = 0.5;//Initialize it to be 0.5.
 	}
 	
 	public LogisticRegression(_Corpus c, int classNo, int featureSize, double lambda){
 		super(c, classNo, featureSize);
-		this.m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
-		this.m_lambda = lambda;//Initialize it to be 0.5.
+		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
+		m_g = new double[m_beta.length];
+		m_lambda = lambda;//Initialize it to be 0.5.
 	}
 
 	/*
@@ -37,10 +40,12 @@ public class LogisticRegression extends BaseClassifier{
 		int[] iflag = {0};
 		int[] iprint = { -1, 3 };
 		double[] diag = new double[m_beta.length];
+		double fValue;
 		int fSize = m_classNo * (m_featureSize + 1);
 		try{
 			do {
-				LBFGS.lbfgs( fSize, 5, m_beta, calculateFunction(m_beta, m_trainSet, m_lambda), calculateGradient(m_beta, m_trainSet, m_lambda), false, diag, iprint, 1e-3, 1e-7, iflag);
+				fValue = calcFuncGradient(m_trainSet);
+				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-7, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -68,51 +73,90 @@ public class LogisticRegression extends BaseClassifier{
 //	}
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
-	public double calculatelogPij(int Yi, double[] beta, _SparseFeature[] spXi){
+	public double calculatelogPij(int Yi, _SparseFeature[] spXi){
 		int offset = Yi * (m_featureSize + 1);
 		double[] xs = new double [this.m_classNo];
-		//double numerator = Utils.dotProduct(trunc(beta, Yi), spXi, offset);
-		xs[Yi] = Utils.dotProduct(beta, spXi, offset);
+		xs[Yi] = Utils.dotProduct(m_beta, spXi, offset);
 		for(int i = 0; i < this.m_classNo; i++){
-			//xs[i] = Utils.dotProduct(trunc(beta, i), spXi, offset); 
 			if (i!=Yi) {
 				offset = i * (m_featureSize + 1);
-				xs[i] = Utils.dotProduct(beta, spXi, offset);
+				xs[i] = Utils.dotProduct(m_beta, spXi, offset);
 			}
 		}
 		return xs[Yi] - Utils.logSumOfExponentials(xs);
 	}
 	
 	//This function is used to calculate the value with the new beta.
-	public double calculateFunction(double[] beta, ArrayList<_Doc> trainSet, double lambda) {
+	public double calcFuncGradient(ArrayList<_Doc> trainSet) {
+		
+		double gValue = 0, fValue = 0;
+		double Pij = 0;
+		double logPij = 0;
+
+		// Add the L2 regularization.
+		double L2 = 0, b;
+		for(int i = 0; i < m_beta.length; i++) {
+			b = m_beta[i];
+			m_g[i] = 2 * m_lambda * b;
+			L2 += b * b;
+		}
+		
+		//The computation complexity is n*classNo.
+		for (_Doc doc: trainSet) {
+			int Yi = doc.getYLabel();
+			for(int j = 0; j < this.m_classNo; j++){
+				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
+				Pij = Math.exp(logPij);
+				if (Yi == j){
+					gValue = Pij - 1.0;
+					fValue += logPij;
+				} else
+					gValue = Pij;
+				
+				int offset = j * (this.m_featureSize + 1);
+				m_g[offset] += gValue;
+				//(Yij - Pij) * Xi
+				for(_SparseFeature sf: doc.getSparse()){
+					int index = sf.getIndex();
+					m_g[offset + index + 1] += gValue * sf.getValue();
+				}
+			}
+		}
+			
+		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
+		return m_lambda*L2 - fValue;
+	}
+	
+	//This function is used to calculate the value with the new beta.
+	public double calculateFunction(ArrayList<_Doc> trainSet) {
 		double totalSum = 0;
 		//Calculate the sum of 
 		for (_Doc doc: trainSet)
-			totalSum += calculatelogPij(doc.getYLabel(), beta, doc.getSparse());
+			totalSum += calculatelogPij(doc.getYLabel(), doc.getSparse());
 		
 		// Add the L2 regularization.
 		double L2 = 0;
-		for (double b : beta)
+		for (double b : m_beta)
 			L2 += b * b;
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
-		return lambda*L2 - totalSum;
+		return m_lambda*L2 - totalSum;
 	}
 
 	// This function is used to calculate the gradient descent of x, which is a
 	// vector with the same dimension with x.
-	public double[] calculateGradient(double[] beta, ArrayList<_Doc> docs, double lambda) {
-		double[] gs = new double [beta.length]; // final gradient vector.
+	public double[] calculateGradient(ArrayList<_Doc> docs) {
+		double[] gs = new double [m_beta.length]; // final gradient vector.
 		double gValue = 0;
 		double Pij = 0;
 		double logPij = 0;
 		//double Yi = 0;
-		for(int i = 0; i < beta.length; i++){
-			gs[i] += 2 * lambda * beta[i];
+		for(int i = 0; i < m_beta.length; i++){
+			gs[i] += 2 * m_lambda * m_beta[i];
 		}
 		//The computation complexity is n*classNo.
 		for (_Doc doc: docs) {
 			for(int j = 0; j < this.m_classNo; j++){
-				logPij = calculatelogPij(j, beta, doc.getSparse());//logP(Y=yi|X=xi)
+				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (doc.getYLabel() == j){
 					gValue = Pij - 1.0;
@@ -137,9 +181,8 @@ public class LogisticRegression extends BaseClassifier{
 		double[] probs = new double[this.m_classNo];
 		
 		for(_Doc doc: testSet){
-			for(int i = 0; i < this.m_classNo; i++){
-				probs[i] = calculatelogPij(i, this.m_beta, doc.getSparse());
-				}
+			for(int i = 0; i < this.m_classNo; i++)
+				probs[i] = calculatelogPij(i, doc.getSparse());
 			doc.setPredictLabel(Utils.maxOfArrayIndex(probs)); //Set the predict label according to the probability of different classes.
 			TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
 		}

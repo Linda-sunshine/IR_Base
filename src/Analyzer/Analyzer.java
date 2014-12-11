@@ -373,6 +373,7 @@ public abstract class Analyzer {
 		});		
 		
 		/************************time series analysis***************************/
+		double norm = 1.0 / m_classMemberNo.length;
 		for(int i = 0; i < docs.size(); i++){
 			_Doc doc = docs.get(i);
 			if(m_preDocs.size() < window){
@@ -382,7 +383,7 @@ public abstract class Analyzer {
 				i--;
 			}
 			else{
-				doc.createSpVctWithTime(m_preDocs, this.m_featureNames.size());
+				doc.createSpVctWithTime(m_preDocs, this.m_featureNames.size(), norm);
 				m_preDocs.remove();
 				m_preDocs.add(doc);
 			}

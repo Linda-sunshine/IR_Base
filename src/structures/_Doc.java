@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import utils.Utils;
+
 /**
  * @author lingong
  * General structure to present a document for DM/ML/IR
@@ -148,7 +150,7 @@ public class _Doc {
 	}
 	
 	//Create a sparse vector with time features.
-	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize){
+	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double norm){
 		int featureLength = this.m_x_sparse.length;
 		int timeLength = preDocs.size();
 		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength];
@@ -156,8 +158,8 @@ public class _Doc {
 		int count = 0;
 		for(_Doc doc:preDocs){
 			int index = featureSize + count;
-			double value = doc.getYLabel();
-			//value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
+			double value = norm * doc.getYLabel();
+			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
 			tempSparse[featureLength + count] = new _SparseFeature(index, value);
 			count++;
 		}		
