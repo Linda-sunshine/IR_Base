@@ -8,7 +8,8 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class NaiveBayes extends BaseClassifier {
-	
+	protected double[][] m_model; //The model contains total frequency for features /presences of features.
+	protected double[][] m_sstat; //The probabilities of values in model.
 	private double[] m_classProb;//p(c)
 	private double[] m_classMember;//count(d|c)
 	
@@ -20,10 +21,13 @@ public class NaiveBayes extends BaseClassifier {
 		this.m_classProb = new double [this.m_classNo];
 		this.m_classMember = new double [this.m_classNo];
 	}
-	
+	//Return the probs for differernt classes.
+	public double[] getClassProbs() {
+		return this.m_classProb;
+	}
 	//Train the data set.
-	public void train(ArrayList<_Doc> train_set){
-		for(_Doc doc: train_set){
+	public void train(){
+		for(_Doc doc: m_trainSet){
 			int label = doc.getYLabel();
 			this.m_classMember[label]++;
 			for(_SparseFeature sf: doc.getSparse()){
@@ -36,9 +40,8 @@ public class NaiveBayes extends BaseClassifier {
 	//Train the data set with term presence????
 	//Is the numerator the total number of document in one class????
 	//If is, I need to set different counters for different classes.
-	public void trainPresence(ArrayList<_Doc> train_set){
-		
-		for(_Doc doc: train_set){
+	public void trainPresence(){
+		for(_Doc doc: m_trainSet){
 			int label = doc.getYLabel();
 			for(_SparseFeature sf: doc.getSparse()){
 				this.m_model[label][sf.getIndex()] += 1;
@@ -63,14 +66,11 @@ public class NaiveBayes extends BaseClassifier {
 			}
 		}
 	}
-	
 	//Test the data set.
-	public void test(ArrayList<_Doc> testSet){
-		double[][] TPTable = new double [this.m_classNo][this.m_classNo];
-		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
+	public void test(){
 		double[] probs = new double[this.m_classNo];
 		
-		for(_Doc doc: testSet){
+		for(_Doc doc: m_testSet){
 			for(int i = 0; i < this.m_classNo; i++){
 				double probability = Math.log(this.m_classProb[i]);
 				double[] sparseProbs = new double[doc.getSparse().length];
@@ -86,11 +86,37 @@ public class NaiveBayes extends BaseClassifier {
 				probs[i] = probability;
 			}
 			doc.setPredictLabel(Utils.maxOfArrayIndex(probs)); //Set the predict label according to the probability of different classes.
-			TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
+			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
 		}
-		PreRecOfOneFold = calculatePreRec(TPTable);
-		this.m_precisionsRecalls.add(PreRecOfOneFold);
+		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
+		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
 		this.m_classProb = new double [this.m_classNo];
 		this.m_classMember = new double [this.m_classNo];
+	}
+	
+	//Predict the label for one document.
+	public int predictOneDoc(_Doc d){
+		int label = 0;
+		double[] probs = new double[this.m_classNo];
+		for(int i = 0; i < this.m_classNo; i++){
+			double probability = Math.log(this.m_classProb[i]);
+			double[] sparseProbs = new double[d.getSparse().length];
+			double[] sparseValues = new double[d.getSparse().length];
+			//Construct probs array and values array first.
+			for(int j = 0; j < d.getSparse().length; j++){
+				int index = d.getSparse()[j].getIndex();
+				sparseValues[j] = d.getSparse()[j].getValue();
+				sparseProbs[j] = m_sstat[i][index];
+			}
+			probability += Utils.sumLog(sparseProbs, sparseValues);
+			probs[i] = probability;
+		}
+		label = Utils.maxOfArrayIndex(probs);
+		return label;
+	}
+	
+	//Save the parameters for classification.
+	public void saveModel(String modelLocation){
+		
 	}
 }

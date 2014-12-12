@@ -9,46 +9,53 @@ import structures._Doc;
 import structures._SparseFeature;
 
 public abstract class BaseClassifier {
+	protected int m_classNo; //The total number of classes.
+	protected int m_featureSize;
 	protected _Corpus m_corpus;
-	protected _SparseFeature[] m_sparseFeatures;
 	protected ArrayList<_Doc> m_trainSet; //All the documents used as the training set.
 	protected ArrayList<_Doc> m_testSet; //All the documents used as the testing set.
-	protected int m_classNo; //The total number of classes.
-	protected double[][] m_model; //The model contains total frequency for features /presences of features.
-	protected double[][] m_sstat; //The probabilities of values in model.
-	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
-	protected int m_featureSize;
 	
+	protected double[] m_probs;
+	protected double[][] m_TPTable;
+	protected double[][] m_PreRecOfOneFold;
+	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
+
 	//Used in NB and LR, will be overwritten.
-	public void train(ArrayList<_Doc> trainSet){}
+	public void train(){}
 	//Used in SVM to train data, will be overwritten. Since java does not accept functions with same parameters 
 	//and different return values, add a new variable.
-	public svm_model train(ArrayList<_Doc> trainSet, boolean flag){
+	public svm_model train(boolean flag){
 		svm_model model = new svm_model();
 		return model;
 	}
 	//Used in NB and LR, will be overwritten.
-	public void test(ArrayList<_Doc> testSet){}	
+	public void test(){}	
 	//Used in SVM, will be overwritten.
-	public void test(ArrayList<_Doc> testSet, svm_model model){}
+	public void test(svm_model model){}
 	
-
 	//Constructor.
 	public BaseClassifier() {
+		this.m_classNo = 0;
+		this.m_featureSize = 0;
 		this.m_corpus = new _Corpus();
 		this.m_trainSet = new ArrayList<_Doc>();
 		this.m_testSet = new ArrayList<_Doc>();
-		this.m_classNo = 0;
-		this.m_featureSize = 0;
+		this.m_probs = new double[this.m_classNo];
+		this.m_TPTable = new double [this.m_classNo][this.m_classNo];
+		this.m_PreRecOfOneFold = new double[this.m_classNo][2];
+		this.m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 
 	// Constructor with parameters.
 	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
+		this.m_classNo = class_number;
+		this.m_featureSize = featureSize;
 		this.m_corpus = c;
 		this.m_trainSet = new ArrayList<_Doc>();
 		this.m_testSet = new ArrayList<_Doc>();
-		this.m_classNo = class_number;
-		this.m_featureSize = featureSize;
+		this.m_probs = new double[this.m_classNo];
+		this.m_TPTable = new double [this.m_classNo][this.m_classNo];
+		this.m_PreRecOfOneFold = new double[this.m_classNo][2];
 		this.m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 	
@@ -93,8 +100,8 @@ public abstract class BaseClassifier {
 				}
 			}
 			// Train the data set to get the parameter.
-			train(this.m_trainSet);
-			test(this.m_testSet);
+			train();
+			test();
 			this.m_trainSet.clear();
 			//this.m_testSet.clear();
 		}

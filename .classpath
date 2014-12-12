@@ -7,5 +7,7 @@
 	<classpathentry kind="lib" path="libs/libsvm.jar"/>
 	<classpathentry kind="lib" path="libs/opennlp-maxent-3.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/opennlp-tools-1.5.3.jar"/>
+	<classpathentry kind="lib" path="libs/colt.jar"/>
+	<classpathentry kind="lib" path="libs/concurrent.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
