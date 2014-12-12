@@ -20,11 +20,13 @@ public class _Doc {
 	
 	private String m_name; // name of this document
 	private int m_ID; // unique id of the document in the collection
+	
 	private String source; //The content of the source file.
+	private int m_totalLength; //The total length of the document.
+	
 	private int m_y_label; // classification target, that is the index of the labels.
 	private int m_predict_label; //The predicted result.
-	private double m_y_value; // regression target, like linear regression only has one value.
-	private int m_totalLength; //The total length of the document.
+	private double m_y_value; // regression target, like linear regression only has one value.	
 	private long m_timeStamp; //The timeStamp for this review.
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
@@ -114,12 +116,7 @@ public class _Doc {
 	//return the unique number of features in the doc
 	public int getDocLength() {
 		return this.m_x_sparse.length;
-	}
-	
-	//Set the document's length, which is the total number of tokens.
-	public void setTotalLength(int l){
-		this.m_totalLength = l;
-	}
+	}	
 	
 	//Get the total number of tokens in a document.
 	public int getTotalDocLength(){
@@ -142,7 +139,9 @@ public class _Doc {
 		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			this.m_x_sparse[i] = new _SparseFeature(pairs.getKey(), pairs.getValue());
+			double TF = pairs.getValue();
+			this.m_x_sparse[i] = new _SparseFeature(pairs.getKey(), TF);
+			m_totalLength += TF;
 			i++;
 		}
 		Arrays.sort(m_x_sparse);

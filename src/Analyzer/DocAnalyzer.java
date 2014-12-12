@@ -101,8 +101,7 @@ public class DocAnalyzer extends Analyzer {
 	//Analyze the document as usual.
 	public void AnalyzeDoc(_Doc doc) {
 		try {
-			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-			doc.setTotalLength(tokens.length); // set the length of the document.
+			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.			
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 			int index = 0;
 			double value = 0;
@@ -145,13 +144,6 @@ public class DocAnalyzer extends Analyzer {
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
 				this.m_classMemberNo[doc.getYLabel()]++;
-				
-				//print out progress
-				if (m_corpus.getSize() % 1000==0) {
-					System.out.print('.');
-					if (m_corpus.getSize() % 100000==0)
-						System.out.println();
-				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
