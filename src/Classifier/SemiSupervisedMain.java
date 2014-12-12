@@ -6,7 +6,7 @@ import java.text.ParseException;
 import structures._Corpus;
 import Analyzer.jsonAnalyzer;
 
-public class AmazonReviewMain {
+public class SemiSupervisedMain {
 
 	public static void main(String[] args) throws IOException, ParseException{
 		/*****Set these parameters before run the classifiers.*****/
@@ -15,7 +15,7 @@ public class AmazonReviewMain {
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		String classifier = "Semi"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -81,9 +81,6 @@ public class AmazonReviewMain {
 			SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
 			mySVM.crossValidation(10, corpus);
 			
-		} else if(classifier.equals("Semi")){
-			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window);
-			mySemi.crossValidation(10, corpus);
-		}else System.out.println("Have not developed yet!:(");
+		} else System.out.println("Have not developed yet!:(");
 	}
 }

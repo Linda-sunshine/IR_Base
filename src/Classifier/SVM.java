@@ -89,8 +89,8 @@ public class SVM extends BaseClassifier{
 			/* Train the data set to get the parameter.
 			 * Jave do not accept same function name with same parameters, different return types.
 			 * I have to add a new variable in the train.*/
-			svm_model model = train(this.m_trainSet, true);
-			test(this.m_testSet, model);
+			svm_model model = train(true);
+			test(model);
 			this.m_trainSet.clear();
 			//this.m_testSet.clear(); // why did you design it in this way?
 		}
@@ -98,15 +98,15 @@ public class SVM extends BaseClassifier{
 	}
 
 	// Train the data set.
-	public svm_model train(ArrayList<_Doc> trainSet, boolean flag) {
+	public svm_model train(boolean flag) {
 		svm_model model = new svm_model();
 		svm_problem problem = new svm_problem();
-		problem.x = new svm_node[trainSet.size()][];
-		problem.y = new double [trainSet.size()];		
+		problem.x = new svm_node[m_trainSet.size()][];
+		problem.y = new double [m_trainSet.size()];		
 		
 		//Construct the svm_problem by enumerating all docs.
 		int docId = 0, fid, fvSize = 0;
-		for(_Doc temp:trainSet){
+		for(_Doc temp : m_trainSet){
 			svm_node[] instance = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
 			fid = 0;
 			for(_SparseFeature fv:temp.getSparse()){
@@ -129,11 +129,9 @@ public class SVM extends BaseClassifier{
 		return model;
 	}
 
-	public void test(ArrayList<_Doc> testSet, svm_model model){
-		double[][] TPTable = new double [this.m_classNo][this.m_classNo];
-		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
+	public void test(svm_model model){
 		//Construct the svm_problem by enumerating all docs.
-		for (_Doc temp:testSet) {
+		for (_Doc temp: m_testSet) {
 			svm_node[] nodes = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
 			int fid = 0;
 			for (_SparseFeature fv:temp.getSparse()) {
@@ -144,11 +142,11 @@ public class SVM extends BaseClassifier{
 			}
 			double result = svm.svm_predict(model, nodes);
 			if (result>0)
-				TPTable[1][temp.getYLabel()] += 1;
+				m_TPTable[1][temp.getYLabel()] += 1;
 			else
-				TPTable[0][temp.getYLabel()] += 1;
+				m_TPTable[0][temp.getYLabel()] += 1;
 		}
-		PreRecOfOneFold = calculatePreRec(TPTable);
-		this.m_precisionsRecalls.add(PreRecOfOneFold);
+		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
+		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
 }

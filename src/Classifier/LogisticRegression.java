@@ -36,7 +36,7 @@ public class LogisticRegression extends BaseClassifier{
 	 * value for the point, together with the gradient vector. When the iflag
 	 * turns to 0, it finds the final point and we get the best beta.
 	 */
-	public void train(ArrayList<_Doc> docs){
+	public void train(){
 		int[] iflag = {0};
 		int[] iprint = { -1, 3 };
 		double[] diag = new double[m_beta.length];
@@ -175,19 +175,14 @@ public class LogisticRegression extends BaseClassifier{
 	}
 
 	// Test the test set.
-	public void test(ArrayList<_Doc> testSet) {
-		double[][] TPTable = new double [this.m_classNo][this.m_classNo];
-		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
-		double[] probs = new double[this.m_classNo];
-		
-		for(_Doc doc: testSet){
+	public void test() {
+		for(_Doc doc: m_testSet){
 			for(int i = 0; i < this.m_classNo; i++)
-				probs[i] = calculatelogPij(i, doc.getSparse());
-			doc.setPredictLabel(Utils.maxOfArrayIndex(probs)); //Set the predict label according to the probability of different classes.
-			TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
+				m_probs[i] = calculatelogPij(i, doc.getSparse());
+			doc.setPredictLabel(Utils.maxOfArrayIndex(m_probs)); //Set the predict label according to the probability of different classes.
+			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
 		}
-		
-		PreRecOfOneFold = calculatePreRec(TPTable);
-		this.m_precisionsRecalls.add(PreRecOfOneFold);
+		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
+		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
 }
