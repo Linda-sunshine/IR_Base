@@ -36,7 +36,7 @@ public class AmazonReviewMain {
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		/*****Parameters in time series analysis.*****/
-		int window = 7;
+		int window = 20;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		

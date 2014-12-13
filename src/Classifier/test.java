@@ -54,18 +54,28 @@ public class test {
 		int tokenLength = tokens.length, N = 3, NgramNo = 0;
 		ArrayList<String> Ngrams = new ArrayList<String>();
 		
-		// Collect all the grams, Ngrams, N-1grams...
-		while(N > 0){
+		//Collect all the grams, Ngrams, N-1grams...
+		while (N > 0) {
 			NgramNo = tokenLength - N + 1;
-			for(int i = 0; i < NgramNo; i++){
-				StringBuffer Ngram = new StringBuffer(128);
-				for(int j = 0; j < N; j++){
-					if (j==0) Ngram.append(tokens[i+j]);
-					else Ngram.append("-" + tokens[i+j]);
+			StringBuffer Ngram = new StringBuffer(128);
+			for (int i = 0; i < NgramNo; i++) {
+				Ngram.setLength(0); 
+				if (!tokens[i].equals("")) {
+					for (int j = 0; j < N; j++) {
+						if (j == 0)
+							Ngram.append(tokens[i + j]);
+						else {
+							if (!tokens[i + j].equals("")) {
+								Ngram.append("-" + tokens[i + j]);
+							} else {
+								Ngram.setLength(0);
+								break;
+							}
+						}
+					}
 				}
-				Ngrams.add(Ngram.toString());
-			}
-			N--;
+				if (!(Ngram.length() == 0)) {Ngrams.add(Ngram.toString());}
+			} N--;
 		}
 		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
