@@ -193,17 +193,25 @@ public abstract class Analyzer {
 			NgramNo = tokenLength - N + 1;
 			for(int i = 0; i < NgramNo; i++){
 				StringBuffer Ngram = new StringBuffer(128);
-				for(int j = 0; j < N; j++){
-					if (j==0) 
-						Ngram.append(tokens[i+j]);
-					else 
-						Ngram.append("-" + tokens[i+j]);
+				if(tokens[i].equals("")){ i++;}
+				else{
+					for(int j = 0; j < N; j++){
+						if (j == 0) Ngram.append(tokens[i + j]);		
+						else {
+							if(!tokens[i + j].equals("")){
+								Ngram.append("-" + tokens[i+j]);
+							} else { 
+								i++;
+								break;
+							}
+						}
+					}
+					Ngrams.add(Ngram.toString());
 				}
-				Ngrams.add(Ngram.toString());
+				N--;
 			}
-			N--;
+			return Ngrams.toArray(new String[Ngrams.size()]);
 		}
-		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
 	
 	//Add one more token to the current vocabulary.
