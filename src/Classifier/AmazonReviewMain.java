@@ -23,14 +23,12 @@ public class AmazonReviewMain {
 		String folder = "./data/amazon/tablets";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-//		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/FinalFeatureStat.txt"; //The destination of storing the final features with stats.
-//		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/SelectedFeatures.txt";
 		String finalLocation = "./FinalFeatureStat.txt";
 		String featureLocation = "./SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
 		String providedCV = "";
-		String featureSelection = "IG"; //Feature selection method.
+		String featureSelection = "CHI"; //Feature selection method.
 		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
@@ -42,15 +40,15 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
-//		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer 
+		//jsonAnalyzer 
 		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		jsonAnalyzer.setFeatureValues(featureValue, norm);
