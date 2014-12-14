@@ -37,6 +37,17 @@ public class NaiveBayes extends BaseClassifier {
 		calculateStat(this.m_model);
 	}
 	
+	public void train(ArrayList<_Doc> trainSet){
+		for(_Doc doc: trainSet){
+			int label = doc.getYLabel();
+			this.m_classMember[label]++;
+			for(_SparseFeature sf: doc.getSparse()){
+				this.m_model[label][sf.getIndex()] += sf.getValue();
+			}
+		}
+		calculateStat(this.m_model);
+	}
+	
 	//Train the data set with term presence????
 	//Is the numerator the total number of document in one class????
 	//If is, I need to set different counters for different classes.

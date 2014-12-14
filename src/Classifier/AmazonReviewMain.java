@@ -13,9 +13,9 @@ public class AmazonReviewMain {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		String classifier = "LR"; //Which classifier to use.
+		String classifier = "SEMI"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -36,7 +36,7 @@ public class AmazonReviewMain {
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		/*****Parameters in time series analysis.*****/
-		int window = 20;
+		int window = 45;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -82,7 +82,7 @@ public class AmazonReviewMain {
 			SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
 			mySVM.crossValidation(10, corpus);
 			
-		} else if(classifier.equals("Semi")){
+		} else if(classifier.equals("SEMI")){
 			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window);
 			mySemi.crossValidation(10, corpus);
 		}else System.out.println("Have not developed yet!:(");

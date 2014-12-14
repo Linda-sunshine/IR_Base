@@ -168,7 +168,7 @@ public class SemiSupervised extends BaseClassifier{
 					this.addTrainSet(k_folder.get(j));
 				}
 			}
-			if (i == 0) m_NB.train();
+			if (i == 0) m_NB.train(this.m_trainSet);
 			// Train the data set to get the parameter.
 			train();
 			test();
