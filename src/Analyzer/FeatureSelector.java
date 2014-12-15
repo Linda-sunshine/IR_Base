@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-
 import structures._stat;
 import utils.Utils;
 
@@ -13,6 +11,7 @@ public class FeatureSelector {
 
 	double m_startProb;
 	double m_endProb;
+	ArrayList<String> m_selectedFeatures;
 
 	//Default setting of feature selection
 	public FeatureSelector(){
@@ -25,13 +24,45 @@ public class FeatureSelector {
 		this.m_startProb = startProb;
 		this.m_endProb = endProb;
 	}
-		
-	//Feature Selection -- DF.
-	public ArrayList<String> DF(HashMap<String, _stat> featureStat, int threshold){
-		HashMap<Integer, ArrayList<String>> featureDF = new HashMap<Integer, ArrayList<String>>();
+	
+	//Return the selected features.
+	public ArrayList<String> getSelectedFeatures(){
+		return m_selectedFeatures;
+	}
+	
+	//Sort the features according to integer values.
+	public void sortFeaturesInt(HashMap<Integer, ArrayList<String>> featureValues){
 		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Integer> unsortedDF = new HashSet<Integer>();
+		Collection<Integer> unsortedValues = featureValues.keySet();
+		ArrayList<Integer> sortedValues = new ArrayList<Integer>(unsortedValues);     
+		Collections.sort(sortedValues);//sort the DF
+		for(int value : sortedValues) sortedFeatures.addAll(featureValues.get(value));//sort the features according to sorted DF/IG/MI/CHI.
 			
+		//Start fetching particular features.
+		int totalSize = sortedFeatures.size();
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
+		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
+	}
+	
+	//Sort the features according to double values.
+	public void sortFeaturesDouble(HashMap<Double, ArrayList<String>> featureValues){
+		ArrayList<String> sortedFeatures = new ArrayList<String>();
+		Collection<Double> unsortedValues = featureValues.keySet();
+		ArrayList<Double> sortedValues = new ArrayList<Double>(unsortedValues);     
+		Collections.sort(sortedValues);//sort the DF
+		for(double value : sortedValues) sortedFeatures.addAll(featureValues.get(value));//sort the features according to sorted DF/IG/MI/CHI.
+			
+		//Start fetching particular features.
+		int totalSize = sortedFeatures.size();
+		int start = (int) (totalSize * this.m_startProb);
+		int end = (int) (totalSize * this.m_endProb);
+		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
+	}
+	
+	//Feature Selection -- DF.
+	public void DF(HashMap<String, _stat> featureStat, int threshold){
+		HashMap<Integer, ArrayList<String>> featureDF = new HashMap<Integer, ArrayList<String>>();
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
@@ -45,25 +76,12 @@ public class FeatureSelector {
 				}
 			}
 		}
-		unsortedDF = featureDF.keySet();
-		ArrayList<Integer> sortedDF = new ArrayList<Integer>(unsortedDF);     
-		Collections.sort(sortedDF);//sort the DF
-		for(int DF : sortedDF) sortedFeatures.addAll(featureDF.get(DF));//sort the features according to sorted DF.
-			
-		//Start fetching particular features.
-		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
-		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
-		return selectedFeatures;
+		sortFeaturesInt(featureDF);
 	}
 		
 	//Feature Selection -- IG.
-	public ArrayList<String> IG(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
+	public void IG(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
 		HashMap<Double, ArrayList<String>> featureIG = new HashMap<Double, ArrayList<String>>();
-		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Double> unsortedIG = new HashSet<Double>();
-			
 		double classMemberSum = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classMemberNo.length];//I
 		double[] PrCit = new double [classMemberNo.length];//II
@@ -109,24 +127,12 @@ public class FeatureSelector {
 				}
 			}
 		}
-		unsortedIG = featureIG.keySet();
-		ArrayList<Double> sortedIG = new ArrayList<Double>(unsortedIG);     
-		Collections.sort(sortedIG);//sort the DF
-		for(double IG : sortedIG) sortedFeatures.addAll(featureIG.get(IG));//sort the features according to sorted DF.
-			
-		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
-		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
-		return selectedFeatures;
+		sortFeaturesDouble(featureIG);
 	} 
 		
 	//Feature Selection -- MI.
-	public ArrayList<String> MI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
+	public void MI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
 		HashMap<Double, ArrayList<String>> featureMI = new HashMap<Double, ArrayList<String>>();
-		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Double> unsortedMI = new HashSet<Double>();
-
 		double[] PrCi = new double[classMemberNo.length];
 		double[] ItCi = new double[classMemberNo.length];
 		double N = Utils.sumOfArray(classMemberNo);
@@ -155,27 +161,13 @@ public class FeatureSelector {
 				}
 			}
 		}
-
-		unsortedMI = featureMI.keySet();
-		ArrayList<Double> sortedMI = new ArrayList<Double>(unsortedMI);
-		Collections.sort(sortedMI);// sort the DF
-		for (double MI : sortedMI) sortedFeatures.addAll(featureMI.get(MI));// sort the features according to sorted MI.
-
-		// Start fetching particular features. How do we define the criterion?
-		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
-		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
-		return selectedFeatures;
+		sortFeaturesDouble(featureMI);
 	}
 		
 	//Feature Selection -- CHI.
-	public ArrayList<String> CHI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
+	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
 		int classNo = classMemberNo.length;
 		HashMap<Double, ArrayList<String>> featureCHI = new HashMap<Double, ArrayList<String>>();
-		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Double> unsortedCHI = new HashSet<Double>();
-		
 		double N = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classNo]; 
 		double[] X2tc = new double [classNo];
@@ -206,16 +198,6 @@ public class FeatureSelector {
 				}
 			}
 		}
-		unsortedCHI = featureCHI.keySet();
-		ArrayList<Double> sortedCHI = new ArrayList<Double>(unsortedCHI);     
-		Collections.sort(sortedCHI);//sort the CHI
-		for(double CHI : sortedCHI) sortedFeatures.addAll(featureCHI.get(CHI));//sort the features according to sorted CHI.
-			
-		//Start fetching particular features. How do we define the criterion?
-		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
-		ArrayList<String> selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
-		return selectedFeatures;
+		sortFeaturesDouble(featureCHI);
 	}
 }

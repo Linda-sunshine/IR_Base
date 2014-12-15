@@ -1,0 +1,8 @@
+#!/bin/sh 
+ONSSERVER=ONSServer 
+PROJECT_PATH=~/Lin\'sWorkSpace/IR_Base
+JAR_PATH=$PROJECT_PATH/libs
+BIN_PATH=$PROJECT_PATH/bin
+CLASS_PATH=$PROJECT_PATH/src
+
+javac -cp $CLASS_PATH -d $BIN_PATH -extdirs $JAR_PATH $CLASS_PATH/Classifier/AmazonReviewMain.java
