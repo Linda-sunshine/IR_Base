@@ -338,14 +338,18 @@ public abstract class Analyzer {
 
 		if (this.m_isFetureSelected) {
 			System.out.println("*******************************************************************");
-			if (this.featureSelection.equals("DF")) {
-				this.m_featureNames = selector.DF(this.m_featureStat, threshold);
-			} else if (this.featureSelection.equals("IG")) {
-				this.m_featureNames = selector.IG(this.m_featureStat, this.m_classMemberNo, threshold);
-			} else if (this.featureSelection.equals("MI")) {
-				this.m_featureNames = selector.MI(this.m_featureStat, this.m_classMemberNo, threshold);
+			if (featureSelection.equals("DF")) {
+				selector.DF(this.m_featureStat, threshold);
+				m_featureNames = selector.getSelectedFeatures();
+			} else if (featureSelection.equals("IG")) {
+				selector.IG(this.m_featureStat, this.m_classMemberNo, threshold);
+				m_featureNames = selector.getSelectedFeatures();
+			} else if (featureSelection.equals("MI")) {
+				selector.MI(this.m_featureStat, this.m_classMemberNo, threshold);
+				m_featureNames = selector.getSelectedFeatures();
 			} else if (this.featureSelection.equals("CHI")) {
-				this.m_featureNames = selector.CHI(this.m_featureStat, this.m_classMemberNo, threshold);
+				selector.CHI(this.m_featureStat, this.m_classMemberNo, threshold);
+				m_featureNames = selector.getSelectedFeatures();
 			}
 		}
 		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
