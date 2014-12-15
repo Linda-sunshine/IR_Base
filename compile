@@ -1,6 +1,6 @@
 #!/bin/sh 
 ONSSERVER=ONSServer 
-PROJECT_PATH=/Users/lingong/Documents/Lin\'sWorkSpace/IR_Base
+PROJECT_PATH=/home/lin/Lin\'sWorkSpace/IR_Base
 JAR_PATH=$PROJECT_PATH/libs
 BIN_PATH=$PROJECT_PATH/bin
 CLASS_PATH=$PROJECT_PATH/src
