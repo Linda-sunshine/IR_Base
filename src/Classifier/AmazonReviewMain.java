@@ -23,8 +23,6 @@ public class AmazonReviewMain {
 		String folder = "./data/amazon/tablets";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-//		String finalLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/FinalFeatureStat.txt"; //The destination of storing the final features with stats.
-//		String featureLocation = "/Users/lingong/Documents/Lin'sWorkSpace/IR_Base/data/movie/SelectedFeatures.txt";
 		String finalLocation = "./FinalFeatureStat.txt";
 		String featureLocation = "./SelectedFeatures.txt";
 
