@@ -40,15 +40,15 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
-		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+//		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		jsonAnalyzer  jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		jsonAnalyzer.setFeatureValues(featureValue, norm);
 		jsonAnalyzer.setTimeFeatures(window);

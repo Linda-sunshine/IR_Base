@@ -15,14 +15,14 @@ public class FeatureSelector {
 
 	//Default setting of feature selection
 	public FeatureSelector(){
-		this.m_startProb = 0;
-		this.m_endProb = 1;
+		m_startProb = 0;
+		m_endProb = 1;
 	}
 		
 	//Given start and end of feature selection.
 	public FeatureSelector(double startProb, double endProb){
-		this.m_startProb = startProb;
-		this.m_endProb = endProb;
+		m_startProb = startProb;
+		m_endProb = endProb;
 	}
 	
 	//Return the selected features.
@@ -40,8 +40,8 @@ public class FeatureSelector {
 			
 		//Start fetching particular features.
 		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
+		int start = (int) (totalSize * m_startProb);
+		int end = (int) (totalSize * m_endProb);
 		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 	}
 	
@@ -55,8 +55,8 @@ public class FeatureSelector {
 			
 		//Start fetching particular features.
 		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * this.m_startProb);
-		int end = (int) (totalSize * this.m_endProb);
+		int start = (int) (totalSize * m_startProb);
+		int end = (int) (totalSize * m_endProb);
 		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
 	}
 	

@@ -57,43 +57,41 @@ public abstract class Analyzer {
 	private LinkedList<_Doc> m_preDocs;	
 	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
-		this.m_corpus = new _Corpus();
-		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		this.m_stemmer = new englishStemmer();
-		this.m_classNo = classNo;
-		this.m_classMemberNo = new int[classNo];
+		m_corpus = new _Corpus();
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		m_classNo = classNo;
+		m_classMemberNo = new int[classNo];
 		
-		this.m_isCVLoaded = false;
-		this.m_isFetureSelected = false;
-		this.m_Ngram = 1;
+		m_isCVLoaded = false;
+		m_isFetureSelected = false;
+		m_Ngram = 1;
 		
-		this.m_featureNames = new ArrayList<String>();
-		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
-		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
-		this.m_featureStat = new HashMap<String, _stat>();
-		this.featureSelection = "DF";
-		
-		this.m_preDocs = new LinkedList<_Doc>();
+		m_featureNames = new ArrayList<String>();
+		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
+		m_featureStat = new HashMap<String, _stat>();
+		featureSelection = "DF";
+		m_preDocs = new LinkedList<_Doc>();
 	}	
 	
 	public Analyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		this.m_corpus = new _Corpus();
-		this.m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		this.m_stemmer = new englishStemmer();
-		this.m_classNo = classNo;
-		this.m_classMemberNo = new int[classNo];
+		m_corpus = new _Corpus();
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		m_classNo = classNo;
+		m_classMemberNo = new int[classNo];
 		
-		this.m_isCVLoaded = false;
-		this.m_isFetureSelected = false;
-		this.m_Ngram = Ngram;
+		m_isCVLoaded = false;
+		m_isFetureSelected = false;
+		m_Ngram = Ngram;
 		
-		this.m_featureNames = new ArrayList<String>();
-		this.m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
-		this.m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
-		this.m_featureStat = new HashMap<String, _stat>();
-		this.featureSelection = "DF";
-		
-		this.m_preDocs = new LinkedList<_Doc>();
+		m_featureNames = new ArrayList<String>();
+		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		m_featureIndexName = new HashMap<Integer, String>();//value: content of the feature; key: the index of the feature
+		m_featureStat = new HashMap<String, _stat>();
+		featureSelection = "DF";
+		m_preDocs = new LinkedList<_Doc>();
 	}	
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -103,7 +101,7 @@ public abstract class Analyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				this.m_featureNames.add(line);
+				m_featureNames.add(line);
 			}
 			reader.close();
 		} catch (IOException e) {
@@ -115,10 +113,10 @@ public abstract class Analyzer {
 		m_isCVLoaded = true;
 
 		// Set the index of the features.
-		for (String f : this.m_featureNames) {
-			this.m_featureNameIndex.put(f, count);
-			this.m_featureIndexName.put(count, f);
-			this.m_featureStat.put(f, new _stat(this.m_classNo));
+		for (String f : m_featureNames) {
+			m_featureNameIndex.put(f, count);
+			m_featureIndexName.put(count, f);
+			m_featureStat.put(f, new _stat(m_classNo));
 			count++;
 		}
 		return true; // if loading is successful
@@ -142,9 +140,9 @@ public abstract class Analyzer {
 	protected PrintWriter SaveCVStat(String finalLocation) throws FileNotFoundException{
 		//File file = new File(path);
 		PrintWriter writer = new PrintWriter(new File(finalLocation));
-		for(int i = 0; i < this.m_featureNames.size(); i++){
-			writer.print(this.m_featureNames.get(i));
-			_stat temp = this.m_featureStat.get(this.m_featureNames.get(i));
+		for(int i = 0; i < m_featureNames.size(); i++){
+			writer.print(m_featureNames.get(i));
+			_stat temp = m_featureStat.get(m_featureNames.get(i));
 			for(int j = 0; j < temp.getDF().length; j++)
 				writer.print("\t" + temp.getDF()[j]);
 			for(int j = 0; j < temp.getTTF().length; j++)
@@ -185,7 +183,7 @@ public abstract class Analyzer {
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
 		
-		int tokenLength = tokens.length, N = this.m_Ngram, NgramNo = 0;
+		int tokenLength = tokens.length, N = m_Ngram, NgramNo = 0;
 		ArrayList<String> Ngrams = new ArrayList<String>();
 		
 		//Collect all the grams, Ngrams, N-1grams...
@@ -226,14 +224,14 @@ public abstract class Analyzer {
 	
 	//With a new feature added into the vocabulary, add the stat into stat arraylist.
 	public void updateFeatureStat(String token) {
-		this.m_featureStat.put(token, new _stat(this.m_classNo));
+		m_featureStat.put(token, new _stat(m_classNo));
 	}
 		
 	//Return corpus without parameter and feature selection.
 	public _Corpus returnCorpus(String finalLocation)throws FileNotFoundException {
-		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
-		this.SaveCVStat(finalLocation);
-		return this.m_corpus;
+		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		SaveCVStat(finalLocation);
+		return m_corpus;
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
@@ -324,57 +322,56 @@ public abstract class Analyzer {
 	//Set the counts of every feature with respect to the collected class number.
 	public void setFeatureConfiguration() {
 		// Initialize the counts of every feature.
-		for (String featureName : this.m_featureStat.keySet()) {
-			this.m_featureStat.get(featureName).initCount(this.m_classNo);		
-			this.m_featureStat.get(featureName).setCounts(this.m_classMemberNo);
+		for (String featureName : m_featureStat.keySet()) {
+			m_featureStat.get(featureName).initCount(m_classNo);		
+			m_featureStat.get(featureName).setCounts(m_classMemberNo);
 		}
 	}
 	
 	//Select the features and store them in a file.
 	public void featureSelection(String location, double startProb, double endProb, int threshold) throws FileNotFoundException {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb);
-		this.m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
-		this.setFeatureConfiguration(); // Construct the table for features.
+		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		setFeatureConfiguration(); // Construct the table for features.
 
-		if (this.m_isFetureSelected) {
+		if (m_isFetureSelected) {
 			System.out.println("*******************************************************************");
 			if (featureSelection.equals("DF")) {
-				selector.DF(this.m_featureStat, threshold);
+				selector.DF(m_featureStat, threshold);
 				m_featureNames = selector.getSelectedFeatures();
 			} else if (featureSelection.equals("IG")) {
-				selector.IG(this.m_featureStat, this.m_classMemberNo, threshold);
+				selector.IG(m_featureStat, m_classMemberNo, threshold);
 				m_featureNames = selector.getSelectedFeatures();
 			} else if (featureSelection.equals("MI")) {
-				selector.MI(this.m_featureStat, this.m_classMemberNo, threshold);
+				selector.MI(m_featureStat, m_classMemberNo, threshold);
 				m_featureNames = selector.getSelectedFeatures();
-			} else if (this.featureSelection.equals("CHI")) {
-				selector.CHI(this.m_featureStat, this.m_classMemberNo, threshold);
+			} else if (featureSelection.equals("CHI")) {
+				selector.CHI(m_featureStat, m_classMemberNo, threshold);
 				m_featureNames = selector.getSelectedFeatures();
 			}
 		}
-		this.SaveCV(location); // Save all the features and probabilities we get after analyzing.
-		System.out.println(this.m_featureNames.size() + " features are selected!");
+		SaveCV(location); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
 	}
 	
 	//Save all the features and feature stat into a file.
 	public PrintWriter SaveCV(String featureLocation) throws FileNotFoundException {
 		// File file = new File(path);
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
-		for (int i = 0; i < this.m_featureNames.size(); i++)
-			writer.println(this.m_featureNames.get(i));
+		for (int i = 0; i < m_featureNames.size(); i++)
+			writer.println(m_featureNames.get(i));
 		writer.close();
 		return writer;
 	}
 	
 	//Return the number of features.
 	public int getFeatureSize(){
-		return this.m_featureNames.size();
+		return m_featureNames.size();
 	}
 	
 	//Sort the documents.
 	public void setTimeFeatures(int window){
-		if (window<1)
-			return;
+		if (window<1) return;
 		
 		//Sort the documents according to time stamps.
 		ArrayList<_Doc> docs = m_corpus.getCollection();
@@ -393,17 +390,16 @@ public abstract class Analyzer {
 			_Doc doc = docs.get(i);
 			if(m_preDocs.size() < window){
 				m_preDocs.add(doc);
-				this.m_corpus.removeDoc(i);
-				this.m_classMemberNo[doc.getYLabel()]--;
+				m_corpus.removeDoc(i);
+				m_classMemberNo[doc.getYLabel()]--;
 				i--;
 			}
 			else{
-				doc.createSpVctWithTime(m_preDocs, this.m_featureNames.size(), norm);
+				doc.createSpVctWithTime(m_preDocs, m_featureNames.size(), norm);
 				m_preDocs.remove();
 				m_preDocs.add(doc);
 			}
 		}
-		
 		System.out.println("Time-series feature set!");
 	}
 }

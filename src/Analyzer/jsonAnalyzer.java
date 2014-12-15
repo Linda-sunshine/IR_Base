@@ -52,9 +52,9 @@ public class jsonAnalyzer extends DocAnalyzer{
 			for(int i=0; i<jarray.length(); i++) {
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
-					long timeStamp = this.m_dateFormatter.parse(post.getDate()).getTime();
+					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
-					this.m_classMemberNo[post.getLabel()-1]++;
+					m_classMemberNo[post.getLabel()-1]++;
 				}
 			}
 		} catch (Exception e) {
