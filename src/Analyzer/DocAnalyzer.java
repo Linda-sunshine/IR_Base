@@ -17,10 +17,10 @@ public class DocAnalyzer extends Analyzer {
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
 		if(providedCV != null)
-			this.LoadCV(providedCV);
+			LoadCV(providedCV);
 		if(fs != null){
-			this.m_isFetureSelected = true;
-			this.featureSelection = fs;
+			m_isFetureSelected = true;
+			featureSelection = fs;
 		}	
 	}	
 	
@@ -28,10 +28,10 @@ public class DocAnalyzer extends Analyzer {
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, Ngram);
 		if(!providedCV.equals(""))
-			this.LoadCV(providedCV);
+			LoadCV(providedCV);
 		if(!fs.equals("")){
-			this.m_isFetureSelected = true;
-			this.featureSelection = fs;
+			m_isFetureSelected = true;
+			featureSelection = fs;
 		}
 	}
 	
@@ -45,7 +45,7 @@ public class DocAnalyzer extends Analyzer {
 
 			while ((line = reader.readLine()) != null) {
 				//buffer.append(line);
-				this.m_featureNames.add(line);
+				m_featureNames.add(line);
 			}
 			reader.close();
 		} catch(IOException e){
@@ -57,10 +57,10 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = true;
 		
 		//Set the index of the features.
-		for(String f: this.m_featureNames){
-			this.m_featureNameIndex.put(f, count);
-			this.m_featureIndexName.put(count, f);
-			this.m_featureStat.put(f, new _stat(this.m_classNo));
+		for(String f: m_featureNames){
+			m_featureNameIndex.put(f, count);
+			m_featureIndexName.put(count, f);
+			m_featureStat.put(f, new _stat(m_classNo));
 			count++;
 		}
 		return true; // if loading is successful
@@ -81,16 +81,15 @@ public class DocAnalyzer extends Analyzer {
 			if(filename.contains("pos")){
 				//Collect the number of documents in one class.
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));
-				this.m_classMemberNo[0]++;
+				m_classMemberNo[0]++;
 			}else if(filename.contains("neg")){
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
-				this.m_classMemberNo[1]++;
+				m_classMemberNo[1]++;
 			}
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
 		}
-		//this.m_corpus.sizeAddOne();
 	}
 
 	/*Analyze a document and add the analyzed document back to corpus.	
@@ -116,16 +115,16 @@ public class DocAnalyzer extends Analyzer {
 							spVct.put(index, value);
 						} else {
 							spVct.put(index, 1.0);
-							this.m_featureStat.get(token).addOneDF(doc.getYLabel());
+							m_featureStat.get(token).addOneDF(doc.getYLabel());
 						}
 					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 						expandVocabulary(token);// update the m_featureNames.
 						updateFeatureStat(token);
 						index = m_featureNameIndex.get(token);
 						spVct.put(index, 1.0);
-						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
+						m_featureStat.get(token).addOneDF(doc.getYLabel());
 					}
-					this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
+					m_featureStat.get(token).addOneTTF(doc.getYLabel());
 				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {
@@ -133,9 +132,9 @@ public class DocAnalyzer extends Analyzer {
 						spVct.put(index, value);
 					} else {
 						spVct.put(index, 1.0);
-						this.m_featureStat.get(token).addOneDF(doc.getYLabel());
+						m_featureStat.get(token).addOneDF(doc.getYLabel());
 					}
-					this.m_featureStat.get(token).addOneTTF(doc.getYLabel());
+					m_featureStat.get(token).addOneTTF(doc.getYLabel());
 				}
 				// if the token is not in the vocabulary, nothing to do.
 			}
@@ -143,7 +142,7 @@ public class DocAnalyzer extends Analyzer {
 			if (spVct.size()>=5) {//temporary code for debugging purpose 
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
-				this.m_classMemberNo[doc.getYLabel()]++;
+				m_classMemberNo[doc.getYLabel()]++;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -1,7 +1,5 @@
 package Classifier;
 import java.util.ArrayList;
-import java.util.HashMap;
-
 import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
@@ -17,88 +15,67 @@ public class SVM extends BaseClassifier{
 	public SVM(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
 		//Set default value of the param.
-		this.m_param = new svm_parameter();
-		// default values
-		this.m_param.svm_type = svm_parameter.C_SVC;
-		this.m_param.kernel_type = svm_parameter.LINEAR; // Hongning: linear kernel is the general choice for text classification
-		this.m_param.degree = 1;
-		this.m_param.gamma = 0; // 1/num_features
-		this.m_param.coef0 = 0.2;
-		this.m_param.nu = 0.5;
-		this.m_param.cache_size = 100;
-		this.m_param.C = 1;
-		this.m_param.eps = 1e-6;
-		this.m_param.p = 0.1;
-		this.m_param.shrinking = 1;
-		this.m_param.probability = 0;
-		this.m_param.nr_weight = 0;
-		this.m_param.weight_label = new int[0];// Hongning: why set it to 0-length array??
-		this.m_param.weight = new double[0];
+		m_param = new svm_parameter();
+		m_param.svm_type = svm_parameter.C_SVC;
+		m_param.kernel_type = svm_parameter.LINEAR; // Hongning: linear kernel is the general choice for text classification
+		m_param.degree = 1;
+		m_param.gamma = 0; // 1/num_features
+		m_param.coef0 = 0.2;
+		m_param.nu = 0.5;
+		m_param.cache_size = 100;
+		m_param.C = 1;
+		m_param.eps = 1e-6;
+		m_param.p = 0.1;
+		m_param.shrinking = 1;
+		m_param.probability = 0;
+		m_param.nr_weight = 0;
+		m_param.weight_label = new int[0];// Hongning: why set it to 0-length array??
+		m_param.weight = new double[0];
 	}
 
 	//Constructor with a given C.
 	public SVM(_Corpus c, int classNumber, int featureSize, double C){
 		super(c, classNumber, featureSize);
 		// Set default value of the param.
-		this.m_param = new svm_parameter();
-		// default values
-		this.m_param.svm_type = svm_parameter.C_SVC;
-		this.m_param.kernel_type = svm_parameter.LINEAR; // Hongning: linear kernel is thegeneral choice for text classification
-		this.m_param.degree = 1;
-		this.m_param.gamma = 0; // 1/num_features
-		this.m_param.coef0 = 0.2;
-		this.m_param.nu = 0.5;
-		this.m_param.cache_size = 100;
-		this.m_param.C = C;
-		this.m_param.eps = 1e-6;
-		this.m_param.p = 0.1;
-		this.m_param.shrinking = 1;
-		this.m_param.probability = 0;
-		this.m_param.nr_weight = 0;
-		this.m_param.weight_label = new int[0];// Hongning: why set it to 0-length array??
-		this.m_param.weight = new double[0];
+		m_param = new svm_parameter();
+		m_param.svm_type = svm_parameter.C_SVC;
+		m_param.kernel_type = svm_parameter.LINEAR; // Hongning: linear kernel is thegeneral choice for text classification
+		m_param.degree = 1;
+		m_param.gamma = 0; // 1/num_features
+		m_param.coef0 = 0.2;
+		m_param.nu = 0.5;
+		m_param.cache_size = 100;
+		m_param.C = C;
+		m_param.eps = 1e-6;
+		m_param.p = 0.1;
+		m_param.shrinking = 1;
+		m_param.probability = 0;
+		m_param.nr_weight = 0;
+		m_param.weight_label = new int[0];// Hongning: why set it to 0-length array??
+		m_param.weight = new double[0];
 	}
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
 		c.shuffle(k);
 		int[] masks = c.getMasks();
-		HashMap<Integer, ArrayList<_Doc>> k_folder = new HashMap<Integer, ArrayList<_Doc>>();
-
-		// Set the hash map with documents.
-		for (int i = 0; i < masks.length; i++) {
-			_Doc doc = c.getCollection().get(i);
-			if (k_folder.containsKey(masks[i])) {
-				ArrayList<_Doc> temp = k_folder.get(masks[i]);
-				temp.add(doc);
-				k_folder.put(masks[i], temp);
-			} else {
-				ArrayList<_Doc> docs = new ArrayList<_Doc>();
-				docs.add(doc);
-				k_folder.put(masks[i], docs);
-			}
-		}
-		// Set the train set and test set.
+		ArrayList<_Doc> docs = c.getCollection();
+		//Use this loop to iterate all the ten folders, set the train set and test set.
 		for (int i = 0; i < k; i++) {
-			this.setTestSet(k_folder.get(i));
-			for (int j = 0; j < k; j++) {
-				if (j != i) {
-					this.addTrainSet(k_folder.get(j));
-				}
+			for (int j = 0; j < masks.length; j++) {
+				if( masks[j]==i ) m_testSet.add(docs.get(j));
+				else m_trainSet.add(docs.get(j));
 			}
-			/* Train the data set to get the parameter.
-			 * Jave do not accept same function name with same parameters, different return types.
-			 * I have to add a new variable in the train.*/
-			svm_model model = train(true);
-			test(model);
-			this.m_trainSet.clear();
-			//this.m_testSet.clear(); // why did you design it in this way?
+			//Train the data set to get the parameter.
+			svm_model model = trainSVM();
+			testSVM(model);
+			m_trainSet.clear();
+			m_testSet.clear();
 		}
-		this.calculateMeanVariance(this.m_precisionsRecalls);
+		calculateMeanVariance(m_precisionsRecalls);	
 	}
-
 	// Train the data set.
-	public svm_model train(boolean flag) {
+	public svm_model trainSVM() {
 		svm_model model = new svm_model();
 		svm_problem problem = new svm_problem();
 		problem.x = new svm_node[m_trainSet.size()][];
@@ -122,14 +99,13 @@ public class SVM extends BaseClassifier{
 			problem.y[docId] = temp.getYLabel();
 			docId ++;
 		}	
-		
-		this.m_param.gamma = 1.0/fvSize;//Set the gamma of parameter.
+		m_param.gamma = 1.0/fvSize;//Set the gamma of parameter.
 		problem.l = docId;
-		model = svm.svm_train(problem, this.m_param);
+		model = svm.svm_train(problem, m_param);
 		return model;
 	}
 
-	public void test(svm_model model){
+	public void testSVM(svm_model model){
 		//Construct the svm_problem by enumerating all docs.
 		for (_Doc temp: m_testSet) {
 			svm_node[] nodes = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
@@ -144,6 +120,10 @@ public class SVM extends BaseClassifier{
 			m_TPTable[(int) ((result + 1)/2)][temp.getYLabel()] += 1;
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
+	
+	@Override
+	public void train(){}
+	public void test(){}
 }

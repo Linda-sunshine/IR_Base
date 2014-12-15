@@ -16,36 +16,36 @@ public class NaiveBayes extends BaseClassifier {
 	//Constructor.
 	public NaiveBayes(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
-		this.m_model = new double [this.m_classNo][featureSize];
-		this.m_sstat = new double [this.m_classNo][featureSize];
-		this.m_classProb = new double [this.m_classNo];
-		this.m_classMember = new double [this.m_classNo];
+		m_model = new double [m_classNo][featureSize];
+		m_sstat = new double [m_classNo][featureSize];
+		m_classProb = new double [m_classNo];
+		m_classMember = new double [m_classNo];
 	}
 	//Return the probs for differernt classes.
 	public double[] getClassProbs() {
-		return this.m_classProb;
+		return m_classProb;
 	}
 	//Train the data set.
 	public void train(){
 		for(_Doc doc: m_trainSet){
 			int label = doc.getYLabel();
-			this.m_classMember[label]++;
+			m_classMember[label]++;
 			for(_SparseFeature sf: doc.getSparse()){
-				this.m_model[label][sf.getIndex()] += sf.getValue();
+				m_model[label][sf.getIndex()] += sf.getValue();
 			}
 		}
-		calculateStat(this.m_model);
+		calculateStat(m_model);
 	}
 	
 	public void train(ArrayList<_Doc> trainSet){
 		for(_Doc doc: trainSet){
 			int label = doc.getYLabel();
-			this.m_classMember[label]++;
+			m_classMember[label]++;
 			for(_SparseFeature sf: doc.getSparse()){
-				this.m_model[label][sf.getIndex()] += sf.getValue();
+				m_model[label][sf.getIndex()] += sf.getValue();
 			}
 		}
-		calculateStat(this.m_model);
+		calculateStat(m_model);
 	}
 	
 	//Train the data set with term presence????
@@ -55,17 +55,17 @@ public class NaiveBayes extends BaseClassifier {
 		for(_Doc doc: m_trainSet){
 			int label = doc.getYLabel();
 			for(_SparseFeature sf: doc.getSparse()){
-				this.m_model[label][sf.getIndex()] += 1;
+				m_model[label][sf.getIndex()] += 1;
 			}
 		}
-		calculateStat(this.m_model);
+		calculateStat(m_model);
 	}
 	
 	//Calculate the probabilities for different features in m_model;
 	public void calculateStat(double[][] model){
 		
-		for(int i = 0; i < this.m_classNo; i++){
-			this.m_classProb[i] = this.m_classMember[i]/this.m_trainSet.size();
+		for(int i = 0; i < m_classNo; i++){
+			m_classProb[i] = m_classMember[i]/m_trainSet.size();
 		}
 		for(int i = 0; i < model.length; i++){
 			int sum = 0;
@@ -73,17 +73,17 @@ public class NaiveBayes extends BaseClassifier {
 				sum += model[i][j];
 			}
 			for(int j = 0; j < model[i].length; j++){
-				this.m_sstat[i][j] = (this.m_model[i][j] + 1)/ (sum + this.m_featureSize);//add one smoothing
+				m_sstat[i][j] = (m_model[i][j] + 1)/ (sum + m_featureSize);//add one smoothing
 			}
 		}
 	}
 	//Test the data set.
 	public void test(){
-		double[] probs = new double[this.m_classNo];
+		double[] probs = new double[m_classNo];
 		
 		for(_Doc doc: m_testSet){
-			for(int i = 0; i < this.m_classNo; i++){
-				double probability = Math.log(this.m_classProb[i]);
+			for(int i = 0; i < m_classNo; i++){
+				double probability = Math.log(m_classProb[i]);
 				double[] sparseProbs = new double[doc.getSparse().length];
 				double[] sparseValues = new double[doc.getSparse().length];
 				
@@ -100,17 +100,17 @@ public class NaiveBayes extends BaseClassifier {
 			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
-		this.m_classProb = new double [this.m_classNo];
-		this.m_classMember = new double [this.m_classNo];
+		m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_classProb = new double [m_classNo];
+		m_classMember = new double [m_classNo];
 	}
 	
 	//Predict the label for one document.
 	public int predictOneDoc(_Doc d){
 		int label = 0;
-		double[] probs = new double[this.m_classNo];
-		for(int i = 0; i < this.m_classNo; i++){
-			double probability = Math.log(this.m_classProb[i]);
+		double[] probs = new double[m_classNo];
+		for(int i = 0; i < m_classNo; i++){
+			double probability = Math.log(m_classProb[i]);
 			double[] sparseProbs = new double[d.getSparse().length];
 			double[] sparseValues = new double[d.getSparse().length];
 			//Construct probs array and values array first.

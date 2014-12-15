@@ -65,19 +65,12 @@ public class LogisticRegression extends BaseClassifier{
 //		return lfValue;
 //	}
 	
-	//This function is used to get a part of the array.
-//	public double[] trunc(double[] a, int index){
-//		double[] b = new double[this.m_featureSize + 1];
-//		System.arraycopy(a, index * (this.m_featureSize + 1), b, 0, this.m_featureSize + 1);		
-//		return b;
-//	}
-	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
 	public double calculatelogPij(int Yi, _SparseFeature[] spXi){
 		int offset = Yi * (m_featureSize + 1);
-		double[] xs = new double [this.m_classNo];
+		double[] xs = new double [m_classNo];
 		xs[Yi] = Utils.dotProduct(m_beta, spXi, offset);
-		for(int i = 0; i < this.m_classNo; i++){
+		for(int i = 0; i < m_classNo; i++){
 			if (i!=Yi) {
 				offset = i * (m_featureSize + 1);
 				xs[i] = Utils.dotProduct(m_beta, spXi, offset);
@@ -104,7 +97,7 @@ public class LogisticRegression extends BaseClassifier{
 		//The computation complexity is n*classNo.
 		for (_Doc doc: trainSet) {
 			int Yi = doc.getYLabel();
-			for(int j = 0; j < this.m_classNo; j++){
+			for(int j = 0; j < m_classNo; j++){
 				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (Yi == j){
@@ -113,7 +106,7 @@ public class LogisticRegression extends BaseClassifier{
 				} else
 					gValue = Pij;
 				
-				int offset = j * (this.m_featureSize + 1);
+				int offset = j * (m_featureSize + 1);
 				m_g[offset] += gValue;
 				//(Yij - Pij) * Xi
 				for(_SparseFeature sf: doc.getSparse()){
@@ -155,7 +148,7 @@ public class LogisticRegression extends BaseClassifier{
 		}
 		//The computation complexity is n*classNo.
 		for (_Doc doc: docs) {
-			for(int j = 0; j < this.m_classNo; j++){
+			for(int j = 0; j < m_classNo; j++){
 				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (doc.getYLabel() == j){
@@ -163,11 +156,11 @@ public class LogisticRegression extends BaseClassifier{
 				} else
 					gValue = Pij;
 				
-				gs[j * (this.m_featureSize + 1)] += gValue;
+				gs[j * (m_featureSize + 1)] += gValue;
 				//(Yij - Pij) * Xi
 				for(_SparseFeature sf: doc.getSparse()){
 					int index = sf.getIndex();
-					gs[j * (this.m_featureSize + 1) + index + 1] += gValue * sf.getValue();
+					gs[j * (m_featureSize + 1) + index + 1] += gValue * sf.getValue();
 				}
 			}
 		}
@@ -177,12 +170,12 @@ public class LogisticRegression extends BaseClassifier{
 	// Test the test set.
 	public void test() {
 		for(_Doc doc: m_testSet){
-			for(int i = 0; i < this.m_classNo; i++)
+			for(int i = 0; i < m_classNo; i++)
 				m_probs[i] = calculatelogPij(i, doc.getSparse());
 			doc.setPredictLabel(Utils.maxOfArrayIndex(m_probs)); //Set the predict label according to the probability of different classes.
 			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		this.m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
 }

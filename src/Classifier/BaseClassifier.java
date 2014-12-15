@@ -1,12 +1,9 @@
 package Classifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import libsvm.svm_model;
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
+
 
 public abstract class BaseClassifier {
 	protected int m_classNo; //The total number of classes.
@@ -20,98 +17,58 @@ public abstract class BaseClassifier {
 	protected double[][] m_PreRecOfOneFold;
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
-	//Used in NB and LR, will be overwritten.
-	public void train(){}
-	//Used in SVM to train data, will be overwritten. Since java does not accept functions with same parameters 
-	//and different return values, add a new variable.
-	public svm_model train(boolean flag){
-		svm_model model = new svm_model();
-		return model;
-	}
-	//Used in NB and LR, will be overwritten.
-	public void test(){}	
-	//Used in SVM, will be overwritten.
-	public void test(svm_model model){}
+	public abstract void train();
+	public abstract void test();
 	
 	//Constructor.
 	public BaseClassifier() {
-		this.m_classNo = 0;
-		this.m_featureSize = 0;
-		this.m_corpus = new _Corpus();
-		this.m_trainSet = new ArrayList<_Doc>();
-		this.m_testSet = new ArrayList<_Doc>();
-		this.m_probs = new double[this.m_classNo];
-		this.m_TPTable = new double [this.m_classNo][this.m_classNo];
-		this.m_PreRecOfOneFold = new double[this.m_classNo][2];
-		this.m_precisionsRecalls = new ArrayList<double[][]>();
+		m_classNo = 0;
+		m_featureSize = 0;
+		m_corpus = new _Corpus();
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		m_probs = new double[m_classNo];
+		m_TPTable = new double [m_classNo][m_classNo];
+		m_PreRecOfOneFold = new double[m_classNo][2];
+		m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 
 	// Constructor with parameters.
 	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
-		this.m_classNo = class_number;
-		this.m_featureSize = featureSize;
-		this.m_corpus = c;
-		this.m_trainSet = new ArrayList<_Doc>();
-		this.m_testSet = new ArrayList<_Doc>();
-		this.m_probs = new double[this.m_classNo];
-		this.m_TPTable = new double [this.m_classNo][this.m_classNo];
-		this.m_PreRecOfOneFold = new double[this.m_classNo][2];
-		this.m_precisionsRecalls = new ArrayList<double[][]>();
+		m_classNo = class_number;
+		m_featureSize = featureSize;
+		m_corpus = c;
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		m_probs = new double[m_classNo];
+		m_TPTable = new double [m_classNo][m_classNo];
+		m_PreRecOfOneFold = new double[m_classNo][2];
+		m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 	
-	//Add one more document array, which is a document folder to the train set.
-	public void addTrainSet(ArrayList<_Doc> docs){
-		for(_Doc doc: docs){
-			this.m_trainSet.add(doc);
-		}
-	}
-	
-	//Set the test_set to be one of the folder.
-	public void setTestSet(ArrayList<_Doc> docs){
-		this.m_testSet = docs;
-	}
-
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
 		c.shuffle(k);
 		int[] masks = c.getMasks();
-		HashMap<Integer, ArrayList<_Doc>> k_folder = new HashMap<Integer, ArrayList<_Doc>>();
-
-		// Set the hash map with documents.
-		for (int i = 0; i < masks.length; i++) {
-			_Doc doc = c.getCollection().get(i);
-			if (k_folder.containsKey(masks[i])) {
-				ArrayList<_Doc> temp = k_folder.get(masks[i]);
-				temp.add(doc);
-				k_folder.put(masks[i], temp);
-			} else{
-				ArrayList<_Doc> docs = new ArrayList<_Doc>();
-				docs.add(doc);
-				k_folder.put(masks[i], docs);
-			}
-		}
-
-		// Set the train set and test set.
+		ArrayList<_Doc> docs = c.getCollection();
+		//Use this loop to iterate all the ten folders, set the train set and test set.
 		for (int i = 0; i < k; i++) {
-			this.setTestSet(k_folder.get(i));
-			for (int j = 0; j < k; j++) {
-				if (j != i) {
-					this.addTrainSet(k_folder.get(j));
-				}
+			for (int j = 0; j < masks.length; j++) {
+				if( masks[j]==i ) m_testSet.add(docs.get(j));
+				else m_trainSet.add(docs.get(j));
 			}
-			// Train the data set to get the parameter.
 			train();
 			test();
-			this.m_trainSet.clear();
-			//this.m_testSet.clear();
+			m_trainSet.clear();
+			m_testSet.clear();
 		}
-		this.calculateMeanVariance(this.m_precisionsRecalls);	
+		calculateMeanVariance(m_precisionsRecalls);	
 	}
 	
 	//Calculate the precision and recall for one folder tests.
 	public double[][] calculatePreRec(double[][] tpTable) {
-		double[][] PreRecOfOneFold = new double[this.m_classNo][2];
-		for (int i = 0; i < this.m_classNo; i++) {
+		double[][] PreRecOfOneFold = new double[m_classNo][2];
+		for (int i = 0; i < m_classNo; i++) {
 			PreRecOfOneFold[i][0] = tpTable[i][i] / (sumOfRow(tpTable, i) + 0.001);// Precision of the class.
 			PreRecOfOneFold[i][1] = tpTable[i][i] / (sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
 		}
@@ -139,7 +96,7 @@ public abstract class BaseClassifier {
 	//Calculate the mean and variance of precision and recall.
 	public double[][] calculateMeanVariance(ArrayList<double[][]> prs){
 		//Use the two-dimension array to represent the final result.
-		double[][] metrix = new double[this.m_classNo][4]; 
+		double[][] metrix = new double[m_classNo][4]; 
 			
 		double precisionSum = 0.0;
 		double precisionMean = 0.0;
@@ -152,7 +109,7 @@ public abstract class BaseClassifier {
 		double recallVar = 0.0;
 
 		//i represents the class label, calculate the mean and variance of different classes.
-		for(int i = 0; i < this.m_classNo; i++){
+		for(int i = 0; i < m_classNo; i++){
 			precisionSum = 0;
 			recallSum = 0;
 			// Calculate the sum of precisions and recalls.
@@ -171,7 +128,7 @@ public abstract class BaseClassifier {
 		}
 
 		// Calculate the sum of variances of precisions and recalls.
-		for (int i = 0; i < this.m_classNo; i++) {
+		for (int i = 0; i < m_classNo; i++) {
 			precisionVarSum = 0.0;
 			recallVarSum = 0.0;
 			// Calculate the sum of precision variance and recall variance.
@@ -191,9 +148,9 @@ public abstract class BaseClassifier {
 		// The final output of the computation.
 		System.out.println("*************************************************");
 		System.out.println("The final result is as follows:");
-		System.out.println("The total number of classes is " + this.m_classNo);
+		System.out.println("The total number of classes is " + m_classNo);
 		
-		for(int i = 0; i < this.m_classNo; i++){
+		for(int i = 0; i < m_classNo; i++){
 			System.out.println("For class " + i + ":precision mean:" + metrix[i][0] + "\trecall mean:" + 
 			metrix[i][1] + "\tprecision var:" + metrix[i][2] + "\trecall var:" + metrix[i][3]);
 		}
