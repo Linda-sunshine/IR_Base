@@ -31,7 +31,7 @@ public class AmazonReviewMain {
 		String featureSelection = "CHI"; //Feature selection method.
 		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		/*****Parameters in time series analysis.*****/
 		int window = 45;
@@ -48,7 +48,6 @@ public class AmazonReviewMain {
 		//Collect vectors for documents.
 		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
-		//jsonAnalyzer 
 		jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		jsonAnalyzer.setFeatureValues(featureValue, norm);
@@ -56,7 +55,7 @@ public class AmazonReviewMain {
 		featureSize = jsonAnalyzer.getFeatureSize();
 		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
 		
-		corpus.save2File("./fv.dat");
+		//corpus.save2File("./fv.dat");
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
