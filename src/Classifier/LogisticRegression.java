@@ -31,6 +31,11 @@ public class LogisticRegression extends BaseClassifier{
 	}
 	
 	@Override
+	public String toString() {
+		return String.format("Logistic Regression[C:%d, F:%d, L:%.2f]", m_classNo, m_featureSize, m_lambda);
+	}
+	
+	@Override
 	protected void init() {
 		Arrays.fill(m_beta, 0);
 	}

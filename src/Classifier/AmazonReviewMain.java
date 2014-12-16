@@ -13,14 +13,15 @@ public class AmazonReviewMain {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		String classifier = "LR"; //Which classifier to use.
+		int CVFold = 10; //k fold-cross validation
+		String classifier = "NB"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
-		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
+		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablets";
+		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String finalLocation = "./FinalFeatureStat.txt";
@@ -35,7 +36,7 @@ public class AmazonReviewMain {
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 20;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -64,25 +65,25 @@ public class AmazonReviewMain {
 			//Define a new naive bayes with the parameters.
 			System.out.println("Start naive bayes, wait...");
 			NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize + window);
-			myNB.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
+			myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 			
 		} else if(classifier.equals("LR")){
 			//Define a new logistics regression with the parameters.
 			double lambda = 0; //Define a new lambda.
 			System.out.println("Start logistic regression, wait...");
 			LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window, lambda);
-			myLR.crossValidation(10, corpus);//Use the movie reviews for testing the codes.
+			myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 			
 		} else if(classifier.equals("SVM")){
 			//corpus.save2File("data/FVs/fvector.dat");
 			double C = 3;// The default value is 1.
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
-			mySVM.crossValidation(10, corpus);
+			mySVM.crossValidation(CVFold, corpus);
 			
 		} else if(classifier.equals("SEMI")){
 			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window);
-			mySemi.crossValidation(10, corpus);
-		}else System.out.println("Have not developed yet!:(");
+			mySemi.crossValidation(CVFold, corpus);
+		} else System.out.println("Have not developed yet!:(");
 	}
 }
