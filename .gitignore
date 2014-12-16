@@ -1,4 +1,5 @@
 bin/*
+data/*
 .classpath
 compile
 run
