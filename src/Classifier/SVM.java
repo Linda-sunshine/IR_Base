@@ -59,6 +59,11 @@ public class SVM extends BaseClassifier{
 	}
 	
 	@Override
+	public String toString() {
+		return String.format("SVM[C:%d, F:%d, T:%d]", m_classNo, m_featureSize, m_param.svm_type);
+	}
+	
+	@Override
 	protected void init() {
 		//no need to initiate, libSVM will take care of it
 	}

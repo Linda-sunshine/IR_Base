@@ -37,6 +37,11 @@ public class NaiveBayes extends BaseClassifier {
 		m_deltaXY = deltaXY;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Naive Bayes[C:%d, F:%d]", m_classNo, m_featureSize);
+	}
+	
 	protected void init() {
 		for(int i=0; i<m_classNo; i++) {
 			Arrays.fill(m_Pxy[i], 0);
@@ -46,6 +51,8 @@ public class NaiveBayes extends BaseClassifier {
 	
 	//Train the data set.
 	public void train(Collection<_Doc> trainSet){
+		init();
+		
 		for(_Doc doc: trainSet){
 			int label = doc.getYLabel();
 			m_pY[label] ++;

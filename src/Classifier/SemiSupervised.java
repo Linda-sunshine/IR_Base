@@ -74,11 +74,11 @@ public class SemiSupervised extends BaseClassifier{
 	public void test(){
 		double similarity = 0;
 		int L = m_labeled.size(), U = m_testSet.size();
-		double[][] Wij = new double[L+U][L+U];
+		double[][] Wij = new double[U+L][U+L];
 		
 		/***Set up K and K'.****/
 		m_k = L;
-		m_kPrime = U;
+		m_kPrime = U; // right now we used all
 		
 		/***Construct the Wij matrix.****/
 		for(int i = 0; i < U; i++){
@@ -97,24 +97,20 @@ public class SemiSupervised extends BaseClassifier{
 			}
 		}
 		
-		/****Construct the C+scale*\Delta matrix.****/
-		double scale = m_alpha / (m_k + m_beta*m_kPrime);
+		/****Construct the C+scale*\Delta matrix and Y vector.****/
+		double scale = -m_alpha / (m_k + m_beta*m_kPrime);
+		double[] Y = new double[U+L];
 		for(int i = 0; i < U+L; i++) {
 			Wij[i][i] = -Utils.sumOfArray(Wij[i]);
 			Utils.scaleArray(Wij[i], scale);
-			if (i<U)
-				Wij[i][i] += m_M;
-			else
+			
+			if (i<U) {
 				Wij[i][i] += 1.0;
-		}
-		
-		/***Construct the y matrix.****/
-		double[] Y = new double[U+L];
-		for(int i = 0; i < U+L; i++){
-			if(i < U)
-				Y[i] = m_M * m_classifier.predict(m_testSet.get(i)); //Multiple learner.
-			else
-				Y[i] = m_labeled.get(i-U).getYLabel();
+				Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
+			} else {
+				Wij[i][i] += m_M;
+				Y[i] = m_M * m_labeled.get(i-U).getYLabel();
+			}
 		}
 		
 		/***Perform matrix inverse.****/
@@ -136,11 +132,9 @@ public class SemiSupervised extends BaseClassifier{
 	
 	//get the closest int
 	private int getLabel(double pred) {
-		int a = (int)pred, b = a+1;
-		if (pred-a>b-pred)
-			return a;
-		else
-			return b;
+		for(int i=0; i<m_classNo; i++)
+			m_cProbs[i] = -Math.abs(i-pred); //-|c-p(c)|
+		return Utils.maxOfArrayIndex(m_cProbs);
 	}
 	
 	@Override
