@@ -90,6 +90,12 @@ public class Utils {
 		return sum;
 	}
 	
+	//The function defines the sum of an array.
+	public static void scaleArray(double[] a, double b) {
+		for (int i=0; i<a.length; i++)
+			a[i] *= b;
+	}
+	
 	//L1 normalization: fsValue/sum(abs(fsValue))
 	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;

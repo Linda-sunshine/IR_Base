@@ -1,6 +1,8 @@
 package Classifier;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collection;
+
 import structures._Corpus;
 import structures._Doc;
 
@@ -12,27 +14,22 @@ public abstract class BaseClassifier {
 	protected ArrayList<_Doc> m_trainSet; //All the documents used as the training set.
 	protected ArrayList<_Doc> m_testSet; //All the documents used as the testing set.
 	
-	protected double[] m_probs;
+	protected double[] m_cProbs;
+	
+	//for cross-validation
 	protected double[][] m_TPTable;
 	protected double[][] m_PreRecOfOneFold;
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
-	public abstract void train();
-	public abstract void test();
-	
-	//Constructor.
-	public BaseClassifier() {
-		m_classNo = 0;
-		m_featureSize = 0;
-		m_corpus = new _Corpus();
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
-		m_probs = new double[m_classNo];
-		m_TPTable = new double [m_classNo][m_classNo];
-		m_PreRecOfOneFold = new double[m_classNo][2];
-		m_precisionsRecalls = new ArrayList<double[][]>();
+	public void train() {
+		train(m_trainSet);
 	}
-
+	
+	public abstract void train(Collection<_Doc> trainSet);
+	public abstract void test();
+	public abstract int predict(_Doc doc);
+	protected abstract void init(); // to be called before training starts
+	
 	// Constructor with parameters.
 	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
 		m_classNo = class_number;
@@ -40,7 +37,7 @@ public abstract class BaseClassifier {
 		m_corpus = c;
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
-		m_probs = new double[m_classNo];
+		m_cProbs = new double[m_classNo];
 		m_TPTable = new double [m_classNo][m_classNo];
 		m_PreRecOfOneFold = new double[m_classNo][2];
 		m_precisionsRecalls = new ArrayList<double[][]>();
