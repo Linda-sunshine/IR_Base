@@ -52,11 +52,8 @@ public class NaiveBayes extends BaseClassifier {
 			for(_SparseFeature sf: doc.getSparse())
 				m_Pxy[label][sf.getIndex()] += m_presence?1:sf.getValue();
 		}
-		normalization();
-	}
-	
-	//Calculate the probabilities for different features in m_model;
-	public void normalization(){
+		
+		//normalization
 		for(int i = 0; i < m_classNo; i++){
 			m_pY[i] = Math.log(m_pY[i] + m_deltaY);//up to a constant since normalization of this is not important
 			double sum = Math.log(Utils.sumOfArray(m_Pxy[i]) + m_featureSize*m_deltaXY);
