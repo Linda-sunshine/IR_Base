@@ -158,7 +158,7 @@ public class _Doc {
 		for(_Doc doc:preDocs){
 			int index = featureSize + count;
 			double value = norm * doc.getYLabel();
-			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
+			//value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
 			tempSparse[featureLength + count] = new _SparseFeature(index, value);
 			count++;
 		}		
