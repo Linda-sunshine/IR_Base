@@ -15,7 +15,7 @@ public class AmazonReviewMain {
 		int Ngram = 2; //The default value is unigram. 
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		String classifier = "SEMI"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier);
 
@@ -33,6 +33,7 @@ public class AmazonReviewMain {
 		double endProb = 1; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
+		
 		/*****Parameters in time series analysis.*****/
 		int window = 20;
 		System.out.println("Window length: " + window);
@@ -40,20 +41,20 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
-//		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		jsonAnalyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer  jsonAnalyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
-		jsonAnalyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		jsonAnalyzer.setFeatureValues(featureValue, norm);
-		jsonAnalyzer.setTimeFeatures(window);
-		featureSize = jsonAnalyzer.getFeatureSize();
-		_Corpus corpus = jsonAnalyzer.returnCorpus(finalLocation);
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.setFeatureValues(featureValue, norm);
+		analyzer.setTimeFeatures(window);
+		featureSize = analyzer.getFeatureSize();
+		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
 		//corpus.save2File("./fv.dat");
 		

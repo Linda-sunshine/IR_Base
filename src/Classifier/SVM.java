@@ -116,8 +116,8 @@ public class SVM extends BaseClassifier{
 				nodes[fid].value = fv.getValue();	
 				fid++;
 			}
-			double result = svm.svm_predict(model, nodes);
-			m_TPTable[(int) ((result + 1)/2)][temp.getYLabel()] += 1;
+			int result = (int)svm.svm_predict(model, nodes);
+			m_TPTable[(result + 1)/2][temp.getYLabel()] += 1;
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
 		m_precisionsRecalls.add(m_PreRecOfOneFold);
