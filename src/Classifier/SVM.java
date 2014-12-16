@@ -1,5 +1,6 @@
 package Classifier;
-import java.util.ArrayList;
+import java.util.Collection;
+
 import libsvm.svm;
 import libsvm.svm_model;
 import libsvm.svm_node;
@@ -11,6 +12,8 @@ import structures._SparseFeature;
 
 public class SVM extends BaseClassifier{
 	svm_parameter m_param; //Define it to be global variable.
+	svm_model m_model;
+	
 	//Constructor without give C.
 	public SVM(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
@@ -55,75 +58,53 @@ public class SVM extends BaseClassifier{
 		m_param.weight = new double[0];
 	}
 	
-	//k-fold Cross Validation.
-	public void crossValidation(int k, _Corpus c){
-		c.shuffle(k);
-		int[] masks = c.getMasks();
-		ArrayList<_Doc> docs = c.getCollection();
-		//Use this loop to iterate all the ten folders, set the train set and test set.
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) m_testSet.add(docs.get(j));
-				else m_trainSet.add(docs.get(j));
-			}
-			//Train the data set to get the parameter.
-			svm_model model = trainSVM();
-			testSVM(model);
-			m_trainSet.clear();
-			m_testSet.clear();
-		}
-		calculateMeanVariance(m_precisionsRecalls);	
+	@Override
+	protected void init() {
+		//no need to initiate, libSVM will take care of it
 	}
-	// Train the data set.
-	public svm_model trainSVM() {
-		svm_model model = new svm_model();
+	
+	protected svm_node[] createSample(_Doc doc) {
+		svm_node[] node = new svm_node[doc.getDocLength()]; 
+		int fid = 0;
+		for(_SparseFeature fv:doc.getSparse()){
+			node[fid] = new svm_node();
+			node[fid].index = 1 + fv.getIndex();//svm's feature index starts from 1
+			node[fid].value = fv.getValue();
+			fid ++;
+		}
+		return node;
+	}
+	
+	@Override
+	public void train(Collection<_Doc> trainSet) {
 		svm_problem problem = new svm_problem();
-		problem.x = new svm_node[m_trainSet.size()][];
-		problem.y = new double [m_trainSet.size()];		
+		problem.x = new svm_node[trainSet.size()][];
+		problem.y = new double [trainSet.size()];		
 		
 		//Construct the svm_problem by enumerating all docs.
-		int docId = 0, fid, fvSize = 0;
-		for(_Doc temp : m_trainSet){
-			svm_node[] instance = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
-			fid = 0;
-			for(_SparseFeature fv:temp.getSparse()){
-				instance[fid] = new svm_node();
-				instance[fid].index = 1+fv.getIndex();
-				instance[fid].value = fv.getValue();
-				
-				if (fvSize<instance[fid].index)
-					fvSize = instance[fid].index;
-				fid ++;
-			}
-			problem.x[docId] = instance;
-			problem.y[docId] = temp.getYLabel();
+		int docId = 0;
+		for(_Doc doc : trainSet){
+			problem.x[docId] = createSample(doc);
+			problem.y[docId] = doc.getYLabel();
 			docId ++;
 		}	
-		m_param.gamma = 1.0/fvSize;//Set the gamma of parameter.
+		m_param.gamma = 1.0/m_featureSize;//Set the gamma of parameter.
 		problem.l = docId;
-		model = svm.svm_train(problem, m_param);
-		return model;
+		m_model = svm.svm_train(problem, m_param);
 	}
 
-	public void testSVM(svm_model model){
-		//Construct the svm_problem by enumerating all docs.
-		for (_Doc temp: m_testSet) {
-			svm_node[] nodes = new svm_node[temp.getDocLength()]; //this doc length is the number of sparse vectors.
-			int fid = 0;
-			for (_SparseFeature fv:temp.getSparse()) {
-				nodes[fid] = new svm_node();
-				nodes[fid].index = 1 + fv.getIndex();
-				nodes[fid].value = fv.getValue();	
-				fid++;
-			}
-			int result = (int)svm.svm_predict(model, nodes);
-			m_TPTable[(result + 1)/2][temp.getYLabel()] += 1;
+	@Override
+	public void test(){
+		for (_Doc doc: m_testSet) {
+			int result = predict(doc);
+			m_TPTable[(result + 1)/2][doc.getYLabel()] += 1;
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
 		m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
 	
 	@Override
-	public void train(){}
-	public void test(){}
+	public int predict(_Doc doc) {
+		return (int)svm.svm_predict(m_model, createSample(doc));
+	}
 }

@@ -1,160 +1,150 @@
 package Classifier;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
+
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
+import cern.colt.matrix.DoubleMatrix2D;
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.linalg.Algebra;
 
 public class SemiSupervised extends BaseClassifier{
 	protected double m_alpha; //Weight coefficient between unlabeled node and labeled node.
 	protected double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
-	protected double m_M; //Influence of label to node.
+	protected double m_M; //Influence of labeled node.
 	protected double m_k; // k labeled nodes.
 	protected double m_kPrime;//k' unlabeled nodes.
 	
-	protected ArrayList<_Doc> m_labeled;
-	protected DoubleMatrix2D m_Wij;
-	protected DoubleMatrix2D m_Dii; //The diagonal degree matrix.
-	protected DoubleMatrix2D m_delta;
-	protected DoubleMatrix2D m_Cii;
-	protected DoubleMatrix2D m_y;
-	protected DoubleMatrix2D m_f;
-	protected Algebra m_Algebra;
+	protected ArrayList<_Doc> m_labeled; // a subset of training set
+	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
-	protected NaiveBayes m_NB; //Multiple learner.
+	protected BaseClassifier m_classifier; //Multiple learner.
 	
 	//Randomly pick 10% of all the training documents.
 	public SemiSupervised(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
-		m_alpha = 0;
-		m_beta = 0;
+		
+		m_labelRatio = 0.1;
+		m_alpha = 1.0;
+		m_beta = 0.1;
 		m_M = 100000;
 		m_k = 0;
 		m_kPrime = 0;	
 		m_labeled = new ArrayList<_Doc>();
-		m_NB = new NaiveBayes(m_corpus, m_classNo, m_featureSize);
+		m_classifier = new NaiveBayes(m_corpus, m_classNo, m_featureSize);
+	}	
+	
+	public SemiSupervised(_Corpus c, int classNumber, int featureSize, double ratio){
+		super(c, classNumber, featureSize);
+		
+		m_labelRatio = ratio;
+		m_alpha = 1.0;
+		m_beta = 0.1;
+		m_M = 100000;
+		m_k = 0;
+		m_kPrime = 0;	
+		m_labeled = new ArrayList<_Doc>();
+		m_classifier = new NaiveBayes(m_corpus, m_classNo, m_featureSize);
 	}
+	
+	@Override
+	protected void init() {
+		m_labeled.clear();
+	}
+	
 	//Train the data set.
-	public void train(){	
-		//m_NB.train(m_trainSet);
+	public void train(Collection<_Doc> trainSet){	
+		init();
+		
+		m_classifier.train(trainSet);
+		
 		//Randomly pick some training documents as the labeled documents.
-		for (int i = 0; i < m_trainSet.size(); i++){
-			Random r = new Random();
-			if(r.nextInt()%9 == 0){
-				m_labeled.add(m_trainSet.get(i));
+		Random r = new Random();
+		for (_Doc doc:trainSet){
+			if(r.nextDouble()<m_labelRatio){
+				m_labeled.add(doc);
 			}
 		}
 	}
+	
 	//Test the data set.
 	public void test(){
 		double similarity = 0;
-		int size = m_labeled.size() + m_testSet.size();
-		m_Wij = new DenseDoubleMatrix2D(size, size);
-		//DoubleMatrix2D m_WijTranspose = new DenseDoubleMatrix2D(size, size);
-		m_Dii = new DenseDoubleMatrix2D(size, size);
-		m_Cii = new DenseDoubleMatrix2D(size, size);
-		m_y = new DenseDoubleMatrix2D(size, 1);
-		m_f = new DenseDoubleMatrix2D(size, 1);
-
+		int L = m_labeled.size(), U = m_testSet.size();
+		double[][] Wij = new double[L+U][L+U];
+		
+		/***Set up K and K'.****/
+		m_k = L;
+		m_kPrime = U;
+		
 		/***Construct the Wij matrix.****/
-		//set the part of unlabeled nodes. U-U
-		for(int i = 0; i < m_testSet.size(); i++){
-			m_Wij.set(i, i, 0);
-			for(int j = 0; j < i; j++){
-				similarity = Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
-				similarity = m_beta * similarity;
-				m_Wij.set(i, j, similarity);
-				m_Wij.set(j, i, similarity);
+		for(int i = 0; i < U; i++){
+			//set the part of unlabeled nodes. U-U
+			for(int j = 0; j < i; j++){//not including i-self
+				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
+				Wij[i][j] = similarity;
+				Wij[j][i] = similarity;
 			}	
-		}
-		//Set the part of labeled and unlabeled nodes. L-U and U-L
-		for(int i = m_testSet.size(); i < size; i++){
-			m_Wij.set(i, i, 0);
-			for(int j = 0; j < size; j++){
-				if(j < i){
-					similarity = Utils.calculateSimilarity(m_labeled.get(i - m_testSet.size()), m_testSet.get(j));
-					m_Wij.set(i, j, similarity);
-					m_Wij.set(j, i, similarity);
-				} else{
-					//Set the part of labeled nodes. L-L
-					m_Wij.set(j, i, 0);
-				}
+			
+			//Set the part of labeled and unlabeled nodes. L-U and U-L
+			for(int j = 0; j < L; j++){
+				similarity = m_alpha * Utils.calculateSimilarity(m_testSet.get(i), m_labeled.get(j));
+				Wij[i][j+U] = similarity;
+				Wij[j+U][i] = similarity;
 			}
 		}
-		//m_WijTranspose = this.m_Wij.viewDice();
-		//or m_WijTranspose = m_Algebra.transpose(m_Wij);
-		//this.m_Wij = max(this.m_Wij, m_WijTranspose);
-		/****Construct the Dii matrix.****/
-		for(int i = 0; i < size; i++){
-			double sum = m_Wij.viewColumn(i).zSum();
-			m_Dii.set(i, i, sum);
+		
+		/****Construct the C+scale*\Delta matrix.****/
+		double scale = m_alpha / (m_k + m_beta*m_kPrime);
+		for(int i = 0; i < U+L; i++) {
+			Wij[i][i] = -Utils.sumOfArray(Wij[i]);
+			Utils.scaleArray(Wij[i], scale);
+			if (i<U)
+				Wij[i][i] += m_M;
+			else
+				Wij[i][i] += 1.0;
 		}
-		/****Construct the delta matrix, = Wij - Dii****/
-		m_delta = new DenseDoubleMatrix2D(size, size);
-		for(int i = 0; i < size; i++){
-			for(int j = 0; j < size; j++){
-				double temp = m_Wij.get(j, i) - m_Dii.get(j, i);
-				m_delta.set(j, i, temp);
-			}
-		}
-		/***Construct the Cii matrix.****/
-		for(int i = 0; i < size; i++){
-			if(i < m_testSet.size())
-				m_Cii.set(i, i, 1);
-			else m_Cii.set(i, i, m_M);
-		}
+		
 		/***Construct the y matrix.****/
-		for(int i = 0; i < size; i++){
-			int tempLabel = 0;
-			if(i < m_testSet.size()){
-				tempLabel = m_NB.predictOneDoc(m_testSet.get(i)); //Multiple learner.
-				m_y.set(i, 1, tempLabel);
-			} else {
-				tempLabel = m_labeled.get(i-m_testSet.size()).getYLabel();
-				m_y.set(i, 1, tempLabel);
-			}
+		double[] Y = new double[U+L];
+		for(int i = 0; i < U+L; i++){
+			if(i < U)
+				Y[i] = m_M * m_classifier.predict(m_testSet.get(i)); //Multiple learner.
+			else
+				Y[i] = m_labeled.get(i-U).getYLabel();
 		}
-		//Predict the labels for all the labeled and unlabeled nodes.
-		DoubleMatrix2D tempM = new DenseDoubleMatrix2D(size, size);
-		double temp = 0;
-		for(int i = 0; i < size; i++){
-			for(int j = 0; j < size; j++){
-				temp = m_Cii.get(j, i) + m_alpha/(m_k + m_beta*m_kPrime) * m_delta.get(j, i);
-				tempM.set(j, i, temp);
-			}
-		}
-		tempM = m_Algebra.inverse(tempM);
-		m_f = m_Algebra.mult(m_Algebra.mult(tempM, m_Cii), m_y);
+		
+		/***Perform matrix inverse.****/
+		DenseDoubleMatrix2D mat = new DenseDoubleMatrix2D(Wij);
+		Algebra alg = new Algebra();
+		DoubleMatrix2D result = alg.inverse(mat);
 		
 		/*******Show results*********/
-		for(int i = 0; i < m_testSet.size(); i++){
-			m_TPTable[(int) m_f.get(i, 1)][m_testSet.get(i).getYLabel()] += 1;
+		for(int i = 0; i < U; i++){
+			double pred = 0;
+			for(int j=0; j<U+L; j++)
+				pred += result.getQuick(i, j) * Y[j];
+			
+			m_TPTable[getLabel(pred)][m_testSet.get(i).getYLabel()] += 1;
 		}
 		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
 		m_precisionsRecalls.add(m_PreRecOfOneFold);
 	}
 	
-	//k-fold Cross Validation.
-	public void crossValidation(int k, _Corpus c) {
-		c.shuffle(k);
-		int[] masks = c.getMasks();
-		ArrayList<_Doc> docs = c.getCollection();
-		//Use this loop to iterate all the ten folders, set the train set and test set.
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) m_testSet.add(docs.get(j));
-				else m_trainSet.add(docs.get(j));
-			}
-			m_NB.train(m_trainSet);
-			train();
-			test();
-			m_trainSet.clear();
-			m_testSet.clear();
-		}
-		calculateMeanVariance(m_precisionsRecalls);	
+	//get the closest int
+	private int getLabel(double pred) {
+		int a = (int)pred, b = a+1;
+		if (pred-a>b-pred)
+			return a;
+		else
+			return b;
+	}
+	
+	@Override
+	public int predict(_Doc doc) {
+		return -1; //we don't support this
 	}
 }
