@@ -1,7 +1,5 @@
 package Classifier;
 
-import java.util.ArrayList;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -44,26 +42,13 @@ public class LogisticRegression extends BaseClassifier{
 		int fSize = m_classNo * (m_featureSize + 1);
 		try{
 			do {
-				fValue = calcFuncGradient(m_trainSet);
+				fValue = calcFuncGradient();
 				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-7, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
 		}
 	}
-	
-	//Calculate the value of the logit function.
-//	public double logitFunction(double[] beta, _SparseFeature[] sf){
-//		double sum = beta[0];
-//		double lfValue = 0;
-//		for(int i = 0; i < sf.length; i++){
-//			int index = sf[i].getIndex() + 1;
-//			sum += beta[index] * sf[i].getValue();
-//		}
-//		sum = Math.exp(-sum);
-//		lfValue = 1 / ( 1 + sum );
-//		return lfValue;
-//	}
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
 	public double calculatelogPij(int Yi, _SparseFeature[] spXi){
@@ -79,8 +64,8 @@ public class LogisticRegression extends BaseClassifier{
 		return xs[Yi] - Utils.logSumOfExponentials(xs);
 	}
 	
-	//This function is used to calculate the value with the new beta.
-	public double calcFuncGradient(ArrayList<_Doc> trainSet) {
+	//This function is used to calculate the value and gradient with the new beta.
+	private double calcFuncGradient() {
 		
 		double gValue = 0, fValue = 0;
 		double Pij = 0;
@@ -95,7 +80,7 @@ public class LogisticRegression extends BaseClassifier{
 		}
 		
 		//The computation complexity is n*classNo.
-		for (_Doc doc: trainSet) {
+		for (_Doc doc: m_trainSet) {
 			int Yi = doc.getYLabel();
 			for(int j = 0; j < m_classNo; j++){
 				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
@@ -118,53 +103,6 @@ public class LogisticRegression extends BaseClassifier{
 			
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
 		return m_lambda*L2 - fValue;
-	}
-	
-	//This function is used to calculate the value with the new beta.
-	public double calculateFunction(ArrayList<_Doc> trainSet) {
-		double totalSum = 0;
-		//Calculate the sum of 
-		for (_Doc doc: trainSet)
-			totalSum += calculatelogPij(doc.getYLabel(), doc.getSparse());
-		
-		// Add the L2 regularization.
-		double L2 = 0;
-		for (double b : m_beta)
-			L2 += b * b;
-		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
-		return m_lambda*L2 - totalSum;
-	}
-
-	// This function is used to calculate the gradient descent of x, which is a
-	// vector with the same dimension with x.
-	public double[] calculateGradient(ArrayList<_Doc> docs) {
-		double[] gs = new double [m_beta.length]; // final gradient vector.
-		double gValue = 0;
-		double Pij = 0;
-		double logPij = 0;
-		//double Yi = 0;
-		for(int i = 0; i < m_beta.length; i++){
-			gs[i] += 2 * m_lambda * m_beta[i];
-		}
-		//The computation complexity is n*classNo.
-		for (_Doc doc: docs) {
-			for(int j = 0; j < m_classNo; j++){
-				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
-				Pij = Math.exp(logPij);
-				if (doc.getYLabel() == j){
-					gValue = Pij - 1.0;
-				} else
-					gValue = Pij;
-				
-				gs[j * (m_featureSize + 1)] += gValue;
-				//(Yij - Pij) * Xi
-				for(_SparseFeature sf: doc.getSparse()){
-					int index = sf.getIndex();
-					gs[j * (m_featureSize + 1) + index + 1] += gValue * sf.getValue();
-				}
-			}
-		}
-		return gs;
 	}
 
 	// Test the test set.
