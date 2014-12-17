@@ -1,9 +1,9 @@
 package Analyzer;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+
 import structures._stat;
 import utils.Utils;
 
@@ -11,77 +11,77 @@ public class FeatureSelector {
 
 	double m_startProb;
 	double m_endProb;
-	ArrayList<String> m_selectedFeatures;
+	int m_DFThreshold;
+	ArrayList<_item> m_selectedFeatures;
+	
+	class _item implements Comparable<_item> {
+		double m_value;
+		String m_name;
+		
+		public _item(String name, double v) {
+			m_value = v;
+			m_name = name;
+		}
+
+		@Override
+		public int compareTo(_item it) {
+			if (this.m_value < it.m_value)
+				return 1;
+			else if (this.m_value > it.m_value)
+				return -1;
+			else
+				return 0;
+		}
+	}
 
 	//Default setting of feature selection
 	public FeatureSelector(){
 		m_startProb = 0;
 		m_endProb = 1;
+		m_selectedFeatures = new ArrayList<_item>();
 	}
 		
 	//Given start and end of feature selection.
-	public FeatureSelector(double startProb, double endProb){
-		m_startProb = startProb;
-		m_endProb = endProb;
+	public FeatureSelector(double startProb, double endProb, int DFThreshold){
+		if (startProb>endProb) {
+			double t = startProb;
+			startProb = endProb;
+			endProb = t;
+		}
+		
+		m_startProb = Math.max(0, startProb);
+		m_endProb = Math.min(1.0, endProb);
+		m_DFThreshold = DFThreshold;
+		m_selectedFeatures = new ArrayList<_item>();
 	}
 	
 	//Return the selected features.
 	public ArrayList<String> getSelectedFeatures(){
-		return m_selectedFeatures;
-	}
-	
-	//Sort the features according to integer values.
-	public void sortFeaturesInt(HashMap<Integer, ArrayList<String>> featureValues){
-		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Integer> unsortedValues = featureValues.keySet();
-		ArrayList<Integer> sortedValues = new ArrayList<Integer>(unsortedValues);     
-		Collections.sort(sortedValues);//sort the DF
-		for(int value : sortedValues) sortedFeatures.addAll(featureValues.get(value));//sort the features according to sorted DF/IG/MI/CHI.
-			
-		//Start fetching particular features.
-		int totalSize = sortedFeatures.size();
+		ArrayList<String> features = new ArrayList<String>();
+		Collections.sort(m_selectedFeatures);
+		
+		int totalSize = m_selectedFeatures.size();
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);
-		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
-	}
-	
-	//Sort the features according to double values.
-	public void sortFeaturesDouble(HashMap<Double, ArrayList<String>> featureValues){
-		ArrayList<String> sortedFeatures = new ArrayList<String>();
-		Collection<Double> unsortedValues = featureValues.keySet();
-		ArrayList<Double> sortedValues = new ArrayList<Double>(unsortedValues);     
-		Collections.sort(sortedValues);//sort the DF
-		for(double value : sortedValues) sortedFeatures.addAll(featureValues.get(value));//sort the features according to sorted DF/IG/MI/CHI.
-			
-		//Start fetching particular features.
-		int totalSize = sortedFeatures.size();
-		int start = (int) (totalSize * m_startProb);
-		int end = (int) (totalSize * m_endProb);
-		m_selectedFeatures = new ArrayList<String>(sortedFeatures.subList(start, end));
+		for(int i=start; i<=end; i++)
+			features.add(m_selectedFeatures.get(i).m_name);
+		
+		return features;
 	}
 	
 	//Feature Selection -- DF.
-	public void DF(HashMap<String, _stat> featureStat, int threshold){
-		HashMap<Integer, ArrayList<String>> featureDF = new HashMap<Integer, ArrayList<String>>();
+	public void DF(HashMap<String, _stat> featureStat){
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
-			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if(sumDF > threshold){
-				if(featureDF.containsKey(sumDF)){
-					featureDF.get(sumDF).add(f);
-				}else{
-					ArrayList<String> temp = new ArrayList<String>();
-					temp.add(f);
-					featureDF.put(sumDF, temp);
-				}
+			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
+			if(sumDF > m_DFThreshold){
+				m_selectedFeatures.add(new _item(f, sumDF));
 			}
 		}
-		sortFeaturesInt(featureDF);
 	}
 		
 	//Feature Selection -- IG.
-	public void IG(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
-		HashMap<Double, ArrayList<String>> featureIG = new HashMap<Double, ArrayList<String>>();
+	public void IG(HashMap<String, _stat> featureStat, int[] classMemberNo){
 		double classMemberSum = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classMemberNo.length];//I
 		double[] PrCit = new double [classMemberNo.length];//II
@@ -98,10 +98,11 @@ public class FeatureSelector {
 				PrCiSum -= PrCi[i] * Math.log(PrCi[i]);
 			}
 		}
+		
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if (sumDF > threshold){
+			if (sumDF > m_DFThreshold){
 				_stat temp = featureStat.get(f);
 				Prt = Utils.sumOfArray(temp.getDF()) / classMemberSum;
 				PrtNot = 1 - Prt;
@@ -118,21 +119,13 @@ public class FeatureSelector {
 					}
 				}
 				Gt = PrCiSum + PrCitSum + PrCitNotSum;
-				if(featureIG.containsKey(Gt)){
-					featureIG.get(Gt).add(f);
-				}else{
-					ArrayList<String> tempArray = new ArrayList<String>();
-					tempArray.add(f);
-					featureIG.put(Gt, tempArray);
-				}
+				m_selectedFeatures.add(new _item(f, Gt));
 			}
 		}
-		sortFeaturesDouble(featureIG);
 	} 
 		
 	//Feature Selection -- MI.
-	public void MI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
-		HashMap<Double, ArrayList<String>> featureMI = new HashMap<Double, ArrayList<String>>();
+	public void MI(HashMap<String, _stat> featureStat, int[] classMemberNo){
 		double[] PrCi = new double[classMemberNo.length];
 		double[] ItCi = new double[classMemberNo.length];
 		double N = Utils.sumOfArray(classMemberNo);
@@ -143,7 +136,7 @@ public class FeatureSelector {
 		for (String f : featureStat.keySet()) {
 			// Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if (sumDF > threshold) {
+			if (sumDF > m_DFThreshold) {
 				Iavg = 0;
 				for (int i = 0; i < classMemberNo.length; i++) {
 					_stat temp = featureStat.get(f);
@@ -152,22 +145,15 @@ public class FeatureSelector {
 							* Utils.sumOfArray(temp.getDF()));
 					Iavg += ItCi[i] * PrCi[i];
 				}
-				if (featureMI.containsKey(Iavg)) {
-					featureMI.get(Iavg).add(f);
-				} else {
-					ArrayList<String> tempArray = new ArrayList<String>();
-					tempArray.add(f);
-					featureMI.put(Iavg, tempArray);
-				}
+				
+				m_selectedFeatures.add(new _item(f, Iavg));
 			}
 		}
-		sortFeaturesDouble(featureMI);
 	}
 		
 	//Feature Selection -- CHI.
-	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo, int threshold){
+	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo){
 		int classNo = classMemberNo.length;
-		HashMap<Double, ArrayList<String>> featureCHI = new HashMap<Double, ArrayList<String>>();
 		double N = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classNo]; 
 		double[] X2tc = new double [classNo];
@@ -177,7 +163,7 @@ public class FeatureSelector {
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if (sumDF > threshold){
+			if (sumDF > m_DFThreshold){
 				X2avg = 0;
 				for(int i = 0; i < classNo; i++){
 					_stat temp = featureStat.get(f);
@@ -189,15 +175,8 @@ public class FeatureSelector {
 					X2avg += Math.pow(X2tc[i], PrCi[i]);
 				}
 				//X2max = Utils.maxOfArrayValue(X2tc);
-				if(featureCHI.containsKey(X2avg)){
-					featureCHI.get(X2avg).add(f);
-				} else{
-					ArrayList<String> tempArray = new ArrayList<String>();
-					tempArray.add(f);
-					featureCHI.put(X2avg, tempArray);
-				}
+				m_selectedFeatures.add(new _item(f, X2avg));
 			}
 		}
-		sortFeaturesDouble(featureCHI);
 	}
 }
