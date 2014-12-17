@@ -26,8 +26,8 @@ public class AmazonReviewMain {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stopwords = "./data/Model/stopwords.dat";
-		String finalLocation = "./FinalFeatureStat.txt";
-		String featureLocation = "./SelectedFeatures.txt";
+		String finalLocation = "./data/Features/FinalFeatureStat.txt";
+		String featureLocation = "./data/Features/SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
 		String featureSelection = "CHI"; //Feature selection method.
@@ -59,7 +59,7 @@ public class AmazonReviewMain {
 		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
-		corpus.save2File("./fv.dat");
+		corpus.save2File("./data/FVs/fv.dat");
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
