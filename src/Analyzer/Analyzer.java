@@ -243,6 +243,7 @@ public abstract class Analyzer {
 	//Save all the features and feature stat into a file.
 	public PrintWriter SaveCV(String featureLocation) throws FileNotFoundException {
 		// File file = new File(path);
+		System.out.format("Saving controlled vocabulary to %s...\n", featureLocation);
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
 		for (int i = 0; i < m_featureNames.size(); i++)
 			writer.println(m_featureNames.get(i));

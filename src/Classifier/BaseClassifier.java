@@ -18,7 +18,6 @@ public abstract class BaseClassifier {
 	
 	//for cross-validation
 	protected double[][] m_TPTable;
-	protected double[][] m_PreRecOfOneFold;
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	public void train() {
@@ -41,7 +40,6 @@ public abstract class BaseClassifier {
 		m_testSet = new ArrayList<_Doc>();
 		m_cProbs = new double[m_classNo];
 		m_TPTable = new double [m_classNo][m_classNo];
-		m_PreRecOfOneFold = new double[m_classNo][2];
 		m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 	
