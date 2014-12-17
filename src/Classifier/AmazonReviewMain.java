@@ -13,10 +13,11 @@ public class AmazonReviewMain {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		int lengthThreshold = 5; //Document length threshold
+		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 5; //k fold-cross validation
-		String classifier = "LR"; //Which classifier to use.
+		String classifier = "NB"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
@@ -24,11 +25,11 @@ public class AmazonReviewMain {
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String stopwords = "./data/Model/stopwords.dat";
 		String finalLocation = "./FinalFeatureStat.txt";
 		String featureLocation = "./SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
-		String providedCV = "";
 		String featureSelection = "CHI"; //Feature selection method.
 		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
@@ -43,22 +44,22 @@ public class AmazonReviewMain {
 		/****Pre-process the data.*****/
 		//Feture selection.
 		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
-		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
 		//jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
-		//corpus.save2File("./fv.dat");
+		corpus.save2File("./fv.dat");
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.

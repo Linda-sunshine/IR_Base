@@ -25,20 +25,14 @@ public class jsonAnalyzer extends DocAnalyzer{
 	
 	private SimpleDateFormat m_dateFormatter;
 	
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, providedCV, fs);		
-		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
-	}	
-	
-	//Constructor with ngram and fValue.
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, providedCV, fs, Ngram);		
+	public jsonAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo, providedCV);		
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
 	}
 	
 	//Constructor with ngram and fValue.
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, fs, Ngram);
+	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 		
 	}
