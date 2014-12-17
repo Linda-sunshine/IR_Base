@@ -1,6 +1,5 @@
 bin/*
 data/*
 .classpath
-fv.dat
 compile
 run
