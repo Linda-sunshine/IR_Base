@@ -65,28 +65,20 @@ public abstract class Analyzer {
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
 	protected boolean LoadCV(String filename) {
-		int count = 0;
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				m_featureNames.add(line);
+				expandVocabulary(line);
 			}
 			reader.close();
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
-			e.printStackTrace();
 			return false;
 		}
 		// Indicate we can only use the loaded features to construct the feature
 		m_isCVLoaded = true;
-
-		// Set the index of the features.
-		for (String f : m_featureNames) {
-			m_featureNameIndex.put(f, count);
-			m_featureStat.put(f, new _stat(m_classNo));
-			count++;
-		}
+		
 		return true; // if loading is successful
 	}
 	
@@ -123,12 +115,8 @@ public abstract class Analyzer {
 	
 	//Add one more token to the current vocabulary.
 	protected void expandVocabulary(String token) {
+		m_featureNameIndex.put(token, m_featureNames.size()); // set the index of the new feature.
 		m_featureNames.add(token); // Add the new feature.
-		m_featureNameIndex.put(token, (m_featureNames.size() - 1)); // set the index of the new feature.
-	}
-	
-	//With a new feature added into the vocabulary, add the stat into stat arraylist.
-	public void updateFeatureStat(String token) {
 		m_featureStat.put(token, new _stat(m_classNo));
 	}
 		
@@ -164,12 +152,12 @@ public abstract class Analyzer {
 			}
 		} else if (fValue.equals("BM25")) {
 			double k1 = 1.5; // [1.2, 2]
-			double b = 10; // (0, 1000]
+			double b = 0.75; // (0, 1000]
 			// Iterate all the documents to get the average document length.
 			double navg = 0;
 			for (int k = 0; k < N; k++)
 				navg += docs.get(k).getTotalDocLength();
-			navg = navg / N;
+			navg /= N;
 
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
@@ -190,7 +178,7 @@ public abstract class Analyzer {
 			double navg = 0;
 			for (int k = 0; k < N; k++)
 				navg += docs.get(k).getTotalDocLength();
-			navg = navg / N;
+			navg /= N;
 
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);

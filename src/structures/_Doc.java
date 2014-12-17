@@ -10,8 +10,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import utils.Utils;
-
 /**
  * @author lingong
  * General structure to present a document for DM/ML/IR
