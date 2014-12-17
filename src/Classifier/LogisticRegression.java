@@ -59,7 +59,7 @@ public class LogisticRegression extends BaseClassifier{
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-2, 1e-5, iflag);
+				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-5, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -134,8 +134,9 @@ public class LogisticRegression extends BaseClassifier{
 	
 	@Override
 	public int predict(_Doc doc) {
+		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
-			m_cProbs[i] = calculatelogPij(i, doc.getSparse());
+			m_cProbs[i] = calculatelogPij(i, fv);
 		return Utils.maxOfArrayIndex(m_cProbs);
 	}
 }

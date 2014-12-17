@@ -13,6 +13,7 @@ public class MovieReviewMain {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
+		int lengthThreshold = 5; //Document length threshold
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 1;
 		String classifier = "SVM"; //Which classifier to use.
@@ -46,7 +47,7 @@ public class MovieReviewMain {
 			
 			//Case 1: no provided CV, no feature selection.
 			System.out.println("Case 1: no provided CV, no feature selection.  Start loading files, wait...");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, null, Ngram);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
@@ -54,7 +55,7 @@ public class MovieReviewMain {
 			
 			//Case 2: provided CV, no feature selection.
 			System.out.println("Case 2: provided CV, no feature selection. Start loading files, wait...");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, null, Ngram);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
@@ -62,25 +63,25 @@ public class MovieReviewMain {
 			
 			//Case 3: no provided CV, feature selection.
 			System.out.println("Case 3: no provided CV, feature selection. Start loading files to do feature selection, wait...");
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, featureSelection, Ngram);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
+			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix);
 			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 
 		} else if(!providedCV.isEmpty() && !featureSelection.isEmpty()){
 			
 			//Case 4: provided CV, feature selection.
-			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 			System.out.println("Case 4: provided CV, feature selection. Start loading files to do feature selection, wait...");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
-			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, null, Ngram);
+			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix);
 			analyzer.setFeatureValues(featureValue, norm);
 			corpus = analyzer.returnCorpus(finalLocation); 

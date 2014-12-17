@@ -168,6 +168,10 @@ public class Utils {
 		}
 		return similarity;
 	}
+	
+	static public boolean isNumber(String token) {
+		return token.matches("\\d+");
+	}
 		
 	public static void main(String[] args){
 		_SparseFeature s1 = new _SparseFeature(1, 4);

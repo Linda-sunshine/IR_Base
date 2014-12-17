@@ -5,65 +5,126 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.Normalizer;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.Set;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
-import structures._stat;
+import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
-
+	protected int m_Ngram; 
+	protected int m_lengthThreshold;
+	
+	Set<String> m_stopwords;
+	
 	//Constructor.
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs) throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
-		if(providedCV != null)
+		
+		m_Ngram = 1;
+		m_lengthThreshold = 5;
+		if(providedCV!=null && !providedCV.isEmpty())
 			LoadCV(providedCV);
-		if(fs != null){
-			m_isFetureSelected = true;
-			featureSelection = fs;
-		}	
+		m_stopwords = new HashSet<String>();
 	}	
 	
 	//Constructor with ngram and fValue.
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, String fs, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, Ngram);
-		if(!providedCV.equals(""))
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		
+		m_Ngram = Ngram;
+		m_lengthThreshold = threshold;
+		if(providedCV!=null && !providedCV.isEmpty())
 			LoadCV(providedCV);
-		if(!fs.equals("")){
-			m_isFetureSelected = true;
-			featureSelection = fs;
-		}
+		m_stopwords = new HashSet<String>();
 	}
 	
-	//Load the features from a file and store them in the m_featurNames.
-	public boolean LoadCV(String filename) {
-		int count = 0;
+	public void LoadStopwords(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			//StringBuffer buffer = new StringBuffer(1024);
 			String line;
 
 			while ((line = reader.readLine()) != null) {
-				//buffer.append(line);
-				m_featureNames.add(line);
+				line = SnowballStemming(Normalize(line));
+				if (!line.isEmpty())
+					m_stopwords.add(line);
 			}
 			reader.close();
+			System.out.format("Loading %d stopwords from %s\n", m_stopwords.size(), filename);
 		} catch(IOException e){
-				System.err.format("[Error]Failed to open file %s!!", filename);
-				e.printStackTrace();
-				return false;
+			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
-		//Indicate we can only use the loaded features to construct the feature vector!!
-		m_isCVLoaded = true;
+	}
+	
+	//Tokenizer.
+	protected String[] Tokenizer(String source){
+		String[] tokens = m_tokenizer.tokenize(source);
+		return tokens;
+	}
+	
+	//Normalize.
+	protected String Normalize(String token){
+		token = Normalizer.normalize(token, Normalizer.Form.NFKC);
+		token = token.replaceAll("\\W+", "");
+		token = token.toLowerCase();
 		
-		//Set the index of the features.
-		for(String f: m_featureNames){
-			m_featureNameIndex.put(f, count);
-			m_featureIndexName.put(count, f);
-			m_featureStat.put(f, new _stat(m_classNo));
-			count++;
+		if (Utils.isNumber(token))
+			return "NUM";
+		else
+			return token;
+	}
+	
+	//Snowball Stemmer.
+	protected String SnowballStemming(String token){
+		m_stemmer.setCurrent(token);
+		if(m_stemmer.stem())
+			return m_stemmer.getCurrent();
+		else
+			return token;
+	}
+	
+	protected boolean isLegit(String token) {
+		return !token.isEmpty() && !m_stopwords.contains(token);
+	}
+	
+	protected boolean isBoundary(String token) {
+		return token.isEmpty();//is this a good checking condition?
+	}
+	
+	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
+	protected String[] TokenizerNormalizeStemmer(String source){
+		String[] tokens = Tokenizer(source); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < tokens.length; i++)
+			tokens[i] = SnowballStemming(Normalize(tokens[i]));
+		
+		LinkedList<String> Ngrams = new LinkedList<String>();
+		int tokenLength = tokens.length, N = m_Ngram;		
+		for(int i=0; i<tokenLength; i++) {
+			String token = tokens[i];
+			boolean legit = isLegit(token);
+			if (legit)
+				Ngrams.add(token);//unigram
+			
+			//N to 2 grams
+			if (!isBoundary(token)) {
+				for(int j=i-1; j>=Math.max(0, i-N+1); j--) {	
+					if (isBoundary(tokens[j]))
+						break;//touch the boundary
+					
+					token = tokens[j] + "-" + token;
+					legit |= isLegit(tokens[j]);
+					if (legit)//at least one of them is legitimate
+						Ngrams.add(token);
+				}
+			}
 		}
-		return true; // if loading is successful
+		
+		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
 
 	//Load a document and analyze it.
@@ -139,7 +200,7 @@ public class DocAnalyzer extends Analyzer {
 				// if the token is not in the vocabulary, nothing to do.
 			}
 			
-			if (spVct.size()>=5) {//temporary code for debugging purpose 
+			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose 
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
 				m_classMemberNo[doc.getYLabel()]++;
