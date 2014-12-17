@@ -30,7 +30,7 @@ public class AmazonReviewMain {
 		String featureLocation = "./data/Features/SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
-		String featureSelection = "CHI"; //Feature selection method.
+		String featureSelection = "IG"; //Feature selection method.
 		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
@@ -59,7 +59,7 @@ public class AmazonReviewMain {
 		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
-		corpus.save2File("./data/FVs/fv.dat");
+		//corpus.save2File("./data/FVs/fv.dat");
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
