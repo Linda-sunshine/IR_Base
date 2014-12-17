@@ -16,7 +16,7 @@ public class AmazonReviewMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 5; //k fold-cross validation
 		
