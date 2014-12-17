@@ -141,11 +141,9 @@ public class DocAnalyzer extends Analyzer {
 			//How to generalize it to several classes???? 
 			if(filename.contains("pos")){
 				//Collect the number of documents in one class.
-				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));
-				m_classMemberNo[0]++;
+				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));				
 			}else if(filename.contains("neg")){
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
-				m_classMemberNo[1]++;
 			}
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);

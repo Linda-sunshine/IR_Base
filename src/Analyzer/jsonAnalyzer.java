@@ -34,7 +34,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
-		
 	}
 	
 	//Load a document and analyze it.
@@ -48,7 +47,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
-					m_classMemberNo[post.getLabel()-1]++;
 				}
 			}
 		} catch (Exception e) {
