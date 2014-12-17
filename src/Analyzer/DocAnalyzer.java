@@ -88,7 +88,10 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	protected boolean isLegit(String token) {
-		return !token.isEmpty() && !m_stopwords.contains(token);
+		return !token.isEmpty() 
+			&& !m_stopwords.contains(token)
+			&& token.length()>1
+			&& token.length()<20;
 	}
 	
 	protected boolean isBoundary(String token) {

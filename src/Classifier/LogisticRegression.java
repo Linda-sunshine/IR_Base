@@ -59,7 +59,7 @@ public class LogisticRegression extends BaseClassifier{
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-5, iflag);
+				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-6, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -126,10 +126,9 @@ public class LogisticRegression extends BaseClassifier{
 	public void test() {
 		for(_Doc doc: m_testSet){
 			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
-			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
+			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
 		}
-		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
 	
 	@Override
