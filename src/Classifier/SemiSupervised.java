@@ -24,7 +24,7 @@ public class SemiSupervised extends BaseClassifier{
 	protected BaseClassifier m_classifier; //Multiple learner.
 	
 	//Randomly pick 10% of all the training documents.
-	public SemiSupervised(_Corpus c, int classNumber, int featureSize){
+	public SemiSupervised(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize);
 		
 		m_labelRatio = 0.1;
@@ -34,10 +34,11 @@ public class SemiSupervised extends BaseClassifier{
 		m_k = 0;
 		m_kPrime = 0;	
 		m_labeled = new ArrayList<_Doc>();
-		m_classifier = new NaiveBayes(m_corpus, m_classNo, m_featureSize);
+		
+		setClassifier(classifier);
 	}	
 	
-	public SemiSupervised(_Corpus c, int classNumber, int featureSize, double ratio){
+	public SemiSupervised(_Corpus c, int classNumber, int featureSize, double ratio, String classifier){
 		super(c, classNumber, featureSize);
 		
 		m_labelRatio = ratio;
@@ -47,7 +48,21 @@ public class SemiSupervised extends BaseClassifier{
 		m_k = 0;
 		m_kPrime = 0;	
 		m_labeled = new ArrayList<_Doc>();
-		m_classifier = new NaiveBayes(m_corpus, m_classNo, m_featureSize);
+		
+		setClassifier(classifier);
+	}
+	
+	private void setClassifier(String classifier) {
+		if (classifier.equals("NB"))
+			m_classifier = new NaiveBayes(null, m_classNo, m_featureSize);
+		else if (classifier.equals("LR"))
+			m_classifier = new LogisticRegression(null, m_classNo, m_featureSize);
+		else if (classifier.equals("SVM"))
+			m_classifier = new SVM(null, m_classNo, m_featureSize);
+		else {
+			System.out.println("Classifier has not developed yet!");
+			System.exit(-1);
+		}
 	}
 	
 	@Override
@@ -126,8 +141,7 @@ public class SemiSupervised extends BaseClassifier{
 			
 			m_TPTable[getLabel(pred)][m_testSet.get(i).getYLabel()] += 1;
 		}
-		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
 	
 	//get the closest int

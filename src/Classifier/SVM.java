@@ -104,8 +104,7 @@ public class SVM extends BaseClassifier{
 			int result = predict(doc);
 			m_TPTable[(result + 1)/2][doc.getYLabel()] += 1;
 		}
-		m_PreRecOfOneFold = calculatePreRec(m_TPTable);
-		m_precisionsRecalls.add(m_PreRecOfOneFold);
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
 	
 	@Override
