@@ -330,23 +330,23 @@ public abstract class Analyzer {
 	
 	//Select the features and store them in a file.
 	public void featureSelection(String location, double startProb, double endProb, int threshold) throws FileNotFoundException {
-		FeatureSelector selector = new FeatureSelector(startProb, endProb);
+		FeatureSelector selector = new FeatureSelector(startProb, endProb, threshold);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		setFeatureConfiguration(); // Construct the table for features.
 
 		if (m_isFetureSelected) {
 			System.out.println("*******************************************************************");
 			if (featureSelection.equals("DF")) {
-				selector.DF(m_featureStat, threshold);
+				selector.DF(m_featureStat);
 				m_featureNames = selector.getSelectedFeatures();
 			} else if (featureSelection.equals("IG")) {
-				selector.IG(m_featureStat, m_classMemberNo, threshold);
+				selector.IG(m_featureStat, m_classMemberNo);
 				m_featureNames = selector.getSelectedFeatures();
 			} else if (featureSelection.equals("MI")) {
-				selector.MI(m_featureStat, m_classMemberNo, threshold);
+				selector.MI(m_featureStat, m_classMemberNo);
 				m_featureNames = selector.getSelectedFeatures();
 			} else if (featureSelection.equals("CHI")) {
-				selector.CHI(m_featureStat, m_classMemberNo, threshold);
+				selector.CHI(m_featureStat, m_classMemberNo);
 				m_featureNames = selector.getSelectedFeatures();
 			}
 		}

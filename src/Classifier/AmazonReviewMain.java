@@ -13,10 +13,10 @@ public class AmazonReviewMain {
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
-		int CVFold = 10; //k fold-cross validation
-		String classifier = "NB"; //Which classifier to use.
+		int CVFold = 5; //k fold-cross validation
+		String classifier = "LR"; //Which classifier to use.
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
@@ -42,15 +42,16 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, providedCV, featureSelection, Ngram);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(featureLocation, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		featureSelection = "";
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
+		//jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, featureSelection, Ngram);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
@@ -69,7 +70,7 @@ public class AmazonReviewMain {
 			
 		} else if(classifier.equals("LR")){
 			//Define a new logistics regression with the parameters.
-			double lambda = 0; //Define a new lambda.
+			double lambda = 1.0; //Define a new lambda.
 			System.out.println("Start logistic regression, wait...");
 			LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window, lambda);
 			myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
