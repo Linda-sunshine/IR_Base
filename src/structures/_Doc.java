@@ -10,11 +10,6 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
-<<<<<<< HEAD
-=======
-import utils.Utils;
-
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 /**
  * @author lingong
  * General structure to present a document for DM/ML/IR

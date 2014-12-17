@@ -69,11 +69,7 @@ public abstract class Analyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
-<<<<<<< HEAD
 				expandVocabulary(line);
-=======
-				m_featureNames.add(line);
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 			}
 			reader.close();
 		} catch (IOException e) {
@@ -82,17 +78,6 @@ public abstract class Analyzer {
 		}
 		// Indicate we can only use the loaded features to construct the feature
 		m_isCVLoaded = true;
-<<<<<<< HEAD
-		
-=======
-
-		// Set the index of the features.
-		for (String f : m_featureNames) {
-			m_featureNameIndex.put(f, count);
-			m_featureStat.put(f, new _stat(m_classNo));
-			count++;
-		}
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 		return true; // if loading is successful
 	}
 	
@@ -131,14 +116,6 @@ public abstract class Analyzer {
 	protected void expandVocabulary(String token) {
 		m_featureNameIndex.put(token, m_featureNames.size()); // set the index of the new feature.
 		m_featureNames.add(token); // Add the new feature.
-<<<<<<< HEAD
-=======
-		m_featureNameIndex.put(token, (m_featureNames.size() - 1)); // set the index of the new feature.
-	}
-	
-	//With a new feature added into the vocabulary, add the stat into stat arraylist.
-	public void updateFeatureStat(String token) {
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 		m_featureStat.put(token, new _stat(m_classNo));
 	}
 		

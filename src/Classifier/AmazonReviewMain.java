@@ -16,11 +16,7 @@ public class AmazonReviewMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-<<<<<<< HEAD
 		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-=======
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 5; //k fold-cross validation
 		
@@ -42,11 +38,7 @@ public class AmazonReviewMain {
 		String featureLocation = "./data/Features/SelectedFeatures.txt";
 
 		/*****Parameters in feature selection.*****/
-<<<<<<< HEAD
-		String featureSelection = "IG"; //Feature selection method.
-=======
 		String featureSelection = "CHI"; //Feature selection method.
->>>>>>> da64ef3995c2e3de0a84dc193345cf5af61433f7
 		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
