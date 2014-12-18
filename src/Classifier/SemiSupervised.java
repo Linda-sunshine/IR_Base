@@ -7,9 +7,9 @@ import java.util.Random;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 
 public class SemiSupervised extends BaseClassifier{
 	protected double m_alpha; //Weight coefficient between unlabeled node and labeled node.
@@ -130,7 +130,7 @@ public class SemiSupervised extends BaseClassifier{
 		
 		/***Perform matrix inverse.****/
 		DenseDoubleMatrix2D mat = new DenseDoubleMatrix2D(Wij);
-		Algebra alg = new Algebra();
+		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		DoubleMatrix2D result = alg.inverse(mat);
 		
 		/*******Show results*********/
