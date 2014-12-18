@@ -181,7 +181,6 @@ public class DocAnalyzer extends Analyzer {
 						}
 					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 						expandVocabulary(token);// update the m_featureNames.
-						updateFeatureStat(token);
 						index = m_featureNameIndex.get(token);
 						spVct.put(index, 1.0);
 						m_featureStat.get(token).addOneDF(doc.getYLabel());
