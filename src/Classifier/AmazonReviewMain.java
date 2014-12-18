@@ -59,8 +59,7 @@ public class AmazonReviewMain {
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
