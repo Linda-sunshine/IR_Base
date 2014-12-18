@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
@@ -12,12 +13,34 @@ import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 
 public class SemiSupervised extends BaseClassifier{
+	class _Node implements Comparable<_Node> {
+		int m_i, m_j; // index in the graph
+		double m_sim; // similarity to the current node
+		
+		public _Node(int i, int j, double sim) {
+			m_i = i;
+			m_j = j;
+			m_sim = sim;
+		}
+
+		@Override
+		public int compareTo(_Node n) {
+			if (m_sim<n.m_sim)
+				return 1;
+			else if (m_sim>n.m_sim)
+				return -1;
+			else
+				return 0;
+		}
+	}
+	
 	protected double m_alpha; //Weight coefficient between unlabeled node and labeled node.
 	protected double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
 	protected double m_M; //Influence of labeled node.
-	protected double m_k; // k labeled nodes.
-	protected double m_kPrime;//k' unlabeled nodes.
+	protected int m_k; // k labeled nodes.
+	protected int m_kPrime;//k' unlabeled nodes.
 	
+	protected MyPriorityQueue<_Node> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
 	protected ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
@@ -31,22 +54,23 @@ public class SemiSupervised extends BaseClassifier{
 		m_alpha = 1.0;
 		m_beta = 0.1;
 		m_M = 100000;
-		m_k = 0;
-		m_kPrime = 0;	
+		m_k = 100;
+		m_kPrime = 50;	
 		m_labeled = new ArrayList<_Doc>();
 		
 		setClassifier(classifier);
 	}	
 	
-	public SemiSupervised(_Corpus c, int classNumber, int featureSize, double ratio, String classifier){
+	public SemiSupervised(_Corpus c, int classNumber, int featureSize, String classifier, 
+			double ratio, int k, int kPrime){
 		super(c, classNumber, featureSize);
 		
 		m_labelRatio = ratio;
 		m_alpha = 1.0;
 		m_beta = 0.1;
 		m_M = 100000;
-		m_k = 0;
-		m_kPrime = 0;	
+		m_k = k;
+		m_kPrime = kPrime;	
 		m_labeled = new ArrayList<_Doc>();
 		
 		setClassifier(classifier);
@@ -91,25 +115,35 @@ public class SemiSupervised extends BaseClassifier{
 		int L = m_labeled.size(), U = m_testSet.size();
 		double[][] Wij = new double[U+L][U+L];
 		
-		/***Set up K and K'.****/
-		m_k = L;
-		m_kPrime = U; // right now we used all
+		/***Set up structure for k nearest neighbors.****/
+		m_kUU = new MyPriorityQueue<_Node>(m_kPrime);
+		m_kUL = new MyPriorityQueue<_Node>(m_k);
 		
 		/***Construct the Wij matrix.****/
 		for(int i = 0; i < U; i++){
 			//set the part of unlabeled nodes. U-U
 			for(int j = 0; j < i; j++){//not including i-self
 				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
-				Wij[i][j] = similarity;
-				Wij[j][i] = similarity;
+				m_kUU.add(new _Node(i, j, similarity));
 			}	
+			
+			for(_Node n:m_kUU) {
+				Wij[n.m_i][n.m_j] = n.m_sim;
+				Wij[n.m_j][n.m_i] = n.m_sim;
+			}
+			m_kUU.clear();
 			
 			//Set the part of labeled and unlabeled nodes. L-U and U-L
 			for(int j = 0; j < L; j++){
 				similarity = m_alpha * Utils.calculateSimilarity(m_testSet.get(i), m_labeled.get(j));
-				Wij[i][j+U] = similarity;
-				Wij[j+U][i] = similarity;
+				m_kUL.add(new _Node(i, j+U, similarity));
 			}
+			
+			for(_Node n:m_kUL) {
+				Wij[n.m_i][n.m_j] = n.m_sim;
+				Wij[n.m_j][n.m_i] = n.m_sim;
+			}
+			m_kUL.clear();
 		}
 		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
