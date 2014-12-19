@@ -75,7 +75,8 @@ public class Execution  {
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (param.m_style.equals("TRANS")) {
-			SemiSupervised mySemi = new SemiSupervised(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier);
+			SemiSupervised mySemi = new SemiSupervised(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier,
+					param.m_sampleRate, param.m_kUL, param.m_kUU);
 			mySemi.crossValidation(param.m_CVFold, corpus);
 		} else System.out.println("Learning paradigm has not developed yet!");
 	}

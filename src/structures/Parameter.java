@@ -23,6 +23,9 @@ public class Parameter {
 	
 	//"SUP", "TRANS"
 	public String m_style = "TRANS";
+	public double m_sampleRate = 0.1; // sampling rate for transductive learning
+	public int m_kUL = 100; // k nearest labeled neighbors
+	public int m_kUU = 50; // k' nearest unlabeled neighbors
 
 	/*****The parameters used in loading files.*****/
 	public String m_folder = null;
@@ -86,6 +89,12 @@ public class Parameter {
 				m_style = argv[i];
 			else if (argv[i-1].equals("-w"))
 				m_window = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-sr"))
+				m_sampleRate = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-kUL"))
+				m_kUL = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-kUU"))
+				m_kUU = Integer.valueOf(argv[i]);
 			else
 				exit_with_help();
 		}
@@ -138,6 +147,9 @@ public class Parameter {
 		+"-s type: learning paradigm (default SUP)\n"
 		+"	SUP -- Supervised learning\n"
 		+"	TRANS -- Transductive learning\n"
+		+"-sr r: Sample rate for transductive learning (default 0.1)\n"
+		+"-kUL c: k nearest labeled neighbors (default 0.1)\n"
+		+"-kUU c: kP nearest unlabeled neighbors (default 0.1)\n"
 		);
 		System.exit(1);
 	}
