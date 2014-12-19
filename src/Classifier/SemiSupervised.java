@@ -76,6 +76,11 @@ public class SemiSupervised extends BaseClassifier{
 		setClassifier(classifier);
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("Transductive Learning[C:%s, k:%d, k':%d]", m_classifier, m_k, m_kPrime);
+	}
+	
 	private void setClassifier(String classifier) {
 		if (classifier.equals("NB"))
 			m_classifier = new NaiveBayes(null, m_classNo, m_featureSize);

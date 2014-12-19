@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -62,6 +63,14 @@ public abstract class Analyzer {
 		m_featureStat = new HashMap<String, _stat>();
 		m_preDocs = new LinkedList<_Doc>();
 	}	
+	
+	public void reset() {
+		Arrays.fill(m_classMemberNo, 0);
+		m_featureNames.clear();
+		m_featureNameIndex.clear();
+		m_featureStat.clear();
+		m_corpus.reset();
+	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
 	protected boolean LoadCV(String filename) {
