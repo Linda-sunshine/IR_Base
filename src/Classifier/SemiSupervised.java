@@ -10,7 +10,7 @@ import structures._Doc;
 import utils.Utils;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
-import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 public class SemiSupervised extends BaseClassifier{
 	class _Node implements Comparable<_Node> {
@@ -168,7 +168,7 @@ public class SemiSupervised extends BaseClassifier{
 		}
 		
 		/***Perform matrix inverse.****/
-		DenseDoubleMatrix2D mat = new DenseDoubleMatrix2D(Wij);
+		SparseDoubleMatrix2D mat = new SparseDoubleMatrix2D(Wij);
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		DoubleMatrix2D result = alg.inverse(mat);
 		
