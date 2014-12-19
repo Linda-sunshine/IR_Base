@@ -105,8 +105,10 @@ public abstract class Analyzer {
 	abstract public void LoadDoc(String filename);
 	
 	//Save all the features and feature stat into a file.
-	protected PrintWriter SaveCVStat(String finalLocation) throws FileNotFoundException{
-		//File file = new File(path);
+	protected void SaveCVStat(String finalLocation) throws FileNotFoundException{
+		if (finalLocation==null || finalLocation.isEmpty())
+			return;
+		
 		PrintWriter writer = new PrintWriter(new File(finalLocation));
 		for(int i = 0; i < m_featureNames.size(); i++){
 			writer.print(m_featureNames.get(i));
@@ -118,7 +120,6 @@ public abstract class Analyzer {
 			writer.println();
 		}
 		writer.close();
-		return writer;
 	}
 	
 	//Add one more token to the current vocabulary.
