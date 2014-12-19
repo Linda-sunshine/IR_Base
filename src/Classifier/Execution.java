@@ -32,11 +32,12 @@ public class Execution  {
 		if (param.m_featureFile==null) {
 		//Feture selection.
 			System.out.println("Performing feature selection, wait...");
-			((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);
-			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
-			
 			param.m_featureFile = "./data/Features/selected_fv.dat";
 			param.m_featureStat = "./data/Features/selected_fv_stat.dat";
+			System.out.println(param.printFeatureSelectionConfiguration());
+			
+			((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);
+			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 			analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_DFthreshold); //Select the features.
 			analyzer.reset();//clear memory for future feature construction
 		}

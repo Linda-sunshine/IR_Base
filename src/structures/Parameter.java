@@ -141,4 +141,26 @@ public class Parameter {
 		);
 		System.exit(1);
 	}
+	
+	public String toString() {
+		StringBuffer buffer = new StringBuffer(512);
+		buffer.append("\n--------------------------------------------------------------------------------------");
+		buffer.append("\nParameters of learning procedure:");
+		buffer.append("\n#Class: " + m_classNumber + "\tNgram: " + m_Ngram + "\tFeature value: " + m_featureValue + "\tNormalization: " + m_norm);
+		buffer.append("\nLearing method: " + m_style + "\tClassifier: " + m_classifier + "Cross validation: " + m_CVFold);
+		buffer.append("\nDoc length cut: " + m_lengthThreshold +"\tWindow length: " + m_window);
+		buffer.append("\nData directory: " + m_folder);
+		buffer.append("\n--------------------------------------------------------------------------------------");
+		return buffer.toString();
+	}
+	
+	public String printFeatureSelectionConfiguration() {
+		StringBuffer buffer = new StringBuffer(512);
+		buffer.append("\n--------------------------------------------------------------------------------------");
+		buffer.append("\nParameters of feature selection:");
+		buffer.append("\nSelection method: " + m_featureSelection + "\tDF cut: " + m_DFthreshold + "\tRange: [" + m_startProb + "," + m_endProb + "]");
+		buffer.append("\nFeature file: " + m_featureFile + "\tStatistics file: " + m_featureStat);
+		buffer.append("\n--------------------------------------------------------------------------------------");
+		return buffer.toString();
+	}
 }
