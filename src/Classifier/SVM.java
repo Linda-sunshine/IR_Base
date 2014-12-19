@@ -97,18 +97,9 @@ public class SVM extends BaseClassifier{
 		problem.l = docId;
 		m_model = svm.svm_train(problem, m_param);
 	}
-
-	@Override
-	public void test(){
-		for (_Doc doc: m_testSet) {
-			int result = predict(doc);
-			m_TPTable[(result + 1)/2][doc.getYLabel()] += 1;
-		}
-		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-	}
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (int)svm.svm_predict(m_model, createSample(doc));
+		return (1+(int)svm.svm_predict(m_model, createSample(doc)))/2;
 	}
 }

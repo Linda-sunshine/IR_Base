@@ -120,16 +120,6 @@ public class LogisticRegression extends BaseClassifier{
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
 		return m_lambda*L2 - fValue;
 	}
-
-	// Test the test set.
-	@Override
-	public void test() {
-		for(_Doc doc: m_testSet){
-			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
-			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
-		}
-		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-	}
 	
 	@Override
 	public int predict(_Doc doc) {

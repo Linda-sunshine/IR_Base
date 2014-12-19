@@ -1,11 +1,8 @@
 package Analyzer;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,14 +11,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -31,15 +21,8 @@ import utils.Utils;
 public abstract class Analyzer {
 	
 	protected _Corpus m_corpus;
-	protected Tokenizer m_tokenizer;
-	protected SnowballStemmer m_stemmer;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
 	int[] m_classMemberNo; //Store the number of members in a class.
-	
-	//added by Hongning to manage feature vocabulary
-	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
-	 * which means no new features will be allowed.*/
-	protected boolean m_isCVLoaded; 
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
@@ -51,12 +34,9 @@ public abstract class Analyzer {
 	
 	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
 		m_corpus = new _Corpus();
-		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		m_stemmer = new englishStemmer();
+		
 		m_classNo = classNo;
 		m_classMemberNo = new int[classNo];
-		
-		m_isCVLoaded = false;
 		
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
@@ -70,24 +50,6 @@ public abstract class Analyzer {
 		m_featureNameIndex.clear();
 		m_featureStat.clear();
 		m_corpus.reset();
-	}
-	
-	//Load the features from a file and store them in the m_featurNames.@added by Lin.
-	protected boolean LoadCV(String filename) {
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				expandVocabulary(line);
-			}
-			reader.close();
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
-			return false;
-		}
-		// Indicate we can only use the loaded features to construct the feature
-		m_isCVLoaded = true;
-		return true; // if loading is successful
 	}
 	
 	//Load all the files in the directory.
@@ -233,19 +195,27 @@ public abstract class Analyzer {
 			selector.CHI(m_featureStat, m_classMemberNo);
 		
 		m_featureNames = selector.getSelectedFeatures();
-		SaveCV(location); // Save all the features and probabilities we get after analyzing.
+		SaveCV(location, featureSelection, startProb, endProb, threshold); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
 	}
 	
 	//Save all the features and feature stat into a file.
-	public PrintWriter SaveCV(String featureLocation) throws FileNotFoundException {
-		// File file = new File(path);
+	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int threshold) throws FileNotFoundException {
+		if (featureLocation==null || featureLocation.isEmpty())
+			return;
+		
 		System.out.format("Saving controlled vocabulary to %s...\n", featureLocation);
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
+		//print out the configurations as comments
+		writer.format("#Selection:%s\n", featureLocation);
+		writer.format("#Start:%f\n", startProb);
+		writer.format("#End:%f\n", endProb);
+		writer.format("#DF_Cut:%f\n", threshold);
+		
+		//print out the features
 		for (int i = 0; i < m_featureNames.size(); i++)
 			writer.println(m_featureNames.get(i));
 		writer.close();
-		return writer;
 	}
 	
 	//Return the number of features.
@@ -264,7 +234,7 @@ public abstract class Analyzer {
 			public int compare(_Doc d1, _Doc d2){
 				if(d1.getTimeStamp() == d2.getTimeStamp())
 					return 0;
-					return d1.getTimeStamp() < d2.getTimeStamp() ? -1 : 1;
+				return d1.getTimeStamp() < d2.getTimeStamp() ? -1 : 1;
 			}
 		});		
 		

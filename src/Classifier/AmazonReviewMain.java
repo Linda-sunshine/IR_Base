@@ -24,7 +24,7 @@ public class AmazonReviewMain {
 		String classifier = "NB"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "TRANS";
+		String style = "SUP";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);

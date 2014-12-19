@@ -32,8 +32,8 @@ public class Execution  {
 		if (param.m_featureFile==null) {
 		//Feture selection.
 			System.out.println("Performing feature selection, wait...");
-			param.m_featureFile = "./data/Features/selected_fv.dat";
-			param.m_featureStat = "./data/Features/selected_fv_stat.dat";
+			param.m_featureFile = String.format("./data/Features/%s_fv.dat", param.m_featureSelection);
+			param.m_featureStat = String.format("./data/Features/%s_fv_stat.dat", param.m_featureSelection);
 			System.out.println(param.printFeatureSelectionConfiguration());
 			
 			((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);

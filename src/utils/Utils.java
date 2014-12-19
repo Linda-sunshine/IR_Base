@@ -18,6 +18,34 @@ public class Utils {
 		return maxIndex;
 	}
 	
+	//Calculate the sum of a column in an array.
+	public static double sumOfColumn(double[][] mat, int i){
+		return sumOfArray(mat[i]);
+	}
+	
+	//Calculate the sum of a row in an array.
+	public static double sumOfRow(double[][] mat, int i){
+		double sum = 0;
+		for(int j = 0; j < mat[i].length; j++){
+			sum += mat[i][j];
+		}
+		return sum;
+	}
+	
+	//Calculate the sum of a column in an array.
+	public static int sumOfColumn(int[][] mat, int i){
+		return sumOfArray(mat[i]);
+	}
+	
+	//Calculate the sum of a row in an array.
+	public static int sumOfRow(int[][] mat, int i){
+		int sum = 0;
+		for(int j = 0; j < mat[i].length; j++){
+			sum += mat[i][j];
+		}
+		return sum;
+	}
+	
 	//Find the max value's index of an array, return Value of the maximum.
 	public static double maxOfArrayValue(double[] probs){
 		return probs[maxOfArrayIndex(probs)];
