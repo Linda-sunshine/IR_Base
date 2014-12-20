@@ -113,12 +113,12 @@ public class Parameter {
 	private void exit_with_help()
 	{
 		System.out.print(
-		 "Usage: java execution [options] training_set_file\n"
+		 "Usage: java execution [options] training_folder\n"
 		+"options:\n"
 		+"-suf suffix : type of files to be loaded (default .json)\n"
 		+"-st stopword_file : list of files that will be excluded in feature generation\n"
-		+"-fpath cv_file : list of controlled vocabular to be used in feature generation\n"
-		+"-fstat fv_file : statistics of the features collected from the corpus\n"
+		+"-fpath cv_file : list of controlled vocabular to be used in feature generation (default null)\n"
+		+"-fstat fv_file : statistics of the features collected from the corpus (default null)\n"
 		+"-fs type : feature selection method (default CHI)\n"
 		+"	DF -- Document frequency\n"
 		+"	CHI -- Chi-Square test statistics\n"
@@ -144,12 +144,12 @@ public class Parameter {
 		+"	NB -- Naive Bayes\n"
 		+"	LR -- Logistic Regression\n"
 		+"	SVM -- Support Vector Machine (libSVM)\n"
-		+"-s type: learning paradigm (default SUP)\n"
+		+"-s type : learning paradigm (default SUP)\n"
 		+"	SUP -- Supervised learning\n"
 		+"	TRANS -- Transductive learning\n"
-		+"-sr r: Sample rate for transductive learning (default 0.1)\n"
-		+"-kUL c: k nearest labeled neighbors (default 0.1)\n"
-		+"-kUU c: kP nearest unlabeled neighbors (default 0.1)\n"
+		+"-sr r : Sample rate for transductive learning (default 0.1)\n"
+		+"-kUL c : k nearest labeled neighbors (default 100)\n"
+		+"-kUU c : kP nearest unlabeled neighbors (default 50)\n"
 		);
 		System.exit(1);
 	}

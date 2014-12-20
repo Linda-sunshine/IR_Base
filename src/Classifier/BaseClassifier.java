@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import utils.Utils;
 
 
 public abstract class BaseClassifier {
@@ -17,7 +18,7 @@ public abstract class BaseClassifier {
 	protected double[] m_cProbs;
 	
 	//for cross-validation
-	protected double[][] m_TPTable;
+	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	public void train() {
@@ -27,9 +28,16 @@ public abstract class BaseClassifier {
 	}
 	
 	public abstract void train(Collection<_Doc> trainSet);
-	public abstract void test();
 	public abstract int predict(_Doc doc);
 	protected abstract void init(); // to be called before training starts
+	
+	public void test() {
+		for(_Doc doc: m_testSet){
+			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
+			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
+		}
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+	}
 	
 	// Constructor with parameters.
 	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
@@ -39,7 +47,8 @@ public abstract class BaseClassifier {
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		m_cProbs = new double[m_classNo];
-		m_TPTable = new double [m_classNo][m_classNo];
+		m_TPTable = new int[m_classNo][m_classNo];
+		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 	
@@ -63,31 +72,52 @@ public abstract class BaseClassifier {
 	}
 	
 	//Calculate the precision and recall for one folder tests.
-	public double[][] calculatePreRec(double[][] tpTable) {
+	public double[][] calculatePreRec(int[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[m_classNo][2];
 		for (int i = 0; i < m_classNo; i++) {
-			PreRecOfOneFold[i][0] = tpTable[i][i] / (sumOfRow(tpTable, i) + 0.001);// Precision of the class.
-			PreRecOfOneFold[i][1] = tpTable[i][i] / (sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
+			PreRecOfOneFold[i][0] = (double) tpTable[i][i] / (Utils.sumOfRow(tpTable, i) + 0.001);// Precision of the class.
+			PreRecOfOneFold[i][1] = (double) tpTable[i][i] / (Utils.sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
+			
+			for(int j=0; j< m_classNo; j++) {
+				m_confusionMat[i][j] += tpTable[i][j];
+				tpTable[i][j] = 0; // clear the result in each fold
+			}
 		}
 		return PreRecOfOneFold;
 	}
-
-	//Calculate the sum of a column in an array.
-	public double sumOfColumn(double[][] tp, int i){
-		double sum = 0;
-		for(int j = 0; j < tp.length; j++){
-			sum += tp[j][i];
-		}
-		return sum;
-	}
 	
-	//Calculate the sum of a row in an array.
-	public double sumOfRow(double[][] tp, int i){
-		double sum = 0;
-		for(int j = 0; j < tp[i].length; j++){
-			sum += tp[i][j];
+	public void printConfusionMat() {
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("\t%d", i);
+		
+		double total = 0, correct = 0;
+		double[] columnSum = new double[m_classNo], prec = new double[m_classNo];
+		System.out.println("\tP");
+		for(int i=0; i<m_classNo; i++){
+			System.out.format("%d", i);
+			double sum = 0; // row sum
+			for(int j=0; j<m_classNo; j++) {
+				System.out.format("\t%d", m_confusionMat[i][j]);
+				sum += m_confusionMat[i][j];
+				columnSum[j] += m_confusionMat[i][j];
+				total += m_confusionMat[i][j];
+			}
+			correct += m_confusionMat[i][i];
+			prec[i] = m_confusionMat[i][i]/sum;
+			System.out.format("\t%.4f\n", prec[i]);
 		}
-		return sum;
+		
+		System.out.print("R");
+		for(int i=0; i<m_classNo; i++){
+			columnSum[i] = m_confusionMat[i][i]/columnSum[i]; // recall
+			System.out.format("\t%.4f", columnSum[i]);
+		}
+		System.out.format("\t%.4f", correct/total);
+		
+		System.out.print("\nF1");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+		System.out.println();
 	}
 	
 	//Calculate the mean and variance of precision and recall.
@@ -151,6 +181,8 @@ public abstract class BaseClassifier {
 			System.out.println("For class " + i + ":precision mean:" + metrix[i][0] + "\trecall mean:" + 
 			metrix[i][1] + "\tprecision var:" + metrix[i][2] + "\trecall var:" + metrix[i][3]);
 		}
+		
+		printConfusionMat();
 		return metrix;
 	}
 }
