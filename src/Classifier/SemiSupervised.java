@@ -117,8 +117,8 @@ public class SemiSupervised extends BaseClassifier{
 		}
 	}
 	
-	private void initCache(int U, int L) {
-		m_cache = new double[U*(2*L+U-1)/2];
+	private void initCache() {
+		m_cache = new double[m_U*(2*m_L+m_U-1)/2];
 	}
 	
 	private int encode(int i, int j) {
@@ -127,7 +127,7 @@ public class SemiSupervised extends BaseClassifier{
 			i = j;
 			j = t;
 		}
-		return (2*(m_U+m_L-1)-1)/2*(i+1) - ((m_U+m_L)-j);
+		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);
 	}
 	
 	private void setCache(int i, int j, double v) {
@@ -146,7 +146,7 @@ public class SemiSupervised extends BaseClassifier{
 		m_U = m_testSet.size();
 		
 		/***Set up cache structure for efficient computation.****/
-		initCache(m_U, m_L);
+		initCache();
 		
 		/***Construct the full similarity matrix.****/
 		for(int i = 0; i < m_U; i++){

@@ -23,6 +23,7 @@ public abstract class Analyzer {
 	protected _Corpus m_corpus;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
 	int[] m_classMemberNo; //Store the number of members in a class.
+	protected int m_Ngram; 
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
@@ -207,6 +208,7 @@ public abstract class Analyzer {
 		System.out.format("Saving controlled vocabulary to %s...\n", featureLocation);
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
 		//print out the configurations as comments
+		writer.format("#NGram:%d\n", m_Ngram);
 		writer.format("#Selection:%s\n", featureLocation);
 		writer.format("#Start:%f\n", startProb);
 		writer.format("#End:%f\n", endProb);
