@@ -148,15 +148,13 @@ public class SemiSupervised extends BaseClassifier{
 		/***Set up cache structure for efficient computation.****/
 		initCache(m_U, m_L);
 		
-		/***Construct the Wij matrix.****/
+		/***Construct the full similarity matrix.****/
 		for(int i = 0; i < m_U; i++){
-			//set the part of unlabeled nodes. U-U
 			for(int j = i+1; j < m_U; j++){//to save computation since our similarity metric is symmetric
 				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
 				setCache(i, j, similarity);
 			}	
-			
-			//Set the part of labeled and unlabeled nodes. L-U and U-L
+
 			for(int j = 0; j < m_L; j++){
 				similarity = Utils.calculateSimilarity(m_testSet.get(i), m_labeled.get(j));
 				setCache(i, m_U+j, similarity);
@@ -170,28 +168,46 @@ public class SemiSupervised extends BaseClassifier{
 		m_kUL = new MyPriorityQueue<_Node>(m_k);
 		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
-		double scale = -m_alpha / (m_k + m_beta*m_kPrime);
+		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum;
 		double[] Y = new double[m_U+m_L];
 		for(int i = 0; i < m_U; i++) {
+			//set the part of unlabeled nodes. U-U
 			for(int j=0; j<m_U; j++) {
 				if (j==i)
 					continue;
 				m_kUU.add(new _Node(i, j, getCache(i,j)));
 			}
 			
-			for(int j=0; j<m_L; j++) {
-				m_kUL.add(new _Node(i, m_U+j, getCache(i,m_U+j)));
+			sum = 0;
+			for(_Node n:m_kUU) {
+				mat.setQuick(n.m_i, n.m_j, -n.m_sim*scale);
+				mat.setQuick(n.m_j, n.m_i, -n.m_sim*scale);
+				sum += n.m_sim;
 			}
+			mat.set(i, i, 1+scale*sum);
+			m_kUU.clear();
 			
-			if (i<m_U) {
-				Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
-			} else {
-				Y[i] = m_M * m_labeled.get(i-m_U).getYLabel();
+			//Set the part of labeled and unlabeled nodes. L-U and U-L
+			for(int j=0; j<m_L; j++)
+				m_kUL.add(new _Node(i, m_U+j, getCache(i,m_U+j)));
+			
+			sum = 0;
+			for(_Node n:m_kUL) {
+				mat.setQuick(n.m_i, n.m_j, -n.m_sim*scale);
+				mat.setQuick(n.m_j, n.m_i, -n.m_sim*scale);
+				sum += n.m_sim;
 			}
+			mat.set(i, i, m_M+scale*sum);
+			m_kUL.clear();
+			
+			//set up the Y vector
+			if (i<m_U)
+				Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
+			else
+				Y[i] = m_M * m_labeled.get(i-m_U).getYLabel();
 		}
 		
 		/***Perform matrix inverse.****/
-		
 		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		DoubleMatrix2D result = alg.inverse(mat);
 		
