@@ -22,7 +22,7 @@ import structures._Doc;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
-	protected int m_Ngram; 
+	
 	protected int m_lengthThreshold;
 
 	protected Tokenizer m_tokenizer;
@@ -66,9 +66,14 @@ public class DocAnalyzer extends Analyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("#"))
-					continue;
-				expandVocabulary(line);
+				if (line.startsWith("#")){
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}
+						
+				} else 
+					expandVocabulary(line);
 			}
 			reader.close();
 			
