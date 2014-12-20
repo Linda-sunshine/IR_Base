@@ -22,9 +22,7 @@ public abstract class BaseClassifier {
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	public void train() {
-		long start = System.currentTimeMillis();
 		train(m_trainSet);
-		System.out.format("%s training finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 	}
 	
 	public abstract void train(Collection<_Doc> trainSet);
@@ -63,8 +61,11 @@ public abstract class BaseClassifier {
 				if( masks[j]==i ) m_testSet.add(docs.get(j));
 				else m_trainSet.add(docs.get(j));
 			}
+			
+			long start = System.currentTimeMillis();
 			train();
 			test();
+			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 			m_trainSet.clear();
 			m_testSet.clear();
 		}
