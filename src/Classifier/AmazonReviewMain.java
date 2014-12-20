@@ -30,7 +30,7 @@ public class AmazonReviewMain {
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/tablets";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stopwords = "./data/Model/stopwords.dat";
@@ -51,15 +51,16 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 //		//Feture selection.
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		//jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
