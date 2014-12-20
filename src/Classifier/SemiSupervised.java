@@ -103,7 +103,7 @@ public class SemiSupervised extends BaseClassifier{
 	}
 	
 	//Train the data set.
-	public void train(Collection<_Doc> trainSet){	
+	public void train(Collection<_Doc> trainSet){
 		init();
 		
 		m_classifier.train(trainSet);
@@ -141,6 +141,7 @@ public class SemiSupervised extends BaseClassifier{
 	//Test the data set.
 	@Override
 	public void test(){
+		
 		double similarity = 0;
 		m_L = m_labeled.size();
 		m_U = m_testSet.size();
@@ -148,7 +149,7 @@ public class SemiSupervised extends BaseClassifier{
 		/***Set up cache structure for efficient computation.****/
 		initCache();
 		
-		/***Construct the full similarity matrix.****/
+		/***Construct the full similarity matrix (except the diagonal).****/
 		for(int i = 0; i < m_U; i++){
 			for(int j = i+1; j < m_U; j++){//to save computation since our similarity metric is symmetric
 				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
@@ -168,7 +169,7 @@ public class SemiSupervised extends BaseClassifier{
 		m_kUL = new MyPriorityQueue<_Node>(m_k);
 		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
-		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum;
+		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
 		double[] Y = new double[m_U+m_L];
 		for(int i = 0; i < m_U; i++) {
 			//set the part of unlabeled nodes. U-U
@@ -180,31 +181,38 @@ public class SemiSupervised extends BaseClassifier{
 			
 			sum = 0;
 			for(_Node n:m_kUU) {
-				mat.setQuick(n.m_i, n.m_j, -n.m_sim*scale);
-				mat.setQuick(n.m_j, n.m_i, -n.m_sim*scale);
-				sum += n.m_sim;
+				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
+				mat.setQuick(n.m_i, n.m_j, scale * value);
+				mat.setQuick(n.m_j, n.m_i, scale * value);
+				sum += value;
 			}
-			mat.set(i, i, 1+scale*sum);
 			m_kUU.clear();
 			
 			//Set the part of labeled and unlabeled nodes. L-U and U-L
 			for(int j=0; j<m_L; j++)
 				m_kUL.add(new _Node(i, m_U+j, getCache(i,m_U+j)));
 			
-			sum = 0;
 			for(_Node n:m_kUL) {
-				mat.setQuick(n.m_i, n.m_j, -n.m_sim*scale);
-				mat.setQuick(n.m_j, n.m_i, -n.m_sim*scale);
-				sum += n.m_sim;
+				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
+				mat.setQuick(n.m_i, n.m_j, scale * value);
+				mat.setQuick(n.m_j, n.m_i, scale * value);
+				sum += value;
 			}
-			mat.set(i, i, m_M+scale*sum);
+			mat.setQuick(i, i, 1-scale*sum);
 			m_kUL.clear();
 			
-			//set up the Y vector
-			if (i<m_U)
-				Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
-			else
-				Y[i] = m_M * m_labeled.get(i-m_U).getYLabel();
+			//set up the Y vector for unlabeled data
+			Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
+		}
+		
+		for(int i=m_U; i<m_L+m_U; i++) {
+			sum = 0;
+			for(int j=0; j<m_U; j++) 
+				sum += mat.getQuick(i, j);
+			mat.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
+			
+			//set up the Y vector for labeled data
+			Y[i] = m_M * m_labeled.get(i-m_U).getYLabel();
 		}
 		
 		/***Perform matrix inverse.****/
