@@ -1,5 +1,4 @@
 package Classifier;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -127,14 +126,9 @@ public abstract class BaseClassifier {
 		double[][] metrix = new double[m_classNo][4]; 
 			
 		double precisionSum = 0.0;
-		double precisionMean = 0.0;
 		double precisionVarSum = 0.0;
-		double precisionVar = 0.0;
-
 		double recallSum = 0.0;
-		double recallMean = 0.0;
 		double recallVarSum = 0.0;
-		double recallVar = 0.0;
 
 		//i represents the class label, calculate the mean and variance of different classes.
 		for(int i = 0; i < m_classNo; i++){
@@ -143,16 +137,12 @@ public abstract class BaseClassifier {
 			// Calculate the sum of precisions and recalls.
 			for (int j = 0; j < prs.size(); j++) {
 				precisionSum += prs.get(j)[i][0];
-				recallSum += prs.get(i)[i][1];
+				recallSum += prs.get(j)[i][1];
 			}
 			
 			// Calculate the means of precisions and recalls.
-			precisionMean = precisionSum/prs.size();
-			precisionMean =Double.parseDouble(new DecimalFormat("##.###").format(precisionMean));
-			metrix[i][0] = precisionMean;
-			recallMean = recallSum/prs.size();
-			recallMean =Double.parseDouble(new DecimalFormat("##.###").format(recallMean));
-			metrix[i][1] = recallMean;
+			metrix[i][0] = precisionSum/prs.size();
+			metrix[i][1] = recallSum/prs.size();
 		}
 
 		// Calculate the sum of variances of precisions and recalls.
@@ -161,16 +151,12 @@ public abstract class BaseClassifier {
 			recallVarSum = 0.0;
 			// Calculate the sum of precision variance and recall variance.
 			for (int j = 0; j < prs.size(); j++) {
-				precisionVarSum += Math.pow((prs.get(j)[i][0] - metrix[i][0]), 2);
-				recallVarSum += Math.pow((prs.get(j)[i][1] - metrix[i][1]), 2);
+				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
+				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
 			}
 			// Calculate the means of precisions and recalls.
-			precisionVar = Math.sqrt(precisionVarSum/prs.size());
-			precisionVar =Double.parseDouble(new DecimalFormat("##.###").format(precisionVar));
-			metrix[i][2] = precisionVar;
-			recallVar = Math.sqrt(recallVarSum/prs.size());
-			recallVar =Double.parseDouble(new DecimalFormat("##.###").format(recallVar));
-			metrix[i][3] = recallVar;
+			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
+			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
 		}
 		
 		// The final output of the computation.
@@ -178,10 +164,8 @@ public abstract class BaseClassifier {
 		System.out.println("The final result is as follows:");
 		System.out.println("The total number of classes is " + m_classNo);
 		
-		for(int i = 0; i < m_classNo; i++){
-			System.out.println("For class " + i + ":precision mean:" + metrix[i][0] + "\trecall mean:" + 
-			metrix[i][1] + "\tprecision var:" + metrix[i][2] + "\trecall var:" + metrix[i][3]);
-		}
+		for(int i = 0; i < m_classNo; i++)
+			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][1], metrix[i][2], metrix[i][3]);
 		
 		printConfusionMat();
 		return metrix;
