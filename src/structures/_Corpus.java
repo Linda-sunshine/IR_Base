@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -20,13 +19,15 @@ public class _Corpus {
 	protected int m_corClassNo = 0;
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
 	private int[] m_mask; 
-	protected HashMap<Integer, Integer> m_classMemberNo;
 			
 	//Constructor.
 	public _Corpus() {
 		this.m_collection = new ArrayList<_Doc>();
-		this.m_classMemberNo = new HashMap<Integer, Integer>();
  	}
+	
+	public void reset() {
+		m_collection.clear();
+	}
 	
 	//Initialize the m_mask, the default value is false.
 	public void setMasks() {

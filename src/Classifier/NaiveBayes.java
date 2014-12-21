@@ -68,16 +68,7 @@ public class NaiveBayes extends BaseClassifier {
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
 	}
-	
-	//Test the data set.
-	public void test(){
-		for(_Doc doc: m_testSet){
-			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
-			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] +=1; //Compare the predicted label and original label, construct the TPTable.
-		}
-		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-	}
-	
+		
 	//Predict the label for one document.
 	@Override
 	public int predict(_Doc d){

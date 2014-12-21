@@ -11,36 +11,79 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
-	protected int m_Ngram; 
-	protected int m_lengthThreshold;
 	
+	protected int m_lengthThreshold;
+
+	protected Tokenizer m_tokenizer;
+	protected SnowballStemmer m_stemmer;
 	Set<String> m_stopwords;
+	
+	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
+	 * which means no new features will be allowed.*/
+	protected boolean m_isCVLoaded; 
 	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
 		
 		m_Ngram = 1;
 		m_lengthThreshold = 5;
-		if(providedCV!=null && !providedCV.isEmpty())
-			LoadCV(providedCV);
+		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 	}	
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
 		
 		m_Ngram = Ngram;
 		m_lengthThreshold = threshold;
-		if(providedCV!=null && !providedCV.isEmpty())
-			LoadCV(providedCV);
+		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
+	}
+	
+	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	protected boolean LoadCV(String filename) {
+		if (filename==null || filename.isEmpty())
+			return false;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")){
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}
+						
+				} else 
+					expandVocabulary(line);
+			}
+			reader.close();
+			
+			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+		
+		return true; // if loading is successful
 	}
 	
 	public void LoadStopwords(String filename) {

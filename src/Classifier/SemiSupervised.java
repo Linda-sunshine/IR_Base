@@ -4,20 +4,46 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Random;
 
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 public class SemiSupervised extends BaseClassifier{
+	class _Node implements Comparable<_Node> {
+		int m_i, m_j; // index in the graph
+		double m_sim; // similarity to the current node
+		
+		public _Node(int i, int j, double sim) {
+			m_i = i;
+			m_j = j;
+			m_sim = sim;
+		}
+
+		@Override
+		public int compareTo(_Node n) {
+			if (m_sim<n.m_sim)
+				return 1;
+			else if (m_sim>n.m_sim)
+				return -1;
+			else
+				return 0;
+		}
+	}
+	
 	protected double m_alpha; //Weight coefficient between unlabeled node and labeled node.
 	protected double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
 	protected double m_M; //Influence of labeled node.
-	protected double m_k; // k labeled nodes.
-	protected double m_kPrime;//k' unlabeled nodes.
+	protected int m_k; // k labeled nodes.
+	protected int m_kPrime;//k' unlabeled nodes.
 	
+	private int m_U, m_L;
+	private double[] m_cache; // cache the similarity computation results given the similarity metric is symmetric
+	
+	protected MyPriorityQueue<_Node> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
 	protected ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
@@ -31,25 +57,31 @@ public class SemiSupervised extends BaseClassifier{
 		m_alpha = 1.0;
 		m_beta = 0.1;
 		m_M = 100000;
-		m_k = 0;
-		m_kPrime = 0;	
+		m_k = 100;
+		m_kPrime = 50;	
 		m_labeled = new ArrayList<_Doc>();
 		
 		setClassifier(classifier);
 	}	
 	
-	public SemiSupervised(_Corpus c, int classNumber, int featureSize, double ratio, String classifier){
+	public SemiSupervised(_Corpus c, int classNumber, int featureSize, String classifier, 
+			double ratio, int k, int kPrime){
 		super(c, classNumber, featureSize);
 		
 		m_labelRatio = ratio;
 		m_alpha = 1.0;
 		m_beta = 0.1;
 		m_M = 100000;
-		m_k = 0;
-		m_kPrime = 0;	
+		m_k = k;
+		m_kPrime = kPrime;	
 		m_labeled = new ArrayList<_Doc>();
 		
 		setClassifier(classifier);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("Transductive Learning[C:%s, k:%d, k':%d]", m_classifier, m_k, m_kPrime);
 	}
 	
 	private void setClassifier(String classifier) {
@@ -71,7 +103,7 @@ public class SemiSupervised extends BaseClassifier{
 	}
 	
 	//Train the data set.
-	public void train(Collection<_Doc> trainSet){	
+	public void train(Collection<_Doc> trainSet){
 		init();
 		
 		m_classifier.train(trainSet);
@@ -85,58 +117,112 @@ public class SemiSupervised extends BaseClassifier{
 		}
 	}
 	
+	private void initCache() {
+		m_cache = new double[m_U*(2*m_L+m_U-1)/2];
+	}
+	
+	private int encode(int i, int j) {
+		if (i>j) {//swap
+			int t = i;
+			i = j;
+			j = t;
+		}
+		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);
+	}
+	
+	private void setCache(int i, int j, double v) {
+		m_cache[encode(i,j)] = v;
+	}
+	
+	private double getCache(int i, int j) {
+		return m_cache[encode(i,j)];
+	}
+	
 	//Test the data set.
+	@Override
 	public void test(){
+		
 		double similarity = 0;
-		int L = m_labeled.size(), U = m_testSet.size();
-		double[][] Wij = new double[U+L][U+L];
+		m_L = m_labeled.size();
+		m_U = m_testSet.size();
 		
-		/***Set up K and K'.****/
-		m_k = L;
-		m_kPrime = U; // right now we used all
+		/***Set up cache structure for efficient computation.****/
+		initCache();
 		
-		/***Construct the Wij matrix.****/
-		for(int i = 0; i < U; i++){
-			//set the part of unlabeled nodes. U-U
-			for(int j = 0; j < i; j++){//not including i-self
+		/***Construct the full similarity matrix (except the diagonal).****/
+		for(int i = 0; i < m_U; i++){
+			for(int j = i+1; j < m_U; j++){//to save computation since our similarity metric is symmetric
 				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
-				Wij[i][j] = similarity;
-				Wij[j][i] = similarity;
+				setCache(i, j, similarity);
 			}	
-			
-			//Set the part of labeled and unlabeled nodes. L-U and U-L
-			for(int j = 0; j < L; j++){
-				similarity = m_alpha * Utils.calculateSimilarity(m_testSet.get(i), m_labeled.get(j));
-				Wij[i][j+U] = similarity;
-				Wij[j+U][i] = similarity;
+
+			for(int j = 0; j < m_L; j++){
+				similarity = Utils.calculateSimilarity(m_testSet.get(i), m_labeled.get(j));
+				setCache(i, m_U+j, similarity);
 			}
 		}
 		
+		SparseDoubleMatrix2D mat = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);
+		
+		/***Set up structure for k nearest neighbors.****/
+		m_kUU = new MyPriorityQueue<_Node>(m_kPrime);
+		m_kUL = new MyPriorityQueue<_Node>(m_k);
+		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
-		double scale = -m_alpha / (m_k + m_beta*m_kPrime);
-		double[] Y = new double[U+L];
-		for(int i = 0; i < U+L; i++) {
-			Wij[i][i] = -Utils.sumOfArray(Wij[i]);
-			Utils.scaleArray(Wij[i], scale);
-			
-			if (i<U) {
-				Wij[i][i] += 1.0;
-				Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
-			} else {
-				Wij[i][i] += m_M;
-				Y[i] = m_M * m_labeled.get(i-U).getYLabel();
+		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
+		double[] Y = new double[m_U+m_L];
+		for(int i = 0; i < m_U; i++) {
+			//set the part of unlabeled nodes. U-U
+			for(int j=0; j<m_U; j++) {
+				if (j==i)
+					continue;
+				m_kUU.add(new _Node(i, j, getCache(i,j)));
 			}
+			
+			sum = 0;
+			for(_Node n:m_kUU) {
+				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
+				mat.setQuick(n.m_i, n.m_j, scale * value);
+				mat.setQuick(n.m_j, n.m_i, scale * value);
+				sum += value;
+			}
+			m_kUU.clear();
+			
+			//Set the part of labeled and unlabeled nodes. L-U and U-L
+			for(int j=0; j<m_L; j++)
+				m_kUL.add(new _Node(i, m_U+j, getCache(i,m_U+j)));
+			
+			for(_Node n:m_kUL) {
+				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
+				mat.setQuick(n.m_i, n.m_j, scale * value);
+				mat.setQuick(n.m_j, n.m_i, scale * value);
+				sum += value;
+			}
+			mat.setQuick(i, i, 1-scale*sum);
+			m_kUL.clear();
+			
+			//set up the Y vector for unlabeled data
+			Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
+		}
+		
+		for(int i=m_U; i<m_L+m_U; i++) {
+			sum = 0;
+			for(int j=0; j<m_U; j++) 
+				sum += mat.getQuick(i, j);
+			mat.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
+			
+			//set up the Y vector for labeled data
+			Y[i] = m_M * m_labeled.get(i-m_U).getYLabel();
 		}
 		
 		/***Perform matrix inverse.****/
-		DenseDoubleMatrix2D mat = new DenseDoubleMatrix2D(Wij);
-		Algebra alg = new Algebra();
+		DenseDoubleAlgebra alg = new DenseDoubleAlgebra();
 		DoubleMatrix2D result = alg.inverse(mat);
 		
 		/*******Show results*********/
-		for(int i = 0; i < U; i++){
+		for(int i = 0; i < m_U; i++){
 			double pred = 0;
-			for(int j=0; j<U+L; j++)
+			for(int j=0; j<m_U+m_L; j++)
 				pred += result.getQuick(i, j) * Y[j];
 			
 			m_TPTable[getLabel(pred)][m_testSet.get(i).getYLabel()] += 1;
