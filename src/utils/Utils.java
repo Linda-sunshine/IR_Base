@@ -19,29 +19,29 @@ public class Utils {
 	}
 	
 	//Calculate the sum of a column in an array.
-	public static double sumOfColumn(double[][] mat, int i){
+	public static double sumOfRow(double[][] mat, int i){
 		return sumOfArray(mat[i]);
 	}
 	
 	//Calculate the sum of a row in an array.
-	public static double sumOfRow(double[][] mat, int i){
+	public static double sumOfColumn(double[][] mat, int i){
 		double sum = 0;
-		for(int j = 0; j < mat[i].length; j++){
-			sum += mat[i][j];
+		for(int j = 0; j < mat.length; j++){
+			sum += mat[j][i];
 		}
 		return sum;
 	}
 	
 	//Calculate the sum of a column in an array.
-	public static int sumOfColumn(int[][] mat, int i){
+	public static int sumOfRow(int[][] mat, int i){
 		return sumOfArray(mat[i]);
 	}
 	
 	//Calculate the sum of a row in an array.
-	public static int sumOfRow(int[][] mat, int i){
+	public static int sumOfColumn(int[][] mat, int i){
 		int sum = 0;
-		for(int j = 0; j < mat[i].length; j++){
-			sum += mat[i][j];
+		for(int j = 0; j < mat.length; j++){
+			sum += mat[j][i];
 		}
 		return sum;
 	}
@@ -53,15 +53,15 @@ public class Utils {
 	
 	//This function is used to calculate the log of the sum of several values.
 	public static double logSumOfExponentials(double[] xs){
-		double max = maxOfArrayValue(xs);
-		double sum = 0.0;
 		if(xs.length == 1){
 			return xs[0];
 		}
+		
+		double max = maxOfArrayValue(xs);
+		double sum = 0.0;
 		for (int i = 0; i < xs.length; i++) {
-			if (xs[i] != Double.NEGATIVE_INFINITY) {
+			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
-			}
 		}
 		return Math.log(sum) + max;
 	}
