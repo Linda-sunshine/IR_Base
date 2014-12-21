@@ -154,6 +154,7 @@ public abstract class BaseClassifier {
 				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
 				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
 			}
+			
 			// Calculate the means of precisions and recalls.
 			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
 			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
@@ -165,7 +166,7 @@ public abstract class BaseClassifier {
 		System.out.println("The total number of classes is " + m_classNo);
 		
 		for(int i = 0; i < m_classNo; i++)
-			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][1], metrix[i][2], metrix[i][3]);
+			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
 		
 		printConfusionMat();
 		return metrix;
