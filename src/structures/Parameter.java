@@ -159,7 +159,7 @@ public class Parameter {
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		buffer.append("\nParameters of learning procedure:");
 		buffer.append("\n#Class: " + m_classNumber + "\tNgram: " + m_Ngram + "\tFeature value: " + m_featureValue + "\tNormalization: " + m_norm);
-		buffer.append("\nLearing method: " + m_style + "\tClassifier: " + m_classifier + "Cross validation: " + m_CVFold);
+		buffer.append("\nLearing method: " + m_style + "\tClassifier: " + m_classifier + "\tCross validation: " + m_CVFold);
 		buffer.append("\nDoc length cut: " + m_lengthThreshold +"\tWindow length: " + m_window);
 		buffer.append("\nData directory: " + m_folder);
 		buffer.append("\n--------------------------------------------------------------------------------------");
