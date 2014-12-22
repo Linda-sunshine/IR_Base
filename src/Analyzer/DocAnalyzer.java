@@ -57,6 +57,17 @@ public class DocAnalyzer extends Analyzer {
 		m_stopwords = new HashSet<String>();
 	}
 	
+	
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public DocAnalyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		m_Ngram = Ngram;
+		m_stopwords = new HashSet<String>();
+		
+	}
+	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
 	protected boolean LoadCV(String filename) {
 		if (filename==null || filename.isEmpty())
