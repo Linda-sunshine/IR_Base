@@ -258,4 +258,46 @@ public abstract class Analyzer {
 		}
 		System.out.println("Time-series feature set!");
 	}
+	
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public double [] get_term_frequency_in_doc(_Doc d)
+	{
+		
+		double get_doc_term_frequency [] = new double [m_featureNameIndex.size()]; 
+		_SparseFeature[] sfs = d.getSparse();
+		for (_SparseFeature sf : sfs) {
+			get_doc_term_frequency [sf.getIndex()] =  sf.getValue()*d.getTotalDocLength();
+		}
+		return get_doc_term_frequency;
+	}
+	
+	
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public double [] get_back_ground_probabilty()
+	{
+		double back_ground_probabilty [] = new double [m_featureNameIndex.size()];
+		
+		for(int i = 0; i<m_featureNameIndex.size();i++)
+		{
+			String featureName = m_featureNames.get(i);
+			_stat stat =  m_featureStat.get(featureName);
+			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
+		}
+		
+		double sum = Utils.sumOfArray(back_ground_probabilty);
+		for(int i = 0; i<m_featureNameIndex.size();i++)
+		{
+			back_ground_probabilty[i] = back_ground_probabilty[i] / sum;
+			
+		}
+		return back_ground_probabilty;
+	}
+	
+	
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public String get_Term_Name(int index)
+	{
+		return this.m_featureNames.get(index);
+	}
+	
 }
