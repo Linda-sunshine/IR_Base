@@ -8,6 +8,11 @@ package topicModel;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import opennlp.tools.util.InvalidFormatException;
@@ -98,7 +103,10 @@ public class plsa extends TopicModel{
 		
 	}
 	
-
+    public double [] get_topic_term_probability(int index)
+    {
+    	return this.topic_term_probabilty [index];
+    }
 	
 	public void initialize_probability()
 	{
@@ -107,8 +115,8 @@ public class plsa extends TopicModel{
 		// random is better than uniform
 		for(int i=0;i<this.number_of_docs;i++)
 		{
-			for(int j=0;j<number_of_topics;j++)
-			this.document_topic_probabilty[i][j] = 1.0/this.number_of_topics;
+			//for(int j=0;j<number_of_topics;j++)
+			this.document_topic_probabilty[i] = randomProbilities(this.number_of_topics);
 		}
 		
 		// initialize term topic metrics
@@ -119,10 +127,7 @@ public class plsa extends TopicModel{
 		{ 
 			for(int j=0;j<this.vocabulary_size;j++)
 			{
-		
-				//this.term_topic_probabilty[i][j] = 0.5; // change later since 2 topic so 0.5
-				this.topic_term_probabilty[i][j] = 1.0 / this.vocabulary_size;
-				
+					this.topic_term_probabilty[i][j] = 1.0 / this.vocabulary_size;
 			}
 		}
 		
@@ -151,7 +156,7 @@ public class plsa extends TopicModel{
 				for(int k=0;k<this.number_of_topics;k++)
 				{
 					double numerator = document_topic_probabilty[i][k] * topic_term_probabilty[k][j];
-					document_word_topic_probabilty[i][j][k] = (double )numerator / denumerator;
+					document_word_topic_probabilty[i][j][k] = (double ) numerator / denumerator;
 					
 				}
 			
@@ -188,15 +193,17 @@ public class plsa extends TopicModel{
 				
 			}
 			
-			for(int j=0;j<this.number_of_topics;j++)
+	    for(int j=0;j<this.number_of_topics;j++)
 			{
-				document_topic_probabilty [i][j] = document_topic_probabilty [i][j] / total_denumerator;
+				
+				
+				document_topic_probabilty [i][j] = (double) document_topic_probabilty [i][j] / total_denumerator;
 			}
 			
 			
 		}
 		
-		// update term-topic matrix -------------
+		// update topic-term matrix -------------
 		
 		
 		for(int k=0;k<this.number_of_topics;k++)
@@ -216,7 +223,7 @@ public class plsa extends TopicModel{
 			
 			for(int i=0;i<this.vocabulary_size;i++)
 			{
-				topic_term_probabilty[k][i] = topic_term_probabilty[k][i] / total_denumerator;
+				topic_term_probabilty[k][i] = (double) topic_term_probabilty[k][i] / total_denumerator;
 			}
 		}
 		
@@ -232,7 +239,8 @@ public class plsa extends TopicModel{
 	
 	public double calculate_log_likelihood()
 	{
-		
+		//print(topic_term_probabilty, number_of_topics,vocabulary_size);
+		//print(document_topic_probabilty, number_of_docs, number_of_topics);
 		double likelihood = 0.0;
 	
 		for(int i=0;i<this.number_of_docs;i++)
@@ -326,15 +334,60 @@ public class plsa extends TopicModel{
 			document_term_count [i] = analyzer.get_term_frequency_in_doc(temp); 
 		}
 		
-		int number_of_topics = 10;
+		int number_of_topics = 2;
 		double lambda = 0.9;
-	    int number_of_iteration = 500;
+	    int number_of_iteration = 50;
 		int vocabulary_size = back_ground_probability.length;
 		
 		//plsa model = new plsa();
 		
 		plsa model = new plsa(N, number_of_topics, number_of_iteration, vocabulary_size, lambda, back_ground_probability, document_term_count);
 		
+		for(int i=0; i<number_of_topics; i++)
+		{
+			double topic_probability [] = model.get_topic_term_probability(i);
+			
+			double sum = 0.0;
+			for(int k=0; k<topic_probability.length;k++)
+			{
+				sum = sum + topic_probability[k];
+			}
+			
+			System.out.println("Topic Probability sum:" + sum);
+			
+			Hashtable<String, Double> dictionary = new Hashtable<String, Double>();
+			
+			for(int k=0; k<topic_probability.length;k++)
+			{
+				dictionary.put(analyzer.get_Term_Name(k), topic_probability[k]);
+			}
+			
+			List<Map.Entry> list = new ArrayList<Map.Entry>(dictionary.entrySet());
+	        Collections.sort(list, new Comparator<Map.Entry>() {
+	           @Override public int compare(Map.Entry e1, Map.Entry e2) {
+	        	    Double i1 = (Double) e1.getValue();
+	        	    Double i2 = (Double) e2.getValue();
+	                if(i1 > i2)
+	                	return -1;
+	                else if(i1 < i2)
+	                	return 1;
+	                else
+	                	return 0;
+	            }
+	        });
+	        
+	        System.out.println("Topic No:"+i+"---------------");
+	        
+	        int l = 0;
+	        for(Map.Entry e : list) 
+	        {
+	        	System.out.println("Term:"+e.getKey()+ ", P(W|theta):"+ e.getValue());
+	        	l++;
+	        	if(l > 10)
+	        		break;
+				
+	        }
+		}
 		
 	}
 	
