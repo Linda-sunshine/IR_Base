@@ -36,14 +36,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 	}
 	
-	// added by Md. Mustafizur Rahman for Topic Modelling
-	public jsonAnalyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, Ngram);
-		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
-		
-	}
-
-	
 	//Load a document and analyze it.
 	@Override
 	public void LoadDoc(String filename) {
@@ -54,7 +46,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
+					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), (post.getLabel()-1), timeStamp));
 				}
 			}
 		} catch (Exception e) {

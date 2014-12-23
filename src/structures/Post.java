@@ -102,24 +102,24 @@ public class Post {
 		try {
 			if (json.has("Overall")){
 				if(json.getString("Overall").equals("None")){
-					//System.err.println("Wrong rating");
 					System.out.print('R');
 				} else{
 					double label = Double.parseDouble(json.getString("Overall"));
 					if(label <= 0 && label > 5){
-						//System.err.println("Error label!!!");
 						System.out.print('L');
 					} else setLabel((int)label);
 				}
 			}
-			if (json.has("Date")){
+			if (json.has("Date"))
 				setDate(json.getString("Date"));
-				//System.out.println("date is " + this.m_date);
-			}
-			if (json.has("Content")){
+			if (json.has("Content"))
 				setContent(json.getString("Content"));
-				//System.out.println("content is " + this.m_content);
-			}
+			if (json.has("Title")) 
+				setTitle(json.getString("Title"));
+			if (json.has("ReviewID"))
+				m_ID = json.getString("ReviewID");
+			if (json.has("Author"))
+				setAuthor(json.getString("Author"));
 		} catch (Exception e) {
 			System.out.print('x');
 		}

@@ -203,11 +203,11 @@ public class Utils {
 		return token.matches("\\d+");
 	}
 	
-	static public void randomize(double[] pros) {
-        int total = 0;
+	static public void randomize(double[] pros, double beta) {
+        double total = 0;
         Random r = new Random();
         for (int i = 0; i < pros.length; i++) {
-            pros[i] = r.nextDouble();
+            pros[i] = beta + r.nextDouble();//to avoid zero probability
             total += pros[i];
         }
 

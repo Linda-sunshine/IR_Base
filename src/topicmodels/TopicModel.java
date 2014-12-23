@@ -5,15 +5,19 @@ import structures._Doc;
 
 public abstract class TopicModel {
 	
+	class _item {
+		String m_name;
+		double m_value;
+	}
+	
 	protected int vocabulary_size;
-	protected int number_of_iteration;//maximum number of iterations
-	protected double lambda;//proportion of background topic in each document
-	protected double beta; // smoothing parameter for p(w|\theta)
+	protected int number_of_iteration; //maximum number of iterations
+	protected double lambda; //proportion of background topic in each document
+	protected double beta; //smoothing parameter for p(w|z, \theta)
 	
-	_Corpus m_corpus;
+	protected _Corpus m_corpus;
 	
-	/*p (w|theta_b) */
-	protected double background_probability [];
+	//initialize necessary model parameters
 	protected abstract void initialize_probability();	
 	
 	//E-step should be per-document computation
@@ -33,13 +37,18 @@ public abstract class TopicModel {
 		return logLikelihood;
 	}
 	
+	//print top k words under each topic
+	public abstract void printTopWords(int k);
+	
+	// perform inference of topic distribution in the document
 	public abstract double[] get_topic_probability(_Doc d);
 	
-	public TopicModel(int vSize, int iteration, double lambda, double beta) {
+	public TopicModel(int vSize, int iteration, double lambda, double beta, _Corpus c) {
 		vocabulary_size = vSize;
 		number_of_iteration = iteration;
 		this.lambda = lambda;
 		this.beta = beta;
+		this.m_corpus = c;
 	}
 	
 	public void EM()

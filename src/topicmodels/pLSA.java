@@ -20,7 +20,7 @@ import structures._Doc;
 import Analyzer.jsonAnalyzer;
 
 
-public class pLSA extends TopicModel{
+public class pLSA extends twoTopic {
 
 	int number_of_docs;
 	int number_of_topics;

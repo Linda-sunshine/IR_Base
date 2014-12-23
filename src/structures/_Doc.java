@@ -15,17 +15,16 @@ import java.util.Map.Entry;
  * General structure to present a document for DM/ML/IR
  */
 public class _Doc {
+	String m_name;
+	int m_ID; // unique id of the document in the collection
 	
-	private String m_name; // name of this document
-	private int m_ID; // unique id of the document in the collection
+	String source; //The content of the source file.
+	int m_totalLength; //The total length of the document.
 	
-	private String source; //The content of the source file.
-	private int m_totalLength; //The total length of the document.
-	
-	private int m_y_label; // classification target, that is the index of the labels.
-	private int m_predict_label; //The predicted result.
-	private double m_y_value; // regression target, like linear regression only has one value.	
-	private long m_timeStamp; //The timeStamp for this review.
+	int m_y_label; // classification target, that is the index of the labels.
+	int m_predict_label; //The predicted result.
+	double m_y_value; // regression target, like linear regression only has one value.	
+	long m_timeStamp; //The timeStamp for this review.
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
@@ -51,17 +50,15 @@ public class _Doc {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
-	}	
-	
-	//Get the name of the document.
-	public String getName(){
-		return this.m_name;
 	}
 	
-	//Set a new name for the document.
-	public String setName(String name){
+	public _Doc (int ID, String name, String source, int ylabel, long timeStamp){
+		this.m_ID = ID;
 		this.m_name = name;
-		return this.m_name;
+		this.source = source;
+		this.m_y_label = ylabel;
+		this.m_totalLength = 0;
+		this.m_timeStamp = timeStamp;
 	}
 	
 	//Get the ID of the document.
@@ -73,6 +70,10 @@ public class _Doc {
 	public int setID(int id){
 		this.m_ID = id;
 		return this.m_ID;
+	}
+	
+	public String getName() {
+		return m_name;
 	}
 	
 	//Get the source content of a document.
