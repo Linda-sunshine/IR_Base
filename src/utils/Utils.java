@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Random;
+
 import structures._Doc;
 import structures._SparseFeature;
 
@@ -199,6 +201,25 @@ public class Utils {
 	
 	static public boolean isNumber(String token) {
 		return token.matches("\\d+");
+	}
+	
+	static public void randomize(double[] pros) {
+        int total = 0;
+        Random r = new Random();
+        for (int i = 0; i < pros.length; i++) {
+            pros[i] = r.nextDouble();
+            total += pros[i];
+        }
+
+        //normalize
+        for (int i = 0; i < pros.length; i++)
+            pros[i] = pros[i] / total;
+    }
+	
+	static public void print(double [] array)
+	{
+		for(int i=0;i<array.length;i++)
+			System.out.println("array["+i+"] =" + array[i]);
 	}
 		
 	public static void main(String[] args){

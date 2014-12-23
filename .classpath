@@ -7,6 +7,6 @@
 	<classpathentry kind="lib" path="libs/opennlp-maxent-3.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/opennlp-tools-1.5.3.jar"/>
 	<classpathentry kind="lib" path="libs/colt.jar" sourcepath="libs/colt.jar"/>
-	<classpathentry kind="lib" path="C:/Users/ASUS/IR_Base/libs/parallelcolt-0.9.4.jar"/>
+	<classpathentry kind="lib" path="libs/parallelcolt-0.9.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

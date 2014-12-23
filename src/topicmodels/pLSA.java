@@ -1,4 +1,4 @@
-package topicModel;
+package topicmodels;
 
 
 /**
@@ -6,21 +6,21 @@ package topicModel;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import opennlp.tools.util.InvalidFormatException;
-import Analyzer.jsonAnalyzer;
 import structures._Doc;
+import Analyzer.jsonAnalyzer;
 
 
-public class plsa extends TopicModel{
+public class pLSA extends TopicModel{
 
 	int number_of_docs;
 	int number_of_topics;
@@ -39,47 +39,8 @@ public class plsa extends TopicModel{
 	double document_word_background_probabilty[][];
 	double likelihood[];
 	
-	plsa()
-	{
-		
-		lambda = 0.9;
-		vocabulary_size = 3;
-		number_of_iteration = 100;
-		number_of_docs = 2;
-		number_of_topics = 2;
-		
-		//initialize background probability
-		background_probability = new double [vocabulary_size];
-		background_probability[0] = 0.5;
-		background_probability[1] = 0.3;
-		background_probability[2] = 0.2;
-		
-		
-		//initialize document_term_count
-		document_term_count = new double [this.number_of_docs][this.vocabulary_size];
-				
-		document_term_count[0][0] = 7;
-		document_term_count[0][1] = 5;
-		document_term_count[0][2] = 6;
-				
-		document_term_count[1][0] = 8;
-		document_term_count[1][1] = 7;
-		document_term_count[1][2] = 5;
-		
-		document_topic_probabilty = new double [this.number_of_docs][this.number_of_topics];
-		topic_term_probabilty = new double [this.number_of_topics][this.vocabulary_size];
-		
-		document_word_topic_probabilty = new double [this.number_of_docs][this.vocabulary_size][this.number_of_topics];
-		document_word_background_probabilty = new double [this.number_of_docs][this.vocabulary_size];
-				
-		initialize_probability();
-		EM();			
-		
-	}
-	
-	plsa(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double back_ground [], double document_term_count [][])
-	{
-		
+	public pLSA(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double back_ground [], double document_term_count [][])
+	{	
 		this.number_of_iteration = number_of_iteration;
 		this.lambda = lambda;
 		this.background_probability = back_ground;
@@ -341,7 +302,7 @@ public class plsa extends TopicModel{
 		
 		//plsa model = new plsa();
 		
-		plsa model = new plsa(N, number_of_topics, number_of_iteration, vocabulary_size, lambda, back_ground_probability, document_term_count);
+		pLSA model = new pLSA(N, number_of_topics, number_of_iteration, vocabulary_size, lambda, back_ground_probability, document_term_count);
 		
 		for(int i=0; i<number_of_topics; i++)
 		{
@@ -385,7 +346,6 @@ public class plsa extends TopicModel{
 	        	l++;
 	        	if(l > 10)
 	        		break;
-				
 	        }
 		}
 		
