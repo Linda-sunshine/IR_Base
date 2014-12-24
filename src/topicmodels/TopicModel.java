@@ -61,13 +61,14 @@ public abstract class TopicModel {
 		{
 			for(_Doc d:m_corpus.getCollection())
 				calculate_E_step(d);
+			
 			calculate_M_step();
 			
 			current = calculate_log_likelihood();
 			delta = Math.abs((current - last)/last);
 			current = last;
-			System.out.format("Likelihood %.4f at step %s converge to %.3f...\n", current, i, delta);
+			System.out.format("Likelihood %.9f at step %s converge to %f...\n", current, i, delta);
 			i++;
-		} while (delta>1e-6 && i<this.number_of_iteration);
+		} while (delta>1e-4 && i<this.number_of_iteration);
 	}
 }

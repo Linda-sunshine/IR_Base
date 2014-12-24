@@ -9,6 +9,7 @@ package topicmodels;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
@@ -16,108 +17,86 @@ import java.util.List;
 import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures.MyPriorityQueue;
+import structures._RankItem;
+import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
+import utils.Utils;
 import Analyzer.jsonAnalyzer;
 
 
-public class pLSA extends twoTopic {
+public class pLSA extends TopicModel {
 
-	int number_of_docs;
-	int number_of_topics;
+	private int number_of_docs;
+	private int number_of_topics;
+	protected double[] background_probability;
 	
-	double document_term_count [][];
-	
-	/* p(z|d) */
-	double document_topic_probabilty [][];
-	
-	/* p(w|z) */
-	double topic_term_probabilty [][];
-	
-	/*p(z|d,w) */
-	
-	double document_word_topic_probabilty[][][];
+	double document_topic_probabilty [][]; /* p(z|d) */
+	double topic_term_probabilty [][]; /* p(w|z) */
+	double document_word_topic_probabilty[][][]; /*p(z|d,w) */
 	double document_word_background_probabilty[][];
-	double likelihood[];
 	
-	public pLSA(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double back_ground [], double document_term_count [][])
+	
+	public pLSA(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double beta, double back_ground [], _Corpus c)
 	{	
-		this.number_of_iteration = number_of_iteration;
-		this.lambda = lambda;
-		this.background_probability = back_ground;
-		this.document_term_count = document_term_count;
-		this.vocabulary_size = vocabulary_size;
+		
+		super(vocabulary_size, number_of_iteration, lambda, beta,c);
+		
 		this.number_of_docs = number_of_docs;
 		this.number_of_topics = number_of_topics;
+		this.background_probability = back_ground;
 		
-		
-		document_topic_probabilty = new double [this.number_of_docs][this.number_of_topics];
+	    document_topic_probabilty = new double [this.number_of_docs][this.number_of_topics];
 		topic_term_probabilty = new double [this.number_of_topics][this.vocabulary_size];
-		
 		document_word_topic_probabilty = new double [this.number_of_docs][this.vocabulary_size][this.number_of_topics];
 		document_word_background_probabilty = new double [this.number_of_docs][this.vocabulary_size];
 		
-		
-		likelihood = new double [this.number_of_iteration];
-		
-		initialize_probability();
-		EM();		
-		
 	}
-	
-    public double [] get_topic_term_probability(int index)
-    {
-    	return this.topic_term_probabilty [index];
-    }
+
 	
 	public void initialize_probability()
 	{
-		
-		//initialize document-topic matrics
+		//initialize document-topic matrix
 		// random is better than uniform
 		for(int i=0;i<this.number_of_docs;i++)
 		{
-			//for(int j=0;j<number_of_topics;j++)
-			this.document_topic_probabilty[i] = randomProbilities(this.number_of_topics);
+			this.document_topic_probabilty[i] = new double [this.number_of_topics];
+			Utils.randomize(this.document_topic_probabilty[i], beta);
 		}
 		
-		// initialize term topic metrics
+		// initialize term topic matrix
 		// uniform is better than random
-		
-
 		for(int i=0;i<number_of_topics;i++)
 		{ 
-			for(int j=0;j<this.vocabulary_size;j++)
-			{
-					this.topic_term_probabilty[i][j] = 1.0 / this.vocabulary_size;
-			}
+			this.topic_term_probabilty[i] = new double [this.vocabulary_size];
+			Arrays.fill(this.topic_term_probabilty[i], 1.0/this.vocabulary_size);
 		}
 		
 		
 	}
 	
-	public void calculate_E_step()
+	@Override
+	public void calculate_E_step(_Doc d)
 	{
-		for(int i=0;i<this.number_of_docs;i++)
-		{
-			
-			//-----------------other topics----------- 
 		
-			for(int j=0;j<this.vocabulary_size;j++)
+		int i = d.getID();
+		//-----------------other topics----------- 
+				for(_SparseFeature fv:d.getSparse()) 
 			{
+				int j = fv.getIndex(); // jth word in doc i
 				double sum = 0.0;
 				for(int k=0;k<this.number_of_topics;k++)
 				{
 					sum = sum + document_topic_probabilty[i][k] * topic_term_probabilty[k][j];
-					
 				}
-			
-			
 				double denumerator = sum;
-			
+				
 				for(int k=0;k<this.number_of_topics;k++)
 				{
 					double numerator = document_topic_probabilty[i][k] * topic_term_probabilty[k][j];
 					document_word_topic_probabilty[i][j][k] = (double ) numerator / denumerator;
+					document_word_topic_probabilty[i][j][k] = fv.getValue() * document_word_topic_probabilty[i][j][k]; 
 					
 				}
 			
@@ -128,11 +107,11 @@ public class pLSA extends twoTopic {
 			
 			
 			}
-		}
-		
 	}
+		
 	
 	
+	@Override
 	public void calculate_M_step()
 	{
 		
@@ -146,9 +125,8 @@ public class pLSA extends twoTopic {
 				double numerator = 0.0;
 				for(int k=0; k<this.vocabulary_size; k++)
 				{
-					numerator = numerator + document_term_count[i][k]*(1 - document_word_background_probabilty[i][k])*document_word_topic_probabilty[i][k][j];
+					numerator = numerator + (1 - document_word_background_probabilty[i][k])*document_word_topic_probabilty[i][k][j];
 				}
-				
 				document_topic_probabilty [i][j] = numerator;
 				total_denumerator = total_denumerator + numerator;
 				
@@ -156,17 +134,11 @@ public class pLSA extends twoTopic {
 			
 	    for(int j=0;j<this.number_of_topics;j++)
 			{
-				
-				
 				document_topic_probabilty [i][j] = (double) document_topic_probabilty [i][j] / total_denumerator;
 			}
-			
-			
 		}
 		
 		// update topic-term matrix -------------
-		
-		
 		for(int k=0;k<this.number_of_topics;k++)
 		{
 			double total_denumerator = 0.0;
@@ -175,7 +147,7 @@ public class pLSA extends twoTopic {
 				double numerator = 0.0;
 				for(int j=0;j<this.number_of_docs;j++)
 				{
-					numerator = numerator + document_term_count[j][i]*(1 - document_word_background_probabilty[j][i])*document_word_topic_probabilty[j][i][k]; 
+					numerator = numerator + (1 - document_word_background_probabilty[j][i])*document_word_topic_probabilty[j][i][k]; 
 				}
 				
 				topic_term_probabilty[k][i] = numerator;
@@ -197,34 +169,24 @@ public class pLSA extends twoTopic {
 	 * N is number of word in corpus
 	 */
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
-	
-	public double calculate_log_likelihood()
+	@Override
+	public double calculate_log_likelihood(_Doc d)
 	{
 		//print(topic_term_probabilty, number_of_topics,vocabulary_size);
 		//print(document_topic_probabilty, number_of_docs, number_of_topics);
 		double likelihood = 0.0;
-	
-		for(int i=0;i<this.number_of_docs;i++)
-		{
-			for(int j=0;j<this.vocabulary_size;j++)
-			{
-				
+		int i = d.getID();
+			for(_SparseFeature fv:d.getSparse()) {
+				int j = fv.getIndex();	
 				double sum = 0.0;
 				for(int k=0;k<this.number_of_topics;k++)
 				{
 					sum = sum + (document_topic_probabilty[i][k] * topic_term_probabilty[k][j]);
-				
 				}
 				double parameter = sum * (1 - lambda) + this.background_probability[j]*lambda;
-				
-				//double parameter = sum;
-				
-				likelihood = likelihood + (document_term_count[i][j] * Math.log(parameter));
+				likelihood = likelihood + (fv.getValue() * Math.log(parameter));
 			}
-			
-		}
-	
-		return likelihood;
+			return likelihood;
 	}
 	
 	
@@ -241,114 +203,94 @@ public class pLSA extends twoTopic {
 		}
 	}
 	
+	@Override
+	public void printTopWords(int k) {
+		//we only have one topic to show
+		for(int i=0; i<topic_term_probabilty.length; i++)
+		{
+			MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+			for(int j = 0; j < vocabulary_size; j++)
+			{
+				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+			}
+			for(_RankItem it:fVector)
+				System.out.format("%s(%.3f)\t", it.m_name, it.m_value);
+			System.out.println();
+		}
+		
+		
+	}
+	
+	
+	public void get_topic_probability()
+	{
+		initialize_probability();
+		EM();
+		/*double delta, last = calculate_log_likelihood(), current;
+		int  i = 0;
+		do
+		{
+			calculate_E_step();
+			calculate_M_step();
+			
+			current = calculate_log_likelihood();
+			delta = Math.abs((current - last)/last);
+			last = current;
+			i++;
+		} while (delta>1e-4 && i<this.number_of_iteration);
+		
+		double perplexity = Math.exp(-current/m_corpus.getCorpusTotalLenght());
+		System.out.format("Likelihood converges to %.4f after %d steps...\n", perplexity, i);
+		*/
+	}
+	
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException
 	{
 		
-		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
-		int CVFold = 10; //k fold-cross validation
-		String classifier = "NB"; //Which classifier to use.
-		System.out.println("--------------------------------------------------------------------------------------");
-		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
-
+		int lengthThreshold = 5; //Document length threshold
+		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String finalLocation = "./FinalFeatureStat.txt";
-		String featureLocation = "./SelectedFeatures.txt";
+		
+		String featureLocation = "./data/Features/selected_fv.txt";
+		String finalLocation = "./data/Features/selected_fv_stat.txt";
 
-		/*****Parameters in feature selection.*****/
-		String providedCV = "";
-		String featureSelection = "TF"; //Feature selection method.
-		double startProb = 0.4; // Used in feature selection, the starting point of the features.
-		double endProb = 1; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
-		
-		/*****Parameters in time series analysis.*****/
-		int window = 0;
-		System.out.println("Window length: " + window);
-		System.out.println("--------------------------------------------------------------------------------------");
-		
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer;
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, Ngram);
-		
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
+		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
 		
 		
 		/* Variable related to PLSA */
-		double back_ground_probability [] = analyzer.get_back_ground_probabilty();
-		ArrayList<_Doc> docs = analyzer.returnCorpus(finalLocation).getCollection(); // Get the collection of all the documents.
-		int N = docs.size();
 		
-		double document_term_count [][] = new double [N][];
-		
-		for(int i = 0; i < docs.size(); i++){
-			_Doc temp = docs.get(i);
-			document_term_count [i] = analyzer.get_term_frequency_in_doc(temp); 
-		}
-		
-		int number_of_topics = 2;
+		int number_of_topics = 3;
+		double beta = 1e-3;
 		double lambda = 0.9;
-	    int number_of_iteration = 50;
-		int vocabulary_size = back_ground_probability.length;
+		int topK = 10;
+	    int number_of_iteration = 20;
+	    int number_of_docs = c.getSize();
+		int vocabulary_size = analyzer.getFeatureSize();
 		
-		//plsa model = new plsa();
+		pLSA model = new pLSA(number_of_docs, number_of_topics, number_of_iteration, vocabulary_size, lambda,  beta, analyzer.get_back_ground_probabilty(),c);
+		model.get_topic_probability();
+		model.printTopWords(topK);
 		
-		pLSA model = new pLSA(N, number_of_topics, number_of_iteration, vocabulary_size, lambda, back_ground_probability, document_term_count);
 		
-		for(int i=0; i<number_of_topics; i++)
-		{
-			double topic_probability [] = model.get_topic_term_probability(i);
-			
-			double sum = 0.0;
-			for(int k=0; k<topic_probability.length;k++)
-			{
-				sum = sum + topic_probability[k];
-			}
-			
-			System.out.println("Topic Probability sum:" + sum);
-			
-			Hashtable<String, Double> dictionary = new Hashtable<String, Double>();
-			
-			for(int k=0; k<topic_probability.length;k++)
-			{
-				dictionary.put(analyzer.get_Term_Name(k), topic_probability[k]);
-			}
-			
-			List<Map.Entry> list = new ArrayList<Map.Entry>(dictionary.entrySet());
-	        Collections.sort(list, new Comparator<Map.Entry>() {
-	           @Override public int compare(Map.Entry e1, Map.Entry e2) {
-	        	    Double i1 = (Double) e1.getValue();
-	        	    Double i2 = (Double) e2.getValue();
-	                if(i1 > i2)
-	                	return -1;
-	                else if(i1 < i2)
-	                	return 1;
-	                else
-	                	return 0;
-	            }
-	        });
-	        
-	        System.out.println("Topic No:"+i+"---------------");
-	        
-	        int l = 0;
-	        for(Map.Entry e : list) 
-	        {
-	        	System.out.println("Term:"+e.getKey()+ ", P(W|theta):"+ e.getValue());
-	        	l++;
-	        	if(l > 10)
-	        		break;
-	        }
-		}
 		
+	}
+
+	@Override
+	public double[] get_topic_probability(_Doc d) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 

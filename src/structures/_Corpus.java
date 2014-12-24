@@ -56,6 +56,17 @@ public class _Corpus {
 		return m_collection.size();
 	}
 	
+	//Get the total count of all the tokens in the corpus 
+	public int getCorpusTotalLenght()
+	{
+		int size = 0;
+		for(int i=0; i < m_collection.size(); i++)
+		{
+			size = size + m_collection.get(i).getTotalDocLength();
+		}
+		return size;
+	}
+	
 	/*
 	 rand.nextInt(k) will always generates a number between 0 ~ (k-1).
 	 Access the documents with the masks can help us split the whole whole 
