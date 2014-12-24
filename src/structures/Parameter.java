@@ -168,7 +168,7 @@ public class Parameter {
 	
 	public String printFeatureSelectionConfiguration() {
 		StringBuffer buffer = new StringBuffer(512);
-		buffer.append("\n--------------------------------------------------------------------------------------");
+		buffer.append("--------------------------------------------------------------------------------------");
 		buffer.append("\nParameters of feature selection:");
 		buffer.append("\nSelection method: " + m_featureSelection + "\tDF cut: " + m_DFthreshold + "\tRange: [" + m_startProb + "," + m_endProb + "]");
 		buffer.append("\nFeature file: " + m_featureFile + "\tStatistics file: " + m_featureStat);

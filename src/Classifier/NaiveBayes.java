@@ -3,8 +3,10 @@ package Classifier;
 import java.util.Arrays;
 import java.util.Collection;
 
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 
@@ -67,6 +69,8 @@ public class NaiveBayes extends BaseClassifier {
 			for(int j = 0; j < m_featureSize; j++)
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
+		
+		printTopFeatures(5);
 	}
 		
 	//Predict the label for one document.
@@ -81,7 +85,25 @@ public class NaiveBayes extends BaseClassifier {
 	}
 	
 	//Save the parameters for classification.
-	public void saveModel(String modelLocation){
+	@Override
+	public void saveModel(String modelLocation) {
 		
+	}
+	
+	public void printTopFeatures(int topK) {
+		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
+		for(int n=0; n<m_featureSize; n++) {
+			for(int i=0; i<m_classNo; i++)
+				m_cProbs[i] = m_Pxy[i][n];
+			queue.add(new _RankItem(n, Utils.entropy(m_cProbs, true)));
+		}
+		
+		System.out.print("Most discriminative features: ");
+		for(_RankItem item:queue) {
+			for(int i=0; i<m_classNo; i++)
+				m_cProbs[i] = m_Pxy[i][item.m_index];
+			System.out.format("%s(%d) ", m_corpus.getFeature(item.m_index), Utils.maxOfArrayIndex(m_cProbs));
+		}
+		System.out.println();
 	}
 }

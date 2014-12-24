@@ -8,19 +8,13 @@ package topicmodels;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.MyPriorityQueue;
-import structures._RankItem;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 import Analyzer.jsonAnalyzer;

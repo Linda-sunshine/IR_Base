@@ -24,7 +24,7 @@ public class AmazonReviewMain {
 		String classifier = "NB"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "TRANS";
+		String style = "SUP";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
@@ -33,16 +33,16 @@ public class AmazonReviewMain {
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String stopwords = "./data/Model/stopwords.dat";
-		String finalLocation = "./data/Features/FinalFeatureStat.txt";
-		String featureLocation = "./data/Features/SelectedFeatures.txt";
+		String finalLocation = "./data/Features/selected_fv_stat.txt";
+		String featureLocation = "./data/Features/selected_fv.txt";
 
 		/*****Parameters in feature selection.*****/
-		String featureSelection = "CHI"; //Feature selection method.
-		double startProb = 0.4; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
+//		String stopwords = "./data/Model/stopwords.dat";
+//		String featureSelection = "CHI"; //Feature selection method.
+//		double startProb = 0.4; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+//		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
 		int window = 0;
@@ -50,7 +50,7 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/****Pre-process the data.*****/
-//		//Feture selection.
+		//Feture selection.
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
@@ -64,9 +64,8 @@ public class AmazonReviewMain {
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		featureSize = analyzer.getFeatureSize();
-		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
-		//corpus.save2File("./data/FVs/fv.dat");
+		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
@@ -86,7 +85,7 @@ public class AmazonReviewMain {
 				
 			} else if(classifier.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
-				double C = 3;// The default value is 1.
+				double C = 1;// The default value is 1.
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
 				mySVM.crossValidation(CVFold, corpus);

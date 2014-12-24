@@ -129,4 +129,10 @@ public class LogisticRegression extends BaseClassifier{
 			m_cProbs[i] = calculatelogPij(i, fv);
 		return Utils.maxOfArrayIndex(m_cProbs);
 	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		
+	}
 }

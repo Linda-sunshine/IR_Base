@@ -38,6 +38,10 @@ public class _Corpus {
 		return m_features.get(i);
 	}
 	
+	public int getFeatureSize() {
+		return m_features.size();
+	}
+	
 	//Initialize the m_mask, the default value is false.
 	public void setMasks() {
 		this.m_mask = new int[this.m_collection.size()];

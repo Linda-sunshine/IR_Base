@@ -222,4 +222,10 @@ public class SemiSupervised extends BaseClassifier{
 	public int predict(_Doc doc) {
 		return -1; //we don't support this
 	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		
+	}
 }

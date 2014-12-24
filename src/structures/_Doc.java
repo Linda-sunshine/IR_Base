@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import utils.Utils;
+
 /**
  * @author lingong
  * General structure to present a document for DM/ML/IR
@@ -29,11 +31,17 @@ public class _Doc {
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	
+	//p(z|d) for topic models in general
+	public double[] m_topics;
+	//sufficient statistics for estimating p(z|d)
+	public double[] m_sstat;
+	
 	//Constructor.
 	public _Doc(){
 		this.m_predict_label = 0;
 		this.m_totalLength = 0;
-		//this.m_timeStamp = 0;
+		m_topics = null;
+		m_sstat = null;
 	}
 	
 	//Constructor.
@@ -42,6 +50,8 @@ public class _Doc {
 		this.source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
+		m_topics = null;
+		m_sstat = null;
 	}
 	
 	public _Doc (int ID, String source, int ylabel, long timeStamp){
@@ -50,6 +60,8 @@ public class _Doc {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
+		m_topics = null;
+		m_sstat = null;
 	}
 	
 	public _Doc (int ID, String name, String source, int ylabel, long timeStamp){
@@ -59,6 +71,8 @@ public class _Doc {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
+		m_topics = null;
+		m_sstat = null;
 	}
 	
 	//Get the ID of the document.
@@ -173,5 +187,14 @@ public class _Doc {
 	public int setPredictLabel(int label){
 		this.m_predict_label = label;
 		return this.m_predict_label;
+	}
+	
+	public void setTopics(int k, double beta) {
+		if (m_topics==null || m_topics.length!=k) {
+			m_topics = new double[k];
+			m_sstat = new double[k];
+		}
+		Utils.randomize(m_topics, beta);
+		Arrays.fill(m_sstat, 0);
 	}
 }

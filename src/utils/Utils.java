@@ -48,6 +48,17 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double entropy(double[] prob, boolean logScale) {
+		double ent = 0;
+		for(double p:prob) {
+			if (logScale)
+				ent += Math.exp(p) * p;
+			else
+				ent += Math.log(p) * p;
+		}
+		return -ent;
+	}
+	
 	//Find the max value's index of an array, return Value of the maximum.
 	public static double maxOfArrayValue(double[] probs){
 		return probs[maxOfArrayIndex(probs)];
@@ -66,6 +77,14 @@ public class Utils {
 				sum += Math.exp(xs[i] - max);
 		}
 		return Math.log(sum) + max;
+	}
+	
+	public static double logSum(double log_a, double log_b)
+	{
+		if (log_a < log_b)
+			return log_b+Math.log(1 + Math.exp(log_a-log_b));
+		else
+			return log_a+Math.log(1 + Math.exp(log_b-log_a));
 	}
 	
 	//The function is used to calculate the sum of log of two arrays.
