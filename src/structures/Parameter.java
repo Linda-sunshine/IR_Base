@@ -22,7 +22,7 @@ public class Parameter {
 	public String m_classifier = "NB"; //Which classifier to use.
 	
 	//"SUP", "TRANS"
-	public String m_style = "TRANS";
+	public String m_style = "SUP";
 	public double m_sampleRate = 0.1; // sampling rate for transductive learning
 	public int m_kUL = 100; // k nearest labeled neighbors
 	public int m_kUU = 50; // k' nearest unlabeled neighbors
@@ -168,9 +168,9 @@ public class Parameter {
 		buffer.append("\nDoc length cut: " + m_lengthThreshold +"\tWindow length: " + m_window);
 		
 		if (m_style.equals("TRANS"))
-			buffer.append("\nLearing method: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);
+			buffer.append("\nLearning paradigm: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);
 		else
-			buffer.append("\nLearing method: SUP");
+			buffer.append("\nLearning paradigm: SUP");
 		
 		if (m_classifier.equals("LR") || m_classifier.equals("SVM"))
 			buffer.append("\nClassifier: " + m_classifier + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);

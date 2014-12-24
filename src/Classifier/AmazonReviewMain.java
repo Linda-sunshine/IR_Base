@@ -16,7 +16,7 @@ public class AmazonReviewMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 		
@@ -24,7 +24,7 @@ public class AmazonReviewMain {
 		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "TRANS";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
@@ -66,6 +66,7 @@ public class AmazonReviewMain {
 		featureSize = analyzer.getFeatureSize();
 		
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
+		double C = 0.1;
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
@@ -78,14 +79,12 @@ public class AmazonReviewMain {
 				
 			} else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
-				double lambda = 0.10; //Define a new lambda.
 				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window, lambda);
+				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window, C);
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(classifier.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
-				double C = 1;// The default value is 1.
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
 				mySVM.crossValidation(CVFold, corpus);
