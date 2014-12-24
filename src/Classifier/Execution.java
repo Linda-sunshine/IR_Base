@@ -61,16 +61,14 @@ public class Execution  {
 				
 			} else if(param.m_classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
-				double lambda = 1.0; //Define a new lambda.
 				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, lambda);
+				LogisticRegression myLR = new LogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
 				myLR.crossValidation(param.m_CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(param.m_classifier.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
-				double C = 3;// The default value is 1.
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, param.m_classNumber, featureSize + param.m_window, C);
+				SVM mySVM = new SVM(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
 				mySVM.crossValidation(param.m_CVFold, corpus);
 				
 			} else System.out.println("Classifier has not developed yet!");

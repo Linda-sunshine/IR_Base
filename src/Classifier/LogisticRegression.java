@@ -13,8 +13,8 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 public class LogisticRegression extends BaseClassifier{
 
 	double[] m_beta;
-	double[] m_g;
-	double[] m_diag;
+	double[] m_g, m_diag;
+	double[] m_cache;
 	double m_lambda;
 	
 	public LogisticRegression(_Corpus c, int classNo, int featureSize){
@@ -22,6 +22,7 @@ public class LogisticRegression extends BaseClassifier{
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
 		m_diag = new double[m_beta.length];
+		m_cache = new double[classNo];
 		m_lambda = 0.5;//Initialize it to be 0.5.
 	}
 	
@@ -30,7 +31,8 @@ public class LogisticRegression extends BaseClassifier{
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
 		m_diag = new double[m_beta.length];
-		m_lambda = lambda;//Initialize it to be 0.5.
+		m_cache = new double[classNo];
+		m_lambda = lambda;
 	}
 	
 	@Override
@@ -41,6 +43,7 @@ public class LogisticRegression extends BaseClassifier{
 	@Override
 	protected void init() {
 		Arrays.fill(m_beta, 0);
+		Arrays.fill(m_diag, 0);
 	}
 
 	/*
@@ -60,7 +63,7 @@ public class LogisticRegression extends BaseClassifier{
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 6, m_beta, fValue, m_g, false, m_diag, iprint, 1e-5, 1e-16, iflag);
+				LBFGS.lbfgs(fSize, 6, m_beta, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-20, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -126,8 +129,8 @@ public class LogisticRegression extends BaseClassifier{
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
-			m_cProbs[i] = calculatelogPij(i, fv);
-		return Utils.maxOfArrayIndex(m_cProbs);
+			m_cache[i] = calculatelogPij(i, fv);
+		return Utils.maxOfArrayIndex(m_cache);
 	}
 	
 	//Save the parameters for classification.

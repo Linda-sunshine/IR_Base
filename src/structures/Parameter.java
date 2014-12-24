@@ -44,6 +44,9 @@ public class Parameter {
 	/*****Parameters in time series analysis.*****/
 	public int m_window = 0; // window size in time series analysis
 	
+	/*****Parameters specified for classifiers.*****/
+	public double m_C = 0.1; // trade-off parameter in LR and SVM
+	
 	public Parameter(String argv[])
 	{
 		int i;
@@ -85,6 +88,8 @@ public class Parameter {
 				m_CVFold = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-c"))
 				m_classifier = argv[i];
+			else if (argv[i-1].equals("-C"))
+				m_C = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-s"))
 				m_style = argv[i];
 			else if (argv[i-1].equals("-w"))
@@ -124,19 +129,19 @@ public class Parameter {
 		+"	CHI -- Chi-Square test statistics\n"
 		+"	IG -- Informatoin gain\n"
 		+"	MI -- Mutual information\n"
-		+"-sp proportion : ignore the bottom proportion of ranked features (default 0.4)\n"
-		+"-ep proportion : ignore the top proportion of ranked features (default 0.999)\n"
-		+"-df c : ignore the documents occurring less than c documents (default 10) \n"
-		+"-cs c : total number of classes (has to be manually specified!)\n"
-		+"-ngram n : n-gram for feature generation (default 2)\n"
-		+"-lcut c : ignore the documents with length less than c (default 5)\n"
-		+"-window s : window size in time series based sentiment analysis (default 0)\n"
+		+"-sp float : ignore the bottom proportion of ranked features (default 0.4)\n"
+		+"-ep float : ignore the top proportion of ranked features (default 0.999)\n"
+		+"-df int : ignore the documents occurring less than c documents (default 10) \n"
+		+"-cs int : total number of classes (has to be manually specified!)\n"
+		+"-ngram int : n-gram for feature generation (default 2)\n"
+		+"-lcut int : ignore the documents with length less than c (default 5)\n"
+		+"-window int : window size in time series based sentiment analysis (default 0)\n"
 		+"-fv type : feature value generation method (default TFIDF)\n"
 		+"	TF -- Term frequency\n"
 		+"	TFIDF -- Term frequency times inverse document frequence\n"
 		+"	BM25 -- Term frequency times BM25 IDF with document length normalization\n"
 		+"	PLN -- Pivoted length normalization\n"
-		+"-norm type : feature value normalization method (default L2)\n"
+		+"-norm int : feature value normalization method (default L2)\n"
 		+"	1 -- L1 normalization\n"
 		+"	2 -- L2 normalization\n"
 		+"	0 -- No normalization\n"
@@ -147,9 +152,10 @@ public class Parameter {
 		+"-s type : learning paradigm (default SUP)\n"
 		+"	SUP -- Supervised learning\n"
 		+"	TRANS -- Transductive learning\n"
-		+"-sr r : Sample rate for transductive learning (default 0.1)\n"
-		+"-kUL c : k nearest labeled neighbors (default 100)\n"
-		+"-kUU c : kP nearest unlabeled neighbors (default 50)\n"
+		+"-C float -- trade-off parameter in LR and SVM (default 0.1)\n"
+		+"-sr float : Sample rate for transductive learning (default 0.1)\n"
+		+"-kUL int : k nearest labeled neighbors (default 100)\n"
+		+"-kUU int : kP nearest unlabeled neighbors (default 50)\n"
 		);
 		System.exit(1);
 	}
@@ -159,8 +165,18 @@ public class Parameter {
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		buffer.append("\nParameters of learning procedure:");
 		buffer.append("\n#Class: " + m_classNumber + "\tNgram: " + m_Ngram + "\tFeature value: " + m_featureValue + "\tNormalization: " + m_norm);
-		buffer.append("\nLearing method: " + m_style + "\tClassifier: " + m_classifier + "\tCross validation: " + m_CVFold);
 		buffer.append("\nDoc length cut: " + m_lengthThreshold +"\tWindow length: " + m_window);
+		
+		if (m_style.equals("TRANS"))
+			buffer.append("\nLearing method: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);
+		else
+			buffer.append("\nLearing method: SUP");
+		
+		if (m_classifier.equals("LR") || m_classifier.equals("SVM"))
+			buffer.append("\nClassifier: " + m_classifier + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);
+		else
+			buffer.append("\nClassifier: " + m_classifier + "\tCross validation: " + m_CVFold);
+		
 		buffer.append("\nData directory: " + m_folder);
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		return buffer.toString();

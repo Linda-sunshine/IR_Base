@@ -16,12 +16,12 @@ public class AmazonReviewMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "TFIDF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 		
 		//"NB", "LR", "SVM"
-		String classifier = "NB"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
 		String style = "SUP";
@@ -78,7 +78,7 @@ public class AmazonReviewMain {
 				
 			} else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
-				double lambda = 1.0; //Define a new lambda.
+				double lambda = 0.10; //Define a new lambda.
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window, lambda);
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
