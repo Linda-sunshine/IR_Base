@@ -117,7 +117,7 @@ public class twoTopic extends TopicModel {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		
 		String featureLocation = "./data/Features/selected_fv.txt";
-		String finalLocation = "data/Features/selected_fv_stat.txt";
+		String finalLocation = "./data/Features/selected_fv_stat.txt";
 
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";

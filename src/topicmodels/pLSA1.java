@@ -26,7 +26,7 @@ import utils.Utils;
 import Analyzer.jsonAnalyzer;
 
 
-public class pLSA extends TopicModel {
+public class pLSA1 extends TopicModel {
 
 	private int number_of_docs;
 	private int number_of_topics;
@@ -38,7 +38,7 @@ public class pLSA extends TopicModel {
 	double document_word_background_probabilty[][];
 	
 	
-	public pLSA(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double beta, double back_ground [], _Corpus c)
+	public pLSA1(int number_of_docs, int number_of_topics, int number_of_iteration, int vocabulary_size, double lambda, double beta, double back_ground [], _Corpus c)
 	{	
 		
 		super(vocabulary_size, number_of_iteration, lambda, beta,c);
@@ -76,12 +76,13 @@ public class pLSA extends TopicModel {
 		
 	}
 	
-	@Override
-	public void calculate_E_step(_Doc d)
+
+	public void calculate_E_step()
 	{
 		
-		int i = d.getID();
-		
+		for (int i = 0; i < this.number_of_docs ; i++)
+		{
+			_Doc d = this.m_corpus.getCollection().get(i);
 		//-----------------other topics----------- 
 			for(_SparseFeature fv:d.getSparse()) 
 			{
@@ -106,7 +107,7 @@ public class pLSA extends TopicModel {
 				denumerator = numerator + (1 - this.lambda) * sum;
 				document_word_background_probabilty[i][j] = (double) numerator / denumerator;
 			
-			
+			}
 			}
 	}
 		
@@ -171,12 +172,15 @@ public class pLSA extends TopicModel {
 	 */
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
 	@Override
-	public double calculate_log_likelihood(_Doc d)
+	public double calculate_log_likelihood()
 	{
 		//print(topic_term_probabilty, number_of_topics,vocabulary_size);
 		//print(document_topic_probabilty, number_of_docs, number_of_topics);
+		
 		double likelihood = 0.0;
-		int i = d.getID();
+		for (int i = 0; i < this.number_of_docs ; i++)
+		{
+			_Doc d = this.m_corpus.getCollection().get(i);
 			for(_SparseFeature fv:d.getSparse()) {
 				int j = fv.getIndex();	
 				double sum = 0.0;
@@ -187,6 +191,7 @@ public class pLSA extends TopicModel {
 				double parameter = sum * (1 - lambda) + this.background_probability[j]*lambda;
 				likelihood = likelihood + (fv.getValue() * Math.log(parameter));
 			}
+		}
 			return likelihood;
 	}
 	
@@ -226,9 +231,8 @@ public class pLSA extends TopicModel {
 	public void get_topic_probability()
 	{
 		initialize_probability();
-		EM();
 		
-		/*double delta, last = calculate_log_likelihood(), current;
+		double delta, last = calculate_log_likelihood(), current;
 		int  i = 0;
 		do
 		{
@@ -238,12 +242,14 @@ public class pLSA extends TopicModel {
 			current = calculate_log_likelihood();
 			delta = Math.abs((current - last)/last);
 			last = current;
+			System.out.format("Likelihood %.9f at step %s converge to %f...\n", last, i, delta);
+			
 			i++;
 		} while (delta>1e-4 && i<this.number_of_iteration);
 		
 		double perplexity = Math.exp(-current/m_corpus.getCorpusTotalLenght());
-		System.out.format("Likelihood converges to %.4f after %d steps...\n", perplexity, i);
-		*/
+		System.out.format("Likelihood converges to %.4f after %d steps...\n", last, i);
+		
 	}
 	
 	
@@ -277,11 +283,11 @@ public class pLSA extends TopicModel {
 		double beta = 1e-3;
 		double lambda = 0.9;
 		int topK = 10;
-	    int number_of_iteration = 20;
+	    int number_of_iteration = 50;
 	    int number_of_docs = c.getSize();
 		int vocabulary_size = analyzer.getFeatureSize();
 		
-		pLSA model = new pLSA(number_of_docs, number_of_topics, number_of_iteration, vocabulary_size, lambda,  beta, analyzer.get_back_ground_probabilty(),c);
+		pLSA1 model = new pLSA1(number_of_docs, number_of_topics, number_of_iteration, vocabulary_size, lambda,  beta, analyzer.get_back_ground_probabilty(),c);
 		model.get_topic_probability();
 		model.printTopWords(topK);
 		
@@ -293,6 +299,20 @@ public class pLSA extends TopicModel {
 	public double[] get_topic_probability(_Doc d) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+
+	@Override
+	public void calculate_E_step(_Doc d) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected double calculate_log_likelihood(_Doc d) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 

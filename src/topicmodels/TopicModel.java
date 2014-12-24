@@ -66,9 +66,11 @@ public abstract class TopicModel {
 			
 			current = calculate_log_likelihood();
 			delta = Math.abs((current - last)/last);
-			current = last;
+			last = current;
+			
 			System.out.format("Likelihood %.9f at step %s converge to %f...\n", current, i, delta);
 			i++;
+			
 		} while (delta>1e-4 && i<this.number_of_iteration);
 	}
 }
