@@ -71,6 +71,8 @@ public abstract class BaseClassifier {
 		calculateMeanVariance(m_precisionsRecalls);	
 	}
 	
+	abstract public void saveModel(String modelLocation);
+	
 	//Calculate the precision and recall for one folder tests.
 	public double[][] calculatePreRec(int[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[m_classNo][2];

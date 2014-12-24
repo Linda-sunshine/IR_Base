@@ -15,10 +15,11 @@ import java.util.Random;
  * General structure of corpus of a set of documents
  */
 public class _Corpus {
-	private ArrayList<_Doc> m_collection; //All the documents in the corpus.
-	protected int m_corClassNo = 0;
+	ArrayList<_Doc> m_collection; //All the documents in the corpus.
+	ArrayList<String> m_features; //ArrayList for features
+	
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
-	private int[] m_mask; 
+	int[] m_mask; 
 			
 	//Constructor.
 	public _Corpus() {
@@ -27,6 +28,18 @@ public class _Corpus {
 	
 	public void reset() {
 		m_collection.clear();
+	}
+	
+	public void setFeatures(ArrayList<String> features) {
+		m_features = features;
+	}
+	
+	public String getFeature(int i) {
+		return m_features.get(i);
+	}
+	
+	public int getFeatureSize() {
+		return m_features.size();
 	}
 	
 	//Initialize the m_mask, the default value is false.
@@ -45,6 +58,17 @@ public class _Corpus {
 	//Get the corpus's size, which is the total number of documents.
 	public int getSize(){
 		return m_collection.size();
+	}
+	
+	//Get the total count of all the tokens in the corpus 
+	public int getCorpusTotalLenght()
+	{
+		int size = 0;
+		for(int i=0; i < m_collection.size(); i++)
+		{
+			size = size + m_collection.get(i).getTotalDocLength();
+		}
+		return size;
 	}
 	
 	/*

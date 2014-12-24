@@ -1,5 +1,7 @@
 package utils;
 
+import java.util.Random;
+
 import structures._Doc;
 import structures._SparseFeature;
 
@@ -46,6 +48,17 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double entropy(double[] prob, boolean logScale) {
+		double ent = 0;
+		for(double p:prob) {
+			if (logScale)
+				ent += Math.exp(p) * p;
+			else
+				ent += Math.log(p) * p;
+		}
+		return -ent;
+	}
+	
 	//Find the max value's index of an array, return Value of the maximum.
 	public static double maxOfArrayValue(double[] probs){
 		return probs[maxOfArrayIndex(probs)];
@@ -64,6 +77,14 @@ public class Utils {
 				sum += Math.exp(xs[i] - max);
 		}
 		return Math.log(sum) + max;
+	}
+	
+	public static double logSum(double log_a, double log_b)
+	{
+		if (log_a < log_b)
+			return log_b+Math.log(1 + Math.exp(log_a-log_b));
+		else
+			return log_a+Math.log(1 + Math.exp(log_b-log_a));
 	}
 	
 	//The function is used to calculate the sum of log of two arrays.
@@ -199,6 +220,25 @@ public class Utils {
 	
 	static public boolean isNumber(String token) {
 		return token.matches("\\d+");
+	}
+	
+	static public void randomize(double[] pros, double beta) {
+        double total = 0;
+        Random r = new Random();
+        for (int i = 0; i < pros.length; i++) {
+            pros[i] = beta + r.nextDouble();//to avoid zero probability
+            total += pros[i];
+        }
+
+        //normalize
+        for (int i = 0; i < pros.length; i++)
+            pros[i] = pros[i] / total;
+    }
+	
+	static public void print(double [] array)
+	{
+		for(int i=0;i<array.length;i++)
+			System.out.println("array["+i+"] =" + array[i]);
 	}
 		
 	public static void main(String[] args){

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import structures._RankItem;
 import structures._stat;
 import utils.Utils;
 
@@ -12,33 +13,13 @@ public class FeatureSelector {
 	double m_startProb;
 	double m_endProb;
 	int m_DFThreshold;
-	ArrayList<_item> m_selectedFeatures;
-	
-	class _item implements Comparable<_item> {
-		double m_value;
-		String m_name;
-		
-		public _item(String name, double v) {
-			m_value = v;
-			m_name = name;
-		}
-
-		@Override
-		public int compareTo(_item it) {
-			if (this.m_value < it.m_value)
-				return -1;
-			else if (this.m_value > it.m_value)
-				return 1;
-			else
-				return 0;
-		}
-	}
+	ArrayList<_RankItem> m_selectedFeatures;
 
 	//Default setting of feature selection
 	public FeatureSelector(){
 		m_startProb = 0;
 		m_endProb = 1;
-		m_selectedFeatures = new ArrayList<_item>();
+		m_selectedFeatures = new ArrayList<_RankItem>();
 	}
 		
 	//Given start and end of feature selection.
@@ -52,7 +33,7 @@ public class FeatureSelector {
 		m_startProb = Math.max(0, startProb);
 		m_endProb = Math.min(1.0, endProb);
 		m_DFThreshold = DFThreshold;
-		m_selectedFeatures = new ArrayList<_item>();
+		m_selectedFeatures = new ArrayList<_RankItem>();
 	}
 	
 	//Return the selected features.
@@ -75,7 +56,7 @@ public class FeatureSelector {
 			//Filter the features which have smaller DFs.
 			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
 			if(sumDF > m_DFThreshold){
-				m_selectedFeatures.add(new _item(f, sumDF));
+				m_selectedFeatures.add(new _RankItem(f, sumDF));
 			}
 		}
 	}
@@ -119,7 +100,7 @@ public class FeatureSelector {
 					}
 				}
 				Gt = PrCiSum + PrCitSum + PrCitNotSum;
-				m_selectedFeatures.add(new _item(f, Gt));
+				m_selectedFeatures.add(new _RankItem(f, Gt));
 			}
 		}
 	} 
@@ -146,7 +127,7 @@ public class FeatureSelector {
 					Iavg += ItCi[i] * PrCi[i];
 				}
 				
-				m_selectedFeatures.add(new _item(f, Iavg));
+				m_selectedFeatures.add(new _RankItem(f, Iavg));
 			}
 		}
 	}
@@ -176,7 +157,7 @@ public class FeatureSelector {
 					X2avg += X2tc[i] * classMemberNo[i];
 				}
 				//X2max = Utils.maxOfArrayValue(X2tc);
-				m_selectedFeatures.add(new _item(f, X2avg));
+				m_selectedFeatures.add(new _RankItem(f, X2avg));
 			}
 		}
 	}

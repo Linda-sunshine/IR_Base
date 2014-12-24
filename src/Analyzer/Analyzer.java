@@ -93,13 +93,16 @@ public abstract class Analyzer {
 	}
 		
 	//Return corpus without parameter and feature selection.
-	public _Corpus returnCorpus(String finalLocation)throws FileNotFoundException {
-		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
 		SaveCVStat(finalLocation);
 		System.out.format("Feature vector contructed for %d documents...\n", m_corpus.getSize());
 		for(int c:m_classMemberNo)
 			System.out.print(c + " ");
 		System.out.println();
+		
+		//store the feature names into corpus
+		m_corpus.setFeatures(m_featureNames);
+		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		return m_corpus;
 	}
 	
@@ -212,7 +215,7 @@ public abstract class Analyzer {
 		writer.format("#Selection:%s\n", featureLocation);
 		writer.format("#Start:%f\n", startProb);
 		writer.format("#End:%f\n", endProb);
-		writer.format("#DF_Cut:%f\n", threshold);
+		writer.format("#DF_Cut:%d\n", threshold);
 		
 		//print out the features
 		for (int i = 0; i < m_featureNames.size(); i++)
@@ -258,4 +261,22 @@ public abstract class Analyzer {
 		}
 		System.out.println("Time-series feature set!");
 	}
+	
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public double[] get_back_ground_probabilty()
+	{
+		double back_ground_probabilty [] = new double [m_featureNameIndex.size()];
+		
+		for(int i = 0; i<m_featureNameIndex.size();i++)
+		{
+			String featureName = m_featureNames.get(i);
+			_stat stat =  m_featureStat.get(featureName);
+			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
+		}
+		
+		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing
+		for(int i = 0; i<m_featureNameIndex.size();i++)
+			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
+		return back_ground_probabilty;
+	}	
 }

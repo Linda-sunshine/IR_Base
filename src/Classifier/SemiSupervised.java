@@ -7,32 +7,13 @@ import java.util.Random;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import utils.Utils;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 public class SemiSupervised extends BaseClassifier{
-	class _Node implements Comparable<_Node> {
-		int m_i, m_j; // index in the graph
-		double m_sim; // similarity to the current node
-		
-		public _Node(int i, int j, double sim) {
-			m_i = i;
-			m_j = j;
-			m_sim = sim;
-		}
-
-		@Override
-		public int compareTo(_Node n) {
-			if (m_sim<n.m_sim)
-				return 1;
-			else if (m_sim>n.m_sim)
-				return -1;
-			else
-				return 0;
-		}
-	}
 	
 	protected double m_alpha; //Weight coefficient between unlabeled node and labeled node.
 	protected double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
@@ -43,7 +24,7 @@ public class SemiSupervised extends BaseClassifier{
 	private int m_U, m_L;
 	private double[] m_cache; // cache the similarity computation results given the similarity metric is symmetric
 	
-	protected MyPriorityQueue<_Node> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
+	protected MyPriorityQueue<_RankItem> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
 	protected ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
@@ -118,7 +99,7 @@ public class SemiSupervised extends BaseClassifier{
 	}
 	
 	private void initCache() {
-		m_cache = new double[m_U*(2*m_L+m_U-1)/2];
+		m_cache = new double[m_U*(2*m_L+m_U-1)/2];//specialized for the current matrix structure
 	}
 	
 	private int encode(int i, int j) {
@@ -127,7 +108,7 @@ public class SemiSupervised extends BaseClassifier{
 			i = j;
 			j = t;
 		}
-		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);
+		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);//specialized for the current matrix structure
 	}
 	
 	private void setCache(int i, int j, double v) {
@@ -149,7 +130,7 @@ public class SemiSupervised extends BaseClassifier{
 		/***Set up cache structure for efficient computation.****/
 		initCache();
 		
-		/***Construct the full similarity matrix (except the diagonal).****/
+		/***pre-compute the full similarity matrix (except the diagonal).****/
 		for(int i = 0; i < m_U; i++){
 			for(int j = i+1; j < m_U; j++){//to save computation since our similarity metric is symmetric
 				similarity = m_beta * Utils.calculateSimilarity(m_testSet.get(i), m_testSet.get(j));
@@ -165,8 +146,8 @@ public class SemiSupervised extends BaseClassifier{
 		SparseDoubleMatrix2D mat = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);
 		
 		/***Set up structure for k nearest neighbors.****/
-		m_kUU = new MyPriorityQueue<_Node>(m_kPrime);
-		m_kUL = new MyPriorityQueue<_Node>(m_k);
+		m_kUU = new MyPriorityQueue<_RankItem>(m_kPrime);
+		m_kUL = new MyPriorityQueue<_RankItem>(m_k);
 		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
 		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
@@ -176,26 +157,26 @@ public class SemiSupervised extends BaseClassifier{
 			for(int j=0; j<m_U; j++) {
 				if (j==i)
 					continue;
-				m_kUU.add(new _Node(i, j, getCache(i,j)));
+				m_kUU.add(new _RankItem(j, getCache(i,j)));
 			}
 			
 			sum = 0;
-			for(_Node n:m_kUU) {
-				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
-				mat.setQuick(n.m_i, n.m_j, scale * value);
-				mat.setQuick(n.m_j, n.m_i, scale * value);
+			for(_RankItem n:m_kUU) {
+				value = Math.max(n.m_value, mat.getQuick(i, n.m_index)/scale);//recover the original Wij
+				mat.setQuick(i, n.m_index, scale * value);
+				mat.setQuick(n.m_index, i, scale * value);
 				sum += value;
 			}
 			m_kUU.clear();
 			
 			//Set the part of labeled and unlabeled nodes. L-U and U-L
 			for(int j=0; j<m_L; j++)
-				m_kUL.add(new _Node(i, m_U+j, getCache(i,m_U+j)));
+				m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)));
 			
-			for(_Node n:m_kUL) {
-				value = Math.max(n.m_sim, mat.getQuick(n.m_i, n.m_j)/scale);//recover the original Wij
-				mat.setQuick(n.m_i, n.m_j, scale * value);
-				mat.setQuick(n.m_j, n.m_i, scale * value);
+			for(_RankItem n:m_kUL) {
+				value = Math.max(n.m_value, mat.getQuick(i, n.m_index)/scale);//recover the original Wij
+				mat.setQuick(i, n.m_index, scale * value);
+				mat.setQuick(n.m_index, i, scale * value);
 				sum += value;
 			}
 			mat.setQuick(i, i, 1-scale*sum);
@@ -240,5 +221,11 @@ public class SemiSupervised extends BaseClassifier{
 	@Override
 	public int predict(_Doc doc) {
 		return -1; //we don't support this
+	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		
 	}
 }

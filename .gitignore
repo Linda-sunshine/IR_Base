@@ -3,3 +3,4 @@ data/*
 .classpath
 compile
 run
+/bin/

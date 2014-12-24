@@ -1,4 +1,5 @@
 package Classifier;
+import java.io.IOException;
 import java.util.Collection;
 
 import libsvm.svm;
@@ -101,5 +102,15 @@ public class SVM extends BaseClassifier{
 	@Override
 	public int predict(_Doc doc) {
 		return (1+(int)svm.svm_predict(m_model, createSample(doc)))/2;
+	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		try {
+			svm.svm_save_model(modelLocation, m_model);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

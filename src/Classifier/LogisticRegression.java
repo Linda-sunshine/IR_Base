@@ -13,13 +13,16 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 public class LogisticRegression extends BaseClassifier{
 
 	double[] m_beta;
-	double[] m_g;
+	double[] m_g, m_diag;
+	double[] m_cache;
 	double m_lambda;
 	
 	public LogisticRegression(_Corpus c, int classNo, int featureSize){
 		super(c, classNo, featureSize);
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
+		m_diag = new double[m_beta.length];
+		m_cache = new double[classNo];
 		m_lambda = 0.5;//Initialize it to be 0.5.
 	}
 	
@@ -27,7 +30,9 @@ public class LogisticRegression extends BaseClassifier{
 		super(c, classNo, featureSize);
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
-		m_lambda = lambda;//Initialize it to be 0.5.
+		m_diag = new double[m_beta.length];
+		m_cache = new double[classNo];
+		m_lambda = lambda;
 	}
 	
 	@Override
@@ -38,6 +43,7 @@ public class LogisticRegression extends BaseClassifier{
 	@Override
 	protected void init() {
 		Arrays.fill(m_beta, 0);
+		Arrays.fill(m_diag, 0);
 	}
 
 	/*
@@ -50,7 +56,6 @@ public class LogisticRegression extends BaseClassifier{
 	@Override
 	public void train(Collection<_Doc> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
-		double[] diag = new double[m_beta.length];
 		double fValue;
 		int fSize = m_beta.length;
 		
@@ -58,7 +63,7 @@ public class LogisticRegression extends BaseClassifier{
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 6, m_beta, fValue, m_g, false, diag, iprint, 1e-6, 1e-15, iflag);
+				LBFGS.lbfgs(fSize, 6, m_beta, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-20, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -82,8 +87,7 @@ public class LogisticRegression extends BaseClassifier{
 	private double calcFuncGradient(Collection<_Doc> trainSet) {
 		
 		double gValue = 0, fValue = 0;
-		double Pij = 0;
-		double logPij = 0;
+		double Pij = 0, logPij = 0;
 
 		// Add the L2 regularization.
 		double L2 = 0, b;
@@ -112,7 +116,7 @@ public class LogisticRegression extends BaseClassifier{
 				int offset = j * (m_featureSize + 1);
 				m_g[offset] += gValue;
 				//(Yij - Pij) * Xi
-				for(_SparseFeature sf: doc.getSparse())
+				for(_SparseFeature sf: fv)
 					m_g[offset + sf.getIndex() + 1] += gValue * sf.getValue();
 			}
 		}
@@ -125,7 +129,13 @@ public class LogisticRegression extends BaseClassifier{
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
-			m_cProbs[i] = calculatelogPij(i, fv);
-		return Utils.maxOfArrayIndex(m_cProbs);
+			m_cache[i] = calculatelogPij(i, fv);
+		return Utils.maxOfArrayIndex(m_cache);
+	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		
 	}
 }
