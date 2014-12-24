@@ -1,5 +1,7 @@
 package Classifier;
 
+import influence.PageRank;
+
 import java.io.IOException;
 import java.text.ParseException;
 
@@ -21,16 +23,16 @@ public class AmazonReviewMain {
 		int CVFold = 10; //k fold-cross validation
 		
 		//"NB", "LR", "SVM"
-		String classifier = "LR"; //Which classifier to use.
+		String classifier = "PR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "TRANS";
+		String style = "SUP";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablets";
+		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String finalLocation = "./data/Features/selected_fv_stat.txt";
@@ -51,16 +53,15 @@ public class AmazonReviewMain {
 		
 		/****Pre-process the data.*****/
 //		//Feture selection.
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-		//jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
@@ -85,10 +86,14 @@ public class AmazonReviewMain {
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(classifier.equals("SVM")){
-				//corpus.save2File("data/FVs/fvector.dat");
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window, C);
 				mySVM.crossValidation(CVFold, corpus);
+				
+			} else if (classifier.equals("PR")){
+				System.out.println("Start PageRank, wait...");
+				PageRank myPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);
+				myPR.train(corpus.getCollection());
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("TRANS")) {

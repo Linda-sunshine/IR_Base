@@ -131,7 +131,7 @@ public class Parameter {
 		+"	MI -- Mutual information\n"
 		+"-sp float : ignore the bottom proportion of ranked features (default 0.4)\n"
 		+"-ep float : ignore the top proportion of ranked features (default 0.999)\n"
-		+"-df int : ignore the documents occurring less than c documents (default 10) \n"
+		+"-df int : ignore the features occurring less than c documents (default 10) \n"
 		+"-cs int : total number of classes (has to be manually specified!)\n"
 		+"-ngram int : n-gram for feature generation (default 2)\n"
 		+"-lcut int : ignore the documents with length less than c (default 5)\n"
