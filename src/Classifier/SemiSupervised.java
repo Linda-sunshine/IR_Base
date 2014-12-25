@@ -157,7 +157,12 @@ public class SemiSupervised extends BaseClassifier{
 			for(int j=0; j<m_U; j++) {
 				if (j==i)
 					continue;
-				m_kUU.add(new _RankItem(j, getCache(i,j)));
+				
+				//differentiate reviews from different products
+				if (m_testSet.get(i).sameProduct(m_testSet.get(j)))
+					m_kUU.add(new _RankItem(j, getCache(i,j)));
+				else
+					m_kUU.add(new _RankItem(j, getCache(i,j)/2));
 			}
 			
 			sum = 0;
@@ -170,8 +175,12 @@ public class SemiSupervised extends BaseClassifier{
 			m_kUU.clear();
 			
 			//Set the part of labeled and unlabeled nodes. L-U and U-L
-			for(int j=0; j<m_L; j++)
-				m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)));
+			for(int j=0; j<m_L; j++) {
+				if (m_testSet.get(i).sameProduct(m_labeled.get(j)))
+					m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)));
+				else
+					m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)/2));
+			}
 			
 			for(_RankItem n:m_kUL) {
 				value = Math.max(n.m_value, mat.getQuick(i, n.m_index)/scale);//recover the original Wij

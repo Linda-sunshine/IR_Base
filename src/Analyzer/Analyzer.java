@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -111,7 +110,7 @@ public abstract class Analyzer {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = docs.size();
 		if (fValue.equals("TF")){
-			//
+			//the original feature is raw TF
 		} else if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
@@ -172,6 +171,9 @@ public abstract class Analyzer {
 			//The default value is just keeping the raw count of every feature.
 			System.out.println("No feature value is set, keep the raw count of every feature.");
 		}
+		
+		//rank the documents by product and time in all the cases
+		Collections.sort(m_corpus.getCollection());
 		if (norm == 1){
 			for(_Doc d:docs)			
 				Utils.L1Normalization(d.getSparse());
@@ -182,6 +184,7 @@ public abstract class Analyzer {
 			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
 		}
 		
+		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 	
 	//Select the features and store them in a file.
@@ -229,37 +232,38 @@ public abstract class Analyzer {
 	}
 	
 	//Sort the documents.
-	public void setTimeFeatures(int window){
-		if (window<1) return;
+	public void setTimeFeatures(int window){//must be called before return corpus
+		if (window<1) 
+			return;
 		
 		//Sort the documents according to time stamps.
 		ArrayList<_Doc> docs = m_corpus.getCollection();
 		
-		Collections.sort(docs, new Comparator<_Doc>(){
-			public int compare(_Doc d1, _Doc d2){
-				if(d1.getTimeStamp() == d2.getTimeStamp())
-					return 0;
-				return d1.getTimeStamp() < d2.getTimeStamp() ? -1 : 1;
-			}
-		});		
-		
 		/************************time series analysis***************************/
 		double norm = 1.0 / m_classMemberNo.length;
+		String lastItemID = null;
 		for(int i = 0; i < docs.size(); i++){
 			_Doc doc = docs.get(i);
+			
+			if (lastItemID == null)
+				lastItemID = doc.getItemID();
+			else if (lastItemID != doc.getItemID()) {
+				m_preDocs.clear(); // reviews for a new category of products
+				lastItemID = doc.getItemID();
+			}
+			
 			if(m_preDocs.size() < window){
 				m_preDocs.add(doc);
 				m_corpus.removeDoc(i);
 				m_classMemberNo[doc.getYLabel()]--;
 				i--;
-			}
-			else{
+			} else{
 				doc.createSpVctWithTime(m_preDocs, m_featureNames.size(), norm);
 				m_preDocs.remove();
 				m_preDocs.add(doc);
 			}
 		}
-		System.out.println("Time-series feature set!");
+		System.out.format("Time-series feature set for %d documents!\n", m_corpus.getSize());
 	}
 	
 	// added by Md. Mustafizur Rahman for Topic Modelling

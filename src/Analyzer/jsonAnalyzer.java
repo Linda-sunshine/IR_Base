@@ -15,6 +15,7 @@ import json.JSONArray;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.Post;
+import structures.Product;
 import structures._Doc;
 
 /**
@@ -41,12 +42,14 @@ public class jsonAnalyzer extends DocAnalyzer{
 	public void LoadDoc(String filename) {
 		try {
 			JSONObject json = LoadJson(filename);
+			Product prod = new Product(json.getJSONObject("ProductInfo"));
 			JSONArray jarray = json.getJSONArray("Reviews");
+			
 			for(int i=0; i<jarray.length(); i++) {
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), (post.getLabel()-1), timeStamp));
+					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp));
 				}
 			}
 		} catch (Exception e) {

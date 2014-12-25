@@ -208,13 +208,17 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 
+	public void AnalyzeDoc(_Doc doc) {
+		AnalyzeDoc(doc, true);
+	}
+	
 	/*Analyze a document and add the analyzed document back to corpus.	
 	 *In the case CV is not loaded, we need two if loops to check. 
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	//Analyze the document as usual.
-	public void AnalyzeDoc(_Doc doc) {
+	protected void AnalyzeDoc(_Doc doc, boolean releaseMem) {
 		try {
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.			
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
@@ -258,6 +262,9 @@ public class DocAnalyzer extends Analyzer {
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
 				m_classMemberNo[doc.getYLabel()]++;
+				
+				if (releaseMem)
+					doc.clearSource();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

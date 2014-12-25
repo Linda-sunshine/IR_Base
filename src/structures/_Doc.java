@@ -16,11 +16,12 @@ import utils.Utils;
  * @author lingong
  * General structure to present a document for DM/ML/IR
  */
-public class _Doc {
+public class _Doc implements Comparable<_Doc> {
 	String m_name;
 	int m_ID; // unique id of the document in the collection
+	String m_itemID; // ID of the product being commented
 	
-	String source; //The content of the source file.
+	String m_source; //The content of the source file.
 	int m_totalLength; //The total length of the document.
 	
 	int m_y_label; // classification target, that is the index of the labels.
@@ -47,7 +48,7 @@ public class _Doc {
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;
-		this.source = source;
+		this.m_source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		m_topics = null;
@@ -56,7 +57,7 @@ public class _Doc {
 	
 	public _Doc (int ID, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
-		this.source = source;
+		this.m_source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
@@ -64,10 +65,12 @@ public class _Doc {
 		m_sstat = null;
 	}
 	
-	public _Doc (int ID, String name, String source, int ylabel, long timeStamp){
+	public _Doc (int ID, String name, String source, String productID, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;
-		this.source = source;
+		this.m_source = source;
+		this.m_itemID = productID;
+		
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
@@ -86,13 +89,17 @@ public class _Doc {
 		return this.m_ID;
 	}
 	
+	public String getItemID() {
+		return m_itemID;
+	}
+	
 	public String getName() {
 		return m_name;
 	}
 	
 	//Get the source content of a document.
 	public String getSource(){
-		return this.source;
+		return this.m_source;
 	}
 	
 	//Get the real label of the doc.
@@ -196,5 +203,24 @@ public class _Doc {
 		}
 		Utils.randomize(m_topics, beta);
 		Arrays.fill(m_sstat, 0);
+	}
+	
+	public void clearSource() {
+		m_source = null;
+	}
+
+	@Override
+	public int compareTo(_Doc d) {
+		int prodCompare = d.m_itemID.compareTo(d.m_itemID);
+		if (prodCompare==0) {
+			if(m_timeStamp == d.getTimeStamp())
+				return 0;
+			return m_timeStamp < d.getTimeStamp() ? -1 : 1;
+		} else
+			return prodCompare;
+	}
+	
+	public boolean sameProduct(_Doc d) {
+		return m_itemID.equals(d.m_itemID);
 	}
 }

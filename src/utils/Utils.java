@@ -2,6 +2,8 @@ package utils;
 
 import java.util.Random;
 
+import json.JSONException;
+import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
 
@@ -191,6 +193,17 @@ public class Utils {
 			for(_SparseFeature f: fs){
 				f.setValue(0.0);
 			}
+		}
+	}
+	
+	static public String getJSONValue(JSONObject json, String key) {
+		try {
+			if (json.has(key))				
+				return(json.getString(key));
+			else
+				return "NULL";
+		} catch (JSONException e) {
+			return "NULL";
 		}
 	}
 	

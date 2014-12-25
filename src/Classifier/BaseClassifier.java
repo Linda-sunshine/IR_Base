@@ -57,8 +57,10 @@ public abstract class BaseClassifier {
 		//Use this loop to iterate all the ten folders, set the train set and test set.
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) m_testSet.add(docs.get(j));
-				else m_trainSet.add(docs.get(j));
+				if( masks[j]==i ) 
+					m_testSet.add(docs.get(j));
+				else 
+					m_trainSet.add(docs.get(j));
 			}
 			
 			long start = System.currentTimeMillis();

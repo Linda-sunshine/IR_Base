@@ -45,9 +45,6 @@ public class _Corpus {
 	//Initialize the m_mask, the default value is false.
 	public void setMasks() {
 		this.m_mask = new int[this.m_collection.size()];
-		for (int i = 0; i < this.m_collection.size(); i++) {
-			this.m_mask[i] = 0;
-		}
 	}
 	
 	//Get all the documents of the corpus.
