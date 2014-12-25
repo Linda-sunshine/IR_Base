@@ -33,6 +33,8 @@ public class DocAnalyzer extends Analyzer {
 	 * which means no new features will be allowed.*/
 	protected boolean m_isCVLoaded; 
 	
+	protected boolean m_releaseContent;
+	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
@@ -43,6 +45,7 @@ public class DocAnalyzer extends Analyzer {
 		m_lengthThreshold = 5;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
 	}	
 	
 	//Constructor with ngram and fValue.
@@ -55,17 +58,11 @@ public class DocAnalyzer extends Analyzer {
 		m_lengthThreshold = threshold;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
 	}
 	
-	
-	// added by Md. Mustafizur Rahman for Topic Modelling
-	public DocAnalyzer(String tokenModel, int classNo, int Ngram) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
-		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		m_stemmer = new englishStemmer();
-		m_Ngram = Ngram;
-		m_stopwords = new HashSet<String>();
-		
+	public void setReleaseContent(boolean release) {
+		m_releaseContent = release;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -207,10 +204,6 @@ public class DocAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 	}
-
-	public void AnalyzeDoc(_Doc doc) {
-		AnalyzeDoc(doc, true);
-	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.	
 	 *In the case CV is not loaded, we need two if loops to check. 
@@ -218,7 +211,7 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	//Analyze the document as usual.
-	protected void AnalyzeDoc(_Doc doc, boolean releaseMem) {
+	protected boolean AnalyzeDoc(_Doc doc) {
 		try {
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.			
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
@@ -263,11 +256,14 @@ public class DocAnalyzer extends Analyzer {
 				m_corpus.addDoc(doc);
 				m_classMemberNo[doc.getYLabel()]++;
 				
-				if (releaseMem)
+				if (m_releaseContent)
 					doc.clearSource();
-			}
+				return true;
+			} else
+				return false;
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 }	

@@ -100,7 +100,7 @@ public class Post {
 	}
 	
 	//Constructor.
-	public Post(JSONObject json) throws NumberFormatException {
+	public Post(JSONObject json) {
 		try {//special treatment for the overall ratings
 			if (json.has("Overall")){
 				if(json.getString("Overall").equals("None")) {

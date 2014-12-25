@@ -3,6 +3,9 @@
  */
 package influence;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -13,6 +16,8 @@ import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
 import Classifier.BaseClassifier;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 /**
@@ -22,7 +27,7 @@ import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
  */
 public class PageRank extends BaseClassifier {
 	
-	SparseDoubleMatrix2D m_transition;
+	DoubleMatrix2D m_transition;
 	int m_topK; // k nearest neighbors
 	
 	double[] m_cache; // to store the pre-compute similarities
@@ -42,42 +47,28 @@ public class PageRank extends BaseClassifier {
 
 	@Override
 	public void train(Collection<_Doc> trainSet) {
-		constructGraph((ArrayList<_Doc>)trainSet);
+		ArrayList<_Doc> graph = new ArrayList<_Doc>();
 		
-		//to save space, we can reuse m_cache
-		if (m_cache==null)
-			m_cache = new double[2*m_N];
-		Arrays.fill(m_cache, 1.0/m_N);//start from uniform	
-		
-		int iter = 0;
-		double delta = 1.0, influence, prob, norm;
-		do {
-			norm = 0;
-			for(int i=0; i<m_N; i++) {
-				influence = 0;
-				for(int j=0; j<m_N; j++) {
-					if ((prob=m_transition.getQuick(j, i))>0) {
-						influence += prob * m_cache[j];
-					}
-				}
-				
-				m_cache[i+m_N] = m_alpha/m_N + (1-m_alpha) * influence; // influence update
-				norm += m_cache[i+m_N];
+		String lastItemID = null;
+		for(_Doc d:trainSet) {
+			if (lastItemID == null)
+				lastItemID = d.getItemID();
+			else if (lastItemID != d.getItemID()) {
+				if (graph.size()>10)//otherwise the graph is too small
+					calcPageRank(graph);
+				graph.clear();
+				lastItemID = d.getItemID();
 			}
 			
-			delta = 0;
-			for(int i=0; i<m_N; i++) {
-				m_cache[i+m_N] /= norm; // normalize
-				delta += (m_cache[i] - m_cache[i+m_N]) * (m_cache[i] - m_cache[i+m_N]); // difference
-				m_cache[i] = m_cache[i+m_N];
-			}
-			
-			delta = Math.sqrt(delta/m_N);
-			System.out.format("PageRank converge to %.3f after %d steps...", delta, iter);
-		} while (iter<m_maxIter && delta>m_converge);
+			graph.add(d);
+		}
+		
+		//for the last product
+		if (graph.size()>5)//otherwise the graph is too small
+			calcPageRank(graph);
 	}
 	
-	private void constructGraph(ArrayList<_Doc> collection) {
+	private void constructSparseGraph(ArrayList<_Doc> collection) {
 		m_N = collection.size();
 		
 		//we need to make this very sparse!
@@ -105,6 +96,87 @@ public class PageRank extends BaseClassifier {
 				m_transition.setQuick(i, item.m_index, item.m_value/sum); // i -> j
 			queue.clear();
 		}
+	}
+	
+	private void constructDenseGraph(ArrayList<_Doc> collection) {
+		m_N = collection.size();
+		
+		//we need to make this very sparse!
+		m_transition = new DenseDoubleMatrix2D(m_N, m_N);
+		
+		double sim;
+		
+		//construct the connection
+		for(int i=0; i<collection.size(); i++) {
+			_Doc di = collection.get(i);
+			// transition probability is proportion to similarity
+			double sum = 0;
+			for(int j=0; j<collection.size(); j++) {
+				if (i!=j) {
+					sim = Math.exp(Utils.calculateSimilarity(di, collection.get(j)));
+					m_transition.setQuick(i, j, sim);
+					sum += sim;
+				}
+			}
+			
+			for(int j=0; j<collection.size(); j++) {
+				if (i!=j) {
+					sim = m_transition.getQuick(i, j) / sum;
+					m_transition.setQuick(i, j, sim);
+				}
+			}
+		}
+	}
+	
+	void calcPageRank(ArrayList<_Doc> collection) {
+		if (collection.size()<m_topK)
+			constructDenseGraph(collection);
+		else
+			constructSparseGraph(collection);
+		
+		//to save space, we can reuse m_cache
+		if (m_cache==null || m_cache.length < 2*m_N)
+			m_cache = new double[2*m_N];
+		Arrays.fill(m_cache, 1.0/m_N);//start from uniform	
+		
+		int iter = 0;
+		double delta = 1.0, influence, prob, norm;
+		do {
+			norm = 0;
+			for(int i=0; i<m_N; i++) {
+				influence = 0;
+				for(int j=0; j<m_N; j++) {
+					if (i!=j && (prob=m_transition.getQuick(j, i))>0) {
+						influence += prob * m_cache[j];
+					}
+				}
+				
+				m_cache[i+m_N] = m_alpha/m_N + (1-m_alpha) * influence; // influence update
+				norm += m_cache[i+m_N] * m_cache[i+m_N];
+			}
+			
+			delta = 0;
+			norm = Math.sqrt(norm);
+			for(int i=0; i<m_N; i++) {
+				m_cache[i+m_N] /= norm; // normalize
+				delta += (m_cache[i] - m_cache[i+m_N]) * (m_cache[i] - m_cache[i+m_N]); // difference
+				m_cache[i] = m_cache[i+m_N];
+			}
+			
+			delta = Math.sqrt(delta/m_N);			
+		} while (++iter<m_maxIter && delta>m_converge);
+		
+		try {
+			PrintWriter writer = new PrintWriter(new File("tmpPageRank.txt"));
+			writer.format("PageRank in %d*%d graph converge to %.7f after %d steps...\n", m_N, m_N, delta, iter);	
+			int id = Utils.maxOfArrayIndex(m_cache,m_N);
+			writer.println(m_cache[id]+ "\t" + collection.get(id));//print the most typical review
+			writer.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 //	//time efficient implementation

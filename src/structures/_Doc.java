@@ -211,7 +211,7 @@ public class _Doc implements Comparable<_Doc> {
 
 	@Override
 	public int compareTo(_Doc d) {
-		int prodCompare = d.m_itemID.compareTo(d.m_itemID);
+		int prodCompare = m_itemID.compareTo(d.m_itemID);
 		if (prodCompare==0) {
 			if(m_timeStamp == d.getTimeStamp())
 				return 0;
@@ -222,5 +222,10 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public boolean sameProduct(_Doc d) {
 		return m_itemID.equals(d.m_itemID);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("ProdID: %s\tID: %s\t Rating: %d\n%s", m_itemID, m_name, m_y_label, m_source);
 	}
 }

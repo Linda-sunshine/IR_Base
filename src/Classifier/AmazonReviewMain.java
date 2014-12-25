@@ -23,7 +23,7 @@ public class AmazonReviewMain {
 		int CVFold = 10; //k fold-cross validation
 		
 		//"NB", "LR", "SVM"
-		String classifier = "LR"; //Which classifier to use.
+		String classifier = "PR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
 		String style = "SUP";
@@ -47,7 +47,7 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 3;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -62,6 +62,7 @@ public class AmazonReviewMain {
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content		
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);

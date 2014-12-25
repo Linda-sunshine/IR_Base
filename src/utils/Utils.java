@@ -11,9 +11,13 @@ public class Utils {
 	
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
+		return maxOfArrayIndex(probs, probs.length);
+	}
+	
+	public static int maxOfArrayIndex(double[] probs, int length){
 		int maxIndex = 0;
 		double maxValue = probs[0];
-		for(int i = 1; i < probs.length; i++){
+		for(int i = 1; i < length; i++){
 			if(probs[i] > maxValue){
 				maxValue = probs[i];
 				maxIndex = i;
