@@ -3,8 +3,9 @@
  */
 package influence;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -167,13 +168,13 @@ public class PageRank extends BaseClassifier {
 		} while (++iter<m_maxIter && delta>m_converge);
 		
 		try {
-			PrintWriter writer = new PrintWriter(new File("tmpPageRank.txt"));
+			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("myfile.txt", true)));
 			writer.format("PageRank in %d*%d graph converge to %.7f after %d steps...\n", m_N, m_N, delta, iter);	
 			int id = Utils.maxOfArrayIndex(m_cache,m_N);
-			writer.println(m_cache[id]+ "\t" + collection.get(id));//print the most typical review
+			writer.println(m_cache[id]+ "\t" + collection.get(id) + "\n\n");//print the most typical review
 			writer.close();
 			
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		

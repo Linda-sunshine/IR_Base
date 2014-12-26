@@ -23,7 +23,7 @@ public class AmazonReviewMain {
 		int CVFold = 10; //k fold-cross validation
 		
 		//"NB", "LR", "SVM"
-		String classifier = "PR"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
 		String style = "SUP";
@@ -47,7 +47,7 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 0;
+		int window = 3;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
