@@ -6,8 +6,12 @@ package topicmodels;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Arrays;
 
+import opennlp.tools.util.InvalidFormatException;
+import Analyzer.jsonAnalyzer;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -130,4 +134,53 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
+	
+	
+	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException
+	{
+		
+	
+		int classNumber = 5; //Define the number of classes in this Naive Bayes.
+		int Ngram = 1; //The default value is unigram. 
+		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		int norm = 0;//The way of normalization.(only 1 and 2)
+		int lengthThreshold = 5; //Document length threshold
+		
+		/*****The parameters used in loading files.*****/
+		String folder = "./data/amazon/test";
+		String suffix = ".json";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		
+		String featureLocation = "./data/Features/selected_fv.txt";
+		String finalLocation = "./data/Features/selected_fv_stat.txt";
+
+		System.out.println("Creating feature vectors, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.setFeatureValues(featureValue, norm);
+		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
+		
+		// Added sentence feature testing 
+		for(int i=0; i<c.getCollection().get(0).getTotalSenetence();i++)
+		{
+					int array [] = c.getCollection().get(0).getSentence(i);
+					System.out.print("Sentence:"+i+"\n");
+					for(int j=0; j<array.length; j++)
+					{
+						System.out.print(array[j]+" ");
+					}
+					
+					System.out.print("\n");
+					for(int j=0; j<array.length; j++)
+					{
+						System.out.print(c.getFeature(array[j])+" ");
+					}
+			     	System.out.print("\n");
+		}
+		
+
+		
+	}
+				
+		
 }
