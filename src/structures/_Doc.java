@@ -31,7 +31,8 @@ public class _Doc implements Comparable<_Doc> {
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
-	private int sentences [][]; // sentence array each row contains the unique word id 
+	private _SparseFeature m_sentences [][]; // sentence array each row contains the unique word id 
+	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
 	//sufficient statistics for estimating p(z|d)
@@ -185,27 +186,40 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_x_sparse = tempSparse;
 	}
 	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void set_number_of_sentences(int size)
+	{
+		m_sentences = new _SparseFeature [size][];
+	}
 	
-	//set sentences list
-		// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-		public void setSentences(int array[][])
-		{
-			this.sentences = array;
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public int getTotalSenetences()
+	{
+		return this.m_sentences.length;
+	}
+	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public _SparseFeature[] getSentences(int index)
+	{
+		return this.m_sentences[index];
+	}
+	
+	//Create the sparse vector for the sentences of the document.
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void createSentenceVct(HashMap<Integer, Double> spVct, int index) {
+		int i = 0;
+		m_sentences [index] = new _SparseFeature[spVct.size()];
+		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			double TF = pairs.getValue();
+			this.m_sentences[index][i] = new _SparseFeature(pairs.getKey(), TF);
+			i++;
 		}
 		
-		// return all the indices of the word in a sentence with given index
-		// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-		public int [] getSentence(int index)
-		{
-			return this.sentences[index];
-		}
-		
-		// return number of sentences in this Doc
-		// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-		public int getTotalSenetence()
-		{
-			return this.sentences.length;
-		}
+	}
+	
+	
 	
 	//Get the predicted result, which is used for comparison.
 	public int getPredictLabel() {

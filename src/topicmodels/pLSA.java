@@ -161,19 +161,20 @@ public class pLSA extends twoTopic {
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
 		
 		// Added sentence feature testing 
-		for(int i=0; i<c.getCollection().get(0).getTotalSenetence();i++)
+		for(int i=0; i<c.getCollection().get(0).getTotalSenetences();i++)
 		{
-					int array [] = c.getCollection().get(0).getSentence(i);
+					_SparseFeature array [] = c.getCollection().get(0).getSentences(i);
 					System.out.print("Sentence:"+i+"\n");
+					//System.out.print(array.length);
 					for(int j=0; j<array.length; j++)
 					{
-						System.out.print(array[j]+" ");
+						System.out.print(array[j].getValue()+" ");
 					}
 					
 					System.out.print("\n");
 					for(int j=0; j<array.length; j++)
 					{
-						System.out.print(c.getFeature(array[j])+" ");
+						System.out.print(c.getFeature(array[j].getIndex())+" ");
 					}
 			     	System.out.print("\n");
 		}
