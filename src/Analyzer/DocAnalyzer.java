@@ -205,6 +205,16 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
+	//Given a long string, return a set of sentences using .?! as delimiter
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	protected String[] findSentence(String source){
+		String regexp = "[.?!]+"; 
+	    String [] sentences;
+	    sentences = source.split(regexp);
+	    return sentences;
+	}
+	
+	
 	/*Analyze a document and add the analyzed document back to corpus.	
 	 *In the case CV is not loaded, we need two if loops to check. 
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
@@ -213,15 +223,39 @@ public class DocAnalyzer extends Analyzer {
 	//Analyze the document as usual.
 	protected boolean AnalyzeDoc(_Doc doc) {
 		try {
-			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.			
+			String[] sentences = findSentence(doc.getSource());
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-			int index = 0;
-			double value = 0;
-			// Construct the sparse vector.
-			for (String token : tokens) {
-				// CV is not loaded, take all the tokens as features.
-				if (!m_isCVLoaded) {
-					if (m_featureNameIndex.containsKey(token)) {
+			int doc_sentences [][] = new int [sentences.length] [];
+			int doc_sentences_index = 0;
+			for(String sentence : sentences) {
+				String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+				int index = 0;
+				double value = 0;
+				int sentence_array [] = new int [tokens.length];
+				int sentence_array_index = 0;
+				// Construct the sparse vector.
+				for (String token : tokens) {
+					// CV is not loaded, take all the tokens as features.
+					if (!m_isCVLoaded) {
+						if (m_featureNameIndex.containsKey(token)) {
+							index = m_featureNameIndex.get(token);
+							if (spVct.containsKey(index)) {
+								value = spVct.get(index) + 1;
+								spVct.put(index, value);
+							} else {
+								spVct.put(index, 1.0);
+								m_featureStat.get(token).addOneDF(doc.getYLabel());
+							}
+						} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
+							expandVocabulary(token);// update the m_featureNames.
+							index = m_featureNameIndex.get(token);
+							spVct.put(index, 1.0);
+							m_featureStat.get(token).addOneDF(doc.getYLabel());
+						}
+		
+						sentence_array [sentence_array_index] = index;	
+						m_featureStat.get(token).addOneTTF(doc.getYLabel());
+					} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 						index = m_featureNameIndex.get(token);
 						if (spVct.containsKey(index)) {
 							value = spVct.get(index) + 1;
@@ -230,30 +264,21 @@ public class DocAnalyzer extends Analyzer {
 							spVct.put(index, 1.0);
 							m_featureStat.get(token).addOneDF(doc.getYLabel());
 						}
-					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
-						expandVocabulary(token);// update the m_featureNames.
-						index = m_featureNameIndex.get(token);
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
+						sentence_array [sentence_array_index] = index;	
+						m_featureStat.get(token).addOneTTF(doc.getYLabel());
 					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-					index = m_featureNameIndex.get(token);
-					if (spVct.containsKey(index)) {
-						value = spVct.get(index) + 1;
-						spVct.put(index, value);
-					} else {
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
-					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				}
-				// if the token is not in the vocabulary, nothing to do.
-			}
-			
+					sentence_array_index++;
+					// if the token is not in the vocabulary, nothing to do.
+			}// End for loop for token
+				doc_sentences[doc_sentences_index] = new int [sentence_array.length];
+				doc_sentences[doc_sentences_index] = sentence_array;
+				doc_sentences_index++;
+		} // End For loop for sentence	
+		
 			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose 
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
+				doc.setSentences(doc_sentences);
 				m_classMemberNo[doc.getYLabel()]++;
 				
 				if (m_releaseContent)
@@ -261,6 +286,7 @@ public class DocAnalyzer extends Analyzer {
 				return true;
 			} else
 				return false;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;
