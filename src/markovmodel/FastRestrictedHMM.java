@@ -1,5 +1,9 @@
 package markovmodel;
 
+import java.util.Arrays;
+
+import utils.Utils;
+
 public class FastRestrictedHMM {
 
 	private int number_of_topic;
@@ -47,24 +51,15 @@ public class FastRestrictedHMM {
 			this.norm_factor[0] += alpha0[i] + alpha0[i+this.number_of_topic];
 		}
 		
-		Normalize(this.norm_factor[0], alpha0);
-	}
-	
-	public void Normalize(double norm, double [] v) 
-	{
-		  double invnorm = 1.0 / norm;
-		  for (int i = 0; i < v.length; i++) {
-		    v[i] *= invnorm;
-		  }
+		Utils.scaleArray(alpha0, 1.0/this.norm_factor[0]);//Hongning: please use the shared implementation
 	}
 	
 	// This method initializes beta[T-1] to be all ones.
 	public void InitBeta(double norm, double[] beta_T_1) {
-	  for (int i = 0; i < this.number_of_states; i++) {
-	    beta_T_1[i] = 1;
-	  }
-
-	  Normalize(norm, beta_T_1);
+//	  for (int i = 0; i < this.number_of_states; i++) {
+//	    beta_T_1[i] = 1;
+//	  }
+	  Arrays.fill(beta_T_1, 1.0/norm);//Hongning: is this equivalent?
 	}
 	
 	
@@ -80,19 +75,19 @@ public class FastRestrictedHMM {
 	{
 		norm_factor[norm_index] = 0.0;
 		for (int s = 0; s < this.number_of_topic; s++) {
-		alpha_t[s] = epsilon*theta[s]*local_t[s];  // regardless of the previous
-		// topic - remember that sum_k alpha[t-1][k] is 1 (because of the norm).
-		alpha_t[s+this.number_of_topic] = (1-epsilon)*(alpha_t_1[s] + alpha_t_1[s+this.number_of_topic])*local_t[s];
-		norm_factor[norm_index] += alpha_t[s]+alpha_t[s+this.number_of_topic];
+			alpha_t[s] = epsilon*theta[s]*local_t[s];  // regardless of the previous
+			// topic - remember that sum_k alpha[t-1][k] is 1 (because of the norm).
+			alpha_t[s+this.number_of_topic] = (1-epsilon)*(alpha_t_1[s] + alpha_t_1[s+this.number_of_topic])*local_t[s];
+			norm_factor[norm_index] += alpha_t[s]+alpha_t[s+this.number_of_topic];
 		}
 		
-		Normalize(norm_factor[norm_index], alpha_t);
+		Utils.scaleArray(alpha_t, 1.0/norm_factor[norm_index]);//Hongning: please use the shared implementation
 	}
 	
 	
 	public void ComputeAllBetas(double[][] local, double[] theta, double epsilon, double[][] beta)  {
 		for (int i = local.length - 2; i >= 0; i--) {
-		ComputeSingleBeta(local[i+1], theta, epsilon, norm_factor[i], beta[i+1], beta[i]);
+			ComputeSingleBeta(local[i+1], theta, epsilon, norm_factor[i], beta[i+1], beta[i]);
 		}
 	}
 	
@@ -134,7 +129,7 @@ public class FastRestrictedHMM {
 	    sprobs[s] = alpha[s]*beta[s];
 	    norm += sprobs[s];
 	  }
-	  Normalize(norm, sprobs);
+	  Utils.scaleArray(sprobs, norm);//Hongning: please use the shared implementation
 	}
 	
 	
@@ -142,7 +137,7 @@ public class FastRestrictedHMM {
 	{
 		double loglik = 0.0;
 		for (int t = 0; t < norm_factor.length; t++) {
-		loglik += Math.log(norm_factor[t]);
+			loglik += Math.log(norm_factor[t]);
 		}
 		
 		return loglik;

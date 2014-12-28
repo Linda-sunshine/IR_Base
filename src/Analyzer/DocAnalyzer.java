@@ -12,19 +12,17 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.util.InvalidFormatException;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import opennlp.tools.tokenize.Tokenizer;
-import opennlp.tools.tokenize.TokenizerME;
-import opennlp.tools.tokenize.TokenizerModel;
-import opennlp.tools.sentdetect.SentenceDetectorME;
-import opennlp.tools.sentdetect.SentenceModel;
-import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
-import structures._SparseFeature;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -259,6 +257,7 @@ public class DocAnalyzer extends Analyzer {
 				int index = 0;
 				double value = 0;
 				HashMap<Integer, Double> sentence_vector = new HashMap<Integer, Double>(); 
+				
 				// Construct the sparse vector.
 				for (String token : tokens) {
 					// CV is not loaded, take all the tokens as features.
@@ -309,10 +308,10 @@ public class DocAnalyzer extends Analyzer {
 						m_featureStat.get(token).addOneTTF(doc.getYLabel());
 					}
 				// if the token is not in the vocabulary, nothing to do.
-			}// End for loop for token
-			doc.createSentenceVct(sentence_vector, sentence_index);	
-			sentence_index++;
-		} // End For loop for sentence	
+				}// End for loop for token
+				doc.createSentenceVct(sentence_vector, sentence_index);	
+				sentence_index++;
+			} // End For loop for sentence	
 		
 			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose 
 				doc.createSpVct(spVct);
