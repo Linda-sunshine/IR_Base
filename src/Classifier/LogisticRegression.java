@@ -13,13 +13,16 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 public class LogisticRegression extends BaseClassifier{
 
 	double[] m_beta;
-	double[] m_g;
+	double[] m_g, m_diag;
+	double[] m_cache;
 	double m_lambda;
 	
 	public LogisticRegression(_Corpus c, int classNo, int featureSize){
 		super(c, classNo, featureSize);
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
+		m_diag = new double[m_beta.length];
+		m_cache = new double[classNo];
 		m_lambda = 0.5;//Initialize it to be 0.5.
 	}
 	
@@ -27,7 +30,9 @@ public class LogisticRegression extends BaseClassifier{
 		super(c, classNo, featureSize);
 		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
-		m_lambda = lambda;//Initialize it to be 0.5.
+		m_diag = new double[m_beta.length];
+		m_cache = new double[classNo];
+		m_lambda = lambda;
 	}
 	
 	@Override
@@ -38,6 +43,7 @@ public class LogisticRegression extends BaseClassifier{
 	@Override
 	protected void init() {
 		Arrays.fill(m_beta, 0);
+		Arrays.fill(m_diag, 0);
 	}
 
 	/*
@@ -49,17 +55,15 @@ public class LogisticRegression extends BaseClassifier{
 	 */	
 	@Override
 	public void train(Collection<_Doc> trainSet) {
-		int[] iflag = {0};
-		int[] iprint = { -1, 3 };
-		double[] diag = new double[m_beta.length];
+		int[] iflag = {0}, iprint = { -1, 3 };
 		double fValue;
-		int fSize = m_classNo * (m_featureSize + 1);
+		int fSize = m_beta.length;
 		
 		init();
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, diag, iprint, 1e-3, 1e-6, iflag);
+				LBFGS.lbfgs(fSize, 6, m_beta, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-20, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -69,23 +73,21 @@ public class LogisticRegression extends BaseClassifier{
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
 	private double calculatelogPij(int Yi, _SparseFeature[] spXi){
 		int offset = Yi * (m_featureSize + 1);
-		double[] xs = new double [m_classNo];
-		xs[Yi] = Utils.dotProduct(m_beta, spXi, offset);
+		m_cProbs[Yi] = Utils.dotProduct(m_beta, spXi, offset);
 		for(int i = 0; i < m_classNo; i++){
 			if (i!=Yi) {
 				offset = i * (m_featureSize + 1);
-				xs[i] = Utils.dotProduct(m_beta, spXi, offset);
+				m_cProbs[i] = Utils.dotProduct(m_beta, spXi, offset);
 			}
 		}
-		return xs[Yi] - Utils.logSumOfExponentials(xs);
+		return m_cProbs[Yi] - Utils.logSumOfExponentials(m_cProbs);
 	}
 	
 	//This function is used to calculate the value and gradient with the new beta.
 	private double calcFuncGradient(Collection<_Doc> trainSet) {
 		
 		double gValue = 0, fValue = 0;
-		double Pij = 0;
-		double logPij = 0;
+		double Pij = 0, logPij = 0;
 
 		// Add the L2 regularization.
 		double L2 = 0, b;
@@ -96,10 +98,14 @@ public class LogisticRegression extends BaseClassifier{
 		}
 		
 		//The computation complexity is n*classNo.
+		int Yi;
+		_SparseFeature[] fv;
 		for (_Doc doc: trainSet) {
-			int Yi = doc.getYLabel();
+			Yi = doc.getYLabel();
+			fv = doc.getSparse();
+			
 			for(int j = 0; j < m_classNo; j++){
-				logPij = calculatelogPij(j, doc.getSparse());//logP(Y=yi|X=xi)
+				logPij = calculatelogPij(j, fv);//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (Yi == j){
 					gValue = Pij - 1.0;
@@ -110,32 +116,26 @@ public class LogisticRegression extends BaseClassifier{
 				int offset = j * (m_featureSize + 1);
 				m_g[offset] += gValue;
 				//(Yij - Pij) * Xi
-				for(_SparseFeature sf: doc.getSparse()){
-					int index = sf.getIndex();
-					m_g[offset + index + 1] += gValue * sf.getValue();
-				}
+				for(_SparseFeature sf: fv)
+					m_g[offset + sf.getIndex() + 1] += gValue * sf.getValue();
 			}
 		}
 			
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
 		return m_lambda*L2 - fValue;
 	}
-
-	// Test the test set.
-	@Override
-	public void test() {
-		for(_Doc doc: m_testSet){
-			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
-			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
-		}
-		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-	}
 	
 	@Override
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
-			m_cProbs[i] = calculatelogPij(i, fv);
-		return Utils.maxOfArrayIndex(m_cProbs);
+			m_cache[i] = calculatelogPij(i, fv);
+		return Utils.maxOfArrayIndex(m_cache);
+	}
+	
+	//Save the parameters for classification.
+	@Override
+	public void saveModel(String modelLocation){
+		
 	}
 }

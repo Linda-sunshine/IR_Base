@@ -8,7 +8,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 /**
@@ -16,24 +15,36 @@ import java.util.Random;
  * General structure of corpus of a set of documents
  */
 public class _Corpus {
-	private ArrayList<_Doc> m_collection; //All the documents in the corpus.
-	protected int m_corClassNo = 0;
+	ArrayList<_Doc> m_collection; //All the documents in the corpus.
+	ArrayList<String> m_features; //ArrayList for features
+	
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
-	private int[] m_mask; 
-	protected HashMap<Integer, Integer> m_classMemberNo;
+	int[] m_mask; 
 			
 	//Constructor.
 	public _Corpus() {
 		this.m_collection = new ArrayList<_Doc>();
-		this.m_classMemberNo = new HashMap<Integer, Integer>();
  	}
+	
+	public void reset() {
+		m_collection.clear();
+	}
+	
+	public void setFeatures(ArrayList<String> features) {
+		m_features = features;
+	}
+	
+	public String getFeature(int i) {
+		return m_features.get(i);
+	}
+	
+	public int getFeatureSize() {
+		return m_features.size();
+	}
 	
 	//Initialize the m_mask, the default value is false.
 	public void setMasks() {
 		this.m_mask = new int[this.m_collection.size()];
-		for (int i = 0; i < this.m_collection.size(); i++) {
-			this.m_mask[i] = 0;
-		}
 	}
 	
 	//Get all the documents of the corpus.
@@ -44,6 +55,17 @@ public class _Corpus {
 	//Get the corpus's size, which is the total number of documents.
 	public int getSize(){
 		return m_collection.size();
+	}
+	
+	//Get the total count of all the tokens in the corpus 
+	public int getCorpusTotalLenght()
+	{
+		int size = 0;
+		for(int i=0; i < m_collection.size(); i++)
+		{
+			size = size + m_collection.get(i).getTotalDocLength();
+		}
+		return size;
 	}
 	
 	/*

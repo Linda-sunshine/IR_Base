@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.Normalizer;
 import java.util.HashMap;
@@ -11,36 +12,92 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
+import opennlp.tools.tokenize.Tokenizer;
+import opennlp.tools.tokenize.TokenizerME;
+import opennlp.tools.tokenize.TokenizerModel;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
+import structures._SparseFeature;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
-	protected int m_Ngram; 
-	protected int m_lengthThreshold;
 	
+	protected int m_lengthThreshold;
+
+	protected Tokenizer m_tokenizer;
+	protected SnowballStemmer m_stemmer;
 	Set<String> m_stopwords;
+	
+	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
+	 * which means no new features will be allowed.*/
+	protected boolean m_isCVLoaded; 
+	
+	protected boolean m_releaseContent;
 	
 	//Constructor.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
 		
 		m_Ngram = 1;
 		m_lengthThreshold = 5;
-		if(providedCV!=null && !providedCV.isEmpty())
-			LoadCV(providedCV);
+		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
 	}	
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
 		
 		m_Ngram = Ngram;
 		m_lengthThreshold = threshold;
-		if(providedCV!=null && !providedCV.isEmpty())
-			LoadCV(providedCV);
+		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+	}
+	
+	public void setReleaseContent(boolean release) {
+		m_releaseContent = release;
+	}
+	
+	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	protected boolean LoadCV(String filename) {
+		if (filename==null || filename.isEmpty())
+			return false;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")){
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}
+						
+				} else 
+					expandVocabulary(line);
+			}
+			reader.close();
+			
+			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+		
+		return true; // if loading is successful
 	}
 	
 	public void LoadStopwords(String filename) {
@@ -153,61 +210,126 @@ public class DocAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 	}
+	
+	//Given a long string, return a set of sentences using .?! as delimiter
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	protected String[] findSentence(String source){
+		String regexp = "[.?!]+"; 
+	    String [] sentences;
+	    sentences = source.split(regexp);
+	    return sentences;
+	}
+	
+	//Given a long string, return a set of sentences using .?! as delimiter
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public String[] detectSenetence(String source)
+	{
+		
+		SentenceModel model;
+		String sentences[] = null; 
+		try {
+			InputStream modelIn = new FileInputStream("./data/Model/en-sent.bin");
+			model = new SentenceModel(modelIn);
+			SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);
+			sentences = sentenceDetector.sentDetect(source);
+		}
+		catch (IOException e) {
+			System.out.println("Senetence Detection exception");
+		}
 
+	    return sentences;
+	}
+	
 	/*Analyze a document and add the analyzed document back to corpus.	
 	 *In the case CV is not loaded, we need two if loops to check. 
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	//Analyze the document as usual.
-	public void AnalyzeDoc(_Doc doc) {
+	//modified for HTMM
+	protected boolean AnalyzeDoc(_Doc doc) {
 		try {
-			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.			
+			String[] sentences = detectSenetence(doc.getSource());
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-			int index = 0;
-			double value = 0;
-			// Construct the sparse vector.
-			for (String token : tokens) {
-				// CV is not loaded, take all the tokens as features.
-				if (!m_isCVLoaded) {
-					if (m_featureNameIndex.containsKey(token)) {
+			doc.set_number_of_sentences(sentences.length);
+			
+			int sentence_index = 0;
+			for(String sentence : sentences) {
+				String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+				int index = 0;
+				double value = 0;
+				HashMap<Integer, Double> sentence_vector = new HashMap<Integer, Double>(); 
+				// Construct the sparse vector.
+				for (String token : tokens) {
+					// CV is not loaded, take all the tokens as features.
+					if (!m_isCVLoaded) {
+						if (m_featureNameIndex.containsKey(token)) {
+							index = m_featureNameIndex.get(token);
+							if (spVct.containsKey(index)) {
+								value = spVct.get(index) + 1;
+								spVct.put(index, value);
+								if(sentence_vector.containsKey(index)){
+									value = sentence_vector.get(index) + 1;
+									sentence_vector.put(index, value);
+								} else {
+									sentence_vector.put(index, 1.0);
+								}
+													
+							} else {
+								spVct.put(index, 1.0);
+								sentence_vector.put(index, 1.0);
+								m_featureStat.get(token).addOneDF(doc.getYLabel());
+							}
+						} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
+							expandVocabulary(token);// update the m_featureNames.
+							index = m_featureNameIndex.get(token);
+							spVct.put(index, 1.0);
+							sentence_vector.put(index, 1.0);
+					    	m_featureStat.get(token).addOneDF(doc.getYLabel());
+						}
+		
+						m_featureStat.get(token).addOneTTF(doc.getYLabel());
+					} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 						index = m_featureNameIndex.get(token);
 						if (spVct.containsKey(index)) {
 							value = spVct.get(index) + 1;
 							spVct.put(index, value);
+							if(sentence_vector.containsKey(index)){
+								value = sentence_vector.get(index) + 1;
+								sentence_vector.put(index, value);
+							} else {
+								sentence_vector.put(index, 1.0);
+							}
 						} else {
 							spVct.put(index, 1.0);
+							sentence_vector.put(index, 1.0);
+						
 							m_featureStat.get(token).addOneDF(doc.getYLabel());
 						}
-					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
-						expandVocabulary(token);// update the m_featureNames.
-						index = m_featureNameIndex.get(token);
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
+						m_featureStat.get(token).addOneTTF(doc.getYLabel());
 					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-					index = m_featureNameIndex.get(token);
-					if (spVct.containsKey(index)) {
-						value = spVct.get(index) + 1;
-						spVct.put(index, value);
-					} else {
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
-					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				}
 				// if the token is not in the vocabulary, nothing to do.
-			}
-			
+			}// End for loop for token
+			doc.createSentenceVct(sentence_vector, sentence_index);	
+			sentence_index++;
+		} // End For loop for sentence	
+		
 			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose 
 				doc.createSpVct(spVct);
 				m_corpus.addDoc(doc);
 				m_classMemberNo[doc.getYLabel()]++;
-			}
+				
+				if (m_releaseContent)
+					doc.clearSource();
+				return true;
+			} else
+				return false;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
+	
 }	
 

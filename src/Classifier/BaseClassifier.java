@@ -1,10 +1,10 @@
 package Classifier;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import utils.Utils;
 
 
 public abstract class BaseClassifier {
@@ -17,19 +17,24 @@ public abstract class BaseClassifier {
 	protected double[] m_cProbs;
 	
 	//for cross-validation
-	protected double[][] m_TPTable;
+	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	public void train() {
-		long start = System.currentTimeMillis();
 		train(m_trainSet);
-		System.out.format("%s training finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 	}
 	
 	public abstract void train(Collection<_Doc> trainSet);
-	public abstract void test();
 	public abstract int predict(_Doc doc);
 	protected abstract void init(); // to be called before training starts
+	
+	public void test() {
+		for(_Doc doc: m_testSet){
+			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
+			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
+		}
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+	}
 	
 	// Constructor with parameters.
 	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
@@ -39,7 +44,8 @@ public abstract class BaseClassifier {
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		m_cProbs = new double[m_classNo];
-		m_TPTable = new double [m_classNo][m_classNo];
+		m_TPTable = new int[m_classNo][m_classNo];
+		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
 	}
 	
@@ -51,43 +57,71 @@ public abstract class BaseClassifier {
 		//Use this loop to iterate all the ten folders, set the train set and test set.
 		for (int i = 0; i < k; i++) {
 			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) m_testSet.add(docs.get(j));
-				else m_trainSet.add(docs.get(j));
+				if( masks[j]==i ) 
+					m_testSet.add(docs.get(j));
+				else 
+					m_trainSet.add(docs.get(j));
 			}
+			
+			long start = System.currentTimeMillis();
 			train();
 			test();
+			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 			m_trainSet.clear();
 			m_testSet.clear();
 		}
 		calculateMeanVariance(m_precisionsRecalls);	
 	}
 	
+	abstract public void saveModel(String modelLocation);
+	
 	//Calculate the precision and recall for one folder tests.
-	public double[][] calculatePreRec(double[][] tpTable) {
+	public double[][] calculatePreRec(int[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[m_classNo][2];
 		for (int i = 0; i < m_classNo; i++) {
-			PreRecOfOneFold[i][0] = tpTable[i][i] / (sumOfRow(tpTable, i) + 0.001);// Precision of the class.
-			PreRecOfOneFold[i][1] = tpTable[i][i] / (sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
+			PreRecOfOneFold[i][0] = (double) tpTable[i][i] / (Utils.sumOfRow(tpTable, i) + 0.001);// Precision of the class.
+			PreRecOfOneFold[i][1] = (double) tpTable[i][i] / (Utils.sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
+			
+			for(int j=0; j< m_classNo; j++) {
+				m_confusionMat[i][j] += tpTable[i][j];
+				tpTable[i][j] = 0; // clear the result in each fold
+			}
 		}
 		return PreRecOfOneFold;
 	}
-
-	//Calculate the sum of a column in an array.
-	public double sumOfColumn(double[][] tp, int i){
-		double sum = 0;
-		for(int j = 0; j < tp.length; j++){
-			sum += tp[j][i];
-		}
-		return sum;
-	}
 	
-	//Calculate the sum of a row in an array.
-	public double sumOfRow(double[][] tp, int i){
-		double sum = 0;
-		for(int j = 0; j < tp[i].length; j++){
-			sum += tp[i][j];
+	public void printConfusionMat() {
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("\t%d", i);
+		
+		double total = 0, correct = 0;
+		double[] columnSum = new double[m_classNo], prec = new double[m_classNo];
+		System.out.println("\tP");
+		for(int i=0; i<m_classNo; i++){
+			System.out.format("%d", i);
+			double sum = 0; // row sum
+			for(int j=0; j<m_classNo; j++) {
+				System.out.format("\t%d", m_confusionMat[i][j]);
+				sum += m_confusionMat[i][j];
+				columnSum[j] += m_confusionMat[i][j];
+				total += m_confusionMat[i][j];
+			}
+			correct += m_confusionMat[i][i];
+			prec[i] = m_confusionMat[i][i]/sum;
+			System.out.format("\t%.4f\n", prec[i]);
 		}
-		return sum;
+		
+		System.out.print("R");
+		for(int i=0; i<m_classNo; i++){
+			columnSum[i] = m_confusionMat[i][i]/columnSum[i]; // recall
+			System.out.format("\t%.4f", columnSum[i]);
+		}
+		System.out.format("\t%.4f", correct/total);
+		
+		System.out.print("\nF1");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+		System.out.println();
 	}
 	
 	//Calculate the mean and variance of precision and recall.
@@ -96,14 +130,9 @@ public abstract class BaseClassifier {
 		double[][] metrix = new double[m_classNo][4]; 
 			
 		double precisionSum = 0.0;
-		double precisionMean = 0.0;
 		double precisionVarSum = 0.0;
-		double precisionVar = 0.0;
-
 		double recallSum = 0.0;
-		double recallMean = 0.0;
 		double recallVarSum = 0.0;
-		double recallVar = 0.0;
 
 		//i represents the class label, calculate the mean and variance of different classes.
 		for(int i = 0; i < m_classNo; i++){
@@ -112,16 +141,12 @@ public abstract class BaseClassifier {
 			// Calculate the sum of precisions and recalls.
 			for (int j = 0; j < prs.size(); j++) {
 				precisionSum += prs.get(j)[i][0];
-				recallSum += prs.get(i)[i][1];
+				recallSum += prs.get(j)[i][1];
 			}
 			
 			// Calculate the means of precisions and recalls.
-			precisionMean = precisionSum/prs.size();
-			precisionMean =Double.parseDouble(new DecimalFormat("##.###").format(precisionMean));
-			metrix[i][0] = precisionMean;
-			recallMean = recallSum/prs.size();
-			recallMean =Double.parseDouble(new DecimalFormat("##.###").format(recallMean));
-			metrix[i][1] = recallMean;
+			metrix[i][0] = precisionSum/prs.size();
+			metrix[i][1] = recallSum/prs.size();
 		}
 
 		// Calculate the sum of variances of precisions and recalls.
@@ -130,16 +155,13 @@ public abstract class BaseClassifier {
 			recallVarSum = 0.0;
 			// Calculate the sum of precision variance and recall variance.
 			for (int j = 0; j < prs.size(); j++) {
-				precisionVarSum += Math.pow((prs.get(j)[i][0] - metrix[i][0]), 2);
-				recallVarSum += Math.pow((prs.get(j)[i][1] - metrix[i][1]), 2);
+				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
+				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
 			}
+			
 			// Calculate the means of precisions and recalls.
-			precisionVar = Math.sqrt(precisionVarSum/prs.size());
-			precisionVar =Double.parseDouble(new DecimalFormat("##.###").format(precisionVar));
-			metrix[i][2] = precisionVar;
-			recallVar = Math.sqrt(recallVarSum/prs.size());
-			recallVar =Double.parseDouble(new DecimalFormat("##.###").format(recallVar));
-			metrix[i][3] = recallVar;
+			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
+			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
 		}
 		
 		// The final output of the computation.
@@ -147,10 +169,10 @@ public abstract class BaseClassifier {
 		System.out.println("The final result is as follows:");
 		System.out.println("The total number of classes is " + m_classNo);
 		
-		for(int i = 0; i < m_classNo; i++){
-			System.out.println("For class " + i + ":precision mean:" + metrix[i][0] + "\trecall mean:" + 
-			metrix[i][1] + "\tprecision var:" + metrix[i][2] + "\trecall var:" + metrix[i][3]);
-		}
+		for(int i = 0; i < m_classNo; i++)
+			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
+		
+		printConfusionMat();
 		return metrix;
 	}
 }

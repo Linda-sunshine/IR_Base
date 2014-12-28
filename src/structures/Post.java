@@ -3,6 +3,7 @@
  */
 package structures;
 
+import utils.Utils;
 import json.JSONException;
 import json.JSONObject;
 
@@ -97,32 +98,32 @@ public class Post {
 	public Post(String ID) {
 		m_ID = ID;
 	}
+	
 	//Constructor.
-	public Post(JSONObject json) throws NumberFormatException {
-		try {
+	public Post(JSONObject json) {
+		try {//special treatment for the overall ratings
 			if (json.has("Overall")){
-				if(json.getString("Overall").equals("None")){
-					//System.err.println("Wrong rating");
+				if(json.getString("Overall").equals("None")) {
 					System.out.print('R');
+					setLabel(-1);
 				} else{
-					double label = Double.parseDouble(json.getString("Overall"));
-					if(label <= 0 && label > 5){
-						//System.err.println("Error label!!!");
-						System.out.print('L');
-					} else setLabel((int)label);
+					double label = json.getDouble("Overall");
+					if(label <= 0)
+						setLabel(1);
+					else if (label>5)
+						setLabel(5);
+					else 
+						setLabel((int)label);
 				}
 			}
-			if (json.has("Date")){
-				setDate(json.getString("Date"));
-				//System.out.println("date is " + this.m_date);
-			}
-			if (json.has("Content")){
-				setContent(json.getString("Content"));
-				//System.out.println("content is " + this.m_content);
-			}
 		} catch (Exception e) {
-			System.out.print('x');
 		}
+		
+		setDate(Utils.getJSONValue(json, "Date"));
+		setContent(Utils.getJSONValue(json, "Content"));
+		setTitle(Utils.getJSONValue(json, "Title"));
+		m_ID = Utils.getJSONValue(json, "ReviewID");
+		setAuthor(Utils.getJSONValue(json, "Author"));
 	}
 	
 	public JSONObject getJSON() throws JSONException {

@@ -1,5 +1,9 @@
 package utils;
 
+import java.util.Random;
+
+import json.JSONException;
+import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
 
@@ -7,15 +11,58 @@ public class Utils {
 	
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
+		return maxOfArrayIndex(probs, probs.length);
+	}
+	
+	public static int maxOfArrayIndex(double[] probs, int length){
 		int maxIndex = 0;
 		double maxValue = probs[0];
-		for(int i = 1; i < probs.length; i++){
+		for(int i = 1; i < length; i++){
 			if(probs[i] > maxValue){
 				maxValue = probs[i];
 				maxIndex = i;
 			}
 		}
 		return maxIndex;
+	}
+	
+	//Calculate the sum of a column in an array.
+	public static double sumOfRow(double[][] mat, int i){
+		return sumOfArray(mat[i]);
+	}
+	
+	//Calculate the sum of a row in an array.
+	public static double sumOfColumn(double[][] mat, int i){
+		double sum = 0;
+		for(int j = 0; j < mat.length; j++){
+			sum += mat[j][i];
+		}
+		return sum;
+	}
+	
+	//Calculate the sum of a column in an array.
+	public static int sumOfRow(int[][] mat, int i){
+		return sumOfArray(mat[i]);
+	}
+	
+	//Calculate the sum of a row in an array.
+	public static int sumOfColumn(int[][] mat, int i){
+		int sum = 0;
+		for(int j = 0; j < mat.length; j++){
+			sum += mat[j][i];
+		}
+		return sum;
+	}
+	
+	public static double entropy(double[] prob, boolean logScale) {
+		double ent = 0;
+		for(double p:prob) {
+			if (logScale)
+				ent += Math.exp(p) * p;
+			else
+				ent += Math.log(p) * p;
+		}
+		return -ent;
 	}
 	
 	//Find the max value's index of an array, return Value of the maximum.
@@ -25,17 +72,25 @@ public class Utils {
 	
 	//This function is used to calculate the log of the sum of several values.
 	public static double logSumOfExponentials(double[] xs){
-		double max = maxOfArrayValue(xs);
-		double sum = 0.0;
 		if(xs.length == 1){
 			return xs[0];
 		}
+		
+		double max = maxOfArrayValue(xs);
+		double sum = 0.0;
 		for (int i = 0; i < xs.length; i++) {
-			if (xs[i] != Double.NEGATIVE_INFINITY) {
+			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
-			}
 		}
 		return Math.log(sum) + max;
+	}
+	
+	public static double logSum(double log_a, double log_b)
+	{
+		if (log_a < log_b)
+			return log_b+Math.log(1 + Math.exp(log_a-log_b));
+		else
+			return log_a+Math.log(1 + Math.exp(log_b-log_a));
 	}
 	
 	//The function is used to calculate the sum of log of two arrays.
@@ -145,6 +200,17 @@ public class Utils {
 		}
 	}
 	
+	static public String getJSONValue(JSONObject json, String key) {
+		try {
+			if (json.has(key))				
+				return(json.getString(key));
+			else
+				return "NULL";
+		} catch (JSONException e) {
+			return "NULL";
+		}
+	}
+	
 	//Calculate the similarity between two documents.
 	public static double calculateSimilarity(_Doc d1, _Doc d2){
 		return calculateSimilarity(d1.getSparse(), d2.getSparse());
@@ -171,6 +237,25 @@ public class Utils {
 	
 	static public boolean isNumber(String token) {
 		return token.matches("\\d+");
+	}
+	
+	static public void randomize(double[] pros, double beta) {
+        double total = 0;
+        Random r = new Random();
+        for (int i = 0; i < pros.length; i++) {
+            pros[i] = beta + r.nextDouble();//to avoid zero probability
+            total += pros[i];
+        }
+
+        //normalize
+        for (int i = 0; i < pros.length; i++)
+            pros[i] = pros[i] / total;
+    }
+	
+	static public void print(double [] array)
+	{
+		for(int i=0;i<array.length;i++)
+			System.out.println("array["+i+"] =" + array[i]);
 	}
 		
 	public static void main(String[] args){

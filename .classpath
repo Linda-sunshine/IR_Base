@@ -4,9 +4,8 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
 	<classpathentry kind="lib" path="libs/jsoup-1.7.3.jar"/>
 	<classpathentry kind="lib" path="libs/jwnl-1.3.3.jar"/>
-	<classpathentry kind="lib" path="libs/libsvm.jar"/>
 	<classpathentry kind="lib" path="libs/opennlp-maxent-3.0.3.jar"/>
 	<classpathentry kind="lib" path="libs/opennlp-tools-1.5.3.jar"/>
-	<classpathentry kind="lib" path="/Users/hongning/Projects/Git/IR_Base/libs/parallelcolt-0.9.4.jar"/>
+	<classpathentry kind="lib" path="libs/parallelcolt-0.9.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

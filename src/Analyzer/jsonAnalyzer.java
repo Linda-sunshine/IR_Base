@@ -12,9 +12,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import json.JSONArray;
+import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.Post;
+import structures.Product;
 import structures._Doc;
 
 /**
@@ -25,11 +27,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 	
 	private SimpleDateFormat m_dateFormatter;
 	
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, providedCV);		
-		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");//standard date format for this project
-	}
-	
 	//Constructor with ngram and fValue.
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
@@ -39,18 +36,30 @@ public class jsonAnalyzer extends DocAnalyzer{
 	//Load a document and analyze it.
 	@Override
 	public void LoadDoc(String filename) {
+		Product prod = null;
+		JSONArray jarray = null;
+		
 		try {
 			JSONObject json = LoadJson(filename);
-			JSONArray jarray = json.getJSONArray("Reviews");
-			for(int i=0; i<jarray.length(); i++) {
+			prod = new Product(json.getJSONObject("ProductInfo"));
+			jarray = json.getJSONArray("Reviews");
+		} catch (Exception e) {
+			System.out.print('X');
+			return;
+		}	
+		
+		for(int i=0; i<jarray.length(); i++) {
+			try {
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getContent(), (post.getLabel()-1), timeStamp));
+					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp));
 				}
+			} catch (ParseException e) {
+				System.out.print('T');
+			} catch (JSONException e) {
+				System.out.print('P');
 			}
-		} catch (Exception e) {
-			System.out.print('X');
 		}
 	}
 	
