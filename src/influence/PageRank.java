@@ -168,10 +168,11 @@ public class PageRank extends BaseClassifier {
 		} while (++iter<m_maxIter && delta>m_converge);
 		
 		try {
-			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("myfile.txt", true)));
+			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("pagerank_results.txt", true)));
 			writer.format("PageRank in %d*%d graph converge to %.7f after %d steps...\n", m_N, m_N, delta, iter);	
-			int id = Utils.maxOfArrayIndex(m_cache,m_N);
-			writer.println(m_cache[id]+ "\t" + collection.get(id) + "\n\n");//print the most typical review
+			int idMax = Utils.maxOfArrayIndex(m_cache,m_N), idMin = Utils.minOfArrayIndex(m_cache,m_N);
+			writer.println(m_cache[idMax]+ "\t" + collection.get(idMax));//print the most typical review
+			writer.println(m_cache[idMin]+ "\t" + collection.get(idMin) + "\n\n");//print the most typical review
 			writer.close();
 			
 		} catch (IOException e) {

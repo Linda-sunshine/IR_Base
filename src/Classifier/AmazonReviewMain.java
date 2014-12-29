@@ -22,8 +22,8 @@ public class AmazonReviewMain {
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 		
-		//"NB", "LR", "SVM"
-		String classifier = "LR"; //Which classifier to use.
+		//"NB", "LR", "SVM", "PR"
+		String classifier = "PR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
 		String style = "SUP";
@@ -43,11 +43,11 @@ public class AmazonReviewMain {
 //		String featureSelection = "CHI"; //Feature selection method.
 //		double startProb = 0.4; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+//		int DFthreshold = 50; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 3;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
