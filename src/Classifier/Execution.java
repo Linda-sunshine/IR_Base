@@ -3,12 +3,13 @@
  */
 package Classifier;
 
+import influence.PageRank;
+
 import java.io.IOException;
 import java.text.ParseException;
 
 import structures.Parameter;
 import structures._Corpus;
-import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 
@@ -22,11 +23,12 @@ public class Execution  {
 		
 		System.out.println(param.toString());
 		
-		Analyzer analyzer;
+		DocAnalyzer analyzer;
 		if (param.m_suffix.equals(".json"))
 			analyzer = new jsonAnalyzer(param.m_tokenModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 		else
 			analyzer = new DocAnalyzer(param.m_tokenModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+		analyzer.setReleaseContent(!param.m_weightScheme.equals("PR"));
 		
 		/****Pre-process the data.*****/
 		if (param.m_featureFile==null) {
@@ -44,11 +46,19 @@ public class Execution  {
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
+		
 		analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(param.m_featureValue, param.m_norm);
 		analyzer.setTimeFeatures(param.m_window);
+		
 		int featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.returnCorpus(param.m_featureStat);
+		
+		if (param.m_weightScheme.equals("PR")) {
+			System.out.println("Creating PageRank instance weighting, wait...");
+			PageRank myPR = new PageRank(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C, 100, 50, 1e-6);
+			myPR.train(corpus.getCollection());
+		}
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.

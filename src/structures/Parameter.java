@@ -21,6 +21,9 @@ public class Parameter {
 	//"NB", "LR", "SVM"
 	public String m_classifier = "NB"; //Which classifier to use.
 	
+	//"PR"
+	public String m_weightScheme = "NONE"; // weather we will use computed weighting
+	
 	//"SUP", "TRANS"
 	public String m_style = "SUP";
 	public double m_sampleRate = 0.1; // sampling rate for transductive learning
@@ -90,9 +93,11 @@ public class Parameter {
 				m_classifier = argv[i];
 			else if (argv[i-1].equals("-C"))
 				m_C = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-w"))
+				m_weightScheme = argv[i];
 			else if (argv[i-1].equals("-s"))
 				m_style = argv[i];
-			else if (argv[i-1].equals("-w"))
+			else if (argv[i-1].equals("-window"))
 				m_window = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-sr"))
 				m_sampleRate = Double.valueOf(argv[i]);
@@ -149,6 +154,8 @@ public class Parameter {
 		+"	NB -- Naive Bayes\n"
 		+"	LR -- Logistic Regression\n"
 		+"	SVM -- Support Vector Machine (libSVM)\n"
+		+"-w type : instance weighting scheme (default None)\n"
+		+"	PR -- Content similarity based PageRank\n"
 		+"-s type : learning paradigm (default SUP)\n"
 		+"	SUP -- Supervised learning\n"
 		+"	TRANS -- Transductive learning\n"
@@ -175,7 +182,7 @@ public class Parameter {
 		if (m_classifier.equals("LR") || m_classifier.equals("SVM"))
 			buffer.append("\nClassifier: " + m_classifier + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);
 		else
-			buffer.append("\nClassifier: " + m_classifier + "\tCross validation: " + m_CVFold);
+			buffer.append("\nClassifier: " + m_classifier + "\tInstance weighting: " + m_weightScheme + "\tCross validation: " + m_CVFold);
 		
 		buffer.append("\nData directory: " + m_folder);
 		buffer.append("\n--------------------------------------------------------------------------------------");
