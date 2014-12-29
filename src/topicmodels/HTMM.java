@@ -313,14 +313,14 @@ public class HTMM extends TopicModel {
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence detection model.
 		
 		String featureLocation = "./data/Features/selected_fv.txt";
 		String finalLocation = "./data/Features/selected_fv_stat.txt";
 
 		System.out.println("Creating feature vectors, wait...");
 		
-		boolean sentence_check = true;
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold,sentence_check);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.

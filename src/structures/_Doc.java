@@ -3,12 +3,10 @@
  */
 package structures;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import utils.Utils;
 
@@ -37,14 +35,6 @@ public class _Doc implements Comparable<_Doc> {
 	public double[] m_topics;
 	//sufficient statistics for estimating p(z|d)
 	public double[] m_sstat;
-	
-	//Constructor.
-	public _Doc(){
-		this.m_predict_label = 0;
-		this.m_totalLength = 0;
-		m_topics = null;
-		m_sstat = null;
-	}
 	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
@@ -143,30 +133,12 @@ public class _Doc implements Comparable<_Doc> {
 	public int getTotalDocLength(){
 		return this.m_totalLength;
 	}
-		
-	//Given an index, find the corresponding value of the feature. 
-	public double findValueWithIndex(int index){
-		for(_SparseFeature sf: this.m_x_sparse){
-			if(index == sf.getIndex())
-				return sf.getValue();
-		}
-		return 0;
-	}
 	
 	//Create the sparse vector for the document.
-	public _SparseFeature[] createSpVct(HashMap<Integer, Double> spVct) {
-		int i = 0;
-		m_x_sparse = new _SparseFeature[spVct.size()];
-		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
-		while(it.hasNext()){
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			double TF = pairs.getValue();
-			this.m_x_sparse[i] = new _SparseFeature(pairs.getKey(), TF);
-			m_totalLength += TF;
-			i++;
-		}
-		Arrays.sort(m_x_sparse);
-		return m_x_sparse;
+	public void createSpVct(HashMap<Integer, Double> spVct) {
+		m_x_sparse = Utils.createSpVct(spVct);
+		for(_SparseFeature fv:m_x_sparse)
+			m_totalLength += fv.getValue();
 	}
 	
 	//Create a sparse vector with time features.
@@ -187,39 +159,19 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void set_number_of_sentences(int size)
-	{
-		m_sentences = new _SparseFeature [size][];
+	public void setSentences(ArrayList<_SparseFeature[]> stnList) {
+		m_sentences = stnList.toArray(new _SparseFeature [stnList.size()][]);
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public int getTotalSenetences()
-	{
+	public int getTotalSenetences() {
 		return this.m_sentences.length;
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public _SparseFeature[] getSentences(int index)
-	{
+	public _SparseFeature[] getSentences(int index) {
 		return this.m_sentences[index];
 	}
-	
-	//Create the sparse vector for the sentences of the document.
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void createSentenceVct(HashMap<Integer, Double> spVct, int index) {
-		int i = 0;
-		m_sentences [index] = new _SparseFeature[spVct.size()];
-		Iterator<Entry<Integer, Double>> it = spVct.entrySet().iterator();
-		while(it.hasNext()){
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			double TF = pairs.getValue();
-			this.m_sentences[index][i] = new _SparseFeature(pairs.getKey(), TF);
-			i++;
-		}
-		
-	}
-	
-	
 	
 	//Get the predicted result, which is used for comparison.
 	public int getPredictLabel() {

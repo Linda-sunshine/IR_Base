@@ -1,6 +1,11 @@
 package utils;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
+import java.util.Map.Entry;
 
 import json.JSONException;
 import json.JSONObject;
@@ -272,6 +277,21 @@ public class Utils {
 	{
 		for(int i=0;i<array.length;i++)
 			System.out.println("array["+i+"] =" + array[i]);
+	}
+	
+	static public _SparseFeature[] createSpVct(HashMap<Integer, Double> vct) {
+		_SparseFeature[] spVct = new _SparseFeature[vct.size()];
+		
+		int i = 0;
+		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
+		while(it.hasNext()){
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			double TF = pairs.getValue();
+			spVct[i] = new _SparseFeature(pairs.getKey(), TF);
+			i++;
+		}
+		Arrays.sort(spVct);		
+		return spVct;
 	}
 		
 	public static void main(String[] args){
