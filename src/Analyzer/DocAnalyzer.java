@@ -31,6 +31,7 @@ public class DocAnalyzer extends Analyzer {
 
 	protected Tokenizer m_tokenizer;
 	protected SnowballStemmer m_stemmer;
+	protected SentenceDetectorME m_sentencedetector;
 	Set<String> m_stopwords;
 	
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
@@ -71,6 +72,7 @@ public class DocAnalyzer extends Analyzer {
 		super(tokenModel, classNo);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
+		m_sentencedetector = new SentenceDetectorME(new SentenceModel(new FileInputStream("./data/Model/en-sent.bin")));
 		
 		m_Ngram = Ngram;
 		m_lengthThreshold = threshold;
@@ -233,26 +235,7 @@ public class DocAnalyzer extends Analyzer {
 	    return sentences;
 	}
 	
-	//Given a long string, return a set of sentences using .?! as delimiter
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public String[] detectSenetence(String source)
-	{
-		
-		SentenceModel model;
-		String sentences[] = null; 
-		try {
-			InputStream modelIn = new FileInputStream("./data/Model/en-sent.bin");
-			model = new SentenceModel(modelIn);
-			SentenceDetectorME sentenceDetector = new SentenceDetectorME(model);
-			sentences = sentenceDetector.sentDetect(source);
-		}
-		catch (IOException e) {
-			System.out.println("Senetence Detection exception");
-		}
 
-	    return sentences;
-	}
-	
 	/*Analyze a document and add the analyzed document back to corpus.	
 	 *In the case CV is not loaded, we need two if loops to check. 
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
@@ -262,7 +245,7 @@ public class DocAnalyzer extends Analyzer {
 	//modified for HTMM
 	protected boolean AnalyzeDoc(_Doc doc, boolean sentence_check) {
 		try {
-			String[] sentences = detectSenetence(doc.getSource());
+			String[] sentences = m_sentencedetector.sentDetect(doc.getSource());
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 			doc.set_number_of_sentences(sentences.length);
 			
