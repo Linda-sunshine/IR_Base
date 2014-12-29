@@ -1,135 +1,113 @@
 package markovmodel;
 
-import java.util.Arrays;
-
+import structures._Doc;
 import utils.Utils;
 
 public class FastRestrictedHMM {
 
-	private int number_of_topic;
-	private int number_of_states;
-	private double norm_factor[];
-	private double alpha [][];
-	private double beta[][];
+	int number_of_topic;
+	int length_of_seq;
+	double alpha[][];
+	double beta[][];
+	double logOneMinusEpsilon;//to compute log(1-epsilon) efficiently
 	
-	public FastRestrictedHMM()
-	{
+	public FastRestrictedHMM() {
 		number_of_topic = 0;
-		number_of_states = 0;
 	}
 	
-	public double ForwardBackward(double epsilon, double[] theta, double [][] local, double [] pi, double[][] sprobs)
+	public double ForwardBackward(_Doc d, double epsilon, double [][] local, double [] pi)
 	{
 		double loglik;
+		double[] theta = d.m_topics;
 		this.number_of_topic = theta.length;
-		this.number_of_states = 2*this.number_of_topic;
-		this.norm_factor  = new double [local.length];
+		this.length_of_seq = d.getSenetenceSize();
 		
-		alpha  = new double [local.length][this.number_of_states];
-		beta = new double [local.length][this.number_of_states];
+		alpha  = new double [this.length_of_seq][2*this.number_of_topic];
+		beta = new double [this.length_of_seq][2*this.number_of_topic];
+		logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
 		
-		InitAlpha(pi, local[0]);
-		ComputeAllAlphas(local, theta, epsilon);
-		InitBeta(norm_factor[local.length-1],local.length-1);
-		ComputeAllBetas(local, theta, epsilon);
-		CombineAllProbs(sprobs);
-		loglik = ComputeLoglik();
+		loglik = initAlpha(pi, local[0]) + forwardComputation(local, theta, epsilon);
+		backwardComputation(local, theta, epsilon);		
 		
 		return loglik;
 	}
 	
-	public void InitAlpha(double[] pi, double[]local0) 
+	//NOTE: all computation in log space
+	double initAlpha(double[] pi, double[] local0) 
 	{
-		this.norm_factor[0] = 0;
+		double norm = Double.NEGATIVE_INFINITY;//log0
 		for (int i = 0; i < this.number_of_topic; i++) 
 		{
-			this.alpha[0][i] = local0[i]*pi[i];
-			this.alpha[0][i+this.number_of_topic] = local0[i]*pi[i+this.number_of_topic];
-			this.norm_factor[0] += this.alpha[0][i] + this.alpha[0][i+this.number_of_topic];
-		}
-		Utils.scaleArray(this.alpha[0], 1.0/this.norm_factor[0]);
-	}
-	
-	// This method initializes beta[T-1] to be all ones.
-	public void InitBeta(double norm, int index) {
-		Arrays.fill(this.beta[index], 1.0/norm); 
-	}
-	
-	
-	public void ComputeAllAlphas(double[][] local, double[] theta, double epsilon) 
-	{
-		for (int i = 1; i < local.length; i++) 
-		{
-			ComputeSingleAlpha(local[i], theta, epsilon, i, i-1, i);
-		}
-	}
-	
-	public void ComputeSingleAlpha(double[] local_t, double[] theta, double epsilon, int norm_index, int t_1, int t) 
-	{
-		norm_factor[norm_index] = 0.0;
-		for (int s = 0; s < this.number_of_topic; s++) {
-			this.alpha[t][s] = epsilon*theta[s]*local_t[s];  // regardless of the previous
-			// topic - remember that sum_k alpha[t-1][k] is 1 (because of the norm).
-			this.alpha[t][s+this.number_of_topic] = (1-epsilon)*(alpha[t_1][s] + alpha[t_1][s+this.number_of_topic])*local_t[s];
-			norm_factor[norm_index] += alpha[t][s]+alpha[t][s+this.number_of_topic];
+			this.alpha[0][i] = local0[i] + pi[i];
+			this.alpha[0][i+this.number_of_topic] = Double.NEGATIVE_INFINITY;
+			//this is full computation, but no need to do so
+			//norm = Utils.logSum(norm, Utils.logSum(this.alpha[0][i], this.alpha[0][i+this.number_of_topic]));
+			norm = Utils.logSum(norm, this.alpha[0][i]);
 		}
 		
-		Utils.scaleArray(alpha[t], 1.0/norm_factor[norm_index]);
-	}
-	
-	
-	public void ComputeAllBetas(double[][] local, double[] theta, double epsilon)  {
-		for (int i = local.length - 2; i >= 0; i--) {
-			ComputeSingleBeta(local[i+1], theta, epsilon, norm_factor[i], i+1, i);
+		//normalization
+		for (int i = 0; i < this.number_of_topic; i++) {
+			this.alpha[0][i] -= norm;
+			//this.alpha[0][i+this.number_of_topic] -= norm; // no need to compute this
 		}
+		
+		return norm;
 	}
 	
-	
-	// This method computes the betas for a single level after beta has been
-	// computed for the next level.
-	public void ComputeSingleBeta(double[] local_t_1, double[] theta, double epsilon, double norm, int t1, int t) {
-	  double trans_sum = 0;
-	  
-	  for (int i = 0; i < this.number_of_topic; i++) {
-	    trans_sum += epsilon*theta[i]*local_t_1[i]*beta[t1][i];
-	  }
-
-	  for (int s = 0; s < this.number_of_topic; s++) {
-	    // Recall that beta_t1[s] == beta_t1[s+topics_]
-	    beta[t][s] = trans_sum + (1-epsilon)*local_t_1[s]*beta[t1][s];
-	    beta[t][s] /= norm;
-	    beta[t][s+this.number_of_topic] = beta[t][s];
-	  }
-	  // we've already normalized the betas!
-	}
-	
-	
-	public void CombineAllProbs(double[][] sprobs)
-    {
-		for (int i = 0; i < alpha.length; i++) {
-			CombineSingleProb(i,i, sprobs[i]);
-		}
-    }
-	
-	
-	// This method combines the alpha and beta to get probabilities for a
-	// single level.
-	public void CombineSingleProb(int alpha_index, int beta_index, double[] sprobs) {
-	  double norm = 0;
-	  for (int s = 0; s < this.number_of_states; s++) {
-	    sprobs[s] = alpha[alpha_index][s]*beta[beta_index][s];
-	    norm += sprobs[s];
-	  }
-	  Utils.scaleArray(sprobs, 1.0/norm);
-	}
-	
-	
-	public double ComputeLoglik() 
+	double forwardComputation(double[][] local, double[] theta, double epsilon) 
 	{
-		double loglik = 0.0;
-		for (int t = 0; t < norm_factor.length; t++) {
-			loglik += Math.log(norm_factor[t]);
+		double logLikelihood = 0;
+		for (int t = 1; t < this.length_of_seq; t++) 
+		{
+			double norm = Double.NEGATIVE_INFINITY;//log0
+			for (int i = 0; i < this.number_of_topic; i++) {
+				alpha[t][i] = epsilon + theta[i] + local[t][i];  // regardless of the previous
+				this.alpha[t][i+this.number_of_topic] = logOneMinusEpsilon + Utils.logSum(alpha[t-1][i], alpha[t-1][i+this.number_of_topic]) + local[t][i];
+				
+				norm = Utils.logSum(norm, Utils.logSum(this.alpha[t][i], this.alpha[t][i+this.number_of_topic]));
+			}
+			
+			//normalization
+			for (int i = 0; i < this.number_of_topic; i++) {
+				this.alpha[t][i] -= norm;
+				this.alpha[t][i+this.number_of_topic] -= norm;
+			}
+			
+			logLikelihood += norm; 
 		}
-		return loglik;
+		return logLikelihood;
+	}
+	
+	void backwardComputation(double[][] local, double[] theta, double epsilon)  {
+		for(int t=this.length_of_seq-1; t>=0; t--) {
+			double norm = Double.NEGATIVE_INFINITY;//log0
+			for (int i = 0; i < this.number_of_topic; i++) {
+				double sum = epsilon;
+				for (int j = 0; j < this.number_of_topic; j++)
+					sum = Utils.logSum(sum, theta[j] + local[t+1][j] + beta[t+1][j]);
+				
+				beta[t][i] = Utils.logSum(logOneMinusEpsilon + beta[t+1][i] + local[t+1][i], sum);
+				beta[t + this.number_of_topic][i] = beta[t][i];
+				
+				norm = Utils.logSum(norm, Utils.logSum(beta[t][i], beta[t + this.number_of_topic][i]));
+			}
+			
+			//normalization
+			for (int i = 0; i < this.number_of_topic; i++) {
+				this.beta[t][i] -= norm;
+				this.beta[t][i+this.number_of_topic] -= norm;
+			}
+		}
+	}
+	
+	public void collectExpectations(double[][] sstat) {
+		for(int t=0; t<this.length_of_seq; t++) {
+			double norm = Double.NEGATIVE_INFINITY;//log0
+			for(int i=0; i<2*this.number_of_topic; i++) 
+				norm = Utils.logSum(norm, alpha[t][i] + beta[t][i]);
+			
+			for(int i=0; i<2*this.number_of_topic; i++) 
+				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
+		}
 	}
 }

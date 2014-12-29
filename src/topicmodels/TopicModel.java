@@ -8,11 +8,13 @@ import structures._Corpus;
 import structures._Doc;
 
 public abstract class TopicModel {
+	protected int number_of_topics;
 	protected int vocabulary_size;
 	protected int number_of_iteration;
-	protected double beta; //smoothing parameter for p(w|z, \theta)
-	
 	protected _Corpus m_corpus;
+	
+	//smoothing parameter for p(w|z, \theta)
+	protected double d_beta; 	
 	
 	//initialize necessary model parameters
 	protected abstract void initialize_probability();	
@@ -40,10 +42,13 @@ public abstract class TopicModel {
 	// perform inference of topic distribution in the document
 	public abstract double[] get_topic_probability(_Doc d);
 	
+	// to be called per EM-iteration
+	protected abstract void init();
+	
 	public TopicModel(int number_of_iteration, double beta, _Corpus c) {
 		vocabulary_size = c.getFeatureSize();
 		this.number_of_iteration = number_of_iteration;
-		this.beta = beta;
+		this.d_beta = beta;
 		this.m_corpus = c;
 	}
 	
@@ -55,6 +60,7 @@ public abstract class TopicModel {
 		int  i = 0;
 		do
 		{
+			init();
 			for(_Doc d:m_corpus.getCollection())
 				calculate_E_step(d);
 			

@@ -32,7 +32,7 @@ public class twoTopic extends TopicModel {
 	
 	@Override
 	protected void initialize_probability() {	
-    	Utils.randomize(m_theta, beta);
+    	Utils.randomize(m_theta, d_beta);
     	Arrays.fill(m_sstat, 0);
 	}
 	
@@ -48,9 +48,9 @@ public class twoTopic extends TopicModel {
 	@Override
 	public void calculate_M_step()
 	{		
-		double sum = Utils.sumOfArray(m_sstat) + vocabulary_size * beta;//with smoothing
+		double sum = Utils.sumOfArray(m_sstat) + vocabulary_size * d_beta;//with smoothing
 		for(int i=0;i<vocabulary_size;i++)
-			m_theta[i] = (beta+m_sstat[i]) / sum;
+			m_theta[i] = (d_beta+m_sstat[i]) / sum;
 	}
 	
 	protected double calculate_log_likelihood(_Doc d)
@@ -100,4 +100,6 @@ public class twoTopic extends TopicModel {
 		System.out.format("Likelihood in document %s converges to %.4f after %d steps...\n", d.getName(), perplexity, i);
 		return m_theta;
 	}
+	
+	protected void init() {};
 }

@@ -68,12 +68,12 @@ public class _Corpus {
 		return size;
 	}
 	
-	public int getLargestSentenceLenght()
+	public int getLargestSentenceSize()
 	{
 		int max = 0;
 		for(int i=0; i<m_collection.size(); i++)
 		{
-			int length = m_collection.get(i).getTotalSenetences();
+			int length = m_collection.get(i).getSenetenceSize();
 			if(length > max)
 				max = length;
 		}
@@ -85,7 +85,6 @@ public class _Corpus {
 	 Access the documents with the masks can help us split the whole whole 
 	 corpus into k folders. The function is used in cross validation.
 	*/
-	//Why this method is defined as private??? It will be used in Classifier.
 	public void shuffle(int k) {
 		Random rand = new Random();
 		for(int i=0; i< m_mask.length; i++) {

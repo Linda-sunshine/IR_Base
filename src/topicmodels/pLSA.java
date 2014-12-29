@@ -6,12 +6,8 @@ package topicmodels;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Arrays;
 
-import opennlp.tools.util.InvalidFormatException;
-import Analyzer.jsonAnalyzer;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -22,8 +18,7 @@ import utils.Utils;
 
 public class pLSA extends twoTopic {
 
-	int number_of_topics;
-	double alpha; // smoothing of p(z|d)
+	double d_alpha; // smoothing of p(z|d)
 	
 	double[][] topic_term_probabilty ; /* p(w|z) */
 	double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
@@ -32,7 +27,7 @@ public class pLSA extends twoTopic {
 			double back_ground [], _Corpus c) {			
 		super(number_of_iteration, lambda, beta, back_ground, c);
 		
-		this.alpha = alpha;
+		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
@@ -42,7 +37,7 @@ public class pLSA extends twoTopic {
 	protected void initialize_probability()
 	{	
 		for(_Doc d:m_corpus.getCollection())
-			d.setTopics(number_of_topics, beta);//allocate memory and randomize it
+			d.setTopics(number_of_topics, d_alpha);//allocate memory and randomize it
 		
 		// initialize term topic matrix
 		// uniform is better than random, (really? and why?)
@@ -81,20 +76,25 @@ public class pLSA extends twoTopic {
 		// update topic-term matrix -------------
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
-			sum = Utils.sumOfArray(word_topic_sstat[k]) + beta*vocabulary_size; // smoothing
+			sum = Utils.sumOfArray(word_topic_sstat[k]); // smoothing
 			for(int i=0;i<this.vocabulary_size;i++)
-				topic_term_probabilty[k][i] = (word_topic_sstat[k][i] + beta) / sum;
-			Arrays.fill(word_topic_sstat[k], 0); // clear up for next iteration
+				topic_term_probabilty[k][i] = (word_topic_sstat[k][i] + d_beta) / sum;
 		}
 		
 		// update per-document topic distribution vectors
 		for(_Doc d:m_corpus.getCollection()) {
-			sum = Utils.sumOfArray(d.m_sstat) + number_of_topics*alpha;
-			for(int k=0;k<this.number_of_topics;k++) {
-				d.m_topics[k] = (d.m_sstat[k]+alpha) / sum; // smoothing
-				d.m_sstat[k] = 0; // clear up for next iteration
-			}
+			sum = Utils.sumOfArray(d.m_sstat) + number_of_topics*d_alpha;
+			for(int k=0;k<this.number_of_topics;k++)
+				d.m_topics[k] = (d.m_sstat[k]+d_alpha) / sum; // smoothing
 		}
+	}
+	
+	@Override
+	protected void init() {
+		for(int k=0;k<this.number_of_topics;k++)
+			Arrays.fill(word_topic_sstat[k], d_beta); // clear up for next iteration
+		for(_Doc d:m_corpus.getCollection())
+			Arrays.fill(d.m_sstat, 0);
 	}
 	
 	//pLSA cannot directly infer topic proportion for new documents!
@@ -134,54 +134,4 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
-	
-	
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException
-	{
-		
-	
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 1; //The default value is unigram. 
-		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-		int norm = 0;//The way of normalization.(only 1 and 2)
-		int lengthThreshold = 5; //Document length threshold
-		
-		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		
-		String featureLocation = "./data/Features/selected_fv.txt";
-		String finalLocation = "./data/Features/selected_fv_stat.txt";
-
-		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, null);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.setFeatureValues(featureValue, norm);
-		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
-		
-		// Added sentence feature testing 
-		for(int i=0; i<c.getCollection().get(0).getTotalSenetences();i++)
-		{
-					_SparseFeature array [] = c.getCollection().get(0).getSentences(i);
-					System.out.print("Sentence:"+i+"\n");
-					//System.out.print(array.length);
-					for(int j=0; j<array.length; j++)
-					{
-						System.out.print(array[j].getValue()+" ");
-					}
-					
-					System.out.print("\n");
-					for(int j=0; j<array.length; j++)
-					{
-						System.out.print(c.getFeature(array[j].getIndex())+" ");
-					}
-			     	System.out.print("\n");
-		}
-		
-
-		
-	}
-				
-		
 }

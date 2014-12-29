@@ -31,7 +31,7 @@ public class _Doc implements Comparable<_Doc> {
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
-	private _SparseFeature m_sentences [][]; // sentence array each row contains the unique word id 
+	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
@@ -174,7 +174,7 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public int getTotalSenetences() {
+	public int getSenetenceSize() {
 		return this.m_sentences.length;
 	}
 	

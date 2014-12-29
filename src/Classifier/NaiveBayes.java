@@ -59,7 +59,7 @@ public class NaiveBayes extends BaseClassifier {
 			int label = doc.getYLabel();
 			m_pY[label] ++;
 			for(_SparseFeature sf: doc.getSparse())
-				m_Pxy[label][sf.getIndex()] += m_presence?1:sf.getValue();
+				m_Pxy[label][sf.getIndex()] += m_presence?1.0:sf.getValue();
 		}
 		
 		//normalization
