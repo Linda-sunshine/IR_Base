@@ -129,7 +129,7 @@ public class FastRestrictedHMM {
 	    sprobs[s] = alpha[s]*beta[s];
 	    norm += sprobs[s];
 	  }
-	  Utils.scaleArray(sprobs, norm);//Hongning: please use the shared implementation
+	  Utils.scaleArray(sprobs, 1.0/norm);//Hongning: please use the shared implementation
 	}
 	
 	
