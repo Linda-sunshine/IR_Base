@@ -28,7 +28,7 @@ public class HTMM extends pLSA {
 		super(number_of_topics, number_of_iteration, 0.5, d_beta, d_alpha, null, c);
 		
 		Random r = new Random();
-		this.epsilon = r.nextDouble(); //Hongning: how to make sure this is in the range of (0,1)
+		this.epsilon = Math.log(r.nextDouble()); //Hongning: how to make sure this is in the range of (0,1)
 		
 		//cache in order to avoid frequently allocating new space
 		p_dwzpsi = new double[c.getLargestSentenceSize()][constant * this.number_of_topics]; // max|S_d| * (2*K)
