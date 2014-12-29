@@ -171,17 +171,17 @@ public class PageRank extends BaseClassifier {
 			collection.get(i).setWeight(1.0 + 10*m_cache[i]);//what would be a reasonable weight setting?
 		}
 		
-		try {
-			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("pagerank_results.txt", true)));
-			writer.format("PageRank in %d*%d graph converge to %.7f after %d steps...\n", m_N, m_N, delta, iter);	
-			int idMax = Utils.maxOfArrayIndex(m_cache,m_N), idMin = Utils.minOfArrayIndex(m_cache,m_N);
-			writer.println(m_cache[idMax]+ "\t" + collection.get(idMax));//print the most typical review
-			writer.println(m_cache[idMin]+ "\t" + collection.get(idMin) + "\n\n");//print the most typical review
-			writer.close();
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+//		try {
+//			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("pagerank_results.txt", true)));
+//			writer.format("PageRank in %d*%d graph converge to %.7f after %d steps...\n", m_N, m_N, delta, iter);	
+//			int idMax = Utils.maxOfArrayIndex(m_cache,m_N), idMin = Utils.minOfArrayIndex(m_cache,m_N);
+//			writer.println(m_cache[idMax]+ "\t" + collection.get(idMax));//print the most typical review
+//			writer.println(m_cache[idMin]+ "\t" + collection.get(idMin) + "\n\n");//print the most typical review
+//			writer.close();
+//			
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 		
 	}
 	

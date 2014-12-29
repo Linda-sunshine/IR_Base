@@ -133,18 +133,20 @@ public class SemiSupervised extends BaseClassifier{
 		initCache();
 		
 		/***pre-compute the full similarity matrix (except the diagonal).****/
-		_Doc di;
+		_Doc di, dj;
 		for(int i = 0; i < m_U; i++){
 			di = m_testSet.get(i);
 			for(int j = i+1; j < m_U; j++){//to save computation since our similarity metric is symmetric
-				similarity = Utils.calculateSimilarity(di, m_testSet.get(j));
-				if (!di.sameProduct(m_testSet.get(j)))
+				dj = m_testSet.get(j);
+				similarity = Utils.calculateSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				if (!di.sameProduct(dj))
 					similarity *= m_discount;//differentiate reviews from different products
 				setCache(i, j, similarity);
 			}	
 
 			for(int j = 0; j < m_L; j++){
-				similarity = Utils.calculateSimilarity(di, m_labeled.get(j));
+				dj = m_labeled.get(j);
+				similarity = Utils.calculateSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				if (!di.sameProduct(m_labeled.get(j)))
 					similarity *= m_discount;//differentiate reviews from different products
 				setCache(i, m_U+j, similarity);

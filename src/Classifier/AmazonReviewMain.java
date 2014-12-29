@@ -18,15 +18,15 @@ public class AmazonReviewMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 		
 		//"NB", "LR", "SVM", "PR"
-		String classifier = "PR"; //Which classifier to use.
+		String classifier = "NB"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "TRANS";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
@@ -62,7 +62,8 @@ public class AmazonReviewMain {
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
-		analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content		
+		//analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
+		analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);

@@ -70,7 +70,7 @@ public class NaiveBayes extends BaseClassifier {
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
 		
-		printTopFeatures(5);
+		//printTopFeatures(5);
 	}
 		
 	//Predict the label for one document.
