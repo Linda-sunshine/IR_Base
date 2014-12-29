@@ -24,8 +24,8 @@ public class HTMM extends TopicModel {
 	private int number_of_docs;
 	private double loglik;
 	final int constant = 2;
-	
-	private double Czw [][];
+	private double[][] word_topic_sstat; // Czw as in HTMM
+	// For Cdz we use here _Doc.m_sstat
 	
 	public HTMM(int number_of_topics,double d_alpha, double d_beta, double beta, int number_of_iteration, _Corpus c) 
 	{
@@ -38,6 +38,7 @@ public class HTMM extends TopicModel {
 		this.number_of_topics = number_of_topics;
 		this.number_of_docs = c.getSize();
 		
+		word_topic_sstat = new double [this.number_of_topics][this.vocabulary_size];
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		p_dwzpsi = new double[number_of_docs][][];
 		for(int d=0; d<number_of_docs; d++)
@@ -83,30 +84,26 @@ public class HTMM extends TopicModel {
 		  }  
 	}
 	
+
 	
 	// This method is used to compute local probabilities for a word or for a
 	// sentence.
 	public double ComputeLocalProbsForItem(_Doc d, _SparseFeature[] sentence, double local [])
 	{
 		double likelihood = 0.0;
-//		for (int z = 0; z < this.number_of_topics; z++) {
-//		    local[z] = 1;
-//		  }
-//		
-//		Normalize(this.number_of_topics, local);
-		//Hongning: Will this server for the same purpose?
 		Arrays.fill(local,1.0/this.number_of_topics);
-		
 		likelihood += Math.log(this.number_of_topics);
 		for (int i = 0; i < sentence.length; i++) {
 		    double norm = 0;
 		    int word = sentence[i].getIndex();
-		    for (int z = 0; z < this.number_of_topics; z++) {
-		      local[z] *= topic_term_probabilty[z][word];//Hongning: why do we multiply word count (sentence[i].getValue()) as well?
-		      norm += local[z];
+		    double frequency = sentence[i].getValue();
+		    for(double count = 0; count < frequency; count = count + 1.0) {
+			    for (int z = 0; z < this.number_of_topics; z++) {
+			      local[z] *= topic_term_probabilty[z][word];//Hongning: why do we multiply word count (sentence[i].getValue()) as well?
+			      norm += local[z];
+			    }
 		    }
 		    Utils.scaleArray(local, 1.0/norm);//Hongning: please use the shared implementation
-		    
 		    likelihood += Math.log(norm);
 		}
 		
@@ -126,8 +123,6 @@ public class HTMM extends TopicModel {
 		
 		return likelihood;
 	}
-	
-
 	@Override
 	public void calculate_E_step(_Doc d) {
 		
@@ -136,19 +131,7 @@ public class HTMM extends TopicModel {
 		double loca_ll = 0.0; // local likelihood
 		
 		loca_ll = ComputeLocalProbsForDoc(d, local);
-		
-		/*System.out.print("\nlocal\n");
-		for(int i=0; i< d.getTotalSenetences(); i++)
-		{
-			for(int j=0; j<this.number_of_topics; j++)
-			{
-				System.out.print(local[i][j]+" ");
-				
-			}
-			System.out.print("\n");
-		}*/
-		
-		
+	
 		double init_probs [] = new double [constant*this.number_of_topics];
 		for(int i=0; i<this.number_of_topics; i++)
 		{
@@ -157,7 +140,6 @@ public class HTMM extends TopicModel {
 		}
 		
 		FastRestrictedHMM f = new FastRestrictedHMM();//Hongning: Do we need to construct the object every time?
-		//System.out.println("Doc ID:"+ d.getID());
 		double ll = f.ForwardBackward(this.epsilon, d.m_topics, local, init_probs, this.p_dwzpsi[d.getID()]);
 		
 		this.loglik += ll+loca_ll;
@@ -166,32 +148,29 @@ public class HTMM extends TopicModel {
 	
 	// We count only the number of times when a new topic was drawn according to
 	// theta, i.e. when psi=1 (this includes the beginning of a document).
-	public double [] CountTopicsInDoc(_Doc d) 
+	public void CountTopicsInDoc(_Doc d) 
 	{
-	  double[] Cdz = new double [this.number_of_topics];//Hongning: in Java, the default value for double is ZERO already
-//	  for (int z = 0; z < this.number_of_topics; z++) {
-//	    Cdz[z] = 0;
-//	  }
 	  for (int i = 0; i < d.getTotalSenetences() ; i++) {
 	    for (int z = 0; z < this.number_of_topics; z++) {
 	      // only psi=1
-	      Cdz[z] += p_dwzpsi[d.getID()][i][z];//Hongning: why do not we store the count in d.m_sstat directly?
+	      d.m_sstat[z] += p_dwzpsi[d.getID()][i][z]; //Hongning: why do not we store the count in d.m_sstat directly?
 	    }
 	  }
 	  
-	  return Cdz;
 	}
-
 	
 	// Finds the MAP estimator for theta_d
 	void FindSingleTheta(_Doc d) {
 	  double norm = 0;
-	  double Cdz [] = CountTopicsInDoc(d);//Hongning: why do we directly accumulate the count in d.m_sstat, rather than create a new structure every time??
+	  Arrays.fill(d.m_sstat, 0.0);
+	  
+	  CountTopicsInDoc(d); //Hongning: why do we directly accumulate the count in d.m_sstat, rather than create a new structure every time??
 	  for (int z = 0; z < this.number_of_topics; z++) {
-	    d.m_topics[z] = Cdz[z] + d_alpha - 1;
+	    d.m_topics[z] = d.m_sstat[z] + d_alpha - 1;
 	    norm += d.m_topics[z];
 	  }
 	  Utils.scaleArray(d.m_topics, 1.0/norm);//Hongning: please use the shared implementation
+	  //Normalize(norm,d.m_topics);
 	}
 	
 	// Finds the theta for all documents in the train set.
@@ -209,9 +188,12 @@ public class HTMM extends TopicModel {
 	  // Iterate over all the words in a sentence
 	  for (int n = 0; n < sen.length; n++) {
 	    int w = sen[n].getIndex();
-	    for (int z = 0; z < this.number_of_topics; z++) {
-	      // both psi=1 and psi=0
-	      Czw[z][w] += topic_probs[z]+topic_probs[z+this.number_of_topics];
+	    double frequency = sen[n].getValue();
+	    for(double count = 0.0; count <frequency; count = count + 1.0){
+		    for (int z = 0; z < this.number_of_topics; z++) {
+		      // both psi=1 and psi=0
+		      word_topic_sstat[z][w] += topic_probs[z]+topic_probs[z+this.number_of_topics];
+		    }
 	    }
 	  }
 	}
@@ -229,18 +211,17 @@ public class HTMM extends TopicModel {
 	// Finds the MAP estimator for phi
 	public void FindPhi() 
 	{
-		//this.Czw = new double [this.number_of_topics][this.vocabulary_size];//Hongning: why should we create the double array every time???
-		for(int i=0; i<this.number_of_topics; i++)
-			Arrays.fill(Czw[i], 0.0);
-	  	CountTopicWord();   // Czw is allocated and initialized to 0
+		for(int z=0; z<this.number_of_topics; z++)
+			Arrays.fill(word_topic_sstat[z], 0.0);
+	  	CountTopicWord();   // word_topic_sstat is allocated and initialized to 0
 		  for (int z = 0; z < this.number_of_topics; z++) {
-		    double norm = Utils.sumOfArray(Czw[z]) + this.vocabulary_size*(this.d_beta - 1);//Hongning: please use the shared implementation
-//		    for (int w = 0; w < this.vocabulary_size; w++) {
-//		      topic_term_probabilty[z][w] = Czw[z][w] + this.d_beta - 1;
+		    double norm = Utils.sumOfArray(word_topic_sstat[z]) + this.vocabulary_size*(this.d_beta - 1);//Hongning: please use the shared implementation
+			  for (int w = 0; w < this.vocabulary_size; w++) {
+		      topic_term_probabilty[z][w] = word_topic_sstat[z][w] + this.d_beta - 1; // please check this
 //		      norm += topic_term_probabilty[z][w];
-//		    }
+		    }
 		    Utils.scaleArray(topic_term_probabilty[z], 1.0/norm);//Hongning: please use the shared implementation
-		  }
+		}
 	}
 	
 	
@@ -344,9 +325,9 @@ public class HTMM extends TopicModel {
 		
 		
 		int number_of_topics = 10;
-		double alpha = 1.5;
+		double alpha = (1 + 50.0 / number_of_topics ); 
 		double beta = 1.01;
-		int number_of_iteration = 2;
+		int number_of_iteration = 500;
 		
 		HTMM htmm = new HTMM(number_of_topics,alpha,beta,.00001,number_of_iteration ,c);
 		htmm.EM(0.0);
