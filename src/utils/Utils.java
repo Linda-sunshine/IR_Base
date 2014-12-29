@@ -26,6 +26,22 @@ public class Utils {
 		return maxIndex;
 	}
 	
+	public static int minOfArrayIndex(double[] probs){
+		return minOfArrayIndex(probs, probs.length);
+	}
+	
+	public static int minOfArrayIndex(double[] probs, int length){
+		int minIndex = 0;
+		double minValue = probs[0];
+		for(int i = 1; i < length; i++){
+			if(probs[i] < minValue){
+				minValue = probs[i];
+				minIndex = i;
+			}
+		}
+		return minIndex;
+	}
+	
 	//Calculate the sum of a column in an array.
 	public static double sumOfRow(double[][] mat, int i){
 		return sumOfArray(mat[i]);
