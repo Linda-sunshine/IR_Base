@@ -294,21 +294,10 @@ public class Utils {
 		return spVct;
 	}
 		
-	public static void main(String[] args){
-		_SparseFeature s1 = new _SparseFeature(1, 4);
-		_SparseFeature s2 = new _SparseFeature(5, 1);
-		_SparseFeature s3 = new _SparseFeature(6, 8);
-		_SparseFeature s4 = new _SparseFeature(9, 4);
-		_SparseFeature s5 = new _SparseFeature(1, 3);
-		_SparseFeature s6 = new _SparseFeature(2, 4);
-		_SparseFeature s7 = new _SparseFeature(5, 1);
-		_SparseFeature s8 = new _SparseFeature(9, 2);
-
-		_SparseFeature[] d1 = new _SparseFeature[] {s1, s2, s3, s4};
-		_SparseFeature[] d2 = new _SparseFeature[] {s5, s6, s7, s8};
-		double similarity = calculateSimilarity(d1, d2);
-		System.out.println(similarity);
-
-		
+	public static boolean endWithPunct(String stn) {
+		char lastChar = stn.charAt(stn.length()-1);
+		return !((lastChar>='a' && lastChar<='z') 
+				|| (lastChar>='A' && lastChar<='Z') 
+				|| (lastChar>='0' && lastChar<='9'));
 	}
 }

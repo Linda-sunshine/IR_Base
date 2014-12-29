@@ -18,6 +18,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.Post;
 import structures.Product;
 import structures._Doc;
+import utils.Utils;
 
 /**
  * @author hongning
@@ -59,7 +60,12 @@ public class jsonAnalyzer extends DocAnalyzer{
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp);
+					String content;
+					if (Utils.endWithPunct(post.getTitle()))
+						content = post.getTitle() + " " + post.getContent();
+					else
+						content = post.getTitle() + ". " + post.getContent();
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
 						AnalyzeDocWithStnSplit(review);
 					else
