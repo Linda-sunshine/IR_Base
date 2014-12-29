@@ -180,7 +180,7 @@ public class Parameter {
 			buffer.append("\nLearning paradigm: SUP");
 		
 		if (m_classifier.equals("LR") || m_classifier.equals("SVM"))
-			buffer.append("\nClassifier: " + m_classifier + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);
+			buffer.append("\nClassifier: " + m_classifier + "\tInstance weighting: " + m_weightScheme + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);
 		else
 			buffer.append("\nClassifier: " + m_classifier + "\tInstance weighting: " + m_weightScheme + "\tCross validation: " + m_CVFold);
 		

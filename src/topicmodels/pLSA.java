@@ -17,7 +17,7 @@ import utils.Utils;
 
 
 public class pLSA extends twoTopic {
-
+	// Dirichlet prior for p(\theta|d)
 	double d_alpha; // smoothing of p(z|d)
 	
 	double[][] topic_term_probabilty ; /* p(w|z) */
@@ -36,13 +36,13 @@ public class pLSA extends twoTopic {
 	@Override
 	protected void initialize_probability()
 	{	
+		// initialize topic document proportion, p(z|d)
 		for(_Doc d:m_corpus.getCollection())
 			d.setTopics(number_of_topics, d_alpha);//allocate memory and randomize it
 		
-		// initialize term topic matrix
-		// uniform is better than random, (really? and why?)
+		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)
-			Arrays.fill(this.topic_term_probabilty[i], 1.0/this.vocabulary_size);
+			Utils.randomize(this.topic_term_probabilty[i], d_beta);
 	}
 	
 	@Override
@@ -90,11 +90,12 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	protected void init() {
+	protected void init() { // clear up for next iteration
 		for(int k=0;k<this.number_of_topics;k++)
-			Arrays.fill(word_topic_sstat[k], d_beta); // clear up for next iteration
+			Arrays.fill(word_topic_sstat[k], d_beta-1.0);
+		
 		for(_Doc d:m_corpus.getCollection())
-			Arrays.fill(d.m_sstat, 0);
+			Arrays.fill(d.m_sstat, d_alpha-1.0);
 	}
 	
 	//pLSA cannot directly infer topic proportion for new documents!

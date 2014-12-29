@@ -84,40 +84,44 @@ public abstract class TopicModel {
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
 		
-		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablets";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		
-		String featureLocation = "./data/Features/selected_fv.txt";
-		String finalLocation = "./data/Features/selected_fv_stat.txt";
-
-		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
-		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.3; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-		
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-
-		System.out.println("Creating feature vectors, wait...");
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.setFeatureValues(featureValue, norm);
-		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
-		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // pLSA
+		String topicmodel = "HTMM"; // pLSA
 		
 		int number_of_topics = 30;
 		double alpha = 1e-2, beta = 1e-3, lambda = 0.7;
 		double converge = 1e-5;
-		int topK = 10, number_of_iteration = 20;
+		int topK = 10, number_of_iteration = 50;
+		
+		/*****The parameters used in loading files.*****/
+		String folder = "./data/amazon/test";
+		String suffix = ".json";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String stnModel = null;
+		if (topicmodel.equals("HTMM"))
+			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+		
+		String featureLocation = "./data/Features/selected_fv_topicmodel.txt";
+		String finalLocation = "./data/Features/selected_fv_stat_topicmodel.txt";
+
+		/*****Parameters in feature selection.*****/
+//		String stopwords = "./data/Model/stopwords.dat";
+//		String featureSelection = "DF"; //Feature selection method.
+//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+//		
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+
+		System.out.println("Creating feature vectors, wait...");
+		jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.setFeatureValues(featureValue, norm);
+		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
 		
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, lambda, beta, analyzer.get_back_ground_probabilty(), c);
@@ -128,6 +132,11 @@ public abstract class TopicModel {
 			}
 		} else if (topicmodel.equals("pLSA")) {
 			pLSA model = new pLSA(number_of_topics, number_of_iteration, lambda,  beta, alpha, analyzer.get_back_ground_probabilty(),c);
+			
+			model.EM(converge);
+			model.printTopWords(topK);
+		} else if (topicmodel.equals("HTMM")) {
+			HTMM model = new HTMM(number_of_topics, alpha, beta, number_of_iteration, c);
 			
 			model.EM(converge);
 			model.printTopWords(topK);
