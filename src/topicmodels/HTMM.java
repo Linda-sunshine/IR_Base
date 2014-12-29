@@ -218,7 +218,7 @@ public class HTMM extends TopicModel {
 		    double norm = Utils.sumOfArray(word_topic_sstat[z]) + this.vocabulary_size*(this.d_beta - 1);//Hongning: please use the shared implementation
 			  for (int w = 0; w < this.vocabulary_size; w++) {
 		      topic_term_probabilty[z][w] = word_topic_sstat[z][w] + this.d_beta - 1; // please check this
-//		      norm += topic_term_probabilty[z][w];
+		     // norm += topic_term_probabilty[z][w];
 		    }
 		    Utils.scaleArray(topic_term_probabilty[z], 1.0/norm);//Hongning: please use the shared implementation
 		}
@@ -318,7 +318,9 @@ public class HTMM extends TopicModel {
 		String finalLocation = "./data/Features/selected_fv_stat.txt";
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		
+		boolean sentence_check = true;
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold,sentence_check);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
@@ -327,7 +329,7 @@ public class HTMM extends TopicModel {
 		int number_of_topics = 10;
 		double alpha = (1 + 50.0 / number_of_topics ); 
 		double beta = 1.01;
-		int number_of_iteration = 500;
+		int number_of_iteration = 5;
 		
 		HTMM htmm = new HTMM(number_of_topics,alpha,beta,.00001,number_of_iteration ,c);
 		htmm.EM(0.0);

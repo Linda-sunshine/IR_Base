@@ -33,6 +33,12 @@ public class jsonAnalyzer extends DocAnalyzer{
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 	}
 	
+	//Constructor with ngram and fValue.
+		public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean sentence_check) throws InvalidFormatException, FileNotFoundException, IOException {
+			super(tokenModel, classNo, providedCV, Ngram, threshold, sentence_check);
+			m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
+		}
+	
 	//Load a document and analyze it.
 	@Override
 	public void LoadDoc(String filename) {
@@ -53,7 +59,10 @@ public class jsonAnalyzer extends DocAnalyzer{
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp));
+					if(this.m_sentence_check == true)
+						AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp), m_sentence_check);
+					else
+						AnalyzeDoc(new _Doc(m_corpus.getSize(), post.getID(), post.getTitle() + " " + post.getContent(), prod.getID(), post.getLabel()-1, timeStamp));
 				}
 			} catch (ParseException e) {
 				System.out.print('T');

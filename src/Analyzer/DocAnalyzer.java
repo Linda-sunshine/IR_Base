@@ -36,6 +36,7 @@ public class DocAnalyzer extends Analyzer {
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
 	protected boolean m_isCVLoaded; 
+	protected boolean m_sentence_check = false;
 	
 	protected boolean m_releaseContent;
 	
@@ -63,6 +64,20 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
+	}
+	
+	//Constructor with ngram and fValue and sentence check.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean sentence_check) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		
+		m_Ngram = Ngram;
+		m_lengthThreshold = threshold;
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+		m_sentence_check = true;
 	}
 	
 	public void setReleaseContent(boolean release) {
@@ -245,7 +260,7 @@ public class DocAnalyzer extends Analyzer {
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	//Analyze the document as usual.
 	//modified for HTMM
-	protected boolean AnalyzeDoc(_Doc doc) {
+	protected boolean AnalyzeDoc(_Doc doc, boolean sentence_check) {
 		try {
 			String[] sentences = detectSenetence(doc.getSource());
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
@@ -329,6 +344,68 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
+	
+	
+	/*Analyze a document and add the analyzed document back to corpus.
+	 *In the case CV is not loaded, we need two if loops to check.
+	 * The first is if the term is in the vocabulary.***I forgot to check this one!
+	 * The second is if the term is in the sparseVector.
+	 * In the case CV is loaded, we still need two if loops to check.*/
+	//Analyze the document as usual.
+	protected boolean AnalyzeDoc(_Doc doc) {
+		try {
+			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+			int index = 0;
+			double value = 0;
+			// Construct the sparse vector.
+			for (String token : tokens) {
+				// CV is not loaded, take all the tokens as features.
+				if (!m_isCVLoaded) {
+					if (m_featureNameIndex.containsKey(token)) {
+						index = m_featureNameIndex.get(token);
+						if (spVct.containsKey(index)) {
+							value = spVct.get(index) + 1;
+							spVct.put(index, value);
+						} else {
+							spVct.put(index, 1.0);
+							m_featureStat.get(token).addOneDF(doc.getYLabel());
+						}
+					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
+						expandVocabulary(token);// update the m_featureNames.
+						index = m_featureNameIndex.get(token);
+						spVct.put(index, 1.0);
+						m_featureStat.get(token).addOneDF(doc.getYLabel());
+					}
+					m_featureStat.get(token).addOneTTF(doc.getYLabel());
+				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+					index = m_featureNameIndex.get(token);
+					if (spVct.containsKey(index)) {
+						value = spVct.get(index) + 1;
+						spVct.put(index, value);
+					} else {
+						spVct.put(index, 1.0);
+						m_featureStat.get(token).addOneDF(doc.getYLabel());
+					}
+					m_featureStat.get(token).addOneTTF(doc.getYLabel());
+				}
+				// if the token is not in the vocabulary, nothing to do.
+			}
+			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+				doc.createSpVct(spVct);
+				m_corpus.addDoc(doc);
+				m_classMemberNo[doc.getYLabel()]++;
+				if (m_releaseContent)
+					doc.clearSource();
+				return true;
+			} else
+				return false;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
 	
 }	
 
