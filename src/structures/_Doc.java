@@ -27,6 +27,8 @@ public class _Doc implements Comparable<_Doc> {
 	double m_y_value; // regression target, like linear regression only has one value.	
 	long m_timeStamp; //The timeStamp for this review.
 	
+	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
+	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature m_sentences [][]; // sentence array each row contains the unique word id 
@@ -67,6 +69,14 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
+	}
+	
+	public void setWeight(double w) {
+		m_weight = w;
+	}
+	
+	public double getWeight() {
+		return m_weight;
 	}
 	
 	//Get the ID of the document.

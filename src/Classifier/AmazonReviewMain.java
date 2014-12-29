@@ -71,6 +71,10 @@ public class AmazonReviewMain {
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
 		double C = 0.1;
 		
+		//temporal code to add pagerank weights
+//		PageRank tmpPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);
+//		tmpPR.train(corpus.getCollection());
+		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
 		if (style.equals("SUP")) {
@@ -100,6 +104,7 @@ public class AmazonReviewMain {
 		} else if (style.equals("TRANS")) {
 			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window, classifier);
 			mySemi.crossValidation(CVFold, corpus);
+			
 		} else System.out.println("Learning paradigm has not developed yet!");
 	}
 }

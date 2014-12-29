@@ -54,8 +54,9 @@ public class Post {
 		return m_content;
 	}
 	public void setContent(String content) {
-		if (!content.isEmpty())
-			this.m_content = content;
+		if (!content.isEmpty()) {
+			this.m_content = Utils.cleanHTML(content);
+		}
 	}
 
 	//timestamp of the post

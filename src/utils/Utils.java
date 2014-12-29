@@ -293,6 +293,41 @@ public class Utils {
 		Arrays.sort(spVct);		
 		return spVct;
 	}
+	
+	public static String cleanHTML(String content) {
+		if (content.indexOf("<!--")==-1 || content.indexOf("-->")==-1)
+			return content;//clean text
+		
+		int start = 0, end = content.indexOf("<!--");
+		StringBuffer buffer = new StringBuffer(content.length());
+		while(end!=-1) {
+			if (end>start)
+				buffer.append(content.substring(start, end).trim());
+			start = content.indexOf("-->", end) + 3;
+			end = content.indexOf("<!--", start);
+		}
+		
+		if (start<content.length())
+			buffer.append(content.substring(start));
+		
+		return cleanVideoReview(buffer.toString());
+	}
+	
+	public static String cleanVideoReview(String content) {
+		if (!content.contains("// <![CDATA[") || !content.contains("Length::"))
+			return content;
+		
+		int start = content.indexOf("// <![CDATA["), end = content.indexOf("Length::", start);
+		end = content.indexOf("Mins", end) + 4;
+		StringBuffer buffer = new StringBuffer(content.length());
+		buffer.append(content.substring(0, start));
+		buffer.append(content.substring(end));
+		
+		if (buffer.length()==0)
+			return null;
+		else
+			return buffer.toString();
+	}
 		
 	public static boolean endWithPunct(String stn) {
 		char lastChar = stn.charAt(stn.length()-1);

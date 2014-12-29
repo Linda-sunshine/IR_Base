@@ -130,7 +130,7 @@ public class PageRank extends BaseClassifier {
 	}
 	
 	void calcPageRank(ArrayList<_Doc> collection) {
-		if (collection.size()<m_topK)
+		if (collection.size()<=m_topK)
 			constructDenseGraph(collection);
 		else
 			constructSparseGraph(collection);
@@ -138,7 +138,7 @@ public class PageRank extends BaseClassifier {
 		//to save space, we can reuse m_cache
 		if (m_cache==null || m_cache.length < 2*m_N)
 			m_cache = new double[2*m_N];
-		Arrays.fill(m_cache, 1.0/m_N);//start from uniform	
+		Arrays.fill(m_cache, 1.0/Math.sqrt(m_N));//start from uniform	
 		
 		int iter = 0;
 		double delta = 1.0, influence, prob, norm;
@@ -166,6 +166,10 @@ public class PageRank extends BaseClassifier {
 			
 			delta = Math.sqrt(delta/m_N);			
 		} while (++iter<m_maxIter && delta>m_converge);
+		
+		for(int i=0; i<m_N; i++) {
+			collection.get(i).setWeight(1.0 + 10*m_cache[i]);//what would be a reasonable weight setting?
+		}
 		
 		try {
 			PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter("pagerank_results.txt", true)));

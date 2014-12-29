@@ -100,18 +100,21 @@ public class LogisticRegression extends BaseClassifier{
 		//The computation complexity is n*classNo.
 		int Yi;
 		_SparseFeature[] fv;
+		double weight;
 		for (_Doc doc: trainSet) {
 			Yi = doc.getYLabel();
 			fv = doc.getSparse();
+			weight = doc.getWeight();
 			
 			for(int j = 0; j < m_classNo; j++){
 				logPij = calculatelogPij(j, fv);//logP(Y=yi|X=xi)
 				Pij = Math.exp(logPij);
 				if (Yi == j){
 					gValue = Pij - 1.0;
-					fValue += logPij;
+					fValue += logPij * weight;
 				} else
 					gValue = Pij;
+				gValue *= weight;//weight might be different for different documents
 				
 				int offset = j * (m_featureSize + 1);
 				m_g[offset] += gValue;
