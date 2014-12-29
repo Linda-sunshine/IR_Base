@@ -68,6 +68,18 @@ public class _Corpus {
 		return size;
 	}
 	
+	public int getLargestSentenceLenght()
+	{
+		int max = 0;
+		for(int i=0; i<m_collection.size(); i++)
+		{
+			int length = m_collection.get(i).getTotalSenetences();
+			if(length > max)
+				max = length;
+		}
+		
+		return max;
+	}
 	/*
 	 rand.nextInt(k) will always generates a number between 0 ~ (k-1).
 	 Access the documents with the masks can help us split the whole whole 

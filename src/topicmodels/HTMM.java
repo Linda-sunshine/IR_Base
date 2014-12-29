@@ -19,13 +19,16 @@ public class HTMM extends TopicModel {
 	private double d_beta; // the symmetric dirichlet prior
 	private int number_of_topics;
 	private double epsilon;   // estimated epsilon
-	private double[][][] p_dwzpsi;  // The state probabilities that is Pr(z,psi | d,w). 
+	private double[][] p_dwzpsi;  // The state probabilities that is Pr(z,psi | d,w). 
 	double[][] topic_term_probabilty ; /* p(w|z) phi */ 
 	private int number_of_docs;
 	private double loglik;
 	final int constant = 2;
 	private double[][] word_topic_sstat; // Czw as in HTMM
 	// For Cdz we use here _Doc.m_sstat
+	
+	private int total; // used for epsilion
+	private double lot; // used for epsilion
 	
 	public HTMM(int number_of_topics,double d_alpha, double d_beta, double beta, int number_of_iteration, _Corpus c) 
 	{
@@ -40,16 +43,11 @@ public class HTMM extends TopicModel {
 		
 		word_topic_sstat = new double [this.number_of_topics][this.vocabulary_size];
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
-		p_dwzpsi = new double[number_of_docs][][];
-		for(int d=0; d<number_of_docs; d++)
+		p_dwzpsi = new double[c.getLargestSentenceLenght()][]; // largest number of sentence of a Doc in corpus
+		for(int s=0; s<c.getLargestSentenceLenght(); s++)
 		{
-			_Doc dc = c.getCollection().get(d);
-			int number_of_sentecne_in_doc_d = dc.getTotalSenetences();
-			p_dwzpsi[dc.getID()] = new double [number_of_sentecne_in_doc_d][];
-			for(int w=0; w<number_of_sentecne_in_doc_d;w++)
-			{
-				p_dwzpsi[dc.getID()][w] = new double [constant*this.number_of_topics];
-			}
+			p_dwzpsi[s] = new double [constant * this.number_of_topics];
+			
 		}
 		
 	}
@@ -66,29 +64,10 @@ public class HTMM extends TopicModel {
 			Utils.randomize(this.topic_term_probabilty[i], beta);
 	}
 	
-	public void IncorporatePriorsIntoLikelihood()
-	{
-		// The prior on theta, assuming a symmetric Dirichlet distirubiton
-		  for (int d = 0; d < this.number_of_docs; d++) {
-			  _Doc doc = m_corpus.getCollection().get(d);
-		    for (int z = 0; z < this.number_of_topics; z++) {
-		      this.loglik += (this.d_alpha-1)*Math.log(doc.m_topics[z]);
-		    }
-		  }
-		  
-		// The prior on phi, assuming a symmetric Dirichlet distirubiton
-		  for (int z = 0; z < this.number_of_topics; z++) {
-		    for (int w = 0; w < this.vocabulary_size; w++) {
-		      this.loglik += (this.d_beta-1)*Math.log(topic_term_probabilty[z][w]);
-		    }
-		  }  
-	}
-	
-
 	
 	// This method is used to compute local probabilities for a word or for a
 	// sentence.
-	public double ComputeLocalProbsForItem(_Doc d, _SparseFeature[] sentence, double local [])
+	private double ComputeLocalProbsForItem(_Doc d, _SparseFeature[] sentence, double local [])
 	{
 		double likelihood = 0.0;
 		Arrays.fill(local,1.0/this.number_of_topics);
@@ -112,7 +91,7 @@ public class HTMM extends TopicModel {
 	
 	// Computes the local probabilities for all the sentences of a particular
 	// document.
-	public double ComputeLocalProbsForDoc(_Doc d, double local [][])
+	private double ComputeLocalProbsForDoc(_Doc d, double local [][])
 	{
 		double likelihood = 0.0;
 		
@@ -120,16 +99,14 @@ public class HTMM extends TopicModel {
 		{
 			likelihood += ComputeLocalProbsForItem(d, d.getSentences(i), local[i]);
 		}
-		
 		return likelihood;
 	}
+	
 	@Override
 	public void calculate_E_step(_Doc d) {
 		
-		
 		double local [][] = new double [d.getTotalSenetences()][this.number_of_topics];
 		double loca_ll = 0.0; // local likelihood
-		
 		loca_ll = ComputeLocalProbsForDoc(d, local);
 	
 		double init_probs [] = new double [constant*this.number_of_topics];
@@ -139,51 +116,56 @@ public class HTMM extends TopicModel {
 		    init_probs[i+this.number_of_topics] = 0;  // Document must begin with a topic transition.
 		}
 		
-		FastRestrictedHMM f = new FastRestrictedHMM();//Hongning: Do we need to construct the object every time?
-		double ll = f.ForwardBackward(this.epsilon, d.m_topics, local, init_probs, this.p_dwzpsi[d.getID()]);
+		// For each doc we use the same this.p_dwzpsi[s] so we clear it 0.0 before use
+		for(int s=0; s<this.m_corpus.getLargestSentenceLenght(); s++)
+		{
+			Arrays.fill(this.p_dwzpsi[s], 0.0);
+		}
 		
-		this.loglik += ll+loca_ll;
+		FastRestrictedHMM f = new FastRestrictedHMM(); 
+		double ll = f.ForwardBackward(this.epsilon, d.m_topics, local, init_probs, this.p_dwzpsi);
+		
+		//-------fractional Epsilon as in HTMM paper------------------
+		FindSingleEpsilon(d);
+		//-------fractional phi or beta_z_w as in HTMM paper-----------
+		// For per_doc_phi calculation 
+		// FindPhi(total phi) will be called later from M_step
+		CountTopicWord(d);   
+		//-------fractional theta_d_z as in HTMM paper-----------------
+		FindSingleTheta(d);
+		this.loglik += ll + loca_ll;
 	}
 
 	
 	// We count only the number of times when a new topic was drawn according to
 	// theta, i.e. when psi=1 (this includes the beginning of a document).
-	public void CountTopicsInDoc(_Doc d) 
+	private void CountTopicsInDoc(_Doc d) 
 	{
 	  for (int i = 0; i < d.getTotalSenetences() ; i++) {
 	    for (int z = 0; z < this.number_of_topics; z++) {
 	      // only psi=1
-	      d.m_sstat[z] += p_dwzpsi[d.getID()][i][z]; //Hongning: why do not we store the count in d.m_sstat directly?
+	      d.m_sstat[z] += this.p_dwzpsi[i][z]; 
 	    }
 	  }
 	  
 	}
 	
 	// Finds the MAP estimator for theta_d
-	void FindSingleTheta(_Doc d) {
+	private void FindSingleTheta(_Doc d) {
 	  double norm = 0;
-	  Arrays.fill(d.m_sstat, 0.0);
-	  
-	  CountTopicsInDoc(d); //Hongning: why do we directly accumulate the count in d.m_sstat, rather than create a new structure every time??
+	  CountTopicsInDoc(d); 
 	  for (int z = 0; z < this.number_of_topics; z++) {
 	    d.m_topics[z] = d.m_sstat[z] + d_alpha - 1;
+	    d.m_sstat[z] = 0.0; // cleared for next iteration
 	    norm += d.m_topics[z];
 	  }
-	  Utils.scaleArray(d.m_topics, 1.0/norm);//Hongning: please use the shared implementation
-	  //Normalize(norm,d.m_topics);
+	  Utils.scaleArray(d.m_topics, 1.0/norm);
+	  
 	}
-	
-	// Finds the theta for all documents in the train set.
-	void FindTheta() {
-	  for (int d = 0; d < this.number_of_docs; d++) {
-	    FindSingleTheta(this.m_corpus.getCollection().get(d));
-	  }
-	}
-	
-	
+
 	// Counts how many times the pair (z,w) for a certain topic z and a certain
 	// word w appears in a certain sentence,
-	void CountTopicWordInSentence(_SparseFeature[] sen, double [] topic_probs) 
+	private void CountTopicWordInSentence(_SparseFeature[] sen, double [] topic_probs) 
 	{
 	  // Iterate over all the words in a sentence
 	  for (int n = 0; n < sen.length; n++) {
@@ -198,50 +180,42 @@ public class HTMM extends TopicModel {
 	  }
 	}
 
-	public void CountTopicWord() {
-	  // iterate over all sentences in corpus
-	  for (int d = 0; d < this.number_of_docs; d++) {
-		  _Doc dc = this.m_corpus.getCollection().get(d);
-	    for (int i = 0; i < dc.getTotalSenetences() ; i++) {
-	      CountTopicWordInSentence(dc.getSentences(i), this.p_dwzpsi[dc.getID()][i]);
+	private void CountTopicWord(_Doc d) {
+	  for (int i = 0; i < d.getTotalSenetences() ; i++) {
+	      CountTopicWordInSentence(d.getSentences(i), this.p_dwzpsi[i]);
 	    }
 	  }
-	}
+	
 	
 	// Finds the MAP estimator for phi
-	public void FindPhi() 
+	private void FindPhi() 
 	{
-		for(int z=0; z<this.number_of_topics; z++)
-			Arrays.fill(word_topic_sstat[z], 0.0);
-	  	CountTopicWord();   // word_topic_sstat is allocated and initialized to 0
 		  for (int z = 0; z < this.number_of_topics; z++) {
-		    double norm = Utils.sumOfArray(word_topic_sstat[z]) + this.vocabulary_size*(this.d_beta - 1);//Hongning: please use the shared implementation
+		    double norm = Utils.sumOfArray(word_topic_sstat[z]) + this.vocabulary_size*(this.d_beta - 1);
 			  for (int w = 0; w < this.vocabulary_size; w++) {
-		      topic_term_probabilty[z][w] = word_topic_sstat[z][w] + this.d_beta - 1; // please check this
-		     // norm += topic_term_probabilty[z][w];
+		      topic_term_probabilty[z][w] = word_topic_sstat[z][w] + this.d_beta - 1; 
 		    }
-		    Utils.scaleArray(topic_term_probabilty[z], 1.0/norm);//Hongning: please use the shared implementation
+		    Utils.scaleArray(topic_term_probabilty[z], 1.0/norm); 
 		}
 	}
 	
-	
-	// Finds the MAP estimator for epsilon.
-	public void FindEpsilon() {
-	  int total = 0;
-	  double lot = 0;
-	  for (int d = 0; d < this.number_of_docs; d++) {
-	    //  we start counting from the second item in the document
-		  _Doc dc = this.m_corpus.getCollection().get(d);
-	    for (int i = 1; i < dc.getTotalSenetences(); i++) {
+	// Finds epsilon for single doc
+	private void FindSingleEpsilon(_Doc d)
+	{
+		 //we start counting from the second item in the document
+		for (int i = 1; i < d.getTotalSenetences(); i++) {
 	      for (int z = 0; z < this.number_of_topics; z++) {
 	        // only psi=1
-	        lot += p_dwzpsi[dc.getID()][i][z];
+	        this.lot += this.p_dwzpsi[i][z];
 	      }
 	    }
-	    total += dc.getTotalSenetences() - 1;      // Psi is always 1 for the first
-	                                      // word/sentence
-	  }
-	  this.epsilon = lot/total;
+	    this.total += d.getTotalSenetences() - 1; // Psi is always 1 for the first  word/sentence
+	}
+	
+	// Finds the MAP estimator for epsilon.
+	private void FindEpsilon() {
+		
+		this.epsilon = (double) this.lot/this.total;
 	}
 	
 	@Override
@@ -249,20 +223,42 @@ public class HTMM extends TopicModel {
 		
 		FindEpsilon();
 		FindPhi();
-		FindTheta();
+		// word_topic_sstat is allocated and initialized to 0 for next iteration
+		for(int z=0; z<this.number_of_topics; z++)
+			 Arrays.fill(word_topic_sstat[z], 0.0);
+		
 	}
 
+	protected void IncorporatePriorsIntoLikelihood()
+	{
+		// The prior on theta, assuming a symmetric Dirichlet distirubiton
+		  for (int d = 0; d < this.number_of_docs; d++) {
+			  _Doc doc = m_corpus.getCollection().get(d);
+		    for (int z = 0; z < this.number_of_topics; z++) {
+		      this.loglik += (this.d_alpha-1)*Math.log(doc.m_topics[z]);
+		    }
+		  }
+		  
+		// The prior on phi, assuming a symmetric Dirichlet distirubiton
+		  for (int z = 0; z < this.number_of_topics; z++) {
+		    for (int w = 0; w < this.vocabulary_size; w++) {
+		      this.loglik += (this.d_beta-1)*Math.log(topic_term_probabilty[z][w]);
+		    }
+		  }  
+	}
+		
 	
 	@Override
 	public void EM(double converge)
 	{	
 		initialize_probability();
 		
-		
 		int  i = 0;
 		do
 		{
 			this.loglik = 0;
+			this.total = 0; // used for epsilion
+			this.lot = 0.0;// used for epsilion
 			for(_Doc d:m_corpus.getCollection())
 				calculate_E_step(d);
 			
@@ -326,10 +322,10 @@ public class HTMM extends TopicModel {
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
 		
 		
-		int number_of_topics = 10;
+		int number_of_topics = 4;
 		double alpha = (1 + 50.0 / number_of_topics ); 
 		double beta = 1.01;
-		int number_of_iteration = 5;
+		int number_of_iteration = 50;
 		
 		HTMM htmm = new HTMM(number_of_topics,alpha,beta,.00001,number_of_iteration ,c);
 		htmm.EM(0.0);
