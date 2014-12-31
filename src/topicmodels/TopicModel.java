@@ -93,7 +93,7 @@ public abstract class TopicModel {
 		int topK = 10, number_of_iteration = 50;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/tablets";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
