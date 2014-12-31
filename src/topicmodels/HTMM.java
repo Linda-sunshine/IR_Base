@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Random;
 
 import markovmodel.FastRestrictedHMM;
+import markovmodel.FastRestrictedViterbi;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -76,7 +77,17 @@ public class HTMM extends pLSA {
 		f.collectExpectations(p_dwzpsi);//expectations will be in the original space		
 		accEpsilonStat(d);
 		accPhiStat(d);
-		estThetaInDoc(d);		
+		estThetaInDoc(d);
+		
+		int path [] = new int [d.getSenetenceSize()];
+		FastRestrictedViterbi v = new FastRestrictedViterbi(d, epsilon, emission);
+		v.BackTrackBestPath(path);
+		System.out.println("Viterbi Path for Doc:"+ d.getID());
+		for(int i=0; i<path.length; i++)
+		{
+			System.out.print(path[i]+" ");
+		}
+		System.out.println();
 	}
 	
 	//accumulate sufficient statistics for epsilon, according to Eq(15) in HTMM note
