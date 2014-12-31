@@ -38,7 +38,7 @@ public class FastRestrictedViterbi {
 		//normalization
 		for (int i = 0; i < this.number_of_topic; i++) {
 			delta[0][i] -= norm;
-			delta[0][i+this.number_of_topic] -= norm;
+			//delta[0][i+this.number_of_topic] -= norm; // no need to do so
 		}
 	}
 	
