@@ -11,6 +11,7 @@ public class FastRestrictedHMM {
 	double beta[][];
 	double norm_factor[];
 	double logOneMinusEpsilon;//to compute log(1-epsilon) efficiently
+	int best[][]; // for Viterbi
 	
 	public FastRestrictedHMM() {
 		number_of_topic = 0;
@@ -101,4 +102,84 @@ public class FastRestrictedHMM {
 				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
 		}
 	}
+	
+	//-----------------Viterbi Algorithm--------------------//
+	//NOTE: all computation in log space
+	// theta is actually init matrix of HMM
+	// local0 is emission[0]
+	public void Initalpha(double[] theta, double[] local0)
+	{
+		double norm = Double.NEGATIVE_INFINITY;//log0
+		for (int i = 0; i < this.number_of_topic; i++) {
+			this.alpha[0][i] = theta[i] + local0[i];
+			this.alpha[0][i+this.number_of_topic] = Double.NEGATIVE_INFINITY;;
+			norm = Utils.logSum(norm, alpha[0][i]);
+		}
+
+		//normalization
+		for (int i = 0; i < this.number_of_topic; i++) {
+			alpha[0][i] -= norm;
+			//alpha[0][i+this.number_of_topic] -= norm; // no need to do so
+		}
+	}
+
+	public void ComputeAllalphas(double[][] emission, double[] theta, double epsilon)
+	{
+		for (int t = 1; t < this.length_of_seq; t++) {
+			int prev_best = FindBestInLevel(t-1);
+			double norm = Double.NEGATIVE_INFINITY;//log0
+			for (int i = 0; i < this.number_of_topic; i++) {
+				alpha[t][i] = alpha[t-1][prev_best] + theta[i] + emission[t][i] + epsilon;
+				best[t][i] = prev_best;
+				if(alpha[t-1][i] > alpha[t-1][i+this.number_of_topic]){
+					alpha[t][i+this.number_of_topic] = alpha[t-1][i] + logOneMinusEpsilon + emission[t][i];
+					best[t][i+this.number_of_topic] = i;
+				}
+				else{
+					alpha[t][i+this.number_of_topic] = alpha[t-1][i+this.number_of_topic] + logOneMinusEpsilon + emission[t][i];
+					best[t][i+this.number_of_topic] = i+this.number_of_topic;
+				}
+				norm = Utils.logSum(norm, Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
+			}// End for i
+
+			//normalization
+			for (int i = 0; i < this.number_of_topic; i++) {
+				alpha[t][i] -= norm;
+				alpha[t][i+this.number_of_topic] -= norm;
+			}
+		}//End For t
+	}
+
+	private int FindBestInLevel(int t)
+	{
+		double best = Double.NEGATIVE_INFINITY;
+		int best_index = -1;
+		for(int i = 0; i<2*this.number_of_topic; i++){
+			if(alpha[t][i] > best){
+				best = alpha[t][i];
+				best_index = i;
+			}
+		}
+		return best_index;
+	}
+	
+	public void BackTrackBestPath(_Doc d, double epsilon, double[][] emission, int[] path)
+	{
+		
+		this.number_of_topic = d.m_topics.length;
+		this.length_of_seq = d.getSenetenceSize();
+		alpha  = new double[this.length_of_seq][2*this.number_of_topic];
+		this.best = new int [this.length_of_seq][2*this.number_of_topic];
+		logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
+		
+		Initalpha(d.m_topics,emission[0]);
+		ComputeAllalphas(emission, d.m_topics, epsilon);
+		
+		int level = this.length_of_seq - 1;
+		path[level] = FindBestInLevel(level);
+		for(int i = this.length_of_seq - 2; i>=0; i--){
+			path[i] = best[i+1][path[i+1]];  
+		}
+	}
+	
 }
