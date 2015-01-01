@@ -85,7 +85,7 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM
+		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM
 		
 		int number_of_topics = 3;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
@@ -93,11 +93,11 @@ public abstract class TopicModel {
 		int topK = 10, number_of_iteration = 500;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablets";
+		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
-		if (topicmodel.equals("HTMM"))
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
 		String featureLocation = "./data/Features/selected_fv_topicmodel.txt";
@@ -137,6 +137,11 @@ public abstract class TopicModel {
 			model.printTopWords(topK);
 		} else if (topicmodel.equals("HTMM")) {
 			HTMM model = new HTMM(number_of_topics, alpha, beta, number_of_iteration, c);
+			
+			model.EM(converge);
+			model.printTopWords(topK);
+		} else if (topicmodel.equals("LRHTMM")) {
+			LRHTMM model = new LRHTMM(number_of_topics, alpha, beta, number_of_iteration, c);
 			
 			model.EM(converge);
 			model.printTopWords(topK);
