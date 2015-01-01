@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Random;
 
 import markovmodel.FastRestrictedHMM;
-import markovmodel.FastRestrictedViterbi;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -84,8 +83,8 @@ public class HTMM extends pLSA {
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {
 		int path [] = new int [d.getSenetenceSize()];
-		FastRestrictedViterbi v = new FastRestrictedViterbi(d, epsilon, emission);
-		v.BackTrackBestPath(path);
+		FastRestrictedHMM v = new FastRestrictedHMM();
+		v.BackTrackBestPath(d, epsilon, emission, path);
 		return path;
 	}
 	
