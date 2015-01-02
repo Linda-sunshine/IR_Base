@@ -3,7 +3,7 @@ package markovmodel;
 import structures._Doc;
 import utils.Utils;
 
-public class FastRestrictedHMM {
+public class LRFastRestrictedHMM {
 
 	int number_of_topic;
 	int length_of_seq;
@@ -13,11 +13,12 @@ public class FastRestrictedHMM {
 	double logOneMinusEpsilon;//to compute log(1-epsilon) efficiently
 	int best[][]; // for Viterbi
 	
-	public FastRestrictedHMM() {
+	
+	public LRFastRestrictedHMM() {
 		number_of_topic = 0;
 	}
 	
-	public double ForwardBackward(_Doc d, double epsilon, double[][] emission)
+	public double ForwardBackward(_Doc d, double[] epsilon, double[][] emission)
 	{
 		this.number_of_topic = d.m_topics.length;
 		this.length_of_seq = d.getSenetenceSize();
@@ -25,14 +26,15 @@ public class FastRestrictedHMM {
 		alpha  = new double[this.length_of_seq][2*this.number_of_topic];
 		beta = new double[this.length_of_seq][2*this.number_of_topic];
 		norm_factor = new double[this.length_of_seq];
-		logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
+		//logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
+		
 		
 		double loglik = initAlpha(d.m_topics, emission[0]) + forwardComputation(emission, d.m_topics, epsilon);
 		backwardComputation(emission, d.m_topics, epsilon);		
 		
 		return loglik;
 	}
-	
+
 	//NOTE: all computation in log space
 	double initAlpha(double[] theta, double[] local0) {
 		double norm = Double.NEGATIVE_INFINITY;//log0
@@ -54,13 +56,15 @@ public class FastRestrictedHMM {
 		return norm;
 	}
 	
-	double forwardComputation(double[][] emission, double[] theta, double epsilon) {
+	double forwardComputation(double[][] emission, double[] theta, double[] epsilon) {
 		double logLikelihood = 0;
 		for (int t = 1; t < this.length_of_seq; t++) 
 		{
 			double norm = Double.NEGATIVE_INFINITY;//log0
 			for (int i = 0; i < this.number_of_topic; i++) {
-				alpha[t][i] = epsilon + theta[i] + emission[t][i];  // regardless of the previous
+				alpha[t][i] = epsilon[t] + theta[i] + emission[t][i];  // regardless of the previous
+				logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon[t]));
+				//System.out.println("logOneMinusEpsilon:"+ logOneMinusEpsilon + "for: "+epsilon[t]);
 				alpha[t][i+this.number_of_topic] = logOneMinusEpsilon + Utils.logSum(alpha[t-1][i], alpha[t-1][i+this.number_of_topic]) + emission[t][i];
 				
 				norm = Utils.logSum(norm, Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
@@ -78,13 +82,13 @@ public class FastRestrictedHMM {
 		return logLikelihood;
 	}
 	
-	void backwardComputation(double[][] emission, double[] theta, double epsilon) {
+	void backwardComputation(double[][] emission, double[] theta, double epsilon[]) {
 		for(int t=this.length_of_seq-2; t>=0; t--) {
 			double sum = Double.NEGATIVE_INFINITY;//log0
 			for (int j = 0; j < this.number_of_topic; j++)
 				sum = Utils.logSum(sum, theta[j] + emission[t+1][j] + beta[t+1][j]);
-			sum += epsilon;
-			
+			sum += epsilon[t];
+			logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon[t]));
 			for (int i = 0; i < this.number_of_topic; i++) {
 				beta[t][i] = Utils.logSum(logOneMinusEpsilon + beta[t+1][i] + emission[t+1][i], sum) - norm_factor[t];
 				beta[t][i + this.number_of_topic] = beta[t][i];
@@ -123,14 +127,15 @@ public class FastRestrictedHMM {
 		}
 	}
 
-	public void ComputeAllalphas(double[][] emission, double[] theta, double epsilon)
+	public void ComputeAllalphas(double[][] emission, double[] theta, double[] epsilon)
 	{
 		for (int t = 1; t < this.length_of_seq; t++) {
 			int prev_best = FindBestInLevel(t-1);
 			double norm = Double.NEGATIVE_INFINITY;//log0
 			for (int i = 0; i < this.number_of_topic; i++) {
-				alpha[t][i] = alpha[t-1][prev_best] + theta[i] + emission[t][i] + epsilon;
+				alpha[t][i] = alpha[t-1][prev_best] + theta[i] + emission[t][i] + epsilon[t];
 				best[t][i] = prev_best;
+				logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon[t]));
 				if(alpha[t-1][i] > alpha[t-1][i+this.number_of_topic]){
 					alpha[t][i+this.number_of_topic] = alpha[t-1][i] + logOneMinusEpsilon + emission[t][i];
 					best[t][i+this.number_of_topic] = i;
@@ -163,14 +168,13 @@ public class FastRestrictedHMM {
 		return best_index;
 	}
 	
-	public void BackTrackBestPath(_Doc d, double epsilon, double[][] emission, int[] path)
+	public void BackTrackBestPath(_Doc d, double[] epsilon, double[][] emission, int[] path)
 	{
 		
 		this.number_of_topic = d.m_topics.length;
 		this.length_of_seq = d.getSenetenceSize();
 		alpha  = new double[this.length_of_seq][2*this.number_of_topic];
 		this.best = new int [this.length_of_seq][2*this.number_of_topic];
-		logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
 		
 		Initalpha(d.m_topics,emission[0]);
 		ComputeAllalphas(emission, d.m_topics, epsilon);

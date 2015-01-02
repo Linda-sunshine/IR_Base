@@ -33,6 +33,8 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	
+	public double [][] m_sentence_features; // feature vector 
+	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
 	//sufficient statistics for estimating p(z|d)
@@ -46,6 +48,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		m_topics = null;
 		m_sstat = null;
+		m_sentence_features = null;
 	}
 	
 	public _Doc (int ID, String source, int ylabel, long timeStamp){
@@ -56,6 +59,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
+		m_sentence_features = null;
 	}
 	
 	public _Doc (int ID, String name, String source, String productID, int ylabel, long timeStamp){
@@ -69,6 +73,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
+		m_sentence_features = null;
 	}
 	
 	public void setWeight(double w) {
@@ -202,6 +207,43 @@ public class _Doc implements Comparable<_Doc> {
 		Utils.randomize(m_topics, beta);
 		Arrays.fill(m_sstat, 0);
 	}
+	
+	public double countCoOccur(int sen_i, int sen_j)
+	{
+		double count =0.0;
+		if(this.getSentences(sen_i).length > this.getSentences(sen_j).length){
+			int temp = sen_i;
+			sen_i = sen_j;
+			sen_j = temp;
+			}
+		
+		for(int i=0; i<this.getSentences(sen_i).length; i++){
+			for(int j=0; j<this.getSentences(sen_j).length; j++){
+				if(this.getSentences(sen_i)[i].getIndex() == this.getSentences(sen_j)[j].getIndex()){
+					count = count + Math.min(this.getSentences(sen_i)[i].getValue(), this.getSentences(sen_j)[j].getValue());
+				}
+			}
+		}
+		return count;
+	}
+	
+	
+	public void setSentenceFeatureVector() {
+		int number_of_feature = 2;
+		m_sentence_features = new double[this.getSenetenceSize()][number_of_feature];
+		
+		// for first sentence
+		int i = 0;
+		m_sentence_features[i][0] = this.getSentences(i).length; // dummy value
+		m_sentence_features[i][1] = this.getSentences(i).length; // dummy value
+		
+		// for later sentences
+		for(i=1; i<this.getSenetenceSize(); i++){
+			m_sentence_features[i][0] = countCoOccur(i-1, i);
+			m_sentence_features[i][1] = Math.abs(this.getSentences(i-1).length - this.getSentences(i).length);
+		}
+	}
+	
 	
 	public void clearSource() {
 		m_source = null;
