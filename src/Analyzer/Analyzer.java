@@ -240,17 +240,25 @@ public abstract class Analyzer {
 		ArrayList<_Doc> docs = m_corpus.getCollection();
 		
 		/************************time series analysis***************************/
-		double norm = 1.0 / m_classMemberNo.length;
+		double norm = 1.0 / m_classMemberNo.length, avg = 0;
+		int count = 0;//for computing the moving average
 		String lastItemID = null;
 		for(int i = 0; i < docs.size(); i++){
-			_Doc doc = docs.get(i);
+			_Doc doc = docs.get(i);			
 			
 			if (lastItemID == null)
 				lastItemID = doc.getItemID();
 			else if (lastItemID != doc.getItemID()) {
 				m_preDocs.clear(); // reviews for a new category of products
 				lastItemID = doc.getItemID();
+				
+				//clear for moving average
+				avg = 0;
+				count = 0;
 			}
+			
+			avg += doc.getYLabel();
+			count += 1;
 			
 			if(m_preDocs.size() < window){
 				m_preDocs.add(doc);
@@ -258,7 +266,7 @@ public abstract class Analyzer {
 				m_classMemberNo[doc.getYLabel()]--;
 				i--;
 			} else{
-				doc.createSpVctWithTime(m_preDocs, m_featureNames.size(), norm);
+				doc.createSpVctWithTime(m_preDocs, m_featureNames.size(), avg/count, norm);
 				m_preDocs.remove();
 				m_preDocs.add(doc);
 			}

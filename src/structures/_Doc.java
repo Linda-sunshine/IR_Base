@@ -152,19 +152,19 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	//Create a sparse vector with time features.
-	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double norm){
+	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double movingAvg, double norm){
 		int featureLength = this.m_x_sparse.length;
 		int timeLength = preDocs.size();
-		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength];
+		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength + 1];//to include the moving average
 		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);		
 		int count = 0;
 		for(_Doc doc:preDocs){
-			int index = featureSize + count;
 			double value = norm * doc.getYLabel();
-			//value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
-			tempSparse[featureLength + count] = new _SparseFeature(index, value);
+			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
+			tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, value);
 			count++;
-		}		
+		}	
+		tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, movingAvg*norm);
 		this.m_x_sparse = tempSparse;
 	}
 	
