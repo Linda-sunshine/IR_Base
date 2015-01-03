@@ -67,13 +67,13 @@ public abstract class TopicModel {
 			calculate_M_step();
 			
 			current = calculate_log_likelihood();
-			delta = Math.abs((current - last)/last);
+			delta = (last-current)/last;
 			last = current;
 			
 			System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 			i++;
 			
-		} while (delta>converge && i<this.number_of_iteration);
+		} while (Math.abs(delta)>converge && i<this.number_of_iteration);
 	}
 	
 	public static void main(String[] args) throws IOException, ParseException
@@ -85,7 +85,7 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM
+		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM, LRHTMM
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!

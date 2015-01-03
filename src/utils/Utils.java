@@ -136,18 +136,13 @@ public class Utils {
 		}
 		return sum;
 	}
-		
-	//The function defines the dot product of two normal arrays.
-	public static double dotProduct(double[] fv, double[] w, int offset){
-		double result = w[offset];
-		for(int i = 0; i < fv.length; i++)
-			result += fv[i] * w[offset+i];
-		return result;
-	}
 	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
-	public static double logistic(double[] fv, double[] w, int offset){
-		return 1.0 / (1.0 + Math.exp(-dotProduct(fv, w, offset)));
+	public static double logistic(double[] fv, double[] w){
+		double sum = w[0];//start from bias term
+		for(int i = 0; i < fv.length; i++)
+			sum += fv[i] * w[1+i];
+		return 1.0 / (1.0 + Math.exp(-sum));
 	}
 	
 	//The function defines the sum of an array.
@@ -235,6 +230,10 @@ public class Utils {
 	//Calculate the similarity between two documents.
 	public static double calculateSimilarity(_Doc d1, _Doc d2){
 		return calculateSimilarity(d1.getSparse(), d2.getSparse());
+	}
+	
+	public static double cosine(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		return calculateSimilarity(spVct1, spVct2) / sumOfFeaturesL2(spVct1) / sumOfFeaturesL2(spVct2);
 	}
 	
 	//Calculate the similarity between two sparse vectors.

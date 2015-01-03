@@ -32,7 +32,7 @@ public class LRFastRestrictedHMM extends FastRestrictedHMM {
 	void initEpsilons(_Doc d) {
 		m_epsilons = new double[this.length_of_seq];
 		for(int t=1; t<this.length_of_seq; t++)
-			m_epsilons[t] = Utils.logistic(d.m_sentence_features[t-1], m_omega, 1);//first sentence does not have features
+			m_epsilons[t] = Utils.logistic(d.m_sentence_features[t-1], m_omega);//first sentence does not have features
 	}
 	
 	//epsilon in log-space

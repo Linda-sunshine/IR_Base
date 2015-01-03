@@ -110,8 +110,11 @@ public class LRHTMM extends HTMM {
 		
 		for(_Doc d:m_corpus.getCollection()) {			
 			for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
-				p = Utils.logistic(d.m_sentence_features[i-1], m_omega, 1); // p(\epsilon=1|x, w)
+				p = Utils.logistic(d.m_sentence_features[i-1], m_omega); // p(\epsilon=1|x, w)
 				q = d.m_sentence_labels[i-1]; // posterior of p(\epsilon=1|x, w)
+				
+				if (p==1 || p==0)
+					System.err.println("Error!");
 				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
 				
 				//collect gradient

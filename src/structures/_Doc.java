@@ -33,7 +33,7 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	
-	static public final int stn_fv_size = 4; // cosine, length_ratio_previous, length_ratio_current, position
+	static public final int stn_fv_size = 3; // cosine, length_ratio, position
 	public double[][] m_sentence_features; // feature vector 	
 	public double[] m_sentence_labels; // estimated transition labels p(\psi=1)
 	
@@ -219,17 +219,15 @@ public class _Doc implements Comparable<_Doc> {
 		int stnSize = this.getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity
-			m_sentence_features[i-1][0] = Utils.calculateSimilarity(m_sentences[i-1], m_sentences[i]);
+			m_sentence_features[i-1][0] = Utils.cosine(m_sentences[i-1], m_sentences[i]);
 			
 			cLength = Utils.sumOfFeaturesL1(this.getSentences(i));
-			//length_ratio_current
-			m_sentence_features[i-1][1] = (pLength-cLength)/cLength;
-			//length_ratio_previous
-			m_sentence_features[i-1][2] = (pLength-cLength)/pLength;
+			//length_ratio
+			m_sentence_features[i-1][1] = (pLength-cLength)/Math.max(cLength, pLength);
 			pLength = cLength;
 			
 			//position
-			m_sentence_features[i-1][3] = (double)i / stnSize;
+			m_sentence_features[i-1][2] = (double)i / stnSize;
 		}
 	}
 	
