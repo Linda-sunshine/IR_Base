@@ -28,7 +28,7 @@ public class HTMM extends pLSA {
 		super(number_of_topics, number_of_iteration, 0.5, d_beta, d_alpha, null, c);
 		
 		Random r = new Random();
-		this.epsilon = Math.log(r.nextDouble()); //Hongning: how to make sure this is in the range of (0,1)
+		this.epsilon = r.nextDouble();
 		
 		//cache in order to avoid frequently allocating new space
 		p_dwzpsi = new double[c.getLargestSentenceSize()][constant * this.number_of_topics]; // max|S_d| * (2*K)
@@ -69,8 +69,8 @@ public class HTMM extends pLSA {
 		ComputeEmissionProbsForDoc(d);
 		
 		//Step 2: use forword/backword algorithm to compute the posterior
-		FastRestrictedHMM f = new FastRestrictedHMM(); 
-		loglik += f.ForwardBackward(d, epsilon, emission);
+		FastRestrictedHMM f = new FastRestrictedHMM(epsilon); 
+		loglik += f.ForwardBackward(d, emission);
 		
 		//Step 3: collection expectations from the posterior distribution
 		f.collectExpectations(p_dwzpsi);//expectations will be in the original space		
@@ -81,8 +81,8 @@ public class HTMM extends pLSA {
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {
 		int path [] = new int [d.getSenetenceSize()];
-		FastRestrictedHMM v = new FastRestrictedHMM();
-		v.BackTrackBestPath(d, epsilon, emission, path);
+		FastRestrictedHMM v = new FastRestrictedHMM(epsilon);
+		v.BackTrackBestPath(d, emission, path);
 		return path;
 	}
 	
@@ -121,7 +121,7 @@ public class HTMM extends pLSA {
 	
 	@Override
 	public void calculate_M_step() {
-		this.epsilon = Math.log(this.lot/this.total);
+		this.epsilon = this.lot/this.total; // to make the code structure concise and consistent, keep epsilon in real space!!
 		
 		for(int i=0; i<this.number_of_topics; i++) {
 			double sum = Math.log(Utils.sumOfArray(word_topic_sstat[i]));

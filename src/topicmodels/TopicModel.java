@@ -85,12 +85,12 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM, LRHTMM
+		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
-		double converge = 1e-5, lambda = 0.7;
-		int topK = 10, number_of_iteration = 500;
+		double converge = 1e-4, lambda = 0.7;
+		int topK = 10, number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";

@@ -77,7 +77,7 @@ public class LRHTMM extends HTMM {
 	@Override
 	public void calculate_M_step() {
 		super.calculate_M_step();
-		estimateOmega();
+		estimateOmega();//maximum likelihood estimation for w
 	}
 	
 	void estimateOmega() {
@@ -89,7 +89,7 @@ public class LRHTMM extends HTMM {
 		try{
 			do {
 				fValue = calcFuncGradient();
-				LBFGS.lbfgs(fSize, 5, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-20, iflag);
+				LBFGS.lbfgs(fSize, 4, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-20, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -113,16 +113,15 @@ public class LRHTMM extends HTMM {
 				p = Utils.logistic(d.m_sentence_features[i-1], m_omega); // p(\epsilon=1|x, w)
 				q = d.m_sentence_labels[i-1]; // posterior of p(\epsilon=1|x, w)
 				
-				if (p==1 || p==0)
+				if (p==1 || p==0)//temporary code for debugging purpose
 					System.err.println("Error!");
 				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
 				
 				//collect gradient
 				g = p - q;
 				m_g_omega[0] += g;//for bias term
-				for(int n=0; n<_Doc.stn_fv_size; n++) {
+				for(int n=0; n<_Doc.stn_fv_size; n++)
 					m_g_omega[1+n] += g * d.m_sentence_features[i-1][n];
-				}
 			}
 		}
 		
