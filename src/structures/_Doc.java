@@ -33,7 +33,9 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	
-	public double [][] m_sentence_features; // feature vector 
+	static public final int stn_fv_size = 4; // cosine, length_ratio_previous, length_ratio_current, position
+	public double[][] m_sentence_features; // feature vector 	
+	public double[] m_sentence_labels; // estimated transition labels p(\psi=1)
 	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
@@ -206,41 +208,28 @@ public class _Doc implements Comparable<_Doc> {
 		}
 		Utils.randomize(m_topics, beta);
 		Arrays.fill(m_sstat, 0);
-	}
-	
-	public double countCoOccur(int sen_i, int sen_j)
-	{
-		double count =0.0;
-		if(this.getSentences(sen_i).length > this.getSentences(sen_j).length){
-			int temp = sen_i;
-			sen_i = sen_j;
-			sen_j = temp;
-			}
-		
-		for(int i=0; i<this.getSentences(sen_i).length; i++){
-			for(int j=0; j<this.getSentences(sen_j).length; j++){
-				if(this.getSentences(sen_i)[i].getIndex() == this.getSentences(sen_j)[j].getIndex()){
-					count = count + Math.min(this.getSentences(sen_i)[i].getValue(), this.getSentences(sen_j)[j].getValue());
-				}
-			}
-		}
-		return count;
-	}
-	
+	}	
 	
 	public void setSentenceFeatureVector() {
-		int number_of_feature = 2;
-		m_sentence_features = new double[this.getSenetenceSize()][number_of_feature];
+		m_sentence_features = new double[this.getSenetenceSize()-1][stn_fv_size];
+		m_sentence_labels = new double[this.getSenetenceSize()-1];
 		
-		// for first sentence
-		int i = 0;
-		m_sentence_features[i][0] = this.getSentences(i).length; // dummy value
-		m_sentence_features[i][1] = this.getSentences(i).length; // dummy value
-		
-		// for later sentences
-		for(i=1; i<this.getSenetenceSize(); i++){
-			m_sentence_features[i][0] = countCoOccur(i-1, i);
-			m_sentence_features[i][1] = Math.abs(this.getSentences(i-1).length - this.getSentences(i).length);
+		// start from 2nd sentence
+		double cLength, pLength = Utils.sumOfFeaturesL1(this.getSentences(0));
+		int stnSize = this.getSenetenceSize();
+		for(int i=1; i<stnSize; i++){
+			//cosine similarity
+			m_sentence_features[i-1][0] = Utils.calculateSimilarity(m_sentences[i-1], m_sentences[i]);
+			
+			cLength = Utils.sumOfFeaturesL1(this.getSentences(i));
+			//length_ratio_current
+			m_sentence_features[i-1][1] = (pLength-cLength)/cLength;
+			//length_ratio_previous
+			m_sentence_features[i-1][2] = (pLength-cLength)/pLength;
+			pLength = cLength;
+			
+			//position
+			m_sentence_features[i-1][3] = (double)i / stnSize;
 		}
 	}
 	

@@ -138,16 +138,16 @@ public class Utils {
 	}
 		
 	//The function defines the dot product of two normal arrays.
-	public static double dotProduct(double[] a, double[] b){
-		double result = 0.0;
-		if(a.length != b.length){
-			System.out.println("dotProduct error! The length of two arrays is not matched!");
-		} else{
-			for(int i = 0; i < a.length; i++){
-				result += a[i] * b[i];
-			}
-		}
+	public static double dotProduct(double[] fv, double[] w, int offset){
+		double result = w[offset];
+		for(int i = 0; i < fv.length; i++)
+			result += fv[i] * w[offset+i];
 		return result;
+	}
+	
+	//Logistic function: 1.0 / (1.0 + exp(-wf))
+	public static double logistic(double[] fv, double[] w, int offset){
+		return 1.0 / (1.0 + Math.exp(-dotProduct(fv, w, offset)));
 	}
 	
 	//The function defines the sum of an array.
@@ -273,8 +273,7 @@ public class Utils {
             pros[i] = pros[i] / total;
     }
 	
-	static public void print(double [] array)
-	{
+	static public void print(double [] array) {
 		for(int i=0;i<array.length;i++)
 			System.out.println("array["+i+"] =" + array[i]);
 	}

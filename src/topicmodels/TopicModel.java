@@ -87,7 +87,7 @@ public abstract class TopicModel {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM
 		
-		int number_of_topics = 3;
+		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
 		double converge = 1e-5, lambda = 0.7;
 		int topK = 10, number_of_iteration = 500;
@@ -117,8 +117,7 @@ public abstract class TopicModel {
 //		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.

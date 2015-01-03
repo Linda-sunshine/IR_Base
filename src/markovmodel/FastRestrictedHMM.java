@@ -17,8 +17,7 @@ public class FastRestrictedHMM {
 		number_of_topic = 0;
 	}
 	
-	public double ForwardBackward(_Doc d, double epsilon, double[][] emission)
-	{
+	public double ForwardBackward(_Doc d, double epsilon, double[][] emission) {
 		this.number_of_topic = d.m_topics.length;
 		this.length_of_seq = d.getSenetenceSize();
 		
@@ -56,8 +55,7 @@ public class FastRestrictedHMM {
 	
 	double forwardComputation(double[][] emission, double[] theta, double epsilon) {
 		double logLikelihood = 0;
-		for (int t = 1; t < this.length_of_seq; t++) 
-		{
+		for (int t = 1; t < this.length_of_seq; t++) {
 			double norm = Double.NEGATIVE_INFINITY;//log0
 			for (int i = 0; i < this.number_of_topic; i++) {
 				alpha[t][i] = epsilon + theta[i] + emission[t][i];  // regardless of the previous
@@ -105,39 +103,19 @@ public class FastRestrictedHMM {
 	
 	//-----------------Viterbi Algorithm--------------------//
 	//NOTE: all computation in log space
-	// theta is actually init matrix of HMM
-	// local0 is emission[0]
-	public void Initalpha(double[] theta, double[] local0)
-	{
-		double norm = Double.NEGATIVE_INFINITY;//log0
-		for (int i = 0; i < this.number_of_topic; i++) {
-			this.alpha[0][i] = theta[i] + local0[i];
-			this.alpha[0][i+this.number_of_topic] = Double.NEGATIVE_INFINITY;;
-			norm = Utils.logSum(norm, alpha[0][i]);
-		}
-
-		//normalization
-		for (int i = 0; i < this.number_of_topic; i++) {
-			alpha[0][i] -= norm;
-			//alpha[0][i+this.number_of_topic] -= norm; // no need to do so
-		}
-	}
-
-	public void ComputeAllalphas(double[][] emission, double[] theta, double epsilon)
-	{
+	public void ComputeAllalphas(double[][] emission, double[] theta, double epsilon) {
 		for (int t = 1; t < this.length_of_seq; t++) {
 			int prev_best = FindBestInLevel(t-1);
 			double norm = Double.NEGATIVE_INFINITY;//log0
 			for (int i = 0; i < this.number_of_topic; i++) {
 				alpha[t][i] = alpha[t-1][prev_best] + theta[i] + emission[t][i] + epsilon;
 				best[t][i] = prev_best;
-				if(alpha[t-1][i] > alpha[t-1][i+this.number_of_topic]){
+				if(alpha[t-1][i] > alpha[t-1][i+this.number_of_topic]) {
 					alpha[t][i+this.number_of_topic] = alpha[t-1][i] + logOneMinusEpsilon + emission[t][i];
 					best[t][i+this.number_of_topic] = i;
-				}
-				else{
+				} else {
 					alpha[t][i+this.number_of_topic] = alpha[t-1][i+this.number_of_topic] + logOneMinusEpsilon + emission[t][i];
-					best[t][i+this.number_of_topic] = i+this.number_of_topic;
+					best[t][i+this.number_of_topic] = i + this.number_of_topic;
 				}
 				norm = Utils.logSum(norm, Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
 			}// End for i
@@ -150,11 +128,10 @@ public class FastRestrictedHMM {
 		}//End For t
 	}
 
-	private int FindBestInLevel(int t)
-	{
-		double best = Double.NEGATIVE_INFINITY;
-		int best_index = -1;
-		for(int i = 0; i<2*this.number_of_topic; i++){
+	int FindBestInLevel(int t) {
+		double best = alpha[t][0];
+		int best_index = 0;
+		for(int i = 1; i<2*this.number_of_topic; i++){
 			if(alpha[t][i] > best){
 				best = alpha[t][i];
 				best_index = i;
@@ -163,16 +140,14 @@ public class FastRestrictedHMM {
 		return best_index;
 	}
 	
-	public void BackTrackBestPath(_Doc d, double epsilon, double[][] emission, int[] path)
-	{
-		
+	public void BackTrackBestPath(_Doc d, double epsilon, double[][] emission, int[] path) {
 		this.number_of_topic = d.m_topics.length;
 		this.length_of_seq = d.getSenetenceSize();
-		alpha  = new double[this.length_of_seq][2*this.number_of_topic];
+		alpha = new double[this.length_of_seq][2*this.number_of_topic];
 		this.best = new int [this.length_of_seq][2*this.number_of_topic];
 		logOneMinusEpsilon = Math.log(1.0 - Math.exp(epsilon));
 		
-		Initalpha(d.m_topics,emission[0]);
+		initAlpha(d.m_topics,emission[0]);
 		ComputeAllalphas(emission, d.m_topics, epsilon);
 		
 		int level = this.length_of_seq - 1;

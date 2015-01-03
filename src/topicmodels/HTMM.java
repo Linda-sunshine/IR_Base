@@ -51,7 +51,7 @@ public class HTMM extends pLSA {
 	}
 	
 	// Construct the emission probabilities for sentences under different topics in a particular document.
-	private void ComputeEmissionProbsForDoc(_Doc d) {
+	void ComputeEmissionProbsForDoc(_Doc d) {
 		for(int i=0; i<d.getSenetenceSize(); i++) {
 			_SparseFeature[] stn = d.getSentences(i);
 			Arrays.fill(emission[i], 0);
@@ -77,8 +77,6 @@ public class HTMM extends pLSA {
 		accEpsilonStat(d);
 		accPhiStat(d);
 		estThetaInDoc(d);
-		
-		
 	}
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {
@@ -89,7 +87,7 @@ public class HTMM extends pLSA {
 	}
 	
 	//accumulate sufficient statistics for epsilon, according to Eq(15) in HTMM note
-	private void accEpsilonStat(_Doc d) {
+	void accEpsilonStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<this.number_of_topics; i++) 
 				this.lot += this.p_dwzpsi[t][i];
@@ -97,7 +95,7 @@ public class HTMM extends pLSA {
 		}
 	}
 	
-	private void accPhiStat(_Doc d) {
+	void accPhiStat(_Doc d) {
 		for(int t=0; t<d.getSenetenceSize(); t++) {
 			for(_SparseFeature w:d.getSentences(t)) {
 				int wid = w.getIndex();
@@ -110,7 +108,7 @@ public class HTMM extends pLSA {
 	}
 	
 	//accumulate sufficient statistics for theta, according to Eq(21) in HTMM note
-	private void estThetaInDoc(_Doc d) {
+	void estThetaInDoc(_Doc d) {
 		for(int t=0; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<this.number_of_topics; i++) 
 				d.m_sstat[i] += this.p_dwzpsi[t][i];
