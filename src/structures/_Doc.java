@@ -33,7 +33,7 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	
-	static public final int stn_fv_size = 3; // cosine, length_ratio, position
+	static public final int stn_fv_size = 4; // cosine, length_ratio, position
 	public double[][] m_sentence_features; // feature vector 	
 	public double[] m_sentence_labels; // estimated transition labels p(\psi=1)
 	
@@ -216,10 +216,11 @@ public class _Doc implements Comparable<_Doc> {
 		
 		// start from 2nd sentence
 		double cLength, pLength = Utils.sumOfFeaturesL1(this.getSentences(0));
+		double pSim = Utils.cosine(m_sentences[0], m_sentences[1]), nSim;
 		int stnSize = this.getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
-			//cosine similarity
-			m_sentence_features[i-1][0] = Utils.cosine(m_sentences[i-1], m_sentences[i]);
+			//cosine similarity			
+			m_sentence_features[i-1][0] = pSim;			
 			
 			cLength = Utils.sumOfFeaturesL1(this.getSentences(i));
 			//length_ratio
@@ -228,6 +229,16 @@ public class _Doc implements Comparable<_Doc> {
 			
 			//position
 			m_sentence_features[i-1][2] = (double)i / stnSize;
+			
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nSim = Utils.cosine(m_sentences[i], m_sentences[i+1]);
+				if (nSim>pSim)
+					m_sentence_features[i-1][3] = 1;
+				else if (nSim<pSim)
+					m_sentence_features[i-1][3] = -1;
+				pSim = nSim;
+			}
 		}
 	}
 	
