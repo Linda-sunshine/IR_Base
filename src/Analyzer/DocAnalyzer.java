@@ -59,7 +59,11 @@ public class DocAnalyzer extends Analyzer {
 		super(tokenModel, classNo);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
-		m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		
+		if (stnModel!=null)
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		else
+			m_stnDetector = null;
 		
 		m_Ngram = Ngram;
 		m_lengthThreshold = threshold;

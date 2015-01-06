@@ -275,7 +275,7 @@ public abstract class Analyzer {
 	}
 	
 	// added by Md. Mustafizur Rahman for Topic Modelling
-	public double[] get_back_ground_probabilty()
+	public double[] getBackgroundProb()
 	{
 		double back_ground_probabilty [] = new double [m_featureNameIndex.size()];
 		
@@ -290,5 +290,5 @@ public abstract class Analyzer {
 		for(int i = 0; i<m_featureNameIndex.size();i++)
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
-	}	
+	}
 }

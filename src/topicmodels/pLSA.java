@@ -7,6 +7,7 @@ package topicmodels;
  */
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -23,47 +24,71 @@ public class pLSA extends twoTopic {
 	double[][] topic_term_probabilty ; /* p(w|z) */
 	double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
 	
-	public pLSA(int number_of_topics, int number_of_iteration, double lambda, double beta, double alpha,
-			double back_ground [], _Corpus c) {			
-		super(number_of_iteration, lambda, beta, back_ground, c);
+	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
+			double lambda, double back_ground [], //arguments for 2topic topic model
+			int number_of_topics, double alpha) { //arguments for pLSA			
+		super(number_of_iteration, converge, beta, c, lambda, back_ground);
 		
 		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("pLSA[k:%d, lambda:%.2f]", number_of_topics, m_lambda);
+	}
 
 	@Override
-	protected void initialize_probability()
-	{	
+	protected void initialize_probability(Collection<_Doc> collection) {	
 		// initialize topic document proportion, p(z|d)
-		for(_Doc d:m_corpus.getCollection())
-			d.setTopics(number_of_topics, d_alpha);//allocate memory and randomize it
+		for(_Doc d:collection)
+			d.setTopics(number_of_topics, d_alpha-1.0);//allocate memory and randomize it
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)
-			Utils.randomize(this.topic_term_probabilty[i], d_beta);
+			Utils.randomize(this.topic_term_probabilty[i], d_beta-1.0);
 	}
 	
 	@Override
-	public void calculate_E_step(_Doc d)
-	{	
+	protected void init() { // clear up for next iteration
+		for(int k=0;k<this.number_of_topics;k++)
+			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
+	}
+	
+	@Override
+	protected void initStatInDoc(_Doc d) {
+		Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
+	}
+	
+	@Override
+	protected void initTestDoc(_Doc d) {
+		//allocate memory and randomize it
+		d.setTopics(number_of_topics, d_alpha-1.0);//in real space
+	}
+	
+	@Override
+	public void calculate_E_step(_Doc d) {	
+		initStatInDoc(d);
+		
 		double propB; // background proportion
 		double exp; // expectation of each term under topic assignment
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex(); // jth word in doc
+			double v = fv.getValue();
 			
 			//-----------------compute posterior----------- 
 			double sum = 0;
 			for(int k=0;k<this.number_of_topics;k++)
-				sum += d.m_topics[k]*topic_term_probabilty[k][j];//shall we computate it in log space?
+				sum += d.m_topics[k]*topic_term_probabilty[k][j];//shall we compute it in log space?
 			
 			propB = m_lambda * background_probability[j];
 			propB /= propB + (1-m_lambda) * sum;//posterior of background probability
 			
 			//-----------------compute and accumulate expectations----------- 
 			for(int k=0;k<this.number_of_topics;k++) {
-				exp = fv.getValue() * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
+				exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
 				word_topic_sstat[k][j] += exp;
 				d.m_sstat[k] += exp;
 			}
@@ -71,37 +96,25 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	public void calculate_M_step()
-	{	
+	public void calculate_M_step() {	
 		// update topic-term matrix -------------
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
-			sum = Utils.sumOfArray(word_topic_sstat[k]); // smoothing
+			sum = Utils.sumOfArray(word_topic_sstat[k]);
 			for(int i=0;i<this.vocabulary_size;i++)
-				topic_term_probabilty[k][i] = (word_topic_sstat[k][i] + d_beta) / sum;
+				topic_term_probabilty[k][i] = word_topic_sstat[k][i] / sum;
 		}
 		
 		// update per-document topic distribution vectors
-		for(_Doc d:m_corpus.getCollection()) {
-			sum = Utils.sumOfArray(d.m_sstat) + number_of_topics*d_alpha;
-			for(int k=0;k<this.number_of_topics;k++)
-				d.m_topics[k] = (d.m_sstat[k]+d_alpha) / sum; // smoothing
-		}
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
 	}
 	
 	@Override
-	protected void init() { // clear up for next iteration
+	protected void estThetaInDoc(_Doc d) {
+		double sum = Utils.sumOfArray(d.m_sstat);
 		for(int k=0;k<this.number_of_topics;k++)
-			Arrays.fill(word_topic_sstat[k], d_beta-1.0);
-		
-		for(_Doc d:m_corpus.getCollection())
-			Arrays.fill(d.m_sstat, d_alpha-1.0);
-	}
-	
-	//pLSA cannot directly infer topic proportion for new documents!
-	@Override
-	public double[] get_topic_probability(_Doc d) {
-		return d.m_topics;
+			d.m_topics[k] = d.m_sstat[k] / sum;
 	}
 	
 	/*likelihod calculation */
@@ -109,9 +122,9 @@ public class pLSA extends twoTopic {
 	 * N is number of word in corpus
 	 */
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
+	//NOTE: cannot be used for unseen documents!
 	@Override
-	public double calculate_log_likelihood(_Doc d)
-	{
+	public double calculate_log_likelihood(_Doc d) {
 		double logLikelihood = 0.0, prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	

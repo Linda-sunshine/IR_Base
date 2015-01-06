@@ -1,6 +1,7 @@
 package topicmodels;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -17,24 +18,41 @@ import utils.Utils;
 public class twoTopic extends TopicModel {
 	private double[] m_theta;//p(w|\theta) - the only topic for each document
 	private double[] m_sstat;//c(w,d)p(z|w) - sufficient statistics for each word under topic
+	
 	/*p (w|theta_b) */
 	protected double[] background_probability;
 	protected double m_lambda; //proportion of background topic in each document
 	
-	public twoTopic(int number_of_iteration, double lambda, double beta, double[] back_ground, _Corpus c) {
-		super(number_of_iteration, beta, c);
+	public twoTopic(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
+			double lambda, double[] back_ground) {//arguments for 2topic topic model
+		super(number_of_iteration, converge, beta, c);
 		
-		background_probability = back_ground;
 		m_lambda = lambda;
+		background_probability = back_ground;
+		
 		m_theta = new double[vocabulary_size];
 		m_sstat = new double[vocabulary_size];
 	}
 	
 	@Override
-	protected void initialize_probability() {	
-    	Utils.randomize(m_theta, d_beta);
-    	Arrays.fill(m_sstat, 0);
+	public String toString() {
+		return String.format("2Topic Model[lambda:%.2f]", m_lambda);
 	}
+	
+	@Override
+	protected void initialize_probability(Collection<_Doc> collection) {}
+	
+	@Override
+	protected void initTestDoc(_Doc d) {
+		Utils.randomize(m_theta, d_beta);
+    	Arrays.fill(m_sstat, 0);
+	};
+
+	@Override
+	protected void init() {}
+	
+	@Override
+	protected void initStatInDoc(_Doc d){}
 	
 	@Override
 	public void calculate_E_step(_Doc d) {
@@ -46,18 +64,15 @@ public class twoTopic extends TopicModel {
 	}
 	
 	@Override
-	public void calculate_M_step()
-	{		
-		double sum = Utils.sumOfArray(m_sstat) + vocabulary_size * d_beta;//with smoothing
+	public void calculate_M_step() {		
+		double sum = Utils.sumOfArray(m_sstat) + vocabulary_size * (d_beta-1.0);//with smoothing
 		for(int i=0;i<vocabulary_size;i++)
-			m_theta[i] = (d_beta+m_sstat[i]) / sum;
+			m_theta[i] = (d_beta - 1.0 + m_sstat[i]) / sum;
 	}
 	
-	protected double calculate_log_likelihood(_Doc d)
-	{		
+	protected double calculate_log_likelihood(_Doc d) {		
 		double logLikelihood = 0.0;
-		for(_SparseFeature fv:d.getSparse())
-		{
+		for(_SparseFeature fv:d.getSparse()) {
 			int wid = fv.getIndex();
 			logLikelihood += fv.getValue() * Math.log(m_lambda*background_probability[wid] + (1-m_lambda)*m_theta[wid]);
 		}
@@ -77,29 +92,9 @@ public class twoTopic extends TopicModel {
 		System.out.println();
 	}
 	
-	//this is mini-EM in a single document 
+	//this function can only estimate the document-specific random variables
 	@Override
-	public double[] get_topic_probability(_Doc d)
-	{
-		initialize_probability();
-		
-		double delta, last = calculate_log_likelihood(), current;
-		int  i = 0;
-		do
-		{
-			calculate_E_step(d);
-			calculate_M_step();
-			
-			current = calculate_log_likelihood(d);
-			delta = Math.abs((current - last)/last);
-			last = current;
-			i++;
-		} while (delta>1e-4 && i<this.number_of_iteration);
-		
-		double perplexity = Math.exp(-current/d.getTotalDocLength());
-		System.out.format("Likelihood in document %s converges to %.4f after %d steps...\n", d.getName(), perplexity, i);
-		return m_theta;
+	protected void estThetaInDoc(_Doc d) {
+		calculate_M_step();
 	}
-	
-	protected void init() {};
 }

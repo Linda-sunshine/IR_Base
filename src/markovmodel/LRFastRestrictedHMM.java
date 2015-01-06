@@ -8,22 +8,21 @@ public class LRFastRestrictedHMM extends FastRestrictedHMM {
 	double[] m_omega; // feature weight for topic transition
 	double[] m_epsilons; // topic transition for each sentence
 	
-	public LRFastRestrictedHMM (double[] omega) {
-		super(-1);//no global epsilon
+	public LRFastRestrictedHMM (double[] omega, int maxSeqSize, int topicSize) {
+		super(-1, maxSeqSize, topicSize);//no global epsilon
 		m_omega = omega;
+		m_epsilons  = new double[maxSeqSize];
 	}
 
+	@Override
 	public double ForwardBackward(_Doc d, double[][] emission) {
-		initEpsilons(d);
-		
+		initEpsilons(d);		
 		return super.ForwardBackward(d, emission);
 	}
 	
 	//all epsilons in real space!!
 	void initEpsilons(_Doc d) {
-		int stnSize = d.getSenetenceSize();
-		m_epsilons = new double[stnSize];
-		for(int t=1; t<stnSize; t++)
+		for(int t=1; t<d.getSenetenceSize(); t++)
 			m_epsilons[t] = Utils.logistic(d.m_sentence_features[t-1], m_omega);//first sentence does not have features
 	}
 	
@@ -32,6 +31,7 @@ public class LRFastRestrictedHMM extends FastRestrictedHMM {
 		return m_epsilons[t];
 	}
 	
+	@Override
 	public void BackTrackBestPath(_Doc d, double[][] emission, int[] path) {
 		initEpsilons(d);		
 		super.BackTrackBestPath(d, emission, path);
