@@ -113,8 +113,11 @@ public class HTMM extends pLSA {
 		//Step 3: collection expectations from the posterior distribution
 		m_hmm.collectExpectations(p_dwzpsi);//expectations will be in the original space	
 		accTheta(d);
-		accEpsilonStat(d);
-		accPhiStat(d);
+		
+		if (m_collectCorpusStats) {
+			accEpsilonStat(d);
+			accPhiStat(d);
+		}
 	}
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {

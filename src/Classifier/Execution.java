@@ -111,7 +111,7 @@ public class Execution  {
 				
 				model = new LRHTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha,
-						param.m_lambda);
+						param.m_C);
 			} else {
 				System.out.println("The specified topic model has not developed yet!");
 				System.exit(-1);

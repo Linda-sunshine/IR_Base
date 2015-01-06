@@ -58,7 +58,7 @@ public class Parameter {
 	public double m_beta = 1.01; // dirichlet prior for p(w|z)
 	public double m_lambda = 0.8; // p(B) in pLSA and 2topic model, L2 regularization in LRHTMM
 	public double m_converge = 1e-4; // EM convergency
-	public int m_maxmIterations = 50; // maximum number of iterations
+	public int m_maxmIterations = 200; // maximum number of iterations
 	
 	public Parameter(String argv[])
 	{
@@ -163,6 +163,7 @@ public class Parameter {
 		+"-ngram int : n-gram for feature generation (default 2)\n"
 		+"-lcut int : ignore the documents with length less than c (default 5)\n"
 		+"-window int : window size in time series based sentiment analysis (default 0)\n"
+		+"-cv int : cross validation fold (default 10)\n"
 		+"-fv type : feature value generation method (default TFIDF)\n"
 		+"	TF -- Term frequency\n"
 		+"	TFIDF -- Term frequency times inverse document frequence\n"
@@ -187,7 +188,6 @@ public class Parameter {
 		+"	TRANS -- Transductive learning\n"
 		+"	TM -- Topic Models\n"
 		+"-C float -- trade-off parameter in LR and SVM (default 0.1)\n"
-		+"-alpha float -- trade-off parameter in LR and SVM (default 0.1)\n"
 		+"-sr float : Sample rate for transductive learning (default 0.1)\n"
 		+"-kUL int : k nearest labeled neighbors (default 100)\n"
 		+"-kUU int : kP nearest unlabeled neighbors (default 50)\n"
@@ -195,7 +195,7 @@ public class Parameter {
 		+"-alpha float : dirichlet prior for p(z|d) (default 1.05)\n"
 		+"-beta float : dirichlet prior for p(w|z) (default 1.01)\n"
 		+"-lambda float : manual background proportion setting p(B) (default 0.8)\n"
-		+"-iter int : maximum number of EM iteration (default 50)\n"
+		+"-iter int : maximum number of EM iteration (default 200)\n"
 		+"-con float : convergency limit (default 1e-4)\n"
 		);
 		System.exit(1);
@@ -210,7 +210,7 @@ public class Parameter {
 		
 		if (m_style.equals("TM")) {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
-			buffer.append("\nalpha: " + m_alpha + "\tbeta" + m_beta + "\tlambda" + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency" + m_converge);
+			buffer.append("\nalpha: " + m_alpha + "\tbeta" + m_beta + "\tlambda" + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
 		} else {
 			if (m_style.equals("TRANS"))
 				buffer.append("\nLearning paradigm: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);

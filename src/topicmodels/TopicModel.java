@@ -24,6 +24,7 @@ public abstract class TopicModel {
 	protected double d_beta; 	
 	
 	boolean m_display; // output EM iterations
+	boolean m_collectCorpusStats; // if we will collect corpus-level statistics (for efficiency purpose)
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -101,6 +102,7 @@ public abstract class TopicModel {
 	}
 
 	public void EM() {	
+		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
 		double delta, last = calculate_log_likelihood(), current;
@@ -128,6 +130,7 @@ public abstract class TopicModel {
 	}
 	
 	public double Evaluation() {
+		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0);
 		for(_Doc d:m_testSet) {
 			loglikelihood = inference(d);

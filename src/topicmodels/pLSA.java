@@ -89,8 +89,10 @@ public class pLSA extends twoTopic {
 			//-----------------compute and accumulate expectations----------- 
 			for(int k=0;k<this.number_of_topics;k++) {
 				exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
-				word_topic_sstat[k][j] += exp;
 				d.m_sstat[k] += exp;
+				
+				if (m_collectCorpusStats)
+					word_topic_sstat[k][j] += exp;
 			}
 		}
 	}
