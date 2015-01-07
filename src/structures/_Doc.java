@@ -207,7 +207,7 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 		Utils.randomize(m_topics, beta);
-		Arrays.fill(m_sstat, 0);
+		Arrays.fill(m_sstat, beta);
 	}	
 	
 	public void setSentenceFeatureVector() {

@@ -63,7 +63,7 @@ public class HTMM extends pLSA {
 		
 		//cache in order to avoid frequently allocating new space
 		p_dwzpsi = new double[maxSeqSize][constant * this.number_of_topics]; // max|S_d| * (2*K)
-		emission = new double[p_dwzpsi.length][this.number_of_topics]; // max|S_d| * K
+		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
 	}
 	
 	@Override
@@ -101,9 +101,6 @@ public class HTMM extends pLSA {
 	
 	@Override
 	public void calculate_E_step(_Doc d) {
-		//Step 0: initiate sufficient statistic collector
-		initStatInDoc(d);
-		
 		//Step 1: pre-compute emission probability
 		ComputeEmissionProbsForDoc(d);
 		

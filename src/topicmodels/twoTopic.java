@@ -52,9 +52,6 @@ public class twoTopic extends TopicModel {
 	protected void init() {}
 	
 	@Override
-	protected void initStatInDoc(_Doc d){}
-	
-	@Override
 	public void calculate_E_step(_Doc d) {
 		for(_SparseFeature fv:d.getSparse()) {
 			int wid = fv.getIndex();

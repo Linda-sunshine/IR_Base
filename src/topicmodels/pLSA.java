@@ -55,11 +55,10 @@ public class pLSA extends twoTopic {
 	protected void init() { // clear up for next iteration
 		for(int k=0;k<this.number_of_topics;k++)
 			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
-	}
-	
-	@Override
-	protected void initStatInDoc(_Doc d) {
-		Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
+		
+		//initiate sufficient statistics
+		for(_Doc d:m_trainSet)
+			Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
 	}
 	
 	@Override
@@ -70,8 +69,6 @@ public class pLSA extends twoTopic {
 	
 	@Override
 	public void calculate_E_step(_Doc d) {	
-		initStatInDoc(d);
-		
 		double propB; // background proportion
 		double exp; // expectation of each term under topic assignment
 		for(_SparseFeature fv:d.getSparse()) {

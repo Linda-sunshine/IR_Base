@@ -51,8 +51,6 @@ public abstract class TopicModel {
 	// to be called per EM-iteration
 	protected abstract void init();
 	
-	protected abstract void initStatInDoc(_Doc d);
-	
 	// to be call per test document
 	protected abstract void initTestDoc(_Doc d);
 	
@@ -63,7 +61,7 @@ public abstract class TopicModel {
 	public double inference(_Doc d) {
 		initTestDoc(d);//this is not a corpus level estimation
 		
-		double delta, last = calculate_log_likelihood(), current;
+		double delta, last = 1, current;
 		int  i = 0;
 		do {
 			calculate_E_step(d);
@@ -176,8 +174,7 @@ public abstract class TopicModel {
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
 	}
 	
-	public static void main(String[] args) throws IOException, ParseException
-	{	
+	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
@@ -185,7 +182,7 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
+		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
@@ -233,7 +230,10 @@ public abstract class TopicModel {
 			} else 
 				model.crossValidation(crossV);
 		} else if (topicmodel.equals("pLSA")) {			
-			pLSA model = new pLSA(number_of_iteration, converge, beta, c, 
+//			pLSA model = new pLSA(number_of_iteration, converge, beta, c, 
+//					lambda, analyzer.getBackgroundProb(), 
+//					number_of_topics, alpha);
+			pLSA model = new pLSAGroup(number_of_iteration, converge, beta, c, 
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha);
 			

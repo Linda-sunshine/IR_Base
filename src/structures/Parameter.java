@@ -210,7 +210,7 @@ public class Parameter {
 		
 		if (m_style.equals("TM")) {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
-			buffer.append("\nalpha: " + m_alpha + "\tbeta" + m_beta + "\tlambda" + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
+			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
 		} else {
 			if (m_style.equals("TRANS"))
 				buffer.append("\nLearning paradigm: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);
