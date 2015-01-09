@@ -37,6 +37,7 @@ public class AmazonReviewMain {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String finalLocation = "./data/Features/selected_fv_stat.txt";
 		String featureLocation = "./data/Features/selected_fv.txt";
+		String modelPath = "./data/Model/";
 
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
@@ -47,7 +48,7 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 3;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -90,7 +91,7 @@ public class AmazonReviewMain {
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window + 1, C);
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-				
+				myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C);

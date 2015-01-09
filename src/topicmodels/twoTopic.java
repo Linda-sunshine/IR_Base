@@ -52,12 +52,14 @@ public class twoTopic extends TopicModel {
 	protected void init() {}
 	
 	@Override
-	public void calculate_E_step(_Doc d) {
+	public double calculate_E_step(_Doc d) {
 		for(_SparseFeature fv:d.getSparse()) {
 			int wid = fv.getIndex();
 			m_sstat[wid] = (1-m_lambda)*m_theta[wid];
 			m_sstat[wid] = fv.getValue() * m_sstat[wid]/(m_sstat[wid]+m_lambda*background_probability[wid]);//compute the expectation
 		}
+		
+		return calculate_log_likelihood(d);
 	}
 	
 	@Override

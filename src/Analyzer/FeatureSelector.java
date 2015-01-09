@@ -39,7 +39,7 @@ public class FeatureSelector {
 	//Return the selected features.
 	public ArrayList<String> getSelectedFeatures(){
 		ArrayList<String> features = new ArrayList<String>();
-		Collections.sort(m_selectedFeatures);//smaller first
+		Collections.sort(m_selectedFeatures);//ascending order
 		
 		int totalSize = m_selectedFeatures.size();
 		int start = (int) (totalSize * m_startProb);

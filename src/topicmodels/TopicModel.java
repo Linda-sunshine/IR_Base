@@ -64,10 +64,9 @@ public abstract class TopicModel {
 		double delta, last = 1, current;
 		int  i = 0;
 		do {
-			calculate_E_step(d);
-			estThetaInDoc(d);
+			current = calculate_E_step(d);
+			estThetaInDoc(d);			
 			
-			current = calculate_log_likelihood(d);
 			delta = (last - current)/last;
 			last = current;
 		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
@@ -75,7 +74,7 @@ public abstract class TopicModel {
 	}
 		
 	//E-step should be per-document computation
-	public abstract void calculate_E_step(_Doc d);
+	public abstract double calculate_E_step(_Doc d); // return log-likelihood
 	
 	//M-step should be per-corpus computation
 	public abstract void calculate_M_step();
@@ -88,10 +87,7 @@ public abstract class TopicModel {
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
-		double logLikelihood = 0;
-		for(_Doc d:m_trainSet)
-			logLikelihood += calculate_log_likelihood(d);
-		return logLikelihood; 
+		return 0;
 	}
 	
 	public void EMonCorpus() {
@@ -108,12 +104,14 @@ public abstract class TopicModel {
 		do
 		{
 			init();
+			
+			current = 0;
 			for(_Doc d:m_trainSet)
-				calculate_E_step(d);
+				current += calculate_E_step(d);
 			
 			calculate_M_step();
 			
-			current = calculate_log_likelihood();
+			current += calculate_log_likelihood();//together with corpus-level log-likelihood
 			delta = (last-current)/last;
 			last = current;
 			
@@ -182,7 +180,7 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
+		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!

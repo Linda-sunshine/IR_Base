@@ -167,7 +167,7 @@ public class _Doc implements Comparable<_Doc> {
 		int count = 0;
 		for(_Doc doc:preDocs){
 			double value = norm * doc.getYLabel();
-			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);
+			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);//time-based features won't be considered since m_x_sparse does not contain time-based features yet
 			tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, value);
 			count++;
 		}	

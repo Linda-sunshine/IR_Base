@@ -1,5 +1,9 @@
 package Classifier;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -139,6 +143,24 @@ public class LogisticRegression extends BaseClassifier{
 	//Save the parameters for classification.
 	@Override
 	public void saveModel(String modelLocation){
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelLocation), "UTF-8"));
+			int offset, fSize = m_corpus.getFeatureSize();//does not include bias and time features
+			for(int i=0; i<fSize; i++) {
+				writer.write(m_corpus.getFeature(i));
+				
+				for(int k=0; k<m_classNo; k++) {
+					offset = 1 + i + k * (m_featureSize + 1);//skip bias
+					writer.write("\t" + m_beta[offset]);
+				}
+				writer.write("\n");
+			}
+			writer.close();
+			
+			System.out.format("%s is saved to %s\n", this.toString(), modelLocation);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		
 	}
 }

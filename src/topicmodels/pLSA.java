@@ -58,7 +58,7 @@ public class pLSA extends twoTopic {
 		
 		//initiate sufficient statistics
 		for(_Doc d:m_trainSet)
-			Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
+			Arrays.fill(d.m_sstat, 0);//pseudo counts for p(\theta|d)
 	}
 	
 	@Override
@@ -68,7 +68,7 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	public void calculate_E_step(_Doc d) {	
+	public double calculate_E_step(_Doc d) {	
 		double propB; // background proportion
 		double exp; // expectation of each term under topic assignment
 		for(_SparseFeature fv:d.getSparse()) {
@@ -92,6 +92,8 @@ public class pLSA extends twoTopic {
 					word_topic_sstat[k][j] += exp;
 			}
 		}
+		
+		return calculate_log_likelihood(d);
 	}
 	
 	@Override
@@ -133,6 +135,19 @@ public class pLSA extends twoTopic {
 			prob = prob*(1-m_lambda) + this.background_probability[j]*m_lambda;//(1-\lambda)p(w|d) * \lambda p(w|theta_b)
 			logLikelihood += fv.getValue() * Math.log(prob);
 		}
+		return logLikelihood;
+	}
+	
+	@Override
+	protected double calculate_log_likelihood() {
+		//prior from Dirichlet distributions
+		double logLikelihood = 0;
+		for(int i=0; i<this.number_of_topics; i++) {
+			for(int v=0; v<this.vocabulary_size; v++) {
+				logLikelihood += (d_beta-1)*topic_term_probabilty[i][v];
+			}
+		}
+		
 		return logLikelihood;
 	}
 	

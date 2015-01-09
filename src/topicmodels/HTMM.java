@@ -100,12 +100,13 @@ public class HTMM extends pLSA {
 	}
 	
 	@Override
-	public void calculate_E_step(_Doc d) {
+	public double calculate_E_step(_Doc d) {
 		//Step 1: pre-compute emission probability
 		ComputeEmissionProbsForDoc(d);
 		
 		//Step 2: use forword/backword algorithm to compute the posterior
-		loglik += m_hmm.ForwardBackward(d, emission);
+		double logLikelihood = m_hmm.ForwardBackward(d, emission) + docThetaLikelihood(d);
+		loglik += logLikelihood;
 		
 		//Step 3: collection expectations from the posterior distribution
 		m_hmm.collectExpectations(p_dwzpsi);//expectations will be in the original space	
@@ -115,6 +116,8 @@ public class HTMM extends pLSA {
 			accEpsilonStat(d);
 			accPhiStat(d);
 		}
+		
+		return logLikelihood;
 	}
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {
@@ -147,7 +150,7 @@ public class HTMM extends pLSA {
 	void accTheta(_Doc d) {
 		for(int t=0; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<this.number_of_topics; i++) 
-				d.m_sstat[i] += this.p_dwzpsi[t][i];
+				d.m_sstat[i] += this.p_dwzpsi[t][i];//only consider \psi=1
 		}
 	}
 	
@@ -175,23 +178,11 @@ public class HTMM extends pLSA {
 		m_hmm.setEpsilon(this.epsilon);
 	}
 	
-	@Override
-	protected double calculate_log_likelihood() {
-		//prior from Dirichlet distributions
+	double docThetaLikelihood(_Doc d) {
 		double logLikelihood = 0;
-		for(_Doc d:m_trainSet) {
-			for(int i=0; i<this.number_of_topics; i++) {
-				logLikelihood += (d_alpha-1)*d.m_topics[i];
-			}
-		}
-		
-		for(int i=0; i<this.number_of_topics; i++) {
-			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1)*topic_term_probabilty[i][v];
-			}
-		}
-		
-		return this.loglik + logLikelihood;
+		for(int i=0; i<this.number_of_topics; i++)
+			logLikelihood += (d_alpha-1)*d.m_topics[i];
+		return logLikelihood;
 	}
 		
 	protected void init() {
@@ -199,7 +190,12 @@ public class HTMM extends pLSA {
 		this.total = 0;
 		this.lot = 0.0;// sufficient statistics for epsilon	
 		
-		super.init();
+		for(int k=0;k<this.number_of_topics;k++)
+			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
+		
+		//initiate sufficient statistics
+		for(_Doc d:m_trainSet)
+			Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
 	}
 	
 	@Override

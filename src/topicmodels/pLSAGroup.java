@@ -28,20 +28,21 @@ public class pLSAGroup extends pLSA {
 	}
 	
 	void enforceGroupPrior() {
+		Arrays.fill(m_thetas, d_alpha - 1.0);
+		
 		for(_Doc di:m_group) {
 			for(int i=0; i<m_thetas.length; i++)
 				m_thetas[i] += di.m_topics[i];
 		}
 		
 		for(int i=0; i<m_thetas.length; i++) 
-			m_thetas[i] /= m_group.size();
+			m_thetas[i] /= 1 + m_group.size();
 		
 		for(_Doc di:m_group) {
 			for(int i=0; i<m_thetas.length; i++) 
-				di.m_sstat[i] = m_thetas[i] + d_alpha - 1.0;
+				di.m_sstat[i] = m_thetas[i];
 		}
 		
-		Arrays.fill(m_thetas, 0);
 		m_group.clear();
 	}
 
