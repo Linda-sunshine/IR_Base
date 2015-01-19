@@ -106,4 +106,9 @@ public class NaiveBayes extends BaseClassifier {
 		}
 		System.out.println();
 	}
+
+	@Override
+	protected void debug(_Doc d) {
+		//to be implemented
+	}
 }

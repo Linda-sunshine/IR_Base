@@ -137,6 +137,19 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double dotProduct(double[] a, double[] b) {
+		if (a.length != b.length)
+			return Double.NaN;
+		double sum = 0;
+		for(int i=0; i<a.length; i++)
+			sum += a[i] * b[i];
+		return sum;
+	}
+	
+	public static double L2Norm(double[] a) {
+		return Math.sqrt(dotProduct(a,a));
+	}
+	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
 	public static double logistic(double[] fv, double[] w){
 		double sum = w[0];//start from bias term
@@ -165,6 +178,18 @@ public class Utils {
 	public static void scaleArray(double[] a, double b) {
 		for (int i=0; i<a.length; i++)
 			a[i] *= b;
+	}
+	
+	//The function defines the sum of an array.
+	public static void scaleArray(double[] a, double[] b, double scale) {
+		for (int i=0; i<a.length; i++)
+			a[i] += b[i] * scale;
+	}
+	
+	//The function defines the sum of an array.
+	public static void setArray(double[] a, double[] b, double scale) {
+		for (int i=0; i<a.length; i++)
+			a[i] = b[i] * scale;
 	}
 	
 	//L1 normalization: fsValue/sum(abs(fsValue))
@@ -272,9 +297,14 @@ public class Utils {
             pros[i] = pros[i] / total;
     }
 	
-	static public void print(double [] array) {
+	static public String formatArray(double [] array) {
+		StringBuffer buffer = new StringBuffer(256);
 		for(int i=0;i<array.length;i++)
-			System.out.println("array["+i+"] =" + array[i]);
+			if (i==0)
+				buffer.append(Double.toString(array[i]));
+			else
+				buffer.append("," + Double.toString(array[i]));
+		return String.format("(%s)", buffer.toString());
 	}
 	
 	static public _SparseFeature[] createSpVct(HashMap<Integer, Double> vct) {

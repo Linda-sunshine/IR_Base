@@ -136,8 +136,48 @@ public class LogisticRegression extends BaseClassifier{
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
-			m_cache[i] = calculatelogPij(i, fv);
+			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
 		return Utils.maxOfArrayIndex(m_cache);
+	}
+	
+	protected void debug(_Doc d) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, true), "UTF-8"));
+			_SparseFeature[] fv = d.getSparse();
+			int fid, offset;
+			double fvalue;		
+			
+			writer.write(d.toString());
+			
+			writer.write("\nBIAS");
+			for(int k=0; k<m_classNo; k++) {
+				offset = k * (m_featureSize + 1);
+				writer.write(String.format("\t%.4f", m_beta[offset]));					
+			}
+			writer.write("\n");
+			
+			for(int i=0; i<fv.length; i++) {
+				fid = fv[i].getIndex();
+				if (fid>=m_corpus.getFeatureSize())
+					break; // beyond text feature range
+				fvalue = fv[i].getValue();				
+				
+				writer.write(m_corpus.getFeature(fid));
+				for(int k=0; k<m_classNo; k++) {
+					offset = k * (m_featureSize + 1) + fid + 1;
+					writer.write(String.format("\t%.4f", fvalue*m_beta[offset]));					
+				}
+				writer.write("\n");
+			}
+			
+			writer.write("Pred");
+			for(int k=0; k<m_classNo; k++) 
+				writer.write(String.format("\t%.4f", m_cache[k]));		
+			writer.write("\n\n");
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//Save the parameters for classification.

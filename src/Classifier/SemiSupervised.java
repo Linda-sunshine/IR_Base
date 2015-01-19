@@ -230,6 +230,9 @@ public class SemiSupervised extends BaseClassifier{
 	}
 	
 	@Override
+	protected void debug(_Doc d){} // no easy way to debug
+	
+	@Override
 	public int predict(_Doc doc) {
 		return -1; //we don't support this
 	}

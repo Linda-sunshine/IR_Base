@@ -1,4 +1,5 @@
 package Classifier;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -20,6 +21,8 @@ public abstract class BaseClassifier {
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
+	protected String m_debugOutput; // set up debug output (default: no debug output)
+	
 	public void train() {
 		train(m_trainSet);
 	}
@@ -27,11 +30,16 @@ public abstract class BaseClassifier {
 	public abstract void train(Collection<_Doc> trainSet);
 	public abstract int predict(_Doc doc);
 	protected abstract void init(); // to be called before training starts
+	protected abstract void debug(_Doc d);
 	
 	public void test() {
 		for(_Doc doc: m_testSet){
 			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
-			m_TPTable[doc.getPredictLabel()][doc.getYLabel()] += 1; //Compare the predicted label and original label, construct the TPTable.
+			int pred = doc.getPredictLabel(), ans = doc.getYLabel();
+			m_TPTable[pred][ans] += 1; //Compare the predicted label and original label, construct the TPTable.
+			
+			if (m_debugOutput!=null && pred != ans)
+				debug(doc);
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
@@ -47,6 +55,21 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_debugOutput = null;
+	}
+	
+	public void setDebugOutput(String filename) {
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		File f = new File(filename);
+		if(!f.isDirectory()) { 
+			if (f.exists()) 
+				f.delete();
+			m_debugOutput = filename;
+		} else {
+			System.err.println("Please specify a correct path for debug output!");
+		}	
 	}
 	
 	//k-fold Cross Validation.

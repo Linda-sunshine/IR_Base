@@ -104,6 +104,9 @@ public class SVM extends BaseClassifier{
 		return (1+(int)svm.svm_predict(m_model, createSample(doc)))/2;
 	}
 	
+	@Override
+	protected void debug(_Doc d) {} // need to digest into libsvm's implementation detail
+	
 	//Save the parameters for classification.
 	@Override
 	public void saveModel(String modelLocation){

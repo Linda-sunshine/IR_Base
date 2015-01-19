@@ -215,7 +215,7 @@ public abstract class Analyzer {
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
 		//print out the configurations as comments
 		writer.format("#NGram:%d\n", m_Ngram);
-		writer.format("#Selection:%s\n", featureLocation);
+		writer.format("#Selection:%s\n", featureSelection);
 		writer.format("#Start:%f\n", startProb);
 		writer.format("#End:%f\n", endProb);
 		writer.format("#DF_Cut:%d\n", threshold);

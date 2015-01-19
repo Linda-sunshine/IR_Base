@@ -3,10 +3,6 @@
  */
 package influence;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -261,6 +257,11 @@ public class PageRank extends BaseClassifier {
 	public void saveModel(String modelLocation) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	protected void debug(_Doc d) {
+		// to be implemented
 	}
 
 }

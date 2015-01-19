@@ -29,7 +29,7 @@ public class AmazonReviewMain {
 		String style = "SUP";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
-		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
+		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -42,15 +42,18 @@ public class AmazonReviewMain {
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "CHI"; //Feature selection method.
-//		double startProb = 0.4; // Used in feature selection, the starting point of the features.
+//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 50; // Filter the features with DFs smaller than this threshold.
+//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 0;
+		int window = 3;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
+		
+		/*****Parameters in time series analysis.*****/
+		String debugOutput = null; //"data/debug/LR.output";
 		
 		/****Pre-process the data.*****/
 //		//Feture selection.
@@ -62,9 +65,9 @@ public class AmazonReviewMain {
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
-		//analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
-		analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
+		jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
@@ -90,8 +93,10 @@ public class AmazonReviewMain {
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window + 1, C);
+				myLR.setDebugOutput(debugOutput);
+				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-				myLR.saveModel(modelPath + "LR.model");
+				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C);
