@@ -16,12 +16,12 @@ public class Problem5 extends QuadraticTest implements Optimizable {
 		m_neval ++;
 		
 		double f;
-		Arrays.fill(m_g, 0);
+		Arrays.fill(g, 0);
 		for(int i=0; i<m_Y.length; i++) {
 			f = m_Y[i] - m_x[0] * (1-Math.pow(m_x[1], i+1));
 			
-			m_g[0] += 2 * f * (Math.pow(m_x[1], i+1) - 1);
-			m_g[1] += 2 * f * m_x[0] * (i+1) * Math.pow(m_x[1], i);
+			g[0] += 2 * f * (Math.pow(m_x[1], i+1) - 1);
+			g[1] += 2 * f * m_x[0] * (i+1) * Math.pow(m_x[1], i);
 		}
 		return calcFunc(m_x);
 	}

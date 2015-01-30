@@ -22,8 +22,8 @@ public class ProjectedLBFGS extends ProjectedGradient {
 	double[] m_sd; // search direction
 	double[][] m_ys, m_ss; // storage for differences of gradients and xs in the last M steps
 	
-	public ProjectedLBFGS(Optimizable objFunc, int m, boolean diag, int maxIter, double converge, double beta, double delta) {
-		super(objFunc, maxIter, converge, beta, delta);
+	public ProjectedLBFGS(Optimizable objFunc, int m, boolean diag, int maxIter, double fdelta, double gdelta, double istp, double ftol, double gtol) {
+		super(objFunc, maxIter, fdelta, gdelta, istp, ftol, gtol);
 		
 		m_M = m;
 		m_diag = diag;
@@ -44,32 +44,37 @@ public class ProjectedLBFGS extends ProjectedGradient {
 			m_Hdiag = new double[m_x.length];
 	}
 	
-	@Override
 	public boolean optimize() {
 		init();
 
 		int k = 1; // the first step has been explore in init()
-		double gNorm, xNorm;//get the initial function value and gradient
+		double gNorm, xNorm, fx_old, converge;//get the initial function value and gradient
 		
 		//initial step for L-BFGS
 		double fx = m_func.calcFuncGradient(m_g);
 		System.arraycopy(m_g, 0, m_sd, 0, m_g.length);//no correction of gradient
 		System.arraycopy(m_g, 0, m_g_old, 0, m_g.length);//store the current gradient
-		fx = linesearch(fx);
+		fx = m_linesearch.linesearch(fx, m_x, m_x_old, m_g, m_sd);
 		updateCorrectionVcts(0);
 		
 		do {
+			fx_old = fx;
+			
 			quasiNewtonDirection(k);
-			fx = linesearch(fx);
+			fx = m_linesearch.linesearch(fx, m_x, m_x_old, m_g, m_sd);
 			updateCorrectionVcts(k);			
 			
 			gNorm = Utils.L2Norm(m_g);
 			xNorm = Utils.L2Norm(m_x);
+			if (fx_old==0)
+				converge = 1.0;//no way to compute
+			else
+				converge = (fx_old-fx)/fx_old;
 			
-			System.out.format("%d. f(x)=%.10f |g(x)|=%.10f\n", k, fx, gNorm);
-		} while (++k<m_maxIter && gNorm>xNorm*m_converge);
+			System.out.format("%d. f(x)=%.10f |g(x)|=%.10f converge=%.5f\n", k, fx, gNorm, converge);
+		} while (++k<m_maxIter && gNorm>xNorm*m_gdelta && Math.abs(converge)>m_fdelta);
 		
-		return gNorm<=xNorm*m_converge;//also need other convergence condition checking
+		return k<m_maxIter;//also need other convergence condition checking
 	}
 	
 	void updateCorrectionVcts(int k) {
@@ -126,25 +131,9 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		//correction of search direction finishes, ready for line search
 	}
 	
-	double linesearch(double fx) {
-		double t = m_delta * Utils.dotProduct(m_sd, m_g);
-		m_alpha = 1.0 / m_beta;
-		do {
-			m_alpha *= m_beta;
-			//step along the search direction
-			for(int i=0; i<m_x.length; i++)
-				m_x[i] = m_x_old[i] - m_alpha * m_sd[i];
-			
-			m_func.projection(m_x);
-		} while (fx - m_alpha*t < m_func.calcFunc(m_x));
-		
-		//calculate the gradient at current point
-		return m_func.calcFuncGradient(m_g);
-	}
-	
 	static public void main(String[] args) {
 		QuadraticTest testcase = new Problem6();
-		ProjectedGradient opt = new ProjectedLBFGS(testcase, 3, false, 500, 1e-4, 0.25, 0.001);
+		ProjectedGradient opt = new ProjectedLBFGS(testcase, 6, false, 1000, 1e-6, 1e-10, 1.0, 1e-5, 1e-4);
 		
 		double value = testcase.byLBFGS();
 		double[] x = testcase.getParameters();

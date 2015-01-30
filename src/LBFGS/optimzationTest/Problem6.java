@@ -15,11 +15,11 @@ public class Problem6 extends QuadraticTest implements Optimizable {
 		m_neval ++;
 		
 		double f;
-		Arrays.fill(m_g, 0);
+		Arrays.fill(g, 0);
 		for(int i=1; i<=10; i++){
 			f = 2*(i+1) - Math.exp(i*m_x[0]) - Math.exp(i*m_x[1]);
-			m_g[0] -= 2*f * i*Math.exp(i*m_x[0]);
-			m_g[1] -= 2*f * i*Math.exp(i*m_x[1]);
+			g[0] -= 2*f * i*Math.exp(i*m_x[0]);
+			g[1] -= 2*f * i*Math.exp(i*m_x[1]);
 		}
 		return calcFunc(m_x);
 	}

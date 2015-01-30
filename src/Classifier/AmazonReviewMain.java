@@ -53,7 +53,7 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/*****Parameters in time series analysis.*****/
-		String debugOutput = null; //"data/debug/LR.output";
+		String debugOutput = "data/debug/LR.output";
 		
 		/****Pre-process the data.*****/
 //		//Feture selection.

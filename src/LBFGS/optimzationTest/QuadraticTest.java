@@ -50,7 +50,7 @@ public abstract class QuadraticTest implements Optimizable {
 		try{
 			do {
 				fValue = calcFuncGradient(m_g);
-				LBFGS.lbfgs(fSize, 6, m_x, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-20, iflag);
+				LBFGS.lbfgs(fSize, 6, m_x, fValue, m_g, false, m_diag, iprint, 1e-6, 1e-10, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
