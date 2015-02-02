@@ -214,7 +214,11 @@ public class Mcsrch
 				// If an unusual termination is to occur then let
 				// stp be the lowest point obtained so far.
 
-				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) ) || nfev[0] >= maxfev - 1 || infoc[0] == 0 || ( brackt[0] && stmax - stmin <= xtol * stmax ) ) stp[0] = stx[0];
+				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) ) 
+						|| nfev[0] >= maxfev - 1 
+						|| infoc[0] == 0 
+						|| ( brackt[0] && stmax - stmin <= xtol * stmax ) )
+					stp[0] = stx[0];
 
 				// Evaluate the function and gradient at stp
 				// and compute the directional derivative.

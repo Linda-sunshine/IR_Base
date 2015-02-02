@@ -4,7 +4,7 @@
 package LBFGS;
 
 import utils.Utils;
-import LBFGS.optimzationTest.Problem6;
+import LBFGS.optimzationTest.Problem5;
 import LBFGS.optimzationTest.QuadraticTest;
 
 /**
@@ -51,9 +51,9 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		double gNorm, xNorm, fx_old, converge;//get the initial function value and gradient
 		
 		//initial step for L-BFGS
-		double fx = m_func.calcFuncGradient(m_g);
-		System.arraycopy(m_g, 0, m_sd, 0, m_g.length);//no correction of gradient
+		double fx = m_func.calcFuncGradient(m_g);		
 		System.arraycopy(m_g, 0, m_g_old, 0, m_g.length);//store the current gradient
+		initSearchDirection();
 		fx = m_linesearch.linesearch(fx, m_x, m_x_old, m_g, m_sd);
 		updateCorrectionVcts(0);
 		
@@ -93,9 +93,14 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		m_rhos[j] = 1.0 / Utils.dotProduct(m_ss[j], m_ys[j]); 
 	}
 	
-	void quasiNewtonDirection(int k) {
+	void initSearchDirection() {
 		//gradient as the initial search direction
 		System.arraycopy(m_g, 0, m_sd, 0, m_g.length);
+		//Utils.setArray(m_sd, m_g, -1);
+	}
+	
+	void quasiNewtonDirection(int k) {
+		initSearchDirection();
 		
 		//start to correct the search direction
 		int m = Math.min(k, m_M), j=(k+m-1)%m;//the latest step
@@ -116,11 +121,6 @@ public class ProjectedLBFGS extends ProjectedGradient {
 				m_sd[i] *= m_Hdiag[i];
 		}
 		
-		if (k>=m_M)
-			j = k%m_M;//the oldest step
-		else
-			j = 0;
-		
 		double beta;
 		for(int i=0; i<m; i++) {
 			beta = m_rhos[j] * Utils.dotProduct(m_sd, m_ys[j]);
@@ -132,8 +132,8 @@ public class ProjectedLBFGS extends ProjectedGradient {
 	}
 	
 	static public void main(String[] args) {
-		QuadraticTest testcase = new Problem6();
-		ProjectedGradient opt = new ProjectedLBFGS(testcase, 6, false, 1000, 1e-6, 1e-10, 1.0, 1e-5, 1e-4);
+		QuadraticTest testcase = new Problem5();
+		ProjectedGradient opt = new ProjectedLBFGS(testcase, 6, false, 1500, 1e-3, 1e-5, 1.0, 1e-5, 0.2);
 		
 		double value = testcase.byLBFGS();
 		double[] x = testcase.getParameters();

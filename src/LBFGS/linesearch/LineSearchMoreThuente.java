@@ -26,7 +26,7 @@ public class LineSearchMoreThuente extends LineSearch {
 	@Override
 	public double linesearch(double finit, double[] x, double[] xp, double[] g, double[] sd) {
 		double dg_init = Utils.dotProduct(sd, g), t = m_ftol * dg_init, value = 0, dg;
-		if (dg_init<=0)
+		if (dg_init<0)
 			return finit; // incorrect search direction
 		
 		double width = MAX_STEP - MIN_STEP, pwidth = 2*width;
@@ -65,7 +65,8 @@ public class LineSearchMoreThuente extends LineSearch {
 	        	stp[0] = MIN_STEP;
 	        
 	        // If an unusual termination is to occur then let stp be the lowest point obtained so far.
-	        if (m_bracket && ( ((stp[0] <= stmin || stp[0] >= stmax) || m_maxStep <= count + 1) || (stmax - stmin <= m_xtol * stmax) )) {
+	        if (m_bracket && ( ((stp[0] <= stmin || stp[0] >= stmax) || (stmax - stmin <= m_xtol * stmax)) )
+	        		|| m_maxStep <= count + 1) {
 	            stp[0] = stx[0];
 	        }
 	        
@@ -76,7 +77,7 @@ public class LineSearchMoreThuente extends LineSearch {
 	        
 	        value = m_func.calcFuncGradient(g);
 	        dg = Utils.dotProduct(g, sd); 
-	        if (value <= finit+stp[0]*t && Math.abs(dg) <= m_gtol * Math.abs(dg_init)) {
+	        if (value <= finit+stp[0]*t && Math.abs(dg) <= m_gtol * (-dg_init)) {
 	            // The sufficient decrease condition and the directional derivative condition hold.
 	            return value;
 	        }
@@ -171,6 +172,12 @@ public class LineSearchMoreThuente extends LineSearch {
 			double[] y, double[] fy, double[] dy,
 			double[] t, double ft, double dt,
 			double tmin, double tmax) {
+		
+//		if ( (m_bracket && (t[0] <= Math.min (x[0], y[0]) || t[0] >= Math.max (x[0], y[0])) ) 
+//				|| dx[0] * (t[0] - x[0]) < 0.0 
+//				|| tmax < tmin ) 
+//			return;
+		
 		int bound;
 		double mc, mq, newt;
 		boolean dsign = (dx[0]*dt<0);
@@ -291,9 +298,9 @@ public class LineSearchMoreThuente extends LineSearch {
 	    if (m_bracket && bound==1) {
 	        mq = x[0] + 0.66 * (y[0] - x[0]);
 	        if (x[0] < y[0]) {
-	            if (mq < newt) newt = mq;
+	            newt = Math.min(newt, mq);
 	        } else {
-	            if (newt < mq) newt = mq;
+	        	newt = Math.max(newt, mq);
 	        }
 	    }
 	
