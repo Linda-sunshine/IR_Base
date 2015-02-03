@@ -16,7 +16,7 @@ public class Problem3 extends QuadraticTest implements Optimizable {
 		
 		g[0] = 10000 * m_x[1] * f1 - Math.exp(-m_x[0]) * f2;
 		g[1] = 10000 * m_x[0] * f1 - Math.exp(-m_x[1]) * f2;
-		return calcFunc(m_x);
+		return f1*f1 + f2*f2;
 	}
 
 	@Override
@@ -29,24 +29,29 @@ public class Problem3 extends QuadraticTest implements Optimizable {
 	
 	@Override
 	public void projection(double[] x) {
-		if (x[0] < 0)
-			x[0] = 0;
-		
-		if (x[0] > 1)
-			x[0] = 1;
-		
-		if (x[1] < 1)
-			x[1] = 1;
-		
-		if (x[1] > 10)
-			x[1] = 10;
+//		if (x[0] < 0)
+//			x[0] = 0;
+//		
+//		if (x[0] > 1)
+//			x[0] = 1;
+//		
+//		if (x[1] < 1)
+//			x[1] = 1;
+//		
+//		if (x[1] > 10)
+//			x[1] = 10;
 	}
 	
 	@Override
 	public void reset() {
+		super.reset();
+		
 		m_x[0] = 0;
 		m_x[1] = 1;
-		m_neval = 0;
 	}
 
+	@Override
+	public String toString() {
+		return "Problem3";
+	}
 }

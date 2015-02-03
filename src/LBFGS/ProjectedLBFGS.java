@@ -4,8 +4,6 @@
 package LBFGS;
 
 import utils.Utils;
-import LBFGS.optimzationTest.Problem5;
-import LBFGS.optimzationTest.QuadraticTest;
 
 /**
  * @author hongning
@@ -18,8 +16,7 @@ public class ProjectedLBFGS extends ProjectedGradient {
 	double[] m_Hdiag; // diagnoal of Hessian
 	double[] m_g_old; // gradient at previous step
 	double[] m_alphas; // correction coefficient
-	double[] m_rhos; // scaling coefficient
-	double[] m_sd; // search direction
+	double[] m_rhos; // scaling coefficient	
 	double[][] m_ys, m_ss; // storage for differences of gradients and xs in the last M steps
 	
 	public ProjectedLBFGS(Optimizable objFunc, int m, boolean diag, int maxIter, double fdelta, double gdelta, double istp, double ftol, double gtol) {
@@ -34,7 +31,6 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		super.init();
 		
 		m_g_old = new double[m_x.length];
-		m_sd = new double[m_x.length];
 		m_alphas = new double[m_M];	
 		m_rhos = new double[m_M];
 		m_ys = new double[m_M][m_x.length];
@@ -53,7 +49,7 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		//initial step for L-BFGS
 		double fx = m_func.calcFuncGradient(m_g);		
 		System.arraycopy(m_g, 0, m_g_old, 0, m_g.length);//store the current gradient
-		initSearchDirection();
+		getSearchDirection();
 		fx = m_linesearch.linesearch(fx, m_x, m_x_old, m_g, m_sd);
 		updateCorrectionVcts(0);
 		
@@ -71,7 +67,7 @@ public class ProjectedLBFGS extends ProjectedGradient {
 			else
 				converge = (fx_old-fx)/fx_old;
 			
-			System.out.format("%d. f(x)=%.10f |g(x)|=%.10f converge=%.5f\n", k, fx, gNorm, converge);
+			//System.out.format("%d. f(x)=%.10f |g(x)|=%.10f converge=%.5f\n", k, fx, gNorm, converge);
 		} while (++k<m_maxIter && gNorm>xNorm*m_gdelta && Math.abs(converge)>m_fdelta);
 		
 		return k<m_maxIter;//also need other convergence condition checking
@@ -93,14 +89,8 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		m_rhos[j] = 1.0 / Utils.dotProduct(m_ss[j], m_ys[j]); 
 	}
 	
-	void initSearchDirection() {
-		//gradient as the initial search direction
-		System.arraycopy(m_g, 0, m_sd, 0, m_g.length);
-		//Utils.setArray(m_sd, m_g, -1);
-	}
-	
 	void quasiNewtonDirection(int k) {
-		initSearchDirection();
+		getSearchDirection();
 		
 		//start to correct the search direction
 		int m = Math.min(k, m_M), j=(k+m-1)%m;//the latest step
@@ -129,19 +119,5 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		}
 		
 		//correction of search direction finishes, ready for line search
-	}
-	
-	static public void main(String[] args) {
-		QuadraticTest testcase = new Problem5();
-		ProjectedGradient opt = new ProjectedLBFGS(testcase, 6, false, 1500, 1e-3, 1e-5, 1.0, 1e-5, 0.2);
-		
-		double value = testcase.byLBFGS();
-		double[] x = testcase.getParameters();
-		System.out.format("By L-BFGS\n%s\t%.10f\t%d\n", Utils.formatArray(x), value, testcase.getNumEval());
-		
-		testcase.reset();
-		x = testcase.getParameters();
-		System.out.println(opt.optimize()?"success!":"failed!");
-		System.out.format("By Projected Gradient\n%s\t%.10f\t%d\n", Utils.formatArray(x), testcase.calcFunc(), testcase.getNumEval());
 	}
 }

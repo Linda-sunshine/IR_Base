@@ -31,7 +31,9 @@ public abstract class QuadraticTest implements Optimizable {
 		return calcFunc(m_x);
 	}
 
-	abstract public void reset();
+	public void reset() {
+		m_neval = 0;
+	}
 	
 	void init() {
 		reset();

@@ -26,12 +26,12 @@ public class LineSearchMoreThuente extends LineSearch {
 	@Override
 	public double linesearch(double finit, double[] x, double[] xp, double[] g, double[] sd) {
 		double dg_init = Utils.dotProduct(sd, g), t = m_ftol * dg_init, value = 0, dg;
-		if (dg_init<0)
+		if (dg_init>=0)
 			return finit; // incorrect search direction
 		
 		double width = MAX_STEP - MIN_STEP, pwidth = 2*width;
 		double[] stp = {m_istp};
-		boolean stage = true;
+		boolean stage = true, intervalUpdate = true;
 		double stmin, stmax;
 		m_bracket = false;
 		
@@ -65,14 +65,16 @@ public class LineSearchMoreThuente extends LineSearch {
 	        	stp[0] = MIN_STEP;
 	        
 	        // If an unusual termination is to occur then let stp be the lowest point obtained so far.
-	        if (m_bracket && ( ((stp[0] <= stmin || stp[0] >= stmax) || (stmax - stmin <= m_xtol * stmax)) )
-	        		|| m_maxStep <= count + 1) {
+	        if ( (m_bracket && (stp[0] <= stmin || stp[0] >= stmax))
+	        		|| m_maxStep <= count + 1
+	        		|| intervalUpdate == false
+	        		|| (m_bracket && stmax - stmin <= m_xtol * stmax) ) {
 	            stp[0] = stx[0];
 	        }
 	        
 	        //step along the search direction
 	        for(int i=0; i<x.length; i++)
-				x[i] = xp[i] - stp[0] * sd[i];
+				x[i] = xp[i] + stp[0] * sd[i];
 	        m_func.projection(x);
 	        
 	        value = m_func.calcFuncGradient(g);
@@ -107,7 +109,7 @@ public class LineSearchMoreThuente extends LineSearch {
 	                Call update_trial_interval() to update the interval of
 	                uncertainty and to compute the new step.
 	             */
-	            update_trial_interval(
+	            intervalUpdate = update_trial_interval(
 	                stx, fxm, dgxm,
 	                sty, fym, dgym,
 	                stp, fm, dgm,
@@ -120,7 +122,7 @@ public class LineSearchMoreThuente extends LineSearch {
 	            dgy[0] = dgym[0] + t;
 	        } else {
 	        	// Call update_trial_interval() to update the interval of uncertainty and to compute the new step.
-	            update_trial_interval(
+	        	intervalUpdate = update_trial_interval(
 	                stx, fx, dgx,
 	                sty, fy, dgy,
 	                stp, value, dg,
@@ -168,15 +170,16 @@ public class LineSearchMoreThuente extends LineSearch {
 	 *      guaranteed sufficient decrease. ACM Transactions on Mathematical
 	 *      Software (TOMS), Vol 20, No 3, pp. 286-307, 1994.
 	 */	
-	void update_trial_interval(double[] x, double[] fx, double[] dx,
+	boolean update_trial_interval(double[] x, double[] fx, double[] dx,
 			double[] y, double[] fy, double[] dy,
 			double[] t, double ft, double dt,
 			double tmin, double tmax) {
 		
-//		if ( (m_bracket && (t[0] <= Math.min (x[0], y[0]) || t[0] >= Math.max (x[0], y[0])) ) 
-//				|| dx[0] * (t[0] - x[0]) < 0.0 
-//				|| tmax < tmin ) 
-//			return;
+		if ( m_bracket && 
+				( (t[0] <= Math.min(x[0], y[0]) || t[0] >= Math.max(x[0], y[0]))  
+				|| dx[0] * (t[0] - x[0]) >= 0.0 
+				|| tmax < tmin) ) 
+			return false;
 		
 		int bound;
 		double mc, mq, newt;
@@ -185,7 +188,7 @@ public class LineSearchMoreThuente extends LineSearch {
 		if (fx[0]<ft) {
 			/*
             Case 1: a higher function value.
-            The minimum is brackt. If the cubic minimizer is closer
+            The minimum is bracket. If the cubic minimizer is closer
             to x than the quadratic one, the cubic one is taken, else
             the average of the minimizers is taken.
 			*/
@@ -207,8 +210,9 @@ public class LineSearchMoreThuente extends LineSearch {
 	         */
 			m_bracket = true;
 	        bound = 0;
-	        mc = cubic_minimizer(x[0], fx[0], dx[0], t[0], ft, dt);
-	        mq = quard_minimizer(x[0], fx[0], dx[0], t[0], ft);
+	        mc = cubic_minimizer(t[0], ft, dt, x[0], fx[0], dx[0]);
+	        mq = quard_minimizer(x[0], dx[0], t[0], dt);
+	        
 	        if (Math.abs(mc-t[0]) > Math.abs(mq-t[0]))
 	            newt = mc;
 	        else
@@ -306,6 +310,8 @@ public class LineSearchMoreThuente extends LineSearch {
 	
 	    /* Return the new trial value. */
 	    t[0] = newt;
+	    
+	    return true;
 	}
 	
 	/**
@@ -363,7 +369,7 @@ public class LineSearchMoreThuente extends LineSearch {
 	    r = p / q;
 	    if (r < 0 && gamma != 0)
 	        return v - r * d;
-	    else if (a < 0)
+	    else if (a > 0)
 	        return xmax;
 	    else
 	        return xmin;
@@ -395,4 +401,4 @@ public class LineSearchMoreThuente extends LineSearch {
 	    double a = u - v;
 	    return v + dv / (dv - du) * a;
 	}
-}
+}	

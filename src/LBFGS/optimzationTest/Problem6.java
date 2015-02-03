@@ -14,14 +14,16 @@ public class Problem6 extends QuadraticTest implements Optimizable {
 	public double calcFuncGradient(double[] g) {
 		m_neval ++;
 		
-		double f;
+		double f, sum = 0;
 		Arrays.fill(g, 0);
 		for(int i=1; i<=10; i++){
 			f = 2*(i+1) - Math.exp(i*m_x[0]) - Math.exp(i*m_x[1]);
 			g[0] -= 2*f * i*Math.exp(i*m_x[0]);
 			g[1] -= 2*f * i*Math.exp(i*m_x[1]);
+			
+			sum += f*f;
 		}
-		return calcFunc(m_x);
+		return sum;
 	}
 
 	@Override
@@ -43,9 +45,14 @@ public class Problem6 extends QuadraticTest implements Optimizable {
 	
 	@Override
 	public void reset() {
+		super.reset();
+		
 		m_x[0] = 1;
 		m_x[1] = 1;
-		m_neval = 0;
 	}
 
+	@Override
+	public String toString() {
+		return "Problem6";
+	}
 }
