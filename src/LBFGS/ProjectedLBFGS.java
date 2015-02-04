@@ -49,10 +49,12 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		//initial step for L-BFGS
 		double fx = m_func.calcFuncGradient(m_g);		
 		System.arraycopy(m_g, 0, m_g_old, 0, m_g.length);//store the current gradient
-		getSearchDirection();
+		getSearchDirection();//using the gradient direction as the search direction
+		m_linesearch.setInitStep(1.0 / Utils.L2Norm(m_g));
 		fx = m_linesearch.linesearch(fx, m_x, m_x_old, m_g, m_sd);
 		updateCorrectionVcts(0);
 		
+		m_linesearch.setInitStep(1.0);
 		do {
 			fx_old = fx;
 			

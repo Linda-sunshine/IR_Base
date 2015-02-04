@@ -9,6 +9,8 @@ public class Problem5 extends QuadraticTest implements Optimizable {
 	
 	public Problem5() {
 		m_x = new double[2];
+		m_lbound = new double[]{0.6,0.5};
+		m_ubound = new double[]{10,100};
 	}
 	
 	@Override
@@ -38,11 +40,6 @@ public class Problem5 extends QuadraticTest implements Optimizable {
 			sum += f*f;
 		}
 		return sum;
-	}
-	
-	@Override
-	public void projection(double[] x) {
-		
 	}
 	
 	@Override

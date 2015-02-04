@@ -6,6 +6,8 @@ public class Problem3 extends QuadraticTest implements Optimizable {
 
 	public Problem3() {
 		m_x = new double[2];
+		m_lbound = new double[]{0,1};
+		m_ubound = new double[]{1,9};
 	}
 	
 	@Override
@@ -25,21 +27,6 @@ public class Problem3 extends QuadraticTest implements Optimizable {
 		
 		double f1 = 10000*x[0]*x[1] - 1, f2 = Math.exp(-x[0]) + Math.exp(-x[1]) - 1.0001;
 		return f1*f1 + f2*f2;
-	}
-	
-	@Override
-	public void projection(double[] x) {
-//		if (x[0] < 0)
-//			x[0] = 0;
-//		
-//		if (x[0] > 1)
-//			x[0] = 1;
-//		
-//		if (x[1] < 1)
-//			x[1] = 1;
-//		
-//		if (x[1] > 10)
-//			x[1] = 10;
 	}
 	
 	@Override

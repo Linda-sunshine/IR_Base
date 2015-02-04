@@ -34,6 +34,10 @@ abstract public class LineSearch {
 			m_gtol = gtol;
 		}
 	}
+	
+	public void setInitStep(double step) {
+		m_istp = step;
+	}
 
 	public abstract double linesearch(double fx, double[] x, double[] xp, double[] g, double[] sd);
 }
