@@ -314,8 +314,8 @@ public class Utils {
 		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			double TF = pairs.getValue();
-			spVct[i] = new _SparseFeature(pairs.getKey(), TF);
+			double fv = pairs.getValue();
+			spVct[i] = new _SparseFeature(pairs.getKey(), fv);
 			i++;
 		}
 		Arrays.sort(spVct);		

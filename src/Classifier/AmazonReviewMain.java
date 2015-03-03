@@ -14,7 +14,7 @@ public class AmazonReviewMain {
 		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 2; //The default value is unigram. 
+		int Ngram = 1; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
@@ -26,7 +26,7 @@ public class AmazonReviewMain {
 		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "FV";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
@@ -48,7 +48,7 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
-		int window = 3;
+		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
@@ -74,6 +74,7 @@ public class AmazonReviewMain {
 		featureSize = analyzer.getFeatureSize();
 		
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
+		corpus.save2File("data/Fvs/fv_BM25.dat");
 		double C = 0.1;
 		
 		//temporal code to add pagerank weights
@@ -111,7 +112,6 @@ public class AmazonReviewMain {
 		} else if (style.equals("TRANS")) {
 			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window + 1, classifier);
 			mySemi.crossValidation(CVFold, corpus);
-			
 		} else System.out.println("Learning paradigm has not developed yet!");
 	}
 }
