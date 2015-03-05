@@ -14,7 +14,7 @@ import utils.Utils;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 
-public class LogisticRegression extends BaseClassifier{
+public class LogisticRegression extends BaseClassifier {
 
 	double[] m_beta;
 	double[] m_g, m_diag;
@@ -74,22 +74,21 @@ public class LogisticRegression extends BaseClassifier{
 		}
 	}
 	
-	//This function is used to calculate Pij = P(Y=yi|X=xi) in multinominal LR.
-	private double calculatelogPij(int Yi, _SparseFeature[] spXi){
-		int offset = Yi * (m_featureSize + 1);
-		m_cProbs[Yi] = Utils.dotProduct(m_beta, spXi, offset);
-		for(int i = 0; i < m_classNo; i++){
-			if (i!=Yi) {
-				offset = i * (m_featureSize + 1);
-				m_cProbs[i] = Utils.dotProduct(m_beta, spXi, offset);
-			}
+	//This function is used to calculate Pij = P(Y=yi|X=xi) in multi-class LR.
+	protected void calcPosterior(_SparseFeature[] spXi, double[] prob){
+		int offset = 0;
+		for(int i = 0; i < m_classNo; i++){			
+			offset = i * (m_featureSize + 1);
+			prob[i] = Utils.dotProduct(m_beta, spXi, offset);			
 		}
-		return m_cProbs[Yi] - Utils.logSumOfExponentials(m_cProbs);
+		
+		double logSum = Utils.logSumOfExponentials(prob);
+		for(int i = 0; i < m_classNo; i++)
+			prob[i] = Math.exp(prob[i] - logSum);
 	}
 	
 	//This function is used to calculate the value and gradient with the new beta.
-	private double calcFuncGradient(Collection<_Doc> trainSet) {
-		
+	protected double calcFuncGradient(Collection<_Doc> trainSet) {		
 		double gValue = 0, fValue = 0;
 		double Pij = 0, logPij = 0;
 
@@ -110,9 +109,11 @@ public class LogisticRegression extends BaseClassifier{
 			fv = doc.getSparse();
 			weight = doc.getWeight();
 			
+			//compute P(Y=j|X=xi)
+			calcPosterior(fv, m_cache);
 			for(int j = 0; j < m_classNo; j++){
-				logPij = calculatelogPij(j, fv);//logP(Y=yi|X=xi)
-				Pij = Math.exp(logPij);
+				Pij = m_cache[j];
+				logPij = Math.log(Pij);
 				if (Yi == j){
 					gValue = Pij - 1.0;
 					fValue += logPij * weight;
