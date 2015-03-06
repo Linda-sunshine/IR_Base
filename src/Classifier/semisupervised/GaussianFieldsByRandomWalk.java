@@ -8,20 +8,29 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double m_eta; //The parameter used in random walk. 
 	double[] m_fu_last; // result from last round of random walk
 	
+	double m_delta; // convergence criterion for random walk
+	boolean m_storeGraph; // shall we precompute and store the graph
+	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize, classifier);
 		
 		m_eta = 0.1;
+		m_labelRatio = 1.0;
+		m_delta = 1e-5;
+		m_storeGraph = false;
 	}	
 	
 	//Constructor: given k and kPrime
-	public GaussianFieldsByRandomWalk(_Corpus c, int classNumber, int featureSize, String classifier, double ratio, int k, int kPrime, double alhpa, double beta){
+	public GaussianFieldsByRandomWalk(_Corpus c, int classNumber, int featureSize, String classifier, 
+			double ratio, int k, int kPrime, double alhpa, double beta, double delta, boolean storeGraph){
 		super(c, classNumber, featureSize, classifier, ratio, k, kPrime);
 		
 		m_eta = 0.1;
 		m_alpha = alhpa;
-		m_beta = beta;	
+		m_beta = beta;
+		m_delta = delta;
+		m_storeGraph = storeGraph;
 	}
 	
 	@Override
@@ -68,7 +77,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	}
 	
 	//based on the precomputed sparse graph
-	//this turns out to be even slower: the sparse matrix access is too slow!!!
 	void randomWalkWithGraph(){
 		double wij, wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		
@@ -79,8 +87,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			int j = 0;
 			
 			/****Get the sum of k'UU******/
-			while (j < m_U) {
-				if (j == i)
+			for (; j < m_U; j++) {
+				if (j == i) 
 					continue;
 				wij = m_graph.getQuick(i, j); //get the similarity between two nodes.
 				if (wij == 0)
@@ -88,12 +96,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				
 				wijSumU += wij;
 				fSumU += wij * m_fu_last[j];
-				
-				j++;
 			}
 			
 			/****Get the sum of kUL******/
-			while (j<m_U+m_L) {
+			for (; j<m_U+m_L; j++) {
 				wij = m_graph.getQuick(i, j); //get the similarity between two nodes.
 				if (wij == 0)
 					continue;
@@ -118,16 +124,18 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The test for random walk algorithm.
 	public void test(){
 		/***Construct the nearest neighbor graph****/
-		constructGraph(false);
+		constructGraph(m_storeGraph);
 		
 		if (m_fu_last==null || m_fu_last.length<m_U)
 			m_fu_last = new double[m_U]; //otherwise we can reuse the current memory
 		
 		/***use random walk to solve matrix inverse***/
 		do {
-			randomWalk();
-			//randomWalkWithGraph();
-		} while(updateFu() > 1e-4);
+			if (m_storeGraph)
+				randomWalkWithGraph();
+			else
+				randomWalk();			
+		} while(updateFu() > m_delta);
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
@@ -137,7 +145,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		
 		/***evaluate the performance***/
 		for(int i = 0; i < m_U; i++)
-			m_TPTable[getLabel3(m_fu[i])][m_testSet.get(i).getYLabel()] += 1;
+			m_TPTable[getLabel(m_fu[i])][m_testSet.get(i).getYLabel()] += 1;
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
 }

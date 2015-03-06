@@ -46,7 +46,7 @@ public class GaussianFields extends BaseClassifier {
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize);
 		
-		m_labelRatio = 0.1;
+		m_labelRatio = 0.2;
 		m_alpha = 1.0;
 		m_beta = 0.1;
 		m_M = 10000;
