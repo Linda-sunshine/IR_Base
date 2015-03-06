@@ -16,7 +16,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		super(c, classNumber, featureSize, classifier);
 		
 		m_eta = 0.1;
-		m_labelRatio = 1.0;
+		m_labelRatio = 0.1;
 		m_delta = 1e-5;
 		m_storeGraph = false;
 	}	

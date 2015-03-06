@@ -420,6 +420,30 @@ public class Linear {
             return model.label[dec_max_idx];
         }
     }
+    
+    //Added by Hongning Wang, just for binary classification now!!!
+    public static double predictValue(Model model, Feature[] x) {
+    	if (model.nr_class != 2)
+    		return -1;
+    	
+        int n;
+        if (model.bias >= 0)
+            n = model.nr_feature + 1;
+        else
+            n = model.nr_feature;
+
+        double[] w = model.w;
+        double sum = 0; // no bias term?
+
+        for (Feature lx : x) {
+            int idx = lx.getIndex();
+            // the dimension of testing data may exceed that of training
+            if (idx <= n)
+            	sum += w[(idx - 1)] * lx.getValue();
+        }
+
+        return sum;
+    }
 
     static void printf(Formatter formatter, String format, Object... args) throws IOException {
         formatter.format(format, args);

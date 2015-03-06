@@ -34,7 +34,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	MyPriorityQueue<_RankItem> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
 	ArrayList<_Doc> m_labeled; // a subset of training set
-	double m_labelRatio; // percentage of training data for semi-supervised learning
+	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
 	BaseClassifier m_classifier; //Multiple learner.
 	double[] m_pY;//p(Y), the probabilities of different classes.
@@ -142,6 +142,10 @@ public class GaussianFields extends BaseClassifier {
 		return m_cache[encode(i,j)];
 	}
 	
+	protected double getSimilarity(_Doc di, _Doc dj) {
+		return Utils.calculateSimilarity(di, dj);
+	}
+	
 	void constructGraph(boolean createSparseGraph) {
 		double similarity = 0;
 		m_L = m_labeled.size();
@@ -160,7 +164,7 @@ public class GaussianFields extends BaseClassifier {
 			di = m_testSet.get(i);
 			for (int j = i + 1; j < m_U; j++) {// to save computation since our similarity metric is symmetric
 				dj = m_testSet.get(j);
-				similarity = Utils.calculateSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				similarity = getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				if (!di.sameProduct(dj))
 					similarity *= m_discount;// differentiate reviews from different products
 				setCache(i, j, similarity);
@@ -168,7 +172,7 @@ public class GaussianFields extends BaseClassifier {
 
 			for (int j = 0; j < m_L; j++) {
 				dj = m_labeled.get(j);
-				similarity = Utils.calculateSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				similarity = getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				if (!di.sameProduct(m_labeled.get(j)))
 					similarity *= m_discount;// differentiate reviews from different products
 				setCache(i, m_U + j, similarity);

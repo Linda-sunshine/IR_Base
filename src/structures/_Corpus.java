@@ -22,7 +22,6 @@ public class _Corpus {
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
 	
-	
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
 	int[] m_mask; 
 			

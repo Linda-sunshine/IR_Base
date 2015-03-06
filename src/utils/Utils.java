@@ -365,27 +365,43 @@ public class Utils {
 				|| (lastChar>='0' && lastChar<='9'));
 	}
 	
-	public static _SparseFeature[] diffVector(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
+	//x_i - x_j 
+	public static _SparseFeature[] diffVector(_SparseFeature[] spVcti, _SparseFeature[] spVctj){
 		ArrayList<_SparseFeature> vectorList = new ArrayList<_SparseFeature>();
-		int pointer1 = 0, pointer2 = 0;
+		int i = 0, j = 0;
+		_SparseFeature fi = spVcti[i], fj = spVctj[j];
+		
 		double fv;
-		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
-			_SparseFeature temp1 = spVct1[pointer1];
-			_SparseFeature temp2 = spVct2[pointer2];
-			if (temp1.getIndex() == temp2.getIndex()) {
-				fv = temp1.getValue() - temp2.getValue();
+		while (i < spVcti.length && j < spVctj.length) {
+			fi = spVcti[i];
+			fj = spVctj[j];
+			
+			if (fi.getIndex() == fj.getIndex()) {
+				fv = fi.getValue() - fj.getValue();
 				if (Math.abs(fv)>Double.MIN_VALUE)//otherwise it is too small
-					vectorList.add(new _SparseFeature(temp1.getIndex(),fv));
-				pointer1++;
-				pointer2++;
-			} else if (temp1.getIndex() > temp2.getIndex()){
-				vectorList.add(new _SparseFeature(temp2.getIndex(), -temp2.getValue()));
-				pointer2++;
+					vectorList.add(new _SparseFeature(fi.getIndex(),fv));
+				i++; 
+				j++; 
+			} else if (fi.getIndex() > fj.getIndex()){
+				vectorList.add(new _SparseFeature(fj.getIndex(), -fj.getValue()));
+				j++;
 			}
 			else{
-				vectorList.add(new _SparseFeature(temp1.getIndex(), temp1.getValue()));
-				pointer1++;
+				vectorList.add(new _SparseFeature(fi.getIndex(), fi.getValue()));
+				i++;
 			}
+		}
+		
+		while (i < spVcti.length) {
+			fi = spVcti[i];
+			vectorList.add(new _SparseFeature(fi.getIndex(), fi.getValue()));
+			i++;
+		}
+		
+		while (j < spVctj.length) {
+			fj = spVctj[j];
+			vectorList.add(new _SparseFeature(fj.getIndex(), -fj.getValue()));
+			j++;
 		}
 		
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
