@@ -7,6 +7,12 @@ import java.text.ParseException;
 
 import structures._Corpus;
 import Analyzer.VctAnalyzer;
+import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.PRLogisticRegression;
+import Classifier.supervised.SVM;
 
 public class VectorReviewMain {
 
@@ -18,13 +24,13 @@ public class VectorReviewMain {
 		int CVFold = 10; //k fold-cross validation
 		
 		//"LR", "PRLR"
-		String classifier = "PRLR"; //Which classifier to use.
+		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "TRANS";
 		
 		/*****The parameters used in loading files.*****/
-		String vctfile = "data/FVs/fv_BM25.dat";
+		String vctfile = "data/FVs/LinearRegression.dat";
 		String modelPath = "./data/Model/";
 		
 		/*****Parameters in time series analysis.*****/
@@ -76,8 +82,11 @@ public class VectorReviewMain {
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("TRANS")) {
-			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize, classifier);
+			GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, classifier);
 			mySemi.crossValidation(CVFold, corpus);
+			
+//			LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, classifier);
+//			lMetricLearner.crossValidation(CVFold, corpus);
 		} else System.out.println("Learning paradigm has not developed yet!");
 	} 
 

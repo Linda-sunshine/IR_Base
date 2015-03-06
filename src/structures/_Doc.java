@@ -265,6 +265,8 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	public boolean sameProduct(_Doc d) {
+		if (m_itemID == null || d.m_itemID == null)
+			return false;
 		return m_itemID.equals(d.m_itemID);
 	}
 	

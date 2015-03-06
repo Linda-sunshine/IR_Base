@@ -4,6 +4,9 @@ import java.io.IOException;
 
 import structures._Corpus;
 import Analyzer.DocAnalyzer;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.SVM;
 
 public class MovieReviewMain {
 	/*****************************Main function*******************************/

@@ -7,6 +7,10 @@ import java.text.ParseException;
 
 import structures._Corpus;
 import Analyzer.jsonAnalyzer;
+import Classifier.semisupervised.GaussianFields;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.SVM;
 
 public class AmazonReviewMain {
 
@@ -110,7 +114,7 @@ public class AmazonReviewMain {
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("TRANS")) {
-			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window + 1, classifier);
+			GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize + window + 1, classifier);
 			mySemi.crossValidation(CVFold, corpus);
 		} else System.out.println("Learning paradigm has not developed yet!");
 	}

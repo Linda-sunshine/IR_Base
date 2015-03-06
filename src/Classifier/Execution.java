@@ -17,6 +17,10 @@ import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
+import Classifier.semisupervised.GaussianFields;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.SVM;
 
 /**
  * @author hongning
@@ -90,7 +94,7 @@ public class Execution  {
 			}
 			model.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TRANS")) {
-			SemiSupervised mySemi = new SemiSupervised(corpus, param.m_classNumber, featureSize + param.m_window, param.m_model,
+			GaussianFields mySemi = new GaussianFields(corpus, param.m_classNumber, featureSize + param.m_window, param.m_model,
 					param.m_sampleRate, param.m_kUL, param.m_kUU);
 			mySemi.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TM")) {

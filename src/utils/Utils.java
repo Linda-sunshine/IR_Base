@@ -1,11 +1,12 @@
 package utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import json.JSONException;
 import json.JSONObject;
@@ -362,5 +363,31 @@ public class Utils {
 		return !((lastChar>='a' && lastChar<='z') 
 				|| (lastChar>='A' && lastChar<='Z') 
 				|| (lastChar>='0' && lastChar<='9'));
+	}
+	
+	public static _SparseFeature[] diffVector(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
+		ArrayList<_SparseFeature> vectorList = new ArrayList<_SparseFeature>();
+		int pointer1 = 0, pointer2 = 0;
+		double fv;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				fv = temp1.getValue() - temp2.getValue();
+				if (Math.abs(fv)>Double.MIN_VALUE)//otherwise it is too small
+					vectorList.add(new _SparseFeature(temp1.getIndex(),fv));
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex()){
+				vectorList.add(new _SparseFeature(temp2.getIndex(), -temp2.getValue()));
+				pointer2++;
+			}
+			else{
+				vectorList.add(new _SparseFeature(temp1.getIndex(), temp1.getValue()));
+				pointer1++;
+			}
+		}
+		
+		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 }
