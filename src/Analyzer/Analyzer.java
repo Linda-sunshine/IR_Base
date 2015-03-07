@@ -136,7 +136,6 @@ public abstract class Analyzer {
 	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
 		SaveCVStat(finalLocation);
 		
-		System.out.format("Feature vector contructed for %d documents...\n", m_corpus.getSize());
 		for(int c:m_classMemberNo)
 			System.out.print(c + " ");
 		System.out.println();

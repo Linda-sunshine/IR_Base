@@ -23,16 +23,19 @@ public class VectorReviewMain {
 		
 		int CVFold = 10; //k fold-cross validation
 		
-		//"LR", "PRLR"
-		String classifier = "LR"; //Which classifier to use.
+		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
+		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
+		String classifier = "GF-RW"; //Which classifier to use.
+//		String modelPath = "./data/Model/";
+		double C = 1;
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "SEMI";
+		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/
-		String featureLocation = "./data/Features/selected_fv.txt";
-		String vctfile = "data/FVs/fv_BM25.dat";
-		String modelPath = "./data/Model/";
+		String featureLocation = "data/Features/fv_stat_2gram_BM25_CHI.txt";
+		String vctfile = "data/Fvs/vct_2gram_BM25_CHI.dat";
 		
 		/*****Parameters in time series analysis.*****/
 		String debugOutput = null; //"data/debug/LR.output";
@@ -45,7 +48,7 @@ public class VectorReviewMain {
 				
 		_Corpus corpus = analyzer.getCorpus();
 		int featureSize = corpus.getFeatureSize();
-		double C = 0.1;
+		
 		
 		/********Choose different classification methods.*********/
 		if (style.equals("SUP")) {
@@ -73,7 +76,7 @@ public class VectorReviewMain {
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize, C, 0.01);//default value of eps from Lin's implementation
+				SVM mySVM = new SVM(corpus, classNumber, featureSize, C, 0.001);//default value of eps from Lin's implementation
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){
@@ -81,14 +84,20 @@ public class VectorReviewMain {
 				PageRank myPR = new PageRank(corpus, classNumber, featureSize, C, 100, 50, 1e-6);
 				myPR.train(corpus.getCollection());
 				
-			} else System.out.println("Classifier has not developed yet!");
-		} else if (style.equals("TRANS")) {
-			GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, classifier);
-			mySemi.crossValidation(CVFold, corpus);
+			} else System.out.println("Classifier has not been developed yet!");
+		} else if (style.equals("SEMI")) {
+			if (classifier.equals("GF")) {
+				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
+				mySemi.crossValidation(CVFold, corpus);
+			} else if (classifier.equals("GF-RW")) {
+				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner,
+						0.2, 100, 50, 1.0, 0.2, 1e-4, 0.1, false);
+				mySemi.crossValidation(CVFold, corpus);
+			} else System.out.println("Classifier has not been developed yet!");
 			
 //			LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, classifier);
 //			lMetricLearner.crossValidation(CVFold, corpus);
-		} else System.out.println("Learning paradigm has not developed yet!");
+		} else System.out.println("Learning paradigm has not been developed yet!");
 	} 
 
 }

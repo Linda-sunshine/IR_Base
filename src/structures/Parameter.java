@@ -11,7 +11,7 @@ public class Parameter {
 	/***** Default setting for these parameters *****/
 	public int m_classNumber = -1; //has to be specified by user now!
 	public int m_Ngram = 2; //The default value is unigram. 
-	public int m_lengthThreshold = 5; //Document length threshold
+	public int m_lengthThreshold = 10; //Document length threshold
 	
 	//"TF", "TFIDF", "BM25", "PLN"
 	public String m_featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
@@ -21,20 +21,21 @@ public class Parameter {
 	//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 	//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
 	//Topic Models: "2topic", "pLSA", "HTMM", "LRHTMM"
-	public String m_model = "NB"; //Which model to use.
+	public String m_model = "SVM"; //Which model to use.
 	
 	//"PR"
 	public String m_weightScheme = "NONE"; // weather we will use computed weighting
 	
 	//"SUP", "TRANS", "TM", "FV"
 	public String m_style = "SUP"; // FV means save vector representation of documents to file
-	public double m_sampleRate = 0.1; // sampling rate for Gaussian Fields when constructing the graph
+	public double m_sampleRate = 0.25; // sampling rate for Gaussian Fields when constructing the graph
 	public int m_kUL = 100; // k nearest labeled neighbors
 	public int m_kUU = 50; // k' nearest unlabeled neighbors
 	public boolean m_storeGraph = false; // prefer storage than speed
 	public int m_bound = 3; // rating difference for generating pairwise constraints
-	public String m_classifier = "LR"; // base classifier for Gaussian Field
-
+	public String m_classifier = "SVM"; // base classifier for Gaussian Field
+	public double m_eta = 0.1; //random start ratio
+	
 	/*****The parameters used in loading files.*****/
 	public String m_folder = null;
 	public String m_suffix = ".json";
@@ -138,6 +139,8 @@ public class Parameter {
 				m_beta = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-lambda"))
 				m_lambda = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-eta"))
+				m_eta = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-iter"))
 				m_maxmIterations = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-con"))
@@ -164,6 +167,8 @@ public class Parameter {
 		+"-st stopword_file : list of files that will be excluded in feature generation\n"
 		+"-fpath cv_file : list of controlled vocabular to be used in feature generation (default null)\n"
 		+"-fstat fv_file : statistics of the features collected from the corpus (default null)\n"
+		+"-vf vct_file : vector representation file (default null)\n"
+		+"-dbf debug_file : classifier's debug output file (default null)\n"
 		+"-fs type : feature selection method (default CHI)\n"
 		+"	DF -- Document frequency\n"
 		+"	CHI -- Chi-Square test statistics\n"
@@ -186,11 +191,11 @@ public class Parameter {
 		+"	1 -- L1 normalization\n"
 		+"	2 -- L2 normalization\n"
 		+"	0 -- No normalization\n"
-		+"-c type : classification method (default NB)\n"
+		+"-c type : classification method (default SVM)\n"
 		+"	NB -- Naive Bayes\n"
 		+"	LR -- Logistic Regression\n"
 		+"	PR-LR -- Posterior Regularized Logistic Regression\n"
-		+"	SVM -- Support Vector Machine (libSVM)\n"
+		+"	SVM -- Support Vector Machine (liblinear)\n"
 		+"	GF -- Gaussian Fields by matrix inversion\n"
 		+"	GF-RW -- Gaussian Fields by random walk\n"
 		+"	GF-RW-ML -- Gaussian Fields by random walk with distance metric learning (by libliner)\n"
@@ -198,6 +203,11 @@ public class Parameter {
 		+"	pLSA -- Probabilistic Latent Semantic Analysis\n"
 		+"	HTMM -- Hidden Topic Markov Model\n"
 		+"	LRHTMM -- MaxEnt Hidden Topic Markov Model\n"
+		+"-cf type : multiple learning in Gaussian Fields (default SVM)\n"
+		+"	NB -- Naive Bayes\n"
+		+"	LR -- Logistic Regression\n"
+		+"	PR-LR -- Posterior Regularized Logistic Regression\n"
+		+"	SVM -- Support Vector Machine (liblinear)\n"
 		+"-w type : instance weighting scheme (default None)\n"
 		+"	PR -- Content similarity based PageRank\n"
 		+"-s type : learning paradigm (default SUP)\n"
@@ -205,15 +215,18 @@ public class Parameter {
 		+"	SEMI -- Semi-supervised learning\n"
 		+"	TM -- Topic Models\n"
 		+"-C float -- trade-off parameter in LR and SVM (default 0.1)\n"
-		+"-sr float : Sample rate for transductive learning (default 0.1)\n"
+		+"-sr float : Sample rate for transductive learning (default 0.25)\n"
 		+"-kUL int : k nearest labeled neighbors (default 100)\n"
 		+"-kUU int : kP nearest unlabeled neighbors (default 50)\n"
+		+"-sg 0/1 : store the k nearest graph (default 0)\n"
 		+"-k int : number of topics (default 50)\n"
 		+"-alpha float : dirichlet prior for p(z|d) (default 1.05)\n"
 		+"-beta float : dirichlet prior for p(w|z) (default 1.01)\n"
 		+"-lambda float : manual background proportion setting p(B) (default 0.8)\n"
+		+"-eta float : random restart probability eta in randowm walk (default 0.1)\n"
 		+"-iter int : maximum number of EM iteration (default 200)\n"
 		+"-con float : convergency limit (default 1e-4)\n"
+		+"-bd int : rating difference bound in generating pairwise constraint (default 3)\n"
 		);
 		System.exit(1);
 	}

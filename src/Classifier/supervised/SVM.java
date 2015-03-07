@@ -141,7 +141,7 @@ public class SVM extends BaseClassifier {
 	public SVM(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
 		//Set default value of the param.
-		m_libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, 1.0, 0.01);
+		m_libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, 1.0, 0.001);
 	}
 
 	//Constructor with a given C.
@@ -153,7 +153,7 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public String toString() {
-		return String.format("SVM[C:%d, F:%d, T:%s]", m_classNo, m_featureSize, m_libParameter.getSolverType());
+		return String.format("SVM[C:%d, F:%d, T:%s, c:%.3f]", m_classNo, m_featureSize, m_libParameter.getSolverType(), m_libParameter.getC());
 	}
 	
 	@Override

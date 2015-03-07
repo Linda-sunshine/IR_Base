@@ -140,6 +140,8 @@ public class _Corpus {
 				writer.write('\n');
 			}
 			writer.close();
+			
+			System.out.format("%d feature vectors saved to %s\n", m_collection.size(), filename);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
