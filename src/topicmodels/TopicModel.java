@@ -180,7 +180,7 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
+		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
@@ -199,20 +199,21 @@ public abstract class TopicModel {
 		String finalLocation = "./data/Features/selected_fv_stat_topicmodel.txt";
 
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
-//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-//		
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		String stopwords = "./data/Model/stopwords.dat";
+		String featureSelection = "DF"; //Feature selection method.
+		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+		
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
+		//jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
