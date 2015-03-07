@@ -5,8 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Random;
 
 import structures._Corpus;
@@ -24,10 +22,18 @@ import Classifier.supervised.liblinear.SolverType;
 
 public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	protected Model m_libModel;
+	int m_bound;
 	
 	//Default constructor without any default parameters.
-	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier){
+	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
 		super(c, classNumber, featureSize, classifier);
+		m_bound = bound;
+	}
+	
+	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, 
+			double ratio, int k, int kPrime, double alhpa, double beta, double delta, boolean storeGraph, int bound) {
+		super(c, classNumber, featureSize, classifier, ratio, k, kPrime, alhpa, beta, delta, storeGraph);
+		m_bound = bound;
 	}
 
 	@Override
@@ -37,13 +43,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	protected double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Linear.predictValue(m_libModel, createLinearFeature(di, dj)));
+		return Math.exp(Linear.predictValue(m_libModel, createLinearFeature(di, dj)));//to make sure this is positive
 	}
 	
 	@Override
 	protected void init() {
 		super.init();
-		m_libModel = trainLibLinear(3);
+		m_libModel = trainLibLinear(m_bound);
 	}
 	
 	//debugging code

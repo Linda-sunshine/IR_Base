@@ -125,6 +125,11 @@ public class _Corpus {
 	}
 	
 	public void save2File(String filename) {
+		if (filename==null || filename.isEmpty()) {
+			System.out.println("Please specify the file name for saving vectors!");
+			return;
+		}
+		
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
 			for(_Doc doc:m_collection) {
