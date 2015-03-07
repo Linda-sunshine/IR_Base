@@ -39,11 +39,14 @@ public class Execution  {
 		
 		String stnModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_stnModel:null;
 		
+		_Corpus corpus;
 		Analyzer analyzer;
 		/***Load the data from vector file***/
 		if (param.m_fvFile!=null && (new File(param.m_fvFile)).exists()) {
 			analyzer = new VctAnalyzer(param.m_classNumber, param.m_lengthThreshold);
 			analyzer.LoadDoc(param.m_fvFile); //Load all the documents as the data set.
+			
+			corpus = analyzer.getCorpus();
 		} else {
 			/***Load the data from text file***/
 			if (param.m_suffix.equals(".json"))
@@ -72,10 +75,11 @@ public class Execution  {
 			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(param.m_featureValue, param.m_norm);
 			analyzer.setTimeFeatures(param.m_window);
+			
+			corpus = analyzer.returnCorpus(param.m_featureStat);
 		}
 		
-		int featureSize = analyzer.getFeatureSize();
-		_Corpus corpus = analyzer.returnCorpus(param.m_featureStat);
+		int featureSize = corpus.getFeatureSize();
 		
 		if (param.m_weightScheme.equals("PR")) {
 			System.out.println("Creating PageRank instance weighting, wait...");
