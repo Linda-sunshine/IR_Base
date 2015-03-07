@@ -27,11 +27,11 @@ public class VectorReviewMain {
 		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "TRANS";
+		String style = "SUP";
 		
 		/*****The parameters used in loading files.*****/
 		String featureLocation = "./data/Features/selected_fv.txt";
-		String vctfile = "data/FVs/LinearRegression.dat";
+		String vctfile = "data/FVs/fv_BM25.dat";
 		String modelPath = "./data/Model/";
 		
 		/*****Parameters in time series analysis.*****/
@@ -73,7 +73,7 @@ public class VectorReviewMain {
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize, C);
+				SVM mySVM = new SVM(corpus, classNumber, featureSize, C, 0.01);//default value of eps from Lin's implementation
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){

@@ -106,7 +106,7 @@ public class Execution  {
 			} else if(param.m_model.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
 				System.out.println("Start SVM, wait...");
-				model = new SVM(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
+				model = new SVM(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C, param.m_converge);
 			} else {
 				System.out.println("Classifier has not been developed yet!");
 				System.exit(-1);

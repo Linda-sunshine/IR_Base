@@ -189,7 +189,7 @@ public abstract class BaseClassifier {
 		
 		// The final output of the computation.
 		System.out.println("*************************************************");
-		System.out.println("The final result is as follows:");
+		System.out.format("The final result of %s is as follows:\n", this.toString());
 		System.out.println("The total number of classes is " + m_classNo);
 		
 		for(int i = 0; i < m_classNo; i++)

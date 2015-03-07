@@ -104,7 +104,7 @@ public class AmazonReviewMain {
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C);
+				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C, 0.01);//default eps value from Lin's implementation
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){
