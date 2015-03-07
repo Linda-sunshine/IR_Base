@@ -1,8 +1,11 @@
 package Analyzer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +29,9 @@ public abstract class Analyzer {
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
+	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
+	 * which means no new features will be allowed.*/
+	protected boolean m_isCVLoaded;
 	
 	//minimal length of indexed document
 	protected int m_lengthThreshold;
@@ -55,6 +61,36 @@ public abstract class Analyzer {
 		m_featureNameIndex.clear();
 		m_featureStat.clear();
 		m_corpus.reset();
+	}
+	
+	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	protected boolean LoadCV(String filename) {
+		if (filename==null || filename.isEmpty())
+			return false;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")){
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}
+						
+				} else 
+					expandVocabulary(line);
+			}
+			reader.close();
+			
+			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
+			m_isCVLoaded = true;
+			
+			return true;
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
 	}
 	
 	//Load all the files in the directory.
@@ -214,6 +250,10 @@ public abstract class Analyzer {
 		m_featureNames = selector.getSelectedFeatures();
 		SaveCV(location, featureSelection, startProb, endProb, threshold); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
+		
+		//clear memory for next step feature construction
+		reset();
+		LoadCV(location);//load the selected features
 	}
 	
 	//Save all the features and feature stat into a file.

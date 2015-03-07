@@ -34,10 +34,7 @@ public class DocAnalyzer extends Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected SentenceDetectorME m_stnDetector;
 	Set<String> m_stopwords;
-	
-	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
-	 * which means no new features will be allowed.*/
-	protected boolean m_isCVLoaded; 
+	 
 	protected boolean m_releaseContent;
 	
 	//Constructor with ngram and fValue.
@@ -72,36 +69,6 @@ public class DocAnalyzer extends Analyzer {
 	
 	public void setReleaseContent(boolean release) {
 		m_releaseContent = release;
-	}
-	
-	//Load the features from a file and store them in the m_featurNames.@added by Lin.
-	protected boolean LoadCV(String filename) {
-		if (filename==null || filename.isEmpty())
-			return false;
-		
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				if (line.startsWith("#")){
-					if (line.startsWith("#NGram")) {//has to be decoded
-						int pos = line.indexOf(':');
-						m_Ngram = Integer.valueOf(line.substring(pos+1));
-					}
-						
-				} else 
-					expandVocabulary(line);
-			}
-			reader.close();
-			
-			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
-			m_isCVLoaded = true;
-			
-			return true;
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
-			return false;
-		}
 	}
 	
 	public void LoadStopwords(String filename) {

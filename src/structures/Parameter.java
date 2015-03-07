@@ -229,10 +229,14 @@ public class Parameter {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
 			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
 		} else {
-			if (m_style.equals("SEMI"))
+			if (m_style.equals("SEMI")) {
 				buffer.append("\nLearning paradigm: SEMI\tSampling rate: " + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
-						+ "\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
-			else
+						+ "\nalpha: " + m_alpha + "\tbeta: " + m_beta);
+				if (m_model.contains("RW"))
+					buffer.append("\tconverge: " + m_converge);
+				
+				buffer.append("\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
+			} else
 				buffer.append("\nLearning paradigm: SUP");
 			
 			if (m_model.equals("LR") || m_model.equals("SVM"))

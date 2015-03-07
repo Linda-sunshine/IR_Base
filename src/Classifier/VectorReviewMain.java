@@ -30,6 +30,7 @@ public class VectorReviewMain {
 		String style = "TRANS";
 		
 		/*****The parameters used in loading files.*****/
+		String featureLocation = "./data/Features/selected_fv.txt";
 		String vctfile = "data/FVs/LinearRegression.dat";
 		String modelPath = "./data/Model/";
 		
@@ -39,7 +40,7 @@ public class VectorReviewMain {
 		/****Pre-process the data.*****/
 		//Feture selection.
 		System.out.println("Loading vectors from file, wait...");
-		VctAnalyzer analyzer = new VctAnalyzer(classNumber, lengthThreshold);
+		VctAnalyzer analyzer = new VctAnalyzer(classNumber, lengthThreshold, featureLocation);
 		analyzer.LoadDoc(vctfile); //Load all the documents as the data set.
 				
 		_Corpus corpus = analyzer.getCorpus();
