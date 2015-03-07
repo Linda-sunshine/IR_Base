@@ -72,7 +72,7 @@ public class LRHTMM extends HTMM {
 		try{
 			do {
 				fValue = calcFuncGradient();
-				LBFGS.lbfgs(fSize, 5, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-20, iflag);
+				LBFGS.lbfgs(fSize, 4, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
@@ -96,8 +96,6 @@ public class LRHTMM extends HTMM {
 				p = Utils.logistic(d.m_sentence_features[i-1], m_omega); // p(\epsilon=1|x, w)
 				q = d.m_sentence_labels[i-1]; // posterior of p(\epsilon=1|x, w)
 				
-				if (p==1 || p==0)//temporary code for debugging purpose
-					System.err.println("Error!");
 				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
 				
 				//collect gradient

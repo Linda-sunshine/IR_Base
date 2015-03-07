@@ -1,11 +1,12 @@
 package utils;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import json.JSONException;
 import json.JSONObject;
@@ -137,6 +138,19 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double dotProduct(double[] a, double[] b) {
+		if (a.length != b.length)
+			return Double.NaN;
+		double sum = 0;
+		for(int i=0; i<a.length; i++)
+			sum += a[i] * b[i];
+		return sum;
+	}
+	
+	public static double L2Norm(double[] a) {
+		return Math.sqrt(dotProduct(a,a));
+	}
+	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
 	public static double logistic(double[] fv, double[] w){
 		double sum = w[0];//start from bias term
@@ -165,6 +179,18 @@ public class Utils {
 	public static void scaleArray(double[] a, double b) {
 		for (int i=0; i<a.length; i++)
 			a[i] *= b;
+	}
+	
+	//The function defines the sum of an array.
+	public static void scaleArray(double[] a, double[] b, double scale) {
+		for (int i=0; i<a.length; i++)
+			a[i] += b[i] * scale;
+	}
+	
+	//The function defines the sum of an array.
+	public static void setArray(double[] a, double[] b, double scale) {
+		for (int i=0; i<a.length; i++)
+			a[i] = b[i] * scale;
 	}
 	
 	//L1 normalization: fsValue/sum(abs(fsValue))
@@ -272,9 +298,14 @@ public class Utils {
             pros[i] = pros[i] / total;
     }
 	
-	static public void print(double [] array) {
+	static public String formatArray(double [] array) {
+		StringBuffer buffer = new StringBuffer(256);
 		for(int i=0;i<array.length;i++)
-			System.out.println("array["+i+"] =" + array[i]);
+			if (i==0)
+				buffer.append(Double.toString(array[i]));
+			else
+				buffer.append("," + Double.toString(array[i]));
+		return String.format("(%s)", buffer.toString());
 	}
 	
 	static public _SparseFeature[] createSpVct(HashMap<Integer, Double> vct) {
@@ -284,8 +315,8 @@ public class Utils {
 		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			double TF = pairs.getValue();
-			spVct[i] = new _SparseFeature(pairs.getKey(), TF);
+			double fv = pairs.getValue();
+			spVct[i] = new _SparseFeature(pairs.getKey(), fv);
 			i++;
 		}
 		Arrays.sort(spVct);		
@@ -332,5 +363,47 @@ public class Utils {
 		return !((lastChar>='a' && lastChar<='z') 
 				|| (lastChar>='A' && lastChar<='Z') 
 				|| (lastChar>='0' && lastChar<='9'));
+	}
+	
+	//x_i - x_j 
+	public static _SparseFeature[] diffVector(_SparseFeature[] spVcti, _SparseFeature[] spVctj){
+		ArrayList<_SparseFeature> vectorList = new ArrayList<_SparseFeature>();
+		int i = 0, j = 0;
+		_SparseFeature fi = spVcti[i], fj = spVctj[j];
+		
+		double fv;
+		while (i < spVcti.length && j < spVctj.length) {
+			fi = spVcti[i];
+			fj = spVctj[j];
+			
+			if (fi.getIndex() == fj.getIndex()) {
+				fv = fi.getValue() - fj.getValue();
+				if (Math.abs(fv)>Double.MIN_VALUE)//otherwise it is too small
+					vectorList.add(new _SparseFeature(fi.getIndex(),fv));
+				i++; 
+				j++; 
+			} else if (fi.getIndex() > fj.getIndex()){
+				vectorList.add(new _SparseFeature(fj.getIndex(), -fj.getValue()));
+				j++;
+			}
+			else{
+				vectorList.add(new _SparseFeature(fi.getIndex(), fi.getValue()));
+				i++;
+			}
+		}
+		
+		while (i < spVcti.length) {
+			fi = spVcti[i];
+			vectorList.add(new _SparseFeature(fi.getIndex(), fi.getValue()));
+			i++;
+		}
+		
+		while (j < spVctj.length) {
+			fj = spVctj[j];
+			vectorList.add(new _SparseFeature(fj.getIndex(), -fj.getValue()));
+			j++;
+		}
+		
+		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 }

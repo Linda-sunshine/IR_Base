@@ -7,6 +7,10 @@ import java.text.ParseException;
 
 import structures._Corpus;
 import Analyzer.jsonAnalyzer;
+import Classifier.semisupervised.GaussianFields;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.SVM;
 
 public class AmazonReviewMain {
 
@@ -14,7 +18,7 @@ public class AmazonReviewMain {
 		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 2; //The default value is unigram. 
+		int Ngram = 1; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
@@ -26,10 +30,10 @@ public class AmazonReviewMain {
 		String classifier = "LR"; //Which classifier to use.
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "FV";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
-		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearing Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
+		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -42,15 +46,18 @@ public class AmazonReviewMain {
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "CHI"; //Feature selection method.
-//		double startProb = 0.4; // Used in feature selection, the starting point of the features.
+//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 50; // Filter the features with DFs smaller than this threshold.
+//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****Parameters in time series analysis.*****/
 		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
+		
+		/*****Parameters in time series analysis.*****/
+		String debugOutput = "data/debug/LR.output";
 		
 		/****Pre-process the data.*****/
 //		//Feture selection.
@@ -62,15 +69,16 @@ public class AmazonReviewMain {
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
-		//analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
-		analyzer.setReleaseContent(!classifier.equals("PR"));//Just for debugging purpose: all the other classifiers do not need content
+		jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		featureSize = analyzer.getFeatureSize();
 		
 		_Corpus corpus = analyzer.returnCorpus(finalLocation);
+		corpus.save2File("data/Fvs/fv_BM25.dat");
 		double C = 0.1;
 		
 		//temporal code to add pagerank weights
@@ -90,8 +98,10 @@ public class AmazonReviewMain {
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window + 1, C);
+				myLR.setDebugOutput(debugOutput);
+				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-				myLR.saveModel(modelPath + "LR.model");
+				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
 				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C);
@@ -104,9 +114,8 @@ public class AmazonReviewMain {
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("TRANS")) {
-			SemiSupervised mySemi = new SemiSupervised(corpus, classNumber, featureSize + window + 1, classifier);
+			GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize + window + 1, classifier);
 			mySemi.crossValidation(CVFold, corpus);
-			
 		} else System.out.println("Learning paradigm has not developed yet!");
 	}
 }

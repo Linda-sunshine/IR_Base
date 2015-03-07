@@ -158,6 +158,12 @@ public class _Doc implements Comparable<_Doc> {
 			m_totalLength += fv.getValue();
 	}
 	
+	public void setSpVct(_SparseFeature[] x) {
+		m_x_sparse = x;
+		//unable to know total length when loading from vector file
+		m_totalLength = x.length;//this is totally inaccurate
+	}
+	
 	//Create a sparse vector with time features.
 	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double movingAvg, double norm){
 		int featureLength = this.m_x_sparse.length;
@@ -259,6 +265,8 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	public boolean sameProduct(_Doc d) {
+		if (m_itemID == null || d.m_itemID == null)
+			return false;
 		return m_itemID.equals(d.m_itemID);
 	}
 	

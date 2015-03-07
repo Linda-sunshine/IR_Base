@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -28,11 +27,14 @@ public abstract class Analyzer {
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
 	
+	//minimal length of indexed document
+	protected int m_lengthThreshold;
+	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
 	
-	public Analyzer(String tokenModel, int classNo) throws InvalidFormatException, FileNotFoundException, IOException{
+	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		
 		m_classNo = classNo;
@@ -41,6 +43,9 @@ public abstract class Analyzer {
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		m_featureStat = new HashMap<String, _stat>();
+		
+		m_lengthThreshold = minDocLength;
+		
 		m_preDocs = new LinkedList<_Doc>();
 	}	
 	
@@ -94,11 +99,16 @@ public abstract class Analyzer {
 	//Return corpus without parameter and feature selection.
 	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
 		SaveCVStat(finalLocation);
+		
 		System.out.format("Feature vector contructed for %d documents...\n", m_corpus.getSize());
 		for(int c:m_classMemberNo)
 			System.out.print(c + " ");
 		System.out.println();
 		
+		return getCorpus();
+	}
+	
+	public _Corpus getCorpus() {
 		//store the feature names into corpus
 		m_corpus.setFeatures(m_featureNames);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
@@ -215,7 +225,7 @@ public abstract class Analyzer {
 		PrintWriter writer = new PrintWriter(new File(featureLocation));
 		//print out the configurations as comments
 		writer.format("#NGram:%d\n", m_Ngram);
-		writer.format("#Selection:%s\n", featureLocation);
+		writer.format("#Selection:%s\n", featureSelection);
 		writer.format("#Start:%f\n", startProb);
 		writer.format("#End:%f\n", endProb);
 		writer.format("#DF_Cut:%d\n", threshold);

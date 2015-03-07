@@ -214,7 +214,11 @@ public class Mcsrch
 				// If an unusual termination is to occur then let
 				// stp be the lowest point obtained so far.
 
-				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) ) || nfev[0] >= maxfev - 1 || infoc[0] == 0 || ( brackt[0] && stmax - stmin <= xtol * stmax ) ) stp[0] = stx[0];
+				if ( ( brackt[0] && ( stp[0] <= stmin || stp[0] >= stmax ) ) 
+						|| nfev[0] >= maxfev - 1 
+						|| infoc[0] == 0 
+						|| ( brackt[0] && stmax - stmin <= xtol * stmax ) )
+					stp[0] = stx[0];
 
 				// Evaluate the function and gradient at stp
 				// and compute the directional derivative.
@@ -374,7 +378,10 @@ public class Mcsrch
 
 		info[0] = 0;
 
-		if ( ( brackt[0] && ( stp[0] <= Math.min ( stx[0] , sty[0] ) || stp[0] >= Math.max ( stx[0] , sty[0] ) ) ) || dx[0] * ( stp[0] - stx[0] ) >= 0.0 || stpmax < stpmin ) return;
+		if ( (brackt[0] && (stp[0] <= Math.min (stx[0], sty[0]) || stp[0] >= Math.max (stx[0], sty[0])) ) 
+				|| dx[0] * (stp[0] - stx[0]) >= 0.0 
+				|| stpmax < stpmin ) 
+			return;
 
 		// Determine if the derivatives have opposite sign.
 
@@ -389,6 +396,7 @@ public class Mcsrch
 
 			info[0] = 1;
 			bound = true;
+			
 			theta = 3 * ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] + dp;
 			s = max3 ( Math.abs ( theta ) , Math.abs ( dx[0] ) , Math.abs ( dp ) );
 			gamma = s * Math.sqrt ( sqr( theta / s ) - ( dx[0] / s ) * ( dp / s ) );
@@ -398,6 +406,7 @@ public class Mcsrch
 			r = p/q;
 			stpc = stx[0] + r * ( stp[0] - stx[0] );
 			stpq = stx[0] + ( ( dx[0] / ( ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] ) ) / 2 ) * ( stp[0] - stx[0] );
+			
 			if ( Math.abs ( stpc - stx[0] ) < Math.abs ( stpq - stx[0] ) )
 			{
 				stpf = stpc;
@@ -417,6 +426,7 @@ public class Mcsrch
 
 			info[0] = 2;
 			bound = false;
+			
 			theta = 3 * ( fx[0] - fp ) / ( stp[0] - stx[0] ) + dx[0] + dp;
 			s = max3 ( Math.abs ( theta ) , Math.abs ( dx[0] ) , Math.abs ( dp ) );
 			gamma = s * Math.sqrt ( sqr( theta / s ) - ( dx[0] / s ) * ( dp / s ) );
@@ -426,6 +436,7 @@ public class Mcsrch
 			r = p/q;
 			stpc = stp[0] + r * ( stx[0] - stp[0] );
 			stpq = stp[0] + ( dp / ( dp - dx[0] ) ) * ( stx[0] - stp[0] );
+			
 			if ( Math.abs ( stpc - stp[0] ) > Math.abs ( stpq - stp[0] ) )
 			{
 				stpf = stpc;

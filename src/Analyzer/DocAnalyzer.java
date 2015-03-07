@@ -28,7 +28,7 @@ import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
 	
-	protected int m_lengthThreshold;
+	
 
 	protected Tokenizer m_tokenizer;
 	protected SnowballStemmer m_stemmer;
@@ -42,13 +42,12 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
+		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
 		m_stnDetector = null; // indicating we don't need sentence splitting
 		
 		m_Ngram = Ngram;
-		m_lengthThreshold = threshold;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
@@ -56,7 +55,7 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Constructor with ngram and fValue and sentence check.
 	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo);
+		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
 		
@@ -66,7 +65,6 @@ public class DocAnalyzer extends Analyzer {
 			m_stnDetector = null;
 		
 		m_Ngram = Ngram;
-		m_lengthThreshold = threshold;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
@@ -97,12 +95,13 @@ public class DocAnalyzer extends Analyzer {
 			reader.close();
 			
 			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
+			m_isCVLoaded = true;
+			
+			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			return false;
 		}
-		
-		return true; // if loading is successful
 	}
 	
 	public void LoadStopwords(String filename) {
@@ -192,7 +191,8 @@ public class DocAnalyzer extends Analyzer {
 		return Ngrams.toArray(new String[Ngrams.size()]);
 	}
 
-	//Load a document and analyze it.
+	//Load a movie review document and analyze it.
+	//this is only specified for this type of review documents
 	public void LoadDoc(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
@@ -203,6 +203,7 @@ public class DocAnalyzer extends Analyzer {
 				buffer.append(line);
 			}
 			reader.close();
+			
 			//How to generalize it to several classes???? 
 			if(filename.contains("pos")){
 				//Collect the number of documents in one class.
@@ -357,6 +358,7 @@ public class DocAnalyzer extends Analyzer {
 			}
 			// if the token is not in the vocabulary, nothing to do.
 		}
+		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			m_corpus.addDoc(doc);

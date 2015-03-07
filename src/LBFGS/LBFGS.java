@@ -276,9 +276,6 @@ public class LBFGS {
 	  *	@throws LBFGS.ExceptionWithIflag 
 	  */
 
-//	public static void x(){
-//		
-//	}
 	public static void lbfgs ( int n , int m , double[] x , double f , double[] g , boolean diagco , double[] diag , int[] iprint , double eps , double xtol , int[] iflag ) throws ExceptionWithIflag
 	{
 		boolean execute_entire_while_loop = false;
@@ -294,7 +291,6 @@ public class LBFGS {
 
 			solution_cache = new double[n];
 			System.arraycopy( x, 0, solution_cache, 0, n );
-			//System.out.println("soulution_cache is " + solution_cache);
 
 			iter = 0;
 
@@ -330,7 +326,6 @@ public class LBFGS {
 				for ( i = 1 ; i <= n ; i += 1 )
 				{
 					diag [ i -1] = 1;
-					//System.out.println("the value of i is:" + i);
 				}
 			}
 			ispt= n+2*m;
@@ -342,7 +337,6 @@ public class LBFGS {
 			}
 
 			gnorm = Math.sqrt ( ddot ( n , g , 0, 1 , g , 0, 1 ) );
-			//System.out.println("The value of gnorm is " + gnorm);
 			stp1= 1/gnorm;
 			ftol= 0.0001; 
 			maxfev= 20;
@@ -451,10 +445,6 @@ public class LBFGS {
 			}
 
 			Mcsrch.mcsrch ( n , x , f , g , w , ispt + point * n , stp , ftol , xtol , maxfev , info , nfev , diag );
-
-//			for (int i =0; i < x.length; i++){
-//				System.out.println("After the mcsrch, the value of x" + i + " is " + x[i]);
-//			}
 	
 			if ( info[0] == - 1 )
 			{

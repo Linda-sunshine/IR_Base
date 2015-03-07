@@ -127,13 +127,16 @@ public abstract class TopicModel {
 	
 	public double Evaluation() {
 		m_collectCorpusStats = false;
-		double perplexity = 0, loglikelihood, log2 = Math.log(2.0);
+		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
 		for(_Doc d:m_testSet) {
 			loglikelihood = inference(d);
+			sumLikelihood += loglikelihood;
 			perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 		}
 		perplexity /= m_testSet.size();
-		System.out.format("Test set perplexity is %.3f\n", perplexity);
+		sumLikelihood /= m_testSet.size();
+		
+		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		return perplexity;
 	}
 	

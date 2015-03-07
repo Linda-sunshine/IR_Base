@@ -18,18 +18,22 @@ public class Parameter {
 	public int m_norm = 2;//The way of normalization.(only 1 and 2)
 	public int m_CVFold = 10; //k fold-cross validation
 	
-	//"NB", "LR", "SVM"
-	//"2topic", "pLSA", "HTMM", "LRHTMM"
+	//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
+	//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
+	//Topic Models: "2topic", "pLSA", "HTMM", "LRHTMM"
 	public String m_model = "NB"; //Which model to use.
 	
 	//"PR"
 	public String m_weightScheme = "NONE"; // weather we will use computed weighting
 	
-	//"SUP", "TRANS", "TM"
-	public String m_style = "SUP";
-	public double m_sampleRate = 0.1; // sampling rate for transductive learning
+	//"SUP", "TRANS", "TM", "FV"
+	public String m_style = "SUP"; // FV means save vector representation of documents to file
+	public double m_sampleRate = 0.1; // sampling rate for Gaussian Fields when constructing the graph
 	public int m_kUL = 100; // k nearest labeled neighbors
 	public int m_kUU = 50; // k' nearest unlabeled neighbors
+	public boolean m_storeGraph = false; // prefer storage than speed
+	public int m_bound = 3; // rating difference for generating pairwise constraints
+	public String m_classifier = "LR"; // base classifier for Gaussian Field
 
 	/*****The parameters used in loading files.*****/
 	public String m_folder = null;
@@ -37,8 +41,10 @@ public class Parameter {
 	public String m_tokenModel = "./data/Model/en-token.bin"; //Token model.
 	public String m_stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 	public String m_stopwords = "./data/Model/stopwords.dat";
-	public String m_featureFile= null;//list of controlled vocabulary
-	public String m_featureStat= "./data/Features/fv_stat.dat";//detailed statistics of the selected features
+	public String m_featureFile = null;//list of controlled vocabulary
+	public String m_featureStat = "./data/Features/fv_stat.dat";//detailed statistics of the selected features
+	public String m_fvFile = null; // vector representation of documents
+	public String m_debugOutput = null; // debug output file
 
 	/*****Parameters in feature selection.*****/
 	public String m_featureSelection = "CHI"; //Feature selection method.
@@ -50,7 +56,7 @@ public class Parameter {
 	public int m_window = 0; // window size in time series analysis
 	
 	/*****Parameters specified for classifiers.*****/
-	public double m_C = 0.1; // trade-off parameter in LR and SVM
+	public double m_C = 1.0; // trade-off parameter in LR and SVM
 	
 	/*****Parameters specified for classifiers.*****/
 	public int m_numTopics = 50; // number of topics
@@ -79,6 +85,10 @@ public class Parameter {
 				m_featureFile = argv[i];
 			else if (argv[i-1].equals("-fstat"))
 				m_featureStat = argv[i];
+			else if (argv[i-1].equals("-vf"))
+				m_fvFile = argv[i];
+			else if (argv[i-1].equals("-dbf"))
+				m_debugOutput = argv[i];
 			else if (argv[i-1].equals("-fs"))
 				m_featureSelection = argv[i];
 			else if (argv[i-1].equals("-sp"))
@@ -109,12 +119,18 @@ public class Parameter {
 				m_style = argv[i];
 			else if (argv[i-1].equals("-window"))
 				m_window = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-cf"))
+				m_classifier = argv[i];
 			else if (argv[i-1].equals("-sr"))
 				m_sampleRate = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-sg"))
+				m_storeGraph = argv[i].equals("1");
 			else if (argv[i-1].equals("-kUL"))
 				m_kUL = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-kUU"))
 				m_kUU = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-bd"))
+				m_bound = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-k"))
 				m_numTopics = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-alpha"))
@@ -176,7 +192,11 @@ public class Parameter {
 		+"-c type : classification method (default NB)\n"
 		+"	NB -- Naive Bayes\n"
 		+"	LR -- Logistic Regression\n"
+		+"	PR-LR -- Posterior Regularized Logistic Regression\n"
 		+"	SVM -- Support Vector Machine (libSVM)\n"
+		+"	GF -- Gaussian Fields by matrix inversion\n"
+		+"	GF-RW -- Gaussian Fields by random walk\n"
+		+"	GF-RW-ML -- Gaussian Fields by random walk with distance metric learning (by libliner)\n"
 		+"	2topic -- Two-Topic Topic Model\n"
 		+"	pLSA -- Probabilistic Latent Semantic Analysis\n"
 		+"	HTMM -- Hidden Topic Markov Model\n"
@@ -185,7 +205,7 @@ public class Parameter {
 		+"	PR -- Content similarity based PageRank\n"
 		+"-s type : learning paradigm (default SUP)\n"
 		+"	SUP -- Supervised learning\n"
-		+"	TRANS -- Transductive learning\n"
+		+"	SEMI -- Semi-supervised learning\n"
 		+"	TM -- Topic Models\n"
 		+"-C float -- trade-off parameter in LR and SVM (default 0.1)\n"
 		+"-sr float : Sample rate for transductive learning (default 0.1)\n"
@@ -212,8 +232,9 @@ public class Parameter {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
 			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
 		} else {
-			if (m_style.equals("TRANS"))
-				buffer.append("\nLearning paradigm: TRANS\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU);
+			if (m_style.equals("SEMI"))
+				buffer.append("\nLearning paradigm: SEMI\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
+						+ "\tSolver:" + (m_model.equals("GF")?"Matrix Inversion":"Random Walk"));
 			else
 				buffer.append("\nLearning paradigm: SUP");
 			
