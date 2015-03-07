@@ -13,6 +13,7 @@ import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.PRLogisticRegression;
 import Classifier.supervised.SVM;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
@@ -86,6 +87,8 @@ public class GaussianFields extends BaseClassifier {
 			m_classifier = new NaiveBayes(null, m_classNo, m_featureSize);
 		else if (classifier.equals("LR"))
 			m_classifier = new LogisticRegression(null, m_classNo, m_featureSize);
+		else if (classifier.equals("PR-LR"))
+			m_classifier = new PRLogisticRegression(null, m_classNo, m_featureSize, 1.0);
 		else if (classifier.equals("SVM"))
 			m_classifier = new SVM(null, m_classNo, m_featureSize);
 		else {

@@ -230,8 +230,8 @@ public class Parameter {
 			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
 		} else {
 			if (m_style.equals("SEMI"))
-				buffer.append("\nLearning paradigm: SEMI\tSampling rate:" + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
-						+ "\tSolver:" + (m_model.equals("GF")?"Matrix Inversion":"Random Walk"));
+				buffer.append("\nLearning paradigm: SEMI\tSampling rate: " + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
+						+ "\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
 			else
 				buffer.append("\nLearning paradigm: SUP");
 			
@@ -239,10 +239,12 @@ public class Parameter {
 				buffer.append("\nClassifier: " + m_model + "\tInstance weighting: " + m_weightScheme + "\tTrade-off Parameter: " + m_C+ "\tCross validation: " + m_CVFold);
 			else
 				buffer.append("\nClassifier: " + m_model + "\tInstance weighting: " + m_weightScheme + "\tCross validation: " + m_CVFold);
-
 		}
 		
-		buffer.append("\nData directory: " + m_folder);
+		if (m_folder!=null)
+			buffer.append("\nData directory: " + m_folder);
+		else if (m_fvFile!=null)
+			buffer.append("\nVector file: " + m_fvFile);
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		return buffer.toString();
 	}

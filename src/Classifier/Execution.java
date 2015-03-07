@@ -25,6 +25,7 @@ import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.PRLogisticRegression;
 import Classifier.supervised.SVM;
 
 /**
@@ -100,6 +101,10 @@ public class Execution  {
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
 				model = new LogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
+			} else if(param.m_model.equals("PR-LR")){
+				//Define a new logistics regression with the parameters.
+				System.out.println("Start posterior regularized logistic regression, wait...");
+				model = new PRLogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
 			} else if(param.m_model.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
 				System.out.println("Start SVM, wait...");

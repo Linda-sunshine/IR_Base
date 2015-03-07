@@ -11,7 +11,6 @@ import optimization.linesearch.LineSearchMethod;
 import optimization.stopCriteria.CompositeStopingCriteria;
 import optimization.stopCriteria.ProjectedGradientL2Norm;
 import optimization.stopCriteria.StopingCriteria;
-import posteriorRegularization.logisticRegression.PairwisePR;
 import posteriorRegularization.logisticRegression.PointwisePR;
 import structures._Corpus;
 import structures._Doc;
