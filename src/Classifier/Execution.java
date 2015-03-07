@@ -156,6 +156,7 @@ public class Execution  {
 			model.crossValidation(param.m_CVFold);
 		} else if (param.m_style.equals("FV")) {
 			corpus.save2File(param.m_fvFile);
+			System.out.format("Vectors saved to %s...\n", param.m_fvFile);
 		} else 
 			System.out.println("Learning paradigm has not developed yet!");
 	}

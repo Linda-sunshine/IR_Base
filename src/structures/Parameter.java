@@ -71,8 +71,7 @@ public class Parameter {
 		int i;
 		
 		// parse options
-		for(i=0;i<argv.length;i++)
-		{
+		for(i=0;i<argv.length;i++) {
 			if(argv[i].charAt(0) != '-') 
 				break;
 			else if(++i>=argv.length)
@@ -147,10 +146,8 @@ public class Parameter {
 				exit_with_help();
 		}
 		
-		if(i>=argv.length)
-			exit_with_help();
-
-		m_folder = argv[i];
+		if(i==argv.length-1)
+			m_folder = argv[i];
 		
 		if (m_classNumber<=0){
 			System.err.println("Class number has to be manually set!");
