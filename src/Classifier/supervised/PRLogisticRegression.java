@@ -11,7 +11,7 @@ import optimization.linesearch.LineSearchMethod;
 import optimization.stopCriteria.CompositeStopingCriteria;
 import optimization.stopCriteria.ProjectedGradientL2Norm;
 import optimization.stopCriteria.StopingCriteria;
-import posteriorRegularization.logisticRegression.PointwisePR;
+import posteriorRegularization.logisticRegression.PairwisePR;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -98,8 +98,8 @@ public class PRLogisticRegression extends LogisticRegression {
 			calcPosterior(doc.getSparse(), null, m_cache);
 			
 			// then we are regularizing the PR here
-			//PairwisePR testcase = new PairwisePR(m_cache, doc.getYLabel(), m_classNo); // Yi is the true label	
-			PointwisePR testcase = new PointwisePR(m_cache, doc.getYLabel(), m_classNo); // Yi is the true label		
+			PairwisePR testcase = new PairwisePR(m_cache, doc.getYLabel(), m_classNo); // Yi is the true label	
+			//PointwisePR testcase = new PointwisePR(m_cache, doc.getYLabel(), m_classNo); // Yi is the true label		
 			testcase.setDebugLevel(-1);
 			
 			LineSearchMethod ls = new ArmijoLineSearchMinimizationAlongProjectionArc(new InterpolationPickFirstStep(istp));
