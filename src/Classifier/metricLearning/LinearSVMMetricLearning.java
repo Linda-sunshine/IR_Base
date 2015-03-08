@@ -5,6 +5,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Random;
 
 import structures._Corpus;
@@ -23,6 +25,8 @@ import Classifier.supervised.liblinear.SolverType;
 public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	protected Model m_libModel;
 	int m_bound;
+	
+	HashMap<Integer, Integer> m_selectedFVs;
 	
 	//Default constructor without any default parameters.
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
@@ -95,8 +99,42 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		} 
 	}
 	
+	void selFeatures(Collection<_Doc> trainSet, double C) {
+		Feature[][] fvs = new Feature[trainSet.size()][];
+		double[] y = new double[trainSet.size()];
+		
+		int fid = 0;
+		for(_Doc d:trainSet) {
+			fvs[fid] = Utils.createLibLinearFV(d);
+			y[fid] = d.getYLabel();
+			fid ++;
+		}
+		
+		Problem libProblem = new Problem();
+		libProblem.l = fid;
+		libProblem.n = m_featureSize;
+		libProblem.x = fvs;
+		libProblem.y = y;
+		m_libModel = Linear.train(libProblem, new Parameter(SolverType.L1R_L2LOSS_SVC, C, 0.001));//use L1 regularization to reduce the feature size
+		
+		m_selectedFVs = new HashMap<Integer, Integer>();
+		double[] w = m_libModel.getWeights();
+		for(int i=0; i<m_featureSize; i++) {
+			for(int c=0; c<m_classNo; c++) {
+				if (w[i*m_classNo+c]!=0) {//a non-zero feature
+					m_selectedFVs.put(i, m_selectedFVs.size());
+					break;
+				}	
+			}
+		}
+		
+		System.out.format("Selecting %d non-zero features...\n", m_selectedFVs.size());
+	}
+	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
+		selFeatures(m_trainSet, 0.3);
+		
 		int mustLink = 0, cannotLink = 0, label;
 		Random rand = new Random();
 		

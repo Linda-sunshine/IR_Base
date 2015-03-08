@@ -130,6 +130,9 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		if (m_fu_last==null || m_fu_last.length<m_U)
 			m_fu_last = new double[m_U]; //otherwise we can reuse the current memory
 		
+		for(int i=0; i<m_U; i++)
+			m_fu_last[i] = m_Y[i];//random walk starts from multiple learner
+		
 		/***use random walk to solve matrix inverse***/
 		do {
 			if (m_storeGraph)

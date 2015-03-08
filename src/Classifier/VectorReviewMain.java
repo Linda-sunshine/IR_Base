@@ -7,6 +7,7 @@ import java.text.ParseException;
 
 import structures._Corpus;
 import Analyzer.VctAnalyzer;
+import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.LogisticRegression;
@@ -25,17 +26,17 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "GF-RW-ML"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
-		double C = 1;
+		double C = 0.4;
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "SEMI";
 		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/
-		String featureLocation = "data/Features/fv_2gram_BM25_CHI_medium.txt";
-		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_medium.dat";
+		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
+		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
 		
 		/*****Parameters in time series analysis.*****/
 		String debugOutput = null; //"data/debug/LR.output";
@@ -48,7 +49,6 @@ public class VectorReviewMain {
 				
 		_Corpus corpus = analyzer.getCorpus();
 		int featureSize = corpus.getFeatureSize();
-		
 		
 		/********Choose different classification methods.*********/
 		if (style.equals("SUP")) {
@@ -93,10 +93,11 @@ public class VectorReviewMain {
 				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner,
 						0.2, 100, 50, 1.0, 0.2, 1e-4, 0.1, false);
 				mySemi.crossValidation(CVFold, corpus);
+			} else if (classifier.equals("GF-RW-ML")) {
+				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, multipleLearner, 3);
+				lMetricLearner.crossValidation(CVFold, corpus);
 			} else System.out.println("Classifier has not been developed yet!");
 			
-//			LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, classifier);
-//			lMetricLearner.crossValidation(CVFold, corpus);
 		} else System.out.println("Learning paradigm has not been developed yet!");
 	} 
 

@@ -8,6 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
@@ -405,5 +408,13 @@ public class Utils {
 		}
 		
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
+	}
+	
+	static public Feature[] createLibLinearFV(_Doc doc) {
+		Feature[] node = new Feature[doc.getDocLength()]; 
+		int fid = 0;
+		for(_SparseFeature fv:doc.getSparse())
+			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
+		return node;
 	}
 }

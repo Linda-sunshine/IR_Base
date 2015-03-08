@@ -5,10 +5,9 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
+import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
@@ -136,7 +135,7 @@ import Classifier.supervised.liblinear.SolverType;
 public class SVM extends BaseClassifier {
 	Model m_libModel;
 	Parameter m_libParameter;
-	SolverType m_type = SolverType.L2R_L2LOSS_SVC_DUAL;
+	SolverType m_type = SolverType.L1R_L2LOSS_SVC;
 	
 	//Constructor without give C.
 	public SVM(_Corpus c, int classNumber, int featureSize){
@@ -162,13 +161,7 @@ public class SVM extends BaseClassifier {
 		//no need to initiate, libSVM will take care of it
 	}
 	
-	protected Feature[] createFV(_Doc doc) {
-		Feature[] node = new Feature[doc.getDocLength()]; 
-		int fid = 0;
-		for(_SparseFeature fv:doc.getSparse())
-			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
-		return node;
-	}
+
 	
 	@Override
 	public void train(Collection<_Doc> trainSet) {
@@ -177,7 +170,7 @@ public class SVM extends BaseClassifier {
 		
 		int fid = 0;
 		for(_Doc d:trainSet) {
-			fvs[fid] = createFV(d);
+			fvs[fid] = Utils.createLibLinearFV(d);
 			y[fid] = d.getYLabel();
 			fid ++;
 		}
@@ -192,7 +185,7 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (int)Linear.predict(m_libModel, createFV(doc));
+		return (int)Linear.predict(m_libModel, Utils.createLibLinearFV(doc));
 	}
 	
 	@Override
