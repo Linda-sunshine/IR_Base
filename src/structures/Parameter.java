@@ -246,7 +246,7 @@ public class Parameter {
 				buffer.append("\nLearning paradigm: SEMI\tSampling rate: " + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
 						+ "\nalpha: " + m_alpha + "\tbeta: " + m_beta);
 				if (m_model.contains("RW"))
-					buffer.append("\tconverge: " + m_converge);
+					buffer.append("\teta: " + m_eta + "\tconverge: " + m_converge);
 				
 				buffer.append("\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
 			} else

@@ -79,7 +79,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio);
+		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
 	}
 	
 	private void setClassifier(String classifier) {

@@ -36,7 +36,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio);
+		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
 	}
 	
 	//The random walk algorithm to generate new labels for unlabeled data.

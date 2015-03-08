@@ -136,19 +136,20 @@ import Classifier.supervised.liblinear.SolverType;
 public class SVM extends BaseClassifier {
 	Model m_libModel;
 	Parameter m_libParameter;
+	SolverType m_type = SolverType.L2R_L2LOSS_SVC_DUAL;
 	
 	//Constructor without give C.
 	public SVM(_Corpus c, int classNumber, int featureSize){
 		super(c, classNumber, featureSize);
 		//Set default value of the param.
-		m_libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, 1.0, 0.001);
+		m_libParameter = new Parameter(m_type, 1.0, 0.001);
 	}
 
 	//Constructor with a given C.
 	public SVM(_Corpus c, int classNumber, int featureSize, double C, double eps){
 		super(c, classNumber, featureSize);
 		// Set default value of the param.
-		m_libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, C, eps);
+		m_libParameter = new Parameter(m_type, C, eps);
 	}
 	
 	@Override
