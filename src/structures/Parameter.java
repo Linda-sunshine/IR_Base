@@ -35,6 +35,7 @@ public class Parameter {
 	public int m_bound = 3; // rating difference for generating pairwise constraints
 	public String m_classifier = "SVM"; // base classifier for Gaussian Field
 	public double m_eta = 0.1; //random start ratio
+	public double m_cSampleRate = 0.001; // sampling rate of constraints for metric learning
 	
 	/*****The parameters used in loading files.*****/
 	public String m_folder = null;
@@ -131,6 +132,8 @@ public class Parameter {
 				m_kUU = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-bd"))
 				m_bound = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-csr"))
+				m_cSampleRate = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-k"))
 				m_numTopics = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-alpha"))
@@ -219,14 +222,15 @@ public class Parameter {
 		+"-kUL int : k nearest labeled neighbors (default 100)\n"
 		+"-kUU int : kP nearest unlabeled neighbors (default 50)\n"
 		+"-sg 0/1 : store the k nearest graph (default 0)\n"
+		+"-bd int : rating difference bound in generating pairwise constraint (default 3)\n"
+		+"-csr double : constrain sampling rate for metric learning (default 1e-3)\n"
 		+"-k int : number of topics (default 50)\n"
 		+"-alpha float : dirichlet prior for p(z|d) (default 1.05)\n"
 		+"-beta float : dirichlet prior for p(w|z) (default 1.01)\n"
 		+"-lambda float : manual background proportion setting p(B) (default 0.8)\n"
 		+"-eta float : random restart probability eta in randowm walk (default 0.1)\n"
 		+"-iter int : maximum number of EM iteration (default 200)\n"
-		+"-con float : convergency limit (default 1e-4)\n"
-		+"-bd int : rating difference bound in generating pairwise constraint (default 3)\n"
+		+"-con float : convergency limit (default 1e-4)\n"		
 		);
 		System.exit(1);
 	}
@@ -245,8 +249,11 @@ public class Parameter {
 			if (m_style.equals("SEMI")) {
 				buffer.append("\nLearning paradigm: SEMI\tSampling rate: " + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
 						+ "\nalpha: " + m_alpha + "\tbeta: " + m_beta);
-				if (m_model.contains("RW"))
+				
+				if (m_model.contains("-RW"))
 					buffer.append("\teta: " + m_eta + "\tconverge: " + m_converge);
+				if (m_model.contains("-ML"))
+					buffer.append("\nDiff bound: " + m_bound + "\tcSample Rate: " + m_cSampleRate);
 				
 				buffer.append("\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
 			} else

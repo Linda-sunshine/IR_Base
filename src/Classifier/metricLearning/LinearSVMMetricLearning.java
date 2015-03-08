@@ -25,6 +25,7 @@ import Classifier.supervised.liblinear.SolverType;
 public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	protected Model m_libModel;
 	int m_bound;
+	double m_contSamplingRate;
 	
 	HashMap<Integer, Integer> m_selectedFVs;
 	
@@ -32,12 +33,15 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
 		super(c, classNumber, featureSize, classifier);
 		m_bound = bound;
+		m_contSamplingRate = 0.001; // a conservative setting
 	}
 	
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, 
-			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph, int bound) {
+			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph, 
+			int bound, double cSampleRate) {
 		super(c, classNumber, featureSize, classifier, ratio, k, kPrime, alhpa, beta, delta, eta, storeGraph);
 		m_bound = bound;
+		m_contSamplingRate = cSampleRate;
 	}
 
 	@Override
@@ -47,7 +51,11 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	protected double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Linear.predictValue(m_libModel, createLinearFeature(di, dj)));//to make sure this is positive
+		Feature[] fv = createLinearFeature(di, dj);
+		if (fv == null)
+			return 0;
+		else
+			return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
 	}
 	
 	@Override
@@ -99,6 +107,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		} 
 	}
 	
+	//using L1 SVM to select a subset of features
 	void selFeatures(Collection<_Doc> trainSet, double C) {
 		Feature[][] fvs = new Feature[trainSet.size()][];
 		double[] y = new double[trainSet.size()];
@@ -128,32 +137,37 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 		}
 		
-		System.out.format("Selecting %d non-zero features...\n", m_selectedFVs.size());
+		System.out.format("Selecting %d non-zero features by L1 regularization...\n", m_selectedFVs.size());
 	}
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		selFeatures(m_trainSet, 0.3);
+		selFeatures(m_trainSet, 0.5);
 		
 		int mustLink = 0, cannotLink = 0, label;
 		Random rand = new Random();
 		
-		//In the problem, the size of feature size is m*m.
+		//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
+		Feature[] fv;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
 		ArrayList<Integer> targetArray = new ArrayList<Integer>();
 		for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
 			_Doc d1 = m_trainSet.get(i);
 			for(int j = i+1; j < m_trainSet.size(); j++){
 				_Doc d2 = m_trainSet.get(j);
-				if(d1.getYLabel() == d2.getYLabel() && (d1.getYLabel()==0 || d1.getYLabel()==4))//start from the extreme case?
+				if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
 					label = 1;
 				else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
 					label = 0;
 				else
 					label = -1;
 				
-				if (label!=-1 && rand.nextDouble() < m_labelRatio) {
-					featureArray.add(createLinearFeature(d1, d2));
+				if (label!=-1 && rand.nextDouble() < m_contSamplingRate) {
+					fv = createLinearFeature(d1, d2);
+					if (fv==null)
+						continue;
+					
+					featureArray.add(fv);
 					targetArray.add(label);
 					
 					if (label==1)
@@ -172,12 +186,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			targetMatrix[i] = targetArray.get(i);
 		}
 		
-		double C = 2.0, eps = 0.01;
+		double C = 1.0, eps = 0.01;
 		Parameter libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, C, eps);
 		
 		Problem libProblem = new Problem();
 		libProblem.l = targetMatrix.length;
-		libProblem.n = m_featureSize * (1+m_featureSize)/2;
+		libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
 		libProblem.x = featureMatrix;
 		libProblem.y = targetMatrix;
 		Model model = Linear.train(libProblem, libParameter);
@@ -189,22 +203,35 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	Feature[] createLinearFeature(_Doc d1, _Doc d2){
 		_SparseFeature[] diffVct = Utils.diffVector(d1.getSparse(), d2.getSparse());
 		
-		Feature[] features = new Feature[diffVct.length*(1+diffVct.length)/2];
-		int pi, pj, spIndex = 0;
+		ArrayList<Feature> features = new ArrayList<Feature>();
+		int pi, pj;
 		double value = 0;
 		for(int i = 0; i < diffVct.length; i++){
 			pi = diffVct[i].getIndex();
+			if (!m_selectedFVs.containsKey(pi))
+				continue;//feature being discarded
+			else
+				pi = m_selectedFVs.get(pi);//map this feature to the reduced feature space
+			
 			for(int j = 0; j < i; j++){
 				pj = diffVct[j].getIndex();
+				if (!m_selectedFVs.containsKey(pj))
+					continue;//feature being discarded
+				else
+					pj = m_selectedFVs.get(pj);//map this feature to the reduced feature space
 				
 				//Currently, we use one dimension array to represent V*V features 
 				value = 2 * diffVct[i].getValue() * diffVct[j].getValue(); // this might be too small to count
-				features[spIndex++] = new FeatureNode(getIndex(pi, pj), value);
+				features.add(new FeatureNode(getIndex(pi, pj), value));
 			}
 			value = diffVct[i].getValue() * diffVct[i].getValue(); // this might be too small to count
-			features[spIndex++] = new FeatureNode(getIndex(pi, pi), value);
+			features.add(new FeatureNode(getIndex(pi, pi), value));
 		}
-		return features;
+		
+		if (features.isEmpty())
+			return null;//might hit nothing
+		else
+			return features.toArray(new Feature[features.size()]);
 	}
 	
 	int getIndex(int i, int j) {

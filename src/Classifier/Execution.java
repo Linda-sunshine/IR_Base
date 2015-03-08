@@ -128,7 +128,8 @@ public class Execution  {
 			} else if (param.m_model.equals("GF-RW-ML")) {
 				System.out.println("Start Gaussian Field with distance metric learning by random walk, wait...");
 				model = new LinearSVMMetricLearning(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier,
-					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, param.m_bound);
+					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
+					param.m_bound, param.m_cSampleRate);
 			} else {
 				System.out.println("Classifier has not been developed yet!");
 				System.exit(-1);
