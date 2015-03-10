@@ -142,7 +142,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		selFeatures(m_trainSet, 0.05);
+		selFeatures(m_trainSet, 0.12);
 		
 		int mustLink = 0, cannotLink = 0, label;
 		Random rand = new Random();

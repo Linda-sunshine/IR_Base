@@ -201,8 +201,10 @@ public class GaussianFields extends BaseClassifier {
 				m_testSet.get(i).setID(i);//record the current position
 		}
 		
-		if (!createSparseGraph)
+		if (!createSparseGraph) {
+			System.out.println("Nearest neighbor graph construction finished!");
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
+		}
 		
 		m_graph = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);//we have to create this every time with exact dimension
 		
@@ -246,6 +248,8 @@ public class GaussianFields extends BaseClassifier {
 				sum += m_graph.getQuick(i, j);
 			m_graph.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
 		}
+		
+		System.out.println("Nearest neighbor graph construction finished!");
 	}
 	
 	//Test the data set.
