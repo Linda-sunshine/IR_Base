@@ -144,19 +144,18 @@ public class LogisticRegression extends BaseClassifier {
 	
 	protected void debug(_Doc d) {
 		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, true), "UTF-8"));
 			_SparseFeature[] fv = d.getSparse();
 			int fid, offset;
 			double fvalue;		
 			
-			writer.write(d.toString());
+			m_debugWriter.write(d.toString());
 			
-			writer.write("\nBIAS");
+			m_debugWriter.write("\nBIAS");
 			for(int k=0; k<m_classNo; k++) {
 				offset = k * (m_featureSize + 1);
-				writer.write(String.format("\t%.4f", m_beta[offset]));					
+				m_debugWriter.write(String.format("\t%.4f", m_beta[offset]));					
 			}
-			writer.write("\n");
+			m_debugWriter.write("\n");
 			
 			for(int i=0; i<fv.length; i++) {
 				fid = fv[i].getIndex();
@@ -164,19 +163,18 @@ public class LogisticRegression extends BaseClassifier {
 					break; // beyond text feature range
 				fvalue = fv[i].getValue();				
 				
-				writer.write(m_corpus.getFeature(fid));
+				m_debugWriter.write(m_corpus.getFeature(fid));
 				for(int k=0; k<m_classNo; k++) {
 					offset = k * (m_featureSize + 1) + fid + 1;
-					writer.write(String.format("\t%.4f", fvalue*m_beta[offset]));					
+					m_debugWriter.write(String.format("\t%.4f", fvalue*m_beta[offset]));					
 				}
-				writer.write("\n");
+				m_debugWriter.write("\n");
 			}
 			
-			writer.write("Pred");
+			m_debugWriter.write("Pred");
 			for(int k=0; k<m_classNo; k++) 
-				writer.write(String.format("\t%.4f", m_cache[k]));		
-			writer.write("\n\n");
-			writer.close();
+				m_debugWriter.write(String.format("\t%.4f", m_cache[k]));		
+			m_debugWriter.write("\n\n");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

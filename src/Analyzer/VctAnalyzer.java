@@ -38,14 +38,24 @@ public class VctAnalyzer extends Analyzer {
 					continue;
 				
 				doc = new _Doc(m_corpus.getSize(), null, Integer.valueOf(container[0]));
-				spVct = new _SparseFeature[container.length-1];
+				if (!line.contains("#"))
+					spVct = new _SparseFeature[container.length-1];
+				else
+					spVct = new _SparseFeature[container.length-2]; // exclude the comment
+				
 				for(int i=1; i<container.length; i++) {
-					entry = container[i].split(":");
-					index = Integer.valueOf(entry[0])-1;//the loaded feature index starts from 1
-					spVct[i-1] = new _SparseFeature(index, Double.valueOf(entry[1]));
-					
-					if (index>maxFvIndex)
-						maxFvIndex = index;
+					if (container[i].startsWith("#")) {//parse the comment part for this review
+						entry = container[i].split("-");
+						doc.setItemID(entry[0].substring(1));
+						doc.setName(entry[1]);
+					} else {
+						entry = container[i].split(":");
+						index = Integer.valueOf(entry[0])-1;//the loaded feature index starts from 1
+						spVct[i-1] = new _SparseFeature(index, Double.valueOf(entry[1]));
+						
+						if (index>maxFvIndex)
+							maxFvIndex = index;
+					}
 				}
 				
 				doc.setSpVct(spVct);

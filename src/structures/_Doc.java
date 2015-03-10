@@ -78,6 +78,8 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentence_features = null;
 	}
 	
+	
+	
 	public void setWeight(double w) {
 		m_weight = w;
 	}
@@ -97,8 +99,16 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_ID;
 	}
 	
+	public void setItemID(String itemID) {
+		m_itemID = itemID;
+	}
+	
 	public String getItemID() {
 		return m_itemID;
+	}
+	
+	public void setName(String name) {
+		m_name = name;
 	}
 	
 	public String getName() {

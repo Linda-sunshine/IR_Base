@@ -153,8 +153,14 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		ArrayList<Integer> targetArray = new ArrayList<Integer>();
 		for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
 			_Doc d1 = m_trainSet.get(i);
+			if (rand.nextDouble()<0.1)
+				continue;
+			
 			for(int j = i+1; j < m_trainSet.size(); j++){
 				_Doc d2 = m_trainSet.get(j);
+				if (rand.nextDouble()<0.1)
+					continue;
+				
 				if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
 					label = 1;
 				else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
@@ -201,37 +207,30 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	//Calculate the new sample according to two documents.
 	//Since cross-product will be symmetric, we don't need to store the whole matrix 
 	Feature[] createLinearFeature(_Doc d1, _Doc d2){
-		_SparseFeature[] diffVct = Utils.diffVector(d1.getSparse(), d2.getSparse());
+		_SparseFeature[] fv1=Utils.projectSpVct(d1.getSparse(), m_selectedFVs), fv2=Utils.projectSpVct(d2.getSparse(), m_selectedFVs);
+		if (fv1==null && fv2==null)
+			return null;
 		
-		ArrayList<Feature> features = new ArrayList<Feature>();
-		int pi, pj;
+		_SparseFeature[] diffVct = Utils.diffVector(fv1, fv2);
+		
+		Feature[] features = new Feature[diffVct.length*(diffVct.length+1)/2];
+		int pi, pj, spIndex=0;
 		double value = 0;
 		for(int i = 0; i < diffVct.length; i++){
 			pi = diffVct[i].getIndex();
-			if (!m_selectedFVs.containsKey(pi))
-				continue;//feature being discarded
-			else
-				pi = m_selectedFVs.get(pi);//map this feature to the reduced feature space
 			
 			for(int j = 0; j < i; j++){
 				pj = diffVct[j].getIndex();
-				if (!m_selectedFVs.containsKey(pj))
-					continue;//feature being discarded
-				else
-					pj = m_selectedFVs.get(pj);//map this feature to the reduced feature space
 				
 				//Currently, we use one dimension array to represent V*V features 
 				value = 2 * diffVct[i].getValue() * diffVct[j].getValue(); // this might be too small to count
-				features.add(new FeatureNode(getIndex(pi, pj), value));
+				features[spIndex++] = new FeatureNode(getIndex(pi, pj), value);
 			}
 			value = diffVct[i].getValue() * diffVct[i].getValue(); // this might be too small to count
-			features.add(new FeatureNode(getIndex(pi, pi), value));
+			features[spIndex++] = new FeatureNode(getIndex(pi, pi), value);
 		}
 		
-		if (features.isEmpty())
-			return null;//might hit nothing
-		else
-			return features.toArray(new Feature[features.size()]);
+		return features;
 	}
 	
 	int getIndex(int i, int j) {

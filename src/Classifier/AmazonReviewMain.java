@@ -38,13 +38,13 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
-		/*****Parameters in feature selection.*****/
+//		/*****Parameters in feature selection.*****/
 		String featureSelection = "CHI"; //Feature selection method.
-		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.3; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
+//		String stopwords = "./data/Model/stopwords.dat";
+//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+//		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -52,7 +52,7 @@ public class AmazonReviewMain {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
 		String finalLocation = String.format("data/Features/fv_%s.txt", pattern);
-		String featureLocation = String.format("data/Features/fv_stat_%s.txt", pattern);
+//		String featureLocation = String.format("data/Features/fv_stat_%s.txt", pattern);
 		String vctFile = String.format("data/Fvs/vct_%s.dat", pattern);		
 		
 		/*****Parameters in time series analysis.*****/
@@ -61,22 +61,22 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/****Feture selection*****/
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		//Collect vectors for documents.
 		System.out.println("Creating feature vectors, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, finalLocation, Ngram, lengthThreshold);
 		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		
 		featureSize = analyzer.getFeatureSize();
-		_Corpus corpus = analyzer.returnCorpus(finalLocation);
+		_Corpus corpus = analyzer.getCorpus();
 		
 		//temporal code to add pagerank weights
 //		PageRank tmpPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);

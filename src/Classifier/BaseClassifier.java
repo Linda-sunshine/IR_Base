@@ -1,5 +1,9 @@
 package Classifier;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -22,6 +26,7 @@ public abstract class BaseClassifier {
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	protected String m_debugOutput; // set up debug output (default: no debug output)
+	protected BufferedWriter m_debugWriter; // debug output writer
 	
 	public void train() {
 		train(m_trainSet);
@@ -74,26 +79,36 @@ public abstract class BaseClassifier {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
-		c.shuffle(k);
-		int[] masks = c.getMasks();
-		ArrayList<_Doc> docs = c.getCollection();
-		//Use this loop to iterate all the ten folders, set the train set and test set.
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) 
-					m_testSet.add(docs.get(j));
-				else 
-					m_trainSet.add(docs.get(j));
+		try {
+			if (m_debugOutput!=null)
+				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
+		
+			c.shuffle(k);
+			int[] masks = c.getMasks();
+			ArrayList<_Doc> docs = c.getCollection();
+			//Use this loop to iterate all the ten folders, set the train set and test set.
+			for (int i = 0; i < k; i++) {
+				for (int j = 0; j < masks.length; j++) {
+					if( masks[j]==i ) 
+						m_testSet.add(docs.get(j));
+					else 
+						m_trainSet.add(docs.get(j));
+				}
+				
+				long start = System.currentTimeMillis();
+				train();
+				test();
+				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				m_trainSet.clear();
+				m_testSet.clear();
 			}
-			
-			long start = System.currentTimeMillis();
-			train();
-			test();
-			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-			m_trainSet.clear();
-			m_testSet.clear();
+			calculateMeanVariance(m_precisionsRecalls);	
+		
+			if (m_debugOutput!=null)
+				m_debugWriter.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		calculateMeanVariance(m_precisionsRecalls);	
 	}
 	
 	abstract public void saveModel(String modelLocation);

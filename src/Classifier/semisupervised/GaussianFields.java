@@ -1,5 +1,6 @@
 package Classifier.semisupervised;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -42,7 +43,7 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
 	double m_discount = 0.5; // default similarity discount if across different products
-	
+
 	//Randomly pick 10% of all the training documents.
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize);
@@ -146,7 +147,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected double getSimilarity(_Doc di, _Doc dj) {
-		return Utils.calculateSimilarity(di, dj);
+		return Math.exp(Utils.calculateSimilarity(di, dj));
 		//return Math.random();//just for debugging purpose
 	}
 	
@@ -193,6 +194,12 @@ public class GaussianFields extends BaseClassifier {
 		/***Set up structure for k nearest neighbors.****/
 		m_kUU = new MyPriorityQueue<_RankItem>(m_kPrime);
 		m_kUL = new MyPriorityQueue<_RankItem>(m_k);
+		
+		/***Set up document mapping for debugging purpose***/
+		if (m_debugOutput!=null) {
+			for (int i = 0; i < m_U; i++) 
+				m_testSet.get(i).setID(i);//record the current position
+		}
 		
 		if (!createSparseGraph)
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
@@ -267,8 +274,14 @@ public class GaussianFields extends BaseClassifier {
 		}
 		
 		/***evaluate the performance***/
-		for(int i = 0; i < m_U; i++)
-			m_TPTable[getLabel(m_fu[i])][m_testSet.get(i).getYLabel()] += 1;
+		int pred, ans;
+		for(int i = 0; i < m_U; i++) {
+			pred = getLabel(m_fu[i]);
+			ans = m_testSet.get(i).getYLabel();
+			m_TPTable[pred][ans] += 1;
+			if (m_debugOutput!=null && pred != ans)
+				debug(m_testSet.get(i));
+		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 	}
 	
@@ -295,7 +308,70 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	@Override
-	protected void debug(_Doc d){} // no easy way to debug
+	protected void debug(_Doc d){
+		int id = d.getID();
+		_RankItem item;
+		_Doc neighbor;
+		double sim, wijSumU=0, wijSumL=0;
+		
+		try {
+			m_debugWriter.write(String.format("%d-%.4f(%d,%d):\t", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id])));
+		
+			//find top five labeled
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++)
+				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
+			
+			/****Get the sum of kUL******/
+			for(_RankItem n: m_kUL)
+				wijSumL += n.m_value; //get the similarity between two nodes.
+			
+			/****Get the top 5 elements from kUL******/
+			for(int k=0; k<5; k++){
+				item = m_kUL.get(k);
+				neighbor = m_labeled.get(item.m_index);
+				sim = item.m_value/wijSumL;
+				
+				if (k==0)
+					m_debugWriter.write(String.format("L[%d:%.4f, ", neighbor.getYLabel(), sim));
+				else if (k==4)
+					m_debugWriter.write(String.format("%d:%.4f]", neighbor.getYLabel(), sim));
+				else
+					m_debugWriter.write(String.format("%d:%.4f, ", neighbor.getYLabel(), sim));
+			}
+			m_kUL.clear();
+			
+			//find top five unlabeled
+			/****Construct the top k' unlabeled data for the current data.****/
+			for (int j = 0; j < m_U; j++) {
+				if (j == id)
+					continue;
+				m_kUU.add(new _RankItem(j, getCache(id, j)));
+			}
+			
+			/****Get the sum of k'UU******/
+			for(_RankItem n: m_kUU)
+				wijSumU += n.m_value; //get the similarity between two nodes.
+			
+			/****Get the top 5 elements from k'UU******/
+			for(int k=0; k<5; k++){
+				item = m_kUU.get(k);
+				neighbor = m_testSet.get(item.m_index);
+				sim = item.m_value/wijSumU;
+				
+				if (k==0)
+					m_debugWriter.write(String.format("\tU[%.4f:%.4f, ", m_fu[neighbor.getID()], sim));
+				else if (k==4)
+					m_debugWriter.write(String.format("%.4f:%.4f]", m_fu[neighbor.getID()], sim));
+				else
+					m_debugWriter.write(String.format("%.4f:%.4f, ", m_fu[neighbor.getID()], sim));
+			}
+			m_kUU.clear();
+			m_debugWriter.write("\n");		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	} 
 	
 	@Override
 	public int predict(_Doc doc) {

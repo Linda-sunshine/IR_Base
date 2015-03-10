@@ -126,7 +126,7 @@ public class _Corpus {
 	
 	public void save2File(String filename) {
 		if (filename==null || filename.isEmpty()) {
-			System.out.println("Please specify the file name for saving vectors!");
+			System.out.println("Please specify the file name to save the vectors!");
 			return;
 		}
 		
@@ -137,7 +137,7 @@ public class _Corpus {
 				for(_SparseFeature fv:doc.getSparse()){
 					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));//index starts from 1
 				}
-				writer.write('\n');
+				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));
 			}
 			writer.close();
 			
