@@ -151,7 +151,7 @@ public class GaussianFields extends BaseClassifier {
 		//return Math.random();//just for debugging purpose
 	}
 	
-	void constructGraph(boolean createSparseGraph) {
+	protected void constructGraph(boolean createSparseGraph) {
 		double similarity = 0;
 		m_L = m_labeled.size();
 		m_U = m_testSet.size();
@@ -254,7 +254,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	//Test the data set.
 	@Override
-	public void test(){	
+	public double test(){	
 		/***Construct the nearest neighbor graph****/
 		constructGraph(true);
 		
@@ -278,15 +278,22 @@ public class GaussianFields extends BaseClassifier {
 		}
 		
 		/***evaluate the performance***/
+		double acc = 0;
 		int pred, ans;
 		for(int i = 0; i < m_U; i++) {
 			pred = getLabel(m_fu[i]);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
-			if (m_debugOutput!=null && pred != ans)
-				debug(m_testSet.get(i));
+			
+			if (pred != ans) {
+				if (m_debugOutput!=null)
+					debug(m_testSet.get(i));
+			} else 
+				acc ++;
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+		
+		return acc/m_U;
 	}
 	
 	/**Different getLabel methods.**/
@@ -319,7 +326,7 @@ public class GaussianFields extends BaseClassifier {
 		double sim, wijSumU=0, wijSumL=0;
 		
 		try {
-			m_debugWriter.write(String.format("%d-%.4f(%d,%d):\t", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id])));
+			m_debugWriter.write(String.format("%d-%d-%.4f(%d,%d):\t", d.getYLabel(), (int)m_Y[id], m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id])));
 		
 			//find top five labeled
 			/****Construct the top k labeled data for the current data.****/

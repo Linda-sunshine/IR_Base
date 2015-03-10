@@ -1,9 +1,5 @@
 package Classifier.metricLearning;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,11 +42,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 
 	@Override
 	public String toString() {
-		return "LinearSVM based Metric Learning for Gaussian Fields by Random Walk";
+		return "LinearSVM based Metric Learning for " + super.toString();
 	}
 	
 	@Override
 	protected double getSimilarity(_Doc di, _Doc dj) {
+//		return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
 		Feature[] fv = createLinearFeature(di, dj);
 		if (fv == null)
 			return 0;
@@ -64,47 +61,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		m_libModel = trainLibLinear(m_bound);
 	}
 	
-	//debugging code
-	void saveFv(int bound) {
-		try {
-			Feature[] fv = null;
-			int mustLink = 0, cannotLink = 0, label;
-			Random rand = new Random();
-			
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("metric.dat")));
-			for(int i = 0; i < m_trainSet.size(); i++){
-				_Doc d1 = m_trainSet.get(i);
-				for(int j = i+1; j < m_trainSet.size(); j++){
-					_Doc d2 = m_trainSet.get(j);
-					if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
-						label = 1;
-					else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
-						label = 0;
-					else
-						label = -1;
-					
-					if (label!=-1 && rand.nextDouble() < m_labelRatio) {
-						fv = createLinearFeature(d1, d2);
-						writer.write(String.format("%d", label));
-						for(Feature f:fv){
-							writer.write(String.format(" %d:%f", f.getIndex(), f.getValue()));//index starts from 1
-						}
-						writer.write('\n');
-						
-						if (label==1)
-							mustLink ++;
-						else
-							cannotLink ++;
-					}
-				}
-			}
-			writer.close();
-			System.out.format("Generating %d must-links and %d cannot links.\n", mustLink, cannotLink);
-			
-			System.exit(-1);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
+	@Override
+	protected void constructGraph(boolean createSparseGraph) {
+		for(_Doc d:m_testSet)
+			d.setProjectedFv(m_selectedFVs);
+		
+		super.constructGraph(createSparseGraph);
 	}
 	
 	//using L1 SVM to select a subset of features
@@ -138,11 +100,15 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 		
 		System.out.format("Selecting %d non-zero features by L1 regularization...\n", m_selectedFVs.size());
+		
+		for(_Doc d:trainSet) 
+			d.setProjectedFv(m_selectedFVs);
 	}
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		selFeatures(m_trainSet, 0.12);
+		selFeatures(m_trainSet, 0.2);
+//		return null;
 		
 		int mustLink = 0, cannotLink = 0, label;
 		Random rand = new Random();
@@ -207,7 +173,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	//Calculate the new sample according to two documents.
 	//Since cross-product will be symmetric, we don't need to store the whole matrix 
 	Feature[] createLinearFeature(_Doc d1, _Doc d2){
-		_SparseFeature[] fv1=Utils.projectSpVct(d1.getSparse(), m_selectedFVs), fv2=Utils.projectSpVct(d2.getSparse(), m_selectedFVs);
+		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
 		if (fv1==null && fv2==null)
 			return null;
 		

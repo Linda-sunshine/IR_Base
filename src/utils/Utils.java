@@ -267,6 +267,9 @@ public class Utils {
 	
 	//Calculate the similarity between two sparse vectors.
 	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
 		double similarity = 0;
 		int pointer1 = 0, pointer2 = 0;
 		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {

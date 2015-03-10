@@ -124,7 +124,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	}
 	
 	//The test for random walk algorithm.
-	public void test(){
+	public double test(){
 		/***Construct the nearest neighbor graph****/
 		constructGraph(m_storeGraph);
 		
@@ -152,14 +152,22 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 		
 		/***evaluate the performance***/
+		double acc = 0;
 		int pred, ans;
 		for(int i = 0; i < m_U; i++) {
-			pred = getLabel(m_fu[i]);
+			//pred = getLabel(m_fu[i]);
+			pred = getLabel3(m_fu[i]);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
-			if (m_debugOutput!=null && pred != ans)
-				debug(m_testSet.get(i));
+			
+			if (pred != ans) {
+				if (m_debugOutput!=null)
+					debug(m_testSet.get(i));
+			} else 
+				acc ++;
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+		
+		return acc/m_U;
 	}
 }

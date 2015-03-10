@@ -37,16 +37,21 @@ public abstract class BaseClassifier {
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
 	
-	public void test() {
+	public double test() {
+		double acc = 0;
 		for(_Doc doc: m_testSet){
 			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
 			int pred = doc.getPredictLabel(), ans = doc.getYLabel();
 			m_TPTable[pred][ans] += 1; //Compare the predicted label and original label, construct the TPTable.
 			
-			if (m_debugOutput!=null && pred != ans)
-				debug(doc);
+			if (pred != ans) {
+				if (m_debugOutput!=null)
+					debug(doc);
+			} else 
+				acc ++;
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+		return acc /m_testSet.size();
 	}
 	
 	// Constructor with parameters.
@@ -97,8 +102,9 @@ public abstract class BaseClassifier {
 				
 				long start = System.currentTimeMillis();
 				train();
-				test();
-				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				double accuracy = test();
+				
+				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy);
 				m_trainSet.clear();
 				m_testSet.clear();
 			}

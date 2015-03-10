@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 
 import utils.Utils;
 
@@ -32,6 +33,7 @@ public class _Doc implements Comparable<_Doc> {
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
+	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
 	public double[][] m_sentence_features; // feature vector 	
@@ -149,6 +151,10 @@ public class _Doc implements Comparable<_Doc> {
 	//Get the sparse vector of the document.
 	public _SparseFeature[] getSparse(){
 		return this.m_x_sparse;
+	}
+	
+	public _SparseFeature[] getProjectedFv() {
+		return this.m_x_projection;
 	}
 	
 	//return the unique number of features in the doc
@@ -283,5 +289,9 @@ public class _Doc implements Comparable<_Doc> {
 	@Override
 	public String toString() {
 		return String.format("ProdID: %s\tID: %s\t Rating: %d\n%s", m_itemID, m_name, m_y_label, m_source);
+	}
+	
+	public void setProjectedFv(Map<Integer, Integer> filter) {
+		m_x_projection = Utils.projectSpVct(m_x_sparse, filter);
 	}
 }
