@@ -156,7 +156,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		int pred, ans;
 		for(int i = 0; i < m_U; i++) {
 			//pred = getLabel(m_fu[i]);
-			pred = getLabel3(m_fu[i]);
+			pred = getLabel(m_fu[i]);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
 			

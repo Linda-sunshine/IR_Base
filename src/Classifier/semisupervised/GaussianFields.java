@@ -326,7 +326,7 @@ public class GaussianFields extends BaseClassifier {
 		double sim, wijSumU=0, wijSumL=0;
 		
 		try {
-			m_debugWriter.write(String.format("%d-%d-%.4f(%d,%d):\t", d.getYLabel(), (int)m_Y[id], m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id])));
+			m_debugWriter.write(String.format("%d\t%.4f(%d,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
 		
 			//find top five labeled
 			/****Construct the top k labeled data for the current data.****/
@@ -346,7 +346,7 @@ public class GaussianFields extends BaseClassifier {
 				if (k==0)
 					m_debugWriter.write(String.format("L[%d:%.4f, ", neighbor.getYLabel(), sim));
 				else if (k==4)
-					m_debugWriter.write(String.format("%d:%.4f]", neighbor.getYLabel(), sim));
+					m_debugWriter.write(String.format("%d:%.4f]\n", neighbor.getYLabel(), sim));
 				else
 					m_debugWriter.write(String.format("%d:%.4f, ", neighbor.getYLabel(), sim));
 			}
@@ -371,11 +371,11 @@ public class GaussianFields extends BaseClassifier {
 				sim = item.m_value/wijSumU;
 				
 				if (k==0)
-					m_debugWriter.write(String.format("\tU[%.4f:%.4f, ", m_fu[neighbor.getID()], sim));
+					m_debugWriter.write(String.format("U[%.2f:%.4f, ", m_fu[neighbor.getID()], sim));
 				else if (k==4)
-					m_debugWriter.write(String.format("%.4f:%.4f]", m_fu[neighbor.getID()], sim));
+					m_debugWriter.write(String.format("%.2f:%.4f]\n", m_fu[neighbor.getID()], sim));
 				else
-					m_debugWriter.write(String.format("%.4f:%.4f, ", m_fu[neighbor.getID()], sim));
+					m_debugWriter.write(String.format("%.2f:%.4f, ", m_fu[neighbor.getID()], sim));
 			}
 			m_kUU.clear();
 			m_debugWriter.write("\n");		
