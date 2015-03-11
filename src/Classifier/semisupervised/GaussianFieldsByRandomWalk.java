@@ -62,7 +62,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			/****Get the sum of k'UU******/
 			for(_RankItem n: m_kUU){
 				wijSumU += n.m_value; //get the similarity between two nodes.
-				fSumU += n.m_value * m_fu_last[n.m_index];
+//				fSumU += n.m_value * m_fu_last[n.m_index];
+				fSumU += n.m_value * m_fu[n.m_index];
 			}
 			m_kUU.clear();
 			
