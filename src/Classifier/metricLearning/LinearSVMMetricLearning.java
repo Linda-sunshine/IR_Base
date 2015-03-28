@@ -1,5 +1,6 @@
 package Classifier.metricLearning;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_contSamplingRate;
 	
 	HashMap<Integer, Integer> m_selectedFVs;
+	boolean m_learningBased = false;
 	
 	//Default constructor without any default parameters.
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
@@ -47,12 +49,15 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	protected double getSimilarity(_Doc di, _Doc dj) {
-//		return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
-		Feature[] fv = createLinearFeature(di, dj);
-		if (fv == null)
-			return 0;
-		else
-			return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
+		if (!m_learningBased)
+			return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
+		else {
+			Feature[] fv = createLinearFeature(di, dj);
+			if (fv == null)
+				return 0;
+			else
+				return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
+		}
 	}
 	
 	@Override
@@ -67,6 +72,18 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			d.setProjectedFv(m_selectedFVs);
 		
 		super.constructGraph(createSparseGraph);
+	}
+	
+	double argmaxW(double[] w, int start, int size) {
+		double max = Math.abs(w[start]);
+		int index = 0;
+		for(int i=1; i<size; i++) {
+			if (Math.abs(w[start+i]) > max) {
+				max = Math.abs(w[start+i]);
+				index = i;
+			}
+		}
+		return w[start+index];
 	}
 	
 	//using L1 SVM to select a subset of features
@@ -99,6 +116,19 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 		}
 		
+		if (m_debugOutput!=null) {
+			try {
+				for(int i=0; i<m_featureSize; i++) {
+					if (m_selectedFVs.containsKey(i)) {
+						m_debugWriter.write(String.format("%s(%.2f), ", m_corpus.getFeature(i), argmaxW(w, i*m_classNo, m_classNo)));
+					}
+				}
+				m_debugWriter.write("\n");
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		
 		System.out.format("Selecting %d non-zero features by L1 regularization...\n", m_selectedFVs.size());
 		
 		for(_Doc d:trainSet) 
@@ -107,67 +137,69 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		selFeatures(m_trainSet, 0.2);
-//		return null;
-		
-		int mustLink = 0, cannotLink = 0, label;
-		Random rand = new Random();
-		
-		//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
-		Feature[] fv;
-		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
-		ArrayList<Integer> targetArray = new ArrayList<Integer>();
-		for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
-			_Doc d1 = m_trainSet.get(i);
-			if (rand.nextDouble()<0.1)
-				continue;
+		if (!m_learningBased) {
+			selFeatures(m_trainSet, 0.2);
+			return null;
+		} else {
+			int mustLink = 0, cannotLink = 0, label;
+			Random rand = new Random();
 			
-			for(int j = i+1; j < m_trainSet.size(); j++){
-				_Doc d2 = m_trainSet.get(j);
+			//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
+			Feature[] fv;
+			ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
+			ArrayList<Integer> targetArray = new ArrayList<Integer>();
+			for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
+				_Doc d1 = m_trainSet.get(i);
 				if (rand.nextDouble()<0.1)
 					continue;
 				
-				if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
-					label = 1;
-				else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
-					label = 0;
-				else
-					label = -1;
-				
-				if (label!=-1 && rand.nextDouble() < m_contSamplingRate) {
-					fv = createLinearFeature(d1, d2);
-					if (fv==null)
+				for(int j = i+1; j < m_trainSet.size(); j++){
+					_Doc d2 = m_trainSet.get(j);
+					if (rand.nextDouble()<0.1)
 						continue;
 					
-					featureArray.add(fv);
-					targetArray.add(label);
-					
-					if (label==1)
-						mustLink ++;
+					if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
+						label = 1;
+					else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
+						label = 0;
 					else
-						cannotLink ++;
+						label = -1;
+					
+					if (label!=-1 && rand.nextDouble() < m_contSamplingRate) {
+						fv = createLinearFeature(d1, d2);
+						if (fv==null)
+							continue;
+						
+						featureArray.add(fv);
+						targetArray.add(label);
+						
+						if (label==1)
+							mustLink ++;
+						else
+							cannotLink ++;
+					}
 				}
 			}
+			System.out.format("Generating %d must-links and %d cannot links.\n", mustLink, cannotLink);
+			
+			Feature[][] featureMatrix = new Feature[featureArray.size()][];
+			double[] targetMatrix = new double[targetArray.size()];
+			for(int i = 0; i < featureArray.size(); i++){
+				featureMatrix[i] = featureArray.get(i);
+				targetMatrix[i] = targetArray.get(i);
+			}
+			
+			double C = 1.0, eps = 0.01;
+			Parameter libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, C, eps);
+			
+			Problem libProblem = new Problem();
+			libProblem.l = targetMatrix.length;
+			libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
+			libProblem.x = featureMatrix;
+			libProblem.y = targetMatrix;
+			Model model = Linear.train(libProblem, libParameter);
+			return model;
 		}
-		System.out.format("Generating %d must-links and %d cannot links.\n", mustLink, cannotLink);
-		
-		Feature[][] featureMatrix = new Feature[featureArray.size()][];
-		double[] targetMatrix = new double[targetArray.size()];
-		for(int i = 0; i < featureArray.size(); i++){
-			featureMatrix[i] = featureArray.get(i);
-			targetMatrix[i] = targetArray.get(i);
-		}
-		
-		double C = 1.0, eps = 0.01;
-		Parameter libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, C, eps);
-		
-		Problem libProblem = new Problem();
-		libProblem.l = targetMatrix.length;
-		libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
-		libProblem.x = featureMatrix;
-		libProblem.y = targetMatrix;
-		Model model = Linear.train(libProblem, libParameter);
-		return model;
 	}
 	
 	//Calculate the new sample according to two documents.

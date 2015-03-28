@@ -1,6 +1,5 @@
 package Classifier.semisupervised;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -319,70 +318,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	@Override
-	protected void debug(_Doc d){
-		int id = d.getID();
-		_RankItem item;
-		_Doc neighbor;
-		double sim, wijSumU=0, wijSumL=0;
-		
-		try {
-			m_debugWriter.write(String.format("%d\t%.4f(%d,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
-		
-			//find top five labeled
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
-			
-			/****Get the sum of kUL******/
-			for(_RankItem n: m_kUL)
-				wijSumL += n.m_value; //get the similarity between two nodes.
-			
-			/****Get the top 5 elements from kUL******/
-			for(int k=0; k<5; k++){
-				item = m_kUL.get(k);
-				neighbor = m_labeled.get(item.m_index);
-				sim = item.m_value/wijSumL;
-				
-				if (k==0)
-					m_debugWriter.write(String.format("L[%d:%.4f, ", neighbor.getYLabel(), sim));
-				else if (k==4)
-					m_debugWriter.write(String.format("%d:%.4f]\n", neighbor.getYLabel(), sim));
-				else
-					m_debugWriter.write(String.format("%d:%.4f, ", neighbor.getYLabel(), sim));
-			}
-			m_kUL.clear();
-			
-			//find top five unlabeled
-			/****Construct the top k' unlabeled data for the current data.****/
-			for (int j = 0; j < m_U; j++) {
-				if (j == id)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(id, j)));
-			}
-			
-			/****Get the sum of k'UU******/
-			for(_RankItem n: m_kUU)
-				wijSumU += n.m_value; //get the similarity between two nodes.
-			
-			/****Get the top 5 elements from k'UU******/
-			for(int k=0; k<5; k++){
-				item = m_kUU.get(k);
-				neighbor = m_testSet.get(item.m_index);
-				sim = item.m_value/wijSumU;
-				
-				if (k==0)
-					m_debugWriter.write(String.format("U[%.2f:%.4f, ", m_fu[neighbor.getID()], sim));
-				else if (k==4)
-					m_debugWriter.write(String.format("%.2f:%.4f]\n", m_fu[neighbor.getID()], sim));
-				else
-					m_debugWriter.write(String.format("%.2f:%.4f, ", m_fu[neighbor.getID()], sim));
-			}
-			m_kUU.clear();
-			m_debugWriter.write("\n");		
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	} 
+	protected void debug(_Doc d) { }
 	
 	@Override
 	public int predict(_Doc doc) {
