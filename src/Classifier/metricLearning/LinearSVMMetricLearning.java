@@ -28,7 +28,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_contSamplingRate;
 	
 	HashMap<Integer, Integer> m_selectedFVs;
-	boolean m_learningBased = false;
+	boolean m_learningBased = true;
 	
 	//Default constructor without any default parameters.
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
@@ -145,7 +145,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		selFeatures(m_trainSet, 0.75);
+		selFeatures(m_trainSet, 0.1);
 		if (!m_learningBased)
 			return null;
 		else {
