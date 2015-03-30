@@ -1,6 +1,9 @@
 package Classifier.metricLearning;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -41,6 +44,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		m_bound = bound;
 		m_contSamplingRate = cSampleRate;
 	}
+	
+	public void setMetricLearningMethod(boolean opt) {
+		m_learningBased = opt;
+	}
 
 	@Override
 	public String toString() {
@@ -50,13 +57,15 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	@Override
 	protected double getSimilarity(_Doc di, _Doc dj) {
 		if (!m_learningBased)
-			return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
+			//return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
+			return Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv());
 		else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
 				return 0;
 			else
 				return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
+				//return Math.min(Math.exp(Linear.predictValue(m_libModel, fv)), 5);//to make sure this is positive
 		}
 	}
 	
@@ -115,6 +124,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				}	
 			}
 		}
+		System.out.format("Selecting %d non-zero features by L1 regularization...\n", m_selectedFVs.size());
+		
+		for(_Doc d:trainSet) 
+			d.setProjectedFv(m_selectedFVs);
 		
 		if (m_debugOutput!=null) {
 			try {
@@ -128,19 +141,14 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				ex.printStackTrace();
 			}
 		}
-		
-		System.out.format("Selecting %d non-zero features by L1 regularization...\n", m_selectedFVs.size());
-		
-		for(_Doc d:trainSet) 
-			d.setProjectedFv(m_selectedFVs);
 	}
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
-		if (!m_learningBased) {
-			selFeatures(m_trainSet, 0.2);
+		selFeatures(m_trainSet, 0.75);
+		if (!m_learningBased)
 			return null;
-		} else {
+		else {
 			int mustLink = 0, cannotLink = 0, label;
 			Random rand = new Random();
 			
@@ -150,12 +158,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			ArrayList<Integer> targetArray = new ArrayList<Integer>();
 			for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
 				_Doc d1 = m_trainSet.get(i);
-				if (rand.nextDouble()<0.1)
+				if (rand.nextDouble()<0.005)
 					continue;
 				
 				for(int j = i+1; j < m_trainSet.size(); j++){
 					_Doc d2 = m_trainSet.get(j);
-					if (rand.nextDouble()<0.1)
+					if (rand.nextDouble()<0.005)
 						continue;
 					
 					if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
@@ -238,5 +246,98 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			j = t;
 		}
 		return 1+i*(i+1)/2+j;//lower triangle for the square matrix, index starts from 1
+	}
+	
+	public void verifySimilarity(String filename, boolean append) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, append), "UTF-8"));
+			
+			for(_Doc d:m_testSet)
+				d.setProjectedFv(m_selectedFVs);
+			
+			_Doc di, dj;
+			//by rating category
+//			for(int i=0; i<m_testSet.size(); i++) {
+//				di = m_testSet.get(i);
+//				if (di.getYLabel()!=0)
+//					continue;
+//				
+//				for(int j=i+1; j<m_testSet.size(); j++) {
+//					dj = m_testSet.get(j);
+//					if (!m_learningBased)
+//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), 1.0-getSimilarity(di, dj)));
+//					else
+//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), getSimilarity(di, dj)));
+//				}
+//				
+//				for(int j=0; j<m_trainSet.size(); j++) {
+//					if (Math.random() > m_contSamplingRate)
+//						continue;
+//					
+//					dj = m_trainSet.get(j);					
+//					if (!m_learningBased)
+//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), 1.0-getSimilarity(di, dj)));
+//					else
+//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), getSimilarity(di, dj)));
+//				}
+//			}
+			
+			//binary category
+			for(int i=0; i<m_testSet.size(); i++) {
+				di = m_testSet.get(i);
+				
+				for(int j=i+1; j<m_testSet.size(); j++) {
+					dj = m_testSet.get(j);
+					if (!m_learningBased)
+						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
+					else
+						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
+				}
+				
+				for(int j=0; j<m_trainSet.size(); j++) {
+					if (Math.random() > m_contSamplingRate)
+						continue;
+					
+					dj = m_trainSet.get(j);					
+					if (!m_learningBased)
+						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
+					else
+						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
+				}
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	//temporary code for verifying similarity calculation
+	public void verification(int k, _Corpus c, String filename){
+		c.shuffle(k);
+		int[] masks = c.getMasks();
+		ArrayList<_Doc> docs = c.getCollection();
+		//Use this loop to iterate all the ten folders, set the train set and test set.
+		for (int i = 0; i < k; i++) {
+			for (int j = 0; j < masks.length; j++) {
+				//more for testing
+//						if( masks[j]==(i+1)%k || masks[j]==(i+2)%k || masks[j]==(i+3)%k ) 
+//							m_testSet.add(docs.get(j));
+//						else if (masks[j]==i)
+//							m_trainSet.add(docs.get(j));
+				
+				//more for training
+				if(masks[j]==i) 
+					m_testSet.add(docs.get(j));
+				else
+					m_trainSet.add(docs.get(j));
+			}
+			
+			train();
+			verifySimilarity(filename, i!=0);
+			
+			m_trainSet.clear();
+			m_testSet.clear();
+		}
 	}
 }

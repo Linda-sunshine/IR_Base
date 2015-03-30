@@ -327,7 +327,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	//Save the parameters for classification.
 	@Override
-	public void saveModel(String modelLocation){
+	public void saveModel(String modelLocation) {
 		
 	}
 }
