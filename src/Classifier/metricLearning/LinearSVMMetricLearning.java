@@ -55,10 +55,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	@Override
-	protected double getSimilarity(_Doc di, _Doc dj) {
+	public double getSimilarity(_Doc di, _Doc dj) {
 		if (!m_learningBased)
-			//return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
-			return Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv());
+			return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
+			//return Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv());
 		else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)

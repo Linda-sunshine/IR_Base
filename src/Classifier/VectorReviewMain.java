@@ -26,7 +26,7 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "GF-RW-ML"; //Which classifier to use.
+		String classifier = "GF-RW"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
@@ -35,11 +35,11 @@ public class VectorReviewMain {
 		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/
-//		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
-//		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
+		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
+		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
 		
-		String featureLocation = "data/Features/fv_fake.txt";
-		String vctfile = "data/Fvs/LinearRegression.dat";
+//		String featureLocation = "data/Features/fv_fake.txt";
+//		String vctfile = "data/Fvs/LinearRegression.dat";
 		
 		/*****Parameters in time series analysis.*****/
 		String debugOutput = String.format("data/debug/%s.sim.pair", classifier);

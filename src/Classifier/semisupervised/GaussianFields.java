@@ -43,6 +43,8 @@ public class GaussianFields extends BaseClassifier {
 	
 	double m_discount = 0.5; // default similarity discount if across different products
 
+	Thread[] m_threadpool;
+	
 	//Randomly pick 10% of all the training documents.
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize);
@@ -137,7 +139,7 @@ public class GaussianFields extends BaseClassifier {
 		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);//specialized for the current matrix structure
 	}
 	
-	void setCache(int i, int j, double v) {
+	public void setCache(int i, int j, double v) {
 		m_cache[encode(i,j)] = v;
 	}
 	
@@ -145,13 +147,45 @@ public class GaussianFields extends BaseClassifier {
 		return m_cache[encode(i,j)];
 	}
 	
-	protected double getSimilarity(_Doc di, _Doc dj) {
+	public _Doc getTestDoc(int i) {
+		return m_testSet.get(i);
+	}
+	
+	public _Doc getLabeledDoc(int i) {
+		return m_labeled.get(i);
+	}
+	
+	public double getSimilarity(_Doc di, _Doc dj) {
 		return Math.exp(Utils.calculateSimilarity(di, dj));
 		//return Math.random();//just for debugging purpose
 	}
 	
+	protected void calcSimilarityInThreads(){
+		//using all the available CPUs!
+		int cores = Runtime.getRuntime().availableProcessors();
+		m_threadpool = new Thread[cores];
+		int start = 0, end, inc = m_U/cores;
+		for(int i=0; i<cores; i++) {
+			if (i==cores-1)
+				end = m_U;
+			else
+				end = Math.min(start+inc, m_U);
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
+			
+			start = end;
+			m_threadpool[i].start();
+		}
+		
+		for(int i=0; i<m_threadpool.length; i++){
+			try {
+				m_threadpool[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	protected void constructGraph(boolean createSparseGraph) {
-		double similarity = 0;
 		m_L = m_labeled.size();
 		m_U = m_testSet.size();
 		
@@ -162,29 +196,8 @@ public class GaussianFields extends BaseClassifier {
 		if (m_Y==null || m_Y.length<m_U+m_L)
 			m_Y = new double[m_U+m_L];
 		
-		/*** pre-compute the full similarity matrix (except the diagonal). ****/
-		_Doc di, dj;
-		for (int i = 0; i < m_U; i++) {
-			di = m_testSet.get(i);
-			for (int j = i + 1; j < m_U; j++) {// to save computation since our similarity metric is symmetric
-				dj = m_testSet.get(j);
-				similarity = getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if (!di.sameProduct(dj))
-					similarity *= m_discount;// differentiate reviews from different products
-				setCache(i, j, similarity);
-			}
-
-			for (int j = 0; j < m_L; j++) {
-				dj = m_labeled.get(j);
-				similarity = getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if (!di.sameProduct(m_labeled.get(j)))
-					similarity *= m_discount;// differentiate reviews from different products
-				setCache(i, m_U + j, similarity);
-			}
-			
-			//set up the Y vector for unlabeled data
-			m_Y[i] = m_classifier.predict(m_testSet.get(i)); //Multiple learner.
-		}	
+		/*** pre-compute the full similarity matrix (except the diagonal) in parallel. ****/
+		calcSimilarityInThreads();
 		
 		//set up the Y vector for labeled data
 		for(int i=m_U; i<m_L+m_U; i++)
