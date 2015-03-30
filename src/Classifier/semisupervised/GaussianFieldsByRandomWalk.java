@@ -1,6 +1,9 @@
 package Classifier.semisupervised;
 
+import java.io.IOException;
+
 import structures._Corpus;
+import structures._Doc;
 import structures._RankItem;
 
 public class GaussianFieldsByRandomWalk extends GaussianFields {
@@ -55,9 +58,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 					continue;
 				m_kUU.add(new _RankItem(j, getCache(i, j)));
 			}
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
 			
 			/****Get the sum of k'UU******/
 			for(_RankItem n: m_kUU){
@@ -66,6 +66,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				fSumU += n.m_value * m_fu[n.m_index];
 			}
 			m_kUU.clear();
+			
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++)
+				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
 			
 			/****Get the sum of kUL******/
 			for(_RankItem n: m_kUL){
@@ -139,12 +143,16 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 		
 		/***use random walk to solve matrix inverse***/
-		do {
-			if (m_storeGraph)
-				randomWalkWithGraph();
-			else
-				randomWalk();			
-		} while(updateFu() > m_delta);
+//		m_eta = 0.1;
+//		for(int i=0; i<5; i++) {
+			do {
+				if (m_storeGraph)
+					randomWalkWithGraph();
+				else
+					randomWalk();			
+			} while(updateFu() > m_delta);
+//			m_eta *= 1.5;
+//		}
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
@@ -171,4 +179,72 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		
 		return acc/m_U;
 	}
+	
+	@Override
+	protected void debug(_Doc d){
+		int id = d.getID();
+		_RankItem item;
+		double sim, wijSumU=0, wijSumL=0;
+		double fSumU = 0, fSumL = 0;
+		
+		try {
+			m_debugWriter.write(String.format("%d\t%.4f(%d,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
+		
+			//find top five labeled
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++)
+				m_kUL.add(new _RankItem(j + m_U, getCache(id, m_U + j)));
+			
+			/****Get the sum of kUL******/
+			for(_RankItem n: m_kUL) {
+				wijSumL += n.m_value; //get the similarity between two nodes.
+				fSumL += n.m_value*m_Y[n.m_index];
+			}
+			
+			/****Get the top 5 elements from kUL******/
+			for(int k=0; k<5; k++){
+				item = m_kUL.get(k);
+				sim = item.m_value/wijSumL;
+				
+				if (k==0)
+					m_debugWriter.write(String.format("L(%.2f)\t[%d:%.4f, ", fSumL/wijSumL, (int)m_Y[item.m_index], sim));
+				else if (k==4)
+					m_debugWriter.write(String.format("%d:%.4f]\n", (int)m_Y[item.m_index], sim));
+				else
+					m_debugWriter.write(String.format("%d:%.4f, ", (int)m_Y[item.m_index], sim));
+			}
+			m_kUL.clear();
+			
+			//find top five unlabeled
+			/****Construct the top k' unlabeled data for the current data.****/
+			for (int j = 0; j < m_U; j++) {
+				if (j == id)
+					continue;
+				m_kUU.add(new _RankItem(j, getCache(id, j)));
+			}
+			
+			/****Get the sum of k'UU******/
+			for(_RankItem n: m_kUU) {
+				wijSumU += n.m_value; //get the similarity between two nodes.
+				fSumU += n.m_value*m_fu[n.m_index];
+			}
+			
+			/****Get the top 5 elements from k'UU******/
+			for(int k=0; k<5; k++){
+				item = m_kUU.get(k);
+				sim = item.m_value/wijSumU;
+				
+				if (k==0)
+					m_debugWriter.write(String.format("U(%.2f)\t[%.2f:%.4f, ", fSumU/wijSumU, m_fu[item.m_index], sim));
+				else if (k==4)
+					m_debugWriter.write(String.format("%.2f:%.4f]\n", m_fu[item.m_index], sim));
+				else
+					m_debugWriter.write(String.format("%.2f:%.4f, ", m_fu[item.m_index], sim));
+			}
+			m_kUU.clear();
+			m_debugWriter.write("\n");		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	} 
 }

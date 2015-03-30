@@ -26,23 +26,23 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "GF-RW-ML"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
 		//"SUP", "TRANS"
-		String style = "SUP";
+		String style = "SEMI";
 		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/
-		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
-		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
+//		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
+//		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
 		
-//		String featureLocation = "data/Features/fv_fake.txt";
-//		String vctfile = "data/Fvs/LinearRegression.dat";
+		String featureLocation = "data/Features/fv_fake.txt";
+		String vctfile = "data/Fvs/LinearRegression.dat";
 		
 		/*****Parameters in time series analysis.*****/
-		String debugOutput = "data/debug/GF-RW.output";
+		String debugOutput = String.format("data/debug/%s.sim.pair", classifier);
 		
 		/****Pre-process the data.*****/
 		//Feture selection.
@@ -92,19 +92,23 @@ public class VectorReviewMain {
 			if (classifier.equals("GF")) {
 				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
 				mySemi.crossValidation(CVFold, corpus);
+				
+				
 			} else if (classifier.equals("GF-RW")) {
 				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner,
-						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.3, false);
+						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false);
 				mySemi.setDebugOutput(debugOutput);
 				
 				mySemi.crossValidation(CVFold, corpus);
 			} else if (classifier.equals("GF-RW-ML")) {
 				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, multipleLearner,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false,
-						3, 0.01);
-				lMetricLearner.setDebugOutput(debugOutput);
+						2, 0.1);
+				lMetricLearner.setMetricLearningMethod(false);
+				//lMetricLearner.setDebugOutput(debugOutput);
 				
 				lMetricLearner.crossValidation(CVFold, corpus);
+				//lMetricLearner.verification(CVFold, corpus, debugOutput);
 			} else System.out.println("Classifier has not been developed yet!");
 			
 		} else System.out.println("Learning paradigm has not been developed yet!");

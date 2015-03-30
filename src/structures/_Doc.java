@@ -293,5 +293,7 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public void setProjectedFv(Map<Integer, Integer> filter) {
 		m_x_projection = Utils.projectSpVct(m_x_sparse, filter);
+//		if (m_x_projection!=null)
+//			Utils.L2Normalization(m_x_projection);
 	}
 }
