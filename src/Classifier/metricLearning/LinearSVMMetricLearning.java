@@ -175,9 +175,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 						label = -1;
 					
 					if (label>-1 && rand.nextDouble() < m_contSamplingRate) {
-						if (mustLink>cannotLink && label==1)
+						if (mustLink*0.8>cannotLink && label==1)
 							continue;
-						else if (mustLink<cannotLink && label==0)
+						else if (mustLink<cannotLink*0.8 && label==0)
 							continue;
 						
 						fv = createLinearFeature(d1, d2);
@@ -297,7 +297,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				di = m_testSet.get(i);
 				for(int j=i+1; j<m_testSet.size(); j++) {
 					dj = m_testSet.get(j);
-					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
+					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), getSimilarity(di, dj)));
 				}
 				
 //				for(int j=0; j<m_trainSet.size(); j++) {
