@@ -58,9 +58,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
-		if (!m_learningBased)
-			return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
-		else {
+		if (!m_learningBased) {
+			_SparseFeature[] xi = di.getProjectedFv(), xj = dj.getProjectedFv(); 
+			if (xi==null || xj==null)
+				return 0;
+			else
+				return Math.exp(Utils.calculateSimilarity(xi, xj));
+		} else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
 				return 0;
@@ -193,7 +197,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					}
 				}
 			}
-			System.out.format("Generating %d must-links and %d cannot links.\n", mustLink, cannotLink);
+			System.out.format("Generating %d must-links and %d cannot-links.\n", mustLink, cannotLink);
 			
 			Feature[][] featureMatrix = new Feature[featureArray.size()][];
 			double[] targetMatrix = new double[targetArray.size()];
@@ -203,11 +207,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			double C = 1.0, eps = 0.01;
-			Parameter libParameter = new Parameter(SolverType.L2R_L2LOSS_SVC_DUAL, C, eps);
+			Parameter libParameter = new Parameter(SolverType.L2R_L1LOSS_SVC_DUAL, C, eps);
 			
 			Problem libProblem = new Problem();
 			libProblem.l = targetMatrix.length;
 			libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
+			//libProblem.n = m_selectedFVs.size() * m_selectedFVs.size();
 			libProblem.x = featureMatrix;
 			libProblem.y = targetMatrix;
 			Model model = Linear.train(libProblem, libParameter);
@@ -244,6 +249,29 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		return features;
 	}
 	
+//	Feature[] createLinearFeature(_Doc d1, _Doc d2){
+//		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
+//		if (fv1==null || fv2==null)
+//			return null;
+//		
+//		Feature[] features = new Feature[fv1.length*fv2.length];
+//		int pi, pj, spIndex=0;
+//		double value = 0;
+//		for(int i = 0; i < fv1.length; i++){
+//			pi = fv1[i].getIndex();
+//			
+//			for(int j = 0; j < fv2.length; j++){
+//				pj = fv2[j].getIndex();
+//				
+//				//Currently, we use one dimension array to represent V*V features 
+//				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
+//				features[spIndex++] = new FeatureNode(1+pi*m_selectedFVs.size()+pj, value);
+//			}
+//		}
+//		
+//		return features;
+//	}
+	
 	int getIndex(int i, int j) {
 		if (i<j) {//swap
 			int t = i;
@@ -256,59 +284,79 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	public void verifySimilarity(String filename, boolean append) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, append), "UTF-8"));
-			MyPriorityQueue<_RankItem> ranklist = new MyPriorityQueue<_RankItem>(50);
 			
 			for(_Doc d:m_testSet)
 				d.setProjectedFv(m_selectedFVs);
 			
+			int size = m_testSet.size();
+			if (m_cache==null || m_cache.length < size*(size+1)/2)
+				m_cache = new double[size*(size+1)/2];
+			
 			_Doc di, dj;
-			for(int i=0; i<m_testSet.size(); i++) {
+			for(int i=1; i<size; i++) {
 				di = m_testSet.get(i);
-				for(int j=i+1; j<m_testSet.size(); j++) {
+				for(int j=0; j<i; j++) {
+					dj = m_testSet.get(j);
+					double similarity = getSimilarity(di, dj);
+
+					m_cache[getIndex(i, j)-1] = similarity;
 					if (Math.random() > m_contSamplingRate)
 						continue;
 					
-					dj = m_testSet.get(j);
-					
-					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
-					double similarity = getSimilarity(di, dj);
 					//plot as binary categories
-					//writer.write(String.format("%s %.4f\n", name, similarity));					
+					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), similarity));					
 					//plot all categories
-					if (di.getYLabel()<dj.getYLabel())
-						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
-					else
-						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
-					
-					ranklist.add(new _RankItem(name, similarity));
+//					if (di.getYLabel()<dj.getYLabel())
+//						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+//					else
+//						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
 				}
 				
-				for(int j=0; j<m_trainSet.size(); j++) {
-					if (Math.random() > m_contSamplingRate)
-						continue;
-					
-					dj = m_trainSet.get(j);					
-
-					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
-					double similarity = getSimilarity(di, dj);
-					//plot as binary categories
-					//writer.write(String.format("%s %.4f\n", name, similarity));					
-					//plot all categories
-					if (di.getYLabel()<dj.getYLabel())
-						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
-					else
-						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
-					
-					ranklist.add(new _RankItem(name, similarity));
-				}
+//				for(int j=0; j<m_trainSet.size(); j++) {
+//					if (Math.random() > m_contSamplingRate)
+//						continue;
+//					
+//					dj = m_trainSet.get(j);					
+//
+//					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
+//					double similarity = getSimilarity(di, dj);
+//					//plot as binary categories
+//					//writer.write(String.format("%s %.4f\n", name, similarity));					
+//					//plot all categories
+//					if (di.getYLabel()<dj.getYLabel())
+//						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+//					else
+//						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
+//					
+//					ranklist.add(new _RankItem(name, similarity));
+//				}
 			}
 			
-			double p = 0;
-			for(_RankItem it:ranklist) 
-				if (it.m_name.equals("true"))
-					p ++;
+			MyPriorityQueue<_RankItem> ranklist = new MyPriorityQueue<_RankItem>(50);
+			double prec = 0;
+			int label;
+			for(int i=0; i<size; i++) {
+				di = m_testSet.get(i);
+				label = di.getYLabel();
+				
+				for(int j=0; j<size; j++) {
+					if (i==j)
+						continue;
+					dj = m_testSet.get(j);
+					ranklist.add(new _RankItem(dj.getYLabel(), m_cache[getIndex(i,j)-1]));
+				}
 			
-			System.out.format("Similarity ranking P@%d: %.3f\n", ranklist.size(), p/ranklist.size());
+				double p = 0;
+				for(_RankItem it:ranklist) {
+					if (it.m_index == label)
+						p ++;
+				}
+				
+				prec += p/ranklist.size();
+				ranklist.clear();
+			}
+			
+			System.out.format("Similarity ranking P@%d: %.3f\n", ranklist.size(), prec/size);
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();

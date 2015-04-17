@@ -28,7 +28,7 @@ public class GaussianFields extends BaseClassifier {
 	int m_kPrime;//k' unlabeled nodes.
 	
 	int m_U, m_L;
-	double[] m_cache; // cache the similarity computation results given the similarity metric is symmetric
+	protected double[] m_cache; // cache the similarity computation results given the similarity metric is symmetric
 	double[] m_fu; // predicted labels for unlabeled data.
 	double[] m_Y; // true label for the labeled data and pseudo label from base learner
 	SparseDoubleMatrix2D m_graph;
@@ -41,7 +41,7 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
-	double m_discount = 0.5; // default similarity discount if across different products
+	double m_discount = 1.0; // default similarity discount if across different products
 
 	Thread[] m_threadpool;
 	
@@ -124,7 +124,7 @@ public class GaussianFields extends BaseClassifier {
 		Utils.scaleArray(m_pY, 1.0/Utils.sumOfArray(m_pY));
 	}
 	
-	void initCache() {
+	protected void initCache() {
 		int size = m_U*(2*m_L+m_U-1)/2;//specialized for the current matrix structure
 		if (m_cache==null || m_cache.length<size)
 			m_cache = new double[m_U*(2*m_L+m_U-1)/2]; // otherwise we can reuse the current memory space
