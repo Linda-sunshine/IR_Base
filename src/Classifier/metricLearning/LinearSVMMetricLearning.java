@@ -175,6 +175,11 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 						label = -1;
 					
 					if (label>-1 && rand.nextDouble() < m_contSamplingRate) {
+						if (mustLink>cannotLink && label==1)
+							continue;
+						else if (mustLink<cannotLink && label==0)
+							continue;
+						
 						fv = createLinearFeature(d1, d2);
 						if (fv==null)
 							continue;
