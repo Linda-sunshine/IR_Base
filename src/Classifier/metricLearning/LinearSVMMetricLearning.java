@@ -180,9 +180,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 							continue;
 						else if (mustLink<cannotLink*0.8 && label==0)
 							continue;
-						
-						fv = createLinearFeature(d1, d2);
-						if (fv==null)
+						else if ((fv=createLinearFeature(d1, d2))==null)
 							continue;
 						
 						featureArray.add(fv);
@@ -349,7 +347,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					m_trainSet.add(docs.get(j));
 			}
 			
-			train();
+			init();//no need to call train()
 			verifySimilarity(filename, i!=0);
 			
 			m_trainSet.clear();
