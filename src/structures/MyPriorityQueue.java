@@ -16,22 +16,22 @@ import java.util.Vector;
 public class MyPriorityQueue<E extends Comparable<? super E>> extends Vector<E> {
 	private static final long serialVersionUID = 2620787807800527871L;
 	int m_size;
-	boolean m_largeFirst;
+	boolean m_descending;
 	
 	public MyPriorityQueue(int size){
 		super();
 		m_size = size;
-		m_largeFirst = true;
+		m_descending = true;
 	}
 	
 	public MyPriorityQueue(int size, boolean largeFirst){
 		super();
 		m_size = size;
-		m_largeFirst = largeFirst;
+		m_descending = largeFirst;
 	}
 	
 	private int compare(E o1, E o2){
-		if (m_largeFirst)
+		if (m_descending)
 			return o1.compareTo(o2);
 		else
 			return o2.compareTo(o1);

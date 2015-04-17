@@ -9,8 +9,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
@@ -51,7 +53,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 
 	@Override
 	public String toString() {
-		return "LinearSVM based Metric Learning for " + super.toString();
+		return "LinearSVM-based Metric Learning for " + super.toString();
 	}
 	
 	@Override
@@ -64,7 +66,6 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				return 0;
 			else
 				return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
-				//return Math.min(Math.exp(Linear.predictValue(m_libModel, fv)), 5);//to make sure this is positive
 		}
 	}
 	
@@ -257,7 +258,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	public void verifySimilarity(String filename, boolean append) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, append), "UTF-8"));
-			double TP = 0, FP = 0;
+			MyPriorityQueue<_RankItem> ranklist = new MyPriorityQueue<_RankItem>(50);
 			
 			for(_Doc d:m_testSet)
 				d.setProjectedFv(m_selectedFVs);
@@ -297,7 +298,12 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				di = m_testSet.get(i);
 				for(int j=i+1; j<m_testSet.size(); j++) {
 					dj = m_testSet.get(j);
-					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), getSimilarity(di, dj)));
+					
+					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
+					double similarity = getSimilarity(di, dj);
+					writer.write(String.format("%s %.4f\n", name, similarity));
+					
+					ranklist.add(new _RankItem(name, similarity));
 				}
 				
 //				for(int j=0; j<m_trainSet.size(); j++) {
@@ -308,6 +314,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 //						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
 //				}
 			}
+			
+			double p = 0;
+			for(_RankItem it:ranklist) 
+				if (it.m_name.equals("true"))
+					p ++;
+			
+			System.out.format("Similarity ranking P@%d: %.3f\n", ranklist.size(), p/ranklist.size());
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
