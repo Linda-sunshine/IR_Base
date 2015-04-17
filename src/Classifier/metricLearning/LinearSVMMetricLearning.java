@@ -275,7 +275,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					//plot as binary categories
 					//writer.write(String.format("%s %.4f\n", name, similarity));					
 					//plot all categories
-					writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+					if (di.getYLabel()<dj.getYLabel())
+						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+					else
+						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
 					
 					ranklist.add(new _RankItem(name, similarity));
 				}
@@ -291,7 +294,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					//plot as binary categories
 					//writer.write(String.format("%s %.4f\n", name, similarity));					
 					//plot all categories
-					writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+					if (di.getYLabel()<dj.getYLabel())
+						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+					else
+						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
 					
 					ranklist.add(new _RankItem(name, similarity));
 				}
