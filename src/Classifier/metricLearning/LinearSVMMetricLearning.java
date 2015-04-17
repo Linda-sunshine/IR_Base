@@ -262,55 +262,39 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				d.setProjectedFv(m_selectedFVs);
 			
 			_Doc di, dj;
-			//by rating category
-//			for(int i=0; i<m_testSet.size(); i++) {
-//				di = m_testSet.get(i);
-//				if (di.getYLabel()!=0)
-//					continue;
-//				
-//				for(int j=i+1; j<m_testSet.size(); j++) {
-//					dj = m_testSet.get(j);
-//					if (!m_learningBased)
-//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), 1.0-getSimilarity(di, dj)));
-//					else
-//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), getSimilarity(di, dj)));
-//				}
-//				
-//				for(int j=0; j<m_trainSet.size(); j++) {
-//					if (Math.random() > m_contSamplingRate)
-//						continue;
-//					
-//					dj = m_trainSet.get(j);					
-//					if (!m_learningBased)
-//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), 1.0-getSimilarity(di, dj)));
-//					else
-//						writer.write(String.format("%d-%d %.4f\n", di.getYLabel(), dj.getYLabel(), getSimilarity(di, dj)));
-//				}
-//			}
-			
-			//binary category
 			for(int i=0; i<m_testSet.size(); i++) {
-				if (Math.random() > m_contSamplingRate)
-					continue;
-				
 				di = m_testSet.get(i);
 				for(int j=i+1; j<m_testSet.size(); j++) {
+					if (Math.random() > m_contSamplingRate)
+						continue;
+					
 					dj = m_testSet.get(j);
 					
 					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
 					double similarity = getSimilarity(di, dj);
-					writer.write(String.format("%s %.4f\n", name, similarity));
+					//plot as binary categories
+					//writer.write(String.format("%s %.4f\n", name, similarity));					
+					//plot all categories
+					writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
 					
 					ranklist.add(new _RankItem(name, similarity));
 				}
 				
-//				for(int j=0; j<m_trainSet.size(); j++) {
-//					dj = m_trainSet.get(j);					
-//					if (!m_learningBased)
-//						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
-//					else
-//						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
-//				}
+				for(int j=0; j<m_trainSet.size(); j++) {
+					if (Math.random() > m_contSamplingRate)
+						continue;
+					
+					dj = m_trainSet.get(j);					
+
+					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
+					double similarity = getSimilarity(di, dj);
+					//plot as binary categories
+					//writer.write(String.format("%s %.4f\n", name, similarity));					
+					//plot all categories
+					writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
+					
+					ranklist.add(new _RankItem(name, similarity));
+				}
 			}
 			
 			double p = 0;
