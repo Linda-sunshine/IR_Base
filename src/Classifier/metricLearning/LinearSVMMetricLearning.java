@@ -58,7 +58,6 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	public double getSimilarity(_Doc di, _Doc dj) {
 		if (!m_learningBased)
 			return Math.exp(Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv()));
-			//return Utils.calculateSimilarity(di.getProjectedFv(), dj.getProjectedFv());
 		else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
@@ -145,7 +144,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	//In this training process, we want to get the weight of all pairs of samples.
 	public Model trainLibLinear(int bound){
+		//creating feature projection first (this is done by choosing important SVM features)
 		selFeatures(m_trainSet, 0.1);
+		
 		if (!m_learningBased)
 			return null;
 		else {
@@ -173,7 +174,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					else
 						label = -1;
 					
-					if (label!=-1 && rand.nextDouble() < m_contSamplingRate) {
+					if (label>-1 && rand.nextDouble() < m_contSamplingRate) {
 						fv = createLinearFeature(d1, d2);
 						if (fv==null)
 							continue;
@@ -214,7 +215,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	//Since cross-product will be symmetric, we don't need to store the whole matrix 
 	Feature[] createLinearFeature(_Doc d1, _Doc d2){
 		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
-		if (fv1==null && fv2==null)
+		if (fv1==null || fv2==null)
 			return null;
 		
 		_SparseFeature[] diffVct = Utils.diffVector(fv1, fv2);
@@ -245,12 +246,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			i = j;
 			j = t;
 		}
-		return 1+i*(i+1)/2+j;//lower triangle for the square matrix, index starts from 1
+		return 1+i*(i+1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
 	}
 	
 	public void verifySimilarity(String filename, boolean append) {
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, append), "UTF-8"));
+			double TP = 0, FP = 0;
 			
 			for(_Doc d:m_testSet)
 				d.setProjectedFv(m_selectedFVs);
@@ -284,26 +286,22 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			//binary category
 			for(int i=0; i<m_testSet.size(); i++) {
-				di = m_testSet.get(i);
+				if (Math.random() > m_contSamplingRate)
+					continue;
 				
+				di = m_testSet.get(i);
 				for(int j=i+1; j<m_testSet.size(); j++) {
 					dj = m_testSet.get(j);
-					if (!m_learningBased)
-						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
-					else
-						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
+					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
 				}
 				
-				for(int j=0; j<m_trainSet.size(); j++) {
-					if (Math.random() > m_contSamplingRate)
-						continue;
-					
-					dj = m_trainSet.get(j);					
-					if (!m_learningBased)
-						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
-					else
-						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
-				}
+//				for(int j=0; j<m_trainSet.size(); j++) {
+//					dj = m_trainSet.get(j);					
+//					if (!m_learningBased)
+//						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), 1.0-getSimilarity(di, dj)));
+//					else
+//						writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), -getSimilarity(di, dj)));
+//				}
 			}
 			writer.close();
 		} catch (IOException e) {

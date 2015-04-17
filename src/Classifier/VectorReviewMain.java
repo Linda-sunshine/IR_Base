@@ -26,7 +26,7 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "GF-RW"; //Which classifier to use.
+		String classifier = "GF-RW-ML"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
@@ -93,7 +93,6 @@ public class VectorReviewMain {
 				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
 				mySemi.crossValidation(CVFold, corpus);
 				
-				
 			} else if (classifier.equals("GF-RW")) {
 				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false);
@@ -104,11 +103,11 @@ public class VectorReviewMain {
 				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, multipleLearner,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false,
 						2, 0.1);
-				lMetricLearner.setMetricLearningMethod(false);
+				lMetricLearner.setMetricLearningMethod(true);
 				//lMetricLearner.setDebugOutput(debugOutput);
 				
-				lMetricLearner.crossValidation(CVFold, corpus);
-				//lMetricLearner.verification(CVFold, corpus, debugOutput);
+				//lMetricLearner.crossValidation(CVFold, corpus);
+				lMetricLearner.verification(CVFold, corpus, debugOutput);
 			} else System.out.println("Classifier has not been developed yet!");
 			
 		} else System.out.println("Learning paradigm has not been developed yet!");

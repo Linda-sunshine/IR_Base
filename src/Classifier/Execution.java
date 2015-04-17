@@ -131,13 +131,14 @@ public class Execution  {
 					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
 					param.m_bound, param.m_cSampleRate);
 				
+				((LinearSVMMetricLearning)model).verification(param.m_CVFold, corpus, param.m_debugOutput);
 			} else {
 				System.out.println("Classifier has not been developed yet!");
 				System.exit(-1);
 			}
 			
-			model.setDebugOutput(param.m_debugOutput);
-			model.crossValidation(param.m_CVFold, corpus);
+//			model.setDebugOutput(param.m_debugOutput);
+//			model.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
 			

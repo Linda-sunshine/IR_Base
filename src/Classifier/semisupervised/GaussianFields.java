@@ -156,7 +156,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Utils.calculateSimilarity(di, dj));
+		return Utils.calculateSimilarity(di, dj);
 		//return Math.random();//just for debugging purpose
 	}
 	
