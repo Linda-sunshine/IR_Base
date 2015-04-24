@@ -7,7 +7,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Random;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -156,7 +155,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			return null;
 		else {
 			int mustLink = 0, cannotLink = 0, label;
-			Random rand = new Random();
+//			Random rand = new Random();
 			
 			MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1000, false);
 			//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
@@ -179,14 +178,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					double sim = super.getSimilarity(di, dj);
 					if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
 							continue;
-					else if (rand.nextDouble() < m_contSamplingRate) {
-						if (mustLink*0.8>cannotLink && label==1)
+					else if ((fv=createLinearFeature(di, dj))==null)
 							continue;
-						else if (mustLink<cannotLink*0.8 && label==0)
-							continue;
-						else if ((fv=createLinearFeature(di, dj))==null)
-							continue;
-						
+					else {
 						featureArray.add(fv);
 						targetArray.add(label);
 						
