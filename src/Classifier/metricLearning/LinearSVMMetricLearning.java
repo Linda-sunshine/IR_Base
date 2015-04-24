@@ -24,12 +24,19 @@ import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 
 public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
+	
+	public enum FeatureType {
+		FT_diff,
+		FT_cross
+	}
+	
 	protected Model m_libModel;
 	int m_bound;
 	double m_contSamplingRate;
 	
 	HashMap<Integer, Integer> m_selectedFVs;
 	boolean m_learningBased = true;
+	FeatureType m_fvType = FeatureType.FT_diff;
 	
 	//Default constructor without any default parameters.
 	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
@@ -205,8 +212,14 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			Problem libProblem = new Problem();
 			libProblem.l = targetMatrix.length;
-			libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
-			//libProblem.n = m_selectedFVs.size() * m_selectedFVs.size();
+			if (m_fvType == FeatureType.FT_diff)
+				libProblem.n = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
+			else if (m_fvType == FeatureType.FT_cross)
+				libProblem.n = m_selectedFVs.size() * m_selectedFVs.size();
+			else {
+				System.err.println("Unknown feature type for svm-based metric learning!");
+				System.exit(-1);
+			}
 			libProblem.x = featureMatrix;
 			libProblem.y = targetMatrix;
 			Model model = Linear.train(libProblem, libParameter);
@@ -214,9 +227,18 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 	}
 	
+	Feature[] createLinearFeature(_Doc d1, _Doc d2){ 
+		if (m_fvType==FeatureType.FT_diff)
+			return createLinearFeature_diff(d1, d2);
+		else if (m_fvType==FeatureType.FT_cross)
+			return createLinearFeature_cross(d1, d2);
+		else
+			return null;
+	}
+	
 	//Calculate the new sample according to two documents.
 	//Since cross-product will be symmetric, we don't need to store the whole matrix 
-	Feature[] createLinearFeature(_Doc d1, _Doc d2){
+	Feature[] createLinearFeature_diff(_Doc d1, _Doc d2){
 		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
 		if (fv1==null || fv2==null)
 			return null;
@@ -243,28 +265,28 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		return features;
 	}
 	
-//	Feature[] createLinearFeature(_Doc d1, _Doc d2){
-//		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
-//		if (fv1==null || fv2==null)
-//			return null;
-//		
-//		Feature[] features = new Feature[fv1.length*fv2.length];
-//		int pi, pj, spIndex=0;
-//		double value = 0;
-//		for(int i = 0; i < fv1.length; i++){
-//			pi = fv1[i].getIndex();
-//			
-//			for(int j = 0; j < fv2.length; j++){
-//				pj = fv2[j].getIndex();
-//				
-//				//Currently, we use one dimension array to represent V*V features 
-//				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
-//				features[spIndex++] = new FeatureNode(1+pi*m_selectedFVs.size()+pj, value);
-//			}
-//		}
-//		
-//		return features;
-//	}
+	Feature[] createLinearFeature_cross(_Doc d1, _Doc d2){
+		_SparseFeature[] fv1=d1.getProjectedFv(), fv2=d2.getProjectedFv();
+		if (fv1==null || fv2==null)
+			return null;
+		
+		Feature[] features = new Feature[fv1.length*fv2.length];
+		int pi, pj, spIndex=0;
+		double value = 0;
+		for(int i = 0; i < fv1.length; i++){
+			pi = fv1[i].getIndex();
+			
+			for(int j = 0; j < fv2.length; j++){
+				pj = fv2[j].getIndex();
+				
+				//Currently, we use one dimension array to represent V*V features 
+				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
+				features[spIndex++] = new FeatureNode(1+pi*m_selectedFVs.size()+pj, value);
+			}
+		}
+		
+		return features;
+	}
 	
 	int getIndex(int i, int j) {
 		if (i<j) {//swap
