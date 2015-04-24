@@ -24,10 +24,10 @@ public class MyPriorityQueue<E extends Comparable<? super E>> extends Vector<E> 
 		m_descending = true;
 	}
 	
-	public MyPriorityQueue(int size, boolean largeFirst){
+	public MyPriorityQueue(int size, boolean descending){
 		super();
 		m_size = size;
-		m_descending = largeFirst;
+		m_descending = descending;
 	}
 	
 	private int compare(E o1, E o2){

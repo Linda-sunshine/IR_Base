@@ -222,6 +222,7 @@ public class GaussianFields extends BaseClassifier {
 		
 		/****Construct the C+scale*\Delta matrix and Y vector.****/
 		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
+		int nz = 0;
 		for(int i = 0; i < m_U; i++) {
 			//set the part of unlabeled nodes. U-U
 			for(int j=0; j<m_U; j++) {
@@ -234,9 +235,12 @@ public class GaussianFields extends BaseClassifier {
 			sum = 0;
 			for(_RankItem n:m_kUU) {
 				value = Math.max(m_beta*n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
-				m_graph.setQuick(i, n.m_index, scale * value);
-				m_graph.setQuick(n.m_index, i, scale * value);
-				sum += value;
+				if (value!=0) {
+					m_graph.setQuick(i, n.m_index, scale * value);
+					m_graph.setQuick(n.m_index, i, scale * value);
+					sum += value;
+					nz ++;
+				}
 			}
 			m_kUU.clear();
 			
@@ -246,9 +250,12 @@ public class GaussianFields extends BaseClassifier {
 			
 			for(_RankItem n:m_kUL) {
 				value = Math.max(n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
-				m_graph.setQuick(i, n.m_index, scale * value);
-				m_graph.setQuick(n.m_index, i, scale * value);
-				sum += value;
+				if (value!=0) {
+					m_graph.setQuick(i, n.m_index, scale * value);
+					m_graph.setQuick(n.m_index, i, scale * value);
+					sum += value;
+					nz ++;
+				}
 			}
 			m_graph.setQuick(i, i, 1-scale*sum);
 			m_kUL.clear();
@@ -261,7 +268,7 @@ public class GaussianFields extends BaseClassifier {
 			m_graph.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
 		}
 		
-		System.out.println("Nearest neighbor graph construction finished!");
+		System.out.format("Nearest neighbor graph (U[%d], L[%d], NZ[%d]) construction finished!\n", m_U, m_L, nz);
 	}
 	
 	//Test the data set.

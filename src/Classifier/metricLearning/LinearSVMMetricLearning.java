@@ -154,33 +154,33 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			int mustLink = 0, cannotLink = 0, label;
 			Random rand = new Random();
 			
+			MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1000, false);
 			//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
 			Feature[] fv;
 			ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
 			ArrayList<Integer> targetArray = new ArrayList<Integer>();
 			for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
-				_Doc d1 = m_trainSet.get(i);
-				if (rand.nextDouble()<0.005)
-					continue;
+				_Doc di = m_trainSet.get(i);
 				
 				for(int j = i+1; j < m_trainSet.size(); j++){
-					_Doc d2 = m_trainSet.get(j);
-					if (rand.nextDouble()<0.005)
-						continue;
+					_Doc dj = m_trainSet.get(j);
 					
-					if(d1.getYLabel() == d2.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
+					if(di.getYLabel() == dj.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
 						label = 1;
-					else if(Math.abs(d1.getYLabel() - d2.getYLabel())>bound)
+					else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
 						label = 0;
 					else
-						label = -1;
+						continue;
 					
-					if (label>-1 && rand.nextDouble() < m_contSamplingRate) {
+					double sim = super.getSimilarity(di, dj);
+					if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
+							continue;
+					else if (rand.nextDouble() < m_contSamplingRate) {
 						if (mustLink*0.8>cannotLink && label==1)
 							continue;
 						else if (mustLink<cannotLink*0.8 && label==0)
 							continue;
-						else if ((fv=createLinearFeature(d1, d2))==null)
+						else if ((fv=createLinearFeature(di, dj))==null)
 							continue;
 						
 						featureArray.add(fv);
