@@ -347,6 +347,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 //					ranklist.add(new _RankItem(name, similarity));
 //				}
 			}
+			writer.close();
 			
 			MyPriorityQueue<_RankItem> ranklist = new MyPriorityQueue<_RankItem>(50);
 			double prec = 0;
@@ -373,7 +374,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			System.out.format("Similarity ranking P@%d: %.3f\n", ranklist.size(), prec/size);
-			writer.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
