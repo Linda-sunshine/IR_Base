@@ -222,6 +222,9 @@ public class Utils {
 	
 	//L2 normalization: fsValue/sqrt(sum of fsValue*fsValue)
 	static public double sumOfFeaturesL2(_SparseFeature[] fs) {
+		if(fs == null) 
+			return 0;
+		
 		double sum = 0;
 		for (_SparseFeature feature: fs){
 			double value = feature.getValue();
@@ -262,7 +265,11 @@ public class Utils {
 	}
 	
 	public static double cosine(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		return calculateSimilarity(spVct1, spVct2) / sumOfFeaturesL2(spVct1) / sumOfFeaturesL2(spVct2);
+		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
+		if (spVct1L2==0 || spVct2L2==0)
+			return 0;
+		else
+			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
 	//Calculate the similarity between two sparse vectors.
@@ -436,6 +443,7 @@ public class Utils {
 		return node;
 	}
 	
+	//Get projectSpVct by building a map filter, added by Hongning.
 	static public _SparseFeature[] projectSpVct(_SparseFeature[] fv, Map<Integer, Integer> filter) {
 		ArrayList<_SparseFeature> pFv = new ArrayList<_SparseFeature>();
 		for(_SparseFeature f:fv) {
@@ -450,4 +458,44 @@ public class Utils {
 			return pFv.toArray(new _SparseFeature[pFv.size()]);
 	}
 	
+	//Get projectSpVct by building a hashmap<Integer, String> filter, added by Lin.
+	static public _SparseFeature[] projectSpVct(_SparseFeature[] fv, HashMap<Integer, String> filter) {
+		ArrayList<_SparseFeature> pFv = new ArrayList<_SparseFeature>();
+		for(_SparseFeature f:fv) {
+			if (filter.containsKey(f.getIndex())) {
+				pFv.add(new _SparseFeature(f.getIndex(), f.getValue()));
+			}
+		}
+		if (pFv.isEmpty())
+			return null;
+		else
+			return pFv.toArray(new _SparseFeature[pFv.size()]);
+	}
+	
+	//Dot product of the random vector and document sparse vector.
+	public static double dotProduct(double[] vct, _SparseFeature[] sf){
+		if(sf[sf.length-1].getIndex() > vct.length)
+			System.err.print("Error in computing dot product between a sparse vector and a full vector");
+		
+		double value = 0;
+		for(_SparseFeature fv:sf)
+			value += vct[fv.getIndex()] * fv.getValue();
+		return value;
+	}
+	
+	//Sgn function: >= 0 1; < 0; 0.
+	public static int sgn(double a){
+		if (a >= 0) return 1;
+		else return 0;
+	}
+	
+	//Encode the hash value after getting the hash array.
+	public static int encode(int[] hash){
+		int value = 0;
+		for(int i = 0; i < hash.length; i++){
+			if (hash[i]>0)
+				value += 1<<hash.length-1-i;
+		}
+		return value;
+	}
 }

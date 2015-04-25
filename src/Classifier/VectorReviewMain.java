@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import structures._Corpus;
+import utils.Utils;
 import Analyzer.VctAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.supervised.KNN;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.PRLogisticRegression;
@@ -18,6 +20,9 @@ import Classifier.supervised.SVM;
 public class VectorReviewMain {
 
 	public static void main(String[] args) throws IOException, ParseException{
+		int[] code = {1, 0, 0, 1};
+		System.out.println(Utils.encode(code));
+		
 		/*****Set these parameters before run the classifiers.*****/
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int lengthThreshold = 5; //Document length threshold
@@ -26,13 +31,13 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "GF-RW-ML"; //Which classifier to use.
+		String classifier = "KNN"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
-		//"SUP", "TRANS"
-		String style = "SEMI";
-		String multipleLearner = "SVM";
+		//"SUP", "SEMI"
+		String style = "SUP";
+		String multipleLearner = "KNN";
 		
 		/*****The parameters used in loading files.*****/
 		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
@@ -61,7 +66,13 @@ public class VectorReviewMain {
 				NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
 				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
-			} else if(classifier.equals("LR")){
+			} else if(classifier.equals("KNN")){
+				//Define a new naive bayes with the parameters.
+				System.out.println("Start kNN, wait...");
+				KNN myKNN = new KNN(corpus, classNumber, featureSize, 10, 1);
+				myKNN.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
+				
+			}  else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize, C);
