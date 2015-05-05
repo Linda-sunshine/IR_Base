@@ -136,7 +136,19 @@ public class GaussianFields extends BaseClassifier {
 			i = j;
 			j = t;
 		}
-		return (2*(m_U+m_L-1)-i)/2*(i+1) - ((m_U+m_L)-j);//specialized for the current matrix structure
+		return i*(2*(m_U+m_L-1)-i+1)/2 + (j-i-1);//specialized for the current matrix structure
+	}
+	
+	public void debugEncode() {
+		m_U = 8; 
+		m_L = 6;
+		for(int i=0; i<m_U; i++) {
+			for(int j=i+1; j<m_U; j++)
+				System.out.print(encode(i,j) + " ");
+			for(int j=0; j<m_L; j++)
+				System.out.print(encode(i,m_U+j) + " ");
+			System.out.println();
+		}
 	}
 	
 	public void setCache(int i, int j, double v) {
@@ -349,5 +361,10 @@ public class GaussianFields extends BaseClassifier {
 	@Override
 	public void saveModel(String modelLocation) {
 		
+	}
+	
+	public static void main(String[] args) {
+		GaussianFields test = new GaussianFields(null, 0, 0, "NB");
+		test.debugEncode();
 	}
 }

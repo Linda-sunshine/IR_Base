@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import structures._Corpus;
-import utils.Utils;
 import Analyzer.VctAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -19,10 +18,7 @@ import Classifier.supervised.SVM;
 
 public class VectorReviewMain {
 
-	public static void main(String[] args) throws IOException, ParseException{
-		int[] code = {1, 0, 0, 1};
-		System.out.println(Utils.encode(code));
-		
+	public static void main(String[] args) throws IOException, ParseException{		
 		/*****Set these parameters before run the classifiers.*****/
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int lengthThreshold = 5; //Document length threshold
@@ -31,13 +27,13 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "KNN"; //Which classifier to use.
+		String classifier = "GF-RW"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
 		//"SUP", "SEMI"
-		String style = "SUP";
-		String multipleLearner = "KNN";
+		String style = "SEMI";
+		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/
 		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
@@ -47,7 +43,8 @@ public class VectorReviewMain {
 //		String vctfile = "data/Fvs/LinearRegression.dat";
 		
 		/*****Parameters in time series analysis.*****/
-		String debugOutput = String.format("data/debug/%s.sim.pair", classifier);
+		//String debugOutput = String.format("data/debug/%s.sim.pair", classifier);
+		String debugOutput = null;
 		
 		/****Pre-process the data.*****/
 		//Feture selection.

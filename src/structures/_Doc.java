@@ -32,12 +32,10 @@ public class _Doc implements Comparable<_Doc> {
 	
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
-	private _SparseFeature[][] m_sentences; // sentence array each row contains the unique word id 
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	public double[][] m_sentence_features; // feature vector 	
-	public double[] m_sentence_labels; // estimated transition labels p(\psi=1)
+	_Stn[] m_sentences;
 	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
@@ -52,7 +50,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		m_topics = null;
 		m_sstat = null;
-		m_sentence_features = null;
+		m_sentences = null;
 	}
 	
 	public _Doc (int ID, String source, int ylabel, long timeStamp){
@@ -63,7 +61,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
-		m_sentence_features = null;
+		m_sentences = null;
 	}
 	
 	public _Doc (int ID, String name, String source, String productID, int ylabel, long timeStamp){
@@ -77,10 +75,8 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
-		m_sentence_features = null;
+		m_sentences = null;
 	}
-	
-	
 	
 	public void setWeight(double w) {
 		m_weight = w;
@@ -199,7 +195,9 @@ public class _Doc implements Comparable<_Doc> {
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public void setSentences(ArrayList<_SparseFeature[]> stnList) {
-		m_sentences = stnList.toArray(new _SparseFeature [stnList.size()][]);
+		m_sentences = new _Stn[stnList.size()];
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i] = new _Stn(stnList.get(i));
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
@@ -208,7 +206,7 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public _SparseFeature[] getSentences(int index) {
+	public _Stn getSentence(int index) {
 		return this.m_sentences[index];
 	}
 	
@@ -233,37 +231,33 @@ public class _Doc implements Comparable<_Doc> {
 	}	
 	
 	public void setSentenceFeatureVector() {
-		m_sentence_features = new double[this.getSenetenceSize()-1][stn_fv_size];
-		m_sentence_labels = new double[this.getSenetenceSize()-1];
-		
 		// start from 2nd sentence
-		double cLength, pLength = Utils.sumOfFeaturesL1(this.getSentences(0));
-		double pSim = Utils.cosine(m_sentences[0], m_sentences[1]), nSim;
-		int stnSize = this.getSenetenceSize();
+		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());
+		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
+		int stnSize = getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
-			m_sentence_features[i-1][0] = pSim;			
+			m_sentences[i-1].m_transitFv[0] = pSim;			
 			
-			cLength = Utils.sumOfFeaturesL1(this.getSentences(i));
+			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
 			//length_ratio
-			m_sentence_features[i-1][1] = (pLength-cLength)/Math.max(cLength, pLength);
+			m_sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
 			pLength = cLength;
 			
 			//position
-			m_sentence_features[i-1][2] = (double)i / stnSize;
+			m_sentences[i-1].m_transitFv[2] = (double)i / stnSize;
 			
 			//similar to previous or next
 			if (i<stnSize-1) {
-				nSim = Utils.cosine(m_sentences[i], m_sentences[i+1]);
+				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
 				if (nSim>pSim)
-					m_sentence_features[i-1][3] = 1;
+					m_sentences[i-1].m_transitFv[3] = 1;
 				else if (nSim<pSim)
-					m_sentence_features[i-1][3] = -1;
+					m_sentences[i-1].m_transitFv[3] = -1;
 				pSim = nSim;
 			}
 		}
-	}
-	
+	}	
 	
 	public void clearSource() {
 		m_source = null;

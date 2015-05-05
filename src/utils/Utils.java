@@ -494,7 +494,7 @@ public class Utils {
 		int value = 0;
 		for(int i = 0; i < hash.length; i++){
 			if (hash[i]>0)
-				value += 1<<hash.length-1-i;
+				value += 1<<(hash.length-1-i);
 		}
 		return value;
 	}

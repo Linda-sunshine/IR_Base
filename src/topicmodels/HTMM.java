@@ -8,6 +8,7 @@ import markovmodel.FastRestrictedHMM;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
+import structures._Stn;
 import utils.Utils;
 
 public class HTMM extends pLSA {
@@ -89,10 +90,10 @@ public class HTMM extends pLSA {
 	// Construct the emission probabilities for sentences under different topics in a particular document.
 	void ComputeEmissionProbsForDoc(_Doc d) {
 		for(int i=0; i<d.getSenetenceSize(); i++) {
-			_SparseFeature[] stn = d.getSentences(i);
+			_Stn stn = d.getSentence(i);
 			Arrays.fill(emission[i], 0);
 			for(int k=0; k<this.number_of_topics; k++) {
-				for(_SparseFeature w:stn) {
+				for(_SparseFeature w:stn.getFv()) {
 					emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
 				}
 			}
@@ -137,9 +138,10 @@ public class HTMM extends pLSA {
 	
 	void accPhiStat(_Doc d) {
 		for(int t=0; t<d.getSenetenceSize(); t++) {
-			for(_SparseFeature s:d.getSentences(t)) {
-				int wid = s.getIndex();
-				double v = s.getValue();//frequency
+			_Stn s = d.getSentence(t);
+			for(_SparseFeature f:s.getFv()) {
+				int wid = f.getIndex();
+				double v = f.getValue();//frequency
 				for(int i=0; i<this.number_of_topics; i++) {
 					this.word_topic_sstat[i][wid] += v * (this.p_dwzpsi[t][i] + this.p_dwzpsi[t][i+this.number_of_topics]);
 				}
