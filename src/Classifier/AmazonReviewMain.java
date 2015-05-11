@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import structures._Corpus;
+import Analyzer.AspectAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.supervised.LogisticRegression;
@@ -26,8 +27,8 @@ public class AmazonReviewMain {
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 	
-		//"SUP", "SEMI", "FV"
-		String style = "FV";
+		//"SUP", "SEMI", "FV", "ASPECT"
+		String style = "ASPECT";
 		
 		//"NB", "LR", "SVM", "PR"
 		String classifier = "LR"; //Which classifier to use.
@@ -39,20 +40,24 @@ public class AmazonReviewMain {
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 //		/*****Parameters in feature selection.*****/
-		String featureSelection = "CHI"; //Feature selection method.
-//		String stopwords = "./data/Model/stopwords.dat";
-//		double startProb = 0.3; // Used in feature selection, the starting point of the features.
-//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+		String featureSelection = "DF"; //Feature selection method.
+		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+		String stopwords = "./data/Model/stopwords.dat";
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String stnModel = "./data/Model/en-sent.bin"; //Token model.
+		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
-		String finalLocation = String.format("data/Features/fv_%s.txt", pattern);
-//		String featureLocation = String.format("data/Features/fv_stat_%s.txt", pattern);
+		String fvFile = String.format("data/Features/fv_%s.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s.txt", pattern);
 		String vctFile = String.format("data/Fvs/vct_%s.dat", pattern);		
 		
 		/*****Parameters in time series analysis.*****/
@@ -60,20 +65,28 @@ public class AmazonReviewMain {
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
-		/****Feture selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
-		//Collect vectors for documents.
-		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, finalLocation, Ngram, lengthThreshold);
-		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
+		/****Loading json files*****/
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold,
+				aspectModel, chiSize);
+		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.setFeatureValues(featureValue, norm);
-		analyzer.setTimeFeatures(window);
+		
+		/****Feature selection*****/
+//		System.out.println("Performing feature selection, wait...");
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		
+//		analyzer.SaveCVStat(fvStatFile);
+		
+		/****Aspect annotation*****/
+		analyzer.BootStrapping(aspectOutput, 0.9, 10);		
+		
+		/****create vectors for documents*****/
+//		System.out.println("Creating feature vectors, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, finalLocation, Ngram, lengthThreshold);
+//		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.setFeatureValues(featureValue, norm);
+//		analyzer.setTimeFeatures(window);
 		
 		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.getCorpus();

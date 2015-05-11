@@ -31,7 +31,7 @@ import utils.Utils;
  * @author hongning
  * Keyword based bootstrapping for aspect annotation
  */
-public class AspectAnalyzer extends DocAnalyzer {
+public class AspectAnalyzer extends jsonAnalyzer {
 
 	class _Aspect{
 		String m_name;
@@ -67,10 +67,12 @@ public class AspectAnalyzer extends DocAnalyzer {
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo,
 			String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
+		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		
-		LoadAspectKeywords(aspectFile);
 		m_chiSize = chiSize;
+		LoadAspectKeywords(aspectFile);
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -97,22 +99,6 @@ public class AspectAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-	public void SaveAspectKeywords(String filename){
-		try {	
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"));
-			for(_Aspect aspect:m_aspects){
-				writer.write(aspect.m_name);
-				for(Integer wid:aspect.m_keywords) {
-					writer.write("\t" + m_featureNames.get(wid));
-				}
-				writer.write("\n");
-			}
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
 	void Annotate(_Doc d){
 		for(int i=0; i<d.getSenetenceSize(); i++){
 			int maxCount = 0, count, sel = -1;
@@ -132,7 +118,7 @@ public class AspectAnalyzer extends DocAnalyzer {
 	void collectStats(_Doc d){
 		int aspectID, wordID;
 		for(_Stn s:d.getSentences()){
-			if ( (aspectID=s.getTopic())>-1){
+			if ( (aspectID=s.getTopic())>-1 ){//if it is annotated
 				for(_SparseFeature f:s.getFv()){
 					wordID = f.getIndex();
 					m_featureStat.get(m_featureNames.get(wordID)).addOneDF(aspectID);
@@ -167,22 +153,23 @@ public class AspectAnalyzer extends DocAnalyzer {
 	}
 	
 	boolean expandKeywordsByChi(double ratio){
-		int selID = -1, aspectSize = m_aspects.size();
+		int selID = -1, aspectSize = m_aspects.size(), N = Utils.sumOfArray(m_aspectDist), DF;
 		double maxChi, chiV;
-		Iterator<Map.Entry<String, _stat>> it = m_featureStat.entrySet().iterator();
+		int[] DFarray;
 		_Aspect aspect;
 		
-		int N = Utils.sumOfArray(m_aspectDist), DF;
+		Iterator<Map.Entry<String, _stat>> it = m_featureStat.entrySet().iterator();
 		while(it.hasNext()){//set aspect assignment for each word
 			Map.Entry<String, _stat> entry = it.next();
 			
 			_stat temp = entry.getValue();
-			DF = Utils.sumOfArray(temp.getDF());
+			DFarray = temp.getDF();
+			DF = Utils.sumOfArray(DFarray);
 			
 			maxChi = 0.0;
 			selID = -1;
 			for(int i=0; i<aspectSize; i++){				
-				chiV = FeatureSelector.ChiSquare(N, DF, temp.getDF()[i], m_aspectDist[i]);				
+				chiV = FeatureSelector.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
 				if (chiV > ratio * maxChi){
 					maxChi = chiV;
 					selID = i;

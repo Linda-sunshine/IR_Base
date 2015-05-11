@@ -107,24 +107,6 @@ public abstract class Analyzer {
 	
 	abstract public void LoadDoc(String filename);
 	
-	//Save all the features and feature stat into a file.
-	protected void SaveCVStat(String finalLocation) throws FileNotFoundException{
-		if (finalLocation==null || finalLocation.isEmpty())
-			return;
-		
-		PrintWriter writer = new PrintWriter(new File(finalLocation));
-		for(int i = 0; i < m_featureNames.size(); i++){
-			writer.print(m_featureNames.get(i));
-			_stat temp = m_featureStat.get(m_featureNames.get(i));
-			for(int j = 0; j < temp.getDF().length; j++)
-				writer.print("\t" + temp.getDF()[j]);
-			for(int j = 0; j < temp.getTTF().length; j++)
-				writer.print("\t" + temp.getTTF()[j]);
-			writer.println();
-		}
-		writer.close();
-	}
-	
 	//Add one more token to the current vocabulary.
 	protected void expandVocabulary(String token) {
 		m_featureNameIndex.put(token, m_featureNames.size()); // set the index of the new feature.
@@ -251,8 +233,8 @@ public abstract class Analyzer {
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
 		//clear memory for next step feature construction
-		reset();
-		LoadCV(location);//load the selected features
+//		reset();
+//		LoadCV(location);//load the selected features
 	}
 	
 	//Save all the features and feature stat into a file.
@@ -273,6 +255,30 @@ public abstract class Analyzer {
 		for (int i = 0; i < m_featureNames.size(); i++)
 			writer.println(m_featureNames.get(i));
 		writer.close();
+	}
+	
+	//Save all the features and feature stat into a file.
+	public void SaveCVStat(String fvStatFile) {
+		if (fvStatFile==null || fvStatFile.isEmpty())
+			return;
+		
+		try {
+			PrintWriter writer = new PrintWriter(new File(fvStatFile));
+		
+			for(int i = 0; i < m_featureNames.size(); i++){
+				writer.print(m_featureNames.get(i));
+				_stat temp = m_featureStat.get(m_featureNames.get(i));
+				for(int j = 0; j < temp.getDF().length; j++)
+					writer.print("\t" + temp.getDF()[j]);
+				for(int j = 0; j < temp.getTTF().length; j++)
+					writer.print("\t" + temp.getTTF()[j]);
+				writer.println();
+			}
+			writer.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	//Return the number of features.
