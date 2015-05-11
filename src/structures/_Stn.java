@@ -3,6 +3,8 @@
  */
 package structures;
 
+import java.util.Set;
+
 /**
  * @author hongning
  * Sentence structure for text documents
@@ -37,5 +39,23 @@ public class _Stn {
 	
 	public double getTransit() {
 		return m_transit;
+	}
+	
+	public int getTopic() {
+		return m_topic;
+	}
+	
+	public void setTopic(int i) {
+		m_topic = i;
+	}
+	
+	//annotate by all the words
+	public int AnnotateByKeyword(Set<Integer> keywords){
+		int count = 0;
+		for(_SparseFeature t:m_x_sparse){
+			if (keywords.contains(t.getIndex()))
+				count ++;
+		}
+		return count;
 	}
 }

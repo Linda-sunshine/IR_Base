@@ -135,30 +135,41 @@ public class FeatureSelector {
 	//Feature Selection -- CHI.
 	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo){
 		int classNo = classMemberNo.length;
-		double N = Utils.sumOfArray(classMemberNo), DF;
+		int N = Utils.sumOfArray(classMemberNo), DF;
 		double[] X2tc = new double [classNo];
-		int[] DFs;
 		double X2avg = 0;		
 			
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			_stat temp = featureStat.get(f);
-			DFs = temp.getDF();
-			DF = Utils.sumOfArray(DFs);
+			DF = Utils.sumOfArray(temp.getDF());
 			
 			if (DF > m_DFThreshold){				
 				X2avg = 0;				
 				for(int i = 0; i < classNo; i++){
-					double A = temp.getDF()[i];//t & c
-					double B = DF - A;//t & !c
-					double C = classMemberNo[i] - A;//!t & c
-					double D = N - DF - classMemberNo[i] + A;//!t & !c
-					X2tc[i] = ( A * D - B * C ) * ( A * D - B * C ) / classMemberNo[i] / ( B + D ) / DF / ( C + D );
-					X2avg += X2tc[i] * classMemberNo[i];
+					X2tc[i] = ChiSquare(N, DF, temp.getDF()[i], classMemberNo[i]);
+					X2avg += X2tc[i] * classMemberNo[i] / N;
 				}
 				//X2max = Utils.maxOfArrayValue(X2tc);
 				m_selectedFeatures.add(new _RankItem(f, X2avg));
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param N: total document size
+	 * @param DF: document frequency for term t
+	 * @param tcDF: number of documents where t and c co-occur
+	 * @param cDF: number of documents where t occurs
+	 * @return
+	 */
+	static public double ChiSquare(int N, int DF, int tcDF, int cDF) {
+		double A = tcDF;//t & c
+		double B = DF - A;//t & !c
+		double C = cDF - A;//!t & c
+		double D = N - DF - cDF + A;//!t & !c
+		
+		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
 }

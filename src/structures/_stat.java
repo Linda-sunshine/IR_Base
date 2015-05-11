@@ -3,6 +3,8 @@
  */
 package structures;
 
+import java.util.Arrays;
+
 
 /**
  * @author lg5bt
@@ -15,6 +17,16 @@ public class _stat {
 	public _stat(int classNo){
 		m_DF = new int[classNo];
 		m_TTF = new int[classNo];
+	}
+	
+	public void reset(int classNo) {
+		if (m_DF.length<classNo) {
+			m_DF = new int[classNo];
+			m_TTF = new int[classNo];
+		} else {
+			Arrays.fill(m_DF, 0);
+			Arrays.fill(m_TTF, 0);
+		}
 	}
 	
 	public int[] getDF(){

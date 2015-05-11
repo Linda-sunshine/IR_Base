@@ -205,6 +205,10 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_sentences.length;
 	}
 	
+	public _Stn[] getSentences() {
+		return m_sentences;
+	}
+	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public _Stn getSentence(int index) {
 		return this.m_sentences[index];
