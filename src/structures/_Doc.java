@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Random;
 
 import utils.Utils;
 
@@ -42,6 +43,11 @@ public class _Doc implements Comparable<_Doc> {
 	//sufficient statistics for estimating p(z|d)
 	public double[] m_sstat;
 	
+	// structure only used by Gibbs sampling to speed up the sampling process
+	public int[] m_words; 
+	public int[] m_topicAssignment;
+	Random m_rand;
+	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;
@@ -50,6 +56,8 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		m_topics = null;
 		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -61,6 +69,8 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -75,6 +85,8 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
 		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -225,15 +237,63 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_predict_label;
 	}
 	
-	public void setTopics(int k, double beta) {
+	public void setTopics(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
 			m_sstat = new double[k];
 		}
-		Utils.randomize(m_topics, beta);
-		Arrays.fill(m_sstat, beta);
-	}	
+		Utils.randomize(m_topics, alpha);
+		Arrays.fill(m_sstat, alpha);
+	}
 	
+	//create necessary structure to accelerate Gibbs sampling
+	public void setTopics4Gibbs(int k, double alpha) {
+		if (m_topics==null || m_topics.length!=k) {
+			m_topics = new double[k];
+			m_sstat = new double[k];
+		}
+
+		Arrays.fill(m_sstat, alpha);
+		
+		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
+		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);
+		if (m_words==null || m_words.length != docSize) {
+			m_topicAssignment = new int[docSize];
+			m_words = new int[docSize];
+		} 
+		
+		int wIndex = 0;
+		if (m_rand==null)
+			m_rand = new Random();
+		for(_SparseFeature fv:m_x_sparse) {
+			for(int j=0; j<fv.getValue(); j++) {
+				m_words[wIndex] = fv.getIndex();
+				m_topicAssignment[wIndex] = m_rand.nextInt(k); // randomly initializing the topics inside a document
+				m_sstat[m_topicAssignment[wIndex]] ++; // collect the topic proportion
+				
+				wIndex ++;
+			}
+		}
+	}
+	
+	public void permutation() {
+		int s, t;
+		for(int i=m_words.length-1; i>1; i--) {
+			s = m_rand.nextInt(i);
+			
+			//swap the word
+			t = m_words[s];
+			m_words[s] = m_words[i];
+			m_words[i] = t;
+			
+			//swap the topic assignment
+			t = m_topicAssignment[s];
+			m_topicAssignment[s] = m_topicAssignment[i];
+			m_topicAssignment[i] = t;
+		}
+	}
+	
+	// used by LR-HTMM for constructing transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence
 		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());
