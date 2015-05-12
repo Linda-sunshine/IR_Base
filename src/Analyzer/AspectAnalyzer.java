@@ -83,7 +83,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			String[] container;
 			HashSet<Integer> keywords;
 			while( (tmpTxt=reader.readLine()) != null ){
-				container = tmpTxt.split("\t");
+				container = tmpTxt.split("\\s+");//Modified by lin.
 				keywords = new HashSet<Integer>(container.length-1);
 				for(int i=1; i<container.length; i++)
 					keywords.add(m_featureNameIndex.get(container[i])); // map it to a controlled vocabulary term

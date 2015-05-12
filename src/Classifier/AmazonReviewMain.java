@@ -18,7 +18,7 @@ public class AmazonReviewMain {
 	public static void main(String[] args) throws IOException, ParseException{
 		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
+		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
 		
@@ -49,10 +49,11 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dudep/RawData";
+		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = "./data/Model/en-sent.bin"; //Token model.
+		
 		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
 		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
@@ -74,7 +75,6 @@ public class AmazonReviewMain {
 		/****Feature selection*****/
 //		System.out.println("Performing feature selection, wait...");
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		
 //		analyzer.SaveCVStat(fvStatFile);
 		
 		/****Aspect annotation*****/
