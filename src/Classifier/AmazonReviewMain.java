@@ -49,7 +49,7 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/small/dudep/RawData";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = "./data/Model/en-sent.bin"; //Token model.
