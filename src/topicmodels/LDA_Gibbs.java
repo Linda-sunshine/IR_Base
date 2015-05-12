@@ -80,7 +80,11 @@ public class LDA_Gibbs extends pLSA {
 			m_sstat[tid] --;
 			
 			//perform random sampling
-			p = m_rand.nextDouble();
+			p = 0;
+			for(tid=0; tid<number_of_topics; tid++)
+				p += (d.m_sstat[tid]/wordSize) * (word_topic_sstat[tid][wid]/m_sstat[tid]);			
+			p *= m_rand.nextDouble();
+			
 			tid = -1;
 			while(p>0 && tid<number_of_topics-1) {
 				tid ++;
