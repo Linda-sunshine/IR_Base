@@ -21,6 +21,7 @@ public class AmazonReviewMain {
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
+		String a = "git branch test";//test if it works in desktop
 		
 		//"TF", "TFIDF", "BM25", "PLN"
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
