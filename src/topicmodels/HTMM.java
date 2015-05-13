@@ -165,7 +165,7 @@ public class HTMM extends pLSA {
 	}
 	
 	@Override
-	public void calculate_M_step() {
+	public void calculate_M_step(int iter) {
 		this.epsilon = this.lot/this.total; // to make the code structure concise and consistent, keep epsilon in real space!!
 		
 		for(int i=0; i<this.number_of_topics; i++) {

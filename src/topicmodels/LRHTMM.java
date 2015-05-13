@@ -58,8 +58,8 @@ public class LRHTMM extends HTMM {
 	}
 	
 	@Override
-	public void calculate_M_step() {
-		super.calculate_M_step();
+	public void calculate_M_step(int iter) {
+		super.calculate_M_step(iter);
 		estimateOmega();//maximum likelihood estimation for w
 	}
 	

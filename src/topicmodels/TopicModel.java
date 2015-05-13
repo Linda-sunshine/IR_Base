@@ -51,6 +51,9 @@ public abstract class TopicModel {
 	// to be called per EM-iteration
 	protected abstract void init();
 	
+	// to be called by the end of EM algorithm 
+	protected abstract void finalEst();
+	
 	// to be call per test document
 	protected abstract void initTestDoc(_Doc d);
 	
@@ -77,7 +80,7 @@ public abstract class TopicModel {
 	public abstract double calculate_E_step(_Doc d); // return log-likelihood
 	
 	//M-step should be per-corpus computation
-	public abstract void calculate_M_step();
+	public abstract void calculate_M_step(int i); // input current iteration to control sampling based algorithm
 	
 	//compute per-document log-likelihood
 	protected abstract double calculate_log_likelihood(_Doc d);
@@ -109,17 +112,19 @@ public abstract class TopicModel {
 			for(_Doc d:m_trainSet)
 				current += calculate_E_step(d);
 			
-			calculate_M_step();
+			calculate_M_step(i);
 			
 			current += calculate_log_likelihood();//together with corpus-level log-likelihood
 			delta = (last-current)/last;
 			last = current;
 			
-			if (m_display)
+			if (m_display && i%10==0)
 				System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 			i++;
 			//Math.abs(delta)>this.m_converge && 
 		} while (i<this.number_of_iteration);
+		
+		finalEst();
 		
 		if (!m_display) // output the summary
 			System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
@@ -183,12 +188,12 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs
+		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
 		double converge = 1e-4, lambda = 0.7;
-		int topK = 10, number_of_iteration = 1000, crossV = 1;
+		int topK = 10, number_of_iteration = 100, crossV = 1;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -246,13 +251,25 @@ public abstract class TopicModel {
 		} else if (topicmodel.equals("LDA_Gibbs")) {		
 			LDA_Gibbs model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
 				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha);
+				number_of_topics, alpha, 0.4, 50);
 		
+			//model.setDisplay(true);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
 			} else 
 				model.crossValidation(crossV);
+		}  else if (topicmodel.equals("LDA_Variational")) {		
+			LDA_Variational model = new LDA_Variational(number_of_iteration, converge, beta, c, 
+					lambda, analyzer.getBackgroundProb(), 
+					number_of_topics, alpha, 50, 1e-3);
+			
+				model.setDisplay(true);
+				if (crossV<=1) {
+					model.EMonCorpus();
+					model.printTopWords(topK);
+				} else 
+					model.crossValidation(crossV);
 		}  else if (topicmodel.equals("HTMM")) {
 			HTMM model = new HTMM(number_of_iteration, converge, beta, c, 
 					number_of_topics, alpha);

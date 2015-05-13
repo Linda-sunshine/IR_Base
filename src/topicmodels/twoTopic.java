@@ -63,7 +63,7 @@ public class twoTopic extends TopicModel {
 	}
 	
 	@Override
-	public void calculate_M_step() {		
+	public void calculate_M_step(int iter) {		
 		double sum = Utils.sumOfArray(m_sstat) + vocabulary_size * (d_beta-1.0);//with smoothing
 		for(int i=0;i<vocabulary_size;i++)
 			m_theta[i] = (d_beta - 1.0 + m_sstat[i]) / sum;
@@ -94,6 +94,9 @@ public class twoTopic extends TopicModel {
 	//this function can only estimate the document-specific random variables
 	@Override
 	protected void estThetaInDoc(_Doc d) {
-		calculate_M_step();
+		calculate_M_step(0);
 	}
+
+	@Override
+	protected void finalEst() {	}
 }

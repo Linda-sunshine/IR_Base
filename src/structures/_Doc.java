@@ -41,11 +41,15 @@ public class _Doc implements Comparable<_Doc> {
 	//p(z|d) for topic models in general
 	public double[] m_topics;
 	//sufficient statistics for estimating p(z|d)
-	public double[] m_sstat;
+	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)
 	
 	// structure only used by Gibbs sampling to speed up the sampling process
 	public int[] m_words; 
 	public int[] m_topicAssignment;
+	
+	// structure only used by variational inference
+	public double[][] m_phi; // p(z|w, \phi)
+	
 	Random m_rand;
 	
 	//Constructor.
@@ -244,6 +248,23 @@ public class _Doc implements Comparable<_Doc> {
 		}
 		Utils.randomize(m_topics, alpha);
 		Arrays.fill(m_sstat, alpha);
+	}
+	
+	//create necessary structure for variational inference
+	public void setTopics4Variational(int k, double alpha) {
+		if (m_topics==null || m_topics.length!=k) {
+			m_topics = new double[k];
+			m_sstat = new double[k];//used as p(z|w,\phi)
+			m_phi = new double[m_x_sparse.length][k];
+		}
+		
+		Arrays.fill(m_sstat, alpha);
+		for(int n=0; n<m_x_sparse.length; n++) {
+			Utils.randomize(m_phi[n], alpha);
+			double v = m_x_sparse[n].getValue();
+			for(int i=0; i<k; i++)
+				m_sstat[i] += m_phi[n][i] * v;
+		}
 	}
 	
 	//create necessary structure to accelerate Gibbs sampling
