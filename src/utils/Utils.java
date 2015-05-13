@@ -482,7 +482,15 @@ public class Utils {
 			value += vct[fv.getIndex()] * fv.getValue();
 		return value;
 	}
-	
+	//Dot product of two binary arrays.
+	public static int dotProduct(int[] a, int[] b){
+		int sum = 0;
+		if(a.length == b.length){
+			for(int i = 0; i < a.length; i++)
+				sum += a[i] & b[i];
+		}
+		return sum;
+	}
 	//Sgn function: >= 0 1; < 0; 0.
 	public static int sgn(double a){
 		if (a >= 0) return 1;

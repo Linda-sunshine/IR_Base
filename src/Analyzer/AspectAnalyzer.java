@@ -14,6 +14,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -32,7 +33,6 @@ import utils.Utils;
  * Keyword based bootstrapping for aspect annotation
  */
 public class AspectAnalyzer extends jsonAnalyzer {
-
 	class _Aspect{
 		String m_name;
 		HashSet<Integer> m_keywords; // index corresponding to the controlled vocabulary
@@ -59,18 +59,23 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return expand;
 		}
 	}
-	
+	int m_aspDimension; //The number of aspects.
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
 	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo,
-			String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
 		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		
+		m_chiSize = chiSize;
+		LoadAspectKeywords(aspectFile);
+	}
+	
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 	}
@@ -85,14 +90,17 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split("\\s+");//Modified by lin.
 				keywords = new HashSet<Integer>(container.length-1);
-				for(int i=1; i<container.length; i++)
-					keywords.add(m_featureNameIndex.get(container[i])); // map it to a controlled vocabulary term
-				
+				for(int i=1; i<container.length; i++){
+					if(m_featureNameIndex.containsKey(container[i]))
+						keywords.add(m_featureNameIndex.get(container[i]));// map it to a controlled vocabulary term
+					else
+						System.out.println("Not in the feature list: " + container[i]);
+				}
 				m_aspects.add(new _Aspect(container[0], keywords, m_chiSize));
 				System.out.println("Keywords for " + container[0] + ": " + keywords.size());
 			}
 			reader.close();
-			
+			m_aspDimension = m_aspects.size();
 			m_aspectDist = new int[m_aspects.size()];
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -217,5 +225,69 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	protected boolean AnalyzeDoc(_Doc doc) {
+		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		int index = 0;
+		double value = 0;
+		// Construct the sparse vector.
+		for (String token : tokens) {
+			// CV is not loaded, take all the tokens as features.
+			if (!m_isCVLoaded) {
+				if (m_featureNameIndex.containsKey(token)) {
+					index = m_featureNameIndex.get(token);
+					if (spVct.containsKey(index)) {
+						value = spVct.get(index) + 1;
+						spVct.put(index, value);
+					} else {
+						spVct.put(index, 1.0);
+						m_featureStat.get(token).addOneDF(doc.getYLabel());
+					}
+				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
+					expandVocabulary(token);// update the m_featureNames.
+					index = m_featureNameIndex.get(token);
+					spVct.put(index, 1.0);
+					m_featureStat.get(token).addOneDF(doc.getYLabel());
+				}
+				m_featureStat.get(token).addOneTTF(doc.getYLabel());
+			} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+				index = m_featureNameIndex.get(token);
+				if (spVct.containsKey(index)) {
+					value = spVct.get(index) + 1;
+					spVct.put(index, value);
+				} else {
+					spVct.put(index, 1.0);
+					m_featureStat.get(token).addOneDF(doc.getYLabel());
+				}
+				m_featureStat.get(token).addOneTTF(doc.getYLabel());
+			}
+			// if the token is not in the vocabulary, nothing to do.
+		}
+		
+		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+			doc.createSpVct(spVct);
+			doc.setAspVct(detectAspects(spVct));
+			m_corpus.addDoc(doc);
+			m_classMemberNo[doc.getYLabel()]++;
+			if (m_releaseContent)
+				doc.clearSource();
+			return true;
+		} else
+			return false;
+	}
+	
+	public int[] detectAspects(HashMap<Integer, Double> spVct){
+		int[] aspVct = new int[m_aspDimension];
+		for(int i = 0; i < m_aspects.size(); i++){
+			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
+			for(int key: keywords){
+				if(spVct.containsKey(key))
+					aspVct[i] = 1;
+				break;
+			}
+		}
+		return aspVct;
 	}
 }

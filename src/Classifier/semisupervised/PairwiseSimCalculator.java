@@ -1,6 +1,7 @@
 package Classifier.semisupervised;
 
 import structures._Doc;
+import utils.Utils;
 
 public class PairwiseSimCalculator implements Runnable {
 
@@ -18,14 +19,20 @@ public class PairwiseSimCalculator implements Runnable {
 	@Override
 	public void run() {
 		_Doc di, dj;
-		double similarity;
+		double similarity, discount;
 		for (int i = m_start; i < m_end; i++) {
 			di = m_GFObj.getTestDoc(i);
 			for (int j = i + 1; j < m_GFObj.m_U; j++) {// to save computation since our similarity metric is symmetric
 				dj = m_GFObj.getTestDoc(j);
 				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if (!di.sameProduct(dj))
-					similarity *= m_GFObj.m_discount;// differentiate reviews from different products
+				if (di.sameProduct(dj)){
+					int aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
+					if(aspScore != 0)
+						discount = Math.pow(1.5, aspScore);
+					else 
+						discount = m_GFObj.m_discount;
+					similarity *= discount;
+				}
 				m_GFObj.setCache(i, j, similarity);
 			}
 
