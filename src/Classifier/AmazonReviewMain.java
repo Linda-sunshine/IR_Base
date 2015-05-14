@@ -90,7 +90,7 @@ public class AmazonReviewMain {
 //		analyzer.BootStrapping(aspectOutput, 0.9, 10);		
 		
 		/***The parameters used in GF-RW.****/
-		double eta = 0.7, sr = 1;
+		double eta = 0.2, sr = 1;
 		
 		/****create vectors for documents*****/
 		System.out.println("Creating feature vectors, wait...");
@@ -141,7 +141,7 @@ public class AmazonReviewMain {
 			} else if (classifier.equals("GF-RW")) {
 //				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner, 1, 1, 5, 1, 0, 1e-4, 1, false);
 				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner, sr, 100, 50, 1, 0.1, 1e-4, eta, false);
-//				mySemi.setFeaturesLookup(analyzer.getFeaturesLookup()); //give the look up to the classifier for debugging purpose.
+				mySemi.setFeaturesLookup(analyzer.getFeaturesLookup()); //give the look up to the classifier for debugging purpose.
 				mySemi.setDebugOutput(debugOutput);
 //				mySemi.setDebugPrinters(WrongRWfile, WrongSVMfile, FuSVM);
 //				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile));

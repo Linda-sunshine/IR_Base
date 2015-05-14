@@ -346,4 +346,8 @@ public abstract class Analyzer {
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
 	}
+	
+	public HashMap<String, Integer> getFeaturesLookup(){
+		return m_featureNameIndex;
+	}
 }
