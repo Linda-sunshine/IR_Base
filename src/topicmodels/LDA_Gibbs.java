@@ -144,15 +144,15 @@ public class LDA_Gibbs extends pLSA {
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
 		double logLikelihood = 0.0, prob;
-//		int wid, tid;
-//		double wordSize = number_of_topics*d_alpha + d.m_words.length;
-//		for(int i=0; i<d.m_words.length; i++) {
-//			wid = d.m_words[i];
-//			tid = d.m_topicAssignment[i];			
-//			
-//			prob = d.m_sstat[tid] / wordSize * word_topic_sstat[tid][wid]/m_sstat[tid];
-//			logLikelihood += Math.log(prob);
-//		}
+		int wid, tid;
+		double wordSize = number_of_topics*d_alpha + d.m_words.length;
+		for(int i=0; i<d.m_words.length; i++) {
+			wid = d.m_words[i];
+			tid = d.m_topicAssignment[i];			
+			
+			prob = d.m_sstat[tid] / wordSize * word_topic_sstat[tid][wid]/m_sstat[tid];
+			logLikelihood += Math.log(prob);
+		}
 		return logLikelihood;
 	}
 	
@@ -160,11 +160,11 @@ public class LDA_Gibbs extends pLSA {
 	protected double calculate_log_likelihood() {
 		//prior from Dirichlet distributions
 		double logLikelihood = 0;
-//		for(int i=0; i<this.number_of_topics; i++) {
-//			for(int v=0; v<this.vocabulary_size; v++) {
-//				logLikelihood += (d_beta-1)*word_topic_sstat[i][v]/m_sstat[i];
-//			}
-//		}
+		for(int i=0; i<this.number_of_topics; i++) {
+			for(int v=0; v<this.vocabulary_size; v++) {
+				logLikelihood += (d_beta-1)*word_topic_sstat[i][v]/m_sstat[i];
+			}
+		}
 		
 		return logLikelihood;
 	}

@@ -128,8 +128,15 @@ public abstract class TopicModel {
 		
 		finalEst();
 		
-		if (!m_display) // output the summary
-			System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
+		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
+		
+		//sample codes to demonstrate the inferred topics
+		for(_Doc d:m_trainSet) {
+			System.out.format("Doc %s,", d.getID());
+			for(i=0; i<number_of_topics; i++)
+				System.out.format("\t%.3f", d.m_topics[i]);
+			System.out.println();
+		}
 	}
 	
 	public double Evaluation() {
@@ -190,12 +197,12 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs
+		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
 		double converge = 1e-4, lambda = 0.7;
-		int topK = 10, number_of_iteration = 100, crossV = 1;
+		int topK = 10, number_of_iteration = 1000, crossV = 1;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -214,7 +221,7 @@ public abstract class TopicModel {
 //		double startProb = 0.2; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 //		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-		
+//		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
@@ -255,7 +262,7 @@ public abstract class TopicModel {
 				lambda, analyzer.getBackgroundProb(), 
 				number_of_topics, alpha, 0.4, 50);
 		
-			//model.setDisplay(true);
+			model.setDisplay(true);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);

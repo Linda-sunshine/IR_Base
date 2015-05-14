@@ -117,7 +117,7 @@ public class LDA_Variational extends pLSA {
 	public void calculate_M_step(int iter) {	
 		//maximum likelihood estimation of p(w|z,\beta)
 		for(int i=0; i<number_of_topics; i++) {
-			for(int v=0; v<vocabulary_size; v++) {
+			for(int v=0; v<vocabulary_size; v++) {//will be in the log scale!!
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/m_sstat[i]);
 			}
 		}
