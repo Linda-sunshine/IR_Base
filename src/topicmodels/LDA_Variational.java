@@ -38,9 +38,7 @@ public class LDA_Variational extends pLSA {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 		// initialize with all smoothing terms
-		for(int i=0; i<number_of_topics; i++)
-			Arrays.fill(word_topic_sstat[i], d_beta);
-		Arrays.fill(m_sstat, d_beta*vocabulary_size);
+		init();
 		
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
@@ -99,10 +97,9 @@ public class LDA_Variational extends pLSA {
 			//variational inference for p(\theta|\gamma)
 			Arrays.fill(d.m_sstat, d_alpha);
 			for(int n=0; n<fv.length; n++) {
-				wid = fv[n].getIndex();
 				v = fv[n].getValue();
 				for(int i=0; i<number_of_topics; i++)
-					d.m_sstat[i] += d.m_phi[n][i] * v;
+					d.m_sstat[i] += d.m_phi[n][i] * v;// 
 			}
 			
 			current = calculate_log_likelihood(d);			

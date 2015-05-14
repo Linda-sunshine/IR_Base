@@ -115,14 +115,16 @@ public abstract class TopicModel {
 			calculate_M_step(i);
 			
 			current += calculate_log_likelihood();//together with corpus-level log-likelihood
-			delta = (last-current)/last;
+			if (i>0)
+				delta = (last-current)/last;
+			else
+				delta = 1.0;
 			last = current;
 			
-			if (m_display && i%10==0)
+			if (m_display)// && i%10==0
 				System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-			i++;
 			//Math.abs(delta)>this.m_converge && 
-		} while (i<this.number_of_iteration);
+		} while (++i<this.number_of_iteration);
 		
 		finalEst();
 		
@@ -262,7 +264,7 @@ public abstract class TopicModel {
 		}  else if (topicmodel.equals("LDA_Variational")) {		
 			LDA_Variational model = new LDA_Variational(number_of_iteration, converge, beta, c, 
 					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 50, 1e-3);
+					number_of_topics, alpha, 50, 1e-8);
 			
 				model.setDisplay(true);
 				if (crossV<=1) {
