@@ -6,144 +6,136 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import structures._Corpus;
+import Analyzer.AspectAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
-import Classifier.supervised.KNN;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
 
-public class AmazonReviewMain {
+public class AspectReviewMain {
 
+	
+	/**-> Generate the aspect list semi-manually.
+	 **-> Do classification. ***/
 	public static void main(String[] args) throws IOException, ParseException{
-		/*****Set these parameters before running the classifiers.*****/
+		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-
+		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
-
+		
 		//"TF", "TFIDF", "BM25", "PLN"
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
-
-		//"SUP", "SEMI", "FV: save features and vectors to files"
-		String style = "SUP";//"SUP", "SEMI"
-		//Supervised: "NB", "LR", "PR-LR", "SVM"; Semi-supervised: "GF", "GF-RW", "GF-RW-ML"**/
-		String classifier = "LR"; //Which classifier to use.
-		String multipleLearner = "SVM";
-		double C = 1.0;
+	
+		//"SUP", "SEMI", "FV", "ASPECT"
+		String style = "SEMI";
 		
+		//"NB", "LR", "SVM", "PR"
+		String classifier = "GF-RW"; //Which classifier to use.
+		String multipleLearner = "SVM";
+		double C = 0.1;
 //		String modelPath = "./data/Model/";
+		String debugOutput = "data/debug/Debug_" + classifier + ".output";
+		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****Parameters in feature selection.*****/
-		String featureSelection = "CHI"; //Feature selection method.
+		String featureSelection = "DF"; //Feature selection method.
 		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.0; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
-		String diffFolder = "20json";
-		String path = "data/" + diffFolder + "/";
-		String folder = path + "RawData";
+		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
 		
-		String pattern = String.format("%dgram_%s_%s_%s", Ngram, featureValue, featureSelection, diffFolder);
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String featureLocation = String.format(path + "fv_%s.txt", pattern);//feature location
-		String vctFile = String.format(path + "vct_%s.dat", pattern);
-		String matrixFile = path + "matrixA.dat";
+		String stnModel = "./data/Model/en-sent.bin"; //Token model.
+		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
-		/***The parameters used in GF-RW and debugging.****/
-		double eta = 0.1, sr = 1;
-		String debugOutput = path + classifier + eta + "_noPOS.txt";
-		String WrongRWfile= path + classifier + eta + "_WrongRW.txt";
-		String WrongSVMfile= path + classifier + eta + "_WrongSVM.txt";
-		String FuSVM = path + classifier + eta + "_FuSVMResults.txt";
-		String reviewStatFile = path + classifier + eta + "_reviewStat.txt";
-		/**Parameters in KNN.**/
-		int k = 1, l = 2;//l > 0, random projection; else brute force.
+		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
+		String fvFile = String.format("data/Features/fv_%s.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s.txt", pattern);
+		String vctFile = String.format("data/Fvs/vct_%s.dat", pattern);		
 		
-		/*****Parameters in time series analysis.*****/
+		/*****Parameters in time series analysis.***/
 		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
-		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+		/**-> Generate the features as vocabulary.***/
+//		/****Load json files to do feature selection first.*****/
+//		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, aspectModel, chiSize);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.resetStopwords();
+//		System.out.println("Performing feature selection, wait...");
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		analyzer.SaveCVStat(fvStatFile);
 		
-		/****Create feature vectors*****/
+		/****Load json files to do Aspect annotation*****/
+		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, aspectModel, chiSize);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.BootStrapping(aspectOutput, 0.9, 10);		
+		
+		/***The parameters used in GF-RW.****/
+		double eta = 0.2, sr = 1;
+		
+		/****create vectors for documents*****/
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber,featureLocation, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, chiSize);
+//		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		
-//		analyzer.calcRepBaseContent();
-//		analyzer.calcRepLabelBaseContent();
-	
-		_Corpus corpus = analyzer.getCorpus();
 		featureSize = analyzer.getFeatureSize();
-//		corpus.save2File(vctFile);
-
-//		//String matrixFile = path + "matrixA0321.dat";
-//		/***Print the matrix of X and Y for metric learning.***/
-//		String xFile = path + diffFolder + "X.csv";
-//		String yFile = path + diffFolder + "Y.csv";
-//		analyzer.printXY(xFile, yFile);
-		
-//		//temporal code to add pagerank weights
+		_Corpus corpus = analyzer.getCorpus();
+//		System.out.println("The number of reviews with non-zero apsects: " + analyzer.returnCount());
+		//temporal code to add pagerank weights
 //		PageRank tmpPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);
 //		tmpPR.train(corpus.getCollection());
 		
 		/********Choose different classification methods.*********/
+		//Execute different classifiers.
 		if (style.equals("SUP")) {
 			if(classifier.equals("NB")){
 				//Define a new naive bayes with the parameters.
 				System.out.println("Start naive bayes, wait...");
-				NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
+				NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize + window + 1);
 				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize, C);
-				myLR.setDebugOutput(debugOutput);//Save debug information into file.
+				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window + 1, C);
+				myLR.setDebugOutput(debugOutput);
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
-				//Define a new SVM with the parameters.
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize, C, 0.01);//default eps value from Lin's implementation
+				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C, 0.01);//default eps value from Lin's implementation
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){
-				//Define a new Pagerank with parameters.
 				System.out.println("Start PageRank, wait...");
-				PageRank myPR = new PageRank(corpus, classNumber, featureSize, C, 100, 50, 1e-6);
+				PageRank myPR = new PageRank(corpus, classNumber, featureSize + window + 1, C, 100, 50, 1e-6);
 				myPR.train(corpus.getCollection());
 				
-			} else if(classifier.equals("KNN")){
-				System.out.println(String.format("Start KNN, k=%d, l=%d, wait...\n", k, l));
-				KNN myKNN = new KNN(corpus, classNumber, featureSize, k, l);
-				myKNN.crossValidation(CVFold, corpus);
-
-			} else 
-				System.out.println("Classifier has not developed yet!");
-		}
-		else if (style.equals("SEMI")) {
+			} else System.out.println("Classifier has not developed yet!");
+		} else if (style.equals("SEMI")) {
 			if (classifier.equals("GF")) {
 				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
 				mySemi.crossValidation(CVFold, corpus);

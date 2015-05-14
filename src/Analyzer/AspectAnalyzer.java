@@ -63,7 +63,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	
+	int m_count;
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
@@ -72,12 +72,14 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
+		m_count = 0;
 	}
 	
 	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
+		m_count = 0;
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -268,6 +270,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
+			if(NotEmpty(detectAspects(spVct)))
+				m_count++;
 			doc.setAspVct(detectAspects(spVct));
 			m_corpus.addDoc(doc);
 			m_classMemberNo[doc.getYLabel()]++;
@@ -276,6 +280,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return true;
 		} else
 			return false;
+	}
+	
+	public int returnCount(){
+		return m_count;
 	}
 	
 	public int[] detectAspects(HashMap<Integer, Double> spVct){
@@ -290,4 +298,24 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 		return aspVct;
 	}
+	
+	public boolean NotEmpty(int[] aspVct){
+		int sum = 0;
+		for(int a: aspVct){
+			sum += a & 1;
+		}
+		if(sum != 0)
+			return true;
+		else 
+			return false;
+	}
+	
+//	public static void main(String[] args){
+//		int[] a = {1, 0, 0, 1};
+//		int[] b = {0, 0, 0};
+//		int[] c = {1, 0, 0, 1, 0};
+//		System.out.println(isEmpty(a));
+//		System.out.println(isEmpty(b));
+//		System.out.println(isEmpty(c));
+//	}
 }
