@@ -515,7 +515,7 @@ public class Utils {
 	   *
 	   **/
 
-	public double trigamma(double x)
+	public static double trigamma(double x)
 	{
 	    double p;
 	    int i;

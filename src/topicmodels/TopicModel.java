@@ -120,17 +120,17 @@ public abstract class TopicModel {
 				delta = 1.0;
 			last = current;
 			
-			if (m_display&& i%10==0) {
+			if (m_display && i%10==0) {
 				if (this.m_converge>0)
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 				else {
 					System.out.print(".");
-					if (i%200==0)
+					if (i%200==190)
 						System.out.println();
 				}
 			}
 			
-			if (this.m_converge>0 && Math.abs(delta)>this.m_converge)
+			if (Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
 		
@@ -199,10 +199,10 @@ public abstract class TopicModel {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 30;
+		int number_of_topics = 25;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int topK = 10, number_of_iteration = 100, crossV = 1;
+		int topK = 20, number_of_iteration = 100, crossV = 1;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -275,7 +275,7 @@ public abstract class TopicModel {
 		}  else if (topicmodel.equals("LDA_Variational")) {		
 			LDA_Variational model = new LDA_Variational(number_of_iteration, converge, beta, c, 
 					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 50, 1e-8);
+					number_of_topics, alpha, 20, -1);
 			
 				model.setDisplay(true);
 				model.LoadPrior(featureLocation, aspectlist, eta);
