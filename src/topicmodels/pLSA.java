@@ -97,7 +97,7 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	public void calculate_M_step() {	
+	public void calculate_M_step(int iter) {	
 		// update topic-term matrix -------------
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
@@ -113,7 +113,7 @@ public class pLSA extends twoTopic {
 	
 	@Override
 	protected void estThetaInDoc(_Doc d) {
-		double sum = Utils.sumOfArray(d.m_sstat);
+		double sum = Utils.sumOfArray(d.m_sstat);//estimate the expectation of \theta
 		for(int k=0;k<this.number_of_topics;k++)
 			d.m_topics[k] = d.m_sstat[k] / sum;
 	}

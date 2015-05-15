@@ -51,6 +51,9 @@ public abstract class TopicModel {
 	// to be called per EM-iteration
 	protected abstract void init();
 	
+	// to be called by the end of EM algorithm 
+	protected abstract void finalEst();
+	
 	// to be call per test document
 	protected abstract void initTestDoc(_Doc d);
 	
@@ -77,7 +80,7 @@ public abstract class TopicModel {
 	public abstract double calculate_E_step(_Doc d); // return log-likelihood
 	
 	//M-step should be per-corpus computation
-	public abstract void calculate_M_step();
+	public abstract void calculate_M_step(int i); // input current iteration to control sampling based algorithm
 	
 	//compute per-document log-likelihood
 	protected abstract double calculate_log_likelihood(_Doc d);
@@ -109,20 +112,31 @@ public abstract class TopicModel {
 			for(_Doc d:m_trainSet)
 				current += calculate_E_step(d);
 			
-			calculate_M_step();
+			calculate_M_step(i);
 			
 			current += calculate_log_likelihood();//together with corpus-level log-likelihood
-			delta = (last-current)/last;
+			if (i>0)
+				delta = (last-current)/last;
+			else
+				delta = 1.0;
 			last = current;
 			
-			if (m_display)
+			if (m_display)// && i%10==0
 				System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-			i++;
-			
-		} while (Math.abs(delta)>this.m_converge && i<this.number_of_iteration);
+			//Math.abs(delta)>this.m_converge && 
+		} while (++i<this.number_of_iteration);
 		
-		if (!m_display) // output the summary
-			System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
+		finalEst();
+		
+		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
+		
+		//sample codes to demonstrate the inferred topics
+		for(_Doc d:m_trainSet) {
+			System.out.format("Doc %s,", d.getID());
+			for(i=0; i<number_of_topics; i++)
+				System.out.format("\t%.3f", d.m_topics[i]);
+			System.out.println();
+		}
 	}
 	
 	public double Evaluation() {
@@ -183,12 +197,12 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor
+		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
 		double converge = 1e-4, lambda = 0.7;
-		int topK = 10, number_of_iteration = 100, crossV = 5;
+		int topK = 10, number_of_iteration = 1000, crossV = 1;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -202,21 +216,20 @@ public abstract class TopicModel {
 		String finalLocation = "./data/Features/selected_fv_stat_topicmodel.txt";
 
 		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
-		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.3; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-		
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		String stopwords = "./data/Model/stopwords.dat";
+//		String featureSelection = "DF"; //Feature selection method.
+//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+//		
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		//jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
@@ -244,7 +257,29 @@ public abstract class TopicModel {
 				model.printTopWords(topK);
 			} else 
 				model.crossValidation(crossV);
-		} else if (topicmodel.equals("HTMM")) {
+		} else if (topicmodel.equals("LDA_Gibbs")) {		
+			LDA_Gibbs model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+				lambda, analyzer.getBackgroundProb(), 
+				number_of_topics, alpha, 0.4, 50);
+		
+			model.setDisplay(true);
+			if (crossV<=1) {
+				model.EMonCorpus();
+				model.printTopWords(topK);
+			} else 
+				model.crossValidation(crossV);
+		}  else if (topicmodel.equals("LDA_Variational")) {		
+			LDA_Variational model = new LDA_Variational(number_of_iteration, converge, beta, c, 
+					lambda, analyzer.getBackgroundProb(), 
+					number_of_topics, alpha, 50, 1e-8);
+			
+				model.setDisplay(true);
+				if (crossV<=1) {
+					model.EMonCorpus();
+					model.printTopWords(topK);
+				} else 
+					model.crossValidation(crossV);
+		}  else if (topicmodel.equals("HTMM")) {
 			HTMM model = new HTMM(number_of_iteration, converge, beta, c, 
 					number_of_topics, alpha);
 			
