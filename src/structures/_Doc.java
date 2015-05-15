@@ -247,8 +247,7 @@ public class _Doc implements Comparable<_Doc> {
 			m_topics = new double[k];
 			m_sstat = new double[k];
 		}
-		Utils.randomize(m_topics, alpha);
-		Arrays.fill(m_sstat, alpha);
+		Utils.randomize(m_sstat, alpha);
 	}
 	
 	//create necessary structure for variational inference

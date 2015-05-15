@@ -56,10 +56,8 @@ public class LDA_Variational extends pLSA {
 		for(int n=0; n<fv.length; n++) {
 			wid = fv[n].getIndex();
 			v = fv[n].getValue();
-			for(int i=0; i<number_of_topics; i++) {
+			for(int i=0; i<number_of_topics; i++)
 				word_topic_sstat[i][wid] += v*d.m_phi[n][i];
-				m_sstat[i] += v*d.m_phi[n][i];
-			}
 		}
 	}
 	
@@ -68,7 +66,7 @@ public class LDA_Variational extends pLSA {
 		// initialize with all smoothing terms
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
-		Arrays.fill(m_sstat, d_beta*vocabulary_size);
+		imposePrior();
 	}
 
 	@Override
@@ -117,9 +115,9 @@ public class LDA_Variational extends pLSA {
 	public void calculate_M_step(int iter) {	
 		//maximum likelihood estimation of p(w|z,\beta)
 		for(int i=0; i<number_of_topics; i++) {
-			for(int v=0; v<vocabulary_size; v++) {//will be in the log scale!!
-				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/m_sstat[i]);
-			}
+			double sum = Utils.sumOfArray(word_topic_sstat[i]);
+			for(int v=0; v<vocabulary_size; v++) //will be in the log scale!!
+				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
 		//we need to estimate p(\theta|\alpha) as well later on
@@ -134,6 +132,9 @@ public class LDA_Variational extends pLSA {
 	
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
+		if (this.m_converge<=0)
+			return 1;//no need to compute
+		
 		int wid;
 		double logLikelihood = -Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v;
 		for(int i=0; i<number_of_topics; i++)
