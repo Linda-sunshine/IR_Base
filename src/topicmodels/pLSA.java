@@ -6,8 +6,13 @@ package topicmodels;
  * Probabilistic Latent Semantic Analysis Topic Modeling 
  */
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -23,6 +28,7 @@ public class pLSA extends twoTopic {
 	
 	double[][] topic_term_probabilty ; /* p(w|z) */
 	double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
+	double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
 	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, double back_ground [], //arguments for 2topic topic model
@@ -33,6 +39,44 @@ public class pLSA extends twoTopic {
 		this.number_of_topics = number_of_topics;
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
+		word_topic_prior = null;
+	}
+	
+	public void LoadPrior(String vocabulary, String filename, double eta) {		
+		try {
+			String tmpTxt;
+			String[] container;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(vocabulary), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				if (tmpTxt.startsWith("#"))
+					continue;
+				featureNameIndex.put(tmpTxt, featureNameIndex.size());
+			}
+			reader.close();
+			
+			int wid, tid = 0, wCount = 0;
+			word_topic_prior = new double[number_of_topics][vocabulary_size];
+			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				container = tmpTxt.split(" ");
+				wCount = 0;
+				for(int i=1; i<container.length; i++) {
+					if (featureNameIndex.containsKey(container[i])) {
+						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
+						word_topic_prior[tid][wid] = eta;
+						wCount++;
+					}
+				}
+				
+				System.out.println("Prior keywords for Topic " + tid + ": " + wCount);
+				tid ++;
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -48,13 +92,26 @@ public class pLSA extends twoTopic {
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)
-			Utils.randomize(this.topic_term_probabilty[i], d_beta-1.0);
+			Utils.randomize(word_topic_sstat[i], d_beta-1.0);
+		imposePrior();
+		
+		calculate_M_step(0);
+	}
+	
+	protected void imposePrior() {
+		if (word_topic_prior!=null) {
+			for(int k=0; k<number_of_topics; k++) {
+				for(int n=0; n<vocabulary_size; n++)
+					word_topic_sstat[k][n] += word_topic_prior[k][n];
+			}
+		}
 	}
 	
 	@Override
 	protected void init() { // clear up for next iteration
 		for(int k=0;k<this.number_of_topics;k++)
 			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
+		imposePrior();
 		
 		//initiate sufficient statistics
 		for(_Doc d:m_trainSet)
@@ -97,7 +154,7 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	public void calculate_M_step(int iter) {	
+	public void calculate_M_step(int iter) {
 		// update topic-term matrix -------------
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
@@ -126,6 +183,9 @@ public class pLSA extends twoTopic {
 	//NOTE: cannot be used for unseen documents!
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
+		if (this.m_converge<=0)
+			return 1;//no need to compute
+		
 		double logLikelihood = 0.0, prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
@@ -140,6 +200,9 @@ public class pLSA extends twoTopic {
 	
 	@Override
 	protected double calculate_log_likelihood() {
+		if (this.m_converge<=0)
+			return 1;//no need to compute
+		
 		//prior from Dirichlet distributions
 		double logLikelihood = 0;
 		for(int i=0; i<this.number_of_topics; i++) {

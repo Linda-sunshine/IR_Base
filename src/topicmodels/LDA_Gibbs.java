@@ -49,6 +49,20 @@ public class LDA_Gibbs extends pLSA {
 				m_sstat[d.m_topicAssignment[i]]++;
 			}
 		}
+		
+		imposePrior();		
+	}
+	
+	@Override
+	protected void imposePrior() {
+		if (word_topic_prior!=null) {
+			for(int k=0; k<number_of_topics; k++) {
+				for(int n=0; n<vocabulary_size; n++) {
+					word_topic_sstat[k][n] += word_topic_prior[k][n];
+					m_sstat[k] += word_topic_prior[k][n];
+				}
+			}
+		}
 	}
 	
 	@Override
@@ -143,6 +157,9 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
+		if (this.m_converge<=0)
+			return 1;//no need to compute
+		
 		double logLikelihood = 0.0, prob;
 		int wid, tid;
 		double wordSize = number_of_topics*d_alpha + d.m_words.length;
@@ -158,6 +175,9 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	protected double calculate_log_likelihood() {
+		if (this.m_converge<=0)
+			return 1;//no need to compute
+		
 		//prior from Dirichlet distributions
 		double logLikelihood = 0;
 		for(int i=0; i<this.number_of_topics; i++) {

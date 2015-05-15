@@ -104,8 +104,7 @@ public abstract class TopicModel {
 		
 		double delta, last = calculate_log_likelihood(), current;
 		int  i = 0;
-		do
-		{
+		do {
 			init();
 			
 			current = 0;
@@ -121,22 +120,23 @@ public abstract class TopicModel {
 				delta = 1.0;
 			last = current;
 			
-			if (m_display)// && i%10==0
-				System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-			//Math.abs(delta)>this.m_converge && 
+			if (m_display&& i%10==0) {
+				if (this.m_converge>0)
+					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+				else {
+					System.out.print(".");
+					if (i%200==0)
+						System.out.println();
+				}
+			}
+			
+			if (this.m_converge>0 && Math.abs(delta)>this.m_converge)
+				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
 		
 		finalEst();
 		
 		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
-		
-		//sample codes to demonstrate the inferred topics
-		for(_Doc d:m_trainSet) {
-			System.out.format("Doc %s,", d.getID());
-			for(i=0; i<number_of_topics; i++)
-				System.out.format("\t%.3f", d.m_topics[i]);
-			System.out.println();
-		}
 	}
 	
 	public double Evaluation() {
@@ -191,18 +191,18 @@ public abstract class TopicModel {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 1; //The default value is unigram. 
+		int Ngram = 2; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
+		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
 		int number_of_topics = 30;
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3;//these two parameters must be larger than 1!!!
-		double converge = 1e-4, lambda = 0.7;
-		int topK = 10, number_of_iteration = 1000, crossV = 1;
+		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
+		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		int topK = 10, number_of_iteration = 100, crossV = 1;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/test";
@@ -212,15 +212,16 @@ public abstract class TopicModel {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String featureLocation = "./data/Features/selected_fv_topicmodel.txt";
-		String finalLocation = "./data/Features/selected_fv_stat_topicmodel.txt";
+		String featureLocation = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+		String finalLocation = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String aspectlist = "./data/Model/aspect_tablet.txt";
 
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+//		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+//		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
 //		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
@@ -252,6 +253,8 @@ public abstract class TopicModel {
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha);
 			
+			model.setDisplay(true);
+			model.LoadPrior(featureLocation, aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -263,6 +266,7 @@ public abstract class TopicModel {
 				number_of_topics, alpha, 0.4, 50);
 		
 			model.setDisplay(true);
+			model.LoadPrior(featureLocation, aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -274,6 +278,7 @@ public abstract class TopicModel {
 					number_of_topics, alpha, 50, 1e-8);
 			
 				model.setDisplay(true);
+				model.LoadPrior(featureLocation, aspectlist, eta);
 				if (crossV<=1) {
 					model.EMonCorpus();
 					model.printTopWords(topK);
