@@ -20,7 +20,7 @@ public class AmazonReviewMain {
 	public static void main(String[] args) throws IOException, ParseException{
 		/*****Set these parameters before running the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
+		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
@@ -42,32 +42,33 @@ public class AmazonReviewMain {
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
 
 		/*****Parameters in feature selection.*****/
-		String featureSelection = "CHI"; //Feature selection method.
+		String featureSelection = "DF"; //Feature selection method.
 		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.0; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
-		String diffFolder = "20json";
-		String path = "data/" + diffFolder + "/";
-		String folder = path + "RawData";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
 		
-		String pattern = String.format("%dgram_%s_%s_%s", Ngram, featureValue, featureSelection, diffFolder);
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String featureLocation = String.format(path + "fv_%s.txt", pattern);//feature location
-		String vctFile = String.format(path + "vct_%s.dat", pattern);
-		String matrixFile = path + "matrixA.dat";
+		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
+		String fvFile = String.format("data/Features/fv_%s.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s.txt", pattern);
+		String vctFile = String.format("data/Fvs/vct_%s.dat", pattern);		
+		
+		String matrixFile = "data/metric/matrixA.dat";
 		
 		/***The parameters used in GF-RW and debugging.****/
 		double eta = 0.1, sr = 1;
-		String debugOutput = path + classifier + eta + "_noPOS.txt";
-		String WrongRWfile= path + classifier + eta + "_WrongRW.txt";
-		String WrongSVMfile= path + classifier + eta + "_WrongSVM.txt";
-		String FuSVM = path + classifier + eta + "_FuSVMResults.txt";
-		String reviewStatFile = path + classifier + eta + "_reviewStat.txt";
+		String debugOutput = "data/debug/Debug_" + classifier + ".output";
+		String WrongRWfile= "data/debug/Debug_"  + classifier + eta + "_WrongRW.txt";
+		String WrongSVMfile= "data/debug/Debug_"  + classifier + eta + "_WrongSVM.txt";
+		String FuSVM = "data/debug/Debug_"  + classifier + eta + "_FuSVMResults.txt";
+		String reviewStatFile = "data/debug/Debug_"  + classifier + eta + "_reviewStat.txt";
+	
 		/**Parameters in KNN.**/
 		int k = 1, l = 2;//l > 0, random projection; else brute force.
 		
@@ -77,22 +78,19 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Performing feature selection, wait...");
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 //		analyzer.resetStopwords();
-		
+
 		/****Create feature vectors*****/
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber,featureLocation, Ngram, lengthThreshold);
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber,featureLocation, Ngram, lengthThreshold);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
-		
-//		analyzer.calcRepBaseContent();
-//		analyzer.calcRepLabelBaseContent();
 	
 		_Corpus corpus = analyzer.getCorpus();
 		featureSize = analyzer.getFeatureSize();

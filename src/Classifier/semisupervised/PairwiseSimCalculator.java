@@ -8,12 +8,14 @@ public class PairwiseSimCalculator implements Runnable {
 	//pointer to the Gaussian Field object to calculate similarity in parallel
 	GaussianFields m_GFObj; 
 	int m_start, m_end;
+	boolean m_aspFlag;
 	
 	//in the range of [start, end)
-	public PairwiseSimCalculator(GaussianFields obj, int start, int end) {
+	public PairwiseSimCalculator(GaussianFields obj, int start, int end, boolean aspFlag) {
 		m_GFObj = obj;
 		m_start = start;
 		m_end = end;
+		m_aspFlag = aspFlag;
 	}
 
 	@Override
@@ -25,14 +27,16 @@ public class PairwiseSimCalculator implements Runnable {
 			for (int j = i + 1; j < m_GFObj.m_U; j++) {// to save computation since our similarity metric is symmetric
 				dj = m_GFObj.getTestDoc(j);
 				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if (di.sameProduct(dj)){
-					int aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
-					if(aspScore != 0)
-						discount = Math.pow(1.5, aspScore);
-					else 
-						discount = m_GFObj.m_discount;
-					similarity *= discount;
-				}
+				if(m_aspFlag){
+					if (di.sameProduct(dj)){
+						int aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
+						if(aspScore != 0)
+							discount = Math.pow(1.5, aspScore);
+						else 
+							discount = m_GFObj.m_discount;
+						similarity *= discount;
+					}
+				}	
 				m_GFObj.setCache(i, j, similarity);
 			}
 

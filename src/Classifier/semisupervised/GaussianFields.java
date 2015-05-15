@@ -48,7 +48,8 @@ public class GaussianFields extends BaseClassifier {
 
 	Thread[] m_threadpool;
 	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
-
+	boolean m_aspFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
+	 
 	//Randomly pick 10% of all the training documents.
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
 		super(c, classNumber, featureSize);
@@ -64,6 +65,7 @@ public class GaussianFields extends BaseClassifier {
 		m_pYSum = new double[classNumber];
 		
 		setClassifier(classifier);
+		m_aspFlag = false;
 	}	
 	
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier, 
@@ -81,8 +83,13 @@ public class GaussianFields extends BaseClassifier {
 		m_pYSum = new double[classNumber];
 		
 		setClassifier(classifier);
+		m_aspFlag = false;
+
 	}
 	
+	public void setAspFlag(boolean a){
+		m_aspFlag = a;
+	}
 	@Override
 	public String toString() {
 		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
@@ -186,7 +193,7 @@ public class GaussianFields extends BaseClassifier {
 				end = m_U;
 			else
 				end = Math.min(start+inc, m_U);
-			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_aspFlag));
 			
 			start = end;
 			m_threadpool[i].start();

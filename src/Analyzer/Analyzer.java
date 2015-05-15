@@ -219,6 +219,11 @@ public abstract class Analyzer {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb, threshold);
 
 		System.out.println("*******************************************************************");
+		PrintWriter writer = new PrintWriter(new File("./data/features_amazon.txt"));
+		writer.write("The total number of features is: " + m_featureNames.size() + "\n");
+		for(String s: m_featureNames)
+			writer.write(s+"\n");
+		
 		if (featureSelection.equals("DF"))
 			selector.DF(m_featureStat);
 		else if (featureSelection.equals("IG"))
