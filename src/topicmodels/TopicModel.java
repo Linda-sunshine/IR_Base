@@ -1,6 +1,9 @@
 package topicmodels;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -136,7 +139,39 @@ public abstract class TopicModel {
 		
 		finalEst();
 		
-		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);
+		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);	
+		
+		tmpSimCheck();
+	}
+	
+	public void tmpSimCheck() {
+		if (m_trainSet==null)
+			m_trainSet = m_corpus.getCollection();
+		
+		try{
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("pair.test"), "UTF-8"));
+			double similarity;
+			for(int i=0; i<m_trainSet.size(); i++) {				
+				_Doc di = m_trainSet.get(i);
+				for(int j=i+1; j<m_trainSet.size(); j++) {
+					_Doc dj = m_trainSet.get(j);
+					
+					if (di.getItemID().equals(dj.getItemID()) == false || Math.random() < 0.9)
+						continue;
+					
+					//if we have topics
+					similarity = Utils.KLsymmetric(di.m_topics, dj.m_topics);
+					
+					//if we only have bag-of-words
+//					similarity = Utils.calculateSimilarity(di, dj);
+					
+					writer.write(String.format("%s %.5f\n", di.getYLabel()==dj.getYLabel(), similarity));	
+				}
+			}
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public double Evaluation() {
@@ -197,9 +232,9 @@ public abstract class TopicModel {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
+		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 25;
+		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int topK = 20, number_of_iteration = 100, crossV = 1;
@@ -212,8 +247,8 @@ public abstract class TopicModel {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String featureLocation = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-		String finalLocation = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		String aspectlist = "./data/Model/aspect_tablet.txt";
 
 		/*****Parameters in feature selection.*****/
@@ -224,16 +259,16 @@ public abstract class TopicModel {
 //		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
 //		
 //		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold, stnModel);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
-		_Corpus c = analyzer.returnCorpus(finalLocation); // Get the collection of all the documents.
+		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
@@ -253,8 +288,9 @@ public abstract class TopicModel {
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha);
 			
+//			model.tmpSimCheck();
 			model.setDisplay(true);
-			model.LoadPrior(featureLocation, aspectlist, eta);
+//			model.LoadPrior(fvFile, aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -266,7 +302,7 @@ public abstract class TopicModel {
 				number_of_topics, alpha, 0.4, 50);
 		
 			model.setDisplay(true);
-			model.LoadPrior(featureLocation, aspectlist, eta);
+			model.LoadPrior(fvFile, aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -278,7 +314,7 @@ public abstract class TopicModel {
 					number_of_topics, alpha, 20, -1);
 			
 				model.setDisplay(true);
-				model.LoadPrior(featureLocation, aspectlist, eta);
+				model.LoadPrior(fvFile, aspectlist, eta);
 				if (crossV<=1) {
 					model.EMonCorpus();
 					model.printTopWords(topK);
