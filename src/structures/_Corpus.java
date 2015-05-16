@@ -137,7 +137,7 @@ public class _Corpus {
 				for(_SparseFeature fv:doc.getSparse()){
 					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));//index starts from 1
 				}
-				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));
+				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));//product ID and review ID
 			}
 			writer.close();
 			

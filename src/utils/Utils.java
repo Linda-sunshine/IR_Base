@@ -523,7 +523,7 @@ public class Utils {
 	   *
 	   **/
 
-	public double trigamma(double x)
+	public static double trigamma(double x)
 	{
 	    double p;
 	    int i;
@@ -592,5 +592,12 @@ public class Utils {
 	        }
 	    }
 	    return gl;
+	}
+	
+	public static double KLsymmetric(double[] p, double [] q) {
+		double sum = 0;
+		for(int i=0; i<p.length; i++) 
+			sum += (p[i]-q[i]) * Math.log(p[i]/q[i]);
+		return sum;
 	}
 }

@@ -27,12 +27,12 @@ public class VectorReviewMain {
 		
 		//Supervised classification models: "NB", "LR", "PR-LR", "SVM"
 		//Semi-supervised classification models: "GF", "GF-RW", "GF-RW-ML"
-		String classifier = "GF-RW"; //Which classifier to use.
+		String classifier = "SVM"; //Which classifier to use.
 //		String modelPath = "./data/Model/";
 		double C = 1.0;
 		
 		//"SUP", "SEMI"
-		String style = "SEMI";
+		String style = "SUP";
 		String multipleLearner = "SVM";
 		
 		/*****The parameters used in loading files.*****/

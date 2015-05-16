@@ -20,8 +20,7 @@ public class AmazonReviewMain {
 	public static void main(String[] args) throws IOException, ParseException{
 		/*****Set these parameters before running the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 2; //Define the number of classes in this Naive Bayes.
-
+		int classNumber = 5; //Define the number of classes
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
 
@@ -29,18 +28,22 @@ public class AmazonReviewMain {
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
-
+		/**
 		//"SUP", "SEMI", "FV: save features and vectors to files"
 		String style = "SUP";//"SUP", "SEMI"
 		//Supervised: "NB", "LR", "PR-LR", "SVM"; Semi-supervised: "GF", "GF-RW", "GF-RW-ML"**/
 		String classifier = "SVM"; //Which classifier to use.
 		String multipleLearner = "SVM";
 		double C = 1.0;
+		**/
+	
+		//"SUP", "SEMI", "FV", "ASPECT"
+		String style = "FV";
 		
 //		String modelPath = "./data/Model/";
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
-
+		/***
 		/*****Parameters in feature selection.*****/
 		String featureSelection = "DF"; //Feature selection method.
 		String stopwords = "./data/Model/stopwords.dat";
@@ -48,16 +51,32 @@ public class AmazonReviewMain {
 		double endProb = 1.0; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
-		
+		****/	
 		/*****The parameters used in loading files.*****/
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
+//		/*****Parameters in feature selection.*****/
+		String featureSelection = "CHI"; //Feature selection method.
+		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+		String stopwords = "./data/Model/stopwords.dat";
+		double startProb = 0.5; // Used in feature selection, the starting point of the features.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+//		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
+		
+		/*****The parameters used in loading files.*****/
+		String folder = "./data/amazon/small";
+		String suffix = ".json";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model
+		String stnModel = null; //"./data/Model/en-sent.bin"; //Sentence model
+		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s.txt", pattern);
-		String fvStatFile = String.format("data/Features/fv_stat_%s.txt", pattern);
-		String vctFile = String.format("data/Fvs/vct_%s.dat", pattern);		
+		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		String vctFile = String.format("data/Fvs/vct_%s_small.dat", pattern);		
 		
 		String matrixFile = "data/metric/matrixA.dat";
 		
@@ -76,7 +95,7 @@ public class AmazonReviewMain {
 		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
-		
+		/***	
 		/****Feature selection*****/
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
@@ -91,7 +110,32 @@ public class AmazonReviewMain {
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
-	
+		***/	
+		/****Loading json files*****/
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		
+		/****Feature selection*****/
+		System.out.println("Performing feature selection, wait...");
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		
+		//analyzer.SaveCVStat(fvStatFile);
+		
+		/****Aspect annotation*****/
+		//analyzer.BootStrapping(aspectOutput, 0.9, 10);		
+		
+		/****create vectors for documents*****/
+		System.out.println("Creating feature vectors, wait...");
+//		jsonAnalyzer 
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.setFeatureValues(featureValue, norm);
+//		analyzer.setTimeFeatures(window);
+		
+		featureSize = analyzer.getFeatureSize();
+>>>>>>> master
 		_Corpus corpus = analyzer.getCorpus();
 		featureSize = analyzer.getFeatureSize();
 //		corpus.save2File(vctFile);

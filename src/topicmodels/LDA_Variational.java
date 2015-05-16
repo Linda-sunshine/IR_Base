@@ -22,12 +22,23 @@ public class LDA_Variational extends pLSA {
 	int m_varMaxIter;
 	double m_varConverge;
 	
+	double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
+	double[] m_alphaStat; // statistics for alpha estimation
+	double[] m_alphaG; // gradient for alpha
+	double[] m_alphaH; // Hessian for alpha
+	
 	public LDA_Variational(int number_of_iteration, double converge,
 			double beta, _Corpus c, double lambda, double[] back_ground,
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
 		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
 		m_varConverge = varConverge;
 		m_varMaxIter = varMaxIter;
+		m_alpha = new double[number_of_topics];
+		Arrays.fill(m_alpha, alpha);
+		
+		m_alphaStat = new double[number_of_topics];
+		m_alphaG = new double[number_of_topics];
+		m_alphaH = new double[number_of_topics];
 	}
 	
 	@Override
@@ -59,10 +70,17 @@ public class LDA_Variational extends pLSA {
 			for(int i=0; i<number_of_topics; i++)
 				word_topic_sstat[i][wid] += v*d.m_phi[n][i];
 		}
+		
+		double diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
+		for(int i=0; i<number_of_topics; i++)
+			m_alphaStat[i] += Utils.digamma(d.m_sstat[i]) - diGammaSum;
 	}
 	
 	@Override
 	protected void init() {//will be called at the beginning of each EM iteration
+		// initialize alpha statistics
+		Arrays.fill(m_alphaStat, 0);
+		
 		// initialize with all smoothing terms
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
@@ -76,7 +94,7 @@ public class LDA_Variational extends pLSA {
 	
 	@Override
 	public double calculate_E_step(_Doc d) {	
-		double last = calculate_log_likelihood(d), current, converge, logSum, v;
+		double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
 		int iter = 0, wid;
 		_SparseFeature[] fv = d.getSparse();
 		
@@ -93,17 +111,22 @@ public class LDA_Variational extends pLSA {
 			}
 			
 			//variational inference for p(\theta|\gamma)
-			Arrays.fill(d.m_sstat, d_alpha);
+			System.arraycopy(m_alpha, 0, d.m_sstat, 0, m_alpha.length);
 			for(int n=0; n<fv.length; n++) {
 				v = fv[n].getValue();
 				for(int i=0; i<number_of_topics; i++)
 					d.m_sstat[i] += d.m_phi[n][i] * v;// 
 			}
 			
-			current = calculate_log_likelihood(d);			
-			converge = Math.abs((current - last)/last);
-			last = current;
-		} while(++iter<m_varMaxIter && converge>m_varConverge);
+			if (m_varConverge>0) {
+				current = calculate_log_likelihood(d);			
+				converge = Math.abs((current - last)/last);
+				last = current;
+				
+				if (converge<m_varConverge)
+					break;
+			}
+		} while(++iter<m_varMaxIter);
 		
 		//collect the sufficient statistics after convergence
 		collectStats(d);
@@ -121,6 +144,28 @@ public class LDA_Variational extends pLSA {
 		}
 		
 		//we need to estimate p(\theta|\alpha) as well later on
+		int docSize = m_trainSet.size(), i = 0;
+		double alphaSum, diAlphaSum, z, c, c1, c2;
+		do {
+			alphaSum = Utils.sumOfArray(m_alpha);
+			diAlphaSum = Utils.digamma(alphaSum);
+			z = docSize * Utils.trigamma(alphaSum);
+			
+			c1 = 0;
+			c2 = 0;
+			for(int k=0; k<number_of_topics; k++) {
+				m_alphaG[k] = docSize * (diAlphaSum - Utils.digamma(m_alpha[k])) + m_alphaStat[k];
+				m_alphaH[k] = -docSize * Utils.trigamma(m_alpha[k]);
+				
+				c1 +=  m_alphaG[k] / m_alphaH[k];
+				c2 += 1.0 / m_alphaH[k];
+			}			
+			c = c1 / (1.0/z + c2);
+			
+			for(int k=0; k<number_of_topics; k++)
+				m_alpha[k] -= (m_alphaG[k]-c) / m_alphaH[k];
+			
+		} while(++i<m_varMaxIter);
 	}
 	
 	@Override
@@ -131,10 +176,7 @@ public class LDA_Variational extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
+	public double calculate_log_likelihood(_Doc d) {		
 		int wid;
 		double logLikelihood = -Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v;
 		for(int i=0; i<number_of_topics; i++)
