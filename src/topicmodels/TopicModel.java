@@ -43,7 +43,7 @@ public abstract class TopicModel {
 		this.d_beta = beta;
 		this.m_corpus = c;
 		
-		m_display = false; // by default we won't track EM iterations
+		m_display = true; // by default we will track EM iterations
 	}
 	
 	@Override

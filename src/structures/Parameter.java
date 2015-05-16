@@ -278,7 +278,7 @@ public class Parameter {
 					+ "\n#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge + "\tMulti-thread: " + m_multithread);
 			
 			if (m_model.equals("vLDA"))
-				buffer.append("\nVarIter: " + m_maxVarIterations + "\tVarConverge: " + m_varConverge);
+				buffer.append("\n#VarIter: " + m_maxVarIterations + "\tVarConverge: " + m_varConverge);
 			else if (m_model.equals("gLDA"))
 				buffer.append("\nBurn in: " + m_burnIn + "\tLag: " + m_lag);
 			
