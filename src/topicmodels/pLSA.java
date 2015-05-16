@@ -43,6 +43,9 @@ public class pLSA extends twoTopic {
 	}
 	
 	public void LoadPrior(String vocabulary, String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
 		try {
 			String tmpTxt;
 			String[] container;
@@ -216,10 +219,18 @@ public class pLSA extends twoTopic {
 	
 	@Override
 	public void printTopWords(int k) {
+		Arrays.fill(m_sstat, 0);
+		for(_Doc d:m_trainSet) {
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += d.m_topics[i];
+		}
+		Utils.L1Normalization(m_sstat);			
+		
 		for(int i=0; i<topic_term_probabilty.length; i++) {
 			MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
 			for(int j = 0; j < vocabulary_size; j++)
 				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+			System.out.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 			for(_RankItem it:fVector)
 				System.out.format("%s(%.3f)\t", it.m_name, it.m_value);
 			System.out.println();

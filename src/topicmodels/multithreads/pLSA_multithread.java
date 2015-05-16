@@ -11,13 +11,13 @@ import topicmodels.pLSA;
 
 public class pLSA_multithread extends pLSA {
 
-	class pLSA_workers implements Runnable {
+	class pLSA_worker implements TopicModelWorker {
 		//int number_of_topics;
 		double[][] sstat;
 		ArrayList<_Doc> m_corpus;
 		double m_likelihood;
 		
-		public pLSA_workers() {
+		public pLSA_worker() {
 			sstat = new double[number_of_topics][vocabulary_size];
 			m_corpus = new ArrayList<_Doc>();
 		}
@@ -33,7 +33,7 @@ public class pLSA_multithread extends pLSA {
 				m_likelihood += calculate_E_step(d);
 		}
 		
-		private double calculate_E_step(_Doc d) {	
+		public double calculate_E_step(_Doc d) {	
 			double propB; // background proportion
 			double exp; // expectation of each term under topic assignment
 			for(_SparseFeature fv:d.getSparse()) {
@@ -60,23 +60,24 @@ public class pLSA_multithread extends pLSA {
 			return calculate_log_likelihood(d);
 		}
 		
-		double[][] getStats() {
-			return sstat;
+		public double accumluateStats() {
+			for(int k=0; k<number_of_topics; k++) 
+				for (int v=0; v<vocabulary_size; v++)
+					word_topic_sstat[k][v] += sstat[k][v];
+			return m_likelihood;
 		}
 		
-		void resetStats() {
+		public void resetStats() {
 			for(int i=0; i<sstat.length; i++)
 				Arrays.fill(sstat[i], 0);
 		}
 	}
 	
-	Thread[] m_threadpool;
-	pLSA_workers[] m_workers;
-	
 	public pLSA_multithread(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, double back_ground [], //arguments for 2topic topic model
 			int number_of_topics, double alpha) {
 		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
+		m_multithread = true;
 	}
 	
 	@Override
@@ -90,10 +91,10 @@ public class pLSA_multithread extends pLSA {
 		
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
-		m_workers = new pLSA_workers[cores];
+		m_workers = new pLSA_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new pLSA_workers();
+			m_workers[i] = new pLSA_worker();
 		
 		int workerID = 0;
 		for(_Doc d:collection) {
@@ -107,72 +108,5 @@ public class pLSA_multithread extends pLSA {
 		super.init();
 		for(int i=0; i<m_workers.length; i++)
 			m_workers[i].resetStats();
-	}
-	
-	private double multithread_E_step() {
-		for(int i=0; i<m_workers.length; i++) {
-			m_threadpool[i] = new Thread(m_workers[i]);
-			m_threadpool[i].start();
-		}
-		
-		//wait till all finished
-		for(int i=0; i<m_threadpool.length; i++){
-			try {
-				m_threadpool[i].join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		double[][] sstat;
-		for(int i=0; i<m_workers.length; i++) {
-			sstat = m_workers[i].getStats();
-			for(int k=0; k<number_of_topics; k++) {
-				for (int v=0; v<vocabulary_size; v++)
-					word_topic_sstat[k][v] += sstat[k][v];				
-			}
-		}
-		return 0;
-	}
-	
-	@Override
-	public void EM() {	
-		long starttime = System.currentTimeMillis();
-		m_collectCorpusStats = true;
-		initialize_probability(m_trainSet);
-		
-		double delta, last = calculate_log_likelihood(), current;
-		int  i = 0;
-		do {
-			init();
-			
-			current = multithread_E_step();			
-			calculate_M_step(i);
-			
-			current += calculate_log_likelihood();//together with corpus-level log-likelihood
-			if (i>0)
-				delta = (last-current)/last;
-			else
-				delta = 1.0;
-			last = current;
-			
-			if (m_display && i%10==0) {
-				if (this.m_converge>0)
-					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-				else {
-					System.out.print(".");
-					if (i%200==190)
-						System.out.println();
-				}
-			}
-			
-			if (Math.abs(delta)<m_converge)
-				break;//to speed-up, we don't need to compute likelihood in many cases
-		} while (++i<this.number_of_iteration);
-		
-		finalEst();
-		
-		long endtime = System.currentTimeMillis() - starttime;
-		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 }

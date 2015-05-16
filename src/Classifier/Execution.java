@@ -12,10 +12,14 @@ import java.text.ParseException;
 import structures.Parameter;
 import structures._Corpus;
 import topicmodels.HTMM;
+import topicmodels.LDA_Gibbs;
+import topicmodels.LDA_Variational;
 import topicmodels.LRHTMM;
 import topicmodels.TopicModel;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
+import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
@@ -131,24 +135,49 @@ public class Execution  {
 					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
 					param.m_bound, param.m_cSampleRate);
 //				((LinearSVMMetricLearning)model).setMetricLearningMethod(false);
-				((LinearSVMMetricLearning)model).verification(param.m_CVFold, corpus, param.m_debugOutput);
+//				((LinearSVMMetricLearning)model).verification(param.m_CVFold, corpus, param.m_debugOutput);
 			} else {
 				System.out.println("Classifier has not been developed yet!");
 				System.exit(-1);
 			}
 			
-//			model.setDebugOutput(param.m_debugOutput);
-//			model.crossValidation(param.m_CVFold, corpus);
+			model.setDebugOutput(param.m_debugOutput);
+			model.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
 			
 			if (param.m_model.equals("2topic")) {
 				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_lambda, analyzer.getBackgroundProb());
-			} else if (param.m_model.equals("pLSA")) {			
-				model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-						param.m_lambda, analyzer.getBackgroundProb(), 
-						param.m_numTopics, param.m_alpha);
+			} else if (param.m_model.equals("pLSA")) {
+				if (param.m_multithread == false) {
+					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
+							param.m_lambda, analyzer.getBackgroundProb(), 
+							param.m_numTopics, param.m_alpha);
+				} else {
+					model = new pLSA_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
+							param.m_lambda, analyzer.getBackgroundProb(), 
+							param.m_numTopics, param.m_alpha);
+				}
+				((pLSA)model).LoadPrior(param.m_featureFile, param.m_priorFile, param.m_gamma);
+			} else if (param.m_model.equals("vLDA")) {
+				if (param.m_multithread == false) {
+					model = new LDA_Variational(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
+							param.m_lambda, analyzer.getBackgroundProb(), 
+							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+				} else {
+					model = new LDA_Variational_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
+							param.m_lambda, analyzer.getBackgroundProb(), 
+							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+				}
+				
+				((LDA_Variational)model).LoadPrior(param.m_featureFile, param.m_priorFile, param.m_gamma);
+			} else if (param.m_model.equals("gLDA")) {
+					model = new LDA_Gibbs(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
+							param.m_lambda, analyzer.getBackgroundProb(), 
+							param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
+				
+				((LDA_Gibbs)model).LoadPrior(param.m_featureFile, param.m_priorFile, param.m_gamma);
 			} else if (param.m_model.equals("HTMM")) {
 				model = new HTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha);
@@ -163,7 +192,11 @@ public class Execution  {
 				System.exit(-1);
 			}
 			
-			model.crossValidation(param.m_CVFold);
+			if (param.m_CVFold<=1) {
+				model.EMonCorpus();
+				model.printTopWords(10); // fixed: print top 10 words
+			} else 
+				model.crossValidation(param.m_CVFold);
 		} else if (param.m_style.equals("FV")) {
 			corpus.save2File(param.m_fvFile);
 			System.out.format("Vectors saved to %s...\n", param.m_fvFile);
