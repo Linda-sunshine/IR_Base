@@ -143,36 +143,35 @@ public class LDA_Variational extends pLSA {
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
-//		if (iter%5==4)//no need to estimate \alpha very often
-//			return;
-//		
-//		//we need to estimate p(\theta|\alpha) as well later on
-//		int docSize = m_trainSet.size(), i = 0;
-//		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
-//		do {
-//			alphaSum = Utils.sumOfArray(m_alpha);
-//			diAlphaSum = Utils.digamma(alphaSum);
-//			z = docSize * Utils.trigamma(alphaSum);
-//			
-//			c1 = 0;
-//			c2 = 0;
-//			for(int k=0; k<number_of_topics; k++) {
-//				m_alphaG[k] = docSize * (diAlphaSum - Utils.digamma(m_alpha[k])) + m_alphaStat[k];
-//				m_alphaH[k] = -docSize * Utils.trigamma(m_alpha[k]);
-//				
-//				c1 +=  m_alphaG[k] / m_alphaH[k];
-//				c2 += 1.0 / m_alphaH[k];
-//			}			
-//			c = c1 / (1.0/z + c2);
-//			
-//			diff = 0;
-//			for(int k=0; k<number_of_topics; k++) {
-//				deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
-//				m_alpha[k] -= (m_alphaG[k]-c) / m_alphaH[k];
-//				diff += deltaAlpha * deltaAlpha;
-//			}
-//			diff /= number_of_topics;
-//		} while(++i<m_varMaxIter && diff>m_varConverge);
+		if (iter%5==4)//no need to estimate \alpha very often
+			return;
+		
+		//we need to estimate p(\theta|\alpha) as well later on
+		int docSize = m_trainSet.size(), i = 0;
+		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
+		do {
+			alphaSum = Utils.sumOfArray(m_alpha);
+			diAlphaSum = Utils.digamma(alphaSum);
+			z = docSize * Utils.trigamma(alphaSum);
+			
+			c1 = 0; c2 = 0;
+			for(int k=0; k<number_of_topics; k++) {
+				m_alphaG[k] = docSize * (diAlphaSum - Utils.digamma(m_alpha[k])) + m_alphaStat[k];
+				m_alphaH[k] = -docSize * Utils.trigamma(m_alpha[k]);
+				
+				c1 +=  m_alphaG[k] / m_alphaH[k];
+				c2 += 1.0 / m_alphaH[k];
+			}			
+			c = c1 / (1.0/z + c2);
+			
+			diff = 0;
+			for(int k=0; k<number_of_topics; k++) {
+				deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
+				m_alpha[k] -= deltaAlpha;
+				diff += deltaAlpha * deltaAlpha;
+			}
+			diff /= number_of_topics;
+		} while(++i<m_varMaxIter && diff>m_varConverge);
 	}
 	
 	@Override
