@@ -10,6 +10,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.multithreads.pLSA_multithread;
 import utils.Utils;
 import Analyzer.jsonAnalyzer;
 
@@ -21,13 +22,13 @@ public abstract class TopicModel {
 	protected _Corpus m_corpus;	
 	
 	//for training/testing split
-	ArrayList<_Doc> m_trainSet, m_testSet;
+	protected ArrayList<_Doc> m_trainSet, m_testSet;
 	
 	//smoothing parameter for p(w|z, \beta)
 	protected double d_beta; 	
 	
-	boolean m_display; // output EM iterations
-	boolean m_collectCorpusStats; // if we will collect corpus-level statistics (for efficiency purpose)
+	protected boolean m_display; // output EM iterations
+	protected boolean m_collectCorpusStats; // if we will collect corpus-level statistics (for efficiency purpose)
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -102,6 +103,8 @@ public abstract class TopicModel {
 	}
 
 	public void EM() {	
+		long starttime = System.currentTimeMillis();
+		
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
@@ -139,9 +142,10 @@ public abstract class TopicModel {
 		
 		finalEst();
 		
-		System.out.format("Likelihood %.3f after step %s converge to %f...\n", current, i, delta);	
+		long endtime = System.currentTimeMillis() - starttime;
+		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 		
-		tmpSimCheck();
+//		tmpSimCheck();
 	}
 	
 	public void tmpSimCheck() {
@@ -281,16 +285,16 @@ public abstract class TopicModel {
 			} else 
 				model.crossValidation(crossV);
 		} else if (topicmodel.equals("pLSA")) {			
-//			pLSA model = new pLSA(number_of_iteration, converge, beta, c, 
-//					lambda, analyzer.getBackgroundProb(), 
-//					number_of_topics, alpha);
-			pLSA model = new pLSAGroup(number_of_iteration, converge, beta, c, 
+			pLSA model = new pLSA(number_of_iteration, converge, beta, c, 
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha);
+//			pLSA model = new pLSAGroup(number_of_iteration, converge, beta, c, 
+//					lambda, analyzer.getBackgroundProb(), 
+//					number_of_topics, alpha);
 			
 //			model.tmpSimCheck();
 			model.setDisplay(true);
-//			model.LoadPrior(fvFile, aspectlist, eta);
+			model.LoadPrior(fvFile, aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);

@@ -30,7 +30,7 @@ public class AmazonReviewMain {
 		String style = "FV";
 		
 		//"NB", "LR", "SVM", "PR"
-		String classifier = "LR"; //Which classifier to use.
+		String classifier = "SVM"; //Which classifier to use.
 		double C = 0.1;
 //		String modelPath = "./data/Model/";
 		String debugOutput = "data/debug/LR.output";
@@ -40,7 +40,6 @@ public class AmazonReviewMain {
 
 //		/*****Parameters in feature selection.*****/
 		String featureSelection = "CHI"; //Feature selection method.
-		int chiSize = 50; // top ChiSquare words for aspect keyword selection
 		String stopwords = "./data/Model/stopwords.dat";
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
@@ -51,9 +50,6 @@ public class AmazonReviewMain {
 		String folder = "./data/amazon/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		String stnModel = null; //"./data/Model/en-sent.bin"; //Sentence model
-		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
 		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
@@ -73,11 +69,7 @@ public class AmazonReviewMain {
 		/****Feature selection*****/
 		System.out.println("Performing feature selection, wait...");
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
-		//analyzer.SaveCVStat(fvStatFile);
-		
-		/****Aspect annotation*****/
-		//analyzer.BootStrapping(aspectOutput, 0.9, 10);		
+		analyzer.SaveCVStat(fvStatFile);	
 		
 		/****create vectors for documents*****/
 		System.out.println("Creating feature vectors, wait...");

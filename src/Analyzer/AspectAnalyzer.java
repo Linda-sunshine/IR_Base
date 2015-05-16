@@ -65,14 +65,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int[] m_aspectDist; // distribution of aspects (count in DF)
 	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo,
-			String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
+			String providedCV, int Ngram, int threshold)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
-		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
-		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		
-		m_chiSize = chiSize;
-		LoadAspectKeywords(aspectFile);
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -85,8 +81,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split("\\s+");
 				keywords = new HashSet<Integer>(container.length-1);
-				for(int i=1; i<container.length; i++)
-					keywords.add(m_featureNameIndex.get(container[i])); // map it to a controlled vocabulary term
+				for(int i=1; i<container.length; i++) {
+					if (m_featureNameIndex.containsKey(container[i]))
+						keywords.add(m_featureNameIndex.get(container[i])); // map it to a controlled vocabulary term
+				}
 				
 				m_aspects.add(new _Aspect(container[0], keywords, m_chiSize));
 				System.out.println("Keywords for " + container[0] + ": " + keywords.size());
@@ -190,8 +188,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return extended;
 	}
 	
-	public void BootStrapping(String filename, double chi_ratio, int chi_iter){
+	public void BootStrapping(String aspectFile, String filename, int chi_size, double chi_ratio, int chi_iter){
+		m_chiSize = chi_size;
 		System.out.println("Vocabulary size: " + m_featureNames.size());
+		LoadAspectKeywords(aspectFile);//load aspects first
 		
 		int iter = 0;
 		do {
@@ -217,5 +217,45 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
+		int classNumber = 5; //Define the number of classes
+		int Ngram = 2; //The default value is bigram. 
+		int lengthThreshold = 10; //Document length threshold
+		
+//		/*****Parameters in feature selection.*****/
+		String featureSelection = "DF"; //Feature selection method.
+		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+		String stopwords = "./data/Model/stopwords.dat";
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+		
+		/*****The parameters used in loading files.*****/
+		String folder = "./data/amazon/small";
+		String suffix = ".json";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
+		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
+		
+		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
+		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		
+		/****Loading json files*****/
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		
+//		/****Feature selection*****/
+//		System.out.println("Performing feature selection, wait...");
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		analyzer.SaveCVStat(fvStatFile);
+		
+		/****Aspect annotation*****/
+		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
 	}
 }
