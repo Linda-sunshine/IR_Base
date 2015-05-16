@@ -43,6 +43,9 @@ public class pLSA extends twoTopic {
 	}
 	
 	public void LoadPrior(String vocabulary, String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
 		try {
 			String tmpTxt;
 			String[] container;

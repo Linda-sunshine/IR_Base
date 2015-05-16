@@ -19,11 +19,11 @@ import utils.Utils;
 public class LDA_Variational extends pLSA {
 
 	// parameters to control variational inference
-	int m_varMaxIter;
-	double m_varConverge;
+	protected int m_varMaxIter;
+	protected double m_varConverge;
 	
-	double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
-	double[] m_alphaStat; // statistics for alpha estimation
+	protected double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
+	protected double[] m_alphaStat; // statistics for alpha estimation
 	double[] m_alphaG; // gradient for alpha
 	double[] m_alphaH; // Hessian for alpha
 	
@@ -143,9 +143,12 @@ public class LDA_Variational extends pLSA {
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
+		if (iter%5==4)//no need to estimate \alpha very often
+			return;
+		
 		//we need to estimate p(\theta|\alpha) as well later on
 		int docSize = m_trainSet.size(), i = 0;
-		double alphaSum, diAlphaSum, z, c, c1, c2;
+		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
 		do {
 			alphaSum = Utils.sumOfArray(m_alpha);
 			diAlphaSum = Utils.digamma(alphaSum);
@@ -162,10 +165,14 @@ public class LDA_Variational extends pLSA {
 			}			
 			c = c1 / (1.0/z + c2);
 			
-			for(int k=0; k<number_of_topics; k++)
+			diff = 0;
+			for(int k=0; k<number_of_topics; k++) {
+				deltaAlpha = (m_alphaG[k]-c) / m_alphaH[k];
 				m_alpha[k] -= (m_alphaG[k]-c) / m_alphaH[k];
-			
-		} while(++i<m_varMaxIter);
+				diff += deltaAlpha * deltaAlpha;
+			}
+			diff /= number_of_topics;
+		} while(++i<m_varMaxIter && diff>m_varConverge);
 	}
 	
 	@Override

@@ -65,8 +65,15 @@ public class Parameter {
 	public double m_alpha = 1.05; // dirichlet prior for p(z|d)
 	public double m_beta = 1.01; // dirichlet prior for p(w|z)
 	public double m_lambda = 0.8; // p(B) in pLSA and 2topic model, L2 regularization in LRHTMM
-	public double m_converge = 1e-4; // EM convergency
-	public int m_maxmIterations = 200; // maximum number of iterations
+	public double m_gamma = 5.0; // strength of prior words 
+	public double m_converge = 1e-5; // EM convergence rate
+	public int m_maxmIterations = 100; // maximum number of iterations
+	public boolean m_multithread = false; // using multi-thread for topic models
+	public int m_maxVarIterations = 10; // maximum number of iterations in variational inference
+	public double m_varConverge = 1e-7; // convergence rate for variational inference
+	public double m_burnIn = 0.4; // burn in period in Gibbs sampling
+	public int m_lag = 10; // lag in accumulating Gibbs samples
+	public String m_priorFile = null; // prior seed word list
 	
 	public Parameter(String argv[])
 	{
@@ -138,6 +145,8 @@ public class Parameter {
 				m_numTopics = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-alpha"))
 				m_alpha = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-gamma"))
+				m_gamma = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-beta"))
 				m_beta = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-lambda"))
@@ -148,6 +157,18 @@ public class Parameter {
 				m_maxmIterations = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-con"))
 				m_converge = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-viter"))
+				m_maxVarIterations = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-vcon"))
+				m_varConverge = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-burnin"))
+				m_burnIn = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-lag"))
+				m_lag = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-mt"))
+				m_multithread = argv[i].equals("1");
+			else if (argv[i-1].equals("-fprior"))
+				m_priorFile = argv[i];
 			else
 				exit_with_help();
 		}
@@ -204,6 +225,8 @@ public class Parameter {
 		+"	GF-RW-ML -- Gaussian Fields by random walk with distance metric learning (by libliner)\n"
 		+"	2topic -- Two-Topic Topic Model\n"
 		+"	pLSA -- Probabilistic Latent Semantic Analysis\n"
+		+"	gLDA -- Latent Dirichlet Allocation with Gibbs sampling\n"
+		+"	vLDA -- Latent Dirichlet Allocation with variational inference\n"
 		+"	HTMM -- Hidden Topic Markov Model\n"
 		+"	LRHTMM -- MaxEnt Hidden Topic Markov Model\n"
 		+"-cf type : multiple learning in Gaussian Fields (default SVM)\n"
@@ -225,12 +248,19 @@ public class Parameter {
 		+"-bd int : rating difference bound in generating pairwise constraint (default 3)\n"
 		+"-csr double : constrain sampling rate for metric learning (default 1e-3)\n"
 		+"-k int : number of topics (default 50)\n"
+		+"-fprior prior_file : prior seed word list (default null)\n"
 		+"-alpha float : dirichlet prior for p(z|d) (default 1.05)\n"
 		+"-beta float : dirichlet prior for p(w|z) (default 1.01)\n"
 		+"-lambda float : manual background proportion setting p(B) (default 0.8)\n"
 		+"-eta float : random restart probability eta in randowm walk (default 0.1)\n"
-		+"-iter int : maximum number of EM iteration (default 200)\n"
-		+"-con float : convergency limit (default 1e-4)\n"		
+		+"-gamma float : strength of prior (default 5.0)\n"
+		+"-iter int : maximum number of EM iteration (default 100)\n"
+		+"-con float : convergency limit for EM iterations (default 1e-5)\n"
+		+"-viter int : maximum number of variational inference iteration (default 10)\n"
+		+"-vcon float : convergency limit for variational inference iterations (default 1e-7)\n"
+		+"-burn float : burn in period of sampling method (default 0.4)\n"
+		+"-lag int : sampling lag when accumulating samples (default 10)\n"
+		+"-mt 0/1 : using multi-thread for topic models (default 0)\n"	
 		);
 		System.exit(1);
 	}
@@ -244,7 +274,16 @@ public class Parameter {
 		
 		if (m_style.equals("TM")) {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
-			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda + "\t#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge);
+			buffer.append("\nalpha: " + m_alpha + "\tbeta: " + m_beta + "\tlambda: " + m_lambda 
+					+ "\n#Iterations: " + m_maxmIterations + "\tConvergency: " + m_converge + "\tMulti-thread: " + m_multithread);
+			
+			if (m_model.equals("vLDA"))
+				buffer.append("\nVarIter: " + m_maxVarIterations + "\tVarConverge: " + m_varConverge);
+			else if (m_model.equals("gLDA"))
+				buffer.append("\nBurn in: " + m_burnIn + "\tLag: " + m_lag);
+			
+			if (m_priorFile!=null && m_priorFile.isEmpty()==false) 
+				buffer.append("\nPrior file: " + m_priorFile + "\tStrength: " + m_gamma);
 		} else {
 			if (m_style.equals("SEMI")) {
 				buffer.append("\nLearning paradigm: SEMI\tSampling rate: " + m_sampleRate + "\tkUL: " + m_kUL + "\tkUU: " + m_kUU
