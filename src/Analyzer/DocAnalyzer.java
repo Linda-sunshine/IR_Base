@@ -137,8 +137,6 @@ public class DocAnalyzer extends Analyzer {
 		int tokenLength = tokens.length, N = m_Ngram;		
 		for(int i=0; i<tokenLength; i++) {
 			String token = tokens[i];
-			if(token.equals("dslr"))
-				System.out.println("bug here!!");
 			boolean legit = isLegit(token);
 			if (legit)
 				Ngrams.add(token);//unigram
@@ -296,8 +294,6 @@ public class DocAnalyzer extends Analyzer {
 		double value = 0;
 		// Construct the sparse vector.
 		for (String token : tokens) {
-			if(token.equals("dslr-NUM") || token.equals("falc-make"))
-				System.out.println("Bug here!!");
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
 				if (m_featureNameIndex.containsKey(token)) {

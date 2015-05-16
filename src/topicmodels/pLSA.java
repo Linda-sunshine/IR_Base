@@ -60,7 +60,7 @@ public class pLSA extends twoTopic {
 			word_topic_prior = new double[number_of_topics][vocabulary_size];
 			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			while( (tmpTxt=reader.readLine()) != null ){
-				container = tmpTxt.split(" ");
+				container = tmpTxt.split("\\s+");
 				wCount = 0;
 				for(int i=1; i<container.length; i++) {
 					if (featureNameIndex.containsKey(container[i])) {
@@ -224,5 +224,9 @@ public class pLSA extends twoTopic {
 				System.out.format("%s(%.3f)\t", it.m_name, it.m_value);
 			System.out.println();
 		}
+	}
+	
+	public double[][] returnTopicTermProbability(){
+		return topic_term_probabilty;
 	}
 }

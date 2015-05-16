@@ -34,7 +34,7 @@ public class _Doc implements Comparable<_Doc> {
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
-	private int[] m_x_aspVct;
+	private double[] m_x_aspVct;
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
 	_Stn[] m_sentences;
@@ -375,11 +375,11 @@ public class _Doc implements Comparable<_Doc> {
 //		if (m_x_projection!=null)
 //			Utils.L2Normalization(m_x_projection);
 	}
-	public void setAspVct(int[] aspVct){
+	public void setAspVct(double[] aspVct){
 		m_x_aspVct = aspVct;
 	}
 	
-	public int[] getAspVct(){
+	public double[] getAspVct(){
 		return m_x_aspVct;
 	}
 }

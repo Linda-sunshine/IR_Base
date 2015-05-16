@@ -29,7 +29,7 @@ public class PairwiseSimCalculator implements Runnable {
 				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				if(m_aspFlag){
 					if (di.sameProduct(dj)){
-						int aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
+						double aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
 						if(aspScore != 0)
 							discount = Math.pow(1.5, aspScore);
 						else 
@@ -51,7 +51,6 @@ public class PairwiseSimCalculator implements Runnable {
 			//set up the Y vector for unlabeled data
 			m_GFObj.m_Y[i] = m_GFObj.m_classifier.predict(m_GFObj.getTestDoc(i)); //Multiple learner.
 		}	
-		
 		System.out.format("[%d,%d) finished...\n", m_start, m_end);
 	}
 

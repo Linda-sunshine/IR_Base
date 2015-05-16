@@ -64,6 +64,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
 	int m_count;
+	boolean m_LDAflag;
+	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
@@ -73,13 +75,26 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 		m_count = 0;
+		m_LDAflag = false;
 	}
 	
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean LDAflag)
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
+		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+		
+		m_chiSize = chiSize;
+		LoadAspectKeywords(aspectFile);
+		m_count = 0;
+		m_LDAflag = LDAflag;
+	}
 	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 		m_count = 0;
+		m_LDAflag = false;
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -90,7 +105,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			String[] container;
 			HashSet<Integer> keywords;
 			while( (tmpTxt=reader.readLine()) != null ){
-				container = tmpTxt.split(" ");
+				container = tmpTxt.split("\\s+");
 				keywords = new HashSet<Integer>(container.length-1);
 				for(int i=1; i<container.length; i++){
 					if(m_featureNameIndex.containsKey(container[i]))
@@ -270,9 +285,12 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
-			if(NotEmpty(detectAspects(spVct)))
-				m_count++;
-			doc.setAspVct(detectAspects(spVct));
+			if(!m_LDAflag){//This is for aspect annotation with given aspects and keywords.
+				double[] tmp = detectAspects(spVct);
+				if(NotEmpty(tmp))
+					m_count++;
+				doc.setAspVct(tmp);
+			}
 			m_corpus.addDoc(doc);
 			m_classMemberNo[doc.getYLabel()]++;
 			if (m_releaseContent)
@@ -286,28 +304,42 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return m_count;
 	}
 	
-	public int[] detectAspects(HashMap<Integer, Double> spVct){
-		int[] aspVct = new int[m_aspDimension];
+	public double[] detectAspects(HashMap<Integer, Double> spVct){
+		double[] aspVct = new double[m_aspDimension];
 		for(int i = 0; i < m_aspects.size(); i++){
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
 			for(int key: keywords){
 				if(spVct.containsKey(key))
-					aspVct[i] = 1;
+					aspVct[i] = 1.0;
 				break;
 			}
 		}
 		return aspVct;
 	}
 	
-	public boolean NotEmpty(int[] aspVct){
+	public boolean NotEmpty(double[] aspVct){
 		int sum = 0;
-		for(int a: aspVct){
-			sum += a & 1;
+		for(double a: aspVct){
+			sum += a * 1.0;
 		}
 		if(sum != 0)
 			return true;
 		else 
 			return false;
+	}
+	
+	//Set the topic vector for every document.
+	public void setTopicVector(double[][] ttp){
+		for(_Doc d: m_corpus.getCollection()){
+			double[] topicVector = new double[ttp.length];
+			for(int i=0; i < ttp.length; i++){
+				for(_SparseFeature sf: d.getSparse()){
+					int index = sf.getIndex();
+					topicVector[i] += ttp[i][index] * sf.getValue();
+				}
+			}
+			d.setAspVct(topicVector);
+		}
 	}
 	
 //	public static void main(String[] args){

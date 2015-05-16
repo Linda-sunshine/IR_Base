@@ -103,7 +103,7 @@ public class GaussianFields extends BaseClassifier {
 		else if (classifier.equals("PR-LR"))
 			m_classifier = new PRLogisticRegression(null, m_classNo, m_featureSize, 1.0);
 		else if (classifier.equals("SVM"))
-			m_classifier = new SVM(null, m_classNo, m_featureSize);
+			m_classifier = new SVM(null, m_classNo, m_featureSize, 1.0, 0.001);
 		else {
 			System.out.println("Classifier has not developed yet!");
 			System.exit(-1);
