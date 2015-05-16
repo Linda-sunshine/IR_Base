@@ -143,7 +143,7 @@ public class LDA_Variational extends pLSA {
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]/sum);
 		}
 		
-		if (iter%5==4)//no need to estimate \alpha very often
+		if (iter%5!=4)//no need to estimate \alpha very often
 			return;
 		
 		//we need to estimate p(\theta|\alpha) as well later on
