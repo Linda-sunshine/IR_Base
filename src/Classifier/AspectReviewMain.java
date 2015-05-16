@@ -7,6 +7,7 @@ import java.text.ParseException;
 
 import structures._Corpus;
 import topicmodels.LDA_Gibbs;
+import topicmodels.pLSA;
 import Analyzer.AspectAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
@@ -94,7 +95,7 @@ public class AspectReviewMain {
 //		analyzer.setTimeFeatures(window);
 			
 		/****create vectors for documents*****/
-		boolean LDAflag = false;
+		boolean LDAflag = true;
 		System.out.println("Creating feature vectors, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, window, LDAflag);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
@@ -116,15 +117,16 @@ public class AspectReviewMain {
 			double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 			int topK = 10, number_of_iteration = 100, crossV = 1;
 			
-			LDA_Gibbs myLDA = new LDA_Gibbs(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha, 0.4, 50);
-			myLDA.setDisplay(true);
-			myLDA.LoadPrior(fvFile, aspectOutput, eta_lad);
+			pLSA model = new pLSA(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha);
+//			LDA_Gibbs mode = new LDA_Gibbs(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha, 0.4, 50);
+			model.setDisplay(true);
+			model.LoadPrior(fvFile, aspectOutput, eta_lad);
 			if (crossV<=1) {
-				myLDA.EMonCorpus();
-				myLDA.printTopWords(topK);
+				model.EMonCorpus();
+				model.printTopWords(topK);
 			} else 
-				myLDA.crossValidation(crossV);
-			analyzer.setTopicVector(myLDA.returnTopicTermProbability()); //Set the aspect vector for reviews based on LDA.
+				model.crossValidation(crossV);
+			analyzer.setTopicVector(model.returnTopicTermProbability()); //Set the aspect vector for reviews based on LDA.
 		}
 		
 		//temporal code to add pagerank weights
