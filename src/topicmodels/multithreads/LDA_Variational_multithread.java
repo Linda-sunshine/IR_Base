@@ -144,7 +144,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 	@Override
 	protected void init() { // clear up for next iteration
 		super.init();
-		for(int i=0; i<m_workers.length; i++)
-			m_workers[i].resetStats();
+		for(TopicModelWorker worker:m_workers)
+			worker.resetStats();
 	}
 }

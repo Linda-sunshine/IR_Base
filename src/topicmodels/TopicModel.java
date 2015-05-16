@@ -4,17 +4,13 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.TopicModelWorker;
-import topicmodels.multithreads.pLSA_multithread;
 import utils.Utils;
-import Analyzer.jsonAnalyzer;
 
 public abstract class TopicModel {
 	protected int number_of_topics;
@@ -115,17 +111,17 @@ public abstract class TopicModel {
 		}
 		
 		//wait till all finished
-		for(int i=0; i<m_threadpool.length; i++){
+		for(Thread thread:m_threadpool){
 			try {
-				m_threadpool[i].join();
+				thread.join();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		double likelihood = 0;
-		for(int i=0; i<m_workers.length; i++)
-			likelihood += m_workers[i].accumluateStats();
+		for(TopicModelWorker worker:m_workers)
+			likelihood += worker.accumluateStats();
 		return likelihood;
 	}
 
