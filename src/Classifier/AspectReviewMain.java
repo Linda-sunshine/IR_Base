@@ -94,7 +94,7 @@ public class AspectReviewMain {
 //		analyzer.setTimeFeatures(window);
 			
 		/****create vectors for documents*****/
-		boolean LDAflag = true;
+		boolean LDAflag = false;
 		System.out.println("Creating feature vectors, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, window, LDAflag);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
@@ -103,7 +103,7 @@ public class AspectReviewMain {
 		
 		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.getCorpus();
-//		System.out.println("The number of reviews with non-zero apsects: " + analyzer.returnCount());
+		System.out.println("The number of reviews with non-zero apsects: " + analyzer.returnCount());
 		
 		/***The parameters used in GF-RW.****/
 		double eta_rw = 0.2;
