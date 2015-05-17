@@ -1,10 +1,8 @@
 package Classifier;
 
 import influence.PageRank;
-
 import java.io.IOException;
 import java.text.ParseException;
-
 import structures._Corpus;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
@@ -18,7 +16,6 @@ import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
 
 public class AspectReviewMain {
-
 	
 	/**We use AmazonReviewMain.java to generate the features. 
 	 * Then, we use bootstrapping to generate aspect keywords.
@@ -30,7 +27,7 @@ public class AspectReviewMain {
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
-		
+
 		//"TF", "TFIDF", "BM25", "PLN"
 		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 2;//The way of normalization.(only 1 and 2)
@@ -95,9 +92,9 @@ public class AspectReviewMain {
 //		analyzer.setTimeFeatures(window);
 			
 		/****create vectors for documents*****/
-		boolean LDAflag = true;
+		boolean topicFlag = true;
 		System.out.println("Creating feature vectors, wait...");
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, window, LDAflag);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, window, topicFlag);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
@@ -111,13 +108,13 @@ public class AspectReviewMain {
 		double sr = 1;
 			
 		/***Try LDA_Gibbs****/
-		if(LDAflag){
+		if(topicFlag){
 			int number_of_topics = 30;
 			double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta_lad = 5.0;//these two parameters must be larger than 1!!!
 			double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 			int topK = 10, number_of_iteration = 100, crossV = 1;
 			
-			pLSA model = new pLSA(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha);
+			pLSA model = new pLSA(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha);
 //			LDA_Gibbs mode = new LDA_Gibbs(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha, 0.4, 50);
 			model.setDisplay(true);
 			model.LoadPrior(fvFile, aspectOutput, eta_lad);
@@ -126,7 +123,6 @@ public class AspectReviewMain {
 				model.printTopWords(topK);
 			} else 
 				model.crossValidation(crossV);
-			analyzer.setTopicVector(model.returnTopicTermProbability()); //Set the aspect vector for reviews based on LDA.
 		}
 		
 		//temporal code to add pagerank weights
@@ -167,8 +163,7 @@ public class AspectReviewMain {
 			} else if (classifier.equals("GF-RW")) {
 				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner, sr, 100, 50, 1, 0.1, 1e-4, eta_rw, false);
 				mySemi.setFeaturesLookup(analyzer.getFeaturesLookup()); //give the look up to the classifier for debugging purpose.
-				mySemi.setAspFlag(true);
-					
+				mySemi.setTopicFlag(true);
 				mySemi.setDebugOutput(debugOutput);//For debug purpose.
 //				mySemi.setDebugPrinters(WrongRWfile, WrongSVMfile, FuSVM);
 //				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile));

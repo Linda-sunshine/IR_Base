@@ -48,7 +48,7 @@ public class GaussianFields extends BaseClassifier {
 
 	Thread[] m_threadpool;
 	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
-	boolean m_aspFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
+	boolean m_topicFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
 	 
 	//Randomly pick 10% of all the training documents.
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
@@ -65,7 +65,7 @@ public class GaussianFields extends BaseClassifier {
 		m_pYSum = new double[classNumber];
 		
 		setClassifier(classifier);
-		m_aspFlag = false;
+		m_topicFlag = false;
 	}	
 	
 	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier, 
@@ -83,12 +83,12 @@ public class GaussianFields extends BaseClassifier {
 		m_pYSum = new double[classNumber];
 		
 		setClassifier(classifier);
-		m_aspFlag = false;
+		m_topicFlag = false;
 
 	}
 	
-	public void setAspFlag(boolean a){
-		m_aspFlag = a;
+	public void setTopicFlag(boolean a){
+		m_topicFlag = a;
 	}
 	@Override
 	public String toString() {
@@ -179,8 +179,13 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Utils.calculateSimilarity(di, dj));
+		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
 		//return Math.random();//just for debugging purpose
+	}
+	
+	//Get similarity based on the results of topic modeling.
+	public double getTopicSimilarity(_Doc di, _Doc dj){
+		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics));
 	}
 	
 	protected void calcSimilarityInThreads(){
@@ -193,7 +198,7 @@ public class GaussianFields extends BaseClassifier {
 				end = m_U;
 			else
 				end = Math.min(start+inc, m_U);
-			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_aspFlag));
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_topicFlag));
 			
 			start = end;
 			m_threadpool[i].start();

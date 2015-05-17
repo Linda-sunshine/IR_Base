@@ -64,13 +64,13 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
 	int m_count;
-	boolean m_LDAflag;
+	boolean m_topicFlag;
 	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
 	
-	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean LDAflag)
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean topicFlag)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
@@ -79,7 +79,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 		m_count = 0;
-		m_LDAflag = LDAflag;
+		m_topicFlag = topicFlag;
 	}
 	
 	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -87,7 +87,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 		m_count = 0;
-		m_LDAflag = false;
+		m_topicFlag = false;
 
 	}
 
@@ -281,12 +281,14 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
-			if(!m_LDAflag){//This is for aspect annotation with given aspects and keywords.
-				double[] tmp = detectAspects(spVct);
-				if(NotEmpty(tmp))
-					m_count++;
-				doc.setAspVct(tmp);
-			}
+//			if(m_topicFlag){//This is for aspect annotation with given aspects and keywords.
+//				double[] tmp = detectAspects(spVct);
+//				if(NotEmpty(tmp)){
+//					m_count++;
+//					doc.setAspVct(tmp);
+//					m_corpus.addDoc(doc);
+//				}
+//			}
 			m_corpus.addDoc(doc);
 			m_classMemberNo[doc.getYLabel()]++;
 			if (m_releaseContent)
@@ -324,19 +326,19 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 	}
 	
-	//Set the topic vector for every document.
-	public void setTopicVector(double[][] ttp){
-		for(_Doc d: m_corpus.getCollection()){
-			double[] topicVector = new double[ttp.length];
-			for(int i=0; i < ttp.length; i++){
-				for(_SparseFeature sf: d.getSparse()){
-					int index = sf.getIndex();
-					topicVector[i] += ttp[i][index] * sf.getValue();
-				}
-			}
-			d.setAspVct(topicVector);
-		}
-	}
+//	//Set the topic vector for every document.
+//	public void setTopicVector(double[][] ttp){
+//		for(_Doc d: m_corpus.getCollection()){
+//			double[] topicVector = new double[ttp.length];
+//			for(int i=0; i < ttp.length; i++){
+//				for(_SparseFeature sf: d.getSparse()){
+//					int index = sf.getIndex();
+//					topicVector[i] += ttp[i][index] * sf.getValue();
+//				}
+//			}
+//			d.setAspVct(topicVector);
+//		}
+//	}
 	
 //	public static void main(String[] args){
 //		int[] a = {1, 0, 0, 1};

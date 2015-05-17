@@ -276,8 +276,10 @@ public class Utils {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
 		if (spVct1L2==0 || spVct2L2==0)
 			return 0;
-		else
-			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
+		else{
+			double sim = calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
+			return sim;
+		}
 	}
 	
 	//Calculate the similarity between two sparse vectors.
