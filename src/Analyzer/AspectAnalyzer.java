@@ -289,8 +289,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 ////					m_corpus.addDoc(doc);
 //				}
 //			}
-			m_corpus.addDoc(doc);
-			m_classMemberNo[doc.getYLabel()]++;
+			if(!(doc.getYLabel() == 1 && m_classMemberNo[1] <= 3185)){
+				m_corpus.addDoc(doc);
+				m_classMemberNo[doc.getYLabel()]++;
+			}
 //			if (m_releaseContent)
 //				doc.clearSource();
 			return true;
