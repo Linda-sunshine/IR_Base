@@ -12,12 +12,11 @@ import utils.Utils;
 
 public class LDA_Variational_multithread extends LDA_Variational {
 
-	class LDA_worker implements TopicModelWorker {
-		//int number_of_topics;
-		double[][] sstat;
-		double[] alphaStat;
-		ArrayList<_Doc> m_corpus;
-		double m_likelihood;
+	public class LDA_worker implements TopicModelWorker {
+		protected double[][] sstat;
+		protected double[] alphaStat;
+		protected ArrayList<_Doc> m_corpus;
+		protected double m_likelihood;
 		
 		public LDA_worker() {
 			sstat = new double[number_of_topics][vocabulary_size];
@@ -47,8 +46,9 @@ public class LDA_Variational_multithread extends LDA_Variational {
 				//variational inference for p(z|w,\phi)
 				for(int n=0; n<fv.length; n++) {
 					wid = fv[n].getIndex();
+					v = fv[n].getValue();
 					for(int i=0; i<number_of_topics; i++)
-						d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+						d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					
 					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
@@ -79,7 +79,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			return current;
 		}
 		
-		private void collectStats(_Doc d) {
+		protected void collectStats(_Doc d) {
 			_SparseFeature[] fv = d.getSparse();
 			int wid;
 			double v; 

@@ -118,9 +118,12 @@ public abstract class Analyzer {
 	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
 		SaveCVStat(finalLocation);
 		
-		for(int c:m_classMemberNo)
+		int sum = 0;
+		for(int c:m_classMemberNo) {
 			System.out.print(c + " ");
-		System.out.println();
+			sum += c;
+		}
+		System.out.println(", Total: " + sum);
 		
 		return getCorpus();
 	}
