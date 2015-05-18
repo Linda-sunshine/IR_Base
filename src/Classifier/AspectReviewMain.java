@@ -107,23 +107,23 @@ public class AspectReviewMain {
 		double eta_rw = 0.2;
 		double sr = 1;
 			
-		/***Try LDA_Gibbs****/
-		if(topicFlag){
-			int number_of_topics = 30;
-			double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta_lad = 5.0;//these two parameters must be larger than 1!!!
-			double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-			int topK = 10, number_of_iteration = 100, crossV = 1;
-			
-			pLSA model = new pLSA(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha);
-//			LDA_Gibbs mode = new LDA_Gibbs(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha, 0.4, 50);
-			model.setDisplay(true);
-			model.LoadPrior(fvFile, aspectOutput, eta_lad);
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
-		}
+//		/***Try LDA_Gibbs****/
+//		if(topicFlag){
+//			int number_of_topics = 30;
+//			double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta_lad = 5.0;//these two parameters must be larger than 1!!!
+//			double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+//			int topK = 10, number_of_iteration = 100, crossV = 1;
+//			
+//			pLSA model = new pLSA(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha);
+////			LDA_Gibbs mode = new LDA_Gibbs(number_of_iteration, converge, beta, corpus, lambda, analyzer.getBackgroundProb(), number_of_topics, alpha, 0.4, 50);
+//			model.setDisplay(true);
+//			model.LoadPrior(fvFile, aspectOutput, eta_lad);
+//			if (crossV<=1) {
+//				model.EMonCorpus();
+//				model.printTopWords(topK);
+//			} else 
+//				model.crossValidation(crossV);
+//		}
 		
 		//temporal code to add pagerank weights
 //		PageRank tmpPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);
@@ -161,7 +161,7 @@ public class AspectReviewMain {
 				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
 				mySemi.crossValidation(CVFold, corpus);
 			} else if (classifier.equals("GF-RW")) {
-				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner, sr, 100, 50, 1, 0.1, 1e-4, eta_rw, false);
+				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner, sr, 40, 20, 1, 0.1, 1e-4, eta_rw, false);
 				mySemi.setFeaturesLookup(analyzer.getFeaturesLookup()); //give the look up to the classifier for debugging purpose.
 				mySemi.setTopicFlag(true);
 				mySemi.setDebugOutput(debugOutput);//For debug purpose.

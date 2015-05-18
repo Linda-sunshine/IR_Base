@@ -25,36 +25,52 @@ public class PairwiseSimCalculator implements Runnable {
 		for (int i = m_start; i < m_end; i++) {
 			di = m_GFObj.getTestDoc(i);
 			for (int j = i + 1; j < m_GFObj.m_U; j++) {// to save computation since our similarity metric is symmetric
+//				similarity = 0; 
 				dj = m_GFObj.getTestDoc(j);
-				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if(m_topicFlag){//If it is topic based similarity.
-					double tmp = m_GFObj.getTopicSimilarity(di, dj);
-					similarity = 0.8 * similarity + 0.2 * m_GFObj.getTopicSimilarity(di, dj);
-				}
 //				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-//				if(m_aspFlag){
-//					if (di.sameProduct(dj)){
-//						double aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
-//						if(aspScore != 0)
-//							discount = Math.pow(1.5, aspScore);
-//						else 
-//							discount = m_GFObj.m_discount;
-//						similarity *= discount;
-//					}
-//				}	
+//				if(m_topicFlag){//If it is topic based similarity.
+//					double tmp = m_GFObj.getTopicSimilarity(di, dj);
+//					if(!Double.isInfinite(tmp))
+//						similarity += tmp;	
+//					else 
+//						System.out.println("Infinity detected");
+//				}
+				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				if(m_topicFlag){
+					if (di.sameProduct(dj)){
+						double aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
+						if(aspScore != 0)
+							discount = Math.pow(1.5, aspScore);
+						else 
+							discount = m_GFObj.m_discount;
+						similarity *= discount;
+					}
+				}	
 				m_GFObj.setCache(i, j, similarity);
 			}
 
 			for (int j = 0; j < m_GFObj.m_L; j++) {
 				dj = m_GFObj.m_labeled.get(j);
-				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-				if(m_topicFlag){//If it is topic based similarity.
-					double tmp = m_GFObj.getTopicSimilarity(di, dj);
-					similarity = 0.8 * similarity + 0.2 * m_GFObj.getTopicSimilarity(di, dj);
-				}
+//				similarity = 0;
 //				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-//				if (!di.sameProduct(m_GFObj.getLabeledDoc(j)))
-//					similarity *= m_GFObj.m_discount;// differentiate reviews from different products
+//				if(m_topicFlag){//If it is topic based similarity.
+//					double tmp = m_GFObj.getTopicSimilarity(di, dj);
+//					if(!Double.isInfinite(tmp))
+//						similarity += tmp;
+//					else 
+//						System.out.println("Infinity detected");
+//				}
+				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				if(m_topicFlag){
+					if (di.sameProduct(dj)){
+						double aspScore = Utils.dotProduct(di.getAspVct(), dj.getAspVct());
+						if(aspScore != 0)
+							discount = Math.pow(1.5, aspScore);
+						else 
+							discount = m_GFObj.m_discount;
+						similarity *= discount;
+					}
+				}	
 				m_GFObj.setCache(i, m_GFObj.m_U + j, similarity);
 			}
 			

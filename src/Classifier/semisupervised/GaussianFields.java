@@ -185,7 +185,9 @@ public class GaussianFields extends BaseClassifier {
 	
 	//Get similarity based on the results of topic modeling.
 	public double getTopicSimilarity(_Doc di, _Doc dj){
-		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics));
+//		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics));
+		return Math.exp(- Utils.KLsymmetric(di.m_topics, dj.m_topics) / 100.0);
+		
 	}
 	
 	protected void calcSimilarityInThreads(){
