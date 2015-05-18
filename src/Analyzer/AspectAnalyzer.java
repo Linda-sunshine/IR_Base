@@ -281,18 +281,18 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
-			if(m_topicFlag){//This is for aspect annotation with given aspects and keywords.
-				double[] tmp = detectAspects(spVct);
-				if(NotEmpty(tmp)){
-					m_count++;
-					doc.setAspVct(tmp);
-//					m_corpus.addDoc(doc);
-				}
-			}
+//			if(m_topicFlag){//This is for aspect annotation with given aspects and keywords.
+//				double[] tmp = detectAspects(spVct);
+//				if(NotEmpty(tmp)){
+//					m_count++;
+//					doc.setAspVct(tmp);
+////					m_corpus.addDoc(doc);
+//				}
+//			}
 			m_corpus.addDoc(doc);
 			m_classMemberNo[doc.getYLabel()]++;
-			if (m_releaseContent)
-				doc.clearSource();
+//			if (m_releaseContent)
+//				doc.clearSource();
 			return true;
 		} else
 			return false;
