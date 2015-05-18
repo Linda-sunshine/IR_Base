@@ -102,8 +102,9 @@ public class LDA_Variational extends pLSA {
 			//variational inference for p(z|w,\phi)
 			for(int n=0; n<fv.length; n++) {
 				wid = fv[n].getIndex();
+				v = fv[n].getValue();
 				for(int i=0; i<number_of_topics; i++)
-					d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+					d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 				
 				logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 				for(int i=0; i<number_of_topics; i++)
