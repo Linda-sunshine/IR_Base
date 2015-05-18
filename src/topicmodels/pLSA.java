@@ -42,7 +42,7 @@ public class pLSA extends twoTopic {
 		word_topic_prior = null;
 	}
 	
-	public void LoadPrior(String vocabulary, String filename, double eta) {		
+	public void LoadPrior(String filename, double eta) {		
 		if (filename == null || filename.isEmpty())
 			return;
 		
@@ -51,17 +51,12 @@ public class pLSA extends twoTopic {
 			String[] container;
 			
 			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(vocabulary), "UTF-8"));
-			while( (tmpTxt=reader.readLine()) != null ){
-				if (tmpTxt.startsWith("#"))
-					continue;
-				featureNameIndex.put(tmpTxt, featureNameIndex.size());
-			}
-			reader.close();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++)
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
 			
 			int wid, tid = 0, wCount = 0;
 			word_topic_prior = new double[number_of_topics][vocabulary_size];
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split(" ");
 				wCount = 0;
@@ -118,7 +113,7 @@ public class pLSA extends twoTopic {
 		
 		//initiate sufficient statistics
 		for(_Doc d:m_trainSet)
-			Arrays.fill(d.m_sstat, 0);//pseudo counts for p(\theta|d)
+			Arrays.fill(d.m_sstat, d_alpha-1.0);//pseudo counts for p(\theta|d)
 	}
 	
 	@Override

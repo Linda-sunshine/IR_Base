@@ -19,9 +19,9 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
+		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 30;
+		int number_of_topics = 20;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int topK = 20, number_of_iteration = 100, crossV = 1;
@@ -71,13 +71,9 @@ public class TopicModelMain {
 			pLSA model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha);
-//			pLSA model = new pLSAGroup(number_of_iteration, converge, beta, c, 
-//					lambda, analyzer.getBackgroundProb(), 
-//					number_of_topics, alpha);
 			
-//			model.tmpSimCheck();
 			model.setDisplay(true);
-			model.LoadPrior(fvFile, aspectlist, eta);
+			model.LoadPrior(aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -89,7 +85,7 @@ public class TopicModelMain {
 				number_of_topics, alpha, 0.4, 50);
 		
 			model.setDisplay(true);
-			model.LoadPrior(fvFile, aspectlist, eta);
+			model.LoadPrior(aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -101,7 +97,7 @@ public class TopicModelMain {
 					number_of_topics, alpha, 10, -1);
 			
 				model.setDisplay(true);
-				model.LoadPrior(fvFile, aspectlist, eta);
+				model.LoadPrior(aspectlist, eta);
 				if (crossV<=1) {
 					model.EMonCorpus();
 					model.printTopWords(topK);
