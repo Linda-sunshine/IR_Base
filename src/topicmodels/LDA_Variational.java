@@ -83,7 +83,7 @@ public class LDA_Variational extends pLSA {
 		
 		// initialize with all smoothing terms
 		for(int i=0; i<number_of_topics; i++)
-			Arrays.fill(word_topic_sstat[i], d_beta);
+			Arrays.fill(word_topic_sstat[i], d_beta-1.0);
 		imposePrior();
 	}
 

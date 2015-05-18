@@ -179,17 +179,27 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_totalLength;
 	}
 	
-	//Create the sparse vector for the document.
-	public void createSpVct(HashMap<Integer, Double> spVct) {
-		m_x_sparse = Utils.createSpVct(spVct);
+	void calcTotalLength() {
+		m_totalLength = 0;
 		for(_SparseFeature fv:m_x_sparse)
 			m_totalLength += fv.getValue();
 	}
 	
+	//Create the sparse vector for the document.
+	public void createSpVct(HashMap<Integer, Double> spVct) {
+		m_x_sparse = Utils.createSpVct(spVct);
+		calcTotalLength();
+	}
+	
+	//Create the sparse vector for the document, taking value from different sections
+	public void createSpVct(ArrayList<HashMap<Integer, Double>> spVcts) {
+		m_x_sparse = Utils.createSpVct(spVcts);
+		calcTotalLength();
+	}
+	
 	public void setSpVct(_SparseFeature[] x) {
 		m_x_sparse = x;
-		//unable to know total length when loading from vector file
-		m_totalLength = x.length;//this is totally inaccurate
+		calcTotalLength();
 	}
 	
 	//Create a sparse vector with time features.
@@ -296,6 +306,7 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 	
+	//permutation the order of words for Gibbs sampling
 	public void permutation() {
 		int s, t;
 		for(int i=m_words.length-1; i>1; i--) {
