@@ -5,6 +5,7 @@ package topicmodels.attributeaware;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Arrays;
 
 import structures._Corpus;
 import structures._Doc;
@@ -28,14 +29,34 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		public double calculate_E_step(_Doc d) {	
 			double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
 			int iter = 0, wid;
-			_SparseFeature[] fv = d.getSparse();
+			double[] values;
+			_SparseFeature fv[] = d.getSparse(), spFea;
 			
 			do {
 				//variational inference for p(z|w,\phi)
 				for(int n=0; n<fv.length; n++) {
-					wid = fv[n].getIndex();
-					for(int i=0; i<number_of_topics; i++)
-						d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+					//reset the estimates
+					Arrays.fill(d.m_phi[n], -100);//exp(-100) should be small enough
+					
+					//allocate the words by attribute and topic combination
+					spFea = fv[n];
+					wid = spFea.getIndex();
+					values = spFea.getValues();
+					for(int a=0; a<values.length; a++) {
+						v = values[a];
+						if (v<1)//no observations (at least 1.0)
+							continue;
+						else if (a<m_attributeSize) {
+							for(int i=0; i<number_of_topics; i++) {
+								//special organization of topics
+								if (i%m_attributeSize==a)//disable the proportion from the other attributes
+									d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+							}
+						} else {//mixing part of all possible attributes
+							for(int i=0; i<number_of_topics; i++)
+								d.m_phi[n][i] = Utils.logSum(d.m_phi[n][i], v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]));
+						}
+					}
 					
 					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
@@ -84,7 +105,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		
-		int number_of_topics = 25;
+		int number_of_topics = 15;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int topK = 20, number_of_iteration = 100;

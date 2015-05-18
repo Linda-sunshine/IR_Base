@@ -103,16 +103,16 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		} else 
 			spVcts.add(null);//no con section
 		
-		if ((content=post.getComments()) != null) {// tokenize comments
-			tokens = TokenizerNormalizeStemmer(content);
-			vPtr = constructSpVct(tokens, y);
-			spVcts.add(vPtr);
-			uniWordsInSections += vPtr.size();
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Comments: %s\n", content));
-		} else
-			spVcts.add(null);//no comments
+//		if ((content=post.getComments()) != null) {// tokenize comments
+//			tokens = TokenizerNormalizeStemmer(content);
+//			vPtr = constructSpVct(tokens, y);
+//			spVcts.add(vPtr);
+//			uniWordsInSections += vPtr.size();
+//			
+//			if (!m_releaseContent)
+//				buffer.append(String.format("Comments: %s\n", content));
+//		} else
+//			spVcts.add(null);//no comments
 		
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
