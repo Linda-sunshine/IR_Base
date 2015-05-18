@@ -347,6 +347,41 @@ public class Utils {
 		return spVct;
 	}
 	
+	static public _SparseFeature[] createSpVct(ArrayList<HashMap<Integer, Double>> vcts) {
+		HashMap<Integer, _SparseFeature> spVcts = new HashMap<Integer, _SparseFeature>();
+		HashMap<Integer, Double> vPtr;
+		_SparseFeature spV;
+		
+		int dim = vcts.size();
+		for(int i=0; i<dim; i++) {
+			vPtr = vcts.get(i);
+			if (vPtr==null || vPtr.isEmpty())
+				continue; // it is possible that we are missing this dimension
+			
+			//iterate through all the features in this section
+			Iterator<Entry<Integer, Double>> it = vPtr.entrySet().iterator();
+			while(it.hasNext()){
+				Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+				int index = pairs.getKey();
+				double value = pairs.getValue();
+				if (spVcts.containsKey(index)) {
+					spV = spVcts.get(index);
+					spV.addValue(value); // increase the total value
+				} else {
+					spV = new _SparseFeature(index, value, dim);
+					spVcts.put(index, spV);
+				}
+				spV.setValue4Dim(value, i);
+			}
+		}
+		
+		int size = spVcts.size();
+		_SparseFeature[] resultVct = spVcts.values().toArray(new _SparseFeature[size]);
+		
+		Arrays.sort(resultVct);		
+		return resultVct;
+	}
+	
 	public static String cleanHTML(String content) {
 		if (content.indexOf("<!--")==-1 || content.indexOf("-->")==-1)
 			return content;//clean text
@@ -364,6 +399,18 @@ public class Utils {
 			buffer.append(content.substring(start));
 		
 		return cleanVideoReview(buffer.toString());
+	}
+	
+	public static void mergeVectors(HashMap<Integer, Double> src, HashMap<Integer, Double> dst) {
+		Iterator<Entry<Integer, Double>> it = src.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			int index = pairs.getKey();
+			if (dst.containsKey(index)==false) 
+				dst.put(index, pairs.getValue());
+			else
+				dst.put(index, pairs.getValue() + dst.get(index));
+		}
 	}
 	
 	public static String cleanVideoReview(String content) {

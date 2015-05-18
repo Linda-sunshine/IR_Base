@@ -26,7 +26,7 @@ import utils.Utils;
  */
 public class jsonAnalyzer extends DocAnalyzer{
 	
-	private SimpleDateFormat m_dateFormatter;
+	SimpleDateFormat m_dateFormatter;
 	
 	//Constructor with ngram and fValue.
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -65,9 +65,13 @@ public class jsonAnalyzer extends DocAnalyzer{
 						content = post.getTitle() + " " + post.getContent();
 					else
 						content = post.getTitle() + ". " + post.getContent();
-					int label = 0;
-					if(post.getLabel() >= 3) label = 1;
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), label, timeStamp);
+//<<<<<<< HEAD
+//					int label = 0;
+//					if(post.getLabel() >= 3) label = 1;
+//					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), label, timeStamp);
+//=======
+					
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
 						AnalyzeDocWithStnSplit(review);
 					else
@@ -82,14 +86,13 @@ public class jsonAnalyzer extends DocAnalyzer{
 	}
 	
 	//sample code for loading the json file
-	public JSONObject LoadJson(String filename) {
+	JSONObject LoadJson(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			StringBuffer buffer = new StringBuffer(1024);
 			String line;
 			
 			while((line=reader.readLine())!=null) {
-				//System.out.println(line);
 				buffer.append(line);
 			}
 			reader.close();

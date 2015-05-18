@@ -8,41 +8,51 @@ package structures;
  * Feature structure for sparse feature representation
  */
 public class _SparseFeature implements Comparable<_SparseFeature> {
-	private String content; //Content of the feature.
-	private int m_index; // Index of the feature
-	private double m_value; // Value of the feature (non-zero)
+	String m_content; //Content of the feature.
+	int m_index; // Index of the feature
+	double m_value; // Value of the feature (non-zero)
+	
+	// feature value under different segments (E.g., in NewEgg we have Pro/Con/Comments segments)
+	double[] m_values; //NOTE: special attention has to be made when computing feature values (except TF feature) in each section
 	
 	//Constructor.
 	public _SparseFeature(){
-		this.content = "";
-		this.m_index = 0;//why I commented this line???
-		this.m_value = 0;
-		//this.m_norm_value = 0;
+		m_content = "";
+		m_index = -1;
+		m_value = 0;
+		m_values = null;
 	}
 	
 	//Constructor.
 	public _SparseFeature(int index, String content) {
-		this.content = content;
-		this.m_index = index;// why I commented this line???
-		this.m_value = 0;
-		//this.m_norm_value = 0;
+		m_content = content;
+		m_index = index;
+		m_value = 0;
+		m_values = null;
 	}
 	
 	public _SparseFeature(int index, double value){
-		this.content = "";
-		this.m_index = index;
-		this.m_value = value;
-		//this.m_norm_value = 0;
+		m_content = "";
+		m_index = index;
+		m_value = value;
+		m_values = null;
+	}
+	
+	public _SparseFeature(int index, double value, int dim){
+		m_content = "";
+		m_index = index;
+		m_value = value;
+		m_values = new double[dim];
 	}
 	
 	//Get the content of the feature.
 	public String getContent(){
-		return this.content;
+		return m_content;
 	}
 	
 	public String setContent(String content){
-		this.content = content;
-		return this.content;
+		m_content = content;
+		return m_content;
 	}
 	
 	//Get the index of the feature.
@@ -51,9 +61,8 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 	}
 	
 	//Set the index for the feature.
-	public int setIndex(int index){
+	public void setIndex(int index){
 		this.m_index = index;
-		return this.m_index;
 	}
 	
 	//Get the value of the feature.
@@ -62,15 +71,20 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 	}
 	
 	//Set the value for the feature.
-	public double setValue(double value){
+	public void setValue(double value){
 		this.m_value = value;
-		return this.m_value;
 	}	
+	
+	public void addValue(double value) {
+		m_value += value;
+	}
+	
+	public void setValue4Dim(double value, int d) {
+		this.m_values[d] = value;//we will not check the index range@
+	}
 
 	@Override
 	public int compareTo(_SparseFeature sfv) {
 		return m_index - sfv.m_index;
-	}
-	
-	
+	}	
 }
