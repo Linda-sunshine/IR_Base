@@ -22,21 +22,21 @@ public class LogisticRegression extends BaseClassifier {
 	double[] m_cache;
 	double m_lambda;
 	
-	public LogisticRegression(_Corpus c, int classNo, int featureSize){
-		super(c, classNo, featureSize);
-		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
+	public LogisticRegression(_Corpus c, double lambda){
+		super(c);
+		m_beta = new double[m_classNo * (m_featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
 		m_diag = new double[m_beta.length];
-		m_cache = new double[classNo];
-		m_lambda = 0.5;//Initialize it to be 0.5.
+		m_cache = new double[m_classNo];
+		m_lambda = lambda;
 	}
 	
-	public LogisticRegression(_Corpus c, int classNo, int featureSize, double lambda){
-		super(c, classNo, featureSize);
-		m_beta = new double[classNo * (featureSize + 1)]; //Initialization.
+	public LogisticRegression(int classNo, int featureSize, double lambda){
+		super(classNo, featureSize);
+		m_beta = new double[m_classNo * (m_featureSize + 1)]; //Initialization.
 		m_g = new double[m_beta.length];
 		m_diag = new double[m_beta.length];
-		m_cache = new double[classNo];
+		m_cache = new double[m_classNo];
 		m_lambda = lambda;
 	}
 	
@@ -159,7 +159,7 @@ public class LogisticRegression extends BaseClassifier {
 			
 			for(int i=0; i<fv.length; i++) {
 				fid = fv[i].getIndex();
-				if (fid>=m_corpus.getFeatureSize())
+				if (fid>=m_featureSize)
 					break; // beyond text feature range
 				fvalue = fv[i].getValue();				
 				
@@ -185,7 +185,7 @@ public class LogisticRegression extends BaseClassifier {
 	public void saveModel(String modelLocation){
 		try {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelLocation), "UTF-8"));
-			int offset, fSize = m_corpus.getFeatureSize();//does not include bias and time features
+			int offset, fSize = m_featureSize;//does not include bias and time features
 			for(int i=0; i<fSize; i++) {
 				writer.write(m_corpus.getFeature(i));
 				

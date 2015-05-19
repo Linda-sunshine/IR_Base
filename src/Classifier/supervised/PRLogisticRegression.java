@@ -23,8 +23,8 @@ public class PRLogisticRegression extends LogisticRegression {
 
 	double[][] m_doc_pr;//to store exp(\lambda\phi(x,y))
 	
-	public PRLogisticRegression(_Corpus c, int classNo, int featureSize, double lambda){
-		super(c, classNo, featureSize, lambda);
+	public PRLogisticRegression(_Corpus c, double lambda){
+		super(c, lambda);
 	}
 	
 	@Override

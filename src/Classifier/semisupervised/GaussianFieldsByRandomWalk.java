@@ -15,8 +15,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	boolean m_storeGraph; // shall we precompute and store the graph
 	
 	//Default constructor without any default parameters.
-	public GaussianFieldsByRandomWalk(_Corpus c, int classNumber, int featureSize, String classifier){
-		super(c, classNumber, featureSize, classifier);
+	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
+		super(c, classifier, C);
 		
 		m_eta = 0.1;
 		m_labelRatio = 0.1;
@@ -25,11 +25,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	}	
 	
 	//Constructor: given k and kPrime
-	public GaussianFieldsByRandomWalk(_Corpus c, int classNumber, int featureSize, String classifier, 
+	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph){
-		super(c, classNumber, featureSize, classifier, ratio, k, kPrime);
+		super(c, classifier, C, ratio, k, kPrime);
 		
-		m_eta = 0.1;
 		m_alpha = alhpa;
 		m_beta = beta;
 		m_delta = delta;
@@ -39,7 +38,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
+		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount);
 	}
 	
 	//The random walk algorithm to generate new labels for unlabeled data.

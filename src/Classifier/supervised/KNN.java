@@ -19,18 +19,18 @@ public class KNN extends BaseClassifier{
 	double[][] m_randomVcts;
 	HashMap<Integer, ArrayList<_Doc>> m_buckets;
 	
-	public KNN(_Corpus c, int classNumber, int featureSize){
-		super(c, classNumber, featureSize);
+	public KNN(_Corpus c){
+		super(c);
 		m_k = 5;
 		m_l = 10;
 		m_buckets = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 	
-	public KNN(_Corpus c, int classNumber, int featureSize, int k, int l){
-		super(c, classNumber, featureSize);
+	public KNN(_Corpus c, int k, int l){
+		super(c);
 		m_k = k;
 		m_l = l;
-		m_randomVcts = new double[m_l][featureSize];
+		m_randomVcts = new double[m_l][m_featureSize];
 		m_buckets = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 	

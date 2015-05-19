@@ -1,4 +1,4 @@
-package Classifier;
+package mains;
 
 import influence.PageRank;
 
@@ -53,26 +53,25 @@ public class VectorReviewMain {
 		analyzer.LoadDoc(vctfile); //Load all the documents as the data set.
 				
 		_Corpus corpus = analyzer.getCorpus();
-		int featureSize = corpus.getFeatureSize();
 		
 		/********Choose different classification methods.*********/
 		if (style.equals("SUP")) {
 			if(classifier.equals("NB")){
 				//Define a new naive bayes with the parameters.
 				System.out.println("Start naive bayes, wait...");
-				NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize);
+				NaiveBayes myNB = new NaiveBayes(corpus);
 				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(classifier.equals("KNN")){
 				//Define a new naive bayes with the parameters.
 				System.out.println("Start kNN, wait...");
-				KNN myKNN = new KNN(corpus, classNumber, featureSize, 10, 1);
+				KNN myKNN = new KNN(corpus, 10, 1);
 				myKNN.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			}  else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize, C);
+				LogisticRegression myLR = new LogisticRegression(corpus, C);
 				myLR.setDebugOutput(debugOutput);
 				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
@@ -80,35 +79,35 @@ public class VectorReviewMain {
 			} else if(classifier.equals("PRLR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start posterior regularized logistic regression, wait...");
-				PRLogisticRegression myLR = new PRLogisticRegression(corpus, classNumber, featureSize, C);
+				PRLogisticRegression myLR = new PRLogisticRegression(corpus, C);
 				myLR.setDebugOutput(debugOutput);
 				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize, C, 0.001);//default value of eps from Lin's implementation
+				SVM mySVM = new SVM(corpus, C);
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){
 				System.out.println("Start PageRank, wait...");
-				PageRank myPR = new PageRank(corpus, classNumber, featureSize, C, 100, 50, 1e-6);
+				PageRank myPR = new PageRank(corpus, C, 100, 50, 1e-6);
 				myPR.train(corpus.getCollection());
 				
 			} else System.out.println("Classifier has not been developed yet!");
 		} else if (style.equals("SEMI")) {
 			if (classifier.equals("GF")) {
-				GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize, multipleLearner);
+				GaussianFields mySemi = new GaussianFields(corpus, multipleLearner, C);
 				mySemi.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("GF-RW")) {
-				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, classNumber, featureSize, multipleLearner,
+				GaussianFields mySemi = new GaussianFieldsByRandomWalk(corpus, multipleLearner, C,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false);
 				mySemi.setDebugOutput(debugOutput);
 				
 				mySemi.crossValidation(CVFold, corpus);
 			} else if (classifier.equals("GF-RW-ML")) {
-				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, classNumber, featureSize, multipleLearner,
+				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, multipleLearner, C,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false,
 						2, 0.1);
 				lMetricLearner.setMetricLearningMethod(true);

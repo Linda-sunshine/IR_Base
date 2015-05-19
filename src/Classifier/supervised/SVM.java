@@ -137,20 +137,20 @@ public class SVM extends BaseClassifier {
 	Parameter m_libParameter;
 	SolverType m_type = SolverType.L1R_L2LOSS_SVC;
 	
-	//Constructor without give C.
-	public SVM(_Corpus c, int classNumber, int featureSize){
-		super(c, classNumber, featureSize);
-		//Set default value of the param.
-		m_libParameter = new Parameter(m_type, 1.0, 0.001);
+	//Constructor with a given C.
+	public SVM(_Corpus c, double C){
+		super(c);
+		// Set default value of the param.
+		m_libParameter = new Parameter(m_type, C, 0.001);
 	}
 
 	//Constructor with a given C.
-	public SVM(_Corpus c, int classNumber, int featureSize, double C, double eps){
-		super(c, classNumber, featureSize);
+	public SVM(int classNo, int featureSize, double C){
+		super(classNo, featureSize);
 		// Set default value of the param.
-		m_libParameter = new Parameter(m_type, C, eps);
+		m_libParameter = new Parameter(m_type, C, 0.001);
 	}
-	
+		
 	@Override
 	public String toString() {
 		return String.format("SVM[C:%d, F:%d, T:%s, c:%.3f]", m_classNo, m_featureSize, m_libParameter.getSolverType(), m_libParameter.getC());
@@ -160,8 +160,6 @@ public class SVM extends BaseClassifier {
 	protected void init() {
 		//no need to initiate, libSVM will take care of it
 	}
-	
-
 	
 	@Override
 	public void train(Collection<_Doc> trainSet) {

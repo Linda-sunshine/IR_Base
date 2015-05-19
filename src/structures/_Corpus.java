@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -44,6 +45,13 @@ public class _Corpus {
 	
 	public int getFeatureSize() {
 		return m_features.size();
+	}
+	
+	public int getClassSize() {
+		HashSet<Integer> labelSet = new HashSet<Integer>();
+		for(_Doc d:m_collection)
+			labelSet.add(d.getYLabel());
+		return labelSet.size();
 	}
 	
 	//Initialize the m_mask, the default value is false.
@@ -122,6 +130,17 @@ public class _Corpus {
 			rSize++;
 		}
 		return pid+1;
+	}
+	
+	public void mapLabels(int threshold) {
+		int y;
+		for(_Doc d:m_collection) {
+			y = d.getYLabel();
+			if (y<threshold)
+				d.setYLabel(0);
+			else
+				d.setYLabel(1);
+		}
 	}
 	
 	public void save2File(String filename) {

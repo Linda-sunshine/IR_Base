@@ -1,4 +1,4 @@
-package Classifier;
+package mains;
 
 import influence.PageRank;
 
@@ -93,30 +93,30 @@ public class AmazonReviewMain {
 			if(classifier.equals("NB")){
 				//Define a new naive bayes with the parameters.
 				System.out.println("Start naive bayes, wait...");
-				NaiveBayes myNB = new NaiveBayes(corpus, classNumber, featureSize + window + 1);
+				NaiveBayes myNB = new NaiveBayes(corpus);
 				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				
 			} else if(classifier.equals("LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, classNumber, featureSize + window + 1, C);
+				LogisticRegression myLR = new LogisticRegression(corpus, C);
 				myLR.setDebugOutput(debugOutput);
 				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
 				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, classNumber, featureSize + window + 1, C, 0.01);//default eps value from Lin's implementation
+				SVM mySVM = new SVM(corpus, C);
 				mySVM.crossValidation(CVFold, corpus);
 				
 			} else if (classifier.equals("PR")){
 				System.out.println("Start PageRank, wait...");
-				PageRank myPR = new PageRank(corpus, classNumber, featureSize + window + 1, C, 100, 50, 1e-6);
+				PageRank myPR = new PageRank(corpus, C, 100, 50, 1e-6);
 				myPR.train(corpus.getCollection());
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("SEMI")) {
-			GaussianFields mySemi = new GaussianFields(corpus, classNumber, featureSize + window + 1, classifier);
+			GaussianFields mySemi = new GaussianFields(corpus, classifier, C);
 			mySemi.crossValidation(CVFold, corpus);
 		} else if (style.equals("FV")) {
 			corpus.save2File(vctFile);

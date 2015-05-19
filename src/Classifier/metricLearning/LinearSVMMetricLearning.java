@@ -39,16 +39,16 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	FeatureType m_fvType = FeatureType.FT_diff;
 	
 	//Default constructor without any default parameters.
-	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, int bound){
-		super(c, classNumber, featureSize, classifier);
+	public LinearSVMMetricLearning(_Corpus c, String classifier, double C, int bound){
+		super(c, classifier, C);
 		m_bound = bound;
 		m_contSamplingRate = 0.001; // a conservative setting
 	}
 	
-	public LinearSVMMetricLearning(_Corpus c, int classNumber, int featureSize, String classifier, 
+	public LinearSVMMetricLearning(_Corpus c, String classifier, double C, 
 			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph, 
 			int bound, double cSampleRate) {
-		super(c, classNumber, featureSize, classifier, ratio, k, kPrime, alhpa, beta, delta, eta, storeGraph);
+		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta, storeGraph);
 		m_bound = bound;
 		m_contSamplingRate = cSampleRate;
 	}

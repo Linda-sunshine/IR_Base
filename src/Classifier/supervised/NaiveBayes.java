@@ -1,9 +1,8 @@
 package Classifier.supervised;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
-import Classifier.BaseClassifier;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -11,6 +10,7 @@ import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
+import Classifier.BaseClassifier;
 
 public class NaiveBayes extends BaseClassifier {
 	private double[][] m_Pxy; // p(X|Y)
@@ -20,9 +20,9 @@ public class NaiveBayes extends BaseClassifier {
 	private double m_deltaXY; // for smoothing p(X|Y) purpose;
 	
 	//Constructor.
-	public NaiveBayes(_Corpus c, int classNumber, int featureSize){
-		super(c, classNumber, featureSize);
-		m_Pxy = new double [m_classNo][featureSize];
+	public NaiveBayes(_Corpus c){
+		super(c);
+		m_Pxy = new double [m_classNo][m_featureSize];
 		m_pY = new double [m_classNo];
 		
 		m_presence = false;
@@ -31,9 +31,20 @@ public class NaiveBayes extends BaseClassifier {
 	}
 	
 	//Constructor.
-	public NaiveBayes(_Corpus c, int classNumber, int featureSize, boolean presence, double deltaY, double deltaXY){
-		super(c, classNumber, featureSize);
-		m_Pxy = new double [m_classNo][featureSize];
+	public NaiveBayes(int classNo, int featureSize){
+		super(classNo, featureSize);
+		m_Pxy = new double [m_classNo][m_featureSize];
+		m_pY = new double [m_classNo];
+		
+		m_presence = false;
+		m_deltaY = 0.1;
+		m_deltaXY = 0.1;
+	}
+	
+	//Constructor.
+	public NaiveBayes(_Corpus c, boolean presence, double deltaY, double deltaXY){
+		super(c);
+		m_Pxy = new double [m_classNo][m_featureSize];
 		m_pY = new double [m_classNo];
 		
 		m_presence = presence;
@@ -92,7 +103,7 @@ public class NaiveBayes extends BaseClassifier {
 		
 	}
 	
-	public void printTopFeatures(int topK) {
+	public void printTopFeatures(int topK, ArrayList<String> features) {
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
 		for(int n=0; n<m_featureSize; n++) {
 			for(int i=0; i<m_classNo; i++)
@@ -104,7 +115,7 @@ public class NaiveBayes extends BaseClassifier {
 		for(_RankItem item:queue) {
 			for(int i=0; i<m_classNo; i++)
 				m_cProbs[i] = m_Pxy[i][item.m_index];
-			System.out.format("%s(%d) ", m_corpus.getFeature(item.m_index), Utils.maxOfArrayIndex(m_cProbs));
+			System.out.format("%s(%d) ", features.get(item.m_index), Utils.maxOfArrayIndex(m_cProbs));
 		}
 		System.out.println();
 	}

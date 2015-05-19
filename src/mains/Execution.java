@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier;
+package mains;
 
 import influence.PageRank;
 
@@ -24,6 +24,7 @@ import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
 import Analyzer.jsonAnalyzer;
+import Classifier.BaseClassifier;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
@@ -82,11 +83,9 @@ public class Execution  {
 			corpus = analyzer.returnCorpus(param.m_featureStat);
 		}
 		
-		int featureSize = corpus.getFeatureSize();
-		
 		if (param.m_weightScheme.equals("PR")) {
 			System.out.println("Creating PageRank instance weighting, wait...");
-			PageRank myPR = new PageRank(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C, 100, 50, 1e-6);
+			PageRank myPR = new PageRank(corpus, param.m_C, 100, 50, 1e-6);
 			myPR.train(corpus.getCollection());
 		}
 		
@@ -98,19 +97,19 @@ public class Execution  {
 			if(param.m_model.equals("NB")){
 				//Define a new naive bayes with the parameters.
 				System.out.println("Start naive bayes, wait...");
-				model = new NaiveBayes(corpus, param.m_classNumber, featureSize + param.m_window);
+				model = new NaiveBayes(corpus);
 			} else if(param.m_model.equals("LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start logistic regression, wait...");
-				model = new LogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
+				model = new LogisticRegression(corpus, param.m_C);
 			} else if(param.m_model.equals("PR-LR")){
 				//Define a new logistics regression with the parameters.
 				System.out.println("Start posterior regularized logistic regression, wait...");
-				model = new PRLogisticRegression(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C);
+				model = new PRLogisticRegression(corpus, param.m_C);
 			} else if(param.m_model.equals("SVM")){
 				//corpus.save2File("data/FVs/fvector.dat");
 				System.out.println("Start SVM, wait...");
-				model = new SVM(corpus, param.m_classNumber, featureSize + param.m_window, param.m_C, param.m_converge);
+				model = new SVM(corpus, param.m_C);
 			} else {
 				System.out.println("Classifier has not been developed yet!");
 				System.exit(-1);
@@ -123,15 +122,15 @@ public class Execution  {
 			
 			if (param.m_model.equals("GF")) {
 				System.out.println("Start Gaussian Field by matrix inversion, wait...");
-				model = new GaussianFields(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier,
+				model = new GaussianFields(corpus, param.m_classifier, param.m_C,
 					param.m_sampleRate, param.m_kUL, param.m_kUU);
 			} else if (param.m_model.equals("GF-RW")) {
 				System.out.println("Start Gaussian Field by random walk, wait...");
-				model = new GaussianFieldsByRandomWalk(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier,
+				model = new GaussianFieldsByRandomWalk(corpus, param.m_classifier, param.m_C,
 					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph);
 			} else if (param.m_model.equals("GF-RW-ML")) {
 				System.out.println("Start Gaussian Field with distance metric learning by random walk, wait...");
-				model = new LinearSVMMetricLearning(corpus, param.m_classNumber, featureSize + param.m_window, param.m_classifier,
+				model = new LinearSVMMetricLearning(corpus, param.m_classifier, param.m_C,
 					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
 					param.m_bound, param.m_cSampleRate);
 //				((LinearSVMMetricLearning)model).setMetricLearningMethod(false);

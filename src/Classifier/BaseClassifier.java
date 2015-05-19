@@ -54,11 +54,27 @@ public abstract class BaseClassifier {
 		return acc /m_testSet.size();
 	}
 	
-	// Constructor with parameters.
-	public BaseClassifier(_Corpus c, int class_number, int featureSize) {
-		m_classNo = class_number;
-		m_featureSize = featureSize;
+	// Constructor with given corpus.
+	public BaseClassifier(_Corpus c) {
+		m_classNo = c.getClassSize();
+		m_featureSize = c.getFeatureSize();
 		m_corpus = c;
+		
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		m_cProbs = new double[m_classNo];
+		m_TPTable = new int[m_classNo][m_classNo];
+		m_confusionMat = new int[m_classNo][m_classNo];
+		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_debugOutput = null;
+	}
+	
+	// Constructor with given dimensions
+	public BaseClassifier(int classNo, int featureSize) {
+		m_classNo = classNo;
+		m_featureSize = featureSize;
+		m_corpus = null;
+		
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		m_cProbs = new double[m_classNo];
