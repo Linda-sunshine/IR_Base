@@ -95,6 +95,10 @@ public abstract class Analyzer {
 	
 	//Load all the files in the directory.
 	public void LoadDirectory(String folder, String suffix) throws IOException {
+		if (folder==null || folder.isEmpty())
+			return;
+		
+		int current = m_corpus.getSize();
 		File dir = new File(folder);
 		for (File f : dir.listFiles()) {
 			if (f.isFile() && f.getName().endsWith(suffix)) {
@@ -102,7 +106,7 @@ public abstract class Analyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
-		System.out.println();
+		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 	}
 	
 	abstract public void LoadDoc(String filename);
