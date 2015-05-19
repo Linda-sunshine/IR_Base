@@ -172,7 +172,7 @@ public abstract class TopicModel {
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 		
-//		tmpSimCheck();
+		tmpSimCheck();
 	}
 	
 	private int getLabel(int y) {
@@ -204,7 +204,7 @@ public abstract class TopicModel {
 						continue;
 					
 					//if we have topics
-					similarity = Utils.KLsymmetric(di.m_topics, dj.m_topics);
+					similarity = Utils.KLsymmetric(di.m_topics, dj.m_topics) / di.m_topics.length;
 					
 					//if we only have bag-of-words
 //					similarity = Utils.calculateSimilarity(di, dj);					

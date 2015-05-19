@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,24 +55,31 @@ public class pLSA extends twoTopic {
 			for(int i=0; i<m_corpus.getFeatureSize(); i++)
 				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
 			
-			int wid, tid = 0, wCount = 0;
-			word_topic_prior = new double[number_of_topics][vocabulary_size];
+			int wid, wCount = 0;
+			
+			double[] prior;
+			ArrayList<double[]> priorWords = new ArrayList<double[]>();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split(" ");
 				wCount = 0;
+				prior = new double[vocabulary_size];
 				for(int i=1; i<container.length; i++) {
 					if (featureNameIndex.containsKey(container[i])) {
 						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
-						word_topic_prior[tid][wid] = eta;
+						prior[wid] = eta;
 						wCount++;
 					}
 				}
 				
-				System.out.println("Prior keywords for Topic " + tid + ": " + wCount);
-				tid ++;
+				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				priorWords.add(prior);
 			}
 			reader.close();
+			
+			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			if (word_topic_prior.length > number_of_topics) 
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -98,7 +106,8 @@ public class pLSA extends twoTopic {
 	
 	protected void imposePrior() {
 		if (word_topic_prior!=null) {
-			for(int k=0; k<number_of_topics; k++) {
+			int size = Math.min(number_of_topics, word_topic_prior.length);
+			for(int k=0; k<size; k++) {
 				for(int n=0; n<vocabulary_size; n++)
 					word_topic_sstat[k][n] += word_topic_prior[k][n];
 			}

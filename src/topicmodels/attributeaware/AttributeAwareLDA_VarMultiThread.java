@@ -118,21 +118,22 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_newegg.txt", Ngram);
 
-//		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-//		
-//		System.out.println("Performing feature selection, wait...");
-//		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, "camera");
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		/*****Parameters in feature selection.*****/
+		String stopwords = "./data/Model/stopwords.dat";
+		String featureSelection = "DF"; //Feature selection method.
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
+		
+		System.out.println("Performing feature selection, wait...");
+		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, "camera");
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, "camera");
+//		newEggAnalyzer 
+		analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, "camera");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		_Corpus c = analyzer.returnCorpus(null); // Get the collection of all the documents.
 		
