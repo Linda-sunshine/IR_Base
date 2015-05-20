@@ -176,19 +176,16 @@ public class Utils {
 		return sum;
 	}
 	
-	//The function defines the sum of an array.
 	public static void scaleArray(double[] a, double b) {
 		for (int i=0; i<a.length; i++)
 			a[i] *= b;
 	}
 	
-	//The function defines the sum of an array.
 	public static void scaleArray(double[] a, double[] b, double scale) {
 		for (int i=0; i<a.length; i++)
 			a[i] += b[i] * scale;
 	}
 	
-	//The function defines the sum of an array.
 	public static void setArray(double[] a, double[] b, double scale) {
 		for (int i=0; i<a.length; i++)
 			a[i] = b[i] * scale;
