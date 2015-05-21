@@ -1,26 +1,28 @@
 package posteriorRegularization.logisticRegression;
 
 import optimization.gradientBasedMethods.ProjectedObjective;
+import optimization.projections.BoundsProjection;
 import optimization.projections.Projection;
 import utils.Utils;
 
 abstract public class PosteriorConstraints extends ProjectedObjective {
 
-	double[] m_p, m_q, m_b;	
-	double[][] m_phi_Z_x;
+	protected double[] m_p, m_q, m_b;	
+	protected double[][] m_phi_Z_x;
 	
 	double m_epsilon = 0.1; // slack variable
-	Projection m_projection;
+	protected Projection m_projection;
 	
-	int C = 5; // class size, this should be treated as an input!!!
-	int CONT_SIZE;
+	protected int C = 5; // class size, this should be treated as an input!!!
+	protected int CONT_SIZE;
 	
-	public PosteriorConstraints(double p[], int true_label, int label_size) {
+	public PosteriorConstraints(double p[], int label_size) {
 		m_p = p;
 		C = label_size;		
+		m_projection = new BoundsProjection(0.0, Double.MAX_VALUE);
 	}
 	
-	abstract void initiate_constraint_feature(int label);
+	abstract protected void initiate_constraint_feature(int label);
 	
 	// this is normalized posterior
 	public double[] getPosterior() {

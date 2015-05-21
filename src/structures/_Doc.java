@@ -251,6 +251,10 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_predict_label;
 	}
 	
+	public boolean hasSegments() {
+		return m_x_sparse[0].m_values != null;
+	}
+	
 	public void setTopics(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];

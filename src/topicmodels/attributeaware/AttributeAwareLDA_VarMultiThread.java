@@ -8,10 +8,18 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import optimization.gradientBasedMethods.ProjectedGradientDescent;
+import optimization.gradientBasedMethods.stats.OptimizerStats;
+import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
+import optimization.linesearch.InterpolationPickFirstStep;
+import optimization.linesearch.LineSearchMethod;
+import optimization.stopCriteria.CompositeStopingCriteria;
+import optimization.stopCriteria.ProjectedGradientL2Norm;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.posteriorRegularization.PairwiseAttributeConstraints;
 import utils.Utils;
 import Analyzer.newEggAnalyzer;
 
@@ -23,18 +31,113 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 	
 	public class AttributeAwareLDA_worker extends LDA_worker {	
 		double[] m_tAssignments; // accumulated topic assignments across words 
+		PairwiseAttributeConstraints m_constraint;
+		CompositeStopingCriteria m_compositeStop;
+		LineSearchMethod m_ls;
+		ProjectedGradientDescent m_optimizer;
+		int m_success;
 		
 		public AttributeAwareLDA_worker() {
 			super();
 			m_tAssignments = new double[number_of_topics];
+			
+			double gdelta = 1e-5, istp = 1.0;
+			
+			m_compositeStop = new CompositeStopingCriteria();
+			m_compositeStop.add(new ProjectedGradientL2Norm(gdelta));
+			m_ls = new ArmijoLineSearchMinimizationAlongProjectionArc(new InterpolationPickFirstStep(istp));
+			m_optimizer = new ProjectedGradientDescent(m_ls);
+			m_optimizer.setMaxIterations(50);
+			
+			m_constraint = new PairwiseAttributeConstraints(number_of_topics);
+			m_constraint.setDebugLevel(-1);
+		}
+		
+		@Override
+		public void run() {
+			m_likelihood = 0;
+			int total = 0; 
+			
+			m_success = 0;
+			for(_Doc d:m_corpus) {
+				if (d.hasSegments())
+					m_likelihood += calculate_E_step_withSegments(d);
+				else {
+					m_likelihood += calculate_E_step(d);
+					total ++;
+				}
+			}
+			
+			System.out.format("%.3f\n", (double)m_success/total);
+		}
+		
+		public double calculate_E_step_withSegments(_Doc d) {
+			double last = m_varConverge>0?calculate_log_likelihood(d):1, current = last, converge, logSum, v;
+			int iter = 0, wid;
+			double[] values;
+			_SparseFeature fv[] = d.getSparse(), spFea;
+			
+			do {
+				//variational inference for p(z|w,\phi)
+				for(int n=0; n<fv.length; n++) {
+					//allocate the words by attribute and topic combination
+					spFea = fv[n];
+					wid = spFea.getIndex();
+					values = spFea.getValues();
+					
+					//reset the estimates
+					Arrays.fill(d.m_phi[n], -100);//exp(-100) should be small enough
+					for(int a=0; a<values.length; a++) {
+						v = values[a];
+						if (v<1)//no observations (at least 1.0)
+							continue;
+						else if (a<m_attributeSize) {
+							for(int i=0; i<number_of_topics; i++) {
+								//special organization of topics
+								if (i%m_attributeSize==a)//disable the proportion from the other attributes
+									d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+							}
+						} else {//mixing part of all possible attributes
+							for(int i=0; i<number_of_topics; i++)
+								d.m_phi[n][i] = Utils.logSum(d.m_phi[n][i], v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]));
+						}
+					}
+					
+					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+					for(int i=0; i<number_of_topics; i++)
+						d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
+				}
+				
+				//variational inference for p(\theta|\gamma)
+				System.arraycopy(m_alpha, 0, d.m_sstat, 0, number_of_topics);
+				for(int n=0; n<fv.length; n++) {
+					v = fv[n].getValue();
+					for(int i=0; i<number_of_topics; i++) 
+						d.m_sstat[i] += d.m_phi[n][i] * v;// expectation of word assignment to topic
+				}				
+				
+				if (m_varConverge>0) {
+					current = calculate_log_likelihood(d);			
+					converge = Math.abs((current - last)/last);
+					last = current;
+					
+					if (converge<m_varConverge)
+						break;
+				}
+			} while(++iter<m_varMaxIter);
+			
+			//collect the sufficient statistics after convergence
+			this.collectStats(d);
+			
+			return current;
 		}
 		
 		@Override
 		public double calculate_E_step(_Doc d) {	
-			double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
+			double last = m_varConverge>0?calculate_log_likelihood(d):1, current = last, converge, logSum, v;
 			int iter = 0, wid;
-			double[] values;
 			_SparseFeature fv[] = d.getSparse(), spFea;
+			
 			
 			//Step 0: variational inference for p(\theta|\gamma)
 			//we need to collect the expectations for posterior regularization construction
@@ -54,54 +157,32 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 					//allocate the words by attribute and topic combination
 					spFea = fv[n];
 					wid = spFea.getIndex();
-					values = spFea.getValues();
+					v = spFea.getValue();												
 					
-					if (values!=null) {//we have content segments
-						//reset the estimates
-						Arrays.fill(d.m_phi[n], -100);//exp(-100) should be small enough
-						
-						for(int a=0; a<values.length; a++) {
-							v = values[a];
-							if (v<1)//no observations (at least 1.0)
-								continue;
-							else if (a<m_attributeSize) {
-								for(int i=0; i<number_of_topics; i++) {
-									//special organization of topics
-									if (i%m_attributeSize==a)//disable the proportion from the other attributes
-										d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
-								}
-							} else {//mixing part of all possible attributes
-								for(int i=0; i<number_of_topics; i++)
-									d.m_phi[n][i] = Utils.logSum(d.m_phi[n][i], v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]));
-							}
-						}
-						
-						logSum = Utils.logSumOfExponentials(d.m_phi[n]);
-						for(int i=0; i<number_of_topics; i++)
-							d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
-					} else {//no content segments
-						v = spFea.getValue();
-						
-													
+					for(int i=0; i<number_of_topics; i++) {
 						//first remove self from the accumulated expectation
-						for(int i=0; i<number_of_topics; i++)
-							m_tAssignments[i] -= d.m_phi[n][i] * v;
-						
-						
-						//then compute the unregularized posterior 
-						for(int i=0; i<number_of_topics; i++)//in log space
-							if (i%2==0)
-								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i+1]/200;//fake posterior regularization
-							else
-								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i-1]/200;//fake posterior regularization
-						
-						//re-accumulate the expectation of topic assignments
-						logSum = Utils.logSumOfExponentials(d.m_phi[n]);
-						for(int i=0; i<number_of_topics; i++) {
-							d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
-							m_tAssignments[i] += d.m_phi[n][i] * v;
-						}
+						m_tAssignments[i] -= d.m_phi[n][i] * v;
+					
+						//then compute the unregularized posterior
+						d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					}
+					
+					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+					for(int i=0; i<number_of_topics; i++)
+						d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
+					
+					// then we are regularizing the PR here
+					m_constraint.reset(d.m_phi[n], m_tAssignments);
+					m_optimizer.reset();
+					
+					if (m_optimizer.optimize(m_constraint, new OptimizerStats(), m_compositeStop)) {
+						d.m_phi[n] = m_constraint.getPosterior(); // get the regularized PR scaler here
+						m_success ++;
+					}
+										
+					//re-accumulate the expectation of topic assignments					
+					for(int i=0; i<number_of_topics; i++) 
+						m_tAssignments[i] += d.m_phi[n][i] * v;
 				}
 				
 				//variational inference for p(\theta|\gamma)
@@ -245,3 +326,4 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		model.printTopWords(topK);
 	}
 }
+
