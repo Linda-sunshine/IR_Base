@@ -35,7 +35,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		CompositeStopingCriteria m_compositeStop;
 		LineSearchMethod m_ls;
 		ProjectedGradientDescent m_optimizer;
-		int m_success;
+		int m_success, m_total;
 		
 		public AttributeAwareLDA_worker() {
 			super();
@@ -56,19 +56,17 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		@Override
 		public void run() {
 			m_likelihood = 0;
-			int total = 0; 
+			m_total = 0; 
 			
 			m_success = 0;
 			for(_Doc d:m_corpus) {
 				if (d.hasSegments())
 					m_likelihood += calculate_E_step_withSegments(d);
-				else {
+				else
 					m_likelihood += calculate_E_step(d);
-					total ++;
-				}
 			}
 			
-			System.out.format("%.3f\n", (double)m_success/total);
+			System.out.format("%.3f\n", (double)m_success/m_total);
 		}
 		
 		public double calculate_E_step_withSegments(_Doc d) {
@@ -138,7 +136,6 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 			int iter = 0, wid;
 			_SparseFeature fv[] = d.getSparse(), spFea;
 			
-			
 			//Step 0: variational inference for p(\theta|\gamma)
 			//we need to collect the expectations for posterior regularization construction
 			Arrays.fill(m_tAssignments, 0);
@@ -179,6 +176,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 						d.m_phi[n] = m_constraint.getPosterior(); // get the regularized PR scaler here
 						m_success ++;
 					}
+					m_total++;
 										
 					//re-accumulate the expectation of topic assignments					
 					for(int i=0; i<number_of_topics; i++) 
