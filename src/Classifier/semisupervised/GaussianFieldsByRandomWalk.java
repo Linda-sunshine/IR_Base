@@ -142,16 +142,12 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 		
 		/***use random walk to solve matrix inverse***/
-//		m_eta = 0.1;
-//		for(int i=0; i<5; i++) {
-			do {
-				if (m_storeGraph)
-					randomWalkWithGraph();
-				else
-					randomWalk();			
-			} while(updateFu() > m_delta);
-//			m_eta *= 1.5;
-//		}
+		do {
+			if (m_storeGraph)
+				randomWalkWithGraph();
+			else
+				randomWalk();			
+		} while(updateFu() > m_delta);
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
