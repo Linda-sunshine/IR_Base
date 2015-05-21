@@ -246,31 +246,36 @@ public class DocAnalyzer extends Analyzer {
 	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
-		int y = doc.getYLabel();
-		
-		for(String sentence : sentences) {
-			String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
-			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y);			
-			if (sentence_vector.size()>0) {//avoid empty sentence
-				stnList.add(Utils.createSpVct(sentence_vector));
-				Utils.mergeVectors(sentence_vector, spVct);
-			}
-		} // End For loop for sentence	
-	
-		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
-			doc.createSpVct(spVct);
-			doc.setSentences(stnList);
-			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
-			
-			if (m_releaseContent)
-				doc.clearSource();
+		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
 			return true;
-		} else
+		else{
+			String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+			ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+			int y = doc.getYLabel();
+			
+			for(String sentence : sentences) {
+				String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+				HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y);			
+				if (sentence_vector.size()>0) {//avoid empty sentence
+					stnList.add(Utils.createSpVct(sentence_vector));
+					Utils.mergeVectors(sentence_vector, spVct);
+				}
+			} // End For loop for sentence	
+		
+			//the document should be long enough
+			if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
+				doc.createSpVct(spVct);
+				doc.setSentences(stnList);
+				m_corpus.addDoc(doc);
+				m_classMemberNo[y]++;
+			}
+		}
+		if (m_releaseContent){
+			doc.clearSource();
+			return true;
+		}
+		else
 			return false;
 	}
 }	

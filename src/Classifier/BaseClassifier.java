@@ -88,7 +88,8 @@ public abstract class BaseClassifier {
 			if (m_debugOutput!=null)
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 		
-			c.shuffle(k);
+//			c.shuffle(k);
+			c.maskInOrder(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.

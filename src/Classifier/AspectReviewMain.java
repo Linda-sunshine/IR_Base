@@ -50,7 +50,8 @@ public class AspectReviewMain {
 		String stnModel = "./data/Model/en-sent.bin"; //Token model.
 		String aspectModel = "./data/Model/aspectlist.txt"; // list of keywords in each aspect
 		String aspectInput = "./data/Model/aspect_input.txt";
-		String aspectOutput = "./data/Model/aspect_output_0515.txt"; // list of keywords in each aspect
+//		String aspectOutput = "./data//aspect_output_0515.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
 		String stopwords = "./data/Model/stopwords.dat";
 		String folder = "./data/amazon/small/dedup/RawData";
@@ -73,17 +74,17 @@ public class AspectReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 //		System.out.println("Performing feature selection, wait...");
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, "", Ngram, lengthThreshold, aspectModel, chiSize);
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, "", Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 	
 //		/****Load json files to do Aspect annotation*****/
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, aspectInput, chiSize);
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.BootStrapping(aspectOutput, 0.9, 10);		
-			
+//		analyzer.BootStrapping(aspectInput, aspectOutput, chiSize, 0.9, 10);		
+//			
 //		/****create vectors for documents*****/
 //		System.out.println("Creating feature vectors, wait...");
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, chiSize);
@@ -91,12 +92,11 @@ public class AspectReviewMain {
 //		analyzer.setFeatureValues(featureValue, norm);
 //		analyzer.setTimeFeatures(window);
 			
-		/****create vectors for documents*****/
+//		/****create vectors for documents*****/
 		boolean topicFlag = true;
 		System.out.println("Creating feature vectors, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, aspectOutput, window, topicFlag);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		analyzer.setFeatureValues(featureValue, norm);
 		analyzer.setTimeFeatures(window);
 		
 		featureSize = analyzer.getFeatureSize();
@@ -104,12 +104,12 @@ public class AspectReviewMain {
 		System.out.println("The number of reviews with non-zero apsects: " + analyzer.returnCount());
 		
 		/***The parameters used in GF-RW.****/
-		double eta_rw = 0.2;
+		double eta_rw = 0.6;
 		double sr = 1;
 			
 		/***Try LDA_Gibbs****/
 		if(topicFlag){
-			int number_of_topics = 30;
+			int number_of_topics = 20;
 			double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta_lad = 5.0;//these two parameters must be larger than 1!!!
 			double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 			int topK = 10, number_of_iteration = 100;

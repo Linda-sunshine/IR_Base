@@ -84,7 +84,12 @@ public class _Corpus {
 			this.m_mask[i] = rand.nextInt(k);
 		}
 	}
-	
+	//Guarantee that we can get the same 10-fold every run.
+	public void maskInOrder(int k) {
+		for (int i = 0; i < m_mask.length; i++) {
+			this.m_mask[i] = i % k;
+		}
+	}
 	//Add a new doc to the corpus.
 	public void addDoc(_Doc doc){
 		m_collection.add(doc);
