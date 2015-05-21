@@ -3,6 +3,7 @@
  */
 package Analyzer;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -25,6 +26,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	//category of NewEgg reviews
 	String m_category; 
 	
+	SimpleDateFormat m_dateFormatter;
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, String category) throws InvalidFormatException,
 			FileNotFoundException, IOException {
@@ -39,13 +41,27 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 		
-		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
+	}
+	
+	//Load all the files in the directory.
+	public void LoadNewEggDirectory(String folder, String suffix) throws IOException {
+		if (folder==null || folder.isEmpty())
+			return;
+		
+		int current = m_corpus.getSize();
+		File dir = new File(folder);
+		for (File f : dir.listFiles()) {
+			if (f.isFile() && f.getName().endsWith(suffix)) {
+				LoadNewEggDoc(f.getAbsolutePath());
+			} else if (f.isDirectory())
+				LoadDirectory(f.getAbsolutePath(), suffix);
+		}
+		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 	}
 
 	//Load a document and analyze it.
-	@Override
-	public void LoadDoc(String filename) {
+	public void LoadNewEggDoc(String filename) {
 		JSONObject prods = null;
 		String item;
 		JSONArray itemIds, reviews;
@@ -103,16 +119,16 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		} else 
 			spVcts.add(null);//no con section
 		
-//		if ((content=post.getComments()) != null) {// tokenize comments
-//			tokens = TokenizerNormalizeStemmer(content);
-//			vPtr = constructSpVct(tokens, y);
-//			spVcts.add(vPtr);
-//			uniWordsInSections += vPtr.size();
-//			
-//			if (!m_releaseContent)
-//				buffer.append(String.format("Comments: %s\n", content));
-//		} else
-//			spVcts.add(null);//no comments
+		if ((content=post.getComments()) != null) {// tokenize comments
+			tokens = TokenizerNormalizeStemmer(content);
+			vPtr = constructSpVct(tokens, y);
+			spVcts.add(vPtr);
+			uniWordsInSections += vPtr.size();
+			
+			if (!m_releaseContent)
+				buffer.append(String.format("Comments: %s\n", content));
+		} else
+			spVcts.add(null);//no comments
 		
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
@@ -124,12 +140,5 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			return true;
 		} else
 			return false;
-	}
-	
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		
-		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, 5, null, 1, 5, "camera");
-		analyzer.LoadDirectory("./data/NewEgg/", ".json"); //Load all the documents as the data set.
 	}
 }

@@ -16,7 +16,6 @@ import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
-import Classifier.supervised.PRLogisticRegression;
 import Classifier.supervised.SVM;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
@@ -44,15 +43,15 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
-	double m_discount = 1.0; // default similarity discount if across different products
+	double m_discount = 0.001; // default similarity discount if across different products
 
 	Thread[] m_threadpool;
 	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
 	boolean m_topicFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
 	 
 	//Randomly pick 10% of all the training documents.
-	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier){
-		super(c, classNumber, featureSize);
+	public GaussianFields(_Corpus c, String classifier, double C){
+		super(c);
 		
 		m_labelRatio = 0.2;
 		m_alpha = 1.0;
@@ -61,16 +60,17 @@ public class GaussianFields extends BaseClassifier {
 		m_k = 100;
 		m_kPrime = 50;	
 		m_labeled = new ArrayList<_Doc>();
+		
+		int classNumber = c.getClassSize();
 		m_pY = new double[classNumber];
 		m_pYSum = new double[classNumber];
-		
-		setClassifier(classifier);
-		m_topicFlag = false;
+
+//		m_topicFlag = false;
+		setClassifier(classifier, C);
 	}	
 	
-	public GaussianFields(_Corpus c, int classNumber, int featureSize, String classifier, 
-			double ratio, int k, int kPrime){
-		super(c, classNumber, featureSize);
+	public GaussianFields(_Corpus c, String classifier, double C, double ratio, int k, int kPrime){
+		super(c);
 		
 		m_labelRatio = ratio;
 		m_alpha = 1.0;
@@ -79,12 +79,13 @@ public class GaussianFields extends BaseClassifier {
 		m_k = k;
 		m_kPrime = kPrime;	
 		m_labeled = new ArrayList<_Doc>();
+		
+		int classNumber = c.getClassSize();
 		m_pY = new double[classNumber];
 		m_pYSum = new double[classNumber];
-		
-		setClassifier(classifier);
-		m_topicFlag = false;
 
+//		m_topicFlag = false;
+		setClassifier(classifier, C);
 	}
 	
 	public void setTopicFlag(boolean a){
@@ -92,18 +93,16 @@ public class GaussianFields extends BaseClassifier {
 	}
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
+		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_discount);
 	}
 	
-	private void setClassifier(String classifier) {
+	private void setClassifier(String classifier, double C) {
 		if (classifier.equals("NB"))
-			m_classifier = new NaiveBayes(null, m_classNo, m_featureSize);
+			m_classifier = new NaiveBayes(m_classNo, m_featureSize);
 		else if (classifier.equals("LR"))
-			m_classifier = new LogisticRegression(null, m_classNo, m_featureSize);
-		else if (classifier.equals("PR-LR"))
-			m_classifier = new PRLogisticRegression(null, m_classNo, m_featureSize, 1.0);
+			m_classifier = new LogisticRegression(m_classNo, m_featureSize, C);
 		else if (classifier.equals("SVM"))
-			m_classifier = new SVM(null, m_classNo, m_featureSize, 1.0, 0.001);
+			m_classifier = new SVM(m_classNo, m_featureSize, C);
 		else {
 			System.out.println("Classifier has not developed yet!");
 			System.exit(-1);
@@ -179,8 +178,12 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
-		//return Math.random();//just for debugging purpose
+
+//		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
+//		return Math.exp(Utils.calculateSimilarity(di, dj));
+		int topicSize = di.m_topics.length;
+		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+//		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 	}
 	
 	//Get similarity based on the results of topic modeling.
@@ -484,9 +487,5 @@ public class GaussianFields extends BaseClassifier {
 		for(String f: featureNameIndex.keySet()){
 			m_IndexFeature.put(featureNameIndex.get(f), f);
 		}
-	}
-	public static void main(String[] args) {
-		GaussianFields test = new GaussianFields(null, 0, 0, "NB");
-		test.debugEncode();
 	}
 }

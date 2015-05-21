@@ -60,7 +60,7 @@ public class LDA_Variational extends pLSA {
 		calculate_M_step(0);
 	}
 	
-	void collectStats(_Doc d) {
+	protected void collectStats(_Doc d) {
 		_SparseFeature[] fv = d.getSparse();
 		int wid;
 		double v; 

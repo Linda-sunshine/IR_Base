@@ -1,22 +1,20 @@
 package posteriorRegularization.logisticRegression;
 
-import optimization.projections.BoundsProjection;
 
 public class PairwisePR extends PosteriorConstraints {
 
 	public PairwisePR(double p[], int true_label, int label_size) {//HdT means the difference between head and tail 
-		super(p, true_label, label_size);
+		super(p, label_size);
 		
 		parameters = new double[]{1.0, 1.0, 1.0, 1.0};//start from a legal point
 		gradient = new double[]{0.0, 0.0, 0.0, 0.0};
-		m_projection = new BoundsProjection(0.0, Double.MAX_VALUE);
 		CONT_SIZE = 4;// pairwise constraint size
 		
 		initiate_constraint_feature(true_label);
 	}
 
 	@Override
-	void initiate_constraint_feature(int label) {
+	protected void initiate_constraint_feature(int label) {
 		m_phi_Z_x = new double[C][CONT_SIZE];
 		m_b = new double[CONT_SIZE];
 		m_q = new double[C];

@@ -34,8 +34,8 @@ public class PageRank extends BaseClassifier {
 	double m_converge;
 	double m_alpha; // dumping factor
 	
-	public PageRank(_Corpus c, int class_number, int featureSize, double alpha, int topK, int maxIter, double converge) {
-		super(c, class_number, featureSize);
+	public PageRank(_Corpus c, double alpha, int topK, int maxIter, double converge) {
+		super(c);
 		m_alpha = alpha;
 		m_topK = topK;
 		m_maxIter = maxIter;
