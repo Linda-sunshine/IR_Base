@@ -31,11 +31,10 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		
 		@Override
 		public double calculate_E_step(_Doc d) {	
-			double last = calculate_log_likelihood(d), current = last, converge, logSum, v, lambda;
+			double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
 			int iter = 0, wid;
 			double[] values;
 			_SparseFeature fv[] = d.getSparse(), spFea;
-			boolean enforceC = false;
 			
 			//Step 0: variational inference for p(\theta|\gamma)
 			//we need to collect the expectations for posterior regularization construction
@@ -50,12 +49,6 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 				d.m_sstat[k] = m_alpha[k] + m_tAssignments[k];
 			
 			do {
-				enforceC = (iter % 3 == 2);
-				if (enforceC)
-					lambda = 1.0/200;
-				else
-					lambda = 0;
-				
 				//variational inference for p(z|w,\phi)
 				for(int n=0; n<fv.length; n++) {
 					//allocate the words by attribute and topic combination
@@ -89,25 +82,24 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 					} else {//no content segments
 						v = spFea.getValue();
 						
-						if (enforceC) {							
-							//first remove self from the accumulated expectation
-							for(int i=0; i<number_of_topics; i++)
-								m_tAssignments[i] -= d.m_phi[n][i] * v;
-						}
+													
+						//first remove self from the accumulated expectation
+						for(int i=0; i<number_of_topics; i++)
+							m_tAssignments[i] -= d.m_phi[n][i] * v;
+						
 						
 						//then compute the unregularized posterior 
 						for(int i=0; i<number_of_topics; i++)//in log space
 							if (i%2==0)
-								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i+1]*lambda;//fake posterior regularization
+								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i+1]/200;//fake posterior regularization
 							else
-								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i-1]*lambda;//fake posterior regularization
+								d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]) - m_tAssignments[i-1]/200;//fake posterior regularization
 						
 						//re-accumulate the expectation of topic assignments
 						logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 						for(int i=0; i<number_of_topics; i++) {
 							d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
-							if (enforceC)
-								m_tAssignments[i] += d.m_phi[n][i] * v;
+							m_tAssignments[i] += d.m_phi[n][i] * v;
 						}
 					}
 				}
