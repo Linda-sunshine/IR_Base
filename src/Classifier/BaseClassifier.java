@@ -121,7 +121,6 @@ public abstract class BaseClassifier {
 						m_testSet.add(docs.get(j));
 					else
 						m_trainSet.add(docs.get(j));
-					
 				}
 				
 				long start = System.currentTimeMillis();

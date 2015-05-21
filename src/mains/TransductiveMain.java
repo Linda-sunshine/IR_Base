@@ -97,7 +97,7 @@ public class TransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(3);
+		c.mapLabels(4);
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
