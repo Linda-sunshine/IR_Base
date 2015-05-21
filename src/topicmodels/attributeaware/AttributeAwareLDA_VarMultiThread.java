@@ -35,7 +35,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		CompositeStopingCriteria m_compositeStop;
 		LineSearchMethod m_ls;
 		ProjectedGradientDescent m_optimizer;
-		int m_success, m_total;
+		int m_success, m_total, m_round;
 		
 		public AttributeAwareLDA_worker() {
 			super();
@@ -51,22 +51,46 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 			
 			m_constraint = new PairwiseAttributeConstraints(number_of_topics);
 			m_constraint.setDebugLevel(-1);
+			
+			m_round = 0;
 		}
 		
 		@Override
 		public void run() {
 			m_likelihood = 0;
-			m_total = 0; 
-			
+			m_total = 0;
 			m_success = 0;
+			
 			for(_Doc d:m_corpus) {
 				if (d.hasSegments())
 					m_likelihood += calculate_E_step_withSegments(d);
-				else
+				else if (m_round>20) // only after we have a reasonable model
 					m_likelihood += calculate_E_step(d);
 			}
 			
-			System.out.format("%.3f\n", (double)m_success/m_total);
+			
+			if (m_round>20)
+				System.out.format("%.3f\n", (double)m_success/m_total);
+			m_round ++;
+		}
+		
+		void initEstPhi(_Doc d) {
+			int wid;
+			double v, logSum;
+			_SparseFeature fv[] = d.getSparse(), spFea;
+			for(int n=0; n<fv.length; n++) {
+				//allocate the words by attribute and topic combination
+				spFea = fv[n];
+				wid = spFea.getIndex();
+				v = spFea.getValue();												
+				
+				for(int i=0; i<number_of_topics; i++) 
+					d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(0.1);
+				
+				logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+				for(int i=0; i<number_of_topics; i++)
+					d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
+			}
 		}
 		
 		public double calculate_E_step_withSegments(_Doc d) {
@@ -137,6 +161,8 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 			_SparseFeature fv[] = d.getSparse(), spFea;
 			
 			//Step 0: variational inference for p(\theta|\gamma)
+			initEstPhi(d);
+			
 			//we need to collect the expectations for posterior regularization construction
 			Arrays.fill(m_tAssignments, 0);
 			for(int n=0; n<fv.length; n++) {
@@ -173,7 +199,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 					m_optimizer.reset();
 					
 					if (m_optimizer.optimize(m_constraint, new OptimizerStats(), m_compositeStop)) {
-						d.m_phi[n] = m_constraint.getPosterior(); // get the regularized PR scaler here
+						d.m_phi[n] = m_constraint.getPosterior(); // get the regularized posterior here
 						m_success ++;
 					}
 					m_total++;

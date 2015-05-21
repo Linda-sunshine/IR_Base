@@ -41,8 +41,12 @@ public class PairwiseAttributeConstraints extends PosteriorConstraints {
 	
 	public void reset(double[] p, double[] ss) {
 		this.m_p = p;
-		for(int i=0; i<C; i++) 
-			m_phi_Z_x[i][i] = ss[i];
+		for(int i=0; i<C; i++) {
+			if (i%2==0)
+				m_phi_Z_x[i][i] = ss[i+1];
+			else
+				m_phi_Z_x[i][i] = ss[i-1];
+		}
 		Arrays.fill(m_q, 0);
 		Arrays.fill(parameters, 0);
 		Arrays.fill(parameters, 0);
