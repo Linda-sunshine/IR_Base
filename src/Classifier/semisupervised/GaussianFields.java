@@ -40,7 +40,7 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
-	double m_discount = 0.001; // default similarity discount if across different products
+	double m_discount = 1.0; // default similarity discount if across different products
 
 	Thread[] m_threadpool;
 	
@@ -167,11 +167,11 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
-		return Math.exp(Utils.calculateSimilarity(di, dj));
-//		int topicSize = di.m_topics.length;
-//		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+//		return Math.exp(Utils.calculateSimilarity(di, dj));
+		int topicSize = di.m_topics.length;
+		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
-		//return Math.random();//just for debugging purpose
+//		return Math.random();//just for debugging purpose
 	}
 	
 	protected void calcSimilarityInThreads(){
