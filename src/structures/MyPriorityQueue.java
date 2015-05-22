@@ -38,7 +38,7 @@ public class MyPriorityQueue<E extends Comparable<? super E>> extends Vector<E> 
 	}
 	
 	public boolean add(E object){
-		if (size()<=m_size)
+		if (size()<m_size)
 			return insert(object);
 		else{			
 			if (compare(lastElement(), object)>=0)

@@ -103,7 +103,7 @@ public class TransductiveMain {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 0.75;
-			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
+			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
 			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
