@@ -169,8 +169,8 @@ public class GaussianFields extends BaseClassifier {
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.exp(Utils.calculateSimilarity(di, dj));
 		int topicSize = di.m_topics.length;
-		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
-//		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+//		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		return Math.random();//just for debugging purpose
 	}
 	
