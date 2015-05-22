@@ -46,9 +46,9 @@ public class MyTransductiveMain {
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
-		String debugOutput = null;
+		String debugOutput = "data/debug/debug.output";
 		//k fold-cross validation
-		int CVFold = 5; 
+		int CVFold = 10; 
 		//choice of base learner
 		String multipleLearner = "SVM";
 		//trade-off parameter

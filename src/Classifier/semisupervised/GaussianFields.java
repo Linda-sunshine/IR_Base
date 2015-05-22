@@ -68,6 +68,7 @@ public class GaussianFields extends BaseClassifier {
 //		m_topicFlag = false;
 		setClassifier(classifier, C);
 		m_IndexFeature = new HashMap<Integer, String>();
+		m_debugStat = new ArrayList<double[]>();
 	}	
 	
 	public GaussianFields(_Corpus c, String classifier, double C, double ratio, int k, int kPrime){
@@ -88,7 +89,7 @@ public class GaussianFields extends BaseClassifier {
 //		m_topicFlag = false;
 		setClassifier(classifier, C);
 		m_IndexFeature = new HashMap<Integer, String>();
-
+		m_debugStat = new ArrayList<double[]>();
 	}
 	
 	public void setTopicFlag(boolean a){
@@ -192,6 +193,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	double getCache(int i, int j) {
+		double a = encode(i, j);
 		return m_cache[encode(i,j)];
 	}
 	
@@ -506,6 +508,7 @@ public class GaussianFields extends BaseClassifier {
 		//find top five labeled
 		/****Construct the top k labeled data for the current data.****/
 		for (int j = 0; j < m_L; j++){
+			double tmp = encode(id, m_U + j);
 			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
 		}
 
