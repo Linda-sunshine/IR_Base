@@ -119,10 +119,11 @@ public abstract class BaseClassifier {
 					
 					//more for training
 					if(masks[j]==i) 
+//						m_trainSet.add(docs.get(j));
 						m_testSet.add(docs.get(j));
 					else
+//						m_testSet.add(docs.get(j));
 						m_trainSet.add(docs.get(j));
-					
 				}
 				
 				long start = System.currentTimeMillis();
@@ -150,7 +151,8 @@ public abstract class BaseClassifier {
 		for (int i = 0; i < m_classNo; i++) {
 			PreRecOfOneFold[i][0] = (double) tpTable[i][i] / (Utils.sumOfRow(tpTable, i) + 0.001);// Precision of the class.
 			PreRecOfOneFold[i][1] = (double) tpTable[i][i] / (Utils.sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
-			
+		}
+		for(int i=0; i < m_classNo; i++){
 			for(int j=0; j< m_classNo; j++) {
 				m_confusionMat[i][j] += tpTable[i][j];
 				tpTable[i][j] = 0; // clear the result in each fold

@@ -49,6 +49,7 @@ public class _Corpus {
 	
 	public int getClassSize() {
 		HashSet<Integer> labelSet = new HashSet<Integer>();
+		
 		for(_Doc d:m_collection)
 			labelSet.add(d.getYLabel());
 		return labelSet.size();

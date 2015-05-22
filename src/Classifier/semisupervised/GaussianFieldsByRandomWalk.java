@@ -168,11 +168,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
 			
-			if (pred != ans) {
-				if (m_debugOutput!=null)
-					debug(m_testSet.get(i));
-			} else 
-				acc ++;
+			tmpDebug(m_testSet.get(i));
+//			if (pred != ans) {
+//				if (m_debugOutput!=null)
+//					debug(m_testSet.get(i));
+//			} else 
+//				acc ++;
+			if(pred == ans)
+				acc++;
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		

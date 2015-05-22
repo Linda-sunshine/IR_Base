@@ -359,15 +359,15 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
+		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
+		String aspectModel = "./data/Model/sentiment_input.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/sentiment_output.txt"; // list of keywords in each aspect
 		
 		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		String fvFile = "data/Features/fv_2gram_TF_DF_3137.txt";
 		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		
 		/****Loading json files*****/
