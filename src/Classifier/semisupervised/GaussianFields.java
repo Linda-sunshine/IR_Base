@@ -178,12 +178,15 @@ public class GaussianFields extends BaseClassifier {
 		//using all the available CPUs!
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
-		int start = 0, end, inc = m_U/cores;
+		int start = 0, end;
+		double avgCost = (m_U * m_L + 0.5 * (m_U-1) * m_U)/cores, cost;
 		for(int i=0; i<cores; i++) {
+			cost = avgCost;
+			for(end = start; end<m_U && cost>=0; end++)
+				cost -= m_L + (m_U-end);
+				
 			if (i==cores-1)
 				end = m_U;
-			else
-				end = Math.min(start+inc, m_U);
 			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
 			
 			start = end;
