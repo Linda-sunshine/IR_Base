@@ -584,7 +584,7 @@ public class GaussianFields extends BaseClassifier {
 		//find top five labeled
 		/****Construct the top k labeled data for the current data.****/
 		for (int j = 0; j < m_L; j++){
-			double tmp = encode(id, m_U + j);
+//			double tmp = encode(id, m_U + j);
 			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
 		}
 

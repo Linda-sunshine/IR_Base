@@ -26,10 +26,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	//Constructor: given k and kPrime
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C,
-			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph){
+			double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph){
 		super(c, classifier, C, ratio, k, kPrime);
 		
-		m_alpha = alhpa;
+		m_alpha = alpha;
 		m_beta = beta;
 		m_delta = delta;
 		m_eta = eta;

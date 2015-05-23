@@ -134,9 +134,9 @@ public class jsonAnalyzer extends DocAnalyzer{
 	}
 	
 	protected boolean AnalyzeDoc(_Doc doc) {
-		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-			return true;
-		else{
+//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
+//			return true;
+//		else{
 			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 			int index = 0;
@@ -179,7 +179,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 				m_corpus.addDoc(doc);
 				m_classMemberNo[doc.getYLabel()]++;
 			}
-		}
+//		}
 		return true;
 //		if (m_releaseContent){
 //			doc.clearSource();
