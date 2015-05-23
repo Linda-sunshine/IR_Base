@@ -209,10 +209,15 @@ public class GaussianFields extends BaseClassifier {
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 
+
 //		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
-		return Math.exp(Utils.calculateSimilarity(di, dj));
+//		return Math.exp(Utils.calculateSimilarity(di, dj));
 //		int topicSize = di.m_topics.length;
 //		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+
+//		return Math.exp(Utils.calculateSimilarity(di, dj));
+		int topicSize = di.m_topics.length;
+		return Math.exp(2*Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 	}
 	
@@ -226,13 +231,23 @@ public class GaussianFields extends BaseClassifier {
 		//using all the available CPUs!
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
-		int start = 0, end, inc = m_U/cores;
-		for(int i=0; i<cores; i++) {
+		int start = 0, end;
+		double avgCost = (m_U * m_L + 0.5 * (m_U-1) * m_U)/cores, cost;
+		System.out.format("Construct graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		for(int i=0; i<cores; i++) {	
 			if (i==cores-1)
 				end = m_U;
-			else
-				end = Math.min(start+inc, m_U);
-			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_topicFlag));
+//			else
+//				end = Math.min(start+inc, m_U);
+//			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_topicFlag));
+
+			else {
+				cost = avgCost;
+				for(end = start; end<m_U && cost>=0; end++)
+					cost -= m_L + (m_U-end-1);
+			}
+			
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
 			
 			start = end;
 			m_threadpool[i].start();
