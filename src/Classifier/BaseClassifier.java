@@ -47,8 +47,11 @@ public abstract class BaseClassifier {
 			if (pred != ans) {
 				if (m_debugOutput!=null)
 					debug(doc);
-			} else 
+			} else {
+				if (m_debugOutput!=null && Math.random()<0.02)
+					debug(doc);
 				acc ++;
+			}
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		return acc /m_testSet.size();
