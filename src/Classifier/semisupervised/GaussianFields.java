@@ -247,7 +247,7 @@ public class GaussianFields extends BaseClassifier {
 					cost -= m_L + (m_U-end-1);
 			}
 			
-			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_topicFlag));
 			
 			start = end;
 			m_threadpool[i].start();
