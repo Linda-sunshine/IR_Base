@@ -109,9 +109,9 @@ public class MyTransductiveMain {
 			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
 					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			mySemi.setDebugOutput(debugOutput);
-			mySemi.setFeaturesLookup(analyzer.getFeaturesLookup());
+//			mySemi.setFeaturesLookup(analyzer.getFeaturesLookup());
 			mySemi.crossValidation(CVFold, c);
-			mySemi.printStat();
+//			mySemi.printStat();
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");

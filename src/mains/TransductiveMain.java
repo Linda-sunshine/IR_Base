@@ -29,7 +29,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -45,8 +45,8 @@ public class TransductiveMain {
 		String style = "SEMI";
 				
 		/*****Parameters in transductive learning.*****/
-		//String debugOutput = String.format("data/debug/%s.sim.pair", classifier);
-		String debugOutput = null;
+		String debugOutput = "data/debug/topical.sim";
+		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -97,15 +97,15 @@ public class TransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(3);
+		c.mapLabels(4);
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
-			double learningRatio = 0.75;
-			int k = 20, kPrime = 5; // k nearest labeled, k' nearest unlabeled
+			double learningRatio = 1.0;
+			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
 					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			mySemi.setDebugOutput(debugOutput);
