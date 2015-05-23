@@ -167,8 +167,11 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			if (pred != ans) {
 				if (m_debugOutput!=null)
 					debug(m_testSet.get(i));
-			} else 
+			} else {
+				if (m_debugOutput!=null && Math.random()<0.02)
+					debug(m_testSet.get(i));
 				acc ++;
+			}
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		
@@ -184,7 +187,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		
 		
 		try {
-			m_debugWriter.write(String.format("%d\t%.4f(%d,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
+			m_debugWriter.write(String.format("%d\t%.4f(%d*,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
 		
 			double mean = 0, sd = 0;
 			//find top five labeled
