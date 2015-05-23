@@ -45,8 +45,8 @@ public class TransductiveMain {
 		String style = "SEMI";
 				
 		/*****Parameters in transductive learning.*****/
-		//String debugOutput = String.format("data/debug/%s.sim.pair", classifier);
-		String debugOutput = null;
+		String debugOutput = "data/debug/topical.sim";
+		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
