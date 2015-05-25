@@ -33,8 +33,8 @@ public class PairwiseSimCalculator implements Runnable {
 //					similarity +=  discount1 * topicSimilarity;	
 //				} else//if they are from different products, their topicSimilarity = 0.
 //					similarity += discount2 * topicSimilarity;
-				if(di.sameProduct(dj))
-					similarity *= 2;
+//				if(di.sameProduct(dj))
+//					similarity *= 2;
 				m_GFObj.setCache(i, j, similarity);
 			}
 
@@ -47,8 +47,8 @@ public class PairwiseSimCalculator implements Runnable {
 //					similarity += discount1 * topicSimilarity;	
 //				} else//if they are from different products, their topicSimilarity = 0.
 //					similarity += discount2 * topicSimilarity;
-				if(di.sameProduct(dj))
-					similarity *= 2;
+//				if(di.sameProduct(dj))
+//					similarity *= 2;
 				m_GFObj.setCache(i, m_GFObj.m_U + j, similarity);
 			}
 			//set up the Y vector for unlabeled data
