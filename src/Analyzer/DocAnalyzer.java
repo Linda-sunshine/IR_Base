@@ -246,9 +246,9 @@ public class DocAnalyzer extends Analyzer {
 	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-			return true;
-		else{
+//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 9555)
+//			return true;
+//		else{
 			String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 			ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
@@ -270,7 +270,7 @@ public class DocAnalyzer extends Analyzer {
 				m_corpus.addDoc(doc);
 				m_classMemberNo[y]++;
 			}
-		}
+//		}
 		if (m_releaseContent){
 			doc.clearSource();
 			return true;

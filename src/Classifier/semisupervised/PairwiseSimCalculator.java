@@ -21,7 +21,7 @@ public class PairwiseSimCalculator implements Runnable {
 	@Override
 	public void run() {
 		_Doc di, dj;
-		double similarity=0, topicSimilarity, discount1=2, discount2=0;
+		double similarity=0, topicSimilarity, discount1=1, discount2=1;
 		for (int i = m_start; i < m_end; i++) {
 			di = m_GFObj.getTestDoc(i);
 			for (int j = i + 1; j < m_GFObj.m_U; j++) {// to save computation since our similarity metric is symmetric

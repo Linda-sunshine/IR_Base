@@ -56,44 +56,44 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			for (int j = 0; j < m_L; j++)
 				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j), (int)m_Y[m_U + j]));
 			
-			/**No.1: majority of its neighbors without similarity.**/
-			/****Get the sum of k'UU******/
-			for(_RankItem n: m_kUU){
-				int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-				stat[labelFu] += m_eta;
-				int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
-				stat[labelSVM] += 1-m_eta;
-			}
-			m_kUU.clear();
-			
-			/****Get the sum of kUL******/
-			for(_RankItem n: m_kUL){
-				stat[n.m_label]++;
-			}
-			m_kUL.clear();
-			m_fu[i] = Utils.maxOfArrayIndex(stat);			
-
-//			/**No.2: majority of its neighbors with similarity.****/
+//			/**No.1: majority of its neighbors without similarity.**/
 //			/****Get the sum of k'UU******/
 //			for(_RankItem n: m_kUU){
-//				wijSumU += n.m_value; //get the similarity between two nodes.
 //				int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-//				//Every unlabeled data get two votes: one from SVM and another from previous votes.
-//				stat[labelFu] += (1 - m_gamma) * m_eta * n.m_value;
-//				int labelSVM = (int) m_Y[n.m_index];
-//				stat[labelSVM] += (1 - m_gamma) * (1-m_eta) * n.m_value;
-////				fSumU += n.m_value * labelFu;
+//				stat[labelFu] += (1 - m_gamma) * m_eta;
+//				int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
+//				stat[labelSVM] += (1 - m_gamma) * (1-m_eta);
 //			}
 //			m_kUU.clear();
 //			
 //			/****Get the sum of kUL******/
 //			for(_RankItem n: m_kUL){
-////				wijSumL += n.m_value;
-//				stat[n.m_label] += m_gamma * n.m_value;
-////				fSumL += n.m_value * m_Y[n.m_index];
+//				stat[n.m_label] += m_gamma;
 //			}
 //			m_kUL.clear();
-//			m_fu[i] = Utils.maxOfArrayIndex(stat);		
+//			m_fu[i] = Utils.maxOfArrayIndex(stat);			
+
+			/**No.2: majority of its neighbors with similarity.****/
+			/****Get the sum of k'UU******/
+			for(_RankItem n: m_kUU){
+				wijSumU += n.m_value; //get the similarity between two nodes.
+				int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+				//Every unlabeled data get two votes: one from SVM and another from previous votes.
+				stat[labelFu] += (1 - m_gamma) * m_eta * n.m_value;
+				int labelSVM = (int) m_Y[n.m_index];
+				stat[labelSVM] += (1 - m_gamma) * (1-m_eta) * n.m_value;
+//				fSumU += n.m_value * labelFu;
+			}
+			m_kUU.clear();
+			
+			/****Get the sum of kUL******/
+			for(_RankItem n: m_kUL){
+//				wijSumL += n.m_value;
+				stat[n.m_label] += m_gamma * n.m_value;
+//				fSumL += n.m_value * m_Y[n.m_index];
+			}
+			m_kUL.clear();
+			m_fu[i] = Utils.maxOfArrayIndex(stat);		
 			
 			if(Double.isNaN(m_fu[i]))
 				System.out.println("NaN detected!!!");

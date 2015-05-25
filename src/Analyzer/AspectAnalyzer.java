@@ -346,7 +346,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 //		System.out.println(isEmpty(c));
 //	}
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		int classNumber = 5; //Define the number of classes
+		int classNumber = 2; //Define the number of classes
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
 		
@@ -355,8 +355,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		int chiSize = 50; // top ChiSquare words for aspect keyword selection
 		String stopwords = "./data/Model/stopwords.dat";
 		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+		double endProb = 1; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small/dedup/RawData";
@@ -367,8 +367,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String aspectOutput = "./data/Model/sentiment_output.txt"; // list of keywords in each aspect
 		
 		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = "data/Features/fv_2gram_TF_DF_3137.txt";
-		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		String fvFile = "data/Features/fv_2gram_9555.txt";
+//		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		
 		/****Loading json files*****/
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
@@ -376,12 +376,12 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
-//		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		/****Feature selection*****/
+		System.out.println("Performing feature selection, wait...");
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 //		analyzer.SaveCVStat(fvStatFile);
 		
 		/****Aspect annotation*****/
-		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
+//		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
 	}
 }

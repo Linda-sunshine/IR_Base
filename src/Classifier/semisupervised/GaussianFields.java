@@ -207,22 +207,17 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
-
-
+		
 //		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
-//		return Math.exp(Utils.calculateSimilarity(di, dj));
-//		int topicSize = di.m_topics.length;
-//		return Math.exp(Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 
-//		return Math.exp(Utils.calculateSimilarity(di, dj));
-		int topicSize = di.m_topics.length;
-		return Math.exp(2*Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+		return Math.exp(Utils.calculateSimilarity(di, dj));
+//		int topicSize = di.m_topics.length;
+//		return Math.exp(2*Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 	}
 	
 	//Get similarity based on the results of topic modeling.
 	public double getTopicSimilarity(_Doc di, _Doc dj){
-//		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics));
 		return Math.exp(- Utils.KLsymmetric(di.m_topics, dj.m_topics) / 100.0);
 	}
 	
