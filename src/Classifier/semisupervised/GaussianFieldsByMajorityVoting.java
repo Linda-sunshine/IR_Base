@@ -12,23 +12,24 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
-
-	double m_difference; //The difference between the previous labels and current labels.
-	double m_eta; //The parameter used in random walk. 
-	double[] m_fu_last; // result from last round of random walk
-	
-	double m_delta; // convergence criterion for random walk
-	boolean m_storeGraph; // shall we precompute and store the graph
+	double m_gamma;
 	
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
 		super(c, classifier, C);
+		m_gamma = 0.5;
 	}	
 	
 	//Constructor: given k and kPrime
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph){
 		super(c, classifier, C, ratio, k, kPrime, alpha, beta, delta, eta, storeGraph);
+		m_gamma = 0.5;
 	}
-
+	
+	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph, double gamma){
+		super(c, classifier, C, ratio, k, kPrime, alpha, beta, delta, eta, storeGraph);
+		m_gamma = gamma;
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("Gaussian Fields by Majority Voting [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
@@ -53,42 +54,47 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			}
 			/****Construct the top k labeled data for the current data.****/
 			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
+				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j), (int)m_Y[m_U + j]));
 			
+			/**No.1: majority of its neighbors without similarity.**/
 			/****Get the sum of k'UU******/
 			for(_RankItem n: m_kUU){
-				wijSumU += n.m_value; //get the similarity between two nodes.
-				int labelFu = (int) m_fu[n.m_index]; //Get its current label.
-
-//				stat[label]++; 
-				//Every unlabeled data get two votes from SVM and previous votes.
-				stat[labelFu] += m_eta * n.m_value;
-				int labelSVM = (int) m_Y[n.m_index];
-				stat[labelSVM] += (1-m_eta) * n.m_value;
-				//stat[label] += label * n.m_value;
-				
-				fSumU += n.m_value * m_fu[n.m_index];
-//				stat[label] += n.m_value * m_fu[n.m_index];
+				int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+				stat[labelFu] += m_eta;
+				int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
+				stat[labelSVM] += 1-m_eta;
 			}
 			m_kUU.clear();
 			
 			/****Get the sum of kUL******/
 			for(_RankItem n: m_kUL){
-				wijSumL += n.m_value;
 				stat[n.m_label]++;
-				int label = (int) m_Y[n.m_index];
-				stat[label] += n.m_value;
-				fSumL += n.m_value * m_Y[n.m_index];
-				stat[n.m_label] += n.m_value * m_Y[n.m_index];
 			}
 			m_kUL.clear();
+			m_fu[i] = Utils.maxOfArrayIndex(stat);			
+
+//			/**No.2: majority of its neighbors with similarity.****/
+//			/****Get the sum of k'UU******/
+//			for(_RankItem n: m_kUU){
+//				wijSumU += n.m_value; //get the similarity between two nodes.
+//				int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+//				//Every unlabeled data get two votes: one from SVM and another from previous votes.
+//				stat[labelFu] += (1 - m_gamma) * m_eta * n.m_value;
+//				int labelSVM = (int) m_Y[n.m_index];
+//				stat[labelSVM] += (1 - m_gamma) * (1-m_eta) * n.m_value;
+////				fSumU += n.m_value * labelFu;
+//			}
+//			m_kUU.clear();
+//			
+//			/****Get the sum of kUL******/
+//			for(_RankItem n: m_kUL){
+////				wijSumL += n.m_value;
+//				stat[n.m_label] += m_gamma * n.m_value;
+////				fSumL += n.m_value * m_Y[n.m_index];
+//			}
+//			m_kUL.clear();
+//			m_fu[i] = Utils.maxOfArrayIndex(stat);		
 			
-			if(wijSumL!=0 || wijSumU!=0){
-				//Different ways of getting m_fu.
-				m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
-				//This is just the majority of the both labeled and unlabeled data.
-//				m_fu[i] = Utils.maxOfArrayIndex(stat);
-			}
 			if(Double.isNaN(m_fu[i]))
 				System.out.println("NaN detected!!!");
 		}

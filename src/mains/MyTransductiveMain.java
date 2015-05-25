@@ -10,6 +10,7 @@ import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
 import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
@@ -41,12 +42,12 @@ public class MyTransductiveMain {
 		String aspectlist = "./data/Model/aspect_output_0515.txt";
 
 		/*****Parameters in learning style.*****/
-		//"SUP", "SEMI"
-		String style = "SEMI";
+		//"SUP", "MV", "RW"
+		String style = "MV";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
-		String debugOutput = "data/debug/debug.output";
+		String debugOutput = String.format("data/debug/%s_debug.output", style);
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -99,19 +100,30 @@ public class MyTransductiveMain {
 		analyzer.setFeatureValues("BM25", 2);
 //		c.mapLabels(3);
 		
-		if (style.equals("SEMI")) {
+		if (style.equals("RW")) {
 			//perform transductive learning
-			System.out.println("Start Transductive Learning, wait...");
+			System.out.println("Start Random Walk based Transductive Learning, wait...");
 			double learningRatio = 1;
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
-			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
-			mySemi.setDebugOutput(debugOutput);
-			mySemi.setFeaturesLookup(analyzer.getFeaturesLookup());
-			mySemi.crossValidation(CVFold, c);
-			mySemi.printStat();
-		} else if (style.equals("SUP")) {
+			GaussianFields myRW = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
+			myRW.setDebugOutput(debugOutput);
+			myRW.setFeaturesLookup(analyzer.getFeaturesLookup());
+			myRW.crossValidation(CVFold, c);
+			myRW.printStat();
+		} else if (style.equals("MV")){
+			System.out.println("Start Random Walk based Transductive Learning, wait...");
+			double learningRatio = 1;
+			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
+			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
+			double tDelta = 1e-4, tEta = 0.4, tgamma = 0.6; // convergence of random walk, weight of random walk
+			GaussianFields myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, tgamma);
+			myMV.setDebugOutput(debugOutput);
+			myMV.setFeaturesLookup(analyzer.getFeaturesLookup());
+			myMV.crossValidation(CVFold, c);
+			myMV.printStat();
+		}else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(c, C);

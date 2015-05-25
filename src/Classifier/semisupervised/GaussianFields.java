@@ -195,7 +195,6 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	double getCache(int i, int j) {
-		double a = encode(i, j);
 		return m_cache[encode(i,j)];
 	}
 	
@@ -237,10 +236,6 @@ public class GaussianFields extends BaseClassifier {
 		for(int i=0; i<cores; i++) {	
 			if (i==cores-1)
 				end = m_U;
-//			else
-//				end = Math.min(start+inc, m_U);
-//			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, m_topicFlag));
-
 			else {
 				cost = avgCost;
 				for(end = start; end<m_U && cost>=0; end++)
@@ -357,7 +352,7 @@ public class GaussianFields extends BaseClassifier {
 		m_kUL = new MyPriorityQueue<_RankItem>(m_k);
 		
 		//temporary injected code
-		tmpSimilarityCheck();
+//		tmpSimilarityCheck();
 		
 		/***Set up document mapping for debugging purpose***/
 		if (m_debugOutput!=null) {
@@ -605,8 +600,7 @@ public class GaussianFields extends BaseClassifier {
 
 		/****Get the top 5 elements from kUL******/
 		for(int i=0; i < m_kUL.size(); i++){
-			item = m_kUL.get(i);
-			neighbor = m_labeled.get(item.m_index);
+			neighbor = m_labeled.get(m_kUL.get(i).m_index);
 			if(neighbor.getYLabel() == d.getYLabel())
 				sameL++;
 		}
