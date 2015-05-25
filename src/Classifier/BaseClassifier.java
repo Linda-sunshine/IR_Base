@@ -148,10 +148,13 @@ public abstract class BaseClassifier {
 	//Calculate the precision and recall for one folder tests.
 	public double[][] calculatePreRec(int[][] tpTable) {
 		double[][] PreRecOfOneFold = new double[m_classNo][2];
+		
 		for (int i = 0; i < m_classNo; i++) {
 			PreRecOfOneFold[i][0] = (double) tpTable[i][i] / (Utils.sumOfRow(tpTable, i) + 0.001);// Precision of the class.
 			PreRecOfOneFold[i][1] = (double) tpTable[i][i] / (Utils.sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
-			
+		}
+		
+		for (int i = 0; i < m_classNo; i++) {			
 			for(int j=0; j< m_classNo; j++) {
 				m_confusionMat[i][j] += tpTable[i][j];
 				tpTable[i][j] = 0; // clear the result in each fold
