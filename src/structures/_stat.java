@@ -46,6 +46,15 @@ public class _stat {
 	public void addOneTTF(int index){
 		this.m_TTF[index]++;
 	}
+	
+	public void minusOneDF(int index){
+		this.m_DF[index]--;
+	}
+	
+	public void minusNTTF(int index, double n){
+		this.m_TTF[index] -= n;
+	}
+	
 }
 
 

@@ -240,60 +240,60 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-	protected boolean AnalyzeDoc(_Doc doc) {
-		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-			return true;
-		else{
-			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-			int index = 0;
-			double value = 0;
-			// Construct the sparse vector.
-			for (String token : tokens) {
-				// CV is not loaded, take all the tokens as features.
-				if (!m_isCVLoaded) {
-					if (m_featureNameIndex.containsKey(token)) {
-						index = m_featureNameIndex.get(token);
-						if (spVct.containsKey(index)) {
-							value = spVct.get(index) + 1;
-							spVct.put(index, value);
-						} else {
-							spVct.put(index, 1.0);
-							m_featureStat.get(token).addOneDF(doc.getYLabel());
-						}
-					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
-						expandVocabulary(token);// update the m_featureNames.
-						index = m_featureNameIndex.get(token);
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
-					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-					index = m_featureNameIndex.get(token);
-					if (spVct.containsKey(index)) {
-						value = spVct.get(index) + 1;
-						spVct.put(index, value);
-					} else {
-						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(doc.getYLabel());
-					}
-					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-				}
-				// if the token is not in the vocabulary, nothing to do.
-			}
-			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
-				doc.createSpVct(spVct);
-				m_corpus.addDoc(doc);
-				m_classMemberNo[doc.getYLabel()]++;
-			}
-		}
-		if (m_releaseContent){
-			doc.clearSource();
-			return true;
-		}
-		else
-			return false;
-	}	
+//	protected boolean AnalyzeDoc(_Doc doc) {
+//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
+//			return true;
+//		else{
+//			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+//			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+//			int index = 0;
+//			double value = 0;
+//			// Construct the sparse vector.
+//			for (String token : tokens) {
+//				// CV is not loaded, take all the tokens as features.
+//				if (!m_isCVLoaded) {
+//					if (m_featureNameIndex.containsKey(token)) {
+//						index = m_featureNameIndex.get(token);
+//						if (spVct.containsKey(index)) {
+//							value = spVct.get(index) + 1;
+//							spVct.put(index, value);
+//						} else {
+//							spVct.put(index, 1.0);
+//							m_featureStat.get(token).addOneDF(doc.getYLabel());
+//						}
+//					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
+//						expandVocabulary(token);// update the m_featureNames.
+//						index = m_featureNameIndex.get(token);
+//						spVct.put(index, 1.0);
+//						m_featureStat.get(token).addOneDF(doc.getYLabel());
+//					}
+//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
+//				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+//					index = m_featureNameIndex.get(token);
+//					if (spVct.containsKey(index)) {
+//						value = spVct.get(index) + 1;
+//						spVct.put(index, value);
+//					} else {
+//						spVct.put(index, 1.0);
+//						m_featureStat.get(token).addOneDF(doc.getYLabel());
+//					}
+//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
+//				}
+//				// if the token is not in the vocabulary, nothing to do.
+//			}
+//			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+//				doc.createSpVct(spVct);
+//				m_corpus.addDoc(doc);
+//				m_classMemberNo[doc.getYLabel()]++;
+//			}
+//		}
+//		if (m_releaseContent){
+//			doc.clearSource();
+//			return true;
+//		}
+//		else
+//			return false;
+//	}	
 	
 	public int returnCount(){
 		return m_count;
@@ -345,43 +345,43 @@ public class AspectAnalyzer extends jsonAnalyzer {
 //		System.out.println(isEmpty(b));
 //		System.out.println(isEmpty(c));
 //	}
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		int classNumber = 2; //Define the number of classes
-		int Ngram = 2; //The default value is bigram. 
-		int lengthThreshold = 10; //Document length threshold
-		
-//		/*****Parameters in feature selection.*****/
-		String featureSelection = "DF"; //Feature selection method.
-		int chiSize = 50; // top ChiSquare words for aspect keyword selection
-		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 1; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-		
-		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dedup/RawData";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-		String aspectModel = "./data/Model/sentiment_input.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/sentiment_output.txt"; // list of keywords in each aspect
-		
-		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = "data/Features/fv_2gram_9555.txt";
-//		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
-		
-		/****Loading json files*****/
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		
-		/****Feature selection*****/
-		System.out.println("Performing feature selection, wait...");
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.SaveCVStat(fvStatFile);
-		
-		/****Aspect annotation*****/
-//		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
-	}
+//	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
+//		int classNumber = 2; //Define the number of classes
+//		int Ngram = 2; //The default value is bigram. 
+//		int lengthThreshold = 10; //Document length threshold
+//		
+////		/*****Parameters in feature selection.*****/
+//		String featureSelection = "DF"; //Feature selection method.
+//		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+//		String stopwords = "./data/Model/stopwords.dat";
+//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+//		double endProb = 1; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+//		
+//		/*****The parameters used in loading files.*****/
+//		String folder = "./data/amazon/small/dedup/RawData";
+//		String suffix = ".json";
+//		String tokenModel = "./data/Model/en-token.bin"; //Token model
+//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
+//		String aspectModel = "./data/Model/sentiment_input.txt"; // list of keywords in each aspect
+//		String aspectOutput = "./data/Model/sentiment_output.txt"; // list of keywords in each aspect
+//		
+//		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
+//		String fvFile = "data/Features/fv_2gram_9555.txt";
+////		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+//		
+//		/****Loading json files*****/
+////		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		
+//		/****Feature selection*****/
+//		System.out.println("Performing feature selection, wait...");
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+////		analyzer.SaveCVStat(fvStatFile);
+//		
+//		/****Aspect annotation*****/
+////		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
+//	}
 }

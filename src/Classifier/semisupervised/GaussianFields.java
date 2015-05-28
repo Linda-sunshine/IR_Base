@@ -589,7 +589,7 @@ public class GaussianFields extends BaseClassifier {
 		//find top five labeled
 		/****Construct the top k labeled data for the current data.****/
 		for (int j = 0; j < m_L; j++){
-//			double tmp = encode(id, m_U + j);
+			double tmp = encode(id, m_U + j);
 			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
 		}
 
@@ -644,8 +644,8 @@ public class GaussianFields extends BaseClassifier {
 			sumL += m_debugStat.get(i)[0];
 			sumU += m_debugStat.get(i)[1];
 		}
-		sumL = sumL / m_debugStat.size();
-		sumU = sumU / m_debugStat.size();
+		sumL = sumL / (m_debugStat.size() + 0.0001);
+		sumU = sumU / (m_debugStat.size() + 0.0001);
 		System.out.print(String.format("L percentage: %.4f, U percentage: %.4f\n", sumL, sumU));
 	}
 }

@@ -26,13 +26,13 @@ public class PairwiseSimCalculator implements Runnable {
 			di = m_GFObj.getTestDoc(i);
 			for (int j = i + 1; j < m_GFObj.m_U; j++) {// to save computation since our similarity metric is symmetric
 				dj = m_GFObj.getTestDoc(j);
-				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-//				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-//				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-//				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
-//					similarity +=  discount1 * topicSimilarity;	
-//				} else//if they are from different products, their topicSimilarity = 0.
-//					similarity += discount2 * topicSimilarity;
+//				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
+				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
+				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
+					similarity +=  discount1 * topicSimilarity;	
+				} else//if they are from different products, their topicSimilarity = 0.
+					similarity += discount2 * topicSimilarity;
 //				if(di.sameProduct(dj))
 //					similarity *= 2;
 				m_GFObj.setCache(i, j, similarity);
@@ -40,13 +40,13 @@ public class PairwiseSimCalculator implements Runnable {
 
 			for (int j = 0; j < m_GFObj.m_L; j++) {
 				dj = m_GFObj.m_labeled.get(j);
-				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-//				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
-//				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-//				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
-//					similarity += discount1 * topicSimilarity;	
-//				} else//if they are from different products, their topicSimilarity = 0.
-//					similarity += discount2 * topicSimilarity;
+//				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
+				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
+				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
+					similarity += discount1 * topicSimilarity;	
+				} else//if they are from different products, their topicSimilarity = 0.
+					similarity += discount2 * topicSimilarity;
 //				if(di.sameProduct(dj))
 //					similarity *= 2;
 				m_GFObj.setCache(i, m_GFObj.m_U + j, similarity);

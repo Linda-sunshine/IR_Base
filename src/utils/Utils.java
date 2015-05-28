@@ -33,6 +33,16 @@ public class Utils {
 		return maxIndex;
 	}
 	
+	public static int minOfArrayValue(int[] count){
+		int maxValue = count[0];
+		if(count.length <=1 && count.length >0)
+			return maxValue;
+		for(int i=1; i < count.length; i++){
+			if(count[i] < maxValue)
+				maxValue = count[i];
+		}
+		return maxValue;
+	}
 	public static int minOfArrayIndex(double[] probs){
 		return minOfArrayIndex(probs, probs.length);
 	}

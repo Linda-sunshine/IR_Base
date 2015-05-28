@@ -24,6 +24,7 @@ import org.tartarus.snowball.ext.englishStemmer;
 
 import structures._Doc;
 import structures._SparseFeature;
+import structures._stat;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -222,12 +223,41 @@ public class DocAnalyzer extends Analyzer {
 		return spVct;
 	}
 	
+	public void rollBack(HashMap<Integer, Double> spVct, int y){
+		if (!m_isCVLoaded) {
+			setFeatureIndexName();//Get the current index-feature lookup table.
+			for(int index: spVct.keySet()){
+				String token = m_featureIndexName.get(index);
+				_stat stat = m_featureStat.get(token);
+				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
+					m_featureNameIndex.remove(index);
+					m_featureStat.remove(token);
+					m_featureNames.remove(token);
+				}
+				else{//If the feature is not the first time to show in feature set.
+					m_featureStat.get(token).minusOneDF(y);
+					m_featureStat.get(token).minusNTTF(y, spVct.get(index));
+				}
+			}
+		} else{//If CV is loaded, we can minus the DF and TTF directly.
+//			setFeatureIndexName(); //Add this step to LoadCV to avoid repetitive operations.
+			for(int index: spVct.keySet()){
+				String token = m_featureIndexName.get(index);
+				m_featureStat.get(token).minusOneDF(y);
+				m_featureStat.get(token).minusNTTF(y, spVct.get(index));
+			}
+		}
+	}
+	
 	/*Analyze a document and add the analyzed document back to corpus.
 	 *In the case CV is not loaded, we need two if loops to check.
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	protected boolean AnalyzeDoc(_Doc doc) {
+//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
+//			return true;
+//		else{
 		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
@@ -240,13 +270,16 @@ public class DocAnalyzer extends Analyzer {
 			if (m_releaseContent)
 				doc.clearSource();
 			return true;
-		} else
+		} else{
+			rollBack(spVct, y);
 			return false;
+		}
+//		}
 	}
 	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 9555)
+//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
 //			return true;
 //		else{
 			String[] sentences = m_stnDetector.sentDetect(doc.getSource());
@@ -269,14 +302,14 @@ public class DocAnalyzer extends Analyzer {
 				doc.setSentences(stnList);
 				m_corpus.addDoc(doc);
 				m_classMemberNo[y]++;
+				if (m_releaseContent)
+					doc.clearSource();
+				return true;
+			} else{
+				rollBack(spVct, y);
+				return false;
 			}
-//		}
-		if (m_releaseContent){
-			doc.clearSource();
-			return true;
 		}
-		else
-			return false;
-	}
+//	}
 }	
 

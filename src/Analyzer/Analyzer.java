@@ -28,6 +28,7 @@ public abstract class Analyzer {
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
+	protected HashMap<Integer, String> m_featureIndexName; //key: index of the feature; value: content of the feature 
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
@@ -48,6 +49,7 @@ public abstract class Analyzer {
 		
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
+		m_featureIndexName = new HashMap<Integer, String>();
 		m_featureStat = new HashMap<String, _stat>();
 		
 		m_lengthThreshold = minDocLength;
@@ -85,6 +87,7 @@ public abstract class Analyzer {
 			
 			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
 			m_isCVLoaded = true;
+			setFeatureIndexName();
 			
 			return true;
 		} catch (IOException e) {
@@ -360,5 +363,12 @@ public abstract class Analyzer {
 	
 	public HashMap<String, Integer> getFeaturesLookup(){
 		return m_featureNameIndex;
+	}
+	//Build the hashMap: given the index, find the corresponding feature.
+	public void setFeatureIndexName(){
+		m_featureIndexName.clear();
+		for(String name: m_featureNameIndex.keySet()){
+			m_featureIndexName.put(m_featureNameIndex.get(name), name);
+		}
 	}
 }
