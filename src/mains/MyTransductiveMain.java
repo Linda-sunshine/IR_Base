@@ -24,7 +24,7 @@ public class MyTransductiveMain {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 30;
+		int number_of_topics = 40;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
@@ -106,7 +106,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
 			GaussianFields myRW = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myRW.setDebugOutput(debugOutput);
 			myRW.setFeaturesLookup(analyzer.getFeaturesLookup());
@@ -116,8 +116,8 @@ public class MyTransductiveMain {
 			System.out.println("Start Random Walk based Transductive Learning, wait...");
 			double learningRatio = 1;
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
-			double tAlpha = 1.0, tBeta = 0.9; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
+			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
 			GaussianFields myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myMV.setDebugOutput(debugOutput);
 			myMV.setFeaturesLookup(analyzer.getFeaturesLookup());
