@@ -53,8 +53,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		return String.format("Gaussian Fields by Majority Voting [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
 	}
 	
-	//The random walk algorithm to generate new labels for unlabeled data.
-	//Take the majority of all neighbors as the new label until they converge.
+	//Take the majority of all neighbors(k+k') as the new label until they converge.
 	void randomWalk(){//construct the sparse graph on the fly every time
 //		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		
@@ -90,7 +89,6 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 					stat[label] += m_beta;
 				}
 				m_kUL.clear();
-//				stat[1] /= 4.0;
 				m_fu[i] = Utils.maxOfArrayIndex(stat);	
 			
 			} else{
@@ -120,6 +118,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		}
 	} 
 	
+	//Take the majority of all neighbors(passing similarity threshold) as the new label until they converge.
 //	void randomWalk(){//construct the sparse graph on the fly every time
 //		
 //		for (int i = 0; i < m_U; i++) {
