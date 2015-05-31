@@ -122,7 +122,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		int cSize = m_classNo==2?1:m_classNo;
 		for(int i=0; i<m_featureSize; i++) {
 			for(int c=0; c<cSize; c++) {
-				if (w[i*m_classNo+c]!=0) {//a non-zero feature
+				if (w[i*cSize+c]!=0) {//a non-zero feature
 					m_selectedFVs.put(i, m_selectedFVs.size());
 					break;
 				}	
