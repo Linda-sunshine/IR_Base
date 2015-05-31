@@ -48,7 +48,7 @@ public class TransductiveMain {
 		String method = "RW-ML";
 				
 		/*****Parameters in transductive learning.*****/
-		String debugOutput = "data/debug/topical.sim";
+		String debugOutput = null;// "data/debug/topical.sim";
 		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 

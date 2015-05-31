@@ -137,7 +137,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			try {
 				for(int i=0; i<m_featureSize; i++) {
 					if (m_selectedFVs.containsKey(i)) {
-						m_debugWriter.write(String.format("%s(%.2f), ", m_corpus.getFeature(i), argmaxW(w, i*m_classNo, m_classNo)));
+						m_debugWriter.write(String.format("%s(%.2f), ", m_corpus.getFeature(i), argmaxW(w, i*cSize, cSize)));
 					}
 				}
 				m_debugWriter.write("\n");
