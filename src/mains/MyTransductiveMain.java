@@ -37,13 +37,13 @@ public class MyTransductiveMain {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_DF_8055.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_DF_3185.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_output_0521.txt";
+		String aspectlist = "./data/Model/aspect_output_0515.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "MV", "RW"
-		String style = "RW";
+		String style = "MV";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -106,7 +106,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.8; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta =1; // convergence of random walk, weight of random walk
 			GaussianFields myRW = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myRW.setDebugOutput(debugOutput);
 			myRW.setFeaturesLookup(analyzer.getFeaturesLookup());
@@ -118,9 +118,9 @@ public class MyTransductiveMain {
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
-			GaussianFieldsByMajorityVoting myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 3.7);
+			GaussianFieldsByMajorityVoting myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 3.8);
 			myMV.setDebugOutput(debugOutput);
-			myMV.setSimilarity();
+//			myMV.setSimilarity();
 			myMV.crossValidation(CVFold, c);
 			myMV.printStat();
 		}else if (style.equals("SUP")) {

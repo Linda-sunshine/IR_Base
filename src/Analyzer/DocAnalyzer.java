@@ -191,6 +191,8 @@ public class DocAnalyzer extends Analyzer {
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
 				if (m_featureNameIndex.containsKey(token)) {
+					if(m_featureNameIndex.containsKey("null"))
+						System.out.println(m_featureNameIndex.get("null"));
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {
 						value = spVct.get(index) + 1;

@@ -82,8 +82,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 			}
 		}
 	}
-//	/***Load a json file with 1:1 postive and negative reviews.
-//	Will this ruin the bias given by the ratio since this ratio is informative itself.***/
+	/***Load a json file with 1:1 postive and negative reviews.
+	Will this ruin the bias given by the ratio since this ratio is informative itself.***/
 //	public void LoadDoc(String filename) {
 //		Product prod = null;
 //		JSONArray jarray = null;

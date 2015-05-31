@@ -30,7 +30,7 @@ public class MyAmazonMain {
 		//"SUP", "SEMI", "FV: save features and vectors to files"
 		String style = "SUP";//"SUP", "SEMI"
 		//Supervised: "NB", "LR", "PR-LR", "SVM"; Semi-supervised: "GF", "GF-RW", "GF-RW-ML"**/
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "NB"; //Which classifier to use.
 		String multipleLearner = "SVM";
 		double C = 1.0;
 		
@@ -55,7 +55,8 @@ public class MyAmazonMain {
 		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		String fvFile = "./data/Features/fv_2gram_DF_8055.txt";
+//		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
 		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		String vctFile = String.format("data/Fvs/vct_%s_small.dat", pattern);		
 		
@@ -78,16 +79,16 @@ public class MyAmazonMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 		/****Feature selection*****/
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, "", Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 //		analyzer.resetStopwords();
 
 		/****Create feature vectors*****/
 		System.out.println("Creating feature vectors, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);		
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
@@ -122,7 +123,6 @@ public class MyAmazonMain {
 				System.out.println("Start logistic regression, wait...");
 				LogisticRegression myLR = new LogisticRegression(corpus, C);
 				myLR.setDebugOutput(debugOutput);
-				
 				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
 				//myLR.saveModel(modelPath + "LR.model");
 			} else if(classifier.equals("SVM")){
