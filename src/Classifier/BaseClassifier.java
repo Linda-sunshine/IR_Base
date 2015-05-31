@@ -47,7 +47,7 @@ public abstract class BaseClassifier {
 			if (pred != ans) {
 				if (m_debugOutput!=null)
 					debug(doc);
-			} else {
+			} else {//also print out some correctly classified samples
 				if (m_debugOutput!=null && Math.random()<0.02)
 					debug(doc);
 				acc ++;

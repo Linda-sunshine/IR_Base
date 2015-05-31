@@ -1,9 +1,6 @@
 package Classifier.metricLearning;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -11,7 +8,6 @@ import java.util.HashMap;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
-import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
@@ -123,8 +119,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		m_selectedFVs = new HashMap<Integer, Integer>();
 		double[] w = m_libModel.getWeights();
+		int cSize = m_classNo==2?1:m_classNo;
 		for(int i=0; i<m_featureSize; i++) {
-			for(int c=0; c<m_classNo; c++) {
+			for(int c=0; c<cSize; c++) {
 				if (w[i*m_classNo+c]!=0) {//a non-zero feature
 					m_selectedFVs.put(i, m_selectedFVs.size());
 					break;
@@ -291,115 +288,5 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			j = t;
 		}
 		return 1+i*(i+1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
-	}
-	
-	public void verifySimilarity(String filename, boolean append) {
-		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename, append), "UTF-8"));
-			
-			for(_Doc d:m_testSet)
-				d.setProjectedFv(m_selectedFVs);
-			
-			int size = m_testSet.size();
-			if (m_cache==null || m_cache.length < size*(size+1)/2)
-				m_cache = new double[size*(size+1)/2];
-			
-			_Doc di, dj;
-			for(int i=1; i<size; i++) {
-				di = m_testSet.get(i);
-				for(int j=0; j<i; j++) {
-					dj = m_testSet.get(j);
-					double similarity = getSimilarity(di, dj);
-
-					m_cache[getIndex(i, j)-1] = similarity;					
-					//plot as binary categories
-					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), similarity));					
-					//plot all categories
-//					if (di.getYLabel()<dj.getYLabel())
-//						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
-//					else
-//						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
-				}
-				
-//				for(int j=0; j<m_trainSet.size(); j++) {
-//					if (Math.random() > m_contSamplingRate)
-//						continue;
-//					
-//					dj = m_trainSet.get(j);					
-//
-//					String name = (new Boolean(di.getYLabel()==dj.getYLabel())).toString();
-//					double similarity = getSimilarity(di, dj);
-//					//plot as binary categories
-//					//writer.write(String.format("%s %.4f\n", name, similarity));					
-//					//plot all categories
-//					if (di.getYLabel()<dj.getYLabel())
-//						writer.write(String.format("%s-%s %.4f\n", di.getYLabel(), dj.getYLabel(), similarity));
-//					else
-//						writer.write(String.format("%s-%s %.4f\n", dj.getYLabel(), di.getYLabel(), similarity));
-//					
-//					ranklist.add(new _RankItem(name, similarity));
-//				}
-			}
-			writer.close();
-			
-			MyPriorityQueue<_RankItem> ranklist = new MyPriorityQueue<_RankItem>(50);
-			double prec = 0;
-			int label;
-			for(int i=0; i<size; i++) {
-				di = m_testSet.get(i);
-				label = di.getYLabel();
-				
-				for(int j=0; j<size; j++) {
-					if (i==j)
-						continue;
-					dj = m_testSet.get(j);
-					ranklist.add(new _RankItem(dj.getYLabel(), m_cache[getIndex(i,j)-1]));
-				}
-			
-				double p = 0;
-				for(_RankItem it:ranklist) {
-					if (it.m_index == label)
-						p ++;
-				}
-				
-				prec += p/ranklist.size();
-				ranklist.clear();
-			}
-			
-			System.out.format("Similarity ranking P@%d: %.3f\n", ranklist.size(), prec/size);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	//temporary code for verifying similarity calculation
-	public void verification(int k, _Corpus c, String filename){
-		c.shuffle(k);
-		int[] masks = c.getMasks();
-		ArrayList<_Doc> docs = c.getCollection();
-		//Use this loop to iterate all the ten folders, set the train set and test set.
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < masks.length; j++) {
-				//more for testing
-//						if( masks[j]==(i+1)%k || masks[j]==(i+2)%k || masks[j]==(i+3)%k ) 
-//							m_testSet.add(docs.get(j));
-//						else if (masks[j]==i)
-//							m_trainSet.add(docs.get(j));
-				
-				//more for training
-				if(masks[j]==i) 
-					m_testSet.add(docs.get(j));
-				else
-					m_trainSet.add(docs.get(j));
-			}
-			
-			init();//no need to call train()
-			verifySimilarity(filename, i!=0);
-			
-			m_trainSet.clear();
-			m_testSet.clear();
-		}
 	}
 }

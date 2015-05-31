@@ -1,5 +1,9 @@
 package Classifier.semisupervised;
 
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -41,7 +45,7 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
 	double m_discount = 1.0; // default similarity discount if across different products
-
+	boolean m_outputPlot = false; // if we want to print out the curves for analysis
 	Thread[] m_threadpool;
 	
 	public GaussianFields(_Corpus c, String classifier, double C){
@@ -210,66 +214,86 @@ public class GaussianFields extends BaseClassifier {
 		int y;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
 		double[][][] total = new double[3][2][2];
-		for(int i = 0; i < m_U; i++) {
-			d = getTestDoc(i);
-			y = d.getYLabel();
-			
-			/****Get the nearest neighbors of k'UU******/
-			for (int j = 0; j < m_U; j++) {
-				if (j == i)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(i, j)));
-			}			
-			
-			int pos = 0;
-			double precision = 0;
-			for(_RankItem n: m_kUU){
-				neighbor = getTestDoc(n.m_index);
-				if (getLabel(m_fu[n.m_index]) == y)//prediction against the ground-truth
-					precision ++;
-				pos ++;
-				
-				if (pos==5) {
-					prec[0][y][0] += precision/pos;
-					total[0][y][0] ++;
-				} else if (pos==10) {
-					prec[1][y][0] += precision/pos;
-					total[1][y][0] ++;
-				} else if (pos==20) {
-					prec[2][y][0] += precision/pos;
-					total[2][y][0] ++;
-					break;
-				}
-			}
-			m_kUU.clear();
-			
-			/****Get the nearest neighbors of k'UL******/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(j, getCache(i, m_U + j)));
-			
-			precision = 0;
-			pos = 0;
-			for(_RankItem n: m_kUL){
-				neighbor = getLabeledDoc(n.m_index);
-				if (neighbor.getYLabel() == y)
-					precision ++;
-				pos ++;
-				
-				if (pos==5) {
-					prec[0][y][1] += precision/pos;
-					total[0][y][1] ++;
-				} else if (pos==10) {
-					prec[1][y][1] += precision/pos;
-					total[1][y][1] ++;
-				} else if (pos==20) {
-					prec[2][y][1] += precision/pos;
-					total[2][y][1] ++;
-					break;
-				}
-			}
-			m_kUL.clear();
-		}
+		double similiarty;
 		
+		try {
+			BufferedWriter writer = null;
+			if (m_outputPlot)
+				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./data/matlab/test.dat"), "UTF-8"));//fixed file location for curve plotting
+				
+			for(int i = 0; i < m_U; i++) {
+				d = getTestDoc(i);
+				y = d.getYLabel();
+				
+				/****Get the nearest neighbors of k'UU******/
+				for (int j = 0; j < m_U; j++) {
+					if (j == i)
+						continue;
+					similiarty = getCache(i, j);
+					m_kUU.add(new _RankItem(j, similiarty));
+					
+					if (m_outputPlot && Math.random()<0.05)
+						writer.write(String.format("%s %.5f\n", y==getTestDoc(j).getYLabel(), similiarty));
+				}			
+				
+				int pos = 0;
+				double precision = 0;
+				for(_RankItem n: m_kUU){
+					neighbor = getTestDoc(n.m_index);
+					if (getLabel(m_fu[n.m_index]) == y)//prediction against the ground-truth
+						precision ++;
+					pos ++;
+					
+					if (pos==5) {
+						prec[0][y][0] += precision/pos;
+						total[0][y][0] ++;
+					} else if (pos==10) {
+						prec[1][y][0] += precision/pos;
+						total[1][y][0] ++;
+					} else if (pos==20) {
+						prec[2][y][0] += precision/pos;
+						total[2][y][0] ++;
+						break;
+					}
+				}
+				m_kUU.clear();
+				
+				/****Get the nearest neighbors of k'UL******/
+				for (int j = 0; j < m_L; j++) {
+					similiarty = getCache(i, m_U + j);
+					m_kUL.add(new _RankItem(j, similiarty));
+					if (m_outputPlot && Math.random()<0.05)
+						writer.write(String.format("%s %.5f\n", y==getLabeledDoc(j).getYLabel(), similiarty));
+				}
+				
+				precision = 0;
+				pos = 0;
+				for(_RankItem n: m_kUL){
+					neighbor = getLabeledDoc(n.m_index);
+					if (neighbor.getYLabel() == y)
+						precision ++;
+					pos ++;
+					
+					if (pos==5) {
+						prec[0][y][1] += precision/pos;
+						total[0][y][1] ++;
+					} else if (pos==10) {
+						prec[1][y][1] += precision/pos;
+						total[1][y][1] ++;
+					} else if (pos==20) {
+						prec[2][y][1] += precision/pos;
+						total[2][y][1] ++;
+						break;
+					}
+				}
+				m_kUL.clear();
+			}
+			
+			if (writer!=null)
+				writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
 		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
 		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
