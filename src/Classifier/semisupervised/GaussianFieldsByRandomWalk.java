@@ -143,14 +143,16 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		
 		/***use random walk to solve matrix inverse***/
 		int iter = 0;
+		double diff = 0;
 		do {
 			if (m_storeGraph)
 				randomWalkWithGraph();
 			else
 				randomWalk();		
 			iter ++;
-		} while(updateFu() > m_delta);
-		System.out.format("Random walk converges after %d iterations...\n", iter);
+			diff = updateFu();
+		} while(diff > m_delta);
+		System.out.format("Random walk converges to %.3f after %d iterations...\n", diff, iter);
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){

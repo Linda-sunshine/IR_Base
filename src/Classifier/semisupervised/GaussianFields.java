@@ -410,9 +410,16 @@ public class GaussianFields extends BaseClassifier {
 	/**Different getLabel methods.**/
 	//This is the original getLabel: -|c-p(c)|
 	int getLabel(double pred) {
-		for(int i=0; i<m_classNo; i++)
-			m_cProbs[i] = -Math.abs(i-pred); //-|c-p(c)|
-		return Utils.maxOfArrayIndex(m_cProbs);
+		int label = 0;
+		double minScore = Math.abs(pred), score;
+		for(int i=1; i<m_classNo; i++) {
+			score = Math.abs(i-pred);
+			if (score<minScore) {
+				minScore = score;
+				label = i;
+			}
+		}
+		return label;
 	}
 	
 	//p(c) * exp(-|c-f(u_i)|)/sum_j{exp(-|c-f(u_j))} j represents all unlabeled data
