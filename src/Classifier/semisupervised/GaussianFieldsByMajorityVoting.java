@@ -14,12 +14,14 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
 		super(c, classifier, C);
 		m_simFlag = false;
+		m_threshold = -1;
 	}	
 	
 	//The constructor for majority voting with similarities. If we want consider similarity, use setSimilarity() below. 
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph){
 		super(c, classifier, C, ratio, k, kPrime, alpha, beta, delta, eta, storeGraph);
 		m_simFlag = false;
+		m_threshold = -1;
 	}
 	
 	//The constructor for threshold based majority voting.
@@ -72,6 +74,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			
 			for(_RankItem n: m_kUU){
 				label = getLabel(m_fu[n.m_index]); //Item n's label.
+				similarity = n.m_value;
 				//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
 				m_cProbs[label] += m_simFlag?similarity*m_beta:m_beta; 
 				
@@ -82,6 +85,8 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			
 			for(_RankItem n: m_kUL){
 				label = (int)m_Y[n.m_index];//Get the item's label from Y array.
+				similarity = n.m_value;
+				
 				m_cProbs[label] += m_simFlag?similarity*m_alpha:m_alpha; 
 			}
 			m_kUL.clear();

@@ -9,7 +9,9 @@ import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
+import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
@@ -41,6 +43,9 @@ public class TransductiveMain {
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
 		String style = "SEMI";
+		
+		//"RW", "RW-MV", "RW-ML"
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
@@ -104,8 +109,26 @@ public class TransductiveMain {
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
-			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
-					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
+			boolean simFlag = false;
+			double threshold = 0.5;
+			int bound = 2; // bound for generating rating constraints
+			double cSampleRate = 0.01; // sampling rate of constraints
+			boolean metricLearning = true;
+			
+			GaussianFields mySemi = null;			
+			if (method.equals("RW")) {
+				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
+					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
+			} else if (method.equals("RW-MV")) {
+				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C,
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, threshold); 
+				((GaussianFieldsByMajorityVoting)mySemi).setSimilarity(simFlag);
+			} else if (method.equals("RW-ML")) {
+				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						bound, cSampleRate);
+				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
+			}
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {
