@@ -113,8 +113,7 @@ public class VectorReviewMain {
 				lMetricLearner.setMetricLearningMethod(true);
 				//lMetricLearner.setDebugOutput(debugOutput);
 				
-				//lMetricLearner.crossValidation(CVFold, corpus);
-				lMetricLearner.verification(CVFold, corpus, debugOutput);
+				lMetricLearner.crossValidation(CVFold, corpus);
 			} else System.out.println("Classifier has not been developed yet!");
 			
 		} else System.out.println("Learning paradigm has not been developed yet!");
