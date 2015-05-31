@@ -109,7 +109,7 @@ public class VectorReviewMain {
 			} else if (classifier.equals("GF-RW-ML")) {
 				LinearSVMMetricLearning lMetricLearner = new LinearSVMMetricLearning(corpus, multipleLearner, C,
 						0.1, 100, 50, 1.0, 0.1, 1e-4, 0.1, false,
-						2, 0.1);
+						2);
 				lMetricLearner.setMetricLearningMethod(true);
 				//lMetricLearner.setDebugOutput(debugOutput);
 				

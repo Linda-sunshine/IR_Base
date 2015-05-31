@@ -32,25 +32,22 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_contSamplingRate;
 	
 	HashMap<Integer, Integer> m_selectedFVs;
 	boolean m_learningBased = true;
-	FeatureType m_fvType = FeatureType.FT_diff;
+	FeatureType m_fvType = FeatureType.FT_diff; // has to be manually changed
 	
 	//Default constructor without any default parameters.
 	public LinearSVMMetricLearning(_Corpus c, String classifier, double C, int bound){
 		super(c, classifier, C);
 		m_bound = bound;
-		m_contSamplingRate = 0.001; // a conservative setting
 	}
 	
 	public LinearSVMMetricLearning(_Corpus c, String classifier, double C, 
 			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph, 
-			int bound, double cSampleRate) {
+			int bound) {
 		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta, storeGraph);
 		m_bound = bound;
-		m_contSamplingRate = cSampleRate;
 	}
 	
 	public void setMetricLearningMethod(boolean opt) {
@@ -162,7 +159,6 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			return null;
 		else {
 			int mustLink = 0, cannotLink = 0, label;
-//			Random rand = new Random();
 			
 			MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1000, false);
 			//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
@@ -271,7 +267,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			return null;
 		
 		Feature[] features = new Feature[fv1.length*fv2.length];
-		int pi, pj, spIndex=0;
+		int pi, pj, spIndex=0, fSize = m_selectedFVs.size();
 		double value = 0;
 		for(int i = 0; i < fv1.length; i++){
 			pi = fv1[i].getIndex();
@@ -281,7 +277,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 				
 				//Currently, we use one dimension array to represent V*V features 
 				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
-				features[spIndex++] = new FeatureNode(1+pi*m_selectedFVs.size()+pj, value);
+				features[spIndex++] = new FeatureNode(1+pi*fSize+pj, value);
 			}
 		}
 		
@@ -315,10 +311,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					dj = m_testSet.get(j);
 					double similarity = getSimilarity(di, dj);
 
-					m_cache[getIndex(i, j)-1] = similarity;
-					if (Math.random() > m_contSamplingRate)
-						continue;
-					
+					m_cache[getIndex(i, j)-1] = similarity;					
 					//plot as binary categories
 					writer.write(String.format("%s %.4f\n", di.getYLabel()==dj.getYLabel(), similarity));					
 					//plot all categories

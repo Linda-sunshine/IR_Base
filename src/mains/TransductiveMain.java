@@ -45,7 +45,7 @@ public class TransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-MV", "RW-ML"
-		String method = "RW-MV";
+		String method = "RW-ML";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
@@ -112,7 +112,6 @@ public class TransductiveMain {
 			boolean simFlag = false;
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			double cSampleRate = 0.01; // sampling rate of constraints
 			boolean metricLearning = true;
 			
 			GaussianFields mySemi = null;			
@@ -126,7 +125,7 @@ public class TransductiveMain {
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						bound, cSampleRate);
+						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
 			}
 			mySemi.setDebugOutput(debugOutput);
