@@ -29,10 +29,11 @@ public class PairwiseSimCalculator implements Runnable {
 //				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
 				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
-					similarity +=  discount1 * topicSimilarity;	
-				} else//if they are from different products, their topicSimilarity = 0.
-					similarity += discount2 * topicSimilarity;
+				similarity += topicSimilarity;
+//				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
+//					similarity +=  discount1 * topicSimilarity;	
+//				} else//if they are from different products, their topicSimilarity = 0.
+//					similarity += discount2 * topicSimilarity;
 //				if(di.sameProduct(dj))
 //					similarity *= 2;
 				m_GFObj.setCache(i, j, similarity);
@@ -43,10 +44,11 @@ public class PairwiseSimCalculator implements Runnable {
 //				similarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
 				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
 				topicSimilarity = Math.exp(m_GFObj.getTopicSimilarity(di, dj));
-				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
-					similarity += discount1 * topicSimilarity;	
-				} else//if they are from different products, their topicSimilarity = 0.
-					similarity += discount2 * topicSimilarity;
+				similarity += topicSimilarity;
+//				if(di.sameProduct(dj)){//If it is topic based similarity and they are for the same product
+//					similarity += discount1 * topicSimilarity;	
+//				} else//if they are from different products, their topicSimilarity = 0.
+//					similarity += discount2 * topicSimilarity;
 //				if(di.sameProduct(dj))
 //					similarity *= 2;
 				m_GFObj.setCache(i, m_GFObj.m_U + j, similarity);

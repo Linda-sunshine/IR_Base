@@ -43,7 +43,7 @@ public class MyTransductiveMain {
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "MV", "RW"
-		String style = "MV";
+		String style = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -106,7 +106,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.8; // convergence of random walk, weight of random walk
 			GaussianFields myRW = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myRW.setDebugOutput(debugOutput);
 			myRW.setFeaturesLookup(analyzer.getFeaturesLookup());
@@ -118,9 +118,9 @@ public class MyTransductiveMain {
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
-			GaussianFields myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
+			GaussianFieldsByMajorityVoting myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 3.7);
 			myMV.setDebugOutput(debugOutput);
-			myMV.setFeaturesLookup(analyzer.getFeaturesLookup());
+			myMV.setSimilarity();
 			myMV.crossValidation(CVFold, c);
 			myMV.printStat();
 		}else if (style.equals("SUP")) {

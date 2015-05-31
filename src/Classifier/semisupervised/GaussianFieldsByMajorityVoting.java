@@ -1,51 +1,48 @@
 package Classifier.semisupervised;
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
-import structures._SparseFeature;
 import utils.Utils;
 
 public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
-	boolean m_simFlag;
-	double m_threshold;
+	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity or not.
+	double m_threshold; //The threshold for threshold-based majority voting.
+	boolean m_thresholdFlag; //The flag is used to determine whether we'll use threshold-based majority voting or not.
 	
 	ArrayList<_RankItem> m_KUU; //It does not have a specific length for nearest unlabeled data.
 	ArrayList<_RankItem> m_KUL; //It does not have a specific length for nearest labeled data.
-	ArrayList<_RankItem> m_negSamples;
 	
+	//The default Constructor, majority voting without similarities.
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
 		super(c, classifier, C);
 		m_simFlag = false;
-		m_KUU = new ArrayList<_RankItem>();
-		m_KUL = new ArrayList<_RankItem>();
-		m_threshold = 3.0;
+		m_thresholdFlag = false;
 	}	
 	
-	//Constructor: given k and kPrime
+	//The constructor for majority voting with similarities. If we want consider similarity, use setSimilarity() below. 
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph){
 		super(c, classifier, C, ratio, k, kPrime, alpha, beta, delta, eta, storeGraph);
 		m_simFlag = false;
-		m_KUU = new ArrayList<_RankItem>();
-		m_KUL = new ArrayList<_RankItem>();
-		m_threshold = 3.7;
+		m_thresholdFlag = false;
 	}
 	
-	//Constructor: given k and kPrime
-	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph, boolean simFlag){
+	//The constructor for threshold based majority voting.
+	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C, double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph, double threshold){
 		super(c, classifier, C, ratio, k, kPrime, alpha, beta, delta, eta, storeGraph);
-		m_simFlag = simFlag;
+		m_simFlag = false;
+		m_thresholdFlag = true;
+		m_threshold = threshold;
 		m_KUU = new ArrayList<_RankItem>();
 		m_KUL = new ArrayList<_RankItem>();
-		m_threshold = 3.0;
+	}
+	
+	public void setSimilarity(){
+		m_simFlag = true;
 	}
 	
 	@Override
@@ -53,151 +50,11 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		return String.format("Gaussian Fields by Majority Voting [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
 	}
 	
-	//Take the majority of all neighbors(k+k') as the new label until they converge.
-	void randomWalk(){//construct the sparse graph on the fly every time
-//		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
-		
-		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
-		for (int i = 0; i < m_U; i++) {
-			double[] stat = new double[m_classNo];
-			
-			/****Construct the top k' unlabeled data for the current data.****/
-			for (int j = 0; j < m_U; j++) {
-				if (j == i)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(i, j)));
-			}
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
-			
-			if(!m_simFlag){
-				/**No.1: majority of its neighbors without similarity.**/
-				/****Get the sum of k'UU******/
-				for(_RankItem n: m_kUU){
-					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-					//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
-					stat[labelFu] += (1 - m_beta) * m_eta; 
-					int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
-					stat[labelSVM] += (1 - m_beta) * (1-m_eta);
-				}
-				m_kUU.clear();
-				
-				/****Get the sum of kUL******/
-				for(_RankItem n: m_kUL){
-					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
-					stat[label] += m_beta;
-				}
-				m_kUL.clear();
-				m_fu[i] = Utils.maxOfArrayIndex(stat);	
-			
-			} else{
-				/**No.2: majority of its neighbors with similarity.****/
-				/****Get the sum of k'UU******/
-				for(_RankItem n: m_kUU){
-					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-					//Every unlabeled data get two votes: one from SVM and another from previous votes.
-					stat[labelFu] += (1 - m_beta) * m_eta * n.m_value;
-					int labelSVM = (int) m_Y[n.m_index];
-					stat[labelSVM] += (1 - m_beta) * (1-m_eta) * n.m_value;
-				}
-				m_kUU.clear();
-				
-				/****Get the sum of kUL******/
-				for(_RankItem n: m_kUL){
-					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
-					stat[label] += m_beta * n.m_value;
-				}
-				m_kUL.clear();
-				
-				m_fu[i] = Utils.maxOfArrayIndex(stat);		
-				
-				if(Double.isNaN(m_fu[i]))
-					System.out.println("NaN detected!!!");
-			}
-		}
-	} 
-	
-	//Take the majority of all neighbors(passing similarity threshold) as the new label until they converge.
-//	void randomWalk(){//construct the sparse graph on the fly every time
-//		
-//		for (int i = 0; i < m_U; i++) {
-//			double similarity = 0;
-//			double[] stat = new double[m_classNo];
-//			
-//			/****Construct the top k' unlabeled data which pass the threshold.****/
-//			for (int j = 0; j < m_U; j++) {
-//				if (j == i)
-//					continue;
-//				similarity = getCache(i, j);
-//				if(similarity > m_threshold)
-//					m_KUU.add(new _RankItem(j, similarity));
-////				m_kUU.add(new _RankItem(j, getCache(i, j)));
-//			}
-//			/****Construct the top k labeled data for the current data.****/
-//			for (int j = 0; j < m_L; j++){
-//				similarity = getCache(i, m_U + j);
-//				if(similarity > m_threshold)
-//					m_KUL.add(new _RankItem(m_U + j, similarity));
-//			}
-//			
-//			if(!m_simFlag){
-//				/**No.1: majority of its neighbors without similarity.**/
-//				for(_RankItem n: m_KUU){
-//					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-//					//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
-//					stat[labelFu] += (1 - m_beta) * m_eta; 
-//					int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
-//					stat[labelSVM] += (1 - m_beta) * (1-m_eta);
-//				}
-//				m_KUU.clear();
-//				
-//				for(_RankItem n: m_KUL){
-//					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
-//					stat[label] += m_beta;
-//				}
-//				m_KUL.clear();
-//				//Divide the class priors.
-////				if(stat.length == m_pY.length){
-////					for(int k =0; k < stat.length; k++)
-////						stat[k] /= m_pY[k]; //Normalize it.
-////				}
-//				m_fu[i] = Utils.maxOfArrayIndex(stat);	
-//			
-//			} else{
-//				/**No.2: majority of its neighbors with similarity.****/
-//				for(_RankItem n: m_KUU){
-//					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
-//					//Every unlabeled data get two votes: one from SVM and another from previous votes.
-//					stat[labelFu] += (1 - m_beta) * m_eta * n.m_value;
-//					int labelSVM = (int) m_Y[n.m_index];
-//					stat[labelSVM] += (1 - m_beta) * (1-m_eta) * n.m_value;
-//				}
-//				m_KUU.clear();
-//				
-//				for(_RankItem n: m_KUL){
-//					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
-//					stat[label] += m_beta * n.m_value;
-//				}
-//				m_KUL.clear();
-//				//Divide the class priors.
-////				if(stat.length == m_pY.length){
-////					for(int k =0; k < stat.length; k++)
-////						stat[k] /= m_pY[k]; //Normalize it.
-////				}
-//				m_fu[i] = Utils.maxOfArrayIndex(stat);		
-//				
-//				if(Double.isNaN(m_fu[i]))
-//					System.out.println("NaN detected!!!");
-//			}
-//		}
-//	} 
-
 	//The test for random walk algorithm.
 	public double test(){
 		/***Construct the nearest neighbor graph****/
 		constructGraph(m_storeGraph);
-		
+			
 		if (m_fu_last==null || m_fu_last.length<m_U)
 			m_fu_last = new double[m_U]; //otherwise we can reuse the current memory
 			
@@ -215,9 +72,6 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 				randomWalk();			
 		} while(updateFu() > m_delta);
 			
-		//Adjust the final results to follow the class prior.
-		adjustResults(false);
- 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
 			for(int j=0; j<m_classNo; j++)
@@ -232,14 +86,21 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
 				
-			//To calculate the percentage of correct negihbors.
-			tmpDebug(m_testSet.get(i));
+			//To calculate the purity of neighbors. The only different with the test in father class.
+			if(!m_thresholdFlag)
+				calcPurity(m_testSet.get(i));
+			else 
+				calcThresholdPurity(m_testSet.get(i));
 			if (pred != ans) {
-				if (m_debugOutput!=null)
+				if (m_debugOutput!=null && !m_thresholdFlag)
 					debug(m_testSet.get(i));
+				else if(m_debugOutput!=null && m_thresholdFlag)
+					thresholdDebug(m_testSet.get(i));
 			} else {
-				if (m_debugOutput!=null && Math.random()<0.02)
+				if (m_debugOutput!=null && !m_thresholdFlag && Math.random()<0.02)
 					debug(m_testSet.get(i));
+				else if(m_debugOutput!=null && m_thresholdFlag && Math.random()<0.02)
+					thresholdDebug(m_testSet.get(i));
 				acc ++;
 			}
 		}
@@ -248,41 +109,188 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		return acc/m_U;
 	}
 	
-	public void adjustResults(boolean adjustFlag){
-		if(adjustFlag){
-			sortNegSamples();
-			double adjustNo = m_negSamples.size() - m_pY[0] / m_pY[1] * m_fu.length;
-			Collections.sort(m_negSamples);
-			for(int i = 0; i < adjustNo; i++){
-				int index = m_negSamples.get(i).m_index;
-				m_fu[index] = 1;
+	//Take the majority of all neighbors(k+k') as the new label until they converge.
+	void randomWalk(){//construct the sparse graph on the fly every time
+//		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
+		double similarity = 0;
+		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
+		for (int i = 0; i < m_U; i++) {
+			double[] stat = new double[m_classNo];
+			
+			/****Construct the top k' unlabeled data for the current data.****/
+			for (int j = 0; j < m_U; j++) {
+				if (j == i)
+					continue;
+				if(!m_thresholdFlag)
+					m_kUU.add(new _RankItem(j, getCache(i, j)));
+				else{
+					similarity = getCache(i, j);
+					if(similarity > m_threshold)
+						m_KUU.add(new _RankItem(j, similarity));
+				}
+			}
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++){
+				if(!m_thresholdFlag)
+					m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
+				else{
+					similarity = getCache(i, m_U + j);
+					if(similarity > m_threshold)
+						m_KUL.add(new _RankItem(m_U + j, similarity));
+				}
+			}
+			
+			if(!m_simFlag && !m_thresholdFlag){
+				/**No.1: majority voting without similarity.**/
+				for(_RankItem n: m_kUU){
+					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+					//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
+					stat[labelFu] += (1 - m_beta) * m_eta; 
+					int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
+					stat[labelSVM] += (1 - m_beta) * (1-m_eta);
+				}
+				m_kUU.clear();
+				
+				for(_RankItem n: m_kUL){
+					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
+					stat[label] += m_beta;
+				}
+				m_kUL.clear();
+				m_fu[i] = Utils.maxOfArrayIndex(stat);	
+			
+			} else if(m_simFlag && !m_thresholdFlag){
+				/**No.2: majority voting with similarity.****/
+				for(_RankItem n: m_kUU){
+					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+					//Every unlabeled data get two votes: one from SVM and another from previous votes.
+					stat[labelFu] += (1 - m_beta) * m_eta * n.m_value;
+					int labelSVM = (int) m_Y[n.m_index];
+					stat[labelSVM] += (1 - m_beta) * (1-m_eta) * n.m_value;
+				}
+				m_kUU.clear();
+				
+				for(_RankItem n: m_kUL){
+					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
+					stat[label] += m_beta * n.m_value;
+				}
+				m_kUL.clear();
+				m_fu[i] = Utils.maxOfArrayIndex(stat);		
+				
+			} else if(!m_simFlag && m_thresholdFlag){
+				/**No.3: threshold based majority voting without similarity.***/
+				for(_RankItem n: m_KUU){
+					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+					//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
+					stat[labelFu] += (1 - m_beta) * m_eta; 
+					int labelSVM = (int) m_Y[n.m_index];//SVM's predition.
+					stat[labelSVM] += (1 - m_beta) * (1-m_eta);
+				}
+				m_KUU.clear();
+				
+				for(_RankItem n: m_KUL){
+					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
+					stat[label] += m_beta;
+				}
+				m_KUL.clear();
+				m_fu[i] = Utils.maxOfArrayIndex(stat);	
+			} else{
+				/**No.4: majority voting based majority voting with similarity.****/
+				for(_RankItem n: m_KUU){
+					int labelFu = (int) m_fu[n.m_index]; //Item n's label.
+					//Every unlabeled data get two votes: one from SVM and another from previous votes.
+					stat[labelFu] += (1 - m_beta) * m_eta * n.m_value;
+					int labelSVM = (int) m_Y[n.m_index];
+					stat[labelSVM] += (1 - m_beta) * (1-m_eta) * n.m_value;
+				}
+				m_KUU.clear();
+				
+				for(_RankItem n: m_KUL){
+					int label = (int) m_Y[n.m_index];//Get the item's label from Y array.
+					stat[label] += m_beta * n.m_value;
+				}
+				m_KUL.clear();
+				m_fu[i] = Utils.maxOfArrayIndex(stat);		
 			}
 		}
-	}
+	} 
 	
-	public void sortNegSamples(){
-		ArrayList<Integer> negSampleIndex = new ArrayList<Integer>(); 
-		m_negSamples = new ArrayList<_RankItem>();
-		for(int i=0; i < m_fu.length; i++){//Collect all the negative instances' indexes.
-			if(m_fu[i] == 0)
-				negSampleIndex.add(i);
-		}
-		for(int i=0; i < negSampleIndex.size() ; i++){//Collect average similarities for every point.
-			double avgSim = 0;
-			for(int j=0; j < m_labeled.size(); j++){
-				avgSim += getCache(negSampleIndex.get(i), m_U + j);
-			}
-			avgSim /= m_labeled.size();
-			m_negSamples.add(new _RankItem(negSampleIndex.get(i), avgSim));
-		}
-	}
+
 	//It needs different debug functions to get a sense of how this method works.
 	protected void debug(_Doc d){
+		int id = d.getID();
+		double sameL = 0, sameU = 0;
+		try {
+			m_debugWriter.write("===============================================================================\n");
+			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n", d.getYLabel(), m_fu[id], (int)m_Y[id]));
+
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++){
+				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
+			}
+			for(_RankItem n: m_kUL){
+				int index = m_U + n.m_index;
+				if(m_Y[index]==d.getYLabel())
+					sameL++;
+			}
+			sameL = sameL / (m_kUL.size() + 0.0001);
+			m_debugWriter.write(String.format("Largest: %.4f, Purity: %.4f\n", m_kUL.get(0).m_value, sameL));
+			m_kUL.clear();
+				
+			for (int j = 0; j < m_U; j++) {
+				if (j == id)
+					continue;
+				m_kUU.add(new _RankItem(j, getCache(id, j)));
+			}
+			for(_RankItem n: m_kUU){
+				if(m_testSet.get(n.m_index).getYLabel()==d.getYLabel())
+					sameU++;
+			}
+			sameU = sameU / (m_kUU.size() + 0.0001);
+			m_debugWriter.write(String.format("Largest: %.4f, purity: %.4f\n", m_kUU.get(0).m_value, sameU));
+			m_kUU.clear();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	} 	
+	//This method will be called for every test sample.
+	protected void calcThresholdPurity(_Doc d){
+		double sameL = 0, sameU = 0, similarity = 0;
+		int id = d.getID();
+		
+		/****Construct the top k labeled data for the current data.****/
+		for (int j = 0; j < m_L; j++){
+			similarity = getCache(id, m_U + j);
+			if(similarity > m_threshold){
+				m_KUL.add(new _RankItem(j, similarity));
+				if(m_Y[m_U + j]==d.getYLabel())
+					sameL++;
+			}		
+		}
+		sameL = sameL / (m_KUL.size() + 0.0001);
+		m_KUL.clear();
+		
+		/****Construct the top k' unlabeled data for the current data.****/
+		for (int j = 0; j < m_U; j++) {
+			if (j == id)
+				continue;
+			similarity = getCache(id, j);
+			if(similarity > m_threshold){
+				m_KUU.add(new _RankItem(j, similarity));
+				if(m_testSet.get(j).getYLabel()==d.getYLabel())//shall we use true label?
+					sameU++;
+			}
+		}
+		sameU = sameU / (m_KUU.size() + 0.0001);
+		m_KUU.clear();
+		m_debugStat.add(new double[]{sameL, sameU});
+	} 
+	
+	//It needs different debug functions since they have different data structure to store neighbors.
+	protected void thresholdDebug(_Doc d){
 		int id = d.getID();
 		double similarity, sameL = 0, sameU = 0;
 		try {
 			m_debugWriter.write("===============================================================================\n");
-//			m_debugWriter.write(String.format("Label:%d, prodID:%s, fu:%.4f, SVM:%d, Content:%s\n", d.getYLabel(), d.getItemID(), m_fu[id], (int)m_Y[id], d.getSource()));
 			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n", d.getYLabel(), m_fu[id], (int)m_Y[id]));
 
 			/****Construct the top k labeled data for the current data.****/
@@ -290,7 +298,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 				similarity = getCache(id, m_U + j);
 				if(similarity > m_threshold){
 					m_KUL.add(new _RankItem(j, similarity));
-					if(m_labeled.get(j).getYLabel()==d.getYLabel())
+					if(m_Y[m_U + j]==d.getYLabel())
 						sameL++;
 				}
 			}
@@ -323,63 +331,13 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 			e.printStackTrace();
 		}
 	} 	
-	protected void tmpDebug(_Doc d){
-		double sameL = 0, sameU = 0, similarity = 0;
-		int id = d.getID();
-		_RankItem item;
-		_Doc neighbor;
-		
-//		System.out.println(m_KUL.size());
-		/****Construct the top k labeled data for the current data.****/
-		for (int j = 0; j < m_L; j++){
-			similarity = getCache(id, m_U + j);
-			if(similarity > m_threshold)
-				m_KUL.add(new _RankItem(j, similarity));
-		}
-
-		for(int i=0; i < m_KUL.size(); i++){
-			neighbor = m_labeled.get(m_KUL.get(i).m_index);
-			if(neighbor.getYLabel() == d.getYLabel())
-				sameL++;
-		}
-		sameL = sameL / (m_KUL.size() + 0.0001);
-		m_KUL.clear();
-		
-		/****Construct the top k' unlabeled data for the current data.****/
-		for (int j = 0; j < m_U; j++) {
-			if (j == id)
-				continue;
-			similarity = getCache(id, j);
-			if(similarity > m_threshold)
-				m_KUU.add(new _RankItem(j, similarity));
-		}
-
-		for(int i=0; i < m_KUU.size(); i++){
-			item = m_KUU.get(i);
-			neighbor = m_testSet.get(item.m_index);
-			if(neighbor.getYLabel() == d.getYLabel())
-				sameU++;
-		}
-		sameU = sameU / (m_KUU.size() + 0.0001);
-		m_KUU.clear();
-		m_debugStat.add(new double[]{sameL, sameU});
-	} 	
 	
 	public int predict(_Doc doc) {
 		return -1; //we don't support this in transductive learning
 	}
 	
-	//Save the parameters for classification.
 	@Override
 	public void saveModel(String modelLocation) {
 		
-	}
-	
-	//Construct the look-up table for the later debugging use.
-	public void setFeaturesLookup(HashMap<String, Integer> featureNameIndex){
-		m_IndexFeature = new HashMap<Integer, String>();
-		for(String f: featureNameIndex.keySet()){
-			m_IndexFeature.put(featureNameIndex.get(f), f);
-		}
 	}
 }
