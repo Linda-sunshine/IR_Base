@@ -205,7 +205,7 @@ public class GaussianFields extends BaseClassifier {
 		}
 	}
 	
-	void tmpSimilarityCheck() {
+	void SimilarityCheck() {
 		_Doc d, neighbor;
 		int y;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
@@ -225,7 +225,7 @@ public class GaussianFields extends BaseClassifier {
 			double precision = 0;
 			for(_RankItem n: m_kUU){
 				neighbor = getTestDoc(n.m_index);
-				if (neighbor.getYLabel() == y)
+				if (getLabel(m_fu[n.m_index]) == y)//prediction against the ground-truth
 					precision ++;
 				pos ++;
 				
@@ -298,9 +298,6 @@ public class GaussianFields extends BaseClassifier {
 		/***Set up structure for k nearest neighbors.****/
 		m_kUU = new MyPriorityQueue<_RankItem>(m_kPrime);
 		m_kUL = new MyPriorityQueue<_RankItem>(m_k);
-		
-		//temporary injected code
-		tmpSimilarityCheck();
 		
 		/***Set up document mapping for debugging purpose***/
 		if (m_debugOutput!=null) {
