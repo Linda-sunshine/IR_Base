@@ -45,7 +45,7 @@ public class TransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-MV", "RW-ML"
-		String method = "RW";
+		String method = "RW-MV";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
@@ -111,7 +111,7 @@ public class TransductiveMain {
 			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
 			boolean simFlag = false;
 			double threshold = 0.5;
-			int bound = 2; // bound for generating rating constraints
+			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			double cSampleRate = 0.01; // sampling rate of constraints
 			boolean metricLearning = true;
 			

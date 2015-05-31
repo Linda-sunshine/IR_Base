@@ -169,7 +169,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			Feature[] fv;
 			ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
 			ArrayList<Integer> targetArray = new ArrayList<Integer>();
-			for(int i = 0; i < m_trainSet.size(); i++){//directly using m_trainSet should not be a good idea!
+			for(int i = 0; i < m_trainSet.size(); i++){
 				_Doc di = m_trainSet.get(i);
 				
 				for(int j = i+1; j < m_trainSet.size(); j++){
