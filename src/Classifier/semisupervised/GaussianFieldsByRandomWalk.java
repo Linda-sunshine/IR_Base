@@ -142,12 +142,15 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 		
 		/***use random walk to solve matrix inverse***/
+		int iter = 0;
 		do {
 			if (m_storeGraph)
 				randomWalkWithGraph();
 			else
-				randomWalk();			
+				randomWalk();		
+			iter ++;
 		} while(updateFu() > m_delta);
+		System.out.format("Random walk converges after %d iterations...\n", iter);
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
@@ -187,7 +190,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		_RankItem item;
 		double sim, wijSumU=0, wijSumL=0;
 		double fSumU = 0, fSumL = 0;
-		
 		
 		try {
 			m_debugWriter.write(String.format("%d\t%.4f(%d*,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));

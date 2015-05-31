@@ -17,6 +17,7 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.NewEggPost;
 import structures._Doc;
+import utils.Utils;
 
 /**
  * @author hongning
@@ -93,15 +94,16 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		String[] tokens;
 		String content;
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
-		HashMap<Integer, Double> vPtr;
+		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			tokens = TokenizerNormalizeStemmer(content);
-			vPtr = constructSpVct(tokens, y);
+			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();
+			Utils.mergeVectors(vPtr, docVct);
 			
 			if (!m_releaseContent)
 				buffer.append(String.format("Pros: %s\n", content));
@@ -110,9 +112,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		
 		if ((content=post.getConContent()) != null) {// tokenize cons
 			tokens = TokenizerNormalizeStemmer(content);
-			vPtr = constructSpVct(tokens, y);
+			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();
+			Utils.mergeVectors(vPtr, docVct);
 			
 			if (!m_releaseContent)
 				buffer.append(String.format("Cons: %s\n", content));
@@ -121,9 +124,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		
 		if ((content=post.getComments()) != null) {// tokenize comments
 			tokens = TokenizerNormalizeStemmer(content);
-			vPtr = constructSpVct(tokens, y);
+			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();
+			//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
 			
 			if (!m_releaseContent)
 				buffer.append(String.format("Comments: %s\n", content));
