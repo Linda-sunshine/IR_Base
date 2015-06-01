@@ -16,7 +16,6 @@ public class AmazonReviewMain {
 
 	public static void main(String[] args) throws IOException, ParseException{
 		/*****Set these parameters before run the classifiers.*****/
-		int featureSize = 0; //Initialize the fetureSize to be zero at first.
 		int classNumber = 5; //Define the number of classes
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
@@ -31,9 +30,9 @@ public class AmazonReviewMain {
 		
 		//"NB", "LR", "SVM", "PR"
 		String classifier = "SVM"; //Which classifier to use.
-		double C = 0.1;
+		double C = 1.0;
 //		String modelPath = "./data/Model/";
-		String debugOutput = "data/debug/LR.output";
+		String debugOutput = null; //"data/debug/LR.output";
 		
 		System.out.println("--------------------------------------------------------------------------------------");
 		System.out.println("Parameters of this run:" + "\nClassNumber: " + classNumber + "\tNgram: " + Ngram + "\tFeatureValue: " + featureValue + "\tLearning Method: " + style + "\tClassifier: " + classifier + "\nCross validation: " + CVFold);
@@ -47,45 +46,39 @@ public class AmazonReviewMain {
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		
 		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
 		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
 		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
-		String vctFile = String.format("data/Fvs/vct_%s_small.dat", pattern);		
+		String vctFile = String.format("data/Fvs/vct_%s_tablet_small.dat", pattern);		
 		
 		/*****Parameters in time series analysis.*****/
 		int window = 0;
 		System.out.println("Window length: " + window);
 		System.out.println("--------------------------------------------------------------------------------------");
 		
-		/****Loading json files*****/
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		
-		/****Feature selection*****/
-		System.out.println("Performing feature selection, wait...");
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		analyzer.SaveCVStat(fvStatFile);	
+//		/****Loading json files*****/
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		
+//		/****Feature selection*****/
+//		System.out.println("Performing feature selection, wait...");
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		analyzer.SaveCVStat(fvStatFile);	
 		
 		/****create vectors for documents*****/
 		System.out.println("Creating feature vectors, wait...");
-//		jsonAnalyzer 
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 //		analyzer.setTimeFeatures(window);
 		
-		featureSize = analyzer.getFeatureSize();
 		_Corpus corpus = analyzer.getCorpus();
-		
-		//temporal code to add pagerank weights
-//		PageRank tmpPR = new PageRank(corpus, classNumber, featureSize + window, C, 100, 50, 1e-6);
-//		tmpPR.train(corpus.getCollection());
 		
 		/********Choose different classification methods.*********/
 		//Execute different classifiers.
