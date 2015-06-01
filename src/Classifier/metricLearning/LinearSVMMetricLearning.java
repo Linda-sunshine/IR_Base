@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 0.25; // SVM's trade-off for L1 feature selection
+	double m_L1C = 0.6; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
@@ -62,13 +62,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		if (!m_learningBased) {
 			_SparseFeature[] xi = di.getProjectedFv(), xj = dj.getProjectedFv(); 
 			if (xi==null || xj==null)
-				return 0;
+				return super.getSimilarity(di, dj);
 			else
 				similarity = Math.exp(Utils.calculateSimilarity(xi, xj));
 		} else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
-				return 0;
+				return super.getSimilarity(di, dj);
 			else
 				similarity = Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
 		}
@@ -153,8 +153,8 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		if (!m_learningBased)
 			return null;
 		
-		int mustLink = 0, cannotLink = 0, label;
-		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1000, false);
+		int mustLink = 0, cannotLink = 0, label, PP=0, NN=0;
+		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(800, false);
 		//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
 		Feature[] fv;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
@@ -172,6 +172,16 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					label = 0;
 				else
 					continue;
+				
+				if (label==1) {
+					if (di.getYLabel()==1)
+						PP++;
+					else
+						NN++;
+					
+					if (PP>NN+100)
+						continue;
+				}
 				
 				double sim = super.getSimilarity(di, dj);
 				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
