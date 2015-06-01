@@ -24,7 +24,7 @@ public class MyTransductiveMain {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 40;
+		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
@@ -37,9 +37,9 @@ public class MyTransductiveMain {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_DF_3185.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_DF_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_output_0515.txt";
+		String aspectlist = "./data/Model/aspect_output_0521.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "MV", "RW"
@@ -96,6 +96,11 @@ public class MyTransductiveMain {
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	
 		
+		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
+		String yFile = String.format("./data/MetricLearning/%s_yFile.csv", style);
+		analyzer.printTopicMatrix(xFile, yFile);
+		String matrixFile = "";
+		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 //		c.mapLabels(3);
@@ -109,7 +114,7 @@ public class MyTransductiveMain {
 			double tDelta = 1e-4, tEta =1; // convergence of random walk, weight of random walk
 			GaussianFields myRW = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myRW.setDebugOutput(debugOutput);
-			myRW.setFeaturesLookup(analyzer.getFeaturesLookup());
+			myRW.setFeatures(analyzer.getFeatures());
 			myRW.crossValidation(CVFold, c);
 			myRW.printStat();
 		} else if (style.equals("MV")){
@@ -118,8 +123,10 @@ public class MyTransductiveMain {
 			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
-			GaussianFieldsByMajorityVoting myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 3.8);
+			GaussianFieldsByMajorityVoting myMV = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
 			myMV.setDebugOutput(debugOutput);
+			myMV.setFeatures(analyzer.getFeatures());
+			myMV.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
 //			myMV.setSimilarity();
 			myMV.crossValidation(CVFold, c);
 			myMV.printStat();

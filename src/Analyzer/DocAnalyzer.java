@@ -191,8 +191,6 @@ public class DocAnalyzer extends Analyzer {
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
 				if (m_featureNameIndex.containsKey(token)) {
-					if(m_featureNameIndex.containsKey("null"))
-						System.out.println(m_featureNameIndex.get("null"));
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {
 						value = spVct.get(index) + 1;
@@ -223,32 +221,6 @@ public class DocAnalyzer extends Analyzer {
 		}
 		
 		return spVct;
-	}
-	
-	public void rollBack(HashMap<Integer, Double> spVct, int y){
-		if (!m_isCVLoaded) {
-			setFeatureIndexName();//Get the current index-feature lookup table.
-			for(int index: spVct.keySet()){
-				String token = m_featureIndexName.get(index);
-				_stat stat = m_featureStat.get(token);
-				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
-					m_featureNameIndex.remove(index);
-					m_featureStat.remove(token);
-					m_featureNames.remove(token);
-				}
-				else{//If the feature is not the first time to show in feature set.
-					m_featureStat.get(token).minusOneDF(y);
-					m_featureStat.get(token).minusNTTF(y, spVct.get(index));
-				}
-			}
-		} else{//If CV is loaded, we can minus the DF and TTF directly.
-//			setFeatureIndexName(); //Add this step to LoadCV to avoid repetitive operations.
-			for(int index: spVct.keySet()){
-				String token = m_featureIndexName.get(index);
-				m_featureStat.get(token).minusOneDF(y);
-				m_featureStat.get(token).minusNTTF(y, spVct.get(index));
-			}
-		}
 	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.

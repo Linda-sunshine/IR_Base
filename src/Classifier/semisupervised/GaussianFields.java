@@ -47,10 +47,12 @@ public class GaussianFields extends BaseClassifier {
 
 	Thread[] m_threadpool;
 
-	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
+//	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
 	boolean m_topicFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
 	ArrayList<double[]> m_debugStat;
 	//Randomly pick 10% of all the training documents.
+	ArrayList<String> m_featureNames;//Store all features for debugging purpose.
+	double[][] m_A; //The matrix used to store the result of metric learning.
 
 	public GaussianFields(_Corpus c, String classifier, double C){
 		super(c);
@@ -90,7 +92,7 @@ public class GaussianFields extends BaseClassifier {
 
 		m_topicFlag = false;
 		setClassifier(classifier, C);
-		m_IndexFeature = new HashMap<Integer, String>();
+//		m_IndexFeature = new HashMap<Integer, String>();
 		m_debugStat = new ArrayList<double[]>();
 	}
 	
@@ -209,7 +211,6 @@ public class GaussianFields extends BaseClassifier {
 	public double getSimilarity(_Doc di, _Doc dj) {
 		
 //		return Math.exp(Utils.cosine(di.getSparse(), dj.getSparse()));
-
 		return Math.exp(Utils.calculateSimilarity(di, dj));
 //		int topicSize = di.m_topics.length;
 //		return Math.exp(2*Utils.calculateSimilarity(di, dj) - Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
@@ -492,7 +493,7 @@ public class GaussianFields extends BaseClassifier {
 			m_debugWriter.write(String.format("Label:%d, prodID:%s, fu:%.4f, getLabel1:%d, getLabel3:%d, SVM:%d, Content:%s\n", d.getYLabel(), d.getItemID(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id], d.getSource()));
 			
 			for(int i = 0; i< dsfs.length; i++){
-				String feature = m_IndexFeature.get(dsfs[i].getIndex());
+				String feature = m_featureNames.get(dsfs[i].getIndex());
 				m_debugWriter.write(String.format("(%s %.4f),", feature, dsfs[i].getValue()));
 			}
 			m_debugWriter.write("\n");
@@ -524,7 +525,7 @@ public class GaussianFields extends BaseClassifier {
 					_SparseFeature tmp1 = dsfs[pointer1];
 					_SparseFeature tmp2 = sfs[pointer2];
 					if(tmp1.getIndex() == tmp2.getIndex()){
-						String feature = m_IndexFeature.get(tmp1.getIndex());
+						String feature = m_featureNames.get(tmp1.getIndex());
 						m_debugWriter.write(String.format("(%s %.4f),", feature, tmp2.getValue()));
 						pointer1++;
 						pointer2++;
@@ -564,7 +565,7 @@ public class GaussianFields extends BaseClassifier {
 					_SparseFeature tmp1 = dsfs[pointer1];
 					_SparseFeature tmp2 = sfs[pointer2];
 					if(tmp1.getIndex() == tmp2.getIndex()){
-						String feature = m_IndexFeature.get(tmp1.getIndex());
+						String feature = m_featureNames.get(tmp1.getIndex());
 						m_debugWriter.write(String.format("(%s %.4f),", feature, tmp2.getValue()));
 						pointer1++;
 						pointer2++;
@@ -629,14 +630,6 @@ public class GaussianFields extends BaseClassifier {
 		
 	}
 	
-	//Construct the look-up table for the later debugging use.
-	public void setFeaturesLookup(HashMap<String, Integer> featureNameIndex){
-		m_IndexFeature = new HashMap<Integer, String>();
-		for(String f: featureNameIndex.keySet()){
-			m_IndexFeature.put(featureNameIndex.get(f), f);
-		}
-	}
-	
 	public void printStat(){
 		double sumL = 0, sumU = 0;
 		for(int i =0 ; i < m_debugStat.size(); i++){
@@ -646,5 +639,13 @@ public class GaussianFields extends BaseClassifier {
 		sumL = sumL / (m_debugStat.size() + 0.0001);
 		sumU = sumU / (m_debugStat.size() + 0.0001);
 		System.out.print(String.format("L percentage: %.4f, U percentage: %.4f\n", sumL, sumU));
+	}
+	
+	public void setMatrixA(double[][] A){
+		this.m_A = A;
+	}
+	
+	public void setFeatures(ArrayList<String> features){
+		m_featureNames = features;
 	}
 }

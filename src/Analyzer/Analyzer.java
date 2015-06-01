@@ -28,7 +28,7 @@ public abstract class Analyzer {
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
-	protected HashMap<Integer, String> m_featureIndexName; //key: index of the feature; value: content of the feature 
+//	protected HashMap<Integer, String> m_featureIndexName; //key: index of the feature; value: content of the feature 
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
@@ -49,7 +49,7 @@ public abstract class Analyzer {
 		
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
-		m_featureIndexName = new HashMap<Integer, String>();
+//		m_featureIndexName = new HashMap<Integer, String>();
 		m_featureStat = new HashMap<String, _stat>();
 		
 		m_lengthThreshold = minDocLength;
@@ -87,7 +87,7 @@ public abstract class Analyzer {
 			
 			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
 			m_isCVLoaded = true;
-			setFeatureIndexName();
+//			setFeatureIndexName();
 			
 			return true;
 		} catch (IOException e) {
@@ -140,6 +140,31 @@ public abstract class Analyzer {
 		m_corpus.setFeatures(m_featureNames);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		return m_corpus;
+	}
+	
+	public void rollBack(HashMap<Integer, Double> spVct, int y){
+		if (!m_isCVLoaded) {
+			for(int index: spVct.keySet()){
+				String token = m_featureNames.get(index);
+				_stat stat = m_featureStat.get(token);
+				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
+					m_featureNameIndex.remove(index);
+					m_featureStat.remove(token);
+					m_featureNames.remove(token);
+				}
+				else{//If the feature is not the first time to show in feature set.
+					stat.minusOneDF(y);
+					stat.minusNTTF(y, spVct.get(index));
+				}
+			}
+		} else{//If CV is loaded, we can minus the DF and TTF directly.
+			for(int index: spVct.keySet()){
+				String token = m_featureNames.get(index);
+				_stat stat = m_featureStat.get(token);
+				stat.minusOneDF(y);
+				stat.minusNTTF(y, spVct.get(index));
+			}
+		}
 	}
 	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
@@ -228,10 +253,6 @@ public abstract class Analyzer {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb, threshold);
 
 		System.out.println("*******************************************************************");
-		PrintWriter writer = new PrintWriter(new File("./data/features_amazon.txt"));
-		writer.write("The total number of features is: " + m_featureNames.size() + "\n");
-		for(String s: m_featureNames)
-			writer.write(s+"\n");
 		
 		if (featureSelection.equals("DF"))
 			selector.DF(m_featureStat);
@@ -364,11 +385,51 @@ public abstract class Analyzer {
 	public HashMap<String, Integer> getFeaturesLookup(){
 		return m_featureNameIndex;
 	}
-	//Build the hashMap: given the index, find the corresponding feature.
-	public void setFeatureIndexName(){
-		m_featureIndexName.clear();
-		for(String name: m_featureNameIndex.keySet()){
-			m_featureIndexName.put(m_featureNameIndex.get(name), name);
+	
+	public ArrayList<String> getFeatures(){
+		return m_featureNames;
+	}
+	//Print the sparse for matlab to generate A.
+	public void printTopicMatrix(String xFile, String yFile) throws FileNotFoundException{
+		PrintWriter writerX = new PrintWriter(new File(xFile));
+		PrintWriter writerY = new PrintWriter(new File(yFile));
+		for(_Doc d: m_corpus.getCollection()){
+			for(int i=0; i < d.m_topics.length-1; i++){
+				writerX.write(d.m_topics[i]+",");
+			}
+			writerX.write(d.m_topics[d.m_topics.length-1] + "\n");
+			writerY.write(d.getYLabel()+"\n");
 		}
+		writerX.close();
+		writerY.close();
+	}
+	
+	//Load the matrix from the matlab result.
+	public double[][] loadMatrixA(String filename, int numTopics){
+		double[][] A = new double[numTopics][numTopics];
+		int count = 0;
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				double[] tmpD = new double[numTopics];
+				String[] tmpS = line.split("\\s+");
+				if(numTopics == tmpS.length){
+					for(int i = 0; i < numTopics; i++){
+						tmpD[i] = Double.parseDouble(tmpS[i]);
+					}
+				A[count] = tmpD;
+				count++;
+				} else
+					System.err.println("Matrix A: size(A[i]) does not match with feature size!");
+			}
+			if(count != numTopics)
+				System.err.println("Matrix A: size(A) does not match with feature size!");
+			reader.close();
+			System.out.format("Matrix A is loaded from %s successfully!!", filename);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+		return A;
 	}
 }

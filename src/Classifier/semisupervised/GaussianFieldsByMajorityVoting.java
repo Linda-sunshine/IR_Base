@@ -242,7 +242,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 				m_kUU.add(new _RankItem(j, getCache(id, j)));
 			}
 			for(_RankItem n: m_kUU){
-				if(m_testSet.get(n.m_index).getYLabel()==d.getYLabel())
+				if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
 					sameU++;
 			}
 			sameU = sameU / (m_kUU.size() + 0.0001);
