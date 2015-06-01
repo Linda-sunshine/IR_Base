@@ -79,7 +79,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			
 			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
 			if (Double.isNaN(m_fu[i])) {
-				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n");
+				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
 				System.exit(-1);				
 			}
 		}
