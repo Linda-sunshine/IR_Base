@@ -53,6 +53,7 @@ public class VectorReviewMain {
 		analyzer.LoadDoc(vctfile); //Load all the documents as the data set.
 				
 		_Corpus corpus = analyzer.getCorpus();
+		corpus.mapLabels(4); // make it binary
 		
 		/********Choose different classification methods.*********/
 		if (style.equals("SUP")) {
