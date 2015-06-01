@@ -37,7 +37,7 @@ public class VectorReviewMain {
 		
 		/*****The parameters used in loading files.*****/
 		String featureLocation = "data/Features/fv_2gram_BM25_CHI_small.txt";
-		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_small.dat";
+		String vctfile = "data/Fvs/vct_2gram_BM25_CHI_tablet_small.dat";
 		
 //		String featureLocation = "data/Features/fv_fake.txt";
 //		String vctfile = "data/Fvs/LinearRegression.dat";
