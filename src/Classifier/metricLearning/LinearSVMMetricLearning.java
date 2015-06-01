@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 0.1; // SVM's trade-off for L1 feature selection
+	double m_L1C = 0.05; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
@@ -58,19 +58,30 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
+		double similarity;
 		if (!m_learningBased) {
 			_SparseFeature[] xi = di.getProjectedFv(), xj = dj.getProjectedFv(); 
 			if (xi==null || xj==null)
 				return 0;
 			else
-				return Math.exp(Utils.calculateSimilarity(xi, xj));
+				similarity = Math.exp(Utils.calculateSimilarity(xi, xj));
 		} else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
 				return 0;
 			else
-				return Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
+				similarity = Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
 		}
+		
+		if (Double.isNaN(similarity)){
+			System.out.println("similarity calculation hits NaN!");
+			System.exit(-1);
+		} else if (Double.isInfinite(similarity)){
+			System.out.println("similarity calculation hits infinite!");
+			System.exit(-1);
+		}
+		
+		return similarity;			
 	}
 	
 	@Override
