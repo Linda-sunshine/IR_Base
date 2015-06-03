@@ -37,9 +37,9 @@ public class MyTransductiveMain {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_DF_8055.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_DF_3185.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_output_0521.txt";
+		String aspectlist = "./data/Model/aspect_output_0515.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "MV", "RW"
