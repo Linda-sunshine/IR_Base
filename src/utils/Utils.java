@@ -654,13 +654,10 @@ public class Utils {
 	
 	public static double KLsymmetric(double[] p, double [] q) {
 		double sum = 0;
-		for(int i=0; i<p.length; i++){
-			if(p[i] != 0 && q[i] != 0){
-				sum += (p[i]-q[i]) * ( Math.log(p[i]) - Math.log(q[i]));
-				if(Double.isInfinite(sum))
-					System.out.println("Infinity");
-			}
-		}	
+		for(int i=0; i<p.length; i++) {
+			if(p[i] != 0 && q[i] != 0)
+				sum += (p[i]-q[i]) * Math.log(p[i]/q[i]);
+		}
 		return sum;
 	}
 }

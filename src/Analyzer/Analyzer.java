@@ -141,8 +141,8 @@ public abstract class Analyzer {
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		return m_corpus;
 	}
-	
-	public void rollBack(HashMap<Integer, Double> spVct, int y){
+
+	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
 			for(int index: spVct.keySet()){
 				String token = m_featureNames.get(index);
@@ -150,7 +150,7 @@ public abstract class Analyzer {
 				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
 					m_featureNameIndex.remove(index);
 					m_featureStat.remove(token);
-					m_featureNames.remove(token);
+					m_featureNames.remove(index);
 				}
 				else{//If the feature is not the first time to show in feature set.
 					stat.minusOneDF(y);
@@ -311,7 +311,6 @@ public abstract class Analyzer {
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

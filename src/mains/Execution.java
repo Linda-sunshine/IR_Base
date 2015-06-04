@@ -132,7 +132,7 @@ public class Execution  {
 				System.out.println("Start Gaussian Field with distance metric learning by random walk, wait...");
 				model = new LinearSVMMetricLearning(corpus, param.m_classifier, param.m_C,
 					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
-					param.m_bound, param.m_cSampleRate);
+					param.m_bound);
 //				((LinearSVMMetricLearning)model).setMetricLearningMethod(false);
 //				((LinearSVMMetricLearning)model).verification(param.m_CVFold, corpus, param.m_debugOutput);
 			} else {

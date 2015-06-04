@@ -9,7 +9,9 @@ import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
+import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
@@ -33,8 +35,6 @@ public class TransductiveMain {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
-			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
@@ -43,9 +43,12 @@ public class TransductiveMain {
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
 		String style = "SEMI";
+		
+		//"RW", "RW-MV", "RW-ML"
+		String method = "RW-ML";
 				
 		/*****Parameters in transductive learning.*****/
-		String debugOutput = "data/debug/topical.sim";
+		String debugOutput = null;// "data/debug/topical.sim";
 		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
@@ -105,9 +108,26 @@ public class TransductiveMain {
 			double learningRatio = 1.0;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
-			GaussianFields mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
-					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false);
+			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
+			boolean simFlag = false;
+			double threshold = 0.5;
+			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
+			boolean metricLearning = true;
+			
+			GaussianFields mySemi = null;			
+			if (method.equals("RW")) {
+				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
+					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
+			} else if (method.equals("RW-MV")) {
+				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C,
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, threshold); 
+				((GaussianFieldsByMajorityVoting)mySemi).setSimilarity(simFlag);
+			} else if (method.equals("RW-ML")) {
+				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						bound);
+				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
+			}
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {

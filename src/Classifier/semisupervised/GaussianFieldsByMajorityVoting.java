@@ -1,21 +1,15 @@
 package Classifier.semisupervised;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
 
 public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
-	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity or not.
+	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
 	double m_threshold; //The threshold for threshold-based majority voting.
-	
-	ArrayList<_RankItem> m_KUU; //It does not have a specific length for nearest unlabeled data.
-	ArrayList<_RankItem> m_KUL; //It does not have a specific length for nearest labeled data.
 	
 	//The default Constructor, majority voting without similarities.
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
@@ -103,42 +97,42 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	} 
 	
 	//It needs different debug functions to get a sense of how this method works.
-	protected void debug(_Doc d){
-		int id = d.getID();
-		double sameL = 0, sameU = 0;
-		try {
-			m_debugWriter.write("===============================================================================\n");
-			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n", d.getYLabel(), m_fu[id], (int)m_Y[id]));
-
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++){
-				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
-			}
-			for(_RankItem n: m_kUL){
-				int index = m_U + n.m_index;
-				if(m_Y[index]==d.getYLabel())
-					sameL++;
-			}
-			sameL = sameL / (m_kUL.size() + 0.0001);
-			m_debugWriter.write(String.format("Largest: %.4f, Purity: %.4f\n", m_kUL.get(0).m_value, sameL));
-			m_kUL.clear();
-				
-			for (int j = 0; j < m_U; j++) {
-				if (j == id)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(id, j)));
-			}
-			for(_RankItem n: m_kUU){
-				if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
-					sameU++;
-			}
-			sameU = sameU / (m_kUU.size() + 0.0001);
-			m_debugWriter.write(String.format("Largest: %.4f, purity: %.4f\n", m_kUU.get(0).m_value, sameU));
-			m_kUU.clear();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	} 	
+//	protected void debug(_Doc d){
+//		int id = d.getID();
+//		double sameL = 0, sameU = 0;
+//		try {
+//			m_debugWriter.write("===============================================================================\n");
+//			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n", d.getYLabel(), m_fu[id], (int)m_Y[id]));
+//
+//			/****Construct the top k labeled data for the current data.****/
+//			for (int j = 0; j < m_L; j++){
+//				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
+//			}
+//			for(_RankItem n: m_kUL){
+//				int index = m_U + n.m_index;
+//				if(m_Y[index]==d.getYLabel())
+//					sameL++;
+//			}
+//			sameL = sameL / (m_kUL.size() + 0.0001);
+//			m_debugWriter.write(String.format("Largest: %.4f, Purity: %.4f\n", m_kUL.get(0).m_value, sameL));
+//			m_kUL.clear();
+//				
+//			for (int j = 0; j < m_U; j++) {
+//				if (j == id)
+//					continue;
+//				m_kUU.add(new _RankItem(j, getCache(id, j)));
+//			}
+//			for(_RankItem n: m_kUU){
+//				if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
+//					sameU++;
+//			}
+//			sameU = sameU / (m_kUU.size() + 0.0001);
+//			m_debugWriter.write(String.format("Largest: %.4f, purity: %.4f\n", m_kUU.get(0).m_value, sameU));
+//			m_kUU.clear();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	} 	
 
 	public int predict(_Doc doc) {
 		return -1; //we don't support this in transductive learning
@@ -148,4 +142,5 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	public void saveModel(String modelLocation) {
 		
 	}
+
 }

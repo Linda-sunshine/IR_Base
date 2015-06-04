@@ -24,7 +24,6 @@ import org.tartarus.snowball.ext.englishStemmer;
 
 import structures._Doc;
 import structures._SparseFeature;
-import structures._stat;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -182,12 +181,12 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
-	protected HashMap<Integer, Double> constructSpVct(String[] tokens, int y) {
+	protected HashMap<Integer, Double> constructSpVct(String[] tokens, int y, HashMap<Integer, Double> docWordMap) {
 		int index = 0;
 		double value = 0;
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		
-		for (String token : tokens) {
+		for (String token : tokens) {//tokens could come from a sentence or a document
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
 				if (m_featureNameIndex.containsKey(token)) {
@@ -197,7 +196,8 @@ public class DocAnalyzer extends Analyzer {
 						spVct.put(index, value);
 					} else {
 						spVct.put(index, 1.0);
-						m_featureStat.get(token).addOneDF(y);
+						if (docWordMap==null || !docWordMap.containsKey(token))
+							m_featureStat.get(token).addOneDF(y);
 					}
 				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 					expandVocabulary(token);// update the m_featureNames.
@@ -213,7 +213,8 @@ public class DocAnalyzer extends Analyzer {
 					spVct.put(index, value);
 				} else {
 					spVct.put(index, 1.0);
-					m_featureStat.get(token).addOneDF(y);
+					if (docWordMap==null || !docWordMap.containsKey(token))
+						m_featureStat.get(token).addOneDF(y);
 				}
 				m_featureStat.get(token).addOneTTF(y);
 			}
@@ -235,7 +236,7 @@ public class DocAnalyzer extends Analyzer {
 		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
-		HashMap<Integer, Double> spVct = constructSpVct(tokens, y);
+		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
@@ -244,11 +245,11 @@ public class DocAnalyzer extends Analyzer {
 			if (m_releaseContent)
 				doc.clearSource();
 			return true;
-		} else{
+		} else {
+			/****Roll back here!!******/
 			rollBack(spVct, y);
 			return false;
 		}
-//		}
 	}
 	
 	// adding sentence splitting function, modified for HTMM
@@ -256,34 +257,35 @@ public class DocAnalyzer extends Analyzer {
 //		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
 //			return true;
 //		else{
-			String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-			ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
-			int y = doc.getYLabel();
-			
-			for(String sentence : sentences) {
-				String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
-				HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y);			
-				if (sentence_vector.size()>0) {//avoid empty sentence
-					stnList.add(Utils.createSpVct(sentence_vector));
-					Utils.mergeVectors(sentence_vector, spVct);
-				}
-			} // End For loop for sentence	
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		int y = doc.getYLabel();
 		
-			//the document should be long enough
-			if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
-				doc.createSpVct(spVct);
-				doc.setSentences(stnList);
-				m_corpus.addDoc(doc);
-				m_classMemberNo[y]++;
-				if (m_releaseContent)
-					doc.clearSource();
-				return true;
-			} else{
-				rollBack(spVct, y);
-				return false;
+		for(String sentence : sentences) {
+			String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
+			if (sentence_vector.size()>0) {//avoid empty sentence
+				stnList.add(Utils.createSpVct(sentence_vector));
+				Utils.mergeVectors(sentence_vector, spVct);
 			}
+		} // End For loop for sentence	
+	
+		//the document should be long enough
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
+			doc.createSpVct(spVct);
+			doc.setSentences(stnList);
+			m_corpus.addDoc(doc);
+			m_classMemberNo[y]++;
+			
+			if (m_releaseContent)
+				doc.clearSource();
+			return true;
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+			return false;
 		}
-//	}
+	}
 }	
 

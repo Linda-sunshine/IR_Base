@@ -1,9 +1,5 @@
 package topicmodels;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -184,44 +180,7 @@ public abstract class TopicModel {
 		else
 			return 0;
 	}
-	
-	public void tmpSimCheck() {
-		if (m_trainSet==null)
-			m_trainSet = m_corpus.getCollection();
-		
-		try{
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./data/matlab/test.dat"), "UTF-8"));
-			double similarity;
-			int yi, yj, pairSize = 0;
-			for(int i=0; i<m_trainSet.size(); i++) {				
-				_Doc di = m_trainSet.get(i);
-				yi = getLabel(di.getYLabel());
-				
-				for(int j=i+1; j<m_trainSet.size(); j++) {
-					_Doc dj = m_trainSet.get(j);
-					
-					if (Math.random() < 0.95)//di.getItemID().equals(dj.getItemID()) == false || 
-						continue;
-					
-					//if we have topics
-					similarity = Utils.KLsymmetric(di.m_topics, dj.m_topics) / di.m_topics.length;
-					
-					//if we only have bag-of-words
-//					similarity = Utils.calculateSimilarity(di, dj);					
-					
-					yj = getLabel(dj.getYLabel());
-					writer.write(String.format("%s %.5f\n", yi==yj, similarity));	
-					pairSize ++;
-				}
-			}
-			writer.close();
-			System.out.format("%d pairs generated for verification purpose.\n", pairSize);
-			
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
+
 	public double Evaluation() {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;

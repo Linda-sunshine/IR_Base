@@ -1,6 +1,7 @@
 package Classifier.supervised;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import structures._Corpus;
@@ -134,26 +135,27 @@ import Classifier.supervised.liblinear.SolverType;
  */
 public class SVM extends BaseClassifier {
 	Model m_libModel;
-	Parameter m_libParameter;
 	SolverType m_type = SolverType.L1R_L2LOSS_SVC;
+	double m_C;
+	final static public double EPS = 0.001;
 	
 	//Constructor with a given C.
 	public SVM(_Corpus c, double C){
 		super(c);
 		// Set default value of the param.
-		m_libParameter = new Parameter(m_type, C, 0.001);
+		m_C = C;
 	}
 
 	//Constructor with a given C.
 	public SVM(int classNo, int featureSize, double C){
 		super(classNo, featureSize);
 		// Set default value of the param.
-		m_libParameter = new Parameter(m_type, C, 0.001);
+		m_C = C; 
 	}
 		
 	@Override
 	public String toString() {
-		return String.format("SVM[C:%d, F:%d, T:%s, c:%.3f]", m_classNo, m_featureSize, m_libParameter.getSolverType(), m_libParameter.getC());
+		return String.format("SVM[C:%d, F:%d, T:%s, c:%.3f]", m_classNo, m_featureSize, m_type, m_C);
 	}
 	
 	@Override
@@ -163,6 +165,10 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public void train(Collection<_Doc> trainSet) {
+		m_libModel = libSVMTrain(trainSet, m_featureSize, m_type, m_C, -1);
+	}
+	
+	public static Model libSVMTrain(Collection<_Doc> trainSet, int fSize, SolverType type, double C, double bias) {
 		Feature[][] fvs = new Feature[trainSet.size()][];
 		double[] y = new double[trainSet.size()];
 		
@@ -175,10 +181,32 @@ public class SVM extends BaseClassifier {
 		
 		Problem libProblem = new Problem();
 		libProblem.l = fid;
-		libProblem.n = m_featureSize;
+		libProblem.n = fSize;
 		libProblem.x = fvs;
 		libProblem.y = y;
-		m_libModel = Linear.train(libProblem, m_libParameter);
+		libProblem.bias = bias;
+		
+		return Linear.train(libProblem, new Parameter(type, C, SVM.EPS));
+	}
+	
+	public static Model libSVMTrain(ArrayList<Feature[]> featureArray, ArrayList<Integer> targetArray,
+			int fSize, SolverType type, double C, double bias) {
+		
+		Feature[][] featureMatrix = new Feature[featureArray.size()][];
+		double[] targetMatrix = new double[targetArray.size()];
+		for(int i = 0; i < featureArray.size(); i++){
+			featureMatrix[i] = featureArray.get(i);
+			targetMatrix[i] = targetArray.get(i);
+		}
+		
+		Problem libProblem = new Problem();
+		libProblem.l = featureMatrix.length;
+		libProblem.n = fSize;
+		libProblem.x = featureMatrix;
+		libProblem.y = targetMatrix;
+		libProblem.bias = bias;
+		
+		return Linear.train(libProblem, new Parameter(type, C, SVM.EPS));
 	}
 	
 	@Override
