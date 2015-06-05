@@ -1,5 +1,6 @@
 package Analyzer;
 
+import java.awt.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +13,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Set;
 
 import structures._Corpus;
 import structures._Doc;
@@ -144,11 +146,15 @@ public abstract class Analyzer {
 
 	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
-			for(int index: spVct.keySet()){
+			int index = 0;/**modified!***/
+			Object[] keys = spVct.keySet().toArray();
+			Arrays.sort(keys);
+			for(int i = 0; i < keys.length; i++){
+				index = (Integer) keys[keys.length - i - 1];
 				String token = m_featureNames.get(index);
 				_stat stat = m_featureStat.get(token);
 				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
-					m_featureNameIndex.remove(index);
+					m_featureNameIndex.remove(token);/**modified!***/
 					m_featureStat.remove(token);
 					m_featureNames.remove(index);
 				}

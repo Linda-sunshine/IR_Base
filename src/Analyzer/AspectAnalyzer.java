@@ -337,51 +337,43 @@ public class AspectAnalyzer extends jsonAnalyzer {
 //		}
 //	}
 	
-//	public static void main(String[] args){
-//		int[] a = {1, 0, 0, 1};
-//		int[] b = {0, 0, 0};
-//		int[] c = {1, 0, 0, 1, 0};
-//		System.out.println(isEmpty(a));
-//		System.out.println(isEmpty(b));
-//		System.out.println(isEmpty(c));
-//	}
-//	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-//		int classNumber = 2; //Define the number of classes
-//		int Ngram = 2; //The default value is bigram. 
-//		int lengthThreshold = 10; //Document length threshold
-//		
-////		/*****Parameters in feature selection.*****/
-//		String featureSelection = "DF"; //Feature selection method.
-//		int chiSize = 50; // top ChiSquare words for aspect keyword selection
-//		String stopwords = "./data/Model/stopwords.dat";
-//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-//		double endProb = 1; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-//		
-//		/*****The parameters used in loading files.*****/
-//		String folder = "./data/amazon/small/dedup/RawData";
-//		String suffix = ".json";
-//		String tokenModel = "./data/Model/en-token.bin"; //Token model
-//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-//		String aspectModel = "./data/Model/sentiment_input.txt"; // list of keywords in each aspect
-//		String aspectOutput = "./data/Model/sentiment_output.txt"; // list of keywords in each aspect
-//		
-//		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-//		String fvFile = "data/Features/fv_2gram_9555.txt";
-////		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
-//		
-//		/****Loading json files*****/
-////		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
+	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
+		int classNumber = 2; //Define the number of classes
+		int Ngram = 2; //The default value is bigram. 
+		int lengthThreshold = 10; //Document length threshold
+		
+//		/*****Parameters in feature selection.*****/
+		String featureSelection = "DF"; //Feature selection method.
+		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+		String stopwords = "./data/Model/stopwords.dat";
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+		
+		/*****The parameters used in loading files.*****/
+		String folder = "./data/amazon/small/dedup/RawData";
+		String suffix = ".json";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
+		String aspectModel = "./data/Model/topic_sentiment_input.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/topic_sentiment_output.txt"; // list of keywords in each aspect
+		
+		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
+		String fvFile = "data/Features/fv_2gram_topic_sentiment.txt";
+//		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		
+		/****Loading json files to do feature selection first.*****/
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		
-//		/****Feature selection*****/
 //		System.out.println("Performing feature selection, wait...");
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-////		analyzer.SaveCVStat(fvStatFile);
-//		
-//		/****Aspect annotation*****/
-////		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
-//	}
+//		analyzer.SaveCVStat(fvStatFile);
+		
+		/****After feature selection, do aspect annotation*****/
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);		
+	}
 }

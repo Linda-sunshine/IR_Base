@@ -264,6 +264,9 @@ public class _Doc implements Comparable<_Doc> {
 		Utils.randomize(m_sstat, alpha);
 	}
 	
+	public double[] getTopics(){
+		return m_topics;
+	}
 	//create necessary structure for variational inference
 	public void setTopics4Variational(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {

@@ -609,38 +609,30 @@ public class GaussianFields extends BaseClassifier {
 	protected void calcPurity(_Doc d){
 		double sameL = 0, sameU = 0;
 		int id = d.getID();
-		_RankItem item;
-		_Doc neighbor;
 		
-		//find top five labeled
-		/****Construct the top k labeled data for the current data.****/
+		//Collect kUL and calculate purity.
 		for (int j = 0; j < m_L; j++){
 			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
 		}
-
-		/****Get the top 5 elements from kUL******/
-		for(int i=0; i < m_kUL.size(); i++){
-			neighbor = m_labeled.get(m_kUL.get(i).m_index);
-			if(neighbor.getYLabel() == d.getYLabel())
+		for(_RankItem n: m_kUL){
+			int index = m_U + n.m_index;
+			if(m_Y[index]==d.getYLabel())
 				sameL++;
 		}
-		sameL = sameL / m_kUL.size();
+		sameL = sameL / (m_kUL.size() + 0.0001);
 		m_kUL.clear();
 		
-		/****Construct the top k' unlabeled data for the current data.****/
+		//Collect kUU and calculate purity.
 		for (int j = 0; j < m_U; j++) {
 			if (j == id)
 				continue;
 			m_kUU.add(new _RankItem(j, getCache(id, j)));
 		}
-		/****Get the top 5 elements from k'UU******/
-		for(int i=0; i < m_kUU.size(); i++){
-			item = m_kUU.get(i);
-			neighbor = m_testSet.get(item.m_index);
-			if(neighbor.getYLabel() == d.getYLabel())
+		for(_RankItem n: m_kUU){
+			if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
 				sameU++;
 		}
-		sameU = sameU / m_kUU.size();
+		sameU = sameU / (m_kUU.size() + 0.0001);
 		m_kUU.clear();
 		m_debugStat.add(new double[]{sameL, sameU});
 	} 	
@@ -663,7 +655,7 @@ public class GaussianFields extends BaseClassifier {
 		}
 		sumL = sumL / (m_debugStat.size() + 0.0001);
 		sumU = sumU / (m_debugStat.size() + 0.0001);
-		System.out.print(String.format("L percentage: %.4f, U percentage: %.4f\n", sumL, sumU));
+		System.out.print(String.format("L&U purity\t%.4f\t%.4f\n", sumL, sumU));
 	}
 	
 	public void setMatrixA(double[][] A){

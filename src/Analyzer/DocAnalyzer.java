@@ -24,6 +24,7 @@ import org.tartarus.snowball.ext.englishStemmer;
 
 import structures._Doc;
 import structures._SparseFeature;
+import structures._stat;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -189,6 +190,9 @@ public class DocAnalyzer extends Analyzer {
 		for (String token : tokens) {//tokens could come from a sentence or a document
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
+//				if(token.equals("veri-expens")){
+//					System.out.println("bug");
+//				}
 				if (m_featureNameIndex.containsKey(token)) {
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {

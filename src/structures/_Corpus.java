@@ -172,6 +172,29 @@ public class _Corpus {
 		} 
 	}
 	
+	public void saveTopicFile(String filename){
+		if (filename==null || filename.isEmpty()) {
+			System.out.println("Please specify the topic file name to save the topic vectors!");
+			return;
+		}
+		
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
+			for(_Doc doc:m_collection) {
+				writer.write(String.format("%d", doc.getYLabel()));
+				for(double v: doc.getTopics()){
+					writer.write(String.format("%f", v));//index starts from 1
+				}
+				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));//product ID and review ID
+			}
+			writer.close();
+			
+			System.out.format("%d topic vectors saved to %s\n", m_collection.size(), filename);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+	}
+	
 	public void saveAs3WayTensor(String filename) {
 		System.out.format("Save 3-way tensor to %s...\n", filename);
 		try {
