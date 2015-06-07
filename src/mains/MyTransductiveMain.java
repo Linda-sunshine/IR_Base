@@ -18,14 +18,14 @@ import Classifier.supervised.SVM;
 public class MyTransductiveMain {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
+		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 10; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 100;
+		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
@@ -38,10 +38,11 @@ public class MyTransductiveMain {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_DF_8055.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-//		String aspectlist = "./data/Model/aspect_output_0521.txt";
-		String aspectlist = "./data/Model/sentiment_output.txt";
+//		String aspectlist = "./data/Model/sentiment_output.txt";
+//		String aspectlist = "./data/Model/topic_sentiment_output.txt";
+		String aspectlist = "./data/Model/aspect_output_simple.txt";
 		
 //		String topicFile = "./data/";
 //		analyzer.saveTopic();
@@ -82,6 +83,7 @@ public class MyTransductiveMain {
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
+		if(style.equals("SEMI")){
 		pLSA tModel = null;
 		if (topicmodel.equals("pLSA")) {			
 			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
@@ -103,8 +105,7 @@ public class MyTransductiveMain {
 		tModel.setDisplay(true);
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	
-		
-		
+		}
 		
 //		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
 //		String yFile = String.format("./data/MetricLearning/%s_yFile.csv", style);
@@ -113,13 +114,13 @@ public class MyTransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(3);
+//		c.mapLabels(3);
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1;
-			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
+			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
 			
