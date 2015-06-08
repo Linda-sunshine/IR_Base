@@ -1,6 +1,9 @@
 package Classifier.semisupervised;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 
 import structures._Corpus;
@@ -11,6 +14,8 @@ import utils.Utils;
 public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
 	double m_threshold; //The threshold for threshold-based majority voting.
+	PrintWriter m_writerPos;
+	PrintWriter m_writerNeg;
 	
 	//The default Constructor, majority voting without similarities.
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
@@ -142,5 +147,31 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	public void saveModel(String modelLocation) {
 		
 	}
-
+	public void setPrinter(String filePos, String fileNeg) throws FileNotFoundException{
+		m_writerPos = new PrintWriter(new File(filePos));
+		m_writerNeg = new PrintWriter(new File(fileNeg));
+	}
+	protected void calcPurity(_Doc d){
+		int label = d.getYLabel();
+		int id = d.getID();
+		
+		//Collect kUL and calculate purity.
+		for (int j = 0; j < m_L; j++){
+			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
+		}
+		for(_RankItem n: m_kUL){
+			int index = m_U + n.m_index;
+			if(m_Y[index]==d.getYLabel()){
+				if(label == 0)
+					m_writerNeg.write(String.format("%.4f\t",n.m_value));
+				else
+					m_writerPos.write(String.format("%.4f\t",n.m_value));
+			}
+		}
+		if(label == 0)
+			m_writerNeg.write("\n");
+		else
+			m_writerPos.write("\n");
+		m_kUL.clear();
+	} 	
 }

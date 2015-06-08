@@ -1,9 +1,12 @@
 package Classifier.semisupervised;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +56,7 @@ public class GaussianFields extends BaseClassifier {
 //	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
 	boolean m_topicFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
 	ArrayList<double[]> m_debugStat;
+//	ArrayList<Double> m_posL, m_negL;
 	//Randomly pick 10% of all the training documents.
 	ArrayList<String> m_featureNames;//Store all features for debugging purpose.
 	double[][] m_A; //The matrix used to store the result of metric learning.
@@ -97,6 +101,8 @@ public class GaussianFields extends BaseClassifier {
 		setClassifier(classifier, C);
 //		m_IndexFeature = new HashMap<Integer, String>();
 		m_debugStat = new ArrayList<double[]>();
+//		m_posL = new ArrayList<Double>();
+//		m_negL = new ArrayList<Double>();
 	}
 	
 	public void setTopicFlag(boolean a){
@@ -217,7 +223,13 @@ public class GaussianFields extends BaseClassifier {
 			return Math.exp(Utils.calculateSimilarity(di, dj));
 		int topicSize = di.m_topics.length;
 		double alpha = 1.0, beta = 1.0;
-		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+		if(m_A != null){
+//			double topicSim = Utils.calculateMDistance(di, dj, m_A);
+			return Math.exp(alpha*Utils.calculateSimilarity(di, dj)) - beta*Utils.calculateMDistance(di, dj, m_A);
+		} else
+//			return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+//			return Math.exp(-beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+			return Math.exp(Utils.cosine(di.getTopics(), dj.getTopics()));
 	}
 	
 	protected void calcSimilarityInThreads(){
@@ -657,6 +669,16 @@ public class GaussianFields extends BaseClassifier {
 		sumU = sumU / (m_debugStat.size() + 0.0001);
 		System.out.print(String.format("L&U purity\t%.4f\t%.4f\n", sumL, sumU));
 	}
+	
+//	public void printSimilarity(String filename) throws FileNotFoundException{
+//		PrintWriter writer = new PrintWriter(new File(filename));
+//		for(double a: m_posL)
+//			writer.write(a+"\t");
+//		writer.write("\n");
+//		for(double b: m_negL)
+//			writer.write(b+"\t");
+//		writer.close();
+//	}
 	
 	public void setMatrixA(double[][] A){
 		this.m_A = A;

@@ -83,7 +83,7 @@ public class MyTransductiveMain {
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-		if(style.equals("SEMI")){
+		if(style.equals("SEMIII")){
 		pLSA tModel = null;
 		if (topicmodel.equals("pLSA")) {			
 			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
@@ -110,7 +110,7 @@ public class MyTransductiveMain {
 //		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
 //		String yFile = String.format("./data/MetricLearning/%s_yFile.csv", style);
 //		analyzer.printTopicMatrix(xFile, yFile);
-//		String matrixFile = "";
+		String matrixFile = "./data/MetricLearning/matrixA_2.dat";
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
@@ -128,6 +128,8 @@ public class MyTransductiveMain {
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			boolean metricLearning = true;
 			
+			String filePos = String.format("./data/posSimi_%d_%d.xls", k, kPrime);
+			String fileNeg = String.format("./data/negSimi_%d_%d.xls", k, kPrime);
 			GaussianFields mySemi = null;			
 			if (method.equals("RW")) {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
@@ -138,10 +140,11 @@ public class MyTransductiveMain {
 				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
 				mySemi.setDebugOutput(debugOutput);
 				mySemi.setFeatures(analyzer.getFeatures());
+				((GaussianFieldsByMajorityVoting) mySemi).setPrinter(filePos, fileNeg);
 //				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
 //				mySemi.setSimilarity();
 				mySemi.crossValidation(CVFold, c);
-				mySemi.printStat();
+//				mySemi.printStat();
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);

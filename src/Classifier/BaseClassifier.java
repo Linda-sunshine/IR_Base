@@ -121,14 +121,14 @@ public abstract class BaseClassifier {
 //						m_testSet.add(docs.get(j));
 					
 					//more for training
-					if(masks[j]==i && Math.random()< 0.04) 
-						m_trainSet.add(docs.get(j));
-					else
-						m_testSet.add(docs.get(j));
-//					if(masks[j]==i) 
-//						m_testSet.add(docs.get(j));
-//					else
+//					if(masks[j]==i && Math.random()< 0.1) 
 //						m_trainSet.add(docs.get(j));
+//					else
+//						m_testSet.add(docs.get(j));
+					if(masks[j]==i) 
+						m_testSet.add(docs.get(j));
+					else
+						m_trainSet.add(docs.get(j));
 				}
 				
 				long start = System.currentTimeMillis();

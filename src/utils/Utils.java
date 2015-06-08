@@ -660,4 +660,36 @@ public class Utils {
 		}
 		return sum;
 	}
+	
+	public static double calculateMDistance(_Doc d1, _Doc d2, double[][] A){
+		double distance = 0, tmp = 0;
+		double[] t1 = d1.getTopics(), t2 = d2.getTopics();
+		double[] tmpArray = new double[A.length]; 
+		for(int i = 0; i < tmpArray.length; i++){
+			for(int j = 0; j < t1.length; j++)
+				tmp += (t1[j] - t2[j]) * A[j][i];
+			tmpArray[i] = tmp;
+			tmp = 0;
+		}//(x_i - x_j)^T * A
+		for(int i = 0; i < tmpArray.length; i++){
+			distance += tmpArray[i] * (t1[i] - t2[i]);
+		} //(x_i - x_j)^T * A * (x_i - x_j)
+//		System.out.println(distance);
+		return distance;
+	}
+	
+	public static double cosine(double[] t1, double[] t2){
+		double similarity = 0, sum1 = 0, sum2 = 0;
+		if(t1.length == t2.length){
+			for(int i=0; i < t1.length; i++){
+				similarity += t1[i] * t2[i];
+				sum1 += t1[i] * t1[i];
+				sum2 += t2[i] * t2[i];
+			}
+			sum1 = Math.sqrt(sum1);
+			sum2 = Math.sqrt(sum2);
+			similarity = similarity / (sum1 * sum2);
+		}
+		return similarity;
+	}
 }
