@@ -62,13 +62,13 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		if (!m_learningBased) {
 			_SparseFeature[] xi = di.getProjectedFv(), xj = dj.getProjectedFv(); 
 			if (xi==null || xj==null)
-				return super.getSimilarity(di, dj);
+				return super.getSimilarity(di, dj);//is this a good back-off?
 			else
 				similarity = Math.exp(Utils.calculateSimilarity(xi, xj));
 		} else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
-				return super.getSimilarity(di, dj);
+				return super.getSimilarity(di, dj);//is this a good back-off?
 			else
 				similarity = Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
 		}
@@ -98,18 +98,6 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		super.constructGraph(createSparseGraph);
 	}
 	
-	double argmaxW(double[] w, int start, int size) {
-		double max = Math.abs(w[start]);
-		int index = 0;
-		for(int i=1; i<size; i++) {
-			if (Math.abs(w[start+i]) > max) {
-				max = Math.abs(w[start+i]);
-				index = i;
-			}
-		}
-		return w[start+index];
-	}
-	
 	//using L1 SVM to select a subset of features
 	void selFeatures(Collection<_Doc> trainSet, double C) {
 		//use L1 regularization to reduce the feature size		
@@ -135,7 +123,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			try {
 				for(int i=0; i<m_featureSize; i++) {
 					if (m_selectedFVs.containsKey(i)) {
-						m_debugWriter.write(String.format("%s(%.2f), ", m_corpus.getFeature(i), argmaxW(w, i*cSize, cSize)));
+						m_debugWriter.write(String.format("%s(%.2f), ", m_corpus.getFeature(i), Utils.max(w, i*cSize, cSize)));
 					}
 				}
 				m_debugWriter.write("\n");
