@@ -674,7 +674,6 @@ public class Utils {
 		for(int i = 0; i < tmpArray.length; i++){
 			distance += tmpArray[i] * (t1[i] - t2[i]);
 		} //(x_i - x_j)^T * A * (x_i - x_j)
-//		System.out.println(distance);
 		return distance;
 	}
 	

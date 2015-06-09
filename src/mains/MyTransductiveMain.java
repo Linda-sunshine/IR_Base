@@ -44,9 +44,6 @@ public class MyTransductiveMain {
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
 		String aspectlist = "./data/Model/aspect_output_simple.txt";
 		
-//		String topicFile = "./data/";
-//		analyzer.saveTopic();
-		
 		/*****Parameters in learning style.*****/
 		//"SEMI"
 		String style = "SEMI";
@@ -56,7 +53,7 @@ public class MyTransductiveMain {
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
-		String debugOutput = String.format("data/debug/%s_debug.output", style);
+		String debugOutput = String.format("data/debug/%s_%s_debug.output", style, method);
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -83,7 +80,7 @@ public class MyTransductiveMain {
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-		if(style.equals("SEMIII")){
+		if(style.equals("SEMI")){
 		pLSA tModel = null;
 		if (topicmodel.equals("pLSA")) {			
 			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
@@ -120,7 +117,7 @@ public class MyTransductiveMain {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1;
-			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
+			int k = 40, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
 			
@@ -128,8 +125,8 @@ public class MyTransductiveMain {
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			boolean metricLearning = true;
 			
-			String filePos = String.format("./data/posSimi_%d_%d.xls", k, kPrime);
-			String fileNeg = String.format("./data/negSimi_%d_%d.xls", k, kPrime);
+//			String filePos = String.format("./data/posSimi_%d_%d.xls", k, kPrime);
+//			String fileNeg = String.format("./data/negSimi_%d_%d.xls", k, kPrime);
 			GaussianFields mySemi = null;			
 			if (method.equals("RW")) {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
@@ -140,11 +137,10 @@ public class MyTransductiveMain {
 				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
 				mySemi.setDebugOutput(debugOutput);
 				mySemi.setFeatures(analyzer.getFeatures());
-				((GaussianFieldsByMajorityVoting) mySemi).setPrinter(filePos, fileNeg);
 //				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
 //				mySemi.setSimilarity();
 				mySemi.crossValidation(CVFold, c);
-//				mySemi.printStat();
+				mySemi.printStat();
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);

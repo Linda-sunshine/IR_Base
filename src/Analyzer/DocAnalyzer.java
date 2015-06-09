@@ -234,9 +234,6 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	protected boolean AnalyzeDoc(_Doc doc) {
-//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-//			return true;
-//		else{
 		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
@@ -246,8 +243,8 @@ public class DocAnalyzer extends Analyzer {
 			doc.createSpVct(spVct);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
-			if (m_releaseContent)
-				doc.clearSource();
+//			if (m_releaseContent)
+//				doc.clearSource();
 			return true;
 		} else {
 			/****Roll back here!!******/
@@ -258,9 +255,6 @@ public class DocAnalyzer extends Analyzer {
 	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-//			return true;
-//		else{
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
@@ -282,8 +276,8 @@ public class DocAnalyzer extends Analyzer {
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			
-			if (m_releaseContent)
-				doc.clearSource();
+//			if (m_releaseContent)
+//				doc.clearSource();
 			return true;
 		} else {
 			/****Roll back here!!******/

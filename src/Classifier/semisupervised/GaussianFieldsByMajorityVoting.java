@@ -108,7 +108,7 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		double sameL = 0, sameU = 0;
 		try {
 			m_debugWriter.write("===============================================================================\n");
-			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n", d.getYLabel(), m_fu[id], (int)m_Y[id]));
+			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n%s\n", d.getYLabel(), m_fu[id], (int)m_Y[id], d.getSource()));
 
 			for (int j = 0; j < m_L; j++){
 				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
@@ -147,31 +147,4 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	public void saveModel(String modelLocation) {
 		
 	}
-	public void setPrinter(String filePos, String fileNeg) throws FileNotFoundException{
-		m_writerPos = new PrintWriter(new File(filePos));
-		m_writerNeg = new PrintWriter(new File(fileNeg));
-	}
-	protected void calcPurity(_Doc d){
-		int label = d.getYLabel();
-		int id = d.getID();
-		
-		//Collect kUL and calculate purity.
-		for (int j = 0; j < m_L; j++){
-			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
-		}
-		for(_RankItem n: m_kUL){
-			int index = m_U + n.m_index;
-			if(m_Y[index]==d.getYLabel()){
-				if(label == 0)
-					m_writerNeg.write(String.format("%.4f\t",n.m_value));
-				else
-					m_writerPos.write(String.format("%.4f\t",n.m_value));
-			}
-		}
-		if(label == 0)
-			m_writerNeg.write("\n");
-		else
-			m_writerPos.write("\n");
-		m_kUL.clear();
-	} 	
 }

@@ -176,14 +176,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			
 			//To calculate the purity of neighbors. The only different with the test in father class.
 			calcPurity(m_testSet.get(i));
-//			if (pred != ans) {
-//				if (m_debugOutput!=null)
-//					debug(m_testSet.get(i));
-//			} else {
-//				if (m_debugOutput!=null && Math.random()<0.02)
-//					debug(m_testSet.get(i));
+			if (pred != ans) {
+				if (m_debugOutput!=null)
+					debug(m_testSet.get(i));
+			} else {
+				if (m_debugOutput!=null && Math.random()<0.02)
+					debug(m_testSet.get(i));
 				acc ++;
-//			}
+			}
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		

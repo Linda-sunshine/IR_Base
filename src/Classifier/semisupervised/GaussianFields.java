@@ -224,12 +224,11 @@ public class GaussianFields extends BaseClassifier {
 		int topicSize = di.m_topics.length;
 		double alpha = 1.0, beta = 1.0;
 		if(m_A != null){
-//			double topicSim = Utils.calculateMDistance(di, dj, m_A);
 			return Math.exp(alpha*Utils.calculateSimilarity(di, dj)) - beta*Utils.calculateMDistance(di, dj, m_A);
 		} else
-//			return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+			return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //			return Math.exp(-beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
-			return Math.exp(Utils.cosine(di.getTopics(), dj.getTopics()));
+//			return Math.exp(Utils.cosine(di.getTopics(), dj.getTopics()));
 	}
 	
 	protected void calcSimilarityInThreads(){
@@ -669,16 +668,6 @@ public class GaussianFields extends BaseClassifier {
 		sumU = sumU / (m_debugStat.size() + 0.0001);
 		System.out.print(String.format("L&U purity\t%.4f\t%.4f\n", sumL, sumU));
 	}
-	
-//	public void printSimilarity(String filename) throws FileNotFoundException{
-//		PrintWriter writer = new PrintWriter(new File(filename));
-//		for(double a: m_posL)
-//			writer.write(a+"\t");
-//		writer.write("\n");
-//		for(double b: m_negL)
-//			writer.write(b+"\t");
-//		writer.close();
-//	}
 	
 	public void setMatrixA(double[][] A){
 		this.m_A = A;
