@@ -41,8 +41,8 @@ public class MyTransductiveMain {
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
-//		String aspectlist = "./data/Model/topic_sentiment_output.txt";
-		String aspectlist = "./data/Model/aspect_output_simple.txt";
+		String aspectlist = "./data/Model/topic_sentiment_output.txt";
+//		String aspectlist = "./data/Model/aspect_output_0521.txt";
 		
 		/*****Parameters in learning style.*****/
 		//"SEMI"
@@ -101,7 +101,8 @@ public class MyTransductiveMain {
 		
 		tModel.setDisplay(true);
 		tModel.LoadPrior(aspectlist, eta);
-		tModel.EMonCorpus();	
+		tModel.EMonCorpus();
+		tModel.printTopWords(10);
 		}
 		
 //		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
