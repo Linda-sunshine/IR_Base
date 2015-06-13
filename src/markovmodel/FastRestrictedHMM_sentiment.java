@@ -9,6 +9,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM{
 
 	double m_sigma;
 	
+	
 	public FastRestrictedHMM_sentiment(double epsilon,double sigma, int maxSeqSize, int topicSize) {
 			
 		super(epsilon, maxSeqSize, topicSize);
