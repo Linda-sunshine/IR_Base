@@ -64,6 +64,7 @@ public class HTSM extends HTMM{
 	@Override
 	public void calculate_M_step(int iter) {
 		this.epsilon = this.lot/this.total; // to make the code structure concise and consistent, keep epsilon in real space!!
+		this.sigma = this.sigma_lot/this.sigma_total;
 		
 		for(int i=0; i<this.number_of_topics; i++) {
 			double sum = Math.log(Utils.sumOfArray(word_topic_sstat[i]));
