@@ -109,16 +109,19 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 		try {
 			m_debugWriter.write("===============================================================================\n");
 			m_debugWriter.write(String.format("Label:%d, Predicted:%.4f, SVM:%d\n%s\n", d.getYLabel(), m_fu[id], (int)m_Y[id], d.getSource()));
-
 			for (int j = 0; j < m_L; j++){
 				m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
 			}
 			for(_RankItem n: m_kUL){
 				int index = m_U + n.m_index;
-				if(m_Y[index]==d.getYLabel())
+				if(m_Y[index]==d.getYLabel()){
 					sameL++;
+					m_debugWriter.write("-----------L--------\n");
+					m_debugWriter.write(m_labeled.get(n.m_index).getSource() + "\n");
+				}
 			}
 			sameL = sameL / (m_kUL.size() + 0.0001);
+			m_debugWriter.write("-----------Stat_L--------\n");
 			m_debugWriter.write(String.format("Largest: %.4f, Purity: %.4f\n", m_kUL.get(0).m_value, sameL));
 			m_kUL.clear();
 				
@@ -128,10 +131,14 @@ public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 				m_kUU.add(new _RankItem(j, getCache(id, j)));
 			}
 			for(_RankItem n: m_kUU){
-				if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
+				if(m_fu[n.m_index]==d.getYLabel()){//Use fu as the comparison.
 					sameU++;
+					m_debugWriter.write("----------U---------\n");
+					m_debugWriter.write(m_testSet.get(n.m_index).getSource() + "\n");
+				}
 			}
 			sameU = sameU / (m_kUU.size() + 0.0001);
+			m_debugWriter.write("-----------Stat_U--------\n");
 			m_debugWriter.write(String.format("Largest: %.4f, purity: %.4f\n", m_kUU.get(0).m_value, sameU));
 			m_kUU.clear();
 		} catch (IOException e) {

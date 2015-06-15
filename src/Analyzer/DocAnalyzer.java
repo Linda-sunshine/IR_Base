@@ -234,6 +234,8 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	protected boolean AnalyzeDoc(_Doc doc) {
+		if(doc.getSource().contains("REPLACEMENT good so far"))
+			System.out.println("Stop here!!");
 		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
