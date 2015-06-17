@@ -42,14 +42,14 @@ public class MyTransductiveMain {
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
-		String aspectlist = "./data/Model/aspect_output_0521.txt";
+		String aspectlist = "./data/Model/aspect_output_0515.txt";
 		
 		/*****Parameters in learning style.*****/
 		//"SEMI"
 		String style = "SEMI";
 		
 		//"RW", "RW-MV", "RW-ML"
-		String method = "RW-MV";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -118,9 +118,9 @@ public class MyTransductiveMain {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1;
-			int k = 20, kPrime = 10; // k nearest labeled, k' nearest unlabeled
+			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
@@ -133,7 +133,9 @@ public class MyTransductiveMain {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
 				mySemi.setDebugOutput(debugOutput);
 				mySemi.setFeatures(analyzer.getFeatures());
+//				((GaussianFieldsByRandomWalk) mySemi).setrmNumber(3);
 				mySemi.crossValidation(CVFold, c);
+//				mySemi.printStat();
 			} else if (method.equals("RW-MV")) {
 				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
 				mySemi.setDebugOutput(debugOutput);
@@ -141,7 +143,7 @@ public class MyTransductiveMain {
 //				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
 //				mySemi.setSimilarity();
 				mySemi.crossValidation(CVFold, c);
-				mySemi.printStat();
+//				mySemi.printStat();
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);

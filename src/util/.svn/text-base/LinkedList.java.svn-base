@@ -1,0 +1,135 @@
+package util;
+
+import java.util.Iterator;
+
+public class LinkedList<T> implements Iterable<T> {
+	private LinkNode<T> firstNode = null;
+	private LinkNode<T> lastNode = null;
+	private int size;
+	private Integer maxSize;
+	
+	public LinkedList() {
+		
+	}
+	
+	public LinkedList(int maxSize) {
+		this.maxSize = maxSize;
+	}
+	
+	public T add(T value) {
+		LinkNode<T> newNode = new LinkNode<T>(value);
+		if (size() == 0) {
+			firstNode = newNode;
+			lastNode = newNode;
+			size++;
+		}
+		else {
+			lastNode.setNextNode(newNode);
+			newNode.setPrevNode(lastNode);
+			lastNode = newNode;
+			size++;
+		}
+		
+		if (this.maxSize != null && this.size() > this.maxSize) {
+			removeFirst();
+			size--;
+		}
+		return value;
+	}
+	
+	public T addFirst(T value) {
+		LinkNode<T> newNode = new LinkNode<T>(value);
+		if (size() == 0) {
+			firstNode = newNode;
+			lastNode = newNode;
+			size++;
+		}
+		else {
+			firstNode.setPrevNode(newNode);
+			newNode.setNextNode(firstNode);
+			firstNode = newNode;
+			size++;
+		}
+		
+		if (this.maxSize != null && this.size() > this.maxSize) {
+			removeLast();
+			size--;
+		}
+		return value;
+	}
+	
+	public T set(int index, T value) {
+		LinkNode<T> node = firstNode;
+		for (int i = 0; i < index; i++) {
+			node = node.getNextNode();
+		}
+		node.setValue(value);
+		return value;
+	}
+	
+	public LinkNode<T> replace(LinkNode<T> oldNode, LinkNode<T> newNode) {
+		LinkNode<T> prevNode = oldNode.getPrevNode();
+		LinkNode<T> nextNode = oldNode.getNextNode();
+		newNode.setPrevNode(prevNode);
+		newNode.setNextNode(nextNode);
+		if (prevNode != null) prevNode.setNextNode(newNode);
+		if (nextNode != null) nextNode.setPrevNode(newNode);
+		oldNode.setPrevNode(null);
+		oldNode.setNextNode(null);
+		return oldNode;
+	}
+	
+	public LinkNode<T> removeFirst() {
+		LinkNode<T> firstNode = this.firstNode;
+		LinkNode<T> secondNode = firstNode.getNextNode();
+		if (secondNode != null) {
+			secondNode.setPrevNode(null);
+			firstNode.setNextNode(null);
+		}
+		this.firstNode = secondNode;
+		return firstNode;
+	}
+	
+	public LinkNode<T> removeLast() {
+		LinkNode<T> lastNode = this.lastNode;
+		LinkNode<T> secondLastNode = lastNode.getPrevNode();
+		if (secondLastNode != null) {
+			secondLastNode.setNextNode(null);
+			lastNode.setPrevNode(null);
+		}
+		this.lastNode = secondLastNode;
+		return lastNode;
+	}
+	
+	public int size() {
+		return size;
+	}
+	
+	public Iterator<T> iterator() {
+		return new LinkedListIterator<T>(firstNode);
+	}
+	
+}
+
+class LinkedListIterator<T> implements Iterator<T> {
+	
+	private LinkNode<T> nextNode;
+	
+	public LinkedListIterator(LinkNode<T> nextNode) {
+		this.nextNode = nextNode;
+	}
+	
+	public boolean hasNext() {
+		return nextNode != null;
+	}
+
+	public T next() {
+		T value = nextNode.getValue();
+		nextNode = nextNode.getNextNode();
+		return value;
+	}
+
+	public void remove() {
+	}
+	
+}

@@ -658,16 +658,16 @@ public class GaussianFields extends BaseClassifier {
 		
 	}
 	
-	public void printStat(){
-		double sumL = 0, sumU = 0;
-		for(int i =0 ; i < m_debugStat.size(); i++){
-			sumL += m_debugStat.get(i)[0];
-			sumU += m_debugStat.get(i)[1];
-		}
-		sumL = sumL / (m_debugStat.size() + 0.0001);
-		sumU = sumU / (m_debugStat.size() + 0.0001);
-		System.out.print(String.format("L&U purity\t%.4f\t%.4f\n", sumL, sumU));
-	}
+//	public void printStat(){
+//		double sumL = 0, sumU = 0;
+//		for(int i =0 ; i < m_debugStat.size(); i++){
+//			sumL += m_debugStat.get(i)[0];
+//			sumU += m_debugStat.get(i)[1];
+//		}
+//		sumL = sumL / (m_debugStat.size() + 0.0001);
+//		sumU = sumU / (m_debugStat.size() + 0.0001);
+//		System.out.print(String.format("L&U purity\t%.4f\t%.4f\n", sumL, sumU));
+//	}
 	
 	public void setMatrixA(double[][] A){
 		this.m_A = A;

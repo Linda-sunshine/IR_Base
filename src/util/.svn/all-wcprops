@@ -1,0 +1,149 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svn/TopicModels/!svn/ver/24/src/util
+END
+DoubleMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/TopicModels/!svn/ver/1/src/util/DoubleMatrix.java
+END
+IntegerSparseMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/TopicModels/!svn/ver/1/src/util/IntegerSparseMatrix.java
+END
+LinkedList.java
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/TopicModels/!svn/ver/17/src/util/LinkedList.java
+END
+Utility.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/TopicModels/!svn/ver/14/src/util/Utility.java
+END
+LinkNode.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/TopicModels/!svn/ver/17/src/util/LinkNode.java
+END
+Sentence.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/TopicModels/!svn/ver/1/src/util/Sentence.java
+END
+NumByStringDictionary.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/TopicModels/!svn/ver/1/src/util/NumByStringDictionary.java
+END
+StringByNumDictionary.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/TopicModels/!svn/ver/1/src/util/StringByNumDictionary.java
+END
+PorterStemmer.java
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/TopicModels/!svn/ver/1/src/util/PorterStemmer.java
+END
+Word.java
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/TopicModels/!svn/ver/17/src/util/Word.java
+END
+HighDimIntegerMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/TopicModels/!svn/ver/17/src/util/HighDimIntegerMatrix.java
+END
+DoubleSparseMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/TopicModels/!svn/ver/1/src/util/DoubleSparseMatrix.java
+END
+Document.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/TopicModels/!svn/ver/1/src/util/Document.java
+END
+SentiWord.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/TopicModels/!svn/ver/1/src/util/SentiWord.java
+END
+Test.java
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/TopicModels/!svn/ver/23/src/util/Test.java
+END
+IntegerMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/TopicModels/!svn/ver/1/src/util/IntegerMatrix.java
+END
+SparseMatrix.java
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/TopicModels/!svn/ver/1/src/util/SparseMatrix.java
+END
+Stemming.java
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svn/TopicModels/!svn/ver/1/src/util/Stemming.java
+END
+OrderedDocument.java
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/TopicModels/!svn/ver/24/src/util/OrderedDocument.java
+END
+WordCount.java
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/TopicModels/!svn/ver/1/src/util/WordCount.java
+END
+SentiWordNet.java
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/TopicModels/!svn/ver/1/src/util/SentiWordNet.java
+END
+Node.java
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/TopicModels/!svn/ver/17/src/util/Node.java
+END
+BigFunctions.java
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/TopicModels/!svn/ver/1/src/util/BigFunctions.java
+END
+Classification.java
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/TopicModels/!svn/ver/1/src/util/Classification.java
+END

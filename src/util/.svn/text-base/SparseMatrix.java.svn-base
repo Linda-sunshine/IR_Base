@@ -1,0 +1,28 @@
+package util;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+
+public abstract class SparseMatrix {
+
+	public abstract int getNumOfRow();
+	public abstract int getNumOfColumn();
+	
+
+	public int[] getSize(String file) throws Exception {
+		int size[] = {0,0};
+		BufferedReader fileReader = new BufferedReader(new FileReader(file));
+		String line = fileReader.readLine();
+		if (line != null) size[1] = line.split("[\\s+]|[,]").length;
+		else { fileReader.close(); return size; }
+		
+		int numRows = 1;
+	    while((line = fileReader.readLine()) != null) {
+	    	if (line.trim().equals("")) break;
+	    	else numRows++;
+	    }
+	    size[0] = numRows;
+	    fileReader.close();
+		return size;
+	}
+}
