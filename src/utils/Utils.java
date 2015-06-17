@@ -506,6 +506,14 @@ public class Utils {
 		return node;
 	}
 	
+	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {
+		Feature[] node = new Feature[spVct.size()]; 
+		int fid = 0;
+		for(_SparseFeature fv:createSpVct(spVct))
+			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
+		return node;
+	}
+	
 	//Get projectSpVct by building a map filter, added by Hongning.
 	static public _SparseFeature[] projectSpVct(_SparseFeature[] fv, Map<Integer, Integer> filter) {
 		ArrayList<_SparseFeature> pFv = new ArrayList<_SparseFeature>();

@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 0.6; // SVM's trade-off for L1 feature selection
+	double m_L1C = 3.0; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
@@ -142,7 +142,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			return null;
 		
 		int mustLink = 0, cannotLink = 0, label, PP=0, NN=0;
-		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(800, false);
+//		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1500, false);
 		//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
 		Feature[] fv;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
@@ -154,26 +154,27 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			for(int j = i+1; j < m_trainSet.size(); j++){
 				_Doc dj = m_trainSet.get(j);
 				
-				if(di.getYLabel() == dj.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
+				if(di.getYLabel() == dj.getYLabel()) {//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
 					label = 1;
-				else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
-					label = 0;
-				else
-					continue;
-				
-				if (label==1) {
+					
 					if (di.getYLabel()==1)
 						PP++;
 					else
 						NN++;
 					
-					if (PP>NN+100)
+					if (PP>NN+1000)
 						continue;
-				}
+				} else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
+					label = 0;
+				else
+					continue;
 				
-				double sim = super.getSimilarity(di, dj);
-				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
-						continue;
+//				double sim = super.getSimilarity(di, dj);
+//				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
+//						continue;
+//				else 
+				if (label==1 && mustLink>cannotLink+2000 || label==0 && mustLink+2000<cannotLink)
+					continue;
 				else if ((fv=createLinearFeature(di, dj))==null)
 						continue;
 				else {
@@ -189,16 +190,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 		System.out.format("Generating %d must-links and %d cannot-links.\n", mustLink, cannotLink);
 		
-		int fSize = 0;
-		if (m_fvType == FeatureType.FT_diff)
-			fSize = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
-		else if (m_fvType == FeatureType.FT_cross)
-			fSize = m_selectedFVs.size() * m_selectedFVs.size();
-		else {
-			System.err.println("Unknown feature type for svm-based metric learning!");
-			System.exit(-1);
-		}
-		
+		int fSize = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;		
 		return SVM.libSVMTrain(featureArray, targetArray, fSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_metricC, -1);
 	}
 	
@@ -245,22 +237,26 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		if (fv1==null || fv2==null)
 			return null;
 		
-		Feature[] features = new Feature[fv1.length*fv2.length];
-		int pi, pj, spIndex=0, fSize = m_selectedFVs.size();
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>();
+		int pi, pj, spIndex=0;
 		double value = 0;
 		for(int i = 0; i < fv1.length; i++){
 			pi = fv1[i].getIndex();
 			
 			for(int j = 0; j < fv2.length; j++){
 				pj = fv2[j].getIndex();
+				spIndex = getIndex(pi, pj) - 1; // index issue will be taken care of in Utils.createLibLinearFV()
+				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
 				
 				//Currently, we use one dimension array to represent V*V features 
-				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
-				features[spIndex++] = new FeatureNode(1+pi*fSize+pj, value);
+				
+				if (spVct.containsKey(spIndex))
+					value += spVct.get(spIndex);
+				spVct.put(spIndex, value);
 			}
 		}
 		
-		return features;
+		return Utils.createLibLinearFV(spVct);
 	}
 	
 	int getIndex(int i, int j) {
