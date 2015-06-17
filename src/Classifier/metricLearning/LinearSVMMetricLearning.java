@@ -173,7 +173,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 //				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
 //						continue;
 //				else 
-				if ((fv=createLinearFeature(di, dj))==null)
+				if (Math.random()<0.1 || (fv=createLinearFeature(di, dj))==null)
 						continue;
 				else {
 					featureArray.add(fv);
