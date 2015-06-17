@@ -172,7 +172,7 @@ public class SVM extends BaseClassifier {
 		Feature[][] fvs = new Feature[trainSet.size()][];
 		double[] y = new double[trainSet.size()];
 		
-		int fid = 0;
+		int fid = 0; // file id
 		for(_Doc d:trainSet) {
 			fvs[fid] = Utils.createLibLinearFV(d);
 			y[fid] = d.getYLabel();
