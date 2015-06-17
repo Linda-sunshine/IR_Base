@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 0.9; // SVM's trade-off for L1 feature selection
+	double m_L1C = 0.2; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
