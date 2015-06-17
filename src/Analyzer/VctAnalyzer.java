@@ -34,7 +34,7 @@ public class VctAnalyzer extends Analyzer {
 			
 			while ((line = reader.readLine()) != null) {
 				container = line.split(" ");
-				if (container.length<=m_lengthThreshold)
+				if (container.length<=m_lengthThreshold || Math.random() < 0.5)
 					continue;
 				
 				doc = new _Doc(m_corpus.getSize(), null, Integer.valueOf(container[0]));

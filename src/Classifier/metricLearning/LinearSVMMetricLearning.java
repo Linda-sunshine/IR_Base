@@ -245,22 +245,26 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		if (fv1==null || fv2==null)
 			return null;
 		
-		Feature[] features = new Feature[fv1.length*fv2.length];
-		int pi, pj, spIndex=0, fSize = m_selectedFVs.size();
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>();
+		int pi, pj, spIndex=0;
 		double value = 0;
 		for(int i = 0; i < fv1.length; i++){
 			pi = fv1[i].getIndex();
 			
 			for(int j = 0; j < fv2.length; j++){
 				pj = fv2[j].getIndex();
+				spIndex = getIndex(pi, pj) - 1; // index issue will be taken care of in Utils.createLibLinearFV()
+				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
 				
 				//Currently, we use one dimension array to represent V*V features 
-				value = fv1[i].getValue() * fv2[j].getValue(); // this might be too small to count
-				features[spIndex++] = new FeatureNode(1+pi*fSize+pj, value);
+				
+				if (spVct.containsKey(spIndex))
+					value += spVct.get(spIndex);
+				spVct.put(spIndex, value);
 			}
 		}
 		
-		return features;
+		return Utils.createLibLinearFV(spVct);
 	}
 	
 	int getIndex(int i, int j) {
