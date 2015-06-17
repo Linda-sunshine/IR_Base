@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 0.6; // SVM's trade-off for L1 feature selection
+	double m_L1C = 0.9; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
@@ -189,16 +189,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 		System.out.format("Generating %d must-links and %d cannot-links.\n", mustLink, cannotLink);
 		
-		int fSize = 0;
-		if (m_fvType == FeatureType.FT_diff)
-			fSize = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;
-		else if (m_fvType == FeatureType.FT_cross)
-			fSize = m_selectedFVs.size() * m_selectedFVs.size();
-		else {
-			System.err.println("Unknown feature type for svm-based metric learning!");
-			System.exit(-1);
-		}
-		
+		int fSize = m_selectedFVs.size() * (1+m_selectedFVs.size())/2;		
 		return SVM.libSVMTrain(featureArray, targetArray, fSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_metricC, -1);
 	}
 	
