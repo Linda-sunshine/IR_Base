@@ -27,7 +27,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected Model m_libModel;
 	int m_bound;
-	double m_L1C = 1.0; // SVM's trade-off for L1 feature selection
+	double m_L1C = 2.0; // SVM's trade-off for L1 feature selection
 	double m_metricC = 1.0;// SVM's trade-off for metric learning
 	
 	HashMap<Integer, Integer> m_selectedFVs;
@@ -142,7 +142,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			return null;
 		
 		int mustLink = 0, cannotLink = 0, label, PP=0, NN=0;
-		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(800, false);
+		MyPriorityQueue<Double> maxSims = new MyPriorityQueue<Double>(1000, true), minSims = new MyPriorityQueue<Double>(1500, false);
 		//In the problem, the size of feature size is m'*m'. (m' is the reduced feature space by L1-SVM)
 		Feature[] fv;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
@@ -154,14 +154,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			for(int j = i+1; j < m_trainSet.size(); j++){
 				_Doc dj = m_trainSet.get(j);
 				
-				if(di.getYLabel() == dj.getYLabel())//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
+				if(di.getYLabel() == dj.getYLabel()) {//start from the extreme case?  && (d1.getYLabel()==0 || d1.getYLabel()==4)
 					label = 1;
-				else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
-					label = 0;
-				else
-					continue;
-				
-				if (label==1) {
+					
 					if (di.getYLabel()==1)
 						PP++;
 					else
@@ -169,7 +164,10 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					
 					if (PP>NN+100)
 						continue;
-				}
+				} else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
+					label = 0;
+				else
+					continue;
 				
 				double sim = super.getSimilarity(di, dj);
 				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
