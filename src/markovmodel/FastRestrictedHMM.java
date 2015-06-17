@@ -13,14 +13,25 @@ public class FastRestrictedHMM {
 	double beta[][];//when using Viterbi, this stores backtracking pointers
 	double norm_factor[];
 	double m_epsilon;//single epsilon shared by all the sentences
+	int constant;
 	
 	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize) {
 		number_of_topic = 0;
 		m_epsilon = epsilon;//in real space!
-		
+		this.constant = 2;
 		this.number_of_topic = topicSize;
-		alpha  = new double[maxSeqSize][2*this.number_of_topic];
-		beta = new double[maxSeqSize][2*this.number_of_topic];
+		alpha  = new double[maxSeqSize][this.constant*this.number_of_topic];
+		beta = new double[maxSeqSize][this.constant*this.number_of_topic];
+		norm_factor = new double[maxSeqSize];
+	}
+	
+	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize, int constant) {
+		number_of_topic = 0;
+		m_epsilon = epsilon;//in real space!
+		this.constant = constant;
+		this.number_of_topic = topicSize;
+		alpha  = new double[maxSeqSize][this.constant*this.number_of_topic];
+		beta = new double[maxSeqSize][this.constant*this.number_of_topic];
 		norm_factor = new double[maxSeqSize];
 	}
 	
@@ -113,10 +124,10 @@ public class FastRestrictedHMM {
 	public void collectExpectations(double[][] sstat) {
 		for(int t=0; t<this.length_of_seq; t++) {
 			double norm = Double.NEGATIVE_INFINITY;//log0
-			for(int i=0; i<2*this.number_of_topic; i++) 
+			for(int i=0; i<this.constant*this.number_of_topic; i++) 
 				norm = Utils.logSum(norm, alpha[t][i] + beta[t][i]);
 			
-			for(int i=0; i<2*this.number_of_topic; i++) 
+			for(int i=0; i<this.constant*this.number_of_topic; i++) 
 				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
 		}
 	}
@@ -151,7 +162,7 @@ public class FastRestrictedHMM {
 	int FindBestInLevel(int t) {
 		double best = alpha[t][0];
 		int best_index = 0;
-		for(int i = 1; i<2*this.number_of_topic; i++){
+		for(int i = 1; i<this.constant*this.number_of_topic; i++){
 			if(alpha[t][i] > best){
 				best = alpha[t][i];
 				best_index = i;

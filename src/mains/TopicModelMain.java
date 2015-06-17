@@ -6,6 +6,7 @@ import java.text.ParseException;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
+import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Variational;
 import topicmodels.LRHTMM;
@@ -25,7 +26,7 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational
+		String topicmodel = "HTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM
 		
 		int number_of_topics = 20;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
@@ -37,7 +38,7 @@ public class TopicModelMain {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
@@ -58,7 +59,7 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -118,7 +119,17 @@ public class TopicModelMain {
 				model.printTopWords(topK);
 			} else 
 				model.crossValidation(crossV);
-		} else if (topicmodel.equals("LRHTMM")) {
+		} else if (topicmodel.equals("HTSM")) {
+			HTSM model = new HTSM(number_of_iteration, converge, beta, c, 
+					number_of_topics, alpha);
+			
+			if (crossV<=1) {
+				model.EMonCorpus();
+				model.printTopWords(topK);
+			} else 
+				model.crossValidation(crossV);
+		}  
+		else if (topicmodel.equals("LRHTMM")) {
 			c.setStnFeatures();
 			
 			LRHTMM model = new LRHTMM(number_of_iteration, converge, beta, c, 

@@ -27,7 +27,7 @@ public class HTMM extends pLSA {
 	double lot; // used for epsilion
 	
 	double loglik;
-	final int constant = 2;
+	int constant = 2;
 
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha) {//arguments for pLSA	
@@ -45,6 +45,22 @@ public class HTMM extends pLSA {
 		p_dwzpsi = new double[maxSeqSize][constant * this.number_of_topics]; // max|S_d| * (2*K)
 		emission = new double[p_dwzpsi.length][this.number_of_topics]; // max|S_d| * K
 	}
+	
+	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
+			int number_of_topics, double alpha, int constant) {//arguments for pLSA	
+		super(number_of_iteration, converge, beta, c,
+				0.5, null, //HTMM does not have a background setting
+				number_of_topics, alpha);
+		
+		Random r = new Random();
+		this.epsilon = r.nextDouble();
+		this.constant = constant;
+		int maxSeqSize = c.getLargestSentenceSize();		
+		//cache in order to avoid frequently allocating new space
+		p_dwzpsi = new double[maxSeqSize][this.constant * this.number_of_topics]; // max|S_d| * (2*K)
+		emission = new double[p_dwzpsi.length][this.number_of_topics]; // max|S_d| * K
+	}
+	
 	
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha, //arguments for pLSA
