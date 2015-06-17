@@ -162,7 +162,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 					else
 						NN++;
 					
-					if (PP>NN+100)
+					if (PP>NN+1000)
 						continue;
 				} else if(Math.abs(di.getYLabel() - dj.getYLabel())>bound)
 					label = 0;
@@ -173,7 +173,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 //				if ( (label==1 && !minSims.add(sim)) || (label==0 && !maxSims.add(sim)) )
 //						continue;
 //				else 
-				if (Math.random()<0.9 || (fv=createLinearFeature(di, dj))==null)
+				if (label==1 && mustLink>cannotLink+1000 || label==0 && mustLink+1000<cannotLink)
+					continue;
+				else if ((fv=createLinearFeature(di, dj))==null)
 						continue;
 				else {
 					featureArray.add(fv);
