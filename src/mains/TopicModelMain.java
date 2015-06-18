@@ -8,7 +8,6 @@ import structures._Doc;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Variational;
 import topicmodels.LRHTMM;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
@@ -32,9 +31,10 @@ public class TopicModelMain {
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int topK = 20, number_of_iteration = 100, crossV = 1;
+		boolean display = true;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -74,75 +74,44 @@ public class TopicModelMain {
 				}
 			} else 
 				model.crossValidation(crossV);
-		} else if (topicmodel.equals("pLSA")) {			
-			pLSA model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha);
-			
-			model.setDisplay(true);
-			model.LoadPrior(aspectlist, eta);
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
-		} else if (topicmodel.equals("LDA_Gibbs")) {		
-			LDA_Gibbs model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 0.4, 50);
-		
-			model.setDisplay(true);
-			model.LoadPrior(aspectlist, eta);
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
-		}  else if (topicmodel.equals("LDA_Variational")) {		
-			LDA_Variational model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 10, -1);
-			
-				model.setDisplay(true);
-				model.LoadPrior(aspectlist, eta);
-				if (crossV<=1) {
-					model.EMonCorpus();
-					model.printTopWords(topK);
-				} else 
-					model.crossValidation(crossV);
-		}  else if (topicmodel.equals("HTMM")) {
-			HTMM model = new HTMM(number_of_iteration, converge, beta, c, 
-					number_of_topics, alpha);
-			
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
-		} else if (topicmodel.equals("HTSM")) {
-			HTSM model = new HTSM(number_of_iteration, converge, beta, c, 
-					number_of_topics, alpha);
-			
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
-		}  
-		else if (topicmodel.equals("LRHTMM")) {
-			c.setStnFeatures();
-			
-			LRHTMM model = new LRHTMM(number_of_iteration, converge, beta, c, 
-					number_of_topics, alpha,
-					lambda);
-			
-			if (crossV<=1) {
-				model.EMonCorpus();
-				model.printTopWords(topK);
-			} else 
-				model.crossValidation(crossV);
 		} else if (topicmodel.equals("Tensor")) {
 			c.saveAs3WayTensor("./data/vectors/3way_tensor.txt");
+		} else {
+			pLSA model = null;
+			
+			if (topicmodel.equals("pLSA")) {
+				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+						lambda, analyzer.getBackgroundProb(), 
+						number_of_topics, alpha);
+			} else if (topicmodel.equals("LDA_Gibbs")) {		
+				model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+					lambda, analyzer.getBackgroundProb(), 
+					number_of_topics, alpha, 0.4, 50);
+			}  else if (topicmodel.equals("LDA_Variational")) {		
+				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+						lambda, analyzer.getBackgroundProb(), 
+						number_of_topics, alpha, 10, -1);
+			}  else if (topicmodel.equals("HTMM")) {
+				model = new HTMM(number_of_iteration, converge, beta, c, 
+						number_of_topics, alpha);
+			} else if (topicmodel.equals("HTSM")) {
+				model = new HTSM(number_of_iteration, converge, beta, c, 
+						number_of_topics, alpha);
+			}  
+			else if (topicmodel.equals("LRHTMM")) {
+				c.setStnFeatures();				
+				model = new LRHTMM(number_of_iteration, converge, beta, c, 
+						number_of_topics, alpha,
+						lambda);
+			}
+			
+			model.setDisplay(display);
+			model.LoadPrior(aspectlist, eta);
+			if (crossV<=1) {
+				model.EMonCorpus();
+				model.printTopWords(topK);
+			} else 
+				model.crossValidation(crossV);
 		}
 	}
 }

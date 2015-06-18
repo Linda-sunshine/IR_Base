@@ -167,18 +167,6 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
-		
-//		tmpSimCheck();
-	}
-	
-	private int getLabel(int y) {
-//		return y;
-		
-		//turn into binary
-		if (y>=3)
-			return 1;
-		else
-			return 0;
 	}
 
 	public double Evaluation() {

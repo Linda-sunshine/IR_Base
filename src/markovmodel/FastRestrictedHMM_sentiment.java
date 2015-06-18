@@ -16,15 +16,14 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM{
 	public void setSigma(double sigma){
 		m_sigma = sigma;
 	}
+	
 	//NOTE: in real space!!!!
 	double getSigma(int t){
 		return m_sigma;
-	}
-	
+	}	
 	
 	// return true if sentiment of ith topic is same as sentiment of jth topic
-	public boolean sentiment_mapper(int i, int j)
-	{
+	public boolean sentiment_mapper(int i, int j) {
 		int topic_i = i%this.number_of_topic;
 		int topic_j = j%this.number_of_topic;
 		int range = this.number_of_topic / 2;
@@ -32,11 +31,8 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM{
 	}
 	
 	//return true if topic of i is same topic of j
-	public boolean topic_mapper(int i, int j)
-	{
-		int topic_i = i%this.number_of_topic;
-		int topic_j = j%this.number_of_topic;
-		return topic_i == topic_j;
+	public boolean topic_mapper(int i, int j) {
+		return i%this.number_of_topic == j%this.number_of_topic;
 	}
 	
 	
@@ -140,7 +136,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM{
 		}
 		return Math.log(sum);
 	}
-	
 	
 	
 	@Override
