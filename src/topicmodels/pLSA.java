@@ -221,12 +221,13 @@ public class pLSA extends twoTopic {
 		return logLikelihood;
 	}
 	
+	//print all the quantities in real space
 	@Override
-	public void printTopWords(int k) {
+	public void printTopWords(int k, boolean logSpace) {
 		Arrays.fill(m_sstat, 0);
 		for(_Doc d:m_trainSet) {
 			for(int i=0; i<number_of_topics; i++)
-				m_sstat[i] += d.m_topics[i];
+				m_sstat[i] += logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
 		}
 		Utils.L1Normalization(m_sstat);			
 		
@@ -236,7 +237,7 @@ public class pLSA extends twoTopic {
 				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 			System.out.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 			for(_RankItem it:fVector)
-				System.out.format("%s(%.3f)\t", it.m_name, it.m_value);
+				System.out.format("%s(%.3f)\t", it.m_name, logSpace?Math.exp(it.m_value):it.m_value);
 			System.out.println();
 		}
 	}

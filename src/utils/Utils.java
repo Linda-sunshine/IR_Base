@@ -117,12 +117,18 @@ public class Utils {
 			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
 		}
+		
+		if (sum==0)
+			return max;
 		return Math.log(sum) + max;
 	}
 	
-	public static double logSum(double log_a, double log_b)
-	{
-		if (log_a < log_b)
+	public static double logSum(double log_a, double log_b) {
+		if (Double.isInfinite(log_a))
+			return log_b;
+		else if (Double.isInfinite(log_b))
+			return log_a;
+		else if (log_a < log_b)
 			return log_b+Math.log(1 + Math.exp(log_a-log_b));
 		else
 			return log_a+Math.log(1 + Math.exp(log_b-log_a));

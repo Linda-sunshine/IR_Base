@@ -80,7 +80,7 @@ public class twoTopic extends TopicModel {
 	}
 
 	@Override
-	public void printTopWords(int k) {
+	public void printTopWords(int k, boolean logSpace) {
 		//we only have one topic to show
 		MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
 		for(int i=0; i<m_theta.length; i++) 

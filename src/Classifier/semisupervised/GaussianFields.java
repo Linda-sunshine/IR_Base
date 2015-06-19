@@ -170,13 +170,20 @@ public class GaussianFields extends BaseClassifier {
 		return m_labeled.get(i);
 	}
 	
+	protected double getBoWSim(_Doc di, _Doc dj) {
+		return Math.exp(Utils.calculateSimilarity(di, dj));
+	}
+	
+	protected double getTopicalSim(_Doc di, _Doc dj) {
+		if (di.m_topics == null || dj.m_topics == null)
+			return 0;
+		int topicSize = di.m_topics.length;
+		return Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize;
+	}
+	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-		if (di.m_topics == null || dj.m_topics == null)
-			return Math.exp(Utils.calculateSimilarity(di, dj));
-		int topicSize = di.m_topics.length;
-		double alpha = 1.0, beta = 1.0;
-		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+		return getBoWSim(di, dj) + getTopicalSim(di, dj);
 	}
 	
 	protected void calcSimilarityInThreads(){

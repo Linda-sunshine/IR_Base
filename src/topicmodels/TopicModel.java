@@ -88,7 +88,7 @@ public abstract class TopicModel {
 	protected abstract double calculate_log_likelihood(_Doc d);
 	
 	//print top k words under each topic
-	public abstract void printTopWords(int k);
+	public abstract void printTopWords(int k, boolean logSpace);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {

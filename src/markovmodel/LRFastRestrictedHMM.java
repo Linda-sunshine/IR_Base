@@ -9,7 +9,7 @@ public class LRFastRestrictedHMM extends FastRestrictedHMM {
 	double[] m_epsilons; // topic transition for each sentence
 	
 	public LRFastRestrictedHMM (double[] omega, int maxSeqSize, int topicSize) {
-		super(-1, maxSeqSize, topicSize);//no global epsilon
+		super(-1, maxSeqSize, topicSize, 2);//no global epsilon
 		m_omega = omega;
 		m_epsilons  = new double[maxSeqSize];
 	}

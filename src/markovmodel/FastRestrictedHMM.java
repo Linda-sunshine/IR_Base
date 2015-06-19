@@ -15,18 +15,7 @@ public class FastRestrictedHMM {
 	double m_epsilon;//single epsilon shared by all the sentences
 	int constant;
 	
-	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize) {
-		number_of_topic = 0;
-		m_epsilon = epsilon;//in real space!
-		this.constant = 2;
-		this.number_of_topic = topicSize;
-		alpha  = new double[maxSeqSize][this.constant*this.number_of_topic];
-		beta = new double[maxSeqSize][this.constant*this.number_of_topic];
-		norm_factor = new double[maxSeqSize];
-	}
-	
 	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize, int constant) {
-		number_of_topic = 0;
 		m_epsilon = epsilon;//in real space!
 		this.constant = constant;
 		this.number_of_topic = topicSize;
@@ -57,8 +46,9 @@ public class FastRestrictedHMM {
 	double initAlpha(double[] theta, double[] local0) {
 		double norm = Double.NEGATIVE_INFINITY;//log0
 		for (int i = 0; i < this.number_of_topic; i++) {
-			alpha[0][i] = local0[i] + theta[i];
-			alpha[0][i+this.number_of_topic] = Double.NEGATIVE_INFINITY;//document must start with a new topic
+			alpha[0][i] = local0[i] + theta[i];//document must start with a new topic and a new sentiment
+			for(int j=1; j<this.constant; j++)
+				alpha[0][i+j*this.number_of_topic] = Double.NEGATIVE_INFINITY;
 			//this is full computation, but no need to do so
 			//norm = Utils.logSum(norm, Utils.logSum(alpha[0][i], alpha[0][i+this.number_of_topic]));
 			norm = Utils.logSum(norm, alpha[0][i]);
@@ -109,10 +99,9 @@ public class FastRestrictedHMM {
 			logEpsilon = Math.log(getEpsilon(t+1));
 			logOneMinusEpsilon = Math.log(1.0 - getEpsilon(t+1));
 			
-			sum = Double.NEGATIVE_INFINITY;//log0
+			sum = logEpsilon;
 			for (int j = 0; j < this.number_of_topic; j++)
 				sum = Utils.logSum(sum, theta[j] + emission[t+1][j] + beta[t+1][j]);
-			sum += logEpsilon;
 			
 			for (int i = 0; i < this.number_of_topic; i++) {
 				beta[t][i] = Utils.logSum(logOneMinusEpsilon + beta[t+1][i] + emission[t+1][i], sum) - norm_factor[t];

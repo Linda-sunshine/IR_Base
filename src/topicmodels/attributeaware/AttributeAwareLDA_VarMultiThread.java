@@ -347,7 +347,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		model.LoadPrior(aspectlist, eta);
 		model.setDisplay(true);
 		model.EMonCorpus();
-		model.printTopWords(topK);
+		model.printTopWords(topK, true);
 	}
 }
 
