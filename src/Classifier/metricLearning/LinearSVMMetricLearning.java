@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -134,7 +133,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	//In this training process, we want to get the weight of all pairs of samples.
-	public Model trainLibLinear(int bound){
+	protected Model trainLibLinear(int bound){
 		//creating feature projection first (this is done by choosing important SVM features)
 		selFeatures(m_trainSet, m_L1C);
 		
