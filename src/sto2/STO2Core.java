@@ -87,7 +87,7 @@ public class STO2Core {
 		boolean randomInit = false;
 		
 		String sentiFilePrefix = "SentiWords-";
-		String wordListFileName = "selected_combine_fv_tablets.txt";
+		String wordListFileName = "fv_2gram_topicmodel_8055.txt";
 		String docListFileName = "DocumentList.txt";
 		String wordDocFileName = "BagOfSentences.txt";
 		

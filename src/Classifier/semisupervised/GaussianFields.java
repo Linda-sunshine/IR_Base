@@ -11,9 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.PriorityQueue;
 import java.util.Random;
 
 import structures.MyPriorityQueue;
+import structures._Clique;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
@@ -60,7 +62,7 @@ public class GaussianFields extends BaseClassifier {
 	//Randomly pick 10% of all the training documents.
 	ArrayList<String> m_featureNames;//Store all features for debugging purpose.
 	double[][] m_A; //The matrix used to store the result of metric learning.
-
+	double[][] m_simiL; // The matrix used to store the similarities among labeled data.
 	public GaussianFields(_Corpus c, String classifier, double C){
 		super(c);
 		
@@ -485,6 +487,197 @@ public class GaussianFields extends BaseClassifier {
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		
 		return acc/m_U;
+	}
+	
+	//Construct the similarities among all the labeled data.
+	public void calcLabeledSimilarities(){
+		m_simiL = new double[m_L][m_L];
+		for(int i =0; i < m_L; i++){
+			for(int j = 0; j < m_L; j++){
+				if(i != j)
+					m_simiL[i][j] = getSimilarity(m_labeled.get(i), m_labeled.get(j));
+			}
+		}
+	}
+//	//Verify the results of both clique and KNN.
+//	public void verifyClique(){
+//
+//		/***Construct the nearest neighbor graph****/
+//		constructGraph(false);
+//		calcLabeledSimilarities();
+//		MyPriorityQueue<_Clique> cliqueQueue = new MyPriorityQueue<_Clique>(1);
+//		double sum = 0;
+////		double[] acc = new double[4];
+//		int indexJ, indexK, indexL;
+//		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
+//		for (int i = 0; i < m_U; i++) {
+//			
+//			/****Construct the top k' unlabeled data for the current data.****/
+//			
+//			/****Construct the top k labeled data for the current data.****/
+//			for (int j = 0; j < m_L; j++){
+//				double similarity = getCache(i, m_U + j);
+//				m_kUL.add(new _RankItem(m_U + j, similarity));
+//			}
+//			
+//			//Collect the votes from kNN.
+//			int[] votesKNN = new int[2];
+//			for(int m = 0; m < 3; m++){//manually setting.
+//				votesKNN[(int) m_Y[m_kUL.get(m).m_index]]++;
+//			}
+//			
+//			//Collect the votes from cliques.
+//			//Get all the cliques and select the one gives the largeest sum.
+//			for(int j = 0; j < m_kUL.size(); j++){
+//				for(int k = j+1; k < m_kUL.size(); k++){
+//					for(int l = k+1; l < m_kUL.size(); l++){
+//						//Calculate all six similarities.
+//						indexJ = m_kUL.get(j).m_index - m_U;
+//						indexK = m_kUL.get(k).m_index - m_U;
+//						indexL = m_kUL.get(l).m_index - m_U;
+//						sum += m_simiL[indexJ][indexK] + m_simiL[indexJ][indexL] + m_simiL[indexK][indexL];
+//						sum += getCache(i, m_U + indexJ) + getCache(i, m_U + indexK) + getCache(i, m_U + indexL);
+//						cliqueQueue.add(new _Clique(new int[]{indexJ, indexK, indexL}, sum));//The indexes are the index in the labeled data.
+//						sum = 0;//Clear sum.
+//					}
+//				}
+//			}
+//			//Majority voting.
+//			_Clique topClique = cliqueQueue.get(0);
+//			int[] votes = new int[2];
+//			int[] indexes = topClique.getIndexes();
+//			for(int m = 0; m < indexes.length; m++){
+//				votes[(int) m_Y[m_U + indexes[m]]]++;
+//			}
+//			m_sim.add(topClique.getValue());
+//			cliqueQueue.clear();	
+//			m_kUL.clear();
+//			
+//			//Verify it majority voting is consistent with true label.
+////			acc[m_testSet.get(i).getYLabel()+2]++;
+//		
+//			int ans = m_testSet.get(i).getYLabel();
+//			m_TPTable[Utils.maxOfArrayIndex(votes)][ans]++;
+//			m_TPTableKNN[Utils.maxOfArrayIndex(votesKNN)][ans]++;
+//			if(Utils.maxOfArrayIndex(votes) == ans)
+//				m_accClique.add(1);
+//			else 
+//				m_accClique.add(0);
+//			if(Utils.maxOfArrayIndex(votesKNN) == ans)
+//				m_accKNN.add(1);
+//			else 
+//				m_accKNN.add(0);
+//			
+////			if( pred == ans){
+////				if(m_testSet.get(i).getYLabel() == 0)
+////					acc[0]++;
+////				else 
+////					acc[1]++;
+////			}
+//		}
+//		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+//		m_precisionsRecallsKNN.add(calculatePreRecKNN(m_TPTableKNN));
+//	}
+	
+	//Verify the results of clique.
+//	public double[] verifyClique(){
+//
+//		/*** Construct the nearest neighbor graph ****/
+//		constructGraph(false);
+//		calcLabeledSimilarities();
+//		MyPriorityQueue<_Clique> cliqueQueue = new MyPriorityQueue<_Clique>(1);
+//		double sum = 0;
+//		 double[] acc = new double[4];
+//		int indexJ, indexK, indexL;
+//		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
+//		for (int i = 0; i < m_U; i++) {
+//				
+//			/**** Construct the top k' unlabeled data for the current data. ****/
+//
+//			/**** Construct the top k labeled data for the current data. ****/
+//			for (int j = 0; j < m_L; j++) {
+//				double similarity = getCache(i, m_U + j);
+//				m_kUL.add(new _RankItem(m_U + j, similarity));
+//			}
+//
+//			// Collect the votes from cliques.
+//			// Get all the cliques and select the one gives the largest sum.
+//			for (int j = 0; j < m_kUL.size(); j++) {
+//				for (int k = j + 1; k < m_kUL.size(); k++) {
+//					for (int l = k + 1; l < m_kUL.size(); l++) {
+//						// Calculate all six similarities.
+//						indexJ = m_kUL.get(j).m_index - m_U;
+//						indexK = m_kUL.get(k).m_index - m_U;
+//						indexL = m_kUL.get(l).m_index - m_U;
+//						sum += m_simiL[indexJ][indexK] + m_simiL[indexJ][indexL] + m_simiL[indexK][indexL];
+//						sum += getCache(i, m_U + indexJ) + getCache(i, m_U + indexK) + getCache(i, m_U + indexL);
+//						cliqueQueue.add(new _Clique(new int[] { indexJ, indexK, indexL }, sum));// The indexes are the index in the labeled data.
+//						sum = 0;// Clear sum.
+//					}
+//				}
+//			}
+//			// Majority voting.
+//			_Clique topClique = cliqueQueue.get(0);
+//			int[] votes = new int[2];
+//			int[] indexes = topClique.getIndexes();
+//			for (int m = 0; m < indexes.length; m++) {
+//				votes[(int) m_Y[m_U + indexes[m]]]++;
+//			}
+//			cliqueQueue.clear();
+//			m_kUL.clear();
+//
+//			// Verify it majority voting is consistent with true label.
+//			acc[m_testSet.get(i).getYLabel()+2]++;
+//			int pred = Utils.maxOfArrayIndex(votes);
+//			int ans = m_testSet.get(i).getYLabel();
+//			m_TPTable[pred][ans]++;
+//			if( pred == ans){
+//				if(m_testSet.get(i).getYLabel() == 0)
+//					acc[0]++;
+//				else 
+//					acc[1]++;
+//			}
+//		}
+//		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+//		return new double[]{acc[0]/acc[2], acc[1]/acc[3]};
+//	}
+	//Verify the kNN's results by majority voting.
+	public double[] verifyClique(){
+		double[] acc = new double[4];
+		/***Construct the nearest neighbor graph****/
+		constructGraph(false);
+		
+		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
+		for (int i = 0; i < m_U; i++) {
+			
+			/****Construct the top k' unlabeled data for the current data.****/
+			
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++){
+				double similarity = getCache(i, m_U + j);
+				m_kUL.add(new _RankItem(m_U + j, similarity));
+			}
+			int[] votes = new int[2];
+			//Get all the cliques and select the one gives the largeest sum.
+			for(_RankItem n: m_kUL){
+				votes[(int) m_Y[n.m_index]]++;
+			}
+			m_kUL.clear();
+			
+			//Verify it majority voting is consistent with true label.
+			acc[m_testSet.get(i).getYLabel()+2]++;
+			int pred = Utils.maxOfArrayIndex(votes);
+			int ans = m_testSet.get(i).getYLabel();
+			m_TPTable[pred][ans]++;
+			if( pred == ans){
+				if(m_testSet.get(i).getYLabel() == 0)
+					acc[0]++;
+				else 
+					acc[1]++;
+			}
+		}
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+		return new double[]{acc[0]/acc[2], acc[1]/acc[3]};
 	}
 	
 	/**Different getLabel methods.**/

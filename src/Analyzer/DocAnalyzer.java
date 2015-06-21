@@ -190,9 +190,6 @@ public class DocAnalyzer extends Analyzer {
 		for (String token : tokens) {//tokens could come from a sentence or a document
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
-//				if(token.equals("veri-expens")){
-//					System.out.println("bug");
-//				}
 				if (m_featureNameIndex.containsKey(token)) {
 					index = m_featureNameIndex.get(token);
 					if (spVct.containsKey(index)) {

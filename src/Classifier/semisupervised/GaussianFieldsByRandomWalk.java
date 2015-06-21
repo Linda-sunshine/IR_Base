@@ -52,6 +52,92 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	}
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
+//	void randomWalk(){//construct the sparse graph on the fly every time
+//		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
+//		
+//		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
+//		for (int i = 0; i < m_U; i++) {
+//			double wijSumU = 0, wijSumL = 0;
+//			double fSumU = 0, fSumL = 0;
+////			double[] simArray = new double[m_kPrime];
+////			int index1 = 0, index2 = 0;
+//			
+//			/****Construct the top k' unlabeled data for the current data.****/
+//			for (int j = 0; j < m_U; j++) {
+//				if (j == i)
+//					continue;
+//				m_kUU.add(new _RankItem(j, getCache(i, j)));
+//			}
+//
+//			/****Get the sum of k'UU******/
+//			for(_RankItem n: m_kUU){
+//				wijSumU += n.m_value; //get the similarity between two nodes.
+//				fSumU += n.m_value * m_fu[n.m_index];
+//			}
+////			System.out.print("\nSimilarities among neighbors:\n");
+////			for(int m = 0; m < m_kUU.size(); m++){
+////				for(int n = 0; n < m_kUU.size(); n++){
+////					if(m != n){
+////						index1 = m_kUU.get(m).m_index;
+////						index2 = m_kUU.get(n).m_index;
+////						simArray[m] += getCache(index1, index2);
+////					}
+////				}
+////				simArray[m] /= m_kPrime;
+////				System.out.print(String.format("%.3f\t", simArray[m]));
+////			}
+////			int index = Utils.minOfArrayIndex(simArray);
+////			_RankItem tmp = m_kUU.get(index);
+////			wijSumU -= tmp.m_value;
+////			fSumU -= tmp.m_value * m_fu[tmp.m_index];
+//			m_kUU.clear();
+//			
+//			/****Construct the top k labeled data for the current data.****/
+//			for (int j = 0; j < m_L; j++)
+//				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
+//			
+////			System.out.println("----------------");
+////			System.out.println("Similarities between test review and Labeled neighbors: ");
+//			/****Get the sum of kUL******/
+////			int count = 0;
+//			for(_RankItem n: m_kUL){
+////				System.out.print(String.format("%d, %.3f, %d\t", count++, n.m_value, (int)m_Y[n.m_index]));
+//				wijSumL += n.m_value;
+//				fSumL += n.m_value * m_Y[n.m_index];
+//			}
+////			double similarity = 0;
+////			System.out.print("\nSimilarities among neighbors:\n");
+////			for(int m = 0; m < m_kUL.size(); m++){
+////				for(int n = 0; n < m_kUL.size(); n++){
+////					if(m != n){
+////						index1 = m_kUL.get(m).m_index - m_U;
+////						index2 = m_kUL.get(n).m_index - m_U;
+////						similarity = Utils.calculateSimilarity(m_labeled.get(index1), m_labeled.get(index2));
+//////						System.out.print(similarity + "\t");
+////						simArray[m] += similarity;
+////					}
+////				}
+////				simArray[m] /= m_k;
+////				System.out.print(String.format("avg: %.3f\n", simArray[m]));
+//			}
+//			//Set the number of neighbors we want to delete.
+////			for(int k = 0; k < m_rmNo; k++){
+////				int index = Utils.minOfArrayIndex(simArray);
+////				simArray[index] = 10000;
+////				_RankItem tmp = m_kUL.get(index);
+////				wijSumL -= tmp.m_value;
+////				fSumL -= tmp.m_value * m_Y[tmp.m_index];
+////			}
+//			m_kUL.clear();
+//			
+//			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
+//			if (Double.isNaN(m_fu[i])) {
+//				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
+//				System.exit(-1);				
+//			}
+//		}
+//	}
+	
 	void randomWalk(){//construct the sparse graph on the fly every time
 		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		
@@ -59,8 +145,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		for (int i = 0; i < m_U; i++) {
 			double wijSumU = 0, wijSumL = 0;
 			double fSumU = 0, fSumL = 0;
-			double[] simArray = new double[m_kPrime];
-			int index1 = 0, index2 = 0;
 			
 			/****Construct the top k' unlabeled data for the current data.****/
 			for (int j = 0; j < m_U; j++) {
@@ -68,65 +152,22 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 					continue;
 				m_kUU.add(new _RankItem(j, getCache(i, j)));
 			}
-
+			
 			/****Get the sum of k'UU******/
 			for(_RankItem n: m_kUU){
 				wijSumU += n.m_value; //get the similarity between two nodes.
 				fSumU += n.m_value * m_fu[n.m_index];
 			}
-//			System.out.print("\nSimilarities among neighbors:\n");
-//			for(int m = 0; m < m_kUU.size(); m++){
-//				for(int n = 0; n < m_kUU.size(); n++){
-//					if(m != n){
-//						index1 = m_kUU.get(m).m_index;
-//						index2 = m_kUU.get(n).m_index;
-//						simArray[m] += getCache(index1, index2);
-//					}
-//				}
-//				simArray[m] /= m_kPrime;
-//				System.out.print(String.format("%.3f\t", simArray[m]));
-//			}
-//			int index = Utils.minOfArrayIndex(simArray);
-//			_RankItem tmp = m_kUU.get(index);
-//			wijSumU -= tmp.m_value;
-//			fSumU -= tmp.m_value * m_fu[tmp.m_index];
 			m_kUU.clear();
 			
 			/****Construct the top k labeled data for the current data.****/
 			for (int j = 0; j < m_L; j++)
 				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
 			
-//			System.out.println("----------------");
-//			System.out.println("Similarities between test review and Labeled neighbors: ");
 			/****Get the sum of kUL******/
-//			int count = 0;
 			for(_RankItem n: m_kUL){
-//				System.out.print(String.format("%d, %.3f, %d\t", count++, n.m_value, (int)m_Y[n.m_index]));
 				wijSumL += n.m_value;
 				fSumL += n.m_value * m_Y[n.m_index];
-			}
-			double similarity = 0;
-//			System.out.print("\nSimilarities among neighbors:\n");
-			for(int m = 0; m < m_kUL.size(); m++){
-				for(int n = 0; n < m_kUL.size(); n++){
-					if(m != n){
-						index1 = m_kUL.get(m).m_index - m_U;
-						index2 = m_kUL.get(n).m_index - m_U;
-						similarity = Utils.calculateSimilarity(m_labeled.get(index1), m_labeled.get(index2));
-//						System.out.print(similarity + "\t");
-						simArray[m] += similarity;
-					}
-				}
-				simArray[m] /= m_k;
-//				System.out.print(String.format("avg: %.3f\n", simArray[m]));
-			}
-			//Set the number of neighbors we want to delete.
-			for(int k = 0; k < m_rmNo; k++){
-				int index = Utils.minOfArrayIndex(simArray);
-				simArray[index] = 10000;
-				_RankItem tmp = m_kUL.get(index);
-				wijSumL -= tmp.m_value;
-				fSumL -= tmp.m_value * m_Y[tmp.m_index];
 			}
 			m_kUL.clear();
 			
@@ -137,47 +178,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			}
 		}
 	}
-	
-//	void randomWalk(){//construct the sparse graph on the fly every time
-//		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
-//		
-//		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
-//		for (int i = 0; i < m_U; i++) {
-//			double wijSumU = 0, wijSumL = 0;
-//			double fSumU = 0, fSumL = 0;
-//			
-//			/****Construct the top k' unlabeled data for the current data.****/
-//			for (int j = 0; j < m_U; j++) {
-//				if (j == i)
-//					continue;
-//				m_kUU.add(new _RankItem(j, getCache(i, j)));
-//			}
-//			
-//			/****Get the sum of k'UU******/
-//			for(_RankItem n: m_kUU){
-//				wijSumU += n.m_value; //get the similarity between two nodes.
-//				fSumU += n.m_value * m_fu[n.m_index];
-//			}
-//			m_kUU.clear();
-//			
-//			/****Construct the top k labeled data for the current data.****/
-//			for (int j = 0; j < m_L; j++)
-//				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
-//			
-//			/****Get the sum of kUL******/
-//			for(_RankItem n: m_kUL){
-//				wijSumL += n.m_value;
-//				fSumL += n.m_value * m_Y[n.m_index];
-//			}
-//			m_kUL.clear();
-//			
-//			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
-//			if (Double.isNaN(m_fu[i])) {
-//				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
-//				System.exit(-1);				
-//			}
-//		}
-//	}
 	
 	//based on the precomputed sparse graph
 	void randomWalkWithGraph(){
@@ -285,6 +285,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		return acc/m_U;
 	}
 	
+
 //	@Override
 //	protected void debug(_Doc d){
 //		int id = d.getID();

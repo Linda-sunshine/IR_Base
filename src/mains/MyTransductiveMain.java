@@ -8,6 +8,7 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -31,18 +32,23 @@ public class MyTransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dedup/RawData";
-		String suffix = ".json";
+		String folder = "data/txt_sentoken";
+		String suffix = ".txt";
+		
+//		String folder = "./data/amazon/small/dedup/RawData";
+//		String suffix = ".json";
+//		String folder = "./data/Electronics/dedup/RawData";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
+//		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_electronics.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
-		String aspectlist = "./data/Model/aspect_output_0515.txt";
+//		String aspectlist = "./data/Model/aspect_output_0515.txt";
 		
 		/*****Parameters in learning style.*****/
 		//"SEMI"
@@ -62,20 +68,22 @@ public class MyTransductiveMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-//		double endProb = 1.0; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-//		
+		String stopwords = "./data/Model/stopwords.dat";
+		String featureSelection = "DF"; //Feature selection method.
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+		
 //		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+//		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+////		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
+		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -100,7 +108,7 @@ public class MyTransductiveMain {
 		}
 		
 		tModel.setDisplay(true);
-		tModel.LoadPrior(aspectlist, eta);
+//		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();
 		tModel.printTopWords(10);
 		}
@@ -108,7 +116,7 @@ public class MyTransductiveMain {
 //		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
 //		String yFile = String.format("./data/MetricLearning/%s_yFile.csv", style);
 //		analyzer.printTopicMatrix(xFile, yFile);
-		String matrixFile = "./data/MetricLearning/matrixA_2.dat";
+//		String matrixFile = "./data/MetricLearning/matrixA_2.dat";
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
@@ -120,7 +128,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.9; // convergence of random walk, weight of random walk
 			
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)

@@ -241,7 +241,7 @@ public abstract class Analyzer {
 		}
 		
 		//rank the documents by product and time in all the cases
-		Collections.sort(m_corpus.getCollection());
+//		Collections.sort(m_corpus.getCollection());
 		if (norm == 1){
 			for(_Doc d:docs)			
 				Utils.L1Normalization(d.getSparse());
