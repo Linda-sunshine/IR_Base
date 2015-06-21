@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,6 +66,7 @@ public class STO2Core {
 	
 	private List<OrderedDocument> documents;
 	final private int maxSentenceLength = 50;
+	private HashMap<Integer, String> indexes = new HashMap<Integer, String>();
 	
 	public static void main(String [] args) throws Exception {
 		int numTopics = 20;
@@ -146,6 +148,9 @@ public class STO2Core {
 //		docListFile.close();
 
 		Vector<OrderedDocument> documents = OrderedDocument.instantiateOrderedDocuments(inputDir+"/"+wordDocFileName, null, null);
+//		indexes = new HashMap<Integer, String>();
+//		for(OrderedDocument d: documents)
+//			indexes.put(d.getDocNo(), d.getReviewID());
 		
 		/*System.out.println("Documents: "+documents.size());
 		System.out.println("Unique Words: "+wordList.size());
@@ -206,8 +211,6 @@ public class STO2Core {
 		probTable = new double[numTopics][numSenti];
 	}
 	
-	
-
 	public void initialization(boolean randomInit) {
 		sumSTW = new int[numSenti][numTopics];
 		sumDST = new int[numDocuments][numSenti];
@@ -225,6 +228,7 @@ public class STO2Core {
 
 		for (OrderedDocument currentDoc : documents){
 			int docNo = currentDoc.getDocNo();
+			indexes.put(docNo, currentDoc.getReviewID());
 			
 			for (Sentence sentence : currentDoc.getSentences()) {
 				int newSenti = -1;
@@ -472,12 +476,13 @@ public class STO2Core {
 
 		// Theta
 		System.out.println("Writing Theta...");
-		out = new PrintWriter(new FileWriter(new File(dir + "/" + prefix + "-Theta.csv")));
-		for (int s = 0; s < this.numSenti; s++)
-			for (int t = 0; t < this.numTopics; t++)
-				out.print("S"+s+"-T"+t+",");
-		out.println();
+//		out = new PrintWriter(new FileWriter(new File(dir + "/" + prefix + "-Theta.csv")));
+//		for (int s = 0; s < this.numSenti; s++)
+//			for (int t = 0; t < this.numTopics; t++)
+//				out.print("S"+s+"-T"+t+",");
+//		out.println();
 		for (int d = 0; d < this.numDocuments; d++) {
+			out.print(indexes.get(d) + ",");
 			for (int s = 0; s < this.numSenti; s++) {
 				for (int t = 0; t < this.numTopics; t++) {
 					out.print(this.Theta[s].getValue(d, t)+",");

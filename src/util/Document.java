@@ -93,6 +93,10 @@ public class Document {
 	public void setReviewID(String reviewID){
 		this.reviewID = reviewID;
 	}
+	
+	public String getReviewID(){
+		return reviewID;
+	}
 	public TreeMap<Integer,Integer> getWordCount() {
 		TreeMap<Integer,Integer> wordCntTable = new TreeMap<Integer,Integer>();
 		for (Word word : this.words) {

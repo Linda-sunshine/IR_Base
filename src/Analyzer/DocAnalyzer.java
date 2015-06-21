@@ -272,7 +272,7 @@ public class DocAnalyzer extends Analyzer {
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
-			m_sentenceWriter.write(String.format("%s\t%d\n", doc.getName(), sentences.length));
+			m_sentenceWriter.write(String.format("#%s\t%d\n", doc.getName(), sentences.length));
 			for(_SparseFeature[] stn: stnList){
 				for(_SparseFeature sf: stn)
 					m_sentenceWriter.write(sf.getIndex()+"\t");

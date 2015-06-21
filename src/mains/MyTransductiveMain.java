@@ -86,7 +86,7 @@ public class MyTransductiveMain {
 //		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 		
-		analyzer.setSentenceWriter("./data/BagOfSentence.txt");
+		analyzer.setSentenceWriter("./data/BagOfSentences.txt");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.

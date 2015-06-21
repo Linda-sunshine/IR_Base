@@ -10,10 +10,12 @@ import java.util.Vector;
 public class OrderedDocument extends Document {
 
 	private Vector<Sentence> sentences;
+//	private static HashMap<Integer, String> indexes;
 	
 	public OrderedDocument() {
 		super();
 		sentences = new Vector<Sentence>();
+//		indexes = new HashMap<Integer, String>();
 	}
 	
 	public void addWord(Word word) {
@@ -35,6 +37,9 @@ public class OrderedDocument extends Document {
 		return sentences;
 	}
 	
+//	public HashMap<Integer, String> returnIndexes(){
+//		return indexes;
+//	}
 	public static Vector<OrderedDocument> instantiateOrderedDocuments (String path, List<String> authors, List<String> authorList) throws Exception {
 		Vector<OrderedDocument> documents = new Vector<OrderedDocument>();
 		BufferedReader wordDocFile = new BufferedReader(new FileReader(new File(path)));
@@ -44,6 +49,8 @@ public class OrderedDocument extends Document {
 		while(true){
 			line = wordDocFile.readLine();
 			if(line == null) break;
+			if(line.startsWith("#"))
+				line = line.substring(1);
 			StringTokenizer st = new StringTokenizer(line);
 			String reviewID = st.nextToken();
 			int numSentences = Integer.valueOf(st.nextToken());
@@ -51,6 +58,7 @@ public class OrderedDocument extends Document {
 			OrderedDocument currentDoc = new OrderedDocument();		
 			currentDoc.setReviewID(reviewID);
 			currentDoc.setDocNo(docCount++);
+//			indexes.put(currentDoc.getDocNo(), reviewID);
 			
 			for (int s = 0; s < numSentences; s++) {
 				Sentence sentence = new Sentence();
