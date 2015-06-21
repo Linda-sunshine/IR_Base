@@ -15,7 +15,7 @@ public class Document {
 	private int author;
 	private int senti;
 	private int[] topicDist;
-	
+	private String reviewID;
 	protected Vector<Word> words;
 	
 	public Document(){
@@ -90,6 +90,9 @@ public class Document {
 		return senti;
 	}
 	
+	public void setReviewID(String reviewID){
+		this.reviewID = reviewID;
+	}
 	public TreeMap<Integer,Integer> getWordCount() {
 		TreeMap<Integer,Integer> wordCntTable = new TreeMap<Integer,Integer>();
 		for (Word word : this.words) {
@@ -138,7 +141,6 @@ public class Document {
 			documents.add(currentDoc);
 		}
 		wordDocFile.close();
-		
 		return documents;
 	}
 	

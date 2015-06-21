@@ -24,7 +24,7 @@ public abstract class BaseClassifier {
 	protected double[] m_cProbs;
 	
 	//for cross-validation
-	protected int[][] m_confusionMat, m_confusionMatKNN, m_TPTable, m_TPTableKNN;//confusion matrix over all folds, prediction table in each fold
+	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls, m_precisionsRecallsKNN; //Use this array to represent the precisions and recalls.
 
 	protected String m_debugOutput; // set up debug output (default: no debug output)
@@ -76,9 +76,7 @@ public abstract class BaseClassifier {
 		m_testSet = new ArrayList<_Doc>();
 		m_cProbs = new double[m_classNo];
 		m_TPTable = new int[m_classNo][m_classNo];
-		m_TPTableKNN = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
-		m_confusionMatKNN = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
 		m_precisionsRecallsKNN = new ArrayList<double[][]>();
 		m_debugOutput = null;
@@ -189,10 +187,6 @@ public abstract class BaseClassifier {
 			e.printStackTrace();
 		}
 	}
-//	public void verifyClique(){}
-	public double[] verifyClique(){
-		return new double[2];
-	}
 	
 	abstract public void saveModel(String modelLocation);
 	
@@ -213,23 +207,7 @@ public abstract class BaseClassifier {
 		}
 		return PreRecOfOneFold;
 	}
-	//Calculate the precision and recall for one folder tests.
-	public double[][] calculatePreRecKNN(int[][] tpTable) {
-		double[][] PreRecOfOneFold = new double[m_classNo][2];
-		
-		for (int i = 0; i < m_classNo; i++) {
-			PreRecOfOneFold[i][0] = (double) tpTable[i][i] / (Utils.sumOfRow(tpTable, i) + 0.001);// Precision of the class.
-			PreRecOfOneFold[i][1] = (double) tpTable[i][i] / (Utils.sumOfColumn(tpTable, i) + 0.001);// Recall of the class.
-		}
-		
-		for (int i = 0; i < m_classNo; i++) {			
-			for(int j=0; j< m_classNo; j++) {
-				m_confusionMatKNN[i][j] += tpTable[i][j];
-				tpTable[i][j] = 0; // clear the result in each fold
-			}
-		}
-		return PreRecOfOneFold;
-	}
+	
 	public void printConfusionMat() {
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("\t%d", i);
@@ -254,39 +232,6 @@ public abstract class BaseClassifier {
 		System.out.print("R");
 		for(int i=0; i<m_classNo; i++){
 			columnSum[i] = m_confusionMat[i][i]/columnSum[i]; // recall
-			System.out.format("\t%.4f", columnSum[i]);
-		}
-		System.out.format("\t%.4f", correct/total);
-		
-		System.out.print("\nF1");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
-		System.out.println();
-	}
-	public void printConfusionMatKNN() {
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("\t%d", i);
-		
-		double total = 0, correct = 0;
-		double[] columnSum = new double[m_classNo], prec = new double[m_classNo];
-		System.out.println("\tP");
-		for(int i=0; i<m_classNo; i++){
-			System.out.format("%d", i);
-			double sum = 0; // row sum
-			for(int j=0; j<m_classNo; j++) {
-				System.out.format("\t%d", m_confusionMatKNN[i][j]);
-				sum += m_confusionMatKNN[i][j];
-				columnSum[j] += m_confusionMatKNN[i][j];
-				total += m_confusionMatKNN[i][j];
-			}
-			correct += m_confusionMatKNN[i][i];
-			prec[i] = m_confusionMatKNN[i][i]/sum;
-			System.out.format("\t%.4f\n", prec[i]);
-		}
-		
-		System.out.print("R");
-		for(int i=0; i<m_classNo; i++){
-			columnSum[i] = m_confusionMatKNN[i][i]/columnSum[i]; // recall
 			System.out.format("\t%.4f", columnSum[i]);
 		}
 		System.out.format("\t%.4f", correct/total);
@@ -346,56 +291,6 @@ public abstract class BaseClassifier {
 			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
 		
 		printConfusionMat();
-		return metrix;
-	}
-	public double[][] calculateMeanVarianceKNN(ArrayList<double[][]> prs){
-		//Use the two-dimension array to represent the final result.
-		double[][] metrix = new double[m_classNo][4]; 
-			
-		double precisionSum = 0.0;
-		double precisionVarSum = 0.0;
-		double recallSum = 0.0;
-		double recallVarSum = 0.0;
-
-		//i represents the class label, calculate the mean and variance of different classes.
-		for(int i = 0; i < m_classNo; i++){
-			precisionSum = 0;
-			recallSum = 0;
-			// Calculate the sum of precisions and recalls.
-			for (int j = 0; j < prs.size(); j++) {
-				precisionSum += prs.get(j)[i][0];
-				recallSum += prs.get(j)[i][1];
-			}
-			
-			// Calculate the means of precisions and recalls.
-			metrix[i][0] = precisionSum/prs.size();
-			metrix[i][1] = recallSum/prs.size();
-		}
-
-		// Calculate the sum of variances of precisions and recalls.
-		for (int i = 0; i < m_classNo; i++) {
-			precisionVarSum = 0.0;
-			recallVarSum = 0.0;
-			// Calculate the sum of precision variance and recall variance.
-			for (int j = 0; j < prs.size(); j++) {
-				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
-				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
-			}
-			
-			// Calculate the means of precisions and recalls.
-			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
-			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
-		}
-		
-		// The final output of the computation.
-		System.out.println("*************************************************");
-		System.out.format("The final result of %s is as follows:\n", this.toString());
-		System.out.println("The total number of classes is " + m_classNo);
-		
-		for(int i = 0; i < m_classNo; i++)
-			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
-		
-		printConfusionMatKNN();
 		return metrix;
 	}
 }

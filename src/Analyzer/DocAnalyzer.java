@@ -1,10 +1,12 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public class DocAnalyzer extends Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected SentenceDetectorME m_stnDetector;
 	Set<String> m_stopwords;
-	 
+	protected PrintWriter m_sentenceWriter;
 	protected boolean m_releaseContent;
 	
 	//Constructor with ngram and fValue.
@@ -224,7 +226,7 @@ public class DocAnalyzer extends Analyzer {
 		
 		return spVct;
 	}
-	
+
 	/*Analyze a document and add the analyzed document back to corpus.
 	 *In the case CV is not loaded, we need two if loops to check.
 	 * The first is if the term is in the vocabulary.***I forgot to check this one!
@@ -249,7 +251,44 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
+	public void setSentenceWriter(String fileName) throws FileNotFoundException{
+		m_sentenceWriter = new PrintWriter(new File(fileName));
+	}
+	//Annotate one review.
+	public void AnnotateIndex(_Doc doc){
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		int y = doc.getYLabel();
+		
+		for(String sentence : sentences) {
+			String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
+			if (sentence_vector.size()>0) {//avoid empty sentence
+				stnList.add(Utils.createSpVct(sentence_vector));
+				Utils.mergeVectors(sentence_vector, spVct);
+			}
+		} // End For loop for sentence	
 	
+		//the document should be long enough
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
+			m_sentenceWriter.write(String.format("%s\t%d\n", doc.getName(), sentences.length));
+			for(_SparseFeature[] stn: stnList){
+				for(_SparseFeature sf: stn)
+					m_sentenceWriter.write(sf.getIndex()+"\t");
+				m_sentenceWriter.write("\n");
+			}
+			doc.setSentences(stnList);
+			m_corpus.addDoc(doc);
+			m_classMemberNo[y]++;
+			
+//			if (m_releaseContent)
+//				doc.clearSource();
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+		}
+	}
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());

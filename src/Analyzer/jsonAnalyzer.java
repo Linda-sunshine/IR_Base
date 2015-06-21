@@ -70,7 +70,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), label, timeStamp);
 //					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
-						AnalyzeDocWithStnSplit(review);
+						AnnotateIndex(review);
+//						AnalyzeDocWithStnSplit(review);
 					else
 						AnalyzeDoc(review);
 				}
@@ -81,6 +82,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 			}
 		}
 	}
+	
 	/***Load a json file with 1:1 postive and negative reviews.
 	Will this ruin the bias given by the ratio since this ratio is informative itself.***/
 //	public void LoadDoc(String filename) {

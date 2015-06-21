@@ -45,9 +45,11 @@ public class OrderedDocument extends Document {
 			line = wordDocFile.readLine();
 			if(line == null) break;
 			StringTokenizer st = new StringTokenizer(line);
+			String reviewID = st.nextToken();
 			int numSentences = Integer.valueOf(st.nextToken());
-			
-			OrderedDocument currentDoc = new OrderedDocument();			
+		
+			OrderedDocument currentDoc = new OrderedDocument();		
+			currentDoc.setReviewID(reviewID);
 			currentDoc.setDocNo(docCount++);
 			
 			for (int s = 0; s < numSentences; s++) {
