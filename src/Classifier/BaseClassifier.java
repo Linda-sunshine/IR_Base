@@ -33,7 +33,8 @@ public abstract class BaseClassifier {
 	}
 	
 	public abstract void train(Collection<_Doc> trainSet);
-	public abstract int predict(_Doc doc);
+	public abstract int predict(_Doc doc);//predict the class label
+	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
 	

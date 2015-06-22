@@ -421,28 +421,67 @@ public class Linear {
         }
     }
     
-    //Added by Hongning Wang, just for binary classification now!!!
-    public static double predictValue(Model model, Feature[] x) {
-    	if (model.nr_class != 2)
-    		return -1;
-    	
-        int n;
+    //Added by Hongning Wang
+    public static double predictValue(Model model, Feature[] x, int label) {
+    	int n;
         if (model.bias >= 0)
             n = model.nr_feature + 1;
         else
             n = model.nr_feature;
 
         double[] w = model.w;
-        double sum = 0; // no bias term?
 
+        int nr_w;
+        if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS)
+            nr_w = 1;
+        else
+            nr_w = model.nr_class;
+
+        double[] dec_values = new double[nr_w]; 
         for (Feature lx : x) {
             int idx = lx.getIndex();
             // the dimension of testing data may exceed that of training
-            if (idx <= n)
-            	sum += w[(idx - 1)] * lx.getValue();
+            if (idx <= n) {
+                for (int i = 0; i < nr_w; i++) {
+                    dec_values[i] += w[(idx - 1) * nr_w + i] * lx.getValue();
+                }
+            }
         }
 
-        return sum;
+        if (model.nr_class == 2)
+            return dec_values[0];
+        else
+            return dec_values[label];
+    }
+    
+    //Added by Hongning Wang
+    public static double predictValue(Model model, double[] x, int label) {
+    	int n;
+        if (model.bias >= 0)
+            n = model.nr_feature + 1;
+        else
+            n = model.nr_feature;
+
+        double[] w = model.w;
+
+        int nr_w;
+        if (model.nr_class == 2 && model.solverType != SolverType.MCSVM_CS)
+            nr_w = 1;
+        else
+            nr_w = model.nr_class;
+
+        double[] dec_values = new double[nr_w]; 
+        // the dimension of testing data may exceed that of training
+        for (int idx=0; idx<Math.min(n, x.length); idx++) {
+            for (int i = 0; i < nr_w; i++) {
+                dec_values[i] += w[idx * nr_w + i] * x[idx];
+            }
+        }
+
+        if (model.nr_class == 2)
+            return dec_values[0];
+        else
+            return dec_values[label];
     }
 
     static void printf(Formatter formatter, String format, Object... args) throws IOException {

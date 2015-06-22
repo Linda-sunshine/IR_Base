@@ -246,6 +246,13 @@ public class PageRank extends BaseClassifier {
 		System.exit(-1);
 		return -1;
 	}
+	
+	@Override
+	public double score(_Doc doc, int label) {
+		System.err.println("Not implemented yet!");
+		System.exit(-1);
+		return -1;
+	}
 
 	@Override
 	protected void init() {

@@ -343,6 +343,15 @@ public class Utils {
 		return String.format("(%s)", buffer.toString());
 	}
 	
+	static public _SparseFeature[] createSpVct(double[] denseFv) {
+		ArrayList<_SparseFeature> spVct = new ArrayList<_SparseFeature>();
+		for(int i=0; i<denseFv.length; i++) {
+			if (denseFv[i]!=0)
+				spVct.add(new _SparseFeature(i, denseFv[i]));
+		}
+		return spVct.toArray(new _SparseFeature[spVct.size()]);
+	}
+	
 	static public _SparseFeature[] createSpVct(HashMap<Integer, Double> vct) {
 		_SparseFeature[] spVct = new _SparseFeature[vct.size()];
 		
@@ -504,12 +513,16 @@ public class Utils {
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 	
-	static public Feature[] createLibLinearFV(_Doc doc) {
-		Feature[] node = new Feature[doc.getDocLength()]; 
+	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
+		Feature[] node = new Feature[spVct.length]; 
 		int fid = 0;
-		for(_SparseFeature fv:doc.getSparse())
+		for(_SparseFeature fv:spVct)
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
 		return node;
+	}
+	
+	static public Feature[] createLibLinearFV(_Doc doc) {
+		return Utils.createLibLinearFV(doc.getSparse());
 	}
 	
 	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {

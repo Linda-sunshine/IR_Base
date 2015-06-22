@@ -52,6 +52,17 @@ public class _Doc implements Comparable<_Doc> {
 	
 	Random m_rand;
 	
+	//only used in learning to rank for random walk
+	public double[] m_rankingFvs; // dense vector for ranking features
+	
+	public double[] getRankingFvs() {
+		return m_rankingFvs;
+	}
+
+	public void setRankingFvs(double[] rankingFvs) {
+		this.m_rankingFvs = rankingFvs;
+	}
+
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;
@@ -388,5 +399,9 @@ public class _Doc implements Comparable<_Doc> {
 		m_x_projection = Utils.projectSpVct(m_x_sparse, filter);
 //		if (m_x_projection!=null)
 //			Utils.L2Normalization(m_x_projection);
+	}
+	
+	public void setProjectedFv(double[] denseFv) {
+		m_x_projection = Utils.createSpVct(denseFv);
 	}
 }

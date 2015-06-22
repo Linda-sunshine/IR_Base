@@ -54,8 +54,7 @@ public class KNN extends BaseClassifier{
 		m_k = k;
 		m_l = l;
 		m_randomVcts = new double[m_l][m_featureSize];
-	}
-	
+	}	
 	
 	//Group all the documents based on their hashcodes.
 	@Override
@@ -98,7 +97,31 @@ public class KNN extends BaseClassifier{
 			} 
 		}
 		
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_k, true);
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_k);
+		for(_Doc d:docs)
+			neighbors.add(new _RankItem(d.getYLabel(), Utils.calculateSimilarity(d, doc)));
+		
+		Arrays.fill(m_cProbs, 0);
+		for(_RankItem rt:neighbors)
+			m_cProbs[rt.m_index] ++;//why don't we consider the similarity?
+		
+		return Utils.maxOfArrayIndex(m_cProbs);
+	}
+	
+	@Override
+	public double score(_Doc doc, int label) {
+		Collection<_Doc> docs;
+		if (m_l<=0) {//no random projection
+			docs = m_trainSet;
+		} else {
+			docs = m_buckets.get(getHashCode(doc));
+			if(docs.size() < m_k) {
+				System.err.println("L is set too large, tune the parameter.");
+				return -1;
+			} 
+		}
+		
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_k);
 		for(_Doc d:docs)
 			neighbors.add(new _RankItem(d.getYLabel(), Utils.calculateSimilarity(d, doc)));
 		
@@ -106,7 +129,7 @@ public class KNN extends BaseClassifier{
 		for(_RankItem rt:neighbors)
 			m_cProbs[rt.m_index] ++;
 		
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return m_cProbs[label] - m_k;//to be consistent with the predict function
 	}
 
 	@Override

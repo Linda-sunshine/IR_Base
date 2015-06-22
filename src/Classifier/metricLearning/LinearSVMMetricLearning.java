@@ -69,7 +69,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			if (fv == null)
 				return super.getSimilarity(di, dj);//is this a good back-off?
 			else
-				similarity = Math.exp(Linear.predictValue(m_libModel, fv));//to make sure this is positive
+				similarity = Math.exp(Linear.predictValue(m_libModel, fv, 1));//to make sure this is positive
 		}
 		
 		if (Double.isNaN(similarity)){
