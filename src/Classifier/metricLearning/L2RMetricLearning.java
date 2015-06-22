@@ -114,7 +114,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					continue;	
 				dj = m_trainSet.get(j);
 				if ( simRanker.add(m_LabeledCache[getIndex(i,j)]) 
-					|| Math.random()<0.01) {//inject some random neighbors
+					|| (neighbors.size()<m_topK*2 && Math.random()<0.005) ) {//inject some random neighbors
 					neighbors.add(dj);
 				}
 			}

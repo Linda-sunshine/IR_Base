@@ -113,7 +113,7 @@ public class TransductiveMain {
 			boolean simFlag = false;
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			int topK = 10; // top K similar documents for constructing pairwise ranking targets
+			int topK = 6; // top K similar documents for constructing pairwise ranking targets
 			boolean metricLearning = true;
 			
 			GaussianFields mySemi = null;			
