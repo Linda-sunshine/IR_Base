@@ -6,6 +6,7 @@ import java.util.Collection;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
@@ -18,6 +19,7 @@ import Classifier.supervised.liblinear.SolverType;
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_topK;//top K initial ranking results 
+	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
 	
@@ -26,15 +28,17 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
 		m_topK = topK;
+		m_noiseRatio = 0.0; // no random neighbor is needed 
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
 			double delta, double eta, boolean storeGraph,
-			int topK) {
+			int topK, double noiseRatio) {
 		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta,
 				storeGraph);
 		m_topK = topK;
+		m_noiseRatio = noiseRatio;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
@@ -96,7 +100,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
-		MyPriorityQueue<Double> simRanker = new MyPriorityQueue<Double>(m_topK);
+		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
 		Feature[] rankFvs = null;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
@@ -113,10 +117,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				if (i==j)
 					continue;	
 				dj = m_trainSet.get(j);
-				if ( simRanker.add(m_LabeledCache[getIndex(i,j)]) 
-					|| (neighbors.size()<m_topK*2 && Math.random()<0.005) ) {//inject some random neighbors
+				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
+			}
+			
+			for(_RankItem it:simRanker)
+				neighbors.add(m_trainSet.get(it.m_index));
+			
+			//inject some random neighbors 
+			for(int j=0; j<m_trainSet.size() && neighbors.size()<(1.0+m_noiseRatio)*m_topK; j++) {
+				if (i==j)
+					continue;	
+				
+				dj = m_trainSet.get(j);
+				if (!neighbors.contains(dj) && Math.random()<0.005)
 					neighbors.add(dj);
-				}
 			}
 			
 			//construct features for the most similar documents with respect to the query di

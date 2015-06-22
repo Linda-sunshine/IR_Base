@@ -114,6 +114,7 @@ public class TransductiveMain {
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6; // top K similar documents for constructing pairwise ranking targets
+			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
 			GaussianFields mySemi = null;			
@@ -132,7 +133,7 @@ public class TransductiveMain {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						topK);
+						topK, noiseRatio);
 			}
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
