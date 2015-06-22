@@ -135,6 +135,7 @@ public abstract class Analyzer {
 	public _Corpus getCorpus() {
 		//store the feature names into corpus
 		m_corpus.setFeatures(m_featureNames);
+		m_corpus.setFeatureStat(m_featureStat);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
 		return m_corpus;
 	}
@@ -170,18 +171,39 @@ public abstract class Analyzer {
 		int N = docs.size();
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
+			for (int i = 0; i < docs.size(); i++) {
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
+				for (_SparseFeature sf : sfs) {
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
+					double DF = Utils.sumOfArray(stat.getDF());
+					double IDF = Math.log((N + 1) / DF);
+					avgIDF += IDF;
+				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
 		} else if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
-					double TFIDF = TF * Math.log((N + 1) / DF);
+					double IDF = Math.log((N + 1) / DF);
+					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
+					avgIDF += IDF;
 				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		} else if (fValue.equals("BM25")) {
 			double k1 = 1.5; // [1.2, 2]
@@ -195,15 +217,20 @@ public abstract class Analyzer {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
-				double n = temp.getTotalDocLength() / navg;
+				double n = temp.getTotalDocLength() / navg, avgIDF = 0;
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
-					double BM25 = Math.log((N - DF + 0.5) / (DF + 0.5)) * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
+					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
+					double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
 					sf.setValue(BM25);
+					avgIDF += IDF;
 				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		} else if (fValue.equals("PLN")) {
 			double s = 0.5; // [0, 1]
@@ -216,15 +243,20 @@ public abstract class Analyzer {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
-				double n = temp.getTotalDocLength() / navg;
+				double n = temp.getTotalDocLength() / navg, avgIDF = 0;
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
-					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n)) * Math.log((N + 1) / DF);
+					double IDF = Math.log((N + 1) / DF);
+					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n)) * IDF;
 					sf.setValue(PLN);
+					avgIDF += IDF;
 				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		} else {
 			//The default value is just keeping the raw count of every feature.

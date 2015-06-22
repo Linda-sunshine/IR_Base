@@ -23,7 +23,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
 	
-	final int RankFVSize = 6;// features to be defined in genRankingFV()
+	final int RankFVSize = 9;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -196,11 +196,14 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());
 		
 		//feature 7: lexicon based sentiment scores
-		
-		
+		fv[6] = 0;
+ 		
 		//Part II: pointwise features for document
-		//stop words proportion
-		//average IDF
+		//feature 8: stop words proportion
+		fv[7] = q.getStopwordProportion() - d.getStopwordProportion();
+		
+		//feature 9: average IDF
+		fv[8] = q.getAvgIDF() - d.getAvgIDF();
 		//average neighborhood similarity
 		
 		return fv;

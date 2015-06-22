@@ -30,7 +30,25 @@ public class _Doc implements Comparable<_Doc> {
 	long m_timeStamp; //The timeStamp for this review.
 	
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
+	double m_stopwordProportion = 0;
+	double m_avgIDF = 0;
 	
+	public double getAvgIDF() {
+		return m_avgIDF;
+	}
+
+	public void setAvgIDF(double avgIDF) {
+		this.m_avgIDF = avgIDF;
+	}
+
+	public double getStopwordProportion() {
+		return m_stopwordProportion;
+	}
+
+	public void setStopwordProportion(double stopwordProportion) {
+		this.m_stopwordProportion = stopwordProportion;
+	}
+
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
