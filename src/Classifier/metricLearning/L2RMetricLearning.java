@@ -7,6 +7,7 @@ import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
+import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -21,7 +22,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
 	
-	final int RankFVSize = 5;
+	final int RankFVSize = 6;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -37,6 +38,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 	}
 	
+	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
 		
@@ -91,6 +93,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		calcLabeledSimilarities();
 		
 		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_topK);
+		Feature[] rankFvs = null;
 		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
 		ArrayList<Integer> targetArray = new ArrayList<Integer>();
 		
@@ -122,13 +125,21 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				for(int n=m+1; n<neighbors.size(); n++) {
 					ritn = neighbors.get(n);
 					
-					if (ritm.m_label > ritn.m_label) {
-						featureArray.add(genPairwiseRankingFV(m_trainSet.get(ritm.m_index), m_trainSet.get(ritn.m_index)));
+					//test rank preference
+					if (ritm.m_label == ritn.m_label)
+						continue;
+					
+					//test feature difference
+					rankFvs = genPairwiseRankingFV(m_trainSet.get(ritm.m_index), m_trainSet.get(ritn.m_index));
+					if (rankFvs==null)
+						continue;
+						
+					//store the preference pair
+					featureArray.add(rankFvs);
+					if (ritm.m_label > ritn.m_label)
 						targetArray.add(1);
-					} else if (ritm.m_label < ritn.m_label) {
-						featureArray.add(genPairwiseRankingFV(m_trainSet.get(ritm.m_index), m_trainSet.get(ritn.m_index)));
+					else
 						targetArray.add(0);
-					}
 				}
 			}
 			
@@ -136,7 +147,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d pairs for rank SVM training...", featureArray.size());
+		System.out.format("Generate %d pairs for rank SVM training...\n", featureArray.size());
 		return SVM.libSVMTrain(featureArray, targetArray, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, 1.0, 1);
 	}
 	
@@ -144,6 +155,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double[] genRankingFV(_Doc q, _Doc d) {
 		double[] fv = new double[RankFVSize];
 		
+		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
 		fv[0] = getBoWSim(q, d);
 		
@@ -157,7 +169,18 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[3] = m_classifier.score(q, 1) - m_classifier.score(d, 1);//how to deal with multi-class instances?
 		
 		//feature 5: sparse feature length difference
-		fv[4] = (double)(q.getDocLength() - d.getDocLength())/q.getDocLength();
+		fv[4] = (double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength();
+		
+		//feature 6: jaccard coefficient
+		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());
+		
+		//feature 7: lexicon based sentiment scores
+		
+		
+		//Part II: pointwise features for document
+		//stop words proportion
+		//average IDF
+		//average neighborhood similarity
 		
 		return fv;
 	}
@@ -172,6 +195,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				fvs.add(new FeatureNode(i+1, value));
 		}
 		
+		if (fvs.size()==0)
+			return null;
 		return fvs.toArray(new Feature[fvs.size()]);
 	}
 }

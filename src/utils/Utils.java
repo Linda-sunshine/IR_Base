@@ -287,6 +287,27 @@ public class Utils {
 		return calculateSimilarity(d1.getSparse(), d2.getSparse());
 	}
 	
+	public static double jaccard(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double overlap = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				overlap ++;
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return overlap/(spVct1.length + spVct2.length);
+	}
+	
 	public static double cosine(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
 		if (spVct1L2==0 || spVct2L2==0)
