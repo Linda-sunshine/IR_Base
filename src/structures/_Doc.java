@@ -41,6 +41,7 @@ public class _Doc implements Comparable<_Doc> {
 	
 	//p(z|d) for topic models in general
 	public double[] m_topics;
+	public double[] m_sentiment;
 	//sufficient statistics for estimating p(z|d)
 	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)
 	
@@ -60,6 +61,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		m_topics = null;
+		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -73,6 +75,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
+		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -89,6 +92,7 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
+		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -399,5 +403,11 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public double[] getAspVct(){
 		return m_x_aspVct;
+	}
+	
+	public void setSentiment(double[] senti, int k){
+		if(senti.length == k){
+			m_sentiment = senti;
+		}
 	}
 }

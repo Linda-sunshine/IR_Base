@@ -42,20 +42,18 @@ public abstract class Analyzer {
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
+	protected PrintWriter m_sentenceWriter;
 	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
-		
 		m_classNo = classNo;
 		m_classMemberNo = new int[classNo];
-		
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 //		m_featureIndexName = new HashMap<Integer, String>();
 		m_featureStat = new HashMap<String, _stat>();
 		
 		m_lengthThreshold = minDocLength;
-		
 		m_preDocs = new LinkedList<_Doc>();
 	}	
 	
@@ -98,6 +96,38 @@ public abstract class Analyzer {
 		}
 	}
 	
+	public void LoadTopicSentiment(String filename, int k) {
+		if (filename==null || filename.isEmpty())
+			return;
+		m_corpus.setReviewIDIndexes();//Set the look-up table for setting sentiment usage.
+		String[] probStrs;
+		int count = 0 ;
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				double[] probs = new double[k];
+				count++;
+				probStrs = line.split(",");
+				if(probStrs.length != (k+1)){
+					System.out.println("The topic sentiment has the wrong dimension!");
+				} else{
+					for(int i=1; i<k+1; i++)
+						probs[i-1] = Double.valueOf(probStrs[i]);
+				}
+				m_corpus.setSentiment(probStrs[0], probs, k);
+			}
+			reader.close();
+			if(count == m_corpus.getSize())
+				System.out.format("%d sentiment vectors are loaded from %s and set to all reviews.\n", m_corpus.getSize(), filename);
+			else
+				System.err.println("The number of sentiment array does not match with review number!");
+			
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
+	
 	//Load all the files in the directory.
 	public void LoadDirectory(String folder, String suffix) throws IOException {
 		if (folder==null || folder.isEmpty())
@@ -112,6 +142,7 @@ public abstract class Analyzer {
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+//		m_sentenceWriter.close();
 	}
 	
 	abstract public void LoadDoc(String filename);

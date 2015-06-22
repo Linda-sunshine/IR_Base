@@ -69,7 +69,7 @@ public class STO2Core {
 	private HashMap<Integer, String> indexes = new HashMap<Integer, String>();
 	
 	public static void main(String [] args) throws Exception {
-		int numTopics = 20;
+		int numTopics = 30;
 		int numIterations = 100;
 		int numSenti = 2;
 		int numThreads = 1;
@@ -476,7 +476,7 @@ public class STO2Core {
 
 		// Theta
 		System.out.println("Writing Theta...");
-//		out = new PrintWriter(new FileWriter(new File(dir + "/" + prefix + "-Theta.csv")));
+		out = new PrintWriter(new FileWriter(new File(dir + "/" + prefix + "-Theta.csv")));
 //		for (int s = 0; s < this.numSenti; s++)
 //			for (int t = 0; t < this.numTopics; t++)
 //				out.print("S"+s+"-T"+t+",");

@@ -228,9 +228,12 @@ public class GaussianFields extends BaseClassifier {
 		if(m_A != null){
 			return Math.exp(alpha*Utils.calculateSimilarity(di, dj)) - beta*Utils.calculateMDistance(di, dj, m_A);
 		} else
-			return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
-//			return Math.exp(-beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
-//			return Math.exp(Utils.cosine(di.getTopics(), dj.getTopics()));
+//			return Math.exp(Utils.calculateSimilarity(di, dj));
+//			return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - 
+//					beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize + 
+//					Utils.cosine(di.getSentiment(), dj.getSentiment())/2/topicSize);
+			return Math.exp(-beta*Utils.KLsymmetric(di.m_sentiment, dj.m_sentiment)/topicSize);
+//			return Math.exp(Utils.cosine(di.getSentiment(), dj.getSentiment()));
 	}
 	
 	protected void calcSimilarityInThreads(){

@@ -47,6 +47,8 @@ public class OrderedDocument extends Document {
 		int docCount=0;
 		String line;
 		while(true){
+			if(docCount>16758)
+				System.out.print("Stop");
 			line = wordDocFile.readLine();
 			if(line == null) break;
 			if(line.startsWith("#"))
@@ -63,23 +65,29 @@ public class OrderedDocument extends Document {
 			for (int s = 0; s < numSentences; s++) {
 				Sentence sentence = new Sentence();
 				line = wordDocFile.readLine();
-				//System.out.println(line);
+//				//System.out.println(line);
 				st = new StringTokenizer(line);
-				sentence.label = Integer.valueOf(st.nextToken());
-				if(sentence.label==-1)
-				{
-					sentence.label = 0;
-					//System.out.println("pros");
-				}
-				if(sentence.label==-2)
-				{
-				 sentence.label = 1;
-				 //System.out.println("cons");
-				}
+//				sentence.label = Integer.valueOf(st.nextToken());
+//				if(sentence.label==-1)
+//				{
+//					sentence.label = 0;
+//					//System.out.println("pros");
+//				}
+//				else if(sentence.label==-2)
+//				{
+//				 sentence.label = 1;
+//				 //System.out.println("cons");
+//				} else{
+//					sentence.addWord(new SentiWord(sentence.label));
+//				}
+				//&& !st.nextToken().startsWith("#")
 				while(st.hasMoreElements()){
-					int wordNo = Integer.valueOf(st.nextToken());
-					//System.out.println(wordNo);
-					sentence.addWord(new SentiWord(wordNo));
+					String tmp = st.nextToken();
+					if(!tmp.startsWith("#")){
+						int wordNo = Integer.valueOf(tmp);
+						//System.out.println(wordNo);
+						sentence.addWord(new SentiWord(wordNo));
+					} else break;
 				}
 				currentDoc.addSentence(sentence);
 			}

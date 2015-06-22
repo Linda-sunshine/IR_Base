@@ -34,7 +34,6 @@ public class DocAnalyzer extends Analyzer {
 	protected SnowballStemmer m_stemmer;
 	protected SentenceDetectorME m_stnDetector;
 	Set<String> m_stopwords;
-	protected PrintWriter m_sentenceWriter;
 	protected boolean m_releaseContent;
 	
 	//Constructor with ngram and fValue.
@@ -272,7 +271,9 @@ public class DocAnalyzer extends Analyzer {
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
-			m_sentenceWriter.write(String.format("#%s\t%d\n", doc.getName(), sentences.length));
+			if(doc.getName().equals("R2IG2MZJL04TC2"))
+				System.out.println("stop");
+			m_sentenceWriter.write(String.format("#%s\t%d\n", doc.getName(), stnList.size()));
 			for(_SparseFeature[] stn: stnList){
 				for(_SparseFeature sf: stn)
 					m_sentenceWriter.write(sf.getIndex()+"\t");
