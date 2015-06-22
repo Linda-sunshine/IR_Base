@@ -112,10 +112,9 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			//query document
 			di = m_trainSet.get(i);
 			
-			
-			if (di.getYLabel() == 1 && negQ < 1.2*posQ)
+			if (di.getYLabel() == 1 && negQ < 0.8*posQ)
 				continue;
-			else if (di.getYLabel() == 0 && posQ < 1.2*negQ)
+			else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
 				continue;
 			
 			//using content similarity to construct initial ranking
