@@ -60,16 +60,21 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		super.train(trainSet);
 		
 		m_rankSVM = trainRankSVM();
+		
+		double[] w = m_rankSVM.getFeatureWeights();
+		for(int i=0; i<m_rankSVM.getNrFeature(); i++)
+			System.out.print(w[i] + " ");
+		System.out.println();
 	}
 	
 	private void calcLabeledSimilarities() {
-		int L = m_trainSet.size();
-		if (m_LabeledCache==null || m_LabeledCache.length<L)
-			m_LabeledCache = new double[L*(L+1)/2];
+		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagnoal
+		if (m_LabeledCache==null || m_LabeledCache.length<size)
+			m_LabeledCache = new double[size];
 		
 		//using Collection<_Doc> trainSet to pass corpus parameter is really awkward
 		_Doc di, dj;
-		for(int i=0; i<m_trainSet.size(); i++) {
+		for(int i=1; i<m_trainSet.size(); i++) {
 			di = m_trainSet.get(i);
 			for(int j=0; j<i; j++) {
 				dj = m_trainSet.get(j);
@@ -84,7 +89,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			i = j;
 			j = t;
 		}
-		return i*(i+1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
+		return i*(i-1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
 	}
  	
 	//In this training process, we want to get the weight of all pairs of samples.
