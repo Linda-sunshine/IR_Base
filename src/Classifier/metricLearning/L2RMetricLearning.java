@@ -200,10 +200,10 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
  		
 		//Part II: pointwise features for document
 		//feature 8: stop words proportion
-		fv[7] = q.getStopwordProportion() - d.getStopwordProportion();
+		fv[7] = d.getStopwordProportion();
 		
 		//feature 9: average IDF
-		fv[8] = q.getAvgIDF() - d.getAvgIDF();
+		fv[8] = d.getAvgIDF();
 		//average neighborhood similarity
 		
 		return fv;
