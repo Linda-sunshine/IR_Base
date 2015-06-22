@@ -32,7 +32,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/small";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
