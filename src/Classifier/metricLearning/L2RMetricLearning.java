@@ -159,7 +159,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					if (label_j > label_k)
 						targetArray.add(1);
 					else
-						targetArray.add(0);
+						targetArray.add(-1);
 				}
 			}
 			

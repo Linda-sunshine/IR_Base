@@ -171,7 +171,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected double getBoWSim(_Doc di, _Doc dj) {
-		return Math.exp(Utils.calculateSimilarity(di, dj));
+		return Utils.calculateSimilarity(di, dj);
 	}
 	
 	protected double getTopicalSim(_Doc di, _Doc dj) {
@@ -183,7 +183,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-		return getBoWSim(di, dj) + getTopicalSim(di, dj);
+		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void calcSimilarityInThreads(){
