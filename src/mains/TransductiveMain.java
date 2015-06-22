@@ -49,7 +49,7 @@ public class TransductiveMain {
 		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
-		String debugOutput = null;// "data/debug/topical.sim";
+		String debugOutput = "data/debug/topical.sim";
 		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
