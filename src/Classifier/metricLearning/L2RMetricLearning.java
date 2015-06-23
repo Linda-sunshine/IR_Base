@@ -125,6 +125,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
 			}
 			
+			//find the top K similar documents by default similarity measure
 			for(_RankItem it:simRanker)
 				neighbors.add(m_trainSet.get(it.m_index));
 			
@@ -134,7 +135,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					continue;	
 				
 				dj = m_trainSet.get(j);
-				if (!neighbors.contains(dj) && Math.random()<0.005)
+				if (Math.random()<0.005 && !neighbors.contains(dj))
 					neighbors.add(dj);
 			}
 			
@@ -178,7 +179,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d pairs for rank SVM training...\n", featureArray.size());
+		System.out.format("Generate %d(%d:%d) pairs for rankSVM training...\n", featureArray.size(), posQ, negQ);
 		return SVM.libSVMTrain(featureArray, targetArray, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, 1.0, -1);
 	}
 	
