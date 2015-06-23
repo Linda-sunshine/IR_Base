@@ -70,8 +70,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), label, timeStamp);
 //					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
-//						AnnotateIndex(review);
-						AnalyzeDocWithStnSplit(review);
+						AnnotateIndex(review);
+//						AnalyzeDocWithStnSplit(review);
 					else
 						AnalyzeDoc(review);
 				}

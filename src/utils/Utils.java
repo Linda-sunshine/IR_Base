@@ -703,4 +703,14 @@ public class Utils {
 		}
 		return similarity;
 	}
+	//The Euclidean distance for two arrays of the same length.
+	public static double EuclideanDistance(double[] t1, double[] t2){
+		double sum = 0;
+		if(t1.length == t2.length){
+			for(int i=0; i < t1.length; i++){
+				sum += (t1[i] - t2[i]) * (t1[i] - t2[i]);
+			}	
+		}
+		return sum;
+	}
 }

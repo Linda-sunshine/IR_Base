@@ -8,9 +8,14 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class OrderedDocument extends Document {
-
+	
+	public int label;
 	private Vector<Sentence> sentences;
 //	private static HashMap<Integer, String> indexes;
+	
+	public void setLabel(int l){
+		label = l;
+	}
 	
 	public OrderedDocument() {
 		super();
@@ -47,8 +52,6 @@ public class OrderedDocument extends Document {
 		int docCount=0;
 		String line;
 		while(true){
-			if(docCount>16758)
-				System.out.print("Stop");
 			line = wordDocFile.readLine();
 			if(line == null) break;
 			if(line.startsWith("#"))
@@ -56,10 +59,12 @@ public class OrderedDocument extends Document {
 			StringTokenizer st = new StringTokenizer(line);
 			String reviewID = st.nextToken();
 			int numSentences = Integer.valueOf(st.nextToken());
+			int label = Integer.valueOf(st.nextToken());
 		
 			OrderedDocument currentDoc = new OrderedDocument();		
 			currentDoc.setReviewID(reviewID);
 			currentDoc.setDocNo(docCount++);
+			currentDoc.setLabel(label);
 //			indexes.put(currentDoc.getDocNo(), reviewID);
 			
 			for (int s = 0; s < numSentences; s++) {

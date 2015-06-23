@@ -91,7 +91,7 @@ public class STO2Core {
 		String sentiFilePrefix = "SentiWords-";
 		String wordListFileName = "fv_2gram_topicmodel_8055.txt";
 		String docListFileName = "DocumentList.txt";
-		String wordDocFileName = "BagOfSentences.txt";
+		String wordDocFileName = "BagOfSentencesLabels.txt";
 		
 /*		*//*** Options ***//*
 		for (int i = 0; i < args.length/2; i++) {
@@ -482,7 +482,7 @@ public class STO2Core {
 //				out.print("S"+s+"-T"+t+",");
 //		out.println();
 		for (int d = 0; d < this.numDocuments; d++) {
-			out.print(indexes.get(d) + ",");
+			out.format("%s,%d,", indexes.get(d), documents.get(d).label);
 			for (int s = 0; s < this.numSenti; s++) {
 				for (int t = 0; t < this.numTopics; t++) {
 					out.print(this.Theta[s].getValue(d, t)+",");
