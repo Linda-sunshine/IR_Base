@@ -32,7 +32,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -109,7 +109,7 @@ public class TransductiveMain {
 			double learningRatio = 1.0;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.75; // convergence of random walk, weight of random walk
 			boolean simFlag = false;
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
