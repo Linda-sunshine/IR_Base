@@ -47,7 +47,7 @@ public class GaussianFields extends BaseClassifier {
 	ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
-	BaseClassifier m_classifier; //Multiple learner.
+	protected BaseClassifier m_classifier; //Multiple learner.
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
@@ -219,15 +219,6 @@ public class GaussianFields extends BaseClassifier {
 		return m_labeled.get(i);
 	}
 	
-	public double getSimilarity(_Doc di, _Doc dj) {
-//		return Math.random();
-		if (di.m_topics == null || dj.m_topics == null)
-			return Math.exp(Utils.calculateSimilarity(di, dj));
-		
-		int topicSize = di.m_topics.length;
-		double alpha = 1.0, beta = 1.0, gamma = 1.0;
-		return Math.exp(alpha*Utils.calculateSimilarity(di, dj)-alpha*Utils.KLsymmetric(di.m_sentiment, dj.m_sentiment)/topicSize);
-
 //		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		if(m_A != null)
 //			return Math.exp(alpha*Utils.calculateSimilarity(di, dj)) - beta*Utils.calculateMDistance(di, dj, m_A);
@@ -238,6 +229,20 @@ public class GaussianFields extends BaseClassifier {
 
 //		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize 
 //				+ gamma*Utils.cosine(di.m_sentiment, dj.m_sentiment)/topicSize);
+	protected double getBoWSim(_Doc di, _Doc dj) {
+		return Utils.calculateSimilarity(di, dj);
+	}
+	
+	protected double getTopicalSim(_Doc di, _Doc dj) {
+		if (di.m_topics == null || dj.m_topics == null)
+			return 0;
+		int topicSize = di.m_topics.length;
+		return Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize;
+	}
+	
+	public double getSimilarity(_Doc di, _Doc dj) {
+//		return Math.random();//just for debugging purpose
+		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void calcSimilarityInThreads(){
@@ -658,6 +663,11 @@ public class GaussianFields extends BaseClassifier {
 	} 	
 	
 	public int predict(_Doc doc) {
+		return -1; //we don't support this in transductive learning
+	}
+	
+	@Override
+	public double score(_Doc doc, int label) {
 		return -1; //we don't support this in transductive learning
 	}
 	

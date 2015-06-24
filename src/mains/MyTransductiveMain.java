@@ -90,7 +90,7 @@ public class MyTransductiveMain {
 //		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
-		analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
+//		analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		
 		if(style.equals("SEMI")){
@@ -115,7 +115,7 @@ public class MyTransductiveMain {
 		tModel.setDisplay(true);
 //		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();
-		tModel.printTopWords(10);
+		tModel.printTopWords(10, true);
 		}
 		
 //		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);

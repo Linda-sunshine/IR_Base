@@ -119,7 +119,7 @@ public class AspectReviewMain {
 			model.setDisplay(true);
 			model.LoadPrior(aspectOutput, eta_lad);
 			model.EMonCorpus();
-			model.printTopWords(topK);
+			model.printTopWords(topK, true);
 		}
 		
 		//temporal code to add pagerank weights

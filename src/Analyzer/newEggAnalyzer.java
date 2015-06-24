@@ -16,6 +16,7 @@ import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.NewEggPost;
+import structures.TokenizeResult;
 import structures._Doc;
 import utils.Utils;
 
@@ -93,13 +94,15 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	protected boolean AnalyzeNewEggPost(NewEggPost post) throws ParseException {
 		String[] tokens;
 		String content;
+		TokenizeResult result;
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
-			tokens = TokenizerNormalizeStemmer(content);
+			result = TokenizerNormalizeStemmer(content);
+			tokens = result.getTokens();
 			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();
@@ -111,7 +114,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			spVcts.add(null);//no pro section
 		
 		if ((content=post.getConContent()) != null) {// tokenize cons
-			tokens = TokenizerNormalizeStemmer(content);
+			result = TokenizerNormalizeStemmer(content);
+			tokens = result.getTokens();
 			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();
@@ -123,7 +127,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			spVcts.add(null);//no con section
 		
 		if ((content=post.getComments()) != null) {// tokenize comments
-			tokens = TokenizerNormalizeStemmer(content);
+			result = TokenizerNormalizeStemmer(content);
+			tokens = result.getTokens();
 			vPtr = constructSpVct(tokens, y, docVct);
 			spVcts.add(vPtr);
 			uniWordsInSections += vPtr.size();

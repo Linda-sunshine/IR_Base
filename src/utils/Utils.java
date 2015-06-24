@@ -16,6 +16,18 @@ import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
+	public static double max(double[] w, int start, int size) {
+		double max = Math.abs(w[start]);
+		int index = 0;
+		for(int i=1; i<size; i++) {
+			if (Math.abs(w[start+i]) > max) {
+				max = Math.abs(w[start+i]);
+				index = i;
+			}
+		}
+		return w[start+index];
+	}
+	
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
 		return maxOfArrayIndex(probs, probs.length);
@@ -127,12 +139,18 @@ public class Utils {
 			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
 		}
+		
+		if (sum==0)
+			return max;
 		return Math.log(sum) + max;
 	}
 	
-	public static double logSum(double log_a, double log_b)
-	{
-		if (log_a < log_b)
+	public static double logSum(double log_a, double log_b) {
+		if (Double.isInfinite(log_a))
+			return log_b;
+		else if (Double.isInfinite(log_b))
+			return log_a;
+		else if (log_a < log_b)
 			return log_b+Math.log(1 + Math.exp(log_a-log_b));
 		else
 			return log_a+Math.log(1 + Math.exp(log_b-log_a));
@@ -293,6 +311,27 @@ public class Utils {
 		return calculateSimilarity(d1.getSparse(), d2.getSparse());
 	}
 	
+	public static double jaccard(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double overlap = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				overlap ++;
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return overlap/(spVct1.length + spVct2.length);
+	}
+	
 	public static double cosine(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
 		if (spVct1L2==0 || spVct2L2==0)
@@ -349,6 +388,15 @@ public class Utils {
 			else
 				buffer.append("," + Double.toString(array[i]));
 		return String.format("(%s)", buffer.toString());
+	}
+	
+	static public _SparseFeature[] createSpVct(double[] denseFv) {
+		ArrayList<_SparseFeature> spVct = new ArrayList<_SparseFeature>();
+		for(int i=0; i<denseFv.length; i++) {
+			if (denseFv[i]!=0)
+				spVct.add(new _SparseFeature(i, denseFv[i]));
+		}
+		return spVct.toArray(new _SparseFeature[spVct.size()]);
 	}
 	
 	static public _SparseFeature[] createSpVct(HashMap<Integer, Double> vct) {
@@ -512,10 +560,22 @@ public class Utils {
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 	
-	static public Feature[] createLibLinearFV(_Doc doc) {
-		Feature[] node = new Feature[doc.getDocLength()]; 
+	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
+		Feature[] node = new Feature[spVct.length]; 
 		int fid = 0;
-		for(_SparseFeature fv:doc.getSparse())
+		for(_SparseFeature fv:spVct)
+			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
+		return node;
+	}
+	
+	static public Feature[] createLibLinearFV(_Doc doc) {
+		return Utils.createLibLinearFV(doc.getSparse());
+	}
+	
+	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {
+		Feature[] node = new Feature[spVct.size()]; 
+		int fid = 0;
+		for(_SparseFeature fv:createSpVct(spVct))
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
 		return node;
 	}

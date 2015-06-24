@@ -24,6 +24,7 @@ import opennlp.tools.util.InvalidFormatException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import structures.TokenizeResult;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._stat;
@@ -126,19 +127,24 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	protected String[] TokenizerNormalizeStemmer(String source){
+	protected TokenizeResult TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
 		
+		
 		LinkedList<String> Ngrams = new LinkedList<String>();
-		int tokenLength = tokens.length, N = m_Ngram;		
+		int tokenLength = tokens.length, N = m_Ngram;	
+		
+		TokenizeResult result = new TokenizeResult(tokenLength);
 		for(int i=0; i<tokenLength; i++) {
 			String token = tokens[i];
 			boolean legit = isLegit(token);
-			if (legit)
+			if (legit) 
 				Ngrams.add(token);//unigram
+			else
+				result.incStopwords();
 			
 			//N to 2 grams
 			if (!isBoundary(token)) {
@@ -154,7 +160,8 @@ public class DocAnalyzer extends Analyzer {
 			}
 		}
 		
-		return Ngrams.toArray(new String[Ngrams.size()]);
+		result.setTokens(Ngrams.toArray(new String[Ngrams.size()]));
+		return result;
 	}
 
 	//Load a movie review document and analyze it.
@@ -232,13 +239,16 @@ public class DocAnalyzer extends Analyzer {
 	 * The second is if the term is in the sparseVector.
 	 * In the case CV is loaded, we still need two if loops to check.*/
 	protected boolean AnalyzeDoc(_Doc doc) {
-		String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
 		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
+			doc.setStopwordProportion(result.getStopwordProportion());
+			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 //			if (m_releaseContent)
@@ -255,13 +265,15 @@ public class DocAnalyzer extends Analyzer {
 	}
 	//Annotate one review.
 	public void AnnotateIndex(_Doc doc){
+		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
 		int y = doc.getYLabel();
 		
 		for(String sentence : sentences) {
-			String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+			String[] tokens = result.getTokens();	
 			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
@@ -290,13 +302,15 @@ public class DocAnalyzer extends Analyzer {
 	}
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
 		int y = doc.getYLabel();
 		
 		for(String sentence : sentences) {
-			String[] tokens = TokenizerNormalizeStemmer(sentence);// Three-step analysis.			
+			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.	
+			String[] tokens = result.getTokens();		
 			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));

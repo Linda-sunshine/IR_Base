@@ -88,7 +88,7 @@ public abstract class TopicModel {
 	protected abstract double calculate_log_likelihood(_Doc d);
 	
 	//print top k words under each topic
-	public abstract void printTopWords(int k);
+	public abstract void printTopWords(int k, boolean logSpace);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
@@ -167,18 +167,6 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
-		
-//		tmpSimCheck();
-	}
-	
-	private int getLabel(int y) {
-//		return y;
-		
-		//turn into binary
-		if (y>=3)
-			return 1;
-		else
-			return 0;
 	}
 
 	public double Evaluation() {

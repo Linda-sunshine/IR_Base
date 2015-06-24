@@ -9,6 +9,7 @@ import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
+import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
@@ -31,7 +32,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/small";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -44,11 +45,11 @@ public class TransductiveMain {
 		//"SUP", "SEMI"
 		String style = "SEMI";
 		
-		//"RW", "RW-MV", "RW-ML"
-		String method = "RW-ML";
+		//"RW", "RW-MV", "RW-ML", "RW-L2R"
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
-		String debugOutput = null;// "data/debug/topical.sim";
+		String debugOutput = "data/debug/topical.sim";
 		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
@@ -112,6 +113,8 @@ public class TransductiveMain {
 			boolean simFlag = false;
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
+			int topK = 6; // top K similar documents for constructing pairwise ranking targets
+			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
 			GaussianFields mySemi = null;			
@@ -127,6 +130,10 @@ public class TransductiveMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
 						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
+			} else if (method.equals("RW-L2R")) {
+				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						topK, noiseRatio);
 			}
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);

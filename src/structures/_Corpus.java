@@ -22,7 +22,14 @@ public class _Corpus {
 	static final int ReviewSizeCut = 3;
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
-	HashMap<String, Integer> m_reviewIDIndexes;
+//	HashMap<String, Integer> m_reviewIDIndexes;
+
+	HashMap<String, _stat> m_featureStat; //statistics about the features
+	
+	public void setFeatureStat(HashMap<String, _stat> featureStat) {
+		this.m_featureStat = featureStat;
+	}
+
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
 	int[] m_mask; 
 			
@@ -259,15 +266,15 @@ public class _Corpus {
 			return String.format("%d\t%d", j, i);
 	}
 	
-	public void setReviewIDIndexes(){
-		m_reviewIDIndexes = new HashMap<String, Integer>();
-		for(int i=0; i < m_collection.size(); i++){
-			m_reviewIDIndexes.put(m_collection.get(i).getName(), i);
-		}
-	}
-	
-	public void setSentiment(String reviewID, double[] probs, int k){
-		int index = m_reviewIDIndexes.get(reviewID);
-		m_collection.get(index).setSentiment(probs, k);
-	}
+//	public void setReviewIDIndexes(){
+//		m_reviewIDIndexes = new HashMap<String, Integer>();
+//		for(int i=0; i < m_collection.size(); i++){
+//			m_reviewIDIndexes.put(m_collection.get(i).getName(), i);
+//		}
+//	}
+//	
+//	public void setSentiment(String reviewID, double[] probs, int k){
+//		int index = m_reviewIDIndexes.get(reviewID);
+//		m_collection.get(index).setSentiment(probs, k);
+//	}
 }

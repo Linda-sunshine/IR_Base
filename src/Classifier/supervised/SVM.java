@@ -135,7 +135,7 @@ import Classifier.supervised.liblinear.SolverType;
  */
 public class SVM extends BaseClassifier {
 	Model m_libModel;
-	SolverType m_type = SolverType.L1R_L2LOSS_SVC;
+	SolverType m_type = SolverType.L2R_L1LOSS_SVC_DUAL;
 	double m_C;
 	final static public double EPS = 0.001;
 	
@@ -172,7 +172,7 @@ public class SVM extends BaseClassifier {
 		Feature[][] fvs = new Feature[trainSet.size()][];
 		double[] y = new double[trainSet.size()];
 		
-		int fid = 0;
+		int fid = 0; // file id
 		for(_Doc d:trainSet) {
 			fvs[fid] = Utils.createLibLinearFV(d);
 			y[fid] = d.getYLabel();
@@ -212,6 +212,11 @@ public class SVM extends BaseClassifier {
 	@Override
 	public int predict(_Doc doc) {
 		return (int)Linear.predict(m_libModel, Utils.createLibLinearFV(doc));
+	}
+	
+	@Override
+	public double score(_Doc doc, int label) {
+		return Linear.predictValue(m_libModel, Utils.createLibLinearFV(doc), label);
 	}
 	
 	@Override
