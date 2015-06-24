@@ -92,37 +92,37 @@ public abstract class Analyzer {
 		}
 	}
 	
-//	public void LoadTopicSentiment(String filename, int k) {
-//		if (filename==null || filename.isEmpty())
-//			return;
-//		m_corpus.setReviewIDIndexes();//Set the look-up table for setting sentiment usage.
-//		String[] probStrs;
-//		int count = 0 ;
-//		try {
-//			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-//			String line;
-//			while ((line = reader.readLine()) != null) {
-//				double[] probs = new double[k];
-//				count++;
-//				probStrs = line.split(",");
-//				if(probStrs.length != (k+2)){
-//					System.out.println("The topic sentiment has the wrong dimension!");
-//				} else{
-//					for(int i=2; i<k+2; i++)
-//						probs[i-2] = Double.valueOf(probStrs[i]);
-//				}
-//				m_corpus.setSentiment(probStrs[0], probs, k);
-//			}
-//			reader.close();
-//			if(count == m_corpus.getSize())
-//				System.out.format("%d sentiment vectors are loaded from %s and set to all reviews.\n", m_corpus.getSize(), filename);
-//			else
-//				System.err.println("The number of sentiment array does not match with review number!");
-//			
-//		} catch (IOException e) {
-//			System.err.format("[Error]Failed to open file %s!!", filename);
-//		}
-//	}
+	public void LoadTopicSentiment(String filename, int k) {
+		if (filename==null || filename.isEmpty())
+			return;
+		m_corpus.setReviewIDIndexes();//Set the look-up table for setting sentiment usage.
+		String[] probStrs;
+		int count = 0 ;
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				double[] probs = new double[k];
+				count++;
+				probStrs = line.split(",");
+				if(probStrs.length != (k+2)){
+					System.out.println("The topic sentiment has the wrong dimension!");
+				} else{
+					for(int i=2; i<k+2; i++)
+						probs[i-2] = Double.valueOf(probStrs[i]);
+				}
+				m_corpus.setSentiment(probStrs[0], probs, k);
+			}
+			reader.close();
+			if(count == m_corpus.getSize())
+				System.out.format("%d sentiment vectors are loaded from %s and set to all reviews.\n", m_corpus.getSize(), filename);
+			else
+				System.err.println("The number of sentiment array does not match with review number!");
+			
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
 	
 	//Load all the files in the directory.
 	public void LoadDirectory(String folder, String suffix) throws IOException {

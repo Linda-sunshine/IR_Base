@@ -8,18 +8,17 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
+import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
 public class MyTransductiveMain {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
-		int classNumber = 2; //Define the number of classes in this Naive Bayes.
+		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 10; //Document length threshold
 		
@@ -48,14 +47,13 @@ public class MyTransductiveMain {
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
-//		String aspectlist = "./data/Model/aspect_output_0515.txt";
 		
 		/*****Parameters in learning style.*****/
-		//"SEMI"
+		//"SUP", "SEMI"
 		String style = "SEMI";
 		
-		//"RW", "RW-MV", "RW-ML"
-		String method = "RW-MV";
+		//"RW", "RW-MV", "RW-ML", "RW-L2R"
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -68,25 +66,23 @@ public class MyTransductiveMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
-		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 1.0; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+//		String stopwords = "./data/Model/stopwords.dat";
+//		String featureSelection = "DF"; //Feature selection method.
+//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+//		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		
 //		System.out.println("Performing feature selection, wait...");
-////		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
-//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
 		System.out.println("Creating feature vectors, wait...");
-//		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 		
+//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 //		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
@@ -94,38 +90,33 @@ public class MyTransductiveMain {
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		
 		if(style.equals("SEMI")){
-		pLSA tModel = null;
-		if (topicmodel.equals("pLSA")) {			
-			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha);
-		} else if (topicmodel.equals("LDA_Gibbs")) {		
-			tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 0.4, 50);
-		}  else if (topicmodel.equals("LDA_Variational")) {		
-			tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 10, -1);
-		} else {
-			System.out.println("The selected topic model has not developed yet!");
-			return;
-		}
+			pLSA tModel = null;
+			if (topicmodel.equals("pLSA")) {			
+				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+						lambda, analyzer.getBackgroundProb(), 
+						number_of_topics, alpha);
+			} else if (topicmodel.equals("LDA_Gibbs")) {		
+				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+						lambda, analyzer.getBackgroundProb(), 
+						number_of_topics, alpha, 0.4, 50);
+			} else if (topicmodel.equals("LDA_Variational")) {		
+				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+						lambda, analyzer.getBackgroundProb(), 
+						number_of_topics, alpha, 10, -1);
+			} else {
+				System.out.println("The selected topic model has not developed yet!");
+				return;
+			}
 		
-		tModel.setDisplay(true);
-//		tModel.LoadPrior(aspectlist, eta);
-		tModel.EMonCorpus();
-		tModel.printTopWords(10, true);
+			tModel.setDisplay(true);
+//			tModel.LoadPrior(aspectlist, eta);
+			tModel.EMonCorpus();
+			tModel.printTopWords(10, true);
 		}
-		
-//		String xFile = String.format("./data/MetricLearning/%s_xFile.csv", style);
-//		String yFile = String.format("./data/MetricLearning/%s_yFile.csv", style);
-//		analyzer.printTopicMatrix(xFile, yFile);
-//		String matrixFile = "./data/MetricLearning/matrixA_2.dat";
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-//		c.mapLabels(3);
+		c.mapLabels(4);
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
@@ -133,35 +124,33 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			
+			boolean mvFlag = false; //If this true
 			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
+			
+			int topK = 6;
+			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
-//			String filePos = String.format("./data/posSimi_%d_%d.xls", k, kPrime);
-//			String fileNeg = String.format("./data/negSimi_%d_%d.xls", k, kPrime);
 			GaussianFields mySemi = null;			
 			if (method.equals("RW")) {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-				mySemi.setDebugOutput(debugOutput);
-				mySemi.setFeatures(analyzer.getFeatures());
-//				((GaussianFieldsByRandomWalk) mySemi).setrmNumber(3);
-				mySemi.crossValidation(CVFold, c);
-//				mySemi.printStat();
-			} else if (method.equals("RW-MV")) {
-				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-				mySemi.setDebugOutput(debugOutput);
-				mySemi.setFeatures(analyzer.getFeatures());
-//				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
-//				mySemi.setSimilarity();
-				mySemi.crossValidation(CVFold, c);
-//				mySemi.printStat();
+				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, true); 
+//			} else if (method.equals("RW-MV")) {
+//				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
+////				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
+////				mySemi.setSimilarity();
 			} else if (method.equals("RW-ML")) {
-				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);
+				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
+			} else if (method.equals("RW-L2R")) {
+				mySemi = new L2RMetricLearning(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, topK, noiseRatio);
 			}
+			mySemi.setFeatures(analyzer.getFeatures());
+			mySemi.setDebugOutput(debugOutput);
+			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");

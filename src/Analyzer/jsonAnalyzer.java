@@ -1,6 +1,3 @@
-/**
- * 
- */
 package Analyzer;
 
 import java.io.BufferedReader;
@@ -10,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -65,10 +60,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 					else
 						content = post.getTitle() + ". " + post.getContent();
 
-					int label = 0;
-					if(post.getLabel() >= 4) label = 1;
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), label, timeStamp);
-//					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
 						AnnotateIndex(review);
 //						AnalyzeDocWithStnSplit(review);
@@ -190,70 +182,5 @@ public class jsonAnalyzer extends DocAnalyzer{
 			}
 			return true;
 		} 
-	}
-	
-//	protected boolean AnalyzeDoc(_Doc doc) {
-//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-//			return true;
-//		else{
-//			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-//			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-//			int index = 0;
-//			double value = 0;
-//			// Construct the sparse vector.
-//			for (String token : tokens) {
-//				// CV is not loaded, take all the tokens as features.
-//				if (!m_isCVLoaded) {
-//					if (m_featureNameIndex.containsKey(token)) {
-//						index = m_featureNameIndex.get(token);
-//						if (spVct.containsKey(index)) {
-//							value = spVct.get(index) + 1;
-//							spVct.put(index, value);
-//						} else {
-//							spVct.put(index, 1.0);
-//							m_featureStat.get(token).addOneDF(doc.getYLabel());
-//						}
-//					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
-//						expandVocabulary(token);// update the m_featureNames.
-//						index = m_featureNameIndex.get(token);
-//						spVct.put(index, 1.0);
-//						m_featureStat.get(token).addOneDF(doc.getYLabel());
-//					}
-//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-//				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-//					index = m_featureNameIndex.get(token);
-//					if (spVct.containsKey(index)) {
-//						value = spVct.get(index) + 1;
-//						spVct.put(index, value);
-//					} else {
-//						spVct.put(index, 1.0);
-//						m_featureStat.get(token).addOneDF(doc.getYLabel());
-//					}
-//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-//				}
-//				// if the token is not in the vocabulary, nothing to do.
-//			}
-//			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
-//				doc.createSpVct(spVct);
-//				m_corpus.addDoc(doc);
-//				m_classMemberNo[doc.getYLabel()]++;
-//			}
-//		}
-//		return true;
-////		if (m_releaseContent){
-////			doc.clearSource();
-////			return true;
-////		}
-////		else
-////			return false;
-//	}
-	
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		String folder = "./data/amazon/small";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		String fvFile = "./data/Features/fv_2gram_3185.txt";
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, 2, fvFile, 2, 10);
-		analyzer.LoadDirectory(folder, suffix);
 	}
 }

@@ -1,14 +1,6 @@
 package Classifier.semisupervised;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
-
 import structures._Corpus;
-import structures._Doc;
 import structures._RankItem;
-import utils.Utils;
 
 public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double m_difference; //The difference between the previous labels and current labels.
@@ -17,7 +9,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	double m_delta; // convergence criterion for random walk
 	boolean m_storeGraph; // shall we precompute and store the graph
-	int m_rmNo; //The number of neighbors we want to remove;
+	boolean m_mvFlag;
+	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
 		super(c, classifier, C);
@@ -26,7 +19,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		m_labelRatio = 0.1;
 		m_delta = 1e-5;
 		m_storeGraph = false;
-		m_rmNo = 0;
+		m_mvFlag = false;
 	}	
 	
 	//Constructor: given k and kPrime
@@ -39,104 +32,27 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		m_delta = delta;
 		m_eta = eta;
 		m_storeGraph = storeGraph;
-		m_rmNo = 0;
+		m_mvFlag = false;
 	}
+	
+	//Constructor: given k and kPrime
+	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C,
+			double ratio, int k, int kPrime, double alpha, double beta, double delta, double eta, boolean storeGraph, boolean mvFlag){
+		super(c, classifier, C, ratio, k, kPrime);
+		
+		m_alpha = alpha;
+		m_beta = beta;
+		m_delta = delta;
+		m_eta = eta;
+		m_storeGraph = storeGraph;
+		m_mvFlag = mvFlag;
+	}
+	
 	
 	@Override
 	public String toString() {
 		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount);
 	}
-	
-	public void setrmNumber(int n){
-		m_rmNo = n;
-	}
-	//The random walk algorithm to generate new labels for unlabeled data.
-	//Take the average of all neighbors as the new label until they converge.
-//	void randomWalk(){//construct the sparse graph on the fly every time
-//		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
-//		
-//		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
-//		for (int i = 0; i < m_U; i++) {
-//			double wijSumU = 0, wijSumL = 0;
-//			double fSumU = 0, fSumL = 0;
-////			double[] simArray = new double[m_kPrime];
-////			int index1 = 0, index2 = 0;
-//			
-//			/****Construct the top k' unlabeled data for the current data.****/
-//			for (int j = 0; j < m_U; j++) {
-//				if (j == i)
-//					continue;
-//				m_kUU.add(new _RankItem(j, getCache(i, j)));
-//			}
-//
-//			/****Get the sum of k'UU******/
-//			for(_RankItem n: m_kUU){
-//				wijSumU += n.m_value; //get the similarity between two nodes.
-//				fSumU += n.m_value * m_fu[n.m_index];
-//			}
-////			System.out.print("\nSimilarities among neighbors:\n");
-////			for(int m = 0; m < m_kUU.size(); m++){
-////				for(int n = 0; n < m_kUU.size(); n++){
-////					if(m != n){
-////						index1 = m_kUU.get(m).m_index;
-////						index2 = m_kUU.get(n).m_index;
-////						simArray[m] += getCache(index1, index2);
-////					}
-////				}
-////				simArray[m] /= m_kPrime;
-////				System.out.print(String.format("%.3f\t", simArray[m]));
-////			}
-////			int index = Utils.minOfArrayIndex(simArray);
-////			_RankItem tmp = m_kUU.get(index);
-////			wijSumU -= tmp.m_value;
-////			fSumU -= tmp.m_value * m_fu[tmp.m_index];
-//			m_kUU.clear();
-//			
-//			/****Construct the top k labeled data for the current data.****/
-//			for (int j = 0; j < m_L; j++)
-//				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
-//			
-////			System.out.println("----------------");
-////			System.out.println("Similarities between test review and Labeled neighbors: ");
-//			/****Get the sum of kUL******/
-////			int count = 0;
-//			for(_RankItem n: m_kUL){
-////				System.out.print(String.format("%d, %.3f, %d\t", count++, n.m_value, (int)m_Y[n.m_index]));
-//				wijSumL += n.m_value;
-//				fSumL += n.m_value * m_Y[n.m_index];
-//			}
-////			double similarity = 0;
-////			System.out.print("\nSimilarities among neighbors:\n");
-////			for(int m = 0; m < m_kUL.size(); m++){
-////				for(int n = 0; n < m_kUL.size(); n++){
-////					if(m != n){
-////						index1 = m_kUL.get(m).m_index - m_U;
-////						index2 = m_kUL.get(n).m_index - m_U;
-////						similarity = Utils.calculateSimilarity(m_labeled.get(index1), m_labeled.get(index2));
-//////						System.out.print(similarity + "\t");
-////						simArray[m] += similarity;
-////					}
-////				}
-////				simArray[m] /= m_k;
-////				System.out.print(String.format("avg: %.3f\n", simArray[m]));
-//			}
-//			//Set the number of neighbors we want to delete.
-////			for(int k = 0; k < m_rmNo; k++){
-////				int index = Utils.minOfArrayIndex(simArray);
-////				simArray[index] = 10000;
-////				_RankItem tmp = m_kUL.get(index);
-////				wijSumL -= tmp.m_value;
-////				fSumL -= tmp.m_value * m_Y[tmp.m_index];
-////			}
-//			m_kUL.clear();
-//			
-//			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
-//			if (Double.isNaN(m_fu[i])) {
-//				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
-//				System.exit(-1);				
-//			}
-//		}
-//	}
 	
 	void randomWalk(){//construct the sparse graph on the fly every time
 		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;

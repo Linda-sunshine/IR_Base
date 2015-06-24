@@ -10,10 +10,6 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import java.lang.Object;
-
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math3.stat.inference.TTest;
 
 public abstract class BaseClassifier {
 	protected int m_classNo; //The total number of classes.
@@ -29,12 +25,6 @@ public abstract class BaseClassifier {
 
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
-//	protected double[][] m_acc;
-//	protected TTest m_tTest;
-//	protected PearsonsCorrelation m_pCorrelation;
-//	protected ArrayList<Double> m_sim;//Every element constains 
-//	protected ArrayList<Integer> m_accClique;
-//	protected ArrayList<Integer> m_accKNN;
 	
 	public void train() {
 		train(m_trainSet);
@@ -114,12 +104,6 @@ public abstract class BaseClassifier {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
-//		m_tTest = new TTest();
-//		m_pCorrelation = new PearsonsCorrelation();
-//		m_sim = new ArrayList<Double>();
-//		m_accClique = new ArrayList<Integer>();
-//		m_accKNN = new ArrayList<Integer>();
-//		m_acc = new double[k][m_classNo];
 		try {
 			if (m_debugOutput!=null)
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
@@ -131,14 +115,6 @@ public abstract class BaseClassifier {
 			//Use this loop to iterate all the ten folders, set the train set and test set.
 			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
-					//more for testing
-//					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
-//						m_trainSet.add(docs.get(j));
-//					else
-//						m_testSet.add(docs.get(j));
-					
-					//more for training
-//					if(masks[j]==i && Math.random()< 0.1) 
 					if(masks[j]==i)
 						m_trainSet.add(docs.get(j));
 					else
@@ -151,36 +127,13 @@ public abstract class BaseClassifier {
 				
 				long start = System.currentTimeMillis();
 				train();
-//				verifyClique();
-//				m_acc[i] = verifyClique();
 				double accuracy = test();
 				
 				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy);
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-//			for(int i = 0; i < k; i++){
-//				System.out.print(String.format("neg:\t%.3f\tpos:\t%.3f\n", m_acc[i][0], m_acc[i][1]));
-//			}
-//			double[] sampleSim = new double[m_sim.size()];
-//			double[] sampleClique = new double[m_accClique.size()];
-//			double[] sampleKNN = new double[m_accKNN.size()];
-//			if(m_accClique.size() == m_accKNN.size() && m_accKNN.size() == m_sim.size()){
-//				for(int m = 0; m < m_accClique.size(); m++){
-//					sampleSim[m] = m_sim.get(m);
-//					sampleClique[m] = m_accClique.get(m);
-//					sampleKNN[m] = m_accKNN.get(m);
-//				}
-//			}
-//
-//			double value = m_tTest.pairedT(sampleClique, sampleKNN);
-//			double correlation1 = m_pCorrelation.correlation(sampleSim, sampleClique);
-//			double correlation2 = m_pCorrelation.correlation(sampleSim, sampleKNN);
-//			System.out.print(String.format("Correlation(sim, Clique): %.3f, (sim, KNN): %.3f\n", correlation1, correlation2));
-//			System.out.print(String.format("Ttest value between clique and kNN: %.3f\n", value));
 			calculateMeanVariance(m_precisionsRecalls);
-//			System.out.println("The result of KNN:");
-//			calculateMeanVarianceKNN(m_precisionsRecallsKNN);	
 
 			if (m_debugOutput!=null)
 				m_debugWriter.close();

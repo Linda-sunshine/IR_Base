@@ -427,13 +427,13 @@ public class _Doc implements Comparable<_Doc> {
 //			Utils.L2Normalization(m_x_projection);
 	}
 
-	//	public void setAspVct(double[] aspVct){
-//		m_x_aspVct = aspVct;
-//	}
-//	
-//	public double[] getAspVct(){
-//		return m_x_aspVct;
-//	}
+	public void setAspVct(double[] aspVct){
+		m_x_aspVct = aspVct;
+	}
+	
+	public double[] getAspVct(){
+		return m_x_aspVct;
+	}
 	
 	public void setSentiment(double[] senti, int k){
 		if(senti.length == k){

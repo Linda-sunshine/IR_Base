@@ -14,8 +14,6 @@ import utils.Utils;
 public class GaussianFieldsByMajorityVoting extends GaussianFieldsByRandomWalk {
 	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
 	double m_threshold; //The threshold for threshold-based majority voting.
-	PrintWriter m_writerPos;
-	PrintWriter m_writerNeg;
 	
 	//The default Constructor, majority voting without similarities.
 	public GaussianFieldsByMajorityVoting(_Corpus c, String classifier, double C){
