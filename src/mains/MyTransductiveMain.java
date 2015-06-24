@@ -52,7 +52,7 @@ public class MyTransductiveMain {
 		//"SUP", "SEMI"
 		String style = "SEMI";
 		
-		//"RW", "RW-MV", "RW-ML", "RW-L2R"
+		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
@@ -126,22 +126,14 @@ public class MyTransductiveMain {
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			
-			boolean mvFlag = false; //If this true
-			double threshold = 0.5;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			
 			int topK = 6;
 			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
 			GaussianFields mySemi = null;			
 			if (method.equals("RW")) {
-				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, true); 
-//			} else if (method.equals("RW-MV")) {
-//				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-////				mySemi.setMatrixA(analyzer.loadMatrixA(matrixFile, number_of_topics));
-////				mySemi.setSimilarity();
+				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, true); 
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);

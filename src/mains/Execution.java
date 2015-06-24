@@ -127,11 +127,11 @@ public class Execution  {
 			} else if (param.m_model.equals("GF-RW")) {
 				System.out.println("Start Gaussian Field by random walk, wait...");
 				model = new GaussianFieldsByRandomWalk(corpus, param.m_classifier, param.m_C,
-					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph);
+					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_weightedAvg);
 			} else if (param.m_model.equals("GF-RW-ML")) {
 				System.out.println("Start Gaussian Field with distance metric learning by random walk, wait...");
 				model = new LinearSVMMetricLearning(corpus, param.m_classifier, param.m_C,
-					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_storeGraph, 
+					param.m_sampleRate, param.m_kUL, param.m_kUU, param.m_alpha, param.m_beta, param.m_converge, param.m_eta, param.m_weightedAvg, 
 					param.m_bound);
 //				((LinearSVMMetricLearning)model).setMetricLearningMethod(false);
 //				((LinearSVMMetricLearning)model).verification(param.m_CVFold, corpus, param.m_debugOutput);
