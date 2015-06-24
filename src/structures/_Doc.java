@@ -69,17 +69,6 @@ public class _Doc implements Comparable<_Doc> {
 	public double[][] m_phi; // p(z|w, \phi)
 	
 	Random m_rand;
-	
-	//only used in learning to rank for random walk
-	public double[] m_rankingFvs; // dense vector for ranking features
-	
-	public double[] getRankingFvs() {
-		return m_rankingFvs;
-	}
-
-	public void setRankingFvs(double[] rankingFvs) {
-		this.m_rankingFvs = rankingFvs;
-	}
 
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
