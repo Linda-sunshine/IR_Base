@@ -1,6 +1,5 @@
 package Analyzer;
 
-import java.awt.List;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -10,11 +9,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Set;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -109,11 +105,11 @@ public abstract class Analyzer {
 				double[] probs = new double[k];
 				count++;
 				probStrs = line.split(",");
-				if(probStrs.length != (k+1)){
+				if(probStrs.length != (k+2)){
 					System.out.println("The topic sentiment has the wrong dimension!");
 				} else{
-					for(int i=1; i<k+1; i++)
-						probs[i-1] = Double.valueOf(probStrs[i]);
+					for(int i=2; i<k+2; i++)
+						probs[i-2] = Double.valueOf(probStrs[i]);
 				}
 				m_corpus.setSentiment(probStrs[0], probs, k);
 			}

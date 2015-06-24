@@ -220,18 +220,21 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
+//		return Math.random();
 		if (di.m_topics == null || dj.m_topics == null)
 			return Math.exp(Utils.calculateSimilarity(di, dj));
 		
 		int topicSize = di.m_topics.length;
 		double alpha = 1.0, beta = 1.0, gamma = 1.0;
-		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
+		return Math.exp(alpha*Utils.calculateSimilarity(di, dj)-alpha*Utils.KLsymmetric(di.m_sentiment, dj.m_sentiment)/topicSize);
+
+//		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);
 //		if(m_A != null)
 //			return Math.exp(alpha*Utils.calculateSimilarity(di, dj)) - beta*Utils.calculateMDistance(di, dj, m_A);
 		
 //		return Math.exp(Utils.calculateSimilarity(di, dj));//cosine similarity
 //		return Math.exp(-Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize);//topic similarity
-//		return Math.exp(Utils.EuclideanDistance(di.m_sentiment, dj.m_sentiment)/topicSize);//sentiment similarity
+//		return Math.exp(-Utils.KLsymmetric(di.m_sentiment, dj.m_sentiment)/topicSize);//sentiment similarity
 
 //		return Math.exp(alpha*Utils.calculateSimilarity(di, dj) - beta*Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize 
 //				+ gamma*Utils.cosine(di.m_sentiment, dj.m_sentiment)/topicSize);

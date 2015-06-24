@@ -69,8 +69,8 @@ public class STO2Core {
 	private HashMap<Integer, String> indexes = new HashMap<Integer, String>();
 	
 	public static void main(String [] args) throws Exception {
-		int numTopics = 30;
-		int numIterations = 100;
+		int numTopics = 15;
+		int numIterations = 500;
 		int numSenti = 2;
 		int numThreads = 1;
 		String inputDir = "./data/input/";
@@ -80,7 +80,6 @@ public class STO2Core {
 		double [] betas = new double[3];
 		betas[0] = 0.001;
 		betas[1] = 0.1;
-		betas[0] = 0.0;
 		
 		double [] gammas =  new double[numSenti];
 		gammas[0] = 1; gammas[1] = 1;

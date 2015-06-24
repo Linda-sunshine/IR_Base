@@ -35,16 +35,16 @@ public class MyTransductiveMain {
 //		String folder = "data/txt_sentoken";
 //		String suffix = ".txt";
 		
-//		String folder = "./data/amazon/small/dedup/RawData";
+		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
-		String folder = "./data/Electronics/dedup/RawData100K";
+//		String folder = "./data/Electronics/dedup/RawData100K";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
-//		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
-		String fvFile = String.format("./data/Features/fv_%dgram_electronics_10253.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
+//		String fvFile = String.format("./data/Features/fv_%dgram_electronics_10253.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
@@ -55,7 +55,7 @@ public class MyTransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-MV", "RW-ML"
-		String method = "RW";
+		String method = "RW-MV";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -90,7 +90,7 @@ public class MyTransductiveMain {
 //		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
-//		analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
+		analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		
 		if(style.equals("SEMI")){
