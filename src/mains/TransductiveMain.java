@@ -11,8 +11,6 @@ import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
-import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
@@ -45,7 +43,7 @@ public class TransductiveMain {
 		//"SUP", "SEMI"
 		String style = "SEMI";
 		
-		//"RW", "RW-MV", "RW-ML", "RW-L2R"
+		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
@@ -109,22 +107,17 @@ public class TransductiveMain {
 			double learningRatio = 1.0;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.75; // convergence of random walk, weight of random walk
-			boolean simFlag = false;
-			double threshold = 0.5;
+			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
+			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6; // top K similar documents for constructing pairwise ranking targets
 			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
-			GaussianFields mySemi = null;			
+			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
-					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-			} else if (method.equals("RW-MV")) {
-				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C,
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, threshold); 
-				((GaussianFieldsByMajorityVoting)mySemi).setSimilarity(simFlag);
+					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg); 
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
@@ -135,6 +128,8 @@ public class TransductiveMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
 						topK, noiseRatio);
 			}
+			
+			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {
