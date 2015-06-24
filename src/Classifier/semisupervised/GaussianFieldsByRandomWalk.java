@@ -1,10 +1,12 @@
 package Classifier.semisupervised;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
+import utils.Utils;
 
 public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double m_difference; //The difference between the previous labels and current labels.
@@ -12,7 +14,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double[] m_fu_last; // result from last round of random walk
 	
 	double m_delta; // convergence criterion for random walk
-	boolean m_storeGraph; // shall we precompute and store the graph
+	boolean m_weightedAvg; // random walk strategy: True - weighted average; False - majority vote
+	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
 	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
@@ -21,29 +24,38 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		m_eta = 0.1;
 		m_labelRatio = 0.1;
 		m_delta = 1e-5;
-		m_storeGraph = false;
+		m_weightedAvg = true;
+		m_simFlag = false;
 	}	
 	
 	//Constructor: given k and kPrime
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C,
-			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph){
+			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean weightedAvg){
 		super(c, classifier, C, ratio, k, kPrime);
 		
 		m_alpha = alhpa;
 		m_beta = beta;
 		m_delta = delta;
 		m_eta = eta;
-		m_storeGraph = storeGraph;
+		m_weightedAvg = weightedAvg;
+		m_simFlag = false;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount);
+		if (m_weightedAvg)
+			return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount);
+		else
+			return String.format("Random walk by majority vote[C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f, simWeight:%s]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount, m_simFlag);
+	}
+	
+	public void setSimilarity(boolean simFlag){
+		m_simFlag = simFlag;
 	}
 	
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
-	void randomWalk(){//construct the sparse graph on the fly every time
+	void randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
 		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
@@ -85,42 +97,49 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 	}
 	
-	//based on the precomputed sparse graph
-	void randomWalkWithGraph(){
-		double wij, wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
+	//Take the majority of all neighbors(k+k') as the new label until they converge.
+	void randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
+		double similarity = 0;
+		int label;
+		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
-			double wijSumU = 0, wijSumL = 0;
-			double fSumU = 0, fSumL = 0;
-			int j = 0;
+			Arrays.fill(m_cProbs, 0);
 			
-			/****Get the sum of k'UU******/
-			for (; j < m_U; j++) {
-				if (j == i) 
-					continue;
-				wij = m_graph.getQuick(i, j); //get the similarity between two nodes.
-				if (wij == 0)
-					continue;
-				
-				wijSumU += wij;
-				//fSumU += wij * m_fu_last[j];//use the old results
-				fSumU += wij * m_fu[j];//use the updated results immediately
+			/****Construct the top k' unlabeled data for the current data.****/
+			for (int j = 0; j < m_U; j++) {
+				if (j == i)
+					continue;				
+				m_kUU.add(new _RankItem(j, getCache(i, j)));
 			}
 			
-			/****Get the sum of kUL******/
-			for (; j<m_U+m_L; j++) {
-				wij = m_graph.getQuick(i, j); //get the similarity between two nodes.
-				if (wij == 0)
-					continue;
-				
-				wijSumL += wij;
-				fSumL += wij * m_Y[j];
-			}
+			/****Construct the top k labeled data for the current data.****/
+			for (int j = 0; j < m_L; j++)
+				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
 			
-			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
+			for(_RankItem n: m_kUU){
+				label = getLabel(m_fu[n.m_index]); //Item n's label.
+				similarity = n.m_value;
+				//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
+				m_cProbs[label] += m_simFlag?similarity*wU:wU; 
+				
+				label = (int) m_Y[n.m_index];//SVM's predition.
+				m_cProbs[label] += m_simFlag?similarity*m_eta:m_eta; 
+			}
+			m_kUU.clear();
+			
+			for(_RankItem n: m_kUL){
+				label = (int)m_Y[n.m_index];//Get the item's label from Y array.
+				similarity = n.m_value;
+				
+				m_cProbs[label] += m_simFlag?similarity*wL:wL; 
+			}
+			m_kUL.clear();
+			
+			m_fu[i] = Utils.maxOfArrayIndex(m_cProbs);
 		}
-	}
+	} 
 	
 	double updateFu() {
 		m_difference = 0;
@@ -134,7 +153,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The test for random walk algorithm.
 	public double test(){
 		/***Construct the nearest neighbor graph****/
-		constructGraph(m_storeGraph);
+		constructGraph(false);
 		
 		if (m_fu_last==null || m_fu_last.length<m_U)
 			m_fu_last = new double[m_U]; //otherwise we can reuse the current memory
@@ -150,10 +169,11 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		int iter = 0;
 		double diff = 0;
 		do {
-			if (m_storeGraph)
-				randomWalkWithGraph();
+			if (m_weightedAvg)
+				randomWalkByWeightedSum();	
 			else
-				randomWalk();		
+				randomWalkByMajorityVote();
+			
 			diff = updateFu();
 			System.out.format("Iteration %d, converge to %.3f...\n", ++iter, diff);
 		} while(diff > m_delta);
