@@ -247,6 +247,15 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void setSentenceswithLabel(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
+		m_sentences = new _Stn[stnList.size()];
+		for(int i=0; i<m_sentences.length; i++){
+			m_sentences[i] = new _Stn(stnList.get(i));
+			m_sentences[i].setSentenceLabel(stnLabel.get(i));
+		}
+	}
+	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public int getSenetenceSize() {
 		return this.m_sentences.length;
 	}

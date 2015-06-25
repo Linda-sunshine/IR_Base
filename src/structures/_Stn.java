@@ -24,6 +24,9 @@ public class _Stn {
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
+	//
+	int m_sentencelabel = 0; // default is neutral
+	
 	public _Stn(_SparseFeature[] x) {
 		m_x_sparse = x;
 		
@@ -33,6 +36,15 @@ public class _Stn {
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;
+	}
+	
+	public void setSentenceLabel(int label){
+		m_sentencelabel = label;
+	}
+
+	
+	public int getSentenceLabel(){
+		return m_sentencelabel;
 	}
 	
 	public double[] getTransitFvs() {
