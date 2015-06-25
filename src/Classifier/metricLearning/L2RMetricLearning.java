@@ -49,7 +49,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
-		m_ranker = 1;
+		m_ranker = 0;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
@@ -76,6 +76,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	protected void init() {
+		super.init();
+		
 		if (m_queries==null)
 			m_queries = new ArrayList<_Query>();
 		else
