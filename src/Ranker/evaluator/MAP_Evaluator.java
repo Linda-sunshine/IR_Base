@@ -15,7 +15,7 @@ import structures._Query;
 public class MAP_Evaluator extends Evaluator implements Evaluation {	
 	double m_P;//number of relevant documents
 	
-	public MAP_Evaluator(double t){
+	public MAP_Evaluator(){
 		super();	
 		m_P = 0;
 	}

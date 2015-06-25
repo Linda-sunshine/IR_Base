@@ -10,7 +10,7 @@ import structures._QUPair;
 import structures._Query;
 import utils.Utils;
 import Ranker.evaluator.Evaluator;
-import Ranker.evaluator.MAP_Evaluator;
+import Ranker.evaluator.NDCG_Evaluator;
 import cern.jet.random.tdouble.Normal;
 
 /**
@@ -27,8 +27,8 @@ public class LambdaRank {
 	double[] m_weight; // feature weight
 	double[] m_g;//gradient
 	
-	Evaluator m_eval = new MAP_Evaluator(1);//relevance should be larger than threshold 
-	//Evaluator m_eval = new NDCG_Evaluator(20);
+	//Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
+	Evaluator m_eval = new NDCG_Evaluator(20);
 	//Evaluator m_eval = new Evaluator();
 	
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
@@ -36,6 +36,7 @@ public class LambdaRank {
 		m_lambda = lambda;
 		m_queries = queries;
 		m_weight = new double[featureSize];
+		m_eval.setRate(0.5);
 	}
 	
 	public double score(double[] fv) {
@@ -130,14 +131,14 @@ public class LambdaRank {
 		
 		if (print){
 			obj = obj - 0.5 * lambda * Utils.L2Norm(m_weight);//to be maximized
-			System.out.format("%d\t%.4f\t%.4f", misorder/2, obj, perf/total);
+			System.out.format("%d\t%.4f\t%.4f\n", misorder/2, obj, perf/total);
 		}
 		return perf/total;
 	}
 	
 	public void train(int maxIter, int k, double initStep){
 		init();		
-		double step = initStep/m_trainingSize, mu;		
+		double step = initStep, mu;		
 		int qid, i, j, pSize;
 		for(int n=0; n<maxIter; n++){
 			Utils.shuffle(m_order, m_trainingSize);
@@ -153,7 +154,7 @@ public class LambdaRank {
 				
 				//Step 4: gradient from regularization
 				for(i=0; i<m_weight.length; i++)
-					m_g[i] = m_g[i]/pSize + m_lambda * m_weight[i];
+					m_g[i] = m_g[i] + m_lambda * m_weight[i];
 				
 				mu = Math.random()*step;
 				for(i=0; i<m_weight.length; i++)
@@ -164,7 +165,6 @@ public class LambdaRank {
 				step /= 1.15;
 				if (n%12==0){
 					evaluate(m_lambda, true);
-					System.out.println();
 				}
 			}
 		}
