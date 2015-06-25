@@ -103,7 +103,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			w = m_rankSVM.getFeatureWeights();			
 		} else {//all the rest use LambdaRank with different evaluator
 			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
-			m_lambdaRank.train(100, 20, 1.0);//lambdaRank specific parameters
+			m_lambdaRank.train(1000, 20, 5.0);//lambdaRank specific parameters
 			w = m_lambdaRank.getWeights();
 		}
 		
@@ -152,11 +152,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			//candidate query document
 			di = m_trainSet.get(i);
 			
-			if (di.getYLabel() == 1 && negQ < 0.8*posQ)
-				continue;
-			else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
-				continue;
-			
 			//using content similarity to construct initial ranking
 			for(int j=0; j<m_trainSet.size(); j++) {
 				if (i==j)
@@ -179,15 +174,23 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					neighbors.add(dj);
 			}
 			
-			//accept the query
 			q = new _Query();
-			m_queries.add(q);
 			
 			//construct features for the most similar documents with respect to the query di
 			for(_Doc d:neighbors)
 				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
-			pairSize += q.createRankingPairs();
+			int size = q.createRankingPairs();
 			
+			if (size==0)
+				continue;
+			else if (di.getYLabel() == 1 && negQ < 0.8*posQ)
+				continue;
+			else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
+				continue;
+			
+			pairSize += size;
+			//accept the query
+			m_queries.add(q);
 			if (di.getYLabel()==1)
 				posQ ++;
 			else
