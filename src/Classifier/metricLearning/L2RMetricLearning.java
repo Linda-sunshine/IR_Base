@@ -90,6 +90,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	protected void L2RModelTraining() {
+		createTrainingQueries();
+		
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 			ArrayList<Integer> labels = new ArrayList<Integer>();
@@ -134,17 +136,16 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
  	
 	//In this training process, we want to get the weight of all pairs of samples.
-	protected void createTrainingQueries(){
+	protected int createTrainingQueries(){
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
 		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
 		
-		_Query q;
-		
+		_Query q;		
 		_Doc di, dj;
-		int posQ = 0, negQ = 0;
+		int posQ = 0, negQ = 0, pairSize = 0;
 		for(int i=0; i<m_trainSet.size(); i++) {
 			//candidate query document
 			di = m_trainSet.get(i);
@@ -183,6 +184,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			//construct features for the most similar documents with respect to the query di
 			for(_Doc d:neighbors)
 				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
+			pairSize += q.createRankingPairs();
 			
 			if (di.getYLabel()==1)
 				posQ ++;
@@ -194,7 +196,9 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d:%d) queries for L2R model training...\n", posQ, negQ);
+		System.out.format("Generate %d(%d:%d) queries for L2R model training...\n", pairSize, posQ, negQ);
+		
+		return pairSize;
 	}
 	
 	//generate ranking features for a query document pair

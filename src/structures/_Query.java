@@ -16,7 +16,7 @@ public class _Query {
 	
 	public void addQUPair(_QUPair pair){ m_docList.add(pair); }
 	
-	public void createRankingPairs() {
+	public int createRankingPairs() {
 		_QUPair qui, quj;
 		for(int i=0; i<m_docList.size(); i++) {
 			qui = m_docList.get(i);
@@ -36,6 +36,7 @@ public class _Query {
 				}
 			}
 		}
+		return m_pairSize;
 	}
 	
 	public void sortDocs() {

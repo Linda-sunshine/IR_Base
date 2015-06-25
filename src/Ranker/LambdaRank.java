@@ -20,7 +20,7 @@ import cern.jet.random.tdouble.Normal;
 public class LambdaRank {
 
 	double m_lambda;
-	int m_trainingSize, m_pairSize;
+	int m_trainingSize;
 	
 	ArrayList<_Query> m_queries;//list of pointers to queries
 	int[] m_order;//randomly shuffle the order for stochastic gradient descent
@@ -34,8 +34,6 @@ public class LambdaRank {
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
 		super();
 		m_lambda = lambda;
-		m_trainingSize = 0;
-		m_pairSize = 0;
 		m_queries = queries;
 		m_weight = new double[featureSize];
 	}
@@ -126,8 +124,8 @@ public class LambdaRank {
 		}		
 		
 		if (print){
-			obj = obj / m_pairSize - 0.5 * lambda * Utils.L2Norm(m_weight);//to be maximized
-			System.out.format("%.4f\t%.4f\t%.4f", (misorder/m_pairSize/2), obj, perf/total);
+			obj = obj - 0.5 * lambda * Utils.L2Norm(m_weight);//to be maximized
+			System.out.format("%.4f\t%.4f\t%.4f", misorder, obj, perf/total);
 		}
 		return perf/total;
 	}
