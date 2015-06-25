@@ -2,12 +2,13 @@ package structures;
 
 import java.util.ArrayList;
 
+import utils.Utils;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 
 public class _QUPair implements Comparable<_QUPair>{
 	public int m_y;
-	double m_score;//ranking score for this QUPair
+	public double m_score;//ranking score for this QUPair
 	
 	//for LambdaRank
 	public ArrayList<_QUPair> m_betterURLs, m_worseURLs;
@@ -47,6 +48,11 @@ public class _QUPair implements Comparable<_QUPair>{
 		if (fvs.size()==0)
 			return null;
 		return fvs.toArray(new Feature[fvs.size()]);
+	}
+	
+	public double score(double[] w){
+		m_score = Utils.dotProduct(w, m_rankFv);
+		return m_score;
 	}
 	
 	//rank by predicted score

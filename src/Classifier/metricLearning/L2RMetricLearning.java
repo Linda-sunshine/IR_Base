@@ -16,6 +16,7 @@ import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
+import Ranker.LambdaRank;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
@@ -23,15 +24,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
+	protected LambdaRank m_lambdaRank;
+	double m_tradeoff;
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 9;// features to be defined in genRankingFV()
 	
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
 		m_topK = topK;
 		m_noiseRatio = 0.0; // no random neighbor is needed 
+		m_tradeoff = 1.0;
+		m_ranker = 0; // default ranker is rankSVM
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -42,13 +48,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				storeGraph);
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
+		m_tradeoff = 1.0; // should be specified
+		m_ranker = 1;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
 		
-		double similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+		double similarity = 0;
+		
+		if (m_ranker==0) 
+			similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+		else
+			similarity = m_lambdaRank.score(genRankingFV(di, dj));
 		
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
@@ -83,14 +96,15 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, 1.0, -1);
+			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			
 			double[] w = m_rankSVM.getFeatureWeights();
 			for(int i=0; i<m_rankSVM.getNrFeature(); i++)
 				System.out.print(w[i] + " ");
 			System.out.println();
 		} else {//all the rest use LambdaRank with different evaluator
-			
+			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
+			m_lambdaRank.train(100, 20, 1.0);//lambdaRank specific parameters
 		}
 	}
 	

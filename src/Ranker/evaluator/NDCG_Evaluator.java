@@ -12,7 +12,7 @@ import structures._Query;
 
 /**
  * @author wang296
- * Evaluate NDCG@k (at most 10)
+ * Evaluate NDCG@k (at most 50)
  */
 public class NDCG_Evaluator extends Evaluator {
 	int m_k;
@@ -21,10 +21,10 @@ public class NDCG_Evaluator extends Evaluator {
 	
 	public NDCG_Evaluator(int k) {
 		super();
-		m_k = Math.min(10, k);
+		m_k = Math.min(50, k);
 		
-		m_discount = new double[10];
-		for(int i=0; i<10; i++)
+		m_discount = new double[50];
+		for(int i=0; i<50; i++)
 			m_discount[i] = 1.0/Math.log(i+2);
 		
 		m_gain = new double[5];
@@ -57,7 +57,7 @@ public class NDCG_Evaluator extends Evaluator {
 		HashMap<_QUPair, Double> change;
 		_QUPair qu1, qu2;
 		double delta;
-		for(int i=0; i<Math.min(m_size,m_k); i++){
+		for(int i=0; i<Math.min(m_size, m_k); i++){
 			qu1 = m_query.m_docList.get(i);
 			change = new HashMap<_QUPair, Double>();			
 			for(int j=i+1; j<m_size; j++){
