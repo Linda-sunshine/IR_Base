@@ -22,6 +22,7 @@ public class _Query {
 			qui = m_docList.get(i);
 			for(int j=0; j<i; j++) {
 				quj = m_docList.get(j);
+				
 				if (qui.m_y > quj.m_y) {
 					qui.addWorseURL(quj);
 					quj.addBetterURL(qui);
@@ -50,16 +51,22 @@ public class _Query {
 	
 	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
 		boolean negSgn = (fvs.size()%2)==0;
+		Feature[] fvct;
 		for(_QUPair di:m_docList) {
-			if (di.m_betterURLs!=null) {
-				if (negSgn) {
-					for(_QUPair dj:di.m_betterURLs) {
-						fvs.add(di.getDiffFv(dj));
+			if (di.m_betterURLs==null)
+				continue;
+			
+			if (negSgn) {
+				for(_QUPair dj:di.m_betterURLs) {
+					if ((fvct=di.getDiffFv(dj)) != null) {
+						fvs.add(fvct);
 						labels.add(-1);
 					}
-				} else {
-					for(_QUPair dj:di.m_betterURLs) {
-						fvs.add(dj.getDiffFv(di));
+				}
+			} else {
+				for(_QUPair dj:di.m_betterURLs) {
+					if ((fvct=dj.getDiffFv(di)) != null) {
+						fvs.add(fvct);
 						labels.add(1);
 					}
 				}

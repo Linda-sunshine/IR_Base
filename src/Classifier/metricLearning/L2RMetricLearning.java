@@ -48,8 +48,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				storeGraph);
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
-		m_tradeoff = 1.0; // should be specified
-		m_ranker = 0;
+		m_tradeoff = 1.0; // should be specified by the user
+		m_ranker = 1;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
@@ -90,7 +90,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	protected void L2RModelTraining() {
-		createTrainingQueries();
+		//select the training pairs
+		createTrainingCorpus();
 		
 		double[] w;
 		if (m_ranker==0) {
@@ -105,6 +106,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		} else {//all the rest use LambdaRank with different evaluator
 			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
 			m_lambdaRank.train(1000, 20, 5.0);//lambdaRank specific parameters
+			
 			w = m_lambdaRank.getWeights();
 		}
 		
@@ -139,7 +141,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
  	
 	//In this training process, we want to get the weight of all pairs of samples.
-	protected int createTrainingQueries(){
+	protected int createTrainingCorpus(){
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
@@ -150,6 +152,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		_Doc di, dj;
 		int posQ = 0, negQ = 0, pairSize = 0;
 		int relevant = 0, irrelevant = 0;
+		
 		for(int i=0; i<m_trainSet.size(); i++) {
 			//candidate query document
 			di = m_trainSet.get(i);
@@ -175,7 +178,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			//inject some random neighbors 
-			for(int j=0; j<m_trainSet.size() && neighbors.size()<(1.0+m_noiseRatio)*m_topK; j++) {
+			int j = 0;
+			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
 				if (i==j)
 					continue;	
 				
@@ -187,6 +191,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					else
 						irrelevant ++;
 				}
+				
+				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
 			}
 			
 			if (relevant==0 || irrelevant==0 
@@ -215,7 +221,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 		
 		System.out.format("Generate %d(%d:%d) queries for L2R model training...\n", pairSize, posQ, negQ);
-		
 		return pairSize;
 	}
 	
