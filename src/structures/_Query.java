@@ -52,23 +52,19 @@ public class _Query {
 	}
 	
 	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
-		boolean betterChoice = fvs.size()%2==0;
+		boolean negSgn = fvs.size()%2==0;
 		for(_QUPair di:m_docList) {
-			if (betterChoice) {
-				if (di.m_betterURLs==null)
-					continue;
-				
-				for(_QUPair dj:di.m_betterURLs) {
-					fvs.add(dj.getDiffFv(di));
-					labels.add(-1);
-				}
-			} else {
-				if (di.m_worseURLs==null)
-					continue;
-				
-				for(_QUPair dj:di.m_worseURLs) {
-					fvs.add(di.getDiffFv(dj));
-					labels.add(1);
+			if (di.m_betterURLs!=null) {
+				if (negSgn) {
+					for(_QUPair dj:di.m_betterURLs) {
+						fvs.add(di.getDiffFv(dj));
+						labels.add(-1);
+					}
+				} else {
+					for(_QUPair dj:di.m_betterURLs) {
+						fvs.add(dj.getDiffFv(di));
+						labels.add(1);
+					}
 				}
 			}
 		}
