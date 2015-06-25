@@ -83,7 +83,12 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				item = itemIds.getString(i);
 				reviews = prods.getJSONArray(item);
 				for(int j=0; j<reviews.length(); j++) 
-					AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
+				{
+					if(this.m_stnDetector!=null)
+						AnalyzeNewEggPostwithsentence(new NewEggPost(reviews.getJSONObject(j), item));
+					else
+						AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
+				}
 			} catch (JSONException e) {
 				System.out.print('P');
 			} catch (ParseException e) {
