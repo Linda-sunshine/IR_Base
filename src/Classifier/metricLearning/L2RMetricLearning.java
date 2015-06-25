@@ -76,6 +76,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	@Override
 	protected void init() {
+		super.init();
+		
 		if (m_queries==null)
 			m_queries = new ArrayList<_Query>();
 		else
