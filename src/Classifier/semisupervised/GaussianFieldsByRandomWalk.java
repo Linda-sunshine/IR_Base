@@ -190,9 +190,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			pred = getLabel(m_fu[i]);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
-			
-			//To calculate the purity of neighbors. The only different with the test in father class.
-			calcPurity(m_testSet.get(i));
+
 			if (pred != ans) {
 				if (m_debugOutput!=null)
 					debug(m_testSet.get(i));

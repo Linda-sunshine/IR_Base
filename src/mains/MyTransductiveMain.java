@@ -43,6 +43,7 @@ public class MyTransductiveMain {
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
+//		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 //		String fvFile = String.format("./data/Features/fv_%dgram_electronics_10253.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
@@ -53,7 +54,7 @@ public class MyTransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -71,13 +72,12 @@ public class MyTransductiveMain {
 //		double startProb = 0.2; // Used in feature selection, the starting point of the features.
 //		double endProb = 1.0; // Used in feature selection, the ending point of the features.
 //		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-		
+//		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
 		
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
@@ -116,7 +116,7 @@ public class MyTransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(4);
+		c.mapLabels(3);
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
@@ -124,7 +124,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
 			
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;

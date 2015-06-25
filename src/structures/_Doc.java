@@ -20,6 +20,7 @@ public class _Doc implements Comparable<_Doc> {
 	String m_name;
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
+	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
 	int m_totalLength; //The total length of the document.
@@ -116,7 +117,6 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_name = name;
 		this.m_source = source;
 		this.m_itemID = productID;
-		
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
@@ -128,6 +128,22 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
+	public _Doc (int ID, String name, String title, String source, String productID, int ylabel, long timeStamp){
+		this.m_ID = ID;
+		this.m_name = name;
+		this.m_title = title;
+		this.m_source = source;
+		this.m_itemID = productID;
+		this.m_y_label = ylabel;
+		this.m_totalLength = 0;
+		this.m_timeStamp = timeStamp;
+		m_topics = null;
+		m_sentiment = null;
+		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
+		m_sentences = null;
+	}
 	public void setWeight(double w) {
 		m_weight = w;
 	}
@@ -163,6 +179,14 @@ public class _Doc implements Comparable<_Doc> {
 		return m_name;
 	}
 	
+	public String getTitle(){
+		return m_title;
+	}
+	
+	public double getTitleScore(){
+		double score = 0;
+		return score;
+	}
 	//Get the source content of a document.
 	public String getSource(){
 		return this.m_source;

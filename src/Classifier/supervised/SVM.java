@@ -136,6 +136,7 @@ import Classifier.supervised.liblinear.SolverType;
 public class SVM extends BaseClassifier {
 	Model m_libModel;
 	SolverType m_type = SolverType.L2R_L1LOSS_SVC_DUAL;
+//	SolverType m_type = SolverType.L1R_L2LOSS_SVC;
 	double m_C;
 	final static public double EPS = 0.001;
 	

@@ -57,8 +57,7 @@ public class GaussianFields extends BaseClassifier {
 
 //	HashMap<Integer, String> m_IndexFeature;//For debug purpose.
 	boolean m_topicFlag; //If it is true, then it will calculate the aspect similarity, otherwise, cosine similarity. 
-	ArrayList<double[]> m_debugStat;
-//	ArrayList<Double> m_posL, m_negL;
+
 	//Randomly pick 10% of all the training documents.
 	ArrayList<String> m_featureNames;//Store all features for debugging purpose.
 	double[][] m_A; //The matrix used to store the result of metric learning.
@@ -101,10 +100,7 @@ public class GaussianFields extends BaseClassifier {
 
 		m_topicFlag = false;
 		setClassifier(classifier, C);
-//		m_IndexFeature = new HashMap<Integer, String>();
-		m_debugStat = new ArrayList<double[]>();
-//		m_posL = new ArrayList<Double>();
-//		m_negL = new ArrayList<Double>();
+
 	}
 	
 	public void setTopicFlag(boolean a){
@@ -631,36 +627,36 @@ public class GaussianFields extends BaseClassifier {
 		}
 	} 	
 	
-	protected void calcPurity(_Doc d){
-		double sameL = 0, sameU = 0;
-		int id = d.getID();
-		
-		//Collect kUL and calculate purity.
-		for (int j = 0; j < m_L; j++){
-			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
-		}
-		for(_RankItem n: m_kUL){
-			int index = m_U + n.m_index;
-			if(m_Y[index]==d.getYLabel())
-				sameL++;
-		}
-		sameL = sameL / (m_kUL.size() + 0.0001);
-		m_kUL.clear();
-		
-		//Collect kUU and calculate purity.
-		for (int j = 0; j < m_U; j++) {
-			if (j == id)
-				continue;
-			m_kUU.add(new _RankItem(j, getCache(id, j)));
-		}
-		for(_RankItem n: m_kUU){
-			if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
-				sameU++;
-		}
-		sameU = sameU / (m_kUU.size() + 0.0001);
-		m_kUU.clear();
-		m_debugStat.add(new double[]{sameL, sameU});
-	} 	
+//	protected void calcPurity(_Doc d){
+//		double sameL = 0, sameU = 0;
+//		int id = d.getID();
+//		
+//		//Collect kUL and calculate purity.
+//		for (int j = 0; j < m_L; j++){
+//			m_kUL.add(new _RankItem(j, getCache(id, m_U + j)));
+//		}
+//		for(_RankItem n: m_kUL){
+//			int index = m_U + n.m_index;
+//			if(m_Y[index]==d.getYLabel())
+//				sameL++;
+//		}
+//		sameL = sameL / (m_kUL.size() + 0.0001);
+//		m_kUL.clear();
+//		
+//		//Collect kUU and calculate purity.
+//		for (int j = 0; j < m_U; j++) {
+//			if (j == id)
+//				continue;
+//			m_kUU.add(new _RankItem(j, getCache(id, j)));
+//		}
+//		for(_RankItem n: m_kUU){
+//			if(m_fu[n.m_index]==d.getYLabel())//Use fu as the comparison.
+//				sameU++;
+//		}
+//		sameU = sameU / (m_kUU.size() + 0.0001);
+//		m_kUU.clear();
+//		m_debugStat.add(new double[]{sameL, sameU});
+//	} 	
 	
 	public int predict(_Doc doc) {
 		return -1; //we don't support this in transductive learning

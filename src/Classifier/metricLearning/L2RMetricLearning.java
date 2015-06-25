@@ -207,7 +207,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());
 		
 		//feature 7: lexicon based sentiment scores
-		fv[6] = 0;
+		fv[6] = Utils.cosine(q.m_sentiment, d.m_sentiment);
  		
 		//Part II: pointwise features for document
 		//feature 8: stop words proportion
@@ -217,6 +217,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[8] = d.getAvgIDF();
 		//average neighborhood similarity
 		
+		//feature 10: the title of review
+//		fv[9] = d.getTitleScore();
+		
+		//feature 11: the postagging score for the review
+//		fv[10] = d.getPOSTagging();
+		
+//		fv[11] = Utils.calcSentiScore(q, d);
 		return fv;
 	}
 	
