@@ -33,8 +33,8 @@ public class LambdaRank {
 	
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
 		super();
-		//m_lambda = lambda;
-		m_lambda = 0.01;
+		m_lambda = lambda;
+		//m_lambda = 0.01;
 		m_queries = queries;
 		m_weight = new double[featureSize];
 		m_eval.setRate(0.5);

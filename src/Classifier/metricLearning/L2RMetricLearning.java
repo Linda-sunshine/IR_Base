@@ -107,7 +107,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			w = m_rankSVM.getFeatureWeights();			
 		} else {//all the rest use LambdaRank with different evaluator
 			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
-			m_lambdaRank.train(1000, 20, 5.0);//lambdaRank specific parameters
+			m_lambdaRank.train(100, 10, 5.0);//lambdaRank specific parameters
 			
 			w = m_lambdaRank.getWeights();
 		}
