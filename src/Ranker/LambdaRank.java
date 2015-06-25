@@ -42,6 +42,10 @@ public class LambdaRank {
 		return Utils.dotProduct(fv, m_weight);
 	}
 	
+	public double[] getWeights() {
+		return m_weight;
+	}
+	
 	protected void initWeight(double lambda){
 		lambda = 1.0/Math.sqrt(lambda);
 		for(int i=0; i<m_weight.length; i++)

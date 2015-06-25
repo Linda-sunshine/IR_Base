@@ -91,7 +91,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected void L2RModelTraining() {
 		createTrainingQueries();
-		
+		double[] w;
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 			ArrayList<Integer> labels = new ArrayList<Integer>();
@@ -100,14 +100,16 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				q.extractPairs4RankSVM(fvs, labels);
 			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			
-			double[] w = m_rankSVM.getFeatureWeights();
-			for(int i=0; i<m_rankSVM.getNrFeature(); i++)
-				System.out.print(w[i] + " ");
-			System.out.println();
+			w = m_rankSVM.getFeatureWeights();			
 		} else {//all the rest use LambdaRank with different evaluator
 			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
 			m_lambdaRank.train(100, 20, 1.0);//lambdaRank specific parameters
+			w = m_lambdaRank.getWeights();
 		}
+		
+		for(int i=0; i<RankFVSize; i++)
+			System.out.print(w[i] + " ");
+		System.out.println();
 	}
 	
 	private void calcLabeledSimilarities() {
