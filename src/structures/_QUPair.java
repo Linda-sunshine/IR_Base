@@ -24,6 +24,11 @@ public class _QUPair implements Comparable<_QUPair>{
 		m_rankFv = features;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%d:%.4f", m_y, m_score);
+	}
+	
 	public void addWorseURL(_QUPair qu){
 		if (m_worseURLs==null)
 			m_worseURLs = new ArrayList<_QUPair>();
@@ -58,9 +63,9 @@ public class _QUPair implements Comparable<_QUPair>{
 	//rank by predicted score
 	public int compareTo (_QUPair qu){
 		if (this.m_score > qu.m_score)
-			return 1;
-		else if (this.m_score < qu.m_score)
 			return -1;
+		else if (this.m_score < qu.m_score)
+			return 1;
 		else 
 			return 0;
 	}

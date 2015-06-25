@@ -33,7 +33,8 @@ public class LambdaRank {
 	
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
 		super();
-		m_lambda = lambda;
+		//m_lambda = lambda;
+		m_lambda = 0.01;
 		m_queries = queries;
 		m_weight = new double[featureSize];
 		m_eval.setRate(0.5);
@@ -56,6 +57,9 @@ public class LambdaRank {
 	protected void init(){//create the pointer array to the training queries
 		m_trainingSize = m_queries.size();
 		m_order = new int[m_trainingSize];
+		for(int i=0; i<m_trainingSize; i++)
+			m_order[i] = i;//shuffling the orders for SGD model training
+		
 		m_g = new double[m_weight.length];
 		
 		initWeight(m_lambda);
@@ -154,7 +158,7 @@ public class LambdaRank {
 				
 				//Step 4: gradient from regularization
 				for(i=0; i<m_weight.length; i++)
-					m_g[i] = m_g[i] + m_lambda * m_weight[i];
+					m_g[i] = m_g[i]/pSize + m_lambda * m_weight[i];
 				
 				mu = Math.random()*step;
 				for(i=0; i<m_weight.length; i++)
@@ -163,7 +167,7 @@ public class LambdaRank {
 						
 			if (n%4==0){
 				step /= 1.15;
-				if (n%12==0){
+				if (n%20==0){
 					evaluate(m_lambda, true);
 				}
 			}
