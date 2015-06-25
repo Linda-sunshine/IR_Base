@@ -142,6 +142,14 @@ public class LogisticRegression extends BaseClassifier {
 		return Utils.maxOfArrayIndex(m_cache);
 	}
 	
+	@Override
+	public double score(_Doc d, int label) {
+		_SparseFeature[] fv = d.getSparse();
+		for(int i = 0; i < m_classNo; i++)
+			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
+		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
+	}
+	
 	protected void debug(_Doc d) {
 		try {
 			_SparseFeature[] fv = d.getSparse();

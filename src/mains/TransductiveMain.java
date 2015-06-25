@@ -9,9 +9,8 @@ import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
+import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
-import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.GaussianFieldsByMajorityVoting;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
@@ -31,7 +30,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/small";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -44,11 +43,11 @@ public class TransductiveMain {
 		//"SUP", "SEMI"
 		String style = "SEMI";
 		
-		//"RW", "RW-MV", "RW-ML"
-		String method = "RW-ML";
+		//"RW", "RW-ML", "RW-L2R"
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
-		String debugOutput = null;// "data/debug/topical.sim";
+		String debugOutput = "data/debug/topical.sim";
 		//String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
@@ -109,25 +108,28 @@ public class TransductiveMain {
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
-			boolean simFlag = false;
-			double threshold = 0.5;
+			boolean simFlag = false, weightedAvg = false;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
+			int topK = 25; // top K similar documents for constructing pairwise ranking targets
+			double noiseRatio = 1.0;
 			boolean metricLearning = true;
 			
-			GaussianFields mySemi = null;			
+			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
 				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
-					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false); 
-			} else if (method.equals("RW-MV")) {
-				mySemi = new GaussianFieldsByMajorityVoting(c, multipleLearner, C,
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, threshold); 
-				((GaussianFieldsByMajorityVoting)mySemi).setSimilarity(simFlag);
+					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg); 
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
 						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
+			} else if (method.equals("RW-L2R")) {
+				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						topK, noiseRatio);
 			}
+			
+			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {

@@ -31,7 +31,8 @@ public class Parameter {
 	public double m_sampleRate = 0.25; // sampling rate for Gaussian Fields when constructing the graph
 	public int m_kUL = 100; // k nearest labeled neighbors
 	public int m_kUU = 50; // k' nearest unlabeled neighbors
-	public boolean m_storeGraph = false; // prefer storage than speed
+	public boolean m_weightedAvg = true; // True: weighted sum in random walk; False: majority vote in random walk
+	public boolean m_simFlag = false; // True: use similarity weight in majority vote;
 	public int m_bound = 3; // rating difference for generating pairwise constraints
 	public String m_classifier = "SVM"; // base classifier for Gaussian Field
 	public double m_eta = 0.1; //random start ratio
@@ -131,8 +132,10 @@ public class Parameter {
 				m_classifier = argv[i];
 			else if (argv[i-1].equals("-sr"))
 				m_sampleRate = Double.valueOf(argv[i]);
-			else if (argv[i-1].equals("-sg"))
-				m_storeGraph = argv[i].equals("1");
+			else if (argv[i-1].equals("-wm"))
+				m_weightedAvg = argv[i].equals("1");
+			else if (argv[i-1].equals("-sf"))
+				m_simFlag = argv[i].equals("1");
 			else if (argv[i-1].equals("-kUL"))
 				m_kUL = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-kUU"))
@@ -244,7 +247,8 @@ public class Parameter {
 		+"-sr float : Sample rate for transductive learning (default 0.25)\n"
 		+"-kUL int : k nearest labeled neighbors (default 100)\n"
 		+"-kUU int : kP nearest unlabeled neighbors (default 50)\n"
-		+"-sg 0/1 : store the k nearest graph (default 0)\n"
+		+"-wm 0/1 : weighted sum or majority vote in random walk\n"
+		+"-sf 0/1 : use similiarity as weight in majority vote\n"
 		+"-bd int : rating difference bound in generating pairwise constraint (default 3)\n"
 		+"-csr double : constrain sampling rate for metric learning (default 1e-3)\n"
 		+"-k int : number of topics (default 50)\n"
@@ -294,7 +298,7 @@ public class Parameter {
 				if (m_model.contains("-ML"))
 					buffer.append("\nDiff bound: " + m_bound + "\tcSample Rate: " + m_cSampleRate);
 				
-				buffer.append("\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tStore graph: " + m_storeGraph);
+				buffer.append("\nSolver: " + (m_model.equals("GF")?"Matrix Inversion":"Random Walk") + "\tBase Classifer: " + m_classifier + "\tWeighted Sum: " + m_weightedAvg + "\tSimilarity Weight: " + m_simFlag);
 			} else
 				buffer.append("\nLearning paradigm: SUP");
 			

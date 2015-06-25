@@ -97,6 +97,16 @@ public class NaiveBayes extends BaseClassifier {
 		return Utils.maxOfArrayIndex(m_cProbs);
 	}
 	
+	@Override
+	public double score(_Doc d, int label){
+		for(int i = 0; i < m_classNo; i++){
+			m_cProbs[i] = m_pY[i];
+			for(_SparseFeature f:d.getSparse())
+				m_cProbs[i] += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue()); // in log space
+		}
+		return m_cProbs[label] - Utils.logSumOfExponentials(m_cProbs);
+	}
+	
 	//Save the parameters for classification.
 	@Override
 	public void saveModel(String modelLocation) {

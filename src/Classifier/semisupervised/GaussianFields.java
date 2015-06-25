@@ -40,7 +40,7 @@ public class GaussianFields extends BaseClassifier {
 	ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
-	BaseClassifier m_classifier; //Multiple learner.
+	protected BaseClassifier m_classifier; //Multiple learner.
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
@@ -171,7 +171,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected double getBoWSim(_Doc di, _Doc dj) {
-		return Math.exp(Utils.calculateSimilarity(di, dj));
+		return Utils.calculateSimilarity(di, dj);
 	}
 	
 	protected double getTopicalSim(_Doc di, _Doc dj) {
@@ -183,7 +183,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-		return getBoWSim(di, dj) + getTopicalSim(di, dj);
+		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void calcSimilarityInThreads(){
@@ -473,6 +473,11 @@ public class GaussianFields extends BaseClassifier {
 	
 	@Override
 	public int predict(_Doc doc) {
+		return -1; //we don't support this in transductive learning
+	}
+	
+	@Override
+	public double score(_Doc doc, int label) {
 		return -1; //we don't support this in transductive learning
 	}
 	

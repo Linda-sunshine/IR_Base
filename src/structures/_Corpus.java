@@ -22,7 +22,12 @@ public class _Corpus {
 	static final int ReviewSizeCut = 3;
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
+	HashMap<String, _stat> m_featureStat; //statistics about the features
 	
+	public void setFeatureStat(HashMap<String, _stat> featureStat) {
+		this.m_featureStat = featureStat;
+	}
+
 	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
 	int[] m_mask; 
 			

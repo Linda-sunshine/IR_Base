@@ -215,6 +215,11 @@ public class SVM extends BaseClassifier {
 	}
 	
 	@Override
+	public double score(_Doc doc, int label) {
+		return Linear.predictValue(m_libModel, Utils.createLibLinearFV(doc), label);
+	}
+	
+	@Override
 	protected void debug(_Doc d) {} // need to digest into libsvm's implementation detail
 	
 	//Save the parameters for classification.
