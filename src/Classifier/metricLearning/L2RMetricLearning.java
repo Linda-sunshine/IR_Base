@@ -6,15 +6,17 @@ import java.util.Collection;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._QUPair;
+import structures._Query;
 import structures._RankItem;
 import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
+import Ranker.LambdaRank;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
@@ -22,13 +24,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
+	protected LambdaRank m_lambdaRank;
+	double m_tradeoff;
 	
+	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
+	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 9;// features to be defined in genRankingFV()
+	
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
 		m_topK = topK;
 		m_noiseRatio = 0.0; // no random neighbor is needed 
+		m_tradeoff = 1.0;
+		m_ranker = 0; // default ranker is rankSVM
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -39,13 +48,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				storeGraph);
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
+		m_tradeoff = 1.0; // should be specified
+		m_ranker = 1;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
 		
-		double similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+		double similarity = 0;
+		
+		if (m_ranker==0) 
+			similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+		else
+			similarity = m_lambdaRank.score(genRankingFV(di, dj));
 		
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
@@ -57,17 +73,39 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		return Math.exp(similarity);//to make sure it is positive			
 	}
+	
+	@Override
+	protected void init() {
+		if (m_queries==null)
+			m_queries = new ArrayList<_Query>();
+		else
+			m_queries.clear();
+	}
 
 	@Override
 	public void train(Collection<_Doc> trainSet) {
 		super.train(trainSet);
 		
-		m_rankSVM = trainRankSVM();
-		
-		double[] w = m_rankSVM.getFeatureWeights();
-		for(int i=0; i<m_rankSVM.getNrFeature(); i++)
-			System.out.print(w[i] + " ");
-		System.out.println();
+		L2RModelTraining();
+	}
+	
+	protected void L2RModelTraining() {
+		if (m_ranker==0) {
+			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
+			ArrayList<Integer> labels = new ArrayList<Integer>();
+			
+			for(_Query q:m_queries)
+				q.extractPairs4RankSVM(fvs, labels);
+			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
+			
+			double[] w = m_rankSVM.getFeatureWeights();
+			for(int i=0; i<m_rankSVM.getNrFeature(); i++)
+				System.out.print(w[i] + " ");
+			System.out.println();
+		} else {//all the rest use LambdaRank with different evaluator
+			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
+			m_lambdaRank.train(100, 20, 1.0);//lambdaRank specific parameters
+		}
 	}
 	
 	private void calcLabeledSimilarities() {
@@ -96,20 +134,19 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
  	
 	//In this training process, we want to get the weight of all pairs of samples.
-	protected Model trainRankSVM(){
+	protected void createTrainingQueries(){
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
 		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
-		Feature[] rankFvs = null;
-		ArrayList<Feature[]> featureArray = new ArrayList<Feature[]>();
-		ArrayList<Integer> targetArray = new ArrayList<Integer>();
 		
-		_Doc di, dj, dk;
-		int label_j, label_k, posQ = 0, negQ = 0;
+		_Query q;
+		
+		_Doc di, dj;
+		int posQ = 0, negQ = 0;
 		for(int i=0; i<m_trainSet.size(); i++) {
-			//query document
+			//candidate query document
 			di = m_trainSet.get(i);
 			
 			if (di.getYLabel() == 1 && negQ < 0.8*posQ)
@@ -139,35 +176,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					neighbors.add(dj);
 			}
 			
-			//construct features for the most similar documents with respect to the query di
-			for(_Doc d:neighbors) 
-				d.setRankingFvs(genRankingFV(di, d));
+			//accept the query
+			q = new _Query();
+			m_queries.add(q);
 			
-			//extract all preference pairs based on the ranking features
-			for(int j=0; j<neighbors.size(); j++) {			
-				dj = neighbors.get(j);
-				label_j = di.getYLabel() == dj.getYLabel()?1:0;
-				for(int k=j+1; k<neighbors.size(); k++) {
-					dk = neighbors.get(k);
-					label_k = di.getYLabel() == dk.getYLabel()?1:0;
-					
-					//test rank preference
-					if (label_j == label_k)
-						continue;
-					
-					//test feature difference
-					rankFvs = genPairwiseRankingFV(dj, dk);
-					if (rankFvs==null)
-						continue;
-						
-					//store the preference pair
-					featureArray.add(rankFvs);
-					if (label_j > label_k)
-						targetArray.add(1);
-					else
-						targetArray.add(-1);
-				}
-			}
+			//construct features for the most similar documents with respect to the query di
+			for(_Doc d:neighbors)
+				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
 			
 			if (di.getYLabel()==1)
 				posQ ++;
@@ -179,8 +194,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d(%d:%d) pairs for rankSVM training...\n", featureArray.size(), posQ, negQ);
-		return SVM.libSVMTrain(featureArray, targetArray, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, 1.0, -1);
+		System.out.format("Generate %d:%d) queries for L2R model training...\n", posQ, negQ);
 	}
 	
 	//generate ranking features for a query document pair
@@ -218,20 +232,5 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//average neighborhood similarity
 		
 		return fv;
-	}
-	
-	//di should be ranked higher than dj
-	Feature[] genPairwiseRankingFV(_Doc di, _Doc dj) {
-		ArrayList<Feature> fvs = new ArrayList<Feature>();
-		double value;
-		for(int i=0; i<RankFVSize; i++) {
-			value = di.m_rankingFvs[i] - dj.m_rankingFvs[i]; 
-			if (value != 0)
-				fvs.add(new FeatureNode(i+1, value));
-		}
-		
-		if (fvs.size()==0)
-			return null;
-		return fvs.toArray(new Feature[fvs.size()]);
 	}
 }
