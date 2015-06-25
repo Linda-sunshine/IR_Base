@@ -98,7 +98,8 @@ public class LambdaRank {
 	}
 	
 	protected double evaluate(double lambda, boolean print){
-		double obj = 0, perf = 0, total = 0, r, misorder = 0;
+		double obj = 0, perf = 0, total = 0, r;
+		int misorder = 0;
 		
 		for(_Query query:m_queries){
 			if ((r=m_eval.eval(query))>=0){//ranking score should already be calculated
