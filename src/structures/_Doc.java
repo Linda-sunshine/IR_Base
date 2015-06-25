@@ -36,6 +36,8 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
+	static public final int stn_senti_fv_size = 3; // cosine, length_ratio
+	
 	_Stn[] m_sentences;
 	
 	//p(z|d) for topic models in general
@@ -328,6 +330,37 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 	
+	// used by LR-HTSM for constructing transition features for sentiment
+	public void setSentenceFeatureVectorForSentiment() {
+		// start from 2nd sentence
+		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());
+		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
+		int stnSize = getSenetenceSize();
+		for(int i=1; i<stnSize; i++){
+			//cosine similarity			
+			m_sentences[i-1].m_sentitransitFv[0] = pSim;			
+			
+			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
+			//length_ratio
+			m_sentences[i-1].m_sentitransitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
+			pLength = cLength;
+			
+			//position
+			m_sentences[i-1].m_sentitransitFv[2] = (double)i / stnSize;
+			
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
+				if (nSim>pSim)
+					m_sentences[i-1].m_sentitransitFv[3] = 1;
+				else if (nSim<pSim)
+					m_sentences[i-1].m_sentitransitFv[3] = -1;
+				pSim = nSim;
+			}
+		}
+	}	
+	
+	
 	// used by LR-HTMM for constructing transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence
@@ -337,15 +370,15 @@ public class _Doc implements Comparable<_Doc> {
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
 			m_sentences[i-1].m_transitFv[0] = pSim;			
-			
+
 			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
 			//length_ratio
 			m_sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
 			pLength = cLength;
-			
+
 			//position
 			m_sentences[i-1].m_transitFv[2] = (double)i / stnSize;
-			
+
 			//similar to previous or next
 			if (i<stnSize-1) {
 				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
@@ -356,7 +389,8 @@ public class _Doc implements Comparable<_Doc> {
 				pSim = nSim;
 			}
 		}
-	}	
+	}
+
 	
 	public void clearSource() {
 		m_source = null;

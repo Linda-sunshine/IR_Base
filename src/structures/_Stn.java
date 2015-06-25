@@ -16,6 +16,11 @@ public class _Stn {
 	double[] m_transitFv; // features for determine topic transition
 	double m_transit; // posterior topic transit probability
 
+	// tructure for LR-HTSM
+	double[] m_sentitransitFv; // features for determine sentiment transition
+	double m_sentitransit; // posterior sentiment transit probability
+
+	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
@@ -23,6 +28,7 @@ public class _Stn {
 		m_x_sparse = x;
 		
 		m_transitFv = new double[_Doc.stn_fv_size];
+		m_sentitransitFv = new double[_Doc.stn_fv_size];
 	}
 
 	public _SparseFeature[] getFv() {
@@ -33,12 +39,24 @@ public class _Stn {
 		return m_transitFv;
 	}
 	
+	public double[] getSentiTransitFvs() {
+		return m_sentitransitFv;
+	}
+	
 	public void setTransit(double t) {
 		m_transit = t;
 	}
 	
+	public void setSentiTransit(double t) {
+		m_sentitransit = t;
+	}
+	
 	public double getTransit() {
 		return m_transit;
+	}
+	
+	public double getSentiTransit() {
+		return m_sentitransit;
 	}
 	
 	public int getTopic() {
