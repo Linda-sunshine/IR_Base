@@ -110,8 +110,8 @@ public class TransductiveMain {
 			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = false;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			int topK = 6; // top K similar documents for constructing pairwise ranking targets
-			double noiseRatio = 1.5;
+			int topK = 20; // top K similar documents for constructing pairwise ranking targets
+			double noiseRatio = 0.5;
 			boolean metricLearning = true;
 			
 			GaussianFieldsByRandomWalk mySemi = null;			

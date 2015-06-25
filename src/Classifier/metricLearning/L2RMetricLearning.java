@@ -185,8 +185,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				continue;
 			else if (di.getYLabel() == 1 && negQ < 0.8*posQ)
 				continue;
-			else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
-				continue;
+			//else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
+			//	continue;
 			
 			pairSize += size;
 			//accept the query
