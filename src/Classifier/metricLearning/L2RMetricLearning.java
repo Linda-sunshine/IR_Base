@@ -91,6 +91,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	protected void L2RModelTraining() {
 		createTrainingQueries();
+		
 		double[] w;
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
@@ -148,9 +149,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		_Query q;		
 		_Doc di, dj;
 		int posQ = 0, negQ = 0, pairSize = 0;
+		int relevant = 0, irrelevant = 0;
 		for(int i=0; i<m_trainSet.size(); i++) {
 			//candidate query document
 			di = m_trainSet.get(i);
+			relevant = 0;
+			irrelevant = 0;
 			
 			//using content similarity to construct initial ranking
 			for(int j=0; j<m_trainSet.size(); j++) {
@@ -161,8 +165,14 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			//find the top K similar documents by default similarity measure
-			for(_RankItem it:simRanker)
-				neighbors.add(m_trainSet.get(it.m_index));
+			for(_RankItem it:simRanker) {
+				dj = m_trainSet.get(it.m_index);
+				neighbors.add(dj);
+				if (di.getYLabel() == dj.getYLabel())
+					relevant ++;
+				else
+					irrelevant ++;
+			}
 			
 			//inject some random neighbors 
 			for(int j=0; j<m_trainSet.size() && neighbors.size()<(1.0+m_noiseRatio)*m_topK; j++) {
@@ -170,27 +180,32 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					continue;	
 				
 				dj = m_trainSet.get(j);
-				if (Math.random()<0.005 && !neighbors.contains(dj))
+				if (Math.random()<0.005 && !neighbors.contains(dj)) {
 					neighbors.add(dj);
+					if (di.getYLabel() == dj.getYLabel())
+						relevant ++;
+					else
+						irrelevant ++;
+				}
 			}
 			
+			if (relevant==0 || irrelevant==0 
+					|| (di.getYLabel() == 1 && negQ < 0.8*posQ)){
+				//clear the cache for next query
+				simRanker.clear();
+				neighbors.clear();
+				continue;
+			}
+				
+			//accept the query
 			q = new _Query();
+			m_queries.add(q);
 			
 			//construct features for the most similar documents with respect to the query di
 			for(_Doc d:neighbors)
 				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
-			int size = q.createRankingPairs();
+			pairSize += q.createRankingPairs();
 			
-			if (size==0)
-				continue;
-			else if (di.getYLabel() == 1 && negQ < 0.8*posQ)
-				continue;
-			//else if (di.getYLabel() == 0 && posQ < 0.8*negQ)
-			//	continue;
-			
-			pairSize += size;
-			//accept the query
-			m_queries.add(q);
 			if (di.getYLabel()==1)
 				posQ ++;
 			else
