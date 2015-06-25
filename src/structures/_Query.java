@@ -53,6 +53,9 @@ public class _Query {
 	
 	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
 		for(_QUPair di:m_docList) {
+			if (di.m_worseURLs==null)
+				continue;
+			
 			for(_QUPair dj:di.m_worseURLs) {
 				fvs.add(di.getDiffFv(dj));
 				labels.add(1);

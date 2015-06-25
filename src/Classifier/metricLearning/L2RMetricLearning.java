@@ -49,7 +49,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified
-		m_ranker = 0;
+		m_ranker = 1;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!

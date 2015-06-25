@@ -129,7 +129,7 @@ public class LambdaRank {
 		
 		if (print){
 			obj = obj - 0.5 * lambda * Utils.L2Norm(m_weight);//to be maximized
-			System.out.format("%.4f\t%.4f\t%.4f", misorder, obj, perf/total);
+			System.out.format("%d\t%.4f\t%.4f", misorder/2, obj, perf/total);
 		}
 		return perf/total;
 	}
