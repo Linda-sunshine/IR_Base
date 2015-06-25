@@ -14,6 +14,11 @@ public class _Query {
 		m_pairSize = 0;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("%d:%d", m_docList.size(), m_pairSize);
+	}
+	
 	public void addQUPair(_QUPair pair){ m_docList.add(pair); }
 	
 	public int createRankingPairs() {
