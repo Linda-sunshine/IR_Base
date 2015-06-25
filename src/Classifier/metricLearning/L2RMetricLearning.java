@@ -190,12 +190,15 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-					|| (di.getYLabel() == 1 && negQ < 0.8*posQ)){
+				|| (di.getYLabel() == 1 && negQ < 0.8*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
 				continue;
-			}
+			} else if (di.getYLabel()==1)
+				posQ ++;
+			else
+				negQ ++;
 				
 			//accept the query
 			q = new _Query();
@@ -205,11 +208,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			for(_Doc d:neighbors)
 				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
 			pairSize += q.createRankingPairs();
-			
-			if (di.getYLabel()==1)
-				posQ ++;
-			else
-				negQ ++;
 			
 			//clear the cache for next query
 			simRanker.clear();
