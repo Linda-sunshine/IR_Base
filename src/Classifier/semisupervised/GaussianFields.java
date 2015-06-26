@@ -224,6 +224,9 @@ public class GaussianFields extends BaseClassifier {
 		double[][][] total = new double[3][2][2];
 		double similiarty;
 		
+		m_kUL.clear();
+		m_kUU.clear();
+		
 		try {
 			BufferedWriter writer = null;
 			if (m_outputPlot)
@@ -231,7 +234,7 @@ public class GaussianFields extends BaseClassifier {
 				
 			for(int i = 0; i < m_U; i++) {
 				d = getTestDoc(i);
-				y = d.getYLabel();
+				y = d.getYLabel();//ground-truth label
 				
 				/****Get the nearest neighbors of k'UU******/
 				for (int j = 0; j < m_U; j++) {

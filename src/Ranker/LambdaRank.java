@@ -10,7 +10,7 @@ import structures._QUPair;
 import structures._Query;
 import utils.Utils;
 import Ranker.evaluator.Evaluator;
-import Ranker.evaluator.NDCG_Evaluator;
+import Ranker.evaluator.MAP_Evaluator;
 import cern.jet.random.tdouble.Normal;
 
 /**
@@ -27,8 +27,8 @@ public class LambdaRank {
 	double[] m_weight; // feature weight
 	double[] m_g;//gradient
 	
-	//Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
-	Evaluator m_eval = new NDCG_Evaluator(20);
+	Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
+	//Evaluator m_eval = new NDCG_Evaluator(20);
 	//Evaluator m_eval = new Evaluator();
 	
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
