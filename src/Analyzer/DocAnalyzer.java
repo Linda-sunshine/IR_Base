@@ -302,7 +302,7 @@ public class DocAnalyzer extends Analyzer {
 						spVct.put(index, value);
 					} else {
 						spVct.put(index, 1.0);
-						if (docWordMap==null || !docWordMap.containsKey(token))
+						if (docWordMap==null || !docWordMap.containsKey(index))
 							m_featureStat.get(token).addOneDF(y);
 					}
 				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
