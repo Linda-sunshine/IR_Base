@@ -55,9 +55,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
-	void randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
+	double randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
 		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
-		double wL = m_alpha, wU = m_beta;
+		double wL = m_alpha, wU = m_beta, acc = 0;
+		_Doc d;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
@@ -94,16 +95,23 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			if (Double.isNaN(m_fu[i])) {
 				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
 				System.exit(-1);				
+			} else {
+				d = getTestDoc(i);
+				if (d.getYLabel() == getLabel(m_fu[i]))
+					acc ++;
 			}
 		}
+		
+		return acc / m_U;
 	}
 	
 	//Take the majority of all neighbors(k+k') as the new label until they converge.
-	void randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
-		double similarity = 0;
+	double randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
+		double similarity = 0, acc = 0;
 		int label;
 //		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
+		_Doc d;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
@@ -140,7 +148,13 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			m_cProbs[label] += 1-m_eta; 
 			
 			m_fu[i] = Utils.maxOfArrayIndex(m_cProbs);
+			
+			d = getTestDoc(i);
+			if (d.getYLabel() == (int)(m_fu[i]))
+				acc ++;
 		}
+		
+		return acc / m_U;
 	} 
 	
 	double updateFu() {
@@ -169,15 +183,15 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		/***use random walk to solve matrix inverse***/
 		System.out.println("Random walk starts:");
 		int iter = 0;
-		double diff = 0;
+		double diff = 0, accuracy;
 		do {
 			if (m_weightedAvg)
-				randomWalkByWeightedSum();	
+				accuracy = randomWalkByWeightedSum();	
 			else
-				randomWalkByMajorityVote();
+				accuracy = randomWalkByMajorityVote();
 			
 			diff = updateFu();
-			System.out.format("Iteration %d, converge to %.3f...\n", ++iter, diff);
+			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
 		} while(diff > m_delta && iter<50);//maximum 50 iterations 
 		
 		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
