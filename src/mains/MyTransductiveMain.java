@@ -8,6 +8,7 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.AspectAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
@@ -38,16 +39,19 @@ public class MyTransductiveMain {
 		String suffix = ".json";
 //		String folder = "./data/Electronics/dedup/RawData100K";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String stnModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
-			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
-		
+//		String stnModel = null;
+//		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
+//			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+
+		String stopword = "./data/Model/stopwords.dat";
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 //		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 //		String fvFile = String.format("./data/Features/fv_%dgram_electronics_10253.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/sentiment_output.txt";
 //		String aspectlist = "./data/Model/topic_sentiment_output.txt";
+		String aspectlist = "./data/Model/aspect_output_simple.txt";
 		
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
@@ -80,11 +84,11 @@ public class MyTransductiveMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
-		
-//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, aspectlist, true);
 //		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
+		analyzer.LoadStopwords(stopword);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		
 		analyzer.setFeatureValues("TF", 0);
 //		analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.

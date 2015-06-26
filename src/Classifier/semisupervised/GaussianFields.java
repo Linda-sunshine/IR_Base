@@ -236,6 +236,13 @@ public class GaussianFields extends BaseClassifier {
 		return Utils.KLsymmetric(di.m_topics, dj.m_topics)/topicSize;
 	}
 	
+	protected double getPOSScore(_Doc di, _Doc dj){
+		return Utils.cosine(di.getPOSVct(), dj.getPOSVct());
+	}
+	
+	protected double getAspectScore(_Doc di, _Doc dj){
+		return Utils.cosine(di.getAspVct(), dj.getAspVct());
+	}
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
 		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));

@@ -64,8 +64,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 //					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
 					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), post.getTitle(), prod.getID(), post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
-						AnnotateIndex(review);
-//						AnalyzeDocWithStnSplit(review);
+//						AnnotateIndex(review);
+						AnalyzeDocWithStnSplit(review);
 					else
 						AnalyzeDoc(review);
 				}
@@ -157,7 +157,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 	}
 	
 	//check format for each post
-	private boolean checkPostFormat(Post p) {
+	protected boolean checkPostFormat(Post p) {
 		if (p.getLabel() <= 0 || p.getLabel() > 5){
 			//System.err.format("[Error]Missing Lable or wrong label!!");
 			System.out.print('L');

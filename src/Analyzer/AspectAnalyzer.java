@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,8 +20,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
+
 import opennlp.tools.util.InvalidFormatException;
 import structures.MyPriorityQueue;
+import structures.Post;
+import structures.Product;
+import structures.TokenizeResult;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
@@ -63,14 +71,20 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	int m_count;
-	boolean m_topicFlag;
-	
+	int m_count=0;
+	boolean m_aspFlag=false;
+		
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
 	
-	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean topicFlag)
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+		LoadAspectKeywords(aspectFile);
+		m_aspFlag = aspFlag;
+	}
+	
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
@@ -78,8 +92,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
-		m_count = 0;
-		m_topicFlag = topicFlag;
+		m_aspFlag = aspFlag;
 	}
 	
 //	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -240,61 +253,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-//	protected boolean AnalyzeDoc(_Doc doc) {
-//		if(doc.getYLabel() == 1 && m_classMemberNo[1] >= 3185)
-//			return true;
-//		else{
-//			String[] tokens = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-//			HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-//			int index = 0;
-//			double value = 0;
-//			// Construct the sparse vector.
-//			for (String token : tokens) {
-//				// CV is not loaded, take all the tokens as features.
-//				if (!m_isCVLoaded) {
-//					if (m_featureNameIndex.containsKey(token)) {
-//						index = m_featureNameIndex.get(token);
-//						if (spVct.containsKey(index)) {
-//							value = spVct.get(index) + 1;
-//							spVct.put(index, value);
-//						} else {
-//							spVct.put(index, 1.0);
-//							m_featureStat.get(token).addOneDF(doc.getYLabel());
-//						}
-//					} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
-//						expandVocabulary(token);// update the m_featureNames.
-//						index = m_featureNameIndex.get(token);
-//						spVct.put(index, 1.0);
-//						m_featureStat.get(token).addOneDF(doc.getYLabel());
-//					}
-//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-//				} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-//					index = m_featureNameIndex.get(token);
-//					if (spVct.containsKey(index)) {
-//						value = spVct.get(index) + 1;
-//						spVct.put(index, value);
-//					} else {
-//						spVct.put(index, 1.0);
-//						m_featureStat.get(token).addOneDF(doc.getYLabel());
-//					}
-//					m_featureStat.get(token).addOneTTF(doc.getYLabel());
-//				}
-//				// if the token is not in the vocabulary, nothing to do.
-//			}
-//			if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
-//				doc.createSpVct(spVct);
-//				m_corpus.addDoc(doc);
-//				m_classMemberNo[doc.getYLabel()]++;
-//			}
-//		}
-//		if (m_releaseContent){
-//			doc.clearSource();
-//			return true;
-//		}
-//		else
-//			return false;
-//	}	
-	
 	public int returnCount(){
 		return m_count;
 	}
@@ -305,7 +263,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
 			for(int key: keywords){
 				if(spVct.containsKey(key))
-					aspVct[i] = 1.0;
+					aspVct[i] = m_aspFlag?spVct.get(key):1;
 				break;
 			}
 		}
@@ -323,6 +281,122 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 	}
 	
+	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
+	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
+		int y = doc.getYLabel();
+		double sentiScore = 0;
+		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+		String[] tokens = result.getTokens();
+		// Construct the sparse vector.
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+		doc.setAspVct(detectAspects(spVct));
+		
+		for(String sentence: sentences){
+			int posIndex = 0;
+			double posValue = 0;
+			String[] posTokens = Tokenizer(sentence);
+			String[] tags = m_tagger.tag(posTokens);
+			HashMap<Integer, Double> postaggingSentenceVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+			
+			for(int i = 0; i < posTokens.length; i++){
+				String tmpToken = SnowballStemming(Normalize(posTokens[i]));
+				if (isLegit(tmpToken)){
+					//If the word is adj/adv, construct the sparse vector.
+					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
+						if(m_posTaggingFeatureNameIndex.containsKey(tmpToken)){
+							posIndex = m_posTaggingFeatureNameIndex.get(tmpToken);
+							if(postaggingSentenceVct.containsKey(posIndex)){
+								posValue = postaggingSentenceVct.get(posIndex) + 1;
+								postaggingSentenceVct.put(posIndex, posValue);
+							} else
+								postaggingSentenceVct.put(posIndex, 1.0);
+						} else{
+							posIndex = m_posTaggingFeatureNameIndex.size();
+							m_posTaggingFeatureNameIndex.put(tmpToken, posIndex);
+							postaggingSentenceVct.put(posIndex, 1.0);
+						}
+					}
+					//If the word is in sentiwordnet, accumulate the score.
+					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")){
+						tmpToken = posTokens[i] + "#r";
+					} else if (tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
+						tmpToken = posTokens[i] + "#a";
+					} else if (tags[i].equals("NN")||tags[i].equals("NNS")||tags[i].equals("NNP")||tags[i].equals("NNPS")){
+						tmpToken = posTokens[i] + "#n";
+					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
+						tmpToken = posTokens[i] + "#v";
+					} 
+					if(m_sentiwordScoreMap.containsKey(tmpToken));
+					sentiScore += m_sentiwordScoreMap.get(tmpToken);
+				}
+			}
+			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
+				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
+		}
+
+		//the document should be long enough
+		if (spVct.size()>=m_lengthThreshold) { 
+			doc.createSpVct(spVct);
+			doc.createPOSVct(posTaggingVct);
+			doc.setStopwordProportion(result.getStopwordProportion());
+			doc.setSentiScore(sentiScore);
+
+			m_corpus.addDoc(doc);
+			m_classMemberNo[y]++;
+					
+//			if (m_releaseContent)
+//			doc.clearSource();
+			return true;
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+			return false;
+		}
+	}
+	//previous LoadDoc, in case we need it.
+	public void LoadDoc(String filename) {
+		Product prod = null;
+		JSONArray jarray = null;
+
+		try {
+			JSONObject json = LoadJson(filename);
+			prod = new Product(json.getJSONObject("ProductInfo"));
+			jarray = json.getJSONArray("Reviews");
+		} catch (Exception e) {
+			System.out.print('X');
+			return;
+		}
+
+		for (int i = 0; i < jarray.length(); i++) {
+			try {
+				Post post = new Post(jarray.getJSONObject(i));
+				if (checkPostFormat(post)) {
+					long timeStamp = m_dateFormatter.parse(post.getDate())
+							.getTime();
+					String content;
+					if (Utils.endWithPunct(post.getTitle()))
+						content = post.getTitle() + " " + post.getContent();
+					else
+						content = post.getTitle() + ". " + post.getContent();
+					// int label = 0;
+					// if(post.getLabel()>=4) label = 1;
+					// _Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, prod.getID(), post.getLabel() - 1, timeStamp);
+					if (this.m_stnDetector != null)
+						AnalyzeDocWithPOSTagging(review);
+					else
+						AnalyzeDoc(review);
+				}
+			} catch (ParseException e) {
+				System.out.print('T');
+			} catch (JSONException e) {
+				System.out.print('P');
+			}
+		}
+	}
+
 //	//Set the topic vector for every document.
 //	public void setTopicVector(double[][] ttp){
 //		for(_Doc d: m_corpus.getCollection()){

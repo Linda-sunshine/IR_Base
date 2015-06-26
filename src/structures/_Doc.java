@@ -21,18 +21,40 @@ public class _Doc implements Comparable<_Doc> {
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the review.
-	
 	String m_source; //The content of the source file.
 	int m_totalLength; //The total length of the document.
-	
 	int m_y_label; // classification target, that is the index of the labels.
 	int m_predict_label; //The predicted result.
 	double m_y_value; // regression target, like linear regression only has one value.	
 	long m_timeStamp; //The timeStamp for this review.
 	
+	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
+	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
+	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
+	private _SparseFeature[] m_x_posVct;
+	private double[] m_x_aspVct;
+		
+	static public final int stn_fv_size = 4; // cosine, length_ratio, position
+	_Stn[] m_sentences;
+		
+	//p(z|d) for topic models in general
+	public double[] m_topics;
+	public double[] m_sentiment;
+	//sufficient statistics for estimating p(z|d)
+	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)	
+	// structure only used by Gibbs sampling to speed up the sampling process
+	public int[] m_words; 
+	public int[] m_topicAssignment;		
+	// structure only used by variational inference
+	public double[][] m_phi; // p(z|w, \phi)	
+	Random m_rand;
+		
+	//only used in learning to rank for random walk
+	public double[] m_rankingFvs; // dense vector for ranking features
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
+	double m_sentiScore = 0; //Sentiment score from sentiwordnet
 	
 	public double getAvgIDF() {
 		return m_avgIDF;
@@ -50,31 +72,13 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_stopwordProportion = stopwordProportion;
 	}
 
-	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
-	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
-	private double[] m_x_aspVct;
+	public void setSentiScore(double s){
+		this.m_sentiScore = s;
+	}
 	
-	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	_Stn[] m_sentences;
-	
-	//p(z|d) for topic models in general
-	public double[] m_topics;
-	public double[] m_sentiment;
-	//sufficient statistics for estimating p(z|d)
-	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)
-	
-	// structure only used by Gibbs sampling to speed up the sampling process
-	public int[] m_words; 
-	public int[] m_topicAssignment;
-	
-	// structure only used by variational inference
-	public double[][] m_phi; // p(z|w, \phi)
-	
-	Random m_rand;
-	
-	//only used in learning to rank for random walk
-	public double[] m_rankingFvs; // dense vector for ranking features
+	public double getSentiScore(){
+		return this.m_sentiScore;
+	}
 	
 	public double[] getRankingFvs() {
 		return m_rankingFvs;
@@ -249,6 +253,14 @@ public class _Doc implements Comparable<_Doc> {
 		calcTotalLength();
 	}
 	
+	//Create the sparse postagging vector for the document. 
+	public void createPOSVct(HashMap<Integer, Double> posVct){
+		m_x_posVct = Utils.createSpVct(posVct);
+	}
+	
+	public _SparseFeature[] getPOSVct(){
+		return m_x_posVct;
+	}
 	//Create the sparse vector for the document, taking value from different sections
 	public void createSpVct(ArrayList<HashMap<Integer, Double>> spVcts) {
 		m_x_sparse = Utils.createSpVct(spVcts);

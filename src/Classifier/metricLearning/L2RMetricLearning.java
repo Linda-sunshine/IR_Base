@@ -23,7 +23,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	protected Model m_rankSVM;
 	
-	final int RankFVSize = 9;// features to be defined in genRankingFV()
+	final int RankFVSize = 12;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -217,13 +217,17 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[8] = d.getAvgIDF();
 		//average neighborhood similarity
 		
-		//feature 10: the title of review
-//		fv[9] = d.getTitleScore();
+		//feature 10: the sentiwordnet score for a review.
+		fv[9] = d.getSentiScore();
 		
-		//feature 11: the postagging score for the review
-//		fv[10] = d.getPOSTagging();
+		//feature 11: the postagging score for a pair of reviews.
+		fv[10] = getPOSScore(q, d);
 		
-//		fv[11] = Utils.calcSentiScore(q, d);
+		//feature 12: the aspect score for a pair of reviews.
+		fv[11] = getAspectScore(q, d);
+		
+		//feature 13: the title of review
+//		fv[12] = d.getTitleScore();
 		return fv;
 	}
 	
