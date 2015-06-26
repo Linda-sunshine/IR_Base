@@ -57,7 +57,7 @@ public class TransductiveMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
+		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "DF"; //Feature selection method.
 //		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
@@ -71,6 +71,7 @@ public class TransductiveMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
+		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -106,8 +107,8 @@ public class TransductiveMain {
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1.0;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
-			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.5; // convergence of random walk, weight of random walk
+			double tAlpha = 1.0, tBeta = 0.6; // labeled data weight, unlabeled data weight
+			double tDelta = 1e-4, tEta = 0.2; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = false;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets

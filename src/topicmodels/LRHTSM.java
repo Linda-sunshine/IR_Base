@@ -3,8 +3,6 @@ package topicmodels;
 import java.util.Arrays;
 import java.util.Collection;
 
-import markovmodel.FastRestrictedHMM_sentiment;
-import markovmodel.LRFastRestrictedHMM;
 import markovmodel.LRFastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
@@ -21,8 +19,6 @@ public class LRHTSM extends HTSM {
 	//feature weight vector for sentiment
 	double[] m_delta;
 	double[] m_g_delta, m_diag_delta;//gradient and diagnoal for delta estimation
-		
-	
 	
 	//L2 regularization for omega
     //double m_lambda;    

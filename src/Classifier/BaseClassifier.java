@@ -58,6 +58,16 @@ public abstract class BaseClassifier {
 		return acc /m_testSet.size();
 	}
 	
+	public String getF1String() {
+		double[][] PRarray = m_precisionsRecalls.get(m_precisionsRecalls.size()-1);
+		StringBuffer buffer = new StringBuffer(128);
+		for(int i=0; i<PRarray.length; i++) {
+			double p = PRarray[i][0], r = PRarray[i][1];
+			buffer.append(String.format("%d:%.3f ", i, 2*p*r/(p+r)));
+		}
+		return buffer.toString().trim();
+	}
+	
 	// Constructor with given corpus.
 	public BaseClassifier(_Corpus c) {
 		m_classNo = c.getClassSize();
@@ -131,7 +141,7 @@ public abstract class BaseClassifier {
 				train();
 				double accuracy = test();
 				
-				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy);
+				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
 				m_trainSet.clear();
 				m_testSet.clear();
 			}

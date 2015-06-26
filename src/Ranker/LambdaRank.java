@@ -10,7 +10,7 @@ import structures._QUPair;
 import structures._Query;
 import utils.Utils;
 import Ranker.evaluator.Evaluator;
-import Ranker.evaluator.NDCG_Evaluator;
+import Ranker.evaluator.MAP_Evaluator;
 import cern.jet.random.tdouble.Normal;
 
 /**
@@ -27,14 +27,13 @@ public class LambdaRank {
 	double[] m_weight; // feature weight
 	double[] m_g;//gradient
 	
-	//Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
-	Evaluator m_eval = new NDCG_Evaluator(20);
+	Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
+	//Evaluator m_eval = new NDCG_Evaluator(20);
 	//Evaluator m_eval = new Evaluator();
 	
 	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
 		super();
 		m_lambda = lambda;
-		//m_lambda = 0.01;
 		m_queries = queries;
 		m_weight = new double[featureSize];
 		m_eval.setRate(0.5);
@@ -51,7 +50,7 @@ public class LambdaRank {
 	protected void initWeight(double lambda){
 		lambda = 1.0/Math.sqrt(lambda);
 		for(int i=0; i<m_weight.length; i++)
-			m_weight[i] = Normal.staticNextDouble(0, lambda)/100;
+			m_weight[i] = Normal.staticNextDouble(0, lambda);
 	}
 	
 	protected void init(){//create the pointer array to the training queries
@@ -166,7 +165,7 @@ public class LambdaRank {
 			}
 						
 			if (n%4==0){
-				step /= 1.15;
+				step *= 0.9;
 				if (n%20==0){
 					evaluate(m_lambda, true);
 				}
