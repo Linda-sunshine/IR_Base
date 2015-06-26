@@ -57,7 +57,7 @@ public class TransductiveMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
+		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "DF"; //Feature selection method.
 //		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
@@ -71,6 +71,7 @@ public class TransductiveMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
+		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.

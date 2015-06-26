@@ -56,7 +56,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
 	void randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
-		double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
+		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
+		double wL = m_alpha, wU = m_beta;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
@@ -101,7 +102,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	void randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
 		double similarity = 0;
 		int label;
-		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
+//		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
+		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
@@ -125,7 +127,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				m_cProbs[label] += m_simFlag?similarity*wU:wU; 
 				
 				label = (int) m_Y[n.m_index];//SVM's predition.
-				m_cProbs[label] += m_simFlag?similarity*m_eta:m_eta; 
+				m_cProbs[label] += m_simFlag?similarity*(1-m_eta):1-m_eta; 
 			}
 			m_kUU.clear();
 			
