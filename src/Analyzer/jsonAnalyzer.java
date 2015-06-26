@@ -35,6 +35,11 @@ public class jsonAnalyzer extends DocAnalyzer{
 		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 	}
+	//Constructor with ngram and fValue.
+	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel, String tagModel) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold, tagModel);
+		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
+	}
 	//previous LoadDoc, in case we need it.
 	public void LoadDoc(String filename) {
 		Product prod = null;
@@ -62,10 +67,11 @@ public class jsonAnalyzer extends DocAnalyzer{
 //					int label = 0;
 //					if(post.getLabel()>=4) label = 1;
 //					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), post.getTitle(), prod.getID(), post.getLabel()-1, timeStamp);
-					if(this.m_stnDetector!=null)
-//						AnnotateIndex(review);
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, prod.getID(), post.getLabel()-1, timeStamp);
+					if(this.m_stnDetector!=null){
+//						AnalyzeDoc(review);
 						AnalyzeDocWithStnSplit(review);
+					}
 					else
 						AnalyzeDoc(review);
 				}

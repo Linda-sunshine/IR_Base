@@ -294,6 +294,7 @@ public class Utils {
 			double value = feature.getValue();
 			sum += value * value;
 		}
+//		System.out.println(sum);
 		return Math.sqrt(sum);
 	}
 	

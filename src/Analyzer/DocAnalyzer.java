@@ -11,6 +11,7 @@ import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -291,6 +292,7 @@ public class DocAnalyzer extends Analyzer {
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		
 		for (String token : tokens) {//tokens could come from a sentence or a document
+			
 			// CV is not loaded, take all the tokens as features.
 			if (!m_isCVLoaded) {
 				if (m_featureNameIndex.containsKey(token)) {
@@ -310,21 +312,21 @@ public class DocAnalyzer extends Analyzer {
 					m_featureStat.get(token).addOneDF(y);
 				}
 				m_featureStat.get(token).addOneTTF(y);
-			} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
-				index = m_featureNameIndex.get(token);
-				if (spVct.containsKey(index)) {
-					value = spVct.get(index) + 1;
-					spVct.put(index, value);
-				} else {
-					spVct.put(index, 1.0);
-					if (docWordMap==null || !docWordMap.containsKey(token))
-						m_featureStat.get(token).addOneDF(y);
+			} else{// CV is loaded.
+				if (m_featureNameIndex.containsKey(token)) {
+					index = m_featureNameIndex.get(token);
+					if (spVct.containsKey(index)) {
+						value = spVct.get(index) + 1;
+						spVct.put(index, value);
+					} else {
+						spVct.put(index, 1.0);
+						if (docWordMap==null || !docWordMap.containsKey(index))
+							m_featureStat.get(token).addOneDF(y);
+					}
+					m_featureStat.get(token).addOneTTF(y);
 				}
-				m_featureStat.get(token).addOneTTF(y);
-			}
-			// if the token is not in the vocabulary, nothing to do.
+			} 
 		}
-		
 		return spVct;
 	}
 
@@ -346,6 +348,9 @@ public class DocAnalyzer extends Analyzer {
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
+//			System.out.println("No split:");
+//			for(int i: spVct.keySet())
+//				System.out.format("%d-%.1f\t", i, spVct.get(i));
 //			if (m_releaseContent)
 //				doc.clearSource();
 			return true;
@@ -374,7 +379,7 @@ public class DocAnalyzer extends Analyzer {
 				stnList.add(Utils.createSpVct(sentence_vector));
 				Utils.mergeVectors(sentence_vector, spVct);
 			}
-		} // End For loop for sentence	
+		} //End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
@@ -414,12 +419,14 @@ public class DocAnalyzer extends Analyzer {
 		} // End For loop for sentence	
 	
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
-			
+//			System.out.println("Sentence split:");
+//			for(int i: spVct.keySet())
+//				System.out.format("%d-%.1f\t", i, spVct.get(i));
 //			if (m_releaseContent)
 //				doc.clearSource();
 			return true;

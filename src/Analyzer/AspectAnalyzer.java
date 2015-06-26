@@ -78,8 +78,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
 	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
 		LoadAspectKeywords(aspectFile);
 		m_aspFlag = aspFlag;
 	}
@@ -87,9 +87,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
-		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel)
-		//public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
 		m_aspFlag = aspFlag;
@@ -262,9 +259,14 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		for(int i = 0; i < m_aspects.size(); i++){
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
 			for(int key: keywords){
-				if(spVct.containsKey(key))
-					aspVct[i] = m_aspFlag?spVct.get(key):1;
-				break;
+				if(m_aspFlag){
+					if(spVct.containsKey(key))
+						aspVct[i] += spVct.get(key);
+				} else{
+					if(spVct.containsKey(key))
+						aspVct[i] = 1;
+					break;	
+				}
 			}
 		}
 		return aspVct;
@@ -284,7 +286,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
 	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
 		int y = doc.getYLabel();
-		double sentiScore = 0;
+		double sentiScore = 0, count= 0;
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		String[] tokens = result.getTokens();
 		// Construct the sparse vector.
@@ -328,8 +330,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
 						tmpToken = posTokens[i] + "#v";
 					} 
-					if(m_sentiwordScoreMap.containsKey(tmpToken));
-					sentiScore += m_sentiwordScoreMap.get(tmpToken);
+					if(m_sentiwordScoreMap.containsKey(tmpToken)){
+						sentiScore += m_sentiwordScoreMap.get(tmpToken);
+						count++;
+					}
 				}
 			}
 			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
@@ -341,7 +345,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
-			doc.setSentiScore(sentiScore);
+			doc.setSentiScore(sentiScore/count);
 
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;

@@ -261,6 +261,8 @@ public abstract class Analyzer {
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
 					double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
+					if(Double.isNaN(BM25))
+						System.out.println("bug");
 					sf.setValue(BM25);
 					avgIDF += IDF;
 				}
