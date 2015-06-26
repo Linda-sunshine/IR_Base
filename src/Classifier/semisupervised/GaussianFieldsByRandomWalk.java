@@ -178,7 +178,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			
 			diff = updateFu();
 			System.out.format("Iteration %d, converge to %.3f...\n", ++iter, diff);
-		} while(diff > m_delta);
+		} while(diff > m_delta && iter<50);//maximum 50 iterations 
 		
 		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
 		SimilarityCheck();
