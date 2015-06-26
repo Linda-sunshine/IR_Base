@@ -125,9 +125,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				similarity = n.m_value;
 				//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
 				m_cProbs[label] += m_simFlag?similarity*wU:wU; 
-				
-				label = (int) m_Y[n.m_index];//SVM's predition.
-				m_cProbs[label] += m_simFlag?similarity*(1-m_eta):1-m_eta; 
 			}
 			m_kUU.clear();
 			
@@ -138,6 +135,9 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				m_cProbs[label] += m_simFlag?similarity*wL:wL; 
 			}
 			m_kUL.clear();
+			
+			label = (int) m_Y[i];//SVM's predition.
+			m_cProbs[label] += 1-m_eta; 
 			
 			m_fu[i] = Utils.maxOfArrayIndex(m_cProbs);
 		}
