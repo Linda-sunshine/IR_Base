@@ -3,14 +3,13 @@
  */
 package structures;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
+
 import utils.Utils;
 
 /**
@@ -255,12 +254,10 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void setSentenceswithLabel(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
+	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
 		m_sentences = new _Stn[stnList.size()];
-		for(int i=0; i<m_sentences.length; i++){
-			m_sentences[i] = new _Stn(stnList.get(i));
-			m_sentences[i].setSentenceLabel(stnLabel.get(i));
-		}
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i] = new _Stn(stnList.get(i), stnLabel.get(i));
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
