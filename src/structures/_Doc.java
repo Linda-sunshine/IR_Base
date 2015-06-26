@@ -3,13 +3,14 @@
  */
 package structures;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
-
 import utils.Utils;
 
 /**
@@ -33,6 +34,13 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	
+	_Corpus m_corpus;
+	
+	public void setCorpus(_Corpus c)
+	{
+		m_corpus = c;
+	}
+	
 	public double getAvgIDF() {
 		return m_avgIDF;
 	}
@@ -54,7 +62,7 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 3; // cosine, length_ratio
+	static public final int stn_senti_fv_size = 4; // cosine, sentiWordNetscore, prior_positive_negative_count
 	
 	_Stn[] m_sentences;
 	
@@ -356,24 +364,34 @@ public class _Doc implements Comparable<_Doc> {
 			m_topicAssignment[i] = t;
 		}
 	}
-	
+		
 	// used by LR-HTSM for constructing transition features for sentiment
 	public void setSentenceFeatureVectorForSentiment() {
 		// start from 2nd sentence
-		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());
 		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
+		double pSenscore = sentiWordScore(0), cSenscore;
+		int pposneg=posnegcount(0),cposneg;
+		
 		int stnSize = getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
 			m_sentences[i-1].m_sentitransitFv[0] = pSim;			
 			
-			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
-			//length_ratio
-			m_sentences[i-1].m_sentitransitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
-			pLength = cLength;
+			//sentiWordScore
+			cSenscore = sentiWordScore(i);
+			if((cSenscore<0 && pSenscore>0) || (cSenscore>0 && pSenscore<0))
+				m_sentences[i-1].m_sentitransitFv[1] = 1; // transition
+			else if((cSenscore<=0 && pSenscore<=0) || (cSenscore>=0 && pSenscore>=0))
+				m_sentences[i-1].m_sentitransitFv[1] = -1; // no transition
+			pSenscore = cSenscore;
 			
-			//position
-			m_sentences[i-1].m_sentitransitFv[2] = (double)i / stnSize;
+			//positive negative count 
+			cposneg = posnegcount(i);
+			if(pposneg==cposneg)
+				m_sentences[i-1].m_sentitransitFv[2] = -1; // no transition
+			else if (pposneg!=cposneg)
+				m_sentences[i-1].m_sentitransitFv[2] = 1; // transition
+			pposneg = cposneg;
 			
 			//similar to previous or next
 			if (i<stnSize-1) {
@@ -385,7 +403,52 @@ public class _Doc implements Comparable<_Doc> {
 				pSim = nSim;
 			}
 		}
-	}	
+	}
+	
+	// receive sentence index as parameter
+	public double sentiWordScore(int i)
+	{
+		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		double senscore = 0.0;
+		double tmp;
+		
+		for(_SparseFeature word:wordsinsentence){
+			index = word.getIndex();
+			token = m_corpus.m_features.get(index);
+			tmp = m_corpus.sentiwordnet.extract(token, "n");
+			if(tmp!=-2) // word found in SentiWordNet
+				senscore+=tmp;
+		}
+		return senscore;
+	}
+	
+	// receive sentence index as parameter
+	public int posnegcount(int i)
+	{
+		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		int poscount = 0;
+		int negcount = 0;
+		
+		for(_SparseFeature word:wordsinsentence){
+			index = word.getIndex();
+			token = m_corpus.m_features.get(index);
+			if(m_corpus.m_pospriorlist.contains(token))
+				poscount++;
+			else if(m_corpus.m_negpriorlist.contains(token))
+				negcount++;
+		}
+		
+		if(poscount>negcount)
+			return 1; // 1 means sentence is more positive
+		else if (negcount>poscount)
+			return 2; // 2 means sentence is more negative
+		else
+			return 0; // sentence is neutral or no match
+	}
 	
 	
 	// used by LR-HTMM for constructing transition features

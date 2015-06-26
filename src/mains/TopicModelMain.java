@@ -112,7 +112,7 @@ public class TopicModelMain {
 			}
 			else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
-				c.setStnFeaturesForSentiment();
+				c.setStnFeaturesForSentiment(c);
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
