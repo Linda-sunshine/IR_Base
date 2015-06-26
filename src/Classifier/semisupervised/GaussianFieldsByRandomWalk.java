@@ -186,9 +186,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 				m_pYSum[j] += Math.exp(-Math.abs(j-m_fu[i]));			
 		}
 		
-		//temporary injected code
-		SimilarityCheck();
-		
 		/***evaluate the performance***/
 		double acc = 0;
 		int pred, ans;
