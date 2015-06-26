@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import json.JSONException;
 import json.JSONObject;
@@ -15,6 +16,18 @@ import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
+	
+	public static void shuffle(int[] order, int size){
+		Random rand = new Random();
+		int t, j;
+		for(int i=size-1; i>0; i--){
+			j = rand.nextInt(i+1);			
+			
+			t = order[i];
+			order[i] = order[j];
+			order[j] = t;
+		}
+	}
 	
 	public static double max(double[] w, int start, int size) {
 		double max = Math.abs(w[start]);
@@ -199,7 +212,11 @@ public class Utils {
 		double sum = w[0];//start from bias term
 		for(int i = 0; i < fv.length; i++)
 			sum += fv[i] * w[1+i];
-		return 1.0 / (1.0 + Math.exp(-sum));
+		return logistic(sum);
+	}
+	
+	public static double logistic(double v) {
+		return 1.0 / (1.0 + Math.exp(-v));
 	}
 	
 	//The function defines the sum of an array.

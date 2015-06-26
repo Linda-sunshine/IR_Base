@@ -124,6 +124,12 @@ public class _Corpus {
 		}
 	}
 	
+	public void setStnFeaturesForSentiment() {
+		for(_Doc d:m_collection) {
+			d.setSentenceFeatureVectorForSentiment();
+		}
+	}
+	
 	public int getItemSize() {
 		String lastPID = null;
 		int pid = 0, rSize = 0;
