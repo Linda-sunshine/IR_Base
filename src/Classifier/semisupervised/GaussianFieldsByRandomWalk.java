@@ -180,6 +180,9 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			System.out.format("Iteration %d, converge to %.3f...\n", ++iter, diff);
 		} while(diff > m_delta);
 		
+		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
+		SimilarityCheck();
+		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
 			for(int j=0; j<m_classNo; j++)

@@ -340,9 +340,6 @@ public class GaussianFields extends BaseClassifier {
 				m_testSet.get(i).setID(i);//record the current position
 		}
 		
-		/***check the purity of newly constructed neighborhood graph with ground-truth labels***/
-		SimilarityCheck();
-		
 		if (!createSparseGraph) {
 			System.out.println("Nearest neighbor graph construction finished!");
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
