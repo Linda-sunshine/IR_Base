@@ -197,7 +197,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 0.8*posQ)){
+				|| (di.getYLabel() == 1 && negQ < 0.6*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
