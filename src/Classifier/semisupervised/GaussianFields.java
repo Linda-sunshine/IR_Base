@@ -1,18 +1,14 @@
 package Classifier.semisupervised;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
-import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
-import structures._RankItem;
+import structures._Edge;
+import structures._Node;
 import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.LogisticRegression;
@@ -26,17 +22,14 @@ public class GaussianFields extends BaseClassifier {
 	
 	double m_alpha; //Weight coefficient between unlabeled node and labeled node.
 	double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
-	double m_M; //Influence of labeled node.
+	double m_M; //Influence of labeled node (similar effect of eta)
 	int m_k; // k labeled nodes.
 	int m_kPrime;//k' unlabeled nodes.
 	
 	int m_U, m_L;
-	protected double[] m_cache; // cache the similarity computation results given the similarity metric is symmetric
-	double[] m_fu; // predicted labels for unlabeled data.
-	double[] m_Y; // true label for the labeled data and pseudo label from base learner
+	protected _Node[] m_nodeList; // list of nodes with its nearest neighbors in the graph
 	SparseDoubleMatrix2D m_graph;
 	
-	MyPriorityQueue<_RankItem> m_kUL, m_kUU; // k nearest neighbors for Unlabeled-Labeled and Unlabeled-Unlabeled
 	ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
@@ -44,8 +37,6 @@ public class GaussianFields extends BaseClassifier {
 	double[] m_pY;//p(Y), the probabilities of different classes.
 	double[] m_pYSum; //\sum_i exp(-|c-fu(i)|)
 	
-	double m_discount = 1.0; // default similarity discount if across different products
-	boolean m_outputPlot = false; // if we want to print out the curves for analysis
 	Thread[] m_threadpool;
 	
 	public GaussianFields(_Corpus c, String classifier, double C){
@@ -63,6 +54,7 @@ public class GaussianFields extends BaseClassifier {
 		m_pY = new double[classNumber];
 		m_pYSum = new double[classNumber];
 		
+		m_nodeList = null;
 		setClassifier(classifier, C);
 	}	
 	
@@ -81,12 +73,14 @@ public class GaussianFields extends BaseClassifier {
 		m_pY = new double[classNumber];
 		m_pYSum = new double[classNumber];
 		
+		m_nodeList = null;
 		setClassifier(classifier, C);
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_discount);
+		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", 
+				m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
 	}
 	
 	private void setClassifier(String classifier, double C) {
@@ -113,6 +107,7 @@ public class GaussianFields extends BaseClassifier {
 	public void train(Collection<_Doc> trainSet){
 		init();
 		
+		//using all labeled data for classifier training
 		m_classifier.train(trainSet);
 		
 		//Randomly pick some training documents as the labeled documents.
@@ -125,41 +120,20 @@ public class GaussianFields extends BaseClassifier {
 		
 		//estimate the prior of p(y=c)
 		Utils.scaleArray(m_pY, 1.0/Utils.sumOfArray(m_pY));
-	}
-	
-	protected void initCache() {
-		int size = m_U*(2*m_L+m_U-1)/2;//specialized for the current matrix structure
-		if (m_cache==null || m_cache.length<size)
-			m_cache = new double[m_U*(2*m_L+m_U-1)/2]; // otherwise we can reuse the current memory space
-	}
-	
-	int encode(int i, int j) {
-		if (i>j) {//swap
-			int t = i;
-			i = j;
-			j = t;
-		}
-		return i*(2*(m_U+m_L-1)-i+1)/2 + (j-i-1);//specialized for the current matrix structure
-	}
-	
-	public void debugEncode() {
-		m_U = 8; 
-		m_L = 6;
-		for(int i=0; i<m_U; i++) {
-			for(int j=i+1; j<m_U; j++)
-				System.out.print(encode(i,j) + " ");
-			for(int j=0; j<m_L; j++)
-				System.out.print(encode(i,m_U+j) + " ");
-			System.out.println();
-		}
-	}
-	
-	public void setCache(int i, int j, double v) {
-		m_cache[encode(i,j)] = v;
-	}
-	
-	double getCache(int i, int j) {
-		return m_cache[encode(i,j)];
+		
+		//set up labeled and unlabeled instance size
+		m_U = m_testSet.size();
+		m_L = m_labeled.size();
+				
+		//create the node list for constructing the nearest neighbor graph
+		if (m_nodeList==null || m_nodeList.length < m_U+m_L)
+			m_nodeList = new _Node[(int)((m_U+m_L)*1.2)];//create sufficient space 
+		
+		for(int i=0; i<m_U; i++)
+			m_nodeList[i] = new _Node(getTestDoc(i).getYLabel(), m_classifier.predict(getTestDoc(i)));
+		
+		for(int i=m_U; i<m_U + m_L; i++)
+			m_nodeList[i] = new _Node(getLabeledDoc(i-m_U).getYLabel());
 	}
 	
 	public _Doc getTestDoc(int i) {
@@ -187,24 +161,19 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected void calcSimilarityInThreads(){
-		//using all the available CPUs!
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
-		int start = 0, end;
-		double avgCost = (m_U * m_L + 0.5 * (m_U-1) * m_U)/cores, cost;
-		System.out.format("Construct graph in parallel: L: %d, U: %d\n",  m_L, m_U);
-		for(int i=0; i<cores; i++) {	
+		int start = 0, end, load = m_U/cores;
+		System.out.format("Construct nearest neighbor graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		for(int i=0; i<cores; i++) {
 			if (i==cores-1)
 				end = m_U;
-			else {
-				cost = avgCost;
-				for(end = start; end<m_U && cost>=0; end++)
-					cost -= m_L + (m_U-end-1);
-			}
+			else
+				end = start + load;
 			
 			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
-			
 			start = end;
+			
 			m_threadpool[i].start();
 		}
 		
@@ -218,92 +187,58 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	void SimilarityCheck() {
-		_Doc d, neighbor;
+		_Node node;
+		_Edge neighbor;
+		
 		int y;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
 		double[][][] total = new double[3][2][2];
-		double similiarty;
 		
-		m_kUL.clear();
-		m_kUU.clear();
-		
-		try {
-			BufferedWriter writer = null;
-			if (m_outputPlot)
-				writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("./data/matlab/test.dat"), "UTF-8"));//fixed file location for curve plotting
+		for(int i = 0; i < m_U; i++) {
+			node = m_nodeList[i];//nearest neighbor graph
+			y = (int)node.m_label;
+			
+			/****Check the nearest unlabeled neighbors******/
+			double precision = 0;
+			for(int pos=0; pos<m_kPrime; pos++){
+				neighbor = node.m_unlabeledEdges.get(pos);
 				
-			for(int i = 0; i < m_U; i++) {
-				d = getTestDoc(i);
-				y = d.getYLabel();//ground-truth label
+				if (getLabel(neighbor.getPred()) == y)//neighbor's prediction against the ground-truth
+					precision ++;
 				
-				/****Get the nearest neighbors of k'UU******/
-				for (int j = 0; j < m_U; j++) {
-					if (j == i)
-						continue;
-					similiarty = getCache(i, j);
-					m_kUU.add(new _RankItem(j, similiarty));
-					
-					if (m_outputPlot && Math.random()<0.05)
-						writer.write(String.format("%s %.5f\n", y==getTestDoc(j).getYLabel(), similiarty));
-				}			
-				
-				int pos = 0;
-				double precision = 0;
-				for(_RankItem n: m_kUU){
-					neighbor = getTestDoc(n.m_index);
-					if (getLabel(m_fu[n.m_index]) == y)//prediction against the ground-truth
-						precision ++;
-					pos ++;
-					
-					if (pos==5) {
-						prec[0][y][0] += precision/pos;
-						total[0][y][0] ++;
-					} else if (pos==10) {
-						prec[1][y][0] += precision/pos;
-						total[1][y][0] ++;
-					} else if (pos==20) {
-						prec[2][y][0] += precision/pos;
-						total[2][y][0] ++;
-						break;
-					}
+				if (pos==4) {
+					prec[0][y][0] += precision/5.0;
+					total[0][y][0] ++;
+				} else if (pos==9) {
+					prec[1][y][0] += precision/10.0;
+					total[1][y][0] ++;
+				} else if (pos==19) {
+					prec[2][y][0] += precision/20.0;
+					total[2][y][0] ++;
+					break;
 				}
-				m_kUU.clear();
-				
-				/****Get the nearest neighbors of k'UL******/
-				for (int j = 0; j < m_L; j++) {
-					similiarty = getCache(i, m_U + j);
-					m_kUL.add(new _RankItem(j, similiarty));
-					if (m_outputPlot && Math.random()<0.05)
-						writer.write(String.format("%s %.5f\n", y==getLabeledDoc(j).getYLabel(), similiarty));
-				}
-				
-				precision = 0;
-				pos = 0;
-				for(_RankItem n: m_kUL){
-					neighbor = getLabeledDoc(n.m_index);
-					if (neighbor.getYLabel() == y)
-						precision ++;
-					pos ++;
-					
-					if (pos==5) {
-						prec[0][y][1] += precision/pos;
-						total[0][y][1] ++;
-					} else if (pos==10) {
-						prec[1][y][1] += precision/pos;
-						total[1][y][1] ++;
-					} else if (pos==20) {
-						prec[2][y][1] += precision/pos;
-						total[2][y][1] ++;
-						break;
-					}
-				}
-				m_kUL.clear();
 			}
 			
-			if (writer!=null)
-				writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+			/****Check the nearest labeled neighbors******/
+			precision = 0;
+			for(int pos=0; pos<m_k; pos++){
+				neighbor = node.m_labeledEdges.get(pos);
+				
+				if ((int)neighbor.getLabel() == y)//neighbor's true label against the ground-truth
+					precision ++;
+				
+				if (pos==4) {
+					prec[0][y][1] += precision/5.0;
+					total[0][y][1] ++;
+				} else if (pos==9) {
+					prec[1][y][1] += precision/10.0;
+					total[1][y][1] ++;
+				} else if (pos==19) {
+					prec[2][y][1] += precision/20.0;
+					total[2][y][1] ++;
+					break;
+				}
+			}
 		}
 		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
 		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
@@ -312,27 +247,9 @@ public class GaussianFields extends BaseClassifier {
 		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
 	}
 	
-	protected void constructGraph(boolean createSparseGraph) {
-		m_L = m_labeled.size();
-		m_U = m_testSet.size();
-		
-		/*** Set up cache structure for efficient computation. ****/
-		initCache();
-		if (m_fu==null || m_fu.length<m_U)
-			m_fu = new double[m_U]; //otherwise we can reuse the current memory
-		if (m_Y==null || m_Y.length<m_U+m_L)
-			m_Y = new double[m_U+m_L];
-		
+	protected void constructGraph(boolean createSparseGraph) {		
 		/*** pre-compute the full similarity matrix (except the diagonal) in parallel. ****/
 		calcSimilarityInThreads();
-		
-		//set up the Y vector for labeled data
-		for(int i=m_U; i<m_L+m_U; i++)
-			m_Y[i] = m_labeled.get(i-m_U).getYLabel();
-		
-		/***Set up structure for k nearest neighbors.****/
-		m_kUU = new MyPriorityQueue<_RankItem>(m_kPrime);
-		m_kUL = new MyPriorityQueue<_RankItem>(m_k);
 		
 		/***Set up document mapping for debugging purpose***/
 		if (m_debugOutput!=null) {
@@ -344,63 +261,62 @@ public class GaussianFields extends BaseClassifier {
 			System.out.println("Nearest neighbor graph construction finished!");
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
 		}
-		
-		m_graph = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);//we have to create this every time with exact dimension
-		
-		/****Construct the C+scale*\Delta matrix and Y vector.****/
-		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
-		int nz = 0;
-		for(int i = 0; i < m_U; i++) {
-			//set the part of unlabeled nodes. U-U
-			for(int j=0; j<m_U; j++) {
-				if (j==i)
-					continue;
-				
-				m_kUU.add(new _RankItem(j, getCache(i,j)));
-			}
-			
-			sum = 0;
-			for(_RankItem n:m_kUU) {
-				value = Math.max(m_beta*n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
-				if (value!=0) {
-					m_graph.setQuick(i, n.m_index, scale * value);
-					m_graph.setQuick(n.m_index, i, scale * value);
-					sum += value;
-					nz ++;
-				}
-			}
-			m_kUU.clear();
-			
-			//Set the part of labeled and unlabeled nodes. L-U and U-L
-			for(int j=0; j<m_L; j++) 
-				m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)));
-			
-			for(_RankItem n:m_kUL) {
-				value = Math.max(n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
-				if (value!=0) {
-					m_graph.setQuick(i, n.m_index, scale * value);
-					m_graph.setQuick(n.m_index, i, scale * value);
-					sum += value;
-					nz ++;
-				}
-			}
-			m_graph.setQuick(i, i, 1-scale*sum);
-			m_kUL.clear();
-		}
-		
-		for(int i=m_U; i<m_L+m_U; i++) {
-			sum = 0;
-			for(int j=0; j<m_U; j++) 
-				sum += m_graph.getQuick(i, j);
-			m_graph.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
-		}
-		
-		System.out.format("Nearest neighbor graph (U[%d], L[%d], NZ[%d]) construction finished!\n", m_U, m_L, nz);
+
+//		the following needs to be carefully revised accordingly!	
+//		m_graph = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);//we have to create this every time with exact dimension
+//		
+//		/****Construct the C+scale*\Delta matrix and Y vector.****/
+//		double scale = -m_alpha / (m_k + m_beta*m_kPrime), sum, value;
+//		int nz = 0;
+//		_Node node;
+//		for(int i = 0; i < m_U; i++) {
+//			node = m_nodeList[i];
+//			
+//			//set the part of unlabeled nodes. U-U			
+//			sum = 0;
+//			for(_RankItem n:m_kUU) {
+//				value = Math.max(m_beta*n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
+//				if (value!=0) {
+//					m_graph.setQuick(i, n.m_index, scale * value);
+//					m_graph.setQuick(n.m_index, i, scale * value);
+//					sum += value;
+//					nz ++;
+//				}
+//			}
+//			m_kUU.clear();
+//			
+//			//Set the part of labeled and unlabeled nodes. L-U and U-L
+//			for(int j=0; j<m_L; j++) 
+//				m_kUL.add(new _RankItem(m_U+j, getCache(i,m_U+j)));
+//			
+//			for(_RankItem n:m_kUL) {
+//				value = Math.max(n.m_value, m_graph.getQuick(i, n.m_index)/scale);//recover the original Wij
+//				if (value!=0) {
+//					m_graph.setQuick(i, n.m_index, scale * value);
+//					m_graph.setQuick(n.m_index, i, scale * value);
+//					sum += value;
+//					nz ++;
+//				}
+//			}
+//			m_graph.setQuick(i, i, 1-scale*sum);
+//			m_kUL.clear();
+//		}
+//		
+//		for(int i=m_U; i<m_L+m_U; i++) {
+//			sum = 0;
+//			for(int j=0; j<m_U; j++) 
+//				sum += m_graph.getQuick(i, j);
+//			m_graph.setQuick(i, i, m_M-sum); // scale has been already applied in each cell
+//		}
+//		
+//		System.out.format("Nearest neighbor graph (U[%d], L[%d], NZ[%d]) construction finished!\n", m_U, m_L, nz);
 	}
 	
 	//Test the data set.
 	@Override
 	public double test(){	
+		_Node node;
+		
 		/***Construct the nearest neighbor graph****/
 		constructGraph(true);
 		
@@ -410,24 +326,26 @@ public class GaussianFields extends BaseClassifier {
 		
 		/***setting up the corresponding weight for the true labels***/
 		for(int i=m_U; i<m_L+m_U; i++)
-			m_Y[i] *= m_M;
+			m_nodeList[i].m_classifierPred *= m_M;
 		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
+			node = m_nodeList[i];
+			
 			double pred = 0;
 			for(int j=0; j<m_U+m_L; j++)
-				pred += result.getQuick(i, j) * m_Y[j];			
-			m_fu[i] = pred;//prediction for the unlabeled based on the labeled data and pseudo labels
+				pred += result.getQuick(i, j) * m_nodeList[j].m_label;			
+			node.m_pred = pred;//prediction for the unlabeled based on the labeled data and pseudo labels
 			
 			for(int j=0; j<m_classNo; j++)
-				m_pYSum[j] += Math.exp(-Math.abs(j-m_fu[i]));			
+				m_pYSum[j] += Math.exp(-Math.abs(j-node.m_pred));			
 		}
 		
 		/***evaluate the performance***/
 		double acc = 0;
 		int pred, ans;
 		for(int i = 0; i < m_U; i++) {
-			pred = getLabel(m_fu[i]);
+			pred = getLabel(m_nodeList[i].m_pred);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
 			

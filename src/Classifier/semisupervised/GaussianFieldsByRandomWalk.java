@@ -5,13 +5,14 @@ import java.util.Arrays;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._RankItem;
+import structures._Edge;
+import structures._Node;
 import utils.Utils;
 
 public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double m_difference; //The difference between the previous labels and current labels.
 	double m_eta; //The parameter used in random walk. 
-	double[] m_fu_last; // result from last round of random walk
+	double[] m_pred_last; // result from last round of random walk
 	
 	double m_delta; // convergence criterion for random walk
 	boolean m_weightedAvg; // random walk strategy: True - weighted average; False - majority vote
@@ -44,9 +45,11 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	@Override
 	public String toString() {
 		if (m_weightedAvg)
-			return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount);
+			return String.format("Gaussian Fields by random walk [C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f]", 
+					m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta);
 		else
-			return String.format("Random walk by majority vote[C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, discount:%.3f, simWeight:%s]", m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_discount, m_simFlag);
+			return String.format("Random walk by majority vote[C:%s, k:%d, k':%d, r:%.3f, alpha:%.3f, beta:%.3f, eta:%.3f, simWeight:%s]", 
+					m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta, m_eta, m_simFlag);
 	}
 	
 	public void setSimilarity(boolean simFlag){
@@ -58,48 +61,33 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
 		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		double wL = m_alpha, wU = m_beta, acc = 0;
-		_Doc d;
+		_Node node;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
+			node = m_nodeList[i];
+			
 			double wijSumU = 0, wijSumL = 0;
 			double fSumU = 0, fSumL = 0;
 			
-			/****Construct the top k' unlabeled data for the current data.****/
-			for (int j = 0; j < m_U; j++) {
-				if (j == i)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(i, j)));
+			/****Walk through the top k' unlabeled neighbor for the current data.****/
+			for (_Edge edge:node.m_unlabeledEdges) {				
+				wijSumU += edge.getSimilarity(); //get the similarity between two nodes.
+				fSumU += edge.getSimilarity() * edge.getPred();
 			}
 			
-			/****Get the sum of k'UU******/
-			for(_RankItem n: m_kUU){
-				wijSumU += n.m_value; //get the similarity between two nodes.
-//				fSumU += n.m_value * m_fu_last[n.m_index];
-				fSumU += n.m_value * m_fu[n.m_index];
+			/****Walk through the top k labeled neighbor for the current data.****/
+			for (_Edge edge:node.m_labeledEdges) {
+				wijSumL += edge.getSimilarity(); //get the similarity between two nodes.
+				fSumL += edge.getSimilarity() * edge.getLabel();
 			}
-			m_kUU.clear();
 			
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
-			
-			/****Get the sum of kUL******/
-			for(_RankItem n: m_kUL){
-				wijSumL += n.m_value;
-				fSumL += n.m_value * m_Y[n.m_index];
-			}
-			m_kUL.clear();
-			
-			m_fu[i] = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * m_Y[i];
-			if (Double.isNaN(m_fu[i])) {
+			node.m_pred = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * node.m_classifierPred;
+			if (Double.isNaN(node.m_pred)) {
 				System.out.format("Encounter NaN in random walk!\nfSumL: %.3f, fSumU: %.3f, wijSumL: %.3f, wijSumU: %.3f\n", fSumL, fSumU, wijSumL, wijSumU);
 				System.exit(-1);				
-			} else {
-				d = getTestDoc(i);
-				if (d.getYLabel() == getLabel(m_fu[i]))
-					acc ++;
-			}
+			} else if ((int)node.m_label == getLabel(node.m_pred))
+				acc ++;
 		}
 		
 		return acc / m_U;
@@ -111,46 +99,36 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		int label;
 //		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
-		_Doc d;
+		_Node node;
 		
 		/**** Construct the C+scale*\Delta matrix and Y vector. ****/
 		for (int i = 0; i < m_U; i++) {
+			node = m_nodeList[i];
 			Arrays.fill(m_cProbs, 0);
 			
-			/****Construct the top k' unlabeled data for the current data.****/
-			for (int j = 0; j < m_U; j++) {
-				if (j == i)
-					continue;				
-				m_kUU.add(new _RankItem(j, getCache(i, j)));
-			}
-			
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(m_U + j, getCache(i, m_U + j)));
-			
-			for(_RankItem n: m_kUU){
-				label = getLabel(m_fu[n.m_index]); //Item n's label.
-				similarity = n.m_value;
-				//We use beta to represent how much we trust the labeled data. The larger, the more trustful.
+			/****Walk through the top k' unlabeled neighbor for the current data.****/
+			for (_Edge edge:node.m_unlabeledEdges) {
+				label = getLabel(edge.getPred()); //Item n's label.
+				similarity = edge.getSimilarity();
+				
 				m_cProbs[label] += m_simFlag?similarity*wU:wU; 
 			}
-			m_kUU.clear();
 			
-			for(_RankItem n: m_kUL){
-				label = (int)m_Y[n.m_index];//Get the item's label from Y array.
-				similarity = n.m_value;
+			/****Walk through the top k labeled neighbor for the current data.****/
+			for (_Edge edge:node.m_labeledEdges) {
+				label = (int)edge.getLabel();
+				similarity = edge.getSimilarity();
 				
 				m_cProbs[label] += m_simFlag?similarity*wL:wL; 
 			}
-			m_kUL.clear();
 			
-			label = (int) m_Y[i];//SVM's predition.
+			/****Multiple learner's prediction.****/
+			label = (int) node.m_classifierPred;
 			m_cProbs[label] += 1-m_eta; 
 			
-			m_fu[i] = Utils.maxOfArrayIndex(m_cProbs);
+			node.m_pred = Utils.maxOfArrayIndex(m_cProbs);
 			
-			d = getTestDoc(i);
-			if (d.getYLabel() == (int)(m_fu[i]))
+			if (node.m_label == node.m_pred)
 				acc ++;
 		}
 		
@@ -160,8 +138,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double updateFu() {
 		m_difference = 0;
 		for(int i = 0; i < m_U; i++){
-			m_difference += Math.abs(m_fu[i] - m_fu_last[i]);
-			m_fu_last[i] = m_fu[i];//record the last result
+			m_difference += Math.abs(m_nodeList[i].m_pred - m_pred_last[i]);
+			m_pred_last[i] = m_nodeList[i].m_pred;//record the last result
 		}
 		return m_difference/m_U;
 	}
@@ -171,14 +149,12 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		/***Construct the nearest neighbor graph****/
 		constructGraph(false);
 		
-		if (m_fu_last==null || m_fu_last.length<m_U)
-			m_fu_last = new double[m_U]; //otherwise we can reuse the current memory
+		if (m_pred_last==null || m_pred_last.length<m_U)
+			m_pred_last = new double[m_U]; //otherwise we can reuse the current memory
 		
-		//initialize fu and fu_last
-		for(int i=0; i<m_U; i++) {
-			m_fu[i] = m_Y[i];
-			m_fu_last[i] = m_Y[i];//random walk starts from multiple learner
-		}
+		//record the starting point
+		for(int i=0; i<m_U; i++)
+			m_pred_last[i] = m_nodeList[i].m_pred;//random walk starts from multiple learner
 		
 		/***use random walk to solve matrix inverse***/
 		System.out.println("Random walk starts:");
@@ -200,7 +176,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
 			for(int j=0; j<m_classNo; j++)
-				m_pYSum[j] += Math.exp(-Math.abs(j-m_fu[i]));			
+				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
 		}
 		
 		/***evaluate the performance***/
@@ -208,7 +184,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		int pred, ans;
 		for(int i = 0; i < m_U; i++) {
 			//pred = getLabel(m_fu[i]);
-			pred = getLabel(m_fu[i]);
+			pred = getLabel(m_nodeList[i].m_pred);
 			ans = m_testSet.get(i).getYLabel();
 			m_TPTable[pred][ans] += 1;
 			
@@ -229,58 +205,52 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	@Override
 	protected void debug(_Doc d){
 		int id = d.getID();
-		_RankItem item;
+		_Node node = m_nodeList[id];
 		double sim, wijSumU=0, wijSumL=0;
 		double fSumU = 0, fSumL = 0;
 		
 		try {
-			m_debugWriter.write(String.format("%d\t%.4f(%d*,%d)\t%d\n", d.getYLabel(), m_fu[id], getLabel(m_fu[id]), getLabel3(m_fu[id]), (int)m_Y[id]));
+			m_debugWriter.write(String.format("%d\t%.4f(%d*,%d)\t%d\n", 
+					d.getYLabel(), //ground-truth
+					node.m_pred, //random walk's raw prediction
+					getLabel(node.m_pred), //map to discrete label
+					getLabel3(node.m_pred), 
+					(int)node.m_classifierPred)); //multiple learner's prediction
 		
 			double mean = 0, sd = 0;
 			//find top five labeled
-			/****Construct the top k labeled data for the current data.****/
-			for (int j = 0; j < m_L; j++)
-				m_kUL.add(new _RankItem(j + m_U, getCache(id, m_U + j)));
-			
-			/****Get the sum of kUL******/
-			for(_RankItem n: m_kUL) {
-				wijSumL += n.m_value; //get the similarity between two nodes.
-				fSumL += n.m_value*m_Y[n.m_index];
-				sd += n.m_value * n.m_value;
+			/****Walk through the top k labeled data for the current data.****/
+			for (_Edge edge:node.m_labeledEdges) {
+				wijSumL += edge.getSimilarity(); //get the similarity between two nodes.
+				fSumL += edge.getSimilarity() * edge.getLabel();
+				
+				sd += edge.getSimilarity() * edge.getSimilarity();
 			}
 			
 			mean = wijSumL / m_k;
 			sd = Math.sqrt(sd/m_k - mean*mean);
 			
-			/****Get the top 5 elements from kUL******/
+			/****Get the top 5 elements from labeled neighbors******/
 			for(int k=0; k<5; k++){
-				item = m_kUL.get(k);
-				sim = item.m_value/wijSumL;
+				_Edge item = node.m_labeledEdges.get(k);
+				sim = item.getSimilarity()/wijSumL;
 				
 				if (k==0)
-					m_debugWriter.write(String.format("L(%.2f)\t[%d:%.4f, ", fSumL/wijSumL, (int)m_Y[item.m_index], sim));
+					m_debugWriter.write(String.format("L(%.2f)\t[%d:%.4f, ", fSumL/wijSumL, (int)item.getLabel(), sim));
 				else if (k==4)
-					m_debugWriter.write(String.format("%d:%.4f]\t%.3f\t%.3f\n", (int)m_Y[item.m_index], sim, mean, sd));
+					m_debugWriter.write(String.format("%d:%.4f]\t%.3f\t%.3f\n", (int)item.getLabel(), sim, mean, sd));
 				else
-					m_debugWriter.write(String.format("%d:%.4f, ", (int)m_Y[item.m_index], sim));
+					m_debugWriter.write(String.format("%d:%.4f, ", (int)item.getLabel(), sim));
 			}
-			m_kUL.clear();
-			mean = 0;
 			sd = 0;
 			
 			//find top five unlabeled
 			/****Construct the top k' unlabeled data for the current data.****/
-			for (int j = 0; j < m_U; j++) {
-				if (j == id)
-					continue;
-				m_kUU.add(new _RankItem(j, getCache(id, j)));
-			}
-			
-			/****Get the sum of k'UU******/
-			for(_RankItem n: m_kUU) {
-				wijSumU += n.m_value; //get the similarity between two nodes.
-				fSumU += n.m_value*m_fu[n.m_index];
-				sd += n.m_value * n.m_value;
+			for (_Edge edge:node.m_unlabeledEdges) {
+				wijSumU += edge.getSimilarity(); //get the similarity between two nodes.
+				fSumU += edge.getSimilarity() * edge.getPred();
+				
+				sd += edge.getSimilarity() * edge.getSimilarity();
 			}
 			
 			mean = wijSumU / m_kPrime;
@@ -288,17 +258,16 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			
 			/****Get the top 5 elements from k'UU******/
 			for(int k=0; k<5; k++){
-				item = m_kUU.get(k);
-				sim = item.m_value/wijSumU;
+				_Edge item = node.m_unlabeledEdges.get(k);
+				sim = item.getSimilarity()/wijSumU;
 				
 				if (k==0)
-					m_debugWriter.write(String.format("U(%.2f)\t[%.2f:%.4f, ", fSumU/wijSumU, m_fu[item.m_index], sim));
+					m_debugWriter.write(String.format("U(%.2f)\t[%.2f:%.4f, ", fSumU/wijSumU, item.getPred(), sim));
 				else if (k==4)
-					m_debugWriter.write(String.format("%.2f:%.4f]\t%.3f\t%.3f\n", m_fu[item.m_index], sim, mean, sd));
+					m_debugWriter.write(String.format("%.2f:%.4f]\t%.3f\t%.3f\n", item.getPred(), sim, mean, sd));
 				else
-					m_debugWriter.write(String.format("%.2f:%.4f, ", m_fu[item.m_index], sim));
+					m_debugWriter.write(String.format("%.2f:%.4f, ", item.getPred(), sim));
 			}
-			m_kUU.clear();
 			m_debugWriter.write("\n");		
 		} catch (IOException e) {
 			e.printStackTrace();
