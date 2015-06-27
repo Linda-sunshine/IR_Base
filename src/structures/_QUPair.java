@@ -57,6 +57,11 @@ public class _QUPair implements Comparable<_QUPair>{
 	
 	public double score(double[] w){
 		m_score = Utils.dotProduct(w, m_rankFv);
+		if(Double.isNaN(m_score)){
+			System.out.println("Nan in score!");
+			m_score = Utils.dotProduct(w, m_rankFv);
+		}
+			
 		return m_score;
 	}
 	

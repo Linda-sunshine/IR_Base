@@ -16,6 +16,9 @@ import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.supervised.KNN;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
 
 public class MyTransductiveMain {
@@ -58,7 +61,7 @@ public class MyTransductiveMain {
 		
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SEMI";
+		String style = "SUP";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
@@ -160,6 +163,8 @@ public class MyTransductiveMain {
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(c, C);
 			mySVM.crossValidation(CVFold, c);
+//			SVM mySVM = new SVM(c, C);
+//			mySVM.crossValidation(CVFold, c);
 		}
 	}
 }

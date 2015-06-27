@@ -87,6 +87,8 @@ public class LambdaRank {
 			if (pair.m_betterURLs!=null){
 				for(_QUPair betterURL:pair.m_betterURLs){//force to moving down
 					diff -= Utils.logistic(pair.m_score-betterURL.m_score) * m_eval.delta(betterURL, pair);
+					if(Double.isNaN(diff))
+						System.out.println("Nan in gradient update!");
 					trainSize ++;
 				}
 			}

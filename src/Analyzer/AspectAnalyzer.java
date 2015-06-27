@@ -345,7 +345,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
-			doc.setSentiScore(sentiScore/count);
+			if(count == 0)
+				doc.setSentiScore(0);
+			else
+				doc.setSentiScore(sentiScore/count);
 
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;

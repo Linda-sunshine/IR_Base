@@ -775,9 +775,11 @@ public class Utils {
 				sum1 += t1[i] * t1[i];
 				sum2 += t2[i] * t2[i];
 			}
-			sum1 = Math.sqrt(sum1);
-			sum2 = Math.sqrt(sum2);
-			similarity = similarity / (sum1 * sum2);
+			if(sum1 != 0 && sum2 != 0){
+				sum1 = Math.sqrt(sum1);
+				sum2 = Math.sqrt(sum2);
+				similarity = similarity / (sum1 * sum2);
+			} else similarity = 0;
 		}
 		return similarity;
 	}
