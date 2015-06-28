@@ -504,7 +504,7 @@ public class _Doc implements Comparable<_Doc> {
 				tagvector[0]++;
 			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
 				tagvector[1]++;
-			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG") || tag.equalsIgnoreCase("NNPS"))
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
 				tagvector[2]++;
 			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
 				tagvector[3]++;
