@@ -11,6 +11,7 @@ import structures._Edge;
 import structures._Node;
 import utils.Utils;
 import Classifier.BaseClassifier;
+import Classifier.semisupervised.PairwiseSimCalculator.ActionType;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
@@ -124,16 +125,6 @@ public class GaussianFields extends BaseClassifier {
 		//set up labeled and unlabeled instance size
 		m_U = m_testSet.size();
 		m_L = m_labeled.size();
-				
-		//create the node list for constructing the nearest neighbor graph
-		if (m_nodeList==null || m_nodeList.length < m_U+m_L)
-			m_nodeList = new _Node[(int)((m_U+m_L)*1.2)];//create sufficient space 
-		
-		for(int i=0; i<m_U; i++)
-			m_nodeList[i] = new _Node(getTestDoc(i).getYLabel(), m_classifier.predict(getTestDoc(i)));
-		
-		for(int i=m_U; i<m_U + m_L; i++)
-			m_nodeList[i] = new _Node(getLabeledDoc(i-m_U).getYLabel());
 	}
 	
 	public _Doc getTestDoc(int i) {
@@ -160,18 +151,17 @@ public class GaussianFields extends BaseClassifier {
 		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
-	protected void calcSimilarityInThreads(){
+	protected void WaitUntilFinish(ActionType atype) {
 		int cores = Runtime.getRuntime().availableProcessors();
-		m_threadpool = new Thread[cores];
 		int start = 0, end, load = m_U/cores;
-		System.out.format("Construct nearest neighbor graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		
 		for(int i=0; i<cores; i++) {
 			if (i==cores-1)
 				end = m_U;
 			else
 				end = start + load;
 			
-			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end));
+			m_threadpool[i] = new Thread(new PairwiseSimCalculator(this, start, end, atype));
 			start = end;
 			
 			m_threadpool[i].start();
@@ -184,6 +174,25 @@ public class GaussianFields extends BaseClassifier {
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	protected void calcSimilarityInThreads(){
+		//create the node list for constructing the nearest neighbor graph
+		if (m_nodeList==null || m_nodeList.length < m_U+m_L)
+			m_nodeList = new _Node[(int)((m_U+m_L)*1.2)];//create sufficient space 			
+
+		//fill in the labeled parts
+		for(int i=m_U; i<m_U + m_L; i++)
+			m_nodeList[i] = new _Node(getLabeledDoc(i-m_U).getYLabel());
+		
+		int cores = Runtime.getRuntime().availableProcessors();
+		m_threadpool = new Thread[cores];
+
+		System.out.format("Construct graph nodes in parallel: L: %d, U: %d\n",  m_L, m_U);
+		WaitUntilFinish(ActionType.AT_node);
+		
+		System.out.format("Construct nearest neighbor graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		WaitUntilFinish(ActionType.AT_graph);
 	}
 	
 	void SimilarityCheck() {
@@ -394,7 +403,7 @@ public class GaussianFields extends BaseClassifier {
 	
 	@Override
 	public int predict(_Doc doc) {
-		return -1; //we don't support this in transductive learning
+		return m_classifier.predict(doc); //we don't support this in transductive learning
 	}
 	
 	@Override

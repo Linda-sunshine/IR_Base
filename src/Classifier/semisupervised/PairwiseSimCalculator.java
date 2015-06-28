@@ -6,20 +6,35 @@ import structures._Node;
 import structures._RankItem;
 
 public class PairwiseSimCalculator implements Runnable {
-
+	
+	public enum ActionType {
+		AT_node,
+		AT_graph
+	}
+	
 	//pointer to the Gaussian Field object to calculate similarity in parallel
 	GaussianFields m_GFObj; 
 	int m_start, m_end;
+	ActionType m_aType;
 	
 	//in the range of [start, end)
-	public PairwiseSimCalculator(GaussianFields obj, int start, int end) {
+	public PairwiseSimCalculator(GaussianFields obj, int start, int end, ActionType atype) {
 		m_GFObj = obj;
 		m_start = start;
 		m_end = end;
+		m_aType = ActionType.AT_node;
+		m_aType = atype;
 	}
-
-	@Override
-	public void run() {
+	
+	void constructNodes() {
+		_Doc d;
+		for (int i = m_start; i < m_end; i++) {
+			d = m_GFObj.getTestDoc(i);
+			m_GFObj.m_nodeList[i] = new _Node(d.getYLabel(), m_GFObj.predict(d));
+		}
+	}
+	
+	void constructNearestGraph() {
 		_Doc di, dj;
 		double similarity;
 		
@@ -58,6 +73,14 @@ public class PairwiseSimCalculator implements Runnable {
 		}	
 		
 		System.out.format("[%d,%d) finished...\n", m_start, m_end);
+	}
+
+	@Override
+	public void run() {
+		if (m_aType.equals(ActionType.AT_graph))
+			constructNearestGraph();
+		else
+			constructNodes();
 	}
 
 }
