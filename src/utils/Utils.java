@@ -226,6 +226,13 @@ public class Utils {
 			a[i] = b[i] * scale;
 	}
 	
+	static public void add2Array(double[] vct, double[] add, double weight){
+		if (vct.length != add.length)
+			return;
+		for(int i=0; i<vct.length; i++)
+			vct[i] += weight * add[i];
+	}
+	
 	//L1 normalization: fsValue/sum(abs(fsValue))
 	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package Ranker;
 
 import java.util.ArrayList;
