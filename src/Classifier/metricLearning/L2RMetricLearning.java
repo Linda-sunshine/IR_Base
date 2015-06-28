@@ -17,6 +17,8 @@ import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
 import Ranker.LambdaRank;
+import Ranker.LambdaRank.OptimizationType;
+import Ranker.LambdaRankParallel;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
@@ -106,8 +108,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			w = m_rankSVM.getFeatureWeights();			
 		} else {//all the rest use LambdaRank with different evaluator
-			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries);
-			m_lambdaRank.train(300, 20, 1.0);//lambdaRank specific parameters
+			/**** single-thread version ****/
+			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
+			m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
+			
+			/**** multi-thread version ****/
+//			m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
+//			m_lambdaRank.train(100, 20, 1.0, 0.98);//lambdaRank specific parameters
 			
 			w = m_lambdaRank.getWeights();
 		}

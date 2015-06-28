@@ -8,6 +8,7 @@ import structures._Query;
 import utils.Utils;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
+import Ranker.evaluator.NDCG_Evaluator;
 import cern.jet.random.tdouble.Normal;
 
 /**
@@ -16,6 +17,14 @@ import cern.jet.random.tdouble.Normal;
  */
 public class LambdaRank {
 
+	public enum OptimizationType {
+		OT_MAP,
+		OT_NDCG,
+		OT_PAIR
+	}
+	
+	static final int NDCG_K = 40; 
+	
 	double m_lambda;
 	int m_trainingSize;
 	
@@ -24,15 +33,21 @@ public class LambdaRank {
 	double[] m_weight; // feature weight
 	double[] m_g;//gradient
 	
-	Evaluator m_eval = new MAP_Evaluator();//relevance should be larger than threshold 
-	//Evaluator m_eval = new NDCG_Evaluator(20);
-	//Evaluator m_eval = new Evaluator();
+	OptimizationType m_oType;
+	Evaluator m_eval;
 	
-	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries) {
-		super();
+	public LambdaRank(int featureSize, double lambda, ArrayList<_Query> queries, OptimizationType otype) {
 		m_lambda = lambda;
 		m_queries = queries;
 		m_weight = new double[featureSize];
+		
+		m_oType = otype;
+		if (otype.equals(OptimizationType.OT_MAP))
+			m_eval = new MAP_Evaluator();
+		else if (otype.equals(OptimizationType.OT_NDCG))
+			m_eval = new NDCG_Evaluator(NDCG_K);
+		else
+			m_eval = new Evaluator();
 		m_eval.setRate(0.5);
 	}
 	
@@ -98,7 +113,7 @@ public class LambdaRank {
 		return trainSize;
 	}
 	
-	protected double evaluate(double lambda, boolean print){
+	protected double evaluate(){
 		double obj = 0, perf = 0, total = 0, r;
 		int misorder = 0;
 		
@@ -129,14 +144,20 @@ public class LambdaRank {
 			}
 		}		
 		
-		if (print){
-			obj = obj - 0.5 * lambda * Utils.L2Norm(m_weight);//to be maximized
-			System.out.format("%d\t%.4f\t%.4f\n", misorder/2, obj, perf/total);
-		}
-		return perf/total;
+		perf /= total;
+		obj -= 0.5 * m_lambda * Utils.L2Norm(m_weight);//to be maximized
+		System.out.format("%d\t%.2f\t%.4f\n", misorder/2, obj, perf);
+		
+		return perf;
 	}
 	
-	public void train(int maxIter, int k, double initStep){
+	public void train(int maxIter, int windowSize, double initStep, double shrinkage){
+		//output the settings
+		System.out.println("[Info]LambdaRank configuration:");
+		System.out.format("\tOptimization Type %s, Lambda %.3f, Shrinkage %.3f, WindowSize %d\n", m_oType, m_lambda, shrinkage, windowSize);
+		System.out.format("\tInitial step size %.1f, Steps %d\n", initStep, maxIter);
+		System.out.println("Misorder\tLogLilikelihood\tPerf");
+		
 		init();		
 		double step = initStep, mu;		
 		int qid, i, j, pSize;
@@ -147,7 +168,7 @@ public class LambdaRank {
 				pSize = 0;
 				Arrays.fill(m_g, 0.0);
 				
-				for(j=0; j<k; j++){//collect the gradients in mini-batch
+				for(j=0; j<windowSize; j++){//collect the gradients in mini-batch
 					pSize += gradientUpdate(m_queries.get(m_order[qid%m_trainingSize]));
 					qid ++;
 				}
@@ -159,14 +180,11 @@ public class LambdaRank {
 				mu = Math.random()*step;
 				for(i=0; i<m_weight.length; i++)
 					m_weight[i] -= mu * m_g[i];
-			}
-						
-			if (n%4==0){
-				step *= 0.9;
-				if (n%20==0){
-					evaluate(m_lambda, true);
-				}
-			}
+			}			
+			
+			step *= shrinkage;
+			if (n%50==0)
+				evaluate();
 		}
 	}
 }
