@@ -65,9 +65,9 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int[] m_aspectDist; // distribution of aspects (count in DF)
 	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo,
-			String providedCV, int Ngram, int threshold)
+			String providedCV, int Ngram, int threshold, String posModel)
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		
 	}
 
@@ -237,6 +237,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
+		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
 		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
 		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
 		
@@ -246,7 +247,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		/****Loading json files*****/
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, posModel);
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		

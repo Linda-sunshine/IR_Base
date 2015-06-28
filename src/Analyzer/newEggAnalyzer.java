@@ -40,9 +40,9 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	}
 
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
-			int Ngram, int threshold, String stnModel, String category)
+			int Ngram, int threshold, String stnModel, String posModel, String category)
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		
 		m_category = category;
 	}
@@ -223,8 +223,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
-			
-			doc.setSentencesWithLabels(stnList,stnLabel);
+			doc.setSentencesWithLabels(stnList, stnLabel);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			return true;

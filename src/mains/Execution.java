@@ -44,6 +44,7 @@ public class Execution  {
 		System.out.println(param.toString());
 		
 		String stnModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_stnModel:null;
+		String posModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_posModel:null;
 		
 		_Corpus corpus;
 		Analyzer analyzer;
@@ -56,11 +57,10 @@ public class Execution  {
 		} else {
 			/***Load the data from text file***/
 			if (param.m_suffix.equals(".json"))
-				analyzer = new jsonAnalyzer(param.m_tokenModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel);
+				analyzer = new jsonAnalyzer(param.m_tokenModel,param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel, posModel);	
 			else
-				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 			((DocAnalyzer)analyzer).setReleaseContent(!param.m_weightScheme.equals("PR"));
-			
 			if (param.m_featureFile==null) {
 				/****Pre-process the data.*****/
 				//Feture selection.

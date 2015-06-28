@@ -19,6 +19,8 @@ public class _Stn {
 	// tructure for LR-HTSM
 	double[] m_sentitransitFv; // features for determine sentiment transition
 	double m_sentitransit; // posterior sentiment transit probability
+	
+	String[] m_sentencePOSTag;
 
 	
 	//structure for topic assignment
@@ -31,7 +33,7 @@ public class _Stn {
 		m_x_sparse = x;
 		
 		m_transitFv = new double[_Doc.stn_fv_size];
-		m_sentitransitFv = new double[_Doc.stn_fv_size];
+		m_sentitransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 	
 	public _Stn(_SparseFeature[] x, int label) {
@@ -49,6 +51,14 @@ public class _Stn {
 		m_label = label;
 	}
 
+	public void setSentencePosTag(String[] sentenceposTags){
+		m_sentencePOSTag = sentenceposTags;
+	}
+	
+	public String[] getSentencePosTag(){
+		return m_sentencePOSTag;
+	}
+	
 	
 	public int getSentenceLabel(){
 		return m_label;

@@ -30,6 +30,7 @@ public class _Corpus {
 	public SentiWordNetDemoCode sentiwordnet;
 	public ArrayList<String> m_pospriorlist;
 	public ArrayList<String> m_negpriorlist;
+	public ArrayList<String> m_negationlist;
 	
 	
 	
@@ -130,9 +131,12 @@ public class _Corpus {
 	{
 		String pathToposwords = "./data/Model/SentiWordsPos.txt";
 		String pathTonegwords = "./data/Model/SentiWordsNeg.txt";
+		String pathTonegationwords = "./data/Model/negation_words.txt";
 		
 		m_pospriorlist = new ArrayList<String>();
 		m_negpriorlist = new ArrayList<String>();
+		m_negationlist = new ArrayList<String>();
+		
 		
 		BufferedReader file = null;
 		try {
@@ -145,6 +149,11 @@ public class _Corpus {
 			file = new BufferedReader(new FileReader(pathTonegwords));
 			while ((line = file.readLine()) != null) {
 				m_negpriorlist.add(line);
+			}
+			
+			file = new BufferedReader(new FileReader(pathTonegationwords));
+			while ((line = file.readLine()) != null) {
+				m_negationlist.add(line);
 			}
 		}
 		catch (Exception e) {

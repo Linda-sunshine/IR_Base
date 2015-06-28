@@ -61,7 +61,7 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 4; // cosine, sentiWordNetscore, prior_positive_negative_count
+	static public final int stn_senti_fv_size = 6; // cosine, sentiWordNetscore, prior_positive_negative_count, KL-divergence between tags
 	
 	_Stn[] m_sentences;
 	
@@ -253,6 +253,11 @@ public class _Doc implements Comparable<_Doc> {
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
 	
+	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
+	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i].setSentencePosTag(stnPoslist.get(i));
+	}
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
 		m_sentences = new _Stn[stnList.size()];
@@ -366,9 +371,10 @@ public class _Doc implements Comparable<_Doc> {
 	public void setSentenceFeatureVectorForSentiment() {
 		// start from 2nd sentence
 		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
+		double pKL = Utils.klDivergence(calculatePOStagVector(0),calculatePOStagVector(1)), nKL;
 		double pSenscore = sentiWordScore(0), cSenscore;
 		int pposneg=posnegcount(0),cposneg;
-		
+		int pnegationcount=negationCount(0),cnegationcount;
 		int stnSize = getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
@@ -399,6 +405,28 @@ public class _Doc implements Comparable<_Doc> {
 					m_sentences[i-1].m_sentitransitFv[3] = -1;
 				pSim = nSim;
 			}
+			
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nKL = Utils.klDivergence(calculatePOStagVector(i),calculatePOStagVector(i+1));
+				if (nKL>pKL)
+					m_sentences[i-1].m_sentitransitFv[4] = 1;
+				else if (nKL<pKL)
+					m_sentences[i-1].m_sentitransitFv[4] = -1;
+				pKL = nKL;
+			}
+			
+			//positive negative count 
+			cnegationcount = negationCount(i);
+			if(pnegationcount==0 && cnegationcount>0)
+				m_sentences[i-1].m_sentitransitFv[5] = 1; // transition
+			else if (pnegationcount>0 && cnegationcount==0)
+				m_sentences[i-1].m_sentitransitFv[5] = 1; // transition
+			else
+				m_sentences[i-1].m_sentitransitFv[5] = -1; // no transition
+			pnegationcount = cnegationcount;
+			
+			
 		}
 	}
 	
@@ -418,7 +446,7 @@ public class _Doc implements Comparable<_Doc> {
 			if(tmp!=-2) // word found in SentiWordNet
 				senscore+=tmp;
 		}
-		return senscore;
+		return senscore/wordsinsentence.length;
 	}
 	
 	// receive sentence index as parameter
@@ -447,6 +475,42 @@ public class _Doc implements Comparable<_Doc> {
 			return 0; // sentence is neutral or no match
 	}
 	
+	// receive sentence index as parameter
+	public int negationCount(int i)
+	{
+		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		int negationcount = 0;
+		
+		for(_SparseFeature word:wordsinsentence){
+			index = word.getIndex();
+			token = m_corpus.m_features.get(index);
+			if(m_corpus.m_negationlist.contains(token))
+				negationcount++;
+		}
+		return negationcount;
+	}
+	
+	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
+	// here i the index of the sentence
+	public double[] calculatePOStagVector(int i){
+		String[] posTag = m_sentences[i].getSentencePosTag();
+		double tagvector[] = new double[4]; // index = 0 for noun, index = 1 for adjective, index = 2 for verb
+		// index = 3 for adverb
+		tagvector[0]= tagvector[1] = tagvector[2]  = tagvector[3] = 0.0;
+		for(String tag:posTag){
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tagvector[0]++;
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tagvector[1]++;
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG") || tag.equalsIgnoreCase("NNPS"))
+				tagvector[2]++;
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tagvector[3]++;
+		}
+		return tagvector;
+	}
 	
 	// used by LR-HTMM for constructing transition features
 	public void setSentenceFeatureVector() {

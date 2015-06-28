@@ -1,6 +1,7 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -12,12 +13,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import opennlp.tools.cmdline.postag.POSModelLoader;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.postag.POSTaggerME;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -31,6 +35,7 @@ public class DocAnalyzer extends Analyzer {
 	protected Tokenizer m_tokenizer;
 	protected SnowballStemmer m_stemmer;
 	protected SentenceDetectorME m_stnDetector;
+	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
 	 
 	protected boolean m_releaseContent;
@@ -49,7 +54,7 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//Constructor with ngram and fValue and sentence check.
-	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
@@ -58,6 +63,10 @@ public class DocAnalyzer extends Analyzer {
 			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
 		else
 			m_stnDetector = null;
+		if (posModel!=null)
+			m_tagger = new POSTaggerME(new POSModelLoader().load(new File(posModel)));
+		else
+			m_tagger = null;
 		
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
@@ -265,14 +274,18 @@ public class DocAnalyzer extends Analyzer {
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
+		
 		int y = doc.getYLabel();
 		
 		for(String sentence : sentences) {
-			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.	
+			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+			String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
 			String[] tokens = result.getTokens();		
 			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
+				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
 			}
 		} // End For loop for sentence	
@@ -281,6 +294,7 @@ public class DocAnalyzer extends Analyzer {
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
+			doc.setSentencesPOSTag(stnPosList);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			

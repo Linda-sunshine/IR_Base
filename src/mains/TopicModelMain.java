@@ -30,7 +30,7 @@ public class TopicModelMain {
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int topK = 20, number_of_iteration = 100, crossV = 1;
+		int topK = 10, number_of_iteration = 100, crossV = 1;
 		boolean display = true, logSpace = false;
 		
 		/*****The parameters used in loading files.*****/
@@ -38,13 +38,19 @@ public class TopicModelMain {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
+		String posModel = null;
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
+		{
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+			posModel = "./data/Model/en-pos-maxent.bin"; // POS model.
+		}
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_tablet.txt";
+		//String aspectlist = "./data/Model/aspect_tablet.txt";
+		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
+		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
@@ -59,7 +65,7 @@ public class TopicModelMain {
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
+		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
