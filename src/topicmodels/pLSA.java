@@ -61,6 +61,10 @@ public class pLSA extends twoTopic {
 			ArrayList<double[]> priorWords = new ArrayList<double[]>();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			while( (tmpTxt=reader.readLine()) != null ){
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+				
 				container = tmpTxt.split(" ");
 				wCount = 0;
 				prior = new double[vocabulary_size];
