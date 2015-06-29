@@ -21,8 +21,10 @@ public class _Doc implements Comparable<_Doc> {
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the review.
+	
 	String m_source; //The content of the source file.
 	int m_totalLength; //The total length of the document.
+	
 	int m_y_label; // classification target, that is the index of the labels.
 	int m_predict_label; //The predicted result.
 	double m_y_value; // regression target, like linear regression only has one value.	
@@ -33,12 +35,9 @@ public class _Doc implements Comparable<_Doc> {
 		
 	//p(z|d) for topic models in general
 	public double[] m_sentiment;
-	// structure only used by variational inference
-	public double[][] m_phi; // p(z|w, \phi)	
-	Random m_rand;
+	
 		
 	//only used in learning to rank for random walk
-	public double[] m_rankingFvs; // dense vector for ranking features
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
@@ -89,18 +88,14 @@ public class _Doc implements Comparable<_Doc> {
 	public int[] m_words; 
 	public int[] m_topicAssignment;
 	
+	// structure only used by variational inference
+	public double[][] m_phi; // p(z|w, \phi)	
+	Random m_rand;
+	
 	public double getSentiScore(){
 		return this.m_sentiScore;
 	}
-	
-	public double[] getRankingFvs() {
-		return m_rankingFvs;
-	}
 
-	public void setRankingFvs(double[] rankingFvs) {
-		this.m_rankingFvs = rankingFvs;
-	}
-	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;

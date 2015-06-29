@@ -285,16 +285,26 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	
 	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
 	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
-		int y = doc.getYLabel();
-		double sentiScore = 0, count= 0;
-		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-		String[] tokens = result.getTokens();
-		// Construct the sparse vector.
+		
+		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		int y = doc.getYLabel();
+		
+		double sentiScore = 0, count= 0;
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		doc.setAspVct(detectAspects(spVct));
-		
+		//Construct the topic vector for every document.
+		for(String sentence: sentences){
+			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.	
+			String[] topicTokens = result.getTokens();		
+			HashMap<Integer, Double> sentence_vector = constructSpVct(topicTokens, y, spVct);			
+			if (sentence_vector.size()>0) {//avoid empty sentence
+				stnList.add(Utils.createSpVct(sentence_vector));
+				Utils.mergeVectors(sentence_vector, spVct);
+			}
+		}
 		for(String sentence: sentences){
 			int posIndex = 0;
 			double posValue = 0;
@@ -341,9 +351,12 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);
+			doc.setSentences(stnList);
+			
+			result = TokenizerNormalizeStemmer(doc.getSource());
 			doc.setStopwordProportion(result.getStopwordProportion());
 			if(count == 0)
 				doc.setSentiScore(0);

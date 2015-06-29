@@ -243,6 +243,10 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//feature 2: topical similarity
 		fv[1] = getTopicalSim(q, d);
+		if(Double.isNaN(fv[1])){
+			System.out.println("NaN in topic similarity");
+			double sim = getTopicalSim(q, d);
+		}
 		
 		//feature 3: belong to the same product
 		fv[2] = q.sameProduct(d)?1:0;
