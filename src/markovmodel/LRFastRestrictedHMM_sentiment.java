@@ -28,13 +28,13 @@ public class LRFastRestrictedHMM_sentiment extends FastRestrictedHMM_sentiment {
 	//all epsilon in real space!!
 	void initEpsilons(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++)
-			m_epsilons[t] = Utils.logistic(d.getSentence(t).getTransitFvs(), m_omega);//first sentence does not have features
+			m_epsilons[t] = Utils.logistic(d.getSentence(t-1).getTransitFvs(), m_omega);//first sentence does not have features
 	}
 	
 	//all sigma in real space!!
 	void initSigmas(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++)
-			m_sigmas[t] = Utils.logistic(d.getSentence(t).getSentiTransitFvs(), m_delta);//first sentence does not have features
+			m_sigmas[t] = Utils.logistic(d.getSentence(t-1).getSentiTransitFvs(), m_delta);//first sentence does not have features
 	}
 
 	@Override
@@ -53,5 +53,4 @@ public class LRFastRestrictedHMM_sentiment extends FastRestrictedHMM_sentiment {
 		initSigmas(d);
 		super.BackTrackBestPath(d, emission, path);
 	}
-	
 }

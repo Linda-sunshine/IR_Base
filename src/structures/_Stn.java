@@ -14,11 +14,11 @@ public class _Stn {
 	
 	//structure for HTMMM
 	double[] m_transitFv; // features for determine topic transition
-	double m_transit; // posterior topic transit probability
+	double m_transitStat; // posterior topic transit probability
 
 	// tructure for LR-HTSM
-	double[] m_sentitransitFv; // features for determine sentiment transition
-	double m_sentitransit; // posterior sentiment transit probability
+	double[] m_sentiTransitFv; // features for determine sentiment transition
+	double m_sentiTransitStat; // posterior sentiment transit probability
 	
 	String[] m_sentencePOSTag;
 	
@@ -32,14 +32,14 @@ public class _Stn {
 		m_x_sparse = x;
 		
 		m_transitFv = new double[_Doc.stn_fv_size];
-		m_sentitransitFv = new double[_Doc.stn_senti_fv_size];
+		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 	
 	public _Stn(_SparseFeature[] x, int label) {
 		m_x_sparse = x;
 		m_label = label;
 		m_transitFv = new double[_Doc.stn_fv_size];
-		m_sentitransitFv = new double[_Doc.stn_fv_size];
+		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 
 	public _SparseFeature[] getFv() {
@@ -56,8 +56,7 @@ public class _Stn {
 	
 	public String[] getSentencePosTag(){
 		return m_sentencePOSTag;
-	}
-	
+	}	
 	
 	public int getSentenceLabel(){
 		return m_label;
@@ -68,23 +67,23 @@ public class _Stn {
 	}
 	
 	public double[] getSentiTransitFvs() {
-		return m_sentitransitFv;
+		return m_sentiTransitFv;
 	}
 	
-	public void setTransit(double t) {
-		m_transit = t;
+	public double getTransitStat() {
+		return m_transitStat;
 	}
 	
-	public void setSentiTransit(double t) {
-		m_sentitransit = t;
+	public void setTransitStat(double t) {
+		m_transitStat = t;
 	}
 	
-	public double getTransit() {
-		return m_transit;
+	public double getSentiTransitStat() {
+		return m_sentiTransitStat;
 	}
 	
-	public double getSentiTransit() {
-		return m_sentitransit;
+	public void setSentiTransitStat(double t) {
+		m_sentiTransitStat = t;
 	}
 	
 	public int getTopic() {

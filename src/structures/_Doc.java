@@ -378,31 +378,31 @@ public class _Doc implements Comparable<_Doc> {
 		int stnSize = getSenetenceSize();
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
-			m_sentences[i-1].m_sentitransitFv[0] = pSim;			
+			m_sentences[i-1].m_sentiTransitFv[0] = pSim;			
 			
 			//sentiWordScore
 			cSenscore = sentiWordScore(i);
 			if((cSenscore<0 && pSenscore>0) || (cSenscore>0 && pSenscore<0))
-				m_sentences[i-1].m_sentitransitFv[1] = 1; // transition
+				m_sentences[i-1].m_sentiTransitFv[1] = 1; // transition
 			else if((cSenscore<=0 && pSenscore<=0) || (cSenscore>=0 && pSenscore>=0))
-				m_sentences[i-1].m_sentitransitFv[1] = -1; // no transition
+				m_sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
 			pSenscore = cSenscore;
 			
 			//positive negative count 
 			cposneg = posnegcount(i);
 			if(pposneg==cposneg)
-				m_sentences[i-1].m_sentitransitFv[2] = -1; // no transition
+				m_sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
 			else if (pposneg!=cposneg)
-				m_sentences[i-1].m_sentitransitFv[2] = 1; // transition
+				m_sentences[i-1].m_sentiTransitFv[2] = 1; // transition
 			pposneg = cposneg;
 			
 			//similar to previous or next
 			if (i<stnSize-1) {
 				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
 				if (nSim>pSim)
-					m_sentences[i-1].m_sentitransitFv[3] = 1;
+					m_sentences[i-1].m_sentiTransitFv[3] = 1;
 				else if (nSim<pSim)
-					m_sentences[i-1].m_sentitransitFv[3] = -1;
+					m_sentences[i-1].m_sentiTransitFv[3] = -1;
 				pSim = nSim;
 			}
 			
@@ -410,20 +410,20 @@ public class _Doc implements Comparable<_Doc> {
 			if (i<stnSize-1) {
 				nKL = Utils.klDivergence(calculatePOStagVector(i),calculatePOStagVector(i+1));
 				if (nKL>pKL)
-					m_sentences[i-1].m_sentitransitFv[4] = 1;
+					m_sentences[i-1].m_sentiTransitFv[4] = 1;
 				else if (nKL<pKL)
-					m_sentences[i-1].m_sentitransitFv[4] = -1;
+					m_sentences[i-1].m_sentiTransitFv[4] = -1;
 				pKL = nKL;
 			}
 			
 			//positive negative count 
 			cnegationcount = negationCount(i);
 			if(pnegationcount==0 && cnegationcount>0)
-				m_sentences[i-1].m_sentitransitFv[5] = 1; // transition
+				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
 			else if (pnegationcount>0 && cnegationcount==0)
-				m_sentences[i-1].m_sentitransitFv[5] = 1; // transition
+				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
 			else
-				m_sentences[i-1].m_sentitransitFv[5] = -1; // no transition
+				m_sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
 			pnegationcount = cnegationcount;
 		}
 	}

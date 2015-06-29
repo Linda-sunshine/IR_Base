@@ -48,12 +48,10 @@ public class LRHTMM extends HTMM {
 	@Override
 	void accEpsilonStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
-			double transit = 0;
+			double s = 0;
 			for(int i=0; i<this.number_of_topics; i++)
-				transit += this.p_dwzpsi[t][i];
-			d.getSentence(t-1).setTransit(transit);
-			this.lot += transit;//we do not need this actually
-			this.total ++;
+				s += this.p_dwzpsi[t][i];
+			d.getSentence(t).setTransitStat(s);//logically, it is better to store this posterior at position t
 		}
 	}
 	
@@ -94,15 +92,16 @@ public class LRHTMM extends HTMM {
 		double[] transitFv;
 		for(_Doc d:m_corpus.getCollection()) {			
 			for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
-				p = Utils.logistic(d.getSentence(i-1).getTransitFvs(), m_omega); // p(\epsilon=1|x, w)
-				q = d.getSentence(i-1).getTransit(); // posterior of p(\epsilon=1|x, w)
+				transitFv = d.getSentence(i-1).getTransitFvs();
+				
+				p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+				q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
 				
 				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
 				
 				//collect gradient
 				g = p - q;
 				m_g_omega[0] += g;//for bias term
-				transitFv = d.getSentence(i-1).getTransitFvs();
 				for(int n=0; n<_Doc.stn_fv_size; n++)
 					m_g_omega[1+n] += g * transitFv[n];
 			}
