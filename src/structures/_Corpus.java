@@ -127,7 +127,7 @@ public class _Corpus {
 		}
 	}
 	
-	public void loadpriorposnegword()
+	public void loadPriorPosNegWords()
 	{
 		String pathToposwords = "./data/Model/SentiWordsPos.txt";
 		String pathTonegwords = "./data/Model/SentiWordsNeg.txt";
@@ -137,7 +137,6 @@ public class _Corpus {
 		m_negpriorlist = new ArrayList<String>();
 		m_negationlist = new ArrayList<String>();
 		
-		
 		BufferedReader file = null;
 		try {
 			file = new BufferedReader(new FileReader(pathToposwords));
@@ -145,21 +144,22 @@ public class _Corpus {
 			while ((line = file.readLine()) != null) {
 				m_pospriorlist.add(line);
 			}
+			file.close();
 			
 			file = new BufferedReader(new FileReader(pathTonegwords));
 			while ((line = file.readLine()) != null) {
 				m_negpriorlist.add(line);
 			}
+			file.close();
 			
 			file = new BufferedReader(new FileReader(pathTonegationwords));
 			while ((line = file.readLine()) != null) {
 				m_negationlist.add(line);
 			}
-		}
-		catch (Exception e) {
+			file.close();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
 
 		// loading the sentiWordnet
 		try{
@@ -171,9 +171,8 @@ public class _Corpus {
 	}
 	
 	public void setStnFeaturesForSentiment(_Corpus c) {
-		
 		// load all prior pos & neg words and also the sentiwordNet
-		loadpriorposnegword();
+		loadPriorPosNegWords();
 		
 		for(_Doc d:m_collection) {
 			d.setCorpus(c);

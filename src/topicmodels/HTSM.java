@@ -4,7 +4,7 @@ import markovmodel.FastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
 
-public class HTSM extends HTMM{
+public class HTSM extends HTMM {
 	
 	double sigma;
 	double sigma_lot; // sufficient statistic about sigma
@@ -31,7 +31,6 @@ public class HTSM extends HTMM{
 		
 		return logLikelihood;
 	}
-	
 	
 	// run upto number_of_topic since the first chunk is for sentiment switching
 	void accSigmaStat(_Doc d) {
@@ -67,7 +66,6 @@ public class HTSM extends HTMM{
 		m_hmm.BackTrackBestPath(d, emission, path);
 		return path;
 	}
-	
 	
 	@Override
 	public double calculate_log_likelihood(_Doc d) {//it is very expensive to re-compute this

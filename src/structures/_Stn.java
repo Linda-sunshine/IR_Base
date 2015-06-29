@@ -21,12 +21,11 @@ public class _Stn {
 	double m_sentitransit; // posterior sentiment transit probability
 	
 	String[] m_sentencePOSTag;
-
 	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
-	//
+	//attribute label for NewEgg data
 	int m_label = 0; // default is neutral
 	
 	public _Stn(_SparseFeature[] x) {

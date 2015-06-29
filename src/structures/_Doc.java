@@ -425,8 +425,6 @@ public class _Doc implements Comparable<_Doc> {
 			else
 				m_sentences[i-1].m_sentitransitFv[5] = -1; // no transition
 			pnegationcount = cnegationcount;
-			
-			
 		}
 	}
 	
@@ -522,8 +520,8 @@ public class _Doc implements Comparable<_Doc> {
 			//cosine similarity			
 			m_sentences[i-1].m_transitFv[0] = pSim;			
 
-			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
 			//length_ratio
+			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
 			m_sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
 			pLength = cLength;
 

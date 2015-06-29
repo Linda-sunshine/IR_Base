@@ -94,7 +94,7 @@ public class LRHTSM extends HTSM {
 		Arrays.fill(m_diag_omega, 0);//since we are reusing this space
 		try{
 			do {
-				fValue = calcFuncGradient();
+				fValue = calcOmegaFuncGradient();
 				LBFGS.lbfgs(fSize, 4, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
@@ -104,7 +104,7 @@ public class LRHTSM extends HTSM {
 	
 	//log-likelihood: 0.5\lambda * w^2 + \sum_x [q(y=1|x) logp(y=1|x,w) + (1-q(y=1|x)) log(1-p(y=1|x,w))]
 	//NOTE: L-BFGS code is for minimizing a problem
-	double calcFuncGradient() {
+	double calcOmegaFuncGradient() {
 		double p, q, g, loglikelihood = 0;
 		
 		//L2 normalization for omega
@@ -142,7 +142,7 @@ public class LRHTSM extends HTSM {
 		Arrays.fill(m_diag_delta, 0);//since we are reusing this space
 		try{
 			do {
-				fValue = calcFuncGradientForSentiment();
+				fValue = calcDeltaFuncGradient();
 				LBFGS.lbfgs(fSize, 4, m_delta, fValue, m_g_delta, false, m_diag_delta, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
@@ -153,7 +153,7 @@ public class LRHTSM extends HTSM {
 	
 	//log-likelihood: 0.5\lambda * w^2 + \sum_x [q(y=1|x) logp(y=1|x,w) + (1-q(y=1|x)) log(1-p(y=1|x,w))]
 	//NOTE: L-BFGS code is for minimizing a problem
-	double calcFuncGradientForSentiment() {
+	double calcDeltaFuncGradient() {
 		double p, q, g, loglikelihood = 0;
 		
 		//L2 normalization for delta
@@ -175,7 +175,7 @@ public class LRHTSM extends HTSM {
 				g = p - q;
 				m_g_delta[0] += g;//for bias term
 				transitFv = d.getSentence(i-1).getSentiTransitFvs();
-				for(int n=0; n<_Doc.stn_fv_size; n++)
+				for(int n=0; n<_Doc.stn_senti_fv_size; n++)
 					m_g_delta[1+n] += g * transitFv[n];
 			}
 		}

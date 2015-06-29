@@ -52,7 +52,7 @@ public class PairwiseSimCalculator implements Runnable {
 					continue;
 				
 				dj = m_GFObj.getTestDoc(j);
-				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				similarity = m_GFObj.getSimilarity(di, dj);
 				kUU.add(new _RankItem(j, similarity));
 			}
 			
@@ -63,7 +63,7 @@ public class PairwiseSimCalculator implements Runnable {
 			//find the nearest labeled examples
 			for (int j = 0; j < m_GFObj.m_L; j++) {
 				dj = m_GFObj.getLabeledDoc(j);
-				similarity = m_GFObj.getSimilarity(di, dj) * di.getWeight() * dj.getWeight();
+				similarity = m_GFObj.getSimilarity(di, dj);
 				kUL.add(new _RankItem(m_GFObj.m_U + j, similarity));
 			}
 			

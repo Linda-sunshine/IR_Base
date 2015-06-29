@@ -34,7 +34,7 @@ public class TopicModelMain {
 		boolean display = true, logSpace = false;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -51,21 +51,21 @@ public class TopicModelMain {
 		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
 		
-		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
-		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
-		
-		System.out.println("Performing feature selection, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		/*****Parameters in feature selection.*****/
+//		String stopwords = "./data/Model/stopwords.dat";
+//		String featureSelection = "DF"; //Feature selection method.
+//		double startProb = 0.5; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+//		
+//		System.out.println("Performing feature selection, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
