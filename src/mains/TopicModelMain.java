@@ -34,7 +34,8 @@ public class TopicModelMain {
 		boolean display = true, logSpace = false;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
+		//String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -49,6 +50,11 @@ public class TopicModelMain {
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		//String aspectlist = "./data/Model/aspect_tablet.txt";
 		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
+		
+		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
+		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
+		String pathToNegationWords = "./data/Model/negation_words.txt";
+		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
 		
 //		/*****Parameters in feature selection.*****/
@@ -118,7 +124,7 @@ public class TopicModelMain {
 			}
 			else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
-				c.setStnFeaturesForSentiment(c);
+				c.setStnFeaturesForSentiment(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);

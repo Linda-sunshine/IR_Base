@@ -16,6 +16,8 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import utils.Utils;
+
 /**
  * @author lingong
  * General structure of corpus of a set of documents
@@ -26,11 +28,13 @@ public class _Corpus {
 	ArrayList<String> m_features; //ArrayList for features
 	HashMap<String, _stat> m_featureStat; //statistics about the features
 	
-	String pathToSWN = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
-	public SentiWordNetDemoCode sentiwordnet;
-	public ArrayList<String> m_pospriorlist;
-	public ArrayList<String> m_negpriorlist;
-	public ArrayList<String> m_negationlist;
+	
+	public SentiWordNetDemoCode sentiWordNet;
+	public ArrayList<String> m_posPriorList;
+	public ArrayList<String> m_negPriorList;
+	public ArrayList<String> m_negationList;
+	
+	_Stn[] m_sentences; // temporary structure for calculating the sentiment features for each doc
 	
 	
 	
@@ -127,34 +131,30 @@ public class _Corpus {
 		}
 	}
 	
-	public void loadPriorPosNegWords()
+	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords,String pathToNegationWords)
 	{
-		String pathToposwords = "./data/Model/SentiWordsPos.txt";
-		String pathTonegwords = "./data/Model/SentiWordsNeg.txt";
-		String pathTonegationwords = "./data/Model/negation_words.txt";
-		
-		m_pospriorlist = new ArrayList<String>();
-		m_negpriorlist = new ArrayList<String>();
-		m_negationlist = new ArrayList<String>();
+		m_posPriorList = new ArrayList<String>();
+		m_negPriorList = new ArrayList<String>();
+		m_negationList = new ArrayList<String>();
 		
 		BufferedReader file = null;
 		try {
-			file = new BufferedReader(new FileReader(pathToposwords));
+			file = new BufferedReader(new FileReader(pathToPosWords));
 			String line;
 			while ((line = file.readLine()) != null) {
-				m_pospriorlist.add(line);
+				m_posPriorList.add(line);
 			}
 			file.close();
 			
-			file = new BufferedReader(new FileReader(pathTonegwords));
+			file = new BufferedReader(new FileReader(pathToNegWords));
 			while ((line = file.readLine()) != null) {
-				m_negpriorlist.add(line);
+				m_negPriorList.add(line);
 			}
 			file.close();
 			
-			file = new BufferedReader(new FileReader(pathTonegationwords));
+			file = new BufferedReader(new FileReader(pathToNegationWords));
 			while ((line = file.readLine()) != null) {
-				m_negationlist.add(line);
+				m_negationList.add(line);
 			}
 			file.close();
 		} catch (Exception e) {
@@ -163,23 +163,168 @@ public class _Corpus {
 
 		// loading the sentiWordnet
 		try{
-			sentiwordnet = new SentiWordNetDemoCode(pathToSWN);
+			sentiWordNet = new SentiWordNetDemoCode(pathToSentiWordNet);
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 	
-	public void setStnFeaturesForSentiment(_Corpus c) {
+	public void setStnFeaturesForSentiment(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords,String pathToNegationWords) {
 		// load all prior pos & neg words and also the sentiwordNet
-		loadPriorPosNegWords();
+		loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
 		for(_Doc d:m_collection) {
-			d.setCorpus(c);
-			d.setSentenceFeatureVectorForSentiment();
+			m_sentences = d.getSentences(); // acting as a pointer to each doc senetnce
+			setSentenceFeatureVectorForSentiment(d);
 		}
 	}
 	
+	
+	// used by LR-HTSM for constructing transition features for sentiment
+	public void setSentenceFeatureVectorForSentiment(_Doc d) {
+		
+		// start from 2nd sentence
+		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
+		double pKL = Utils.klDivergence(calculatePOStagVector(0),calculatePOStagVector(1)), nKL;
+		double pSenScore = sentiWordScore(0), cSenScore;
+		int pPosNeg= posNegCount(0),cPosNeg;
+		int pNegationCount= negationCount(0),cNegationCount;
+		int stnSize = d.getSenetenceSize();
+		for(int i=1; i<stnSize; i++){
+			//cosine similarity			
+			m_sentences[i-1].m_sentiTransitFv[0] = pSim;			
+
+			//sentiWordScore
+			cSenScore = sentiWordScore(i);
+			if((cSenScore<0 && pSenScore>0) || (cSenScore>0 && pSenScore<0))
+				m_sentences[i-1].m_sentiTransitFv[1] = 1; // transition
+			else if((cSenScore<=0 && pSenScore<=0) || (cSenScore>=0 && pSenScore>=0))
+				m_sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
+			pSenScore = cSenScore;
+
+			//positive negative count 
+			cPosNeg = posNegCount(i);
+			if(pPosNeg==cPosNeg)
+				m_sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
+			else if (pPosNeg!=cPosNeg)
+				m_sentences[i-1].m_sentiTransitFv[2] = 1; // transition
+			pPosNeg = cPosNeg;
+
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
+				if (nSim>pSim)
+					m_sentences[i-1].m_sentiTransitFv[3] = 1;
+				else if (nSim<pSim)
+					m_sentences[i-1].m_sentiTransitFv[3] = -1;
+				pSim = nSim;
+			}
+
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nKL = Utils.klDivergence(calculatePOStagVector(i),calculatePOStagVector(i+1));
+				if (nKL>pKL)
+					m_sentences[i-1].m_sentiTransitFv[4] = 1;
+				else if (nKL<pKL)
+					m_sentences[i-1].m_sentiTransitFv[4] = -1;
+				pKL = nKL;
+			}
+
+			//positive negative count 
+			cNegationCount = negationCount(i);
+			if(pNegationCount==0 && cNegationCount>0)
+				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+			else if (pNegationCount>0 && cNegationCount==0)
+				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+			else
+				m_sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
+			pNegationCount = cNegationCount;
+		}
+	}
+
+	// receive sentence index as parameter
+	public double sentiWordScore(int i)
+	{
+		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		double senScore = 0.0;
+		double tmp;
+
+		for(_SparseFeature word:wordsInSentence){
+			index = word.getIndex();
+			token = m_features.get(index);
+			tmp = sentiWordNet.extract(token, "n");
+			if(tmp!=-2) // word found in SentiWordNet
+				senScore+=tmp;
+		}
+		return senScore/wordsInSentence.length;
+	}
+
+	// receive sentence index as parameter
+	public int posNegCount(int i)
+	{
+		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		int posCount = 0;
+		int negCount = 0;
+
+		for(_SparseFeature word:wordsInSentence){
+			index = word.getIndex();
+			token = m_features.get(index);
+			if(m_posPriorList.contains(token))
+				posCount++;
+			else if(m_negPriorList.contains(token))
+				negCount++;
+		}
+
+		if(posCount>negCount)
+			return 1; // 1 means sentence is more positive
+		else if (negCount>posCount)
+			return 2; // 2 means sentence is more negative
+		else
+			return 0; // sentence is neutral or no match
+	}
+
+	// receive sentence index as parameter
+	public int negationCount(int i)
+	{
+		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+		int index;
+		String token;
+		int negationCount = 0;
+
+		for(_SparseFeature word:wordsInSentence){
+			index = word.getIndex();
+			token = m_features.get(index);
+			if(m_negationList.contains(token))
+				negationCount++;
+		}
+		return negationCount;
+	}
+
+	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
+	// here i the index of the sentence
+	public double[] calculatePOStagVector(int i){
+		String[] posTag = m_sentences[i].getSentencePosTag();
+		double tagVector[] = new double[4]; // index = 0 for noun, index = 1 for adjective, index = 2 for verb
+		// index = 3 for adverb
+		tagVector[0]= tagVector[1] = tagVector[2]  = tagVector[3] = 0.0;
+		for(String tag:posTag){
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tagVector[0]++;
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tagVector[1]++;
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
+				tagVector[2]++;
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tagVector[3]++;
+		}
+		return tagVector;
+	}
+
 	public int getItemSize() {
 		String lastPID = null;
 		int pid = 0, rSize = 0;
