@@ -140,22 +140,27 @@ public class MyTransductiveMain {
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
-			
+			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5;
 			boolean metricLearning = true;
 			
-			GaussianFields mySemi = null;			
+			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
-				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, true); 
+				mySemi = new GaussianFieldsByRandomWalk(c, multipleLearner, C,
+					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg); 
 			} else if (method.equals("RW-ML")) {
-				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, bound);
+				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
 			} else if (method.equals("RW-L2R")) {
-				mySemi = new L2RMetricLearning(c, multipleLearner, C, learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, topK, noiseRatio);
+				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						topK, noiseRatio);
 			}
-			mySemi.setFeatures(analyzer.getFeatures());
+			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {

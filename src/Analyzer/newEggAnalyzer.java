@@ -85,7 +85,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				for(int j=0; j<reviews.length(); j++) 
 				{
 					if(this.m_stnDetector!=null)
-						AnalyzeNewEggPostwithsentence(new NewEggPost(reviews.getJSONObject(j), item));
+						AnalyzeNewEggPostWithSentence(new NewEggPost(reviews.getJSONObject(j), item));
 					else
 						AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
 				}
@@ -158,7 +158,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	}
 	
 	
-	protected boolean AnalyzeNewEggPostwithsentence(NewEggPost post) throws ParseException {
+	protected boolean AnalyzeNewEggPostWithSentence(NewEggPost post) throws ParseException {
 		String[] tokens;
 		String content;
 		TokenizeResult result;
@@ -166,14 +166,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		ArrayList<Integer> stnLabel = new ArrayList<Integer>(); 
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
-		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
-		
-			String[] sentences = m_stnDetector.sentDetect(content);
-			
-			for(String sentence : sentences) {
+			for(String sentence : m_stnDetector.sentDetect(content)) {
 
 				result = TokenizerNormalizeStemmer(sentence);
 				tokens = result.getTokens();
@@ -181,28 +177,23 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
 					stnLabel.add(1); // 1 for pos
-					spVcts.add(vPtr);
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 				}
 			}
 			if (!m_releaseContent)
 				buffer.append(String.format("Pros: %s\n", content));
-		} else 
-			spVcts.add(null);//no pro section
+		}
 		
 		if ((content=post.getConContent()) != null) {// tokenize cons
-			String[] sentences = m_stnDetector.sentDetect(content);
-			
-			for(String sentence : sentences) {
+			for(String sentence : m_stnDetector.sentDetect(content)) {
 
 				result = TokenizerNormalizeStemmer(sentence);
 				tokens = result.getTokens();
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
-					stnLabel.add(2); // 2 for cons
-					spVcts.add(vPtr);
+					stnLabel.add(0); // 0 for cons
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 				}
@@ -210,38 +201,30 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			
 			if (!m_releaseContent)
 				buffer.append(String.format("Cons: %s\n", content));
-		} else 
-			spVcts.add(null);//no con section
+		} 
 		
 		if ((content=post.getComments()) != null) {// tokenize comments
-			String[] sentences = m_stnDetector.sentDetect(content);
-			
-			for(String sentence : sentences) {
+			for(String sentence : m_stnDetector.sentDetect(content)) {
 
 				result = TokenizerNormalizeStemmer(sentence);
 				tokens = result.getTokens();
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
-					stnLabel.add(0); // 0 for neutral
-					spVcts.add(vPtr);
+					stnLabel.add(-1); // 0 for neutral
 					uniWordsInSections += vPtr.size();
-					Utils.mergeVectors(vPtr, docVct);
 				}
 			}
-			//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
 			
 			if (!m_releaseContent)
 				buffer.append(String.format("Comments: %s\n", content));
-		} else
-			spVcts.add(null);//no comments
+		}
 		
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
 			
-			doc.createSpVct(spVcts);
-			doc.setSentenceswithLabel(stnList,stnLabel);
+			doc.setSentencesWithLabels(stnList,stnLabel);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			return true;

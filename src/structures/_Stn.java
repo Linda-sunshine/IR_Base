@@ -25,11 +25,18 @@ public class _Stn {
 	int m_topic; //topic/aspect assignment
 	
 	//
-	int m_sentencelabel = 0; // default is neutral
+	int m_label = 0; // default is neutral
 	
 	public _Stn(_SparseFeature[] x) {
 		m_x_sparse = x;
 		
+		m_transitFv = new double[_Doc.stn_fv_size];
+		m_sentitransitFv = new double[_Doc.stn_fv_size];
+	}
+	
+	public _Stn(_SparseFeature[] x, int label) {
+		m_x_sparse = x;
+		m_label = label;
 		m_transitFv = new double[_Doc.stn_fv_size];
 		m_sentitransitFv = new double[_Doc.stn_fv_size];
 	}
@@ -39,12 +46,12 @@ public class _Stn {
 	}
 	
 	public void setSentenceLabel(int label){
-		m_sentencelabel = label;
+		m_label = label;
 	}
 
 	
 	public int getSentenceLabel(){
-		return m_sentencelabel;
+		return m_label;
 	}
 	
 	public double[] getTransitFvs() {

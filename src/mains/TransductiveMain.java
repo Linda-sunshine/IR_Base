@@ -30,7 +30,7 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -109,7 +109,7 @@ public class TransductiveMain {
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.6; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.2; // convergence of random walk, weight of random walk
-			boolean simFlag = false, weightedAvg = false;
+			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
 			double noiseRatio = 1.0;

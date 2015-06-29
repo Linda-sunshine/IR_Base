@@ -35,7 +35,7 @@ public class LRHTSM extends HTSM {
 		m_lambda = lambda;
 		
 		//variable related to LR sentiment
-		m_delta = new double [_Doc.stn_fv_size + 1];//bias + stn_transition_features
+		m_delta = new double [_Doc.stn_senti_fv_size + 1];//bias + stn_senti_transition_features
 		m_g_delta = new double[m_delta.length];
 		m_diag_delta = new double[m_delta.length];
 	

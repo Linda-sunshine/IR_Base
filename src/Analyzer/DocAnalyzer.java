@@ -312,18 +312,16 @@ public class DocAnalyzer extends Analyzer {
 					m_featureStat.get(token).addOneDF(y);
 				}
 				m_featureStat.get(token).addOneTTF(y);
-			} else{// CV is loaded.
-				if (m_featureNameIndex.containsKey(token)) {
-					index = m_featureNameIndex.get(token);
-					if (spVct.containsKey(index)) {
-						value = spVct.get(index) + 1;
-						spVct.put(index, value);
-					} else {
-						spVct.put(index, 1.0);
-						if (docWordMap==null || !docWordMap.containsKey(index))
-							m_featureStat.get(token).addOneDF(y);
-					}
-					m_featureStat.get(token).addOneTTF(y);
+
+			} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+				index = m_featureNameIndex.get(token);
+				if (spVct.containsKey(index)) {
+					value = spVct.get(index) + 1;
+					spVct.put(index, value);
+				} else {
+					spVct.put(index, 1.0);
+					if (docWordMap==null || !docWordMap.containsKey(index))
+						m_featureStat.get(token).addOneDF(y);
 				}
 			} 
 		}
