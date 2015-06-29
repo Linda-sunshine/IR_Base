@@ -351,7 +351,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>=1) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);
 			doc.setSentences(stnList);

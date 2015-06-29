@@ -101,13 +101,13 @@ public class MyTransductiveMain {
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).LoadSNWWithScore("./data/Model/SentiWordNet_3.0.0_20130122.txt");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
+//			analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 			analyzer.setFeatureValues("TF", 0);		
 			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
 			pLSA tModel = null;
 			if (topicmodel.equals("pLSA")) {			
-				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+				tModel = new pLSA(number_of_iteration, converge, beta, c, 
 						lambda, analyzer.getBackgroundProb(), 
 						number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
