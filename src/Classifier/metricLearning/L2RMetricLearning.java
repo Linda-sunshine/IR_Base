@@ -154,7 +154,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
-		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
+		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_trainSet.size());
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
 		
 		_Query q;		
@@ -176,15 +176,29 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
 			}
 			
-			//find the top K similar documents by default similarity measure
-			for(_RankItem it:simRanker) {
-				dj = m_trainSet.get(it.m_index);
+			for(int j=0; j < m_topK; i++){
+				//get the top one.
+				dj = m_trainSet.get(simRanker.get(j).m_index);
 				neighbors.add(dj);
-				if (di.getYLabel() == dj.getYLabel())
-					relevant ++;
-				else
-					irrelevant ++;
+				if(di.getYLabel()==dj.getYLabel())
+					relevant++;
+				else irrelevant++;
+				//get the bottom one.
+				dj = m_trainSet.get(simRanker.get(m_trainSet.size()-1-j).m_index);
+				neighbors.add(dj);
+				if(di.getYLabel()==dj.getYLabel())
+					relevant++;
+				else irrelevant++;		
 			}
+			//find the top K similar documents by default similarity measure
+//			for(_RankItem it:simRanker) {
+//				dj = m_trainSet.get(it.m_index);
+//				neighbors.add(dj);
+//				if (di.getYLabel() == dj.getYLabel())
+//					relevant ++;
+//				else
+//					irrelevant ++;
+//			}
 			
 			//inject some random neighbors 
 			int j = 0;
@@ -204,7 +218,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 1.5*posQ)){
+				|| (di.getYLabel() == 1 && negQ < 2*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
