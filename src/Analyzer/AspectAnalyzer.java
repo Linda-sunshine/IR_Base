@@ -288,7 +288,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
 		int y = doc.getYLabel();
 		
 		double sentiScore = 0, count= 0;
@@ -300,16 +299,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
 		doc.setAspVct(detectAspects(spVct));
 		
-		//Construct the topic vector for every document.
-//		for(String sentence: sentences){
-//			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.	
-//			String[] topicTokens = result.getTokens();		
-//			HashMap<Integer, Double> sentence_vector = constructSpVct(topicTokens, y, spVct);			
-//			if (sentence_vector.size()>0) {//avoid empty sentence
-//				stnList.add(Utils.createSpVct(sentence_vector));
-//				Utils.mergeVectors(sentence_vector, spVct);
-//			}
-//		}
 		for(String sentence: sentences){
 			int posIndex = 0;
 			double posValue = 0;
@@ -359,7 +348,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		if (spVct.size()>=m_lengthThreshold) { 
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);
-//			doc.setSentences(stnList);
 			
 			if(count == 0)
 				doc.setSentiScore(0);

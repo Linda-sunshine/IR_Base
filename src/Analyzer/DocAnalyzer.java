@@ -323,6 +323,7 @@ public class DocAnalyzer extends Analyzer {
 					if (docWordMap==null || !docWordMap.containsKey(index))
 						m_featureStat.get(token).addOneDF(y);
 				}
+				m_featureStat.get(token).addOneTTF(y);
 			} 
 		}
 		return spVct;

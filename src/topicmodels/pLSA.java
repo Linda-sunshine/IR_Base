@@ -201,6 +201,9 @@ public class pLSA extends twoTopic {
 				prob += d.m_topics[k]*topic_term_probabilty[k][j];
 			prob = prob*(1-m_lambda) + this.background_probability[j]*m_lambda;//(1-\lambda)p(w|d) * \lambda p(w|theta_b)
 			logLikelihood += fv.getValue() * Math.log(prob);
+			
+			if (Double.isNaN(logLikelihood))
+				System.out.print("eeee");
 		}
 		return logLikelihood;
 	}

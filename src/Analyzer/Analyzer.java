@@ -440,6 +440,9 @@ public abstract class Analyzer {
 			String featureName = m_featureNames.get(i);
 			_stat stat =  m_featureStat.get(featureName);
 			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
+			
+			if (back_ground_probabilty[i]<0)
+				System.out.print("ssss ");
 		}
 		
 		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing

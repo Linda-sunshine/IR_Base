@@ -33,7 +33,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 //	final int RankFVSize = 12;// features to be defined in genRankingFV()
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 9;// features to be defined in genRankingFV()
+	final int RankFVSize = 12;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -97,7 +97,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	protected void L2RModelTraining() {
 		//select the training pairs
 		createTrainingCorpus();
-		
 		double[] w;
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
@@ -126,7 +125,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	private void calcLabeledSimilarities() {
-		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagnoal
+		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagonal
 		if (m_LabeledCache==null || m_LabeledCache.length<size)
 			m_LabeledCache = new double[size];
 		
@@ -205,7 +204,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 0.9*posQ)){
+				|| (di.getYLabel() == 1 && negQ < 1.5*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
@@ -243,11 +242,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//feature 2: topical similarity
 		fv[1] = getTopicalSim(q, d);
-		if(Double.isNaN(fv[1])){
-			System.out.println("NaN in topic similarity");
-			double sim = getTopicalSim(q, d);
-		}
-		
+			
 		//feature 3: belong to the same product
 		fv[2] = q.sameProduct(d)?1:0;
 		
@@ -272,15 +267,15 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//average neighborhood similarity
 		
 		//feature 10: the sentiwordnet score for a review.
-//		fv[9] = d.getSentiScore();
-//		
-//		//feature 11: the postagging score for a pair of reviews.
-//		fv[10] = getPOSScore(q, d);
-//		
-//		//feature 12: the aspect score for a pair of reviews.
-//		fv[11] = getAspectScore(q, d);
-//		
-//		//feature 13: the title of review
+		fv[9] = d.getSentiScore();
+		
+		//feature 11: the postagging score for a pair of reviews.
+		fv[10] = getPOSScore(q, d);
+		
+		//feature 12: the aspect score for a pair of reviews.
+		fv[11] = getAspectScore(q, d);
+		
+		//feature 13: the title of review
 //		fv[12] = d.getTitleScore();
 		return fv;
 	}
