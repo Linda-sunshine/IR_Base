@@ -262,15 +262,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		int best_index = -1;
 		
 		if (i<this.number_of_topic) {//both changed
-			
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si!=sentimentMapper(j) && ti!=topicMapper(j)){
-					best = alpha[t][j];
-					System.out.println("Here"+t+"val:"+best);
-					break;
-					}
-				}
-			
+
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si!=sentimentMapper(j) && ti!=topicMapper(j)){
 					if(alpha[t][j] > best){
@@ -283,14 +275,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti!=topicMapper(j)){
-					best = alpha[t][j];
-					System.out.println("Here1"+t+"val:"+best);
-					break;
-				}
-			}
-			
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si==sentimentMapper(j) && ti!=topicMapper(j)){
 					if(alpha[t][j] > best){
 						best = alpha[t][j];
 						best_index = j;
@@ -298,15 +282,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				}
 			}
 		} else {//both stay the same
-			
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si==sentimentMapper(j) && ti==topicMapper(j)){
-					best = alpha[t][j];
-					System.out.println("Here2"+t+"val:"+best);
-					break;
-				}
-			}
-			
 			
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti==topicMapper(j)){
