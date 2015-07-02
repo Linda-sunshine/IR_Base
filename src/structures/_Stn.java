@@ -26,7 +26,13 @@ public class _Stn {
 	int m_topic; //topic/aspect assignment
 	
 	//attribute label for NewEgg data
-	int m_label = 0; // default is neutral
+	int m_sentimentLabel = -1; // default is -1 so that it can help to debug 
+	// 0 for neutral or comment, 1 is for pos and 2 is for neg
+	// use in FastRestritedHMM.java_for sentiment to decide sentiment switch 
+	
+	//attribute for topic label for future use only
+	int m_topicLabel = -1; // default is -1 so that it can help to debug 
+	
 	
 	public _Stn(_SparseFeature[] x) {
 		m_x_sparse = x;
@@ -37,7 +43,7 @@ public class _Stn {
 	
 	public _Stn(_SparseFeature[] x, int label) {
 		m_x_sparse = x;
-		m_label = label;
+		m_sentimentLabel = label;
 		m_transitFv = new double[_Doc.stn_fv_size];
 		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
@@ -46,8 +52,8 @@ public class _Stn {
 		return m_x_sparse;
 	}
 	
-	public void setSentenceLabel(int label){
-		m_label = label;
+	public void setSentenceSenitmentLabel(int label){
+		m_sentimentLabel = label;
 	}
 
 	public void setSentencePosTag(String[] sentenceposTags){
@@ -58,8 +64,8 @@ public class _Stn {
 		return m_sentencePOSTag;
 	}	
 	
-	public int getSentenceLabel(){
-		return m_label;
+	public int getSentenceSenitmentLabel(){
+		return m_sentimentLabel;
 	}
 	
 	public double[] getTransitFvs() {

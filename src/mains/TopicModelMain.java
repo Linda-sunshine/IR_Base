@@ -25,12 +25,12 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "HTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int topK = 10, number_of_iteration = 100, crossV = 1;
+		int topK = 10, number_of_iteration = 100, crossV = 2;
 		boolean display = true, logSpace = false;
 		
 		/*****The parameters used in loading files.*****/

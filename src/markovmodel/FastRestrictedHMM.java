@@ -15,6 +15,8 @@ public class FastRestrictedHMM {
 	double m_epsilon;//single epsilon shared by all the sentences
 	int constant;
 	
+	_Doc m_docPtr;
+	
 	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize, int constant) {
 		m_epsilon = epsilon;//in real space!
 		this.constant = constant;
@@ -34,6 +36,7 @@ public class FastRestrictedHMM {
 	}
 	
 	public double ForwardBackward(_Doc d, double[][] emission) {
+		m_docPtr = d;
 		this.length_of_seq = d.getSenetenceSize();
 		
 		double loglik = initAlpha(d.m_topics, emission[0]) + forwardComputation(emission, d.m_topics);
@@ -150,7 +153,7 @@ public class FastRestrictedHMM {
 
 	int FindBestInLevel(int t) {
 		double best = alpha[t][0];
-		int best_index = 0;
+		int best_index = -1;
 		for(int i = 1; i<this.constant*this.number_of_topic; i++){
 			if(alpha[t][i] > best){
 				best = alpha[t][i];

@@ -216,4 +216,26 @@ public class HTMM extends pLSA {
 			logLikelihood += (d_alpha-1)*d.m_topics[i];
 		return logLikelihood + m_hmm.ForwardBackward(d, emission);
 	}
+	
+	@Override
+	public double inference(_Doc d) {
+		initTestDoc(d);//this is not a corpus level estimation
+		
+		double delta, last = 1, current;
+		int  i = 0;
+		do {
+			current = calculate_E_step(d);
+			estThetaInDoc(d);			
+			delta = (last - current)/last;
+			last = current;
+		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
+		int path[] = get_MAP_topic_assignment(d);
+		System.out.println("Doc No: "+d.getID());
+		for(i=0; i<path.length;i++)
+			System.out.print(path[i]+",");
+		System.out.println();
+		
+		return current;
+	}
+	
 }
