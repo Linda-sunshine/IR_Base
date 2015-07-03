@@ -86,6 +86,7 @@ public class HTSM extends HTMM {
 		double delta, last = 1, current;
 		int  i = 0;
 		do {
+			init();
 			current = calculate_E_step(d);
 			estThetaInDoc(d);			
 			delta = (last - current)/last;

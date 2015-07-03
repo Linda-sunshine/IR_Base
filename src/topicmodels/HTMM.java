@@ -201,8 +201,10 @@ public class HTMM extends pLSA {
 	@Override
 	protected void initTestDoc(_Doc d) {
 		super.initTestDoc(d);
-		for(int i=0; i<d.m_topics.length; i++)//convert to log-space
+		for(int i=0; i<d.m_topics.length; i++){//convert to log-space
+			d.m_topics[i] = (double)1.0/this.number_of_topics;
 			d.m_topics[i] = Math.log(d.m_topics[i]);
+		}
 	}
 	
 	//for HTMM, this function will be only called in testing phase to avoid duplicated computation
@@ -220,10 +222,10 @@ public class HTMM extends pLSA {
 	@Override
 	public double inference(_Doc d) {
 		initTestDoc(d);//this is not a corpus level estimation
-		
 		double delta, last = 1, current;
 		int  i = 0;
 		do {
+			init();
 			current = calculate_E_step(d);
 			estThetaInDoc(d);			
 			delta = (last - current)/last;
