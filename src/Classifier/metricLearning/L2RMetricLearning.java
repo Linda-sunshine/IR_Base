@@ -28,7 +28,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	protected Model m_rankSVM;
 	protected LambdaRank m_lambdaRank;
 	double m_tradeoff;
-	
+	double m_negRatio;
 
 //	final int RankFVSize = 12;// features to be defined in genRankingFV()
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
@@ -41,6 +41,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_noiseRatio = 0.0; // no random neighbor is needed 
 		m_tradeoff = 1.0;
 		m_ranker = 0; // default ranker is rankSVM
+		m_negRatio = 1.0;
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -53,6 +54,20 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
 		m_ranker = 1;
+		m_negRatio = 1;
+	}
+	
+	public L2RMetricLearning(_Corpus c, String classifier, double C,
+			double ratio, int k, int kPrime, double alhpa, double beta,
+			double delta, double eta, boolean storeGraph,
+			int topK, double noiseRatio, double negRatio) {
+		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta,
+				storeGraph);
+		m_topK = topK;
+		m_noiseRatio = noiseRatio;
+		m_tradeoff = 1.0; // should be specified by the user
+		m_ranker = 1;
+		m_negRatio = negRatio;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
@@ -154,7 +169,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
 		
-		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_trainSet.size());
+		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
 		
 		_Query q;		
@@ -176,29 +191,30 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
 			}
 			
-			for(int j=0; j < m_topK; i++){
-				//get the top one.
-				dj = m_trainSet.get(simRanker.get(j).m_index);
-				neighbors.add(dj);
-				if(di.getYLabel()==dj.getYLabel())
-					relevant++;
-				else irrelevant++;
-				//get the bottom one.
-				dj = m_trainSet.get(simRanker.get(m_trainSet.size()-1-j).m_index);
-				neighbors.add(dj);
-				if(di.getYLabel()==dj.getYLabel())
-					relevant++;
-				else irrelevant++;		
-			}
-			//find the top K similar documents by default similarity measure
-//			for(_RankItem it:simRanker) {
-//				dj = m_trainSet.get(it.m_index);
+//			for(int j=0; j < m_topK; i++){
+//				//get the top one.
+//				dj = m_trainSet.get(simRanker.get(j).m_index);
 //				neighbors.add(dj);
-//				if (di.getYLabel() == dj.getYLabel())
-//					relevant ++;
-//				else
-//					irrelevant ++;
+//				if(di.getYLabel()==dj.getYLabel())
+//					relevant++;
+//				else irrelevant++;
+//				//get the bottom one.
+//				dj = m_trainSet.get(simRanker.get(m_trainSet.size()-1-j).m_index);
+//				neighbors.add(dj);
+//				if(di.getYLabel()==dj.getYLabel())
+//					relevant++;
+//				else irrelevant++;		
 //			}
+			
+			//find the top K similar documents by default similarity measure
+			for(_RankItem it:simRanker) {
+				dj = m_trainSet.get(it.m_index);
+				neighbors.add(dj);
+				if (di.getYLabel() == dj.getYLabel())
+					relevant ++;
+				else
+					irrelevant ++;
+			}
 			
 			//inject some random neighbors 
 			int j = 0;
@@ -218,7 +234,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 2*posQ)){
+				|| (di.getYLabel() == 1 && negQ < m_negRatio*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
@@ -261,7 +277,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[2] = q.sameProduct(d)?1:0;
 		
 		//feature 4: classifier's prediction difference
-		fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
+//		fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
 		
 		//feature 5: sparse feature length difference
 		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());

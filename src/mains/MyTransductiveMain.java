@@ -144,7 +144,7 @@ public class MyTransductiveMain {
 			boolean simFlag = false, weightedAvg = false;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
-			double noiseRatio = 1.5;
+			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
 			boolean metricLearning = true;
 			
 			GaussianFieldsByRandomWalk mySemi = null;			
@@ -159,7 +159,7 @@ public class MyTransductiveMain {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						topK, noiseRatio);
+						topK, noiseRatio, negRatio);
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
