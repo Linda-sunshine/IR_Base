@@ -30,6 +30,8 @@ public class _Stn {
 	// 0 for neutral or comment, 1 is for pos and 2 is for neg
 	// use in FastRestritedHMM.java_for sentiment to decide sentiment switch 
 	
+	int m_predictedSentimentLabel = -1;
+	
 	//attribute for topic label for future use only
 	int m_topicLabel = -1; // default is -1 so that it can help to debug 
 	
@@ -50,6 +52,14 @@ public class _Stn {
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;
+	}
+	
+	public void setSentencePredictedSenitmentLabel(int label){
+		m_predictedSentimentLabel = label;
+	}
+	
+	public int getSentencePredictedSenitmentLabel(){
+		return m_predictedSentimentLabel;
 	}
 	
 	public void setSentenceSenitmentLabel(int label){

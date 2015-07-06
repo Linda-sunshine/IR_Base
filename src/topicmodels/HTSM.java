@@ -94,11 +94,11 @@ public class HTSM extends HTMM {
 			last = current;
 		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
 		int path[] = get_MAP_topic_assignment(d);
-		System.out.println("Doc No: "+d.getID());
-		for(i=0; i<path.length;i++)
-			System.out.print(path[i]+",");
-		System.out.println();
-		
+//		System.out.println("Doc No: "+d.getID());
+//		for(i=0; i<path.length;i++)
+//			System.out.print(d.getSentence(i).getSentencePredictedSenitmentLabel()+",");
+//		System.out.println();
+//		
 		return current;
 	}
 	

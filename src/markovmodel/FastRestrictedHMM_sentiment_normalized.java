@@ -354,6 +354,13 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 		int level = this.length_of_seq - 1;
 		path[level] = FindBestInLevel(level);
 		for(int i = this.length_of_seq - 2; i>=0; i--)
-			path[i] = (int)beta[i+1][path[i+1]];  
+			path[i] = (int)beta[i+1][path[i+1]]; 
+		
+		for(int i=0; i<this.length_of_seq; i++){
+			int predictedSentiment = sentimentMapper(topicMapper(path[i]));
+			d.getSentence(i).setSentencePredictedSenitmentLabel(predictedSentiment);
+		}
+			
+		
 	}
 }

@@ -174,6 +174,6 @@ public class FastRestrictedHMM {
 		path[level] = FindBestInLevel(level);
 		for(int i = this.length_of_seq - 2; i>=0; i--)
 			path[i] = (int)beta[i+1][path[i+1]];  
-	}
+		}
 	
 }

@@ -180,8 +180,58 @@ public abstract class TopicModel {
 		perplexity /= m_testSet.size();
 		sumLikelihood /= m_testSet.size();
 		
+		int index = this.toString().indexOf("[");
+		String modelName = this.toString().substring(0,index);
+		if(modelName.equalsIgnoreCase("HTSM") || modelName.equalsIgnoreCase("LR-HTSM"))
+			calculatePrecisionRecall();
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		return perplexity;
+	}
+	
+	public void calculatePrecisionRecall(){
+		int[][] precision_recall = new int [2][2];
+		precision_recall [0][0] = 0; // 0 is for pos
+		precision_recall[0][1] = 0; // 1 is neg 
+		precision_recall[1][0] = 0;
+		precision_recall[1][1] = 0;
+		
+		int actualLabel, predictedLabel;
+		
+		for(_Doc d:m_testSet) {
+			for(int i=0; i<d.getSenetenceSize(); i++){
+				actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
+				predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
+				precision_recall[actualLabel][predictedLabel]++;
+			}
+		}
+		
+		System.out.println("Confusion Matrix");
+		for(int i=0; i<2; i++)
+		{
+			for(int j=0; j<2; j++)
+			{
+				System.out.print(precision_recall[i][j]+",");
+			}
+			System.out.println();
+		}
+		
+		double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
+		double cons_precision = (double)precision_recall[1][1]/(precision_recall[0][1] + precision_recall[1][1]);
+		
+		
+		double pros_recall = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[0][1]);
+		double cons_recall = (double)precision_recall[1][1]/(precision_recall[1][0] + precision_recall[1][1]);
+		
+		System.out.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
+		System.out.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
+		
+		
+		double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
+		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
+		
+		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
+
+		
 	}
 	
 	//k-fold Cross Validation.

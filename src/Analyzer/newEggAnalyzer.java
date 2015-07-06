@@ -181,7 +181,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
 					stnPosList.add(posTags);
-					stnLabel.add(1); // 1 for pos
+					stnLabel.add(0); // 0 for pos
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 					spVcts.add(vPtr);
@@ -201,7 +201,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
 					stnPosList.add(posTags);
-					stnLabel.add(2); // 2 for cons
+					stnLabel.add(1); // 1 for cons
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 					spVcts.add(vPtr);
@@ -212,25 +212,25 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				buffer.append(String.format("Cons: %s\n", content));
 		} 
 		
-		if ((content=post.getComments()) != null) {// tokenize comments
-			for(String sentence : m_stnDetector.sentDetect(content)) {
-
-				result = TokenizerNormalizeStemmer(sentence);
-				String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
-				tokens = result.getTokens();
-				vPtr = constructSpVct(tokens, y, docVct);		
-				if (vPtr.size()>0) {//avoid empty sentence
-					stnList.add(Utils.createSpVct(vPtr));
-					stnPosList.add(posTags);
-					stnLabel.add(0); // 0 for neutral
-					uniWordsInSections += vPtr.size();
-					spVcts.add(vPtr);
-				}
-			}
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Comments: %s\n", content));
-		}
+//		if ((content=post.getComments()) != null) {// tokenize comments
+//			for(String sentence : m_stnDetector.sentDetect(content)) {
+//
+//				result = TokenizerNormalizeStemmer(sentence);
+//				String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+//				tokens = result.getTokens();
+//				vPtr = constructSpVct(tokens, y, docVct);		
+//				if (vPtr.size()>0) {//avoid empty sentence
+//					stnList.add(Utils.createSpVct(vPtr));
+//					stnPosList.add(posTags);
+//					stnLabel.add(2); // 2 for neutral
+//					uniWordsInSections += vPtr.size();
+//					spVcts.add(vPtr);
+//				}
+//			}
+//			
+//			if (!m_releaseContent)
+//				buffer.append(String.format("Comments: %s\n", content));
+//		}
 		
 		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=5) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
