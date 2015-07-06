@@ -63,6 +63,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		int currentSentenceSenitment;
 		
 		for (int t = 1; t < this.length_of_seq; t++) {
+			norm = Double.NEGATIVE_INFINITY;
 			epsilon = getEpsilon(t);
 			logEpsilon = Math.log(epsilon);
 			logOneMinusEpsilon = Math.log(1.0 - epsilon);
@@ -80,7 +81,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			for (int i = 0; i < this.number_of_topic; i++) {
 					alpha[t][i] = logSigma + logEpsilon + emission[t][i] + sumOfAlphas(i, t-1, theta);  
 					alpha[t][i+this.number_of_topic] = logOneMinusSigma + logEpsilon + emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
-					norm = Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]);
+					norm = Utils.logSum(norm,Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
 					
 					alpha[t][i+2*this.number_of_topic] = logOneMinusSigma + logOneMinusEpsilon + emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
 					norm = Utils.logSum(norm, alpha[t][i+2*this.number_of_topic]);
@@ -132,11 +133,11 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	
 		for(int t=this.length_of_seq-2; t>=0; t--) {
 			
-			epsilon = getEpsilon(t);
+			epsilon = getEpsilon(t+1);
 			logEpsilon = Math.log(epsilon);
 			logOneMinusEpsilon = Math.log(1.0 - epsilon);
 			
-			sigma = getSigma(t);
+			sigma = getSigma(t+1);
 			logSigma = Math.log(sigma);
 			logOneMinusSigma = Math.log(1.0 - sigma);
 
@@ -173,7 +174,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 						si = sentimentMapper(i);
 						sum = Double.NEGATIVE_INFINITY;
 
-						for(int j=0; j<this.constant*this.number_of_topic; j++) {
+						for(int j=0; j<this.number_of_topic; j++) {
 							tj = topicMapper(j);
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
@@ -193,7 +194,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 						si = sentimentMapper(i);
 						sum = Double.NEGATIVE_INFINITY;
 
-						for(int j=0; j<this.constant*this.number_of_topic; j++) {
+						for(int j=this.number_of_topic; j<this.constant*this.number_of_topic; j++) {
 							tj = topicMapper(j);
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
@@ -211,6 +212,8 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					}
 				}
 			}
+			if(Double.isInfinite(sum))
+				System.out.println(sum);
 			nextSentenceSenitment = currentSentenceSenitment;
 		}
 	}

@@ -95,7 +95,7 @@ public class FastRestrictedHMM {
 	
 	void backwardComputation(double[][] emission, double[] theta) {
 		//initiate beta_n
-		Arrays.fill(beta[this.length_of_seq-1], 0);
+		Arrays.fill(beta[this.length_of_seq-1], 0); // since log 1 = 0
 		
 		double sum, logEpsilon, logOneMinusEpsilon;
 		for(int t=this.length_of_seq-2; t>=0; t--) {
@@ -121,6 +121,7 @@ public class FastRestrictedHMM {
 			
 			for(int i=0; i<this.constant*this.number_of_topic; i++) 
 				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
+	
 		}
 	}
 	
