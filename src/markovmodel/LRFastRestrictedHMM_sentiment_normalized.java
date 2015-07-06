@@ -3,14 +3,14 @@ package markovmodel;
 import structures._Doc;
 import utils.Utils;
 
-public class LRFastRestrictedHMM_sentiment extends FastRestrictedHMM_sentiment{
+public class LRFastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM_sentiment_normalized{
 	
 	double[] m_omega; // feature weight for topic transition
 	double[] m_delta; // feature weight for sentiment transition
 	double[] m_epsilons; // topic transition for each sentence
 	double[] m_sigmas;
 	
-	public LRFastRestrictedHMM_sentiment (double[] omega, double[] delta, int maxSeqSize, int topicSize) {
+	public LRFastRestrictedHMM_sentiment_normalized (double[] omega, double[] delta, int maxSeqSize, int topicSize) {
 		super(-1, -1, maxSeqSize, topicSize);//no global epsilon, epsilon = -1,sigma = -1
 		m_omega = omega;
 		m_delta = delta;

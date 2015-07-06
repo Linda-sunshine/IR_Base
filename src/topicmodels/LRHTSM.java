@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import markovmodel.LRFastRestrictedHMM_sentiment;
+import markovmodel.LRFastRestrictedHMM_sentiment_normalized;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
@@ -37,7 +38,7 @@ public class LRHTSM extends HTSM {
 	
 		m_lambda = lambda;//used as L2 regularization parameter for delta and omega estimation 
 		
-		m_hmm = new LRFastRestrictedHMM_sentiment(m_omega, m_delta, c.getLargestSentenceSize(), number_of_topics); 
+		m_hmm = new LRFastRestrictedHMM_sentiment_normalized(m_omega, m_delta, c.getLargestSentenceSize(), number_of_topics); 
 	}
 	
 	@Override

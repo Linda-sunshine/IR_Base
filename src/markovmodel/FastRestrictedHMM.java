@@ -34,7 +34,7 @@ public class FastRestrictedHMM {
 	public void setEpsilon(double epsilon) {
 		m_epsilon = epsilon;
 	}
-	
+		
 	public double ForwardBackward(_Doc d, double[][] emission) {
 		m_docPtr = d;
 		this.length_of_seq = d.getSenetenceSize();

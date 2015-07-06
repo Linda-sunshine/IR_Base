@@ -4,12 +4,12 @@ import java.util.Arrays;
 import structures._Doc;
 import utils.Utils;
 
-public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
+public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 
 	double m_sigma;//probability of sentiment switch
 	double m_transitMatrix[][];
 	
-	public FastRestrictedHMM_sentiment(double epsilon,double sigma, int maxSeqSize, int topicSize) {
+	public FastRestrictedHMM_sentiment_normalized(double epsilon,double sigma, int maxSeqSize, int topicSize) {
 		super(epsilon, maxSeqSize, topicSize, 3); // 3 is constant
 		m_sigma = sigma;
 		m_transitMatrix = new double[3*this.number_of_topic][3*this.number_of_topic];	
@@ -40,12 +40,12 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		if (i<this.number_of_topic) {//both changed
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si!=sentimentMapper(j) && ti!=topicMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + theta[ti]);
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[j][i]);
 			}
 		} else if (i<2*this.number_of_topic) {//only topic changed
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti!=topicMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + theta[ti]);
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[j][i]);
 			}
 		} else {//both stay the same
 			sum = Utils.logSum(alpha[t][i-2*this.number_of_topic], alpha[t][i-this.number_of_topic]);
@@ -54,11 +54,40 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		return sum;
 	}
 	
-
+	void generateTransitionMatrix(){
+		double logEpsilon, logOneMinusEpsilon;
+		double logSigma, logOneMinusSigma;
+		double epsilon = getEpsilon(1);
+		logEpsilon = Math.log(epsilon);
+		logOneMinusEpsilon = Math.log(1.0 - epsilon);
+		
+		double sigma = getSigma(1);
+		logSigma = Math.log(sigma);
+		logOneMinusSigma = Math.log(1.0 - sigma);
+		
+		double sum;
+		for(int i=0; i<3*this.number_of_topic;i++){
+			int ti = topicMapper(i), si = sentimentMapper(i);
+			sum = Double.NEGATIVE_INFINITY;
+			for(int j=0; j<3*this.number_of_topic; j++){
+				int tj = topicMapper(j), sj = sentimentMapper(j);
+				if(si!=sj && ti!=tj)
+					m_transitMatrix[i][j] = logSigma + logEpsilon + m_docPtr.m_topics[tj];
+				else if(si==sj && ti!=tj)
+					m_transitMatrix[i][j] = logOneMinusSigma + logEpsilon + m_docPtr.m_topics[tj];
+				else
+					m_transitMatrix[i][j] = logOneMinusSigma + logOneMinusEpsilon;
+				sum = Utils.logSum(sum, m_transitMatrix[i][j]);
+			}
+			// normalizing the transition Matrix
+			for(int j=0; j<3*this.number_of_topic; j++)
+				m_transitMatrix[i][j] -= sum;
+		}
+	}
 	
 	@Override
 	double forwardComputation(double[][] emission, double[] theta) {
-	
+		generateTransitionMatrix();
 		double epsilon, logEpsilon, logOneMinusEpsilon;
 		double sigma, logSigma, logOneMinusSigma;
 		double logLikelihood = 0, norm = Double.NEGATIVE_INFINITY;//log0
@@ -83,11 +112,11 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			//this means this documnet is not from newEgg
 			// theta is represented as all positive topics then all negative topics
 			for (int i = 0; i < this.number_of_topic; i++) {
-					alpha[t][i] = logSigma + logEpsilon + emission[t][i] + sumOfAlphas(i, t-1, theta);  
-					alpha[t][i+this.number_of_topic] = logOneMinusSigma + logEpsilon + emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
+					alpha[t][i] = emission[t][i] + sumOfAlphas(i, t-1, theta);  
+					alpha[t][i+this.number_of_topic] = emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
 					norm = Utils.logSum(norm,Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
 					
-					alpha[t][i+2*this.number_of_topic] = logOneMinusSigma + logOneMinusEpsilon + emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
+					alpha[t][i+2*this.number_of_topic] = emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
 					norm = Utils.logSum(norm, alpha[t][i+2*this.number_of_topic]);
 				}
 			}
@@ -96,15 +125,15 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				if(previousSentenceSenitment!=currentSentenceSenitment){
 					//this means we have to consider only the first chunck // both sentiment & topic switch
 					for (int i = 0; i < this.number_of_topic; i++) {
-						alpha[t][i] = logSigma + logEpsilon + emission[t][i] + sumOfAlphas(i, t-1, theta);
+						alpha[t][i] = emission[t][i] + sumOfAlphas(i, t-1, theta);
 						norm = Utils.logSum(norm, alpha[t][i]);
 					}
 				}
 				else{
 					//this means we have to consider only the second & third chunck // topic switch or not
 					for (int i = 0; i < this.number_of_topic; i++) {
-						alpha[t][i+this.number_of_topic] = logOneMinusSigma + logEpsilon + emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
-						alpha[t][i+2*this.number_of_topic] = logOneMinusSigma + logOneMinusEpsilon + emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
+						alpha[t][i+this.number_of_topic] = emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
+						alpha[t][i+2*this.number_of_topic] = emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
 						norm = Utils.logSum(norm,Utils.logSum(alpha[t][i+this.number_of_topic], alpha[t][i+2*this.number_of_topic]));
 					}
 				}
@@ -158,11 +187,11 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 						sj = sentimentMapper(j);
 						probj = emission[t+1][tj] + beta[t+1][j];
 						if (sj!=si && tj!=ti) {
-							sum = Utils.logSum(sum, logSigma + logEpsilon + theta[tj] + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 						} else if (sj==si && tj!=ti) {
-							sum = Utils.logSum(sum, logOneMinusSigma + logEpsilon + theta[tj] + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 						} else {
-							sum = Utils.logSum(sum, logOneMinusSigma + logOneMinusEpsilon + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 						}
 					}
 					sum -= norm_factor[t];
@@ -183,7 +212,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
 							if (sj!=si && tj!=ti) {
-								sum = Utils.logSum(sum, logSigma + logEpsilon + theta[tj] + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 							} 
 						}
 						sum -= norm_factor[t];
@@ -203,9 +232,9 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
 							if (sj==si && tj!=ti) {
-								sum = Utils.logSum(sum, logOneMinusSigma + logEpsilon + theta[tj] + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 							} else {
-								sum = Utils.logSum(sum, logOneMinusSigma + logOneMinusEpsilon + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
 							}
 						}
 						sum -= norm_factor[t];
@@ -243,18 +272,18 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				
 				
 				prev_best = FindBestInLevel(t-1, i);
-				alpha[t][i] = alpha[t-1][prev_best] + logSigma + logEpsilon + theta[i] + emission[t][i];
+				alpha[t][i] = alpha[t-1][prev_best] + m_transitMatrix[prev_best][i] + emission[t][i];
 				beta[t][i] = prev_best;
 				
 				prev_best = FindBestInLevel(t-1, i+this.number_of_topic);
 				ti = topicMapper(i+this.number_of_topic);
-				alpha[t][i+this.number_of_topic] = alpha[t-1][prev_best] + logOneMinusSigma + logEpsilon + theta[ti] + emission[t][i];
+				alpha[t][i+this.number_of_topic] = alpha[t-1][prev_best] +  m_transitMatrix[prev_best][i+this.number_of_topic]  + emission[t][i];
 				beta[t][i+this.number_of_topic] = prev_best;
 				
 				
 				prev_best = FindBestInLevel(t-1, i+2*this.number_of_topic);
 				ti = topicMapper(i+2*this.number_of_topic);
-				alpha[t][i+2*this.number_of_topic] = alpha[t-1][prev_best] + logOneMinusSigma + logOneMinusEpsilon + emission[t][i];
+				alpha[t][i+2*this.number_of_topic] = alpha[t-1][prev_best] + m_transitMatrix[prev_best][i+2*this.number_of_topic]  + emission[t][i];
 				beta[t][i+2*this.number_of_topic] = prev_best;
 				
 			}// End for i
