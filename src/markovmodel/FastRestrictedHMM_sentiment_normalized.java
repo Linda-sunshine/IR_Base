@@ -88,40 +88,28 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 	@Override
 	double forwardComputation(double[][] emission, double[] theta) {
 		generateTransitionMatrix();
-		double epsilon, logEpsilon, logOneMinusEpsilon;
-		double sigma, logSigma, logOneMinusSigma;
 		double logLikelihood = 0, norm = Double.NEGATIVE_INFINITY;//log0
 		
 		int previousSentenceSenitment = this.m_docPtr.getSentence(0).getSentenceSenitmentLabel();
 		int currentSentenceSenitment;
 		
 		for (int t = 1; t < this.length_of_seq; t++) {
-			norm = Double.NEGATIVE_INFINITY;
-			epsilon = getEpsilon(t);
-			logEpsilon = Math.log(epsilon);
-			logOneMinusEpsilon = Math.log(1.0 - epsilon);
-			
-			sigma = getSigma(t);
-			logSigma = Math.log(sigma);
-			logOneMinusSigma = Math.log(1.0 - sigma);
-			
+			norm = Double.NEGATIVE_INFINITY;			
 			currentSentenceSenitment = this.m_docPtr.getSentence(t).getSentenceSenitmentLabel();
-			
 		
 			if(currentSentenceSenitment==-1 || previousSentenceSenitment==-1){
-			//this means this documnet is not from newEgg
-			// theta is represented as all positive topics then all negative topics
-			for (int i = 0; i < this.number_of_topic; i++) {
+				//this means this documnet is not from newEgg
+				// theta is represented as all positive topics then all negative topics
+				for (int i = 0; i < this.number_of_topic; i++) {
 					alpha[t][i] = emission[t][i] + sumOfAlphas(i, t-1, theta);  
 					alpha[t][i+this.number_of_topic] = emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
-					norm = Utils.logSum(norm,Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
+					norm = Utils.logSum(norm, Utils.logSum(alpha[t][i], alpha[t][i+this.number_of_topic]));
 					
 					alpha[t][i+2*this.number_of_topic] = emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
 					norm = Utils.logSum(norm, alpha[t][i+2*this.number_of_topic]);
 				}
 			}
-			else{
-				//this means this document is from newEgg
+			else{//this means this document has partial annotation
 				if(previousSentenceSenitment!=currentSentenceSenitment){
 					//this means we have to consider only the first chunck // both sentiment & topic switch
 					for (int i = 0; i < this.number_of_topic; i++) {
@@ -134,7 +122,7 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 					for (int i = 0; i < this.number_of_topic; i++) {
 						alpha[t][i+this.number_of_topic] = emission[t][i] + sumOfAlphas(i+this.number_of_topic, t-1, theta);  // same sentiment but different topic
 						alpha[t][i+2*this.number_of_topic] = emission[t][i] + sumOfAlphas(i+2*this.number_of_topic, t-1, theta); // same sentiment and same topic
-						norm = Utils.logSum(norm,Utils.logSum(alpha[t][i+this.number_of_topic], alpha[t][i+2*this.number_of_topic]));
+						norm = Utils.logSum(norm, Utils.logSum(alpha[t][i+this.number_of_topic], alpha[t][i+2*this.number_of_topic]));
 					}
 				}
 			}
@@ -155,25 +143,13 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 		//initiate beta_n
 		Arrays.fill(beta[this.length_of_seq-1], 0);
 		
-		double epsilon, logEpsilon, logOneMinusEpsilon;
-		double sigma, logSigma, logOneMinusSigma;
 		double sum = Double.NEGATIVE_INFINITY, probj;
 		int ti, si, tj, sj;
 		
 		int nextSentenceSenitment = this.m_docPtr.getSentence(this.length_of_seq-1).getSentenceSenitmentLabel();
 		int currentSentenceSenitment;
-		
 	
 		for(int t=this.length_of_seq-2; t>=0; t--) {
-			
-			epsilon = getEpsilon(t+1);
-			logEpsilon = Math.log(epsilon);
-			logOneMinusEpsilon = Math.log(1.0 - epsilon);
-			
-			sigma = getSigma(t+1);
-			logSigma = Math.log(sigma);
-			logOneMinusSigma = Math.log(1.0 - sigma);
-
 			currentSentenceSenitment = this.m_docPtr.getSentence(t).getSentenceSenitmentLabel();
 
 			if(currentSentenceSenitment==-1 || nextSentenceSenitment==-1){
@@ -186,13 +162,13 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 						tj = topicMapper(j);
 						sj = sentimentMapper(j);
 						probj = emission[t+1][tj] + beta[t+1][j];
-						if (sj!=si && tj!=ti) {
+						
+						if (sj!=si && tj!=ti)
 							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
-						} else if (sj==si && tj!=ti) {
+						else if (sj==si && tj!=ti)
 							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
-						} else {
+						else 
 							sum = Utils.logSum(sum, m_transitMatrix[i][j] + probj);
-						}
 					}
 					sum -= norm_factor[t];
 
@@ -255,22 +231,11 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 	//NOTE: all computation in log space
 	@Override
 	public void computeViterbiAlphas(double[][] emission, double[] theta) {
-		double logEpsilon, logOneMinusEpsilon, epsilon,sigma, logSigma, logOneMinusSigma;
 		int prev_best;
 		int ti;
 		
-		for (int t = 1; t < this.length_of_seq; t++) {
-			epsilon = getEpsilon(t);
-			logEpsilon = Math.log(epsilon);
-			logOneMinusEpsilon = Math.log(1.0 - epsilon);
-			
-			sigma = getSigma(t);
-			logSigma = Math.log(sigma);
-			logOneMinusSigma = Math.log(1.0 - sigma);
-			
+		for (int t = 1; t < this.length_of_seq; t++) {			
 			for (int i = 0; i < this.number_of_topic; i++) {
-				
-				
 				prev_best = FindBestInLevel(t-1, i);
 				alpha[t][i] = alpha[t-1][prev_best] + m_transitMatrix[prev_best][i] + emission[t][i];
 				beta[t][i] = prev_best;
@@ -280,7 +245,6 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 				alpha[t][i+this.number_of_topic] = alpha[t-1][prev_best] +  m_transitMatrix[prev_best][i+this.number_of_topic]  + emission[t][i];
 				beta[t][i+this.number_of_topic] = prev_best;
 				
-				
 				prev_best = FindBestInLevel(t-1, i+2*this.number_of_topic);
 				ti = topicMapper(i+2*this.number_of_topic);
 				alpha[t][i+2*this.number_of_topic] = alpha[t-1][prev_best] + m_transitMatrix[prev_best][i+2*this.number_of_topic]  + emission[t][i];
@@ -289,7 +253,6 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 			}// End for i
 		}//End For t
 	}
-	
 	
 	int FindBestInLevel(int t, int i) {
 		
@@ -360,7 +323,5 @@ public class FastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM {
 			int predictedSentiment = sentimentMapper(topicMapper(path[i]));
 			d.getSentence(i).setSentencePredictedSenitmentLabel(predictedSentiment);
 		}
-			
-		
 	}
 }

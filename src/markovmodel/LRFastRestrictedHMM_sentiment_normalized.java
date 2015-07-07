@@ -3,7 +3,7 @@ package markovmodel;
 import structures._Doc;
 import utils.Utils;
 
-public class LRFastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM_sentiment_normalized{
+public class LRFastRestrictedHMM_sentiment_normalized extends FastRestrictedHMM_sentiment_normalized {
 	
 	double[] m_omega; // feature weight for topic transition
 	double[] m_delta; // feature weight for sentiment transition
