@@ -41,12 +41,12 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		if (i<this.number_of_topic) {//both changed
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si!=sentimentMapper(j) && ti!=topicMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t][j][i]);
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
 			}
 		} else if (i<2*this.number_of_topic) {//only topic changed
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti!=topicMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t][j][i]);
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
 			}
 		} else {//both stay the same
 			sum = Utils.logSum(alpha[t][i-2*this.number_of_topic], alpha[t][i-this.number_of_topic]);
@@ -171,11 +171,11 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 						probj = emission[t+1][tj] + beta[t+1][j];
 						
 						if (sj!=si && tj!=ti)
-							sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 						else if (sj==si && tj!=ti)
-							sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 						else 
-							sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 					}
 					sum -= norm_factor[t];
 
@@ -195,7 +195,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
 							if (sj!=si && tj!=ti) {
-								sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 							} 
 						}
 						sum -= norm_factor[t];
@@ -215,9 +215,9 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 							sj = sentimentMapper(j);
 							probj = emission[t+1][tj] + beta[t+1][j];
 							if (sj==si && tj!=ti) {
-								sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 							} else {
-								sum = Utils.logSum(sum, m_transitMatrix[t][i][j] + probj);
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
 							}
 						}
 						sum -= norm_factor[t];
@@ -239,8 +239,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	@Override
 	public void computeViterbiAlphas(double[][] emission, double[] theta) {
 		int prev_best;
-		int ti;
-		
 		for (int t = 1; t < this.length_of_seq; t++) {			
 			for (int i = 0; i < this.number_of_topic; i++) {
 				prev_best = FindBestInLevel(t-1, i);
@@ -248,7 +246,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				beta[t][i] = prev_best;
 				
 				prev_best = FindBestInLevel(t-1, i+this.number_of_topic);
-				ti = topicMapper(i+this.number_of_topic);
 				alpha[t][i+this.number_of_topic] = alpha[t-1][prev_best] +  m_transitMatrix[t][prev_best][i+this.number_of_topic]  + emission[t][i];
 				beta[t][i+this.number_of_topic] = prev_best;
 				
