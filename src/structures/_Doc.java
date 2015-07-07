@@ -33,6 +33,15 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	
+	int m_sourceName = -1; // source is 1 for Amazon and 2 for newEgg
+	
+	public void setSourceName(int sourceName){
+		m_sourceName = sourceName;
+	}
+	
+	public int getSourceName(){
+		return m_sourceName;
+	}
 	
 	public double getAvgIDF() {
 		return m_avgIDF;

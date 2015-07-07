@@ -198,10 +198,14 @@ public abstract class TopicModel {
 		int actualLabel, predictedLabel;
 		
 		for(_Doc d:m_testSet) {
-			for(int i=0; i<d.getSenetenceSize(); i++){
-				actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
-				predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
-				precision_recall[actualLabel][predictedLabel]++;
+			// if documnet is from newEgg which is 2 then calculate precision-recall
+			if(d.getSourceName()==2){
+				
+				for(int i=0; i<d.getSenetenceSize(); i++){
+					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
+					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
+					precision_recall[actualLabel][predictedLabel]++;
+				}
 			}
 		}
 		

@@ -1,7 +1,7 @@
 package topicmodels;
 
+import markovmodel.FastRestrictedHMM_sentiment1;
 import markovmodel.FastRestrictedHMM_sentiment;
-import markovmodel.FastRestrictedHMM_sentiment_normalized;
 import structures._Corpus;
 import structures._Doc;
 
@@ -20,7 +20,7 @@ public class HTSM extends HTMM {
 		}
 		
 		this.sigma = Math.random();
-		m_hmm = new FastRestrictedHMM_sentiment_normalized(epsilon, sigma, c.getLargestSentenceSize(), this.number_of_topics); 
+		m_hmm = new FastRestrictedHMM_sentiment(epsilon, sigma, c.getLargestSentenceSize(), this.number_of_topics); 
 	}
 	
 	@Override
@@ -47,7 +47,7 @@ public class HTSM extends HTMM {
 		
 		if (iter>0) {
 			this.sigma = this.sigma_lot / this.total;
-			((FastRestrictedHMM_sentiment_normalized)m_hmm).setSigma(this.sigma);
+			((FastRestrictedHMM_sentiment)m_hmm).setSigma(this.sigma);
 		}
 	}
 	
@@ -64,7 +64,7 @@ public class HTSM extends HTMM {
 	@Override
 	public int[] get_MAP_topic_assignment(_Doc d) {
 		int path [] = new int [d.getSenetenceSize()];
-		((FastRestrictedHMM_sentiment_normalized)m_hmm).BackTrackBestPath(d, emission, path);
+		((FastRestrictedHMM_sentiment)m_hmm).BackTrackBestPath(d, emission, path);
 		return path;
 	}
 	

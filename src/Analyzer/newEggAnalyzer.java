@@ -149,7 +149,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
-			
+			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
@@ -235,6 +235,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=5) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
+			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
 			doc.setSentencesWithLabels(stnList, stnLabel);
 			doc.setSentencesPOSTag(stnPosList);
