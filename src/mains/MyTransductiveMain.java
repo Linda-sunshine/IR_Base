@@ -64,7 +64,7 @@ public class MyTransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -97,7 +97,7 @@ public class MyTransductiveMain {
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		} else{
 //			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, null);
-			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
+			analyzer = new AspectAnalyzer(tokenModel, null, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
 //			analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).LoadSNWWithScore("./data/Model/SentiWordNet_3.0.0_20130122.txt");
@@ -140,7 +140,7 @@ public class MyTransductiveMain {
 			double learningRatio = 1;
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = false;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;

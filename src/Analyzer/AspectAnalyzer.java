@@ -390,7 +390,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 					if (Utils.endWithPunct(post.getTitle()))
 						content = post.getTitle() + " " + post.getContent();
 					else
-						content = post.getTitle() + ". " + post.getContent();
+						content = post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getContent();
 					// int label = 0;
 					// if(post.getLabel()>=4) label = 1;
 					// _Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
@@ -407,20 +407,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			}
 		}
 	}
-
-//	//Set the topic vector for every document.
-//	public void setTopicVector(double[][] ttp){
-//		for(_Doc d: m_corpus.getCollection()){
-//			double[] topicVector = new double[ttp.length];
-//			for(int i=0; i < ttp.length; i++){
-//				for(_SparseFeature sf: d.getSparse()){
-//					int index = sf.getIndex();
-//					topicVector[i] += ttp[i][index] * sf.getValue();
-//				}
-//			}
-//			d.setAspVct(topicVector);
-//		}
-//	}
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		int classNumber = 2; //Define the number of classes
