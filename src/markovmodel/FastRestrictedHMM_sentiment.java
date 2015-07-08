@@ -40,7 +40,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	}
 	
 	//topicMapper gives us large i value to the actual topic number
-	// for example if total_numner of toics is 6 [0 to 2 is positive; 3 to 5 is negative], then we have 3*6=18
+	// for example if total_numner of topics is 6 [0 to 2 is positive; 3 to 5 is negative], then we have 3*6=18
 	// topics so if the input i is 15, topicIndexMapper return it as a range between 
 	// 0 to 3 (half of topic_number) which is (15%6)%(6/2) = 0 here
 	// we need because for example P0 cannot transit to P0 or N0
@@ -133,6 +133,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				int docTopicIndex;
 				sum = Double.NEGATIVE_INFINITY;
 				int c = 0;
+				//System.out.print("\ni:"+i+",j: ");
 				for(int j=0; j<this.constant*this.number_of_topic; j++){
 					tj = topicIndexMapper(j);
 					sj = sentimentMapper(j);
@@ -141,6 +142,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					if(j>=0 && j<this.number_of_topic){
 						if(si!=sj && ti!=tj)
 						{
+							//System.out.print(j+",");
 							m_transitMatrix[t][i][j] = logSigma + logEpsilon + m_docPtr.m_topics[docTopicIndex];
 							c++;
 						}
@@ -149,12 +151,14 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					{
 					 if(si==sj && ti!=tj)
 						{
-							m_transitMatrix[t][i][j] = logOneMinusSigma + logEpsilon + m_docPtr.m_topics[docTopicIndex];
+						 	//System.out.print(j+",");
+						 	m_transitMatrix[t][i][j] = logOneMinusSigma + logEpsilon + m_docPtr.m_topics[docTopicIndex];
 							c++;
 						}
 					}
 					else if ((j>=2*this.number_of_topic && j<3*this.number_of_topic)){
 						if(si==sj && ti==tj){
+							//System.out.print(j+",");
 							m_transitMatrix[t][i][j] = logOneMinusSigma + logOneMinusEpsilon;
 							c++;
 						}
@@ -184,7 +188,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			currentSentenceSenitment = this.m_docPtr.getSentence(t).getSentenceSenitmentLabel();
 		
 			if(currentSentenceSenitment==-1 || previousSentenceSenitment==-1){
-				//this means this documnet is not from newEgg
+				//this means this document is not from newEgg
 				// theta is represented as all positive topics then all negative topics
 				for (int i = 0; i < this.number_of_topic; i++) {
 					alpha[t][i] = emission[t][i] + sumOfAlphas(i, t-1);  
@@ -364,9 +368,10 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		double best=Double.NEGATIVE_INFINITY;
 		int best_index = -1;
 		if (i<this.number_of_topic) {//both changed
-
+			//System.out.print("\ni:"+i+", j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si!=sentimentMapper(j) && ti!=topicIndexMapper(j)){
+					//System.out.print(j+",");
 					if(alpha[t][j] > best){
 						best = alpha[t][j];
 						best_index = j;
@@ -374,9 +379,10 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				}
 			}
 		} else if (i<2*this.number_of_topic) {//only topic changed
-			
+			//System.out.print("\ni:"+i+", j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti!=topicIndexMapper(j)){
+					//System.out.print(j+",");
 					if(alpha[t][j] > best){
 						best = alpha[t][j];
 						best_index = j;
@@ -384,9 +390,10 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				}
 			}
 		} else {//both stay the same
-			
+			//System.out.print("\ni:"+i+", j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti==topicIndexMapper(j)){
+					//System.out.print(j+",");
 					if(alpha[t][j] > best){
 						best = alpha[t][j];
 						best_index = j;
@@ -394,6 +401,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 				}
 			}
 		}
+		//System.out.println("best:"+best_index);
 		return best_index;
 	}
 
