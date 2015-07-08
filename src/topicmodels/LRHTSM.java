@@ -111,20 +111,41 @@ public class LRHTSM extends HTSM {
 		loglikelihood *= m_lambda/2;
 		
 		double[] transitFv;
-		for(_Doc d:m_corpus.getCollection()) {			
-			for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
-				transitFv = d.getSentence(t-1).getTransitFvs();
-				
-				p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
-				q = d.getSentence(t).getTransitStat(); // posterior of p(\epsilon=1|x, w)
-				
-				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
-				
-				//collect gradient
-				g = p - q;
-				m_g_omega[0] += g;//for bias term
-				for(int n=0; n<_Doc.stn_fv_size; n++)
-					m_g_omega[1+n] += g * transitFv[n];
+		
+		if(m_crossValidFold==1){
+			for(_Doc d:m_corpus.getCollection()) {			
+				for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
+					transitFv = d.getSentence(t-1).getTransitFvs();
+
+					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+					q = d.getSentence(t).getTransitStat(); // posterior of p(\epsilon=1|x, w)
+
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+
+					//collect gradient
+					g = p - q;
+					m_g_omega[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_fv_size; n++)
+						m_g_omega[1+n] += g * transitFv[n];
+				}
+			}
+		}
+		else if(m_crossValidFold>1){
+			for(_Doc d:m_trainSet) {			
+				for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
+					transitFv = d.getSentence(t-1).getTransitFvs();
+
+					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+					q = d.getSentence(t).getTransitStat(); // posterior of p(\epsilon=1|x, w)
+
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+
+					//collect gradient
+					g = p - q;
+					m_g_omega[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_fv_size; n++)
+						m_g_omega[1+n] += g * transitFv[n];
+				}
 			}
 		}
 		
@@ -161,22 +182,43 @@ public class LRHTSM extends HTSM {
 		loglikelihood *= m_lambda/2;
 		
 		double[] transitFv;
-		for(_Doc d:m_corpus.getCollection()) {			
-			for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
-				transitFv = d.getSentence(t-1).getSentiTransitFvs();
-				
-				p = Utils.logistic(transitFv, m_delta); // p(\epsilon=1|x, w)
-				q = d.getSentence(t).getSentiTransitStat(); // posterior of p(\epsilon=1|x, w)
-				
-				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
-				
-				//collect gradient
-				g = p - q;
-				m_g_delta[0] += g;//for bias term
-				for(int n=0; n<_Doc.stn_senti_fv_size; n++)
-					m_g_delta[1+n] += g * transitFv[n];
+		if(m_crossValidFold==1){
+			for(_Doc d:m_corpus.getCollection()) {			
+				for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
+					transitFv = d.getSentence(t-1).getSentiTransitFvs();
+					
+					p = Utils.logistic(transitFv, m_delta); // p(\epsilon=1|x, w)
+					q = d.getSentence(t).getSentiTransitStat(); // posterior of p(\epsilon=1|x, w)
+					
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+					
+					//collect gradient
+					g = p - q;
+					m_g_delta[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_senti_fv_size; n++)
+						m_g_delta[1+n] += g * transitFv[n];
+				}
 			}
 		}
+		else{
+			for(_Doc d:m_trainSet) {			
+				for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
+					transitFv = d.getSentence(t-1).getSentiTransitFvs();
+					
+					p = Utils.logistic(transitFv, m_delta); // p(\epsilon=1|x, w)
+					q = d.getSentence(t).getSentiTransitStat(); // posterior of p(\epsilon=1|x, w)
+					
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+					
+					//collect gradient
+					g = p - q;
+					m_g_delta[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_senti_fv_size; n++)
+						m_g_delta[1+n] += g * transitFv[n];
+				}
+			}
+		}
+		
 		
 		return loglikelihood;
 	}

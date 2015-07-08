@@ -98,7 +98,14 @@ public class pLSA extends twoTopic {
 	protected void initialize_probability(Collection<_Doc> collection) {	
 		// initialize topic document proportion, p(z|d)
 		for(_Doc d:collection)
+		{
 			d.setTopics(number_of_topics, d_alpha-1.0);//allocate memory and randomize it
+			
+			for(int t=0; t<d.getSenetenceSize(); t++){
+				d.getSentence(t).setSentiTransitStat(0); // setting this to zero for use in LRHTSM for each fold
+				d.getSentence(t).setTransitStat(0); // setting this to zero for use in LRHTSM for each fold
+			}
+		}
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)

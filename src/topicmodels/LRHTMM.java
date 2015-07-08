@@ -90,23 +90,42 @@ public class LRHTMM extends HTMM {
 		loglikelihood *= m_lambda/2;
 		
 		double[] transitFv;
-		for(_Doc d:m_corpus.getCollection()) {			
-			for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
-				transitFv = d.getSentence(i-1).getTransitFvs();
-				
-				p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
-				q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
-				
-				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
-				
-				//collect gradient
-				g = p - q;
-				m_g_omega[0] += g;//for bias term
-				for(int n=0; n<_Doc.stn_fv_size; n++)
-					m_g_omega[1+n] += g * transitFv[n];
+		if(m_crossValidFold==1){
+			for(_Doc d:m_corpus.getCollection()) {			
+				for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
+					transitFv = d.getSentence(i-1).getTransitFvs();
+
+					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+					q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
+
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+
+					//collect gradient
+					g = p - q;
+					m_g_omega[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_fv_size; n++)
+						m_g_omega[1+n] += g * transitFv[n];
+				}
 			}
 		}
-		
+		else if(m_crossValidFold>1){
+			for(_Doc d:m_trainSet) {			
+				for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
+					transitFv = d.getSentence(i-1).getTransitFvs();
+
+					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+					q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
+
+					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+
+					//collect gradient
+					g = p - q;
+					m_g_omega[0] += g;//for bias term
+					for(int n=0; n<_Doc.stn_fv_size; n++)
+						m_g_omega[1+n] += g * transitFv[n];
+				}
+			}
+		}
 		return loglikelihood;
 	}
 }

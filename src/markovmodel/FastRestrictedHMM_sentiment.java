@@ -85,22 +85,28 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		int ti = topicIndexMapper(i), si = sentimentMapper(i);
 		int c=0;
 		if (i<this.number_of_topic) {//both changed
+			//System.out.print("\nFrom "+t+" to "+(t+1)+" i:"+i+"j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si!=sentimentMapper(j) && ti!=topicIndexMapper(j)){
+					//System.out.print(j+",");
 					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
 					c++;
 				}
 			}
 		} else if (i<2*this.number_of_topic) {//only topic changed
+			//System.out.print("\nFrom "+t+" to "+(t+1)+" i:"+i+"j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti!=topicIndexMapper(j)){
+					//System.out.print(j+",");
 					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
 					c++;
 				}
 			}
 		} else {//both stay the same
+			//System.out.print("\nFrom "+t+" to "+(t+1)+" i:"+i+"j:");
 			for(int j=0; j<this.constant*this.number_of_topic; j++) {
 				if(si==sentimentMapper(j) && ti==topicIndexMapper(j)){
+					//System.out.print(j+",");
 					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
 					c++;
 				}
@@ -333,8 +339,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					}
 				}
 			}
-			if(Double.isInfinite(sum))
-				System.out.println(sum);
 			nextSentenceSenitment = currentSentenceSenitment;
 		}
 	}
