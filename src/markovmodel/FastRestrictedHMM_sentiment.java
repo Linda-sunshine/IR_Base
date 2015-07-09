@@ -35,7 +35,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		return i%this.number_of_topic;
 	}	
 	
-	double sumOfAlphas(int i, int t){
+	double sumOfAlphas(int i, int t){//i: destination state, t: previous position
 		double sum = Double.NEGATIVE_INFINITY;
 		int ti = topicMapper(i), si = sentimentMapper(i);
 		if (i<this.number_of_topic) {//both changed

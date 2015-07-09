@@ -3,7 +3,6 @@ package topicmodels;
 import java.util.Arrays;
 import java.util.Collection;
 
-import markovmodel.LRFastRestrictedHMM_sentiment1;
 import markovmodel.LRFastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;

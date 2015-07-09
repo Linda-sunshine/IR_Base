@@ -1,6 +1,5 @@
 package topicmodels;
 
-import markovmodel.FastRestrictedHMM_sentiment1;
 import markovmodel.FastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
@@ -93,7 +92,7 @@ public class HTSM extends HTMM {
 			delta = (last - current)/last;
 			last = current;
 		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
-		int path[] = get_MAP_topic_assignment(d);
+//		int path[] = get_MAP_topic_assignment(d);
 //		System.out.println("Doc No: "+d.getID());
 //		for(i=0; i<path.length;i++)
 //			System.out.print(d.getSentence(i).getSentencePredictedSenitmentLabel()+",");
