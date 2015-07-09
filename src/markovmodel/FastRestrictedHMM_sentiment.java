@@ -13,7 +13,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		super(epsilon, maxSeqSize, topicSize, 3); // 3 is constant
 		m_sigma = sigma;
 		m_transitMatrix = new double[maxSeqSize][3*this.number_of_topic][3*this.number_of_topic];
-		
 	}
 	
 	public void setSigma(double sigma){
@@ -120,8 +119,18 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		double logEpsilon, logOneMinusEpsilon;
 		double logSigma, logOneMinusSigma;
 		double epsilon, sigma;
-		
 		double sum;
+		
+		//initialize transitionMatrix
+		for(int i=0; i<this.length_of_seq; i++){
+			for(int j=0; j<3*this.number_of_topic;j++){
+				for(int k=0; k<3*this.number_of_topic;k++){
+					m_transitMatrix[i][j][k] = Double.NEGATIVE_INFINITY;
+				}
+			}
+		}
+		
+		
 		for(int t=1; t<this.length_of_seq;t++){
 			epsilon = getEpsilon(t);
 			logEpsilon = Math.log(epsilon);
@@ -437,7 +446,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	@Override
 	public void BackTrackBestPath(_Doc d, double[][] emission, int[] path) {
 		this.length_of_seq = d.getSenetenceSize();
-		
+		m_docPtr = d;
 		initAlpha(d.m_topics,emission[0]);
 		generateTransitionMatrix();
 		computeViterbiAlphas(emission, d.m_topics);
