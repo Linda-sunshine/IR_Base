@@ -14,6 +14,7 @@ public abstract class TopicModel {
 	protected int number_of_iteration;
 	protected double m_converge;
 	protected _Corpus m_corpus;	
+	protected int m_crossValidFold;
 	
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
@@ -240,6 +241,7 @@ public abstract class TopicModel {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
+		m_crossValidFold = k;
 		m_corpus.shuffle(k);
 		int[] masks = m_corpus.getMasks();
 		ArrayList<_Doc> docs = m_corpus.getCollection();

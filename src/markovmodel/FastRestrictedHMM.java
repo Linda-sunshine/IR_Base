@@ -48,6 +48,7 @@ public class FastRestrictedHMM {
 	//NOTE: all computation in log space
 	double initAlpha(double[] theta, double[] local0) {
 		double norm = Double.NEGATIVE_INFINITY;//log0
+		
 		for (int i = 0; i < this.number_of_topic; i++) {
 			alpha[0][i] = local0[i] + theta[i];//document must start with a new topic and a new sentiment
 			for(int j=1; j<this.constant; j++)
