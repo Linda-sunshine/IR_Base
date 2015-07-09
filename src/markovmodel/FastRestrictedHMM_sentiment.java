@@ -253,19 +253,31 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					ti = topicIndexMapper(i);
 					si = sentimentMapper(i);
 					sum = Double.NEGATIVE_INFINITY;
-
+					//System.out.print("\ni:"+i+",j:");
 					for(int j=0; j<this.constant*this.number_of_topic; j++) {
 						tj = topicIndexMapper(j);
 						sj = sentimentMapper(j);
 						int topicj = topicMapper(j);
 						probj = emission[t+1][topicj] + beta[t+1][j];
 						
-						if (sj!=si && tj!=ti)
-							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
-						else if (sj==si && tj!=ti)
-							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
-						else 
-							sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
+						if(j>=0 && j<this.number_of_topic){
+							if (sj!=si && tj!=ti){
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
+								//System.out.print(j+",");
+							}
+						}
+						else if(j>=this.number_of_topic && j<2*this.number_of_topic){
+							if (sj==si && tj!=ti){
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
+								//System.out.print(j+",");
+							}
+						}
+						else if (j>=2*this.number_of_topic && j<3*this.number_of_topic){
+							if(sj==si && tj==ti){
+								sum = Utils.logSum(sum, m_transitMatrix[t+1][i][j] + probj);
+								//System.out.print(j+",");
+							}
+						}
 					}
 					sum -= norm_factor[t];
 
