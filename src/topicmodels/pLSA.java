@@ -179,6 +179,13 @@ public class pLSA extends twoTopic {
 			estThetaInDoc(d);
 	}
 	
+	protected double docThetaLikelihood(_Doc d) {
+		double logLikelihood = 0;
+		for(int i=0; i<this.number_of_topics; i++)
+			logLikelihood += (d_alpha-1)*d.m_topics[i];
+		return logLikelihood;
+	}
+	
 	@Override
 	protected void estThetaInDoc(_Doc d) {
 		double sum = Utils.sumOfArray(d.m_sstat);//estimate the expectation of \theta
@@ -197,7 +204,7 @@ public class pLSA extends twoTopic {
 		if (this.m_collectCorpusStats && this.m_converge<=0)//during training
 			return 1;//no need to compute
 		
-		double logLikelihood = 0.0, prob;
+		double logLikelihood = docThetaLikelihood(d), prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
 			prob = 0.0;

@@ -101,7 +101,8 @@ public class HTMM extends pLSA {
 	@Override
 	public double calculate_E_step(_Doc d) {
 		//Step 1: pre-compute emission probability
-		ComputeEmissionProbsForDoc(d);
+		if (m_collectCorpusStats)//indicates this is training
+			ComputeEmissionProbsForDoc(d);
 		
 		//Step 2: use forword/backword algorithm to compute the posterior
 		double logLikelihood = m_hmm.ForwardBackward(d, emission) + docThetaLikelihood(d);
@@ -185,13 +186,6 @@ public class HTMM extends pLSA {
 			estThetaInDoc(d);
 	}
 	
-	double docThetaLikelihood(_Doc d) {
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++)
-			logLikelihood += (d_alpha-1)*d.m_topics[i];
-		return logLikelihood;
-	}
-		
 	protected void init() {
 		super.init();
 		
@@ -209,20 +203,17 @@ public class HTMM extends pLSA {
 		}
 	}
 	
-	//for HTMM, this function will be only called in testing phase to avoid duplicated computation
 	@Override
 	public double calculate_log_likelihood(_Doc d) {//it is very expensive to re-compute this
-		//Step 1: pre-compute emission probability
-		ComputeEmissionProbsForDoc(d);		
-		
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++) 
-			logLikelihood += (d_alpha-1)*d.m_topics[i];
-		return logLikelihood + m_hmm.ForwardBackward(d, emission);
+		System.err.println("This function should not be called");
+		System.exit(-1);
+		return -1;
 	}
 	
 	@Override
 	public double inference(_Doc d) {
+		ComputeEmissionProbsForDoc(d);//to avoid repeatedly computing emission probability 
+		
 		double current = super.inference(d);
 		
 		int path[] = get_MAP_topic_assignment(d);
