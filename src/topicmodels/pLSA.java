@@ -211,16 +211,24 @@ public class pLSA extends twoTopic {
 	
 	protected double docThetaLikelihood(_Doc d) {
 		double logLikelihood = Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
-		for(int i=0; i<this.number_of_topics; i++)
-			logLikelihood += (d_alpha-1)*Math.log(d.m_topics[i]);
+		for(int i=0; i<this.number_of_topics; i++) {
+			if (m_logSpace)
+				logLikelihood += (d_alpha-1) * d.m_topics[i];
+			else
+				logLikelihood += (d_alpha-1) * Math.log(d.m_topics[i]);
+		}
 		return logLikelihood;
 	}
 	
 	@Override
 	protected void estThetaInDoc(_Doc d) {
 		double sum = Utils.sumOfArray(d.m_sstat);//estimate the expectation of \theta
-		for(int k=0;k<this.number_of_topics;k++)
-			d.m_topics[k] = d.m_sstat[k] / sum;
+		for(int k=0;k<this.number_of_topics;k++) {
+			if (m_logSpace)
+				d.m_topics[k] = Math.log(d.m_sstat[k]/sum);
+			else
+				d.m_topics[k] = d.m_sstat[k]/sum;
+		}
 	}
 	
 	/*likelihod calculation */
