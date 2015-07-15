@@ -144,11 +144,9 @@ public class Execution  {
 			model.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
-			boolean logSpace = false;
 			if (param.m_model.equals("2topic")) {
 				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_lambda, analyzer.getBackgroundProb());
-				logSpace = false;
 			} else if (param.m_model.equals("pLSA")) {
 				if (param.m_multithread == false) {
 					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
@@ -160,7 +158,6 @@ public class Execution  {
 							param.m_numTopics, param.m_alpha);
 				}
 				((pLSA)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = false;
 			} else if (param.m_model.equals("vLDA")) {
 				if (param.m_multithread == false) {
 					model = new LDA_Variational(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
@@ -173,25 +170,21 @@ public class Execution  {
 				}
 				
 				((LDA_Variational)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = true;
 			} else if (param.m_model.equals("gLDA")) {
 					model = new LDA_Gibbs(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 							param.m_lambda, analyzer.getBackgroundProb(), 
 							param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
 				
 				((LDA_Gibbs)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = true;
 			} else if (param.m_model.equals("HTMM")) {
 				model = new HTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha);
-				logSpace = true;
 			} else if (param.m_model.equals("LRHTMM")) {
 				corpus.setStnFeatures();
 				
 				model = new LRHTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha,
 						param.m_C);
-				logSpace = true;
 			} else {
 				System.out.println("The specified topic model has not been developed yet!");
 				System.exit(-1);
@@ -199,7 +192,7 @@ public class Execution  {
 			
 			if (param.m_CVFold<=1) {
 				model.EMonCorpus();
-				model.printTopWords(10, logSpace); // fixed: print top 10 words
+				model.printTopWords(10); // fixed: print top 10 words
 			} else 
 				model.crossValidation(param.m_CVFold);
 		} else if (param.m_style.equals("FV")) {

@@ -40,6 +40,8 @@ public class pLSA extends twoTopic {
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_prior = null;
+		
+		m_logSpace = false;
 	}
 	
 	public void LoadPrior(String filename, double eta) {		
@@ -223,7 +225,10 @@ public class pLSA extends twoTopic {
 		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));;
 		for(int i=0; i<this.number_of_topics; i++) {
 			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1) * Math.log(topic_term_probabilty[i][v]);
+				if (m_logSpace)
+					logLikelihood += (d_beta-1) * topic_term_probabilty[i][v];
+				else
+					logLikelihood += (d_beta-1) * Math.log(topic_term_probabilty[i][v]);
 			}
 		}
 		
@@ -232,11 +237,11 @@ public class pLSA extends twoTopic {
 	
 	//print all the quantities in real space
 	@Override
-	public void printTopWords(int k, boolean logSpace) {
+	public void printTopWords(int k) {
 		Arrays.fill(m_sstat, 0);
 		for(_Doc d:m_trainSet) {
 			for(int i=0; i<number_of_topics; i++)
-				m_sstat[i] += logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
 		}
 		Utils.L1Normalization(m_sstat);			
 		
@@ -246,7 +251,7 @@ public class pLSA extends twoTopic {
 				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 			System.out.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 			for(_RankItem it:fVector)
-				System.out.format("%s(%.3f)\t", it.m_name, logSpace?Math.exp(it.m_value):it.m_value);
+				System.out.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
 			System.out.println();
 		}
 	}
