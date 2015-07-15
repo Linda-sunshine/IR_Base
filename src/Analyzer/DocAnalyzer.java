@@ -213,15 +213,20 @@ public class DocAnalyzer extends Analyzer {
 					} else {
 						spVct.put(index, 1.0);
 						if (docWordMap==null || !docWordMap.containsKey(index))
-							m_featureStat.get(token).addOneDF(y);
+							if(m_featureStat.containsKey(token))
+								m_featureStat.get(token).addOneDF(y);
+//							else
+//								System.out.println("Not found"+token);
 					}
 				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 					expandVocabulary(token);// update the m_featureNames.
 					index = m_featureNameIndex.get(token);
 					spVct.put(index, 1.0);
-					m_featureStat.get(token).addOneDF(y);
+					if(m_featureStat.containsKey(token))
+						m_featureStat.get(token).addOneDF(y);
 				}
-				m_featureStat.get(token).addOneTTF(y);
+				if(m_featureStat.containsKey(token))
+					m_featureStat.get(token).addOneTTF(y);
 			} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 				index = m_featureNameIndex.get(token);
 				if (spVct.containsKey(index)) {

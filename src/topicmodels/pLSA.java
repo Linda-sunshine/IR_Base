@@ -108,13 +108,38 @@ public class pLSA extends twoTopic {
 	}
 	
 	protected void imposePrior() {
-		if (word_topic_prior!=null) {
+		/*if (word_topic_prior!=null) {
 			int size = Math.min(number_of_topics, word_topic_prior.length);
 			for(int k=0; k<size; k++) {
 				for(int n=0; n<vocabulary_size; n++)
 					word_topic_sstat[k][n] += word_topic_prior[k][n];
 			}
+		}*/
+		
+		if (word_topic_prior!=null) {
+			if(number_of_topics>word_topic_prior.length){
+		
+				int diff = number_of_topics/2 - word_topic_prior.length/2;
+				for(int k=0; k<word_topic_prior.length/2; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+
+
+				for(int k=number_of_topics/2; k<word_topic_prior.length; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k-diff][n];
+				}
+			}
+			else{
+				int size = Math.min(number_of_topics, word_topic_prior.length);
+				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+			}
 		}
+		
 	}
 	
 	@Override
