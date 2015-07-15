@@ -370,7 +370,7 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 		
-	// used by LR-HTMM for constructing transition features
+	// used by LR-HTMM for constructing topic transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence
 		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());

@@ -32,7 +32,7 @@ public class HTSM extends HTMM {
 		return logLikelihood;
 	}
 	
-	// run upto number_of_topic since the first chunk is for sentiment switching
+	//probabilities of sentiment switch
 	void accSigmaStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<this.number_of_topics; i++) 
@@ -59,46 +59,4 @@ public class HTSM extends HTMM {
 	public String toString() {
 		return String.format("HTSM[k:%d, alpha:%.3f, beta:%.3f]", number_of_topics, d_alpha, d_beta);
 	}
-	
-	@Override
-	public int[] get_MAP_topic_assignment(_Doc d) {
-		int path [] = new int [d.getSenetenceSize()];
-		((FastRestrictedHMM_sentiment)m_hmm).BackTrackBestPath(d, emission, path);
-		return path;
-	}
-	
-	@Override
-	public double calculate_log_likelihood(_Doc d) {//it is very expensive to re-compute this
-		//Step 1: pre-compute emission probability
-		ComputeEmissionProbsForDoc(d);		
-		
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++) 
-			logLikelihood += (d_alpha-1)*d.m_topics[i];
-		return logLikelihood + m_hmm.ForwardBackward(d, emission);
-	}
-	
-	// perform inference of topic distribution in the document
-	@Override
-	public double inference(_Doc d) {
-		initTestDoc(d);//this is not a corpus level estimation
-		
-		double delta, last = 1, current;
-		int  i = 0;
-		do {
-			init();
-			current = calculate_E_step(d);
-			estThetaInDoc(d);			
-			delta = (last - current)/last;
-			last = current;
-		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
-//		int path[] = get_MAP_topic_assignment(d);
-//		System.out.println("Doc No: "+d.getID());
-//		for(i=0; i<path.length;i++)
-//			System.out.print(d.getSentence(i).getSentencePredictedSenitmentLabel()+",");
-//		System.out.println();
-//		
-		return current;
-	}
-	
 }

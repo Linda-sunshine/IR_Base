@@ -11,8 +11,8 @@ import utils.Utils;
 public abstract class TopicModel {
 	protected int number_of_topics;
 	protected int vocabulary_size;
-	protected int number_of_iteration;
-	protected double m_converge;
+	protected double m_converge;//relative change in log-likelihood to terminate EM
+	protected int number_of_iteration;//number of iterations in inferencing testing document
 	protected _Corpus m_corpus;	
 	protected int m_crossValidFold;
 	
@@ -181,9 +181,7 @@ public abstract class TopicModel {
 		perplexity /= m_testSet.size();
 		sumLikelihood /= m_testSet.size();
 		
-		int index = this.toString().indexOf("[");
-		String modelName = this.toString().substring(0,index);
-		if(modelName.equalsIgnoreCase("HTSM") || modelName.equalsIgnoreCase("LR-HTSM"))
+		if(this instanceof HTSM)
 			calculatePrecisionRecall();
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		return perplexity;
@@ -235,8 +233,6 @@ public abstract class TopicModel {
 		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
 		
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
-
-		
 	}
 	
 	//k-fold Cross Validation.

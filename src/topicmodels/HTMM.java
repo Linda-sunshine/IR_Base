@@ -125,6 +125,7 @@ public class HTMM extends pLSA {
 		return path;
 	}	
 
+	//probabilities of topic switch
 	void accEpsilonStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<(this.constant-1)*this.number_of_topics; i++) 
@@ -133,6 +134,7 @@ public class HTMM extends pLSA {
 		}
 	}
 	
+	//probabilities of topic assignment
 	void accPhiStat(_Doc d) {
 		double prob;
 		for(int t=0; t<d.getSenetenceSize(); t++) {
@@ -221,21 +223,12 @@ public class HTMM extends pLSA {
 	
 	@Override
 	public double inference(_Doc d) {
-		initTestDoc(d);//this is not a corpus level estimation
-		double delta, last = 1, current;
-		int  i = 0;
-		do {
-			init();
-			current = calculate_E_step(d);
-			estThetaInDoc(d);			
-			delta = (last - current)/last;
-			last = current;
-		} while (Math.abs(delta)>m_converge && ++i<this.number_of_iteration);
+		double current = super.inference(d);
+		
 		int path[] = get_MAP_topic_assignment(d);
-		System.out.println("Doc No: "+d.getID());
-		for(i=0; i<path.length;i++)
-			System.out.print(path[i]+",");
-		System.out.println();
+		_Stn[] sentences = d.getSentences();
+		for(int i=0; i<path.length;i++)
+			sentences[i].setTopic(path[i]);
 		
 		return current;
 	}

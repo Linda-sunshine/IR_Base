@@ -22,7 +22,6 @@ import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 
-
 public class pLSA extends twoTopic {
 	// Dirichlet prior for p(\theta|d)
 	protected double d_alpha; // smoothing of p(z|d)
@@ -98,14 +97,7 @@ public class pLSA extends twoTopic {
 	protected void initialize_probability(Collection<_Doc> collection) {	
 		// initialize topic document proportion, p(z|d)
 		for(_Doc d:collection)
-		{
 			d.setTopics(number_of_topics, d_alpha-1.0);//allocate memory and randomize it
-			
-			for(int t=0; t<d.getSenetenceSize(); t++){
-				d.getSentence(t).setSentiTransitStat(0); // setting this to zero for use in LRHTSM for each fold
-				d.getSentence(t).setTransitStat(0); // setting this to zero for use in LRHTSM for each fold
-			}
-		}
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)
@@ -126,7 +118,7 @@ public class pLSA extends twoTopic {
 	}
 	
 	@Override
-	protected void init() { // clear up for next iteration
+	protected void init() { // clear up for next iteration during EM
 		for(int k=0;k<this.number_of_topics;k++)
 			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
 		imposePrior();
@@ -140,6 +132,7 @@ public class pLSA extends twoTopic {
 	protected void initTestDoc(_Doc d) {
 		//allocate memory and randomize it
 		d.setTopics(number_of_topics, d_alpha-1.0);//in real space
+		estThetaInDoc(d);
 	}
 	
 	@Override
@@ -163,7 +156,7 @@ public class pLSA extends twoTopic {
 				exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
 				d.m_sstat[k] += exp;
 				
-				if (m_collectCorpusStats)
+				if (m_collectCorpusStats)//when testing, we don't need to collect sufficient statistics
 					word_topic_sstat[k][j] += exp;
 			}
 		}
@@ -173,7 +166,7 @@ public class pLSA extends twoTopic {
 	
 	@Override
 	public void calculate_M_step(int iter) {
-		// update topic-term matrix -------------
+		// update topic-term matrix
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
 			sum = Utils.sumOfArray(word_topic_sstat[k]);
@@ -201,7 +194,7 @@ public class pLSA extends twoTopic {
 	//NOTE: cannot be used for unseen documents!
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_converge<=0)
+		if (this.m_collectCorpusStats && this.m_converge<=0)//during training
 			return 1;//no need to compute
 		
 		double logLikelihood = 0.0, prob;
@@ -216,6 +209,7 @@ public class pLSA extends twoTopic {
 		return logLikelihood;
 	}
 	
+	//corpus-level parameters will be only called during training
 	@Override
 	protected double calculate_log_likelihood() {
 		if (this.m_converge<=0)

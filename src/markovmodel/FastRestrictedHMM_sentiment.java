@@ -26,7 +26,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	
 	//one half for the first sentiment, second half for the second sentiment
 	public int sentimentMapper(int i) {
-		int range = this.number_of_topic / 2;//we assumed the topic size has to been even!!!
+		int range = this.number_of_topic / 2;//we assumed the topic size has to be even!!!
 		return (i%this.number_of_topic) / range;
 	}
 	
@@ -42,8 +42,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 	// for example if total_numner of topics is 6 [0 to 2 is positive; 3 to 5 is negative], then we have 3*6=18
 	// topics so if the input i is 15, aspectMapper return it as a range between 
 	// 0 to 3 (half of topic_number) which is (15%6)%(6/2) = 0 here
-	// we need because for example P0 cannot transit to P0 or N0
-		
+	// we need because for example P0 cannot transit to P0 or N0		
 	public int aspectMapper(int i) {
 		int range = this.number_of_topic / 2;
 		return (i%this.number_of_topic)%range;
@@ -57,29 +56,6 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			Arrays.fill(alpha[t], Double.NEGATIVE_INFINITY);
 
 		return super.initAlpha(theta, local0);
-	}
-
-	double sumOfAlphas(int i, int t){//i is current latent state, t is previous position
-		double sum = Double.NEGATIVE_INFINITY;
-		int ti = aspectMapper(i), si = sentimentMapper(i);
-		if (i<this.number_of_topic) {//both changed
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si!=sentimentMapper(j) && ti!=aspectMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
-			}
-		} else if (i<2*this.number_of_topic) {//only topic changed
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si==sentimentMapper(j) && ti!=aspectMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
-			}
-		} else {//both stay the same
-			for(int j=0; j<this.constant*this.number_of_topic; j++) {
-				if(si==sentimentMapper(j) && ti==aspectMapper(j))
-					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
-			}
-		}
-	
-		return sum;
 	}
 	
 	void generateTransitionMatrix(double[] theta){
@@ -130,6 +106,29 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 					m_transitMatrix[t][i][j] -= sum;
 			}
 		}
+	}
+
+	double sumOfAlphas(int i, int t){//i is current latent state, t is previous position
+		double sum = Double.NEGATIVE_INFINITY;
+		int ti = aspectMapper(i), si = sentimentMapper(i);
+		if (i<this.number_of_topic) {//both changed
+			for(int j=0; j<this.constant*this.number_of_topic; j++) {
+				if(si!=sentimentMapper(j) && ti!=aspectMapper(j))
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
+			}
+		} else if (i<2*this.number_of_topic) {//only topic changed
+			for(int j=0; j<this.constant*this.number_of_topic; j++) {
+				if(si==sentimentMapper(j) && ti!=aspectMapper(j))
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
+			}
+		} else {//both stay the same
+			for(int j=0; j<this.constant*this.number_of_topic; j++) {
+				if(si==sentimentMapper(j) && ti==aspectMapper(j))
+					sum = Utils.logSum(sum, alpha[t][j] + m_transitMatrix[t+1][j][i]);
+			}
+		}
+	
+		return sum;
 	}
 	
 	@Override

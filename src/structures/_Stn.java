@@ -32,10 +32,6 @@ public class _Stn {
 	
 	int m_predictedSentimentLabel = -1;
 	
-	//attribute for topic label for future use only
-	int m_topicLabel = -1; // default is -1 so that it can help to debug 
-	
-	
 	public _Stn(_SparseFeature[] x) {
 		m_x_sparse = x;
 		

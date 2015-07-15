@@ -53,16 +53,12 @@ public class FastRestrictedHMM {
 			alpha[0][i] = local0[i] + theta[i];//document must start with a new topic and a new sentiment
 			for(int j=1; j<this.constant; j++)
 				alpha[0][i+j*this.number_of_topic] = Double.NEGATIVE_INFINITY;
-			//this is full computation, but no need to do so
-			//norm = Utils.logSum(norm, Utils.logSum(alpha[0][i], alpha[0][i+this.number_of_topic]));
 			norm = Utils.logSum(norm, alpha[0][i]);
 		}
 		
 		//normalization
-		for (int i = 0; i < this.number_of_topic; i++) {
+		for (int i = 0; i < this.number_of_topic; i++)
 			alpha[0][i] -= norm;
-			//this.alpha[0][i+this.number_of_topic] -= norm; // no need to compute this
-		}
 		
 		norm_factor[0] = norm;
 		return norm;

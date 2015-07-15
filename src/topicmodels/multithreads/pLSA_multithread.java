@@ -97,7 +97,7 @@ public class pLSA_multithread extends pLSA {
 			m_workers[i] = new pLSA_worker();
 		
 		int workerID = 0;
-		for(_Doc d:collection) {
+		for(_Doc d:collection) {//evenly allocate the work load
 			m_workers[workerID%cores].addDoc(d);
 			workerID++;
 		}

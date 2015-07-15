@@ -34,10 +34,6 @@ public class _Corpus {
 	public ArrayList<String> m_negPriorList;
 	public ArrayList<String> m_negationList;
 	
-	_Stn[] m_sentences; // temporary structure for calculating the sentiment features for each doc
-	
-	
-	
 	public void setFeatureStat(HashMap<String, _stat> featureStat) {
 		this.m_featureStat = featureStat;
 	}
@@ -174,79 +170,78 @@ public class _Corpus {
 		// load all prior pos & neg words and also the sentiwordNet
 		loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
-		for(_Doc d:m_collection) {
-			m_sentences = d.getSentences(); // acting as a pointer to each doc senetnce
+		for(_Doc d:m_collection)
 			setSentenceFeatureVectorForSentiment(d);
-		}
 	}
 	
 	
 	// used by LR-HTSM for constructing transition features for sentiment
 	public void setSentenceFeatureVectorForSentiment(_Doc d) {
+		_Stn[] sentences = d.getSentences();
 		
 		// start from 2nd sentence
-		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
-		double pKL = Utils.klDivergence(calculatePOStagVector(0),calculatePOStagVector(1)), nKL;
-		double pSenScore = sentiWordScore(0), cSenScore;
-		int pPosNeg= posNegCount(0),cPosNeg;
-		int pNegationCount= negationCount(0),cNegationCount;
+		double pSim = Utils.cosine(sentences[0].getFv(), sentences[1].getFv()), nSim;
+		double pKL = Utils.klDivergence(calculatePOStagVector(sentences[0]), calculatePOStagVector(sentences[1])), nKL;
+		double pSenScore = sentiWordScore(sentences[0]), cSenScore;
+		int pPosNeg= posNegCount(sentences[0]), cPosNeg;
+		int pNegationCount= negationCount(sentences[0]), cNegationCount;
 		int stnSize = d.getSenetenceSize();
+		
 		for(int i=1; i<stnSize; i++){
 			//cosine similarity			
-			m_sentences[i-1].m_sentiTransitFv[0] = pSim;			
+			sentences[i-1].m_sentiTransitFv[0] = pSim;			
 
 			//sentiWordScore
-			cSenScore = sentiWordScore(i);
+			cSenScore = sentiWordScore(sentences[i]);
 			if((cSenScore<0 && pSenScore>0) || (cSenScore>0 && pSenScore<0))
-				m_sentences[i-1].m_sentiTransitFv[1] = 1; // transition
+				sentences[i-1].m_sentiTransitFv[1] = 1; // transition
 			else if((cSenScore<=0 && pSenScore<=0) || (cSenScore>=0 && pSenScore>=0))
-				m_sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
+				sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
 			pSenScore = cSenScore;
 
-			//positive negative count 
-			cPosNeg = posNegCount(i);
+			//positive/negative count 
+			cPosNeg = posNegCount(sentences[i]);
 			if(pPosNeg==cPosNeg)
-				m_sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
+				sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
 			else if (pPosNeg!=cPosNeg)
-				m_sentences[i-1].m_sentiTransitFv[2] = 1; // transition
+				sentences[i-1].m_sentiTransitFv[2] = 1; // transition
 			pPosNeg = cPosNeg;
 
 			//similar to previous or next
 			if (i<stnSize-1) {
-				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
+				nSim = Utils.cosine(sentences[i].getFv(), sentences[i+1].getFv());
 				if (nSim>pSim)
-					m_sentences[i-1].m_sentiTransitFv[3] = 1;
+					sentences[i-1].m_sentiTransitFv[3] = 1;
 				else if (nSim<pSim)
-					m_sentences[i-1].m_sentiTransitFv[3] = -1;
+					sentences[i-1].m_sentiTransitFv[3] = -1;
 				pSim = nSim;
 			}
 
 			//similar to previous or next
 			if (i<stnSize-1) {
-				nKL = Utils.klDivergence(calculatePOStagVector(i),calculatePOStagVector(i+1));
+				nKL = Utils.klDivergence(calculatePOStagVector(sentences[i]), calculatePOStagVector(sentences[i+1]));
 				if (nKL>pKL)
-					m_sentences[i-1].m_sentiTransitFv[4] = 1;
+					sentences[i-1].m_sentiTransitFv[4] = 1;
 				else if (nKL<pKL)
-					m_sentences[i-1].m_sentiTransitFv[4] = -1;
+					sentences[i-1].m_sentiTransitFv[4] = -1;
 				pKL = nKL;
 			}
 
 			//positive negative count 
-			cNegationCount = negationCount(i);
+			cNegationCount = negationCount(sentences[i]);
 			if(pNegationCount==0 && cNegationCount>0)
-				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
 			else if (pNegationCount>0 && cNegationCount==0)
-				m_sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
 			else
-				m_sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
+				sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
 			pNegationCount = cNegationCount;
 		}
 	}
 
 	// receive sentence index as parameter
-	public double sentiWordScore(int i)
-	{
-		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+	public double sentiWordScore(_Stn s) {
+		_SparseFeature[] wordsInSentence = s.getFv();
 		int index;
 		String token;
 		double senScore = 0.0;
@@ -263,9 +258,8 @@ public class _Corpus {
 	}
 
 	// receive sentence index as parameter
-	public int posNegCount(int i)
-	{
-		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+	public int posNegCount(_Stn s) {
+		_SparseFeature[] wordsInSentence = s.getFv();
 		int index;
 		String token;
 		int posCount = 0;
@@ -289,9 +283,8 @@ public class _Corpus {
 	}
 
 	// receive sentence index as parameter
-	public int negationCount(int i)
-	{
-		_SparseFeature[] wordsInSentence = m_sentences[i].getFv();
+	public int negationCount(_Stn s) {
+		_SparseFeature[] wordsInSentence = s.getFv();
 		int index;
 		String token;
 		int negationCount = 0;
@@ -307,9 +300,12 @@ public class _Corpus {
 
 	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
 	// here i the index of the sentence
-	public double[] calculatePOStagVector(int i){
-		String[] posTag = m_sentences[i].getSentencePosTag();
-		double tagVector[] = new double[4]; // index = 0 for noun, index = 1 for adjective, index = 2 for verb
+	public double[] calculatePOStagVector(_Stn s) {
+		String[] posTag = s.getSentencePosTag();
+		double tagVector[] = new double[4]; 
+		// index = 0 for noun
+		// index = 1 for adjective
+		// index = 2 for verb
 		// index = 3 for adverb
 		tagVector[0]= tagVector[1] = tagVector[2]  = tagVector[3] = 0.0;
 		for(String tag:posTag){
