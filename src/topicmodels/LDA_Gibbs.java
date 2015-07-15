@@ -56,7 +56,8 @@ public class LDA_Gibbs extends pLSA {
 	@Override
 	protected void imposePrior() {
 		if (word_topic_prior!=null) {
-			for(int k=0; k<number_of_topics; k++) {
+			int size = Math.min(number_of_topics, word_topic_prior.length);
+			for(int k=0; k<size; k++) {
 				for(int n=0; n<vocabulary_size; n++) {
 					word_topic_sstat[k][n] += word_topic_prior[k][n];
 					m_sstat[k] += word_topic_prior[k][n];
@@ -157,8 +158,8 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
+		if (this.m_collectCorpusStats && this.m_converge<=0)
+			return 1;//no need to compute during training
 		
 		double logLikelihood = 0.0, prob;
 		int wid, tid;

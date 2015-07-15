@@ -31,6 +31,7 @@ public class LDA_Variational extends pLSA {
 			double beta, _Corpus c, double lambda, double[] back_ground,
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
 		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
+		
 		m_varConverge = varConverge;
 		m_varMaxIter = varMaxIter;
 		m_alpha = new double[number_of_topics];
