@@ -43,7 +43,7 @@ public class HTMM extends pLSA {
 		p_dwzpsi = new double[maxSeqSize][this.constant * this.number_of_topics]; // max|S_d| * (2*K)
 		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
 		
-		m_logSpace = false;
+		m_logSpace = true;
 	}
 	
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
@@ -61,7 +61,7 @@ public class HTMM extends pLSA {
 		p_dwzpsi = new double[maxSeqSize][this.constant * this.number_of_topics]; // max|S_d| * (2*K)
 		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
 		
-		m_logSpace = false;
+		m_logSpace = true;
 	}
 	
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
@@ -84,7 +84,7 @@ public class HTMM extends pLSA {
 		p_dwzpsi = new double[maxSeqSize][constant * this.number_of_topics]; // max|S_d| * (2*K)
 		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
 		
-		m_logSpace = false;
+		m_logSpace = true;
 	}
 	
 	@Override
@@ -112,19 +112,20 @@ public class HTMM extends pLSA {
 			ComputeEmissionProbsForDoc(d);
 		
 		//Step 2: use forword/backword algorithm to compute the posterior
-		double logLikelihood = m_hmm.ForwardBackward(d, emission) + docThetaLikelihood(d);
+		double logLikelihood = m_hmm.ForwardBackward(d, emission);
 		loglik += logLikelihood;
 		
 		//Step 3: collection expectations from the posterior distribution
 		m_hmm.collectExpectations(p_dwzpsi);//expectations will be in the original space	
 		accTheta(d);
+		estThetaInDoc(d);//get the posterior of theta
 		
 		if (m_collectCorpusStats) {
 			accEpsilonStat(d);
 			accPhiStat(d);
 		}
 		
-		return logLikelihood;
+		return logLikelihood + docThetaLikelihood(d);
 	}
 	
 	public int[] get_MAP_topic_assignment(_Doc d) {
@@ -168,14 +169,6 @@ public class HTMM extends pLSA {
 		}
 	}
 	
-	//accumulate sufficient statistics for theta, according to Eq(21) in HTMM note
-	@Override
-	protected void estThetaInDoc(_Doc d) {
-		double sum = Math.log(Utils.sumOfArray(d.m_sstat));//prior has already been incorporated when initialize m_sstat
-		for(int i=0; i<this.number_of_topics; i++) 
-			d.m_topics[i] = Math.log(d.m_sstat[i]) - sum;//ensure in log-space
-	}
-	
 	@Override
 	public void calculate_M_step(int iter) {
 		if (iter>0) {
@@ -188,9 +181,6 @@ public class HTMM extends pLSA {
 			for(int v=0; v<this.vocabulary_size; v++)
 				topic_term_probabilty[i][v] = Math.log(word_topic_sstat[i][v]) - sum;
 		}
-		
-		for(_Doc d:m_trainSet)
-			estThetaInDoc(d);
 	}
 	
 	protected void init() {
