@@ -19,6 +19,7 @@ public class LDA_Gibbs extends pLSA {
 	int m_burnIn; // discard the samples within burn in period
 	int m_lag; // lag in accumulating the samples
 	
+	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, double[] back_ground,
 			int number_of_topics, double alpha, double burnIn, int lag) {
@@ -46,7 +47,7 @@ public class LDA_Gibbs extends pLSA {
 			d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
 			for(int i=0; i<d.m_words.length; i++) {
 				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]] ++;
-				m_sstat[d.m_topicAssignment[i]]++;
+				m_sstat[d.m_topicAssignment[i]] ++;
 			}
 		}
 		
@@ -82,7 +83,7 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	protected void initTestDoc(_Doc d) {
-		//this needs to be carefully implemented
+		d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
 	}
 	
 	@Override
@@ -96,8 +97,10 @@ public class LDA_Gibbs extends pLSA {
 			
 			//remove the word's topic assignment
 			d.m_sstat[tid] --;
-			word_topic_sstat[tid][wid] --;
-			m_sstat[tid] --;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] --;
+				m_sstat[tid] --;
+			}
 			
 			//perform random sampling
 			p = 0;
@@ -114,8 +117,10 @@ public class LDA_Gibbs extends pLSA {
 			//assign the selected topic to word
 			d.m_topicAssignment[i] = tid;
 			d.m_sstat[tid] ++;
-			word_topic_sstat[tid][wid] ++;
-			m_sstat[tid] ++;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] ++;
+				m_sstat[tid] ++;
+			}
 		}
 		
 		return calculate_log_likelihood(d);
@@ -133,11 +138,30 @@ public class LDA_Gibbs extends pLSA {
 			}
 			
 			//accumulate p(z|d)
-			for(_Doc d:m_trainSet) {
-				for(int i=0; i<this.number_of_topics; i++)
-					d.m_topics[i] += d.m_sstat[i];
-			}
+			for(_Doc d:m_trainSet)
+				collectStats(d);
 		}
+	}
+	
+	protected void collectStats(_Doc d) {
+		for(int k=0; k<this.number_of_topics; k++)
+			d.m_topics[k] += d.m_sstat[k];
+	}
+	
+	// perform inference of topic distribution in the document
+	@Override
+	public double inference(_Doc d) {
+		initTestDoc(d);//this is not a corpus level estimation
+		
+		double likelihood = Double.NEGATIVE_INFINITY;
+		int  i = 0;
+		do {
+			likelihood = Utils.logSum(likelihood, calculate_E_step(d));
+			collectStats(d);
+		} while (++i<this.number_of_iteration);
+		
+		estThetaInDoc(d);
+		return likelihood - Math.log(number_of_iteration); // this is average joint probability!
 	}
 	
 	@Override
@@ -158,18 +182,19 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_collectCorpusStats && this.m_converge<=0)
+		if (this.m_collectCorpusStats && m_converge<0)
 			return 1;//no need to compute during training
 		
-		double logLikelihood = 0.0, prob;
-		int wid, tid;
-		double wordSize = number_of_topics*d_alpha + d.m_words.length;
+		int tid, wid;
+		double logLikelihood = Utils.lgamma(number_of_topics*d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
+		double docSum = Utils.sumOfArray(d.m_sstat);
+		for(tid=0; tid<number_of_topics; tid++)
+			logLikelihood += (d_alpha-1) * Math.log(d.m_sstat[tid]/docSum);
+		
 		for(int i=0; i<d.m_words.length; i++) {
 			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];			
-			
-			prob = d.m_sstat[tid] / wordSize * word_topic_sstat[tid][wid]/m_sstat[tid];
-			logLikelihood += Math.log(prob);
+			tid = d.m_topicAssignment[i];
+			logLikelihood += Math.log(d.m_sstat[tid]/docSum * word_topic_sstat[tid][wid]/m_sstat[tid]);
 		}
 		return logLikelihood;
 	}
@@ -183,7 +208,7 @@ public class LDA_Gibbs extends pLSA {
 		double logLikelihood = 0;
 		for(int i=0; i<this.number_of_topics; i++) {
 			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1)*word_topic_sstat[i][v]/m_sstat[i];
+				logLikelihood += (d_beta-1) * Math.log(word_topic_sstat[i][v]/m_sstat[i]);
 			}
 		}
 		

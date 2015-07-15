@@ -226,7 +226,7 @@ public class pLSA extends twoTopic {
 		double logLikelihood = 0;
 		for(int i=0; i<this.number_of_topics; i++) {
 			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1)*topic_term_probabilty[i][v];
+				logLikelihood += (d_beta-1) * Math.log(topic_term_probabilty[i][v]);
 			}
 		}
 		
