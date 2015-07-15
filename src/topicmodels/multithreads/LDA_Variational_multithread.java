@@ -48,7 +48,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 					wid = fv[n].getIndex();
 					v = fv[n].getValue();
 					for(int i=0; i<number_of_topics; i++)
-						d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+						d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					
 					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
@@ -74,7 +74,8 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			} while(++iter<m_varMaxIter);
 			
 			//collect the sufficient statistics after convergence
-			this.collectStats(d);
+			if (m_collectCorpusStats)
+				this.collectStats(d);
 			
 			return current;
 		}

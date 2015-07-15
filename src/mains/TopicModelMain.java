@@ -25,7 +25,7 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
@@ -105,7 +105,7 @@ public class TopicModelMain {
 			}  else if (topicmodel.equals("LDA_Variational")) {		
 				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
 						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, 10, -1);
+						number_of_topics, alpha, 10, 1e-5);
 				logSpace = true;
 			}  else if (topicmodel.equals("HTMM")) {
 				model = new HTMM(number_of_iteration, converge, beta, c, 

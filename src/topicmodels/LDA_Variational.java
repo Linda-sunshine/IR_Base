@@ -61,6 +61,17 @@ public class LDA_Variational extends pLSA {
 		calculate_M_step(0);
 	}
 	
+	@Override
+	protected void init() {//will be called at the beginning of each EM iteration
+		// initialize alpha statistics
+		Arrays.fill(m_alphaStat, 0);
+		
+		// initialize with all smoothing terms
+		for(int i=0; i<number_of_topics; i++)
+			Arrays.fill(word_topic_sstat[i], d_beta-1.0);
+		imposePrior();
+	}
+	
 	protected void collectStats(_Doc d) {
 		_SparseFeature[] fv = d.getSparse();
 		int wid;
@@ -72,25 +83,15 @@ public class LDA_Variational extends pLSA {
 				word_topic_sstat[i][wid] += v*d.m_phi[n][i];
 		}
 		
+		//if we need to use maximum likelihood to estimate alpha
 		double diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
 		for(int i=0; i<number_of_topics; i++)
 			m_alphaStat[i] += Utils.digamma(d.m_sstat[i]) - diGammaSum;
 	}
-	
-	@Override
-	protected void init() {//will be called at the beginning of each EM iteration
-		// initialize alpha statistics
-		Arrays.fill(m_alphaStat, 0);
-		
-		// initialize with all smoothing terms
-		for(int i=0; i<number_of_topics; i++)
-			Arrays.fill(word_topic_sstat[i], d_beta-1.0);
-		imposePrior();
-	}
 
 	@Override
 	protected void initTestDoc(_Doc d) {
-		//this needs to be carefully implemented
+		d.setTopics4Variational(number_of_topics, d_alpha);
 	}
 	
 	@Override
@@ -105,7 +106,7 @@ public class LDA_Variational extends pLSA {
 				wid = fv[n].getIndex();
 				v = fv[n].getValue();
 				for(int i=0; i<number_of_topics; i++)
-					d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+					d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 				
 				logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 				for(int i=0; i<number_of_topics; i++)
@@ -117,7 +118,7 @@ public class LDA_Variational extends pLSA {
 			for(int n=0; n<fv.length; n++) {
 				v = fv[n].getValue();
 				for(int i=0; i<number_of_topics; i++)
-					d.m_sstat[i] += d.m_phi[n][i] * v;// 
+					d.m_sstat[i] += d.m_phi[n][i] * v;
 			}
 			
 			if (m_varConverge>0) {
@@ -128,10 +129,10 @@ public class LDA_Variational extends pLSA {
 				if (converge<m_varConverge)
 					break;
 			}
-		} while(++iter<m_varMaxIter);
+		} while(++iter<m_varMaxIter);		
 		
-		//collect the sufficient statistics after convergence
-		collectStats(d);
+		if (m_collectCorpusStats)
+			collectStats(d);//collect the sufficient statistics after convergence
 		
 		return current;
 	}
@@ -184,11 +185,18 @@ public class LDA_Variational extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {		
+	public double calculate_log_likelihood(_Doc d) {	
+		if (m_collectCorpusStats && m_varConverge<0)
+			return 1.0; // during training and ignore likelihood computation
+		
 		int wid;
-		double logLikelihood = -Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v;
-		for(int i=0; i<number_of_topics; i++)
-			logLikelihood += Utils.lgamma(d.m_sstat[i]);
+		double[] diGamma = new double[this.number_of_topics];
+		double logLikelihood = Utils.lgamma(Utils.sumOfArray(m_alpha))-Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v, diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
+		for(int i=0; i<number_of_topics; i++) {
+			diGamma[i] = Utils.digamma(d.m_sstat[i]) - diGammaSum;
+			logLikelihood += Utils.lgamma(d.m_sstat[i]) - Utils.lgamma(m_alpha[i])
+					+ (m_alpha[i] - d.m_sstat[i]) * diGamma[i];
+		}
 		
 		//collect the sufficient statistics
 		_SparseFeature[] fv = d.getSparse();
@@ -196,13 +204,22 @@ public class LDA_Variational extends pLSA {
 			wid = fv[n].getIndex();
 			v = fv[n].getValue();
 			for(int i=0; i<number_of_topics; i++) 
-				logLikelihood += v * d.m_phi[n][i] * (topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
+				logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
 		}
 		return logLikelihood;
 	}
 	
 	@Override
 	protected double calculate_log_likelihood() {
-		return 0;//right now we are not estimating \alpha yet
+		return 0;// \alpha part has been put into document-wise log-likelihood
+	}
+	
+	// perform inference of topic distribution in the document
+	@Override
+	public double inference(_Doc d) {
+		initTestDoc(d);		
+		double likelihood = calculate_E_step(d);
+		estThetaInDoc(d);
+		return likelihood;
 	}
 }

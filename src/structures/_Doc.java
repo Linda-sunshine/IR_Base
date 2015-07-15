@@ -309,7 +309,7 @@ public class _Doc implements Comparable<_Doc> {
 	public void setTopics4Variational(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
-			m_sstat = new double[k];//used as p(z|w,\phi)
+			m_sstat = new double[k]; // used as p(z|w,\phi) (gamma for variational inference)
 			m_phi = new double[m_x_sparse.length][k];
 		}
 		
