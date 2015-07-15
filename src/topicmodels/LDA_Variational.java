@@ -96,7 +96,11 @@ public class LDA_Variational extends pLSA {
 	
 	@Override
 	public double calculate_E_step(_Doc d) {	
-		double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
+		double last = 1;		
+		if (m_varConverge>0)
+			last = calculate_log_likelihood(d);
+		
+		double current = last, converge, logSum, v;
 		int iter = 0, wid;
 		_SparseFeature[] fv = d.getSparse();
 		
@@ -131,10 +135,11 @@ public class LDA_Variational extends pLSA {
 			}
 		} while(++iter<m_varMaxIter);		
 		
-		if (m_collectCorpusStats)
+		if (m_collectCorpusStats) {
 			collectStats(d);//collect the sufficient statistics after convergence
-		
-		return current;
+		 	return current;
+		} else
+			return calculate_log_likelihood(d);//in testing, we need to compute log-likelihood
 	}
 	
 	@Override
@@ -185,13 +190,10 @@ public class LDA_Variational extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {	
-		if (m_collectCorpusStats && m_varConverge<0)
-			return 1.0; // during training and ignore likelihood computation
-		
+	public double calculate_log_likelihood(_Doc d) {
 		int wid;
 		double[] diGamma = new double[this.number_of_topics];
-		double logLikelihood = Utils.lgamma(Utils.sumOfArray(m_alpha))-Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v, diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
+		double logLikelihood = Utils.lgamma(Utils.sumOfArray(m_alpha)) - Utils.lgamma(Utils.sumOfArray(d.m_sstat)), v, diGammaSum = Utils.digamma(Utils.sumOfArray(d.m_sstat));
 		for(int i=0; i<number_of_topics; i++) {
 			diGamma[i] = Utils.digamma(d.m_sstat[i]) - diGammaSum;
 			logLikelihood += Utils.lgamma(d.m_sstat[i]) - Utils.lgamma(m_alpha[i])
@@ -207,11 +209,6 @@ public class LDA_Variational extends pLSA {
 				logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
 		}
 		return logLikelihood;
-	}
-	
-	@Override
-	protected double calculate_log_likelihood() {
-		return 0;// \alpha part has been put into document-wise log-likelihood
 	}
 	
 	// perform inference of topic distribution in the document

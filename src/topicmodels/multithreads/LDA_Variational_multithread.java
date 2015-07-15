@@ -38,7 +38,11 @@ public class LDA_Variational_multithread extends LDA_Variational {
 		
 		@Override
 		public double calculate_E_step(_Doc d) {	
-			double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
+			double last = 1;			
+			if (m_varConverge>0)
+				last = calculate_log_likelihood(d);
+			
+			double current = last, converge, logSum, v;
 			int iter = 0, wid;
 			_SparseFeature[] fv = d.getSparse();
 			
@@ -74,10 +78,11 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			} while(++iter<m_varMaxIter);
 			
 			//collect the sufficient statistics after convergence
-			if (m_collectCorpusStats)
-				this.collectStats(d);
-			
-			return current;
+			if (m_collectCorpusStats) {
+				this.collectStats(d);			
+				return current;
+			} else 
+				return calculate_log_likelihood(d);
 		}
 		
 		protected void collectStats(_Doc d) {

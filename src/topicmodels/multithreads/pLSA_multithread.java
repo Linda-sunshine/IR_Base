@@ -57,7 +57,10 @@ public class pLSA_multithread extends pLSA {
 				}
 			}
 			
-			return calculate_log_likelihood(d);
+			if (m_collectCorpusStats==false || m_converge>0)
+				return calculate_log_likelihood(d);
+			else
+				return 1;//no need to compute likelihood
 		}
 		
 		public double accumluateStats() {

@@ -143,7 +143,9 @@ public abstract class TopicModel {
 			
 			calculate_M_step(i);
 			
-			current += calculate_log_likelihood();//together with corpus-level log-likelihood
+			if (m_converge>0)
+				current += calculate_log_likelihood();//together with corpus-level log-likelihood
+			
 			if (i>0)
 				delta = (last-current)/last;
 			else
@@ -151,7 +153,7 @@ public abstract class TopicModel {
 			last = current;
 			
 			if (m_display && i%10==0) {
-				if (this.m_converge>0)
+				if (m_converge>0)
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 				else {
 					System.out.print(".");
@@ -197,7 +199,7 @@ public abstract class TopicModel {
 		int actualLabel, predictedLabel;
 		
 		for(_Doc d:m_testSet) {
-			// if documnet is from newEgg which is 2 then calculate precision-recall
+			// if document is from newEgg which is 2 then calculate precision-recall
 			if(d.getSourceName()==2){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){

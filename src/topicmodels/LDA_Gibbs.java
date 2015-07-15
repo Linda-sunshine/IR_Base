@@ -123,7 +123,10 @@ public class LDA_Gibbs extends pLSA {
 			}
 		}
 		
-		return calculate_log_likelihood(d);
+		if (m_collectCorpusStats == false || m_converge>0)
+			return calculate_log_likelihood(d);
+		else
+			return 1;
 	}
 	
 	@Override
@@ -158,10 +161,10 @@ public class LDA_Gibbs extends pLSA {
 		do {
 			likelihood = Utils.logSum(likelihood, calculate_E_step(d));
 			collectStats(d);
-		} while (++i<this.number_of_iteration);
+		} while (++i<this.m_lag);
 		
 		estThetaInDoc(d);
-		return likelihood - Math.log(number_of_iteration); // this is average joint probability!
+		return likelihood - Math.log(m_lag); // this is average joint probability!
 	}
 	
 	@Override
@@ -181,10 +184,7 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_collectCorpusStats && m_converge<0)
-			return 1;//no need to compute during training
-		
+	public double calculate_log_likelihood(_Doc d) {		
 		int tid, wid;
 		double logLikelihood = Utils.lgamma(number_of_topics*d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
 		double docSum = Utils.sumOfArray(d.m_sstat);
@@ -200,16 +200,13 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	protected double calculate_log_likelihood() {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
+	protected double calculate_log_likelihood() {		
 		//prior from Dirichlet distributions
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++) {
-			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1) * Math.log(word_topic_sstat[i][v]/m_sstat[i]);
-			}
+		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));
+		for(int tid=0; tid<this.number_of_topics; tid++) {
+			for(int wid=0; wid<this.vocabulary_size; wid++)
+				logLikelihood += Utils.lgamma(word_topic_sstat[tid][wid]);
+			logLikelihood -= Utils.lgamma(m_sstat[tid]);
 		}
 		
 		return logLikelihood;

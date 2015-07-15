@@ -161,7 +161,10 @@ public class pLSA extends twoTopic {
 			}
 		}
 		
-		return calculate_log_likelihood(d);
+		if (m_collectCorpusStats==false || m_converge>0)
+			return calculate_log_likelihood(d);
+		else
+			return 1;//no need to compute likelihood
 	}
 	
 	@Override
@@ -180,9 +183,9 @@ public class pLSA extends twoTopic {
 	}
 	
 	protected double docThetaLikelihood(_Doc d) {
-		double logLikelihood = 0;
+		double logLikelihood = Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
 		for(int i=0; i<this.number_of_topics; i++)
-			logLikelihood += (d_alpha-1)*d.m_topics[i];
+			logLikelihood += (d_alpha-1)*Math.log(d.m_topics[i]);
 		return logLikelihood;
 	}
 	
@@ -200,10 +203,7 @@ public class pLSA extends twoTopic {
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
 	//NOTE: cannot be used for unseen documents!
 	@Override
-	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_collectCorpusStats && this.m_converge<=0)//during training
-			return 1;//no need to compute
-		
+	public double calculate_log_likelihood(_Doc d) {		
 		double logLikelihood = docThetaLikelihood(d), prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
@@ -218,12 +218,9 @@ public class pLSA extends twoTopic {
 	
 	//corpus-level parameters will be only called during training
 	@Override
-	protected double calculate_log_likelihood() {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
+	protected double calculate_log_likelihood() {		
 		//prior from Dirichlet distributions
-		double logLikelihood = 0;
+		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));;
 		for(int i=0; i<this.number_of_topics; i++) {
 			for(int v=0; v<this.vocabulary_size; v++) {
 				logLikelihood += (d_beta-1) * Math.log(topic_term_probabilty[i][v]);

@@ -30,7 +30,11 @@ public class TopicModelMain {
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		int varIter = 10;
+		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 5;
+		int gibbs_iteration = 1000, gibbs_lag = 50;
+		double burnIn = 0.4;
 		boolean display = true, logSpace = false;
 		
 		/*****The parameters used in loading files.*****/
@@ -49,8 +53,9 @@ public class TopicModelMain {
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String aspectlist = null;
 		//String aspectlist = "./data/Model/aspect_tablet.txt";
-		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
+		//String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 		
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
@@ -98,14 +103,14 @@ public class TopicModelMain {
 						number_of_topics, alpha);
 				logSpace = false;
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
-				model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 0.4, 50);
+					number_of_topics, alpha, burnIn, gibbs_lag);
 				logSpace = false;
 			}  else if (topicmodel.equals("LDA_Variational")) {		
 				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
 						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, 10, 1e-5);
+						number_of_topics, alpha, varIter, varConverge);
 				logSpace = true;
 			}  else if (topicmodel.equals("HTMM")) {
 				model = new HTMM(number_of_iteration, converge, beta, c, 
