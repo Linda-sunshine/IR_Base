@@ -40,6 +40,8 @@ public class LDA_Variational extends pLSA {
 		m_alphaStat = new double[number_of_topics];
 		m_alphaG = new double[number_of_topics];
 		m_alphaH = new double[number_of_topics];
+		
+		m_logSpace = true;
 	}
 	
 	@Override

@@ -25,7 +25,7 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
@@ -35,7 +35,7 @@ public class TopicModelMain {
 		int topK = 10, number_of_iteration = 50, crossV = 5;
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		double burnIn = 0.4;
-		boolean display = true, logSpace = false;
+		boolean display = true;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/tablet/topicmodel";
@@ -88,7 +88,7 @@ public class TopicModelMain {
 			if (crossV<=1) {
 				for(_Doc d:c.getCollection()) {
 					model.inference(d);
-					model.printTopWords(topK, false);
+					model.printTopWords(topK);
 				}
 			} else 
 				model.crossValidation(crossV);
@@ -101,32 +101,26 @@ public class TopicModelMain {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 						lambda, analyzer.getBackgroundProb(), 
 						number_of_topics, alpha);
-				logSpace = false;
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, analyzer.getBackgroundProb(), 
 					number_of_topics, alpha, burnIn, gibbs_lag);
-				logSpace = false;
 			}  else if (topicmodel.equals("LDA_Variational")) {		
 				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
 						lambda, analyzer.getBackgroundProb(), 
 						number_of_topics, alpha, varIter, varConverge);
-				logSpace = true;
 			}  else if (topicmodel.equals("HTMM")) {
 				model = new HTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
-				logSpace = true;
 			} else if (topicmodel.equals("HTSM")) {
 				model = new HTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
-				logSpace = true;
 			}  
 			else if (topicmodel.equals("LRHTMM")) {
 				c.setStnFeatures();				
 				model = new LRHTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-				logSpace = true;
 			}
 			else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
@@ -134,14 +128,13 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-				logSpace = true;
 			}
 			
 			model.setDisplay(display);
 			model.LoadPrior(aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
-				model.printTopWords(topK, logSpace);
+				model.printTopWords(topK);
 			} else 
 				model.crossValidation(crossV);
 		}

@@ -15,6 +15,7 @@ public abstract class TopicModel {
 	protected int number_of_iteration;//number of iterations in inferencing testing document
 	protected _Corpus m_corpus;	
 	protected int m_crossValidFold;
+	protected boolean m_logSpace; // whether the computations are all in log space
 	
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
@@ -89,7 +90,7 @@ public abstract class TopicModel {
 	protected abstract double calculate_log_likelihood(_Doc d);
 	
 	//print top k words under each topic
-	public abstract void printTopWords(int k, boolean logSpace);
+	public abstract void printTopWords(int k);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
