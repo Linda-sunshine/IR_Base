@@ -31,16 +31,16 @@ public class pLSA extends twoTopic {
 	protected double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
 	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			double lambda, double back_ground [], //arguments for 2topic topic model
+			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) { //arguments for pLSA			
-		super(number_of_iteration, converge, beta, c, lambda, back_ground);
+		super(number_of_iteration, converge, beta, c, lambda, null);
 		
 		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_prior = null;
-		
+		background_probability = new double[vocabulary_size];//to be initialized during EM
 		m_logSpace = false;
 	}
 	
@@ -98,8 +98,14 @@ public class pLSA extends twoTopic {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {	
 		// initialize topic document proportion, p(z|d)
-		for(_Doc d:collection)
+		// initialize background topic
+		Arrays.fill(background_probability, d_beta-1.0);
+		for(_Doc d:collection) {
 			d.setTopics(number_of_topics, d_alpha-1.0);//allocate memory and randomize it
+			for(_SparseFeature fv:d.getSparse()) 
+				background_probability[fv.getIndex()] += fv.getValue();
+		}
+		Utils.L1Normalization(background_probability);
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)

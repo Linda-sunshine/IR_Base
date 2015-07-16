@@ -25,10 +25,10 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
+		double alpha = 1.0 + 1e-12, beta = 1.0 + 1e-12, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
@@ -99,16 +99,13 @@ public class TopicModelMain {
 			
 			if (topicmodel.equals("pLSA")) {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha);
+						lambda, number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, burnIn, gibbs_lag);
+					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			}  else if (topicmodel.equals("LDA_Variational")) {		
 				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, varIter, varConverge);
+						lambda, number_of_topics, alpha, varIter, varConverge);
 			}  else if (topicmodel.equals("HTMM")) {
 				model = new HTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);

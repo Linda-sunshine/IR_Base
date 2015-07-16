@@ -77,9 +77,9 @@ public class pLSA_multithread extends pLSA {
 	}
 	
 	public pLSA_multithread(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			double lambda, double back_ground [], //arguments for 2topic topic model
+			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		m_multithread = true;
 	}
 	

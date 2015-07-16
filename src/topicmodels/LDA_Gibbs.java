@@ -21,10 +21,9 @@ public class LDA_Gibbs extends pLSA {
 	
 	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,
-			_Corpus c, double lambda, double[] back_ground,
+			_Corpus c, double lambda, 
 			int number_of_topics, double alpha, double burnIn, int lag) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground,
-				number_of_topics, alpha);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		m_sstat = new double[number_of_topics];
 		m_rand = new Random();
 		m_burnIn = (int) (burnIn * number_of_iteration);

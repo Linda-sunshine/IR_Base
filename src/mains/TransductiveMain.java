@@ -81,16 +81,13 @@ public class TransductiveMain {
 		pLSA tModel = null;
 		if (topicmodel.equals("pLSA")) {			
 			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha);
+					lambda, number_of_topics, alpha);
 		} else if (topicmodel.equals("LDA_Gibbs")) {		
 			tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 0.4, 50);
+				lambda, number_of_topics, alpha, 0.4, 50);
 		}  else if (topicmodel.equals("LDA_Variational")) {		
 			tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 10, -1);
+					lambda, number_of_topics, alpha, 10, -1);
 		} else {
 			System.out.println("The selected topic model has not developed yet!");
 			return;

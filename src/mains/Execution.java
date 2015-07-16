@@ -150,30 +150,25 @@ public class Execution  {
 			} else if (param.m_model.equals("pLSA")) {
 				if (param.m_multithread == false) {
 					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha);
+							param.m_lambda, param.m_numTopics, param.m_alpha);
 				} else {
 					model = new pLSA_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha);
+							param.m_lambda, param.m_numTopics, param.m_alpha);
 				}
 				((pLSA)model).LoadPrior(param.m_priorFile, param.m_gamma);
 			} else if (param.m_model.equals("vLDA")) {
 				if (param.m_multithread == false) {
 					model = new LDA_Variational(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
 				} else {
 					model = new LDA_Variational_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
 				}
 				
 				((LDA_Variational)model).LoadPrior(param.m_priorFile, param.m_gamma);
 			} else if (param.m_model.equals("gLDA")) {
 					model = new LDA_Gibbs(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
 				
 				((LDA_Gibbs)model).LoadPrior(param.m_priorFile, param.m_gamma);
 			} else if (param.m_model.equals("HTMM")) {
