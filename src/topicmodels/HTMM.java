@@ -30,7 +30,7 @@ public class HTMM extends pLSA {
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha) {//arguments for pLSA	
 		super(number_of_iteration, converge, beta, c,
-				0, null, //HTMM does not have a background setting
+				0, //HTMM does not have a background setting
 				number_of_topics, alpha);
 		
 		this.constant = 2;		
@@ -50,7 +50,7 @@ public class HTMM extends pLSA {
 			int number_of_topics, double alpha, //arguments for pLSA	
 			int constant) {
 		super(number_of_iteration, converge, beta, c,
-				0, null, //HTMM does not have a background setting
+				0, //HTMM does not have a background setting
 				number_of_topics, alpha);
 		
 		this.epsilon = Math.random();
@@ -68,7 +68,7 @@ public class HTMM extends pLSA {
 			int number_of_topics, double alpha, //arguments for pLSA
 			boolean setHMM) { //just to indicate we don't need initiate hmm inferencer
 		super(number_of_iteration, converge, beta, c,
-				0, null, //HTMM does not have a background setting
+				0, //HTMM does not have a background setting
 				number_of_topics, alpha);
 		
 		this.epsilon = Math.random();

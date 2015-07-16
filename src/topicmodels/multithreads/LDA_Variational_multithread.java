@@ -118,9 +118,9 @@ public class LDA_Variational_multithread extends LDA_Variational {
 	}
 	
 	public LDA_Variational_multithread(int number_of_iteration, double converge,
-			double beta, _Corpus c, double lambda, double[] back_ground,
+			double beta, _Corpus c, double lambda, 
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha, varMaxIter, varConverge);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, varMaxIter, varConverge);
 		m_multithread = true;
 	}
 

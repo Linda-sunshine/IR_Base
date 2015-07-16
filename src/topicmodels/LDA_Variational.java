@@ -28,9 +28,9 @@ public class LDA_Variational extends pLSA {
 	double[] m_alphaH; // Hessian for alpha
 	
 	public LDA_Variational(int number_of_iteration, double converge,
-			double beta, _Corpus c, double lambda, double[] back_ground,
+			double beta, _Corpus c, double lambda, 
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		
 		m_varConverge = varConverge;
 		m_varMaxIter = varMaxIter;

@@ -18,10 +18,9 @@ public class pLSAGroup extends pLSA {
 	LinkedList<_Doc> m_group;
 	
 	public pLSAGroup(int number_of_iteration, double converge, double beta,
-			_Corpus c, double lambda, double[] back_ground,
+			_Corpus c, double lambda, 
 			int number_of_topics, double alpha) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground,
-				number_of_topics, alpha);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		
 		m_thetas = new double[this.number_of_topics];
 		m_group = new LinkedList<_Doc>();

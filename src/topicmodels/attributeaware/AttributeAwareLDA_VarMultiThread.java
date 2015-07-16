@@ -241,9 +241,9 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 	
 	public AttributeAwareLDA_VarMultiThread(int number_of_iteration,
 			double converge, double beta, _Corpus c, double lambda,
-			double[] back_ground, int number_of_topics, double alpha,
+			int number_of_topics, double alpha,
 			int varMaxIter, double varConverge, int attributeSize) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground,
+		super(number_of_iteration, converge, beta, c, lambda,
 				number_of_topics*attributeSize, alpha, varMaxIter, varConverge);
 		
 		m_attributeSize = attributeSize;
@@ -341,8 +341,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		
 		AttributeAwareLDA_VarMultiThread model 
 			= new AttributeAwareLDA_VarMultiThread(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 10, -1, attributeSize);
+				lambda, number_of_topics, alpha, 10, -1, attributeSize);
 		
 		model.LoadPrior(aspectlist, eta);
 		model.setDisplay(true);
