@@ -25,7 +25,7 @@ public class HTMM extends pLSA {
 	double lot;
 	
 	double loglik;
-	int constant;
+	protected int constant;
 
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha) {//arguments for pLSA	
@@ -189,15 +189,6 @@ public class HTMM extends pLSA {
 		this.loglik = 0;
 		this.total = 0;
 		this.lot = 0.0;// sufficient statistics for epsilon
-	}
-	
-	@Override
-	protected void initTestDoc(_Doc d) {
-		super.initTestDoc(d);
-		for(int i=0; i<d.m_topics.length; i++){//convert to log-space
-			d.m_topics[i] = (double)1.0/this.number_of_topics;
-			d.m_topics[i] = Math.log(d.m_topics[i]);
-		}
 	}
 	
 	@Override

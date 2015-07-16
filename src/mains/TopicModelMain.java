@@ -2,16 +2,17 @@ package mains;
 
 import java.io.IOException;
 import java.text.ParseException;
+
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.LRHTSM_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
 
@@ -25,15 +26,15 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
-		double alpha = 1.0 + 1e-12, beta = 1.0 + 1e-12, eta = 5.0;//these two parameters must be larger than 1!!!
+		double alpha = 1.0 + 1e-2, beta = 1.0 + 2e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 5;
-		int gibbs_iteration = 1000, gibbs_lag = 50;
+		int gibbs_iteration = 1500, gibbs_lag = 50;
 		double burnIn = 0.4;
 		boolean display = true;
 		
@@ -122,7 +123,7 @@ public class TopicModelMain {
 			else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
 				c.setStnFeaturesForSentiment(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-				model = new LRHTSM(number_of_iteration, converge, beta, c, 
+				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
 			}
