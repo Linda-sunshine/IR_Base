@@ -13,11 +13,11 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 // HTMM parameter both in log space
 public class LRHTSM extends HTSM {	
 	//feature weight vector for topic 
-	double[] m_omega;
+	protected double[] m_omega;
 	double[] m_g_omega, m_diag_omega;//gradient and diagonal for omega estimation
 	
 	//feature weight vector for sentiment
-	double[] m_delta;
+	protected double[] m_delta;
 	double[] m_g_delta, m_diag_delta;//gradient and diagonal for delta estimation
     
 	public LRHTSM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model

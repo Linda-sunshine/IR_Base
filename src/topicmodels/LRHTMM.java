@@ -46,7 +46,7 @@ public class LRHTMM extends HTMM {
 	
 	//accumulate sufficient statistics for epsilon, according to Eq(15) in HTMM note
 	@Override
-	void accEpsilonStat(_Doc d) {
+	protected void accEpsilonStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			double s = 0;
 			for(int i=0; i<this.number_of_topics; i++)

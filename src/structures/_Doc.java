@@ -313,9 +313,9 @@ public class _Doc implements Comparable<_Doc> {
 			m_phi = new double[m_x_sparse.length][k];
 		}
 		
-		Arrays.fill(m_sstat, alpha);
+		Arrays.fill(m_sstat, alpha-1);
 		for(int n=0; n<m_x_sparse.length; n++) {
-			Utils.randomize(m_phi[n], alpha);
+			Utils.randomize(m_phi[n], alpha-1);
 			double v = m_x_sparse[n].getValue();
 			for(int i=0; i<k; i++)
 				m_sstat[i] += m_phi[n][i] * v;
@@ -329,7 +329,8 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 
-		Arrays.fill(m_sstat, alpha);
+		Arrays.fill(m_sstat, alpha-1);
+		Arrays.fill(m_topics, 0);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
 		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);

@@ -191,7 +191,7 @@ public class pLSA extends twoTopic {
 	}
 	
 	protected double docThetaLikelihood(_Doc d) {
-		double logLikelihood = Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
+		double logLikelihood = 0; //Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
 		for(int i=0; i<this.number_of_topics; i++) {
 			if (m_logSpace)
 				logLikelihood += (d_alpha-1) * d.m_topics[i];

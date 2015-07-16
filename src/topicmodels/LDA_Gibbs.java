@@ -155,15 +155,19 @@ public class LDA_Gibbs extends pLSA {
 	public double inference(_Doc d) {
 		initTestDoc(d);//this is not a corpus level estimation
 		
-		double likelihood = Double.NEGATIVE_INFINITY;
+		double likelihood = Double.NEGATIVE_INFINITY, result, count = 0;
 		int  i = 0;
 		do {
-			likelihood = Utils.logSum(likelihood, calculate_E_step(d));
-			collectStats(d);
-		} while (++i<this.m_lag);
+			result = calculate_E_step(d);
+			if (i>m_burnIn && i%m_lag==0){
+				likelihood = Utils.logSum(likelihood, result);
+				collectStats(d);
+				count ++;
+			}
+		} while (++i<this.number_of_iteration);
 		
 		estThetaInDoc(d);
-		return likelihood - Math.log(m_lag); // this is average joint probability!
+		return likelihood - Math.log(count); // this is average joint probability!
 	}
 	
 	@Override
@@ -185,10 +189,7 @@ public class LDA_Gibbs extends pLSA {
 	@Override
 	public double calculate_log_likelihood(_Doc d) {		
 		int tid, wid;
-		double logLikelihood = Utils.lgamma(number_of_topics*d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
-		double docSum = Utils.sumOfArray(d.m_sstat);
-		for(tid=0; tid<number_of_topics; tid++)
-			logLikelihood += (d_alpha-1) * Math.log(d.m_sstat[tid]/docSum);
+		double logLikelihood = docThetaLikelihood(d), docSum = Utils.sumOfArray(d.m_sstat);
 		
 		for(int i=0; i<d.m_words.length; i++) {
 			wid = d.m_words[i];

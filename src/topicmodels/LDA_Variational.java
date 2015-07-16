@@ -140,7 +140,9 @@ public class LDA_Variational extends pLSA {
 		if (m_collectCorpusStats) {
 			collectStats(d);//collect the sufficient statistics after convergence
 		 	return current;
-		} else
+		} else if (m_varConverge>0)
+			return current;//to avoid computing this again
+		else
 			return calculate_log_likelihood(d);//in testing, we need to compute log-likelihood
 	}
 	
