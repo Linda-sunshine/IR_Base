@@ -26,8 +26,7 @@ public class pLSA extends twoTopic {
 	// Dirichlet prior for p(\theta|d)
 	protected double d_alpha; // smoothing of p(z|d)
 	
-	protected double[][] topic_term_probabilty ; /* p(w|z) */
-	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
+	protected double[][] topic_term_probabilty ; /* p(w|z) */	
 	protected double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
 	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
