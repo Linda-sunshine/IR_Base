@@ -209,7 +209,75 @@ public class HTMM extends pLSA {
 		for(int i=0; i<path.length;i++)
 			sentences[i].setTopic(path[i]);
 		
+		
+		calculateDocSummary(d);
+		
 		return current;
 	}
+	
+	public void calculateDocSummary(_Doc d)
+	{
+		System.out.println("\n Doc Id: "+d.getID());
+		System.out.println("Number of Sentences: " + d.getSenetenceSize());
+		// using ith topic calculate the probabilty of the each sentecne
+		double sentences[][] = new double [this.number_of_topics][d.getSenetenceSize()];
+		
+		
+//		for(int j=0; j<d.getSenetenceSize(); j++){
+//			_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+//			for(int w=0; w<tmpSentence.length; w++){
+//				int wid = tmpSentence[w].getIndex();
+//				
+//				System.out.print(m_corpus.getFeature(wid)+ " ");
+//			}
+//			System.out.println(".");
+//		}
+//		
+		for(int j=0; j<d.getSenetenceSize(); j++){
+			System.out.println(d.getSentence(j).getRawSentence());
+		}
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			for(int j=0; j<d.getSenetenceSize(); j++){
+				double prob = 1.0;
+				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+				for(int w=0; w<tmpSentence.length; w++){
+					int wid = tmpSentence[w].getIndex();
+					prob*= topic_term_probabilty[i][wid]*d.m_topics[i];
+				}
+				sentences[i][j] = prob/tmpSentence.length;
+			}
+			
+			
+			/* Find Sentence with largest probability*/
+			double max = sentences[i][0]; 
+			int max_index = 0;
+			
+			for(int j=1; j<d.getSenetenceSize(); j++){
+				if(sentences[i][j]>max){
+					max = sentences[i][j];
+					max_index = j;
+				}
+			}
+			
+			
+			/* print that sentence*/
+			if(i<this.number_of_topics/2)
+				System.out.println("\nT: "+i);
+			else
+				System.out.println("\nT: "+i);
+			
+			System.out.println(d.getSentence(max_index).getRawSentence());
+			
+//			_SparseFeature[] tmpSentence = d.getSentence(max_index).getFv();
+//			for(int w=0; w<tmpSentence.length; w++){
+//				int wid = tmpSentence[w].getIndex();
+//				System.out.print(m_corpus.getFeature(wid)+ " ");
+//			}
+			
+		}
+			
+	}
+	
 	
 }

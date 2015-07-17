@@ -256,6 +256,13 @@ public class _Doc implements Comparable<_Doc> {
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
 	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void setRawSentences(ArrayList<String> stnList) {
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i].setRawSentence(stnList.get(i));
+	}
+	
+	
 	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
 	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
 		for(int i=0; i<m_sentences.length; i++)

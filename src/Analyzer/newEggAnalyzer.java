@@ -164,6 +164,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		String content;
 		TokenizeResult result;
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		ArrayList<String> rawStnList = new ArrayList<String>(); // to avoid empty sentences
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
 		ArrayList<Integer> stnLabel = new ArrayList<Integer>(); 
@@ -180,6 +181,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
+					rawStnList.add(sentence);
 					stnPosList.add(posTags);
 					stnLabel.add(0); // 0 for pos
 					uniWordsInSections += vPtr.size();
@@ -200,6 +202,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
+					rawStnList.add(sentence);
 					stnPosList.add(posTags);
 					stnLabel.add(1); // 1 for cons
 					uniWordsInSections += vPtr.size();
@@ -238,6 +241,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
 			doc.setSentencesWithLabels(stnList, stnLabel);
+			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;

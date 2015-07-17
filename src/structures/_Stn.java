@@ -21,6 +21,7 @@ public class _Stn {
 	double m_sentiTransitStat; // posterior sentiment transit probability
 	
 	String[] m_sentencePOSTag;
+	String m_rawSource;
 	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
@@ -64,6 +65,14 @@ public class _Stn {
 
 	public void setSentencePosTag(String[] sentenceposTags){
 		m_sentencePOSTag = sentenceposTags;
+	}
+	
+	public void setRawSentence(String src){
+		m_rawSource = src;
+	}
+	
+	public String getRawSentence(){
+		return m_rawSource;
 	}
 	
 	public String[] getSentencePosTag(){
