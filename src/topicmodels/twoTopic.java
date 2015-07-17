@@ -101,7 +101,7 @@ public class twoTopic extends TopicModel {
 	protected void finalEst() {	}
 
 	@Override
-	public void docSummary(int numberOfSentences) {
+	public void docSummary(String[] productList) {
 		// TODO Auto-generated method stub
 		
 	}
