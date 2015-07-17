@@ -293,4 +293,50 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
+	
+	
+	public void docSummary(int numberOfSentences){
+		
+		double sentences[][] = new double [this.number_of_topics][numberOfSentences];
+		String rawSentence[] = new String[numberOfSentences];
+		
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			int index = 0;
+			for(_Doc d:m_testSet) {
+			for(int j=0; j<d.getSenetenceSize(); j++){
+				double prob = 1.0;
+				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+				for(int w=0; w<tmpSentence.length; w++){
+					int wid = tmpSentence[w].getIndex();
+					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+				}
+				rawSentence[index] = d.getSentence(j).getRawSentence();
+				sentences[i][index] = prob/tmpSentence.length;
+				index++;
+			}// sentence loop
+		}//doc loop
+			
+			/* Find Sentence with largest probability*/
+			double max = sentences[i][0]; 
+			int max_index = 0;
+
+			for(int j=1; j<numberOfSentences; j++){
+				if(sentences[i][j]>max){
+					max = sentences[i][j];
+					max_index = j;
+				}
+			}
+			/* print that sentence*/
+			if(i<this.number_of_topics/2)
+				System.out.println("\nT: "+i);
+			else
+				System.out.println("\nT: "+i);
+
+			System.out.println(rawSentence[max_index]);
+
+		}
+	
+	}
+	
 }
