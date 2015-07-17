@@ -243,7 +243,7 @@ public class HTMM extends pLSA {
 				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
 				for(int w=0; w<tmpSentence.length; w++){
 					int wid = tmpSentence[w].getIndex();
-					prob*= topic_term_probabilty[i][wid]*d.m_topics[i];
+					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
 				}
 				sentences[i][j] = prob/tmpSentence.length;
 			}
