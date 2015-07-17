@@ -212,6 +212,7 @@ public class LDA_Variational extends pLSA {
 			for(int i=0; i<number_of_topics; i++) 
 				logLikelihood += d.m_phi[n][i] * (diGamma[i] + v*topic_term_probabilty[i][wid] - Math.log(d.m_phi[n][i]));
 		}
+
 		return logLikelihood;
 	}
 	

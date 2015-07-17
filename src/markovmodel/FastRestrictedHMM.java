@@ -164,7 +164,7 @@ public class FastRestrictedHMM {
 	public void BackTrackBestPath(_Doc d, double[][] emission, int[] path) {
 		this.length_of_seq = d.getSenetenceSize();
 		
-		initAlpha(d.m_topics,emission[0]);
+		initAlpha(d.m_topics, emission[0]);
 		computeViterbiAlphas(emission, d.m_topics);
 		
 		int level = this.length_of_seq - 1;

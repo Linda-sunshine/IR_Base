@@ -3,7 +3,6 @@
  */
 package topicmodels.multithreads;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -22,40 +21,23 @@ import topicmodels.LRHTSM;
  */
 public class LRHTSM_multithread extends LRHTSM {
 
-	class LRHTSM_worker implements TopicModelWorker {
-
-		ArrayList<_Doc> m_corpus;
-		double m_likelihood;
+	class LRHTSM_worker extends TopicModel_worker {		// cache structure for sufficient statistics
 		
-		// cache structure for sufficient statistics
-		double[][] sstat; // p(w|z)
 		double[][] p_dwzpsi;  // The state probabilities that is Pr(z,psi | d,w)
 	 	double[][] emission;  // emission probability of p(s|z)
 	 	
 	 	//hmm-style inferencer
 	 	FastRestrictedHMM_sentiment m_hmm; 
 	 	
-	 	public LRHTSM_worker(int maxSeqSize) {	 		
+	 	public LRHTSM_worker(int number_of_topics, int vocabulary_size, int maxSeqSize) {
+	 		super(number_of_topics, vocabulary_size);
+	 		
 	 		//cache in order to avoid frequently allocating new space
 			p_dwzpsi = new double[maxSeqSize][constant * number_of_topics]; // max|S_d| * (2*K)
 			emission = new double[maxSeqSize][number_of_topics]; // max|S_d| * K
-			sstat = new double[number_of_topics][vocabulary_size];
-			m_corpus = new ArrayList<_Doc>();
 			
 			m_hmm = new LRFastRestrictedHMM_sentiment(m_omega, m_delta, maxSeqSize, number_of_topics); 
 	 	}
-	 	
-		@Override
-		public void run() {
-			m_likelihood = 0;
-			for(_Doc d:m_corpus)
-				m_likelihood += calculate_E_step(d);
-		}
-
-		@Override
-		public void addDoc(_Doc d) {
-			m_corpus.add(d);
-		}
 		
 		void ComputeEmissionProbsForDoc(_Doc d) {
 			for(int i=0; i<d.getSenetenceSize(); i++) {
@@ -91,20 +73,28 @@ public class LRHTSM_multithread extends LRHTSM {
 			
 			return logLikelihood + docThetaLikelihood(d);
 		}
-
+		
 		@Override
-		public double accumluateStats() {
-			for(int k=0; k<number_of_topics; k++) {
-				for(int v=0; v<vocabulary_size; v++)
-					word_topic_sstat[k][v] += sstat[k][v];
-			}
-			return m_likelihood;
-		}
-
-		@Override
-		public void resetStats() {
-			for(int i=0; i<sstat.length; i++)
-				Arrays.fill(sstat[i], 0);			
+		public double inference(_Doc d) {
+			initTestDoc(d);//this is not a corpus level estimation
+			ComputeEmissionProbsForDoc(d);//to avoid repeatedly computing emission probability 
+			
+			double delta, last = 1, current;
+			int  i = 0;
+			do {
+				current = calculate_E_step(d);
+				estThetaInDoc(d);			
+				
+				delta = (last - current)/last;
+				last = current;
+			} while (Math.abs(delta)>m_converge && ++i<number_of_iteration);
+			
+			int path[] = get_MAP_topic_assignment(d);
+			_Stn[] sentences = d.getSentences();
+			for(i=0; i<path.length; i++)
+				sentences[i].setTopic(path[i]);
+			
+			return current;
 		}
 		
 		void accTheta(_Doc d) {
@@ -149,7 +139,13 @@ public class LRHTSM_multithread extends LRHTSM {
 					}
 				}
 			}
-		}		
+		}	
+		
+		int[] get_MAP_topic_assignment(_Doc d) {
+			int path [] = new int[d.getSenetenceSize()];
+			m_hmm.BackTrackBestPath(d, emission, path);
+			return path;
+		}
 	}
 	
 	public LRHTSM_multithread(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
@@ -169,7 +165,7 @@ public class LRHTSM_multithread extends LRHTSM {
 		m_workers = new LRHTSM_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new LRHTSM_worker(m_corpus.getLargestSentenceSize());
+			m_workers[i] = new LRHTSM_worker(number_of_topics, vocabulary_size, m_corpus.getLargestSentenceSize());
 		
 		int workerID = 0;
 		for(_Doc d:collection) {
@@ -178,6 +174,11 @@ public class LRHTSM_multithread extends LRHTSM {
 		}
 		
 		super.initialize_probability(collection);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("multi-thread LR-HTMM[k:%d, alpha:%.3f, beta:%.3f, lambda:%.2f]", number_of_topics, d_alpha, d_beta, m_lambda);
 	}
 
 	@Override

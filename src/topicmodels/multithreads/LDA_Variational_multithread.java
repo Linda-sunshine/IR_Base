@@ -1,6 +1,5 @@
 package topicmodels.multithreads;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -12,28 +11,12 @@ import utils.Utils;
 
 public class LDA_Variational_multithread extends LDA_Variational {
 
-	public class LDA_worker implements TopicModelWorker {
-		protected double[][] sstat;
+	public class LDA_worker extends TopicModel_worker {
 		protected double[] alphaStat;
-		protected ArrayList<_Doc> m_corpus;
-		protected double m_likelihood;
 		
-		public LDA_worker() {
-			sstat = new double[number_of_topics][vocabulary_size];
+		public LDA_worker(int number_of_topics, int vocabulary_size) {
+			super(number_of_topics, vocabulary_size);
 			alphaStat = new double[number_of_topics];
-			m_corpus = new ArrayList<_Doc>();
-		}
-		
-		@Override
-		public void addDoc(_Doc d) {
-			m_corpus.add(d);
-		}
-		
-		@Override
-		public void run() {
-			m_likelihood = 0;
-			for(_Doc d:m_corpus)
-				m_likelihood += calculate_E_step(d);
 		}
 		
 		@Override
@@ -101,19 +84,27 @@ public class LDA_Variational_multithread extends LDA_Variational {
 				alphaStat[i] += Utils.digamma(d.m_sstat[i]) - diGammaSum;
 		}
 		
-		public double accumluateStats() {
-			for(int k=0; k<number_of_topics; k++) {
-				for(int v=0; v<vocabulary_size; v++)
-					word_topic_sstat[k][v] += sstat[k][v];
-				m_alphaStat[k] += alphaStat[k];
-			}
-			return m_likelihood;
+		// this is directly copied from LDA_Variational.java
+		@Override
+		public double inference(_Doc d) {
+			initTestDoc(d);		
+			double likelihood = calculate_E_step(d);
+			estThetaInDoc(d);
+			return likelihood;
 		}
 		
+		@Override
+		public double accumluateStats(double[][] word_topic_sstat) {
+			for(int k=0; k<number_of_topics; k++)
+				m_alphaStat[k] += alphaStat[k];
+
+			return super.accumluateStats(word_topic_sstat);
+		}
+		
+		@Override
 		public void resetStats() {
 			Arrays.fill(alphaStat, 0);
-			for(int i=0; i<sstat.length; i++)
-				Arrays.fill(sstat[i], 0);
+			super.resetStats();
 		}
 	}
 	
@@ -136,7 +127,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 		m_workers = new LDA_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new LDA_worker();
+			m_workers[i] = new LDA_worker(number_of_topics, vocabulary_size);
 		
 		int workerID = 0;
 		for(_Doc d:collection) {

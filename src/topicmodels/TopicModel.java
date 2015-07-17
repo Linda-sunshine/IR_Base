@@ -6,6 +6,7 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.multithreads.TopicModelWorker;
+import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
 
 public abstract class TopicModel {
@@ -19,6 +20,7 @@ public abstract class TopicModel {
 	
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
+	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
 	
 	//smoothing parameter for p(w|z, \beta)
 	protected double d_beta; 	
@@ -104,6 +106,7 @@ public abstract class TopicModel {
 	
 	double multithread_E_step() {
 		for(int i=0; i<m_workers.length; i++) {
+			m_workers[i].setType(RunType.RT_EM);
 			m_threadpool[i] = new Thread(m_workers[i]);
 			m_threadpool[i].start();
 		}
@@ -119,8 +122,37 @@ public abstract class TopicModel {
 		
 		double likelihood = 0;
 		for(TopicModelWorker worker:m_workers)
-			likelihood += worker.accumluateStats();
+			likelihood += worker.accumluateStats(word_topic_sstat);
 		return likelihood;
+	}
+	
+	void multithread_inference() {
+		//clear up for adding new testing documents
+		for(int i=0; i<m_workers.length; i++) {
+			m_workers[i].setType(RunType.RT_inference);
+			m_workers[i].clearCorpus();
+		}
+		
+		//evenly allocate the testing work load
+		int workerID = 0;
+		for(_Doc d:m_testSet) {
+			m_workers[workerID%m_workers.length].addDoc(d);
+			workerID++;
+		}
+			
+		for(int i=0; i<m_workers.length; i++) {
+			m_threadpool[i] = new Thread(m_workers[i]);
+			m_threadpool[i].start();
+		}
+		
+		//wait till all finished
+		for(Thread thread:m_threadpool){
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public void EM() {	
@@ -176,10 +208,20 @@ public abstract class TopicModel {
 	public double Evaluation() {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
-		for(_Doc d:m_testSet) {
-			loglikelihood = inference(d);
-			sumLikelihood += loglikelihood;
-			perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+		
+		if (m_multithread) {
+			multithread_inference();
+			
+			for(TopicModelWorker worker:m_workers) {
+				sumLikelihood += worker.getLogLikelihood();
+				perplexity += worker.getPerplexity();
+			}
+		} else {
+			for(_Doc d:m_testSet) {
+				loglikelihood = inference(d);
+				sumLikelihood += loglikelihood;
+				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+			}
 		}
 		perplexity /= m_testSet.size();
 		sumLikelihood /= m_testSet.size();
