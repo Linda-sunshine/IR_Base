@@ -347,9 +347,7 @@ public class DocAnalyzer extends Analyzer {
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
-//			System.out.println("No split:");
-//			for(int i: spVct.keySet())
-//				System.out.format("%d-%.1f\t", i, spVct.get(i));
+			
 //			if (m_releaseContent)
 //				doc.clearSource();
 			return true;
