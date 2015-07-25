@@ -40,6 +40,9 @@ public abstract class Analyzer {
 	private LinkedList<_Doc> m_preDocs;	
 	protected PrintWriter m_sentenceWriter;
 	
+	public ArrayList<_Doc> m_trainSet;
+	public ArrayList<_Doc> m_testSet;
+	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		m_classNo = classNo;
@@ -140,6 +143,11 @@ public abstract class Analyzer {
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 //		m_sentenceWriter.close();
 	}
+	
+	public void LoadTrainFile(String fileName, String suffix) throws IOException{
+		
+	}
+
 	
 	abstract public void LoadDoc(String filename);
 	
@@ -335,8 +343,8 @@ public abstract class Analyzer {
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
 		//clear memory for next step feature construction
-//		reset();
-//		LoadCV(location);//load the selected features
+		reset();
+		LoadCV(location);//load the selected features
 	}
 	
 	//Save all the features and feature stat into a file.

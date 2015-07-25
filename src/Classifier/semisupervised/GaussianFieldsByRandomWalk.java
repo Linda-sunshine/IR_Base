@@ -146,6 +146,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	//The test for random walk algorithm.
 	public double test(){
+		
 		/***Construct the nearest neighbor graph****/
 		constructGraph(false);
 		
@@ -198,7 +199,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			}
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-		
 		return acc/m_U;
 	}
 	

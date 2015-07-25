@@ -1,9 +1,11 @@
 package Classifier;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -53,6 +55,7 @@ public abstract class BaseClassifier {
 				acc ++;
 			}
 		}
+		
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		return acc /m_testSet.size();
 	}
@@ -98,7 +101,7 @@ public abstract class BaseClassifier {
 		m_debugOutput = null;
 	}
 	
-	public void setDebugOutput(String filename) {
+	public void setDebugOutput(String filename) throws IOException, FileNotFoundException {
 		if (filename==null || filename.isEmpty())
 			return;
 		
@@ -107,11 +110,16 @@ public abstract class BaseClassifier {
 			if (f.exists()) 
 				f.delete();
 			m_debugOutput = filename;
+			//Added by Lin
+			m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 		} else {
 			System.err.println("Please specify a correct path for debug output!");
 		}	
 	}
-	
+	public void setTrainTestSet(ArrayList<_Doc> train, ArrayList<_Doc> test){
+		m_trainSet = train;
+		m_testSet = test;
+	}
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
 		try {
@@ -169,6 +177,7 @@ public abstract class BaseClassifier {
 				tpTable[i][j] = 0; // clear the result in each fold
 			}
 		}
+		
 		return PreRecOfOneFold;
 	}
 	
@@ -203,7 +212,6 @@ public abstract class BaseClassifier {
 		System.out.print("\nF1");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
-		System.out.println();
 	}
 	
 	//Calculate the mean and variance of precision and recall.

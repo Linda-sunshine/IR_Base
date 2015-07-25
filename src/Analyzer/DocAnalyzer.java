@@ -118,7 +118,6 @@ public class DocAnalyzer extends Analyzer {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
-	
 	//Tokenizer.
 	protected String[] Tokenizer(String source){
 		String[] tokens = m_tokenizer.tokenize(source);
@@ -347,6 +346,35 @@ public class DocAnalyzer extends Analyzer {
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
+			
+//			if (m_releaseContent)
+//				doc.clearSource();
+			return true;
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+			return false;
+		}
+	}
+	//Load a single review.
+	protected boolean AnalyzeTrainTestDoc(_Doc doc, boolean train) {
+		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+		String[] tokens = result.getTokens();
+		int y = doc.getYLabel();
+		// Construct the sparse vector.
+		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+		
+		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+			doc.createSpVct(spVct);
+			doc.setStopwordProportion(result.getStopwordProportion());
+			if(train){
+				m_trainSet.add(doc);
+				m_corpus.addDoc(doc);
+				m_classMemberNo[y]++;
+			} else{
+				m_testSet.add(doc);
+				m_corpus.addDoc(doc);
+			}
 			
 //			if (m_releaseContent)
 //				doc.clearSource();
