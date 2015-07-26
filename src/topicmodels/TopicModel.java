@@ -55,6 +55,10 @@ public abstract class TopicModel {
 	}
 	
 	public void setNewEggLoadInTrain(boolean flag){
+		if(flag)
+			System.out.println("NewEgg is added in Training Set");
+		else
+			System.out.println("NewEgg is NOT added in Training Set");
 		m_LoadnewEggInTrain = flag;
 	}
 	

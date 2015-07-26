@@ -43,6 +43,99 @@ public class pLSA extends twoTopic {
 		m_logSpace = false;
 	}
 	
+	
+	public void LoadAspectSentiPrior(String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
+		try {
+			String tmpTxt;
+			String[] container;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++)
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			
+			int wid, wCount = 0;
+			
+			double[] prior;
+			ArrayList<double[]> priorWords = new ArrayList<double[]>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+				
+				container = tmpTxt.split(" ");
+				wCount = 0;
+				prior = new double[vocabulary_size];
+				for(int i=1; i<container.length; i++) {
+					if (featureNameIndex.containsKey(container[i])) {
+						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
+						prior[wid] = eta;
+						wCount++;
+					}
+				}
+				
+				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				priorWords.add(prior);
+			}
+			reader.close();
+			
+			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			if (word_topic_prior.length > number_of_topics) 
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void LoadAspectPrior(String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
+		try {
+			String tmpTxt;
+			String[] container;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++)
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			
+			int wid, wCount = 0;
+			
+			double[] prior;
+			ArrayList<double[]> priorWords = new ArrayList<double[]>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+				
+				container = tmpTxt.split(" ");
+				wCount = 0;
+				prior = new double[vocabulary_size];
+				for(int i=1; i<container.length; i++) {
+					if (featureNameIndex.containsKey(container[i])) {
+						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
+						prior[wid] = eta;
+						wCount++;
+					}
+				}
+				
+				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				priorWords.add(prior);
+			}
+			reader.close();
+			
+			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			if (word_topic_prior.length > number_of_topics) 
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void LoadPrior(String filename, double eta) {		
 		if (filename == null || filename.isEmpty())
 			return;
