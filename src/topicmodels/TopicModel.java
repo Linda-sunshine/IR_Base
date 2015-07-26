@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
