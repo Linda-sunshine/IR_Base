@@ -29,6 +29,11 @@ public class TopicModelMain {
 		String topicmodel = "LDA_Variational"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		int number_of_topics = 30;
+		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
+		boolean setRandomFold = false; // false means no shuffling and true means shuffling
+		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
+
+		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
@@ -127,12 +132,17 @@ public class TopicModelMain {
 			}
 			
 			model.setDisplay(display);
+			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			model.LoadPrior(aspectlist, eta);
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
-			} else 
+			} else {
+				model.setTestDocMod(testDocMod);
+				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
+			}
+			
 		}
 	}
 }

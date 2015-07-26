@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -17,7 +18,9 @@ public abstract class TopicModel {
 	protected _Corpus m_corpus;	
 	protected int m_crossValidFold;
 	protected boolean m_logSpace; // whether the computations are all in log space
-	
+	protected boolean m_LoadnewEggInTrain = true; // check whether newEgg will be loaded in trainSet or Not
+	protected boolean m_randomFold = true; // true mean randomly take K fold and test and false means use only 1 fold and use the fixed trainset
+	protected int m_testDocMod; // when m_randomFold = false, we select every m_testDocMod_th document for testing
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
 	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
@@ -49,6 +52,18 @@ public abstract class TopicModel {
 	
 	public void setDisplay(boolean disp) {
 		m_display = disp;
+	}
+	
+	public void setNewEggLoadInTrain(boolean flag){
+		m_LoadnewEggInTrain = flag;
+	}
+	
+	public void setRandomFold(boolean flag){
+		m_randomFold = flag;
+	}
+	
+	public void setTestDocMod(int mod){
+		m_testDocMod = mod;
 	}
 	
 	//initialize necessary model parameters
@@ -93,6 +108,9 @@ public abstract class TopicModel {
 	
 	//print top k words under each topic
 	public abstract void printTopWords(int k);
+	
+	// calculate the docsummary
+	public abstract void docSummary(String[] productList);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
@@ -217,7 +235,10 @@ public abstract class TopicModel {
 				perplexity += worker.getPerplexity();
 			}
 		} else {
+			
+			
 			for(_Doc d:m_testSet) {
+				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
 				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
@@ -227,11 +248,14 @@ public abstract class TopicModel {
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
+		{
 			calculatePrecisionRecall();
+		}
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		return perplexity;
 	}
-	
+
+		
 	public void calculatePrecisionRecall(){
 		int[][] precision_recall = new int [2][2];
 		precision_recall [0][0] = 0; // 0 is for pos
@@ -283,31 +307,67 @@ public abstract class TopicModel {
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
 		m_crossValidFold = k;
-		m_corpus.shuffle(k);
-		int[] masks = m_corpus.getMasks();
-		ArrayList<_Doc> docs = m_corpus.getCollection();
 		
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
-		double[] perf = new double[k];
+		double[] perf;
 		
-		//Use this loop to iterate all the ten folders, set the train set and test set.
-		for (int i = 0; i < k; i++) {
-			for (int j = 0; j < masks.length; j++) {
-				if( masks[j]==i ) 
-					m_testSet.add(docs.get(j));
-				else 
-					m_trainSet.add(docs.get(j));
+		
+		if(m_randomFold==true){
+			perf = new double[k];
+			m_corpus.shuffle(k);
+			int[] masks = m_corpus.getMasks();
+			ArrayList<_Doc> docs = m_corpus.getCollection();
+			//Use this loop to iterate all the ten folders, set the train set and test set.
+			for (int i = 0; i < k; i++) {
+				for (int j = 0; j < masks.length; j++) {
+					if( masks[j]==i ) 
+						m_testSet.add(docs.get(j));
+					else 
+						m_trainSet.add(docs.get(j));
+				}
+				
+				System.out.println("Fold number "+i);
+				System.out.println("Train Set Size "+m_trainSet.size());
+				System.out.println("Test Set Size "+m_testSet.size());
+
+				long start = System.currentTimeMillis();
+				EM();
+				perf[i] = Evaluation();
+				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				m_trainSet.clear();
+				m_testSet.clear();
 			}
+		}
+		
+		else{
+			k = 1;
+			perf = new double[k];
+			for(_Doc d:m_corpus.getCollection()){
+
+				if(m_LoadnewEggInTrain==false){
+					if(d.getID()%m_testDocMod!=0 && d.getSourceName()==1){ // Only adding Amazon Data in train
+						m_trainSet.add(d);
+					}
+					else
+						m_testSet.add(d);
+				}
+				else{
+					if(d.getID()%m_testDocMod!=0) { 
+						m_trainSet.add(d);
+					}
+					else
+						m_testSet.add(d);
+				}
+			}
+			System.out.println("Train Set Size "+m_trainSet.size());
+			System.out.println("Test Set Size "+m_testSet.size());
 			
 			long start = System.currentTimeMillis();
 			EM();
-			perf[i] = Evaluation();
+			perf[0] = Evaluation();
 			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-			m_trainSet.clear();
-			m_testSet.clear();
 		}
-		
 		//output the performance statistics
 		double mean = Utils.sumOfArray(perf)/k, var = 0;
 		for(int i=0; i<perf.length; i++)
