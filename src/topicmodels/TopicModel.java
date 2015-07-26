@@ -350,8 +350,12 @@ public abstract class TopicModel {
 			for(_Doc d:m_corpus.getCollection()){
 
 				if(m_LoadnewEggInTrain==false){
-					if(d.getID()%m_testDocMod!=0 && d.getSourceName()==1){ // Only adding Amazon Data in train
-						m_trainSet.add(d);
+					if(d.getID()%m_testDocMod!=0){ 
+						if(d.getSourceName()==1)// Only adding Amazon Data in train
+							m_trainSet.add(d);
+						if(d.getSourceName()==2){
+						//Do not add the newEgg Doc it is skipped!!
+						}
 					}
 					else
 						m_testSet.add(d);

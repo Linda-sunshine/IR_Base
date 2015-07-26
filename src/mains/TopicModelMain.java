@@ -145,10 +145,10 @@ public class TopicModelMain {
 			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			if(loadAspectSentiPrior==1){
 				System.out.println("Loading Ascpect Senti list from "+aspectSentiList);
-				model.LoadAspectSentiPrior(aspectSentiList, eta);
+				model.LoadPrior(aspectSentiList, eta);
 			} else if(loadAspectSentiPrior==2){
 				System.out.println("Loading Ascpect list from "+aspectList);
-				model.LoadAspectPrior(aspectList, eta);
+				model.LoadPrior(aspectList, eta);
 			}else{
 				System.out.println("No prior is added!!");
 			}
