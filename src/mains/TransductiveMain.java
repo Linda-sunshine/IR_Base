@@ -113,6 +113,7 @@ public class TransductiveMain {
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
 			double noiseRatio = 1.0;
 			boolean metricLearning = true;
+			boolean multithread_LR = true;//training LambdaRank with multi-threads
 			
 			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
@@ -120,13 +121,13 @@ public class TransductiveMain {
 					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg); 
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						topK, noiseRatio);
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
+						topK, noiseRatio, multithread_LR);
 			}
 			
 			mySemi.setSimilarity(simFlag);

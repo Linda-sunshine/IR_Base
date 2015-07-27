@@ -28,6 +28,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	protected Model m_rankSVM;
 	protected LambdaRank m_lambdaRank;
 	double m_tradeoff;
+	boolean m_multithread = false; // by default we will use single thread
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
@@ -44,14 +45,15 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
-			double delta, double eta, boolean storeGraph,
-			int topK, double noiseRatio) {
+			double delta, double eta, boolean weightedAvg,
+			int topK, double noiseRatio, boolean multithread) {
 		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta,
-				storeGraph);
+				weightedAvg);
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
 		m_ranker = 1;
+		m_multithread = multithread;
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
@@ -108,24 +110,26 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			w = m_rankSVM.getFeatureWeights();			
 		} else {//all the rest use LambdaRank with different evaluator
-			/**** single-thread version ****/
-//			m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
-//			m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
-			
-			/**** multi-thread version ****/
-			m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
-			m_lambdaRank.train(100, 20, 1.0, 0.98);//lambdaRank specific parameters
-			
+			if (m_multithread) {
+				/**** multi-thread version ****/
+				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
+				m_lambdaRank.train(100, 20, 1.0, 0.98);//lambdaRank specific parameters
+			} else {
+				/**** single-thread version ****/
+				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
+				m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
+			}			
 			w = m_lambdaRank.getWeights();
 		}
 		
 		for(int i=0; i<RankFVSize; i++)
-			System.out.print(w[i] + " ");
+			System.out.format("%.5f ", w[i]);
 		System.out.println();
 	}
 	
+	//this is an important feature and will be used repeated
 	private void calcLabeledSimilarities() {
-		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagnoal
+		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagonal
 		if (m_LabeledCache==null || m_LabeledCache.length<size)
 			m_LabeledCache = new double[size];
 		
@@ -247,7 +251,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[2] = q.sameProduct(d)?1:0;
 		
 		//feature 4: classifier's prediction difference
-		fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
+		//fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
 		
 		//feature 5: sparse feature length difference
 		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());
