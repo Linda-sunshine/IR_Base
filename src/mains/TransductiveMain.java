@@ -24,13 +24,13 @@ public class TransductiveMain {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
-		int number_of_topics = 20;
+		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
