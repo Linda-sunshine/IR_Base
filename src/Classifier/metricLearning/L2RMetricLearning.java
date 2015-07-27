@@ -204,7 +204,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 0.9*posQ)){
+				|| (di.getYLabel() == 1 && negQ < 1.1*posQ)){
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
@@ -247,7 +247,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[2] = q.sameProduct(d)?1:0;
 		
 		//feature 4: classifier's prediction difference
-		fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
+		//fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
 		
 		//feature 5: sparse feature length difference
 		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());
