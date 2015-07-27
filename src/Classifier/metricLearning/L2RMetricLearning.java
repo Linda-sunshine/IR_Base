@@ -129,6 +129,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	//this is an important feature and will be used repeated
 	private void calcLabeledSimilarities() {
+		System.out.println("Creating cache for labeled documents...");
+		
 		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagonal
 		if (m_LabeledCache==null || m_LabeledCache.length<size)
 			m_LabeledCache = new double[size];
@@ -232,7 +234,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d(%d:%d) queries for L2R model training...\n", pairSize, posQ, negQ);
+		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return pairSize;
 	}
 	

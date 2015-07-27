@@ -188,10 +188,10 @@ public class GaussianFields extends BaseClassifier {
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
 
-		System.out.format("Construct graph nodes in parallel: L: %d, U: %d\n",  m_L, m_U);
+		System.out.format("Construct nearest neighbor graph nodes in parallel: L: %d, U: %d\n",  m_L, m_U);
 		WaitUntilFinish(ActionType.AT_node);
 		
-		System.out.format("Construct nearest neighbor graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		System.out.format("Construct nearest neighbor graph edges in parallel: L: %d, U: %d\n",  m_L, m_U);
 		WaitUntilFinish(ActionType.AT_graph);
 	}
 	
