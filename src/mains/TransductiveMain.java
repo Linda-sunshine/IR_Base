@@ -46,7 +46,7 @@ public class TransductiveMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
