@@ -36,13 +36,6 @@ public class HTMM extends pLSA {
 		this.constant = 2;		
 		this.epsilon = Math.random();
 		
-		int maxSeqSize = c.getLargestSentenceSize();		
-		m_hmm = new FastRestrictedHMM(epsilon, maxSeqSize, this.number_of_topics, this.constant); 
-		
-		//cache in order to avoid frequently allocating new space
-		p_dwzpsi = new double[maxSeqSize][this.constant * this.number_of_topics]; // max|S_d| * (2*K)
-		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
-		
 		m_logSpace = true;
 	}
 	
@@ -55,36 +48,20 @@ public class HTMM extends pLSA {
 		
 		this.epsilon = Math.random();
 		this.constant = constant;
+		m_logSpace = true;
+		createSpace();
+	}
+	
+	@Override
+	protected void createSpace() {
+		super.createSpace();
 		
-		int maxSeqSize = c.getLargestSentenceSize();		
+		int maxSeqSize = m_corpus.getLargestSentenceSize();		
+		m_hmm = new FastRestrictedHMM(epsilon, maxSeqSize, this.number_of_topics, this.constant); 
+		
 		//cache in order to avoid frequently allocating new space
 		p_dwzpsi = new double[maxSeqSize][this.constant * this.number_of_topics]; // max|S_d| * (2*K)
 		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
-		
-		m_logSpace = true;
-	}
-	
-	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			int number_of_topics, double alpha, //arguments for pLSA
-			boolean setHMM) { //just to indicate we don't need initiate hmm inferencer
-		super(number_of_iteration, converge, beta, c,
-				0, //HTMM does not have a background setting
-				number_of_topics, alpha);
-		
-		this.epsilon = Math.random();
-		this.constant = 2;
-		
-		int maxSeqSize = c.getLargestSentenceSize();		
-		if (setHMM)
-			m_hmm = new FastRestrictedHMM(epsilon, maxSeqSize, this.number_of_topics, this.constant); 
-		else
-			m_hmm = null;
-		
-		//cache in order to avoid frequently allocating new space
-		p_dwzpsi = new double[maxSeqSize][constant * this.number_of_topics]; // max|S_d| * (2*K)
-		emission = new double[maxSeqSize][this.number_of_topics]; // max|S_d| * K
-		
-		m_logSpace = true;
 	}
 	
 	@Override

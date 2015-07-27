@@ -24,10 +24,16 @@ public class LDA_Gibbs extends pLSA {
 			_Corpus c, double lambda, 
 			int number_of_topics, double alpha, double burnIn, int lag) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
-		m_sstat = new double[number_of_topics];
+		
 		m_rand = new Random();
 		m_burnIn = (int) (burnIn * number_of_iteration);
 		m_lag = lag;
+	}
+	
+	@Override
+	protected void createSpace() {
+		super.createSpace();
+		m_sstat = new double[number_of_topics];
 	}
 
 	@Override

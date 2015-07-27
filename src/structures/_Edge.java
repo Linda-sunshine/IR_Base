@@ -41,9 +41,9 @@ public class _Edge implements Comparable<_Edge> {
 	@Override
 	public int compareTo(_Edge e) {
 		if (e.m_similarity>this.m_similarity)
-			return -1;
-		else if (e.m_similarity<this.m_similarity)
 			return 1;
+		else if (e.m_similarity<this.m_similarity)
+			return -1;
 		else
 			return 0;
 	}

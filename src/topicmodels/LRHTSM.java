@@ -24,7 +24,11 @@ public class LRHTSM extends HTSM {
 			int number_of_topics, double alpha, //arguments for pLSA	
 			double lambda) {//arguments for LR-HTMM		
 		super(number_of_iteration, converge, beta, c, number_of_topics, alpha);
-
+	
+		m_lambda = lambda;//used as L2 regularization parameter for delta and omega estimation 
+	}
+	
+	protected void createSpace() {
 		//variable related to LR topic
 		m_omega = new double [_Doc.stn_fv_size + 1];//bias + stn_transition_features
 		m_g_omega = new double[m_omega.length];
@@ -34,10 +38,8 @@ public class LRHTSM extends HTSM {
 		m_delta = new double [_Doc.stn_senti_fv_size + 1];//bias + stn_senti_transition_features
 		m_g_delta = new double[m_delta.length];
 		m_diag_delta = new double[m_delta.length];
-	
-		m_lambda = lambda;//used as L2 regularization parameter for delta and omega estimation 
 		
-		m_hmm = new LRFastRestrictedHMM_sentiment(m_omega, m_delta, c.getLargestSentenceSize(), number_of_topics); 
+		m_hmm = new LRFastRestrictedHMM_sentiment(m_omega, m_delta, m_corpus.getLargestSentenceSize(), number_of_topics); 
 	}
 	
 	@Override
