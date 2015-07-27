@@ -101,8 +101,8 @@ public class pLSA extends twoTopic {
 				System.err.format("The topic size (%d) specified in the sentiment-aspect seed words is not even!", word_topic_prior.length);
 				System.exit(-1);
 			} else if (word_topic_prior.length > number_of_topics) {
-				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
-				System.err.format("Reset the topic size to %d!", word_topic_prior.length);
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!\n", word_topic_prior.length, number_of_topics);
+				System.err.format("Reset the topic size to %d!\n", word_topic_prior.length);
 				
 				this.number_of_topics = word_topic_prior.length;
 				createSpace();
