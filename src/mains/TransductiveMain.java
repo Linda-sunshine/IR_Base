@@ -73,6 +73,7 @@ public class TransductiveMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer =new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+		analyzer.setReleaseContent(false);//for debugging purpose
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues("TF", 0);

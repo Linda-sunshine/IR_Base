@@ -254,6 +254,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//feature 4: classifier's prediction difference
 		//fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
+		fv[3] = 0;
 		
 		//feature 5: sparse feature length difference
 		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());

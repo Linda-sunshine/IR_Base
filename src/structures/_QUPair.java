@@ -41,6 +41,7 @@ public class _QUPair implements Comparable<_QUPair>{
 		m_betterURLs.add(qu);
 	}
 	
+	//for RankSVM
 	Feature[] getDiffFv(_QUPair dj) {
 		ArrayList<Feature> fvs = new ArrayList<Feature>();
 		double value;

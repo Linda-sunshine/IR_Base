@@ -36,6 +36,9 @@ public abstract class Analyzer {
 	//minimal length of indexed document
 	protected int m_lengthThreshold;
 	
+	//if we have store content of documents
+	protected boolean m_releaseContent;
+	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
@@ -137,6 +140,7 @@ public abstract class Analyzer {
 		m_corpus.setFeatures(m_featureNames);
 		m_corpus.setFeatureStat(m_featureStat);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		m_corpus.setContent(!m_releaseContent);
 		return m_corpus;
 	}
 	
