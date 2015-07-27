@@ -155,13 +155,13 @@ public class LDA_Gibbs extends pLSA {
 	public double inference(_Doc d) {
 		initTestDoc(d);//this is not a corpus level estimation
 		
-		double likelihood = Double.NEGATIVE_INFINITY, result, count = 0;
+		double likelihood = Double.NEGATIVE_INFINITY, count = 0;
 		int  i = 0;
 		do {
-			result = calculate_E_step(d);
+			calculate_E_step(d);
 			if (i>m_burnIn && i%m_lag==0){
-				likelihood = Utils.logSum(likelihood, result);
 				collectStats(d);
+				likelihood = Utils.logSum(likelihood, calculate_log_likelihood(d));				
 				count ++;
 			}
 		} while (++i<this.number_of_iteration);
