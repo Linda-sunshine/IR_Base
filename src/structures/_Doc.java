@@ -33,7 +33,7 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	
-	int m_sourceName = -1; // source is 1 for Amazon and 2 for newEgg
+	int m_sourceName = 1; // source is 1 for Amazon and 2 for newEgg
 	
 	public void setSourceName(int sourceName){
 		m_sourceName = sourceName;
@@ -255,6 +255,13 @@ public class _Doc implements Comparable<_Doc> {
 		for(int i=0; i<m_sentences.length; i++)
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
+	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void setRawSentences(ArrayList<String> stnList) {
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i].setRawSentence(stnList.get(i));
+	}
+	
 	
 	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
 	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {

@@ -99,4 +99,10 @@ public class twoTopic extends TopicModel {
 
 	@Override
 	protected void finalEst() {	}
+
+	@Override
+	public void docSummary(String[] productList) {
+		// TODO Auto-generated method stub
+		
+	}
 }

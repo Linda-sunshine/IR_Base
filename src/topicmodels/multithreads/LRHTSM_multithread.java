@@ -93,7 +93,6 @@ public class LRHTSM_multithread extends LRHTSM {
 			_Stn[] sentences = d.getSentences();
 			for(i=0; i<path.length; i++)
 				sentences[i].setTopic(path[i]);
-			
 			return current;
 		}
 		

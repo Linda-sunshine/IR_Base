@@ -28,7 +28,11 @@ import utils.Utils;
 public class newEggAnalyzer extends jsonAnalyzer {
 	//category of NewEgg reviews
 	String m_category; 
-	
+	ArrayList<String> m_duplicateChecker;
+	int m_duplicateCount = 0;
+	int m_reviewCount = 0;
+	int m_prosSentenceCounter = 0;
+	int m_consSentenceCounter = 0;
 	SimpleDateFormat m_dateFormatter;
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, String category) throws InvalidFormatException,
@@ -37,6 +41,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		//11/7/2013 7:01:22 PM
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
+		m_duplicateChecker = new ArrayList<String>();
+		m_duplicateCount = 0;
+		
+		
 	}
 
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
@@ -45,6 +53,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
+		m_duplicateChecker = new ArrayList<String>();
+		m_duplicateCount = 0;
 	}
 	
 	//Load all the files in the directory.
@@ -60,7 +70,11 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
+		System.out.format("Number of Total Reviews %d\n", m_reviewCount);
+		System.out.println("Number of Duplicate Reviews "+m_duplicateCount);
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+		if(this.m_stnDetector!=null)
+			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosSentenceCounter, m_consSentenceCounter);
 	}
 
 	//Load a document and analyze it.
@@ -73,6 +87,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			JSONObject json = LoadJson(filename);
 			prods = json.getJSONObject(m_category);
 			itemIds = prods.names();
+			System.out.printf("Under %s category, Number of Items: %d\n", m_category, itemIds.length());
 		} catch (Exception e) {
 			System.out.print('X');
 			return;
@@ -82,6 +97,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			try {
 				item = itemIds.getString(i);
 				reviews = prods.getJSONArray(item);
+				m_reviewCount+=reviews.length();
 				for(int j=0; j<reviews.length(); j++) 
 				{
 					if(this.m_stnDetector!=null)
@@ -105,6 +121,15 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
+		
+		String wholeContent = post.getProContent() + post.getConContent() + post.getComments();
+		if(m_duplicateChecker.contains(wholeContent))
+		{
+			m_duplicateCount++;
+			return false;
+		}
+		else
+			m_duplicateChecker.add(wholeContent);
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			result = TokenizerNormalizeStemmer(content);
@@ -164,12 +189,24 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		String content;
 		TokenizeResult result;
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
+		ArrayList<String> rawStnList = new ArrayList<String>(); // to avoid empty sentences
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
 		ArrayList<Integer> stnLabel = new ArrayList<Integer>(); 
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		int y = post.getLabel()-1, uniWordsInSections = 0;
+		int prosSentenceCounter = 0;
+		int consSentenceCounter = 0;
+		
+		String wholeContent = post.getProContent() + post.getConContent() + post.getComments();
+		if(m_duplicateChecker.contains(wholeContent))
+		{
+			m_duplicateCount++;
+			return false;
+		}
+		else
+			m_duplicateChecker.add(wholeContent);
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			for(String sentence : m_stnDetector.sentDetect(content)) {
@@ -180,6 +217,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
+					rawStnList.add(sentence);
+					prosSentenceCounter++;
 					stnPosList.add(posTags);
 					stnLabel.add(0); // 0 for pos
 					uniWordsInSections += vPtr.size();
@@ -200,6 +239,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				vPtr = constructSpVct(tokens, y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
 					stnList.add(Utils.createSpVct(vPtr));
+					rawStnList.add(sentence);
+					consSentenceCounter++;
 					stnPosList.add(posTags);
 					stnLabel.add(1); // 1 for cons
 					uniWordsInSections += vPtr.size();
@@ -238,9 +279,12 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
 			doc.setSentencesWithLabels(stnList, stnLabel);
+			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
+			m_prosSentenceCounter+=prosSentenceCounter;
+			m_consSentenceCounter+=consSentenceCounter;
 			return true;
 		} else
 			return false;

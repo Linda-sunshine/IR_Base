@@ -143,16 +143,21 @@ public abstract class Analyzer {
 	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
 			for(int index: spVct.keySet()){
-				String token = m_featureNames.get(index);
-				_stat stat = m_featureStat.get(token);
-				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
-					m_featureNameIndex.remove(index);
-					m_featureStat.remove(token);
-					m_featureNames.remove(index);
-				}
-				else{//If the feature is not the first time to show in feature set.
-					stat.minusOneDF(y);
-					stat.minusNTTF(y, spVct.get(index));
+				String token="";
+				if(m_featureNames.contains(index))
+				{	
+					token = m_featureNames.get(index);
+					_stat stat = m_featureStat.get(token);
+
+					if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
+						m_featureNameIndex.remove(index);
+						m_featureStat.remove(token);
+						m_featureNames.remove(index);
+					}
+					else{//If the feature is not the first time to show in feature set.
+						stat.minusOneDF(y);
+						stat.minusNTTF(y, spVct.get(index));
+					}
 				}
 			}
 		} else{//If CV is loaded, we can minus the DF and TTF directly.

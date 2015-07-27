@@ -28,7 +28,14 @@ public class TopicModelMain {
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
+		String category = "camera";
 		int number_of_topics = 30;
+		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
+		boolean setRandomFold = false; // false means no shuffling and true means shuffling
+		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
+		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		
+		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
@@ -37,6 +44,13 @@ public class TopicModelMain {
 		int gibbs_iteration = 1500, gibbs_lag = 50;
 		double burnIn = 0.4;
 		boolean display = true;
+		
+		// most popular items under each category from Amazon
+		// needed for docSummary
+		String tabletProductList[] = {"B00G3Q4CMM"};
+		String cameraProductList[] = {"B00FY3U206"};
+		String phoneProductList[] = {"B00H0MGCDK"};
+		String tvProductList[] = {"B00GEECXKQ"};
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/tablet/topicmodel";
@@ -55,8 +69,9 @@ public class TopicModelMain {
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		String aspectlist = null;
-		//String aspectlist = "./data/Model/aspect_tablet.txt";
-		//String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
+	
+		String aspectList = "./data/Model/aspect_"+ category + ".txt";
+		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
@@ -127,12 +142,34 @@ public class TopicModelMain {
 			}
 			
 			model.setDisplay(display);
-			model.LoadPrior(aspectlist, eta);
+			model.setNewEggLoadInTrain(loadNewEggInTrain);
+			if(loadAspectSentiPrior==1){
+				System.out.println("Loading Ascpect Senti list from "+aspectSentiList);
+				model.LoadAspectSentiPrior(aspectSentiList, eta);
+			} else if(loadAspectSentiPrior==2){
+				System.out.println("Loading Ascpect list from "+aspectList);
+				model.LoadAspectPrior(aspectList, eta);
+			}else{
+				System.out.println("No prior is added!!");
+			}
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
-			} else 
+			} else {
+				model.setTestDocMod(testDocMod);
+				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
+				
+				if(category.equalsIgnoreCase("camera"))
+					model.docSummary(cameraProductList);
+				else if(category.equalsIgnoreCase("tablet"))
+					model.docSummary(tabletProductList);
+				else if(category.equalsIgnoreCase("phone"))
+					model.docSummary(phoneProductList);
+				else if(category.equalsIgnoreCase("tv"))
+					model.docSummary(tvProductList);
+			}
+			
 		}
 	}
 }

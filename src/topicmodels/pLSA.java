@@ -43,6 +43,99 @@ public class pLSA extends twoTopic {
 		m_logSpace = false;
 	}
 	
+	
+	public void LoadAspectSentiPrior(String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
+		try {
+			String tmpTxt;
+			String[] container;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++)
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			
+			int wid, wCount = 0;
+			
+			double[] prior;
+			ArrayList<double[]> priorWords = new ArrayList<double[]>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+				
+				container = tmpTxt.split(" ");
+				wCount = 0;
+				prior = new double[vocabulary_size];
+				for(int i=1; i<container.length; i++) {
+					if (featureNameIndex.containsKey(container[i])) {
+						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
+						prior[wid] = eta;
+						wCount++;
+					}
+				}
+				
+				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				priorWords.add(prior);
+			}
+			reader.close();
+			
+			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			if (word_topic_prior.length > number_of_topics) 
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void LoadAspectPrior(String filename, double eta) {		
+		if (filename == null || filename.isEmpty())
+			return;
+		
+		try {
+			String tmpTxt;
+			String[] container;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++)
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			
+			int wid, wCount = 0;
+			
+			double[] prior;
+			ArrayList<double[]> priorWords = new ArrayList<double[]>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			while( (tmpTxt=reader.readLine()) != null ){
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+				
+				container = tmpTxt.split(" ");
+				wCount = 0;
+				prior = new double[vocabulary_size];
+				for(int i=1; i<container.length; i++) {
+					if (featureNameIndex.containsKey(container[i])) {
+						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
+						prior[wid] = eta;
+						wCount++;
+					}
+				}
+				
+				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				priorWords.add(prior);
+			}
+			reader.close();
+			
+			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			if (word_topic_prior.length > number_of_topics) 
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void LoadPrior(String filename, double eta) {		
 		if (filename == null || filename.isEmpty())
 			return;
@@ -115,13 +208,38 @@ public class pLSA extends twoTopic {
 	}
 	
 	protected void imposePrior() {
-		if (word_topic_prior!=null) {
+		/*if (word_topic_prior!=null) {
 			int size = Math.min(number_of_topics, word_topic_prior.length);
 			for(int k=0; k<size; k++) {
 				for(int n=0; n<vocabulary_size; n++)
 					word_topic_sstat[k][n] += word_topic_prior[k][n];
 			}
+		}*/
+		
+		if (word_topic_prior!=null) {
+			if(number_of_topics>word_topic_prior.length){
+		
+				int diff = number_of_topics/2 - word_topic_prior.length/2;
+				for(int k=0; k<word_topic_prior.length/2; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+
+
+				for(int k=number_of_topics/2; k<word_topic_prior.length; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k-diff][n];
+				}
+			}
+			else{
+				int size = Math.min(number_of_topics, word_topic_prior.length);
+				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+			}
 		}
+		
 	}
 	
 	@Override
@@ -268,4 +386,108 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
+	
+	
+	public void docSummary(String[] productList){
+		
+		int numberofSentences = 0;
+		for(int i=0; i<productList.length; i++){
+			
+			for(_Doc d:m_trainSet) {
+				if(d.getItemID().equalsIgnoreCase(productList[i])){
+					numberofSentences+=d.getSenetenceSize();
+				}
+			}
+		}
+		
+		double sentences[][] = new double [this.number_of_topics][numberofSentences];
+		String rawSentence[] = new String[numberofSentences];
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			int index = 0;
+			for(_Doc d:m_trainSet) {
+				if(d.getItemID().equalsIgnoreCase(productList[0])){
+			for(int j=0; j<d.getSenetenceSize(); j++){
+				double prob = 1.0;
+				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+				for(int w=0; w<tmpSentence.length; w++){
+					int wid = tmpSentence[w].getIndex();
+					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+				}
+				rawSentence[index] = d.getSentence(j).getRawSentence();
+				sentences[i][index] = prob/tmpSentence.length;
+				index++;
+			}// sentence loop
+			} // if condition
+		}//doc loop
+			
+			/* Find Sentence with largest probability*/
+			double max = sentences[i][0]; 
+			int max_index = 0;
+
+			for(int j=1; j<numberofSentences; j++){
+				if(sentences[i][j]>max){
+					max = sentences[i][j];
+					max_index = j;
+				}
+			}
+			/* print that sentence*/
+			if(i<this.number_of_topics/2)
+				System.out.println("\nT: "+i);
+			else
+				System.out.println("\nT: "+i);
+
+			System.out.println(rawSentence[max_index]);
+
+		}
+	
+	}
+	
+//	
+//	public void docSummary(int numberOfSentences){
+//		
+//		double sentences[][] = new double [this.number_of_topics][numberOfSentences];
+//		String rawSentence[] = new String[numberOfSentences];
+//		
+//		
+//		for(int i=0; i<this.number_of_topics; i++){
+//			int index = 0;
+//			for(_Doc d:m_testSet) {
+//				if(d.getItemID().equalsIgnoreCase("B00ACVI202")){
+//			for(int j=0; j<d.getSenetenceSize(); j++){
+//				double prob = 1.0;
+//				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+//				for(int w=0; w<tmpSentence.length; w++){
+//					int wid = tmpSentence[w].getIndex();
+//					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+//				}
+//				rawSentence[index] = d.getSentence(j).getRawSentence();
+//				sentences[i][index] = prob/tmpSentence.length;
+//				index++;
+//			}// sentence loop
+//			} // if condition
+//		}//doc loop
+//			
+//			/* Find Sentence with largest probability*/
+//			double max = sentences[i][0]; 
+//			int max_index = 0;
+//
+//			for(int j=1; j<numberOfSentences; j++){
+//				if(sentences[i][j]>max){
+//					max = sentences[i][j];
+//					max_index = j;
+//				}
+//			}
+//			/* print that sentence*/
+//			if(i<this.number_of_topics/2)
+//				System.out.println("\nT: "+i);
+//			else
+//				System.out.println("\nT: "+i);
+//
+//			System.out.println(rawSentence[max_index]);
+//
+//		}
+//	
+//	}
+	
 }
