@@ -30,7 +30,7 @@ public class PairwiseSimCalculator implements Runnable {
 		_Doc d;
 		for (int i = m_start; i < m_end; i++) {
 			d = m_GFObj.getTestDoc(i);
-			m_GFObj.m_nodeList[i] = new _Node(d.getYLabel(), m_GFObj.predict(d));
+			m_GFObj.m_nodeList[i] = new _Node(i, d.getYLabel(), m_GFObj.predict(d));
 		}
 	}
 	
@@ -70,6 +70,9 @@ public class PairwiseSimCalculator implements Runnable {
 			for(_RankItem it:kUL) 
 				node.addLabeledEdge(m_GFObj.m_nodeList[it.m_index], it.m_value);
 			kUL.clear();
+			
+			// sort the edges to accelerate debug output
+			node.sortEdges();
 		}	
 		
 		System.out.format("[%d,%d) finished...\n", m_start, m_end);

@@ -14,14 +14,13 @@ import java.util.LinkedList;
 import java.util.Set;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
-import opennlp.tools.postag.POSModel;
+import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import opennlp.tools.postag.POSTaggerME;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -37,8 +36,6 @@ public class DocAnalyzer extends Analyzer {
 	protected SentenceDetectorME m_stnDetector;
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
-	 
-	protected boolean m_releaseContent;
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{

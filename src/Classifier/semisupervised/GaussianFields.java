@@ -182,8 +182,10 @@ public class GaussianFields extends BaseClassifier {
 			m_nodeList = new _Node[(int)((m_U+m_L)*1.2)];//create sufficient space 			
 
 		//fill in the labeled parts
-		for(int i=m_U; i<m_U + m_L; i++)
-			m_nodeList[i] = new _Node(getLabeledDoc(i-m_U).getYLabel());
+		for(int i=m_U; i<m_U + m_L; i++) {
+			_Doc d = getLabeledDoc(i-m_U);
+			m_nodeList[i] = new _Node(i-m_U, d.getYLabel(), d.getYLabel());
+		}
 		
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];

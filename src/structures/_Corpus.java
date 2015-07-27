@@ -27,7 +27,7 @@ public class _Corpus {
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
 	HashMap<String, _stat> m_featureStat; //statistics about the features
-	
+	boolean m_withContent = false; // by default all documents' content has been released
 	
 	public SentiWordNetDemoCode sentiWordNet;
 	public ArrayList<String> m_posPriorList;
@@ -48,6 +48,14 @@ public class _Corpus {
 	
 	public void reset() {
 		m_collection.clear();
+	}
+	
+	public void setContent(boolean content) {
+		m_withContent = content;
+	}
+	
+	public boolean hasContent() {
+		return m_withContent;
 	}
 	
 	public void setFeatures(ArrayList<String> features) {

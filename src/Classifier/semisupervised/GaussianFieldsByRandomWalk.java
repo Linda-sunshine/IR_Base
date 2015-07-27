@@ -203,7 +203,39 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	}
 	
 	@Override
-	protected void debug(_Doc d){
+	protected void debug(_Doc d) {
+		debugSummary(d);
+		if (m_corpus.hasContent())
+			debugDetails(d);
+	}
+	
+	void debugDetails(_Doc d){
+		int id = d.getID();
+		_Node node = m_nodeList[id];
+		
+		try {
+			m_debugWriter.write(d.toString() + "\n");
+			
+			/****Get the top 5 elements from labeled neighbors******/
+			for(int k=0; k<5; k++){
+				_Edge item = node.m_labeledEdges.get(k);
+				_Doc dj = getLabeledDoc(item.getNodeId());
+				m_debugWriter.write(dj.toString() + "\n");
+			}
+			
+			/****Get the top 5 elements from k'UU******/
+			for(int k=0; k<5; k++){
+				_Edge item = node.m_unlabeledEdges.get(k);
+				_Doc dj = getTestDoc(item.getNodeId());
+				m_debugWriter.write(dj.toString() + "\n");
+			}
+			m_debugWriter.write("\n");		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	void debugSummary(_Doc d){
 		int id = d.getID();
 		_Node node = m_nodeList[id];
 		double sim, wijSumU=0, wijSumL=0;
@@ -214,7 +246,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 					d.getYLabel(), //ground-truth
 					node.m_pred, //random walk's raw prediction
 					getLabel(node.m_pred), //map to discrete label
-					getLabel3(node.m_pred), 
+					getLabel3(node.m_pred), //consider the prior
 					(int)node.m_classifierPred)); //multiple learner's prediction
 		
 			double mean = 0, sd = 0;

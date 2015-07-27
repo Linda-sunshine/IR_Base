@@ -117,7 +117,8 @@ public abstract class BaseClassifier {
 		try {
 			if (m_debugOutput!=null)
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
-		
+			
+			m_debugWriter.write(this.toString() + "\n");
 			c.shuffle(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
