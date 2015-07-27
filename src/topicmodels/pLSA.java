@@ -22,25 +22,25 @@ import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 
-
 public class pLSA extends twoTopic {
 	// Dirichlet prior for p(\theta|d)
 	protected double d_alpha; // smoothing of p(z|d)
 	
-	protected double[][] topic_term_probabilty ; /* p(w|z) */
-	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
+	protected double[][] topic_term_probabilty ; /* p(w|z) */	
 	protected double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
 	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			double lambda, double back_ground [], //arguments for 2topic topic model
+			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) { //arguments for pLSA			
-		super(number_of_iteration, converge, beta, c, lambda, back_ground);
+		super(number_of_iteration, converge, beta, c, lambda, null);
 		
 		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_prior = null;
+		background_probability = new double[vocabulary_size];//to be initialized during EM
+		m_logSpace = false;
 	}
 	
 	public void LoadPrior(String filename, double eta) {		
@@ -97,8 +97,14 @@ public class pLSA extends twoTopic {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {	
 		// initialize topic document proportion, p(z|d)
-		for(_Doc d:collection)
+		// initialize background topic
+		Arrays.fill(background_probability, d_beta-1.0);
+		for(_Doc d:collection) {
 			d.setTopics(number_of_topics, d_alpha-1.0);//allocate memory and randomize it
+			for(_SparseFeature fv:d.getSparse()) 
+				background_probability[fv.getIndex()] += fv.getValue();
+		}
+		Utils.L1Normalization(background_probability);
 		
 		// initialize term topic matrix p(w|z,\phi)
 		for(int i=0;i<number_of_topics;i++)
@@ -109,17 +115,42 @@ public class pLSA extends twoTopic {
 	}
 	
 	protected void imposePrior() {
-		if (word_topic_prior!=null) {
+		/*if (word_topic_prior!=null) {
 			int size = Math.min(number_of_topics, word_topic_prior.length);
 			for(int k=0; k<size; k++) {
 				for(int n=0; n<vocabulary_size; n++)
 					word_topic_sstat[k][n] += word_topic_prior[k][n];
 			}
+		}*/
+		
+		if (word_topic_prior!=null) {
+			if(number_of_topics>word_topic_prior.length){
+		
+				int diff = number_of_topics/2 - word_topic_prior.length/2;
+				for(int k=0; k<word_topic_prior.length/2; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+
+
+				for(int k=number_of_topics/2; k<word_topic_prior.length; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k-diff][n];
+				}
+			}
+			else{
+				int size = Math.min(number_of_topics, word_topic_prior.length);
+				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++)
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+				}
+			}
 		}
+		
 	}
 	
 	@Override
-	protected void init() { // clear up for next iteration
+	protected void init() { // clear up for next iteration during EM
 		for(int k=0;k<this.number_of_topics;k++)
 			Arrays.fill(word_topic_sstat[k], d_beta-1.0);//pseudo counts for p(w|z)
 		imposePrior();
@@ -133,6 +164,7 @@ public class pLSA extends twoTopic {
 	protected void initTestDoc(_Doc d) {
 		//allocate memory and randomize it
 		d.setTopics(number_of_topics, d_alpha-1.0);//in real space
+		estThetaInDoc(d);
 	}
 	
 	@Override
@@ -156,17 +188,20 @@ public class pLSA extends twoTopic {
 				exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
 				d.m_sstat[k] += exp;
 				
-				if (m_collectCorpusStats)
+				if (m_collectCorpusStats)//when testing, we don't need to collect sufficient statistics
 					word_topic_sstat[k][j] += exp;
 			}
 		}
 		
-		return calculate_log_likelihood(d);
+		if (m_collectCorpusStats==false || m_converge>0)
+			return calculate_log_likelihood(d);
+		else
+			return 1;//no need to compute likelihood
 	}
 	
 	@Override
 	public void calculate_M_step(int iter) {
-		// update topic-term matrix -------------
+		// update topic-term matrix
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
 			sum = Utils.sumOfArray(word_topic_sstat[k]);
@@ -179,11 +214,26 @@ public class pLSA extends twoTopic {
 			estThetaInDoc(d);
 	}
 	
+	protected double docThetaLikelihood(_Doc d) {
+		double logLikelihood = 0; //Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
+		for(int i=0; i<this.number_of_topics; i++) {
+			if (m_logSpace)
+				logLikelihood += (d_alpha-1) * d.m_topics[i];
+			else
+				logLikelihood += (d_alpha-1) * Math.log(d.m_topics[i]);
+		}
+		return logLikelihood;
+	}
+	
 	@Override
 	protected void estThetaInDoc(_Doc d) {
 		double sum = Utils.sumOfArray(d.m_sstat);//estimate the expectation of \theta
-		for(int k=0;k<this.number_of_topics;k++)
-			d.m_topics[k] = d.m_sstat[k] / sum;
+		for(int k=0;k<this.number_of_topics;k++) {
+			if (m_logSpace)
+				d.m_topics[k] = Math.log(d.m_sstat[k]/sum);
+			else
+				d.m_topics[k] = d.m_sstat[k]/sum;
+		}
 	}
 	
 	/*likelihod calculation */
@@ -193,11 +243,8 @@ public class pLSA extends twoTopic {
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
 	//NOTE: cannot be used for unseen documents!
 	@Override
-	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
-		double logLikelihood = 0.0, prob;
+	public double calculate_log_likelihood(_Doc d) {		
+		double logLikelihood = docThetaLikelihood(d), prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
 			prob = 0.0;
@@ -209,16 +256,17 @@ public class pLSA extends twoTopic {
 		return logLikelihood;
 	}
 	
+	//corpus-level parameters will be only called during training
 	@Override
-	protected double calculate_log_likelihood() {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
+	protected double calculate_log_likelihood() {		
 		//prior from Dirichlet distributions
-		double logLikelihood = 0;
+		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));;
 		for(int i=0; i<this.number_of_topics; i++) {
 			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1)*topic_term_probabilty[i][v];
+				if (m_logSpace)
+					logLikelihood += (d_beta-1) * topic_term_probabilty[i][v];
+				else
+					logLikelihood += (d_beta-1) * Math.log(topic_term_probabilty[i][v]);
 			}
 		}
 		
@@ -227,11 +275,11 @@ public class pLSA extends twoTopic {
 	
 	//print all the quantities in real space
 	@Override
-	public void printTopWords(int k, boolean logSpace) {
+	public void printTopWords(int k) {
 		Arrays.fill(m_sstat, 0);
 		for(_Doc d:m_trainSet) {
 			for(int i=0; i<number_of_topics; i++)
-				m_sstat[i] += logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
 		}
 		Utils.L1Normalization(m_sstat);			
 		
@@ -241,8 +289,112 @@ public class pLSA extends twoTopic {
 				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 			System.out.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 			for(_RankItem it:fVector)
-				System.out.format("%s(%.3f)\t", it.m_name, logSpace?Math.exp(it.m_value):it.m_value);
+				System.out.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
 			System.out.println();
 		}
 	}
+	
+	
+	public void docSummary(String[] productList){
+		
+		int numberofSentences = 0;
+		for(int i=0; i<productList.length; i++){
+			
+			for(_Doc d:m_trainSet) {
+				if(d.getItemID().equalsIgnoreCase(productList[i])){
+					numberofSentences+=d.getSenetenceSize();
+				}
+			}
+		}
+		
+		double sentences[][] = new double [this.number_of_topics][numberofSentences];
+		String rawSentence[] = new String[numberofSentences];
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			int index = 0;
+			for(_Doc d:m_trainSet) {
+				if(d.getItemID().equalsIgnoreCase(productList[0])){
+			for(int j=0; j<d.getSenetenceSize(); j++){
+				double prob = 1.0;
+				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+				for(int w=0; w<tmpSentence.length; w++){
+					int wid = tmpSentence[w].getIndex();
+					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+				}
+				rawSentence[index] = d.getSentence(j).getRawSentence();
+				sentences[i][index] = prob/tmpSentence.length;
+				index++;
+			}// sentence loop
+			} // if condition
+		}//doc loop
+			
+			/* Find Sentence with largest probability*/
+			double max = sentences[i][0]; 
+			int max_index = 0;
+
+			for(int j=1; j<numberofSentences; j++){
+				if(sentences[i][j]>max){
+					max = sentences[i][j];
+					max_index = j;
+				}
+			}
+			/* print that sentence*/
+			if(i<this.number_of_topics/2)
+				System.out.println("\nT: "+i);
+			else
+				System.out.println("\nT: "+i);
+
+			System.out.println(rawSentence[max_index]);
+
+		}
+	
+	}
+	
+//	
+//	public void docSummary(int numberOfSentences){
+//		
+//		double sentences[][] = new double [this.number_of_topics][numberOfSentences];
+//		String rawSentence[] = new String[numberOfSentences];
+//		
+//		
+//		for(int i=0; i<this.number_of_topics; i++){
+//			int index = 0;
+//			for(_Doc d:m_testSet) {
+//				if(d.getItemID().equalsIgnoreCase("B00ACVI202")){
+//			for(int j=0; j<d.getSenetenceSize(); j++){
+//				double prob = 1.0;
+//				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+//				for(int w=0; w<tmpSentence.length; w++){
+//					int wid = tmpSentence[w].getIndex();
+//					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+//				}
+//				rawSentence[index] = d.getSentence(j).getRawSentence();
+//				sentences[i][index] = prob/tmpSentence.length;
+//				index++;
+//			}// sentence loop
+//			} // if condition
+//		}//doc loop
+//			
+//			/* Find Sentence with largest probability*/
+//			double max = sentences[i][0]; 
+//			int max_index = 0;
+//
+//			for(int j=1; j<numberOfSentences; j++){
+//				if(sentences[i][j]>max){
+//					max = sentences[i][j];
+//					max_index = j;
+//				}
+//			}
+//			/* print that sentence*/
+//			if(i<this.number_of_topics/2)
+//				System.out.println("\nT: "+i);
+//			else
+//				System.out.println("\nT: "+i);
+//
+//			System.out.println(rawSentence[max_index]);
+//
+//		}
+//	
+//	}
+	
 }

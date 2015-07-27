@@ -13,12 +13,12 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 // HTMM parameter both in log space
 public class LRHTSM extends HTSM {	
 	//feature weight vector for topic 
-	double[] m_omega;
-	double[] m_g_omega, m_diag_omega;//gradient and diagnoal for omega estimation
+	protected double[] m_omega;
+	double[] m_g_omega, m_diag_omega;//gradient and diagonal for omega estimation
 	
 	//feature weight vector for sentiment
-	double[] m_delta;
-	double[] m_g_delta, m_diag_delta;//gradient and diagnoal for delta estimation
+	protected double[] m_delta;
+	double[] m_g_delta, m_diag_delta;//gradient and diagonal for delta estimation
     
 	public LRHTSM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha, //arguments for pLSA	
@@ -47,30 +47,37 @@ public class LRHTSM extends HTSM {
 	
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
-		super.initialize_probability(collection);
+		for(_Doc d:collection) {
+			for(int t=0; t<d.getSenetenceSize(); t++){
+				d.getSentence(t).setSentiTransitStat(0); // setting this to zero for use in LRHTSM for each fold
+				d.getSentence(t).setTransitStat(0); // setting this to zero for use in LRHTSM for each fold
+			}
+		}
 		Arrays.fill(m_omega, 0);
 		Arrays.fill(m_delta, 0);
+		
+		super.initialize_probability(collection);		
 	}
 	
-	//accumulate sufficient statistics for epsilon, according to Eq(15) in HTMM note
+	//accumulate sufficient statistics for epsilon (topic transition), according to Eq(15) in HTMM note
 	@Override
 	void accEpsilonStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			double s = 0;
 			for(int i=0; i<(this.constant-1)*this.number_of_topics; i++) 
 				s += this.p_dwzpsi[t][i];
-			d.getSentence(t).setTransitStat(s); //logically, it is better to store this posterior at position t
+			d.getSentence(t).setTransitStat(s); //store the statistics at position t!!
 		}
 	}
 	
-	@Override
-	// run upto number_of_topic since the first chunk is for sentiment switching
+	//accumulate sufficient statistics for sigma (sentiment transition)
+	@Override	
 	void accSigmaStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			double s = 0;
 			for(int i=0; i<this.number_of_topics; i++) 
 				s += this.p_dwzpsi[t][i];
-			d.getSentence(t).setSentiTransitStat(s); //logically, it is better to store this posterior at position t
+			d.getSentence(t).setSentiTransitStat(s); //store the statistics at position t!!
 		}
 	}
 	
@@ -110,22 +117,22 @@ public class LRHTSM extends HTSM {
 		loglikelihood *= m_lambda/2;
 		
 		double[] transitFv;
-		for(_Doc d:m_corpus.getCollection()) {			
+		for(_Doc d:m_trainSet) {			
 			for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
 				transitFv = d.getSentence(t-1).getTransitFvs();
-				
+
 				p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
 				q = d.getSentence(t).getTransitStat(); // posterior of p(\epsilon=1|x, w)
-				
+
 				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
-				
+
 				//collect gradient
 				g = p - q;
 				m_g_omega[0] += g;//for bias term
 				for(int n=0; n<_Doc.stn_fv_size; n++)
 					m_g_omega[1+n] += g * transitFv[n];
 			}
-		}
+		}		
 		
 		return loglikelihood;
 	}
@@ -159,8 +166,8 @@ public class LRHTSM extends HTSM {
 		}
 		loglikelihood *= m_lambda/2;
 		
-		double[] transitFv;
-		for(_Doc d:m_corpus.getCollection()) {			
+		double[] transitFv;		
+		for(_Doc d:m_trainSet) {			
 			for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
 				transitFv = d.getSentence(t-1).getSentiTransitFvs();
 				

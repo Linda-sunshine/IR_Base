@@ -2,16 +2,17 @@ package mains;
 
 import java.io.IOException;
 import java.text.ParseException;
+
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.LRHTSM_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.jsonAnalyzer;
 
@@ -25,17 +26,36 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
+		String category = "camera";
 		int number_of_topics = 30;
+		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
+		boolean setRandomFold = false; // false means no shuffling and true means shuffling
+		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
+		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		
+		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int topK = 10, number_of_iteration = 100, crossV = 1;
-		boolean display = true, logSpace = false;
+		int varIter = 10;
+		double varConverge = 1e-5;
+		int topK = 10, number_of_iteration = 50, crossV = 5;
+		int gibbs_iteration = 1500, gibbs_lag = 50;
+		double burnIn = 0.4;
+		boolean display = true;
+		
+		// most popular items under each category from Amazon
+		// needed for docSummary
+		String tabletProductList[] = {"B00G3Q4CMM"};
+		String cameraProductList[] = {"B00FY3U206"};
+		String phoneProductList[] = {"B00H0MGCDK"};
+		String tvProductList[] = {"B00GEECXKQ"};
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/tablet/topicmodel";
 		//String folder = "./data/amazon/test";
+		//String folder = "./data/amazon/newegg/newegg-reviews.json";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -48,8 +68,10 @@ public class TopicModelMain {
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		//String aspectlist = "./data/Model/aspect_tablet.txt";
-		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
+		String aspectlist = null;
+	
+		String aspectList = "./data/Model/aspect_"+ category + ".txt";
+		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
@@ -57,13 +79,13 @@ public class TopicModelMain {
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
 		
-//		/*****Parameters in feature selection.*****/
+		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "DF"; //Feature selection method.
 //		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 //		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
-//		
+		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
@@ -82,7 +104,7 @@ public class TopicModelMain {
 			if (crossV<=1) {
 				for(_Doc d:c.getCollection()) {
 					model.inference(d);
-					model.printTopWords(topK, false);
+					model.printTopWords(topK);
 				}
 			} else 
 				model.crossValidation(crossV);
@@ -93,51 +115,61 @@ public class TopicModelMain {
 			
 			if (topicmodel.equals("pLSA")) {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha);
-				logSpace = false;
+						lambda, number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
-				model = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 0.4, 50);
-				logSpace = false;
-			}  else if (topicmodel.equals("LDA_Variational")) {		
+				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
+			} else if (topicmodel.equals("LDA_Variational")) {		
 				model = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, 10, -1);
-				logSpace = true;
-			}  else if (topicmodel.equals("HTMM")) {
+						lambda, number_of_topics, alpha, varIter, varConverge);
+			} else if (topicmodel.equals("HTMM")) {
 				model = new HTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
-				logSpace = true;
 			} else if (topicmodel.equals("HTSM")) {
 				model = new HTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
-				logSpace = true;
-			}  
-			else if (topicmodel.equals("LRHTMM")) {
+			} else if (topicmodel.equals("LRHTMM")) {
 				c.setStnFeatures();				
 				model = new LRHTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-				logSpace = true;
-			}
-			else if (topicmodel.equals("LRHTSM")) {
+			} else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
 				c.setStnFeaturesForSentiment(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-				model = new LRHTSM(number_of_iteration, converge, beta, c, 
+				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-				logSpace = true;
 			}
 			
 			model.setDisplay(display);
-			model.LoadPrior(aspectlist, eta);
+			model.setNewEggLoadInTrain(loadNewEggInTrain);
+			if(loadAspectSentiPrior==1){
+				System.out.println("Loading Ascpect Senti list from "+aspectSentiList);
+				model.LoadPrior(aspectSentiList, eta);
+			} else if(loadAspectSentiPrior==2){
+				System.out.println("Loading Ascpect list from "+aspectList);
+				model.LoadPrior(aspectList, eta);
+			}else{
+				System.out.println("No prior is added!!");
+			}
 			if (crossV<=1) {
 				model.EMonCorpus();
-				model.printTopWords(topK, logSpace);
-			} else 
+				model.printTopWords(topK);
+			} else {
+				model.setTestDocMod(testDocMod);
+				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
+				
+				if(category.equalsIgnoreCase("camera"))
+					model.docSummary(cameraProductList);
+				else if(category.equalsIgnoreCase("tablet"))
+					model.docSummary(tabletProductList);
+				else if(category.equalsIgnoreCase("phone"))
+					model.docSummary(phoneProductList);
+				else if(category.equalsIgnoreCase("tv"))
+					model.docSummary(tvProductList);
+			}
+			
 		}
 	}
 }

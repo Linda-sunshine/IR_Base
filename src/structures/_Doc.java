@@ -33,6 +33,15 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	
+	int m_sourceName = 1; // source is 1 for Amazon and 2 for newEgg
+	
+	public void setSourceName(int sourceName){
+		m_sourceName = sourceName;
+	}
+	
+	public int getSourceName(){
+		return m_sourceName;
+	}
 	
 	public double getAvgIDF() {
 		return m_avgIDF;
@@ -247,6 +256,13 @@ public class _Doc implements Comparable<_Doc> {
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
 	
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void setRawSentences(ArrayList<String> stnList) {
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i].setRawSentence(stnList.get(i));
+	}
+	
+	
 	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
 	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
 		for(int i=0; i<m_sentences.length; i++)
@@ -300,13 +316,13 @@ public class _Doc implements Comparable<_Doc> {
 	public void setTopics4Variational(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
-			m_sstat = new double[k];//used as p(z|w,\phi)
+			m_sstat = new double[k]; // used as p(z|w,\phi) (gamma for variational inference)
 			m_phi = new double[m_x_sparse.length][k];
 		}
 		
-		Arrays.fill(m_sstat, alpha);
+		Arrays.fill(m_sstat, alpha-1);
 		for(int n=0; n<m_x_sparse.length; n++) {
-			Utils.randomize(m_phi[n], alpha);
+			Utils.randomize(m_phi[n], alpha-1);
 			double v = m_x_sparse[n].getValue();
 			for(int i=0; i<k; i++)
 				m_sstat[i] += m_phi[n][i] * v;
@@ -320,7 +336,8 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 
-		Arrays.fill(m_sstat, alpha);
+		Arrays.fill(m_sstat, alpha-1);
+		Arrays.fill(m_topics, 0);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
 		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);
@@ -361,7 +378,7 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 		
-	// used by LR-HTMM for constructing transition features
+	// used by LR-HTMM for constructing topic transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence
 		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());

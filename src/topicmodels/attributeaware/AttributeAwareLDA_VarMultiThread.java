@@ -37,8 +37,8 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		ProjectedGradientDescent m_optimizer;
 		int m_success, m_total, m_round;
 		
-		public AttributeAwareLDA_worker() {
-			super();
+		public AttributeAwareLDA_worker(int number_of_topics, int vocabulary_size) {
+			super(number_of_topics, vocabulary_size);
 			m_tAssignments = new double[number_of_topics];
 			
 			double gdelta = 1e-5, istp = 1.0;
@@ -241,9 +241,9 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 	
 	public AttributeAwareLDA_VarMultiThread(int number_of_iteration,
 			double converge, double beta, _Corpus c, double lambda,
-			double[] back_ground, int number_of_topics, double alpha,
+			int number_of_topics, double alpha,
 			int varMaxIter, double varConverge, int attributeSize) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground,
+		super(number_of_iteration, converge, beta, c, lambda,
 				number_of_topics*attributeSize, alpha, varMaxIter, varConverge);
 		
 		m_attributeSize = attributeSize;
@@ -277,7 +277,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		m_workers = new AttributeAwareLDA_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new AttributeAwareLDA_worker();
+			m_workers[i] = new AttributeAwareLDA_worker(number_of_topics, vocabulary_size);
 		
 		int workerID = 0;
 		for(_Doc d:collection) {
@@ -341,13 +341,12 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		
 		AttributeAwareLDA_VarMultiThread model 
 			= new AttributeAwareLDA_VarMultiThread(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 10, -1, attributeSize);
+				lambda, number_of_topics, alpha, 10, -1, attributeSize);
 		
 		model.LoadPrior(aspectlist, eta);
 		model.setDisplay(true);
 		model.EMonCorpus();
-		model.printTopWords(topK, true);
+		model.printTopWords(topK);
 	}
 }
 

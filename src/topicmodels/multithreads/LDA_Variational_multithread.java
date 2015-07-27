@@ -1,6 +1,5 @@
 package topicmodels.multithreads;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -12,33 +11,21 @@ import utils.Utils;
 
 public class LDA_Variational_multithread extends LDA_Variational {
 
-	public class LDA_worker implements TopicModelWorker {
-		protected double[][] sstat;
+	public class LDA_worker extends TopicModel_worker {
 		protected double[] alphaStat;
-		protected ArrayList<_Doc> m_corpus;
-		protected double m_likelihood;
 		
-		public LDA_worker() {
-			sstat = new double[number_of_topics][vocabulary_size];
+		public LDA_worker(int number_of_topics, int vocabulary_size) {
+			super(number_of_topics, vocabulary_size);
 			alphaStat = new double[number_of_topics];
-			m_corpus = new ArrayList<_Doc>();
-		}
-		
-		@Override
-		public void addDoc(_Doc d) {
-			m_corpus.add(d);
-		}
-		
-		@Override
-		public void run() {
-			m_likelihood = 0;
-			for(_Doc d:m_corpus)
-				m_likelihood += calculate_E_step(d);
 		}
 		
 		@Override
 		public double calculate_E_step(_Doc d) {	
-			double last = calculate_log_likelihood(d), current = last, converge, logSum, v;
+			double last = 1;			
+			if (m_varConverge>0)
+				last = calculate_log_likelihood(d);
+			
+			double current = last, converge, logSum, v;
 			int iter = 0, wid;
 			_SparseFeature[] fv = d.getSparse();
 			
@@ -48,7 +35,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 					wid = fv[n].getIndex();
 					v = fv[n].getValue();
 					for(int i=0; i<number_of_topics; i++)
-						d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
+						d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					
 					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
@@ -74,9 +61,11 @@ public class LDA_Variational_multithread extends LDA_Variational {
 			} while(++iter<m_varMaxIter);
 			
 			//collect the sufficient statistics after convergence
-			this.collectStats(d);
-			
-			return current;
+			if (m_collectCorpusStats) {
+				this.collectStats(d);			
+				return current;
+			} else 
+				return calculate_log_likelihood(d);
 		}
 		
 		protected void collectStats(_Doc d) {
@@ -95,26 +84,34 @@ public class LDA_Variational_multithread extends LDA_Variational {
 				alphaStat[i] += Utils.digamma(d.m_sstat[i]) - diGammaSum;
 		}
 		
-		public double accumluateStats() {
-			for(int k=0; k<number_of_topics; k++) {
-				for(int v=0; v<vocabulary_size; v++)
-					word_topic_sstat[k][v] += sstat[k][v];
-				m_alphaStat[k] += alphaStat[k];
-			}
-			return m_likelihood;
+		// this is directly copied from LDA_Variational.java
+		@Override
+		public double inference(_Doc d) {
+			initTestDoc(d);		
+			double likelihood = calculate_E_step(d);
+			estThetaInDoc(d);
+			return likelihood;
 		}
 		
+		@Override
+		public double accumluateStats(double[][] word_topic_sstat) {
+			for(int k=0; k<number_of_topics; k++)
+				m_alphaStat[k] += alphaStat[k];
+
+			return super.accumluateStats(word_topic_sstat);
+		}
+		
+		@Override
 		public void resetStats() {
 			Arrays.fill(alphaStat, 0);
-			for(int i=0; i<sstat.length; i++)
-				Arrays.fill(sstat[i], 0);
+			super.resetStats();
 		}
 	}
 	
 	public LDA_Variational_multithread(int number_of_iteration, double converge,
-			double beta, _Corpus c, double lambda, double[] back_ground,
+			double beta, _Corpus c, double lambda, 
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha, varMaxIter, varConverge);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, varMaxIter, varConverge);
 		m_multithread = true;
 	}
 
@@ -130,7 +127,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 		m_workers = new LDA_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new LDA_worker();
+			m_workers[i] = new LDA_worker(number_of_topics, vocabulary_size);
 		
 		int workerID = 0;
 		for(_Doc d:collection) {

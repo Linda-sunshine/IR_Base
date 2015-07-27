@@ -81,16 +81,13 @@ public class TransductiveMain {
 		pLSA tModel = null;
 		if (topicmodel.equals("pLSA")) {			
 			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha);
+					lambda, number_of_topics, alpha);
 		} else if (topicmodel.equals("LDA_Gibbs")) {		
 			tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-				lambda, analyzer.getBackgroundProb(), 
-				number_of_topics, alpha, 0.4, 50);
+				lambda, number_of_topics, alpha, 0.4, 50);
 		}  else if (topicmodel.equals("LDA_Variational")) {		
 			tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-					lambda, analyzer.getBackgroundProb(), 
-					number_of_topics, alpha, 10, -1);
+					lambda, number_of_topics, alpha, 10, -1);
 		} else {
 			System.out.println("The selected topic model has not developed yet!");
 			return;
@@ -116,6 +113,7 @@ public class TransductiveMain {
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
 			double noiseRatio = 2.0;
 			boolean metricLearning = true;
+			boolean multithread_LR = true;//training LambdaRank with multi-threads
 			
 			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
@@ -123,13 +121,13 @@ public class TransductiveMain {
 					learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg); 
 			} else if (method.equals("RW-ML")) {
 				mySemi = new LinearSVMMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						bound);
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						topK, noiseRatio);
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
+						topK, noiseRatio, multithread_LR);
 			}
 			
 			mySemi.setSimilarity(simFlag);

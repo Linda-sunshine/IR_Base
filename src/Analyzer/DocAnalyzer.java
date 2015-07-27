@@ -213,15 +213,20 @@ public class DocAnalyzer extends Analyzer {
 					} else {
 						spVct.put(index, 1.0);
 						if (docWordMap==null || !docWordMap.containsKey(index))
-							m_featureStat.get(token).addOneDF(y);
+							if(m_featureStat.containsKey(token))
+								m_featureStat.get(token).addOneDF(y);
+//							else
+//								System.out.println("Not found"+token);
 					}
 				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 					expandVocabulary(token);// update the m_featureNames.
 					index = m_featureNameIndex.get(token);
 					spVct.put(index, 1.0);
-					m_featureStat.get(token).addOneDF(y);
+					if(m_featureStat.containsKey(token))
+						m_featureStat.get(token).addOneDF(y);
 				}
-				m_featureStat.get(token).addOneTTF(y);
+				if(m_featureStat.containsKey(token))
+					m_featureStat.get(token).addOneTTF(y);
 			} else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
 				index = m_featureNameIndex.get(token);
 				if (spVct.containsKey(index)) {
@@ -275,6 +280,9 @@ public class DocAnalyzer extends Analyzer {
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
 		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
+		ArrayList<String> rawStnList = new ArrayList<String>(); // to avoid empty sentences
+		
+		
 		
 		int y = doc.getYLabel();
 		
@@ -285,6 +293,7 @@ public class DocAnalyzer extends Analyzer {
 			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
+				rawStnList.add(sentence);
 				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
 			}
@@ -294,6 +303,7 @@ public class DocAnalyzer extends Analyzer {
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
+			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;

@@ -15,6 +15,8 @@ public class FastRestrictedHMM {
 	double m_epsilon;//single epsilon shared by all the sentences
 	int constant;
 	
+	_Doc m_docPtr;
+	
 	public FastRestrictedHMM(double epsilon, int maxSeqSize, int topicSize, int constant) {
 		m_epsilon = epsilon;//in real space!
 		this.constant = constant;
@@ -32,8 +34,9 @@ public class FastRestrictedHMM {
 	public void setEpsilon(double epsilon) {
 		m_epsilon = epsilon;
 	}
-	
+		
 	public double ForwardBackward(_Doc d, double[][] emission) {
+		m_docPtr = d;
 		this.length_of_seq = d.getSenetenceSize();
 		
 		double loglik = initAlpha(d.m_topics, emission[0]) + forwardComputation(emission, d.m_topics);
@@ -45,20 +48,17 @@ public class FastRestrictedHMM {
 	//NOTE: all computation in log space
 	double initAlpha(double[] theta, double[] local0) {
 		double norm = Double.NEGATIVE_INFINITY;//log0
+		
 		for (int i = 0; i < this.number_of_topic; i++) {
 			alpha[0][i] = local0[i] + theta[i];//document must start with a new topic and a new sentiment
 			for(int j=1; j<this.constant; j++)
 				alpha[0][i+j*this.number_of_topic] = Double.NEGATIVE_INFINITY;
-			//this is full computation, but no need to do so
-			//norm = Utils.logSum(norm, Utils.logSum(alpha[0][i], alpha[0][i+this.number_of_topic]));
 			norm = Utils.logSum(norm, alpha[0][i]);
 		}
 		
 		//normalization
-		for (int i = 0; i < this.number_of_topic; i++) {
+		for (int i = 0; i < this.number_of_topic; i++)
 			alpha[0][i] -= norm;
-			//this.alpha[0][i+this.number_of_topic] -= norm; // no need to compute this
-		}
 		
 		norm_factor[0] = norm;
 		return norm;
@@ -92,7 +92,7 @@ public class FastRestrictedHMM {
 	
 	void backwardComputation(double[][] emission, double[] theta) {
 		//initiate beta_n
-		Arrays.fill(beta[this.length_of_seq-1], 0);
+		Arrays.fill(beta[this.length_of_seq-1], 0); // since log 1 = 0
 		
 		double sum, logEpsilon, logOneMinusEpsilon;
 		for(int t=this.length_of_seq-2; t>=0; t--) {
@@ -118,6 +118,7 @@ public class FastRestrictedHMM {
 			
 			for(int i=0; i<this.constant*this.number_of_topic; i++) 
 				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
+	
 		}
 	}
 	
@@ -163,13 +164,13 @@ public class FastRestrictedHMM {
 	public void BackTrackBestPath(_Doc d, double[][] emission, int[] path) {
 		this.length_of_seq = d.getSenetenceSize();
 		
-		initAlpha(d.m_topics,emission[0]);
+		initAlpha(d.m_topics, emission[0]);
 		computeViterbiAlphas(emission, d.m_topics);
 		
 		int level = this.length_of_seq - 1;
 		path[level] = FindBestInLevel(level);
 		for(int i = this.length_of_seq - 2; i>=0; i--)
 			path[i] = (int)beta[i+1][path[i+1]];  
-	}
+		}
 	
 }

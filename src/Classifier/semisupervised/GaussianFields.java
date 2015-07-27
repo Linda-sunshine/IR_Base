@@ -271,7 +271,7 @@ public class GaussianFields extends BaseClassifier {
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
 		}
 
-//		the following needs to be carefully revised accordingly!	
+//		the following needs to be carefully revised accordingly! Currently, we only support random walk
 //		m_graph = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);//we have to create this every time with exact dimension
 //		
 //		/****Construct the C+scale*\Delta matrix and Y vector.****/
