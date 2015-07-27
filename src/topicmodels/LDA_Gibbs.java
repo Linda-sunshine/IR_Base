@@ -187,6 +187,15 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
+	protected double docThetaLikelihood(_Doc d) {
+		double norm = Utils.sumOfArray(d.m_topics);
+		double logLikelihood = 0; //Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
+		for(int i=0; i<this.number_of_topics; i++)
+			logLikelihood += (d_alpha-1) * Math.log(d.m_topics[i]/norm);
+		return logLikelihood;
+	}
+	
+	@Override
 	public double calculate_log_likelihood(_Doc d) {		
 		int tid, wid;
 		double logLikelihood = docThetaLikelihood(d), docSum = Utils.sumOfArray(d.m_sstat);
