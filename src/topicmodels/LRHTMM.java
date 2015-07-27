@@ -22,15 +22,20 @@ public class LRHTMM extends HTMM {
 	public LRHTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			int number_of_topics, double alpha, //arguments for pLSA	
 			double lambda) {//arguments for LR-HTMM		
-		super(number_of_iteration, converge, beta, c, number_of_topics, alpha, false);
+		super(number_of_iteration, converge, beta, c, number_of_topics, alpha);
 
 		//variable related to LR
+		m_lambda = lambda;
+	}
+	
+	protected void createSpace() {
+		super.createSpace();
+		
 		m_omega = new double [_Doc.stn_fv_size + 1];//bias + stn_transition_features
 		m_g_omega = new double[m_omega.length];
 		m_diag_omega = new double[m_omega.length];
-		m_lambda = lambda;
 		
-		m_hmm = new LRFastRestrictedHMM(m_omega, c.getLargestSentenceSize(), number_of_topics);
+		m_hmm = new LRFastRestrictedHMM(m_omega, m_corpus.getLargestSentenceSize(), number_of_topics);
 	}
 	
 	@Override

@@ -29,18 +29,33 @@ public class pLSA extends twoTopic {
 	protected double[][] topic_term_probabilty ; /* p(w|z) */	
 	protected double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
 	
+	boolean m_sentiAspectPrior = false; // symmetric sentiment aspect prior
+	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) { //arguments for pLSA			
 		super(number_of_iteration, converge, beta, c, lambda, null);
 		
 		this.d_alpha = alpha;
-		this.number_of_topics = number_of_topics;
+		this.number_of_topics = number_of_topics;		
+		m_logSpace = false;
+		
+		createSpace();
+	}
+	
+	protected void createSpace() {
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_prior = null;
 		background_probability = new double[vocabulary_size];//to be initialized during EM
-		m_logSpace = false;
+	}
+	
+	public void setSentiAspectPrior(boolean senti) {
+		m_sentiAspectPrior = senti; 
+		if (senti && number_of_topics%2==1) {
+			System.err.format("The topic size (%d) specified is not even!", number_of_topics);
+			System.exit(-1);
+		}
 	}
 	
 	public void LoadPrior(String filename, double eta) {		
@@ -82,8 +97,17 @@ public class pLSA extends twoTopic {
 			reader.close();
 			
 			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
-			if (word_topic_prior.length > number_of_topics) 
-				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!", word_topic_prior.length, number_of_topics);
+			if (m_sentiAspectPrior && word_topic_prior.length%2==1) {
+				System.err.format("The topic size (%d) specified in the sentiment-aspect seed words is not even!", word_topic_prior.length);
+				System.exit(-1);
+			} else if (word_topic_prior.length > number_of_topics) {
+				System.err.format("More topics specified in seed words (%d) than topic model's configuration(%d)!\n", word_topic_prior.length, number_of_topics);
+				System.err.format("Reset the topic size to %d!\n", word_topic_prior.length);
+				
+				this.number_of_topics = word_topic_prior.length;
+				createSpace();
+			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -114,39 +138,23 @@ public class pLSA extends twoTopic {
 		calculate_M_step(0);
 	}
 	
-	protected void imposePrior() {
-		/*if (word_topic_prior!=null) {
-			int size = Math.min(number_of_topics, word_topic_prior.length);
-			for(int k=0; k<size; k++) {
-				for(int n=0; n<vocabulary_size; n++)
-					word_topic_sstat[k][n] += word_topic_prior[k][n];
-			}
-		}*/
-		
-		if (word_topic_prior!=null) {
-			if(number_of_topics>word_topic_prior.length){
-		
-				int diff = number_of_topics/2 - word_topic_prior.length/2;
-				for(int k=0; k<word_topic_prior.length/2; k++) {
-					for(int n=0; n<vocabulary_size; n++)
-						word_topic_sstat[k][n] += word_topic_prior[k][n];
-				}
-
-
-				for(int k=number_of_topics/2; k<word_topic_prior.length; k++) {
-					for(int n=0; n<vocabulary_size; n++)
-						word_topic_sstat[k][n] += word_topic_prior[k-diff][n];
-				}
-			}
-			else{
-				int size = Math.min(number_of_topics, word_topic_prior.length);
+	protected void imposePrior() {		
+		if (word_topic_prior!=null) {//we have enforced that the topic size is at least as many as prior seed words
+			if (m_sentiAspectPrior) {
+				int size = word_topic_prior.length/2, shift = number_of_topics/2;//if it is sentiment aspect prior, the size must be even
 				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++) {
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+						word_topic_sstat[k + shift][n] += word_topic_prior[k + size][n];
+					}
+				}
+			} else {//no symmetric property
+				for(int k=0; k<word_topic_prior.length; k++) {
 					for(int n=0; n<vocabulary_size; n++)
 						word_topic_sstat[k][n] += word_topic_prior[k][n];
 				}
 			}
 		}
-		
 	}
 	
 	@Override

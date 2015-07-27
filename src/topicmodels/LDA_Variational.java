@@ -32,16 +32,21 @@ public class LDA_Variational extends pLSA {
 			int number_of_topics, double alpha, int varMaxIter, double varConverge) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		
-		m_varConverge = varConverge;
-		m_varMaxIter = varMaxIter;
-		m_alpha = new double[number_of_topics];
 		Arrays.fill(m_alpha, alpha);
+		m_varConverge = varConverge;
+		m_varMaxIter = varMaxIter;		
 		
+		m_logSpace = true;
+	}
+	
+	@Override
+	protected void createSpace() {
+		super.createSpace();
+		
+		m_alpha = new double[number_of_topics];
 		m_alphaStat = new double[number_of_topics];
 		m_alphaG = new double[number_of_topics];
 		m_alphaH = new double[number_of_topics];
-		
-		m_logSpace = true;
 	}
 	
 	@Override
