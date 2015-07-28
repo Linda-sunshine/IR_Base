@@ -82,7 +82,7 @@ public class TransductiveMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
+//		analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
 		analyzer.LoadStopwords(stopword); //Load the sentiwordnet file.
 		analyzer.LoadSNWWithScore("./data/Model/SentiWordNet_3.0.0_20130122.txt");
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
