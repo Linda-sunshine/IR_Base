@@ -38,13 +38,18 @@ public class TransductiveMain {
 		String stopword = "./data/Model/stopwords.dat";
 		String tagModel = "./data/Model/en-pos-maxent.bin";
 		
-		String category = "tablets"; //"electronics"
-		String dataSize = "86jsons"; //"50K", "100K"
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-//		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-//		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_output_simple.txt";
+//		String category = "tablets"; //"electronics"
+//		String dataSize = "86jsons"; //"50K", "100K"
+//		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
+//		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
+////		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+////		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+//		String aspectlist = "./data/Model/aspect_output_simple.txt";
+
+		
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
@@ -102,6 +107,7 @@ public class TransductiveMain {
 		}
 		
 		tModel.setDisplay(true);
+		tModel.setSentiAspectPrior(true);
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	
 		

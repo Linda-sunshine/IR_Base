@@ -29,6 +29,8 @@ public class LRHTSM extends HTSM {
 	}
 	
 	protected void createSpace() {
+		super.createSpace();
+		
 		//variable related to LR topic
 		m_omega = new double [_Doc.stn_fv_size + 1];//bias + stn_transition_features
 		m_g_omega = new double[m_omega.length];

@@ -375,7 +375,7 @@ public class Utils {
 
         //normalize
         for (int i = 0; i < pros.length; i++)
-            pros[i] = pros[i] / total;
+            pros[i] /= total;
     }
 	
 	static public String formatArray(double [] array) {
