@@ -35,7 +35,8 @@ public class pLSA_multithread extends pLSA {
 					exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
 					d.m_sstat[k] += exp;
 					
-					sstat[k][j] += exp;
+					if (m_collectCorpusStats)
+						sstat[k][j] += exp;
 				}
 			}
 			

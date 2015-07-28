@@ -26,17 +26,17 @@ public class TopicModelMain {
 		int lengthThreshold = 5; //Document length threshold
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
-		int number_of_topics = 10;
+		int number_of_topics = 40;
 		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
-		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
-		double converge = 1e-9, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
+		double converge = 1e-9, lambda = 0.9; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 1;
@@ -68,7 +68,6 @@ public class TopicModelMain {
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = null;
 	
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
@@ -145,10 +144,12 @@ public class TopicModelMain {
 			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){
-				System.out.println("Loading Ascpect Senti list from "+aspectSentiList);
+				System.out.println("Loading aspect-senti list from "+aspectSentiList);
+				model.setSentiAspectPrior(true);
 				model.LoadPrior(aspectSentiList, eta);
 			} else if(loadAspectSentiPrior==2){
-				System.out.println("Loading Ascpect list from "+aspectList);
+				System.out.println("Loading aspect list from "+aspectList);
+				model.setSentiAspectPrior(false);
 				model.LoadPrior(aspectList, eta);
 			}else{
 				System.out.println("No prior is added!!");

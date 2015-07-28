@@ -45,8 +45,7 @@ public class pLSA extends twoTopic {
 	
 	protected void createSpace() {
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
-		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];
-		word_topic_prior = null;
+		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];		
 		background_probability = new double[vocabulary_size];//to be initialized during EM
 	}
 	
@@ -91,12 +90,13 @@ public class pLSA extends twoTopic {
 					}
 				}
 				
-				System.out.println("Prior keywords for Topic " + priorWords.size() + ": " + wCount);
+				System.out.format("Prior keywords for Topic %d (%s): %d\n", priorWords.size(), container[0], wCount);
 				priorWords.add(prior);
 			}
 			reader.close();
 			
 			word_topic_prior = priorWords.toArray(new double[priorWords.size()][]);
+			
 			if (m_sentiAspectPrior && word_topic_prior.length%2==1) {
 				System.err.format("The topic size (%d) specified in the sentiment-aspect seed words is not even!", word_topic_prior.length);
 				System.exit(-1);
@@ -213,6 +213,7 @@ public class pLSA extends twoTopic {
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
 			sum = Utils.sumOfArray(word_topic_sstat[k]);
+			System.out.println(sum);
 			for(int i=0;i<this.vocabulary_size;i++)
 				topic_term_probabilty[k][i] = word_topic_sstat[k][i] / sum;
 		}
