@@ -4,16 +4,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -37,6 +41,10 @@ public class DocAnalyzer extends Analyzer {
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
 	
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;
+	protected HashMap<String, Integer> m_sentiwordNetFeatureNameIndex;
+	protected HashMap<String, Double> m_sentiwordScoreMap;
+	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
@@ -48,9 +56,31 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
+		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+	}
+	//TokenModel + stnModel.
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(classNo, threshold);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		
+		if (stnModel!=null)
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		else
+			m_stnDetector = null;
+		
+		m_Ngram = Ngram;
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+
 	}
 	
-	//Constructor with ngram and fValue and sentence check.
+	//TokenModel + stnModel + posModel.
 	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
@@ -69,6 +99,31 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
+		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+	}
+	
+	//Constructor with ngram and fValue and sentence check.
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo,
+			String providedCV, int Ngram, int threshold, String tagModel)
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(classNo, threshold);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+
+		if (stnModel != null)
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		else
+			m_stnDetector = null;
+		m_tagger = new POSTaggerME(new POSModel(new FileInputStream(tagModel)));
+
+		m_Ngram = Ngram;
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
 	
 	public void setReleaseContent(boolean release) {
@@ -312,6 +367,84 @@ public class DocAnalyzer extends Analyzer {
 			/****Roll back here!!******/
 			rollBack(spVct, y);
 			return false;
+		}
+	}
+	
+	public void setSentenceWriter(String fileName) throws FileNotFoundException{
+		m_sentenceWriter = new PrintWriter(new File(fileName));
+	}
+	
+	//Load the sentinet word and store them in the dictionary for later use.
+	public void LoadSNWWithScore(String filename) throws IOException {
+		m_sentiwordScoreMap = new HashMap<String, Double>();// for tagging3 to
+															// store features.
+		// From String to list of doubles.
+		HashMap<String, HashMap<Integer, Double>> tempDictionary = new HashMap<String, HashMap<Integer, Double>>();
+
+		BufferedReader csv = null;
+		try {
+			csv = new BufferedReader(new FileReader(filename));
+			int lineNumber = 0;
+			String line;
+			while ((line = csv.readLine()) != null) {
+				lineNumber++;
+				// If it's a comment, skip this line.
+				if (!line.trim().startsWith("#")) {
+					// We use tab separation
+					String[] data = line.split("\t");
+					String wordTypeMarker = data[0];
+					// Is it a valid line? Otherwise, through exception.
+					if (data.length != 6)
+						throw new IllegalArgumentException("Incorrect tabulation format in file, line: " + lineNumber);
+					// Calculate synset score as score = PosS - NegS. If it's 0,
+					// then it is neutral word, ignore it.
+					Double synsetScore = Double.parseDouble(data[2])
+							- Double.parseDouble(data[3]);
+					// Get all Synset terms
+					String[] synTermsSplit = data[4].split(" ");
+					// Go through all terms of current synset.
+					for (String synTermSplit : synTermsSplit) {
+						// Get synterm and synterm rank
+						String[] synTermAndRank = synTermSplit.split("#"); // able#1 = [able, 1]
+						String synTerm = synTermAndRank[0] + "#"
+								+ wordTypeMarker; // able#a
+						int synTermRank = Integer.parseInt(synTermAndRank[1]); // different senses of a word
+						// Add the current term to map if it doesn't have one
+						if (!tempDictionary.containsKey(synTerm))
+							tempDictionary.put(synTerm,
+									new HashMap<Integer, Double>());// <able#a, <<1, score>, <2, score>...>>
+						// If the dict already has the synTerm, just add synset
+						// link-<2, score> to synterm.
+						tempDictionary.get(synTerm).put(synTermRank,
+								synsetScore);
+					}
+				}
+			}
+
+			// Go through all the terms.
+			Set<String> synTerms = tempDictionary.keySet();
+			for (String synTerm : synTerms) {
+				double score = 0;
+				int count = 0;
+				HashMap<Integer, Double> synSetScoreMap = tempDictionary.get(synTerm);
+				Collection<Double> scores = synSetScoreMap.values();
+				for (double s : scores) {
+					if (s != 0) {
+						score += s;
+						count++;
+					}
+					if (score != 0)
+						score = (double) score / count;
+				}
+				String[] termMarker = synTerm.split("#");
+				m_sentiwordScoreMap.put(
+						SnowballStemming(Normalize(termMarker[0])) + "#"
+								+ termMarker[1], score);
+			}
+		} finally {
+			if (csv != null) {
+				csv.close();
+			}
 		}
 	}
 }	

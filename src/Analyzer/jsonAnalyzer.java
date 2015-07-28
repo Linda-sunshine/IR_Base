@@ -29,19 +29,23 @@ public class jsonAnalyzer extends DocAnalyzer{
 	SimpleDateFormat m_dateFormatter;
 	
 	//Constructor with ngram and fValue.
+	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
+	}
+	
+	//Constructor with ngram and fValue.
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel, String posModel) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, stnModel, posModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 	}
 	
 	//Constructor with ngram and fValue.
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
+//		m_dateFormatter = new SimpleDateFormat("yyyy-MM-dddd");// standard date format for yelp data
 	}
-	
-
-	
 	//Load a document and analyze it.
 	@Override
 	public void LoadDoc(String filename) {
@@ -101,7 +105,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 	}
 	
 	//check format for each post
-	private boolean checkPostFormat(Post p) {
+	protected boolean checkPostFormat(Post p) {
 		if (p.getLabel() <= 0 || p.getLabel() > 5){
 			//System.err.format("[Error]Missing Lable or wrong label!!");
 			System.out.print('L');
