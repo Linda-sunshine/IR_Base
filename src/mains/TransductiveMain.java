@@ -39,14 +39,14 @@ public class TransductiveMain {
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_tablet.txt";
+		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW";
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
@@ -95,6 +95,7 @@ public class TransductiveMain {
 		}
 		
 		tModel.setDisplay(true);
+		tModel.setSentiAspectPrior(true);
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	
 		

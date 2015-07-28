@@ -60,13 +60,25 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	protected void imposePrior() {
-		if (word_topic_prior!=null) {
-			int size = Math.min(number_of_topics, word_topic_prior.length);
-			for(int k=0; k<size; k++) {
-				for(int n=0; n<vocabulary_size; n++) {
-					word_topic_sstat[k][n] += word_topic_prior[k][n];
-					m_sstat[k] += word_topic_prior[k][n];
+	protected void imposePrior() {		
+		if (word_topic_prior!=null) {//we have enforced that the topic size is at least as many as prior seed words
+			if (m_sentiAspectPrior) {
+				int size = word_topic_prior.length/2, shift = number_of_topics/2;//if it is sentiment aspect prior, the size must be even
+				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++) {
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+						m_sstat[k] += word_topic_prior[k][n];
+						
+						word_topic_sstat[k + shift][n] += word_topic_prior[k + size][n];
+						m_sstat[k + shift] += word_topic_prior[k + size][n];
+					}
+				}
+			} else {//no symmetric property
+				for(int k=0; k<word_topic_prior.length; k++) {
+					for(int n=0; n<vocabulary_size; n++) {
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+						m_sstat[k] += word_topic_prior[k][n];
+					}
 				}
 			}
 		}
