@@ -30,7 +30,10 @@ public class TopicModelMain {
 		
 		String category = "tablet";
 		int number_of_topics = 40;
-		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
+		String FilePath = "./data/amazon/"; // File path for storing the JST and ASUM input fomrat data
+		int trainSize = 1000;// trainSize 0 means only newEgg; 5000 means all the data 
+		boolean loadNewEggInTrain = true; // false means in training there is no reviews from new
+		boolean generateTrainTestDataForJSTASUM = true;
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -52,8 +55,8 @@ public class TopicModelMain {
 		String tvProductList[] = {"B00GEECXKQ"};
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
-		//String folder = "./data/amazon/test";
+		//String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/test";
 		//String folder = "./data/amazon/newegg/newegg-reviews.json";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -153,6 +156,11 @@ public class TopicModelMain {
 				model.LoadPrior(aspectList, eta);
 			}else{
 				System.out.println("No prior is added!!");
+			}
+			
+
+			if(generateTrainTestDataForJSTASUM && setRandomFold==false){
+				model.setFilePathForJSTASUM(trainSize,category, FilePath);
 			}
 			
 			if (crossV<=1) {
