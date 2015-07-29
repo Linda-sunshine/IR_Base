@@ -72,7 +72,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 					else
 						content = post.getTitle() + ". " + post.getContent();
 					
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), content, prod.getID(), post.getLabel()-1, timeStamp);
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), content, post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
 						AnalyzeDocWithStnSplit(review);
 					else

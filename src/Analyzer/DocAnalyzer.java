@@ -308,7 +308,6 @@ public class DocAnalyzer extends Analyzer {
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
