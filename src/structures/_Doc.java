@@ -83,7 +83,7 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 4; // cosine, sentiWordNetscore, prior_positive_negative_count
+	static public final int stn_senti_fv_size = 6; // cosine, sentiWordNetscore, prior_positive_negative_count
 	
 	_Stn[] m_sentences;
 	
