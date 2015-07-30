@@ -281,6 +281,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSentencesWithLabels(stnList, stnLabel);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
+			setSentenceFeatureVectorForSentiment(doc);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			m_prosSentenceCounter+=prosSentenceCounter;

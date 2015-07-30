@@ -447,25 +447,6 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 		
-	// receive sentence index as parameter
-	public double sentiWordScore(int i)
-	{
-		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
-		int index;
-		String token;
-		double senscore = 0.0;
-		double tmp;
-		
-		for(_SparseFeature word:wordsinsentence){
-			index = word.getIndex();
-			token = m_corpus.m_features.get(index);
-			tmp = m_corpus.sentiWordNet.extract(token, "n");
-			if(tmp!=-2) // word found in SentiWordNet
-				senscore+=tmp;
-		}
-		return senscore;
-	}
-	
 	// used by LR-HTMM for constructing transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence

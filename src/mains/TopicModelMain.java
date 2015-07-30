@@ -96,6 +96,10 @@ public class TopicModelMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
+		{
+			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		}
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -137,7 +141,6 @@ public class TopicModelMain {
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
-				c.setStnFeaturesForSentiment(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
