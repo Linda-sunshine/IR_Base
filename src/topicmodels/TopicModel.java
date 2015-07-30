@@ -432,8 +432,6 @@ public abstract class TopicModel {
 		catch(Exception e){
 			System.out.print("File Not Found");
 		}
-		
-		
 	}
 	
 	//k-fold Cross Validation.
@@ -443,6 +441,9 @@ public abstract class TopicModel {
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		double[] perf;
+		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
+		int newEggRatingCount[] = {0,0,0,0,0};
+		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
 		
 		if(m_randomFold==true){
@@ -475,25 +476,39 @@ public abstract class TopicModel {
 		else{
 			k = 1;
 			perf = new double[k];
+		
 			for(_Doc d:m_corpus.getCollection()){
-
-				if(m_LoadnewEggInTrain==false){
-					if(d.getID()%m_testDocMod!=0){ 
-						if(d.getSourceName()==1)// Only adding Amazon Data in train
-							m_trainSet.add(d);
-						if(d.getSourceName()==2){
-						//Do not add the newEgg Doc it is skipped!!
-						}
+				if(d.getSourceName()==2){
+					newEggRatingCount[d.getYLabel()]++;
 					}
-					else
-						m_testSet.add(d);
-				}
-				else{
-					if(d.getID()%m_testDocMod!=0) { 
+			}
+			
+			
+			for(_Doc d:m_corpus.getCollection()){
+				
+				if(d.getSourceName()==1){ // from Amazon
+					int rating = d.getYLabel();
+					if(amazonTrainsetRatingCount[rating]<= 0.8*(m_trainSize/amazonTrainsetRatingCount.length)){
 						m_trainSet.add(d);
-					}
-					else
+						amazonTrainsetRatingCount[rating]++;
+					}else{
 						m_testSet.add(d);
+					}
+				}
+				
+				if(m_LoadnewEggInTrain==true && d.getSourceName()==2){
+					
+					int rating = d.getYLabel();
+					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+						m_trainSet.add(d);
+						newEggTrainsetRatingCount[rating]++;
+					}else{
+						m_testSet.add(d);
+					}
+					
+				}
+				if(m_LoadnewEggInTrain==false && d.getSourceName()==2){
+					m_testSet.add(d);
 				}
 			}
 			

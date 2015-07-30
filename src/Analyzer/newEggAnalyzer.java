@@ -176,6 +176,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
 			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
+			doc.setYLabel(y);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			return true;
@@ -281,6 +282,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSentencesWithLabels(stnList, stnLabel);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
+			doc.setYLabel(y);
 			setSentenceFeatureVectorForSentiment(doc);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
