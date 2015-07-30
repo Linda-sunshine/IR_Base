@@ -167,18 +167,21 @@ public class DocAnalyzer extends Analyzer {
 			file = new BufferedReader(new FileReader(pathToPosWords));
 			String line;
 			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line); // only stemming since the list contains only single word per line and there is no number
 				m_posPriorList.add(line);
 			}
 			file.close();
 			
 			file = new BufferedReader(new FileReader(pathToNegWords));
 			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line);
 				m_negPriorList.add(line);
 			}
 			file.close();
 			
 			file = new BufferedReader(new FileReader(pathToNegationWords));
 			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line);
 				m_negationList.add(line);
 			}
 			file.close();
@@ -400,7 +403,7 @@ public class DocAnalyzer extends Analyzer {
 		} // End For loop for sentence	
 	
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
 			doc.setRawSentences(rawStnList);
@@ -563,6 +566,7 @@ public class DocAnalyzer extends Analyzer {
 
 	// receive sentence index as parameter
 	public double sentiWordScore(_Stn s) {
+		
 		_SparseFeature[] wordsInSentence = s.getFv();
 		int index;
 		String token;
@@ -580,19 +584,22 @@ public class DocAnalyzer extends Analyzer {
 	}
 
 	// receive sentence index as parameter
+	// PosNeg count is done against the raw sentence
+	// so stopword will also get counter here like not, none 
+	// which is important for PosNeg count
 	public int posNegCount(_Stn s) {
-		_SparseFeature[] wordsInSentence = s.getFv();
-		int index;
-		String token;
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
 		int posCount = 0;
 		int negCount = 0;
 
-		for(_SparseFeature word:wordsInSentence){
-			index = word.getIndex();
-			token = m_featureNames.get(index);
-			if(m_posPriorList.contains(token))
+		for(String word:wordsInSentence){
+			if(m_posPriorList.contains(word))
 				posCount++;
-			else if(m_negPriorList.contains(token))
+			else if(m_negPriorList.contains(word))
 				negCount++;
 		}
 
@@ -605,16 +612,19 @@ public class DocAnalyzer extends Analyzer {
 	}
 
 	// receive sentence index as parameter
+	// Negation count is done against the raw sentence
+	// so stopword will also get counter here like not, none 
+	// which is important for negation count
 	public int negationCount(_Stn s) {
-		_SparseFeature[] wordsInSentence = s.getFv();
-		int index;
-		String token;
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
 		int negationCount = 0;
 
-		for(_SparseFeature word:wordsInSentence){
-			index = word.getIndex();
-			token = m_featureNames.get(index);
-			if(m_negationList.contains(token))
+		for(String word:wordsInSentence){
+			if(m_negationList.contains(word))
 				negationCount++;
 		}
 		return negationCount;

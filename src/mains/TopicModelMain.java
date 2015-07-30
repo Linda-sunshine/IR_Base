@@ -24,6 +24,7 @@ public class TopicModelMain {
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
+		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
@@ -98,6 +99,7 @@ public class TopicModelMain {
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
+			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		}
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.

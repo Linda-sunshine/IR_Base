@@ -36,6 +36,7 @@ public abstract class Analyzer {
 	//minimal length of indexed document
 	protected int m_lengthThreshold;
 	
+	protected int m_minimumNumberofSentences;
 	//if we have store content of documents
 	protected boolean m_releaseContent;
 	
@@ -111,6 +112,10 @@ public abstract class Analyzer {
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+	}
+	
+	public void setMinimumNumberOfSentences(int number){
+		m_minimumNumberofSentences = number;
 	}
 	
 	abstract public void LoadDoc(String filename);

@@ -273,7 +273,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 //				buffer.append(String.format("Comments: %s\n", content));
 //		}
 		
-		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=5) {
+		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
 			doc.setSourceName(2);
