@@ -4,16 +4,20 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
+import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -25,9 +29,11 @@ import opennlp.tools.util.InvalidFormatException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import structures.SentiWordNetDemoCode;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._SparseFeature;
+import structures._Stn;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -36,6 +42,16 @@ public class DocAnalyzer extends Analyzer {
 	protected SentenceDetectorME m_stnDetector;
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
+	
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;
+	protected HashMap<String, Integer> m_sentiwordNetFeatureNameIndex;
+	protected HashMap<String, Double> m_sentiwordScoreMap;
+	
+	protected SentiWordNetDemoCode sentiWordNet;
+	protected ArrayList<String> m_posPriorList;
+	protected ArrayList<String> m_negPriorList;
+	protected ArrayList<String> m_negationList;
+	
 	
 	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -48,9 +64,31 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
+		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+	}
+	//TokenModel + stnModel.
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+		super(classNo, threshold);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		
+		if (stnModel!=null)
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		else
+			m_stnDetector = null;
+		
+		m_Ngram = Ngram;
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+
 	}
 	
-	//Constructor with ngram and fValue and sentence check.
+	//TokenModel + stnModel + posModel.
 	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
@@ -69,6 +107,31 @@ public class DocAnalyzer extends Analyzer {
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
+		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+	}
+	
+	//Constructor with ngram and fValue and sentence check.
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo,
+			String providedCV, int Ngram, int threshold, String tagModel)
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(classNo, threshold);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+
+		if (stnModel != null)
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		else
+			m_stnDetector = null;
+		m_tagger = new POSTaggerME(new POSModel(new FileInputStream(tagModel)));
+
+		m_Ngram = Ngram;
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
 	
 	public void setReleaseContent(boolean release) {
@@ -91,6 +154,50 @@ public class DocAnalyzer extends Analyzer {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
+	
+	
+	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords,String pathToNegationWords)
+	{
+		m_posPriorList = new ArrayList<String>();
+		m_negPriorList = new ArrayList<String>();
+		m_negationList = new ArrayList<String>();
+		
+		BufferedReader file = null;
+		try {
+			file = new BufferedReader(new FileReader(pathToPosWords));
+			String line;
+			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line); // only stemming since the list contains only single word per line and there is no number
+				m_posPriorList.add(line);
+			}
+			file.close();
+			
+			file = new BufferedReader(new FileReader(pathToNegWords));
+			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line);
+				m_negPriorList.add(line);
+			}
+			file.close();
+			
+			file = new BufferedReader(new FileReader(pathToNegationWords));
+			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line);
+				m_negationList.add(line);
+			}
+			file.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		// loading the sentiWordnet
+		try{
+			sentiWordNet = new SentiWordNetDemoCode(pathToSentiWordNet);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
 	
 	//Tokenizer.
 	protected String[] Tokenizer(String source){
@@ -253,7 +360,6 @@ public class DocAnalyzer extends Analyzer {
 		int y = doc.getYLabel();
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
@@ -297,11 +403,12 @@ public class DocAnalyzer extends Analyzer {
 		} // End For loop for sentence	
 	
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>1) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
+			setSentenceFeatureVectorForSentiment(doc);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			
@@ -313,6 +420,237 @@ public class DocAnalyzer extends Analyzer {
 			rollBack(spVct, y);
 			return false;
 		}
+	}
+	
+	public void setSentenceWriter(String fileName) throws FileNotFoundException{
+		m_sentenceWriter = new PrintWriter(new File(fileName));
+	}
+	
+	//Load the sentinet word and store them in the dictionary for later use.
+	public void LoadSNWWithScore(String filename) throws IOException {
+		m_sentiwordScoreMap = new HashMap<String, Double>();// for tagging3 to
+															// store features.
+		// From String to list of doubles.
+		HashMap<String, HashMap<Integer, Double>> tempDictionary = new HashMap<String, HashMap<Integer, Double>>();
+
+		BufferedReader csv = null;
+		try {
+			csv = new BufferedReader(new FileReader(filename));
+			int lineNumber = 0;
+			String line;
+			while ((line = csv.readLine()) != null) {
+				lineNumber++;
+				// If it's a comment, skip this line.
+				if (!line.trim().startsWith("#")) {
+					// We use tab separation
+					String[] data = line.split("\t");
+					String wordTypeMarker = data[0];
+					// Is it a valid line? Otherwise, through exception.
+					if (data.length != 6)
+						throw new IllegalArgumentException("Incorrect tabulation format in file, line: " + lineNumber);
+					// Calculate synset score as score = PosS - NegS. If it's 0,
+					// then it is neutral word, ignore it.
+					Double synsetScore = Double.parseDouble(data[2])
+							- Double.parseDouble(data[3]);
+					// Get all Synset terms
+					String[] synTermsSplit = data[4].split(" ");
+					// Go through all terms of current synset.
+					for (String synTermSplit : synTermsSplit) {
+						// Get synterm and synterm rank
+						String[] synTermAndRank = synTermSplit.split("#"); // able#1 = [able, 1]
+						String synTerm = synTermAndRank[0] + "#"
+								+ wordTypeMarker; // able#a
+						int synTermRank = Integer.parseInt(synTermAndRank[1]); // different senses of a word
+						// Add the current term to map if it doesn't have one
+						if (!tempDictionary.containsKey(synTerm))
+							tempDictionary.put(synTerm,
+									new HashMap<Integer, Double>());// <able#a, <<1, score>, <2, score>...>>
+						// If the dict already has the synTerm, just add synset
+						// link-<2, score> to synterm.
+						tempDictionary.get(synTerm).put(synTermRank,
+								synsetScore);
+					}
+				}
+			}
+
+			// Go through all the terms.
+			Set<String> synTerms = tempDictionary.keySet();
+			for (String synTerm : synTerms) {
+				double score = 0;
+				int count = 0;
+				HashMap<Integer, Double> synSetScoreMap = tempDictionary.get(synTerm);
+				Collection<Double> scores = synSetScoreMap.values();
+				for (double s : scores) {
+					if (s != 0) {
+						score += s;
+						count++;
+					}
+					if (score != 0)
+						score = (double) score / count;
+				}
+				String[] termMarker = synTerm.split("#");
+				m_sentiwordScoreMap.put(
+						SnowballStemming(Normalize(termMarker[0])) + "#"
+								+ termMarker[1], score);
+			}
+		} finally {
+			if (csv != null) {
+				csv.close();
+			}
+		}
+	}
+	
+	// used by LR-HTSM for constructing transition features for sentiment
+	public void setSentenceFeatureVectorForSentiment(_Doc d) {
+		_Stn[] sentences = d.getSentences();
+		
+		// start from 2nd sentence
+		double pSim = Utils.cosine(sentences[0].getFv(), sentences[1].getFv()), nSim;
+		double pKL = Utils.klDivergence(calculatePOStagVector(sentences[0]), calculatePOStagVector(sentences[1])), nKL;
+		double pSenScore = sentiWordScore(sentences[0]), cSenScore;
+		int pPosNeg= posNegCount(sentences[0]), cPosNeg;
+		int pNegationCount= negationCount(sentences[0]), cNegationCount;
+		int stnSize = d.getSenetenceSize();
+		
+		for(int i=1; i<stnSize; i++){
+			//cosine similarity			
+			sentences[i-1].m_sentiTransitFv[0] = pSim;			
+
+			//sentiWordScore
+			cSenScore = sentiWordScore(sentences[i]);
+			if((cSenScore<0 && pSenScore>0) || (cSenScore>0 && pSenScore<0))
+				sentences[i-1].m_sentiTransitFv[1] = 1; // transition
+			else if((cSenScore<=0 && pSenScore<=0) || (cSenScore>=0 && pSenScore>=0))
+				sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
+			pSenScore = cSenScore;
+
+			//positive/negative count 
+			cPosNeg = posNegCount(sentences[i]);
+			if(pPosNeg==cPosNeg)
+				sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
+			else if (pPosNeg!=cPosNeg)
+				sentences[i-1].m_sentiTransitFv[2] = 1; // transition
+			pPosNeg = cPosNeg;
+
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nSim = Utils.cosine(sentences[i].getFv(), sentences[i+1].getFv());
+				if (nSim>pSim)
+					sentences[i-1].m_sentiTransitFv[3] = 1;
+				else if (nSim<pSim)
+					sentences[i-1].m_sentiTransitFv[3] = -1;
+				pSim = nSim;
+			}
+
+			//similar to previous or next
+			if (i<stnSize-1) {
+				nKL = Utils.klDivergence(calculatePOStagVector(sentences[i]), calculatePOStagVector(sentences[i+1]));
+				if (nKL>pKL)
+					sentences[i-1].m_sentiTransitFv[4] = 1;
+				else if (nKL<pKL)
+					sentences[i-1].m_sentiTransitFv[4] = -1;
+				pKL = nKL;
+			}
+
+			//positive negative count 
+			cNegationCount = negationCount(sentences[i]);
+			if(pNegationCount==0 && cNegationCount>0)
+				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+			else if (pNegationCount>0 && cNegationCount==0)
+				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
+			else
+				sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
+			pNegationCount = cNegationCount;
+		}
+	}
+
+	// receive sentence index as parameter
+	public double sentiWordScore(_Stn s) {
+		
+		_SparseFeature[] wordsInSentence = s.getFv();
+		int index;
+		String token;
+		double senScore = 0.0;
+		double tmp;
+
+		for(_SparseFeature word:wordsInSentence){
+			index = word.getIndex();
+			token = m_featureNames.get(index);
+			tmp = sentiWordNet.extract(token, "n");
+			if(tmp!=-2) // word found in SentiWordNet
+				senScore+=tmp;
+		}
+		return senScore/wordsInSentence.length;
+	}
+
+	// receive sentence index as parameter
+	// PosNeg count is done against the raw sentence
+	// so stopword will also get counter here like not, none 
+	// which is important for PosNeg count
+	public int posNegCount(_Stn s) {
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
+		int posCount = 0;
+		int negCount = 0;
+
+		for(String word:wordsInSentence){
+			if(m_posPriorList.contains(word))
+				posCount++;
+			else if(m_negPriorList.contains(word))
+				negCount++;
+		}
+
+		if(posCount>negCount)
+			return 1; // 1 means sentence is more positive
+		else if (negCount>posCount)
+			return 2; // 2 means sentence is more negative
+		else
+			return 0; // sentence is neutral or no match
+	}
+
+	// receive sentence index as parameter
+	// Negation count is done against the raw sentence
+	// so stopword will also get counter here like not, none 
+	// which is important for negation count
+	public int negationCount(_Stn s) {
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
+		int negationCount = 0;
+
+		for(String word:wordsInSentence){
+			if(m_negationList.contains(word))
+				negationCount++;
+		}
+		return negationCount;
+	}
+
+	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
+	// here i the index of the sentence
+	public double[] calculatePOStagVector(_Stn s) {
+		String[] posTag = s.getSentencePosTag();
+		double tagVector[] = new double[4]; 
+		// index = 0 for noun
+		// index = 1 for adjective
+		// index = 2 for verb
+		// index = 3 for adverb
+		tagVector[0]= tagVector[1] = tagVector[2]  = tagVector[3] = 0.0;
+		for(String tag:posTag){
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tagVector[0]++;
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tagVector[1]++;
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
+				tagVector[2]++;
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tagVector[3]++;
+		}
+		return tagVector;
 	}
 }	
 

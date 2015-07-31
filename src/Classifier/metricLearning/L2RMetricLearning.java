@@ -32,7 +32,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 9;// features to be defined in genRankingFV()
+	final int RankFVSize = 12;// features to be defined in genRankingFV()
 	
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
@@ -263,7 +263,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441
 		
 		//feature 7: lexicon based sentiment scores
-		fv[6] = 0;
+		fv[6] = Utils.cosine(q.m_sentiment, d.m_sentiment);
  		
 		//Part II: pointwise features for document
 		//feature 8: stop words proportion
@@ -271,6 +271,18 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//feature 9: average IDF
 		fv[8] = d.getAvgIDF();//0.03732
+		
+		//feature 10: the sentiwordnet score for a review.
+		fv[9] = d.getSentiScore();
+
+		// feature 11: the postagging score for a pair of reviews.
+		fv[10] = getPOSScore(q, d);
+
+		// feature 12: the aspect score for a pair of reviews.
+		fv[11] = getAspectScore(q, d);
+
+		// feature 13: the title of review
+		// fv[12] = d.getTitleScore();
 		
 		return fv;
 	}

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package Analyzer;
 
 import java.io.BufferedReader;
@@ -12,27 +9,35 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.MyPriorityQueue;
+import structures.TokenizeResult;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._stat;
 import utils.Utils;
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
+import structures.Post;
+import structures.Product;
+
 
 /**
  * @author hongning
  * Keyword based bootstrapping for aspect annotation
  */
 public class AspectAnalyzer extends jsonAnalyzer {
-
 	class _Aspect{
 		String m_name;
 		HashSet<Integer> m_keywords; // index corresponding to the controlled vocabulary
@@ -59,17 +64,39 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return expand;
 		}
 	}
-	
+	int m_aspDimension; //The number of aspects.
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo,
-			String providedCV, int Ngram, int threshold, String posModel)
-			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
+	int m_count=0;
+	boolean m_aspFlag=false;
 		
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
+	
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
+		LoadAspectKeywords(aspectFile);
+		m_aspFlag = aspFlag;
+	}
+	
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		m_chiSize = chiSize;
+		LoadAspectKeywords(aspectFile);
+		m_aspFlag = aspFlag;
+	}
+	
+//	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
+//		super(tokenModel, classNo, providedCV, Ngram, threshold);
+//		m_chiSize = chiSize;
+//		LoadAspectKeywords(aspectFile);
+//		m_count = 0;
+//		m_topicFlag = false;
+//
+//	}
 
 	public void LoadAspectKeywords(String filename){
 		try {
@@ -81,6 +108,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split("\\s+");
 				keywords = new HashSet<Integer>(container.length-1);
+
 				for(int i=1; i<container.length; i++) {
 					if (m_featureNameIndex.containsKey(container[i]))
 						keywords.add(m_featureNameIndex.get(container[i])); // map it to a controlled vocabulary term
@@ -90,7 +118,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 				System.out.println("Keywords for " + container[0] + ": " + keywords.size());
 			}
 			reader.close();
-			
+			m_aspDimension = m_aspects.size();
 			m_aspectDist = new int[m_aspects.size()];
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -219,6 +247,164 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
+	public int returnCount(){
+		return m_count;
+	}
+	
+	public double[] detectAspects(HashMap<Integer, Double> spVct){
+		double[] aspVct = new double[m_aspDimension];
+		for(int i = 0; i < m_aspects.size(); i++){
+			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
+			for(int key: keywords){
+				if(m_aspFlag){
+					if(spVct.containsKey(key))
+						aspVct[i] += spVct.get(key);
+				} else{
+					if(spVct.containsKey(key))
+						aspVct[i] = 1;
+					break;	
+				}
+			}
+		}
+		return aspVct;
+	}
+	
+	public boolean NotEmpty(double[] aspVct){
+		int sum = 0;
+		for(double a: aspVct){
+			sum += a * 1.0;
+		}
+		if(sum != 0)
+			return true;
+		else 
+			return false;
+	}
+	
+	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
+	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
+		
+		TokenizeResult result;
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		int y = doc.getYLabel();
+		
+		double sentiScore = 0, count= 0;
+		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+		
+		result = TokenizerNormalizeStemmer(doc.getSource());
+		String[] tokens = result.getTokens();
+		doc.setStopwordProportion(result.getStopwordProportion());
+		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+		doc.setAspVct(detectAspects(spVct));
+		
+		for(String sentence: sentences){
+			int posIndex = 0;
+			double posValue = 0;
+			String[] posTokens = Tokenizer(sentence);
+			String[] tags = m_tagger.tag(posTokens);
+			HashMap<Integer, Double> postaggingSentenceVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+			
+			for(int i = 0; i < posTokens.length; i++){
+				String tmpToken = SnowballStemming(Normalize(posTokens[i]));
+				if (isLegit(tmpToken)){
+					//If the word is adj/adv, construct the sparse vector.
+					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
+						if(m_posTaggingFeatureNameIndex.containsKey(tmpToken)){
+							posIndex = m_posTaggingFeatureNameIndex.get(tmpToken);
+							if(postaggingSentenceVct.containsKey(posIndex)){
+								posValue = postaggingSentenceVct.get(posIndex) + 1;
+								postaggingSentenceVct.put(posIndex, posValue);
+							} else
+								postaggingSentenceVct.put(posIndex, 1.0);
+						} else{
+							posIndex = m_posTaggingFeatureNameIndex.size();
+							m_posTaggingFeatureNameIndex.put(tmpToken, posIndex);
+							postaggingSentenceVct.put(posIndex, 1.0);
+						}
+					}
+					//If the word is in sentiwordnet, accumulate the score.
+					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")){
+						tmpToken = posTokens[i] + "#r";
+					} else if (tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
+						tmpToken = posTokens[i] + "#a";
+					} else if (tags[i].equals("NN")||tags[i].equals("NNS")||tags[i].equals("NNP")||tags[i].equals("NNPS")){
+						tmpToken = posTokens[i] + "#n";
+					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
+						tmpToken = posTokens[i] + "#v";
+					} 
+					if(m_sentiwordScoreMap.containsKey(tmpToken)){
+						sentiScore += m_sentiwordScoreMap.get(tmpToken);
+						count++;
+					}
+				}
+			}
+			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
+				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
+		}
+
+		//the document should be long enough
+		if (spVct.size()>=m_lengthThreshold) { 
+			doc.createSpVct(spVct);
+			doc.createPOSVct(posTaggingVct);
+			
+			if(count == 0)
+				doc.setSentiScore(0);
+			else
+				doc.setSentiScore(sentiScore/count);
+
+			m_corpus.addDoc(doc);
+			m_classMemberNo[y]++;
+					
+//			if (m_releaseContent)
+//			doc.clearSource();
+			return true;
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+			return false;
+		}
+	}
+	//previous LoadDoc, in case we need it.
+	public void LoadDoc(String filename) {
+		Product prod = null;
+		JSONArray jarray = null;
+
+		try {
+			JSONObject json = LoadJson(filename);
+			prod = new Product(json.getJSONObject("ProductInfo"));
+			jarray = json.getJSONArray("Reviews");
+		} catch (Exception e) {
+			System.out.print('X');
+			return;
+		}
+
+		for (int i = 0; i < jarray.length(); i++) {
+			try {
+				Post post = new Post(jarray.getJSONObject(i));
+				if (checkPostFormat(post)) {
+					long timeStamp = m_dateFormatter.parse(post.getDate())
+							.getTime();
+					String content;
+					if (Utils.endWithPunct(post.getTitle()))
+						content = post.getTitle() + " " + post.getContent();
+					else
+						content = post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getContent();
+					// int label = 0;
+					// if(post.getLabel()>=4) label = 1;
+					// _Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, prod.getID(), post.getLabel() - 1, timeStamp);
+					if (this.m_stnDetector != null)
+						AnalyzeDocWithPOSTagging(review);
+					else
+						AnalyzeDoc(review);
+				}
+			} catch (ParseException e) {
+				System.out.print('T');
+			} catch (JSONException e) {
+				System.out.print('P');
+			}
+		}
+	}
+
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 5; //Define the number of classes
 		int Ngram = 2; //The default value is bigram. 
@@ -247,8 +433,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		/****Loading json files*****/
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, posModel);
-		analyzer.LoadStopwords(stopwords);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 //		/****Feature selection*****/

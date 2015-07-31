@@ -24,13 +24,17 @@ public class TopicModelMain {
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
+		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
 		int number_of_topics = 40;
-		boolean loadNewEggInTrain = false; // false means in training there is no reviews from new
+		String FilePath = "./data/amazon/"; // File path for storing the JST and ASUM input fomrat data
+		int trainSize = 1000;// trainSize 0 means only newEgg; 5000 means all the data 
+		boolean loadNewEggInTrain = true; // false means in training there is no reviews from new
+		boolean generateTrainTestDataForJSTASUM = true;
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -46,14 +50,14 @@ public class TopicModelMain {
 		
 		// most popular items under each category from Amazon
 		// needed for docSummary
-		String tabletProductList[] = {"B00G3Q4CMM"};
-		String cameraProductList[] = {"B00FY3U206"};
-		String phoneProductList[] = {"B00H0MGCDK"};
-		String tvProductList[] = {"B00GEECXKQ"};
+		String tabletProductList[] = {"B008DWG5HE"};
+		String cameraProductList[] = {"B005IHAIMA"};
+		String phoneProductList[] = {"B00COYOAYW"};
+		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
-		//String folder = "./data/amazon/test";
+		//String folder = "./data/amazon/tablet/topicmodel";
+		String folder = "./data/amazon/test";
 		//String folder = "./data/amazon/newegg/newegg-reviews.json";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -77,6 +81,19 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
+		String topWordFilePath = "./result/"+category+"/"+trainSize+"/";
+		if(loadNewEggInTrain)
+			topWordFilePath += "NewEggLoaded/";
+		else
+			topWordFilePath += "noNewEgg/";
+		if(loadAspectSentiPrior==0)
+			topWordFilePath += "noPrior/";
+		else if(loadAspectSentiPrior==1)
+			topWordFilePath += "aspectSentiPrior/";
+		else
+			topWordFilePath += "aspectPrior/";
+		
+		topWordFilePath+="topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
@@ -93,6 +110,11 @@ public class TopicModelMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
+		{
+			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
+			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		}
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -134,7 +156,6 @@ public class TopicModelMain {
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
 				c.setStnFeatures();
-				c.setStnFeaturesForSentiment(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
@@ -155,6 +176,11 @@ public class TopicModelMain {
 				System.out.println("No prior is added!!");
 			}
 			
+
+			if(generateTrainTestDataForJSTASUM && setRandomFold==false){
+				model.setFilePathForJSTASUM(trainSize,category, FilePath);
+			}
+			
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
@@ -162,8 +188,9 @@ public class TopicModelMain {
 				model.setTestDocMod(testDocMod);
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
+				model.printTopWords(topK,topWordFilePath);
 				
-				if (sentence) {
+				if (sentence && trainSize==5000) {
 					if(category.equalsIgnoreCase("camera"))
 						model.docSummary(cameraProductList);
 					else if(category.equalsIgnoreCase("tablet"))

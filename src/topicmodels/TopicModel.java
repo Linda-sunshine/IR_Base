@@ -1,10 +1,15 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
+import structures._Stn;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -33,6 +38,11 @@ public abstract class TopicModel {
 	protected boolean m_multithread = false; // by default we do not use multi-thread mode
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
+	
+	protected int m_trainSize = -1; // -1 means we donot generate File for JST and ASUM
+	protected String m_category;
+	private String filePath;
+	public PrintWriter infoWriter;
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -67,6 +77,15 @@ public abstract class TopicModel {
 	
 	public void setTestDocMod(int mod){
 		m_testDocMod = mod;
+	}
+	
+	public void setInforWriter(String path){
+		System.out.println("Info File Path: "+ path);
+		try{
+			infoWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
 	}
 	
 	//initialize necessary model parameters
@@ -110,6 +129,7 @@ public abstract class TopicModel {
 	protected abstract double calculate_log_likelihood(_Doc d);
 	
 	//print top k words under each topic
+	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
 	
 	// calculate the docsummary
@@ -207,12 +227,16 @@ public abstract class TopicModel {
 			last = current;
 			
 			if (m_display && i%10==0) {
-				if (m_converge>0)
+				if (m_converge>0){
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-				else {
+					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+				}else {
 					System.out.print(".");
-					if (i%200==190)
+					infoWriter.print(".");
+					if (i%200==190){
 						System.out.println();
+						infoWriter.print("\n");
+					}
 				}
 			}
 			
@@ -224,6 +248,7 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 
 	public double Evaluation() {
@@ -255,6 +280,8 @@ public abstract class TopicModel {
 			calculatePrecisionRecall();
 		}
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		
 		return perplexity;
 	}
 
@@ -281,13 +308,16 @@ public abstract class TopicModel {
 		}
 		
 		System.out.println("Confusion Matrix");
+		infoWriter.println("Confusion Matrix");
 		for(int i=0; i<2; i++)
 		{
 			for(int j=0; j<2; j++)
 			{
 				System.out.print(precision_recall[i][j]+",");
+				infoWriter.print(precision_recall[i][j]+",");
 			}
 			System.out.println();
+			infoWriter.println();
 		}
 		
 		double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
@@ -298,13 +328,133 @@ public abstract class TopicModel {
 		double cons_recall = (double)precision_recall[1][1]/(precision_recall[1][0] + precision_recall[1][1]);
 		
 		System.out.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
+		infoWriter.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
 		System.out.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
+		infoWriter.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
 		
 		
 		double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
 		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
 		
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
+		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
+	}
+	
+	
+	public void setFilePathForJSTASUM(int m_trainSize, String m_category, String filePath){
+		this.m_trainSize = m_trainSize;
+		this.m_category = m_category;
+		this.filePath = filePath;
+	}
+	
+	public void generateFileForJSTASUM(){
+		
+		try{
+			PrintWriter jstTrainCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR.dat"));
+			PrintWriter jstTestCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test.dat"));
+			// for sentence level of JST
+			PrintWriter jstTestCorpusForSentenceWriter = new PrintWriter(new File(filePath +"JST/" +  m_trainSize +"/"+m_category+"/MR_test_sentence.dat"));
+			PrintWriter jstTestCorpusForSentenceLabelWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test_label_sentence.dat"));
+		
+			PrintWriter asumWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/BagOfSentences_pros_cons.txt"));
+			PrintWriter asumFeatureWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/selected_combine_fv.txt"));
+			
+			
+			int index = -1;
+			String word = "";
+	
+			// Training Documnet Generation for JST
+			for(_Doc trainDoc:m_trainSet){
+				jstTrainCorpusWriter.write("d"+trainDoc.getID()+" ");
+				for(_SparseFeature feature :trainDoc.getSparse()){
+						index = feature.getIndex(); 
+						word = m_corpus.getFeature(index);
+						jstTrainCorpusWriter.write(word+" ");
+				}
+				jstTrainCorpusWriter.write("\n");
+			}
+			
+			jstTrainCorpusWriter.flush();
+			jstTrainCorpusWriter.close();
+						
+			index = -1;
+			word = "";
+			for(_Doc testDoc:m_testSet){
+				jstTestCorpusWriter.write("d"+testDoc.getID()+" ");
+				for(_SparseFeature feature :testDoc.getSparse()){
+						index = feature.getIndex(); 
+						word = m_corpus.getFeature(index);
+						jstTestCorpusWriter.write(word+" ");
+				}
+				jstTestCorpusWriter.write("\n");
+			}
+			
+			jstTestCorpusWriter.flush();
+			jstTestCorpusWriter.close();
+		
+			
+		
+			
+			index = -1;
+			word = "";
+			int sentenceCounter = 0;
+			for(_Doc testDoc:m_testSet){
+				for(_Stn sentence : testDoc.getSentences()){
+					jstTestCorpusForSentenceWriter.write("d"+sentenceCounter+" ");
+					int sentenceLabel = sentence.getSentenceSenitmentLabel()==-1?3:sentence.getSentenceSenitmentLabel();
+					jstTestCorpusForSentenceLabelWriter.write("d"+sentenceCounter+" "+sentenceLabel+"\n");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						word = m_corpus.getFeature(index);
+						jstTestCorpusForSentenceWriter.write(word+" ");
+					}
+					sentenceCounter++;
+					jstTestCorpusForSentenceWriter.write("\n");
+				}
+			}
+			
+			jstTestCorpusForSentenceWriter.flush();
+			jstTestCorpusForSentenceWriter.close();
+		
+			jstTestCorpusForSentenceLabelWriter.flush();
+			jstTestCorpusForSentenceLabelWriter.close();
+		
+			// Test Document generation for JST but sentence based used for precision recall
+			index = -1;
+			word = "";
+			for(_Doc d:m_corpus.getCollection()){
+				asumWriter.write(d.getSenetenceSize()+"\n");
+				for(_Stn sentence : d.getSentences()){
+					int sentenceLabel = sentence.getSentenceSenitmentLabel();
+					if(sentenceLabel==0) // pros
+						sentenceLabel = -1;
+					else if(sentenceLabel==1) // cons
+						sentenceLabel = -2;
+					else if(sentenceLabel==-1) // from Amazon
+						sentenceLabel = -3;
+					asumWriter.write(sentenceLabel+" ");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						asumWriter.write(index+" ");
+					}
+					asumWriter.write("\n");
+				}
+			}
+			
+			asumWriter.flush();
+			asumWriter.close();
+			
+			for(int i=0; i<m_corpus.getFeatureSize();i++){
+				asumFeatureWriter.write(m_corpus.getFeature(i)+"\n");
+			}
+			
+			asumFeatureWriter.flush();
+			asumFeatureWriter.close();
+		
+		}
+		catch(Exception e){
+			System.err.print("File Not Found");
+		}
 	}
 	
 	//k-fold Cross Validation.
@@ -314,6 +464,9 @@ public abstract class TopicModel {
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		double[] perf;
+		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
+		int newEggRatingCount[] = {0,0,0,0,0};
+		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
 		
 		if(m_randomFold==true){
@@ -346,34 +499,75 @@ public abstract class TopicModel {
 		else{
 			k = 1;
 			perf = new double[k];
+		    int totalNewqEggDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
-
-				if(m_LoadnewEggInTrain==false){
-					if(d.getID()%m_testDocMod!=0){ 
-						if(d.getSourceName()==1)// Only adding Amazon Data in train
-							m_trainSet.add(d);
-						if(d.getSourceName()==2){
-						//Do not add the newEgg Doc it is skipped!!
-						}
+				if(d.getSourceName()==2){
+					newEggRatingCount[d.getYLabel()]++;
+					totalNewqEggDoc++;
 					}
-					else
-						m_testSet.add(d);
-				}
-				else{
-					if(d.getID()%m_testDocMod!=0) { 
+			}
+			System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
+			infoWriter.println("Total New Egg Doc:"+totalNewqEggDoc);
+			
+			int amazonTrainSize = 0;
+			int amazonTestSize = 0;
+			int newEggTrainSize = 0;
+			int newEggTestSize = 0;
+			
+			for(_Doc d:m_corpus.getCollection()){
+				
+				if(d.getSourceName()==1){ // from Amazon
+					int rating = d.getYLabel();
+					if(amazonTrainsetRatingCount[rating]<= 0.8*(m_trainSize/amazonTrainsetRatingCount.length)){
 						m_trainSet.add(d);
-					}
-					else
+						amazonTrainsetRatingCount[rating]++;
+						amazonTrainSize++;
+					}else{
 						m_testSet.add(d);
+						amazonTestSize++;
+					}
+				}
+				
+				if(m_LoadnewEggInTrain==true && d.getSourceName()==2){
+					
+					int rating = d.getYLabel();
+					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+						m_trainSet.add(d);
+						newEggTrainsetRatingCount[rating]++;
+						newEggTrainSize++;
+					}else{
+						m_testSet.add(d);
+						newEggTestSize++;
+					}
+					
+				}
+				if(m_LoadnewEggInTrain==false && d.getSourceName()==2){
+					m_testSet.add(d);
+					newEggTestSize++;
 				}
 			}
+			
+			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+			infoWriter.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+			
+			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
+			infoWriter.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
+			
+			if(m_trainSize!=-1){
+				generateFileForJSTASUM();
+			}
+			
 			System.out.println("Train Set Size "+m_trainSet.size());
+			infoWriter.println("Train Set Size "+m_trainSet.size());
 			System.out.println("Test Set Size "+m_testSet.size());
+			infoWriter.println("Test Set Size "+m_testSet.size());
 			
 			long start = System.currentTimeMillis();
 			EM();
 			perf[0] = Evaluation();
 			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+			infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+			
 		}
 		//output the performance statistics
 		double mean = Utils.sumOfArray(perf)/k, var = 0;
@@ -381,5 +575,10 @@ public abstract class TopicModel {
 			var += (perf[i]-mean) * (perf[i]-mean);
 		var = Math.sqrt(var/k);
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		
+		infoWriter.flush();
+		infoWriter.close();
 	}
+	
 }

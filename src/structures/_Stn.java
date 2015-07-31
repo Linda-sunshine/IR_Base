@@ -17,7 +17,7 @@ public class _Stn {
 	double m_transitStat; // posterior topic transit probability
 
 	// tructure for LR-HTSM
-	double[] m_sentiTransitFv; // features for determine sentiment transition
+	public double[] m_sentiTransitFv; // features for determine sentiment transition
 	double m_sentiTransitStat; // posterior sentiment transit probability
 	
 	String[] m_sentencePOSTag;

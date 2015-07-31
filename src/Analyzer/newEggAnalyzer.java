@@ -176,6 +176,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
 			doc.setSourceName(2);
 			doc.createSpVct(spVcts);
+			doc.setYLabel(y);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			return true;
@@ -273,7 +274,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 //				buffer.append(String.format("Comments: %s\n", content));
 //		}
 		
-		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=5) {
+		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
 			doc.setSourceName(2);
@@ -281,6 +282,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSentencesWithLabels(stnList, stnLabel);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
+			doc.setYLabel(y);
+			setSentenceFeatureVectorForSentiment(doc);
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			m_prosSentenceCounter+=prosSentenceCounter;
