@@ -463,16 +463,32 @@ public class DocAnalyzer extends Analyzer {
 	// receive sentence index as parameter
 	public double sentiWordScore(_Stn s) {
 		
-		_SparseFeature[] wordsInSentence = s.getFv();
-		int index;
-		String token;
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		// calculate the POS tag to use it in the calculation of sentiWord score
+		String[] posTags = m_tagger.tag(wordsInSentence); // only tokenize then POS tagging
+				
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
 		double senScore = 0.0;
 		double tmp;
+		String word = "";
+		String tag = "";
 
-		for(_SparseFeature word:wordsInSentence){
-			index = word.getIndex();
-			token = m_featureNames.get(index);
-			tmp = m_sentiWordNet.extract(token, "n");
+		for(int i=0; i<wordsInSentence.length;i++){
+			word = wordsInSentence[i];
+			tag = posTags[i];
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tag = "n";
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tag = "a";
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
+				tag = "v";
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tag = "r";
+			
+			tmp = m_sentiWordNet.extract(word, tag);
 			if(tmp!=-2) // word found in SentiWordNet
 				senScore+=tmp;
 		}
