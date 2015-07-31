@@ -2,12 +2,19 @@ package structures;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
+import utils.Utils;
 
 public class SentiWordNet {
 
 	Map<String, Double> dictionary;
+	private SnowballStemmer m_stemmer;
 	
 	public boolean contains(String term) {
 		return dictionary.containsKey(term);
@@ -17,7 +24,28 @@ public class SentiWordNet {
 		return dictionary.get(term);
 	}
 
+	public String SnowballStemming(String token){
+		m_stemmer.setCurrent(token);
+		if(m_stemmer.stem())
+			return m_stemmer.getCurrent();
+		else
+			return token;
+	}
+	
+	public String Normalize(String token){
+		token = Normalizer.normalize(token, Normalizer.Form.NFKC);
+		token = token.replaceAll("\\W+", "");
+		token = token.toLowerCase();
+		
+		if (Utils.isNumber(token))
+			return "NUM";
+		else
+			return token;
+	}
+	
 	public SentiWordNet(String pathToSWN) throws IOException {
+		
+		m_stemmer = new englishStemmer();
 		// This is our main dictionary representation
 		dictionary = new HashMap<String, Double>();
 
@@ -85,7 +113,7 @@ public class SentiWordNet {
 			// Go through all the terms.
 			for (Map.Entry<String, HashMap<Integer, Double>> entry : tempDictionary
 					.entrySet()) {
-				String word = entry.getKey();
+				String word = SnowballStemming(Normalize(entry.getKey()));
 				Map<Integer, Double> synSetScoreMap = entry.getValue();
 
 				// Calculate weighted average. Weigh the synsets according to
@@ -112,6 +140,7 @@ public class SentiWordNet {
 		}
 	}
 
+	
 	public double extract(String word, String pos) {
 		
 		if(dictionary.containsKey(word + "#" + pos) )
@@ -121,14 +150,8 @@ public class SentiWordNet {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		/*if(args.length<1) {
-			System.err.println("Usage: java SentiWordNetDemoCode <pathToSentiWordNetFile>");
-			return;
-		}*/
-		
 		String pathToSWN = "./data/SentiWordNet_3.0.0_20130122.txt";
 		SentiWordNet sentiwordnet = new SentiWordNet(pathToSWN);
-		
 		System.out.println("work#n "+sentiwordnet.extract("opaque", "v"));
 		System.out.println("bad#n "+sentiwordnet.extract("bad", "n"));
 		System.out.println("blue#a "+sentiwordnet.extract("blue", "a"));
