@@ -172,7 +172,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
+			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
 			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
@@ -275,7 +276,8 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		
 		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
+			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
 			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
 			doc.setSentencesWithLabels(stnList, stnLabel);

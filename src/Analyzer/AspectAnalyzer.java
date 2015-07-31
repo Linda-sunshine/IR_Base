@@ -342,48 +342,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-	//previous LoadDoc, in case we need it.
-	public void LoadDoc(String filename) {
-		Product prod = null;
-		JSONArray jarray = null;
-
-		try {
-			JSONObject json = LoadJson(filename);
-			prod = new Product(json.getJSONObject("ProductInfo"));
-			jarray = json.getJSONArray("Reviews");
-		} catch (Exception e) {
-			System.out.print('X');
-			return;
-		}
-
-		for (int i = 0; i < jarray.length(); i++) {
-			try {
-				Post post = new Post(jarray.getJSONObject(i));
-				if (checkPostFormat(post)) {
-					long timeStamp = m_dateFormatter.parse(post.getDate())
-							.getTime();
-					String content;
-					if (Utils.endWithPunct(post.getTitle()))
-						content = post.getTitle() + " " + post.getContent();
-					else
-						content = post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getContent();
-					// int label = 0;
-					// if(post.getLabel()>=4) label = 1;
-					// _Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, prod.getID(), post.getLabel() - 1, timeStamp);
-					if (this.m_stnDetector != null)
-						AnalyzeDocWithPOSTagging(review);
-					else
-						AnalyzeDoc(review);
-				}
-			} catch (ParseException e) {
-				System.out.print('T');
-			} catch (JSONException e) {
-				System.out.print('P');
-			}
-		}
-	}
-
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 5; //Define the number of classes
 		int Ngram = 2; //The default value is bigram. 
