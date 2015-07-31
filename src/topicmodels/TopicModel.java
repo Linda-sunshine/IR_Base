@@ -476,13 +476,19 @@ public abstract class TopicModel {
 		else{
 			k = 1;
 			perf = new double[k];
-		
+		    int totalNewqEggDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
 				if(d.getSourceName()==2){
 					newEggRatingCount[d.getYLabel()]++;
+					totalNewqEggDoc++;
 					}
 			}
+			System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
 			
+			int amazonTrainSize = 0;
+			int amazonTestSize = 0;
+			int newEggTrainSize = 0;
+			int newEggTestSize = 0;
 			
 			for(_Doc d:m_corpus.getCollection()){
 				
@@ -491,8 +497,10 @@ public abstract class TopicModel {
 					if(amazonTrainsetRatingCount[rating]<= 0.8*(m_trainSize/amazonTrainsetRatingCount.length)){
 						m_trainSet.add(d);
 						amazonTrainsetRatingCount[rating]++;
+						amazonTrainSize++;
 					}else{
 						m_testSet.add(d);
+						amazonTestSize++;
 					}
 				}
 				
@@ -502,15 +510,21 @@ public abstract class TopicModel {
 					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
 						m_trainSet.add(d);
 						newEggTrainsetRatingCount[rating]++;
+						newEggTrainSize++;
 					}else{
 						m_testSet.add(d);
+						newEggTestSize++;
 					}
 					
 				}
 				if(m_LoadnewEggInTrain==false && d.getSourceName()==2){
 					m_testSet.add(d);
+					newEggTestSize++;
 				}
 			}
+			
+			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			
 			if(m_trainSize!=-1){
 				generateFileForJSTASUM();
