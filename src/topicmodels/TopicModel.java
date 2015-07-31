@@ -42,7 +42,7 @@ public abstract class TopicModel {
 	protected int m_trainSize = -1; // -1 means we donot generate File for JST and ASUM
 	protected String m_category;
 	private String filePath;
-	
+	public PrintWriter infoWriter;
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -77,6 +77,15 @@ public abstract class TopicModel {
 	
 	public void setTestDocMod(int mod){
 		m_testDocMod = mod;
+	}
+	
+	public void setInforWriter(String path){
+		System.out.println("Info File Path: "+ path);
+		try{
+			infoWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
 	}
 	
 	//initialize necessary model parameters
@@ -218,12 +227,16 @@ public abstract class TopicModel {
 			last = current;
 			
 			if (m_display && i%10==0) {
-				if (m_converge>0)
+				if (m_converge>0){
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-				else {
+					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+				}else {
 					System.out.print(".");
-					if (i%200==190)
+					infoWriter.print(".");
+					if (i%200==190){
 						System.out.println();
+						infoWriter.print("\n");
+					}
 				}
 			}
 			
@@ -235,6 +248,7 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 
 	public double Evaluation() {
@@ -266,6 +280,8 @@ public abstract class TopicModel {
 			calculatePrecisionRecall();
 		}
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		
 		return perplexity;
 	}
 
@@ -292,13 +308,16 @@ public abstract class TopicModel {
 		}
 		
 		System.out.println("Confusion Matrix");
+		infoWriter.println("Confusion Matrix");
 		for(int i=0; i<2; i++)
 		{
 			for(int j=0; j<2; j++)
 			{
 				System.out.print(precision_recall[i][j]+",");
+				infoWriter.print(precision_recall[i][j]+",");
 			}
 			System.out.println();
+			infoWriter.println();
 		}
 		
 		double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
@@ -309,13 +328,16 @@ public abstract class TopicModel {
 		double cons_recall = (double)precision_recall[1][1]/(precision_recall[1][0] + precision_recall[1][1]);
 		
 		System.out.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
+		infoWriter.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
 		System.out.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
+		infoWriter.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
 		
 		
 		double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
 		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
 		
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
+		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
 	
@@ -431,7 +453,7 @@ public abstract class TopicModel {
 		
 		}
 		catch(Exception e){
-			System.out.print("File Not Found");
+			System.err.print("File Not Found");
 		}
 	}
 	
@@ -485,6 +507,7 @@ public abstract class TopicModel {
 					}
 			}
 			System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
+			infoWriter.println("Total New Egg Doc:"+totalNewqEggDoc);
 			
 			int amazonTrainSize = 0;
 			int amazonTestSize = 0;
@@ -525,19 +548,26 @@ public abstract class TopicModel {
 			}
 			
 			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+			infoWriter.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+			
 			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
+			infoWriter.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			
 			if(m_trainSize!=-1){
 				generateFileForJSTASUM();
 			}
 			
 			System.out.println("Train Set Size "+m_trainSet.size());
+			infoWriter.println("Train Set Size "+m_trainSet.size());
 			System.out.println("Test Set Size "+m_testSet.size());
+			infoWriter.println("Test Set Size "+m_testSet.size());
 			
 			long start = System.currentTimeMillis();
 			EM();
 			perf[0] = Evaluation();
 			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+			infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+			
 		}
 		//output the performance statistics
 		double mean = Utils.sumOfArray(perf)/k, var = 0;
@@ -545,5 +575,10 @@ public abstract class TopicModel {
 			var += (perf[i]-mean) * (perf[i]-mean);
 		var = Math.sqrt(var/k);
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		
+		infoWriter.flush();
+		infoWriter.close();
 	}
+	
 }
