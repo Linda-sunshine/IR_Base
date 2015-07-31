@@ -3,10 +3,8 @@
  */
 package structures;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -15,8 +13,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Random;
-
-import utils.Utils;
 
 /**
  * @author lingong
@@ -247,17 +243,5 @@ public class _Corpus {
 			return String.format("%d\t%d", i, j);
 		else
 			return String.format("%d\t%d", j, i);
-	}
-	
-	public void setReviewIDIndexes(){
-		m_reviewIDIndexes = new HashMap<String, Integer>();
-		for(int i=0; i < m_collection.size(); i++){
-			m_reviewIDIndexes.put(m_collection.get(i).getName(), i);
-		}
-	}
-	
-	public void setSentiment(String reviewID, double[] probs, int k){
-		int index = m_reviewIDIndexes.get(reviewID);
-		m_collection.get(index).setSentiment(probs, k);
 	}
 }

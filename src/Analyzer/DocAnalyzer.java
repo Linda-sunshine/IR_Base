@@ -7,17 +7,14 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import opennlp.tools.cmdline.postag.POSModelLoader;
-import opennlp.tools.postag.POSModel;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
 import opennlp.tools.sentdetect.SentenceModel;
@@ -29,7 +26,7 @@ import opennlp.tools.util.InvalidFormatException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import structures.SentiWordNetDemoCode;
+import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._SparseFeature;
@@ -45,16 +42,16 @@ public class DocAnalyzer extends Analyzer {
 	
 	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;
 	protected HashMap<String, Integer> m_sentiwordNetFeatureNameIndex;
-	protected HashMap<String, Double> m_sentiwordScoreMap;
 	
-	protected SentiWordNetDemoCode sentiWordNet;
-	protected ArrayList<String> m_posPriorList;
-	protected ArrayList<String> m_negPriorList;
-	protected ArrayList<String> m_negationList;
+	protected SentiWordNet m_sentiWordNet;
+	protected ArrayList<String> m_posPriorList;//list of positive seed words
+	protected ArrayList<String> m_negPriorList;//list of negative seed words
+	protected ArrayList<String> m_negationList;//list of negation seed words
 	
 	
 	//Constructor with ngram and fValue.
-	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
@@ -68,8 +65,10 @@ public class DocAnalyzer extends Analyzer {
 		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
+	
 	//TokenModel + stnModel.
-	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo, 
+			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
@@ -89,7 +88,8 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//TokenModel + stnModel + posModel.
-	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, 
+			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
@@ -98,6 +98,7 @@ public class DocAnalyzer extends Analyzer {
 			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
 		else
 			m_stnDetector = null;
+		
 		if (posModel!=null)
 			m_tagger = new POSTaggerME(new POSModelLoader().load(new File(posModel)));
 		else
@@ -111,29 +112,7 @@ public class DocAnalyzer extends Analyzer {
 		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
-	
-	//Constructor with ngram and fValue and sentence check.
-	public DocAnalyzer(String tokenModel, String stnModel, int classNo,
-			String providedCV, int Ngram, int threshold, String tagModel)
-			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(classNo, threshold);
-		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		m_stemmer = new englishStemmer();
 
-		if (stnModel != null)
-			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
-		else
-			m_stnDetector = null;
-		m_tagger = new POSTaggerME(new POSModel(new FileInputStream(tagModel)));
-
-		m_Ngram = Ngram;
-		m_isCVLoaded = LoadCV(providedCV);
-		m_stopwords = new HashSet<String>();
-		m_releaseContent = true;
-		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
-		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
-	}
-	
 	public void setReleaseContent(boolean release) {
 		m_releaseContent = release;
 	}
@@ -153,11 +132,10 @@ public class DocAnalyzer extends Analyzer {
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
-	}
+	}	
 	
-	
-	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords,String pathToNegationWords)
-	{
+	//since the seed words are stemmed, please double check when you use such words in generating the features
+	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords, String pathToNegationWords) {
 		m_posPriorList = new ArrayList<String>();
 		m_negPriorList = new ArrayList<String>();
 		m_negationList = new ArrayList<String>();
@@ -185,21 +163,16 @@ public class DocAnalyzer extends Analyzer {
 				m_negationList.add(line);
 			}
 			file.close();
+			
+			// loading the sentiWordnet
+			m_sentiWordNet = new SentiWordNet(pathToSentiWordNet);
 		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-		// loading the sentiWordnet
-		try{
-			sentiWordNet = new SentiWordNetDemoCode(pathToSentiWordNet);
-		}
-		catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 
 	
-	//Tokenizer.
+	//Tokenizing input text string
 	protected String[] Tokenizer(String source){
 		String[] tokens = m_tokenizer.tokenize(source);
 		return tokens;
@@ -244,7 +217,6 @@ public class DocAnalyzer extends Analyzer {
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
 		
-		
 		LinkedList<String> Ngrams = new LinkedList<String>();
 		int tokenLength = tokens.length, N = m_Ngram;	
 		
@@ -277,6 +249,7 @@ public class DocAnalyzer extends Analyzer {
 
 	//Load a movie review document and analyze it.
 	//this is only specified for this type of review documents
+	//do we still need this function, or shall we normalize it with json format?
 	public void LoadDoc(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
@@ -301,6 +274,7 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
+	//convert the input token sequence into a sparse vector (docWordMap cannot be changed)
 	protected HashMap<Integer, Double> constructSpVct(String[] tokens, int y, HashMap<Integer, Double> docWordMap) {
 		int index = 0;
 		double value = 0;
@@ -316,11 +290,10 @@ public class DocAnalyzer extends Analyzer {
 						spVct.put(index, value);
 					} else {
 						spVct.put(index, 1.0);
-						if (docWordMap==null || !docWordMap.containsKey(index))
+						if (docWordMap==null || !docWordMap.containsKey(index)) {
 							if(m_featureStat.containsKey(token))
 								m_featureStat.get(token).addOneDF(y);
-//							else
-//								System.out.println("Not found"+token);
+						}
 					}
 				} else {// indicate we allow the analyzer to dynamically expand the feature vocabulary
 					expandVocabulary(token);// update the m_featureNames.
@@ -381,11 +354,9 @@ public class DocAnalyzer extends Analyzer {
 		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
-		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
-		ArrayList<String> rawStnList = new ArrayList<String>(); // to avoid empty sentences
-		
-		
+		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
+		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
+		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
 		
 		int y = doc.getYLabel();
 		
@@ -403,14 +374,15 @@ public class DocAnalyzer extends Analyzer {
 		} // End For loop for sentence	
 	
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) { 
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
 			doc.createSpVct(spVct);
 			doc.setSentences(stnList);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			setSentenceFeatureVectorForSentiment(doc);
+			
 			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
+			m_classMemberNo[y] ++;
 			
 			if (m_releaseContent)
 				doc.clearSource();
@@ -419,84 +391,6 @@ public class DocAnalyzer extends Analyzer {
 			/****Roll back here!!******/
 			rollBack(spVct, y);
 			return false;
-		}
-	}
-	
-	public void setSentenceWriter(String fileName) throws FileNotFoundException{
-		m_sentenceWriter = new PrintWriter(new File(fileName));
-	}
-	
-	//Load the sentinet word and store them in the dictionary for later use.
-	public void LoadSNWWithScore(String filename) throws IOException {
-		m_sentiwordScoreMap = new HashMap<String, Double>();// for tagging3 to
-															// store features.
-		// From String to list of doubles.
-		HashMap<String, HashMap<Integer, Double>> tempDictionary = new HashMap<String, HashMap<Integer, Double>>();
-
-		BufferedReader csv = null;
-		try {
-			csv = new BufferedReader(new FileReader(filename));
-			int lineNumber = 0;
-			String line;
-			while ((line = csv.readLine()) != null) {
-				lineNumber++;
-				// If it's a comment, skip this line.
-				if (!line.trim().startsWith("#")) {
-					// We use tab separation
-					String[] data = line.split("\t");
-					String wordTypeMarker = data[0];
-					// Is it a valid line? Otherwise, through exception.
-					if (data.length != 6)
-						throw new IllegalArgumentException("Incorrect tabulation format in file, line: " + lineNumber);
-					// Calculate synset score as score = PosS - NegS. If it's 0,
-					// then it is neutral word, ignore it.
-					Double synsetScore = Double.parseDouble(data[2])
-							- Double.parseDouble(data[3]);
-					// Get all Synset terms
-					String[] synTermsSplit = data[4].split(" ");
-					// Go through all terms of current synset.
-					for (String synTermSplit : synTermsSplit) {
-						// Get synterm and synterm rank
-						String[] synTermAndRank = synTermSplit.split("#"); // able#1 = [able, 1]
-						String synTerm = synTermAndRank[0] + "#"
-								+ wordTypeMarker; // able#a
-						int synTermRank = Integer.parseInt(synTermAndRank[1]); // different senses of a word
-						// Add the current term to map if it doesn't have one
-						if (!tempDictionary.containsKey(synTerm))
-							tempDictionary.put(synTerm,
-									new HashMap<Integer, Double>());// <able#a, <<1, score>, <2, score>...>>
-						// If the dict already has the synTerm, just add synset
-						// link-<2, score> to synterm.
-						tempDictionary.get(synTerm).put(synTermRank,
-								synsetScore);
-					}
-				}
-			}
-
-			// Go through all the terms.
-			Set<String> synTerms = tempDictionary.keySet();
-			for (String synTerm : synTerms) {
-				double score = 0;
-				int count = 0;
-				HashMap<Integer, Double> synSetScoreMap = tempDictionary.get(synTerm);
-				Collection<Double> scores = synSetScoreMap.values();
-				for (double s : scores) {
-					if (s != 0) {
-						score += s;
-						count++;
-					}
-					if (score != 0)
-						score = (double) score / count;
-				}
-				String[] termMarker = synTerm.split("#");
-				m_sentiwordScoreMap.put(
-						SnowballStemming(Normalize(termMarker[0])) + "#"
-								+ termMarker[1], score);
-			}
-		} finally {
-			if (csv != null) {
-				csv.close();
-			}
 		}
 	}
 	
@@ -518,9 +412,11 @@ public class DocAnalyzer extends Analyzer {
 
 			//sentiWordScore
 			cSenScore = sentiWordScore(sentences[i]);
-			if((cSenScore<0 && pSenScore>0) || (cSenScore>0 && pSenScore<0))
+			if(cSenScore<=-2 || pSenScore<=-2)
+				sentences[i-1].m_sentiTransitFv[1] = 0;
+			else if (cSenScore*pSenScore<0)
 				sentences[i-1].m_sentiTransitFv[1] = 1; // transition
-			else if((cSenScore<=0 && pSenScore<=0) || (cSenScore>=0 && pSenScore>=0))
+			else
 				sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
 			pSenScore = cSenScore;
 
@@ -528,7 +424,7 @@ public class DocAnalyzer extends Analyzer {
 			cPosNeg = posNegCount(sentences[i]);
 			if(pPosNeg==cPosNeg)
 				sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
-			else if (pPosNeg!=cPosNeg)
+			else
 				sentences[i-1].m_sentiTransitFv[2] = 1; // transition
 			pPosNeg = cPosNeg;
 
@@ -552,7 +448,7 @@ public class DocAnalyzer extends Analyzer {
 				pKL = nKL;
 			}
 
-			//positive negative count 
+			//negation count 
 			cNegationCount = negationCount(sentences[i]);
 			if(pNegationCount==0 && cNegationCount>0)
 				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
@@ -576,7 +472,7 @@ public class DocAnalyzer extends Analyzer {
 		for(_SparseFeature word:wordsInSentence){
 			index = word.getIndex();
 			token = m_featureNames.get(index);
-			tmp = sentiWordNet.extract(token, "n");
+			tmp = m_sentiWordNet.extract(token, "n");
 			if(tmp!=-2) // word found in SentiWordNet
 				senScore+=tmp;
 		}
@@ -639,7 +535,6 @@ public class DocAnalyzer extends Analyzer {
 		// index = 1 for adjective
 		// index = 2 for verb
 		// index = 3 for adverb
-		tagVector[0]= tagVector[1] = tagVector[2]  = tagVector[3] = 0.0;
 		for(String tag:posTag){
 			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
 				tagVector[0]++;
@@ -650,6 +545,7 @@ public class DocAnalyzer extends Analyzer {
 			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
 				tagVector[3]++;
 		}
+		Utils.L1Normalization(tagVector);
 		return tagVector;
 	}
 }	

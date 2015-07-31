@@ -31,25 +31,21 @@ public class _Doc implements Comparable<_Doc> {
 	long m_timeStamp; //The timeStamp for this review.
 	
 	private _SparseFeature[] m_x_posVct;
-	private double[] m_x_aspVct;
-		
-	//p(z|d) for topic models in general
-	public double[] m_sentiment;
-	
+	private double[] m_x_aspVct;	
 		
 	//only used in learning to rank for random walk
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
-	int m_sourceName = 1; // source is 1 for Amazon and 2 for newEgg
+	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
 	
-	public void setSourceName(int sourceName){
-		m_sourceName = sourceName;
+	public void setSourceType(int sourceName){
+		m_sourceType = sourceName;
 	}
 	
-	public int getSourceName(){
-		return m_sourceName;
+	public int getSourceType(){
+		return m_sourceType;
 	}
 	_Corpus m_corpus;
 	
@@ -111,7 +107,6 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		m_topics = null;
-		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -125,7 +120,6 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
-		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -140,12 +134,12 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
-		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
 		m_sentences = null;
 	}
+	
 	public _Doc (int ID, String name, String title, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;
@@ -155,7 +149,6 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
-		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
@@ -172,12 +165,12 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
 		m_topics = null;
-		m_sentiment = null;
 		m_sstat = null;
 		m_words = null;
 		m_topicAssignment = null;
 		m_sentences = null;
 	}
+	
 	public void setWeight(double w) {
 		m_weight = w;
 	}
@@ -325,6 +318,13 @@ public class _Doc implements Comparable<_Doc> {
 		for(int i=0; i<m_sentences.length; i++)
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling (if we know the label for this sentence)
+	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
+		m_sentences = new _Stn[stnList.size()];
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i] = new _Stn(stnList.get(i), stnLabel.get(i));
+	}
+		
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public void setRawSentences(ArrayList<String> stnList) {
 		for (int i = 0; i < m_sentences.length; i++)
@@ -334,13 +334,7 @@ public class _Doc implements Comparable<_Doc> {
 	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
 		for(int i=0; i<m_sentences.length; i++)
 			m_sentences[i].setSentencePosTag(stnPoslist.get(i));
-	}
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
-		m_sentences = new _Stn[stnList.size()];
-		for(int i=0; i<m_sentences.length; i++)
-			m_sentences[i] = new _Stn(stnList.get(i), stnLabel.get(i));
-	}
+	}	
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public int getSenetenceSize() {
@@ -517,13 +511,7 @@ public class _Doc implements Comparable<_Doc> {
 	public double[] getAspVct(){
 		return m_x_aspVct;
 	}
-	
-	public void setSentiment(double[] senti, int k){
-		if(senti.length == k){
-			m_sentiment = senti;
-		}
-	}
-	
+		
 	public void setProjectedFv(double[] denseFv) {
 		m_x_projection = Utils.createSpVct(denseFv);
 	}

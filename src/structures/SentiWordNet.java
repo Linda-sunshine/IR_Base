@@ -5,11 +5,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SentiWordNetDemoCode {
+public class SentiWordNet {
 
-	private Map<String, Double> dictionary;
+	Map<String, Double> dictionary;
+	
+	public boolean contains(String term) {
+		return dictionary.containsKey(term);
+	}
+	
+	public double score(String term) {
+		return dictionary.get(term);
+	}
 
-	public SentiWordNetDemoCode(String pathToSWN) throws IOException {
+	public SentiWordNet(String pathToSWN) throws IOException {
 		// This is our main dictionary representation
 		dictionary = new HashMap<String, Double>();
 
@@ -119,7 +127,7 @@ public class SentiWordNetDemoCode {
 		}*/
 		
 		String pathToSWN = "./data/SentiWordNet_3.0.0_20130122.txt";
-		SentiWordNetDemoCode sentiwordnet = new SentiWordNetDemoCode(pathToSWN);
+		SentiWordNet sentiwordnet = new SentiWordNet(pathToSWN);
 		
 		System.out.println("work#n "+sentiwordnet.extract("opaque", "v"));
 		System.out.println("bad#n "+sentiwordnet.extract("bad", "n"));

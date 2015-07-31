@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -34,17 +33,16 @@ public abstract class Analyzer {
 	protected boolean m_isCVLoaded;
 	
 	//minimal length of indexed document
-	protected int m_lengthThreshold;
-	
-	protected int m_minimumNumberofSentences;
+	protected int m_lengthThreshold = 5;
+	//minimal size of sentences
+	protected int m_stnSizeThreshold = 2;
 	//if we have store content of documents
 	protected boolean m_releaseContent;
 	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
-	protected PrintWriter m_sentenceWriter;
-	
+
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		
@@ -115,7 +113,7 @@ public abstract class Analyzer {
 	}
 	
 	public void setMinimumNumberOfSentences(int number){
-		m_minimumNumberofSentences = number;
+		m_stnSizeThreshold = number;
 	}
 	
 	abstract public void LoadDoc(String filename);
@@ -428,37 +426,4 @@ public abstract class Analyzer {
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
 	}
-	
-	public void LoadTopicSentiment(String filename, int k) {
-		if (filename==null || filename.isEmpty())
-			return;
-		m_corpus.setReviewIDIndexes();//Set the look-up table for setting sentiment usage.
-		String[] probStrs;
-		int count = 0 ;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				double[] probs = new double[k];
-				count++;
-				probStrs = line.split(",");
-				if(probStrs.length != (k+2)){
-					System.out.println("The topic sentiment has the wrong dimension!");
-				} else{
-					for(int i=2; i<k+2; i++)
-						probs[i-2] = Double.valueOf(probStrs[i]);
-				}
-				m_corpus.setSentiment(probStrs[0], probs, k);
-			}
-			reader.close();
-			if(count == m_corpus.getSize())
-				System.out.format("%d sentiment vectors are loaded from %s and set to all reviews.\n", m_corpus.getSize(), filename);
-			else
-				System.err.println("The number of sentiment array does not match with review number!");
-			
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
-		}
-	}
-	
 }

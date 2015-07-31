@@ -123,8 +123,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		int y = post.getLabel()-1, uniWordsInSections = 0;
 		
 		String wholeContent = post.getProContent() + post.getConContent() + post.getComments();
-		if(m_duplicateChecker.contains(wholeContent))
-		{
+		if(m_duplicateChecker.contains(wholeContent)) {
 			m_duplicateCount++;
 			return false;
 		}
@@ -174,7 +173,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
-			doc.setSourceName(2);
+			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
 			m_corpus.addDoc(doc);
@@ -274,10 +273,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 //				buffer.append(String.format("Comments: %s\n", content));
 //		}
 		
-		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_minimumNumberofSentences) {
+		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), (m_releaseContent?null:buffer.toString()), post.getProdId(), y, timeStamp);			
-			doc.setSourceName(2);
+			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
 			doc.setSentencesWithLabels(stnList, stnLabel);
 			doc.setRawSentences(rawStnList);

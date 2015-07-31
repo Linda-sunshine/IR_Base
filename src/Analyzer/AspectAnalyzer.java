@@ -64,18 +64,20 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return expand;
 		}
 	}
+	
 	int m_aspDimension; //The number of aspects.
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	int m_count=0;
 	boolean m_aspFlag=false;
 		
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
 	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
 		LoadAspectKeywords(aspectFile);
 		m_aspFlag = aspFlag;
@@ -88,15 +90,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		LoadAspectKeywords(aspectFile);
 		m_aspFlag = aspFlag;
 	}
-	
-//	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize) throws InvalidFormatException, FileNotFoundException, IOException{
-//		super(tokenModel, classNo, providedCV, Ngram, threshold);
-//		m_chiSize = chiSize;
-//		LoadAspectKeywords(aspectFile);
-//		m_count = 0;
-//		m_topicFlag = false;
-//
-//	}
 
 	public void LoadAspectKeywords(String filename){
 		try {
@@ -247,10 +240,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-	public int returnCount(){
-		return m_count;
-	}
-	
 	public double[] detectAspects(HashMap<Integer, Double> spVct){
 		double[] aspVct = new double[m_aspDimension];
 		for(int i = 0; i < m_aspects.size(); i++){
@@ -269,28 +258,16 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return aspVct;
 	}
 	
-	public boolean NotEmpty(double[] aspVct){
-		int sum = 0;
-		for(double a: aspVct){
-			sum += a * 1.0;
-		}
-		if(sum != 0)
-			return true;
-		else 
-			return false;
-	}
-	
 	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
 	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
 		
-		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		int y = doc.getYLabel();
 		
 		double sentiScore = 0, count= 0;
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		
-		result = TokenizerNormalizeStemmer(doc.getSource());
+		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());
 		String[] tokens = result.getTokens();
 		doc.setStopwordProportion(result.getStopwordProportion());
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
@@ -331,8 +308,9 @@ public class AspectAnalyzer extends jsonAnalyzer {
 					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
 						tmpToken = posTokens[i] + "#v";
 					} 
-					if(m_sentiwordScoreMap.containsKey(tmpToken)){
-						sentiScore += m_sentiwordScoreMap.get(tmpToken);
+					
+					if(m_sentiWordNet.contains(tmpToken)){
+						sentiScore += m_sentiWordNet.score(tmpToken);
 						count++;
 					}
 				}
@@ -363,6 +341,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 		}
 	}
+	
 	//previous LoadDoc, in case we need it.
 	public void LoadDoc(String filename) {
 		Product prod = null;

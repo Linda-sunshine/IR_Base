@@ -260,10 +260,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
 		
 		//feature 6: jaccard coefficient
-		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441
-		
-		//feature 7: lexicon based sentiment scores
-		fv[6] = Utils.cosine(q.m_sentiment, d.m_sentiment);
+		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
  		
 		//Part II: pointwise features for document
 		//feature 8: stop words proportion

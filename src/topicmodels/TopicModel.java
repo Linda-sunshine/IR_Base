@@ -1,7 +1,6 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -297,7 +296,7 @@ public abstract class TopicModel {
 		
 		for(_Doc d:m_testSet) {
 			// if document is from newEgg which is 2 then calculate precision-recall
-			if(d.getSourceName()==2){
+			if(d.getSourceType()==2){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
 					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
@@ -501,7 +500,7 @@ public abstract class TopicModel {
 			perf = new double[k];
 		    int totalNewqEggDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
-				if(d.getSourceName()==2){
+				if(d.getSourceType()==2){
 					newEggRatingCount[d.getYLabel()]++;
 					totalNewqEggDoc++;
 					}
@@ -516,7 +515,7 @@ public abstract class TopicModel {
 			
 			for(_Doc d:m_corpus.getCollection()){
 				
-				if(d.getSourceName()==1){ // from Amazon
+				if(d.getSourceType()==1){ // from Amazon
 					int rating = d.getYLabel();
 					if(amazonTrainsetRatingCount[rating]<= 0.8*(m_trainSize/amazonTrainsetRatingCount.length)){
 						m_trainSet.add(d);
@@ -528,7 +527,7 @@ public abstract class TopicModel {
 					}
 				}
 				
-				if(m_LoadnewEggInTrain==true && d.getSourceName()==2){
+				if(m_LoadnewEggInTrain==true && d.getSourceType()==2) {
 					
 					int rating = d.getYLabel();
 					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
@@ -541,7 +540,7 @@ public abstract class TopicModel {
 					}
 					
 				}
-				if(m_LoadnewEggInTrain==false && d.getSourceName()==2){
+				if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
 					m_testSet.add(d);
 					newEggTestSize++;
 				}
