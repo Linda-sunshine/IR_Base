@@ -50,10 +50,10 @@ public class TopicModelMain {
 		
 		// most popular items under each category from Amazon
 		// needed for docSummary
-		String tabletProductList[] = {"B00G3Q4CMM"};
-		String cameraProductList[] = {"B00FY3U206"};
-		String phoneProductList[] = {"B00H0MGCDK"};
-		String tvProductList[] = {"B00GEECXKQ"};
+		String tabletProductList[] = {"B008DWG5HE"};
+		String cameraProductList[] = {"B005IHAIMA"};
+		String phoneProductList[] = {"B00COYOAYW"};
+		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
 		//String folder = "./data/amazon/tablet/topicmodel";
@@ -81,6 +81,19 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
+		String topWordFilePath = "./result/"+category+"/"+trainSize+"/";
+		if(loadNewEggInTrain)
+			topWordFilePath += "NewEggLoaded/";
+		else
+			topWordFilePath += "noNewEgg/";
+		if(loadAspectSentiPrior==0)
+			topWordFilePath += "noPrior/";
+		else if(loadAspectSentiPrior==1)
+			topWordFilePath += "aspectSentiPrior/";
+		else
+			topWordFilePath += "aspectPrior/";
+		
+		topWordFilePath+="topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
@@ -175,8 +188,9 @@ public class TopicModelMain {
 				model.setTestDocMod(testDocMod);
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
+				model.printTopWords(topK,topWordFilePath);
 				
-				if (sentence) {
+				if (sentence && trainSize==5000) {
 					if(category.equalsIgnoreCase("camera"))
 						model.docSummary(cameraProductList);
 					else if(category.equalsIgnoreCase("tablet"))

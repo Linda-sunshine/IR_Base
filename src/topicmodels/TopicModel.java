@@ -39,8 +39,8 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	private int m_trainSize = -1; // -1 means we donot generate File for JST and ASUM
-	private String m_category;
+	protected int m_trainSize = -1; // -1 means we donot generate File for JST and ASUM
+	protected String m_category;
 	private String filePath;
 	
 	
@@ -120,6 +120,7 @@ public abstract class TopicModel {
 	protected abstract double calculate_log_likelihood(_Doc d);
 	
 	//print top k words under each topic
+	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
 	
 	// calculate the docsummary
