@@ -213,7 +213,6 @@ public class pLSA extends twoTopic {
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
 			sum = Utils.sumOfArray(word_topic_sstat[k]);
-			System.out.println(sum);
 			for(int i=0;i<this.vocabulary_size;i++)
 				topic_term_probabilty[k][i] = word_topic_sstat[k][i] / sum;
 		}

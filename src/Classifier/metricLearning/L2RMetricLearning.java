@@ -244,34 +244,33 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
-		fv[0] = getBoWSim(q, d);
+		fv[0] = getBoWSim(q, d);//0.04298
 		
 		//feature 2: topical similarity
-		fv[1] = getTopicalSim(q, d);
+		fv[1] = getTopicalSim(q, d);//-0.09567
 		
 		//feature 3: belong to the same product
-		fv[2] = q.sameProduct(d)?1:0;
+		fv[2] = q.sameProduct(d)?1:0;//0.02620
 		
 		//feature 4: classifier's prediction difference
 		//fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
 		fv[3] = 0;
 		
 		//feature 5: sparse feature length difference
-		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());
+		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
 		
 		//feature 6: jaccard coefficient
-		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());
+		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441
 		
 		//feature 7: lexicon based sentiment scores
 		fv[6] = 0;
  		
 		//Part II: pointwise features for document
 		//feature 8: stop words proportion
-		fv[7] = d.getStopwordProportion();
+		fv[7] = d.getStopwordProportion();//-0.00005
 		
 		//feature 9: average IDF
-		fv[8] = d.getAvgIDF();
-		//average neighborhood similarity
+		fv[8] = d.getAvgIDF();//0.03732
 		
 		return fv;
 	}
