@@ -38,10 +38,12 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	protected int m_trainSize = -1; // -1 means we donot generate File for JST and ASUM
+	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
+	private boolean m_trainSetForASUMJST = false;
 	protected String m_category;
 	private String filePath;
 	public PrintWriter infoWriter;
+	
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -85,6 +87,12 @@ public abstract class TopicModel {
 		}catch(Exception e){
 			System.err.println(path+" Not found!!");
 		}
+	}
+	
+	//added by Mustafiz
+	// for controlling varying training set size of Amazon
+	public void setTrainSetSize(int size){
+		m_trainSize = size;
 	}
 	
 	//initialize necessary model parameters
@@ -341,6 +349,7 @@ public abstract class TopicModel {
 	
 	
 	public void setFilePathForJSTASUM(int m_trainSize, String m_category, String filePath){
+		this.m_trainSetForASUMJST = true;
 		this.m_trainSize = m_trainSize;
 		this.m_category = m_category;
 		this.filePath = filePath;
@@ -452,7 +461,7 @@ public abstract class TopicModel {
 		
 		}
 		catch(Exception e){
-			System.err.print("File Not Found");
+			System.err.print("JST and ASUM File Not Found");
 		}
 	}
 	
@@ -513,11 +522,16 @@ public abstract class TopicModel {
 			int newEggTrainSize = 0;
 			int newEggTestSize = 0;
 			
+			System.out.println("Amazon Input Size:"+ m_trainSize);
+			int limit = (int) Math.ceil(0.8*(m_trainSize/amazonTrainsetRatingCount.length));
+			System.out.println("Limit is:" + limit);
+			
 			for(_Doc d:m_corpus.getCollection()){
 				
 				if(d.getSourceType()==1){ // from Amazon
 					int rating = d.getYLabel();
-					if(amazonTrainsetRatingCount[rating]<= 0.8*(m_trainSize/amazonTrainsetRatingCount.length)){
+					
+					if(amazonTrainsetRatingCount[rating]<= limit){
 						m_trainSet.add(d);
 						amazonTrainsetRatingCount[rating]++;
 						amazonTrainSize++;
@@ -552,7 +566,7 @@ public abstract class TopicModel {
 			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			infoWriter.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			
-			if(m_trainSize!=-1){
+			if(m_trainSetForASUMJST){
 				generateFileForJSTASUM();
 			}
 			

@@ -187,6 +187,7 @@ public class TopicModelMain {
 			} else {
 				model.setTestDocMod(testDocMod);
 				model.setRandomFold(setRandomFold);
+				model.setTrainSetSize(trainSize);
 				model.crossValidation(crossV);
 				model.printTopWords(topK,topWordFilePath);
 				
