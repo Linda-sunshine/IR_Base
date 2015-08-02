@@ -473,6 +473,8 @@ public abstract class TopicModel {
 		m_testSet = new ArrayList<_Doc>();
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
+		int amazonRatingCount[] = {0,0,0,0,0};
+		
 		int newEggRatingCount[] = {0,0,0,0,0};
 		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
@@ -508,30 +510,33 @@ public abstract class TopicModel {
 			k = 1;
 			perf = new double[k];
 		    int totalNewqEggDoc = 0;
+		    int totalAmazonDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
 				if(d.getSourceType()==2){
 					newEggRatingCount[d.getYLabel()]++;
 					totalNewqEggDoc++;
 					}
+				else if(d.getSourceType()==1){
+					amazonRatingCount[d.getYLabel()]++;
+					totalAmazonDoc++;
+				}
 			}
 			System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
 			infoWriter.println("Total New Egg Doc:"+totalNewqEggDoc);
+			System.out.println("Total Amazon Doc:"+ totalAmazonDoc);
+			infoWriter.println("Total Amazon Doc:"+ totalAmazonDoc);
 			
 			int amazonTrainSize = 0;
 			int amazonTestSize = 0;
 			int newEggTrainSize = 0;
 			int newEggTestSize = 0;
 			
-			System.out.println("Amazon Input Size:"+ m_trainSize);
-			int limit = (int) Math.ceil(0.8*(m_trainSize/amazonTrainsetRatingCount.length));
-			System.out.println("Limit is:" + limit);
-			
 			for(_Doc d:m_corpus.getCollection()){
 				
 				if(d.getSourceType()==1){ // from Amazon
 					int rating = d.getYLabel();
 					
-					if(amazonTrainsetRatingCount[rating]<= limit){
+					if(amazonTrainsetRatingCount[rating]<=0.8*amazonRatingCount[rating]){
 						m_trainSet.add(d);
 						amazonTrainsetRatingCount[rating]++;
 						amazonTrainSize++;
@@ -566,14 +571,19 @@ public abstract class TopicModel {
 			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			infoWriter.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			
+			for(int i=0; i<amazonTrainsetRatingCount.length; i++){
+				System.out.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
+				infoWriter.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
+			}
+			
 			if(m_trainSetForASUMJST){
 				generateFileForJSTASUM();
 			}
 			
-			System.out.println("Train Set Size "+m_trainSet.size());
-			infoWriter.println("Train Set Size "+m_trainSet.size());
-			System.out.println("Test Set Size "+m_testSet.size());
-			infoWriter.println("Test Set Size "+m_testSet.size());
+			System.out.println("Combined Train Set Size "+m_trainSet.size());
+			infoWriter.println("Combined Train Set Size "+m_trainSet.size());
+			System.out.println("Combined Test Set Size "+m_testSet.size());
+			infoWriter.println("Combined Test Set Size "+m_testSet.size());
 			
 			long start = System.currentTimeMillis();
 			EM();
