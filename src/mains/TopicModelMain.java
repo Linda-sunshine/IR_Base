@@ -150,12 +150,10 @@ public class TopicModelMain {
 				model = new HTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
 			} else if (topicmodel.equals("LRHTMM")) {
-				c.setStnFeatures();				
 				model = new LRHTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-				c.setStnFeatures();
 				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);

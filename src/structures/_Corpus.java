@@ -120,12 +120,6 @@ public class _Corpus {
 	public int[] getMasks(){
 		return this.m_mask;
 	}
-	
-	public void setStnFeatures() {
-		for(_Doc d:m_collection) {
-			d.setSentenceFeatureVector();
-		}
-	}
 		
 	public int getItemSize() {
 		String lastPID = null;

@@ -29,7 +29,6 @@ import org.tartarus.snowball.ext.englishStemmer;
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
-import structures._SparseFeature;
 import structures._Stn;
 import utils.Utils;
 
@@ -206,14 +205,15 @@ public class DocAnalyzer extends Analyzer {
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	protected TokenizeResult TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source); //Original tokens.
+		TokenizeResult result = new TokenizeResult(tokens);
+		
 		//Normalize them and stem them.		
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
 		
 		LinkedList<String> Ngrams = new LinkedList<String>();
-		int tokenLength = tokens.length, N = m_Ngram;	
+		int tokenLength = tokens.length, N = m_Ngram;			
 		
-		TokenizeResult result = new TokenizeResult(tokenLength);
 		for(int i=0; i<tokenLength; i++) {
 			String token = tokens[i];
 			boolean legit = isLegit(token);
@@ -373,34 +373,26 @@ public class DocAnalyzer extends Analyzer {
 		int y = doc.getYLabel();
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-		
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
-		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
-		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
+		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // sparse sentence feature vectors 
 		
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
-			String[] rawTokens = Tokenizer(sentence);//added by Lin, needed for constructing vectors.
-			String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
-			String[] tokens = result.getTokens();		
-			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
+			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);// construct bag-of-word vector based on normalized tokens	
 
-			if (sentence_vector.size()>0) {//avoid empty sentence
-				stnList.add(Utils.createSpVct(sentence_vector));
-				rawStnList.add(sentence);
-				stnPosList.add(posTags);
+			if (sentence_vector.size()>0) {//avoid empty sentence				
+				String[] posTags = m_tagger.tag(result.getRawTokens());
+				
+				stnList.add(new _Stn(Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
 			}
 		} // End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
-			doc.createSpVct(spVct);
-			
+			doc.createSpVct(spVct);			
 			doc.setSentences(stnList);
-			doc.setRawSentences(rawStnList);
-			doc.setSentencesPOSTag(stnPosList);
-			setSentenceFeatureVectorForSentiment(doc);
+			
+			setStnFvs(doc);
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
@@ -415,12 +407,13 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
-	// used by LR-HTSM for constructing transition features for sentiment
-	public void setSentenceFeatureVectorForSentiment(_Doc d) {
+	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment
+	public void setStnFvs(_Doc d) {
 		_Stn[] sentences = d.getSentences();
 		
 		// start from 2nd sentence
 		double pSim = Utils.cosine(sentences[0].getFv(), sentences[1].getFv()), nSim;
+		double cLength, pLength = Utils.sumOfFeaturesL1(sentences[0].getFv());
 		double pKL = Utils.klDivergence(calculatePOStagVector(sentences[0]), calculatePOStagVector(sentences[1])), nKL;
 		double pSenScore = sentiWordScore(sentences[0]), cSenScore;
 		int pPosNeg= posNegCount(sentences[0]), cPosNeg;
@@ -428,10 +421,19 @@ public class DocAnalyzer extends Analyzer {
 		int stnSize = d.getSenetenceSize();
 		
 		for(int i=1; i<stnSize; i++){
-			//cosine similarity			
-			sentences[i-1].m_sentiTransitFv[0] = pSim;			
+			//cosine similarity	for both sentiment and topical transition		
+			sentences[i-1].m_sentiTransitFv[0] = pSim;	
+			sentences[i-1].m_transitFv[0] = pSim;		
 
-			//sentiWordScore
+			//length_ratio for topical transition
+			cLength = Utils.sumOfFeaturesL1(sentences[i].getFv());			
+			sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
+			pLength = cLength;
+			
+			//position for topical transition
+			sentences[i-1].m_transitFv[2] = (double)i / stnSize;
+			
+			//sentiWordScore for sentiment transition
 			cSenScore = sentiWordScore(sentences[i]);
 			if(cSenScore<=-2 || pSenScore<=-2)
 				sentences[i-1].m_sentiTransitFv[1] = 0;
@@ -449,13 +451,16 @@ public class DocAnalyzer extends Analyzer {
 				sentences[i-1].m_sentiTransitFv[2] = 1; // transition
 			pPosNeg = cPosNeg;
 
-			//similar to previous or next
+			//similar to previous or next for both topical and sentiment transitions
 			if (i<stnSize-1) {
 				nSim = Utils.cosine(sentences[i].getFv(), sentences[i+1].getFv());
-				if (nSim>pSim)
+				if (nSim>pSim) {
 					sentences[i-1].m_sentiTransitFv[3] = 1;
-				else if (nSim<pSim)
+					sentences[i-1].m_transitFv[3] = 1;
+				} else if (nSim<pSim) {
 					sentences[i-1].m_sentiTransitFv[3] = -1;
+					sentences[i-1].m_transitFv[3] = -1;
+				}
 				pSim = nSim;
 			}
 
@@ -483,46 +488,14 @@ public class DocAnalyzer extends Analyzer {
 
 	// receive sentence index as parameter
 	public double sentiWordScore(_Stn s) {
-		
-		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
-		// calculate the POS tag to use it in the calculation of sentiWord score
-		String[] posTags = m_tagger.tag(wordsInSentence); // only tokenize then POS tagging
-				
-		//Normalize them and stem them.		
-		for(int i = 0; i < wordsInSentence.length; i++)
-			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
-		
-		double senScore = 0.0;
-		double tmp;
-		String word = "";
-		String tag = "";
-
-		for(int i=0; i<wordsInSentence.length;i++){
-			word = wordsInSentence[i];
-			tag = posTags[i];
-			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
-				tag = "n";
-			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
-				tag = "a";
-			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
-				tag = "v";
-			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
-				tag = "r";
-			
-			tmp = m_sentiWordNet.extract(word, tag);
-			if(tmp!=-2) // word found in SentiWordNet
-				senScore+=tmp;
-		}
-		return senScore/wordsInSentence.length;
+		return sentiWordScore(s.getRawTokens(), s.getSentencePosTag());
 	}
 
 	// added by Lin, the same function with different parameters.
 	public double sentiWordScore(String[] tokens, String[] posTags) {
-		
 		double senScore = 0.0;
 		double tmp;
-		String word = "";
-		String tag = "";
+		String word, tag;
 
 		for(int i=0; i<tokens.length;i++){
 			word = SnowballStemming(Normalize(tokens[i]));
@@ -542,6 +515,7 @@ public class DocAnalyzer extends Analyzer {
 		}
 		return senScore/tokens.length;//This is average, we may have different ways of calculation.
 	}
+	
 	// receive sentence index as parameter
 	// PosNeg count is done against the raw sentence
 	// so stopword will also get counter here like not, none 
