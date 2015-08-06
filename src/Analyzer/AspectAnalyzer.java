@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,11 +25,6 @@ import structures._SparseFeature;
 import structures._Stn;
 import structures._stat;
 import utils.Utils;
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
-import structures.Post;
-import structures.Product;
 
 
 /**
@@ -240,7 +234,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-	public double[] detectAspects(HashMap<Integer, Double> spVct){
+	double[] detectAspects(HashMap<Integer, Double> spVct){
 		double[] aspVct = new double[m_aspDimension];
 		for(int i = 0; i < m_aspects.size(); i++){
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
@@ -303,7 +297,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.setSentencesPOSTag(stnPosList);
 			setSentenceFeatureVectorForSentiment(doc);
 			
-			//Added by Lin, only need parts of the postagging(adj and adv)
+			//Added by Lin, only need parts of the pos tagging (adj and adv)
 			doc.setSentencesAdjPOSTag(stnPosList);
 			doc.setSentiScore(sentiScore);
 			
@@ -319,89 +313,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 		}
 	}
-//	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
-//	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
-//		
-//		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-//		int y = doc.getYLabel();
-//		
-//		double sentiScore = 0, count= 0;
-//		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
-//		
-//		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());
-//		String[] tokens = result.getTokens();
-//		doc.setStopwordProportion(result.getStopwordProportion());
-//		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-//		doc.setAspVct(detectAspects(spVct));
-//		
-//		for(String sentence: sentences){
-//			int posIndex = 0;
-//			double posValue = 0;
-//			String[] posTokens = Tokenizer(sentence);
-//			String[] tags = m_tagger.tag(posTokens);
-//			HashMap<Integer, Double> postaggingSentenceVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-//			
-//			for(int i = 0; i < posTokens.length; i++){
-//				String tmpToken = SnowballStemming(Normalize(posTokens[i]));
-//				if (isLegit(tmpToken)){
-//					//If the word is adj/adv, construct the sparse vector.
-//					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-//						if(m_posTaggingFeatureNameIndex.containsKey(tmpToken)){
-//							posIndex = m_posTaggingFeatureNameIndex.get(tmpToken);
-//							if(postaggingSentenceVct.containsKey(posIndex)){
-//								posValue = postaggingSentenceVct.get(posIndex) + 1;
-//								postaggingSentenceVct.put(posIndex, posValue);
-//							} else
-//								postaggingSentenceVct.put(posIndex, 1.0);
-//						} else{
-//							posIndex = m_posTaggingFeatureNameIndex.size();
-//							m_posTaggingFeatureNameIndex.put(tmpToken, posIndex);
-//							postaggingSentenceVct.put(posIndex, 1.0);
-//						}
-//					}
-//					//If the word is in sentiwordnet, accumulate the score.
-//					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")){
-//						tmpToken = posTokens[i] + "#r";
-//					} else if (tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-//						tmpToken = posTokens[i] + "#a";
-//					} else if (tags[i].equals("NN")||tags[i].equals("NNS")||tags[i].equals("NNP")||tags[i].equals("NNPS")){
-//						tmpToken = posTokens[i] + "#n";
-//					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
-//						tmpToken = posTokens[i] + "#v";
-//					} 
-//					
-//					if(m_sentiWordNet.contains(tmpToken)){
-//						sentiScore += m_sentiWordNet.score(tmpToken);
-//						count++;
-//					}
-//				}
-//			}
-//			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
-//				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
-//		}
-//
-//		//the document should be long enough
-//		if (spVct.size()>=m_lengthThreshold) { 
-//			doc.createSpVct(spVct);
-//			doc.createPOSVct(posTaggingVct);
-//			
-//			if(count == 0)
-//				doc.setSentiScore(0);
-//			else
-//				doc.setSentiScore(sentiScore/count);
-//
-//			m_corpus.addDoc(doc);
-//			m_classMemberNo[y]++;
-//					
-////			if (m_releaseContent)
-////			doc.clearSource();
-//			return true;
-//		} else {
-//			/****Roll back here!!******/
-//			rollBack(spVct, y);
-//			return false;
-//		}
-//	}
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 5; //Define the number of classes

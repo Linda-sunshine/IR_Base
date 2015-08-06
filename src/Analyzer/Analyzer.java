@@ -55,9 +55,11 @@ public abstract class Analyzer {
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		m_featureStat = new HashMap<String, _stat>();
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		
 		m_lengthThreshold = minDocLength;
 		
-		m_preDocs = new LinkedList<_Doc>();
+		m_preDocs = new LinkedList<_Doc>(); // key: POS tag; value: index in the list		
 	}	
 	
 	public void reset() {

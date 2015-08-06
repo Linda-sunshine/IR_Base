@@ -96,8 +96,8 @@ public class TransductiveMain {
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
 		analyzer.initSentiWordNet(pathToSentiWordNet);
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		
 		// Added by Mustafizur----------------
-
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 		analyzer.setFeatureValues("TF", 0);		
