@@ -258,6 +258,67 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return aspVct;
 	}
 	
+	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+		double sentiScore = 0;
+		TokenizeResult result;
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		
+		//Added by Lin for constructing postagging vector.
+		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+		
+		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
+		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
+		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
+		
+		int y = doc.getYLabel();
+		
+		for(String sentence : sentences) {
+			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+			String[] rawTokens = Tokenizer(sentence);//added by Lin, needed for constructing vectors.
+			String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
+			String[] tokens = result.getTokens();		
+			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
+			//Added by Lin for constructing postagging vector.
+			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
+
+			if (sentence_vector.size()>0) {//avoid empty sentence
+				stnList.add(Utils.createSpVct(sentence_vector));
+				rawStnList.add(sentence);
+				stnPosList.add(posTags);
+				Utils.mergeVectors(sentence_vector, spVct);
+				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
+				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
+			}
+		} // End For loop for sentence	
+	
+		//the document should be long enough
+		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
+			doc.createSpVct(spVct);
+			doc.createPOSVct(posTaggingVct);//added by Lin.
+			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
+			
+			doc.setSentences(stnList);
+			doc.setRawSentences(rawStnList);
+			doc.setSentencesPOSTag(stnPosList);
+			setSentenceFeatureVectorForSentiment(doc);
+			
+			//Added by Lin, only need parts of the postagging(adj and adv)
+			doc.setSentencesAdjPOSTag(stnPosList);
+			doc.setSentiScore(sentiScore);
+			
+			m_corpus.addDoc(doc);
+			m_classMemberNo[y] ++;
+			
+			if (m_releaseContent)
+				doc.clearSource();
+			return true;
+		} else {
+			/****Roll back here!!******/
+			rollBack(spVct, y);
+			return false;
+		}
+	}
 //	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
 //	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
 //		

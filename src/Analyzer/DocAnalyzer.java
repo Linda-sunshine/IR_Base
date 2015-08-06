@@ -378,10 +378,10 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
-	
+
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-		double sentiScore = 0;
+//		double sentiScore = 0;
 		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
@@ -402,30 +402,30 @@ public class DocAnalyzer extends Analyzer {
 			String[] tokens = result.getTokens();		
 			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
 			//Added by Lin for constructing postagging vector.
-			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
+//			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
 
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
 				rawStnList.add(sentence);
 				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
-				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
-				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
+//				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);//added by Lin
+//				sentiScore += sentiWordScore(rawTokens, posTags);//added by Lin, since we already have the postagging, we don't need to repeat it.
 			}
 		} // End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
 			doc.createSpVct(spVct);
-			doc.createPOSVct(posTaggingVct);//added by Lin
+//			doc.createPOSVct(posTaggingVct);//added by Lin
 			doc.setSentences(stnList);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			setSentenceFeatureVectorForSentiment(doc);
 			
-			//Added by Lin, only need parts of the postagging(adj and adv)
-			doc.setSentencesAdjPOSTag(stnPosList);
-			doc.setSentiScore(sentiScore);
+//			//Added by Lin, only need parts of the postagging(adj and adv)
+//			doc.setSentencesAdjPOSTag(stnPosList);
+//			doc.setSentiScore(sentiScore);
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
