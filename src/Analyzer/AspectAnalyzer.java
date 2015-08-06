@@ -263,7 +263,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
 		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
-		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
+//		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
 		
 		int y = doc.getYLabel();
 		
@@ -278,7 +278,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
-				rawStnList.add(sentence);
+//				rawStnList.add(sentence);
 				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
 				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
@@ -291,14 +291,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
-			
-			doc.setSentences(stnList);
-			doc.setRawSentences(rawStnList);
-			doc.setSentencesPOSTag(stnPosList);
-			setSentenceFeatureVectorForSentiment(doc);
-			
-			//Added by Lin, only need parts of the pos tagging (adj and adv)
-			doc.setSentencesAdjPOSTag(stnPosList);
 			doc.setSentiScore(sentiScore);
 			
 			m_corpus.addDoc(doc);
