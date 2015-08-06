@@ -402,7 +402,7 @@ public class Utils {
 
         //normalize
         for (int i = 0; i < pros.length; i++)
-            pros[i] = pros[i] / total;
+            pros[i] /= total;
     }
 	
 	static public String formatArray(double [] array) {
@@ -799,5 +799,35 @@ public class Utils {
 			}	
 		}
 		return sum;
+	}
+	
+	public static double klDivergence(double[] p1, double[] p2) {
+		  double log2 = Math.log(2);
+		  double klDiv = 0.0;
+		  for (int i = 0; i < p1.length; ++i) {
+	        if (p1[i] == 0) { continue; }
+	        if (p2[i] == 0.0) { continue; } 
+
+	      klDiv += p1[i] * Math.log( p1[i] / p2[i] );
+	      }
+	      return klDiv / log2; 
+	 }
+	
+
+	public static double cosine(double[] t1, double[] t2){
+		double similarity = 0, sum1 = 0, sum2 = 0;
+		if(t1.length == t2.length){
+			for(int i=0; i < t1.length; i++){
+				similarity += t1[i] * t2[i];
+				sum1 += t1[i] * t1[i];
+				sum2 += t2[i] * t2[i];
+			}
+			if(sum1 != 0 && sum2 != 0){
+				sum1 = Math.sqrt(sum1);
+				sum2 = Math.sqrt(sum2);
+				similarity = similarity / (sum1 * sum2);
+			} else similarity = 0;
+		}
+		return similarity;
 	}
 }

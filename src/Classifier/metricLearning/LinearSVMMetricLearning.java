@@ -40,9 +40,9 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	public LinearSVMMetricLearning(_Corpus c, String classifier, double C, 
-			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean storeGraph, 
+			double ratio, int k, int kPrime, double alhpa, double beta, double delta, double eta, boolean weightedAvg, 
 			int bound) {
-		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta, storeGraph);
+		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta, weightedAvg);
 		m_bound = bound;
 	}
 	

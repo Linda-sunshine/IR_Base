@@ -19,15 +19,21 @@ public class LDA_Gibbs extends pLSA {
 	int m_burnIn; // discard the samples within burn in period
 	int m_lag; // lag in accumulating the samples
 	
+	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,
-			_Corpus c, double lambda, double[] back_ground,
+			_Corpus c, double lambda, 
 			int number_of_topics, double alpha, double burnIn, int lag) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground,
-				number_of_topics, alpha);
-		m_sstat = new double[number_of_topics];
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
+		
 		m_rand = new Random();
 		m_burnIn = (int) (burnIn * number_of_iteration);
 		m_lag = lag;
+	}
+	
+	@Override
+	protected void createSpace() {
+		super.createSpace();
+		m_sstat = new double[number_of_topics];
 	}
 
 	@Override
@@ -46,7 +52,7 @@ public class LDA_Gibbs extends pLSA {
 			d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
 			for(int i=0; i<d.m_words.length; i++) {
 				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]] ++;
-				m_sstat[d.m_topicAssignment[i]]++;
+				m_sstat[d.m_topicAssignment[i]] ++;
 			}
 		}
 		
@@ -54,12 +60,25 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	protected void imposePrior() {
-		if (word_topic_prior!=null) {
-			for(int k=0; k<number_of_topics; k++) {
-				for(int n=0; n<vocabulary_size; n++) {
-					word_topic_sstat[k][n] += word_topic_prior[k][n];
-					m_sstat[k] += word_topic_prior[k][n];
+	protected void imposePrior() {		
+		if (word_topic_prior!=null) {//we have enforced that the topic size is at least as many as prior seed words
+			if (m_sentiAspectPrior) {
+				int size = word_topic_prior.length/2, shift = number_of_topics/2;//if it is sentiment aspect prior, the size must be even
+				for(int k=0; k<size; k++) {
+					for(int n=0; n<vocabulary_size; n++) {
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+						m_sstat[k] += word_topic_prior[k][n];
+						
+						word_topic_sstat[k + shift][n] += word_topic_prior[k + size][n];
+						m_sstat[k + shift] += word_topic_prior[k + size][n];
+					}
+				}
+			} else {//no symmetric property
+				for(int k=0; k<word_topic_prior.length; k++) {
+					for(int n=0; n<vocabulary_size; n++) {
+						word_topic_sstat[k][n] += word_topic_prior[k][n];
+						m_sstat[k] += word_topic_prior[k][n];
+					}
 				}
 			}
 		}
@@ -81,7 +100,7 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	protected void initTestDoc(_Doc d) {
-		//this needs to be carefully implemented
+		d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
 	}
 	
 	@Override
@@ -95,8 +114,10 @@ public class LDA_Gibbs extends pLSA {
 			
 			//remove the word's topic assignment
 			d.m_sstat[tid] --;
-			word_topic_sstat[tid][wid] --;
-			m_sstat[tid] --;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] --;
+				m_sstat[tid] --;
+			}
 			
 			//perform random sampling
 			p = 0;
@@ -113,11 +134,16 @@ public class LDA_Gibbs extends pLSA {
 			//assign the selected topic to word
 			d.m_topicAssignment[i] = tid;
 			d.m_sstat[tid] ++;
-			word_topic_sstat[tid][wid] ++;
-			m_sstat[tid] ++;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] ++;
+				m_sstat[tid] ++;
+			}
 		}
 		
-		return calculate_log_likelihood(d);
+		if (m_collectCorpusStats == false || m_converge>0)
+			return calculate_log_likelihood(d);
+		else
+			return 1;
 	}
 	
 	@Override
@@ -132,11 +158,34 @@ public class LDA_Gibbs extends pLSA {
 			}
 			
 			//accumulate p(z|d)
-			for(_Doc d:m_trainSet) {
-				for(int i=0; i<this.number_of_topics; i++)
-					d.m_topics[i] += d.m_sstat[i];
-			}
+			for(_Doc d:m_trainSet)
+				collectStats(d);
 		}
+	}
+	
+	protected void collectStats(_Doc d) {
+		for(int k=0; k<this.number_of_topics; k++)
+			d.m_topics[k] += d.m_sstat[k];
+	}
+	
+	// perform inference of topic distribution in the document
+	@Override
+	public double inference(_Doc d) {
+		initTestDoc(d);//this is not a corpus level estimation
+		
+		double likelihood = Double.NEGATIVE_INFINITY, count = 0;
+		int  i = 0;
+		do {
+			calculate_E_step(d);
+			if (i>m_burnIn && i%m_lag==0){
+				collectStats(d);
+				likelihood = Utils.logSum(likelihood, calculate_log_likelihood(d));				
+				count ++;
+			}
+		} while (++i<this.number_of_iteration);
+		
+		estThetaInDoc(d);
+		return likelihood - Math.log(count); // this is average joint probability!
 	}
 	
 	@Override
@@ -156,34 +205,35 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
+	protected double docThetaLikelihood(_Doc d) {
+		double norm = Utils.sumOfArray(d.m_topics);
+		double logLikelihood = 0; //Utils.lgamma(number_of_topics * d_alpha) - number_of_topics*Utils.lgamma(d_alpha);
+		for(int i=0; i<this.number_of_topics; i++)
+			logLikelihood += (d_alpha-1) * Math.log(d.m_topics[i]/norm);
+		return logLikelihood;
+	}
+	
+	@Override
+	public double calculate_log_likelihood(_Doc d) {		
+		int tid, wid;
+		double logLikelihood = docThetaLikelihood(d), docSum = Utils.sumOfArray(d.m_sstat);
 		
-		double logLikelihood = 0.0, prob;
-		int wid, tid;
-		double wordSize = number_of_topics*d_alpha + d.m_words.length;
 		for(int i=0; i<d.m_words.length; i++) {
 			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];			
-			
-			prob = d.m_sstat[tid] / wordSize * word_topic_sstat[tid][wid]/m_sstat[tid];
-			logLikelihood += Math.log(prob);
+			tid = d.m_topicAssignment[i];
+			logLikelihood += Math.log(d.m_sstat[tid]/docSum * word_topic_sstat[tid][wid]/m_sstat[tid]);
 		}
 		return logLikelihood;
 	}
 	
 	@Override
-	protected double calculate_log_likelihood() {
-		if (this.m_converge<=0)
-			return 1;//no need to compute
-		
+	protected double calculate_log_likelihood() {		
 		//prior from Dirichlet distributions
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++) {
-			for(int v=0; v<this.vocabulary_size; v++) {
-				logLikelihood += (d_beta-1)*word_topic_sstat[i][v]/m_sstat[i];
-			}
+		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));
+		for(int tid=0; tid<this.number_of_topics; tid++) {
+			for(int wid=0; wid<this.vocabulary_size; wid++)
+				logLikelihood += Utils.lgamma(word_topic_sstat[tid][wid]);
+			logLikelihood -= Utils.lgamma(m_sstat[tid]);
 		}
 		
 		return logLikelihood;

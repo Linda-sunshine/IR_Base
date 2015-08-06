@@ -14,44 +14,73 @@ public class _Stn {
 	
 	//structure for HTMMM
 	double[] m_transitFv; // features for determine topic transition
-	double m_transit; // posterior topic transit probability
+	double m_transitStat; // posterior topic transit probability
 
 	// tructure for LR-HTSM
-	double[] m_sentitransitFv; // features for determine sentiment transition
-	double m_sentitransit; // posterior sentiment transit probability
-
+	public double[] m_sentiTransitFv; // features for determine sentiment transition
+	double m_sentiTransitStat; // posterior sentiment transit probability
+	
+	String[] m_sentencePOSTag;
+	String m_rawSource;
 	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
-	//
-	int m_label = 0; // default is neutral
+	//attribute label for NewEgg data
+	int m_sentimentLabel = -1; // default is -1 so that it can help to debug 
+	// 0 for neutral or comment, 1 is for pos and 2 is for neg
+	// use in FastRestritedHMM.java_for sentiment to decide sentiment switch 
+	
+	int m_predictedSentimentLabel = -1;
 	
 	public _Stn(_SparseFeature[] x) {
 		m_x_sparse = x;
 		
 		m_transitFv = new double[_Doc.stn_fv_size];
-		m_sentitransitFv = new double[_Doc.stn_fv_size];
+		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 	
 	public _Stn(_SparseFeature[] x, int label) {
 		m_x_sparse = x;
-		m_label = label;
+		m_sentimentLabel = label;
 		m_transitFv = new double[_Doc.stn_fv_size];
-		m_sentitransitFv = new double[_Doc.stn_fv_size];
+		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;
 	}
 	
-	public void setSentenceLabel(int label){
-		m_label = label;
+	public void setSentencePredictedSenitmentLabel(int label){
+		m_predictedSentimentLabel = label;
+	}
+	
+	public int getSentencePredictedSenitmentLabel(){
+		return m_predictedSentimentLabel;
+	}
+	
+	public void setSentenceSenitmentLabel(int label){
+		m_sentimentLabel = label;
 	}
 
+	public void setSentencePosTag(String[] sentenceposTags){
+		m_sentencePOSTag = sentenceposTags;
+	}
 	
-	public int getSentenceLabel(){
-		return m_label;
+	public void setRawSentence(String src){
+		m_rawSource = src;
+	}
+	
+	public String getRawSentence(){
+		return m_rawSource;
+	}
+	
+	public String[] getSentencePosTag(){
+		return m_sentencePOSTag;
+	}	
+	
+	public int getSentenceSenitmentLabel(){
+		return m_sentimentLabel;
 	}
 	
 	public double[] getTransitFvs() {
@@ -59,23 +88,23 @@ public class _Stn {
 	}
 	
 	public double[] getSentiTransitFvs() {
-		return m_sentitransitFv;
+		return m_sentiTransitFv;
 	}
 	
-	public void setTransit(double t) {
-		m_transit = t;
+	public double getTransitStat() {
+		return m_transitStat;
 	}
 	
-	public void setSentiTransit(double t) {
-		m_sentitransit = t;
+	public void setTransitStat(double t) {
+		m_transitStat = t;
 	}
 	
-	public double getTransit() {
-		return m_transit;
+	public double getSentiTransitStat() {
+		return m_sentiTransitStat;
 	}
 	
-	public double getSentiTransit() {
-		return m_sentitransit;
+	public void setSentiTransitStat(double t) {
+		m_sentiTransitStat = t;
 	}
 	
 	public int getTopic() {

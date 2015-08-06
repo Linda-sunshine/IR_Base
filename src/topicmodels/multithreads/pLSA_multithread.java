@@ -1,7 +1,5 @@
 package topicmodels.multithreads;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 import structures._Corpus;
@@ -11,26 +9,10 @@ import topicmodels.pLSA;
 
 public class pLSA_multithread extends pLSA {
 
-	class pLSA_worker implements TopicModelWorker {
-		//int number_of_topics;
-		double[][] sstat;
-		ArrayList<_Doc> m_corpus;
-		double m_likelihood;
+	public class pLSA_worker extends TopicModel_worker {
 		
-		public pLSA_worker() {
-			sstat = new double[number_of_topics][vocabulary_size];
-			m_corpus = new ArrayList<_Doc>();
-		}
-		
-		public void addDoc(_Doc d) {
-			m_corpus.add(d);
-		}
-		
-		@Override
-		public void run() {
-			m_likelihood = 0;
-			for(_Doc d:m_corpus)
-				m_likelihood += calculate_E_step(d);
+		public pLSA_worker(int number_of_topics, int vocabulary_size) {
+			super(number_of_topics, vocabulary_size);
 		}
 		
 		public double calculate_E_step(_Doc d) {	
@@ -53,30 +35,39 @@ public class pLSA_multithread extends pLSA {
 					exp = v * (1-propB)*d.m_topics[k]*topic_term_probabilty[k][j]/sum;
 					d.m_sstat[k] += exp;
 					
-					sstat[k][j] += exp;
+					if (m_collectCorpusStats)
+						sstat[k][j] += exp;
 				}
 			}
 			
-			return calculate_log_likelihood(d);
+			if (m_collectCorpusStats==false || m_converge>0)
+				return calculate_log_likelihood(d);
+			else
+				return 1;//no need to compute likelihood
 		}
-		
-		public double accumluateStats() {
-			for(int k=0; k<number_of_topics; k++) 
-				for (int v=0; v<vocabulary_size; v++)
-					word_topic_sstat[k][v] += sstat[k][v];
-			return m_likelihood;
+
+		// this is directly copied from TopicModel.java
+		@Override
+		public double inference(_Doc d) {
+			initTestDoc(d);//this is not a corpus level estimation
+			
+			double delta, last = 1, current;
+			int  i = 0;
+			do {
+				current = calculate_E_step(d);
+				estThetaInDoc(d);			
+				
+				delta = (last - current)/last;
+				last = current;
+			} while (Math.abs(delta)>m_converge && ++i<number_of_iteration);
+			return current;
 		}
-		
-		public void resetStats() {
-			for(int i=0; i<sstat.length; i++)
-				Arrays.fill(sstat[i], 0);
-		}
-	}
+	}	
 	
 	public pLSA_multithread(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			double lambda, double back_ground [], //arguments for 2topic topic model
+			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) {
-		super(number_of_iteration, converge, beta, c, lambda, back_ground, number_of_topics, alpha);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		m_multithread = true;
 	}
 	
@@ -94,10 +85,10 @@ public class pLSA_multithread extends pLSA {
 		m_workers = new pLSA_worker[cores];
 		
 		for(int i=0; i<cores; i++)
-			m_workers[i] = new pLSA_worker();
+			m_workers[i] = new pLSA_worker(number_of_topics, vocabulary_size);
 		
 		int workerID = 0;
-		for(_Doc d:collection) {
+		for(_Doc d:collection) {//evenly allocate the work load
 			m_workers[workerID%cores].addDoc(d);
 			workerID++;
 		}

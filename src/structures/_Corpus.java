@@ -3,10 +3,8 @@
  */
 package structures;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -26,13 +24,7 @@ public class _Corpus {
 	ArrayList<String> m_features; //ArrayList for features
 	HashMap<String, Integer> m_reviewIDIndexes;
 	HashMap<String, _stat> m_featureStat; //statistics about the features
-	
-	String pathToSWN = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
-	public SentiWordNetDemoCode sentiwordnet;
-	public ArrayList<String> m_pospriorlist;
-	public ArrayList<String> m_negpriorlist;
-	
-	
+	boolean m_withContent = false; // by default all documents' content has been released
 	
 	public void setFeatureStat(HashMap<String, _stat> featureStat) {
 		this.m_featureStat = featureStat;
@@ -48,6 +40,14 @@ public class _Corpus {
 	
 	public void reset() {
 		m_collection.clear();
+	}
+	
+	public void setContent(boolean content) {
+		m_withContent = content;
+	}
+	
+	public boolean hasContent() {
+		return m_withContent;
 	}
 	
 	public void setFeatures(ArrayList<String> features) {
@@ -132,53 +132,7 @@ public class _Corpus {
 			d.setSentenceFeatureVector();
 		}
 	}
-	
-	public void loadpriorposnegword()
-	{
-		String pathToposwords = "./data/Model/SentiWordsPos.txt";
-		String pathTonegwords = "./data/Model/SentiWordsNeg.txt";
 		
-		m_pospriorlist = new ArrayList<String>();
-		m_negpriorlist = new ArrayList<String>();
-		
-		BufferedReader file = null;
-		try {
-			file = new BufferedReader(new FileReader(pathToposwords));
-			String line;
-			while ((line = file.readLine()) != null) {
-				m_pospriorlist.add(line);
-			}
-			
-			file = new BufferedReader(new FileReader(pathTonegwords));
-			while ((line = file.readLine()) != null) {
-				m_negpriorlist.add(line);
-			}
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-
-		// loading the sentiWordnet
-		try{
-			sentiwordnet = new SentiWordNetDemoCode(pathToSWN);
-		}
-		catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	
-	public void setStnFeaturesForSentiment(_Corpus c) {
-		
-		// load all prior pos & neg words and also the sentiwordNet
-		loadpriorposnegword();
-		
-		for(_Doc d:m_collection) {
-			d.setCorpus(c);
-			d.setSentenceFeatureVectorForSentiment();
-		}
-	}
-	
 	public int getItemSize() {
 		String lastPID = null;
 		int pid = 0, rSize = 0;

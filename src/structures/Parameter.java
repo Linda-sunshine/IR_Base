@@ -43,6 +43,7 @@ public class Parameter {
 	public String m_suffix = ".json";
 	public String m_tokenModel = "./data/Model/en-token.bin"; //Token model.
 	public String m_stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+	public String m_posModel = "./data/Model/en-pos-maxent.bin"; //Sentence model.
 	public String m_stopwords = "./data/Model/stopwords.dat";
 	public String m_featureFile = null;//list of controlled vocabulary
 	public String m_featureStat = "./data/Features/fv_stat.dat";//detailed statistics of the selected features

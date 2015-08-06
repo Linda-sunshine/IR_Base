@@ -44,6 +44,7 @@ public class Execution  {
 		System.out.println(param.toString());
 		
 		String stnModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_stnModel:null;
+		String posModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_posModel:null;
 		
 		_Corpus corpus;
 		Analyzer analyzer;
@@ -56,11 +57,10 @@ public class Execution  {
 		} else {
 			/***Load the data from text file***/
 			if (param.m_suffix.equals(".json"))
-				analyzer = new jsonAnalyzer(param.m_tokenModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel);
+				analyzer = new jsonAnalyzer(param.m_tokenModel,param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel, posModel);	
 			else
-				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 			((DocAnalyzer)analyzer).setReleaseContent(!param.m_weightScheme.equals("PR"));
-			
 			if (param.m_featureFile==null) {
 				/****Pre-process the data.*****/
 				//Feture selection.
@@ -144,54 +144,42 @@ public class Execution  {
 			model.crossValidation(param.m_CVFold, corpus);
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
-			boolean logSpace = false;
 			if (param.m_model.equals("2topic")) {
 				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_lambda, analyzer.getBackgroundProb());
-				logSpace = false;
 			} else if (param.m_model.equals("pLSA")) {
 				if (param.m_multithread == false) {
 					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha);
+							param.m_lambda, param.m_numTopics, param.m_alpha);
 				} else {
 					model = new pLSA_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha);
+							param.m_lambda, param.m_numTopics, param.m_alpha);
 				}
 				((pLSA)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = false;
 			} else if (param.m_model.equals("vLDA")) {
 				if (param.m_multithread == false) {
 					model = new LDA_Variational(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
 				} else {
 					model = new LDA_Variational_multithread(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_maxVarIterations, param.m_varConverge);
 				}
 				
 				((LDA_Variational)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = true;
 			} else if (param.m_model.equals("gLDA")) {
 					model = new LDA_Gibbs(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-							param.m_lambda, analyzer.getBackgroundProb(), 
-							param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
+							param.m_lambda, param.m_numTopics, param.m_alpha, param.m_burnIn, param.m_lag);
 				
 				((LDA_Gibbs)model).LoadPrior(param.m_priorFile, param.m_gamma);
-				logSpace = true;
 			} else if (param.m_model.equals("HTMM")) {
 				model = new HTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha);
-				logSpace = true;
 			} else if (param.m_model.equals("LRHTMM")) {
 				corpus.setStnFeatures();
 				
 				model = new LRHTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha,
 						param.m_C);
-				logSpace = true;
 			} else {
 				System.out.println("The specified topic model has not been developed yet!");
 				System.exit(-1);
@@ -199,7 +187,7 @@ public class Execution  {
 			
 			if (param.m_CVFold<=1) {
 				model.EMonCorpus();
-				model.printTopWords(10, logSpace); // fixed: print top 10 words
+				model.printTopWords(10); // fixed: print top 10 words
 			} else 
 				model.crossValidation(param.m_CVFold);
 		} else if (param.m_style.equals("FV")) {

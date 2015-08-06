@@ -4,7 +4,7 @@ import markovmodel.FastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
 
-public class HTSM extends HTMM{
+public class HTSM extends HTMM {
 	
 	double sigma;
 	double sigma_lot; // sufficient statistic about sigma
@@ -18,8 +18,13 @@ public class HTSM extends HTMM{
 			System.exit(-1);
 		}
 		
-		this.sigma = Math.random();
-		m_hmm = new FastRestrictedHMM_sentiment(epsilon, sigma, c.getLargestSentenceSize(), this.number_of_topics); 
+		this.sigma = Math.random();		
+	}
+	
+	@Override
+	protected void createSpace() {
+		super.createSpace();
+		m_hmm = new FastRestrictedHMM_sentiment(epsilon, sigma, m_corpus.getLargestSentenceSize(), this.number_of_topics); 
 	}
 	
 	@Override
@@ -32,8 +37,7 @@ public class HTSM extends HTMM{
 		return logLikelihood;
 	}
 	
-	
-	// run upto number_of_topic since the first chunk is for sentiment switching
+	//probabilities of sentiment switch
 	void accSigmaStat(_Doc d) {
 		for(int t=1; t<d.getSenetenceSize(); t++) {
 			for(int i=0; i<this.number_of_topics; i++) 
@@ -60,24 +64,4 @@ public class HTSM extends HTMM{
 	public String toString() {
 		return String.format("HTSM[k:%d, alpha:%.3f, beta:%.3f]", number_of_topics, d_alpha, d_beta);
 	}
-	
-	@Override
-	public int[] get_MAP_topic_assignment(_Doc d) {
-		int path [] = new int [d.getSenetenceSize()];
-		m_hmm.BackTrackBestPath(d, emission, path);
-		return path;
-	}
-	
-	
-	@Override
-	public double calculate_log_likelihood(_Doc d) {//it is very expensive to re-compute this
-		//Step 1: pre-compute emission probability
-		ComputeEmissionProbsForDoc(d);		
-		
-		double logLikelihood = 0;
-		for(int i=0; i<this.number_of_topics; i++) 
-			logLikelihood += (d_alpha-1)*d.m_topics[i];
-		return logLikelihood + m_hmm.ForwardBackward(d, emission);
-	}
-	
 }

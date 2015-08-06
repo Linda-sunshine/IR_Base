@@ -33,7 +33,11 @@ public abstract class Analyzer {
 	protected boolean m_isCVLoaded;
 	
 	//minimal length of indexed document
-	protected int m_lengthThreshold;
+	protected int m_lengthThreshold = 5;
+	//minimal size of sentences
+	protected int m_stnSizeThreshold = 2;
+	//if we have store content of documents
+	protected boolean m_releaseContent;
 	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
@@ -42,6 +46,9 @@ public abstract class Analyzer {
 	
 	public ArrayList<_Doc> m_trainSet;
 	public ArrayList<_Doc> m_testSet;
+
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
+
 	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
@@ -149,6 +156,10 @@ public abstract class Analyzer {
 	}
 
 	
+	public void setMinimumNumberOfSentences(int number){
+		m_stnSizeThreshold = number;
+	}
+	
 	abstract public void LoadDoc(String filename);
 	
 	//Add one more token to the current vocabulary.
@@ -177,11 +188,13 @@ public abstract class Analyzer {
 		m_corpus.setFeatures(m_featureNames);
 		m_corpus.setFeatureStat(m_featureStat);
 		m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+		m_corpus.setContent(!m_releaseContent);
 		return m_corpus;
 	}
 
 	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
+<<<<<<< HEAD
 			int index = 0;/**modified!***/
 			Object[] keys = spVct.keySet().toArray();
 			Arrays.sort(keys);
@@ -197,6 +210,24 @@ public abstract class Analyzer {
 				else{//If the feature is not the first time to show in feature set.
 					stat.minusOneDF(y);
 					stat.minusNTTF(y, spVct.get(index));
+=======
+			for(int index: spVct.keySet()){
+				String token="";
+				if(m_featureNames.contains(index))
+				{	
+					token = m_featureNames.get(index);
+					_stat stat = m_featureStat.get(token);
+
+					if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
+						m_featureNameIndex.remove(index);
+						m_featureStat.remove(token);
+						m_featureNames.remove(index);
+					}
+					else{//If the feature is not the first time to show in feature set.
+						stat.minusOneDF(y);
+						stat.minusNTTF(y, spVct.get(index));
+					}
+>>>>>>> master
 				}
 			}
 		} else{//If CV is loaded, we can minus the DF and TTF directly.
@@ -310,7 +341,11 @@ public abstract class Analyzer {
 		}
 		
 		//rank the documents by product and time in all the cases
+<<<<<<< HEAD
 //		Collections.sort(m_corpus.getCollection());
+=======
+		//Collections.sort(m_corpus.getCollection());
+>>>>>>> master
 		if (norm == 1){
 			for(_Doc d:docs)			
 				Utils.L1Normalization(d.getSparse());
@@ -449,8 +484,13 @@ public abstract class Analyzer {
 			_stat stat =  m_featureStat.get(featureName);
 			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
 			
+<<<<<<< HEAD
 			if (back_ground_probabilty[i]<0)
 				System.out.print("ssss ");
+=======
+			if (back_ground_probabilty[i] < 0)
+				System.err.println();
+>>>>>>> master
 		}
 		
 		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing

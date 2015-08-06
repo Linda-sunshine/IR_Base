@@ -153,7 +153,11 @@ public class GaussianFields extends BaseClassifier {
 	protected double getAspectScore(_Doc di, _Doc dj){
 		return Utils.cosine(di.getAspVct(), dj.getAspVct());
 	}
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> master
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
 		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
@@ -191,16 +195,18 @@ public class GaussianFields extends BaseClassifier {
 			m_nodeList = new _Node[(int)((m_U+m_L)*1.2)];//create sufficient space 			
 
 		//fill in the labeled parts
-		for(int i=m_U; i<m_U + m_L; i++)
-			m_nodeList[i] = new _Node(getLabeledDoc(i-m_U).getYLabel());
+		for(int i=m_U; i<m_U + m_L; i++) {
+			_Doc d = getLabeledDoc(i-m_U);
+			m_nodeList[i] = new _Node(i-m_U, d.getYLabel(), d.getYLabel());
+		}
 		
 		int cores = Runtime.getRuntime().availableProcessors();
 		m_threadpool = new Thread[cores];
 
-		System.out.format("Construct graph nodes in parallel: L: %d, U: %d\n",  m_L, m_U);
+		System.out.format("Construct nearest neighbor graph nodes in parallel: L: %d, U: %d\n",  m_L, m_U);
 		WaitUntilFinish(ActionType.AT_node);
 		
-		System.out.format("Construct nearest neighbor graph in parallel: L: %d, U: %d\n",  m_L, m_U);
+		System.out.format("Construct nearest neighbor graph edges in parallel: L: %d, U: %d\n",  m_L, m_U);
 		WaitUntilFinish(ActionType.AT_graph);
 	}
 	
@@ -280,7 +286,7 @@ public class GaussianFields extends BaseClassifier {
 			return;//stop here if we want to save memory and construct the graph on the fly (space speed trade-off)
 		}
 
-//		the following needs to be carefully revised accordingly!	
+//		the following needs to be carefully revised accordingly! Currently, we only support random walk
 //		m_graph = new SparseDoubleMatrix2D(m_U+m_L, m_U+m_L);//we have to create this every time with exact dimension
 //		
 //		/****Construct the C+scale*\Delta matrix and Y vector.****/

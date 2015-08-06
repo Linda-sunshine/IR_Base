@@ -31,18 +31,33 @@ public class _Doc implements Comparable<_Doc> {
 	long m_timeStamp; //The timeStamp for this review.
 	
 	private _SparseFeature[] m_x_posVct;
+<<<<<<< HEAD
 	private double[] m_x_aspVct;
 		
 	//p(z|d) for topic models in general
 	public double[] m_sentiment;
 	
+=======
+	private double[] m_x_aspVct;	
+>>>>>>> master
 		
 	//only used in learning to rank for random walk
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
+<<<<<<< HEAD
+=======
+	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+>>>>>>> master
 	
+	public void setSourceType(int sourceName){
+		m_sourceType = sourceName;
+	}
+	
+	public int getSourceType(){
+		return m_sourceType;
+	}
 	_Corpus m_corpus;
 	
 	public void setCorpus(_Corpus c)
@@ -70,12 +85,16 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_sentiScore = s;
 	}
 
+	public void setSentiScore(double s){
+		this.m_sentiScore = s;
+	}
+
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 4; // cosine, sentiWordNetscore, prior_positive_negative_count
+	static public final int stn_senti_fv_size = 6; // cosine, sentiWordNetscore, prior_positive_negative_count
 	
 	_Stn[] m_sentences;
 	
@@ -110,6 +129,7 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
+<<<<<<< HEAD
 	public _Doc (int ID, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_source = source;
@@ -125,8 +145,13 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	public _Doc (int ID, String name, String source, int ylabel, long timeStamp){
+=======
+	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
+>>>>>>> master
 		this.m_ID = ID;
 		this.m_name = name;
+		this.m_itemID = prodID;
+		this.m_title = title;
 		this.m_source = source;
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
@@ -317,13 +342,23 @@ public class _Doc implements Comparable<_Doc> {
 		for(int i=0; i<m_sentences.length; i++)
 			m_sentences[i] = new _Stn(stnList.get(i));
 	}
-	
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling (if we know the label for this sentence)
 	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
 		m_sentences = new _Stn[stnList.size()];
 		for(int i=0; i<m_sentences.length; i++)
 			m_sentences[i] = new _Stn(stnList.get(i), stnLabel.get(i));
 	}
+		
+	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
+	public void setRawSentences(ArrayList<String> stnList) {
+		for (int i = 0; i < m_sentences.length; i++)
+			m_sentences[i].setRawSentence(stnList.get(i));
+	}
+	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
+	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
+		for(int i=0; i<m_sentences.length; i++)
+			m_sentences[i].setSentencePosTag(stnPoslist.get(i));
+	}	
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public int getSenetenceSize() {
@@ -430,92 +465,6 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 		
-	// used by LR-HTSM for constructing transition features for sentiment
-	public void setSentenceFeatureVectorForSentiment() {
-		// start from 2nd sentence
-		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
-		double pSenscore = sentiWordScore(0), cSenscore;
-		int pposneg=posnegcount(0),cposneg;
-		
-		int stnSize = getSenetenceSize();
-		for(int i=1; i<stnSize; i++){
-			//cosine similarity			
-			m_sentences[i-1].m_sentitransitFv[0] = pSim;			
-			
-			//sentiWordScore
-			cSenscore = sentiWordScore(i);
-			if((cSenscore<0 && pSenscore>0) || (cSenscore>0 && pSenscore<0))
-				m_sentences[i-1].m_sentitransitFv[1] = 1; // transition
-			else if((cSenscore<=0 && pSenscore<=0) || (cSenscore>=0 && pSenscore>=0))
-				m_sentences[i-1].m_sentitransitFv[1] = -1; // no transition
-			pSenscore = cSenscore;
-			
-			//positive negative count 
-			cposneg = posnegcount(i);
-			if(pposneg==cposneg)
-				m_sentences[i-1].m_sentitransitFv[2] = -1; // no transition
-			else if (pposneg!=cposneg)
-				m_sentences[i-1].m_sentitransitFv[2] = 1; // transition
-			pposneg = cposneg;
-			
-			//similar to previous or next
-			if (i<stnSize-1) {
-				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
-				if (nSim>pSim)
-					m_sentences[i-1].m_sentitransitFv[3] = 1;
-				else if (nSim<pSim)
-					m_sentences[i-1].m_sentitransitFv[3] = -1;
-				pSim = nSim;
-			}
-		}
-	}
-	
-	// receive sentence index as parameter
-	public double sentiWordScore(int i)
-	{
-		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
-		int index;
-		String token;
-		double senscore = 0.0;
-		double tmp;
-		
-		for(_SparseFeature word:wordsinsentence){
-			index = word.getIndex();
-			token = m_corpus.m_features.get(index);
-			tmp = m_corpus.sentiwordnet.extract(token, "n");
-			if(tmp!=-2) // word found in SentiWordNet
-				senscore+=tmp;
-		}
-		return senscore;
-	}
-	
-	// receive sentence index as parameter
-	public int posnegcount(int i)
-	{
-		_SparseFeature[] wordsinsentence = m_sentences[i].getFv();
-		int index;
-		String token;
-		int poscount = 0;
-		int negcount = 0;
-		
-		for(_SparseFeature word:wordsinsentence){
-			index = word.getIndex();
-			token = m_corpus.m_features.get(index);
-			if(m_corpus.m_pospriorlist.contains(token))
-				poscount++;
-			else if(m_corpus.m_negpriorlist.contains(token))
-				negcount++;
-		}
-		
-		if(poscount>negcount)
-			return 1; // 1 means sentence is more positive
-		else if (negcount>poscount)
-			return 2; // 2 means sentence is more negative
-		else
-			return 0; // sentence is neutral or no match
-	}
-	
-	
 	// used by LR-HTMM for constructing transition features
 	public void setSentenceFeatureVector() {
 		// start from 2nd sentence
@@ -582,6 +531,7 @@ public class _Doc implements Comparable<_Doc> {
 	public void setAspVct(double[] aspVct){
 		m_x_aspVct = aspVct;
 	}
+<<<<<<< HEAD
 	
 	public double[] getAspVct(){
 		return m_x_aspVct;
@@ -592,7 +542,13 @@ public class _Doc implements Comparable<_Doc> {
 			m_sentiment = senti;
 		}
 	}
+=======
+>>>>>>> master
 	
+	public double[] getAspVct(){
+		return m_x_aspVct;
+	}
+		
 	public void setProjectedFv(double[] denseFv) {
 		m_x_projection = Utils.createSpVct(denseFv);
 	}
