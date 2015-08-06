@@ -269,6 +269,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
+			doc.setSentences(stnList);
 			setStnFvs(doc);
 			
 			m_corpus.addDoc(doc);
