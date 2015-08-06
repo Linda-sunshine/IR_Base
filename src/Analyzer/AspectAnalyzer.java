@@ -302,9 +302,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 //			doc.setRawSentences(rawStnList);
 //			doc.setSentencesPOSTag(stnPosList);
 //			setSentenceFeatureVectorForSentiment(doc);
-			
-			//Added by Lin, only need parts of the postagging(adj and adv)
-			doc.setSentencesAdjPOSTag(stnPosList);
+//			//Added by Lin, only need parts of the postagging(adj and adv)
+//			doc.setSentencesAdjPOSTag(stnPosList);
 			doc.setSentiScore(sentiScore);
 			
 			m_corpus.addDoc(doc);
