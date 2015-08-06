@@ -294,6 +294,10 @@ public class _Doc implements Comparable<_Doc> {
 			m_sentences[i].setSentencePosTag(stnPoslist.get(i));
 	}	
 	
+	// added by Lin for constructing adj/adv postagging vector.
+	public void setSentencesAdjPOSTag(ArrayList<String[]> stnPoslist){
+		
+	}
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public int getSenetenceSize() {
 		return this.m_sentences.length;

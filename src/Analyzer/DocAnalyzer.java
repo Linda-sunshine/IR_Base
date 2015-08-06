@@ -40,8 +40,8 @@ public class DocAnalyzer extends Analyzer {
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
 	
-	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;
-	protected HashMap<String, Integer> m_sentiwordNetFeatureNameIndex;
+//	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;
+//	protected HashMap<String, Integer> m_sentiwordNetFeatureNameIndex;
 	
 	protected SentiWordNet m_sentiWordNet;
 	protected ArrayList<String> m_posPriorList;//list of positive seed words
@@ -63,7 +63,7 @@ public class DocAnalyzer extends Analyzer {
 		m_releaseContent = true;
 		
 		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
-		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+//		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
 	
 	//TokenModel + stnModel.
@@ -83,7 +83,7 @@ public class DocAnalyzer extends Analyzer {
 		m_stopwords = new HashSet<String>();
 		m_releaseContent = true;
 		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
-		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+//		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 
 	}
 	
@@ -110,7 +110,7 @@ public class DocAnalyzer extends Analyzer {
 		m_releaseContent = true;
 		
 		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
-		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
+//		m_sentiwordNetFeatureNameIndex = new HashMap<String, Integer>();
 	}
 
 	public void setReleaseContent(boolean release) {
@@ -171,7 +171,10 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 
-	
+	//Added by Lin, initialize the sentiwordnet.
+	public void initSentiWordNet(String pathToSentiWordNet) throws IOException{
+		m_sentiWordNet = new SentiWordNet(pathToSentiWordNet);
+	}
 	//Tokenizing input text string
 	protected String[] Tokenizer(String source){
 		String[] tokens = m_tokenizer.tokenize(source);
@@ -318,8 +321,35 @@ public class DocAnalyzer extends Analyzer {
 			}
 			// if the token is not in the vocabulary, nothing to do.
 		}
-		
 		return spVct;
+	}
+	
+	//Added by Lin for constructing postagging vectors.
+	public HashMap<Integer, Double> constructPOSSpVct(String[] tokens, String[] tags){
+		int posIndex = 0;
+		double posValue = 0;
+		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+
+		for(int i = 0; i < tokens.length; i++){
+			if (isLegit(tokens[i])){
+				//If the word is adj/adv, construct the sparse vector.
+				if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
+					if(m_posTaggingFeatureNameIndex.containsKey(tokens[i])){
+						posIndex = m_posTaggingFeatureNameIndex.get(tokens[i]);
+						if(posTaggingVct.containsKey(posIndex)){
+							posValue = posTaggingVct.get(posIndex) + 1;
+							posTaggingVct.put(posIndex, posValue);
+						} else
+							posTaggingVct.put(posIndex, 1.0);
+					} else{
+						posIndex = m_posTaggingFeatureNameIndex.size();
+						m_posTaggingFeatureNameIndex.put(tokens[i], posIndex);
+						posTaggingVct.put(posIndex, 1.0);
+					}
+				}
+			}
+		}
+		return posTaggingVct;
 	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.
@@ -351,9 +381,14 @@ public class DocAnalyzer extends Analyzer {
 	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+		double sentiScore = 0;
 		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		
+		//Added by Lin for constructing postagging vector.
+		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+		
 		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
 		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
 		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
@@ -362,24 +397,35 @@ public class DocAnalyzer extends Analyzer {
 		
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
-			String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+			String[] rawTokens = Tokenizer(sentence);//added by Lin, needed for constructing vectors.
+			String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
 			String[] tokens = result.getTokens();		
-			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);			
+			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
+			//Added by Lin for constructing postagging vector.
+			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
+
 			if (sentence_vector.size()>0) {//avoid empty sentence
 				stnList.add(Utils.createSpVct(sentence_vector));
 				rawStnList.add(sentence);
 				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
+				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
+				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
 			}
 		} // End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
 			doc.createSpVct(spVct);
+			doc.createPOSVct(posTaggingVct);//added by Lin
 			doc.setSentences(stnList);
 			doc.setRawSentences(rawStnList);
 			doc.setSentencesPOSTag(stnPosList);
 			setSentenceFeatureVectorForSentiment(doc);
+			
+			//Added by Lin, only need parts of the postagging(adj and adv)
+			doc.setSentencesAdjPOSTag(stnPosList);
+			doc.setSentiScore(sentiScore);
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
@@ -495,6 +541,32 @@ public class DocAnalyzer extends Analyzer {
 		return senScore/wordsInSentence.length;
 	}
 
+	// added by Lin, the same function with different parameters.
+	public double sentiWordScore(String[] tokens, String[] posTags) {
+		
+		double senScore = 0.0;
+		double tmp;
+		String word = "";
+		String tag = "";
+
+		for(int i=0; i<tokens.length;i++){
+			word = SnowballStemming(Normalize(tokens[i]));
+			tag = posTags[i];
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tag = "n";
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tag = "a";
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
+				tag = "v";
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tag = "r";
+			
+			tmp = m_sentiWordNet.extract(word, tag);
+			if(tmp!=-2) // word found in SentiWordNet
+				senScore+=tmp;
+		}
+		return senScore/tokens.length;//This is average, we may have different ways of calculation.
+	}
 	// receive sentence index as parameter
 	// PosNeg count is done against the raw sentence
 	// so stopword will also get counter here like not, none 

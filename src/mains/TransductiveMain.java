@@ -3,6 +3,7 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
+import structures.SentiWordNet;
 import structures._Corpus;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
@@ -20,7 +21,8 @@ public class TransductiveMain {
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		
+		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
+
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
@@ -37,6 +39,13 @@ public class TransductiveMain {
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for postagging.
 		String stopword = "./data/Model/stopwords.dat";
 		String tagModel = "./data/Model/en-pos-maxent.bin";
+		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+
+		//Added by Mustafizur----------------
+		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
+		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
+		String pathToNegationWords = "./data/Model/negation_words.txt";
+		String infoFilePath = "./data/result/"+"Topics_"+number_of_topics+"Information.txt";
 		
 //		String category = "tablets"; //"electronics"
 //		String dataSize = "86jsons"; //"50K", "100K"
@@ -47,7 +56,7 @@ public class TransductiveMain {
 //		String aspectlist = "./data/Model/aspect_output_simple.txt";
 
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
@@ -82,7 +91,13 @@ public class TransductiveMain {
 
 		System.out.println("Creating feature vectors, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-		analyzer.LoadStopwords(stopword); //Load the sentiwordnet file.
+		//Added by Mustafizur----------------
+		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
+		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
+		analyzer.initSentiWordNet(pathToSentiWordNet);
+		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		// Added by Mustafizur----------------
+
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 		analyzer.setFeatureValues("TF", 0);		
@@ -104,6 +119,7 @@ public class TransductiveMain {
 		}
 		
 		tModel.setDisplay(true);
+		tModel.setInforWriter(infoFilePath);
 		tModel.setSentiAspectPrior(true);
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	

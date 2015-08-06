@@ -43,6 +43,8 @@ public abstract class Analyzer {
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
 
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
+	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		
