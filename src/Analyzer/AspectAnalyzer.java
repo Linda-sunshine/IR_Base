@@ -261,8 +261,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		//Added by Lin for constructing postagging vector.
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
-		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
+//		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
+//		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
 //		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
 		
 		int y = doc.getYLabel();
@@ -277,9 +277,9 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
 
 			if (sentence_vector.size()>0) {//avoid empty sentence
-				stnList.add(Utils.createSpVct(sentence_vector));
+//				stnList.add(Utils.createSpVct(sentence_vector));
 //				rawStnList.add(sentence);
-				stnPosList.add(posTags);
+//				stnPosList.add(posTags);
 				Utils.mergeVectors(sentence_vector, spVct);
 				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
 				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
@@ -287,7 +287,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		} // End For loop for sentence	
 	
 		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
+		//remove "&& stnList.size()>=m_stnSizeThreshold"
+		if (spVct.size()>=m_lengthThreshold) { 
 			doc.createSpVct(spVct);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
