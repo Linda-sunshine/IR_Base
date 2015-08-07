@@ -60,14 +60,14 @@ public class TransductiveMain {
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SEMI";
+		String style = "SUP";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
-		//String debugOutput = null;
+//		String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -94,8 +94,8 @@ public class TransductiveMain {
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
 		analyzer.initSentiWordNet(pathToSentiWordNet);
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		
 		// Added by Mustafizur----------------
-
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 		analyzer.setFeatureValues("TF", 0);		
