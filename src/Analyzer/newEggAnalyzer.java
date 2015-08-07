@@ -1,6 +1,3 @@
-/**
- * 
- */
 package Analyzer;
 
 import java.io.File;
@@ -18,7 +15,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.NewEggPost;
 import structures.TokenizeResult;
 import structures._Doc;
-import structures._SparseFeature;
+import structures._Stn;
 import utils.Utils;
 
 /**
@@ -34,6 +31,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	int m_prosSentenceCounter = 0;
 	int m_consSentenceCounter = 0;
 	SimpleDateFormat m_dateFormatter;
+	
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, String category) throws InvalidFormatException,
 			FileNotFoundException, IOException {
@@ -43,8 +41,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		m_category = category;
 		m_duplicateChecker = new ArrayList<String>();
 		m_duplicateCount = 0;
-		
-		
 	}
 
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
@@ -138,7 +134,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			uniWordsInSections += vPtr.size();
 			Utils.mergeVectors(vPtr, docVct);
 			
-			
 			if (!m_releaseContent)
 				buffer.append(String.format("Pros: %s\n", content));
 		} else 
@@ -186,14 +181,11 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	
 	
 	protected boolean AnalyzeNewEggPostWithSentence(NewEggPost post) throws ParseException {
-		String[] tokens;
 		String content;
 		TokenizeResult result;
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // to avoid empty sentences
-		ArrayList<String> rawStnList = new ArrayList<String>(); // to avoid empty sentences
+		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // to avoid empty sentences
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
-		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // to avoid empty sentences
-		ArrayList<Integer> stnLabel = new ArrayList<Integer>(); 
+
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		int y = post.getLabel()-1, uniWordsInSections = 0;
@@ -211,17 +203,14 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			for(String sentence : m_stnDetector.sentDetect(content)) {
-
 				result = TokenizerNormalizeStemmer(sentence);
-				String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
-				tokens = result.getTokens();
-				vPtr = constructSpVct(tokens, y, docVct);		
+				vPtr = constructSpVct(result.getTokens(), y, docVct);
+				
 				if (vPtr.size()>0) {//avoid empty sentence
-					stnList.add(Utils.createSpVct(vPtr));
-					rawStnList.add(sentence);
+					String[] posTags = m_tagger.tag(result.getRawTokens()); // only tokenize then POS tagging
+					
+					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 0)); // 0 for pos
 					prosSentenceCounter++;
-					stnPosList.add(posTags);
-					stnLabel.add(0); // 0 for pos
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 					spVcts.add(vPtr);
@@ -235,15 +224,13 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			for(String sentence : m_stnDetector.sentDetect(content)) {
 
 				result = TokenizerNormalizeStemmer(sentence);
-				String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
-				tokens = result.getTokens();
-				vPtr = constructSpVct(tokens, y, docVct);		
+				
+				vPtr = constructSpVct(result.getTokens(), y, docVct);		
 				if (vPtr.size()>0) {//avoid empty sentence
-					stnList.add(Utils.createSpVct(vPtr));
-					rawStnList.add(sentence);
+					String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 1)); // 1 for cons
+					
 					consSentenceCounter++;
-					stnPosList.add(posTags);
-					stnLabel.add(1); // 1 for cons
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 					spVcts.add(vPtr);
@@ -258,13 +245,11 @@ public class newEggAnalyzer extends jsonAnalyzer {
 //			for(String sentence : m_stnDetector.sentDetect(content)) {
 //
 //				result = TokenizerNormalizeStemmer(sentence);
-//				String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
-//				tokens = result.getTokens();
-//				vPtr = constructSpVct(tokens, y, docVct);		
+//				
+//				vPtr = constructSpVct(result.getTokens(), y, docVct);		
 //				if (vPtr.size()>0) {//avoid empty sentence
-//					stnList.add(Utils.createSpVct(vPtr));
-//					stnPosList.add(posTags);
-//					stnLabel.add(2); // 2 for neutral
+//					String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+//					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence)); // -1 for comments
 //					uniWordsInSections += vPtr.size();
 //					spVcts.add(vPtr);
 //				}
@@ -280,11 +265,10 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
 			doc.setSourceType(2);
 			doc.createSpVct(spVcts);
-			doc.setSentencesWithLabels(stnList, stnLabel);
-			doc.setRawSentences(rawStnList);
-			doc.setSentencesPOSTag(stnPosList);
 			doc.setYLabel(y);
-			setSentenceFeatureVectorForSentiment(doc);
+			doc.setSentences(stnList);
+			setStnFvs(doc);
+			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
 			m_prosSentenceCounter+=prosSentenceCounter;

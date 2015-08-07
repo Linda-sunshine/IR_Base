@@ -9,25 +9,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
-
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
-
 import opennlp.tools.util.InvalidFormatException;
 import structures.MyPriorityQueue;
-<<<<<<< HEAD
-import structures.Post;
-import structures.Product;
-=======
->>>>>>> master
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._RankItem;
@@ -35,12 +24,6 @@ import structures._SparseFeature;
 import structures._Stn;
 import structures._stat;
 import utils.Utils;
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
-import structures.Post;
-import structures.Product;
-
 
 /**
  * @author hongning
@@ -73,33 +56,13 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return expand;
 		}
 	}
-<<<<<<< HEAD
-=======
-	
->>>>>>> master
+
 	int m_aspDimension; //The number of aspects.
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-<<<<<<< HEAD
-	int m_count=0;
 	boolean m_aspFlag=false;
-		
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
-	}
 	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
-		LoadAspectKeywords(aspectFile);
-		m_aspFlag = aspFlag;
-	}
-	
-	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
-			throws InvalidFormatException, FileNotFoundException, IOException {
-=======
-	boolean m_aspFlag=false;
-		
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
@@ -114,7 +77,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	
 	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
 			throws InvalidFormatException, FileNotFoundException, IOException {
->>>>>>> master
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_chiSize = chiSize;
 		LoadAspectKeywords(aspectFile);
@@ -279,13 +241,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-<<<<<<< HEAD
-	public int returnCount(){
-		return m_count;
-	}
-	
-=======
->>>>>>> master
 	public double[] detectAspects(HashMap<Integer, Double> spVct){
 		double[] aspVct = new double[m_aspDimension];
 		for(int i = 0; i < m_aspects.size(); i++){
@@ -304,7 +259,6 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return aspVct;
 	}
 	
-<<<<<<< HEAD
 	public boolean NotEmpty(double[] aspVct){
 		int sum = 0;
 		for(double a: aspVct){
@@ -316,277 +270,64 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 	}
 	
-	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
-	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
-		
-		TokenizeResult result;
-		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-		int y = doc.getYLabel();
-		
-		double sentiScore = 0, count= 0;
-		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
-		
-		result = TokenizerNormalizeStemmer(doc.getSource());
-		String[] tokens = result.getTokens();
-		doc.setStopwordProportion(result.getStopwordProportion());
-		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		doc.setAspVct(detectAspects(spVct));
-		
-		for(String sentence: sentences){
-			int posIndex = 0;
-			double posValue = 0;
-			String[] posTokens = Tokenizer(sentence);
-			String[] tags = m_tagger.tag(posTokens);
-			HashMap<Integer, Double> postaggingSentenceVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-			
-			for(int i = 0; i < posTokens.length; i++){
-				String tmpToken = SnowballStemming(Normalize(posTokens[i]));
-				if (isLegit(tmpToken)){
-					//If the word is adj/adv, construct the sparse vector.
-					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-						if(m_posTaggingFeatureNameIndex.containsKey(tmpToken)){
-							posIndex = m_posTaggingFeatureNameIndex.get(tmpToken);
-							if(postaggingSentenceVct.containsKey(posIndex)){
-								posValue = postaggingSentenceVct.get(posIndex) + 1;
-								postaggingSentenceVct.put(posIndex, posValue);
-							} else
-								postaggingSentenceVct.put(posIndex, 1.0);
-						} else{
-							posIndex = m_posTaggingFeatureNameIndex.size();
-							m_posTaggingFeatureNameIndex.put(tmpToken, posIndex);
-							postaggingSentenceVct.put(posIndex, 1.0);
-						}
-					}
-					//If the word is in sentiwordnet, accumulate the score.
-					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")){
-						tmpToken = posTokens[i] + "#r";
-					} else if (tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-						tmpToken = posTokens[i] + "#a";
-					} else if (tags[i].equals("NN")||tags[i].equals("NNS")||tags[i].equals("NNP")||tags[i].equals("NNPS")){
-						tmpToken = posTokens[i] + "#n";
-					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
-						tmpToken = posTokens[i] + "#v";
-					} 
-					if(m_sentiwordScoreMap.containsKey(tmpToken)){
-						sentiScore += m_sentiwordScoreMap.get(tmpToken);
-						count++;
-					}
-				}
-			}
-			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
-				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
-		}
 
-		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold) { 
-			doc.createSpVct(spVct);
-			doc.createPOSVct(posTaggingVct);
-			
-			if(count == 0)
-				doc.setSentiScore(0);
-			else
-				doc.setSentiScore(sentiScore/count);
-
-			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
-					
-//			if (m_releaseContent)
-//			doc.clearSource();
-=======
-	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
-		double sentiScore = 0;
-		TokenizeResult result;
-		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-		
+protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+	double sentiScore = 0;
+	TokenizeResult result;
+	String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+	HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+	
+	//Added by Lin for constructing postagging vector.
+	HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
+	
+//	ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
+//	ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
+//	ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
+	
+	int y = doc.getYLabel();
+	
+	for(String sentence : sentences) {
+		result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+		String[] rawTokens = Tokenizer(sentence);//added by Lin, needed for constructing vectors.
+		String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
+		String[] tokens = result.getTokens();		
+		HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
 		//Added by Lin for constructing postagging vector.
-		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
-		
-		ArrayList<_SparseFeature[]> stnList = new ArrayList<_SparseFeature[]>(); // sparse sentence feature vectors 
-		ArrayList<String[]> stnPosList = new ArrayList<String[]>(); // POS tagging results
-//		ArrayList<String> rawStnList = new ArrayList<String>(); // original content of each sentence
-		
-		int y = doc.getYLabel();
-		
-		for(String sentence : sentences) {
-			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
-			String[] rawTokens = Tokenizer(sentence);//added by Lin, needed for constructing vectors.
-			String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
-			String[] tokens = result.getTokens();		
-			HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, y, spVct);	
-			//Added by Lin for constructing postagging vector.
-			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
+		HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
 
-			if (sentence_vector.size()>0) {//avoid empty sentence
-				stnList.add(Utils.createSpVct(sentence_vector));
-//				rawStnList.add(sentence);
-				stnPosList.add(posTags);
-				Utils.mergeVectors(sentence_vector, spVct);
-				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
-				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
-			}
-		} // End For loop for sentence	
-	
-		//the document should be long enough
-		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
-			doc.createSpVct(spVct);
-			doc.createPOSVct(posTaggingVct);//added by Lin.
-			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
-			
-//			doc.setSentences(stnList);
-//			doc.setRawSentences(rawStnList);
-//			doc.setSentencesPOSTag(stnPosList);
-//			setSentenceFeatureVectorForSentiment(doc);
-//			//Added by Lin, only need parts of the postagging(adj and adv)
-//			doc.setSentencesAdjPOSTag(stnPosList);
-			doc.setSentiScore(sentiScore);
-			
-			m_corpus.addDoc(doc);
-			m_classMemberNo[y] ++;
-			
-			if (m_releaseContent)
-				doc.clearSource();
->>>>>>> master
-			return true;
-		} else {
-			/****Roll back here!!******/
-			rollBack(spVct, y);
-			return false;
+		if (sentence_vector.size()>0) {//avoid empty sentence
+//			stnList.add(Utils.createSpVct(sentence_vector));
+//			rawStnList.add(sentence);
+//			stnPosList.add(posTags);
+			Utils.mergeVectors(sentence_vector, spVct);
+			Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
+			sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
 		}
+	} // End For loop for sentence	
+
+	//the document should be long enough
+	//remove "&& stnList.size()>=m_stnSizeThreshold"
+	if (spVct.size()>=m_lengthThreshold) { 
+		doc.createSpVct(spVct);
+		doc.createPOSVct(posTaggingVct);//added by Lin.
+		doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
+		doc.setSentiScore(sentiScore);
+		
+		m_corpus.addDoc(doc);
+		m_classMemberNo[y] ++;
+		
+		if (m_releaseContent)
+			doc.clearSource();
+		return true;
+	} else {
+		/****Roll back here!!******/
+		rollBack(spVct, y);
+		return false;
 	}
-<<<<<<< HEAD
-	//previous LoadDoc, in case we need it.
-	public void LoadDoc(String filename) {
-		Product prod = null;
-		JSONArray jarray = null;
+}
 
-		try {
-			JSONObject json = LoadJson(filename);
-			prod = new Product(json.getJSONObject("ProductInfo"));
-			jarray = json.getJSONArray("Reviews");
-		} catch (Exception e) {
-			System.out.print('X');
-			return;
-		}
-
-		for (int i = 0; i < jarray.length(); i++) {
-			try {
-				Post post = new Post(jarray.getJSONObject(i));
-				if (checkPostFormat(post)) {
-					long timeStamp = m_dateFormatter.parse(post.getDate())
-							.getTime();
-					String content;
-					if (Utils.endWithPunct(post.getTitle()))
-						content = post.getTitle() + " " + post.getContent();
-					else
-						content = post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getTitle() + ". " + post.getContent();
-					// int label = 0;
-					// if(post.getLabel()>=4) label = 1;
-					// _Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, prod.getID(), post.getLabel() - 1, timeStamp);
-					if (this.m_stnDetector != null)
-						AnalyzeDocWithPOSTagging(review);
-					else
-						AnalyzeDoc(review);
-				}
-			} catch (ParseException e) {
-				System.out.print('T');
-			} catch (JSONException e) {
-				System.out.print('P');
-			}
-		}
-	}
-	
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		int classNumber = 2; //Define the number of classes
-=======
-//	//Analyze document with POS Tagging, set postagging sparse vector and senti score.
-//	protected boolean AnalyzeDocWithPOSTagging(_Doc doc) {
-//		
-//		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
-//		int y = doc.getYLabel();
-//		
-//		double sentiScore = 0, count= 0;
-//		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
-//		
-//		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());
-//		String[] tokens = result.getTokens();
-//		doc.setStopwordProportion(result.getStopwordProportion());
-//		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-//		doc.setAspVct(detectAspects(spVct));
-//		
-//		for(String sentence: sentences){
-//			int posIndex = 0;
-//			double posValue = 0;
-//			String[] posTokens = Tokenizer(sentence);
-//			String[] tags = m_tagger.tag(posTokens);
-//			HashMap<Integer, Double> postaggingSentenceVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
-//			
-//			for(int i = 0; i < posTokens.length; i++){
-//				String tmpToken = SnowballStemming(Normalize(posTokens[i]));
-//				if (isLegit(tmpToken)){
-//					//If the word is adj/adv, construct the sparse vector.
-//					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")||tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-//						if(m_posTaggingFeatureNameIndex.containsKey(tmpToken)){
-//							posIndex = m_posTaggingFeatureNameIndex.get(tmpToken);
-//							if(postaggingSentenceVct.containsKey(posIndex)){
-//								posValue = postaggingSentenceVct.get(posIndex) + 1;
-//								postaggingSentenceVct.put(posIndex, posValue);
-//							} else
-//								postaggingSentenceVct.put(posIndex, 1.0);
-//						} else{
-//							posIndex = m_posTaggingFeatureNameIndex.size();
-//							m_posTaggingFeatureNameIndex.put(tmpToken, posIndex);
-//							postaggingSentenceVct.put(posIndex, 1.0);
-//						}
-//					}
-//					//If the word is in sentiwordnet, accumulate the score.
-//					if(tags[i].equals("RB")||tags[i].equals("RBR")||tags[i].equals("RBS")){
-//						tmpToken = posTokens[i] + "#r";
-//					} else if (tags[i].equals("JJ")||tags[i].equals("JJR")||tags[i].equals("JJS")){
-//						tmpToken = posTokens[i] + "#a";
-//					} else if (tags[i].equals("NN")||tags[i].equals("NNS")||tags[i].equals("NNP")||tags[i].equals("NNPS")){
-//						tmpToken = posTokens[i] + "#n";
-//					} else if (tags[i].equals("VB")||tags[i].equals("VBD")||tags[i].equals("VBG")||tags[i].equals("VBN")||tags[i].equals("VBP")||tags[i].equals("VBZ")){
-//						tmpToken = posTokens[i] + "#v";
-//					} 
-//					
-//					if(m_sentiWordNet.contains(tmpToken)){
-//						sentiScore += m_sentiWordNet.score(tmpToken);
-//						count++;
-//					}
-//				}
-//			}
-//			if (postaggingSentenceVct.size() > 0) //avoid empty sentence
-//				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
-//		}
-//
-//		//the document should be long enough
-//		if (spVct.size()>=m_lengthThreshold) { 
-//			doc.createSpVct(spVct);
-//			doc.createPOSVct(posTaggingVct);
-//			
-//			if(count == 0)
-//				doc.setSentiScore(0);
-//			else
-//				doc.setSentiScore(sentiScore/count);
-//
-//			m_corpus.addDoc(doc);
-//			m_classMemberNo[y]++;
-//					
-////			if (m_releaseContent)
-////			doc.clearSource();
-//			return true;
-//		} else {
-//			/****Roll back here!!******/
-//			rollBack(spVct, y);
-//			return false;
-//		}
-//	}
-	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 5; //Define the number of classes
->>>>>>> master
 		int Ngram = 2; //The default value is bigram. 
 		int lengthThreshold = 10; //Document length threshold
 		
@@ -595,46 +336,33 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		int chiSize = 50; // top ChiSquare words for aspect keyword selection
 		String stopwords = "./data/Model/stopwords.dat";
 		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 1; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dedup/RawData";
+		String folder = "./data/amazon/small";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-<<<<<<< HEAD
-		String aspectModel = "./data/Model/topic_sentiment_input.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/topic_sentiment_output.txt"; // list of keywords in each aspect
-=======
 		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
 		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
 		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
->>>>>>> master
 		
 		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = "data/Features/fv_2gram_topic_sentiment.txt";
-//		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		
-		/****Loading json files to do feature selection first.*****/
+		/****Loading json files*****/
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-<<<<<<< HEAD
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-=======
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 //		/****Feature selection*****/
->>>>>>> master
 //		System.out.println("Performing feature selection, wait...");
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 //		analyzer.SaveCVStat(fvStatFile);
 		
-		/****After feature selection, do aspect annotation*****/
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);		
+		/****Aspect annotation*****/
+		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
 	}
 }

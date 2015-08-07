@@ -153,16 +153,11 @@ public class GaussianFields extends BaseClassifier {
 	protected double getAspectScore(_Doc di, _Doc dj){
 		return Utils.cosine(di.getAspVct(), dj.getAspVct());
 	}
-<<<<<<< HEAD
-
-=======
 	
->>>>>>> master
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
 		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
-	
 	
 	protected void WaitUntilFinish(ActionType atype) {
 		int cores = Runtime.getRuntime().availableProcessors();

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -26,7 +27,6 @@ public abstract class Analyzer {
 	
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
-//	protected HashMap<Integer, String> m_featureIndexName; //key: index of the feature; value: content of the feature 
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
 	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
@@ -42,25 +42,24 @@ public abstract class Analyzer {
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
-	protected PrintWriter m_sentenceWriter;
-	
-	public ArrayList<_Doc> m_trainSet;
-	public ArrayList<_Doc> m_testSet;
 
 	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
-
 	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
+		
 		m_classNo = classNo;
 		m_classMemberNo = new int[classNo];
+		
 		m_featureNames = new ArrayList<String>();
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
-//		m_featureIndexName = new HashMap<Integer, String>();
 		m_featureStat = new HashMap<String, _stat>();
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		
 		m_lengthThreshold = minDocLength;
-		m_preDocs = new LinkedList<_Doc>();
+		
+		m_preDocs = new LinkedList<_Doc>(); // key: POS tag; value: index in the list		
 	}	
 	
 	public void reset() {
@@ -93,44 +92,11 @@ public abstract class Analyzer {
 			
 			System.out.format("%d feature words loaded from %s...\n", m_featureNames.size(), filename);
 			m_isCVLoaded = true;
-//			setFeatureIndexName();
 			
 			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			return false;
-		}
-	}
-	
-	public void LoadTopicSentiment(String filename, int k) {
-		if (filename==null || filename.isEmpty())
-			return;
-		m_corpus.setReviewIDIndexes();//Set the look-up table for setting sentiment usage.
-		String[] probStrs;
-		int count = 0 ;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				double[] probs = new double[k];
-				count++;
-				probStrs = line.split(",");
-				if(probStrs.length != (k+2)){
-					System.out.println("The topic sentiment has the wrong dimension!");
-				} else{
-					for(int i=2; i<k+2; i++)
-						probs[i-2] = Double.valueOf(probStrs[i]);
-				}
-				m_corpus.setSentiment(probStrs[0], probs, k);
-			}
-			reader.close();
-			if(count == m_corpus.getSize())
-				System.out.format("%d sentiment vectors are loaded from %s and set to all reviews.\n", m_corpus.getSize(), filename);
-			else
-				System.err.println("The number of sentiment array does not match with review number!");
-			
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
 	
@@ -148,13 +114,7 @@ public abstract class Analyzer {
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
-//		m_sentenceWriter.close();
 	}
-	
-	public void LoadTrainFile(String fileName, String suffix) throws IOException{
-		
-	}
-
 	
 	public void setMinimumNumberOfSentences(int number){
 		m_stnSizeThreshold = number;
@@ -191,26 +151,9 @@ public abstract class Analyzer {
 		m_corpus.setContent(!m_releaseContent);
 		return m_corpus;
 	}
-
+	
 	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
-<<<<<<< HEAD
-			int index = 0;/**modified!***/
-			Object[] keys = spVct.keySet().toArray();
-			Arrays.sort(keys);
-			for(int i = 0; i < keys.length; i++){
-				index = (Integer) keys[keys.length - i - 1];
-				String token = m_featureNames.get(index);
-				_stat stat = m_featureStat.get(token);
-				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
-					m_featureNameIndex.remove(token);/**modified!***/
-					m_featureStat.remove(token);
-					m_featureNames.remove(index);
-				}
-				else{//If the feature is not the first time to show in feature set.
-					stat.minusOneDF(y);
-					stat.minusNTTF(y, spVct.get(index));
-=======
 			for(int index: spVct.keySet()){
 				String token="";
 				if(m_featureNames.contains(index))
@@ -227,7 +170,6 @@ public abstract class Analyzer {
 						stat.minusOneDF(y);
 						stat.minusNTTF(y, spVct.get(index));
 					}
->>>>>>> master
 				}
 			}
 		} else{//If CV is loaded, we can minus the DF and TTF directly.
@@ -300,8 +242,6 @@ public abstract class Analyzer {
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
 					double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
-					if(Double.isNaN(BM25))
-						System.out.println("bug");
 					sf.setValue(BM25);
 					avgIDF += IDF;
 				}
@@ -341,11 +281,7 @@ public abstract class Analyzer {
 		}
 		
 		//rank the documents by product and time in all the cases
-<<<<<<< HEAD
-//		Collections.sort(m_corpus.getCollection());
-=======
 		//Collections.sort(m_corpus.getCollection());
->>>>>>> master
 		if (norm == 1){
 			for(_Doc d:docs)			
 				Utils.L1Normalization(d.getSparse());
@@ -355,6 +291,7 @@ public abstract class Analyzer {
 		} else {
 			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
 		}
+		
 		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 	
@@ -363,7 +300,6 @@ public abstract class Analyzer {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb, threshold);
 
 		System.out.println("*******************************************************************");
-		
 		if (featureSelection.equals("DF"))
 			selector.DF(m_featureStat);
 		else if (featureSelection.equals("IG"))
@@ -378,8 +314,8 @@ public abstract class Analyzer {
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
 		//clear memory for next step feature construction
-		reset();
-		LoadCV(location);//load the selected features
+//		reset();
+//		LoadCV(location);//load the selected features
 	}
 	
 	//Save all the features and feature stat into a file.
@@ -421,6 +357,7 @@ public abstract class Analyzer {
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -484,69 +421,13 @@ public abstract class Analyzer {
 			_stat stat =  m_featureStat.get(featureName);
 			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
 			
-<<<<<<< HEAD
-			if (back_ground_probabilty[i]<0)
-				System.out.print("ssss ");
-=======
 			if (back_ground_probabilty[i] < 0)
 				System.err.println();
->>>>>>> master
 		}
 		
 		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing
 		for(int i = 0; i<m_featureNameIndex.size();i++)
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
-	}
-	
-	public HashMap<String, Integer> getFeaturesLookup(){
-		return m_featureNameIndex;
-	}
-	
-	public ArrayList<String> getFeatures(){
-		return m_featureNames;
-	}
-	//Print the sparse for matlab to generate A.
-	public void printTopicMatrix(String xFile, String yFile) throws FileNotFoundException{
-		PrintWriter writerX = new PrintWriter(new File(xFile));
-		PrintWriter writerY = new PrintWriter(new File(yFile));
-		for(_Doc d: m_corpus.getCollection()){
-			for(int i=0; i < d.m_topics.length-1; i++){
-				writerX.write(d.m_topics[i]+",");
-			}
-			writerX.write(d.m_topics[d.m_topics.length-1] + "\n");
-			writerY.write(d.getYLabel()+"\n");
-		}
-		writerX.close();
-		writerY.close();
-	}
-	
-	//Load the matrix from the matlab result.
-	public double[][] loadMatrixA(String filename, int numTopics){
-		double[][] A = new double[numTopics][numTopics];
-		int count = 0;
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				double[] tmpD = new double[numTopics];
-				String[] tmpS = line.split("\\s+");
-				if(numTopics == tmpS.length){
-					for(int i = 0; i < numTopics; i++){
-						tmpD[i] = Double.parseDouble(tmpS[i]);
-					}
-				A[count] = tmpD;
-				count++;
-				} else
-					System.err.println("Matrix A: size(A[i]) does not match with feature size!");
-			}
-			if(count != numTopics)
-				System.err.println("Matrix A: size(A) does not match with feature size!");
-			reader.close();
-			System.out.format("Matrix A is loaded from %s successfully!!", filename);
-		} catch (IOException e) {
-			System.err.format("[Error]Failed to open file %s!!", filename);
-		}
-		return A;
 	}
 }

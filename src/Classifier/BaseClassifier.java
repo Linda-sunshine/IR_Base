@@ -1,11 +1,9 @@
 package Classifier;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -13,17 +11,19 @@ import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
 
+
 public abstract class BaseClassifier {
 	protected int m_classNo; //The total number of classes.
 	protected int m_featureSize;
 	protected _Corpus m_corpus;
 	protected ArrayList<_Doc> m_trainSet; //All the documents used as the training set.
 	protected ArrayList<_Doc> m_testSet; //All the documents used as the testing set.
+	
 	protected double[] m_cProbs;
 	
 	//for cross-validation
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
-	protected ArrayList<double[][]> m_precisionsRecalls, m_precisionsRecallsKNN; //Use this array to represent the precisions and recalls.
+	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
@@ -37,7 +37,6 @@ public abstract class BaseClassifier {
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
-//	protected abstract void verifyClique();
 	
 	public double test() {
 		double acc = 0;
@@ -55,7 +54,6 @@ public abstract class BaseClassifier {
 				acc ++;
 			}
 		}
-		
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		return acc /m_testSet.size();
 	}
@@ -82,7 +80,6 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
-		m_precisionsRecallsKNN = new ArrayList<double[][]>();
 		m_debugOutput = null;
 	}
 	
@@ -101,7 +98,7 @@ public abstract class BaseClassifier {
 		m_debugOutput = null;
 	}
 	
-	public void setDebugOutput(String filename) throws IOException, FileNotFoundException {
+	public void setDebugOutput(String filename) {
 		if (filename==null || filename.isEmpty())
 			return;
 		
@@ -110,34 +107,31 @@ public abstract class BaseClassifier {
 			if (f.exists()) 
 				f.delete();
 			m_debugOutput = filename;
-			//Added by Lin
-			m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 		} else {
 			System.err.println("Please specify a correct path for debug output!");
 		}	
 	}
-	public void setTrainTestSet(ArrayList<_Doc> train, ArrayList<_Doc> test){
-		m_trainSet = train;
-		m_testSet = test;
-	}
+	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
 		try {
-			if (m_debugOutput!=null)
+			if (m_debugOutput!=null){
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
-			
-			m_debugWriter.write(this.toString() + "\n");
+				m_debugWriter.write(this.toString() + "\n");
+			}
 			c.shuffle(k);
-//			c.maskInOrder(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.
 			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
-					if(masks[j]==i)
+					//more for testing
+					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
 						m_trainSet.add(docs.get(j));
 					else
 						m_testSet.add(docs.get(j));
+					
+//					//more for training
 //					if(masks[j]==i) 
 //						m_testSet.add(docs.get(j));
 //					else
@@ -152,8 +146,8 @@ public abstract class BaseClassifier {
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-			calculateMeanVariance(m_precisionsRecalls);
-
+			calculateMeanVariance(m_precisionsRecalls);	
+		
 			if (m_debugOutput!=null)
 				m_debugWriter.close();
 		} catch (IOException e) {
@@ -178,7 +172,6 @@ public abstract class BaseClassifier {
 				tpTable[i][j] = 0; // clear the result in each fold
 			}
 		}
-		
 		return PreRecOfOneFold;
 	}
 	
@@ -213,6 +206,7 @@ public abstract class BaseClassifier {
 		System.out.print("\nF1");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+		System.out.println();
 	}
 	
 	//Calculate the mean and variance of precision and recall.

@@ -46,17 +46,9 @@ public class jsonAnalyzer extends DocAnalyzer{
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
 //		m_dateFormatter = new SimpleDateFormat("yyyy-MM-dddd");// standard date format for yelp data
 	}
-<<<<<<< HEAD
-	//Constructor with ngram and fValue.
-	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel, String tagModel) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold, tagModel);
-		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
-	}
-	//Load yelp json file.
-=======
+
 	//Load a document and analyze it.
 	@Override
->>>>>>> master
 	public void LoadDoc(String filename) {
 		Product prod = null;
 		JSONArray jarray = null;
@@ -75,10 +67,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 				Post post = new Post(jarray.getJSONObject(i));
 				if (checkPostFormat(post)){
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-<<<<<<< HEAD
-					_Doc review = new _Doc(m_corpus.getSize(), post.getContent(), post.getLabel()-1, timeStamp);
-					if(this.m_stnDetector!=null){
-=======
 					String content;
 					if (Utils.endWithPunct(post.getTitle()))
 						content = post.getTitle() + " " + post.getContent();
@@ -88,9 +76,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
 					if(this.m_stnDetector!=null)
->>>>>>> master
 						AnalyzeDocWithStnSplit(review);
-					}
 					else
 						AnalyzeDoc(review);
 				}
@@ -102,54 +88,6 @@ public class jsonAnalyzer extends DocAnalyzer{
 		}
 	}
 	
-//	public void clearTrainSet(){
-//		m_trainSet.clear();
-//	}
-//	public void LoadDoc(String filename, boolean train) {
-//		if(train)
-//			m_trainSet = new ArrayList<_Doc>();
-//		else
-//			m_testSet = new ArrayList<_Doc>();
-//		
-//		Product prod = null;
-//		JSONArray jarray = null;
-//		
-//		try {
-//			JSONObject json = LoadJson(filename);
-//			//prod = new Product(json.getJSONObject("ProductInfo"));
-//			jarray = json.getJSONArray("Reviews");
-//		} catch (Exception e) {
-//			System.out.print('X');
-//			return;
-//		}	
-//		for(int i=0; i<jarray.length(); i++) {
-//			try {
-//				Post post = new Post(jarray.getJSONObject(i));
-//				if (checkPostFormat(post)){
-//					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-//					String content;
-//					if (Utils.endWithPunct(post.getTitle()))
-//						content = post.getTitle() + " " + post.getContent();
-//					else
-//						content = post.getTitle() + ". " + post.getContent();
-////					int label = 0;
-////					if(post.getLabel()>=4) label = 1;
-////					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), prod.getID(), label, timeStamp);
-//					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
-//					if(this.m_stnDetector!=null){
-//						AnalyzeDocWithStnSplit(review);
-//					}
-//					else
-//						AnalyzeTrainTestDoc(review, train);
-//				}
-//			} catch (ParseException e) {
-//				System.out.print('T');
-//			} catch (JSONException e) {
-//				System.out.print('P');
-//			}
-//		}
-//	}
-
 	//sample code for loading the json file
 	JSONObject LoadJson(String filename) {
 		try {

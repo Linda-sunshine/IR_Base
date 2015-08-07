@@ -2,8 +2,6 @@ package mains;
 
 import java.io.IOException;
 import java.text.ParseException;
-
-import structures.SentiWordNet;
 import structures._Corpus;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;

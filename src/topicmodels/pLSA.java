@@ -77,15 +77,11 @@ public class pLSA extends twoTopic {
 			ArrayList<double[]> priorWords = new ArrayList<double[]>();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			while( (tmpTxt=reader.readLine()) != null ){
-<<<<<<< HEAD
-				container = tmpTxt.split("\\s+");
-=======
 				tmpTxt = tmpTxt.trim();
 				if (tmpTxt.isEmpty())
 					continue;
 				
 				container = tmpTxt.split(" ");
->>>>>>> master
 				wCount = 0;
 				prior = new double[vocabulary_size];
 				for(int i=1; i<container.length; i++) {
@@ -266,9 +262,6 @@ public class pLSA extends twoTopic {
 				prob += d.m_topics[k]*topic_term_probabilty[k][j];
 			prob = prob*(1-m_lambda) + this.background_probability[j]*m_lambda;//(1-\lambda)p(w|d) * \lambda p(w|theta_b)
 			logLikelihood += fv.getValue() * Math.log(prob);
-			
-			if (Double.isNaN(logLikelihood))
-				System.out.print("eeee");
 		}
 		return logLikelihood;
 	}
@@ -406,11 +399,6 @@ public class pLSA extends twoTopic {
 		}
 	}
 	
-<<<<<<< HEAD
-	public double[][] returnTopicTermProbability(){
-		return topic_term_probabilty;
-	}
-=======
 	
 //	
 //	public void docSummary(int numberOfSentences){
@@ -459,5 +447,4 @@ public class pLSA extends twoTopic {
 //	
 //	}
 	
->>>>>>> master
 }

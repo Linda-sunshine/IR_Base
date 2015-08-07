@@ -27,7 +27,7 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
 		int number_of_topics = 40;
@@ -56,17 +56,10 @@ public class TopicModelMain {
 		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
-<<<<<<< HEAD
-		String folder = "./data/amazon/small/dedup/RawData";
-=======
 		//String folder = "./data/amazon/tablet/topicmodel";
 		String folder = "./data/amazon/test";
 		//String folder = "./data/amazon/newegg/newegg-reviews.json";
->>>>>>> master
 		String suffix = ".json";
-//		
-//		String folder = "./data/amazon/test";
-//		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		String posModel = null;
@@ -77,21 +70,6 @@ public class TopicModelMain {
 			sentence = true;
 		}
 		
-<<<<<<< HEAD
-		
-		String category = "tablets"; //"electronics"
-		String dataSize = "86jsons"; //"50K", "100K"
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-//		String aspectlist = "./data/Model/sentiment_output.txt";
-//		String aspectlist = "./data/Model/topic_sentiment_output.txt";
-		String aspectlist = "./data/Model/aspect_output_simple.txt";
-		
-//		
-//		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-//		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-//		String aspectlist = "./data/Model/aspect_tablet.txt";
-=======
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 	
@@ -102,7 +80,6 @@ public class TopicModelMain {
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
->>>>>>> master
 
 		String topWordFilePath = "./result/"+category+"/"+trainSize+"/";
 		if(loadNewEggInTrain)
@@ -132,16 +109,12 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-<<<<<<< HEAD
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, null);
-=======
 		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		}
->>>>>>> master
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -162,15 +135,8 @@ public class TopicModelMain {
 			pLSA model = null;
 			
 			if (topicmodel.equals("pLSA")) {
-<<<<<<< HEAD
-				model = new pLSA(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha);
-				logSpace = false;
-=======
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 						lambda, number_of_topics, alpha);
->>>>>>> master
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
@@ -184,12 +150,10 @@ public class TopicModelMain {
 				model = new HTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha);
 			} else if (topicmodel.equals("LRHTMM")) {
-				c.setStnFeatures();				
 				model = new LRHTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-				c.setStnFeatures();
 				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
@@ -238,7 +202,5 @@ public class TopicModelMain {
 			}
 			
 		}
-		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		System.out.println("Finish.");
 	}
 }

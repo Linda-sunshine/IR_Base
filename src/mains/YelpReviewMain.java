@@ -7,6 +7,7 @@ import structures._Corpus;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
@@ -98,17 +99,14 @@ public class YelpReviewMain {
 
 			pLSA tModel = null;
 			if (topicmodel.equals("pLSA")) {			
-				tModel = new pLSA(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha);
+				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+						lambda, number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {		
 				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, 0.4, 50);
-			} else if (topicmodel.equals("LDA_Variational")) {		
+					lambda, number_of_topics, alpha, 0.4, 50);
+			}  else if (topicmodel.equals("LDA_Variational")) {		
 				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-						lambda, analyzer.getBackgroundProb(), 
-						number_of_topics, alpha, 10, -1);
+						lambda, number_of_topics, alpha, 10, -1);
 			} else {
 				System.out.println("The selected topic model has not developed yet!");
 				return;
@@ -117,7 +115,7 @@ public class YelpReviewMain {
 			tModel.setDisplay(true);
 //			tModel.LoadPrior(aspectlist, eta);
 			tModel.EMonCorpus();
-			tModel.printTopWords(10, true);
+//			tModel.printTopWords(10, true);
 		}
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
@@ -136,6 +134,7 @@ public class YelpReviewMain {
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
 			boolean metricLearning = true;
+			boolean multithread_LR = true;//training LambdaRank with multi-threads
 			
 			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {
@@ -148,8 +147,8 @@ public class YelpReviewMain {
 				((LinearSVMMetricLearning)mySemi).setMetricLearningMethod(metricLearning);
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
-						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, false, 
-						topK, noiseRatio, negRatio);
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
+						topK, noiseRatio, multithread_LR);
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);

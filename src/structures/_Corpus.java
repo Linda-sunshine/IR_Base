@@ -64,7 +64,6 @@ public class _Corpus {
 	
 	public int getClassSize() {
 		HashSet<Integer> labelSet = new HashSet<Integer>();
-		
 		for(_Doc d:m_collection)
 			labelSet.add(d.getYLabel());
 		return labelSet.size();
@@ -108,12 +107,7 @@ public class _Corpus {
 			this.m_mask[i] = rand.nextInt(k);
 		}
 	}
-	//Guarantee that we can get the same 10-fold every run.
-	public void maskInOrder(int k) {
-		for (int i = 0; i < m_mask.length; i++) {
-			this.m_mask[i] = i % k;
-		}
-	}
+	
 	//Add a new doc to the corpus.
 	public void addDoc(_Doc doc){
 		m_collection.add(doc);
@@ -125,12 +119,6 @@ public class _Corpus {
 	//Get the mask array of the corpus.
 	public int[] getMasks(){
 		return this.m_mask;
-	}
-	
-	public void setStnFeatures() {
-		for(_Doc d:m_collection) {
-			d.setSentenceFeatureVector();
-		}
 	}
 		
 	public int getItemSize() {
@@ -182,29 +170,6 @@ public class _Corpus {
 			writer.close();
 			
 			System.out.format("%d feature vectors saved to %s\n", m_collection.size(), filename);
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-	}
-	
-	public void saveTopicFile(String filename){
-		if (filename==null || filename.isEmpty()) {
-			System.out.println("Please specify the topic file name to save the topic vectors!");
-			return;
-		}
-		
-		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
-			for(_Doc doc:m_collection) {
-				writer.write(String.format("%d", doc.getYLabel()));
-				for(double v: doc.getTopics()){
-					writer.write(String.format("%f", v));//index starts from 1
-				}
-				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));//product ID and review ID
-			}
-			writer.close();
-			
-			System.out.format("%d topic vectors saved to %s\n", m_collection.size(), filename);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
@@ -272,17 +237,5 @@ public class _Corpus {
 			return String.format("%d\t%d", i, j);
 		else
 			return String.format("%d\t%d", j, i);
-	}
-	
-	public void setReviewIDIndexes(){
-		m_reviewIDIndexes = new HashMap<String, Integer>();
-		for(int i=0; i < m_collection.size(); i++){
-			m_reviewIDIndexes.put(m_collection.get(i).getName(), i);
-		}
-	}
-	
-	public void setSentiment(String reviewID, double[] probs, int k){
-		int index = m_reviewIDIndexes.get(reviewID);
-		m_collection.get(index).setSentiment(probs, k);
 	}
 }

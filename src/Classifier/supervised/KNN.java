@@ -23,7 +23,6 @@ public class KNN extends BaseClassifier{
 		super(c);
 		m_k = 5;
 		m_l = 10;
-		m_randomVcts = new double[m_l][m_featureSize];
 		m_buckets = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 	
