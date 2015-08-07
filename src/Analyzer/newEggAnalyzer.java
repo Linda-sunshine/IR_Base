@@ -25,8 +25,6 @@ import utils.Utils;
 public class newEggAnalyzer extends jsonAnalyzer {
 	//category of NewEgg reviews
 	String m_category; 
-	ArrayList<String> m_duplicateChecker;
-	int m_duplicateCount = 0;
 	int m_reviewCount = 0;
 	int m_prosSentenceCounter = 0;
 	int m_consSentenceCounter = 0;
@@ -39,8 +37,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		//11/7/2013 7:01:22 PM
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
-		m_duplicateChecker = new ArrayList<String>();
-		m_duplicateCount = 0;
 	}
 
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
@@ -49,8 +45,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
-		m_duplicateChecker = new ArrayList<String>();
-		m_duplicateCount = 0;
 	}
 	
 	//Load all the files in the directory.
@@ -66,8 +60,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
-		System.out.format("Number of Total Reviews %d\n", m_reviewCount);
-		System.out.println("Number of Duplicate Reviews "+m_duplicateCount);
+		System.out.format("Number of Total Reviews from newEgg is %d\n", m_reviewCount);
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 		if(this.m_stnDetector!=null)
 			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosSentenceCounter, m_consSentenceCounter);
@@ -103,6 +96,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				}
 			} catch (JSONException e) {
 				System.out.print('P');
+				e.printStackTrace();
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
@@ -117,14 +111,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
-		
-		String wholeContent = post.getProContent() + post.getConContent() + post.getComments();
-		if(m_duplicateChecker.contains(wholeContent)) {
-			m_duplicateCount++;
-			return false;
-		}
-		else
-			m_duplicateChecker.add(wholeContent);
 		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			result = TokenizerNormalizeStemmer(content);
@@ -192,15 +178,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		int prosSentenceCounter = 0;
 		int consSentenceCounter = 0;
 		
-		String wholeContent = post.getProContent() + post.getConContent() + post.getComments();
-		if(m_duplicateChecker.contains(wholeContent))
-		{
-			m_duplicateCount++;
-			return false;
-		}
-		else
-			m_duplicateChecker.add(wholeContent);
-		
 		if ((content=post.getProContent()) != null) {// tokenize pros
 			for(String sentence : m_stnDetector.sentDetect(content)) {
 				result = TokenizerNormalizeStemmer(sentence);
@@ -263,7 +240,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-			doc.setSourceType(2);
+			doc.setSourceType(2); // source = 2 means the Document is from newEgg
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
 			doc.setSentences(stnList);
