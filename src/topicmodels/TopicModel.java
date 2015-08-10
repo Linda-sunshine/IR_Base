@@ -427,11 +427,35 @@ public abstract class TopicModel {
 			jstTestCorpusForSentenceLabelWriter.flush();
 			jstTestCorpusForSentenceLabelWriter.close();
 		
-			// Test Document generation for JST but sentence based used for precision recall
+			// Train Document generation for ASUM 
 			index = -1;
 			word = "";
-			for(_Doc d:m_corpus.getCollection()){
+			for(_Doc d:m_trainSet){
 				asumWriter.write(d.getSenetenceSize()+"\n");
+				for(_Stn sentence : d.getSentences()){
+					int sentenceLabel = sentence.getSentenceSenitmentLabel();
+					if(sentenceLabel==0) // pros
+						sentenceLabel = -1;
+					else if(sentenceLabel==1) // cons
+						sentenceLabel = -2;
+					else if(sentenceLabel==-1) // from Amazon
+						sentenceLabel = -3;
+					asumWriter.write(sentenceLabel+" ");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						asumWriter.write(index+" ");
+					}
+					asumWriter.write("\n");
+				}
+			}
+			
+			
+			// Test Document generation for ASUM
+			index = -1;
+			word = "";
+			for(_Doc d:m_testSet){
+				int senlen = (-1)*d.getSenetenceSize();
+				asumWriter.write(senlen+"\n");
 				for(_Stn sentence : d.getSentences()){
 					int sentenceLabel = sentence.getSentenceSenitmentLabel();
 					if(sentenceLabel==0) // pros
@@ -577,6 +601,7 @@ public abstract class TopicModel {
 			}
 			
 			if(m_trainSetForASUMJST){
+				System.out.println("Generating file for JST and ASUM" + filePath);
 				generateFileForJSTASUM();
 			}
 			

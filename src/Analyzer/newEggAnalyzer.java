@@ -106,6 +106,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				}
 			} catch (JSONException e) {
 				System.out.print('P');
+				e.printStackTrace();
 			} catch (ParseException e) {
 				e.printStackTrace();
 			}
