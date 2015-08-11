@@ -32,7 +32,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 12;// features to be defined in genRankingFV()
+	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
