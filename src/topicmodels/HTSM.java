@@ -51,7 +51,7 @@ public class HTSM extends HTMM {
 				if(i==0){ // first sentence handle specially for newEgg
 					//get the sentiment label of the first sentence
 					int sentimentLabel = stn.getSentenceSenitmentLabel();
-					if(sentimentLabel==0){ // positive sentiment second half
+					if(sentimentLabel==0){ // positive sentiment first half
 						for(int k=0; k<this.number_of_topics/2; k++) {
 							for(_SparseFeature w:stn.getFv()) {
 								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
