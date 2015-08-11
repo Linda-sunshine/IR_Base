@@ -42,8 +42,7 @@ public abstract class TopicModel {
 	private boolean m_trainSetForASUMJST = false;
 	protected String m_category;
 	private String filePath;
-	public PrintWriter infoWriter;
-	
+	public PrintWriter infoWriter;	
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -139,7 +138,7 @@ public abstract class TopicModel {
 	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
 	
-	// calculate the docsummary
+	// calculate the doc summary
 	public abstract void docSummary(String[] productList);
 	
 	// compute corpus level log-likelihood
@@ -504,9 +503,7 @@ public abstract class TopicModel {
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-		}
-		
-		else{
+		} else {
 			k = 1;
 			perf = new double[k];
 		    int totalNewqEggDoc = 0;

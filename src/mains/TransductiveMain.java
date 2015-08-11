@@ -3,7 +3,6 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures.SentiWordNet;
 import structures._Corpus;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
@@ -32,37 +31,33 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dedup/RawData";
+		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-//		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
-		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for postagging.
 		String stopword = "./data/Model/stopwords.dat";
+		String tokenModel = "./data/Model/en-token.bin"; //Token model.
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for pos tagging.		
 		String tagModel = "./data/Model/en-pos-maxent.bin";
-		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+		String sentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
 		//Added by Mustafizur----------------
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
 		String pathToNegationWords = "./data/Model/negation_words.txt";
-		String infoFilePath = "./data/result/"+"Topics_"+number_of_topics+"Information.txt";
+		String infoFilePath = "./data/result/Topics_" + number_of_topics + "_Information.txt";
 		
 //		String category = "tablets"; //"electronics"
 //		String dataSize = "86jsons"; //"50K", "100K"
 //		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
 //		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-////		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-////		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/aspect_output_simple.txt";
-
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SUP";
+		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
@@ -94,8 +89,7 @@ public class TransductiveMain {
 		//Added by Mustafizur----------------
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
-		analyzer.initSentiWordNet(pathToSentiWordNet);
-		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		analyzer.loadPriorPosNegWords(sentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
 		// Added by Mustafizur----------------
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
