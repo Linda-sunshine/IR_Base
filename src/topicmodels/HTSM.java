@@ -1,8 +1,12 @@
 package topicmodels;
 
+import java.util.Arrays;
+
 import markovmodel.FastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
+import structures._Stn;
 
 public class HTSM extends HTMM {
 	
@@ -25,6 +29,56 @@ public class HTSM extends HTMM {
 	protected void createSpace() {
 		super.createSpace();
 		m_hmm = new FastRestrictedHMM_sentiment(epsilon, sigma, m_corpus.getLargestSentenceSize(), this.number_of_topics); 
+	}
+	
+	@Override
+	// Construct the emission probabilities for sentences under different topics in a particular document.
+	void ComputeEmissionProbsForDoc(_Doc d) {
+		if(d.getSourceType()==1){ //from Amazon
+			for(int i=0; i<d.getSenetenceSize(); i++) {
+				_Stn stn = d.getSentence(i);
+				Arrays.fill(emission[i], 0);
+				for(int k=0; k<this.number_of_topics; k++) {
+					for(_SparseFeature w:stn.getFv()) {
+						emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+					}
+				}
+			}
+		}else{// from newEgg sourceType will be = 2
+			for(int i=0; i<d.getSenetenceSize(); i++) {
+				_Stn stn = d.getSentence(i);
+				Arrays.fill(emission[i], 0);
+				if(i==0){ // first sentence handle specially for newEgg
+					//get the sentiment label of the first sentence
+					int sentimentLabel = stn.getSentenceSenitmentLabel();
+					if(sentimentLabel==0){ // positive sentiment first half
+						for(int k=0; k<this.number_of_topics/2; k++) {
+							for(_SparseFeature w:stn.getFv()) {
+								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+							}
+						}
+					}else if(sentimentLabel==1){ // negative sentiment second half
+						for(int k=this.number_of_topics/2; k<this.number_of_topics; k++) {
+							for(_SparseFeature w:stn.getFv()) {
+								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+							}
+						}
+					}else if (sentimentLabel==2){ // for comment section of newEgg any sentiment can happen
+						for(int k=0; k<this.number_of_topics; k++) {
+							for(_SparseFeature w:stn.getFv()) {
+								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+							}
+						}
+					}
+				}else{
+					for(int k=0; k<this.number_of_topics; k++) {
+						for(_SparseFeature w:stn.getFv()) {
+							emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	@Override

@@ -173,17 +173,11 @@ public class TopicModelMain {
 			}else{
 				System.out.println("No prior is added!!");
 			}
-			
-
-			if(generateTrainTestDataForJSTASUM && setRandomFold==false){
-				model.setFilePathForJSTASUM(trainSize,category, FilePath);
-			}
-			
+						
 			if (crossV<=1) {
 				model.EMonCorpus();
 				model.printTopWords(topK);
 			} else {
-				model.setTestDocMod(testDocMod);
 				model.setRandomFold(setRandomFold);
 				model.setTrainSetSize(trainSize);
 				model.crossValidation(crossV);

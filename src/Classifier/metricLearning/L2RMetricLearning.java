@@ -32,8 +32,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 12;// features to be defined in genRankingFV()
-	
+	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -251,35 +250,31 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//feature 3: belong to the same product
 		fv[2] = q.sameProduct(d)?1:0;//0.02620
+
+		//feature 4: sparse feature length difference
+		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
 		
-		//feature 4: classifier's prediction difference
-		//fv[3] = Math.abs(m_classifier.score(q, 1) - m_classifier.score(d, 1));//how to deal with multi-class instances?
-		fv[3] = 0;
-		
-		//feature 5: sparse feature length difference
-		fv[4] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
-		
-		//feature 6: jaccard coefficient
-		fv[5] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
+		//feature 5: jaccard coefficient
+		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
  		
 		//Part II: pointwise features for document
-		//feature 8: stop words proportion
-		fv[7] = d.getStopwordProportion();//-0.00005
+		//feature 6: stop words proportion
+		fv[5] = d.getStopwordProportion();//-0.00005
 		
-		//feature 9: average IDF
-		fv[8] = d.getAvgIDF();//0.03732
+		//feature 7: average IDF
+		fv[6] = d.getAvgIDF();//0.03732
 		
-		//feature 10: the sentiwordnet score for a review.
-		fv[9] = d.getSentiScore();
+		//feature 8: the sentiwordnet score for a review.
+		fv[7] = d.getSentiScore();
 
-		// feature 11: the postagging score for a pair of reviews.
-		fv[10] = getPOSScore(q, d);
+		// feature 9: the postagging score for a pair of reviews.
+		fv[8] = getPOSScore(q, d);
 
-		// feature 12: the aspect score for a pair of reviews.
-		fv[11] = getAspectScore(q, d);
+		// feature 10: the aspect score for a pair of reviews.
+		fv[9] = getAspectScore(q, d);
 
-		// feature 13: the title of review
-		// fv[12] = d.getTitleScore();
+		// feature 11: the title of review
+		// fv[10] = d.getTitleScore();
 		
 		return fv;
 	}

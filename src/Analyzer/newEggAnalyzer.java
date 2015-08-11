@@ -155,7 +155,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-			doc.setSourceType(2);
+			doc.setSourceType(2); // 2 means from newEgg
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
 			m_corpus.addDoc(doc);
