@@ -13,36 +13,44 @@ public class _Stn {
 	_SparseFeature[] m_x_sparse; // bag of words for a sentence
 	
 	//structure for HTMMM
-	double[] m_transitFv; // features for determine topic transition
+	public double[] m_transitFv; // features for determine topic transition
 	double m_transitStat; // posterior topic transit probability
 
 	// tructure for LR-HTSM
-	double[] m_sentiTransitFv; // features for determine sentiment transition
+	public double[] m_sentiTransitFv; // features for determine sentiment transition
 	double m_sentiTransitStat; // posterior sentiment transit probability
 	
-	String[] m_sentencePOSTag;
+	String[] m_rawTokens; // raw token sequence after tokenization
+	String[] m_sentencePOSTag; // corresponding POS tags
 	String m_rawSource;
 	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
 	//attribute label for NewEgg data
-	int m_sentimentLabel = -1; // default is -1 so that it can help to debug 
-	// 0 for neutral or comment, 1 is for pos and 2 is for neg
-	// use in FastRestritedHMM.java_for sentiment to decide sentiment switch 
-	
+	// default is -1 so that it can help to debug 
+	//  0 is for pos, 1 is for neg and 2 for neutral or comment
+	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
+	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
 	
-	public _Stn(_SparseFeature[] x) {
+	public _Stn(_SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
 		m_x_sparse = x;
+		m_rawTokens = rawTokens;
+		m_sentencePOSTag = posTags;
+		m_rawSource = rawSource;
 		
 		m_transitFv = new double[_Doc.stn_fv_size];
 		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
 	
-	public _Stn(_SparseFeature[] x, int label) {
+	public _Stn(_SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource, int label) {
 		m_x_sparse = x;
+		m_rawTokens = rawTokens;
+		m_sentencePOSTag = posTags;
+		m_rawSource = rawSource;
 		m_sentimentLabel = label;
+		
 		m_transitFv = new double[_Doc.stn_fv_size];
 		m_sentiTransitFv = new double[_Doc.stn_senti_fv_size];
 	}
@@ -63,16 +71,12 @@ public class _Stn {
 		m_sentimentLabel = label;
 	}
 
-	public void setSentencePosTag(String[] sentenceposTags){
-		m_sentencePOSTag = sentenceposTags;
-	}
-	
-	public void setRawSentence(String src){
-		m_rawSource = src;
-	}
-	
 	public String getRawSentence(){
 		return m_rawSource;
+	}
+	
+	public String[] getRawTokens() {
+		return m_rawTokens;
 	}
 	
 	public String[] getSentencePosTag(){

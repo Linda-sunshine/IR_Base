@@ -9,12 +9,14 @@ package structures;
  */
 public class TokenizeResult {
 	
+	String[] m_rawTokens; // original raw unigrams
 	String[] m_tokens;
 	int m_stopwords;
 	int m_originLength;
 	
-	public TokenizeResult(int length) {
-		m_originLength = length;
+	public TokenizeResult(String[] rawTokens) {
+		m_rawTokens = rawTokens;
+		m_originLength = rawTokens.length;
 		m_tokens = null;
 		m_stopwords = 0;
 	}
@@ -25,6 +27,10 @@ public class TokenizeResult {
 	
 	public String[] getTokens() {
 		return m_tokens;
+	}
+	
+	public String[] getRawTokens() {
+		return m_rawTokens;
 	}
 
 	public void incStopwords() {

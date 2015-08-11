@@ -7,9 +7,11 @@ package topicmodels;
  */
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -213,7 +215,6 @@ public class pLSA extends twoTopic {
 		double sum = 0;
 		for(int k=0;k<this.number_of_topics;k++) {
 			sum = Utils.sumOfArray(word_topic_sstat[k]);
-			System.out.println(sum);
 			for(int i=0;i<this.vocabulary_size;i++)
 				topic_term_probabilty[k][i] = word_topic_sstat[k][i] / sum;
 		}
@@ -284,6 +285,36 @@ public class pLSA extends twoTopic {
 	
 	//print all the quantities in real space
 	@Override
+	public void printTopWords(int k, String topWordPath) {
+		System.out.println("TopWord FilePath:" + topWordPath);
+		Arrays.fill(m_sstat, 0);
+		for(_Doc d:m_trainSet) {
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+		}
+		Utils.L1Normalization(m_sstat);			
+	
+		try{
+			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+		
+			for(int i=0; i<topic_term_probabilty.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+				for(int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+				
+				topWordWriter.format("Topic %d(%.3f):\t", i, m_sstat[i]);
+				for(_RankItem it:fVector)
+					topWordWriter.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch(Exception ex){
+			System.err.print("File Not Found");
+		}
+	}
+	
+	//print all the quantities in real space
+	@Override
 	public void printTopWords(int k) {
 		Arrays.fill(m_sstat, 0);
 		for(_Doc d:m_trainSet) {
@@ -303,12 +334,10 @@ public class pLSA extends twoTopic {
 		}
 	}
 	
-	
 	public void docSummary(String[] productList){
 		
 		int numberofSentences = 0;
-		for(int i=0; i<productList.length; i++){
-			
+		for(int i=0; i<productList.length; i++){			
 			for(_Doc d:m_trainSet) {
 				if(d.getItemID().equalsIgnoreCase(productList[i])){
 					numberofSentences+=d.getSenetenceSize();
@@ -322,25 +351,25 @@ public class pLSA extends twoTopic {
 		for(int i=0; i<this.number_of_topics; i++){
 			int index = 0;
 			for(_Doc d:m_trainSet) {
-				if(d.getItemID().equalsIgnoreCase(productList[0])){
-			for(int j=0; j<d.getSenetenceSize(); j++){
-				double prob = 1.0;
-				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
-				for(int w=0; w<tmpSentence.length; w++){
-					int wid = tmpSentence[w].getIndex();
-					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
-				}
-				rawSentence[index] = d.getSentence(j).getRawSentence();
-				sentences[i][index] = prob/tmpSentence.length;
-				index++;
-			}// sentence loop
-			} // if condition
-		}//doc loop
+				if(d.getItemID().equalsIgnoreCase(productList[0])) {
+					for(int j=0; j<d.getSenetenceSize(); j++){
+						double prob = 1.0;
+						_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
+						for(int w=0; w<tmpSentence.length; w++){
+							int wid = tmpSentence[w].getIndex();
+							prob *= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
+						}
+						rawSentence[index] = d.getSentence(j).getRawSentence();
+						sentences[i][index] = prob/tmpSentence.length;
+						index++;
+					}// sentence loop
+				} // if condition
+			}//doc loop
 			
 			/* Find Sentence with largest probability*/
 			double max = sentences[i][0]; 
 			int max_index = 0;
-
+	
 			for(int j=1; j<numberofSentences; j++){
 				if(sentences[i][j]>max){
 					max = sentences[i][j];
@@ -352,13 +381,11 @@ public class pLSA extends twoTopic {
 				System.out.println("\nT: "+i);
 			else
 				System.out.println("\nT: "+i);
-
+	
 			System.out.println(rawSentence[max_index]);
-
 		}
-	
 	}
-	
+		
 //	
 //	public void docSummary(int numberOfSentences){
 //		

@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -34,14 +33,17 @@ public abstract class Analyzer {
 	protected boolean m_isCVLoaded;
 	
 	//minimal length of indexed document
-	protected int m_lengthThreshold;
-	
+	protected int m_lengthThreshold = 5;
+	//minimal size of sentences
+	protected int m_stnSizeThreshold = 2;
 	//if we have store content of documents
 	protected boolean m_releaseContent;
 	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
+
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
 	
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
@@ -53,9 +55,11 @@ public abstract class Analyzer {
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		m_featureStat = new HashMap<String, _stat>();
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		
 		m_lengthThreshold = minDocLength;
 		
-		m_preDocs = new LinkedList<_Doc>();
+		m_preDocs = new LinkedList<_Doc>(); // key: POS tag; value: index in the list		
 	}	
 	
 	public void reset() {
@@ -110,6 +114,10 @@ public abstract class Analyzer {
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+	}
+	
+	public void setMinimumNumberOfSentences(int number){
+		m_stnSizeThreshold = number;
 	}
 	
 	abstract public void LoadDoc(String filename);
@@ -273,7 +281,7 @@ public abstract class Analyzer {
 		}
 		
 		//rank the documents by product and time in all the cases
-		Collections.sort(m_corpus.getCollection());
+		//Collections.sort(m_corpus.getCollection());
 		if (norm == 1){
 			for(_Doc d:docs)			
 				Utils.L1Normalization(d.getSparse());

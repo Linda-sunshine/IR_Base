@@ -8,7 +8,7 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.jsonAnalyzer;
+import Analyzer.AspectAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
@@ -20,7 +20,8 @@ public class TransductiveMain {
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		
+		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
+
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
@@ -32,10 +33,23 @@ public class TransductiveMain {
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/tablet/small";
 		String suffix = ".json";
+		String stopword = "./data/Model/stopwords.dat";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String stnModel = null;
-		String posModel = null;
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for pos tagging.		
+		String tagModel = "./data/Model/en-pos-maxent.bin";
+		String sentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+
+		//Added by Mustafizur----------------
+		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
+		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
+		String pathToNegationWords = "./data/Model/negation_words.txt";
+		String infoFilePath = "./data/result/Topics_" + number_of_topics + "_Information.txt";
 		
+//		String category = "tablets"; //"electronics"
+//		String dataSize = "86jsons"; //"50K", "100K"
+//		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
+//		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
+//		String aspectlist = "./data/Model/aspect_output_simple.txt";
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
@@ -50,7 +64,7 @@ public class TransductiveMain {
 				
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
-		//String debugOutput = null;
+//		String debugOutput = null;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -59,7 +73,6 @@ public class TransductiveMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
 //		String featureSelection = "DF"; //Feature selection method.
 //		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 //		double endProb = 0.999; // Used in feature selection, the ending point of the features.
@@ -72,11 +85,16 @@ public class TransductiveMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer =new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
-		analyzer.setReleaseContent(false);//for debugging purpose
-		analyzer.LoadStopwords(stopwords);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
+		//Added by Mustafizur----------------
+		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
+		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
+		analyzer.loadPriorPosNegWords(sentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		
+		// Added by Mustafizur----------------
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.setFeatureValues("TF", 0);
+		
+		analyzer.setFeatureValues("TF", 0);		
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
 		pLSA tModel = null;
@@ -95,6 +113,7 @@ public class TransductiveMain {
 		}
 		
 		tModel.setDisplay(true);
+		tModel.setInforWriter(infoFilePath);
 		tModel.setSentiAspectPrior(true);
 		tModel.LoadPrior(aspectlist, eta);
 		tModel.EMonCorpus();	

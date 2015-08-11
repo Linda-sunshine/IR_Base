@@ -20,27 +20,32 @@ public class _Doc implements Comparable<_Doc> {
 	String m_name;
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
+	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
-	int m_totalLength; //The total length of the document.
+	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+	int m_totalLength; //The total length of the document in tokens
 	
 	int m_y_label; // classification target, that is the index of the labels.
 	int m_predict_label; //The predicted result.
-	double m_y_value; // regression target, like linear regression only has one value.	
 	long m_timeStamp; //The timeStamp for this review.
 	
+	// added by Lin
+	private _SparseFeature[] m_x_posVct; // sparse vector projected by pos tagging 
+	private double[] m_x_aspVct; // aspect vector	
+		
+	//only used in learning to rank for random walk
 	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
+	double m_sentiScore = 0; //Sentiment score from sentiwordnet
 	
-	int m_sourceName = 1; // source is 1 for Amazon and 2 for newEgg
-	
-	public void setSourceName(int sourceName){
-		m_sourceName = sourceName;
+	public void setSourceType(int sourceName) {
+		m_sourceType = sourceName;
 	}
 	
-	public int getSourceName(){
-		return m_sourceName;
+	public int getSourceType() {
+		return m_sourceType;
 	}
 	
 	public double getAvgIDF() {
@@ -59,12 +64,20 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_stopwordProportion = stopwordProportion;
 	}
 
+	public void setSentiScore(double s){
+		this.m_sentiScore = s;
+	}
+	
+	public double getSentiScore(){
+		return this.m_sentiScore;
+	}
+
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
-	static public final int stn_fv_size = 4; // cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 6; // cosine, sentiWordNetscore, prior_positive_negative_count, KL-divergence between tags
+	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
+	static public final int stn_senti_fv_size = 6; // bias, cosine, sentiWordNetScore, prior_positive_negative_count, POS tag divergency
 	
 	_Stn[] m_sentences;
 	
@@ -78,10 +91,9 @@ public class _Doc implements Comparable<_Doc> {
 	public int[] m_topicAssignment;
 	
 	// structure only used by variational inference
-	public double[][] m_phi; // p(z|w, \phi)
-	
+	public double[][] m_phi; // p(z|w, \phi)	
 	Random m_rand;
-
+	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;
@@ -95,25 +107,12 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
-	public _Doc (int ID, String source, int ylabel, long timeStamp){
-		this.m_ID = ID;
-		this.m_source = source;
-		this.m_y_label = ylabel;
-		this.m_totalLength = 0;
-		this.m_timeStamp = timeStamp;
-		m_topics = null;
-		m_sstat = null;
-		m_words = null;
-		m_topicAssignment = null;
-		m_sentences = null;
-	}
-	
-	public _Doc (int ID, String name, String source, String productID, int ylabel, long timeStamp){
+	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;
+		this.m_itemID = prodID;
+		this.m_title = title;
 		this.m_source = source;
-		this.m_itemID = productID;
-		
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
@@ -138,9 +137,8 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	//Set a new ID for the document.
-	public int setID(int id){
+	public void setID(int id){
 		this.m_ID = id;
-		return this.m_ID;
 	}
 	
 	public void setItemID(String itemID) {
@@ -159,6 +157,10 @@ public class _Doc implements Comparable<_Doc> {
 		return m_name;
 	}
 	
+	public String getTitle(){
+		return m_title;
+	}
+	
 	//Get the source content of a document.
 	public String getSource(){
 		return this.m_source;
@@ -170,14 +172,8 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	//Set the Y value for the document, Y represents the class.
-	public int setYLabel(int label){
+	public void setYLabel(int label){
 		this.m_y_label = label;
-		return this.m_y_label;
-	}
-	
-	//Get the Y value, such as the result of linear regression.
-	public double getYValue(){
-		return this.m_y_value;
 	}
 	
 	//Get the time stamp of the document.
@@ -215,21 +211,30 @@ public class _Doc implements Comparable<_Doc> {
 			m_totalLength += fv.getValue();
 	}
 	
-	//Create the sparse vector for the document.
-	public void createSpVct(HashMap<Integer, Double> spVct) {
-		m_x_sparse = Utils.createSpVct(spVct);
-		calcTotalLength();
-	}
-	
 	//Create the sparse vector for the document, taking value from different sections
 	public void createSpVct(ArrayList<HashMap<Integer, Double>> spVcts) {
 		m_x_sparse = Utils.createSpVct(spVcts);
 		calcTotalLength();
 	}
 	
+	//Create the sparse vector for the document.
+	public void createSpVct(HashMap<Integer, Double> spVct) {
+		m_x_sparse = Utils.createSpVct(spVct);
+		calcTotalLength();
+	}
+	
 	public void setSpVct(_SparseFeature[] x) {
 		m_x_sparse = x;
 		calcTotalLength();
+	}
+		
+	//Create the sparse postagging vector for the document. 
+	public void createPOSVct(HashMap<Integer, Double> posVct){
+		m_x_posVct = Utils.createSpVct(posVct);
+	}
+	
+	public _SparseFeature[] getPOSVct(){
+		return m_x_posVct;
 	}
 	
 	//Create a sparse vector with time features.
@@ -250,29 +255,8 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void setSentences(ArrayList<_SparseFeature[]> stnList) {
-		m_sentences = new _Stn[stnList.size()];
-		for(int i=0; i<m_sentences.length; i++)
-			m_sentences[i] = new _Stn(stnList.get(i));
-	}
-	
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void setRawSentences(ArrayList<String> stnList) {
-		for(int i=0; i<m_sentences.length; i++)
-			m_sentences[i].setRawSentence(stnList.get(i));
-	}
-	
-	
-	// added by Md. Mustafizur Rahman for HTSM Topic Modelling 
-	public void setSentencesPOSTag(ArrayList<String[]> stnPoslist) {
-		for(int i=0; i<m_sentences.length; i++)
-			m_sentences[i].setSentencePosTag(stnPoslist.get(i));
-	}
-	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
-	public void setSentencesWithLabels(ArrayList<_SparseFeature[]> stnList, ArrayList<Integer> stnLabel) {
-		m_sentences = new _Stn[stnList.size()];
-		for(int i=0; i<m_sentences.length; i++)
-			m_sentences[i] = new _Stn(stnList.get(i), stnLabel.get(i));
+	public void setSentences(ArrayList<_Stn> stnList) {
+		m_sentences = stnList.toArray(new _Stn[stnList.size()]);
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
@@ -304,6 +288,7 @@ public class _Doc implements Comparable<_Doc> {
 		return m_x_sparse[0].m_values != null;
 	}
 	
+	//we will reset the topic vector
 	public void setTopics(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
@@ -312,17 +297,21 @@ public class _Doc implements Comparable<_Doc> {
 		Utils.randomize(m_sstat, alpha);
 	}
 	
+	public double[] getTopics(){
+		return m_topics;
+	}
+	
 	//create necessary structure for variational inference
 	public void setTopics4Variational(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
-			m_sstat = new double[k]; // used as p(z|w,\phi) (gamma for variational inference)
+			m_sstat = new double[k];//used as p(z|w,\phi)
 			m_phi = new double[m_x_sparse.length][k];
 		}
 		
-		Arrays.fill(m_sstat, alpha-1);
+		Arrays.fill(m_sstat, alpha);
 		for(int n=0; n<m_x_sparse.length; n++) {
-			Utils.randomize(m_phi[n], alpha-1);
+			Utils.randomize(m_phi[n], alpha);
 			double v = m_x_sparse[n].getValue();
 			for(int i=0; i<k; i++)
 				m_sstat[i] += m_phi[n][i] * v;
@@ -336,8 +325,7 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 
-		Arrays.fill(m_sstat, alpha-1);
-		Arrays.fill(m_topics, 0);
+		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
 		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);
@@ -377,37 +365,6 @@ public class _Doc implements Comparable<_Doc> {
 			m_topicAssignment[i] = t;
 		}
 	}
-		
-	// used by LR-HTMM for constructing topic transition features
-	public void setSentenceFeatureVector() {
-		// start from 2nd sentence
-		double cLength, pLength = Utils.sumOfFeaturesL1(m_sentences[0].getFv());
-		double pSim = Utils.cosine(m_sentences[0].getFv(), m_sentences[1].getFv()), nSim;
-		int stnSize = getSenetenceSize();
-		for(int i=1; i<stnSize; i++){
-			//cosine similarity			
-			m_sentences[i-1].m_transitFv[0] = pSim;			
-
-			//length_ratio
-			cLength = Utils.sumOfFeaturesL1(m_sentences[i].getFv());
-			m_sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
-			pLength = cLength;
-
-			//position
-			m_sentences[i-1].m_transitFv[2] = (double)i / stnSize;
-
-			//similar to previous or next
-			if (i<stnSize-1) {
-				nSim = Utils.cosine(m_sentences[i].getFv(), m_sentences[i+1].getFv());
-				if (nSim>pSim)
-					m_sentences[i-1].m_transitFv[3] = 1;
-				else if (nSim<pSim)
-					m_sentences[i-1].m_transitFv[3] = -1;
-				pSim = nSim;
-			}
-		}
-	}
-
 	
 	public void clearSource() {
 		m_source = null;
@@ -444,4 +401,13 @@ public class _Doc implements Comparable<_Doc> {
 	public void setProjectedFv(double[] denseFv) {
 		m_x_projection = Utils.createSpVct(denseFv);
 	}
+
+	public void setAspVct(double[] aspVct){
+		m_x_aspVct = aspVct;
+	}
+	
+	public double[] getAspVct(){
+		return m_x_aspVct;
+	}
+
 }

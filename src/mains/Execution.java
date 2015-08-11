@@ -174,9 +174,7 @@ public class Execution  {
 			} else if (param.m_model.equals("HTMM")) {
 				model = new HTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha);
-			} else if (param.m_model.equals("LRHTMM")) {
-				corpus.setStnFeatures();
-				
+			} else if (param.m_model.equals("LRHTMM")) {				
 				model = new LRHTMM(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
 						param.m_numTopics, param.m_alpha,
 						param.m_C);
