@@ -66,8 +66,8 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		
 		//initialize transitionMatrix
 		for(int i=0; i<this.length_of_seq; i++){
-			for(int j=0; j<3*this.number_of_topic; j++){
-				for(int k=0; k<3*this.number_of_topic; k++){
+			for(int j=0; j<this.constant*this.number_of_topic; j++){
+				for(int k=0; k<this.constant*this.number_of_topic; k++){
 					m_transitMatrix[i][j][k] = Double.NEGATIVE_INFINITY;
 				}
 			}
@@ -82,12 +82,13 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 			logSigma = Math.log(sigma);
 			logOneMinusSigma = Math.log(1.0 - sigma);
 			
-			for(int i=0; i<this.constant*this.number_of_topic;i++){
+			for(int i=0; i<this.constant*this.number_of_topic; i++){
 				int ti = aspectMapper(i), si = sentimentMapper(i);
 				sum = Double.NEGATIVE_INFINITY;
 
 				for(int j=0; j<this.constant*this.number_of_topic; j++){
 					int tj = aspectMapper(j), sj = sentimentMapper(j);
+					
 					int docTopicIndex = topicMapper(j);
 					if(j<this.number_of_topic) {
 						if(si!=sj && ti!=tj)
