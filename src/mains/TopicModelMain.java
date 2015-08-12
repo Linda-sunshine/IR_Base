@@ -27,7 +27,7 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
 		int number_of_topics = 40;

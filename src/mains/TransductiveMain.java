@@ -67,6 +67,7 @@ public class TransductiveMain {
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
 //		String debugOutput = null;
+		boolean releaseContent = false;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -92,6 +93,7 @@ public class TransductiveMain {
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
 		analyzer.loadPriorPosNegWords(sentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		analyzer.setReleaseContent(releaseContent);
 		
 		// Added by Mustafizur----------------
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
