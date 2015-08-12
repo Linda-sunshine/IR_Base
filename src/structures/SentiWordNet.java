@@ -3,8 +3,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -74,14 +76,11 @@ public class SentiWordNet {
 
 					// Is it a valid line? Otherwise, through exception.
 					if (data.length != 6) {
-						throw new IllegalArgumentException(
-								"Incorrect tabulation format in file, line: "
-										+ lineNumber);
+						throw new IllegalArgumentException("Incorrect tabulation format in file, line: " + lineNumber);
 					}
 
 					// Calculate synset score as score = PosS - NegS
-					Double synsetScore = Double.parseDouble(data[2])
-							- Double.parseDouble(data[3]);
+					Double synsetScore = Double.parseDouble(data[2]) - Double.parseDouble(data[3]);
 
 					// Get all Synset terms
 					String[] synTermsSplit = data[4].split(" ");
@@ -90,8 +89,7 @@ public class SentiWordNet {
 					for (String synTermSplit : synTermsSplit) {
 						// Get synterm and synterm rank
 						String[] synTermAndRank = synTermSplit.split("#");
-						String synTerm = synTermAndRank[0] + "#"
-								+ wordTypeMarker;
+						String synTerm = synTermAndRank[0] + "#" + wordTypeMarker;
 
 						int synTermRank = Integer.parseInt(synTermAndRank[1]);
 						// What we get here is a map of the type:
@@ -99,20 +97,17 @@ public class SentiWordNet {
 
 						// Add map to term if it doesn't have one
 						if (!tempDictionary.containsKey(synTerm)) {
-							tempDictionary.put(synTerm,
-									new HashMap<Integer, Double>());
+							tempDictionary.put(synTerm, new HashMap<Integer, Double>());
 						}
 
 						// Add synset link to synterm
-						tempDictionary.get(synTerm).put(synTermRank,
-								synsetScore);
+						tempDictionary.get(synTerm).put(synTermRank, synsetScore);
 					}
 				}
 			}
 
 			// Go through all the terms.
-			for (Map.Entry<String, HashMap<Integer, Double>> entry : tempDictionary
-					.entrySet()) {
+			for (Map.Entry<String, HashMap<Integer, Double>> entry : tempDictionary.entrySet()) {
 				String word = SnowballStemming(Normalize(entry.getKey()));
 				Map<Integer, Double> synSetScoreMap = entry.getValue();
 
@@ -122,14 +117,32 @@ public class SentiWordNet {
 				// Sum = 1/1 + 1/2 + 1/3 ...
 				double score = 0.0;
 				double sum = 0.0;
-				for (Map.Entry<Integer, Double> setScore : synSetScoreMap
-						.entrySet()) {
+				for (Map.Entry<Integer, Double> setScore : synSetScoreMap.entrySet()) {
 					score += setScore.getValue() / (double) setScore.getKey();
 					sum += 1.0 / (double) setScore.getKey();
 				}
 				score /= sum;
-
 				dictionary.put(word, score);
+			}
+			
+			// Go through all the terms.
+			Set<String> synTerms = tempDictionary.keySet();
+			for (String synTerm : synTerms) {
+				double score = 0;
+				int count = 0;
+				HashMap<Integer, Double> synSetScoreMap = tempDictionary
+						.get(synTerm);
+				Collection<Double> scores = synSetScoreMap.values();
+				for (double s : scores) {
+					if (s != 0) {
+						score += s;
+						count++;
+					}
+					if (score != 0)
+						score = (double) score / count;
+				}
+				String[] termMarker = synTerm.split("#");
+				dictionary.put(SnowballStemming(Normalize(termMarker[0])) + "#" + termMarker[1], score);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -150,7 +163,7 @@ public class SentiWordNet {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		String pathToSWN = "./data/SentiWordNet_3.0.0_20130122.txt";
+		String pathToSWN = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 		SentiWordNet sentiwordnet = new SentiWordNet(pathToSWN);
 		System.out.println("work#n "+sentiwordnet.extract("opaque", "v"));
 		System.out.println("bad#n "+sentiwordnet.extract("bad", "n"));

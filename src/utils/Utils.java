@@ -802,14 +802,44 @@ public class Utils {
 	}
 	
 	public static double klDivergence(double[] p1, double[] p2) {
-		  double log2 = Math.log(2);
-		  double klDiv = 0.0;
-		  for (int i = 0; i < p1.length; ++i) {
-	        if (p1[i] == 0) { continue; }
-	        if (p2[i] == 0.0) { continue; } 
+		double log2 = Math.log(2);
+		double klDiv = 0.0;
+		for (int i = 0; i < p1.length; ++i) {
+			if (p1[i] == 0) {
+				continue;
+			}
+			if (p2[i] == 0.0) {
+				continue;
+			}
 
-	      klDiv += p1[i] * Math.log( p1[i] / p2[i] );
-	      }
-	      return klDiv / log2; 
-	 }
+			klDiv += p1[i] * Math.log(p1[i] / p2[i]);
+		}
+		return klDiv / log2;
+	}
+	
+	// added by Lin for computing LCS.
+	public static int LCS2Doc(_Doc d1, _Doc d2) {
+		String[] x = d1.getTokens();
+		String[] y = d2.getTokens();
+		return LCSLength(x, y);
+	}
+	
+	// added by Lin for computing LCS.
+	public static int LCSLength(String[] x, String[] y) {
+		int m = x.length;
+		int n = y.length;
+		int[][] c = new int[m + 1][n + 1];
+		for (int i = 1; i <= m; i++) {
+			for (int j = 1; j <= n; j++) {
+				if (x[i - 1].equals(y[j - 1]))
+					c[i][j] = c[i - 1][j - 1] + 1;
+				else if (c[i - 1][j] >= c[i][j - 1]) {
+					c[i][j] = c[i - 1][j];
+				} else
+					c[i][j] = c[i][j - 1];
+			}
+		}
+		return c[m][n];// Every cell contains the current longest common
+						// sequence of xi, yj.
+	}
 }

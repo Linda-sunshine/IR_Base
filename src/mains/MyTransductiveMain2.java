@@ -22,41 +22,41 @@ import Classifier.supervised.SVM;
 public class MyTransductiveMain2 {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
+				
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		int lengthThreshold = 10; //Document length threshold
-		
+		int lengthThreshold = 5; //Document length threshold
+		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
+
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
-		double converge = 1e-5, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-//		String folder = "data/txt_sentoken";
-//		String suffix = ".txt";
-		
 		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
-//		String folder = "./data/Electronics/dedup/RawData100K";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String stnModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
-			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
-//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model.
+//		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
+		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for postagging.
 		String stopword = "./data/Model/stopwords.dat";
 		String tagModel = "./data/Model/en-pos-maxent.bin";
-				
+		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+
+		//Added by Mustafizur----------------
+		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
+		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
+		String pathToNegationWords = "./data/Model/negation_words.txt";
+		String infoFilePath = "./data/result/"+"Topics_"+number_of_topics+"Information.txt";
+		
 		String category = "tablets"; //"electronics"
 		String dataSize = "86jsons"; //"50K", "100K"
 		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-//		String aspectlist = "./data/Model/sentiment_output.txt";
-//		String aspectlist = "./data/Model/topic_sentiment_output.txt";
 		String aspectlist = "./data/Model/aspect_output_simple.txt";
-		String infoFilePath = "./data/result/"+"Topics_"+number_of_topics+"Information.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
@@ -95,11 +95,11 @@ public class MyTransductiveMain2 {
 			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		} else{
-			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
-//			analyzer = new AspectAnalyzer(tokenModel, null, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-//			analyzer.setSentenceWriter("./data/input/BagOfSentencesLabels.txt");
+			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
+			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
-//			((DocAnalyzer) analyzer).LoadSNWWithScore("./data/Model/SentiWordNet_3.0.0_20130122.txt");
+			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //			analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 			analyzer.setFeatureValues("TF", 0);		
@@ -168,8 +168,6 @@ public class MyTransductiveMain2 {
 			System.out.println("Start SVM, wait...");
 			SVM mySVM = new SVM(c, C);
 			mySVM.crossValidation(CVFold, c);
-//			SVM mySVM = new SVM(c, C);
-//			mySVM.crossValidation(CVFold, c);
 		}
 	}
 }

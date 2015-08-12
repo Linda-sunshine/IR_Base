@@ -53,7 +53,6 @@ public class MyTransductiveMain {
 ////		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 //		String aspectlist = "./data/Model/aspect_output_simple.txt";
 
-		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";

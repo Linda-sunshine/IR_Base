@@ -40,6 +40,15 @@ public class _Doc implements Comparable<_Doc> {
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
 	
+	/**Added by Lin for storing tokens after tokenization, normalization, stemming for computing LCS.**/
+	String[] m_tokens;
+	public void addTokens(String[] tokens){
+		m_tokens = tokens;
+	}
+	public String[] getTokens(){
+		return m_tokens;
+	}
+	
 	public void setSourceType(int sourceName) {
 		m_sourceType = sourceName;
 	}

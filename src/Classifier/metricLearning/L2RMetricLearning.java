@@ -272,10 +272,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 
 		// feature 10: the aspect score for a pair of reviews.
 		fv[9] = getAspectScore(q, d);
-
-		// feature 11: the title of review
-		// fv[10] = d.getTitleScore();
 		
+		// feature 11: the longest subsequence of a query and a document.
+//		fv[10] = Utils.LCS2Doc(q, d);
+		
+		// feature 12: the title of review
+		// fv[11] = d.getTitleScore();
 		return fv;
 	}
 }

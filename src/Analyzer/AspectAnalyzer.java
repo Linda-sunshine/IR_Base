@@ -265,6 +265,10 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		
+		//Added by Lin for computing LCS for documents.
+		result = TokenizerNormalizeStemmer(doc.getSource());
+		doc.addTokens(result.getTokens());
+		
 		//Added by Lin for constructing postagging vector.
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		int y = doc.getYLabel();
