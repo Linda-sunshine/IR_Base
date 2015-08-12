@@ -63,7 +63,7 @@ public class MyTransductiveMain2 {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW";
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -92,6 +92,7 @@ public class MyTransductiveMain2 {
 		Analyzer analyzer;
 		_Corpus c;
 		if(style.equals("SUP")){
+			stnModel = null;
 			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		} else{
@@ -138,11 +139,12 @@ public class MyTransductiveMain2 {
 			double learningRatio = 1;
 			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
-			boolean simFlag = false, weightedAvg = false;
+			double tDelta = 1e-4, tEta = 0.7; // convergence of random walk, weight of random walk
+			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
+			int ranker = 0;//0-learning to rank; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
@@ -158,7 +160,7 @@ public class MyTransductiveMain2 {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
-						topK, noiseRatio, multithread_LR);
+						topK, noiseRatio, ranker, multithread_LR);
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);

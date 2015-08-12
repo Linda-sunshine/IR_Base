@@ -149,7 +149,7 @@ public class TransductiveMain {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
-						topK, noiseRatio, multithread_LR);
+						topK, noiseRatio, 1, multithread_LR);
 			}
 			
 			mySemi.setSimilarity(simFlag);

@@ -32,7 +32,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 10;// features to be defined in genRankingFV()
+	final int RankFVSize = 11;// features to be defined in genRankingFV()
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -45,13 +45,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
 			double delta, double eta, boolean weightedAvg,
-			int topK, double noiseRatio, boolean multithread) {
+			int topK, double noiseRatio, int ranker, boolean multithread) {
 		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta,
 				weightedAvg);
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
-		m_ranker = 1;
+		m_ranker = ranker;
 		m_multithread = multithread;
 	}
 	
@@ -274,7 +274,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[9] = getAspectScore(q, d);
 		
 		// feature 11: the longest subsequence of a query and a document.
-//		fv[10] = Utils.LCS2Doc(q, d);
+		fv[10] = Utils.LCS2Doc(q, d);
 		
 		// feature 12: the title of review
 		// fv[11] = d.getTitleScore();
