@@ -75,7 +75,7 @@ public class LRHTMM extends HTMM {
 		Arrays.fill(m_diag_omega, 0);//since we are reusing this space
 		try{
 			do {
-				fValue = calcFuncGradient();
+				fValue = calcOmegaFuncGradient();
 				LBFGS.lbfgs(fSize, 4, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
@@ -85,7 +85,7 @@ public class LRHTMM extends HTMM {
 	
 	//log-likelihood: 0.5\lambda * w^2 + \sum_x [q(y=1|x) logp(y=1|x,w) + (1-q(y=1|x)) log(1-p(y=1|x,w))]
 	//NOTE: L-BFGS code is for minimizing a problem
-	double calcFuncGradient() {
+	double calcOmegaFuncGradient() {
 		double p, q, g, loglikelihood = 0;
 		
 		//L2 normalization for omega
@@ -96,42 +96,23 @@ public class LRHTMM extends HTMM {
 		loglikelihood *= m_lambda/2;
 		
 		double[] transitFv;
-		if(m_crossValidFold==1){
-			for(_Doc d:m_corpus.getCollection()) {			
-				for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
-					transitFv = d.getSentence(i-1).getTransitFvs();
+		for(_Doc d:m_trainSet) {			
+			for(int t=1; t<d.getSenetenceSize(); t++) {//start from the second sentence
+				transitFv = d.getSentence(t-1).getTransitFvs();
 
-					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
-					q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
+				p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
+				q = d.getSentence(t).getTransitStat(); // posterior of p(\epsilon=1|x, w)
 
-					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
+				loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
 
-					//collect gradient
-					g = p - q;
-					m_g_omega[0] += g;//for bias term
-					for(int n=0; n<_Doc.stn_fv_size; n++)
-						m_g_omega[1+n] += g * transitFv[n];
-				}
+				//collect gradient
+				g = p - q;
+				m_g_omega[0] += g;//for bias term
+				for(int n=0; n<_Doc.stn_fv_size; n++)
+					m_g_omega[1+n] += g * transitFv[n];
 			}
-		}
-		else if(m_crossValidFold>1){
-			for(_Doc d:m_trainSet) {			
-				for(int i=1; i<d.getSenetenceSize(); i++) {//start from the second sentence
-					transitFv = d.getSentence(i-1).getTransitFvs();
-
-					p = Utils.logistic(transitFv, m_omega); // p(\epsilon=1|x, w)
-					q = d.getSentence(i).getTransitStat(); // posterior of p(\epsilon=1|x, w)
-
-					loglikelihood -= q * Math.log(p) + (1-q) * Math.log(1-p); // this is actually cross-entropy
-
-					//collect gradient
-					g = p - q;
-					m_g_omega[0] += g;//for bias term
-					for(int n=0; n<_Doc.stn_fv_size; n++)
-						m_g_omega[1+n] += g * transitFv[n];
-				}
-			}
-		}
+		}		
+		
 		return loglikelihood;
 	}
 }

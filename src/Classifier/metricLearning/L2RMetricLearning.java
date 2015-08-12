@@ -243,39 +243,36 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
-		fv[0] = getBoWSim(q, d);//0.04298
+		fv[0] = getBoWSim(q, d);//0.03960
 		
 		//feature 2: topical similarity
-		fv[1] = getTopicalSim(q, d);//-0.09567
+		fv[1] = getTopicalSim(q, d);//-0.08929
 		
 		//feature 3: belong to the same product
-		fv[2] = q.sameProduct(d)?1:0;//0.02620
+		fv[2] = q.sameProduct(d)?1:0;//0.02466
 
 		//feature 4: sparse feature length difference
-		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
+		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01415
 		
 		//feature 5: jaccard coefficient
-		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
+		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02212
  		
+		//feature 6: the sentiwordnet score for a review.
+		fv[5] = Math.abs((q.getSentiScore() - d.getSentiScore())/q.getSentiScore());//-0.02739
+
+		// feature 7: the postagging score for a pair of reviews.
+		fv[6] = getPOSScore(q, d);//0.04999
+
+		// feature 8: the aspect score for a pair of reviews.
+		fv[7] = getAspectScore(q, d);//0.10186
+		
 		//Part II: pointwise features for document
-		//feature 6: stop words proportion
-		fv[5] = d.getStopwordProportion();//-0.00005
+		//feature 9: stop words proportion
+		fv[8] = d.getStopwordProportion();//0.00000
 		
-		//feature 7: average IDF
-		fv[6] = d.getAvgIDF();//0.03732
-		
-		//feature 8: the sentiwordnet score for a review.
-		fv[7] = d.getSentiScore();
+		//feature 10: average IDF
+		fv[9] = d.getAvgIDF();//0.02869	
 
-		// feature 9: the postagging score for a pair of reviews.
-		fv[8] = getPOSScore(q, d);
-
-		// feature 10: the aspect score for a pair of reviews.
-		fv[9] = getAspectScore(q, d);
-
-		// feature 11: the title of review
-		// fv[10] = d.getTitleScore();
-		
 		return fv;
 	}
 }

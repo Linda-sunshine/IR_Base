@@ -92,7 +92,7 @@ public class pLSA extends twoTopic {
 					}
 				}
 				
-				System.out.format("Prior keywords for Topic %d (%s): %d\n", priorWords.size(), container[0], wCount);
+				System.out.format("Prior keywords for Topic %d (%s): %d/%d\n", priorWords.size(), container[0], wCount, container.length-1);
 				priorWords.add(prior);
 			}
 			reader.close();

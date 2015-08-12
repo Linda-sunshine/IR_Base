@@ -261,6 +261,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		//Added by Lin for constructing postagging vector.
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		int y = doc.getYLabel();
+		double stopwordCnt = 0, rawCnt = 0;
 		
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
@@ -275,12 +276,16 @@ public class AspectAnalyzer extends jsonAnalyzer {
 				Utils.mergeVectors(sentence_vector, spVct);
 				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
 				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
+				
+				stopwordCnt += result.getStopwordCnt();
+				rawCnt += result.getRawCnt();
 			}
 		} // End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold) { 
 			doc.createSpVct(spVct);
+			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			
 			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.

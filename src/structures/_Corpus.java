@@ -20,9 +20,9 @@ import java.util.Random;
  */
 public class _Corpus {
 	static final int ReviewSizeCut = 3;
+	
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
-	HashMap<String, Integer> m_reviewIDIndexes;
 	HashMap<String, _stat> m_featureStat; //statistics about the features
 	boolean m_withContent = false; // by default all documents' content has been released
 	
