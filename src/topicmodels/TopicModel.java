@@ -37,7 +37,6 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
 	protected String m_category;
 	public PrintWriter infoWriter;	
 	
@@ -80,12 +79,6 @@ public abstract class TopicModel {
 		}catch(Exception e){
 			System.err.println(path+" Not found!!");
 		}
-	}
-	
-	//added by Mustafiz
-	// for controlling varying training set size of Amazon
-	public void setTrainSetSize(int size){
-		m_trainSize = size;
 	}
 	
 	//initialize necessary model parameters

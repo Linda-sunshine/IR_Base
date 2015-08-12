@@ -179,7 +179,6 @@ public class TopicModelMain {
 				model.printTopWords(topK);
 			} else {
 				model.setRandomFold(setRandomFold);
-				model.setTrainSetSize(trainSize);
 				model.crossValidation(crossV);
 				model.printTopWords(topK,topWordFilePath);
 				
