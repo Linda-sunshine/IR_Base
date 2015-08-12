@@ -37,6 +37,14 @@ public class TokenizeResult {
 		m_stopwords ++;
 	}
 	
+	public int getStopwordCnt() {
+		return m_stopwords;
+	}
+	
+	public int getRawCnt() {
+		return m_originLength;
+	}
+	
 	public double getStopwordProportion() {
 		return (double)m_stopwords / m_originLength;
 	}
