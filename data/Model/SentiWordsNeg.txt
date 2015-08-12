@@ -12,10 +12,10 @@ disappoint
 hate
 junk
 mess
-notgood
-notlik
-notrecommend
-notworth
+not-good
+not-lik
+not-recommend
+not-worth
 problem
 regret
 sorri

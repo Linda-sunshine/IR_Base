@@ -7,8 +7,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
-import structures._Stn;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -131,9 +129,6 @@ public abstract class TopicModel {
 	//print top k words under each topic
 	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
-	
-	// calculate the doc summary
-	public abstract void docSummary(String[] productList);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
