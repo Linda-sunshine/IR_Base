@@ -3,8 +3,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.Normalizer;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -74,9 +76,7 @@ public class SentiWordNet {
 
 					// Is it a valid line? Otherwise, through exception.
 					if (data.length != 6) {
-						throw new IllegalArgumentException(
-								"Incorrect tabulation format in file, line: "
-										+ lineNumber);
+						throw new IllegalArgumentException("Incorrect tabulation format in file, line: "+ lineNumber);
 					}
 
 					// Calculate synset score as score = PosS - NegS
@@ -111,25 +111,22 @@ public class SentiWordNet {
 			}
 
 			// Go through all the terms.
-			for (Map.Entry<String, HashMap<Integer, Double>> entry : tempDictionary
-					.entrySet()) {
-				String word = SnowballStemming(Normalize(entry.getKey()));
-				Map<Integer, Double> synSetScoreMap = entry.getValue();
-
-				// Calculate weighted average. Weigh the synsets according to
-				// their rank.
-				// Score= 1/2*first + 1/3*second + 1/4*third ..... etc.
-				// Sum = 1/1 + 1/2 + 1/3 ...
-				double score = 0.0;
-				double sum = 0.0;
-				for (Map.Entry<Integer, Double> setScore : synSetScoreMap
-						.entrySet()) {
-					score += setScore.getValue() / (double) setScore.getKey();
-					sum += 1.0 / (double) setScore.getKey();
+			Set<String> synTerms = tempDictionary.keySet();
+			for (String synTerm : synTerms) {
+				double score = 0;
+				int count = 0;
+				HashMap<Integer, Double> synSetScoreMap = tempDictionary.get(synTerm);
+				Collection<Double> scores = synSetScoreMap.values();
+				for (double s : scores) {
+					if (s != 0) {
+						score += s;
+						count++;
+					}
+					if (score != 0)
+						score = (double) score / count;
 				}
-				score /= sum;
-
-				dictionary.put(word, score);
+				String[] termMarker = synTerm.split("#");
+				dictionary.put(SnowballStemming(Normalize(termMarker[0])) + "#" + termMarker[1], score);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -150,7 +147,7 @@ public class SentiWordNet {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		String pathToSWN = "./data/SentiWordNet_3.0.0_20130122.txt";
+		String pathToSWN = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 		SentiWordNet sentiwordnet = new SentiWordNet(pathToSWN);
 		System.out.println("work#n "+sentiwordnet.extract("opaque", "v"));
 		System.out.println("bad#n "+sentiwordnet.extract("bad", "n"));
