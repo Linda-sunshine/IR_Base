@@ -76,7 +76,7 @@ public class SentiWordNet {
 
 					// Is it a valid line? Otherwise, through exception.
 					if (data.length != 6) {
-						throw new IllegalArgumentException("Incorrect tabulation format in file, line: " + lineNumber);
+						throw new IllegalArgumentException("Incorrect tabulation format in file, line: "+ lineNumber);
 					}
 
 					// Calculate synset score as score = PosS - NegS
@@ -106,25 +106,6 @@ public class SentiWordNet {
 				}
 			}
 
-			// Go through all the terms.
-			for (Map.Entry<String, HashMap<Integer, Double>> entry : tempDictionary.entrySet()) {
-				String word = SnowballStemming(Normalize(entry.getKey()));
-				Map<Integer, Double> synSetScoreMap = entry.getValue();
-
-				// Calculate weighted average. Weigh the synsets according to
-				// their rank.
-				// Score= 1/2*first + 1/3*second + 1/4*third ..... etc.
-				// Sum = 1/1 + 1/2 + 1/3 ...
-				double score = 0.0;
-				double sum = 0.0;
-				for (Map.Entry<Integer, Double> setScore : synSetScoreMap.entrySet()) {
-					score += setScore.getValue() / (double) setScore.getKey();
-					sum += 1.0 / (double) setScore.getKey();
-				}
-				score /= sum;
-				dictionary.put(word, score);
-			}
-			
 			// Go through all the terms.
 			Set<String> synTerms = tempDictionary.keySet();
 			for (String synTerm : synTerms) {
