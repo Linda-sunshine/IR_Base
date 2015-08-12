@@ -29,7 +29,7 @@ public class _Stn {
 	
 	//attribute label for NewEgg data
 	// default is -1 so that it can help to debug 
-	//  0 is for pos, 1 is for neg and 2 for neutral or comment
+	// 0 is for pos, 1 is for neg and 2 for neutral or comment
 	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
 	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
@@ -105,6 +105,13 @@ public class _Stn {
 	
 	public double getSentiTransitStat() {
 		return m_sentiTransitStat;
+	}
+	
+	public double getLength() {
+		double length = 0;
+		for(_SparseFeature f:m_x_sparse)
+			length += f.getValue();
+		return length;
 	}
 	
 	public void setSentiTransitStat(double t) {

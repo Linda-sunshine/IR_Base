@@ -118,7 +118,6 @@ public class FastRestrictedHMM {
 			
 			for(int i=0; i<this.constant*this.number_of_topic; i++) 
 				sstat[t][i] = Math.exp(alpha[t][i] + beta[t][i] - norm); // convert into original space
-	
 		}
 	}
 	
