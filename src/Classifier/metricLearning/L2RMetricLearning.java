@@ -55,6 +55,16 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_multithread = multithread;
 	}
 	
+	@Override
+	public String toString() {
+		String ranker;
+		if (m_ranker==0)
+			ranker = "RankSVM";
+		else
+			ranker = "LambdaRank@MAP";
+		return String.format("%s-[%s]", super.toString(), ranker);
+	}
+	
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
@@ -258,7 +268,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02212
  		
 		//feature 6: the sentiwordnet score for a review.
-		fv[5] = Math.abs((q.getSentiScore() - d.getSentiScore())/q.getSentiScore());//-0.02739
+		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.02739
 
 		// feature 7: the postagging score for a pair of reviews.
 		fv[6] = getPOSScore(q, d);//0.04999

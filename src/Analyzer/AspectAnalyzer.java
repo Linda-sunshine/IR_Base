@@ -289,7 +289,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			
 			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
-			doc.setSentiScore(sentiScore);
+			doc.setSentiScore(sentiScore/spVct.size());//average sentence sentiWordNet score
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
