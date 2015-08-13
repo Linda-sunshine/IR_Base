@@ -33,6 +33,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 10;// features to be defined in genRankingFV()
+	double[] m_mean, m_std; // to normalize the ranking features
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -71,9 +72,9 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		double similarity = 0;
 		
 		if (m_ranker==0) 
-			similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+			similarity = Linear.predictValue(m_rankSVM, normalize(genRankingFV(di, dj)), 0);
 		else
-			similarity = m_lambdaRank.score(genRankingFV(di, dj));
+			similarity = m_lambdaRank.score(normalize(genRankingFV(di, dj)));
 		
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
@@ -242,8 +243,42 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
+		normalize();//normalize the features by z-score
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return pairSize;
+	}
+	
+	void normalize() {
+		m_mean = new double[RankFVSize];
+		m_std = new double[RankFVSize];
+		
+		double size = 0;
+		for(_Query q:m_queries) {
+			for(_QUPair qu:q.m_docList) {
+				for(int i=0; i<RankFVSize; i++) {
+					m_mean[i] += qu.m_rankFv[i];
+					m_std[i] += qu.m_rankFv[i] * qu.m_rankFv[i];
+					size ++;
+				}
+			}
+		}
+		
+		for(int i=0; i<RankFVSize; i++) {
+			m_mean[i] /= size;
+			m_std[i] = Math.sqrt(m_std[i]/size - m_mean[i]*m_mean[i]);
+		}
+		
+		for(_Query q:m_queries) {
+			for(_QUPair qu:q.m_docList) {
+				normalize(qu.m_rankFv);
+			}
+		}
+	}
+	
+	double[] normalize(double[] fv) {
+		for(int i=0; i<RankFVSize; i++)
+			fv[i] = (fv[i] - m_mean[i]) / m_std[i];
+		return fv;
 	}
 	
 	//generate ranking features for a query document pair
