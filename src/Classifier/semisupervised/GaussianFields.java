@@ -21,11 +21,11 @@ import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 public class GaussianFields extends BaseClassifier {
 	
-	double m_alpha; //Weight coefficient between unlabeled node and labeled node.
-	double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
+	double m_alpha; //Weight coefficient for labeled neighbors.
+	double m_beta; //Weight coefficient for unlabeled neighbors
 	double m_M; //Influence of labeled node (similar effect of eta)
-	int m_k; // k labeled nodes.
-	int m_kPrime;//k' unlabeled nodes.
+	int m_k; // k labeled neighbors.
+	int m_kPrime;//k' unlabeled neighbors.
 	
 	int m_U, m_L;
 	protected _Node[] m_nodeList; // list of nodes with its nearest neighbors in the graph

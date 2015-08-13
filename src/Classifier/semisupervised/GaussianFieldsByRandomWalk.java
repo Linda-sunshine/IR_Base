@@ -16,7 +16,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	double m_delta; // convergence criterion for random walk
 	boolean m_weightedAvg; // random walk strategy: True - weighted average; False - majority vote
-	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
+	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight in majority vote random walk
 	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
@@ -59,7 +59,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
 	double randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
-		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		double wL = m_alpha, wU = m_beta, acc = 0;
 		_Node node;
 		
@@ -97,7 +96,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
 		double similarity = 0, acc = 0;
 		int label;
-//		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
 		_Node node;
 		
