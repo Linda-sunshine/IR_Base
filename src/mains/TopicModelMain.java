@@ -27,20 +27,17 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
 		int number_of_topics = 40;
-		String FilePath = "./data/amazon/"; // File path for storing the JST and ASUM input fomrat data
 		int trainSize = 1000;// trainSize 0 means only newEgg; 5000 means all the data 
-		boolean loadNewEggInTrain = true; // false means in training there is no reviews from new
-		boolean generateTrainTestDataForJSTASUM = true;
+		boolean loadNewEggInTrain = false; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
-		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
-		double converge = 1e-9, lambda = 0.9; // negative converge means do need to check likelihood convergency
+		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 1;
@@ -50,14 +47,14 @@ public class TopicModelMain {
 		
 		// most popular items under each category from Amazon
 		// needed for docSummary
-		String tabletProductList[] = {"B008DWG5HE"};
+		String tabletProductList[] = {"B008GFRDL0"};
 		String cameraProductList[] = {"B005IHAIMA"};
 		String phoneProductList[] = {"B00COYOAYW"};
 		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
-		//String folder = "./data/amazon/tablet/topicmodel";
-		String folder = "./data/amazon/test";
+		String folder = "./data/amazon/tablet/topicmodel";
+		//String folder = "./data/amazon/test";
 		//String folder = "./data/amazon/newegg/newegg-reviews.json";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -81,11 +78,12 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
-		String topWordFilePath = "./result/"+category+"/"+trainSize+"/";
+		String topWordFilePath = "./results/"+category+"/"+trainSize+"/";
 		if(loadNewEggInTrain)
 			topWordFilePath += "NewEggLoaded/";
 		else
 			topWordFilePath += "noNewEgg/";
+		
 		if(loadAspectSentiPrior==0)
 			topWordFilePath += "noPrior/";
 		else if(loadAspectSentiPrior==1)
@@ -94,6 +92,8 @@ public class TopicModelMain {
 			topWordFilePath += "aspectPrior/";
 		
 		topWordFilePath+="topWords.txt";
+		
+		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
 		
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
@@ -115,6 +115,7 @@ public class TopicModelMain {
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		}
+		
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -160,6 +161,7 @@ public class TopicModelMain {
 			}
 			
 			model.setDisplay(display);
+			model.setInforWriter(infoFilePath);
 			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){
@@ -179,22 +181,20 @@ public class TopicModelMain {
 				model.printTopWords(topK);
 			} else {
 				model.setRandomFold(setRandomFold);
-				model.setTrainSetSize(trainSize);
 				model.crossValidation(crossV);
-				model.printTopWords(topK,topWordFilePath);
-				
-				if (sentence && trainSize==5000) {
-					if(category.equalsIgnoreCase("camera"))
-						model.docSummary(cameraProductList);
-					else if(category.equalsIgnoreCase("tablet"))
-						model.docSummary(tabletProductList);
-					else if(category.equalsIgnoreCase("phone"))
-						model.docSummary(phoneProductList);
-					else if(category.equalsIgnoreCase("tv"))
-						model.docSummary(tvProductList);
-				}
+				model.printTopWords(topK, topWordFilePath);
 			}
 			
+			if (sentence) {
+				if(category.equalsIgnoreCase("camera"))
+					((HTMM)model).docSummary(cameraProductList);
+				else if(category.equalsIgnoreCase("tablet"))
+					((HTMM)model).docSummary(tabletProductList);
+				else if(category.equalsIgnoreCase("phone"))
+					((HTMM)model).docSummary(phoneProductList);
+				else if(category.equalsIgnoreCase("tv"))
+					((HTMM)model).docSummary(tvProductList);
+			}
 		}
 	}
 }

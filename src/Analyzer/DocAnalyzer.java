@@ -369,6 +369,7 @@ public class DocAnalyzer extends Analyzer {
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // sparse sentence feature vectors 
+		double stopwordCnt = 0, rawCnt = 0;
 		
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
@@ -379,12 +380,16 @@ public class DocAnalyzer extends Analyzer {
 				
 				stnList.add(new _Stn(Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
+				
+				stopwordCnt += result.getStopwordCnt();
+				rawCnt += result.getRawCnt();
 			}
 		} // End For loop for sentence	
 	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
-			doc.createSpVct(spVct);			
+			doc.createSpVct(spVct);		
+			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.setSentences(stnList);
 			
 			setStnFvs(doc);

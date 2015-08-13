@@ -220,14 +220,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			for(int k=0; k<5; k++){
 				_Edge item = node.m_labeledEdges.get(k);
 				_Doc dj = getLabeledDoc(item.getNodeId());
-				m_debugWriter.write(String.format("L(%d, %.4f)\t%s\n", 1+k, item.getSimilarity(), dj.toString()));
+				m_debugWriter.write(String.format("L(%d, %.4f)\t%s\n", (int)item.getClassifierPred(), item.getSimilarity(), dj.toString()));
 			}
 			
 			/****Get the top 5 elements from k'UU******/
 			for(int k=0; k<5; k++){
 				_Edge item = node.m_unlabeledEdges.get(k);
 				_Doc dj = getTestDoc(item.getNodeId());
-				m_debugWriter.write(String.format("U(%d, %.4f)\t%s\n", 1+k, item.getSimilarity(), dj.toString()));
+				m_debugWriter.write(String.format("U(%d, %d, %.4f)\t%s\n", (int)item.getClassifierPred(), (int)item.getPred(), item.getSimilarity(), dj.toString()));
 			}
 			m_debugWriter.write("\n");		
 		} catch (IOException e) {

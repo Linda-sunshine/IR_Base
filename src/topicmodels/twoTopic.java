@@ -101,12 +101,6 @@ public class twoTopic extends TopicModel {
 	protected void finalEst() {	}
 
 	@Override
-	public void docSummary(String[] productList) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void printTopWords(int k, String topWordPath) {
 		// TODO Auto-generated method stub
 		

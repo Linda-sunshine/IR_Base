@@ -7,8 +7,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
-import structures._Stn;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -19,10 +17,12 @@ public abstract class TopicModel {
 	protected double m_converge;//relative change in log-likelihood to terminate EM
 	protected int number_of_iteration;//number of iterations in inferencing testing document
 	protected _Corpus m_corpus;	
-	protected int m_crossValidFold;
+	
 	protected boolean m_logSpace; // whether the computations are all in log space
+	
 	protected boolean m_LoadnewEggInTrain = true; // check whether newEgg will be loaded in trainSet or Not
 	protected boolean m_randomFold = true; // true mean randomly take K fold and test and false means use only 1 fold and use the fixed trainset
+	
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
 	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
@@ -37,8 +37,6 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
-	protected String m_category;
 	public PrintWriter infoWriter;	
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
@@ -72,7 +70,6 @@ public abstract class TopicModel {
 		m_randomFold = flag;
 	}
 	
-	
 	public void setInforWriter(String path){
 		System.out.println("Info File Path: "+ path);
 		try{
@@ -80,12 +77,6 @@ public abstract class TopicModel {
 		}catch(Exception e){
 			System.err.println(path+" Not found!!");
 		}
-	}
-	
-	//added by Mustafiz
-	// for controlling varying training set size of Amazon
-	public void setTrainSetSize(int size){
-		m_trainSize = size;
 	}
 	
 	//initialize necessary model parameters
@@ -131,9 +122,6 @@ public abstract class TopicModel {
 	//print top k words under each topic
 	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
-	
-	// calculate the doc summary
-	public abstract void docSummary(String[] productList);
 	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
@@ -263,10 +251,7 @@ public abstract class TopicModel {
 				perplexity += worker.getPerplexity();
 			}
 		} else {
-			
-			
-			for(_Doc d:m_testSet) {
-				
+			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
 				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
@@ -276,9 +261,8 @@ public abstract class TopicModel {
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
-		{
 			calculatePrecisionRecall();
-		}
+
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		
@@ -343,10 +327,9 @@ public abstract class TopicModel {
 		
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
-		m_crossValidFold = k;
-		
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
+		
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
 		int amazonRatingCount[] = {0,0,0,0,0};
@@ -472,6 +455,5 @@ public abstract class TopicModel {
 		
 		infoWriter.flush();
 		infoWriter.close();
-	}
-	
+	}	
 }

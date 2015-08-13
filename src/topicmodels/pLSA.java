@@ -92,7 +92,7 @@ public class pLSA extends twoTopic {
 					}
 				}
 				
-				System.out.format("Prior keywords for Topic %d (%s): %d\n", priorWords.size(), container[0], wCount);
+				System.out.format("Prior keywords for Topic %d (%s): %d/%d\n", priorWords.size(), container[0], wCount, container.length-1);
 				priorWords.add(prior);
 			}
 			reader.close();
@@ -333,104 +333,4 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
-	
-	public void docSummary(String[] productList){
-		
-		int numberofSentences = 0;
-		for(int i=0; i<productList.length; i++){			
-			for(_Doc d:m_trainSet) {
-				if(d.getItemID().equalsIgnoreCase(productList[i])){
-					numberofSentences+=d.getSenetenceSize();
-				}
-			}
-		}
-		
-		double sentences[][] = new double [this.number_of_topics][numberofSentences];
-		String rawSentence[] = new String[numberofSentences];
-		
-		for(int i=0; i<this.number_of_topics; i++){
-			int index = 0;
-			for(_Doc d:m_trainSet) {
-				if(d.getItemID().equalsIgnoreCase(productList[0])) {
-					for(int j=0; j<d.getSenetenceSize(); j++){
-						double prob = 1.0;
-						_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
-						for(int w=0; w<tmpSentence.length; w++){
-							int wid = tmpSentence[w].getIndex();
-							prob *= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
-						}
-						rawSentence[index] = d.getSentence(j).getRawSentence();
-						sentences[i][index] = prob/tmpSentence.length;
-						index++;
-					}// sentence loop
-				} // if condition
-			}//doc loop
-			
-			/* Find Sentence with largest probability*/
-			double max = sentences[i][0]; 
-			int max_index = 0;
-	
-			for(int j=1; j<numberofSentences; j++){
-				if(sentences[i][j]>max){
-					max = sentences[i][j];
-					max_index = j;
-				}
-			}
-			/* print that sentence*/
-			if(i<this.number_of_topics/2)
-				System.out.println("\nT: "+i);
-			else
-				System.out.println("\nT: "+i);
-	
-			System.out.println(rawSentence[max_index]);
-		}
-	}
-		
-//	
-//	public void docSummary(int numberOfSentences){
-//		
-//		double sentences[][] = new double [this.number_of_topics][numberOfSentences];
-//		String rawSentence[] = new String[numberOfSentences];
-//		
-//		
-//		for(int i=0; i<this.number_of_topics; i++){
-//			int index = 0;
-//			for(_Doc d:m_testSet) {
-//				if(d.getItemID().equalsIgnoreCase("B00ACVI202")){
-//			for(int j=0; j<d.getSenetenceSize(); j++){
-//				double prob = 1.0;
-//				_SparseFeature[] tmpSentence = d.getSentence(j).getFv();
-//				for(int w=0; w<tmpSentence.length; w++){
-//					int wid = tmpSentence[w].getIndex();
-//					prob*= Math.exp(topic_term_probabilty[i][wid])* Math.exp(d.m_topics[i]);
-//				}
-//				rawSentence[index] = d.getSentence(j).getRawSentence();
-//				sentences[i][index] = prob/tmpSentence.length;
-//				index++;
-//			}// sentence loop
-//			} // if condition
-//		}//doc loop
-//			
-//			/* Find Sentence with largest probability*/
-//			double max = sentences[i][0]; 
-//			int max_index = 0;
-//
-//			for(int j=1; j<numberOfSentences; j++){
-//				if(sentences[i][j]>max){
-//					max = sentences[i][j];
-//					max_index = j;
-//				}
-//			}
-//			/* print that sentence*/
-//			if(i<this.number_of_topics/2)
-//				System.out.println("\nT: "+i);
-//			else
-//				System.out.println("\nT: "+i);
-//
-//			System.out.println(rawSentence[max_index]);
-//
-//		}
-//	
-//	}
-	
 }

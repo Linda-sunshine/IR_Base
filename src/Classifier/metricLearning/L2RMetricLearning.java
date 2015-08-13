@@ -55,6 +55,16 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_multithread = multithread;
 	}
 	
+	@Override
+	public String toString() {
+		String ranker;
+		if (m_ranker==0)
+			ranker = "RankSVM";
+		else
+			ranker = "LambdaRank@MAP";
+		return String.format("%s-[%s]", super.toString(), ranker);
+	}
+	
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
@@ -243,41 +253,44 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
-		fv[0] = getBoWSim(q, d);//0.04298
+		fv[0] = getBoWSim(q, d);//0.03900
 		
 		//feature 2: topical similarity
-		fv[1] = getTopicalSim(q, d);//-0.09567
+		fv[1] = getTopicalSim(q, d);//-0.08513
 		
 		//feature 3: belong to the same product
-		fv[2] = q.sameProduct(d)?1:0;//0.02620
+		fv[2] = q.sameProduct(d)?1:0;//0.02104
 
 		//feature 4: sparse feature length difference
-		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
+		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01580
 		
 		//feature 5: jaccard coefficient
-		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
+		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02190
  		
+		//feature 6: the sentiwordnet score for a review.
+		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.00103
+
+		//		// feature 10: the aspect score for a pair of reviews.
+//		fv[9] = getAspectScore(q, d);
+//		
+//		// feature 11: the longest subsequence of a query and a document.
+//		fv[10] = Utils.LCS2Doc(q, d);
+//		
+//		// feature 12: the title of review
+//		// fv[11] = d.getTitleScore();
+		// feature 7: the pos tagging score for a pair of reviews.
+		fv[6] = getPOSScore(q, d);//0.04831
+
+		// feature 8: the aspect score for a pair of reviews.
+		fv[7] = getAspectScore(q, d);//0.10005
+		
 		//Part II: pointwise features for document
-		//feature 6: stop words proportion
-		fv[5] = d.getStopwordProportion();//-0.00005
+		//feature 9: stop words proportion
+		fv[8] = d.getStopwordProportion();//0.00060
 		
-		//feature 7: average IDF
-		fv[6] = d.getAvgIDF();//0.03732
-		
-		//feature 8: the sentiwordnet score for a review.
-		fv[7] = d.getSentiScore();
+		//feature 10: average IDF
+		fv[9] = d.getAvgIDF();//0.02447
 
-		// feature 9: the postagging score for a pair of reviews.
-		fv[8] = getPOSScore(q, d);
-
-		// feature 10: the aspect score for a pair of reviews.
-		fv[9] = getAspectScore(q, d);
-		
-		// feature 11: the longest subsequence of a query and a document.
-		fv[10] = Utils.LCS2Doc(q, d);
-		
-		// feature 12: the title of review
-		// fv[11] = d.getTitleScore();
 		return fv;
 	}
 }
