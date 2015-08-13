@@ -68,7 +68,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
-		
 		double similarity = 0;
 		
 		if (m_ranker==0) 
