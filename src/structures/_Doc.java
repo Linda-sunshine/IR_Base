@@ -204,6 +204,22 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_x_projection;
 	}
 	
+	public int[] getIndices() {
+		int[] indices = new int[m_x_sparse.length];
+		for(int i=0; i<m_x_sparse.length; i++) 
+			indices[i] = m_x_sparse[i].m_index;
+		
+		return indices;
+	}
+	
+	public double[] getValues() {
+		double[] values = new double[m_x_sparse.length];
+		for(int i=0; i<m_x_sparse.length; i++) 
+			values[i] = m_x_sparse[i].m_value;
+		
+		return values;
+	}
+	
 	//return the unique number of features in the doc
 	public int getDocLength() {
 		return this.m_x_sparse.length;
