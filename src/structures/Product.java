@@ -1,7 +1,7 @@
 package structures;
 
-import utils.Utils;
 import json.JSONObject;
+import utils.Utils;
 
 public class Product {
 	String m_ID;

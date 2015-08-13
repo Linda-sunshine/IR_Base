@@ -3,8 +3,8 @@ package Classifier.supervised.liblinear;
 import static Classifier.supervised.liblinear.Linear.atof;
 import static Classifier.supervised.liblinear.Linear.atoi;
 import static Classifier.supervised.liblinear.Linear.closeQuietly;
-import static Classifier.supervised.liblinear.Linear.printf;
 import static Classifier.supervised.liblinear.Linear.info;
+import static Classifier.supervised.liblinear.Linear.printf;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

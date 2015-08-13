@@ -227,7 +227,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			for(int k=0; k<5; k++){
 				_Edge item = node.m_unlabeledEdges.get(k);
 				_Doc dj = getTestDoc(item.getNodeId());
-				m_debugWriter.write(String.format("U(%d, %d, %.4f)\t%s\n", (int)item.getClassifierPred(), (int)item.getPred(), item.getSimilarity(), dj.toString()));
+				m_debugWriter.write(String.format("U(%d, %.3f, %.4f)\t%s\n", (int)item.getClassifierPred(), item.getPred(), item.getSimilarity(), dj.toString()));
 			}
 			m_debugWriter.write("\n");		
 		} catch (IOException e) {

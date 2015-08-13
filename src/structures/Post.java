@@ -3,9 +3,9 @@
  */
 package structures;
 
-import utils.Utils;
 import json.JSONException;
 import json.JSONObject;
+import utils.Utils;
 
 /**
  * @author hongning

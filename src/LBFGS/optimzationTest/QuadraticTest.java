@@ -1,8 +1,8 @@
 package LBFGS.optimzationTest;
 
 import LBFGS.LBFGS;
-import LBFGS.Optimizable;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import LBFGS.Optimizable;
 
 /**
  * Testing cases for numerical optimization problems
