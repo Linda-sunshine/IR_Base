@@ -144,7 +144,7 @@ public class MyTransductiveMain2 {
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 0;//0-learning to rank; 1-lambda rank.
+			int ranker = 1;//0-learning to rank; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 

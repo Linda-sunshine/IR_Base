@@ -268,7 +268,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		//Added by Lin for computing LCS for documents.
 		result = TokenizerNormalizeStemmer(doc.getSource());
 		doc.addTokens(result.getTokens());
-		
+		doc.setStopwordProportion(result.getStopwordProportion());
+
 		//Added by Lin for constructing postagging vector.
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
 		int y = doc.getYLabel();
