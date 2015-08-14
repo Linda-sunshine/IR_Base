@@ -289,7 +289,7 @@ public class GaussianFields extends BaseClassifier {
 		
 		System.out.format("W-C: %.4f/%.4f\n\n", dMean, dStd);
 		
-		System.out.format("W TP:%d\tNP:%d\tFN:%d\tPN:%d\n", acc[0][0][0], acc[0][0][1], acc[0][1][0], acc[0][1][1]);
+		System.out.format("W TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[0][0][0], acc[0][0][1], acc[0][1][0], acc[0][1][1]);
 		System.out.format("C TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[1][0][0], acc[1][0][1], acc[1][1][0], acc[1][1][1]);
 		System.out.format("L TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[2][0][0], acc[2][0][1], acc[2][1][0], acc[2][1][1]);
 		System.out.format("U TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[3][0][0], acc[3][0][1], acc[3][1][0], acc[3][1][1]);
