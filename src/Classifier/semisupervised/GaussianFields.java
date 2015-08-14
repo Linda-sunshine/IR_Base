@@ -209,34 +209,31 @@ public class GaussianFields extends BaseClassifier {
 		_Node node;
 		_Edge neighbor;
 		
-		int y;
+		int y, uPred, lPred, cPred;
+		double dMean = 0, dStd = 0;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
 		double[][][] total = new double[3][2][2];
-		double[] acc = new double[5]; // combined prediction, classifier's prediction, labeled neighbors prediction, unlabeled neighbors prediction, optimal
+		int[][][] acc = new int[5][2][2]; // combined prediction, classifier's prediction, labeled neighbors prediction, unlabeled neighbors prediction, optimal
 		
 		for(int i = 0; i < m_U; i++) {
 			node = m_nodeList[i];//nearest neighbor graph
 			y = (int)node.m_label;
 			
-			/****Check different prediction methods' performance******/
-			boolean success = false;
-			if (y==getLabel(node.m_pred))
-				acc[0] ++;
-			if (y==(int)(node.m_classifierPred)) {
-				acc[1] ++;
-				success = true;
-			}
-			if (y==(int)(node.weightAvgInLabeledNeighbors()+0.5)) {
-				acc[2] ++;
-				success = true;
-			}
-			if (y==(int)(node.weightAvgInUnlabeledNeighbors()+0.5)) {
-				acc[3] ++;
-				success = true;
-			}
-			if (success)
-				acc[4] ++;
+			dMean += node.m_pred - node.m_classifierPred;
+			dStd += (node.m_pred - node.m_classifierPred) * (node.m_pred - node.m_classifierPred);
 			
+			/****Check different prediction methods' performance******/
+			cPred = (int)(node.m_classifierPred);
+			lPred = (int)(node.weightAvgInLabeledNeighbors()+0.5);
+			uPred = (int)(node.weightAvgInUnlabeledNeighbors()+0.5);
+			acc[0][y][getLabel(node.m_pred)] ++;
+			acc[1][y][cPred] ++;				
+			acc[2][y][lPred] ++;
+			acc[3][y][uPred] ++;
+			if (cPred==y || lPred==y || uPred==y)
+				acc[4][y][y] ++;//one of these predictions is correct
+			else
+				acc[4][y][1-y] ++;
 			
 			/****Check the nearest unlabeled neighbors******/
 			double precision = 0;
@@ -280,12 +277,23 @@ public class GaussianFields extends BaseClassifier {
 				}
 			}
 		}
+		
+		dMean /= m_U;
+		dStd = Math.sqrt(dStd/m_U - dMean*dMean);
+		
 		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
 		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
 		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
 		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
-		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
-		System.out.format("Agg:%.5f\tC:%.5f\tL:%.5f\tU:%.5f\tO:%.5f\n\n", acc[0]/m_U, acc[1]/m_U, acc[2]/m_U, acc[3]/m_U, acc[4]/m_U);
+		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+		
+		System.out.format("W-C: %.4f/%.4f\n\n", dMean, dStd);
+		
+		System.out.format("W TP:%d\tNP:%d\tFN:%d\tPN:%d\n", acc[0][0][0], acc[0][0][1], acc[0][1][0], acc[0][1][1]);
+		System.out.format("C TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[1][0][0], acc[1][0][1], acc[1][1][0], acc[1][1][1]);
+		System.out.format("L TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[2][0][0], acc[2][0][1], acc[2][1][0], acc[2][1][1]);
+		System.out.format("U TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[3][0][0], acc[3][0][1], acc[3][1][0], acc[3][1][1]);
+		System.out.format("O TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[4][0][0], acc[4][0][1], acc[4][1][0], acc[4][1][1]);
 	}
 	
 	protected void constructGraph(boolean createSparseGraph) {		
