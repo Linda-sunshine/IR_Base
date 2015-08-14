@@ -285,7 +285,7 @@ public class GaussianFields extends BaseClassifier {
 		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
 		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
 		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
-		System.out.format("Agg:%.4f\tC:%.4f\tL:%.4f\tU:%.4f\tO:%.4f\n\n", acc[0]/m_U, acc[1]/m_U, acc[2]/m_U, acc[3]/m_U, acc[4]/m_U);
+		System.out.format("Agg:%.5f\tC:%.5f\tL:%.5f\tU:%.5f\tO:%.5f\n\n", acc[0]/m_U, acc[1]/m_U, acc[2]/m_U, acc[3]/m_U, acc[4]/m_U);
 	}
 	
 	protected void constructGraph(boolean createSparseGraph) {		
