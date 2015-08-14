@@ -168,14 +168,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
 		} while(diff > m_delta && iter<50);//maximum 50 iterations 
 		
-		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
-		SimilarityCheck();
-		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
 			for(int j=0; j<m_classNo; j++)
 				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
 		}
+		
+		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
+		SimilarityCheck();
 		
 		/***evaluate the performance***/
 		double acc = 0;

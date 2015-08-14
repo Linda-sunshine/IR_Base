@@ -212,10 +212,31 @@ public class GaussianFields extends BaseClassifier {
 		int y;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
 		double[][][] total = new double[3][2][2];
+		double[] acc = new double[5]; // combined prediction, classifier's prediction, labeled neighbors prediction, unlabeled neighbors prediction, optimal
 		
 		for(int i = 0; i < m_U; i++) {
 			node = m_nodeList[i];//nearest neighbor graph
 			y = (int)node.m_label;
+			
+			/****Check different prediction methods' performance******/
+			boolean success = false;
+			if (y==getLabel(node.m_pred))
+				acc[0] ++;
+			if (y==(int)(node.m_classifierPred)) {
+				acc[1] ++;
+				success = true;
+			}
+			if (y==(int)(node.weightAvgInLabeledNeighbors()+0.5)) {
+				acc[2] ++;
+				success = true;
+			}
+			if (y==(int)(node.weightAvgInUnlabeledNeighbors()+0.5)) {
+				acc[3] ++;
+				success = true;
+			}
+			if (success)
+				acc[4] ++;
+			
 			
 			/****Check the nearest unlabeled neighbors******/
 			double precision = 0;
@@ -263,7 +284,8 @@ public class GaussianFields extends BaseClassifier {
 		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
 		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
 		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
-		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+		System.out.format("Agg:%.4f\tC:%.4f\tL:%.4f\tU:%.4f\tO:%.4f\n\n", acc[0]/m_U, acc[1]/m_U, acc[2]/m_U, acc[3]/m_U, acc[4]/m_U);
 	}
 	
 	protected void constructGraph(boolean createSparseGraph) {		
