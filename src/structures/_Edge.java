@@ -34,6 +34,10 @@ public class _Edge implements Comparable<_Edge> {
 		return m_node.m_pred;
 	}
 	
+	public double getClassifierPred() {
+		return m_node.m_classifierPred;
+	}
+	
 	public double getSimilarity() {
 		return m_similarity;
 	}

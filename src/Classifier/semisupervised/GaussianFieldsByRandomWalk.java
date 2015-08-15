@@ -16,7 +16,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	double m_delta; // convergence criterion for random walk
 	boolean m_weightedAvg; // random walk strategy: True - weighted average; False - majority vote
-	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
+	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight in majority vote random walk
 	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
@@ -59,7 +59,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
 	double randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
-		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		double wL = m_alpha, wU = m_beta, acc = 0;
 		_Node node;
 		
@@ -97,7 +96,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
 		double similarity = 0, acc = 0;
 		int label;
-//		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
 		_Node node;
 		
@@ -170,14 +168,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
 		} while(diff > m_delta && iter<50);//maximum 50 iterations 
 		
-		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
-		SimilarityCheck();
-		
 		/***get some statistics***/
 		for(int i = 0; i < m_U; i++){
 			for(int j=0; j<m_classNo; j++)
 				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
 		}
+		
+		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
+		SimilarityCheck();
 		
 		/***evaluate the performance***/
 		double acc = 0;
@@ -220,14 +218,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			for(int k=0; k<5; k++){
 				_Edge item = node.m_labeledEdges.get(k);
 				_Doc dj = getLabeledDoc(item.getNodeId());
-				m_debugWriter.write(String.format("L(%d, %.4f)\t%s\n", 1+k, item.getSimilarity(), dj.toString()));
+				m_debugWriter.write(String.format("L(%d, %.4f)\t%s\n", (int)item.getClassifierPred(), item.getSimilarity(), dj.toString()));
 			}
 			
 			/****Get the top 5 elements from k'UU******/
 			for(int k=0; k<5; k++){
 				_Edge item = node.m_unlabeledEdges.get(k);
 				_Doc dj = getTestDoc(item.getNodeId());
-				m_debugWriter.write(String.format("U(%d, %.4f)\t%s\n", 1+k, item.getSimilarity(), dj.toString()));
+				m_debugWriter.write(String.format("U(%d, %.3f, %.4f)\t%s\n", (int)item.getClassifierPred(), item.getPred(), item.getSimilarity(), dj.toString()));
 			}
 			m_debugWriter.write("\n");		
 		} catch (IOException e) {

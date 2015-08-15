@@ -46,5 +46,25 @@ public class _Node {
 		Collections.sort(m_labeledEdges);
 		Collections.sort(m_unlabeledEdges);
 	}
+	
+	public double weightAvgInLabeledNeighbors() {
+		double wijSumL = 0, fSumL = 0;
+		for (_Edge edge:m_labeledEdges) {				
+			wijSumL += edge.getSimilarity(); //get the similarity between two nodes.
+			fSumL += edge.getSimilarity() * edge.getLabel();
+		}
+		
+		return fSumL / wijSumL;
+	}
+	
+	public double weightAvgInUnlabeledNeighbors() {
+		double wijSumU = 0, fSumU = 0;
+		for (_Edge edge:m_unlabeledEdges) {				
+			wijSumU += edge.getSimilarity(); //get the similarity between two nodes.
+			fSumU += edge.getSimilarity() * edge.getPred();
+		}
+		
+		return fSumU / wijSumU;
+	}
 }
 

@@ -107,6 +107,13 @@ public class _Stn {
 		return m_sentiTransitStat;
 	}
 	
+	public double getLength() {
+		double length = 0;
+		for(_SparseFeature f:m_x_sparse)
+			length += f.getValue();
+		return length;
+	}
+	
 	public void setSentiTransitStat(double t) {
 		m_sentiTransitStat = t;
 	}

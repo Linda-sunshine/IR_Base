@@ -3,8 +3,10 @@ package topicmodels;
 import java.util.Arrays;
 
 import markovmodel.FastRestrictedHMM;
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import utils.Utils;
@@ -33,10 +35,10 @@ public class HTMM extends pLSA {
 				0, //HTMM does not have a background setting
 				number_of_topics, alpha);
 		
-		this.constant = 2;		
-		this.epsilon = Math.random();
-		
+		this.epsilon = Math.random();		
+		this.constant = 2;
 		m_logSpace = true;
+		createSpace();
 	}
 	
 	public HTMM(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
@@ -189,5 +191,29 @@ public class HTMM extends pLSA {
 		return current;
 	}
 	
-	
+	public void docSummary(String[] productList){
+		for(String prodID : productList) {
+			for(int i=0; i<this.number_of_topics; i++){
+				MyPriorityQueue<_RankItem> stnQueue = new MyPriorityQueue<_RankItem>(3);//top three sentences per topic per product
+				
+				for(_Doc d:m_trainSet) {
+					if(d.getItemID().equalsIgnoreCase(prodID)) {
+						for(int j=0; j<d.getSenetenceSize(); j++){
+							_Stn sentence = d.getSentence(j);
+							double prob = d.m_topics[i];
+							for(_SparseFeature f:sentence.getFv())
+								prob += f.getValue() * topic_term_probabilty[i][f.getIndex()];
+							prob /= sentence.getLength();
+							
+							stnQueue.add(new _RankItem(sentence.getRawSentence(), prob));
+						}
+					}
+				}				
+				
+				System.out.format("Product: %s, Topic: %d\n", prodID, i);
+				for(_RankItem it:stnQueue)
+					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);				
+			}
+		}
+	}
 }

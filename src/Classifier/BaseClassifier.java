@@ -46,7 +46,7 @@ public abstract class BaseClassifier {
 			m_TPTable[pred][ans] += 1; //Compare the predicted label and original label, construct the TPTable.
 			
 			if (pred != ans) {
-				if (m_debugOutput!=null)
+				if (m_debugOutput!=null && Math.random()<0.2)//try to reduce the output size
 					debug(doc);
 			} else {//also print out some correctly classified samples
 				if (m_debugOutput!=null && Math.random()<0.02)

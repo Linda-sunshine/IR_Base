@@ -7,8 +7,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._SparseFeature;
-import structures._Stn;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -19,11 +17,12 @@ public abstract class TopicModel {
 	protected double m_converge;//relative change in log-likelihood to terminate EM
 	protected int number_of_iteration;//number of iterations in inferencing testing document
 	protected _Corpus m_corpus;	
-	protected int m_crossValidFold;
+	
 	protected boolean m_logSpace; // whether the computations are all in log space
+	
 	protected boolean m_LoadnewEggInTrain = true; // check whether newEgg will be loaded in trainSet or Not
 	protected boolean m_randomFold = true; // true mean randomly take K fold and test and false means use only 1 fold and use the fixed trainset
-	protected int m_testDocMod; // when m_randomFold = false, we select every m_testDocMod_th document for testing
+	
 	//for training/testing split
 	protected ArrayList<_Doc> m_trainSet, m_testSet;
 	protected double[][] word_topic_sstat; /* fractional count for p(z|d,w) */
@@ -38,12 +37,9 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
-	private boolean m_trainSetForASUMJST = false;
-	protected String m_category;
-	private String filePath;
 	public PrintWriter infoWriter;
-	
+	public PrintWriter summaryWriter;
+	public PrintWriter debugWriter;
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -76,10 +72,6 @@ public abstract class TopicModel {
 		m_randomFold = flag;
 	}
 	
-	public void setTestDocMod(int mod){
-		m_testDocMod = mod;
-	}
-	
 	public void setInforWriter(String path){
 		System.out.println("Info File Path: "+ path);
 		try{
@@ -89,10 +81,22 @@ public abstract class TopicModel {
 		}
 	}
 	
-	//added by Mustafiz
-	// for controlling varying training set size of Amazon
-	public void setTrainSetSize(int size){
-		m_trainSize = size;
+	public void setSummaryWriter(String path){
+		System.out.println("Summary File Path: "+ path);
+		try{
+			summaryWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
+	}
+	
+	public void setDebugWriter(String path){
+		System.out.println("Debug File Path: "+ path);
+		try{
+			debugWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
 	}
 	
 	//initialize necessary model parameters
@@ -139,9 +143,6 @@ public abstract class TopicModel {
 	public abstract void printTopWords(int k, String topWordPath);
 	public abstract void printTopWords(int k);
 	
-	// calculate the docsummary
-	public abstract void docSummary(String[] productList);
-	
 	// compute corpus level log-likelihood
 	protected double calculate_log_likelihood() {
 		return 0;
@@ -183,9 +184,17 @@ public abstract class TopicModel {
 		
 		//evenly allocate the testing work load
 		int workerID = 0;
-		for(_Doc d:m_testSet) {
-			m_workers[workerID%m_workers.length].addDoc(d);
-			workerID++;
+		
+		if(debugWriter==null){
+			for(_Doc d:m_testSet) {
+				m_workers[workerID%m_workers.length].addDoc(d);
+				workerID++;
+			}
+		}else{
+			for(_Doc d:m_corpus.getCollection()) {
+				m_workers[workerID%m_workers.length].addDoc(d);
+				workerID++;
+			}
 		}
 			
 		for(int i=0; i<m_workers.length; i++) {
@@ -264,35 +273,44 @@ public abstract class TopicModel {
 		
 		if (m_multithread) {
 			multithread_inference();
-			
+			System.out.println("In thread");
 			for(TopicModelWorker worker:m_workers) {
 				sumLikelihood += worker.getLogLikelihood();
 				perplexity += worker.getPerplexity();
 			}
 		} else {
-			
-			
-			for(_Doc d:m_testSet) {
-				
+			System.out.println("In Normal");
+			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
 				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 			}
+			
 		}
 		perplexity /= m_testSet.size();
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
-		{
 			calculatePrecisionRecall();
-		}
+
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		
 		return perplexity;
 	}
 
-		
+	
+	public void debugOutputWrite(){
+		debugWriter.println("Doc ID, Source, SentenceIndex, ActualSentiment, PredictedSentiment");
+		for(_Doc d:m_corpus.getCollection()){
+			for(int i=0; i<d.getSenetenceSize(); i++){
+				debugWriter.format("%d,%d,%d,%s,%d,%d\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence(),d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel());
+			}
+		}
+		debugWriter.flush();
+		debugWriter.close();
+	}
+	
 	public void calculatePrecisionRecall(){
 		int[][] precision_recall = new int [2][2];
 		precision_recall [0][0] = 0; // 0 is for pos
@@ -347,155 +365,12 @@ public abstract class TopicModel {
 		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
-	
-	public void setFilePathForJSTASUM(int m_trainSize, String m_category, String filePath){
-		this.m_trainSetForASUMJST = true;
-		this.m_trainSize = m_trainSize;
-		this.m_category = m_category;
-		this.filePath = filePath;
-	}
-	
-	public void generateFileForJSTASUM(){
 		
-		try{
-			
-			PrintWriter jstTrainCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR.dat"));
-			PrintWriter jstTestCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test.dat"));
-			// for sentence level of JST
-			PrintWriter jstTestCorpusForSentenceWriter = new PrintWriter(new File(filePath +"JST/" +  m_trainSize +"/"+m_category+"/MR_test_sentence.dat"));
-			PrintWriter jstTestCorpusForSentenceLabelWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test_label_sentence.dat"));
-		
-			PrintWriter asumWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/BagOfSentences_pros_cons.txt"));
-			PrintWriter asumFeatureWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/selected_combine_fv.txt"));
-			
-			
-			int index = -1;
-			String word = "";
-	
-			// Training Documnet Generation for JST
-			for(_Doc trainDoc:m_trainSet){
-				jstTrainCorpusWriter.write("d"+trainDoc.getID()+" ");
-				for(_SparseFeature feature :trainDoc.getSparse()){
-						index = feature.getIndex(); 
-						word = m_corpus.getFeature(index);
-						jstTrainCorpusWriter.write(word+" ");
-				}
-				jstTrainCorpusWriter.write("\n");
-			}
-			
-			jstTrainCorpusWriter.flush();
-			jstTrainCorpusWriter.close();
-						
-			index = -1;
-			word = "";
-			for(_Doc testDoc:m_testSet){
-				jstTestCorpusWriter.write("d"+testDoc.getID()+" ");
-				for(_SparseFeature feature :testDoc.getSparse()){
-						index = feature.getIndex(); 
-						word = m_corpus.getFeature(index);
-						jstTestCorpusWriter.write(word+" ");
-				}
-				jstTestCorpusWriter.write("\n");
-			}
-			
-			jstTestCorpusWriter.flush();
-			jstTestCorpusWriter.close();
-		
-			
-		
-			
-			index = -1;
-			word = "";
-			int sentenceCounter = 0;
-			for(_Doc testDoc:m_testSet){
-				for(_Stn sentence : testDoc.getSentences()){
-					jstTestCorpusForSentenceWriter.write("d"+sentenceCounter+" ");
-					int sentenceLabel = sentence.getSentenceSenitmentLabel()==-1?3:sentence.getSentenceSenitmentLabel();
-					jstTestCorpusForSentenceLabelWriter.write("d"+sentenceCounter+" "+sentenceLabel+"\n");
-					for(_SparseFeature feature : sentence.getFv()){
-						index = feature.getIndex(); 
-						word = m_corpus.getFeature(index);
-						jstTestCorpusForSentenceWriter.write(word+" ");
-					}
-					sentenceCounter++;
-					jstTestCorpusForSentenceWriter.write("\n");
-				}
-			}
-			
-			jstTestCorpusForSentenceWriter.flush();
-			jstTestCorpusForSentenceWriter.close();
-		
-			jstTestCorpusForSentenceLabelWriter.flush();
-			jstTestCorpusForSentenceLabelWriter.close();
-		
-			// Train Document generation for ASUM 
-			index = -1;
-			word = "";
-			for(_Doc d:m_trainSet){
-				asumWriter.write(d.getSenetenceSize()+"\n");
-				for(_Stn sentence : d.getSentences()){
-					int sentenceLabel = sentence.getSentenceSenitmentLabel();
-					if(sentenceLabel==0) // pros
-						sentenceLabel = -1;
-					else if(sentenceLabel==1) // cons
-						sentenceLabel = -2;
-					else if(sentenceLabel==-1) // from Amazon
-						sentenceLabel = -3;
-					asumWriter.write(sentenceLabel+" ");
-					for(_SparseFeature feature : sentence.getFv()){
-						index = feature.getIndex(); 
-						asumWriter.write(index+" ");
-					}
-					asumWriter.write("\n");
-				}
-			}
-			
-			
-			// Test Document generation for ASUM
-			index = -1;
-			word = "";
-			for(_Doc d:m_testSet){
-				int senlen = (-1)*d.getSenetenceSize();
-				asumWriter.write(senlen+"\n");
-				for(_Stn sentence : d.getSentences()){
-					int sentenceLabel = sentence.getSentenceSenitmentLabel();
-					if(sentenceLabel==0) // pros
-						sentenceLabel = -1;
-					else if(sentenceLabel==1) // cons
-						sentenceLabel = -2;
-					else if(sentenceLabel==-1) // from Amazon
-						sentenceLabel = -3;
-					asumWriter.write(sentenceLabel+" ");
-					for(_SparseFeature feature : sentence.getFv()){
-						index = feature.getIndex(); 
-						asumWriter.write(index+" ");
-					}
-					asumWriter.write("\n");
-				}
-			}
-			
-			asumWriter.flush();
-			asumWriter.close();
-			
-			for(int i=0; i<m_corpus.getFeatureSize();i++){
-				asumFeatureWriter.write(m_corpus.getFeature(i)+"\n");
-			}
-			
-			asumFeatureWriter.flush();
-			asumFeatureWriter.close();
-		
-		}
-		catch(Exception e){
-			System.err.print("JST and ASUM File Not Found");
-		}
-	}
-	
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
-		m_crossValidFold = k;
-		
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
+		
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
 		int amazonRatingCount[] = {0,0,0,0,0};
@@ -529,9 +404,7 @@ public abstract class TopicModel {
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-		}
-		
-		else{
+		} else {
 			k = 1;
 			perf = new double[k];
 		    int totalNewqEggDoc = 0;
@@ -585,8 +458,16 @@ public abstract class TopicModel {
 					
 				}
 				if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
-					m_testSet.add(d);
-					newEggTestSize++;
+					int rating = d.getYLabel();
+					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+						// Do nothing simply ignore it make for different set
+						//m_trainSet.add(d);
+						newEggTrainsetRatingCount[rating]++;
+						//newEggTrainSize++;
+					}else{
+						m_testSet.add(d);
+						newEggTestSize++;
+					}
 				}
 			}
 			
@@ -600,12 +481,7 @@ public abstract class TopicModel {
 				System.out.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
 				infoWriter.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
 			}
-			
-			if(m_trainSetForASUMJST){
-				System.out.println("Generating file for JST and ASUM" + filePath);
-				generateFileForJSTASUM();
-			}
-			
+	
 			System.out.println("Combined Train Set Size "+m_trainSet.size());
 			infoWriter.println("Combined Train Set Size "+m_trainSet.size());
 			System.out.println("Combined Test Set Size "+m_testSet.size());
@@ -628,6 +504,5 @@ public abstract class TopicModel {
 		
 		infoWriter.flush();
 		infoWriter.close();
-	}
-	
+	}	
 }

@@ -33,6 +33,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 10;// features to be defined in genRankingFV()
+	double[] m_mean, m_std; // to normalize the ranking features
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -55,16 +56,25 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_multithread = multithread;
 	}
 	
+	@Override
+	public String toString() {
+		String ranker;
+		if (m_ranker==0)
+			ranker = "RankSVM";
+		else
+			ranker = "LambdaRank@MAP";
+		return String.format("%s-[%s]", super.toString(), ranker);
+	}
+	
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
-		
 		double similarity = 0;
 		
 		if (m_ranker==0) 
-			similarity = Linear.predictValue(m_rankSVM, genRankingFV(di, dj), 0);
+			similarity = Linear.predictValue(m_rankSVM, normalize(genRankingFV(di, dj)), 0);
 		else
-			similarity = m_lambdaRank.score(genRankingFV(di, dj));
+			similarity = m_lambdaRank.score(normalize(genRankingFV(di, dj)));
 		
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
@@ -233,8 +243,42 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
+		normalize();//normalize the features by z-score
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return pairSize;
+	}
+	
+	void normalize() {
+		m_mean = new double[RankFVSize];
+		m_std = new double[RankFVSize];
+		
+		double size = 0;
+		for(_Query q:m_queries) {
+			for(_QUPair qu:q.m_docList) {
+				for(int i=0; i<RankFVSize; i++) {
+					m_mean[i] += qu.m_rankFv[i];
+					m_std[i] += qu.m_rankFv[i] * qu.m_rankFv[i];
+					size ++;
+				}
+			}
+		}
+		
+		for(int i=0; i<RankFVSize; i++) {
+			m_mean[i] /= size;
+			m_std[i] = Math.sqrt(m_std[i]/size - m_mean[i]*m_mean[i]);
+		}
+		
+		for(_Query q:m_queries) {
+			for(_QUPair qu:q.m_docList) {
+				normalize(qu.m_rankFv);
+			}
+		}
+	}
+	
+	double[] normalize(double[] fv) {
+		for(int i=0; i<RankFVSize; i++)
+			fv[i] = (fv[i] - m_mean[i]) / m_std[i];
+		return fv;
 	}
 	
 	//generate ranking features for a query document pair
@@ -243,39 +287,36 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
-		fv[0] = getBoWSim(q, d);//0.04298
+		fv[0] = getBoWSim(q, d);//0.04104
 		
 		//feature 2: topical similarity
-		fv[1] = getTopicalSim(q, d);//-0.09567
+		fv[1] = getTopicalSim(q, d);//-0.28595
 		
 		//feature 3: belong to the same product
-		fv[2] = q.sameProduct(d)?1:0;//0.02620
+		fv[2] = q.sameProduct(d)?1:0;//-0.01331
 
 		//feature 4: sparse feature length difference
-		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01410
+		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//0.00045
 		
 		//feature 5: jaccard coefficient
-		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02441		
+		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.05490
  		
+		//feature 6: the sentiwordnet score for a review.
+		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.09206
+
+		// feature 7: the pos tagging score for a pair of reviews.
+		fv[6] = getPOSScore(q, d);//0.02567
+
+		// feature 8: the aspect score for a pair of reviews.
+		fv[7] = getAspectScore(q, d);//-0.03405
+		
 		//Part II: pointwise features for document
-		//feature 6: stop words proportion
-		fv[5] = d.getStopwordProportion();//-0.00005
+		//feature 9: stop words proportion
+		fv[8] = d.getStopwordProportion();//-0.05709
 		
-		//feature 7: average IDF
-		fv[6] = d.getAvgIDF();//0.03732
-		
-		//feature 8: the sentiwordnet score for a review.
-		fv[7] = d.getSentiScore();
+		//feature 10: average IDF
+		fv[9] = d.getAvgIDF();//0.05842
 
-		// feature 9: the postagging score for a pair of reviews.
-		fv[8] = getPOSScore(q, d);
-
-		// feature 10: the aspect score for a pair of reviews.
-		fv[9] = getAspectScore(q, d);
-
-		// feature 11: the title of review
-		// fv[10] = d.getTitleScore();
-		
 		return fv;
 	}
 }

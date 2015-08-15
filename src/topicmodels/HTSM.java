@@ -34,40 +34,25 @@ public class HTSM extends HTMM {
 	@Override
 	// Construct the emission probabilities for sentences under different topics in a particular document.
 	void ComputeEmissionProbsForDoc(_Doc d) {
-		if(d.getSourceType()==1){ //from Amazon
+		if(d.getSourceType()==1) //from Amazon
+			super.ComputeEmissionProbsForDoc(d);
+		else {// from newEgg sourceType will be 2
 			for(int i=0; i<d.getSenetenceSize(); i++) {
 				_Stn stn = d.getSentence(i);
-				Arrays.fill(emission[i], 0);
-				for(int k=0; k<this.number_of_topics; k++) {
-					for(_SparseFeature w:stn.getFv()) {
-						emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
-					}
-				}
-			}
-		}else{// from newEgg sourceType will be = 2
-			for(int i=0; i<d.getSenetenceSize(); i++) {
-				_Stn stn = d.getSentence(i);
-				Arrays.fill(emission[i], 0);
+				int start = 0, end = this.number_of_topics;
+				Arrays.fill(emission[i], Double.NEGATIVE_INFINITY);
+				
 				if(i==0){ // first sentence handle specially for newEgg
 					//get the sentiment label of the first sentence
 					int sentimentLabel = stn.getSentenceSenitmentLabel();
-					if(sentimentLabel==0){ // positive sentiment first half
-						for(int k=0; k<this.number_of_topics/2; k++) {
-							for(_SparseFeature w:stn.getFv()) {
-								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
-							}
-						}
-					}else if(sentimentLabel==1){ // negative sentiment second half
-						for(int k=this.number_of_topics/2; k<this.number_of_topics; k++) {
-							for(_SparseFeature w:stn.getFv()) {
-								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
-							}
-						}
-					}else if (sentimentLabel==2){ // for comment section of newEgg any sentiment can happen
-						for(int k=0; k<this.number_of_topics; k++) {
-							for(_SparseFeature w:stn.getFv()) {
-								emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
-							}
+					if(sentimentLabel==0)// positive sentiment first half						
+						end = this.number_of_topics / 2;
+					else if(sentimentLabel==1) // negative sentiment second half
+						start = this.number_of_topics / 2;
+					
+					for(int k=start; k<end; k++) {
+						for(_SparseFeature w:stn.getFv()) {
+							emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
 						}
 					}
 				}else{

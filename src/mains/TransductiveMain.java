@@ -32,7 +32,9 @@ public class TransductiveMain {
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
+
 		String folder = "./data/amazon/small/dedup/RawData";
+		//String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 //		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
@@ -70,6 +72,7 @@ public class TransductiveMain {
 		/*****Parameters in transductive learning.*****/
 		String debugOutput = "data/debug/topical.sim";
 //		String debugOutput = null;
+		boolean releaseContent = false;
 		//k fold-cross validation
 		int CVFold = 10; 
 		//choice of base learner
@@ -94,8 +97,13 @@ public class TransductiveMain {
 		//Added by Mustafizur----------------
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
+		
 		analyzer.initSentiWordNet(pathToSentiWordNet);
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		
+		//analyzer.loadPriorPosNegWords(sentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		//analyzer.setReleaseContent(releaseContent);
+
 		
 		// Added by Mustafizur----------------
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
@@ -126,15 +134,15 @@ public class TransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(4);
+		c.mapLabels(3);//how to set this reasonably
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1.0;
-			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
+			int k = 30, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-5, tEta = 0.1; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
