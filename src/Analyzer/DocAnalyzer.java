@@ -157,11 +157,6 @@ public class DocAnalyzer extends Analyzer {
 			e.printStackTrace();
 		}
 	}
-
-	//Added by Lin, initialize the sentiwordnet.
-	public void initSentiWordNet(String pathToSentiWordNet) throws IOException{
-		m_sentiWordNet = new SentiWordNet(pathToSentiWordNet);
-	}
 	
 	//Tokenizing input text string
 	protected String[] Tokenizer(String source){

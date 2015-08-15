@@ -358,6 +358,7 @@ public abstract class TopicModel {
 	public void generateFileForJSTASUM(){
 		
 		try{
+			
 			PrintWriter jstTrainCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR.dat"));
 			PrintWriter jstTestCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test.dat"));
 			// for sentence level of JST
