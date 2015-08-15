@@ -10,47 +10,24 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.pLSA;
-import topicmodels.pLSAGroup;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.LRHTSM_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.jsonAnalyzer;
 import Analyzer.newEggAnalyzer;
 
 public class TopicModelMainnew {
 
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 1; //The default value is unigram. 
+		int Ngram = 2; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
 		
-		
-		/*****parameters for the two-topic topic model*****/
+		/*****parameters for the topic models*****/
 		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
-		
-		
-		// change topic number and category
-		int crossV = 2; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
-		boolean setRandomFold = false; // false means no shuffling and true means shuffling
-		int testDocMod = 11; // when setRandomFold = false, we select every m_testDocMod_th document for testing
-
-		String category = "camera";
-		int number_of_topics = 26;
-		int loadAspectSentiPrior = 2; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
-		boolean loadNewEggInTrain = false; // false means in training there is no reviews from newEgg
-		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-		int trainSize = 1000; // trainSize 0 means only newEgg; 5000 means all the data 
-		int number_of_iteration = 50;
-		int topK = 50;
-		boolean generateTrainTestDataForJSTASUM = false;
-		boolean sentence = false;
-		boolean debugSentenceTransition = false;
-		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.9; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
@@ -59,6 +36,23 @@ public class TopicModelMainnew {
 		double burnIn = 0.4;
 		boolean display = true;
 		
+		int crossV = 2; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
+		boolean setRandomFold = false; // false means no shuffling and true means shuffling
+		
+		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
+		// change topic number and category
+		String category = "camera";
+		int number_of_topics = 26;
+		int loadAspectSentiPrior = 2; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		boolean loadNewEggInTrain = false; // false means in training there is no reviews from newEgg
+		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
+		int trainSize = 0; // trainSize 0 means only newEgg; 5000 means all the data 
+		int number_of_iteration = 50;
+		int topK = 50;
+		boolean generateTrainTestDataForJSTASUM = false;
+		boolean sentence = false;
+		boolean debugSentenceTransition = false;
+		
 		// most popular items under each category from Amazon
 		String tabletProductList[] = {"B008DWG5HE"};
 		String cameraProductList[] = {"B005IHAIMA"};
@@ -66,15 +60,12 @@ public class TopicModelMainnew {
 		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
-		//String folder = "./data/amazon/tablet/topicmodel";
-		
 		String amazonFolder = "./data/amazon/mainData/"+ category + "/"+trainSize+"/";
 		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		String posModel = null;
-		
 		
 		String featureDirectory = "./data/amazon/mainData/"+category+"/"+trainSize+"/";
 		if(loadNewEggInTrain)
@@ -101,6 +92,7 @@ public class TopicModelMainnew {
 
 		String FilePath = "./data/amazon/";
 		String resultDirectory = "./result/"+category+"/"+trainSize+"/";
+		
 		if(loadNewEggInTrain)
 			resultDirectory += "NewEggLoaded/";
 		else
@@ -115,11 +107,9 @@ public class TopicModelMainnew {
 		String topWordFilePath = resultDirectory+"Topics_"+number_of_topics+"_topWords.txt";
 		String infoFilePath = resultDirectory+"Topics_"+number_of_topics+"_Information.txt";
 		String featureWeightFilePath = resultDirectory + "Topics_"+number_of_topics+"_FeaturesWeight.csv";;
-		
 		String debugDirectory = null;
 		String debugFilePath = null;
 		
-
 		if(debugSentenceTransition){
 			debugDirectory = "./debug/"+category+"/"+trainSize+"/";
 			if(loadNewEggInTrain)
@@ -135,8 +125,6 @@ public class TopicModelMainnew {
 			debugFilePath = debugDirectory + "Topics_"+number_of_topics+"_Debug.csv";
 			
 		}
-		
-		
 		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
@@ -218,7 +206,6 @@ public class TopicModelMainnew {
 				model = new LRHTMM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-			
 			}
 			else if (topicmodel.equals("LRHTSM")) {
 				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
