@@ -7,6 +7,8 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
+import structures._Stn;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -36,6 +38,11 @@ public abstract class TopicModel {
 	protected boolean m_multithread = false; // by default we do not use multi-thread mode
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
+	
+	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
+	private boolean m_trainSetForASUMJST = false;
+	protected String m_category;
+	private String filePath;
 	
 	public PrintWriter infoWriter;
 	public PrintWriter summaryWriter;
@@ -211,7 +218,149 @@ public abstract class TopicModel {
 			}
 		}
 	}
+	public void setFilePathForJSTASUM(int m_trainSize, String m_category, String filePath){
+		this.m_trainSetForASUMJST = true;
+		this.m_trainSize = m_trainSize;
+		this.m_category = m_category;
+		this.filePath = filePath;
+	}
+	
+	public void generateFileForJSTASUM(){
 
+		try{
+
+			PrintWriter jstTrainCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR.dat"));
+			PrintWriter jstTestCorpusWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test.dat"));
+			// for sentence level of JST
+			PrintWriter jstTestCorpusForSentenceWriter = new PrintWriter(new File(filePath +"JST/" +  m_trainSize +"/"+m_category+"/MR_test_sentence.dat"));
+			PrintWriter jstTestCorpusForSentenceLabelWriter = new PrintWriter(new File(filePath +"JST/" + m_trainSize +"/"+m_category+"/MR_test_label_sentence.dat"));
+
+			PrintWriter asumWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/BagOfSentences_pros_cons.txt"));
+			PrintWriter asumFeatureWriter = new PrintWriter(new File( filePath + "ASUM/"+ m_trainSize +"/"+m_category+"/selected_combine_fv.txt"));
+
+
+			int index = -1;
+			String word = "";
+
+			// Training Documnet Generation for JST
+			for(_Doc trainDoc:m_trainSet){
+				jstTrainCorpusWriter.write("d"+trainDoc.getID()+" ");
+				for(_SparseFeature feature :trainDoc.getSparse()){
+					index = feature.getIndex(); 
+					word = m_corpus.getFeature(index);
+					jstTrainCorpusWriter.write(word+" ");
+				}
+				jstTrainCorpusWriter.write("\n");
+			}
+
+			jstTrainCorpusWriter.flush();
+			jstTrainCorpusWriter.close();
+
+			index = -1;
+			word = "";
+			for(_Doc testDoc:m_testSet){
+				jstTestCorpusWriter.write("d"+testDoc.getID()+" ");
+				for(_SparseFeature feature :testDoc.getSparse()){
+					index = feature.getIndex(); 
+					word = m_corpus.getFeature(index);
+					jstTestCorpusWriter.write(word+" ");
+				}
+				jstTestCorpusWriter.write("\n");
+			}
+
+			jstTestCorpusWriter.flush();
+			jstTestCorpusWriter.close();
+
+
+
+
+			index = -1;
+			word = "";
+			int sentenceCounter = 0;
+			for(_Doc testDoc:m_testSet){
+				for(_Stn sentence : testDoc.getSentences()){
+					jstTestCorpusForSentenceWriter.write("d"+sentenceCounter+" ");
+					int sentenceLabel = sentence.getSentenceSenitmentLabel()==-1?3:sentence.getSentenceSenitmentLabel();
+					jstTestCorpusForSentenceLabelWriter.write("d"+sentenceCounter+" "+sentenceLabel+"\n");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						word = m_corpus.getFeature(index);
+						jstTestCorpusForSentenceWriter.write(word+" ");
+					}
+					sentenceCounter++;
+					jstTestCorpusForSentenceWriter.write("\n");
+				}
+			}
+
+			jstTestCorpusForSentenceWriter.flush();
+			jstTestCorpusForSentenceWriter.close();
+
+			jstTestCorpusForSentenceLabelWriter.flush();
+			jstTestCorpusForSentenceLabelWriter.close();
+
+			// Train Document generation for ASUM 
+			index = -1;
+			word = "";
+			for(_Doc d:m_trainSet){
+				asumWriter.write(d.getSenetenceSize()+"\n");
+				for(_Stn sentence : d.getSentences()){
+					int sentenceLabel = sentence.getSentenceSenitmentLabel();
+					if(sentenceLabel==0) // pros
+						sentenceLabel = -1;
+					else if(sentenceLabel==1) // cons
+						sentenceLabel = -2;
+					else if(sentenceLabel==-1) // from Amazon
+						sentenceLabel = -3;
+					asumWriter.write(sentenceLabel+" ");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						asumWriter.write(index+" ");
+					}
+					asumWriter.write("\n");
+				}
+			}
+
+
+			// Test Document generation for ASUM
+			index = -1;
+			word = "";
+			for(_Doc d:m_testSet){
+				int senlen = (-1)*d.getSenetenceSize();
+				asumWriter.write(senlen+"\n");
+				for(_Stn sentence : d.getSentences()){
+					int sentenceLabel = sentence.getSentenceSenitmentLabel();
+					if(sentenceLabel==0) // pros
+						sentenceLabel = -1;
+					else if(sentenceLabel==1) // cons
+						sentenceLabel = -2;
+					else if(sentenceLabel==-1) // from Amazon
+						sentenceLabel = -3;
+					asumWriter.write(sentenceLabel+" ");
+					for(_SparseFeature feature : sentence.getFv()){
+						index = feature.getIndex(); 
+						asumWriter.write(index+" ");
+					}
+					asumWriter.write("\n");
+				}
+			}
+
+			asumWriter.flush();
+			asumWriter.close();
+
+			for(int i=0; i<m_corpus.getFeatureSize();i++){
+				asumFeatureWriter.write(m_corpus.getFeature(i)+"\n");
+			}
+
+			asumFeatureWriter.flush();
+			asumFeatureWriter.close();
+
+		}
+		catch(Exception e){
+			System.err.print("JST and ASUM File Not Found");
+		}
+	}
+	
+	
 	public void EM() {	
 		long starttime = System.currentTimeMillis();
 		

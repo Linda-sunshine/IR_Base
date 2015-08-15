@@ -211,9 +211,14 @@ public class HTMM extends pLSA {
 				}				
 				
 				System.out.format("Product: %s, Topic: %d\n", prodID, i);
-				for(_RankItem it:stnQueue)
-					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);				
+				summaryWriter.format("Product: %s, Topic: %d\n", prodID, i);
+				for(_RankItem it:stnQueue){
+					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);	
+					summaryWriter.format("%s\t%.3f\n", it.m_name, it.m_value);	
+				}			
 			}
 		}
+		summaryWriter.flush();
+		summaryWriter.close();
 	}
 }

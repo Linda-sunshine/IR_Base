@@ -97,8 +97,6 @@ public class TransductiveMain {
 		//Added by Mustafizur----------------
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
-		
-		analyzer.initSentiWordNet(pathToSentiWordNet);
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
 		//analyzer.loadPriorPosNegWords(sentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
