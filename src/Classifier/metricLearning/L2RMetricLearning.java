@@ -120,10 +120,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			if (m_multithread) {
 				/**** multi-thread version ****/
 				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
+				m_lambdaRank.setSigns(getRankingFVSigns());
 				m_lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
 			} else {
 				/**** single-thread version ****/
 				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
+				m_lambdaRank.setSigns(getRankingFVSigns());
 				m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
 			}			
 			w = m_lambdaRank.getWeights();
@@ -277,6 +279,21 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		for(int i=0; i<RankFVSize; i++)
 			fv[i] = (fv[i] - m_mean[i]) / m_std[i];
 		return fv;
+	}
+	
+	int[] getRankingFVSigns() {
+		int[] signs = new int[RankFVSize];
+		signs[0] = 1;
+		signs[1] = -1;
+		signs[2] = 1;
+		signs[3] = -1;
+		signs[4] = 1;
+		signs[5] = -1;
+		signs[6] = 1;
+		signs[7] = 1;
+		signs[8] = -1;
+		signs[9] = 1;
+		return signs;
 	}
 	
 	//generate ranking features for a query document pair

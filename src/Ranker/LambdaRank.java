@@ -27,6 +27,7 @@ public class LambdaRank {
 	
 	double m_lambda;
 	int m_trainingSize;
+	int[] m_signs; // sign of feature weights during random initialization
 	
 	ArrayList<_Query> m_queries;//list of pointers to queries
 	int[] m_order;//randomly shuffle the order for stochastic gradient descent
@@ -63,6 +64,17 @@ public class LambdaRank {
 		lambda = 1.0/Math.sqrt(lambda);
 		for(int i=0; i<m_weight.length; i++)
 			m_weight[i] = Normal.staticNextDouble(0, lambda);
+		
+		if (m_signs!=null) {//enforce sign over the initial setting of feature weights
+			for(int i=0; i<m_weight.length; i++) {
+				if (m_signs[i]*m_weight[i]<0)
+					m_weight[i] = -m_weight[i];
+			}
+		}
+	}
+	
+	public void setSigns(int[] signs) {
+		m_signs = signs;
 	}
 	
 	protected void init(){//create the pointer array to the training queries
