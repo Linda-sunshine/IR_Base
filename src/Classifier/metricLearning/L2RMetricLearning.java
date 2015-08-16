@@ -52,7 +52,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
-		m_ranker = 1;
+		m_ranker = 0;
 		m_multithread = multithread;
 	}
 	
@@ -122,7 +122,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			if (m_multithread) {
 				/**** multi-thread version ****/
 				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
-				m_lambdaRank.train(100, 20, 1.0, 0.98);//lambdaRank specific parameters
+				m_lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
 			} else {
 				/**** single-thread version ****/
 				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
