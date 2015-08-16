@@ -559,10 +559,11 @@ public class Utils {
 	}
 	
 	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
-		Feature[] node = new Feature[spVct.length]; 
+		Feature[] node = new Feature[1+spVct.length]; 
 		int fid = 0;
 		for(_SparseFeature fv:spVct)
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
+		node[fid] = new FeatureNode(8541, 1);//add bias term to the end
 		return node;
 	}
 	
