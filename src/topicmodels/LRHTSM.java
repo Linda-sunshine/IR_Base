@@ -1,5 +1,7 @@
 package topicmodels;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -191,6 +193,30 @@ public class LRHTSM extends HTSM {
 		}
 		
 		return loglikelihood;
+	}
+	
+	public void writeOmegaDelta(String file){
+		PrintWriter deltaOmegaWriter = null;
+		try {
+			deltaOmegaWriter = new PrintWriter(file);
+			
+			deltaOmegaWriter.println("Topical feature weight values");
+			
+			for(int i=0; i<m_omega.length;i++)
+				deltaOmegaWriter.format("%.3f,", m_omega[i]);
+			
+			deltaOmegaWriter.println("\nSentiment feature weight values");
+			
+			for(int i=0; i<m_delta.length;i++)
+				deltaOmegaWriter.format("%.3f,", m_delta[i]);
+			
+		} catch (FileNotFoundException e) {
+			System.err.format("%s Not Found", file);
+		}
+		
+		deltaOmegaWriter.flush();
+		deltaOmegaWriter.close();
+		
 	}
 	
 }
