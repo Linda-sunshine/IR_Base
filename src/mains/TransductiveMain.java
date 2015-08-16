@@ -59,7 +59,7 @@ public class TransductiveMain {
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SUP";
+		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";

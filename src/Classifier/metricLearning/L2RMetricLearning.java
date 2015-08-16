@@ -30,7 +30,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_tradeoff;
 	boolean m_multithread = false; // by default we will use single thread
 	
-	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
+	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	double[] m_mean, m_std; // to normalize the ranking features
@@ -40,7 +40,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 		m_noiseRatio = 0.0; // no random neighbor is needed 
 		m_tradeoff = 1.0;
-		m_ranker = 0; // default ranker is rankSVM
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -52,7 +51,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_topK = topK;
 		m_noiseRatio = noiseRatio;
 		m_tradeoff = 1.0; // should be specified by the user
-		m_ranker = 0;
 		m_multithread = multithread;
 	}
 	
