@@ -88,6 +88,25 @@ public class LambdaRankParallel extends LambdaRank {
 		double weight = 1.0 / workerSize, performance = 0;
 		int querySize = m_queries.size();
 		long starttimer = System.currentTimeMillis();
+		
+		//evaluate initial performance
+		for(LambdaRankWorker worker:m_workers) {
+			worker.setWeight(m_weight);
+			worker.setType(OperationType.OT_evaluate);//evaluation on training queries
+		}
+		WaitTillFinish();
+		
+		double obj = 0, perf = 0;
+		int misorder = 0;
+		for(LambdaRankWorker worker:m_workers){
+			obj += worker.m_obj;
+			perf += worker.m_perf;
+			misorder += worker.m_misorder;
+		}
+		perf /= querySize;
+		obj -= 0.5 * m_lambda * Utils.L2Norm(m_weight);//to be maximized		
+		System.out.format("0\t%d\t%.2f\t%.4f\n", misorder, obj, perf);
+		
 		for(int i=0; i<iteration; i++){
 			// training operation
 			for(LambdaRankWorker worker:m_workers){
@@ -108,8 +127,7 @@ public class LambdaRankParallel extends LambdaRank {
 			}
 			WaitTillFinish();
 			
-			double obj = 0, perf = 0;
-			int misorder = 0;
+			obj = 0; perf = 0; misorder = 0;
 			for(LambdaRankWorker worker:m_workers){
 				obj += worker.m_obj;
 				perf += worker.m_perf;
@@ -126,7 +144,7 @@ public class LambdaRankParallel extends LambdaRank {
 			}
 			performance = perf;
 			
-			System.out.format("%d\t%d\t%.2f\t%.4f\n", i, misorder, obj, perf);
+			System.out.format("%d\t%d\t%.2f\t%.4f\n", 1+i, misorder, obj, perf);
 		}
 
 		System.out.format("[Info]Training procedure takes %.2f seconds to finish...\n", (System.currentTimeMillis()-starttimer)/1000.0);
