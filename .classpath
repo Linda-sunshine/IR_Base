@@ -9,7 +9,7 @@
 	<classpathentry kind="lib" path="libs/parallelcolt-0.9.4.jar"/>
 	<classpathentry kind="lib" path="libs/optimization.jar"/>
 	<classpathentry kind="lib" path="libs/trove-2.0.2.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/Git/IR_Base/libs/mallet.jar"/>
-	<classpathentry kind="lib" path="E:/Projects/Git/IR_Base/libs/mallet-deps.jar"/>
+	<classpathentry kind="lib" path="/if15/hw5x/wrk/projects/Git/IR_Base/libs/mallet.jar"/>
+	<classpathentry kind="lib" path="/if15/hw5x/wrk/projects/Git/IR_Base/libs/mallet-deps.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -186,6 +186,8 @@ public class TopicModelMain {
 			}
 			
 			if (sentence) {
+				String summaryFilePath =  "./data/results/Topics_" + number_of_topics + "_Summary.txt";
+				model.setSummaryWriter(summaryFilePath);
 				if(category.equalsIgnoreCase("camera"))
 					((HTMM)model).docSummary(cameraProductList);
 				else if(category.equalsIgnoreCase("tablet"))

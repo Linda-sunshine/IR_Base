@@ -132,7 +132,7 @@ public class TransductiveMain {
 			double learningRatio = 1.0;
 			int k = 30, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-5, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-5, tEta = 0.6; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets

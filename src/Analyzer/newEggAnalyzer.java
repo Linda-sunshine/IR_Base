@@ -32,22 +32,25 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	int m_prosSentenceCounter = 0;
 	int m_consSentenceCounter = 0;
 	SimpleDateFormat m_dateFormatter;
+	int m_prosConsLoad = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
 	
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
-			int Ngram, int threshold, String category) throws InvalidFormatException,
+			int Ngram, int threshold, String category, int loadProsCons) throws InvalidFormatException,
 			FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		//11/7/2013 7:01:22 PM
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
+		m_prosConsLoad = loadProsCons;
 	}
 
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
-			int Ngram, int threshold, String stnModel, String posModel, String category)
+			int Ngram, int threshold, String stnModel, String posModel, String category, int loadProsCons)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
+		m_prosConsLoad = loadProsCons;
 	}
 	
 	//Load all the files in the directory.
@@ -115,44 +118,72 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		int y = post.getLabel()-1, uniWordsInSections = 0;
 		
-		if ((content=post.getProContent()) != null) {// tokenize pros
-			result = TokenizerNormalizeStemmer(content);
-			tokens = result.getTokens();
-			vPtr = constructSpVct(tokens, y, docVct);
-			spVcts.add(vPtr);
-			uniWordsInSections += vPtr.size();
-			Utils.mergeVectors(vPtr, docVct);
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Pros: %s\n", content));
-		} else 
-			spVcts.add(null);//no pro section
-		
-		if ((content=post.getConContent()) != null) {// tokenize cons
-			result = TokenizerNormalizeStemmer(content);
-			tokens = result.getTokens();
-			vPtr = constructSpVct(tokens, y, docVct);
-			spVcts.add(vPtr);
-			uniWordsInSections += vPtr.size();
-			Utils.mergeVectors(vPtr, docVct);
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Cons: %s\n", content));
-		} else 
-			spVcts.add(null);//no con section
-		
-		if ((content=post.getComments()) != null) {// tokenize comments
-			result = TokenizerNormalizeStemmer(content);
-			tokens = result.getTokens();
-			vPtr = constructSpVct(tokens, y, docVct);
-			spVcts.add(vPtr);
-			uniWordsInSections += vPtr.size();
-			//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Comments: %s\n", content));
-		} else
-			spVcts.add(null);//no comments
+		if(m_prosConsLoad==2){ // load both pros and cons
+			if ((content=post.getProContent()) != null) {// tokenize pros
+				result = TokenizerNormalizeStemmer(content);
+				tokens = result.getTokens();
+				vPtr = constructSpVct(tokens, y, docVct);
+				spVcts.add(vPtr);
+				uniWordsInSections += vPtr.size();
+				Utils.mergeVectors(vPtr, docVct);
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Pros: %s\n", content));
+			} else 
+				spVcts.add(null);//no pro section
+
+			if ((content=post.getConContent()) != null) {// tokenize cons
+				result = TokenizerNormalizeStemmer(content);
+				tokens = result.getTokens();
+				vPtr = constructSpVct(tokens, y, docVct);
+				spVcts.add(vPtr);
+				uniWordsInSections += vPtr.size();
+				Utils.mergeVectors(vPtr, docVct);
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Cons: %s\n", content));
+			} else 
+				spVcts.add(null);//no con section
+
+			if ((content=post.getComments()) != null) {// tokenize comments
+				result = TokenizerNormalizeStemmer(content);
+				tokens = result.getTokens();
+				vPtr = constructSpVct(tokens, y, docVct);
+				spVcts.add(vPtr);
+				uniWordsInSections += vPtr.size();
+				//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Comments: %s\n", content));
+			} else
+				spVcts.add(null);//no comments
+		}else if(m_prosConsLoad==0){ // load only pros
+			if ((content=post.getProContent()) != null) {// tokenize pros
+				result = TokenizerNormalizeStemmer(content);
+				tokens = result.getTokens();
+				vPtr = constructSpVct(tokens, y, docVct);
+				spVcts.add(vPtr);
+				uniWordsInSections += vPtr.size();
+				Utils.mergeVectors(vPtr, docVct);
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Pros: %s\n", content));
+			} else 
+				spVcts.add(null);//no pro section
+		}else if(m_prosConsLoad==1){
+			if ((content=post.getConContent()) != null) {// tokenize cons
+				result = TokenizerNormalizeStemmer(content);
+				tokens = result.getTokens();
+				vPtr = constructSpVct(tokens, y, docVct);
+				spVcts.add(vPtr);
+				uniWordsInSections += vPtr.size();
+				Utils.mergeVectors(vPtr, docVct);
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Cons: %s\n", content));
+			} else 
+				spVcts.add(null);//no con section
+		}
 		
 		if (uniWordsInSections>=m_lengthThreshold) {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
@@ -181,45 +212,88 @@ public class newEggAnalyzer extends jsonAnalyzer {
 		int prosSentenceCounter = 0;
 		int consSentenceCounter = 0;
 		
-		if ((content=post.getProContent()) != null) {// tokenize pros
-			for(String sentence : m_stnDetector.sentDetect(content)) {
-				result = TokenizerNormalizeStemmer(sentence);
-				vPtr = constructSpVct(result.getTokens(), y, docVct);
-				
-				if (vPtr.size()>0) {//avoid empty sentence
-					String[] posTags = m_tagger.tag(result.getRawTokens()); // only tokenize then POS tagging
-					
-					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 0)); // 0 for pos
-					prosSentenceCounter++;
-					uniWordsInSections += vPtr.size();
-					Utils.mergeVectors(vPtr, docVct);
-					spVcts.add(vPtr);
-				}
-			}
-			if (!m_releaseContent)
-				buffer.append(String.format("Pros: %s\n", content));
-		}
 		
-		if ((content=post.getConContent()) != null) {// tokenize cons
-			for(String sentence : m_stnDetector.sentDetect(content)) {
+		if(m_prosConsLoad==2){
+			if ((content=post.getProContent()) != null) {// tokenize pros
+				for(String sentence : m_stnDetector.sentDetect(content)) {
+					result = TokenizerNormalizeStemmer(sentence);
+					vPtr = constructSpVct(result.getTokens(), y, docVct);
 
-				result = TokenizerNormalizeStemmer(sentence);
-				
-				vPtr = constructSpVct(result.getTokens(), y, docVct);		
-				if (vPtr.size()>0) {//avoid empty sentence
-					String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
-					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 1)); // 1 for cons
-					
-					consSentenceCounter++;
-					uniWordsInSections += vPtr.size();
-					Utils.mergeVectors(vPtr, docVct);
-					spVcts.add(vPtr);
+					if (vPtr.size()>0) {//avoid empty sentence
+						String[] posTags = m_tagger.tag(result.getRawTokens()); // only tokenize then POS tagging
+
+						stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 0)); // 0 for pos
+						prosSentenceCounter++;
+						uniWordsInSections += vPtr.size();
+						Utils.mergeVectors(vPtr, docVct);
+						spVcts.add(vPtr);
+					}
 				}
+				if (!m_releaseContent)
+					buffer.append(String.format("Pros: %s\n", content));
 			}
-			
-			if (!m_releaseContent)
-				buffer.append(String.format("Cons: %s\n", content));
-		} 
+
+			if ((content=post.getConContent()) != null) {// tokenize cons
+				for(String sentence : m_stnDetector.sentDetect(content)) {
+
+					result = TokenizerNormalizeStemmer(sentence);
+
+					vPtr = constructSpVct(result.getTokens(), y, docVct);		
+					if (vPtr.size()>0) {//avoid empty sentence
+						String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+						stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 1)); // 1 for cons
+
+						consSentenceCounter++;
+						uniWordsInSections += vPtr.size();
+						Utils.mergeVectors(vPtr, docVct);
+						spVcts.add(vPtr);
+					}
+				}
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Cons: %s\n", content));
+			} 
+		}else if(m_prosConsLoad==0){ // load only pros
+			if ((content=post.getProContent()) != null) {// tokenize pros
+				for(String sentence : m_stnDetector.sentDetect(content)) {
+					result = TokenizerNormalizeStemmer(sentence);
+					vPtr = constructSpVct(result.getTokens(), y, docVct);
+
+					if (vPtr.size()>0) {//avoid empty sentence
+						String[] posTags = m_tagger.tag(result.getRawTokens()); // only tokenize then POS tagging
+
+						stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 0)); // 0 for pos
+						prosSentenceCounter++;
+						uniWordsInSections += vPtr.size();
+						Utils.mergeVectors(vPtr, docVct);
+						spVcts.add(vPtr);
+					}
+				}
+				if (!m_releaseContent)
+					buffer.append(String.format("Pros: %s\n", content));
+			}
+		}else if(m_prosConsLoad==1){// load only cons
+			if ((content=post.getConContent()) != null) {// tokenize cons
+				for(String sentence : m_stnDetector.sentDetect(content)) {
+
+					result = TokenizerNormalizeStemmer(sentence);
+
+					vPtr = constructSpVct(result.getTokens(), y, docVct);		
+					if (vPtr.size()>0) {//avoid empty sentence
+						String[] posTags = m_tagger.tag(Tokenizer(sentence)); // only tokenize then POS tagging
+						stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, 1)); // 1 for cons
+
+						consSentenceCounter++;
+						uniWordsInSections += vPtr.size();
+						Utils.mergeVectors(vPtr, docVct);
+						spVcts.add(vPtr);
+					}
+				}
+
+				if (!m_releaseContent)
+					buffer.append(String.format("Cons: %s\n", content));
+			} 
+		}
 		
 //		if ((content=post.getComments()) != null) {// tokenize comments
 //			for(String sentence : m_stnDetector.sentDetect(content)) {

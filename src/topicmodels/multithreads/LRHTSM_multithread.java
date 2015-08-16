@@ -177,7 +177,7 @@ public class LRHTSM_multithread extends LRHTSM {
 	
 	@Override
 	public String toString() {
-		return String.format("multi-thread LR-HTMM[k:%d, alpha:%.3f, beta:%.3f, lambda:%.2f]", number_of_topics, d_alpha, d_beta, m_lambda);
+		return String.format("multi-thread LR-HTSM[k:%d, alpha:%.3f, beta:%.3f, lambda:%.2f]", number_of_topics, d_alpha, d_beta, m_lambda);
 	}
 
 	@Override
