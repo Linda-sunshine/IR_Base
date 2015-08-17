@@ -57,6 +57,10 @@ class LambdaRankWorker implements Runnable {
 		m_queries.add(q);
 	}
 	
+	public void clearQueries() {
+		m_queries.clear();
+	}
+	
 	public void setType(OperationType type){
 		m_type = type;
 	}
