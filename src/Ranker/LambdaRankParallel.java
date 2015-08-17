@@ -33,6 +33,9 @@ public class LambdaRankParallel extends LambdaRank {
 	}
 	
 	void allocateQueries() {
+		for(LambdaRankWorker worker:m_workers)
+			worker.clearQueries();
+		
 		int workerSize = m_workers.length, workerId;
 		Random rand = new Random();
 		for(_Query q:m_queries){
@@ -114,7 +117,7 @@ public class LambdaRankParallel extends LambdaRank {
 		
 		for(int i=0; i<iteration; i++){
 			// training operation
-			WaitTillFinish(OperationType.OT_evaluate);
+			WaitTillFinish(OperationType.OT_train);
 			
 			// aggregate the learned weights from workers
 			Arrays.fill(m_weight, 0);
