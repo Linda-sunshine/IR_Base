@@ -5,6 +5,7 @@ package Ranker;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 
 import structures._Query;
 import utils.Utils;
@@ -31,6 +32,18 @@ public class LambdaRankParallel extends LambdaRank {
 		m_iteration = iteration;
 	}
 	
+	void allocateQueries() {
+		int workerSize = m_workers.length, workerId;
+		Random rand = new Random();
+		for(_Query q:m_queries){
+			workerId = rand.nextInt(workerSize);
+			m_workers[workerId].addQuery(q);
+		}
+		
+		for(LambdaRankWorker worker:m_workers)
+			worker.init();
+	}
+	
 	protected int initWorkers(int windowSize, int maxIter, double initStep, double shrinkage){
 		// Step 1: create the workers
 		int workerSize = Runtime.getRuntime().availableProcessors();
@@ -40,24 +53,21 @@ public class LambdaRankParallel extends LambdaRank {
 			m_workers[i] = new LambdaRankWorker(maxIter, m_weight.length, windowSize, initStep, shrinkage, m_lambda/workerSize, m_oType);
 		m_threadpool = new Thread[workerSize];
 		
-		// Step 2: allocate the training instances evenly
-		i = 0;
-		for(_Query q:m_queries){
-			m_workers[i%workerSize].addQuery(q);
-			i++;
-		}
-		
-		// Step 3: initialize the global weights randomly
-		initWeight(m_lambda);
-		
-		// Step 4: initialize the workers
-		for(LambdaRankWorker worker:m_workers)
-			worker.init();
+		// Step 2: initialize the global weights randomly
+		initWeight(m_lambda);		
 		
 		return workerSize;
 	}
 	
-	protected void WaitTillFinish(){
+	protected void WaitTillFinish(OperationType opt){
+		if (opt == OperationType.OT_train)
+			allocateQueries();
+		
+		for(LambdaRankWorker worker:m_workers) {
+			worker.setWeight(m_weight);
+			worker.setType(opt);//evaluation on training queries
+		}
+		
 		for(int i=0; i<m_threadpool.length; i++){
 			m_threadpool[i] = new Thread(m_workers[i]);//everytime, we have to recreate the thread
 			m_threadpool[i].start();
@@ -88,32 +98,23 @@ public class LambdaRankParallel extends LambdaRank {
 		double weight = 1.0 / workerSize, performance = 0;
 		int querySize = m_queries.size();
 		long starttimer = System.currentTimeMillis();
-		
-		//evaluate initial performance
-		for(LambdaRankWorker worker:m_workers) {
-			worker.setWeight(m_weight);
-			worker.setType(OperationType.OT_evaluate);//evaluation on training queries
-		}
-		WaitTillFinish();
-		
 		double obj = 0, perf = 0;
-		int misorder = 0;
-		for(LambdaRankWorker worker:m_workers){
-			obj += worker.m_obj;
-			perf += worker.m_perf;
-			misorder += worker.m_misorder;
-		}
-		perf /= querySize;
-		obj -= 0.5 * m_lambda * Utils.L2Norm(m_weight);//to be maximized		
-		System.out.format("0\t%d\t%.2f\t%.4f\n", misorder, obj, perf);
+		int misorder = 0;	
+		
+//		//evaluate initial performance
+//		WaitTillFinish(OperationType.OT_evaluate);
+//		for(LambdaRankWorker worker:m_workers){
+//			obj += worker.m_obj;
+//			perf += worker.m_perf;
+//			misorder += worker.m_misorder;
+//		}
+//		perf /= querySize;
+//		obj -= 0.5 * m_lambda * Utils.L2Norm(m_weight);//to be maximized		
+//		System.out.format("0\t%d\t%.2f\t%.4f\n", misorder, obj, perf);
 		
 		for(int i=0; i<iteration; i++){
 			// training operation
-			for(LambdaRankWorker worker:m_workers){
-				worker.setType(OperationType.OT_train);
-				worker.setWeight(m_weight);
-			}
-			WaitTillFinish();
+			WaitTillFinish(OperationType.OT_evaluate);
 			
 			// aggregate the learned weights from workers
 			Arrays.fill(m_weight, 0);
@@ -121,11 +122,7 @@ public class LambdaRankParallel extends LambdaRank {
 				Utils.add2Array(m_weight, worker.getWeight(), weight);
 			
 			//evaluate training performance
-			for(LambdaRankWorker worker:m_workers) {
-				worker.setWeight(m_weight);
-				worker.setType(OperationType.OT_evaluate);//evaluation on training queries
-			}
-			WaitTillFinish();
+			WaitTillFinish(OperationType.OT_evaluate);
 			
 			obj = 0; perf = 0; misorder = 0;
 			for(LambdaRankWorker worker:m_workers){
