@@ -137,14 +137,14 @@ public class MyTransductiveMain2 {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1;
-			int k = 10, kPrime = 10; // k nearest labeled, k' nearest unlabeled
+			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.7; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 1;//0-learning to rank; 1-lambda rank.
+			int ranker = 0;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
