@@ -136,7 +136,7 @@ public class TransductiveMain {
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
-			double noiseRatio = 2.0;
+			double noiseRatio = 1.0;
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 			
