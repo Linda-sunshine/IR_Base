@@ -2,7 +2,7 @@ package Classifier.metricLearning;
 
 import java.util.ArrayList;
 import java.util.Collection;
-
+import clustering.KMeansAlg;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -33,6 +33,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 11;// features to be defined in genRankingFV()
+	ArrayList<ArrayList<_Doc>> m_clusters;
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -165,6 +166,93 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
  	
 	//In this training process, we want to get the weight of all pairs of samples.
+//	protected int createTrainingCorpus(){
+//		//pre-compute the similarity between labeled documents
+//		calcLabeledSimilarities();
+//		
+//		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
+//		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
+//		
+//		_Query q;		
+//		_Doc di, dj;
+//		int posQ = 0, negQ = 0, pairSize = 0;
+//		int relevant = 0, irrelevant = 0;
+//		
+//		for(int i=0; i<m_trainSet.size(); i++) {
+//			//candidate query document
+//			di = m_trainSet.get(i);
+//			relevant = 0;
+//			irrelevant = 0;
+//			
+//			//using content similarity to construct initial ranking
+//			for(int j=0; j<m_trainSet.size(); j++) {
+//				if (i==j)
+//					continue;	
+//				dj = m_trainSet.get(j);
+//				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
+//			}
+//			
+//			//find the top K similar documents by default similarity measure
+//			for(_RankItem it:simRanker) {
+//				dj = m_trainSet.get(it.m_index);
+//				neighbors.add(dj);
+//				if (di.getYLabel() == dj.getYLabel())
+//					relevant ++;
+//				else
+//					irrelevant ++;
+//			}
+//			
+//			//inject some random neighbors 
+//			int j = 0;
+//			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
+//				if (i!=j) {
+//					dj = m_trainSet.get(j);
+//					if (Math.random()<0.02 && !neighbors.contains(dj)) {
+//						neighbors.add(dj);
+//						if (di.getYLabel() == dj.getYLabel())
+//							relevant ++;
+//						else
+//							irrelevant ++;
+//					}
+//				}
+//				
+//				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
+//			}
+//			
+//			if (relevant==0 || irrelevant==0 
+//				|| (di.getYLabel() == 1 && negQ < 1.1*posQ)){
+//				//clear the cache for next query
+//				simRanker.clear();
+//				neighbors.clear();
+//				continue;
+//			} else if (di.getYLabel()==1)
+//				posQ ++;
+//			else
+//				negQ ++;
+//				
+//			//accept the query
+//			q = new _Query();
+//			m_queries.add(q);
+//			
+//			//construct features for the most similar documents with respect to the query di
+//			for(_Doc d:neighbors)
+//				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
+//			pairSize += q.createRankingPairs();
+//			
+//			//clear the cache for next query
+//			simRanker.clear();
+//			neighbors.clear();
+//		}
+//		
+//		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
+//		return pairSize;
+//	}
+	// Added by Lin, pass the clustering results back to L2R.
+	public void setClusters(ArrayList<ArrayList<_Doc>> clusters){
+		m_clusters = clusters;
+	}
+	
+	//In this create training corpus, we use clustering to do document selection.
 	protected int createTrainingCorpus(){
 		//pre-compute the similarity between labeled documents
 		calcLabeledSimilarities();
@@ -175,59 +263,28 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		_Query q;		
 		_Doc di, dj;
 		int posQ = 0, negQ = 0, pairSize = 0;
-		int relevant = 0, irrelevant = 0;
+		int index = 0;
 		
 		for(int i=0; i<m_trainSet.size(); i++) {
-			//candidate query document
+			//Candidate query.
 			di = m_trainSet.get(i);
-			relevant = 0;
-			irrelevant = 0;
-			
-			//using content similarity to construct initial ranking
-			for(int j=0; j<m_trainSet.size(); j++) {
-				if (i==j)
-					continue;	
-				dj = m_trainSet.get(j);
-				simRanker.add(new _RankItem(j, m_LabeledCache[getIndex(i,j)]));
-			}
-			
-			//find the top K similar documents by default similarity measure
-			for(_RankItem it:simRanker) {
-				dj = m_trainSet.get(it.m_index);
-				neighbors.add(dj);
-				if (di.getYLabel() == dj.getYLabel())
-					relevant ++;
-				else
-					irrelevant ++;
-			}
-			
-			//inject some random neighbors 
-			int j = 0;
-			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
-				if (i!=j) {
-					dj = m_trainSet.get(j);
-					if (Math.random()<0.02 && !neighbors.contains(dj)) {
-						neighbors.add(dj);
-						if (di.getYLabel() == dj.getYLabel())
-							relevant ++;
-						else
-							irrelevant ++;
-					}
-				}
-				
-				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
-			}
-			
-			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < 1.1*posQ)){
-				//clear the cache for next query
+			//Filter out unlabeled data + calculate sim(q, d_L);
+			for(int j=0; j<m_clusters.size(); j++){
 				simRanker.clear();
-				neighbors.clear();
-				continue;
-			} else if (di.getYLabel()==1)
-				posQ ++;
-			else
-				negQ ++;
+				//Select the most similar reviews in each cluster as the documents.
+				for(_Doc d: m_clusters.get(j)){
+					if(m_trainSet.contains(d)){
+						index = m_trainSet.indexOf(d);
+						if(i != index)
+							simRanker.add(new _RankItem(index, m_LabeledCache[getIndex(i, index)]));
+					}
+				}			
+				//Pick the top k from each cluster;
+				for(_RankItem it:simRanker) {
+					dj = m_trainSet.get(it.m_index);
+					neighbors.add(dj);
+				}
+			}
 				
 			//accept the query
 			q = new _Query();
@@ -239,7 +296,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			pairSize += q.createRankingPairs();
 			
 			//clear the cache for next query
-			simRanker.clear();
 			neighbors.clear();
 		}
 		
@@ -270,7 +326,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//feature 6: the sentiwordnet score for a review.
 		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.00103
 
-		//		// feature 10: the aspect score for a pair of reviews.
+		//feature 10: the aspect score for a pair of reviews.
 //		fv[9] = getAspectScore(q, d);
 //		
 //		// feature 11: the longest subsequence of a query and a document.

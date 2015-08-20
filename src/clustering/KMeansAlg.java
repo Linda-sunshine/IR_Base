@@ -52,7 +52,7 @@ public class KMeansAlg extends BaseClassifier {
 		}
 		return new FeatureVector(m_dict, indices, d.getValues());
 	}
-
+	
 	@Override
 	public void train(Collection<_Doc> trainSet) {
 		init();
@@ -65,7 +65,20 @@ public class KMeansAlg extends BaseClassifier {
 		m_centroids = alg.getClusterMeans();
 		m_clusters = result.getClusters();
 	}
-
+	
+	//added by Lin, transfer instances in cluster back to clusers of docs.
+	public ArrayList<ArrayList<_Doc>> getClusters(){
+		ArrayList<ArrayList<_Doc>> clusters = new ArrayList<ArrayList<_Doc>>();
+		for(InstanceList c: m_clusters){
+			ArrayList<_Doc> cluster = new ArrayList<_Doc>();
+			for(Instance ins: c){
+				cluster.add((_Doc) ins.getSource());
+			}	
+			clusters.add(cluster);
+		}
+		return clusters;
+	}
+	
 	//assign to the closest cluster 
 	@Override
 	public int predict(_Doc doc) {
