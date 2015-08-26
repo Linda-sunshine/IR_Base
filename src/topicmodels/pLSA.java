@@ -17,6 +17,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -30,8 +33,8 @@ public class pLSA extends twoTopic {
 	
 	protected double[][] topic_term_probabilty ; /* p(w|z) */	
 	protected double[][] word_topic_prior; /* prior distribution of words under a set of topics, by default it is null */
-	
 	boolean m_sentiAspectPrior = false; // symmetric sentiment aspect prior
+	protected SnowballStemmer m_stemmer = new englishStemmer();;
 	
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, //arguments for 2topic topic model
@@ -49,6 +52,15 @@ public class pLSA extends twoTopic {
 		topic_term_probabilty = new double[this.number_of_topics][this.vocabulary_size];
 		word_topic_sstat = new double[this.number_of_topics][this.vocabulary_size];		
 		background_probability = new double[vocabulary_size];//to be initialized during EM
+	}
+	
+	//Snowball Stemmer.
+	public String SnowballStemming(String token){
+		m_stemmer.setCurrent(token);
+		if(m_stemmer.stem())
+			return m_stemmer.getCurrent();
+		else
+			return token;
 	}
 	
 	public void setSentiAspectPrior(boolean senti) {
@@ -81,18 +93,30 @@ public class pLSA extends twoTopic {
 				if (tmpTxt.isEmpty())
 					continue;
 				
+				System.out.println("Prior loaded:" + tmpTxt);
+				int uniGramCount = 0; 
+				int biGramCount = 0;
 				container = tmpTxt.split(" ");
 				wCount = 0;
 				prior = new double[vocabulary_size];
 				for(int i=1; i<container.length; i++) {
+					//here for checking we have added the stemming
+					// but stemming is reducing the number of prior loaded
+					// so we turn off the loading of stemming
+					//container[i] = SnowballStemming(container[i]); // stemmer added
 					if (featureNameIndex.containsKey(container[i])) {
 						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
 						prior[wid] = eta;
 						wCount++;
+						if(container[i].contains("-"))
+							biGramCount++;
+						else
+							uniGramCount++;
 					}
+					
 				}
-				
 				System.out.format("Prior keywords for Topic %d (%s): %d/%d\n", priorWords.size(), container[0], wCount, container.length-1);
+				System.out.println("Unigram loaded:"+uniGramCount +", Bigram loaded:"+biGramCount);
 				priorWords.add(prior);
 			}
 			reader.close();
