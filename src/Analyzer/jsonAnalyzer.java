@@ -78,7 +78,9 @@ public class jsonAnalyzer extends DocAnalyzer{
 						AnalyzeDocWithStnSplit(review);
 					else
 						AnalyzeDoc(review);
+					
 				}
+				
 			} catch (ParseException e) {
 				System.out.print('T');
 			} catch (JSONException e) {

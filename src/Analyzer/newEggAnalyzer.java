@@ -4,6 +4,7 @@
 package Analyzer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
@@ -14,6 +15,8 @@ import java.util.HashMap;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
 import opennlp.tools.util.InvalidFormatException;
 import structures.NewEggPost;
 import structures.TokenizeResult;
@@ -33,6 +36,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	int m_consSentenceCounter = 0;
 	SimpleDateFormat m_dateFormatter;
 	int m_prosConsLoad = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
+	boolean m_classifierOrTopicmodel = false; // by default false because we basically use it in topicmodel, true means used in basic classifier
 	
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, String category, int loadProsCons) throws InvalidFormatException,
@@ -72,13 +76,30 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosSentenceCounter, m_consSentenceCounter);
 	}
 
+	public void setClassifierOrTopicModel(boolean flag, String stnModel){
+		m_classifierOrTopicmodel = flag;
+		try {
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		} catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	//Load a document and analyze it.
 	public void LoadNewEggDoc(String filename) {
 		JSONObject prods = null;
 		String item;
 		JSONArray itemIds, reviews;
-		
+		System.out.println(filename);
 		try {
+			
 			JSONObject json = LoadJson(filename);
 			prods = json.getJSONObject(m_category);
 			itemIds = prods.names();
@@ -95,10 +116,14 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				m_reviewCount+=reviews.length();
 				for(int j=0; j<reviews.length(); j++) 
 				{
-					if(this.m_stnDetector!=null)
+					if(this.m_stnDetector!=null && !m_classifierOrTopicmodel)
 						AnalyzeNewEggPostWithSentence(new NewEggPost(reviews.getJSONObject(j), item));
-					else
-						AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
+					else{
+						if(!m_classifierOrTopicmodel) // if false
+							AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
+						else // if true
+							AnalyzeNewEggPostSentenceClassification(new NewEggPost(reviews.getJSONObject(j), item));
+					}
 				}
 			} catch (JSONException e) {
 				System.out.print('P');
@@ -107,6 +132,122 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				e.printStackTrace();
 			}
 		}
+	}
+// 	we do not need this right now	
+//	protected void AnalyzeNewEggPostForClassification(NewEggPost post) throws ParseException {
+//		String[] tokens;
+//		String content;
+//		TokenizeResult result;
+//		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
+//		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+//		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
+//		
+//		/*Analyzing Pros Section*/
+//		int y = 0, uniWordsInSections = 0;
+//		if ((content=post.getProContent()) != null) {// tokenize pros
+//			result = TokenizerNormalizeStemmer(content);
+//			tokens = result.getTokens();
+//			vPtr = constructSpVct(tokens, y, docVct);
+//			spVcts.add(vPtr);
+//			uniWordsInSections += vPtr.size();
+//			Utils.mergeVectors(vPtr, docVct);
+//
+//			if (!m_releaseContent)
+//				buffer.append(String.format("Pros: %s\n", content));
+//		} else 
+//			spVcts.add(null);//no pro section
+//		if (uniWordsInSections>=m_lengthThreshold) {
+//			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+//			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+//			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
+//			doc.setSourceType(2); // 2 means from newEgg
+//			doc.createSpVct(spVcts);
+//			doc.setYLabel(y);
+//			m_corpus.addDoc(doc);
+//			m_classMemberNo[y]++;
+//		} 
+//		
+//		
+//		/*Analyzing Cons Section*/
+//		buffer = m_releaseContent?null:new StringBuffer(256);
+//		vPtr = new HashMap<Integer, Double>(); // docVct is used to collect DF
+//		docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+//		spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
+//		y = 1; uniWordsInSections = 0;
+//		if ((content=post.getConContent()) != null) {// tokenize cons
+//			result = TokenizerNormalizeStemmer(content);
+//			tokens = result.getTokens();
+//			vPtr = constructSpVct(tokens, y, docVct);
+//			spVcts.add(vPtr);
+//			uniWordsInSections += vPtr.size();
+//			Utils.mergeVectors(vPtr, docVct);
+//
+//			if (!m_releaseContent)
+//				buffer.append(String.format("Cons: %s\n", content));
+//		} else 
+//			spVcts.add(null);//no con section
+//		
+//		if (uniWordsInSections>=m_lengthThreshold) {
+//			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+//			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+//			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
+//			doc.setSourceType(2); // 2 means from newEgg
+//			doc.createSpVct(spVcts);
+//			doc.setYLabel(y);
+//			m_corpus.addDoc(doc);
+//			m_classMemberNo[y]++;
+//		} 
+//	}
+	
+	public void AnalyzeNewEggPostSentenceClassification(NewEggPost post) throws ParseException {
+		
+		String content;
+		TokenizeResult result;
+		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
+		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+
+		/*Analyzing Pros Section*/
+		if ((content=post.getProContent()) != null) {// tokenize pros
+			for(String sentence : m_stnDetector.sentDetect(content)) {
+				
+				int y = 0; // Pros label 0
+				result = TokenizerNormalizeStemmer(sentence);
+				vPtr = constructSpVct(result.getTokens(), y, docVct);
+				if (vPtr.size()>=m_lengthThreshold) {
+					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
+					doc.setSourceType(2); // source = 2 means the Document is from newEgg
+					doc.createSpVct(vPtr);
+					doc.setYLabel(y);
+					m_corpus.addDoc(doc);
+					m_classMemberNo[y]++;
+				}
+			}
+			if (!m_releaseContent)
+				buffer.append(String.format("Pros: %s\n", content));
+		}
+
+		/*Analyzing Cons Section*/
+		if ((content=post.getConContent()) != null) {// tokenize cons
+			for(String sentence : m_stnDetector.sentDetect(content)) {
+
+				int y = 1; // Cons label 1
+				result = TokenizerNormalizeStemmer(sentence);
+				vPtr = constructSpVct(result.getTokens(), y, docVct);
+				if (vPtr.size()>=m_lengthThreshold) {
+					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
+					doc.setSourceType(2); // source = 2 means the Document is from newEgg
+					doc.createSpVct(vPtr);
+					doc.setYLabel(y);
+					m_corpus.addDoc(doc);
+					m_classMemberNo[y]++;
+				}
+			}
+
+			if (!m_releaseContent)
+				buffer.append(String.format("Cons: %s\n", content));
+		} 
 	}
 	
 	protected boolean AnalyzeNewEggPost(NewEggPost post) throws ParseException {
@@ -145,20 +286,20 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			} else 
 				spVcts.add(null);//no con section
 
-			if ((content=post.getComments()) != null) {// tokenize comments
-				result = TokenizerNormalizeStemmer(content);
-				tokens = result.getTokens();
-				vPtr = constructSpVct(tokens, y, docVct);
-				spVcts.add(vPtr);
-				uniWordsInSections += vPtr.size();
-				//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
-
-				if (!m_releaseContent)
-					buffer.append(String.format("Comments: %s\n", content));
-			} else
-				spVcts.add(null);//no comments
+//			if ((content=post.getComments()) != null) {// tokenize comments
+//				result = TokenizerNormalizeStemmer(content);
+//				tokens = result.getTokens();
+//				vPtr = constructSpVct(tokens, y, docVct);
+//				spVcts.add(vPtr);
+//				uniWordsInSections += vPtr.size();
+//				//Utils.mergeVectors(vPtr, docVct); // this action will be not necessary since we won't have any other sections
+//
+//				if (!m_releaseContent)
+//					buffer.append(String.format("Comments: %s\n", content));
+//			} else
+//				spVcts.add(null);//no comments
 		}else if(m_prosConsLoad==0){ // load only pros
-			if ((content=post.getProContent()) != null) {// tokenize pros
+			if ((content=post.getProContent()) != null) {// tokenize pros	
 				result = TokenizerNormalizeStemmer(content);
 				tokens = result.getTokens();
 				vPtr = constructSpVct(tokens, y, docVct);

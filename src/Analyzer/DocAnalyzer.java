@@ -177,7 +177,7 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//Snowball Stemmer.
-	protected String SnowballStemming(String token){
+	public String SnowballStemming(String token){
 		m_stemmer.setCurrent(token);
 		if(m_stemmer.stem())
 			return m_stemmer.getCurrent();
@@ -385,7 +385,6 @@ public class DocAnalyzer extends Analyzer {
 				rawCnt += result.getRawCnt();
 			}
 		} // End For loop for sentence	
-	
 		//the document should be long enough
 		if (spVct.size()>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) { 
 			doc.createSpVct(spVct);		
@@ -497,6 +496,7 @@ public class DocAnalyzer extends Analyzer {
 		double tmp;
 		String word, tag;
 
+		int tokenFound = 0; // number of token found in sentiWordNet
 		for(int i=0; i<tokens.length;i++){
 			word = SnowballStemming(Normalize(tokens[i]));
 			tag = posTags[i];
@@ -510,10 +510,21 @@ public class DocAnalyzer extends Analyzer {
 				tag = "r";
 			
 			tmp = m_sentiWordNet.extract(word, tag);
+			
 			if(tmp!=-2) // word found in SentiWordNet
+			{
 				senScore+=tmp;
+				tokenFound++;
+				//System.out.print(word+",");
+			}
 		}
-		return senScore/tokens.length;//This is average, we may have different ways of calculation.
+		//System.out.print("\nSentence lenghts:"+tokens.length+", Token Found in SentiWordnet:"+tokenFound);
+		
+		if(tokenFound==0) // no token found in sentiWordNet
+			return 0;
+		else
+			return senScore/tokenFound; // average based on the number of token found 
+		//return senScore/tokens.length;//This is average, we may have different ways of calculation.
 	}
 	
 	// receive sentence index as parameter
@@ -530,12 +541,16 @@ public class DocAnalyzer extends Analyzer {
 		int negCount = 0;
 
 		for(String word:wordsInSentence){
-			if(m_posPriorList.contains(word))
+			if(m_posPriorList.contains(word)){
 				posCount++;
-			else if(m_negPriorList.contains(word))
+				//System.out.print("positive:" + word+",");
+			}
+			else if(m_negPriorList.contains(word)){
 				negCount++;
+				//System.out.print("negative:"+ word+",");
+			}
 		}
-
+		//System.out.println("PosCount:"+posCount+",negCount"+negCount);
 		if(posCount>negCount)
 			return 1; // 1 means sentence is more positive
 		else if (negCount>posCount)
@@ -557,9 +572,13 @@ public class DocAnalyzer extends Analyzer {
 		int negationCount = 0;
 
 		for(String word:wordsInSentence){
-			if(m_negationList.contains(word))
+			if(m_negationList.contains(word)){
 				negationCount++;
+				//System.out.print(word+",");
+			}
+				
 		}
+		//System.out.println("NegationCount"+negationCount);
 		return negationCount;
 	}
 
