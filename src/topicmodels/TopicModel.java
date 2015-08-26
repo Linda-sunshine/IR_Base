@@ -580,10 +580,10 @@ public abstract class TopicModel {
 		
 		//taking the STD
 		for(int i=0; i<_Doc.stn_senti_fv_size;i++)
-			sentimentFeaturesStandardDeviation[i] = sentimentFeatures[i]/(totalNumberofSentencesInTrainSet-1);
+			sentimentFeaturesStandardDeviation[i] = Math.sqrt(sentimentFeatures[i])/(totalNumberofSentencesInTrainSet-1);
 
 		for(int i=0; i<_Doc.stn_fv_size;i++)
-			topicFeaturesStandardDeviation[i] = topicFeatures[i]/(totalNumberofSentencesInTrainSet-1);
+			topicFeaturesStandardDeviation[i] = Math.sqrt(topicFeatures[i])/(totalNumberofSentencesInTrainSet-1);
 
 		//Now normalize using z-score both train and test set
 		for(_Doc d:m_corpus.getCollection()){
