@@ -371,9 +371,24 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		for(int i = this.length_of_seq - 2; i>=0; i--)
 			path[i] = (int)beta[i+1][path[i+1]]; 
 		
+		// For first senetnce there will be always tranisition
+		// so values are set to 1.0
+		double topicTransitionProbs = 1.0; 
+		double sentimentTransitionProbs = 1.0;
 		for(int i=0; i<this.length_of_seq; i++){
 			int predictedSentiment = sentimentMapper(path[i]);
+			int predictedTopic = topicMapper(path[i]);
+			if(i!=0){
+				topicTransitionProbs = getEpsilon(i);
+				sentimentTransitionProbs = getSigma(i);
+			}
+			
+			// storing the debug result of LRHTSM
 			d.getSentence(i).setSentencePredictedSenitmentLabel(predictedSentiment);
+			d.getSentence(i).setSentencePredictedTopic(predictedTopic);
+			d.getSentence(i).setTopicTransition(topicTransitionProbs);
+			d.getSentence(i).setSentimentTransition(sentimentTransitionProbs);
+			
 		}
 	}
 }

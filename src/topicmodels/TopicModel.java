@@ -450,10 +450,10 @@ public abstract class TopicModel {
 
 	
 	public void debugOutputWrite(){
-		debugWriter.println("Doc ID, Source, SentenceIndex, ActualSentiment, PredictedSentiment");
+		debugWriter.println("Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty");
 		for(_Doc d:m_corpus.getCollection()){
 			for(int i=0; i<d.getSenetenceSize(); i++){
-				debugWriter.format("%d,%d,%d,%s,%d,%d\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence(),d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel());
+				debugWriter.format("%d,%d,%d,\"%s\",%d,%d,%d,%f,%f\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence().toLowerCase().replaceAll("[^a-z0-9.]", " ") ,d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel(), d.getSentence(i).getSentencePredictedTopic(), d.getSentence(i).getTopicTransition(),d.getSentence(i).getSentimentTransition());
 			}
 		}
 		debugWriter.flush();
@@ -514,7 +514,91 @@ public abstract class TopicModel {
 		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
+	// added by Mustafiz for normalizing the feature of topic and sentiment for each doc
+	// here we normalize each feature by z-score https://en.wikipedia.org/wiki/Standard_score
+	public void normalizeFeature(){
+		System.out.println("Normalizing the sentiment and topic features");
+		int totalNumberofSentencesInTrainSet = 0;
 		
+		double[] sentimentFeatures = new double[_Doc.stn_senti_fv_size];
+		double[] topicFeatures = new double[_Doc.stn_fv_size];
+		
+		double[] sentimentFeaturesMean = new double[_Doc.stn_senti_fv_size];
+		double[] topicFeaturesMean = new double[_Doc.stn_fv_size];
+		
+		double[] sentimentFeaturesStandardDeviation = new double[_Doc.stn_senti_fv_size];
+		double[] topicFeaturesStandardDeviation = new double[_Doc.stn_fv_size];
+		
+		//initialize the vectors to zero
+		for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+			sentimentFeatures[i] = 0.0;
+		
+		for(int i=0; i<_Doc.stn_fv_size;i++)
+			topicFeatures[i] = 0.0;
+		
+		// getting the summation of all the values of features across all the documents
+		for(_Doc d:m_trainSet){
+			_Stn[] sentences = d.getSentences();
+			int stnSize = d.getSenetenceSize();
+			totalNumberofSentencesInTrainSet+=stnSize;
+			for(int s=0; s<stnSize; s++){
+				for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+					sentimentFeatures[i] += sentences[s].m_sentiTransitFv[i];
+				for(int i=0; i<_Doc.stn_fv_size;i++)
+					topicFeatures[i] += sentences[s].m_transitFv[i];
+			}// sentence loop
+		}// doc loop
+		
+		//taking the mean
+		for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+			sentimentFeaturesMean[i] = sentimentFeatures[i]/totalNumberofSentencesInTrainSet;
+		
+		for(int i=0; i<_Doc.stn_fv_size;i++)
+			topicFeaturesMean[i] = topicFeatures[i]/totalNumberofSentencesInTrainSet;
+		
+		//calculating the standard deviation STD
+		
+		//Again initialize the vectors to zero
+		for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+			sentimentFeatures[i] = 0.0;
+
+		for(int i=0; i<_Doc.stn_fv_size;i++)
+			topicFeatures[i] = 0.0;
+		
+		// getting the summation of all the values of features across all the documents for STD
+		for(_Doc d:m_trainSet){
+			_Stn[] sentences = d.getSentences();
+			int stnSize = d.getSenetenceSize();
+			for(int s=0; s<stnSize; s++){
+				for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+					sentimentFeatures[i] += (sentences[s].m_sentiTransitFv[i]-sentimentFeaturesMean[i])*(sentences[s].m_sentiTransitFv[i]-sentimentFeaturesMean[i]);
+				for(int i=0; i<_Doc.stn_fv_size;i++)
+					topicFeatures[i] += (sentences[s].m_transitFv[i]-topicFeaturesMean[i])*(sentences[s].m_transitFv[i]-topicFeaturesMean[i]);
+			}// sentence loop
+		}// doc loop
+
+		
+		//taking the STD
+		for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+			sentimentFeaturesStandardDeviation[i] = sentimentFeatures[i]/(totalNumberofSentencesInTrainSet-1);
+
+		for(int i=0; i<_Doc.stn_fv_size;i++)
+			topicFeaturesStandardDeviation[i] = topicFeatures[i]/(totalNumberofSentencesInTrainSet-1);
+
+		//Now normalize using z-score both train and test set
+		for(_Doc d:m_corpus.getCollection()){
+			_Stn[] sentences = d.getSentences();
+			int stnSize = d.getSenetenceSize();
+			for(int s=0; s<stnSize; s++){
+				for(int i=0; i<_Doc.stn_senti_fv_size;i++)
+					sentences[s].m_sentiTransitFv[i] = (sentences[s].m_sentiTransitFv[i] - sentimentFeaturesMean[i])/sentimentFeaturesStandardDeviation[i];
+				for(int i=0; i<_Doc.stn_fv_size;i++)
+					sentences[s].m_transitFv[i] = (sentences[s].m_transitFv[i] - topicFeaturesMean[i])/topicFeaturesStandardDeviation[i]; 
+			}// sentence loop
+		}// Corpus loop
+
+	}
+	
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
 		m_trainSet = new ArrayList<_Doc>();
@@ -546,6 +630,7 @@ public abstract class TopicModel {
 				System.out.println("Train Set Size "+m_trainSet.size());
 				System.out.println("Test Set Size "+m_testSet.size());
 
+				normalizeFeature();
 				long start = System.currentTimeMillis();
 				EM();
 				perf[i] = Evaluation();
@@ -636,6 +721,7 @@ public abstract class TopicModel {
 			System.out.println("Combined Test Set Size "+m_testSet.size());
 			infoWriter.println("Combined Test Set Size "+m_testSet.size());
 			
+			normalizeFeature();
 			long start = System.currentTimeMillis();
 			EM();
 			perf[0] = Evaluation();

@@ -113,19 +113,23 @@ public class NaiveBayes extends BaseClassifier {
 		
 	}
 	
-	public void printTopFeatures(int topK, ArrayList<String> features) {
+	// ranking the features in desceding order from Naive Bayes p(X|Y=1) and p(X|Y=0) 
+	// positive features at the top and negative features at the bootom of the list
+	// 1 means cons and 0 means pros
+	public void printTopFeaturesSet(int topK, ArrayList<String> features) {
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
+		double logRatio = 0.0;
 		for(int n=0; n<m_featureSize; n++) {
 			for(int i=0; i<m_classNo; i++)
-				m_cProbs[i] = m_Pxy[i][n];
-			queue.add(new _RankItem(n, Utils.entropy(m_cProbs, true)));
+				m_cProbs[i] = Math.exp(m_Pxy[i][n]); // converting to original space since m_Pxy in logSpace
+			logRatio = Math.log(m_cProbs[1]) - Math.log(m_cProbs[0]); // log Ratio since we have only two classes
+			queue.add(new _RankItem(n, logRatio));
 		}
 		
-		System.out.print("Most discriminative features: ");
+		System.out.print("Most discriminative features:\n");
+		int i = 0;
 		for(_RankItem item:queue) {
-			for(int i=0; i<m_classNo; i++)
-				m_cProbs[i] = m_Pxy[i][item.m_index];
-			System.out.format("%s(%d) ", features.get(item.m_index), Utils.maxOfArrayIndex(m_cProbs));
+			System.out.format("%d:%s(%f)\n", i++, features.get(item.m_index), item.m_value);
 		}
 		System.out.println();
 	}

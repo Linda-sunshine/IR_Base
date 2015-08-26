@@ -24,6 +24,10 @@ public class _Stn {
 	String[] m_sentencePOSTag; // corresponding POS tags
 	String m_rawSource;
 	
+	//needed for debugging the topic and sentiment transition probabilities
+	double topicTransition;
+	double sentimentTransition;
+	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
 	
@@ -33,6 +37,8 @@ public class _Stn {
 	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
 	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
+	int m_predictedTopic = -1; // added by Mustafiz for debugging topic transition
+	
 	
 	public _Stn(_SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
 		m_x_sparse = x;
@@ -57,6 +63,35 @@ public class _Stn {
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;
+	}
+	
+	// for debugging the LRHTSM model
+	public void setTopicTransition(double transProb){
+		topicTransition = transProb;
+	}
+	
+	// for debugging the LRHTSM model
+	public double getTopicTransition(){
+		return topicTransition;
+	}
+	
+	// for debugging the LRHTSM model
+	public void setSentimentTransition(double transProb){
+		sentimentTransition = transProb;
+	}
+	
+	// for debugging the LRHTSM model
+	public double getSentimentTransition(){
+		return sentimentTransition;
+	}
+	
+	// for debugging the LRHTSM model
+	public void setSentencePredictedTopic(int topic){
+		m_predictedTopic = topic;
+	}
+	// for debugging the LRHTSM model
+	public int getSentencePredictedTopic(){
+		return m_predictedTopic;
 	}
 	
 	public void setSentencePredictedSenitmentLabel(int label){

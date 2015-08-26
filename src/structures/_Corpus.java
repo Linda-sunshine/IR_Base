@@ -58,6 +58,12 @@ public class _Corpus {
 		return m_features.get(i);
 	}
 	
+	// used to call from AmazonReviewMain to pass this feature set to 
+	// Naive Bayes classifier
+	public ArrayList<String> getAllFeatures(){
+		return m_features;
+	}
+	
 	public int getFeatureSize() {
 		return m_features.size();
 	}
