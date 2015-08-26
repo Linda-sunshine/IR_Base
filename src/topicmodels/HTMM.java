@@ -1,5 +1,8 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import markovmodel.FastRestrictedHMM;
@@ -189,6 +192,41 @@ public class HTMM extends pLSA {
 			sentences[i].setTopic(path[i]);
 		
 		return current;
+	}
+	
+	public void printTopFeaturesSet(int topK, ArrayList<String> features, String path){
+		
+		System.out.println("Feature Wise File Path: "+ path);
+		try{
+			debugWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
+		
+		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
+		double logRatio = 0.0;
+		int range = this.number_of_topics/2;
+		
+		for(int i=0; i<this.number_of_topics/2; i++){
+			queue = new MyPriorityQueue<_RankItem>(topK, false);
+			for(int n=0; n<features.size(); n++) {
+				logRatio = Math.log(Math.exp(topic_term_probabilty[i][n])) - Math.log(Math.exp(topic_term_probabilty[i+range][n])); // log Ratio since we have only two classes
+				queue.add(new _RankItem(n, logRatio));
+			}
+		
+			System.out.print("Most discriminative features for topic:"+ i +"\n");
+			debugWriter.print("Most discriminative features for topic:"+ i +"\n");
+			int j=0;
+			for(_RankItem item:queue) {
+				System.out.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
+				debugWriter.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
+				j++;
+			}
+			System.out.println();
+			debugWriter.println();
+		}
+		debugWriter.flush();
+		debugWriter.close();
 	}
 	
 	public void docSummary(String[] productList){

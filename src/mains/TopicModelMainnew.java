@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.ParseException;
+import java.util.ArrayList;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -48,12 +49,12 @@ public class TopicModelMainnew {
 		
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
 		// change topic number and category
-		String category = "tablet";
-		int number_of_topics = 30;
+		String category = "camera";
+		int number_of_topics = 26;
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from newEgg
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-		int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
+		int trainSize = 0; // trainSize 0 means only newEgg; 5000 means all the data 
 		int number_of_iteration = 50;
 		int topK = 50;
 		boolean generateTrainTestDataForJSTASUM = false;
@@ -181,6 +182,9 @@ public class TopicModelMainnew {
 		}	
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
+		ArrayList<String> featureSet = c.getAllFeatures();
+		int size = featureSet.size();
+		
 		
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
@@ -256,6 +260,8 @@ public class TopicModelMainnew {
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
 				model.printTopWords(topK, topWordFilePath);
+				String topicWiseFEaturesFilePath =  resultDirectory + "Topics_" + number_of_topics + "_TopicWiseFeature.txt";
+				((HTMM)model).printTopFeaturesSet(size, featureSet, topicWiseFEaturesFilePath);
 			}
 			
 			if (sentence) {
