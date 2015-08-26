@@ -257,6 +257,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		TokenizeResult result;
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
+		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // sparse sentence feature vectors 
 		
 		//Added by Lin for constructing postagging vector.
 		HashMap<Integer, Double> posTaggingVct = new HashMap<Integer, Double>();//Collect the index and counts of projected features.	
@@ -266,17 +267,13 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
 			String[] rawTokens = result.getRawTokens();
-			String[] posTags = m_tagger.tag(rawTokens); // only tokenize then POS tagging
-
-			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);	
-			//Added by Lin for constructing postagging vector.
-			HashMap<Integer, Double> postaggingSentenceVct = constructPOSSpVct(rawTokens, posTags); // Collect the index and counts of features.
-
+			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);
+			
 			if (sentence_vector.size()>0) {//avoid empty sentence
+				String[] posTags = m_tagger.tag(result.getRawTokens());
+				stnList.add(new _Stn(Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
-				Utils.mergeVectors(postaggingSentenceVct, posTaggingVct);
 				sentiScore += sentiWordScore(rawTokens, posTags);//since we already have the postagging, we don't need to repeat it.
-				
 				stopwordCnt += result.getStopwordCnt();
 				rawCnt += result.getRawCnt();
 			}
@@ -286,8 +283,8 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		if (spVct.size()>=m_lengthThreshold) { 
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
+			doc.setSentences(stnList);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
-			
 			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
 			doc.setSentiScore(sentiScore/spVct.size());//average sentence sentiWordNet score
 			
@@ -306,8 +303,9 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 5; //Define the number of classes
-		int Ngram = 2; //The default value is bigram. 
-		int lengthThreshold = 10; //Document length threshold
+		int Ngram = 1; //The default value is bigram. 
+		int lengthThreshold = 5; //Document length threshold
+		
 		
 //		/*****Parameters in feature selection.*****/
 		String featureSelection = "DF"; //Feature selection method.
@@ -315,7 +313,19 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String stopwords = "./data/Model/stopwords.dat";
 		double startProb = 0.2; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+		
+		
+		/*parameter added by Mustafiz*/
+		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
+		String category = "tv";
+		int trainSize = 5000; // use only 5000 to generate the Aspects
+		String amazonFolder = "./data/amazon/mainData/"+ category + "/"+trainSize+"/";
+		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
+		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
+		String pathToNegationWords = "./data/Model/negation_words.txt";
+		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small";
@@ -323,22 +333,32 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
 		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
-		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
+		String aspectModel = "./data/Model/aspect_"+category+"_own.txt"; // list of keywords in each aspect
+		String aspectOutput = "./data/Model/aspect_"+category+"_output.txt"; // list of keywords in each aspect
+		boolean aspFlag = false;
 		
 		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
-		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+		
+		
+		/*Added by Mustafiz*/
+		String featureDirectory = "./data/amazon/mainData/"+category+"/"+trainSize+"/";
+		String fvFile = featureDirectory+"_topicmodel.txt"; 
+		String fvStatFile = featureDirectory+"stat_topicmodel.txt";
+		
+		//String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+		//String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		
 		/****Loading json files*****/
 //		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		
-//		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.SaveCVStat(fvStatFile);
+		System.out.println("Performing feature selection, wait...");
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, null, classNumber, null, Ngram, lengthThreshold); 
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(amazonFolder, suffix);
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		System.out.println("Creating feature vectors, wait...");
+		analyzer = new AspectAnalyzer(tokenModel,stnModel,classNumber, fvFile, Ngram, lengthThreshold, posModel, aspectModel,aspFlag); 
+		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		analyzer.LoadDirectory(amazonFolder, suffix); //Load all the documents as the data set.
 		
 		/****Aspect annotation*****/
 		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
