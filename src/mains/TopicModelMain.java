@@ -9,12 +9,12 @@ import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
+import topicmodels.LRHTSM;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.LRHTSM_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.jsonAnalyzer;
+import Analyzer.newEggAnalyzer;
 
 public class TopicModelMain {
 
@@ -27,12 +27,11 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		
 		String category = "tablet";
 		int number_of_topics = 40;
-		int trainSize = 1000;// trainSize 0 means only newEgg; 5000 means all the data 
-		boolean loadNewEggInTrain = false; // false means in training there is no reviews from NewEgg
+		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
@@ -53,9 +52,8 @@ public class TopicModelMain {
 		String tvProductList[] = {"B0074FGLUM"};
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/topicmodel";
-		//String folder = "./data/amazon/test";
-		//String folder = "./data/amazon/newegg/newegg-reviews.json";
+		String amazonFolder = "./data/amazon/tablet/topicmodel";
+		String newEggFolder = "./data/NewEgg";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -78,21 +76,6 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
-		String topWordFilePath = "./results/"+category+"/"+trainSize+"/";
-		if(loadNewEggInTrain)
-			topWordFilePath += "NewEggLoaded/";
-		else
-			topWordFilePath += "noNewEgg/";
-		
-		if(loadAspectSentiPrior==0)
-			topWordFilePath += "noPrior/";
-		else if(loadAspectSentiPrior==1)
-			topWordFilePath += "aspectSentiPrior/";
-		else
-			topWordFilePath += "aspectPrior/";
-		
-		topWordFilePath+="topWords.txt";
-		
 		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
 		
 		/*****Parameters in feature selection.*****/
@@ -109,14 +92,17 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
+		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		}
 		
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
+		analyzer.LoadDirectory(amazonFolder, suffix);				
+		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		
@@ -155,7 +141,10 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
+//				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
+//						number_of_topics, alpha,
+//						lambda);
+				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
 			}
@@ -182,7 +171,7 @@ public class TopicModelMain {
 			} else {
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
-				model.printTopWords(topK, topWordFilePath);
+				model.printTopWords(topK);
 			}
 			
 			if (sentence) {
