@@ -77,6 +77,8 @@ public class Parameter {
 	public int m_lag = 10; // lag in accumulating Gibbs samples
 	public String m_priorFile = null; // prior seed word list
 	
+	public int m_topK = 5;
+	public int m_noC = 5;
 	public Parameter(String argv[])
 	{
 		int i;
@@ -169,6 +171,10 @@ public class Parameter {
 				m_burnIn = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-lag"))
 				m_lag = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-topK"))//added by Lin for selecting the top K documents as
+				m_topK = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-noC"))//added by Lin for selecting the number of clusters.
+				m_noC = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-mt"))
 				m_multithread = argv[i].equals("1");
 			else if (argv[i-1].equals("-fprior"))
