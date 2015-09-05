@@ -32,7 +32,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_ranker; // 0: pairwise rankSVM; 1: LambdaRank
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 11;// features to be defined in genRankingFV()
+	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	ArrayList<ArrayList<_Doc>> m_clusters;
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
@@ -341,7 +341,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		
 		//Part I: pairwise features for query document pair
 //		// feature 11: the longest subsequence of a query and a document.
-		fv[10] = Utils.LCS2Doc(q, d);
+//		fv[10] = Utils.LCS2Doc(q, d);
 //		
 //		// feature 12: the title of review
 //		// fv[11] = d.getTitleScore();

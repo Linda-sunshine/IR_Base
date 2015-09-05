@@ -61,21 +61,21 @@ public class _Query {
 			if (di.m_betterURLs==null)
 				continue;
 			
-			if (negSgn) {
-				for(_QUPair dj:di.m_betterURLs) {
-					if ((fvct=di.getDiffFv(dj)) != null) {
-						fvs.add(fvct);
-						labels.add(-1);
-					}
-				}
-			} else {
+//			if (negSgn) {
+//				for(_QUPair dj:di.m_betterURLs) {
+//					if ((fvct=di.getDiffFv(dj)) != null) {
+//						fvs.add(fvct);
+//						labels.add(-1);
+//					}
+//				}
+//			} else {
 				for(_QUPair dj:di.m_betterURLs) {
 					if ((fvct=dj.getDiffFv(di)) != null) {
 						fvs.add(fvct);
 						labels.add(1);
 					}
 				}
-			}
+//			}
 		}
 	}
 }
