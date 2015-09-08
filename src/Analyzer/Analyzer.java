@@ -12,6 +12,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import opennlp.tools.sentdetect.SentenceDetectorME;
+import opennlp.tools.sentdetect.SentenceModel;
+import opennlp.tools.util.InvalidFormatException;
+
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -25,6 +29,7 @@ public abstract class Analyzer {
 	int[] m_classMemberNo; //Store the number of members in a class.
 	protected int m_Ngram; 
 	
+	protected boolean m_classifierOrTopicmodel = false; // by default false because we basically use it in topicmodel, true means used in basic classifier
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
@@ -69,6 +74,8 @@ public abstract class Analyzer {
 		m_featureStat.clear();
 		m_corpus.reset();
 	}
+	
+
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
 	protected boolean LoadCV(String filename) {

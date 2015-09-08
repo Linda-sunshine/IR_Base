@@ -155,6 +155,133 @@ public abstract class BaseClassifier {
 		}
 	}
 	
+	//k-fold Cross Validation.
+	public void crossValidationNahid(int k, boolean m_randomFold, boolean m_LoadnewEggInTrain) {
+			m_trainSet = new ArrayList<_Doc>();
+			m_testSet = new ArrayList<_Doc>();
+			
+			double[] perf;
+			int amazonTrainsetRatingCount[] = {0,0,0,0,0};
+			int amazonRatingCount[] = {0,0,0,0,0};
+			
+			int newEggRatingCount[] = {0,0,0,0,0};
+			int newEggTrainsetRatingCount[] = {0,0,0,0,0};
+			
+			
+			if(m_randomFold==true){
+				perf = new double[k];
+				m_corpus.shuffle(k);
+				int[] masks = m_corpus.getMasks();
+				ArrayList<_Doc> docs = m_corpus.getCollection();
+				//Use this loop to iterate all the ten folders, set the train set and test set.
+				for (int i = 0; i < k; i++) {
+					for (int j = 0; j < masks.length; j++) {
+						if( masks[j]==i ) 
+							m_testSet.add(docs.get(j));
+						else 
+							m_trainSet.add(docs.get(j));
+					}
+					
+					System.out.println("Fold number "+i);
+					System.out.println("Train Set Size "+m_trainSet.size());
+					System.out.println("Test Set Size "+m_testSet.size());
+
+					long start = System.currentTimeMillis();
+					train();
+					double accuracy = test();
+					
+					System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
+					m_trainSet.clear();
+					m_testSet.clear();
+				}
+			} else {
+				k = 1;
+				perf = new double[k];
+			    int totalNewqEggDoc = 0;
+			    int totalAmazonDoc = 0;
+				for(_Doc d:m_corpus.getCollection()){
+					if(d.getSourceType()==2){
+						newEggRatingCount[d.getYLabel()]++;
+						totalNewqEggDoc++;
+						}
+					else if(d.getSourceType()==1){
+						amazonRatingCount[d.getYLabel()]++;
+						totalAmazonDoc++;
+					}
+				}
+				System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
+				System.out.println("Total Amazon Doc:"+ totalAmazonDoc);
+				
+				int amazonTrainSize = 0;
+				int amazonTestSize = 0;
+				int newEggTrainSize = 0;
+				int newEggTestSize = 0;
+				
+				for(_Doc d:m_corpus.getCollection()){
+					
+					if(d.getSourceType()==1){ // from Amazon
+						int rating = d.getYLabel();
+						
+						if(amazonTrainsetRatingCount[rating]<=0.8*amazonRatingCount[rating]){
+							m_trainSet.add(d);
+							amazonTrainsetRatingCount[rating]++;
+							amazonTrainSize++;
+						}else{
+							m_testSet.add(d);
+							amazonTestSize++;
+						}
+					}
+					
+					if(m_LoadnewEggInTrain==true && d.getSourceType()==2) {
+						
+						int rating = d.getYLabel();
+						if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+							m_trainSet.add(d);
+							newEggTrainsetRatingCount[rating]++;
+							newEggTrainSize++;
+						}else{
+							m_testSet.add(d);
+							newEggTestSize++;
+						}
+						
+					}
+					if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
+						int rating = d.getYLabel();
+						if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+							// Do nothing simply ignore it make for different set
+							//m_trainSet.add(d);
+							newEggTrainsetRatingCount[rating]++;
+							//newEggTrainSize++;
+						}else{
+							m_testSet.add(d);
+							newEggTestSize++;
+						}
+					}
+				}
+				
+				System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
+				
+				System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
+				
+				for(int i=0; i<amazonTrainsetRatingCount.length; i++){
+					System.out.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
+				}
+		
+				System.out.println("Combined Train Set Size "+m_trainSet.size());
+				System.out.println("Combined Test Set Size "+m_testSet.size());
+				
+				long start = System.currentTimeMillis();
+				train();
+				double accuracy = test();
+				
+				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
+						
+			}
+			//output the performance statistics
+			calculateMeanVariance(m_precisionsRecalls);	
+			
+		}	
+	
 	abstract public void saveModel(String modelLocation);
 	
 	//Calculate the precision and recall for one folder tests.

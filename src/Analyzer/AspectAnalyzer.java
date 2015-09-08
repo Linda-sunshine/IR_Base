@@ -311,14 +311,15 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String featureSelection = "DF"; //Feature selection method.
 		int chiSize = 50; // top ChiSquare words for aspect keyword selection
 		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		//Actually I am selecting all words here
+		double startProb = 0.1; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 1; // Filter the features with DFs smaller than this threshold.
 		
 		
 		/*parameter added by Mustafiz*/
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
-		String category = "tv";
+		String category = "tablet";
 		int trainSize = 5000; // use only 5000 to generate the Aspects
 		String amazonFolder = "./data/amazon/mainData/"+ category + "/"+trainSize+"/";
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
@@ -328,7 +329,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
+		String folder = "./data/amazon/test";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
@@ -337,25 +338,18 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		String aspectOutput = "./data/Model/aspect_"+category+"_output.txt"; // list of keywords in each aspect
 		boolean aspFlag = false;
 		
-		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		
-		
 		/*Added by Mustafiz*/
 		String featureDirectory = "./data/amazon/mainData/"+category+"/"+trainSize+"/";
 		String fvFile = featureDirectory+"_topicmodel.txt"; 
-		String fvStatFile = featureDirectory+"stat_topicmodel.txt";
-		
-		//String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
-		//String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		
 		/****Loading json files*****/
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
 		System.out.println("Performing feature selection, wait...");
 		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, null, classNumber, null, Ngram, lengthThreshold); 
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(amazonFolder, suffix);
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		System.out.println("Creating feature vectors, wait...");
+
+//	    System.out.println("Creating feature vectors, wait...");
 		analyzer = new AspectAnalyzer(tokenModel,stnModel,classNumber, fvFile, Ngram, lengthThreshold, posModel, aspectModel,aspFlag); 
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		analyzer.LoadDirectory(amazonFolder, suffix); //Load all the documents as the data set.

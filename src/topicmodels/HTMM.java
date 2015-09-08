@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import markovmodel.FastRestrictedHMM;
 import structures.MyPriorityQueue;
@@ -196,37 +197,112 @@ public class HTMM extends pLSA {
 	
 	public void printTopFeaturesSet(int topK, ArrayList<String> features, String path){
 		
+		HashMap<Integer, String> list = new HashMap<Integer, String>();
+		HashMap<Integer, Double> values = new HashMap<Integer, Double>();
+		
+	
+	
+		int size = features.size();
+		int range = this.number_of_topics/2;
+		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(size, false);
+		PrintWriter topicWiseFeatureWriter = null;
+		
 		System.out.println("Feature Wise File Path: "+ path);
 		try{
-			debugWriter = new PrintWriter(new File(path));
+			topicWiseFeatureWriter = new PrintWriter(new File(path));
 		}catch(Exception e){
 			System.err.println(path+" Not found!!");
 		}
 		
-		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
+		for(int i=0; i<this.number_of_topics/2; i++){
+			MyPriorityQueue<_RankItem> queuePos = new MyPriorityQueue<_RankItem>(500, true);
+			MyPriorityQueue<_RankItem> queueNeg = new MyPriorityQueue<_RankItem>(500, true);
+			
+			for(int n=0; n<features.size(); n++) {
+				queuePos.add(new _RankItem(m_corpus.getFeature(n), topic_term_probabilty[i][n]));
+				queueNeg.add(new _RankItem(m_corpus.getFeature(n), topic_term_probabilty[i+range][n]));
+			}
+			topicWiseFeatureWriter.print("Aspect Related Words topic:"+ i +"\n");
+			int count = 0;
+			for(_RankItem itemPos:queuePos){
+				for(_RankItem itemNeg:queueNeg){
+					if(itemPos.m_name.equalsIgnoreCase(itemNeg.m_name)){
+						topicWiseFeatureWriter.format("%d:%s(%f),(%f)\n", count++, itemPos.m_name,itemPos.m_value, itemNeg.m_value);
+					}
+				}
+			}
+			queuePos.clear();
+			queueNeg.clear();
+		}
+		
+		
 		double logRatio = 0.0;
-		int range = this.number_of_topics/2;
+		
 		
 		for(int i=0; i<this.number_of_topics/2; i++){
-			queue = new MyPriorityQueue<_RankItem>(topK, false);
+			queue = new MyPriorityQueue<_RankItem>(size, false);
 			for(int n=0; n<features.size(); n++) {
 				logRatio = Math.log(Math.exp(topic_term_probabilty[i][n])) - Math.log(Math.exp(topic_term_probabilty[i+range][n])); // log Ratio since we have only two classes
 				queue.add(new _RankItem(n, logRatio));
 			}
 		
 			System.out.print("Most discriminative features for topic:"+ i +"\n");
-			debugWriter.print("Most discriminative features for topic:"+ i +"\n");
+			topicWiseFeatureWriter.print("Most discriminative features for topic:"+ i +"\n");
 			int j=0;
+			int middlePointDetector = 0;
 			for(_RankItem item:queue) {
-				System.out.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
-				debugWriter.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
+				list.put(j, features.get(item.m_index));
+				values.put(j, item.m_value);
+				//System.out.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
+				//debugWriter.format("%d:%s(%f)\n", j, features.get(item.m_index), item.m_value);
 				j++;
+				//since in ascending order so negative values in top and posiitve in bottom 
+				if(item.m_value<=0.0){
+					middlePointDetector++;
+				}
+			}
+			
+			System.out.println("List Size:"+list.size());
+			System.out.println("Middle Point:"+ middlePointDetector);
+			
+			System.out.print("Top 50 featuresi for topic:"+ i +"\n");
+			topicWiseFeatureWriter.print("Top 50 features for topic:"+ i +"\n");
+			for(j=0;j<topK;j++){
+				//System.out.format("%d:%s\n", j, list.get(j));
+				topicWiseFeatureWriter.format("%d:%s(%f)\n", j, list.get(j),values.get(j));
 			}
 			System.out.println();
-			debugWriter.println();
+			topicWiseFeatureWriter.println();
+			
+			System.out.print("Bottom 50 features for topic:"+ i +"\n");
+			topicWiseFeatureWriter.print("Bottom 50 features for topic:"+ i +"\n");
+			int k =0;
+			for(j=list.size()-1; j>=list.size() - topK;j--){
+				//System.out.format("%d:%s\n", k, list.get(j));
+				topicWiseFeatureWriter.format("%d:%s(%f)\n", k, list.get(j),values.get(j));
+				k++;
+			}
+			System.out.println();
+			topicWiseFeatureWriter.println();
+			
+			System.out.print("Middle 50 features for topic:"+ i +"\n");
+			topicWiseFeatureWriter.print("Middle 50 features for topic:"+ i +"\n");
+			//int middleOfList = (int)Math.ceil(list.size()/2.0);
+			int middleOfList = middlePointDetector;
+			k = 0;
+			for(j=middleOfList-topK/2; j<=middleOfList+topK/2;j++){
+				//System.out.format("%d:%s\n", k, list.get(j));
+				topicWiseFeatureWriter.format("%d:%s(%f)\n", k, list.get(j),values.get(j));
+				k++;
+			}
+			System.out.println();
+			topicWiseFeatureWriter.println();
+			
+			//clearing the list for next topic
+			list.clear();
 		}
-		debugWriter.flush();
-		debugWriter.close();
+		topicWiseFeatureWriter.flush();
+		topicWiseFeatureWriter.close();
 	}
 	
 	public void docSummary(String[] productList){

@@ -192,18 +192,19 @@ public abstract class TopicModel {
 		//evenly allocate the testing work load
 		int workerID = 0;
 		
-		if(debugWriter==null){
-			for(_Doc d:m_testSet) {
-				m_workers[workerID%m_workers.length].addDoc(d);
-				workerID++;
-			}
-		}else{
-			for(_Doc d:m_corpus.getCollection()) {
-				m_workers[workerID%m_workers.length].addDoc(d);
-				workerID++;
-			}
+		// whether it is in debug mode or not we will always use the testSet for debug
+		//if(debugWriter==null){
+		for(_Doc d:m_testSet) {
+			m_workers[workerID%m_workers.length].addDoc(d);
+			workerID++;
 		}
-			
+//		}else{
+//			for(_Doc d:m_corpus.getCollection()) {
+//				m_workers[workerID%m_workers.length].addDoc(d);
+//				workerID++;
+//			}
+//		}
+//			
 		for(int i=0; i<m_workers.length; i++) {
 			m_threadpool[i] = new Thread(m_workers[i]);
 			m_threadpool[i].start();
@@ -451,7 +452,7 @@ public abstract class TopicModel {
 	
 	public void debugOutputWrite(){
 		debugWriter.println("Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty");
-		for(_Doc d:m_corpus.getCollection()){
+		for(_Doc d:m_testSet){
 			for(int i=0; i<d.getSenetenceSize(); i++){
 				debugWriter.format("%d,%d,%d,\"%s\",%d,%d,%d,%f,%f\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence().toLowerCase().replaceAll("[^a-z0-9.]", " ") ,d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel(), d.getSentence(i).getSentencePredictedTopic(), d.getSentence(i).getTopicTransition(),d.getSentence(i).getSentimentTransition());
 			}

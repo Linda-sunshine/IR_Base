@@ -74,10 +74,14 @@ public class jsonAnalyzer extends DocAnalyzer{
 					
 					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
-					if(this.m_stnDetector!=null)
+					if(this.m_stnDetector!=null && !m_classifierOrTopicmodel)
 						AnalyzeDocWithStnSplit(review);
-					else
-						AnalyzeDoc(review);
+					else{
+						if(!m_classifierOrTopicmodel) // if false
+							AnalyzeDoc(review);
+						else
+							AnalyzeDocAsSentence(post,prod.getID(),timeStamp);
+					}
 					
 				}
 				

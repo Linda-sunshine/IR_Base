@@ -39,17 +39,46 @@ public class LRHTSM_multithread extends LRHTSM {
 			m_hmm = new LRFastRestrictedHMM_sentiment(m_omega, m_delta, maxSeqSize, number_of_topics); 
 	 	}
 		
-		void ComputeEmissionProbsForDoc(_Doc d) {
+//	 	void ComputeEmissionProbsForDoc(_Doc d) {
+//			for(int i=0; i<d.getSenetenceSize(); i++) {
+//				_Stn stn = d.getSentence(i);
+//				Arrays.fill(emission[i], 0);
+//				for(int k=0; k<this.number_of_topics; k++) {
+//					for(_SparseFeature w:stn.getFv()) {
+//						emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+//					}
+//				}
+//			}
+//		}
+	 	
+		void ComputeEmissionProbsForDoc(_Doc d) {			
 			for(int i=0; i<d.getSenetenceSize(); i++) {
 				_Stn stn = d.getSentence(i);
-				Arrays.fill(this.emission[i], 0);
-				for(int k=0; k<number_of_topics; k++) {
-					for(_SparseFeature w:stn.getFv()) {
-						this.emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+				Arrays.fill(emission[i], 0);
+				
+				int start = 0, end = this.number_of_topics;				
+				if(d.forTest==false && i==0 && d.getSourceType()==2){ // first sentence is specially handled for newEgg
+					//get the sentiment label of the first sentence
+					int sentimentLabel = stn.getSentenceSenitmentLabel();
+					if(sentimentLabel==0) {// positive sentiment in the first half						
+						end = this.number_of_topics / 2;
+						for(int k=end; k<this.number_of_topics; k++)
+							emission[i][k] = Double.NEGATIVE_INFINITY;							
+					} else if(sentimentLabel==1) { // negative sentiment in the second half
+						start = this.number_of_topics / 2;
+						for(int k=0; k<start; k++)
+							emission[i][k] = Double.NEGATIVE_INFINITY;
 					}
 				}
-			}
+				
+				for(int k=start; k<end; k++) {
+					for(_SparseFeature w:stn.getFv()) {
+						emission[i][k] += w.getValue() * topic_term_probabilty[k][w.getIndex()];//all in log-space
+					}
+				}
+			}			
 		}
+		
 
 		@Override
 		public double calculate_E_step(_Doc d) {
@@ -77,6 +106,7 @@ public class LRHTSM_multithread extends LRHTSM {
 		@Override
 		public double inference(_Doc d) {
 			initTestDoc(d);//this is not a corpus level estimation
+			d.forTest = true;
 			ComputeEmissionProbsForDoc(d);//to avoid repeatedly computing emission probability 
 			
 			double delta, last = 1, current;

@@ -39,6 +39,7 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
+	public boolean forTest = false; // true mean it is for test
 	
 	public void setSourceType(int sourceName) {
 		m_sourceType = sourceName;
@@ -84,7 +85,7 @@ public class _Doc implements Comparable<_Doc> {
 	//p(z|d) for topic models in general
 	public double[] m_topics;
 	//sufficient statistics for estimating p(z|d)
-	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)
+	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma) also used in EM Naive Bayes
 	
 	// structure only used by Gibbs sampling to speed up the sampling process
 	public int[] m_words; 

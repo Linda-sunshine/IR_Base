@@ -36,7 +36,6 @@ public class newEggAnalyzer extends jsonAnalyzer {
 	int m_consSentenceCounter = 0;
 	SimpleDateFormat m_dateFormatter;
 	int m_prosConsLoad = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-	boolean m_classifierOrTopicmodel = false; // by default false because we basically use it in topicmodel, true means used in basic classifier
 	
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, String category, int loadProsCons) throws InvalidFormatException,
@@ -76,22 +75,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosSentenceCounter, m_consSentenceCounter);
 	}
 
-	public void setClassifierOrTopicModel(boolean flag, String stnModel){
-		m_classifierOrTopicmodel = flag;
-		try {
-			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
-		} catch (InvalidFormatException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
+
 	//Load a document and analyze it.
 	public void LoadNewEggDoc(String filename) {
 		JSONObject prods = null;

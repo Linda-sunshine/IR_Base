@@ -26,6 +26,7 @@ import opennlp.tools.util.InvalidFormatException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import structures.Post;
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
@@ -235,6 +236,23 @@ public class DocAnalyzer extends Analyzer {
 		return result;
 	}
 
+	public void setClassifierOrTopicModel(boolean flag, String stnModel){
+		m_classifierOrTopicmodel = flag;
+		try {
+			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
+		} catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	
 	//Load a movie review document and analyze it.
 	//this is only specified for this type of review documents
 	//do we still need this function, or shall we normalize it with json format?
@@ -362,6 +380,32 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 
+	
+	// here for each sentence we create a doc for EM-Naive Bayes
+	protected void AnalyzeDocAsSentence(Post post, String prodID, long timeStamp) {
+		
+		String content = post.getContent();
+		TokenizeResult result;
+		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+		
+		for(String sentence : m_stnDetector.sentDetect(content)) {
+			int y = 0; //it does not mean any values, since for EM-Naive Bayes this dataset is treated as unlablled 
+			// we are placing 0 to avoid exception in structures._stat.addOneDF
+			result = TokenizerNormalizeStemmer(sentence);
+			vPtr = constructSpVct(result.getTokens(), y, docVct);
+			
+			if (vPtr.size()>=m_lengthThreshold) {			
+				_Doc doc = new _Doc(m_corpus.getSize(), post.getID(),prodID, post.getTitle(), content, post.getLabel()-1, timeStamp);
+				doc.setSourceType(1); // source = 1 means the Document is from Amazon
+				doc.createSpVct(vPtr);
+				doc.setYLabel(y);
+				m_corpus.addDoc(doc);
+				m_classMemberNo[y]++;
+			
+			}
+		} // End For loop for sentence	
+	}
+	
 	// adding sentence splitting function, modified for HTMM
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
 		TokenizeResult result;

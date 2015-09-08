@@ -13,11 +13,11 @@ import utils.Utils;
 import Classifier.BaseClassifier;
 
 public class NaiveBayes extends BaseClassifier {
-	private double[][] m_Pxy; // p(X|Y)
-	private double[] m_pY;//p(Y)
-	private boolean m_presence;
-	private double m_deltaY; // for smoothing p(Y) purpose;
-	private double m_deltaXY; // for smoothing p(X|Y) purpose;
+	protected double[][] m_Pxy; // p(X|Y)
+	protected double[] m_pY;//p(Y)
+	protected boolean m_presence;
+	protected double m_deltaY; // for smoothing p(Y) purpose;
+	protected double m_deltaXY; // for smoothing p(X|Y) purpose;
 	
 	//Constructor.
 	public NaiveBayes(_Corpus c){
@@ -66,8 +66,8 @@ public class NaiveBayes extends BaseClassifier {
 	
 	//Train the data set.
 	public void train(Collection<_Doc> trainSet){
-		init();
 		
+		init();
 		for(_Doc doc: trainSet){
 			int label = doc.getYLabel();
 			m_pY[label] ++;
