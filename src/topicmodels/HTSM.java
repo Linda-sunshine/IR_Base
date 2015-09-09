@@ -1,5 +1,7 @@
 package topicmodels;
 
+import java.util.Arrays;
+
 import markovmodel.FastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
@@ -34,6 +36,8 @@ public class HTSM extends HTMM {
 	void ComputeEmissionProbsForDoc(_Doc d) {			
 		for(int i=0; i<d.getSenetenceSize(); i++) {
 			_Stn stn = d.getSentence(i);
+			Arrays.fill(emission[i], 0);
+			
 			int start = 0, end = this.number_of_topics;				
 			if(i==0 && d.getSourceType()==2){ // first sentence is specially handled for newEgg
 				//get the sentiment label of the first sentence

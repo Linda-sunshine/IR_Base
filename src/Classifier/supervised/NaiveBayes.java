@@ -1,6 +1,5 @@
 package Classifier.supervised;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
@@ -13,11 +12,12 @@ import utils.Utils;
 import Classifier.BaseClassifier;
 
 public class NaiveBayes extends BaseClassifier {
-	private double[][] m_Pxy; // p(X|Y)
-	private double[] m_pY;//p(Y)
-	private boolean m_presence;
-	private double m_deltaY; // for smoothing p(Y) purpose;
-	private double m_deltaXY; // for smoothing p(X|Y) purpose;
+	// both quantities in log space
+	protected double[][] m_Pxy; // log p(X|Y)
+	protected double[] m_pY;// log p(Y)
+	protected boolean m_presence;
+	protected double m_deltaY; // for smoothing p(Y) purpose;
+	protected double m_deltaXY; // for smoothing p(X|Y) purpose;
 	
 	//Constructor.
 	public NaiveBayes(_Corpus c){
@@ -54,9 +54,10 @@ public class NaiveBayes extends BaseClassifier {
 	
 	@Override
 	public String toString() {
-		return String.format("Naive Bayes[C:%d, F:%d]", m_classNo, m_featureSize);
+		return String.format("Naive Bayes [C:%d, F:%d]", m_classNo, m_featureSize);
 	}
 	
+	@Override
 	protected void init() {
 		for(int i=0; i<m_classNo; i++) {
 			Arrays.fill(m_Pxy[i], 0);
@@ -82,8 +83,6 @@ public class NaiveBayes extends BaseClassifier {
 			for(int j = 0; j < m_featureSize; j++)
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
-		
-		//printTopFeatures(5);
 	}
 		
 	//Predict the label for one document.
@@ -113,21 +112,17 @@ public class NaiveBayes extends BaseClassifier {
 		
 	}
 	
-	public void printTopFeatures(int topK, ArrayList<String> features) {
-		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, false);
-		for(int n=0; n<m_featureSize; n++) {
-			for(int i=0; i<m_classNo; i++)
-				m_cProbs[i] = m_Pxy[i][n];
-			queue.add(new _RankItem(n, Utils.entropy(m_cProbs, true)));
+	public void printTopFeatures(int topK) {
+		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK, true);
+
+		for(int i=0; i<m_classNo; i++) {
+			for(int n=0; n<m_featureSize; n++) 
+				queue.add(new _RankItem(n, m_Pxy[i][n]));
+			
+			System.out.format("Class %d:\n", i);
+			for(_RankItem item:queue)				
+				System.out.println(m_corpus.getFeature(item.m_index));
 		}
-		
-		System.out.print("Most discriminative features: ");
-		for(_RankItem item:queue) {
-			for(int i=0; i<m_classNo; i++)
-				m_cProbs[i] = m_Pxy[i][item.m_index];
-			System.out.format("%s(%d) ", features.get(item.m_index), Utils.maxOfArrayIndex(m_cProbs));
-		}
-		System.out.println();
 	}
 
 	@Override

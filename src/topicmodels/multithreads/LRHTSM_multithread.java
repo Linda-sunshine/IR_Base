@@ -3,6 +3,7 @@
  */
 package topicmodels.multithreads;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 import markovmodel.FastRestrictedHMM_sentiment;
@@ -41,6 +42,8 @@ public class LRHTSM_multithread extends LRHTSM {
 		void ComputeEmissionProbsForDoc(_Doc d) {			
 			for(int i=0; i<d.getSenetenceSize(); i++) {
 				_Stn stn = d.getSentence(i);
+				Arrays.fill(emission[i], 0);
+				
 				int start = 0, end = this.number_of_topics;				
 				if(i==0 && d.getSourceType()==2){ // first sentence is specially handled for newEgg
 					//get the sentiment label of the first sentence

@@ -23,7 +23,7 @@ public class _Doc implements Comparable<_Doc> {
 	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
-	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+	int m_sourceType = 1; // source is 1 for Amazon (unlabeled) and 2 for newEgg (labeled)
 	int m_totalLength; //The total length of the document in tokens
 	
 	int m_y_label; // classification target, that is the index of the labels.

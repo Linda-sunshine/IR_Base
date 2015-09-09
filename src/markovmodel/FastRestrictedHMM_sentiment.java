@@ -67,9 +67,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		//initialize transitionMatrix
 		for(int i=0; i<this.length_of_seq; i++){
 			for(int j=0; j<this.constant*this.number_of_topic; j++){
-				for(int k=0; k<this.constant*this.number_of_topic; k++){
-					m_transitMatrix[i][j][k] = Double.NEGATIVE_INFINITY;
-				}
+				Arrays.fill(m_transitMatrix[i][j], Double.NEGATIVE_INFINITY);
 			}
 		}
 		
