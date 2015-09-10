@@ -558,17 +558,23 @@ public class Utils {
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 	
-	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
-		Feature[] node = new Feature[1+spVct.length]; 
+	static public Feature[] createLibLinearFV(_SparseFeature[] spVct, int fSize) {
+		Feature[] node;
+		if (fSize>0)//include bias term in the end
+			node = new Feature[1+spVct.length]; 
+		else//ignore bias term
+			node = new Feature[spVct.length];
+		
 		int fid = 0;
 		for(_SparseFeature fv:spVct)
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
-		node[fid] = new FeatureNode(8541, 1);//add bias term to the end
+		if (fSize>0)
+			node[fid] = new FeatureNode(1+fSize, 1.0);
 		return node;
 	}
 	
-	static public Feature[] createLibLinearFV(_Doc doc) {
-		return Utils.createLibLinearFV(doc.getSparse());
+	static public Feature[] createLibLinearFV(_Doc doc, int fSize) {
+		return Utils.createLibLinearFV(doc.getSparse(), fSize);
 	}
 	
 	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {

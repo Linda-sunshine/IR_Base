@@ -40,8 +40,7 @@ public class NaiveBayesEM extends NaiveBayes {
 	}
 
 	@Override
-	protected void init() {
-		super.init();
+	protected void init() {		
 		for(_Doc doc: m_trainSet){
 			if (doc.getSourceType()==1)
 				doc.setTopics(m_classNo, m_deltaY);//create the storage space
@@ -57,9 +56,10 @@ public class NaiveBayesEM extends NaiveBayes {
 			
 			if (doc.getSourceType()==1) {//unlabeled data
 				double sumY = Utils.logSumOfExponentials(m_cProbs);
-				for(int i=0; i<m_classNo; i++)
+				for(int i=0; i<m_classNo; i++) {
 					doc.m_sstat[i] = Math.exp(m_cProbs[i] - sumY); // p(y|x)
-				likelihood += sumY; // p(x)
+					likelihood += doc.m_sstat[i] * m_cProbs[i]; // p(x)
+				}
 			} else if (doc.getSourceType()==2) {//labeled data
 				likelihood += m_cProbs[doc.getYLabel()]; //p(x, y=Y)
 			}
@@ -69,6 +69,8 @@ public class NaiveBayesEM extends NaiveBayes {
 	}
 	 
 	void MStep(Collection<_Doc> trainSet, int iter) {
+		super.init();
+		
 		for(_Doc doc: trainSet){
 			if (doc.getSourceType()==2) {// labeled data
 				int label = doc.getYLabel();
@@ -99,14 +101,18 @@ public class NaiveBayesEM extends NaiveBayes {
 	public void train(Collection<_Doc> trainSet){
 		init();
 		
-		double current = 0, last = 1.0, converge = 1.0;
-		int iter = 0;
+		double current = 0, last = -1.0, converge = 1.0;
+		int iter = 1;
 		
 		do {
 			current = EStep(trainSet);
 			MStep(trainSet, iter);
 			
-			converge = (current-last)/last;
+			if (iter==1)
+				converge = 1.0;
+			else
+				converge = (last-current)/last;
+			
 			last = current;
 			iter ++;
 		} while(iter<m_maxIter && converge>m_converge);
