@@ -6,6 +6,8 @@ package Ranker;
 import java.util.Arrays;
 import java.util.Collection;
 
+import cern.jet.random.tdouble.Normal;
+
 import utils.Utils;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
@@ -20,6 +22,8 @@ public class RankNet {
 	double[] m_g, m_diag;
 	double m_lambda;
 	
+	int[] m_signs; // sign of feature weights during random initialization
+	
 	public RankNet(int fSize, double lambda) {
 		m_beta = new double[fSize]; //Initialization, no bias term
 		m_g = new double[m_beta.length];
@@ -32,25 +36,40 @@ public class RankNet {
 		return String.format("RankNet[F:%d, L:%.2f]", m_beta.length, m_lambda);
 	}
 	
-	protected void init() {
-		Arrays.fill(m_beta, 0);
+	protected void init() {		
 		Arrays.fill(m_diag, 0);
+		
+		double lambda = 1.0/Math.sqrt(m_lambda);
+		for(int i=0; i<m_beta.length; i++)
+			m_beta[i] = Normal.staticNextDouble(0, lambda);
+		
+		if (m_signs!=null) {//enforce sign over the initial setting of feature weights
+			for(int i=0; i<m_beta.length; i++) {
+				if (m_signs[i]*m_beta[i]<0)
+					m_beta[i] = -m_beta[i];
+			}
+		}
 	}
 	
-	public void train(Collection<double[]> trainSet) {
+	public void setSigns(int[] signs) {
+		m_signs = signs;
+	}
+	
+	public double train(Collection<double[]> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
-		double fValue;
+		double fValue = 0;
 		int fSize = m_beta.length;
 		
 		init();
 		try{
 			do {
 				fValue = calcFuncGradient(trainSet);
-				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-32, iflag);
+				LBFGS.lbfgs(fSize, 5, m_beta, fValue, m_g, false, m_diag, iprint, 8e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
 		}
+		return fValue;
 	}
 	
 	//This function is used to calculate the value and gradient with the new beta.
