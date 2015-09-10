@@ -211,6 +211,20 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double[] diff(double[] a, double[] b) {
+		if (a.length != b.length)
+			return null;
+		
+		double[] diff = new double[a.length];
+		boolean nonzero = false;
+		for(int i=0; i<a.length; i++) {
+			diff[i] = a[i] - b[i];
+			if (Math.abs(diff[i])>1e-10)
+				nonzero = true;
+		}
+		return nonzero?diff:null;
+	}
+	
 	public static void scaleArray(double[] a, double b) {
 		for (int i=0; i<a.length; i++)
 			a[i] *= b;

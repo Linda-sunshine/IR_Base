@@ -13,24 +13,24 @@ import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
 import Ranker.LambdaRank;
 import Ranker.LambdaRank.OptimizationType;
 import Ranker.LambdaRankParallel;
+import Ranker.RankNet;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_topK;//top K initial ranking results 
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
-	protected Model m_rankSVM;
-	protected LambdaRank m_lambdaRank;
+
+	double[] m_weights;
 	double m_tradeoff;
 	boolean m_multithread = false; // by default we will use single thread
 	
-	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank
+	int m_ranker = 2; // 0: pairwise rankSVM; 1: LambdaRank; 2: RankNet
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	double[] m_mean, m_std; // to normalize the ranking features
@@ -67,13 +67,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
-		double similarity = 0;
-		
-		if (m_ranker==0) 
-			similarity = Linear.predictValue(m_rankSVM, normalize(genRankingFV(di, dj)), 0);
-		else
-			similarity = m_lambdaRank.score(normalize(genRankingFV(di, dj)));
-		
+		double similarity = Utils.dotProduct(m_weights, normalize(genRankingFV(di, dj)));
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
 			System.exit(-1);
@@ -106,33 +100,41 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//select the training pairs
 		createTrainingCorpus();
 		
-		double[] w;
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 			ArrayList<Integer> labels = new ArrayList<Integer>();
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
+			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			
-			w = m_rankSVM.getFeatureWeights();			
-		} else {//all the rest use LambdaRank with different evaluator
+			m_weights = rankSVM.getFeatureWeights();			
+		} else if (m_ranker==1) {//all the rest use LambdaRank with different evaluator
+			LambdaRank lambdaRank;
 			if (m_multithread) {
 				/**** multi-thread version ****/
-				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
-				m_lambdaRank.setSigns(getRankingFVSigns());
-				m_lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
+				lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
+				lambdaRank.setSigns(getRankingFVSigns());
+				lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
 			} else {
 				/**** single-thread version ****/
-				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
-				m_lambdaRank.setSigns(getRankingFVSigns());
-				m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
+				lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
+				lambdaRank.setSigns(getRankingFVSigns());
+				lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
 			}			
-			w = m_lambdaRank.getWeights();
-		}
+			m_weights = lambdaRank.getWeights();
+		} else if (m_ranker==2) {
+			RankNet ranknet = new RankNet(RankFVSize, 0.05);
+			ArrayList<double[]> fvs = new ArrayList<double[]>();
+			for(_Query q:m_queries)
+				q.extractPairs4RankNet(fvs);
+			ranknet.train(fvs);
+			
+			m_weights = ranknet.getWeights();
+		}		
 		
 		for(int i=0; i<RankFVSize; i++)
-			System.out.format("%.5f ", w[i]);
+			System.out.format("%.5f ", m_weights[i]);
 		System.out.println();
 	}
 	
