@@ -3,11 +3,13 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import clustering.KMeansAlg;
 import structures.Parameter;
 import structures._Corpus;
 import structures._Doc;
+import structures._Pair;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
@@ -19,6 +21,7 @@ import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.semisupervised.LCSReader;
 import Classifier.supervised.SVM;
 /**
  * @author Lin
@@ -98,11 +101,57 @@ public class Execution4Clustering  {
 		c = analyzer.returnCorpus(param.m_featureFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		
-		//kmeans clutering among all review documents.
-		//Do clustering first.
-		KMeansAlg kmeans = new KMeansAlg(c, param.m_noC);
-		kmeans.train(c.getCollection());
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
+		
+		/************LCS Write and Read operations.***************/
+//		int cores = Runtime.getRuntime().availableProcessors();
+		//Write the LCS to 8 files.
+//		Thread[] writeThreads = new Thread[cores];
+//		int LCSStart = 0, LCSEnd; int total = c.getCollection().size()-1;
+//		int LCSAvg = total / cores;
+//		for(int i=0; i < cores; i++){
+//			if(i == cores -1)
+//				LCSEnd = total;
+//			else LCSEnd = LCSStart + LCSAvg;
+//			writeThreads[i] = new Thread(new LCSWriter(LCSStart, LCSEnd, i, c.getCollection()));
+//			writeThreads[i].start();
+//			LCSStart = LCSEnd;
+//		}
+//		for(int i=0; i<writeThreads.length; i++){
+//			try {
+//				writeThreads[i].join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+		
+//		//Read the LCS from 8 files.
+//		HashMap<_Pair, Integer> LCSMap = new HashMap<_Pair, Integer>();
+//		Thread[] ReadThreads = new Thread[cores];
+//		LCSReader[] LCSReaders = new LCSReader[cores];
+//		for(int i=0; i < cores; i++){
+//			String filename = String.format("./data/LCS/LCS_%d", i);
+//			LCSReaders[i] = new LCSReader(filename);
+//			ReadThreads[i] = new Thread(LCSReaders[i]);
+//			ReadThreads[i].start();
+//		}
+//		for(int i=0; i<cores; i++){
+//			try {
+//				ReadThreads[i].join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}	
+//		//Merge all the hashmaps to one single hashmap.
+//		for(int i=0; i<cores; i++){
+//			LCSMap.putAll(LCSReaders[i].getLCSMap());
+//		}
+//		
+//		//kmeans clutering among all review documents.
+//		// Do clustering first.
+//		KMeansAlg kmeans = new KMeansAlg(c, param.m_noC);
+//		kmeans.train(c.getCollection());
+//		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
+				
 		
 		if (param.m_style.equals("SEMI")) {
 			//perform transductive learning
@@ -111,11 +160,11 @@ public class Execution4Clustering  {
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.8; // convergence of random walk, weight of random walk
-			boolean simFlag = false, weightedAvg = true;
+			boolean simFlag = true, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			//int topK = 5;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 1;//0-RankSVM; 1-lambda rank.
+			int ranker = 0;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
@@ -131,11 +180,14 @@ public class Execution4Clustering  {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, param.m_eta, weightedAvg, 
-						param.m_topK, noiseRatio, ranker, multithread_LR);
+						param.m_topK, param.m_noiseRatio, ranker, multithread_LR);
 			}
+			((L2RMetricLearning) mySemi).setQueryRatio(param.m_queryRatio);
+			((L2RMetricLearning) mySemi).setDocumentRatio(param.m_documentRatio);
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setLCSMap(LCSMap);
 			mySemi.crossValidation(CVFold, c);
 		} else if (param.m_style.equals("SUP")) {
 			//perform supervised learning

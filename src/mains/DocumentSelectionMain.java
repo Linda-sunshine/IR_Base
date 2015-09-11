@@ -1,11 +1,16 @@
 package mains;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
-
+import java.util.HashMap;
 import clustering.KMeansAlg;
-
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
@@ -13,14 +18,17 @@ import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.semisupervised.LCSReader;
+import Classifier.semisupervised.LCSWriter;
 import Classifier.supervised.SVM;
-
 import structures._Corpus;
 import structures._Doc;
+import structures._Pair;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import utils.Utils;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
@@ -65,7 +73,7 @@ public class DocumentSelectionMain {
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SEMI";
+		String style = "SUP";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
@@ -102,6 +110,7 @@ public class DocumentSelectionMain {
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		} else{
 			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
+			((DocAnalyzer) analyzer).setReleaseContent(false);
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
@@ -137,13 +146,71 @@ public class DocumentSelectionMain {
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
+//		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
+		
+//		/************LCS Write and Read operations.***************/
+//		//Write the LCS to 8 files.
+//		Thread[] writeThreads = new Thread[cores];
+//		int LCSStart = 0, LCSEnd; int total = c.getCollection().size()-1;
+//		int LCSAvg = total / cores;
+//		for(int i=0; i < cores; i++){
+//			if(i == cores -1)
+//				LCSEnd = total;
+//			else LCSEnd = LCSStart + LCSAvg;
+//			writeThreads[i] = new Thread(new LCSWriter(LCSStart, LCSEnd, i, c.getCollection()));
+//			writeThreads[i].start();
+//			LCSStart = LCSEnd;
+//		}
+//		for(int i=0; i<writeThreads.length; i++){
+//			try {
+//				writeThreads[i].join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		
+//		//Read the LCS from 8 files.
+//		HashMap<_Pair, Integer> LCSMap = new HashMap<_Pair, Integer>();
+//		Thread[] ReadThreads = new Thread[cores];
+//		LCSReader[] LCSReaders = new LCSReader[cores];
+//		for(int i=0; i < cores; i++){
+//			String filename = String.format("./data/LCS/LCS_%d", i);
+//			LCSReaders[i] = new LCSReader(filename);
+//			ReadThreads[i] = new Thread(LCSReaders[i]);
+//			ReadThreads[i].start();
+//		}
+//		for(int i=0; i<cores; i++){
+//			try {
+//				ReadThreads[i].join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//		}	
+//		//Merge all the hashmaps to one single hashmap.
+//		for(int i=0; i<cores; i++){
+//			LCSMap.putAll(LCSReaders[i].getLCSMap());
+//		}
 		
 		//kmeans clutering among all review documents.
-		
-		//Do clustering first.
-		KMeansAlg kmeans = new KMeansAlg(c, 5);
-		kmeans.train(c.getCollection());
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
+//		for(int k=2; k<=5; k++){
+//			KMeansAlg kmeans = new KMeansAlg(c, k);
+//			kmeans.train(c.getCollection());
+//			ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
+//			
+//			//Write out the results of clustering.
+//			for(int i=0; i < clusters.size(); i++){
+//				int[] stat = new int[5];
+//				String filename = String.format("./data/kmeans/%dmeans_cluster_%d", k, i); 
+//				PrintWriter printer = new PrintWriter(new File(filename));
+//				for(_Doc d: clusters.get(i)){
+//					stat[d.getYLabel()]++;
+//					printer.write(d.getYLabel()+"\n"+d.getSource()+"\n"+"******\n");
+//				}
+//				for(int j=0; j < stat.length; j++)
+//					printer.write(String.format("classNo: %d, count: %d, percentage: %.3f", j, stat[j], (double)j/(double)clusters.get(i).size()));
+//				printer.close();
+//			}
+//		}
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
@@ -176,7 +243,8 @@ public class DocumentSelectionMain {
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {
 			//perform supervised learning

@@ -103,6 +103,12 @@ public class _Doc implements Comparable<_Doc> {
 	public double[][] m_phi; // p(z|w, \phi)	
 	Random m_rand;
 	
+	public _Doc (int ID, int ylabel, _SparseFeature[] sfs){
+		this.m_ID = ID;
+		this.m_x_sparse = sfs;
+		this.m_y_label = ylabel;
+	}
+	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;

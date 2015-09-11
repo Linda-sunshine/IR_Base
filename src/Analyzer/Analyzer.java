@@ -14,6 +14,7 @@ import java.util.LinkedList;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Pair;
 import structures._SparseFeature;
 import structures._stat;
 import utils.Utils;
@@ -44,7 +45,8 @@ public abstract class Analyzer {
 	private LinkedList<_Doc> m_preDocs;	
 
 	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
-	
+	private HashMap<_Pair, Integer> m_LCSMap; //added by Lin for storing LCS pairs.s
+ 
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		
@@ -71,7 +73,7 @@ public abstract class Analyzer {
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
-	protected boolean LoadCV(String filename) {
+	protected boolean LoadCV(String filename){
 		if (filename==null || filename.isEmpty())
 			return false;
 		
@@ -79,6 +81,7 @@ public abstract class Analyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
+				
 				if (line.startsWith("#")){
 					if (line.startsWith("#NGram")) {//has to be decoded
 						int pos = line.indexOf(':');
@@ -97,6 +100,35 @@ public abstract class Analyzer {
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			return false;
+		}
+	}
+	
+	public void LoadLCSFiles(String folder){
+		if(folder == null || folder.isEmpty())
+			return;
+		
+		m_LCSMap = new HashMap<_Pair, Integer>();
+		File dir = new File(folder);
+		for(File f: dir.listFiles()){
+			long start = System.currentTimeMillis();
+			if(f.isFile()){
+				try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f.getAbsolutePath()), "UTF-8"));
+					String line;
+					while ((line = reader.readLine()) != null) {
+						String[] pair = line.split(",");
+						
+						if(pair.length != 3)
+							System.out.println("Wrong LCS triple!");
+						else
+							m_LCSMap.put(new _Pair(Integer.parseInt(pair[0]), Integer.parseInt(pair[1].trim())), Integer.parseInt(pair[2].trim()));
+					}
+					reader.close();
+					System.out.format("After reading %s in %.4f secs, %d LCS triples loaded totally.\n", f.getAbsolutePath(), (double)(System.currentTimeMillis()-start)/1000.0, m_LCSMap.size());
+				} catch (IOException e) {
+					System.err.format("[Error]Failed to open file %s!!", folder);
+				}		
+			}
 		}
 	}
 	
@@ -429,5 +461,11 @@ public abstract class Analyzer {
 		for(int i = 0; i<m_featureNameIndex.size();i++)
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
+	}
+	
+	//added by Lin.
+	public HashMap<_Pair, Integer> returnLCSMap(){
+		System.out.format("LCS map has %d pairs.\n", m_LCSMap.size());
+		return m_LCSMap;
 	}
 }

@@ -149,6 +149,12 @@ public class LogisticRegression extends BaseClassifier {
 			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
 		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
 	}
+//	//added by Lin.
+//	public double score(double[] fv, int label){
+//		for(int i = 0; i < m_classNo; i++)
+////			m_cache[i] = Utils.dotProduct(m_beta, fv, i*(m_featureSize + 1));
+//		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
+//	}
 	
 	protected void debug(_Doc d) {
 		try {
@@ -209,6 +215,10 @@ public class LogisticRegression extends BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	
+	//access the parameter, added by Lin.
+	public double[] getParameter(){
+		return m_beta;
 	}
 }

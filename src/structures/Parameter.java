@@ -77,8 +77,13 @@ public class Parameter {
 	public int m_lag = 10; // lag in accumulating Gibbs samples
 	public String m_priorFile = null; // prior seed word list
 	
+	//added by Lin to check the best performance of RankSVM.
 	public int m_topK = 5;
 	public int m_noC = 5;
+	public double m_noiseRatio = 1.5;
+	public double m_queryRatio = 1;
+	public double m_documentRatio = 1;
+	
 	public Parameter(String argv[])
 	{
 		int i;
@@ -171,12 +176,20 @@ public class Parameter {
 				m_burnIn = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-lag"))
 				m_lag = Integer.valueOf(argv[i]);
+			//added by Lin for tuning parameters for RankSVM.
 			else if (argv[i-1].equals("-topK"))//added by Lin for selecting the top K documents as
 				m_topK = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-noC"))//added by Lin for selecting the number of clusters.
 				m_noC = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-mt"))
 				m_multithread = argv[i].equals("1");
+			else if (argv[i-1].equals("-nr"))
+				m_noiseRatio = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-qr"))
+				m_queryRatio = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-dr"))
+				m_documentRatio = Double.valueOf(argv[i]);
+			
 			else if (argv[i-1].equals("-fprior"))
 				m_priorFile = argv[i];
 			else

@@ -1,6 +1,6 @@
 #!/bin/sh
 for k in 0.7 0.6 
-	do for i in 5 7 9 11 
+	do for i in 4 6 8 10 12
 			do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -eta $k -topK $i ./data/amazon/small/dedup/RawData | tee RankSVM_eta"$k"_topK"$i".output
 	done
 done 
