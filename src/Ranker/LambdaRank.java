@@ -168,7 +168,7 @@ public class LambdaRank {
 			qid = 0;
 			while(qid<m_trainingSize){
 				pSize = 0;
-				Arrays.fill(m_g, 0.0);
+				Arrays.fill(m_g, 0);
 				
 				for(j=0; j<windowSize; j++){//collect the gradients in mini-batch
 					pSize += gradientUpdate(m_queries.get(m_order[qid%m_trainingSize]));

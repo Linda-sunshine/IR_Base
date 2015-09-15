@@ -73,7 +73,7 @@ public class DocumentSelectionMain {
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SUP";
+		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW-L2R";
@@ -211,6 +211,10 @@ public class DocumentSelectionMain {
 //				printer.close();
 //			}
 //		}
+		int noClusters = 200; 
+		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
+		kmeans.train(c.getCollection());
+		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
@@ -221,9 +225,9 @@ public class DocumentSelectionMain {
 			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			int topK = 5;
+			int topK = 1;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 0;//0-RankSVM; 1-lambda rank.
+			int ranker = 1;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = false;//training LambdaRank with multi-threads
 
@@ -243,7 +247,7 @@ public class DocumentSelectionMain {
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-//			((L2RMetricLearning) mySemi).setClusters(clusters);
+			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {
