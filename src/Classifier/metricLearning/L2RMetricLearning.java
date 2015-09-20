@@ -44,6 +44,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	ArrayList<ArrayList<_Doc>> m_clusters;
 	HashMap<_Pair, Integer> m_LCSMap;//Added by Lin for storing LCS pairs.
 	
+	//Added by Lin for lambdaRank parameter tuning.
+	double m_shrinkage=0.98;
+	double m_stepSize=1;
+	int m_maxIter = 300;
+	int m_windowSize = 20;
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
 		m_topK = topK;
@@ -51,7 +57,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_tradeoff = 1.0;
 		m_ranker = 0; // default ranker is rankSVM
 		m_queryRatio = 1.0;
-
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -68,6 +73,26 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_queryRatio = 1.0;
 	}
 	
+	//In lambdaRank, the tradeoff = lambda.added by Lin.
+	public void setLambda(double lambda){
+		m_tradeoff = lambda;
+	}
+
+	public void setShrinkage(double sk){
+		m_shrinkage = sk;
+	}
+
+	public void setStepSize(double ss){
+		m_stepSize = ss;
+	}
+	
+	public void setWindowSize(int ws){
+		m_windowSize = ws;
+	}
+	
+	public void setMaxIter(int maxIter){
+		m_maxIter = maxIter;
+	}
 	@Override
 	public String toString() {
 		String ranker;
@@ -160,11 +185,11 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			if (m_multithread) {
 				/**** multi-thread version ****/
 				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
-				m_lambdaRank.train(100, 20, 1.0, 0.98);//lambdaRank specific parameters
+				m_lambdaRank.train(m_maxIter, m_windowSize, m_stepSize, m_shrinkage);//lambdaRank specific parameters
 			} else {
 				/**** single-thread version ****/
-				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_NDCG);
-				m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
+				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_NDCG);//tradeoff is the lambda in LambdaRank.
+				m_lambdaRank.train(m_maxIter, m_windowSize, m_stepSize, m_shrinkage);//lambdaRank specific parameters
 			}			
 			w = m_lambdaRank.getWeights();
 		} 

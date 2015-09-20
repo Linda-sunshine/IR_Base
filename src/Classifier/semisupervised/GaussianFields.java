@@ -40,6 +40,8 @@ public class GaussianFields extends BaseClassifier {
 	
 	Thread[] m_threadpool;
 	
+	double[][] m_onePurityStat; //Used to store the stat of one fold, added by Lin.
+	int m_purityCount=0;//added by Lin.
 	public GaussianFields(_Corpus c, String classifier, double C){
 		super(c);
 		
@@ -259,11 +261,38 @@ public class GaussianFields extends BaseClassifier {
 				}
 			}
 		}
+		//Store the purity information for further average, added by Lin.
 		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
-		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
-		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
-		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
-		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+		m_onePurityStat = new double[4][3];
+		m_onePurityStat[0][0] = prec[0][1][0]/total[0][1][0];
+		m_onePurityStat[0][1] = prec[1][1][0]/total[1][1][0];
+		m_onePurityStat[0][2] = prec[2][1][0]/total[2][1][0];
+		
+		m_onePurityStat[1][0] = prec[0][1][1]/total[0][1][1];
+		m_onePurityStat[1][1] = prec[1][1][1]/total[1][1][1];
+		m_onePurityStat[1][2] = prec[2][1][1]/total[2][1][1];
+		
+		m_onePurityStat[2][0] = prec[0][0][0]/total[0][0][0];
+		m_onePurityStat[2][1] = prec[1][0][0]/total[1][0][0];
+		m_onePurityStat[2][2] = prec[2][0][0]/total[2][0][0];
+		
+		m_onePurityStat[3][0] = prec[0][0][1]/total[0][0][1];
+		m_onePurityStat[3][1] = prec[1][0][1]/total[1][0][1];
+		m_onePurityStat[3][2] = prec[2][0][1]/total[2][0][1];
+		
+		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[0][0], m_onePurityStat[0][1], m_onePurityStat[0][2]);
+		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[1][0], m_onePurityStat[1][1], m_onePurityStat[1][2]);
+		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[2][0], m_onePurityStat[2][1], m_onePurityStat[2][2]);
+		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", m_onePurityStat[3][0], m_onePurityStat[3][1], m_onePurityStat[3][2] );
+		
+		if(m_purityCount > m_purityStat.length)
+			System.out.println("Purity dimension out of range.\n");
+		else
+			m_purityStat[m_purityCount++] = m_onePurityStat;
+//		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
+//		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
+//		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
+//		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
 	}
 	
 	protected void constructGraph(boolean createSparseGraph) {		

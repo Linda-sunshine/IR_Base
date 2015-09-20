@@ -78,11 +78,17 @@ public class Parameter {
 	public String m_priorFile = null; // prior seed word list
 	
 	//added by Lin to check the best performance of RankSVM.
-	public int m_topK = 5;
-	public int m_noC = 5;
+	public int m_topK = 1;
+	public int m_noC = 100;
 	public double m_noiseRatio = 1.5;
 	public double m_queryRatio = 1;
 	public double m_documentRatio = 1;
+	//Parameters for learning to rank.
+	public double m_lambda4L2R = 1;
+	public double m_shrinkage = 0.98;
+	public double m_stepSize = 1;
+	public int m_windowSize = 20;
+	public int m_maxIter = 100;
 	
 	public Parameter(String argv[])
 	{
@@ -189,6 +195,17 @@ public class Parameter {
 				m_queryRatio = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-dr"))
 				m_documentRatio = Double.valueOf(argv[i]);
+			//parameters for learning to rank.
+			else if (argv[i-1].equals("-lmd4l2r"))
+				m_lambda4L2R = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-sk"))
+				m_shrinkage = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-step"))
+				m_stepSize = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-window"))
+				m_windowSize = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-maxIter"))
+				m_maxIter = Integer.valueOf(argv[i]);
 			
 			else if (argv[i-1].equals("-fprior"))
 				m_priorFile = argv[i];

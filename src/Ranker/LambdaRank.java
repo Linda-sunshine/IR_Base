@@ -6,6 +6,7 @@ import java.util.Arrays;
 import structures._QUPair;
 import structures._Query;
 import utils.Utils;
+import Classifier.metricLearning.L2RMetricLearning;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;

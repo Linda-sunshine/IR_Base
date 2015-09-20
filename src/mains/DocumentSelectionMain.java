@@ -145,7 +145,7 @@ public class DocumentSelectionMain {
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		c.mapLabels(4);
+//		c.mapLabels(4);
 //		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
 		
 //		/************LCS Write and Read operations.***************/
@@ -214,7 +214,15 @@ public class DocumentSelectionMain {
 		int noClusters = 200; 
 		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
 		kmeans.train(c.getCollection());
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
+		kmeans.tranferClusters2Docs();
+		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+		
+		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
+		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
+
+		kmeans.writeStat(kmeansStatFile);
+		kmeans.writeContent(kmeansContentFile);
+		c.mapLabels(4); //Do kmeans first, then map the labels.
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
@@ -229,7 +237,7 @@ public class DocumentSelectionMain {
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
 			int ranker = 1;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
-			boolean multithread_LR = false;//training LambdaRank with multi-threads
+			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
 			GaussianFieldsByRandomWalk mySemi = null;			
 			if (method.equals("RW")) {

@@ -152,6 +152,18 @@ public class Execution4Clustering  {
 //		kmeans.train(c.getCollection());
 //		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
 				
+		KMeansAlg kmeans = new KMeansAlg(c, param.m_noC);
+		kmeans.train(c.getCollection());
+		kmeans.tranferClusters2Docs();
+		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+		
+		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", param.m_noC);
+		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", param.m_noC);
+
+		kmeans.writeStat(kmeansStatFile);
+		kmeans.writeContent(kmeansContentFile);
+		
+		c.mapLabels(4); //Do kmeans first, then map the labels.
 		
 		if (param.m_style.equals("SEMI")) {
 			//perform transductive learning
@@ -182,11 +194,17 @@ public class Execution4Clustering  {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, param.m_eta, weightedAvg, 
 						param.m_topK, param.m_noiseRatio, ranker, multithread_LR);
 			}
-			((L2RMetricLearning) mySemi).setQueryRatio(param.m_queryRatio);
-			((L2RMetricLearning) mySemi).setDocumentRatio(param.m_documentRatio);
+//			((L2RMetricLearning) mySemi).setQueryRatio(param.m_queryRatio);
+//			((L2RMetricLearning) mySemi).setDocumentRatio(param.m_documentRatio);
+			((L2RMetricLearning) mySemi).setLambda(param.m_lambda4L2R);
+			((L2RMetricLearning) mySemi).setShrinkage(param.m_shrinkage);
+			((L2RMetricLearning) mySemi).setStepSize(param.m_stepSize);
+			((L2RMetricLearning) mySemi).setWindowSize(param.m_windowSize);
+			((L2RMetricLearning) mySemi).setMaxIter(param.m_maxIter);
+			
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-//			((L2RMetricLearning) mySemi).setClusters(clusters);
+			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(LCSMap);
 			mySemi.crossValidation(CVFold, c);
 		} else if (param.m_style.equals("SUP")) {

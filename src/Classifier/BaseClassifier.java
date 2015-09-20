@@ -28,6 +28,7 @@ public abstract class BaseClassifier {
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
+	protected double[][][] m_purityStat;
 	public void train() {
 		train(m_trainSet);
 	}
@@ -114,6 +115,7 @@ public abstract class BaseClassifier {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
+		m_purityStat = new double[k][4][3];
 		try {
 			if (m_debugOutput!=null){
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
@@ -140,14 +142,13 @@ public abstract class BaseClassifier {
 				
 				long start = System.currentTimeMillis();
 				train();
-				double accuracy = test();
-				
+				double accuracy = test();				
 				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-			calculateMeanVariance(m_precisionsRecalls);	
-		
+			calculateMeanVariance();	
+			calculateMeanPurity();
 			if (m_debugOutput!=null)
 				m_debugWriter.close();
 		} catch (IOException e) {
@@ -155,6 +156,29 @@ public abstract class BaseClassifier {
 		}
 	}
 	
+	//Calculate the mean of purity. added by Lin.
+	public void calculateMeanPurity(){
+		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
+		int folder = m_purityStat.length;
+		double[][] puritySum = new double[4][3];
+		for(int i=0; i<4; i++){
+			for(int j=0; j<3; j++){
+				puritySum[i][j] = sumPurity(i, j);
+			}
+		}
+		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", puritySum[0][0]/folder, puritySum[0][1]/folder, puritySum[0][2]/folder);
+		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", puritySum[1][0]/folder, puritySum[1][1]/folder, puritySum[1][2]/folder);
+		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", puritySum[2][0]/folder, puritySum[2][1]/folder, puritySum[2][2]/folder);
+		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", puritySum[3][0]/folder, puritySum[3][1]/folder, puritySum[3][2]/folder);
+	}
+	
+	public double sumPurity(int i, int j){
+		double sum = 0;
+		for(int k=0; k<m_purityStat.length; k++){
+			sum += m_purityStat[k][i][j];
+		}
+		return sum;
+	}
 	abstract public void saveModel(String modelLocation);
 	
 	//Calculate the precision and recall for one folder tests.
@@ -210,7 +234,7 @@ public abstract class BaseClassifier {
 	}
 	
 	//Calculate the mean and variance of precision and recall.
-	public double[][] calculateMeanVariance(ArrayList<double[][]> prs){
+	public double[][] calculateMeanVariance(){
 		//Use the two-dimension array to represent the final result.
 		double[][] metrix = new double[m_classNo][4]; 
 			
@@ -224,14 +248,14 @@ public abstract class BaseClassifier {
 			precisionSum = 0;
 			recallSum = 0;
 			// Calculate the sum of precisions and recalls.
-			for (int j = 0; j < prs.size(); j++) {
-				precisionSum += prs.get(j)[i][0];
-				recallSum += prs.get(j)[i][1];
+			for (int j = 0; j < m_precisionsRecalls.size(); j++) {
+				precisionSum += m_precisionsRecalls.get(j)[i][0];
+				recallSum += m_precisionsRecalls.get(j)[i][1];
 			}
 			
 			// Calculate the means of precisions and recalls.
-			metrix[i][0] = precisionSum/prs.size();
-			metrix[i][1] = recallSum/prs.size();
+			metrix[i][0] = precisionSum/m_precisionsRecalls.size();
+			metrix[i][1] = recallSum/m_precisionsRecalls.size();
 		}
 
 		// Calculate the sum of variances of precisions and recalls.
@@ -239,14 +263,14 @@ public abstract class BaseClassifier {
 			precisionVarSum = 0.0;
 			recallVarSum = 0.0;
 			// Calculate the sum of precision variance and recall variance.
-			for (int j = 0; j < prs.size(); j++) {
-				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
-				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
+			for (int j = 0; j < m_precisionsRecalls.size(); j++) {
+				precisionVarSum += (m_precisionsRecalls.get(j)[i][0] - metrix[i][0])*(m_precisionsRecalls.get(j)[i][0] - metrix[i][0]);
+				recallVarSum += (m_precisionsRecalls.get(j)[i][1] - metrix[i][1])*(m_precisionsRecalls.get(j)[i][1] - metrix[i][1]);
 			}
 			
 			// Calculate the means of precisions and recalls.
-			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
-			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
+			metrix[i][2] = Math.sqrt(precisionVarSum/m_precisionsRecalls.size());
+			metrix[i][3] = Math.sqrt(recallVarSum/m_precisionsRecalls.size());
 		}
 		
 		// The final output of the computation.
