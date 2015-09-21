@@ -206,6 +206,12 @@ public class Execution4Clustering  {
 			mySemi.setDebugOutput(debugOutput);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(LCSMap);
+			System.out.print(String.format("------Parameters--------\n" +
+					"Learning ratio: %.3f\tKUL:%d\tKUU:%d\talpha:%.3f\tbeta:%.3f\n" +
+					"eta:%.3f\ttopK:%d\tnoiseRatio:%.3f\tranker:%d\n" +
+					"lambda:%.3f\tshrinkage:%.3f\tstepSize:%.3f\twindowsize:%d\tmaxIteration:%d\n", 
+					learningRatio, k, kPrime, tAlpha, tBeta, param.m_eta, param.m_topK, param.m_noiseRatio, ranker, 
+					param.m_lambda4L2R, param.m_shrinkage, param.m_stepSize, param.m_windowSize, param.m_maxIter));
 			mySemi.crossValidation(CVFold, c);
 		} else if (param.m_style.equals("SUP")) {
 			//perform supervised learning

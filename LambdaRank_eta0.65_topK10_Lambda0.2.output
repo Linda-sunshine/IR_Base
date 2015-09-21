@@ -1,0 +1,27 @@
+
+--------------------------------------------------------------------------------------
+Parameters of learning procedure:
+#Class: 5	Ngram: 2	Feature value: TF	Normalization: 2
+Doc length cut: 10	Window length: 0
+Learning paradigm: SEMI	Sampling rate: 0.25	kUL: 100	kUU: 50
+alpha: 1.05	beta: 1.01
+Solver: Random Walk	Base Classifer: SVM	Weighted Sum: true	Similarity Weight: false
+Classifier: SVM	Instance weighting: NONE	Trade-off Parameter: 1.0	Cross validation: 10
+Data directory: ./data/amazon/small/dedup/RawData
+--------------------------------------------------------------------------------------
+Creating feature vectors, wait...
+8055 feature words loaded from ./data/Features/fv_2gram_tablets_86jsons.txt...
+Keywords for <screen>: 52
+Keywords for <app>: 55
+Keywords for <price>: 63
+Keywords for <battery>: 60
+Keywords for <sound>: 23
+Keywords for <camera>: 47
+Keywords for <cpu>: 46
+Keywords for <microsd>: 44
+Keywords for <internet>: 46
+Keywords for <keyboard>: 26
+Keywords for <usb>: 35
+Keywords for <servic>: 49
+Loading 614 stopwords from ./data/Model/stopwords.dat
+DT

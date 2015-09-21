@@ -202,7 +202,7 @@ public class Parameter {
 				m_shrinkage = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-step"))
 				m_stepSize = Double.valueOf(argv[i]);
-			else if (argv[i-1].equals("-window"))
+			else if (argv[i-1].equals("-rankW"))
 				m_windowSize = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-maxIter"))
 				m_maxIter = Integer.valueOf(argv[i]);
