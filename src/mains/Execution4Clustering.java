@@ -99,7 +99,7 @@ public class Execution4Clustering  {
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(param.m_featureFile); // Get the collection of all the documents.
-		c.mapLabels(4);
+//		c.mapLabels(4);
 		
 		
 		/************LCS Write and Read operations.***************/
@@ -152,16 +152,16 @@ public class Execution4Clustering  {
 //		kmeans.train(c.getCollection());
 //		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
 				
-		KMeansAlg kmeans = new KMeansAlg(c, param.m_noC);
-		kmeans.train(c.getCollection());
-		kmeans.tranferClusters2Docs();
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
-		
-		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", param.m_noC);
-		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", param.m_noC);
-
-		kmeans.writeStat(kmeansStatFile);
-		kmeans.writeContent(kmeansContentFile);
+//		KMeansAlg kmeans = new KMeansAlg(c, param.m_noC);
+//		kmeans.train(c.getCollection());
+//		kmeans.tranferClusters2Docs();
+//		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+//		
+//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", param.m_noC);
+//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", param.m_noC);
+//
+//		kmeans.writeStat(kmeansStatFile);
+//		kmeans.writeContent(kmeansContentFile);
 		
 		c.mapLabels(4); //Do kmeans first, then map the labels.
 		
@@ -176,7 +176,7 @@ public class Execution4Clustering  {
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			//int topK = 5;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 0;//0-RankSVM; 1-lambda rank.
+			int ranker = 1;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
@@ -204,7 +204,7 @@ public class Execution4Clustering  {
 			
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(LCSMap);
 			mySemi.crossValidation(CVFold, c);
 		} else if (param.m_style.equals("SUP")) {
