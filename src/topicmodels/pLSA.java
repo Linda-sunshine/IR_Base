@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Random;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -335,6 +336,87 @@ public class pLSA extends twoTopic {
 		} catch(Exception ex){
 			System.err.print("File Not Found");
 		}
+	}
+	
+	public void createWordIntrusionList(String wordIntrusionPath){
+		// select most influencing topic from doc
+		// select top 4 words from that topic
+		// and also select a low probability word from that topic which has 
+		// higher probability in other topic
+		
+		int topTopic = 30;
+		int topWord = 5;
+		MyPriorityQueue<_RankItem> topTopicVector = new MyPriorityQueue<_RankItem>(topTopic);
+		System.out.println("TopWord FilePath:" + wordIntrusionPath);
+		PrintWriter wordIntrusionWriter;
+		
+		//Accumulating the statistics for most influencial topics over the corpus
+		Arrays.fill(m_sstat, 0);
+		for(_Doc d:m_trainSet) {
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+		}
+		Utils.L1Normalization(m_sstat);	
+		
+		// finding the top 5 topics
+		for(int i = 0; i<this.number_of_topics; i++){
+			topTopicVector.add(new _RankItem(i,m_sstat[i]));
+		}
+		
+		try{
+			wordIntrusionWriter = new PrintWriter(new File(wordIntrusionPath));
+
+			for(_RankItem it:topTopicVector){
+				int topicIndex = it.m_index;
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(vocabulary_size);
+				for(int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[topicIndex][j]));
+				
+				wordIntrusionWriter.format("Topic %d(%.3f):\t", topicIndex, m_sstat[topicIndex]);
+				ArrayList<String> topWordList = new ArrayList<String>();
+				// print top 5 high probability words from this topic
+				int j = 1;
+				for(_RankItem item:fVector){
+					if(j>topWord)
+						break;
+					wordIntrusionWriter.format("%s, ", item.m_name);
+					topWordList.add(item.m_name);
+					j++;
+				}
+				// introduce an intruder words from low probability words
+				Random r = new Random();
+				int intruderWordIndex = 90 + r.nextInt(100);
+				j = 0;
+				for(_RankItem item:fVector){
+					if(j==intruderWordIndex){
+						wordIntrusionWriter.format("%s,", item.m_name);
+						break;
+					}
+					j++;
+				}
+				
+				// introduce a intruding word from another topic where a word has higher probability
+				int randomTopicIndex = (topicIndex + 1)%this.number_of_topics;
+				fVector = new MyPriorityQueue<_RankItem>(vocabulary_size);
+				for(j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[randomTopicIndex][j]));
+				
+				for(_RankItem item:fVector){
+					if(!topWordList.contains(item.m_name)){
+						wordIntrusionWriter.format("%s", item.m_name);
+						break;
+					}
+				}
+				wordIntrusionWriter.write("\n");
+				fVector.clear();
+				topWordList.clear();
+			}
+			wordIntrusionWriter.close();
+		}catch(Exception e){
+			System.err.println(wordIntrusionPath+" Not Found!!");
+		}
+		
+		
 	}
 	
 	//print all the quantities in real space

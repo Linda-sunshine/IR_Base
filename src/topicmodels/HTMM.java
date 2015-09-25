@@ -200,8 +200,6 @@ public class HTMM extends pLSA {
 		HashMap<Integer, String> list = new HashMap<Integer, String>();
 		HashMap<Integer, Double> values = new HashMap<Integer, Double>();
 		
-	
-	
 		int size = features.size();
 		int range = this.number_of_topics/2;
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(size, false);
@@ -215,8 +213,8 @@ public class HTMM extends pLSA {
 		}
 		
 		for(int i=0; i<this.number_of_topics/2; i++){
-			MyPriorityQueue<_RankItem> queuePos = new MyPriorityQueue<_RankItem>(500, true);
-			MyPriorityQueue<_RankItem> queueNeg = new MyPriorityQueue<_RankItem>(500, true);
+			MyPriorityQueue<_RankItem> queuePos = new MyPriorityQueue<_RankItem>(150, true);
+			MyPriorityQueue<_RankItem> queueNeg = new MyPriorityQueue<_RankItem>(150, true);
 			
 			for(int n=0; n<features.size(); n++) {
 				queuePos.add(new _RankItem(m_corpus.getFeature(n), topic_term_probabilty[i][n]));

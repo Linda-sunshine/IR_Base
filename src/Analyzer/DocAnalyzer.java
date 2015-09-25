@@ -44,6 +44,7 @@ public class DocAnalyzer extends Analyzer {
 	protected ArrayList<String> m_posPriorList;//list of positive seed words
 	protected ArrayList<String> m_negPriorList;//list of negative seed words
 	protected ArrayList<String> m_negationList;//list of negation seed words
+	protected ArrayList<String> m_conjunctionList;//list of conjunction words
 	
 	
 	//Constructor with ngram and fValue.
@@ -123,10 +124,11 @@ public class DocAnalyzer extends Analyzer {
 	}	
 	
 	//since the seed words are stemmed, please double check when you use such words in generating the features
-	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords, String pathToNegationWords) {
+	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords, String pathToNegationWords, String pathToConjunction) {
 		m_posPriorList = new ArrayList<String>();
 		m_negPriorList = new ArrayList<String>();
 		m_negationList = new ArrayList<String>();
+		m_conjunctionList = new ArrayList<String>();
 		
 		BufferedReader file = null;
 		try {
@@ -149,6 +151,13 @@ public class DocAnalyzer extends Analyzer {
 			while ((line = file.readLine()) != null) {
 				line = SnowballStemming(line);
 				m_negationList.add(line);
+			}
+			file.close();
+			
+			file = new BufferedReader(new FileReader(pathToConjunction));
+			while ((line = file.readLine()) != null) {
+				line = SnowballStemming(line);
+				m_conjunctionList.add(line);
 			}
 			file.close();
 			
@@ -526,6 +535,10 @@ public class DocAnalyzer extends Analyzer {
 			else
 				sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
 			pNegationCount = cNegationCount;
+			
+			//conjunction position		
+			//sentences[i-1].m_sentiTransitFv[6] = conjuctionPosition(sentences[i]);	
+			//sentences[i-1].m_transitFv[4] = sentences[i-1].m_sentiTransitFv[6];		
 		}
 	}
 
@@ -624,6 +637,30 @@ public class DocAnalyzer extends Analyzer {
 		}
 		//System.out.println("NegationCount"+negationCount);
 		return negationCount;
+	}
+	
+	public int conjuctionPosition(_Stn s) {
+		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
+		//Normalize them and stem them.		
+		for(int i = 0; i < wordsInSentence.length; i++)
+			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
+		
+		int conjunctionPosition = 0;
+
+		for(String word:wordsInSentence){
+			if(m_conjunctionList.contains(word)){
+				break;
+				//System.out.print(word+",");
+			}
+			conjunctionPosition++;	
+		}
+		//System.out.println("NegationCount"+negationCount);
+		
+		if(conjunctionPosition<wordsInSentence.length/2)
+			return 1; // sentiment and topic transition 
+		else if(conjunctionPosition>=wordsInSentence.length/2)
+			return -1;
+		return 0; 
 	}
 
 	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence

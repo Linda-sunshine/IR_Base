@@ -14,6 +14,7 @@ import Classifier.supervised.EMNaiveBayes;
 import Classifier.supervised.EMNaiveBayes;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.NaiveBayesEM;
 import Classifier.supervised.SVM;
 
 public class AmazonReviewMainNahid {
@@ -32,7 +33,7 @@ public class AmazonReviewMainNahid {
 		String style = "SUP";
 		
 		//"NB", "LR", "SVM", "PR", "EM-NB"
-		String classifier = "EM-NB"; //Which classifier to use.
+		String classifier = "EM-NB1"; //Which classifier to use.
 		double C = 1.0;
 		String debugOutput = null; //"data/debug/LR.output";
 		
@@ -45,7 +46,7 @@ public class AmazonReviewMainNahid {
 		double startProb = 0.3; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-//		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
+//		System.out.println("Feature Selection: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
 
@@ -115,6 +116,13 @@ public class AmazonReviewMainNahid {
 				//Define a new EM-naive bayes with the parameters.
 				System.out.println("Start EM-naive bayes, wait...");
 				EMNaiveBayes myNB = new EMNaiveBayes(corpus,numberOfIteration,varConverge);
+				myNB.crossValidationNahid(CVFold, m_randomFold, m_LoadnewEggInTrain);
+			}
+			
+			else if(classifier.equals("EM-NB1")){
+				//Define a new EM-naive bayes with the parameters.
+				System.out.println("Start Prof EM-naive bayes, wait...");
+				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
 				myNB.crossValidationNahid(CVFold, m_randomFold, m_LoadnewEggInTrain);
 			}
 			else if(classifier.equals("LR")){

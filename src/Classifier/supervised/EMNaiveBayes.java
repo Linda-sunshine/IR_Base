@@ -39,11 +39,10 @@ public class EMNaiveBayes extends NaiveBayes {
 	}
 
 	
-	protected void clearCache(Collection<_Doc> trainSet) {
-		for(_Doc d:trainSet){
-			d.m_sstat = new double[m_classNo];
-			for(int i=0; i<m_classNo;i++)
-				d.m_sstat[i] = 0.0;
+	protected void clearCache(Collection<_Doc> trainSet) {		
+		for(_Doc doc: m_trainSet){
+			if (doc.getSourceType()==1)
+				doc.setTopics(m_classNo, m_deltaY);//create the storage space
 		}
 	}
 	
@@ -51,6 +50,7 @@ public class EMNaiveBayes extends NaiveBayes {
 		// likelihood calculation
 		for(_Doc d: trainSet){
 			if(d.getSourceType()==2){// from NewEgg 
+				d.m_sstat = new double[m_classNo];
 				int i = d.getYLabel();
 				d.m_sstat[i] = m_pY[i];
 				for(_SparseFeature f:d.getSparse())
@@ -71,18 +71,12 @@ public class EMNaiveBayes extends NaiveBayes {
 				}
 		}
 		//normalization
+		double sumY = Math.log(Utils.sumOfArray(m_pY) + m_deltaY * m_classNo);
 		for(int i = 0; i < m_classNo; i++){
-			m_pY[i] = Math.log(m_pY[i] + m_deltaY);//up to a constant since normalization of this is not important
+			m_pY[i] = Math.log(m_pY[i] + m_deltaY) -sumY;//up to a constant since normalization of this is not important
 			double sum = Math.log(Utils.sumOfArray(m_Pxy[i]) + m_featureSize*m_deltaXY);
 			for(int j = 0; j < m_featureSize; j++)
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
-		}
-		double norm = Double.NEGATIVE_INFINITY; // log 0;
-		for(int i = 0; i < m_classNo; i++){
-			norm = Utils.logSum(norm, m_pY[i]);
-		}
-		for(int i = 0; i < m_classNo; i++){
-			m_pY[i] -= norm;
 		}
 	}
 	
@@ -96,7 +90,7 @@ public class EMNaiveBayes extends NaiveBayes {
 		//initial Naive Bayes estimation on labelled dataset
 		initialTrain(trainSet);
 		
-		double delta, current, last=0.0;;
+		double delta, current, last=0.0;
 		
 		//EM algorithm start 
 		int i = 0;
@@ -131,7 +125,7 @@ public class EMNaiveBayes extends NaiveBayes {
 					d.m_sstat[i] = m_pY[i];
 					for(_SparseFeature f:d.getSparse())
 						d.m_sstat[i]  += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue());
-				}
+					}
 				//normalize inside document
 				double norm = Double.NEGATIVE_INFINITY; // log 0;
 				for(int i = 0; i < m_classNo; i++){
@@ -168,22 +162,14 @@ public class EMNaiveBayes extends NaiveBayes {
 		}
 		//normalization
 		//placing all values in logscale
+		double sumY = Math.log(Utils.sumOfArray(m_pY) + m_deltaY * m_classNo);
 		for(int i = 0; i < m_classNo; i++){
-			m_pY[i] = Math.log(m_pY[i] + m_deltaY);//up to a constant since normalization of this is not important
+			m_pY[i] = Math.log(m_pY[i] + m_deltaY) - sumY;//up to a constant since normalization of this is not important
 			double sum = Math.log(Utils.sumOfArray(m_Pxy[i]) + m_featureSize*m_deltaXY);
 			for(int j = 0; j < m_featureSize; j++)
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
-		double norm = Double.NEGATIVE_INFINITY; // log 0;
-		for(int i = 0; i < m_classNo; i++){
-			norm = Utils.logSum(norm, m_pY[i]);
-		}
-		for(int i = 0; i < m_classNo; i++){
-			m_pY[i] -= norm;
-		}
-		
-		//clearing d.m_sstat for E-step on next iteration
-		clearCache(docSet);
+
 	}
 	
 

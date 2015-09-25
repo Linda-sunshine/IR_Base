@@ -105,4 +105,10 @@ public class twoTopic extends TopicModel {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void createWordIntrusionList(String wordIntrusionPath) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -54,7 +54,7 @@ public class TopicModelMainnew {
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from newEgg
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-		int trainSize = 0; // trainSize 0 means only newEgg; 5000 means all the data 
+		int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
 		int number_of_iteration = 50;
 		int topK = 50;
 		boolean generateTrainTestDataForJSTASUM = false;
@@ -98,10 +98,12 @@ public class TopicModelMainnew {
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
+		
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
+		String pathToConjunctionWords = "./data/Model/conjunction.txt";
 
 		String FilePath = "./data/amazon/";
 		String resultDirectory = "./result/"+category+"/"+trainSize+"/";
@@ -118,8 +120,14 @@ public class TopicModelMainnew {
 			resultDirectory += "aspectPrior/";
 		
 		String topWordFilePath = resultDirectory+"Topics_"+number_of_topics+"_topWords.txt";
+		String wordIntrusionFilePath = resultDirectory+"Topics_"+number_of_topics+"_wordIntrusion.txt";
+		
 		String infoFilePath = resultDirectory+"Topics_"+number_of_topics+"_Information.txt";
 		String featureWeightFilePath = resultDirectory + "Topics_"+number_of_topics+"_FeaturesWeight.csv";;
+		
+		String topicTransitionFilePath = resultDirectory + "Topics_"+number_of_topics+"_TopicTransitionMatrix.csv";;
+		
+		
 		String debugDirectory = null;
 		String debugFilePath = null;
 		
@@ -171,7 +179,7 @@ public class TopicModelMainnew {
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords, pathToConjunctionWords);
 		}
 		
 		if(trainSize==0) 
@@ -258,6 +266,7 @@ public class TopicModelMainnew {
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
 				model.printTopWords(topK, topWordFilePath);
+				model.createWordIntrusionList(wordIntrusionFilePath);
 				String topicWiseFEaturesFilePath =  resultDirectory + "Topics_" + number_of_topics + "_TopicWiseFeature.txt";
 				((HTMM)model).printTopFeaturesSet(topK, featureSet, topicWiseFEaturesFilePath);
 			}
@@ -278,8 +287,11 @@ public class TopicModelMainnew {
 			if(debugSentenceTransition){
 				model.debugOutputWrite();
 			}
-			if(topicmodel.equals("LRHTSM"))
+			if(topicmodel.equals("LRHTSM")){
 				((LRHTSM)model).writeOmegaDelta(featureWeightFilePath);
+				model.calculateTopicTransitionMatrix(topicTransitionFilePath);
+			}
+			
 		}
 	}
 }

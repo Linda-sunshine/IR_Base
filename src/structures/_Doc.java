@@ -77,8 +77,8 @@ public class _Doc implements Comparable<_Doc> {
 	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
-	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
-	static public final int stn_senti_fv_size = 6; // bias, cosine, sentiWordNetScore, prior_positive_negative_count, POS tag divergency
+	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position, conjunction
+	static public final int stn_senti_fv_size = 6; // bias, cosine, sentiWordNetScore, prior_positive_negative_count, POS tag divergency, conjunction
 	
 	_Stn[] m_sentences;
 	
