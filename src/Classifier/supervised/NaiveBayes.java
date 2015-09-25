@@ -104,6 +104,16 @@ public class NaiveBayes extends BaseClassifier {
 			for(_SparseFeature f:d.getSparse())
 				m_cProbs[i] += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue()); // in log space
 		}
+		/*else{
+			int i = d.getYLabel();
+			for(int j=0; j<m_classNo;j++){
+				if(j!=i)
+					m_cProbs[j] = 0.0;
+			}
+			m_cProbs[i] = m_pY[i];
+			for(_SparseFeature f:d.getSparse())
+				m_cProbs[i] += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue()); // in log space
+		}*/
 		return m_cProbs[label] - Utils.logSumOfExponentials(m_cProbs);
 	}
 	
