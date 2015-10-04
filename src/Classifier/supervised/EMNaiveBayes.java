@@ -173,6 +173,7 @@ public class EMNaiveBayes extends NaiveBayes {
 	}
 	
 
+	/*
 	@Override
 	public double test() {// we have override it because we want to test only against original newEgg dataset
 		double acc = 0;
@@ -197,5 +198,5 @@ public class EMNaiveBayes extends NaiveBayes {
 		}
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		return acc /testSize;
-	}
+	}*/
 }

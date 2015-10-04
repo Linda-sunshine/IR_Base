@@ -4,8 +4,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Random;
 
 import structures._Corpus;
 import structures._Doc;
@@ -20,6 +23,7 @@ public abstract class BaseClassifier {
 	protected ArrayList<_Doc> m_testSet; //All the documents used as the testing set.
 	
 	protected double[] m_cProbs;
+	protected PrintWriter infoWriter;
 	
 	//for cross-validation
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
@@ -37,6 +41,17 @@ public abstract class BaseClassifier {
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
+	
+	public void setInfoWriter(String filePath){
+		try{
+			infoWriter = new PrintWriter(new File(filePath));
+			System.out.println("File Set");
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			System.err.println("Info file"+filePath+" Not Found");
+		}
+	}
 	
 	public double test() {
 		double acc = 0;
@@ -160,6 +175,8 @@ public abstract class BaseClassifier {
 			m_trainSet = new ArrayList<_Doc>();
 			m_testSet = new ArrayList<_Doc>();
 			
+			HashMap<Integer, double[]> tpt = new HashMap<Integer, double[]>();
+			
 			double[] perf;
 			int amazonTrainsetRatingCount[] = {0,0,0,0,0};
 			int amazonRatingCount[] = {0,0,0,0,0};
@@ -168,7 +185,7 @@ public abstract class BaseClassifier {
 			int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 			
 			
-			if(m_randomFold==true){
+			/*if(m_randomFold==true){
 				perf = new double[k];
 				m_corpus.shuffle(k);
 				int[] masks = m_corpus.getMasks();
@@ -176,10 +193,12 @@ public abstract class BaseClassifier {
 				//Use this loop to iterate all the ten folders, set the train set and test set.
 				for (int i = 0; i < k; i++) {
 					for (int j = 0; j < masks.length; j++) {
-						if( masks[j]==i ) 
+						if( masks[j]==i ){ 
 							m_testSet.add(docs.get(j));
-						else 
+						}
+						else{ 
 							m_trainSet.add(docs.get(j));
+						}
 					}
 					
 					System.out.println("Fold number "+i);
@@ -194,7 +213,99 @@ public abstract class BaseClassifier {
 					m_trainSet.clear();
 					m_testSet.clear();
 				}
-			} else {
+			}else */if(m_randomFold==true){
+				
+				perf = new double[k];
+				ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
+				
+				for(_Doc d:m_corpus.getCollection()){
+					if(d.getSourceType()==2)
+						neweggDocs.add(d);
+				}
+				
+				// shuffling only newEgg docs
+				int[] masks = new int [neweggDocs.size()]; 
+				Random rand = new Random();
+				for(int i=0; i< masks.length; i++) {
+					masks[i] = rand.nextInt(k);
+				}
+				
+				//Use this loop to iterate all the k folders, set the train set and test set.
+				for (int i = 0; i < k; i++) {
+					
+					// adding one fold of train and test from newEgg
+					for (int j = 0; j < masks.length; j++) {
+						if( masks[j]==i ){ 
+							m_testSet.add(neweggDocs.get(j));
+						}
+						else{ 
+							m_trainSet.add(neweggDocs.get(j));
+						}
+					}
+					
+					//adding all the data from amazon in trainset
+					int index = 0;
+					
+					for(int a=0; a<=5000;a=a+1000){
+						System.out.println("a:"+ a);
+						
+						if(a!=0){
+							int m = 0;
+							int l = index;
+							for(; ;l++){
+								_Doc d = m_corpus.getCollection().get(l);
+								if(m>1000)
+									break;
+								if(d.getSourceType()==1){
+									m_trainSet.add(d);
+									m++;
+								}
+								
+							}
+							index = l;
+
+						}
+					
+						System.out.println("Fold number "+i);
+						System.out.println("Train Set Size "+m_trainSet.size());
+						System.out.println("Test Set Size "+m_testSet.size());
+
+						long start = System.currentTimeMillis();
+						train();
+						//double accuracy = test();
+						
+						int precision_recall [][] = {{0,0},{0,0}};
+						for(_Doc doc: m_testSet){
+							doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
+							int pred = doc.getPredictLabel(), ans = doc.getYLabel();
+							precision_recall[ans][pred] += 1; //Compare the predicted label and original label, construct the TPTable.
+				
+						}
+					    
+					    double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
+						double cons_precision = (double)precision_recall[1][1]/(precision_recall[0][1] + precision_recall[1][1]);
+						
+						double pros_recall = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[0][1]);
+						double cons_recall = (double)precision_recall[1][1]/(precision_recall[1][0] + precision_recall[1][1]);
+						
+						double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
+						double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
+						
+						double result [] = {pros_f1,cons_f1};
+						
+						tpt.put(i+a, result);
+					    
+						System.out.format("%s Train/Test finished in %.2f seconds with pros F1 %.4f and cons F1 %.4f ..\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, pros_f1, cons_f1);
+						
+						
+					}// amazon trainSize loop ends
+			
+					m_trainSet.clear();
+					m_testSet.clear();
+				}
+			}
+			
+			else {
 				k = 1;
 				perf = new double[k];
 			    int totalNewqEggDoc = 0;
@@ -280,6 +391,20 @@ public abstract class BaseClassifier {
 			//output the performance statistics
 			calculateMeanVariance(m_precisionsRecalls);	
 			
+			// calculate statistics for new folding mechanism
+			double trainSizeSum [][] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
+			for(int size = 0; size<=5; size = size+1){
+				for(int fold = 0; fold<k;fold++){
+					double tmp [] = tpt.get(fold+size*1000);
+					trainSizeSum[size][0] += tmp[0];
+					trainSizeSum[size][1] += tmp[1];
+				}
+			}
+			
+			for(int size = 0; size<=5; size = size+1){
+				System.out.println("Train size:"+size*1000 +", Pros F1:"+trainSizeSum[size][0]/k+", Cons F1:"+trainSizeSum[size][1]/k);
+			}
+			
 		}	
 	
 	abstract public void saveModel(String modelLocation);
@@ -303,17 +428,22 @@ public abstract class BaseClassifier {
 	}
 	
 	public void printConfusionMat() {
-		for(int i=0; i<m_classNo; i++)
+		for(int i=0; i<m_classNo; i++){
 			System.out.format("\t%d", i);
+			infoWriter.format("\t%d", i);
+		}
 		
 		double total = 0, correct = 0;
 		double[] columnSum = new double[m_classNo], prec = new double[m_classNo];
 		System.out.println("\tP");
+		infoWriter.println("\tP");
 		for(int i=0; i<m_classNo; i++){
 			System.out.format("%d", i);
+			infoWriter.format("%d", i);
 			double sum = 0; // row sum
 			for(int j=0; j<m_classNo; j++) {
 				System.out.format("\t%d", m_confusionMat[i][j]);
+				infoWriter.format("\t%d", m_confusionMat[i][j]);
 				sum += m_confusionMat[i][j];
 				columnSum[j] += m_confusionMat[i][j];
 				total += m_confusionMat[i][j];
@@ -321,19 +451,28 @@ public abstract class BaseClassifier {
 			correct += m_confusionMat[i][i];
 			prec[i] = m_confusionMat[i][i]/sum;
 			System.out.format("\t%.4f\n", prec[i]);
+			infoWriter.format("\t%.4f\n", prec[i]);
 		}
 		
 		System.out.print("R");
+		infoWriter.print("R");
 		for(int i=0; i<m_classNo; i++){
 			columnSum[i] = m_confusionMat[i][i]/columnSum[i]; // recall
 			System.out.format("\t%.4f", columnSum[i]);
+			infoWriter.format("\t%.4f", columnSum[i]);
 		}
 		System.out.format("\t%.4f", correct/total);
+		infoWriter.format("\t%.4f", correct/total);
 		
 		System.out.print("\nF1");
-		for(int i=0; i<m_classNo; i++)
+		infoWriter.print("\nF1");
+		for(int i=0; i<m_classNo; i++){
 			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+			infoWriter.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+		}
 		System.out.println();
+		infoWriter.println();
+		
 	}
 	
 	//Calculate the mean and variance of precision and recall.
@@ -379,12 +518,18 @@ public abstract class BaseClassifier {
 		// The final output of the computation.
 		System.out.println("*************************************************");
 		System.out.format("The final result of %s is as follows:\n", this.toString());
+		infoWriter.format("The final result of %s is as follows:\n", this.toString());
 		System.out.println("The total number of classes is " + m_classNo);
+		infoWriter.println("The total number of classes is " + m_classNo);
 		
-		for(int i = 0; i < m_classNo; i++)
+		for(int i = 0; i < m_classNo; i++){
 			System.out.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
-		
+			infoWriter.format("Class %d:\tprecision(%.3f+/-%.3f)\trecall(%.3f+/-%.3f)\n", i, metrix[i][0], metrix[i][2], metrix[i][1], metrix[i][3]);
+			
+		}
 		printConfusionMat();
+		infoWriter.flush();
+		infoWriter.close();
 		return metrix;
 	}
 }

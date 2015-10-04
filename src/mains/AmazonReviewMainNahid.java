@@ -52,14 +52,18 @@ public class AmazonReviewMainNahid {
 
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
 		// change topic number and category
-		String category = "tablet";
-		int trainSize = 0; // trainSize 0 means only newEgg
+		String category = "tv";
+		int trainSize = 5000; // trainSize 0 means only newEgg
+		
 		boolean m_LoadnewEggInTrain = true;
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
 		int lengthThreshold = 2; //Document is now sentence length threshold
-		boolean m_randomFold = false;
+		boolean m_randomFold = true;
 		int numberOfIteration = 200; // for EM-Naive Bayes
 		double varConverge = 1e-5; // for EM-Naive Bayes
+		
+		
+		String resultPath = "./model/"+classifier+"/result/"+category+"/"+trainSize+"/"+category+"_information.txt";
 		
 		String amazonFolder = "./data/amazon/mainData/"+ category + "/"+trainSize+"/";
 		String folder = "./data/amazon/test";
@@ -123,6 +127,7 @@ public class AmazonReviewMainNahid {
 				//Define a new EM-naive bayes with the parameters.
 				System.out.println("Start Prof EM-naive bayes, wait...");
 				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
+				myNB.setInfoWriter(resultPath);
 				myNB.crossValidationNahid(CVFold, m_randomFold, m_LoadnewEggInTrain);
 			}
 			else if(classifier.equals("LR")){

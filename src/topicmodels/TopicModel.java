@@ -5,6 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Random;
+
+import javax.swing.plaf.metal.MetalIconFactory.FolderIcon16;
 
 import structures._Corpus;
 import structures._Doc;
@@ -39,6 +43,7 @@ public abstract class TopicModel {
 	protected boolean m_multithread = false; // by default we do not use multi-thread mode
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
+	protected double[][] prosConsPerFold;
 	
 	protected int m_trainSize = 0; // varying trainSet size for Amazon; 0 means dataset only from newEgg
 	private boolean m_trainSetForASUMJST = false;
@@ -307,6 +312,8 @@ public abstract class TopicModel {
 			word = "";
 			for(_Doc d:m_trainSet){
 				asumWriter.write(d.getSenetenceSize()+"\n");
+				//writing the itemID
+				asumWriter.write(d.getItemID()+"\n");
 				for(_Stn sentence : d.getSentences()){
 					int sentenceLabel = sentence.getSentenceSenitmentLabel();
 					if(sentenceLabel==0) // pros
@@ -321,6 +328,9 @@ public abstract class TopicModel {
 						asumWriter.write(index+" ");
 					}
 					asumWriter.write("\n");
+					
+					//writing raw sentence in next line
+					asumWriter.write(sentence.getRawSentence().replaceAll("\\r\\n|\\r|\\n", " ")+"\n");
 				}
 			}
 
@@ -331,6 +341,7 @@ public abstract class TopicModel {
 			for(_Doc d:m_testSet){
 				int senlen = (-1)*d.getSenetenceSize();
 				asumWriter.write(senlen+"\n");
+				asumWriter.write(d.getItemID()+"\n");
 				for(_Stn sentence : d.getSentences()){
 					int sentenceLabel = sentence.getSentenceSenitmentLabel();
 					if(sentenceLabel==0) // pros
@@ -345,6 +356,7 @@ public abstract class TopicModel {
 						asumWriter.write(index+" ");
 					}
 					asumWriter.write("\n");
+					asumWriter.write(sentence.getRawSentence().replaceAll("\\r\\n|\\r|\\n", " ")+"\n");
 				}
 			}
 
@@ -360,7 +372,8 @@ public abstract class TopicModel {
 
 		}
 		catch(Exception e){
-			System.err.print("JST and ASUM File Not Found");
+			e.printStackTrace();
+			System.err.print("JST and ASUM File Not Found"+this.filePath);
 		}
 	}
 	
@@ -484,7 +497,7 @@ public abstract class TopicModel {
 		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 
-	public double Evaluation() {
+	public double Evaluation(int foldNumber) {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
 		
@@ -508,7 +521,7 @@ public abstract class TopicModel {
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
-			calculatePrecisionRecall();
+			calculatePrecisionRecall(foldNumber);
 
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
@@ -528,7 +541,7 @@ public abstract class TopicModel {
 		debugWriter.close();
 	}
 	
-	public void calculatePrecisionRecall(){
+	public void calculatePrecisionRecall(int foldNumber){
 		int[][] precision_recall = new int [2][2];
 		precision_recall [0][0] = 0; // 0 is for pos
 		precision_recall[0][1] = 0; // 1 is neg 
@@ -577,6 +590,9 @@ public abstract class TopicModel {
 		
 		double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
 		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
+		
+		prosConsPerFold[foldNumber][0]=pros_f1;
+		prosConsPerFold[foldNumber][1]=cons_f1;
 		
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
@@ -674,6 +690,11 @@ public abstract class TopicModel {
 	public void crossValidation(int k) {
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
+		HashMap<Integer, double[]> tpt = new HashMap<Integer, double[]>();
+		
+		prosConsPerFold = new  double[k][2]; // 0 for pros and 1 cons // k is the number of fold
+		for(int a=0; a<k;a++)
+			prosConsPerFold[a][0]=prosConsPerFold[a][1]=0.0;
 		
 		double[] perf;
 		int amazonTrainsetRatingCount[] = {0,0,0,0,0};
@@ -683,7 +704,7 @@ public abstract class TopicModel {
 		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
 		
-		if(m_randomFold==true){
+		/*if(m_randomFold==true){
 			perf = new double[k];
 			m_corpus.shuffle(k);
 			int[] masks = m_corpus.getMasks();
@@ -701,18 +722,159 @@ public abstract class TopicModel {
 				System.out.println("Train Set Size "+m_trainSet.size());
 				System.out.println("Test Set Size "+m_testSet.size());
 
-				normalizeFeature();
+				if(this instanceof HTSM)
+					normalizeFeature();
 				long start = System.currentTimeMillis();
 				EM();
-				perf[i] = Evaluation();
+				perf[i] = Evaluation(i);
 				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-		} else {
+			
+			
+		} */
+		if(m_randomFold==true){
+			
+			perf = new double[k];
+			ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
+			
+			for(_Doc d:m_corpus.getCollection()){
+				if(d.getSourceType()==2)
+					neweggDocs.add(d);
+			}
+			
+			// shuffling only newEgg docs
+			int[] masks = new int [neweggDocs.size()]; 
+			Random rand = new Random();
+			for(int i=0; i< masks.length; i++) {
+				masks[i] = rand.nextInt(k);
+			}
+			
+			//Use this loop to iterate all the k folders, set the train set and test set.
+			for (int i = 0; i < k; i++) {
+				
+				// adding one fold of train and test from newEgg
+				for (int j = 0; j < masks.length; j++) {
+					if( masks[j]==i ){ 
+						m_testSet.add(neweggDocs.get(j));
+					}
+					else{ 
+						m_trainSet.add(neweggDocs.get(j));
+					}
+				}
+				
+				//adding all the data from amazon in trainset
+				int index = 0;
+				
+				for(int a=0; a<=5000;a=a+1000){
+					System.out.println("a:"+ a);
+					
+					if(a!=0){
+						int m = 0;
+						int l = index;
+						for(; l<m_corpus.getCollection().size();l++){
+							_Doc d = m_corpus.getCollection().get(l);
+							if(m>1000)
+								break;
+							if(d.getSourceType()==1){
+								m_trainSet.add(d);
+								m++;
+							}
+							
+						}
+						index = l;
+
+					}
+				
+					System.out.println("Fold number "+i);
+					System.out.println("Train Set Size "+m_trainSet.size());
+					System.out.println("Test Set Size "+m_testSet.size());
+
+					if(this instanceof HTSM)
+						normalizeFeature();
+					long start = System.currentTimeMillis();
+					EM();
+					perf[i] = Evaluation(i);
+					System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+					
+					
+					int precision_recall_local [][] = {{0,0},{0,0}};
+					for(_Doc d: m_testSet){
+						
+						for(int s=0; s<d.getSenetenceSize(); s++){
+							int actualLabel = d.getSentence(s).getSentenceSenitmentLabel();
+							int predictedLabel = d.getSentence(s).getSentencePredictedSenitmentLabel();
+							precision_recall_local[actualLabel][predictedLabel]++;
+						}
+					}
+				    
+				    double pros_precision = (double)precision_recall_local[0][0]/(precision_recall_local[0][0] + precision_recall_local[1][0]);
+					double cons_precision = (double)precision_recall_local[1][1]/(precision_recall_local[0][1] + precision_recall_local[1][1]);
+					
+					double pros_recall = (double)precision_recall_local[0][0]/(precision_recall_local[0][0] + precision_recall_local[0][1]);
+					double cons_recall = (double)precision_recall_local[1][1]/(precision_recall_local[1][0] + precision_recall_local[1][1]);
+					
+					double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
+					double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
+					
+					double result [] = {pros_f1,cons_f1};
+					
+					tpt.put(i+a, result);
+				    
+					System.out.format("%s Train/Test finished in %.2f seconds with pros F1 %.4f and cons F1 %.4f ..\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, pros_f1, cons_f1);
+					infoWriter.format("%s Train/Test finished in %.2f seconds with pros F1 %.4f and cons F1 %.4f ..\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, pros_f1, cons_f1);
+					
+					
+				}// amazon trainSize loop ends
+		
+				m_trainSet.clear();
+				m_testSet.clear();
+			}
+			
+			double trainSizeSum [][] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
+			for(int size = 0; size<=5; size = size+1){
+				for(int fold = 0; fold<k;fold++){
+					double tmp [] = tpt.get(fold+size*1000);
+					trainSizeSum[size][0] += tmp[0];
+					trainSizeSum[size][1] += tmp[1];
+				}
+			}
+			
+			infoWriter.println("Pros F1 Folding Matrix");
+			
+			for(int size = 0; size<=5; size = size+1){
+				for(int fold = 0; fold<k;fold++){
+					infoWriter.print(tpt.get(fold+size*1000)[0]+", ");
+					
+				}
+			}
+			
+			
+			infoWriter.println("\nCons F1 Folding Matrix");
+			
+			for(int size = 0; size<=5; size = size+1){
+				for(int fold = 0; fold<k;fold++){
+					infoWriter.print(tpt.get(fold+size*1000)[1]+", ");
+					
+				}
+			}
+			
+			infoWriter.println();
+			for(int size = 0; size<=5; size = size+1){
+				System.out.println("Train size:"+size*1000 +", Pros F1:"+trainSizeSum[size][0]/k+", Cons F1:"+trainSizeSum[size][1]/k);
+				infoWriter.println("Train size:"+size*1000 +", Pros F1:"+trainSizeSum[size][0]/k+", Cons F1:"+trainSizeSum[size][1]/k);
+				
+			}
+		}
+
+		
+		else {
 			k = 1;
 			perf = new double[k];
-		    int totalNewqEggDoc = 0;
+		    
+			int totalNewqEggDoc = 0;
 		    int totalAmazonDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
 				if(d.getSourceType()==2){
@@ -776,6 +938,15 @@ public abstract class TopicModel {
 				}
 			}
 			
+			if(m_trainSetForASUMJST){
+				System.out.println("Starting Generating File for JST & ASUM");
+				generateFileForJSTASUM();
+				System.out.println("Finished Generating File for JST & ASUM ");
+				System.exit(-1);
+			}
+			
+			
+			
 			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
 			infoWriter.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
 			
@@ -792,10 +963,11 @@ public abstract class TopicModel {
 			System.out.println("Combined Test Set Size "+m_testSet.size());
 			infoWriter.println("Combined Test Set Size "+m_testSet.size());
 			
-			normalizeFeature();
+			if(this instanceof HTSM)
+				normalizeFeature();
 			long start = System.currentTimeMillis();
 			EM();
-			perf[0] = Evaluation();
+			perf[0] = Evaluation(k);
 			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 			infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 			
@@ -807,6 +979,35 @@ public abstract class TopicModel {
 		var = Math.sqrt(var/k);
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
 		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		
+		double prosSum = 0.0;
+		double consSum = 0.0;
+		
+		for(int a=0; a<k;a++){
+			prosSum+=prosConsPerFold[a][0];
+			consSum+=prosConsPerFold[a][1];
+		}
+		
+		double prosMean = prosSum/k;
+		double consMean = consSum/k;
+		
+		double prosVar = 0.0;
+		double consVar = 0.0;
+		
+		for(int a=0; a<k;a++){
+			prosVar+= (prosConsPerFold[a][0] - prosMean)*(prosConsPerFold[a][0] - prosMean);
+			consVar+= (prosConsPerFold[a][1] - consMean)*(prosConsPerFold[a][1] - consMean);
+		}
+		
+		prosVar = Math.sqrt(prosVar/k);
+		consVar = Math.sqrt(consVar/k);
+		
+		infoWriter.format("Cross Validated for %d fold  Pros:%f, Cons:%f\n", k, prosSum/k, consSum/k);
+		infoWriter.format("Cross Validated foe %d fold Pros Var:%f, Cons Var:%f\n",k, prosVar, consVar);
+		
+		System.out.format("Cross Validated for %d fold  Pros:%f, Cons:%f\n", k, prosSum/k, consSum/k);
+		System.out.format("Cross Validated foe %d fold Pros Var:%f, Cons Var:%f\n",k, prosVar, consVar);
+		
 		
 		infoWriter.flush();
 		infoWriter.close();

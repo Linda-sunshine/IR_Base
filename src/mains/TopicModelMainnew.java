@@ -35,8 +35,6 @@ public class TopicModelMainnew {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
 		
 		/*****parameters for the topic models*****/
-		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.9; // negative converge means do need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
@@ -44,22 +42,27 @@ public class TopicModelMainnew {
 		double burnIn = 0.4;
 		boolean display = true;
 		
-		int crossV = 2; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
+		int crossV = 5; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
 		// change topic number and category
+		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		String category = "tablet";
-		int number_of_topics = 30;
+		int number_of_topics = 26;
+		
+		int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
+		
 		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from newEgg
+		
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-		int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
 		int number_of_iteration = 50;
 		int topK = 50;
-		boolean generateTrainTestDataForJSTASUM = false;
+		boolean generateTrainTestDataForJSTASUM = true;
 		boolean sentence = false;
-		boolean debugSentenceTransition = true;
+		boolean debugSentenceTransition = false;
 		
 		if(loadNewEggInTrain==false && trainSize ==0){
 			System.err.println("parameter loadNewEgginTrain must be TRUE if parameter trainSize is 0\n or parameter trainSize should be greater than 0 if parameter loadNewEgginTrain should be FALSE");
@@ -80,7 +83,7 @@ public class TopicModelMainnew {
 		String stnModel = null;
 		String posModel = null;
 		
-		String featureDirectory = "./data/amazon/mainData/"+category+"/"+trainSize+"/";
+		String featureDirectory = "./model/"+topicmodel+"/result/"+category+"/"+trainSize+"/";
 		if(loadNewEggInTrain)
 			featureDirectory += "NewEggLoaded/";
 		else
@@ -106,7 +109,7 @@ public class TopicModelMainnew {
 		String pathToConjunctionWords = "./data/Model/conjunction.txt";
 
 		String FilePath = "./data/amazon/";
-		String resultDirectory = "./result/"+category+"/"+trainSize+"/";
+		String resultDirectory = "./model/"+topicmodel+"/result/"+category+"/"+trainSize+"/";
 		
 		if(loadNewEggInTrain)
 			resultDirectory += "NewEggLoaded/";
@@ -132,7 +135,7 @@ public class TopicModelMainnew {
 		String debugFilePath = null;
 		
 		if(debugSentenceTransition){
-			debugDirectory = "./debug/"+category+"/"+trainSize+"/";
+			debugDirectory = "./model/"+topicmodel+"/debug/"+category+"/"+trainSize+"/";
 			if(loadNewEggInTrain)
 				debugDirectory += "NewEggLoaded/";
 			else
@@ -268,7 +271,8 @@ public class TopicModelMainnew {
 				model.printTopWords(topK, topWordFilePath);
 				model.createWordIntrusionList(wordIntrusionFilePath);
 				String topicWiseFEaturesFilePath =  resultDirectory + "Topics_" + number_of_topics + "_TopicWiseFeature.txt";
-				((HTMM)model).printTopFeaturesSet(topK, featureSet, topicWiseFEaturesFilePath);
+				if(topicmodel.equalsIgnoreCase("LRHTSM"))
+					((HTMM)model).printTopFeaturesSet(topK, featureSet, topicWiseFEaturesFilePath);
 			}
 			
 			if (sentence) {
@@ -284,7 +288,7 @@ public class TopicModelMainnew {
 					((HTMM)model).docSummary(tvProductList);
 			}
 			
-			if(debugSentenceTransition){
+			if(debugSentenceTransition && topicmodel.equalsIgnoreCase("LRHTSM")){
 				model.debugOutputWrite();
 			}
 			if(topicmodel.equals("LRHTSM")){
