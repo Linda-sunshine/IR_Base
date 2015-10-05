@@ -121,7 +121,8 @@ public abstract class BaseClassifier {
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 				m_debugWriter.write(this.toString() + "\n");
 			}
-			c.shuffle(k);
+//			c.shuffle(k);
+			c.mastInOrder(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.

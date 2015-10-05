@@ -24,4 +24,21 @@ Keywords for <keyboard>: 26
 Keywords for <usb>: 35
 Keywords for <servic>: 49
 Loading 614 stopwords from ./data/Model/stopwords.dat
-DT
+DTLoading 16776 reviews from ./data/amazon/small/dedup/RawData
+No normalizaiton is adopted here or wrong parameters!!
+Text feature generated for 16776 documents...
+2082 1104 1325 3146 9119 , Total: 16776
+Info File Path: ./data/result/Topics_30Information.txt
+Prior keywords for Topic 0 (<screen>): 52/52
+Prior keywords for Topic 1 (<app>): 55/55
+Prior keywords for Topic 2 (<price>): 63/63
+Prior keywords for Topic 3 (<battery>): 60/60
+Prior keywords for Topic 4 (<sound>): 23/23
+Prior keywords for Topic 5 (<camera>): 47/47
+Prior keywords for Topic 6 (<cpu>): 46/46
+Prior keywords for Topic 7 (<microsd>): 44/44
+Prior keywords for Topic 8 (<internet>): 46/46
+Prior keywords for Topic 9 (<keyboard>): 26/26
+Prior keywords for Topic 10 (<usb>): 35/35
+Prior keywords for Topic 11 (<servic>): 49/50
+......

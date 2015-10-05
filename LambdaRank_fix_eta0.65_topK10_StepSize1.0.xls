@@ -1,0 +1,599 @@
+
+--------------------------------------------------------------------------------------
+Parameters of learning procedure:
+#Class: 5	Ngram: 2	Feature value: TF	Normalization: 2
+Doc length cut: 10	Window length: 0
+Learning paradigm: SEMI	Sampling rate: 0.25	kUL: 100	kUU: 50
+alpha: 1.05	beta: 1.01
+Solver: Random Walk	Base Classifer: SVM	Weighted Sum: true	Similarity Weight: false
+Classifier: SVM	Instance weighting: NONE	Trade-off Parameter: 1.0	Cross validation: 10
+Data directory: ./data/amazon/small/dedup/RawData
+--------------------------------------------------------------------------------------
+Creating feature vectors, wait...
+8055 feature words loaded from ./data/Features/fv_2gram_tablets_86jsons.txt...
+Keywords for <screen>: 52
+Keywords for <app>: 55
+Keywords for <price>: 63
+Keywords for <battery>: 60
+Keywords for <sound>: 23
+Keywords for <camera>: 47
+Keywords for <cpu>: 46
+Keywords for <microsd>: 44
+Keywords for <internet>: 46
+Keywords for <keyboard>: 26
+Keywords for <usb>: 35
+Keywords for <servic>: 49
+Loading 614 stopwords from ./data/Model/stopwords.dat
+DTLoading 16776 reviews from ./data/amazon/small/dedup/RawData
+No normalizaiton is adopted here or wrong parameters!!
+Text feature generated for 16776 documents...
+2082 1104 1325 3146 9119 , Total: 16776
+Info File Path: ./data/result/Topics_30Information.txt
+Prior keywords for Topic 0 (<screen>): 52/52
+Prior keywords for Topic 1 (<app>): 55/55
+Prior keywords for Topic 2 (<price>): 63/63
+Prior keywords for Topic 3 (<battery>): 60/60
+Prior keywords for Topic 4 (<sound>): 23/23
+Prior keywords for Topic 5 (<camera>): 47/47
+Prior keywords for Topic 6 (<cpu>): 46/46
+Prior keywords for Topic 7 (<microsd>): 44/44
+Prior keywords for Topic 8 (<internet>): 46/46
+Prior keywords for Topic 9 (<keyboard>): 26/26
+Prior keywords for Topic 10 (<usb>): 35/35
+Prior keywords for Topic 11 (<servic>): 49/50
+..........Likelihood 16776.000 after step 100 converge to 0.000000 after 21 seconds...
+Text feature generated for 16776 documents...
+2082 1104 1325 3146 9119 , Total: 16776
+Start Transductive Learning, wait...
+------Parameters--------
+Learning ratio: 1.000	KUL:20	KUU:20	alpha:1.000	beta:1.000
+eta:0.650	topK:10	noiseRatio:1.500	ranker:1
+lambda:1.000	shrinkage:0.980	stepSize:1.000	windowsize:20	maxIteration:100
+.*
+optimization finished, #iter = 18
+Objective value = -1214.25
+nSV = 2424
+Creating cache for labeled documents...
+Generate 449492(1530:1591) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	193683	-619025.00	0.6586
+1	193382	-618991.30	0.6591
+2	193458	-618999.71	0.6590
+3	193671	-619021.88	0.6586
+4	193520	-619003.54	0.6589
+5	193968	-619054.81	0.6582
+6	193778	-619030.74	0.6585
+7	193549	-619003.69	0.6588
+8	193722	-619028.87	0.6585
+9	193310	-618996.43	0.6592
+10	193367	-619011.37	0.6592
+11	193402	-618981.86	0.6591
+12	193323	-618990.35	0.6591
+13	193586	-619020.10	0.6587
+14	193692	-619021.83	0.6586
+15	193798	-619027.42	0.6584
+16	193496	-619000.76	0.6589
+17	193606	-619009.68	0.6588
+18	193298	-619002.42	0.6591
+[Info]Training procedure takes 68.14 seconds to finish...
+0.02274 -0.04990 0.03309 -0.03042 0.01433 -0.00055 0.03322 0.06800 0.00114 0.00631 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3442, U: 13334
+Construct nearest neighbor graph edges in parallel: L: 3442, U: 13334
+[4998,6664) finished...
+[1666,3332) finished...
+[0,1666) finished...
+[3332,4998) finished...
+[11662,13334) finished...
+[8330,9996) finished...
+[6664,8330) finished...
+[9996,11662) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.242 with accuracy 0.7899...
+Iteration 2, converge to 0.013 with accuracy 0.7890...
+Iteration 3, converge to 0.001 with accuracy 0.7891...
+Iteration 4, converge to 0.000 with accuracy 0.7890...
+Iteration 5, converge to 0.000 with accuracy 0.7890...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.735	0.733	0.729
+Pos	L	0.655	0.651	0.647
+Neg	U	0.552	0.546	0.536
+Neg	L	0.567	0.555	0.548
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 291.80 seconds with accuracy 0.7890 and F1 (0:0.758 1:0.813)...
+.*
+optimization finished, #iter = 18
+Objective value = -1210.86
+nSV = 2384
+Creating cache for labeled documents...
+Generate 447572(1540:1574) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	191742	-615836.68	0.6637
+1	192005	-615872.92	0.6634
+2	191365	-615805.91	0.6642
+3	191428	-615804.82	0.6642
+4	191237	-615792.05	0.6644
+5	191454	-615820.00	0.6641
+6	191845	-615846.89	0.6636
+7	191428	-615810.26	0.6642
+8	191182	-615796.24	0.6645
+9	191715	-615835.40	0.6637
+10	191369	-615809.90	0.6642
+11	191708	-615825.23	0.6637
+12	191378	-615808.46	0.6642
+13	191418	-615810.51	0.6641
+14	191511	-615807.32	0.6640
+15	190911	-615784.11	0.6648
+16	191701	-615836.38	0.6638
+17	191303	-615802.22	0.6643
+18	191450	-615818.89	0.6641
+19	191063	-615779.36	0.6646
+[Info]Training procedure takes 73.32 seconds to finish...
+0.02494 -0.05488 0.03482 -0.03443 0.01572 -0.00051 0.03840 0.06524 0.00014 -0.00168 0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3424, U: 13352
+Construct nearest neighbor graph edges in parallel: L: 3424, U: 13352
+[5007,6676) finished...
+[1669,3338) finished...
+[3338,5007) finished...
+[0,1669) finished...
+[8345,10014) finished...
+[11683,13352) finished...
+[6676,8345) finished...
+[10014,11683) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.235 with accuracy 0.7925...
+Iteration 2, converge to 0.013 with accuracy 0.7910...
+Iteration 3, converge to 0.001 with accuracy 0.7915...
+Iteration 4, converge to 0.000 with accuracy 0.7914...
+Iteration 5, converge to 0.000 with accuracy 0.7913...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.782	0.781	0.778
+Pos	L	0.688	0.684	0.678
+Neg	U	0.504	0.495	0.485
+Neg	L	0.540	0.531	0.524
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 290.94 seconds with accuracy 0.7913 and F1 (0:0.752 1:0.820)...
+.*
+optimization finished, #iter = 18
+Objective value = -1182.25
+nSV = 2352
+Creating cache for labeled documents...
+Generate 442194(1510:1557) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	189715	-609196.95	0.6629
+1	189582	-609193.28	0.6630
+2	189439	-609188.73	0.6632
+3	190331	-609225.53	0.6620
+4	190027	-609206.39	0.6623
+5	190110	-609213.27	0.6623
+6	190397	-609227.14	0.6619
+7	190217	-609220.69	0.6621
+8	190340	-609226.36	0.6620
+9	190252	-609218.91	0.6621
+10	190314	-609232.79	0.6621
+11	190023	-609206.40	0.6624
+12	190339	-609236.17	0.6620
+13	190237	-609225.68	0.6621
+14	190372	-609245.12	0.6620
+15	190741	-609266.74	0.6616
+16	190130	-609214.82	0.6622
+17	189921	-609205.60	0.6625
+[Info]Training procedure takes 66.49 seconds to finish...
+0.02322 -0.05162 0.03898 -0.02507 0.01467 -0.00055 0.03870 0.06200 0.00104 -0.00579 0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3381, U: 13395
+Construct nearest neighbor graph edges in parallel: L: 3381, U: 13395
+[5022,6696) finished...
+[1674,3348) finished...
+[0,1674) finished...
+[3348,5022) finished...
+[6696,8370) finished...
+[11718,13395) finished...
+[8370,10044) finished...
+[10044,11718) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.232 with accuracy 0.7842...
+Iteration 2, converge to 0.013 with accuracy 0.7848...
+Iteration 3, converge to 0.001 with accuracy 0.7849...
+Iteration 4, converge to 0.000 with accuracy 0.7849...
+Iteration 5, converge to 0.000 with accuracy 0.7849...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.795	0.791	0.787
+Pos	L	0.710	0.703	0.696
+Neg	U	0.493	0.485	0.477
+Neg	L	0.523	0.515	0.508
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 289.71 seconds with accuracy 0.7849 and F1 (0:0.743 1:0.815)...
+.*
+optimization finished, #iter = 17
+Objective value = -1179.46
+nSV = 2389
+Creating cache for labeled documents...
+Generate 418026(1398:1525) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	181021	-576147.62	0.6535
+1	181351	-576150.59	0.6531
+2	181572	-576140.67	0.6527
+3	181955	-576158.07	0.6524
+4	181979	-576162.05	0.6523
+5	181617	-576140.10	0.6526
+6	181440	-576146.71	0.6529
+7	181640	-576139.06	0.6525
+8	181611	-576147.50	0.6527
+9	180962	-576150.62	0.6536
+10	181597	-576151.43	0.6527
+11	181501	-576128.20	0.6528
+12	182151	-576176.08	0.6521
+13	182170	-576176.39	0.6520
+14	181934	-576160.40	0.6524
+15	181376	-576141.62	0.6530
+16	181442	-576134.10	0.6529
+17	182145	-576177.31	0.6521
+18	181471	-576143.25	0.6529
+[Info]Training procedure takes 66.59 seconds to finish...
+0.02099 -0.04908 0.03604 -0.02293 0.01303 -0.00053 0.02839 0.06310 0.00077 0.00619 0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3356, U: 13420
+Construct nearest neighbor graph edges in parallel: L: 3356, U: 13420
+[5031,6708) finished...
+[1677,3354) finished...
+[0,1677) finished...
+[3354,5031) finished...
+[11739,13420) finished...
+[8385,10062) finished...
+[6708,8385) finished...
+[10062,11739) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.238 with accuracy 0.7873...
+Iteration 2, converge to 0.013 with accuracy 0.7862...
+Iteration 3, converge to 0.001 with accuracy 0.7864...
+Iteration 4, converge to 0.000 with accuracy 0.7864...
+Iteration 5, converge to 0.000 with accuracy 0.7864...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.747	0.742	0.737
+Pos	L	0.668	0.665	0.661
+Neg	U	0.540	0.534	0.522
+Neg	L	0.562	0.548	0.539
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 286.86 seconds with accuracy 0.7864 and F1 (0:0.751 1:0.813)...
+..*
+optimization finished, #iter = 25
+Objective value = -1116.62
+nSV = 2313
+Creating cache for labeled documents...
+Generate 407838(1394:1462) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	176661	-562311.06	0.6594
+1	176862	-562346.67	0.6591
+2	176562	-562307.28	0.6595
+3	176750	-562325.16	0.6593
+4	176836	-562339.89	0.6592
+5	176529	-562304.05	0.6596
+6	176670	-562322.52	0.6594
+7	176489	-562304.82	0.6597
+8	176244	-562279.47	0.6600
+9	176645	-562309.02	0.6594
+10	176298	-562281.00	0.6600
+11	176314	-562288.82	0.6600
+12	176622	-562308.96	0.6594
+13	176719	-562321.57	0.6593
+14	176656	-562309.02	0.6594
+15	176441	-562293.49	0.6597
+[Info]Training procedure takes 53.95 seconds to finish...
+0.02132 -0.04986 0.02984 -0.02201 0.01310 -0.00040 0.02967 0.06670 0.00003 0.00741 0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3280, U: 13496
+Construct nearest neighbor graph edges in parallel: L: 3280, U: 13496
+[5061,6748) finished...
+[1687,3374) finished...
+[0,1687) finished...
+[3374,5061) finished...
+[11809,13496) finished...
+[8435,10122) finished...
+[10122,11809) finished...
+[6748,8435) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.235 with accuracy 0.7834...
+Iteration 2, converge to 0.013 with accuracy 0.7823...
+Iteration 3, converge to 0.001 with accuracy 0.7822...
+Iteration 4, converge to 0.000 with accuracy 0.7822...
+Iteration 5, converge to 0.000 with accuracy 0.7822...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.757	0.754	0.752
+Pos	L	0.673	0.670	0.665
+Neg	U	0.530	0.520	0.510
+Neg	L	0.555	0.547	0.537
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 270.20 seconds with accuracy 0.7822 and F1 (0:0.743 1:0.811)...
+..*
+optimization finished, #iter = 21
+Objective value = -1143.61
+nSV = 2313
+Creating cache for labeled documents...
+Generate 410064(1414:1438) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	176800	-565041.75	0.6583
+1	176576	-565019.85	0.6586
+2	176784	-565034.46	0.6585
+3	176741	-565034.23	0.6584
+4	176959	-565043.16	0.6581
+5	176730	-565034.01	0.6584
+6	176544	-565014.75	0.6587
+7	177037	-565055.03	0.6580
+8	176760	-565029.45	0.6585
+9	176753	-565022.26	0.6585
+10	176459	-565016.66	0.6588
+11	177091	-565070.42	0.6579
+12	176700	-565030.98	0.6585
+[Info]Training procedure takes 43.24 seconds to finish...
+0.02107 -0.04799 0.02836 -0.02829 0.01340 -0.00048 0.03131 0.06635 0.00047 0.00138 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3238, U: 13538
+Construct nearest neighbor graph edges in parallel: L: 3238, U: 13538
+[5076,6768) finished...
+[1692,3384) finished...
+[0,1692) finished...
+[3384,5076) finished...
+[6768,8460) finished...
+[11844,13538) finished...
+[10152,11844) finished...
+[8460,10152) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.232 with accuracy 0.7839...
+Iteration 2, converge to 0.013 with accuracy 0.7839...
+Iteration 3, converge to 0.001 with accuracy 0.7839...
+Iteration 4, converge to 0.000 with accuracy 0.7839...
+Iteration 5, converge to 0.000 with accuracy 0.7839...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.790	0.788	0.783
+Pos	L	0.691	0.685	0.677
+Neg	U	0.499	0.487	0.477
+Neg	L	0.540	0.533	0.524
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 265.13 seconds with accuracy 0.7839 and F1 (0:0.739 1:0.816)...
+.*
+optimization finished, #iter = 19
+Objective value = -1216.83
+nSV = 2402
+Creating cache for labeled documents...
+Generate 430800(1478:1517) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	186588	-593406.11	0.6571
+1	186474	-593398.70	0.6573
+2	186108	-593376.14	0.6578
+3	186285	-593390.44	0.6575
+4	186385	-593394.81	0.6575
+5	186016	-593378.20	0.6579
+6	186109	-593383.90	0.6578
+7	186451	-593398.67	0.6574
+8	186619	-593407.65	0.6571
+9	186456	-593401.38	0.6574
+10	186642	-593417.35	0.6572
+11	186642	-593417.81	0.6572
+12	186363	-593381.41	0.6575
+[Info]Training procedure takes 46.14 seconds to finish...
+0.02139 -0.04872 0.04096 -0.02952 0.01375 -0.00063 0.03027 0.06531 0.00159 -0.00128 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3366, U: 13410
+Construct nearest neighbor graph edges in parallel: L: 3366, U: 13410
+[5028,6704) finished...
+[1676,3352) finished...
+[0,1676) finished...
+[3352,5028) finished...
+[6704,8380) finished...
+[8380,10056) finished...
+[11732,13410) finished...
+[10056,11732) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.239 with accuracy 0.7831...
+Iteration 2, converge to 0.013 with accuracy 0.7838...
+Iteration 3, converge to 0.001 with accuracy 0.7837...
+Iteration 4, converge to 0.000 with accuracy 0.7837...
+Iteration 5, converge to 0.000 with accuracy 0.7837...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.763	0.760	0.757
+Pos	L	0.677	0.673	0.668
+Neg	U	0.520	0.510	0.498
+Neg	L	0.534	0.527	0.519
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 269.04 seconds with accuracy 0.7837 and F1 (0:0.747 1:0.811)...
+..*
+optimization finished, #iter = 21
+Objective value = -1256.13
+nSV = 2450
+Creating cache for labeled documents...
+Generate 444436(1483:1590) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	192964	-612565.22	0.6564
+1	193765	-612605.25	0.6554
+2	193656	-612579.28	0.6555
+3	193490	-612566.81	0.6557
+4	193178	-612560.05	0.6561
+5	193561	-612600.07	0.6556
+6	193253	-612571.57	0.6560
+7	192737	-612562.58	0.6566
+8	193067	-612562.88	0.6563
+9	192952	-612549.78	0.6564
+[Info]Training procedure takes 37.00 seconds to finish...
+0.02046 -0.04728 0.03922 -0.02583 0.01302 -0.00050 0.03185 0.05981 0.00244 -0.00070 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3430, U: 13346
+Construct nearest neighbor graph edges in parallel: L: 3430, U: 13346
+[5004,6672) finished...
+[1668,3336) finished...
+[3336,5004) finished...
+[0,1668) finished...
+[11676,13346) finished...
+[8340,10008) finished...
+[6672,8340) finished...
+[10008,11676) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.239 with accuracy 0.7835...
+Iteration 2, converge to 0.013 with accuracy 0.7826...
+Iteration 3, converge to 0.001 with accuracy 0.7826...
+Iteration 4, converge to 0.000 with accuracy 0.7826...
+Iteration 5, converge to 0.000 with accuracy 0.7825...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.749	0.746	0.744
+Pos	L	0.677	0.672	0.665
+Neg	U	0.541	0.529	0.518
+Neg	L	0.550	0.538	0.528
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 257.04 seconds with accuracy 0.7825 and F1 (0:0.749 1:0.808)...
+..*
+optimization finished, #iter = 23
+Objective value = -1210.03
+nSV = 2404
+Creating cache for labeled documents...
+Generate 428136(1432:1530) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	186983	-590589.39	0.6514
+1	187218	-590584.77	0.6511
+2	186481	-590629.20	0.6517
+3	187668	-590597.34	0.6505
+4	187180	-590588.43	0.6510
+5	187219	-590582.12	0.6511
+6	187303	-590587.41	0.6510
+7	187054	-590588.67	0.6512
+8	187711	-590584.65	0.6505
+9	187295	-590588.10	0.6510
+10	186694	-590616.06	0.6516
+11	187856	-590601.05	0.6505
+12	186726	-590600.50	0.6515
+[Info]Training procedure takes 22.14 seconds to finish...
+0.02059 -0.04668 0.02944 -0.01322 0.01262 -0.00049 0.03160 0.06077 0.00029 0.00026 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3307, U: 13469
+Construct nearest neighbor graph edges in parallel: L: 3307, U: 13469
+[5049,6732) finished...
+[1683,3366) finished...
+[0,1683) finished...
+[3366,5049) finished...
+[11781,13469) finished...
+[6732,8415) finished...
+[10098,11781) finished...
+[8415,10098) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.233 with accuracy 0.7811...
+Iteration 2, converge to 0.013 with accuracy 0.7797...
+Iteration 3, converge to 0.001 with accuracy 0.7797...
+Iteration 4, converge to 0.000 with accuracy 0.7796...
+Iteration 5, converge to 0.000 with accuracy 0.7796...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.768	0.764	0.760
+Pos	L	0.686	0.681	0.672
+Neg	U	0.534	0.526	0.512
+Neg	L	0.558	0.551	0.542
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 147.98 seconds with accuracy 0.7796 and F1 (0:0.742 1:0.808)...
+..*
+optimization finished, #iter = 22
+Objective value = -1191.31
+nSV = 2384
+Creating cache for labeled documents...
+Generate 431196(1462:1530) ranking pairs for L2R model training...
+[Info]LambdaRank configuration:
+	Optimization Type OT_MAP, Lambda 1.000, Shrinkage 0.980, WindowSize 20
+	Initial step size 1.00000, Steps 100, Iteration 10
+Iter	Misorder	LogLilikelihood	Perf
+0	187750	-594133.47	0.6498
+1	187863	-594136.22	0.6497
+2	188071	-594146.35	0.6493
+3	188328	-594173.27	0.6490
+4	187416	-594128.99	0.6504
+5	188001	-594142.66	0.6495
+6	187929	-594136.85	0.6496
+7	188012	-594134.69	0.6495
+8	187834	-594134.32	0.6497
+9	188019	-594148.72	0.6495
+10	188000	-594143.00	0.6495
+11	188168	-594158.04	0.6492
+12	188051	-594145.53	0.6494
+13	187661	-594127.79	0.6501
+14	187766	-594125.10	0.6498
+15	188029	-594146.09	0.6494
+16	187581	-594129.49	0.6502
+17	187739	-594128.49	0.6499
+18	188251	-594163.84	0.6491
+19	187776	-594125.36	0.6498
+[Info]Training procedure takes 34.04 seconds to finish...
+0.02064 -0.04610 0.02504 -0.02768 0.01305 -0.00053 0.03444 0.06435 0.00023 0.00582 -0.00000 
+Construct nearest neighbor graph nodes in parallel: L: 3328, U: 13448
+Construct nearest neighbor graph edges in parallel: L: 3328, U: 13448
+[5043,6724) finished...
+[1681,3362) finished...
+[0,1681) finished...
+[3362,5043) finished...
+[8405,10086) finished...
+[11767,13448) finished...
+[6724,8405) finished...
+[10086,11767) finished...
+Nearest neighbor graph construction finished!
+Random walk starts:
+Iteration 1, converge to 0.239 with accuracy 0.7881...
+Iteration 2, converge to 0.013 with accuracy 0.7875...
+Iteration 3, converge to 0.001 with accuracy 0.7875...
+Iteration 4, converge to 0.000 with accuracy 0.7876...
+Iteration 5, converge to 0.000 with accuracy 0.7876...
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.741	0.736	0.733
+Pos	L	0.660	0.657	0.650
+Neg	U	0.557	0.547	0.537
+Neg	L	0.573	0.563	0.550
+
+Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] Train/Test finished in 159.94 seconds with accuracy 0.7876 and F1 (0:0.755 1:0.813)...
+*************************************************
+The final result of Gaussian Fields by random walk [C:SVM[C:2, F:8055, T:L2R_L1LOSS_SVC_DUAL, c:1.000], k:20, k':20, r:1.000, alpha:1.000, beta:1.000, eta:0.650]-[LambdaRank@MAP] is as follows:
+The total number of classes is 2
+Class 0:	precision(0.805+/-0.013)	recall(0.698+/-0.017)
+Class 1:	precision(0.772+/-0.008)	recall(0.858+/-0.014)
+	0	1	P
+0	42777	10361	0.8050
+1	18479	62591	0.7721
+R	0.6983	0.8580	0.7851
+F1	0.7479	0.8128
+
+Query	Docs	P@5	P@10	P@20
+Pos	U	0.763	0.759	0.756
+Pos	L	0.679	0.674	0.668
+Neg	U	0.527	0.518	0.507
+Neg	L	0.550	0.541	0.532
+

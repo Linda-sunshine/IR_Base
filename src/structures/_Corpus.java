@@ -108,6 +108,12 @@ public class _Corpus {
 		}
 	}
 	
+	//Assign the masks in order for each document.
+	public void mastInOrder(int k){
+		for(int i=0; i< m_mask.length; i++){
+			this.m_mask[i] = i % k;
+		}
+	}
 	//Add a new doc to the corpus.
 	public void addDoc(_Doc doc){
 		m_collection.add(doc);

@@ -1,21 +1,21 @@
 #!/bin/sh
 #tune lambda
-for k in 0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -lmd4l2r $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_eta0.65_topK10_Lambda"$k".output
+for k in 0.2 0.4 0.6 0.8 1.0 1.2 
+	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -lmd4l2r $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_fix_eta0.65_topK10_Lambda"$k".xls
 done 
 #tune step size
 for k in 1.0 0.1 0.01 0.001 0.0001 
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -step $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_eta0.65_topK10_StepSize"$k".output
+	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -step $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_fix_eta0.65_topK10_StepSize"$k".xls
 done 
 #tune max iteration
 for k in 100 200 300 400 500 600 
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -maxIter $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_eta0.65_topK10_MaxIteration"$k".output
+	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -maxIter $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_fix_eta0.65_topK10_MaxIteration"$k".xls
 done 
 #tune shrinkage
-for k in 0.98 0.96 0.94 0.92 0.9 0.88 
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -sk $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_eta0.65_topK10_Shrinkage"$k".output
+for k in 0.98 0.96 0.94 0.92 0.9 0.88 0.86 
+	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -sk $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_fix_eta0.65_topK10_Shrinkage"$k".xls
 done 
 #tune window size 
 for k in 0 20 40 60 80 100 120 140 
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -rankW $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_eta0.65_topK10_WindowSize"$k".output
+	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -rankW $k -eta 0.65 -topK 10 ./data/amazon/small/dedup/RawData | tee LambdaRank_fix_eta0.65_topK10_WindowSize"$k".xls
 done 

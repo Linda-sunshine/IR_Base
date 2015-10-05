@@ -327,7 +327,10 @@ public class _Doc implements Comparable<_Doc> {
 		}
 		Utils.randomize(m_sstat, alpha);
 	}
-	
+	//added by Lin, if we have the generated topics, set it to the document.
+	public void setTopics(double[] t){
+		m_topics = t;
+	}
 	public double[] getTopics(){
 		return m_topics;
 	}

@@ -120,32 +120,36 @@ public class DocumentSelectionMain {
 			analyzer.setFeatureValues("TF", 0);		
 			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-			pLSA tModel = null;
-			if (topicmodel.equals("pLSA")) {			
-				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-						lambda, number_of_topics, alpha);
-			} else if (topicmodel.equals("LDA_Gibbs")) {		
-				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-					lambda, number_of_topics, alpha, 0.4, 50);
-			}  else if (topicmodel.equals("LDA_Variational")) {		
-				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-						lambda, number_of_topics, alpha, 10, -1);
-			} else {
-				System.out.println("The selected topic model has not developed yet!");
-				return;
-			}
-		
-			tModel.setDisplay(true);
-			tModel.setInforWriter(infoFilePath);
-			tModel.setSentiAspectPrior(true);
-			tModel.LoadPrior(aspectlist, eta);
-			tModel.EMonCorpus();	
+//			pLSA tModel = null;
+//			if (topicmodel.equals("pLSA")) {			
+//				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+//						lambda, number_of_topics, alpha);
+//			} else if (topicmodel.equals("LDA_Gibbs")) {		
+//				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+//					lambda, number_of_topics, alpha, 0.4, 50);
+//			}  else if (topicmodel.equals("LDA_Variational")) {		
+//				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+//						lambda, number_of_topics, alpha, 10, -1);
+//			} else {
+//				System.out.println("The selected topic model has not developed yet!");
+//				return;
+//			}
+//		
+//			tModel.setDisplay(true);
+//			tModel.setInforWriter(infoFilePath);
+//			tModel.setSentiAspectPrior(true);
+//			tModel.LoadPrior(aspectlist, eta);
+//			tModel.EMonCorpus();	
 
 		}
+		String topicFile = "./data/topicVectors";
+//		analyzer.saveTopicVectors(topicFile);
+		
+		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-//		c.mapLabels(4);
+		c.mapLabels(4);
 //		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
 		
 //		/************LCS Write and Read operations.***************/
@@ -211,31 +215,31 @@ public class DocumentSelectionMain {
 //				printer.close();
 //			}
 //		}
-		int noClusters = 200; 
-		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
-		kmeans.train(c.getCollection());
-		kmeans.tranferClusters2Docs();
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
-		
-		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
-		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
-
-		kmeans.writeStat(kmeansStatFile);
-		kmeans.writeContent(kmeansContentFile);
-		c.mapLabels(4); //Do kmeans first, then map the labels.
-		
+//		int noClusters = 200; 
+//		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
+//		kmeans.train(c.getCollection());
+//		kmeans.tranferClusters2Docs();
+//		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+//		
+//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
+//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
+//
+//		kmeans.writeStat(kmeansStatFile);
+//		kmeans.writeContent(kmeansContentFile);
+//		c.mapLabels(4); //Do kmeans first, then map the labels.
+//		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.9; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
-			int topK = 1;
-			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
-			int ranker = 1;//0-RankSVM; 1-lambda rank.
+			int topK = 20;
+			double noiseRatio = 0, negRatio = 1; //0.5, 1, 1.5, 2
+			int ranker = 0;//0-RankSVM; 1-lambda rank.
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
@@ -255,7 +259,7 @@ public class DocumentSelectionMain {
 			}
 			mySemi.setSimilarity(simFlag);
 			mySemi.setDebugOutput(debugOutput);
-			((L2RMetricLearning) mySemi).setClusters(clusters);
+//			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
 		} else if (style.equals("SUP")) {

@@ -468,4 +468,45 @@ public abstract class Analyzer {
 		System.out.format("LCS map has %d pairs.\n", m_LCSMap.size());
 		return m_LCSMap;
 	}
+	
+	public void saveTopicVectors(String filename) throws FileNotFoundException {
+		if(filename == null || filename.isEmpty())
+			return;
+		PrintWriter writer = new PrintWriter(new File(filename));
+		for(_Doc d: m_corpus.getCollection()){
+			writer.write(d.getID()+"\t");
+			for(double v: d.m_topics){
+				writer.write(v+"\t");
+			}
+			writer.write("\n");
+		}
+		writer.close();
+	}
+	
+	public void loadTopicVectors(String filename, int topicNu){
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			int index = 0;
+			double[] topicVector;
+			while ((line = reader.readLine()) != null) {
+				String[] topics = line.split("\t");
+				if(topics.length == (topicNu+1)){
+					index = Integer.valueOf(topics[0]);
+					topicVector = new double[topicNu];
+					for(int i=1; i < topicNu; i++)
+						topicVector[i-1] = Double.valueOf(topics[i]);
+					m_corpus.getCollection().get(index).setTopics(topicVector);
+				} else 
+					System.out.println("The dimension of topic vector is wrong!");
+			}
+			reader.close();
+			System.out.format("%d topic vectors loaded from %s...\n", index+1 , filename);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
 }

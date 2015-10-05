@@ -57,6 +57,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_tradeoff = 1.0;
 		m_ranker = 0; // default ranker is rankSVM
 		m_queryRatio = 1.0;
+		m_documentRatio = 2;
 	}
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
@@ -71,6 +72,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_ranker = ranker;
 		m_multithread = multithread;
 		m_queryRatio = 1.0;
+		m_documentRatio = 2;
 	}
 	
 	//In lambdaRank, the tradeoff = lambda.added by Lin.
@@ -277,7 +279,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
 				if (i!=j) {
 					dj = m_trainSet.get(j);
-					if (Math.random()<0.02 && !neighbors.contains(dj)) {
+					//if (Math.random()<0.02 && !neighbors.contains(dj)) {
+					if(!neighbors.contains(dj)){
 						neighbors.add(dj);
 						if (di.getYLabel() == dj.getYLabel())
 							relevant ++;
@@ -290,7 +293,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ) || (di.getYLabel()==1 && relevant/irrelevant > m_documentRatio)){
+				|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ)){
+				//|| (di.getYLabel()==1 && relevant/irrelevant > m_documentRatio)
 				//clear the cache for next query
 				simRanker.clear();
 				neighbors.clear();
@@ -307,7 +311,9 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			//construct features for the most similar documents with respect to the query di
 			for(_Doc d:neighbors)
 				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
+//			int nu = q.createRankingPairs();
 			pairSize += q.createRankingPairs();
+//			System.out.format("newly created size %d, total pairSize %d\n", nu, pairSize);
 			
 			//clear the cache for next query
 			simRanker.clear();

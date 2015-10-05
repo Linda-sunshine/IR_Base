@@ -78,7 +78,7 @@ public class LambdaRankParallel extends LambdaRank {
 		// Step 0: output the settings
 		System.out.println("[Info]LambdaRank configuration:");
 		System.out.format("\tOptimization Type %s, Lambda %.3f, Shrinkage %.3f, WindowSize %d\n", m_oType, m_lambda, shrinkage, windowSize);
-		System.out.format("\tInitial step size %.1f, Steps %d, Iteration %d\n", initStep, maxIter, iteration);
+		System.out.format("\tInitial step size %.5f, Steps %d, Iteration %d\n", initStep, maxIter, iteration);
 		System.out.println("Iter\tMisorder\tLogLilikelihood\tPerf");
 		
 		// Step 1: setup the workers

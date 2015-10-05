@@ -143,7 +143,8 @@ class LambdaRankWorker implements Runnable {
 				for(i=0; i<m_weight.length; i++)
 					m_g[i] = m_g[i]/pSize + m_lambda * m_weight[i];
 				
-				mu = Math.random()*m_step;
+				//mu = Math.random()*m_step;
+				mu = 0.1;
 				for(i=0; i<m_weight.length; i++)
 					m_weight[i] -= mu * m_g[i];
 			}			
