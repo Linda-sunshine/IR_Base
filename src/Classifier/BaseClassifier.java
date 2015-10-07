@@ -246,7 +246,7 @@ public abstract class BaseClassifier {
 					//adding all the data from amazon in trainset
 					int index = 0;
 					
-					for(int a=0; a<=5000;a=a+1000){
+					for(int a=0; a<=25000;a=a+5000){
 						System.out.println("a:"+ a);
 						
 						if(a!=0){
@@ -254,7 +254,7 @@ public abstract class BaseClassifier {
 							int l = index;
 							for(; ;l++){
 								_Doc d = m_corpus.getCollection().get(l);
-								if(m>1000)
+								if(m>5000)
 									break;
 								if(d.getSourceType()==1){
 									m_trainSet.add(d);
@@ -395,7 +395,7 @@ public abstract class BaseClassifier {
 			double trainSizeSum [][] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
 			for(int size = 0; size<=5; size = size+1){
 				for(int fold = 0; fold<k;fold++){
-					double tmp [] = tpt.get(fold+size*1000);
+					double tmp [] = tpt.get(fold+size*5000);
 					trainSizeSum[size][0] += tmp[0];
 					trainSizeSum[size][1] += tmp[1];
 				}

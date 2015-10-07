@@ -306,7 +306,7 @@ public class HTMM extends pLSA {
 	public void docSummary(String[] productList){
 		for(String prodID : productList) {
 			for(int i=0; i<this.number_of_topics; i++){
-				MyPriorityQueue<_RankItem> stnQueue = new MyPriorityQueue<_RankItem>(3);//top three sentences per topic per product
+				MyPriorityQueue<_RankItem> stnQueue = new MyPriorityQueue<_RankItem>(25);//top twenty five sentences per topic per product
 				
 				for(_Doc d:m_trainSet) {
 					if(d.getItemID().equalsIgnoreCase(prodID)) {
@@ -322,11 +322,16 @@ public class HTMM extends pLSA {
 					}
 				}				
 				
-				System.out.format("Product: %s, Topic: %d\n", prodID, i);
-				summaryWriter.format("Product: %s, Topic: %d\n", prodID, i);
+				//System.out.format("Product: %s, Topic: %d\n", prodID, i);
+				//summaryWriter.format("Product: %s, Topic: %d\n", prodID, i);
+				int senNumber = 0;
 				for(_RankItem it:stnQueue){
-					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);	
-					summaryWriter.format("%s\t%.3f\n", it.m_name, it.m_value);	
+					//System.out.format("%s\t%.3f\n", it.m_name, it.m_value);	
+					System.out.format("%s,%d,%d,%s\n", prodID, i, senNumber, it.m_name);
+					//summaryWriter.format("%s\t%.3f\n", it.m_name, it.m_value);
+					summaryWriter.format("%s,%d,%d,%s\n", prodID, i, senNumber, it.m_name);
+					senNumber++;
+					
 				}			
 			}
 		}
