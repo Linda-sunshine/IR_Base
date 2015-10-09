@@ -64,12 +64,37 @@ public class summaryMain {
 	String phoneProductList[] = {"B00COYOAYW","B004T36GCU","B008HTJLF6"};
 	String tvProductList[] = {"B0074FGLUM","B00BCGROJG","B00AOA9BL0"};
 	
+	HashMap<String,String> tabletProductNames = new HashMap<String,String>();
+	HashMap<String,String> phoneProductNames = new HashMap<String,String>();
+	HashMap<String,String> cameraProductNames = new HashMap<String,String>();
+	HashMap<String,String> tvProductNames = new HashMap<String,String>();
+	
+	
+	//	{"Samsung Galaxy Note 10.1","Amazon Kindle Fire HDX","ASUS Transformer Tablet"};
+	
+	
+	
 	private PrintWriter resultWriter;
 	private PrintWriter surveyWriter;
 	
 	public summaryMain(){
 		r = new Random();
 		
+		tabletProductNames.put("B008DWG5HE", "Samsung Galaxy Note 10.1");
+		tabletProductNames.put("B00CYQPM42", "Amazon Kindle Fire HDX");
+		tabletProductNames.put("B007P4YAPK", "ASUS Transformer Tablet");
+		
+		phoneProductNames.put("B00COYOAYW", "Nokia Lumia 521");
+		phoneProductNames.put("B004T36GCU", "HTC A9192 Phone");
+		phoneProductNames.put("B008HTJLF6", "Samsung Galaxy S III");
+		
+		cameraProductNames.put("B005IHAIMA", "Sony NEX-5N 16.1 MP Compact Interchangeable Lens Camera");
+		cameraProductNames.put("B002IPHIEG", "Sony Cybershot DSC");
+		cameraProductNames.put("B00DMS0LCO", "Canon EOS 70D Digital SLR Camera");
+		
+		tvProductNames.put("B0074FGLUM", "Samsung UN50EH5300 50-Inch 1080p 60Hz LED HDTV");
+		tvProductNames.put("B00BCGROJG", "Samsung Ultra Slim Smart LED HDTV 2013 Model");
+		tvProductNames.put("B00AOA9BL0", "XFINITY TV Go");
 	}
 	
 	public void setResultWriter(String path){
@@ -85,10 +110,17 @@ public class summaryMain {
 	
 public void writeCSV(String path, String category, int[] topicID){
 		
-		PrintWriter writer;
+		PrintWriter writer = null;
 		String [] topics = null;
+		HashMap<String,String> productNames = new HashMap<String,String>();
 		try{
 			writer = new PrintWriter(new File(path));
+		}
+		catch(Exception e){
+			System.err.println(path+" Not found!!");
+			e.printStackTrace();
+			
+		}
 			if(category.equalsIgnoreCase("camera"))
 				topics = cameraTopic;
 			else if(category.equalsIgnoreCase("phone"))
@@ -103,18 +135,22 @@ public void writeCSV(String path, String category, int[] topicID){
 			if(category.equalsIgnoreCase("camera")){
 				topics = cameraTopic;
 				productList = cameraProductList;
+				productNames = cameraProductNames;
 			}
 			else if(category.equalsIgnoreCase("phone")){
 				topics = phoneTopic;
 				productList = phoneProductList;
+				productNames = phoneProductNames;
 			}
 			else if(category.equalsIgnoreCase("tablet")){
 				topics = tabletTopic;
 				productList = tabletProductList;
+				productNames = tabletProductNames;
 			}
 			else if(category.equalsIgnoreCase("tv")){
 				topics = tvTopic;
 				productList = tvProductList;
+				productNames = tvProductNames;
 			}
 			
 			//writer.write("Under each cate");
@@ -123,14 +159,16 @@ public void writeCSV(String path, String category, int[] topicID){
 				
 				for(int topic = 0; topic<topicID.length; topic++){
 					int posTopic = topicID[topic];
-					writer.write("Product ID:"+prodID+"\n");
+					writer.write("Product name:"+productNames.get(prodID)+"\n");
 					writer.write("Topic ID:"+ posTopic+"\n");
-					writer.write("Topic Name:"+ topics[posTopic]+" ");
-					writer.write("(Positive Sentiment) \n");
+					writer.write("Tell me something POSITIVE about "+ topics[posTopic].toUpperCase()+" Aspect \n");
 					String key = prodID+posTopic;
 					ArrayList<String> sentences = list.get(key);
 					int sentenceCounter = 0;
+					if(sentences==null)
+						System.out.println("NULL");
 					for(String sentence:sentences){
+						System.out.println("sen:"+sentence);
 						writer.write(sentenceCounter+","+sentence+"\n");
 						sentenceCounter++;
 					}
@@ -140,12 +178,11 @@ public void writeCSV(String path, String category, int[] topicID){
 					
 					writer.write("\n\n");
 					
-					writer.write("Product ID:"+prodID+"\n");
-					
+					writer.write("Product name:"+productNames.get(prodID)+"\n");
 					int negTopic = topicID[topic] + this.number_of_topics/2;
 					writer.write("Topic ID:"+ negTopic+"\n");
-					writer.write("Topic Name:"+ topics[negTopic]+" ");
-					writer.write("(Negative Sentiment) \n");
+					writer.write("Tell me something NEGATIVE about "+ topics[posTopic].toUpperCase()+" Aspect \n");
+					
 					key = prodID+negTopic;
 					sentences = list.get(key);
 					sentenceCounter = 0;
@@ -166,10 +203,7 @@ public void writeCSV(String path, String category, int[] topicID){
 			writer.close();
 			
 			
-		}
-		catch(Exception e){
-			System.err.println(path+" Not found!!");
-		}
+		
 }
 	
 	
@@ -217,7 +251,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Pos Topic:"+ posTopic+", ");
 						System.out.println("HTSM Index:"+HTSM_index);
 						String key = prodID+posTopic+HTSM_index;
-						String sentence = HTSM_summary.get(key);
+						String sentence = HTSM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("HTSM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -253,7 +287,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Pos Topic:"+ posTopic+", ");
 						System.out.println("HTMM Index:"+HTMM_index);
 						String key = prodID+posTopic+HTMM_index;
-						String sentence = HTMM_summary.get(key);
+						String sentence = HTMM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("HTMM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -291,7 +325,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Pos Topic:"+ posTopic+", ");
 						System.out.println("ASUM Index:"+ASUM_index);
 						String key = prodID+posTopic+ASUM_index;
-						String sentence = ASUM_summary.get(key);
+						String sentence = ASUM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("ASUM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -345,7 +379,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Neg Topic:"+ posTopic+", ");
 						System.out.println("HTSM Index:"+HTSM_index);
 						String key = prodID+posTopic+HTSM_index;
-						String sentence = HTSM_summary.get(key);
+						String sentence = HTSM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("HTSM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -382,7 +416,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Neg Topic:"+ posTopic+", ");
 						System.out.println("HTMM Index:"+HTMM_index);
 						String key = prodID+posTopic+HTMM_index;
-						String sentence = HTMM_summary.get(key);
+						String sentence = HTMM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("HTMM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -420,7 +454,7 @@ public void writeCSV(String path, String category, int[] topicID){
 						System.out.print("Neg Topic:"+ posTopic+", ");
 						System.out.println("ASUM Index:"+ASUM_index);
 						String key = prodID+posTopic+ASUM_index;
-						String sentence = ASUM_summary.get(key);
+						String sentence = ASUM_summary.get(key).replaceAll("[^a-zA-Z ]", "").toLowerCase();
 						System.out.println("ASUM Sentence:"+sentence);
 						
 						if(!list.containsKey(prodID+posTopic)){
@@ -625,8 +659,15 @@ public void writeCSV(String path, String category, int[] topicID){
 		summaryMain com = new summaryMain();
 		
 		String modelNames[] = {"LRHTMM","LRHTSM","ASUM"}; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		String category = "tablet";
+		String category = "tv";
 		int number_of_topics = 0;
+		int tablettopicID [] = {1,2,3,7};
+		int phonetopicID [] = {2,3,5,8};
+		//int cameratopicID [] = {0,1,11,12};
+		
+		int cameratopicID [] = {1,9,10,12};
+		
+		int tvtopicID [] = {0,1,2,3};
 		
 		if(category.equalsIgnoreCase("tablet"))
 			number_of_topics = 30;
@@ -649,10 +690,7 @@ public void writeCSV(String path, String category, int[] topicID){
 		
 	    System.out.println("Reading Done");
 		
-		int tablettopicID [] = {1,2,3,7};
-		int cameratopicID [] = {1,2,3,7};
-		int phonetopicID [] = {1,2,3,7};
-		int tvtopicID [] = {1,2,3,7};
+		
 		
 		int topicID[] = null;
 		
@@ -669,7 +707,7 @@ public void writeCSV(String path, String category, int[] topicID){
 		com.doInterleaving(category, topicID);
 		
 		String outputFileSurvey = "./survey/"+category+"_DocSummary_Survey.csv";
-		com.writeCSV(outputFileSurvey, category, tablettopicID);
+		com.writeCSV(outputFileSurvey, category, topicID);
 		
 	    System.out.println("Done");
 		

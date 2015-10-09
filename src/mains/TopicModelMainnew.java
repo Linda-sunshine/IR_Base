@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import structures.Product;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
@@ -47,20 +48,31 @@ public class TopicModelMainnew {
 		
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
 		// change topic number and category
-		String topicmodel = "LRHTMM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		int number_of_topics = 0;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
-		String category = "tablet";
-		int number_of_topics = 26;
 		
-		int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
+		String category = "tv";
+        int trainSize = 0; // trainSize 0 means only newEgg; 5000 means all the data 
 		
-		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		
+        int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from newEgg
+		
+        if(category.equalsIgnoreCase("tablet"))
+			number_of_topics = 30;
+		else if(category.equalsIgnoreCase("camera"))
+			number_of_topics = 26;
+		else if(category.equalsIgnoreCase("phone"))
+			number_of_topics = 26;
+		else if(category.equalsIgnoreCase("tv"))
+			number_of_topics = 16;
+		
 		
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
 		int number_of_iteration = 50;
 		int topK = 50;
-		boolean generateTrainTestDataForJSTASUM = true;
+		boolean generateTrainTestDataForJSTASUM = false;
 		boolean sentence = false;
 		boolean debugSentenceTransition = false;
 		
@@ -70,10 +82,10 @@ public class TopicModelMainnew {
 		}
 		
 		// most popular items under each category from Amazon
-		String tabletProductList[] = {"B008DWG5HE"};
-		String cameraProductList[] = {"B005IHAIMA"};
-		String phoneProductList[] = {"B00COYOAYW"};
-		String tvProductList[] = {"B0074FGLUM"};
+		String tabletProductList[] = {"B008DWG5HE","B00CYQPM42","B007P4YAPK"};
+		String cameraProductList[] = {"B005IHAIMA","B002IPHIEG","B00DMS0LCO"};
+		String phoneProductList[] = {"B00COYOAYW","B004T36GCU","B008HTJLF6"};
+		String tvProductList[] = {"B0074FGLUM","B00BCGROJG","B00AOA9BL0"};
 		
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/mainData/"+ category + "/"+trainSize+"/";
@@ -84,6 +96,11 @@ public class TopicModelMainnew {
 		String posModel = null;
 		
 		String featureDirectory = "./model/"+topicmodel+"/result/"+category+"/"+trainSize+"/";
+		
+		/*if(generateTrainTestDataForJSTASUM)
+			featureDirectory = "./data/amazon/mainData/"+trainSize+"/"+category;
+		*/
+		
 		if(loadNewEggInTrain)
 			featureDirectory += "NewEggLoaded/";
 		else
@@ -123,7 +140,7 @@ public class TopicModelMainnew {
 			resultDirectory += "aspectPrior/";
 		
 		String topWordFilePath = resultDirectory+"Topics_"+number_of_topics+"_topWords.txt";
-		String wordIntrusionFilePath = resultDirectory+"Topics_"+number_of_topics+"_wordIntrusion.txt";
+		String wordIntrusionFilePath = resultDirectory+ topicmodel +"_" +category+"_Topics_" + number_of_topics + "_WordIntrusion.txt";
 		
 		String infoFilePath = resultDirectory+"Topics_"+number_of_topics+"_Information.txt";
 		String featureWeightFilePath = resultDirectory + "Topics_"+number_of_topics+"_FeaturesWeight.csv";;
@@ -276,7 +293,7 @@ public class TopicModelMainnew {
 			}
 			
 			if (sentence) {
-				String summaryFilePath =  resultDirectory + "Topics_" + number_of_topics + "_Summary.txt";
+				String summaryFilePath =  resultDirectory + topicmodel +"_" +category+"_Topics_" + number_of_topics + "_Summary.txt";
 				model.setSummaryWriter(summaryFilePath);
 				if(category.equalsIgnoreCase("camera"))
 					((HTMM)model).docSummary(cameraProductList);

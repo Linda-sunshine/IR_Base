@@ -187,8 +187,9 @@ public class intrusionMain {
 				topics = tvTopic;
 			
 			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
+				writer.write("topic "+i+",");
 			writer.write("\n");
+			
 			
 			for(int w=0;w<7;w++){
 				for(int i=0; i<this.number_of_topics;i++)
@@ -197,8 +198,10 @@ public class intrusionMain {
 			}
 			
 			writer.write("\n\n\n\n");
+			
 			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
+				writer.write("topic "+i+",");
+					
 			writer.write("\n");
 			for(int w=0;w<7;w++){
 				for(int i=0; i<this.number_of_topics;i++)
@@ -208,7 +211,8 @@ public class intrusionMain {
 			writer.write("\n\n\n\n");
 			
 			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
+				writer.write("topic "+i+",");
+				
 			writer.write("\n");
 			for(int w=0;w<7;w++){
 				for(int i=0; i<this.number_of_topics;i++)
@@ -218,7 +222,7 @@ public class intrusionMain {
 			writer.write("\n\n\n\n");
 			
 			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
+				writer.write("topic "+i+",");
 			writer.write("\n");
 			for(int w=0;w<7;w++){
 				for(int i=0; i<this.number_of_topics;i++)
@@ -243,7 +247,7 @@ public class intrusionMain {
 		intrusionMain com = new intrusionMain();
 		
 		String modelNames[] = {"LRHTMM","LRHTSM","LDA","ASUM"}; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		String category = "tablet";
+		String category = "tv";
 		int number_of_topics = 0;
 		
 		if(category.equalsIgnoreCase("tablet"))
