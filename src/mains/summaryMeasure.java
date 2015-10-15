@@ -31,7 +31,7 @@ import java.util.Random;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.Set;
 
-public class summaryMain {
+public class summaryMeasure {
 	
 	
 	private HashMap<String,String> HTSM_summary = new HashMap<String, String>();
@@ -41,15 +41,20 @@ public class summaryMain {
 	private HashMap<String, ArrayList<String>> list =new HashMap<String, ArrayList<String>>();
 	
 	
-	private int number_of_topics= 0;
-	private int number_of_Total_sentences = 6;
+	private HashMap<String, ArrayList<String>> HTSM =new HashMap<String, ArrayList<String>>();
+	private HashMap<String, ArrayList<String>> HTMM =new HashMap<String, ArrayList<String>>();
+	private HashMap<String, ArrayList<String>> ASUM =new HashMap<String, ArrayList<String>>();
 	
-	/*
-	private String cameraTopic[]= {"battery-pos", "screen-pos","viewfinder-pos","record-pos","mode-pos","shutter-pos","memori-pos","zoom-pos","len-pos","picture-pos","price-pos","Instruction-pos","video-pos","battery-neg", "screen-neg","viewfinder-neg","record-neg","mode-neg","shutter-neg","memori-neg","zoom-neg","len-neg","picture-neg","price-neg","Instruction-neg","video-neg"};
-	private String phoneTopic[]= {"screen-pos","app-pos","price-pos","battery-pos","sound-pos","camera-pos","storage-pos","call-pos","servic-pos","cpu-pos","keyboard-pos","design-pos","text-pos","screen-neg","app-neg","price-neg","battery-neg","sound-neg","camera-neg","storage-neg","call-neg","servic-neg","cpu-neg","keyboard-neg","design-neg","text-neg"};
-	private String tabletTopic[]= {"screen-pos","app-pos","price-pos","battery-pos","sound-pos","camera-pos","cpu-pos","microsd-pos","internet-pos","keyboard-pos","bluetooth-pos","usb-pos","gps-pos","servic-pos","mous-pos","screen-neg","app-neg","price-neg","battery-neg","sound-neg","camera-neg","cpu-neg","microsd-neg","internet-neg","keyboard-neg","bluetooth-neg","usb-neg","gps-neg","servic-neg","mous-neg"};
-	private String tvTopic[]= {"screen-pos","price-pos","sound-pos","servic-pos","picture-pos","quality-pos","app-pos","connection-pos","screen-neg","price-neg","sound-neg","servic-neg","picture-neg","quality-neg","app-neg","connection-neg"};
-	*/
+
+	private int number_of_topics= 0;
+	private int number_of_Total_sentences = 0;
+	private String category;
+	
+	private double HTSM_score = 0;
+	private double HTMM_score = 0;
+	private double ASUM_score = 0;
+	
+
 
 	private String cameraTopic[]= {"battery", "screen","viewfinder","record","mode","shutter","memori","zoom","len","picture","price","Instruction","video","battery", "screen","viewfinder","record","mode","shutter","memori","zoom","len","picture","price","Instruction","video"};
 	private String phoneTopic[]= {"screen","app","price","battery","sound","camera","storage","call","servic","cpu","keyboard","design","text","screen","app","price","battery","sound","camera","storage","call","servic","cpu","keyboard","design","text"};
@@ -70,14 +75,41 @@ public class summaryMain {
 	HashMap<String,String> tvProductNames = new HashMap<String,String>();
 	
 	
+	HashMap<String,String> tabletProductKeys = new HashMap<String,String>();
+	HashMap<String,String> phoneProductKeys = new HashMap<String,String>();
+	HashMap<String,String> cameraProductKeys = new HashMap<String,String>();
+	HashMap<String,String> tvProductKeys = new HashMap<String,String>();
+	
+	HashMap<String,String> ProductKeys = new HashMap<String,String>();
+	
 	//	{"Samsung Galaxy Note 10.1","Amazon Kindle Fire HDX","ASUS Transformer Tablet"};
 	
 	
 	
 	private PrintWriter resultWriter;
 	private PrintWriter surveyWriter;
+
+	public void setCategory (String category){
+		this.category = category;
+		this.number_of_Total_sentences = 0;
+		
+		if(category.equalsIgnoreCase("camera")){
+			ProductKeys = cameraProductKeys;
+		}
+		else if(category.equalsIgnoreCase("phone")){
+			ProductKeys = phoneProductKeys;
+		}
+		else if(category.equalsIgnoreCase("tablet")){
+			ProductKeys = tabletProductKeys;
+		}
+		else if(category.equalsIgnoreCase("tv")){
+			ProductKeys = tvProductKeys;
+		}
+		
+		
+	}
 	
-	public summaryMain(){
+	public summaryMeasure(){
 		r = new Random();
 		
 		tabletProductNames.put("B008DWG5HE", "Samsung Galaxy Note 10.1");
@@ -95,6 +127,23 @@ public class summaryMain {
 		tvProductNames.put("B0074FGLUM", "Samsung UN50EH5300 50-Inch 1080p 60Hz LED HDTV");
 		tvProductNames.put("B00BCGROJG", "Samsung Ultra Slim Smart LED HDTV 2013 Model");
 		tvProductNames.put("B00AOA9BL0", "XFINITY TV Go");
+		
+		
+		tabletProductKeys.put("Samsung Galaxy Note 10.1","B008DWG5HE");
+		tabletProductKeys.put("Amazon Kindle Fire HDX","B00CYQPM42");
+		tabletProductKeys.put("ASUS Transformer Tablet","B007P4YAPK");
+		
+		phoneProductKeys.put("Nokia Lumia 521","B00COYOAYW");
+		phoneProductKeys.put( "HTC A9192 Phone","B004T36GCU");
+		phoneProductKeys.put( "Samsung Galaxy S III","B008HTJLF6");
+		
+		cameraProductKeys.put("Sony NEX-5N 16.1 MP Compact Interchangeable Lens Camera","B005IHAIMA");
+		cameraProductKeys.put("Sony Cybershot DSC","B002IPHIEG");
+		cameraProductKeys.put("Canon EOS 70D Digital SLR Camera","B00DMS0LCO");
+		
+		tvProductKeys.put("Samsung UN50EH5300 50-Inch 1080p 60Hz LED HDTV","B0074FGLUM");
+		tvProductKeys.put("Samsung Ultra Slim Smart LED HDTV 2013 Model","B00BCGROJG");
+		tvProductKeys.put("XFINITY TV Go","B00AOA9BL0");
 	}
 	
 	public void setResultWriter(String path){
@@ -500,6 +549,173 @@ public void writeCSV(String path, String category, int[] topicID){
 	}
 	
 	
+	public void readSummaryRealResult(String fileName){
+		BufferedReader fileReader = null;
+		try {
+			 
+			fileReader = new BufferedReader(new FileReader(fileName));
+			String line;
+			while ((line = fileReader.readLine()) != null) {
+				//System.out.println(line);
+				String infos [] = line.split(",");
+				String modelName = infos[0];
+				String productID = infos[1];
+				String topicID = infos[2];
+				productID = productID+topicID;
+				String summary = infos[4];
+				
+				if(modelName.equalsIgnoreCase("HTSM")){
+					if(!HTSM.containsKey(productID)){
+						ArrayList<String> tmp = new ArrayList<String>();
+						tmp.add(summary);
+						
+						HTSM.put(productID, tmp);
+					}
+					else{
+						ArrayList<String> tmp = HTSM.get(productID);
+						tmp.add(summary);
+						HTSM.put(productID, tmp);
+					}
+					
+				}else if(modelName.equalsIgnoreCase("HTMM")){
+					if(!HTMM.containsKey(productID)){
+						ArrayList<String> tmp = new ArrayList<String>();
+						tmp.add(summary);
+						
+						HTMM.put(productID, tmp);
+					}
+					else{
+						ArrayList<String> tmp = HTMM.get(productID);
+						tmp.add(summary);
+						HTMM.put(productID, tmp);
+					}
+					
+				}else if(modelName.equalsIgnoreCase("ASUM")){
+					if(!ASUM.containsKey(productID)){
+						ArrayList<String> tmp = new ArrayList<String>();
+						tmp.add(summary);
+						
+						ASUM.put(productID, tmp);
+					}
+					else{
+						ArrayList<String> tmp = ASUM.get(productID);
+						tmp.add(summary);
+						ASUM.put(productID, tmp);
+					}
+					
+				}
+			}
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+	 
+		
+	}
+	
+	
+	
+	public void readSummarySurvey(String fileName){
+		
+		/*System.out.println("HTSM size"+HTSM.size());
+		System.out.println("HTMM size"+HTMM.size());
+		System.out.println("ASUM size"+ASUM.size());*/
+		
+		BufferedReader fileReader = null;
+		try {
+			 
+			fileReader = new BufferedReader(new FileReader(fileName));
+			String line;
+			String productName = "";
+			String topicID = "";
+			while ((line = fileReader.readLine()) != null) {
+				//System.out.println(line);
+				if(line.contains("Product name")){
+					productName = line.substring(line.indexOf(":")+1, line.indexOf(","));
+				}
+				
+				if(line.contains("Topic ID")){
+					topicID = line.substring(line.indexOf(":")+1, line.indexOf(","));
+				}
+				
+				
+				if(line.contains("Answer")){
+					
+					if(line.split(",").length>1){
+						String summary = line.split(",")[1];
+						String productID = ProductKeys.get(productName);
+						productID = productID+topicID;
+
+						/*System.out.println("Topic ID:"+topicID);
+						System.out.println("Product Name:"+productName);
+						System.out.println("Product ID:"+productID);
+						System.out.println(summary);
+						*/
+
+						// do not use else if here because same sentence can come from all three models
+						// as result all models should recieve scores for that sentence
+						// so use if
+						
+						if(HTSM.get(productID).contains(summary)){
+							HTSM_score = HTSM_score+ 1;
+							System.out.println("sentence:" + summary+", index:"+this.number_of_Total_sentences);
+							
+						}
+						
+						if(HTMM.get(productID).contains(summary)){
+							HTMM_score = HTMM_score+ 1;
+							System.out.println("sentence:" + summary+", index:"+this.number_of_Total_sentences);
+							
+						
+						}
+						
+						if(ASUM.get(productID).contains(summary)){
+							ASUM_score = ASUM_score+ 1;
+							System.out.println("sentence:" + summary+", index:"+this.number_of_Total_sentences);
+							
+						}
+						
+						if(HTSM.get(productID).contains(summary) || HTMM.get(productID).contains(summary) || ASUM.get(productID).contains(summary)){
+							this.number_of_Total_sentences++;
+						}
+						
+					}
+					
+				}
+				
+	
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+	 
+		
+	}
+	
+	public void Scores(int normalizer, String category){
+		
+		System.out.println("Total Sentence:"+ this.number_of_Total_sentences);
+		double totalScore = ASUM_score+HTMM_score+HTSM_score;
+		System.out.println("Total Score:"+ totalScore);
+		System.out.println("ASUM,score,"+ASUM_score);
+		System.out.println("HTMM,score,"+HTMM_score);
+		System.out.println("HTSM,score,"+HTSM_score);
+		
+		
+		System.out.format("ASUM,score, %.3f\n",ASUM_score/totalScore);
+		System.out.format("HTMM,score, %.3f\n",HTMM_score/totalScore);
+		System.out.format("HTSM,score, %.3f\n",HTSM_score/totalScore);
+		
+		System.out.format("%s & %.3f & %.3f & %.3f \\\\ \n", category, ASUM_score/totalScore, HTMM_score/totalScore, HTSM_score/totalScore);
+		
+	}
+	
+	
 	public void readcsv(String fileName, String category, String modelName)
 	{
 		
@@ -586,127 +802,37 @@ public void writeCSV(String path, String category, int[] topicID){
 	  
 	}
 
-	/*public void writeCSV(String path, String category){
 		
-		PrintWriter writer;
-		String [] topics = null;
-		
-		try{
-			writer = new PrintWriter(new File(path));
-			if(category.equalsIgnoreCase("camera"))
-				topics = cameraTopic;
-			else if(category.equalsIgnoreCase("phone"))
-				topics = phoneTopic;
-			else if(category.equalsIgnoreCase("tablet"))
-				topics = tabletTopic;
-			else if(category.equalsIgnoreCase("tv"))
-				topics = tvTopic;
-			
-			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
-			writer.write("\n");
-			
-			for(int w=0;w<7;w++){
-				for(int i=0; i<this.number_of_topics;i++)
-					writer.write(LDA_array[w][i]+",");
-				writer.write("\n");
-			}
-			
-			writer.write("\n\n\n\n");
-			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
-			writer.write("\n");
-			for(int w=0;w<7;w++){
-				for(int i=0; i<this.number_of_topics;i++)
-					writer.write(HTSM_array[w][i]+",");
-				writer.write("\n");
-			}
-			writer.write("\n\n\n\n");
-			
-			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
-			writer.write("\n");
-			for(int w=0;w<7;w++){
-				for(int i=0; i<this.number_of_topics;i++)
-					writer.write(HTMM_array[w][i]+",");
-				writer.write("\n");
-			}
-			writer.write("\n\n\n\n");
-			
-			for(int i=0; i<this.number_of_topics;i++)
-				writer.write(topics[i]+",");
-			writer.write("\n");
-			for(int w=0;w<7;w++){
-				for(int i=0; i<this.number_of_topics;i++)
-					writer.write(ASUM_array[w][i]+",");
-				writer.write("\n");
-			}
-			writer.write("\n\n\n\n");
-			
-			writer.flush();
-			writer.close();
-			
-			
-		}catch(Exception e){
-			System.err.println(path+" Not found!!");
-		}
-		
-	}*/
-	
-	
 	public static void main(String[] args) {
 		
-		summaryMain com = new summaryMain();
+		summaryMeasure com = new summaryMeasure();
+		int totalAnnot = 0;
 		
-		String modelNames[] = {"LRHTMM","LRHTSM","ASUM"}; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		String category = "tv";
-		int number_of_topics = 0;
-		int tablettopicID [] = {1,2,3,7};
-		int phonetopicID [] = {2,3,5,8};
-		int cameratopicID [] = {1,9,10,12};
-		int tvtopicID [] = {0,1,2,3};
+		String category = "tablet";
+		if(category.equalsIgnoreCase("tablet") || category.equalsIgnoreCase("camera") || category.equalsIgnoreCase("phone"))
+			totalAnnot = 6;
 		
-		if(category.equalsIgnoreCase("tablet"))
-			number_of_topics = 30;
-		else if(category.equalsIgnoreCase("camera"))
-			number_of_topics = 26;
-		else if(category.equalsIgnoreCase("phone"))
-			number_of_topics = 26;
-		else if(category.equalsIgnoreCase("tv"))
-			number_of_topics = 16;
+		if(category.equalsIgnoreCase("tv"))
+			totalAnnot = 3;
 		
-		for(String modelName:modelNames){
+		int totalCount = 4*2*2*totalAnnot; // # of products * #number of sentiment * #of sentence * #of annotator
 		
-			String summaryFilePath = "./survey/"+ modelName +"_" +category+"_Topics_" + number_of_topics + "_Summary.txt";
-			com.readcsv(summaryFilePath, category, modelName);
-			
-		}
-		
-		String outputFileResult = "./survey/"+category+"_DocSummary_Result.csv";
-		com.setResultWriter(outputFileResult);
-		
-	    System.out.println("Reading Done");
-		int topicID[] = null;
-		
-		if(category.equalsIgnoreCase("tablet"))
-			topicID = tablettopicID;
-		else if(category.equalsIgnoreCase("camera"))
-			topicID = cameratopicID;
-		else if(category.equalsIgnoreCase("phone"))
-			topicID = phonetopicID;
-		else if(category.equalsIgnoreCase("tv"))
-			topicID = tvtopicID;
+		com.setCategory(category);
+		String summaryFilePath = "./survey/"+category+"_DocSummary_Result_new.csv";
+		//String summaryFilePath = "./survey/"+category+"_DocSummary_Result.csv";
 		
 		
-		com.doInterleaving(category, topicID);
-		
-		String outputFileSurvey = "./survey/"+category+"_DocSummary_Survey.csv";
-		com.writeCSV(outputFileSurvey, category, topicID);
-		
-	    System.out.println("Done");
+		com.readSummaryRealResult(summaryFilePath);
 
-		
-      }
+		String filePath = "./survey/survey/summaryResult/";	
+		for(int annotatorNumber = 1;annotatorNumber<=totalAnnot;annotatorNumber++)
+			{
+				System.out.println(annotatorNumber);
+				String surveyFilePath = filePath+category+"_"+annotatorNumber+".csv";
+				com.readSummarySurvey(surveyFilePath);
+			}
+		com.Scores(totalCount,category);
+		}
 
 	
 

@@ -1,0 +1,4 @@
+sbatch rivana_command.slurm 
+squeue -u mr4xb
+scancel JOBID
+allocations

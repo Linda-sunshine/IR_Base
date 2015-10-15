@@ -52,8 +52,8 @@ public class TopicModelMainnew {
 		int number_of_topics = 0;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		
-		String category = "tv";
-        int trainSize = 0; // trainSize 0 means only newEgg; 5000 means all the data 
+		String category = "camera";
+        int trainSize = 5000; // trainSize 0 means only newEgg; 5000 means all the data 
 		
 		
         int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 

@@ -1,0 +1,1365 @@
+B005IHAIMA,0,0,Battery lasts for a while.
+B005IHAIMA,0,1,Would I say must buy?
+B005IHAIMA,0,2,Very Happy with this Beast of a camera.
+B005IHAIMA,0,3,There are always stubborn streaks on the screen.
+B005IHAIMA,0,4,amazed.
+B005IHAIMA,0,5,Sony does it all.
+B005IHAIMA,0,6,I am hoping that it will be different now.
+B005IHAIMA,0,7,I like this little guy.
+B005IHAIMA,0,8,I purchased the A57 and haven't looked back.
+B005IHAIMA,0,9,again and suggest you purchase elsewhere.
+B005IHAIMA,0,10,Great camera.
+B005IHAIMA,0,11,Great camera.
+B005IHAIMA,0,12,Great camera.
+B005IHAIMA,0,13,Great camera.
+B005IHAIMA,0,14,very good camera.
+B005IHAIMA,0,15,The camera is great.
+B005IHAIMA,0,16,This camera is quite good.
+B005IHAIMA,0,17,Great value.
+B005IHAIMA,0,18,Great Camera.
+B005IHAIMA,0,19,Great Camera.
+B005IHAIMA,0,20,Great camera!
+B005IHAIMA,0,21,Good.
+B005IHAIMA,0,22,Don't buy this camera.
+B005IHAIMA,0,23,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,0,24,Really a good cameraI.
+B005IHAIMA,1,0,Really a good cameraI.
+B005IHAIMA,1,1,Great camera.
+B005IHAIMA,1,2,The pictures are excellent.
+B005IHAIMA,1,3,I mostly got the camera for still shots.
+B005IHAIMA,1,4,Excellent camera.
+B005IHAIMA,1,5,I couldn't have taken it with the R1.And the video.
+B005IHAIMA,1,6,Buy it.
+B005IHAIMA,1,7,Awesome.
+B005IHAIMA,1,8,I am so happy with it.
+B005IHAIMA,1,9,Amazing little powerhouse.
+B005IHAIMA,1,10,But it must go back, the sound is uncalled for.
+B005IHAIMA,1,11,This camera is amazing.
+B005IHAIMA,1,12,Amazing.
+B005IHAIMA,1,13,What I got was far more than I expected.
+B005IHAIMA,1,14,Hard to beat!
+B005IHAIMA,1,15,It weighs so little.
+B005IHAIMA,1,16,Very good camera and a very good image.
+B005IHAIMA,1,17,My computer already labours with my 18mp camera.
+B005IHAIMA,1,18,Great camera.
+B005IHAIMA,1,19,Great camera.
+B005IHAIMA,1,20,Great camera.
+B005IHAIMA,1,21,The camera is great.
+B005IHAIMA,1,22,very good camera.
+B005IHAIMA,1,23,This camera is quite good.
+B005IHAIMA,1,24,Great value.
+B005IHAIMA,2,0,Love it!!!! Love it love it!!!!
+B005IHAIMA,2,1,Negatif yani ise lens portfoyunun zayif olmasi.
+B005IHAIMA,2,2,I love it.
+B005IHAIMA,2,3,This is a great camera!
+B005IHAIMA,2,4,will Sony do?
+B005IHAIMA,2,5,Ama bunu da kisa surede sigma tamron gibi ureticiler kapatacaktir diye dusunuyorum.
+B005IHAIMA,2,6,Mine did not have one.
+B005IHAIMA,2,7,Great camera.
+B005IHAIMA,2,8,Great camera.
+B005IHAIMA,2,9,Great camera.
+B005IHAIMA,2,10,Great camera.
+B005IHAIMA,2,11,The camera is great.
+B005IHAIMA,2,12,Right out of the box.
+B005IHAIMA,2,13,I've just noticed it.
+B005IHAIMA,2,14,Great value.
+B005IHAIMA,2,15,Great Camera.
+B005IHAIMA,2,16,Great Camera.
+B005IHAIMA,2,17,Great camera!
+B005IHAIMA,2,18,very good camera.
+B005IHAIMA,2,19,I love it.
+B005IHAIMA,2,20,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,2,21,This camera is quite good.
+B005IHAIMA,2,22,I love this camera.
+B005IHAIMA,2,23,Good.
+B005IHAIMA,2,24,I love it.
+B005IHAIMA,3,0,We love it!
+B005IHAIMA,3,1,The camera was easy to use also.
+B005IHAIMA,3,2,Excellent Camera.
+B005IHAIMA,3,3,Great little camera.
+B005IHAIMA,3,4,buy it nowww!
+B005IHAIMA,3,5,New camera just as I have expected.
+B005IHAIMA,3,6,The camera is Excellent.
+B005IHAIMA,3,7,(Other than more lenses)
+B005IHAIMA,3,8,The shipment was well packaged and they were prompt.
+B005IHAIMA,3,9,Goodbye DSLR.
+B005IHAIMA,3,10,I'm not a professional anyway.
+B005IHAIMA,3,11,Great camera.
+B005IHAIMA,3,12,Great camera.
+B005IHAIMA,3,13,Great camera.
+B005IHAIMA,3,14,Great camera.
+B005IHAIMA,3,15,I took pictures for the girls and they was like "What a cute little camera" .^.^.
+B005IHAIMA,3,16,Love it!!!! Love it love it!!!!
+B005IHAIMA,3,17,The camera is great.
+B005IHAIMA,3,18,Great value.
+B005IHAIMA,3,19,Great Camera.
+B005IHAIMA,3,20,Great Camera.
+B005IHAIMA,3,21,Great camera!
+B005IHAIMA,3,22,I love it.
+B005IHAIMA,3,23,very good camera.
+B005IHAIMA,3,24,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,4,0,Great camera.
+B005IHAIMA,4,1,So far I am loving it.
+B005IHAIMA,4,2,Awesome Camera!
+B005IHAIMA,4,3,Stupendous camera - I love it.
+B005IHAIMA,4,4,I've never been so happy with a camera before this one.
+B005IHAIMA,4,5,I think you will be impressed.
+B005IHAIMA,4,6,I purchased the A57 and haven't looked back.
+B005IHAIMA,4,7,again and suggest you purchase elsewhere.
+B005IHAIMA,4,8,Awesome.
+B005IHAIMA,4,9,Great camera.
+B005IHAIMA,4,10,Great camera.
+B005IHAIMA,4,11,Great camera.
+B005IHAIMA,4,12,very good camera.
+B005IHAIMA,4,13,This camera is quite good.
+B005IHAIMA,4,14,The camera is great.
+B005IHAIMA,4,15,I was so impressed, that I had to get one for myself.
+B005IHAIMA,4,16,Good.
+B005IHAIMA,4,17,Really a good cameraI.
+B005IHAIMA,4,18,Great value.
+B005IHAIMA,4,19,Great Camera.
+B005IHAIMA,4,20,Love it!!!! Love it love it!!!!
+B005IHAIMA,4,21,Great Camera.
+B005IHAIMA,4,22,Great camera!
+B005IHAIMA,4,23,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,4,24,I love it.
+B005IHAIMA,5,0,Buy it only if you want jacketable camera.
+B005IHAIMA,5,1,I love it.
+B005IHAIMA,5,2,Not Quite What I Expected.
+B005IHAIMA,5,3,Buy it.
+B005IHAIMA,5,4,should be camera of the year.
+B005IHAIMA,5,5,Hopefully it lasts.2)
+B005IHAIMA,5,6,I couldn't have taken it with the R1.And the video.
+B005IHAIMA,5,7,I mostly got the camera for still shots.
+B005IHAIMA,5,8,I am so happy with it.
+B005IHAIMA,5,9,Perfect mid-range camera.
+B005IHAIMA,5,10,The pictures are excellent.
+B005IHAIMA,5,11,Kind of intersects both worlds.
+B005IHAIMA,5,12,One star.***
+B005IHAIMA,5,13,Awesome.
+B005IHAIMA,5,14,It's sensor is one of the sharpest sensors I've ever seen.
+B005IHAIMA,5,15,Great camera.
+B005IHAIMA,5,16,Great camera.
+B005IHAIMA,5,17,Great camera.
+B005IHAIMA,5,18,very good camera.
+B005IHAIMA,5,19,Great camera.
+B005IHAIMA,5,20,This camera is quite good.
+B005IHAIMA,5,21,Good.
+B005IHAIMA,5,22,The camera is great.
+B005IHAIMA,5,23,Don't buy this camera.
+B005IHAIMA,5,24,Really a good cameraI.
+B005IHAIMA,6,0,Great camera.
+B005IHAIMA,6,1,DO NOT BUY THIS CAMERA.
+B005IHAIMA,6,2,What's going on with Sony?
+B005IHAIMA,6,3,I couldn't have taken it with the R1.And the video.
+B005IHAIMA,6,4,will Sony do?
+B005IHAIMA,6,5,A camcoder can't be any better regarding picture.
+B005IHAIMA,6,6,This was not an impulse buy.
+B005IHAIMA,6,7,a very capable camera.
+B005IHAIMA,6,8,We're both happy with what we got.
+B005IHAIMA,6,9,One star.***
+B005IHAIMA,6,10,I am yet to explore most of it.
+B005IHAIMA,6,11,Great camera.
+B005IHAIMA,6,12,Great camera.
+B005IHAIMA,6,13,Great camera.
+B005IHAIMA,6,14,very good camera.
+B005IHAIMA,6,15,This camera is quite good.
+B005IHAIMA,6,16,What is ISO?
+B005IHAIMA,6,17,The camera is great.
+B005IHAIMA,6,18,Oh wow.
+B005IHAIMA,6,19,Good.
+B005IHAIMA,6,20,Great value.
+B005IHAIMA,6,21,Great Camera.
+B005IHAIMA,6,22,Great Camera.
+B005IHAIMA,6,23,Great camera!
+B005IHAIMA,6,24,Really a good cameraI.
+B005IHAIMA,7,0,Great camera.
+B005IHAIMA,7,1,This is a great camera!
+B005IHAIMA,7,2,I love it.
+B005IHAIMA,7,3,I love this camera.
+B005IHAIMA,7,4,Only took 250 shots so far.
+B005IHAIMA,7,5,Both very nice.
+B005IHAIMA,7,6,Great Camera.
+B005IHAIMA,7,7,Amazing Camera.
+B005IHAIMA,7,8,Amazing camera!
+B005IHAIMA,7,9,This camera is amazing.
+B005IHAIMA,7,10,Amazing.
+B005IHAIMA,7,11,Love the camera.
+B005IHAIMA,7,12,Don't buy this camera.
+B005IHAIMA,7,13,Goodbye DSLR.
+B005IHAIMA,7,14,Its a sony.
+B005IHAIMA,7,15,The camera is Excellent.
+B005IHAIMA,7,16,This was not an impulse buy.
+B005IHAIMA,7,17,Used it in a trip to Maui.
+B005IHAIMA,7,18,Mine did not have one.
+B005IHAIMA,7,19,it met my need as discribed.
+B005IHAIMA,7,20,Drug it all over heck, helicopters and boats and planes.
+B005IHAIMA,7,21,Great camera.
+B005IHAIMA,7,22,Great camera.
+B005IHAIMA,7,23,Great camera.
+B005IHAIMA,7,24,very good camera.
+B005IHAIMA,8,0,Great little camera.
+B005IHAIMA,8,1,Great Camera.
+B005IHAIMA,8,2,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,8,3,Great camera!
+B005IHAIMA,8,4,It is a good street/travel camera.
+B005IHAIMA,8,5,It's quite good for what it is.
+B005IHAIMA,8,6,My back says this camera is great!
+B005IHAIMA,8,7,Great Camera.
+B005IHAIMA,8,8,It is that light!
+B005IHAIMA,8,9,This camera is quite good.
+B005IHAIMA,8,10,Great little camera.
+B005IHAIMA,8,11,Almost Great.
+B005IHAIMA,8,12,Sony really did their homework on this camera.
+B005IHAIMA,8,13,great camera.
+B005IHAIMA,8,14,Dump the DSLR, get this now!
+B005IHAIMA,8,15,Best of all worlds.
+B005IHAIMA,8,16,Still, in this regard the Lx3 is better.
+B005IHAIMA,8,17,Goodbye DSLR.
+B005IHAIMA,8,18,Very stealth with the flipout screen.
+B005IHAIMA,8,19,Sony does it all.
+B005IHAIMA,8,20,Lets get too the point  !
+B005IHAIMA,8,21,This is the best camera ive ever owned.
+B005IHAIMA,8,22,BEST CAMERA EVER!!
+B005IHAIMA,8,23,I also have the Sony E 55-210mm F4.5-6.3
+B005IHAIMA,8,24,That was the best from both worlds!
+B005IHAIMA,9,0,Good.
+B005IHAIMA,9,1,great camera.
+B005IHAIMA,9,2,This is a great camera!
+B005IHAIMA,9,3,I mostly got the camera for still shots.
+B005IHAIMA,9,4,Almost Great.
+B005IHAIMA,9,5,My back says this camera is great!
+B005IHAIMA,9,6,It is a good street/travel camera.
+B005IHAIMA,9,7,It's quite good for what it is.
+B005IHAIMA,9,8,Stupendous camera - I love it.
+B005IHAIMA,9,9,The best of 2 worlds.
+B005IHAIMA,9,10,This camera is everything I expected.
+B005IHAIMA,9,11,Everything I Expected and More!
+B005IHAIMA,9,12,Love the camera.
+B005IHAIMA,9,13,Amazing!
+B005IHAIMA,9,14,He loves using it.
+B005IHAIMA,9,15,I was so impressed, that I had to get one for myself.
+B005IHAIMA,9,16,Still, in this regard the Lx3 is better.
+B005IHAIMA,9,17,Battery lasts for a while.
+B005IHAIMA,9,18,Very stealth with the flipout screen.
+B005IHAIMA,9,19,What is ISO?
+B005IHAIMA,9,20,And this takes a lot of getting used to.
+B005IHAIMA,9,21,I can just snap away.
+B005IHAIMA,9,22,I can just snap away.
+B005IHAIMA,9,23,That has no bearing on the camera's performance, obviously.
+B005IHAIMA,9,24,New Photographer.
+B005IHAIMA,10,0,Great value.
+B005IHAIMA,10,1,Great Camera.
+B005IHAIMA,10,2,Great camera.
+B005IHAIMA,10,3,very good camera.
+B005IHAIMA,10,4,I found this camera very easy to use.
+B005IHAIMA,10,5,I love this camera.
+B005IHAIMA,10,6,The camera is great.
+B005IHAIMA,10,7,I love it.
+B005IHAIMA,10,8,The lan is very perfect as well.
+B005IHAIMA,10,9,The camera is perfect.
+B005IHAIMA,10,10,best ever.
+B005IHAIMA,10,11,Good.
+B005IHAIMA,10,12,The camera was easy to use also.
+B005IHAIMA,10,13,amazed.
+B005IHAIMA,10,14,We love it!
+B005IHAIMA,10,15,buy it nowww!
+B005IHAIMA,10,16,Fantastic camera.
+B005IHAIMA,10,17,This is a beautiful camera.
+B005IHAIMA,10,18,Amazing camera!
+B005IHAIMA,10,19,It's colour is very beautiful.
+B005IHAIMA,10,20,Catered the "in between" market.
+B005IHAIMA,10,21,Great camera.
+B005IHAIMA,10,22,Great camera.
+B005IHAIMA,10,23,Great camera.
+B005IHAIMA,10,24,Great Camera.
+B005IHAIMA,11,0,Very nice camera.
+B005IHAIMA,11,1,I am very happy with this camera.
+B005IHAIMA,11,2,Great camera.
+B005IHAIMA,11,3,Great camera.
+B005IHAIMA,11,4,Great camera.
+B005IHAIMA,11,5,Great camera.
+B005IHAIMA,11,6,very good camera.
+B005IHAIMA,11,7,This camera is quite good.
+B005IHAIMA,11,8,The camera is great.
+B005IHAIMA,11,9,Good.
+B005IHAIMA,11,10,Great value.
+B005IHAIMA,11,11,Great Camera.
+B005IHAIMA,11,12,Great Camera.
+B005IHAIMA,11,13,Great camera!
+B005IHAIMA,11,14,Really a good cameraI.
+B005IHAIMA,11,15,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,11,16,Great Camera.
+B005IHAIMA,11,17,great camera.
+B005IHAIMA,11,18,Don't buy this camera.
+B005IHAIMA,11,19,This is a great camera!
+B005IHAIMA,11,20,Love it!!!! Love it love it!!!!
+B005IHAIMA,11,21,I found this camera very easy to use.
+B005IHAIMA,11,22,Great little camera.
+B005IHAIMA,11,23,Battery lasts for a while.
+B005IHAIMA,11,24,That was the best from both worlds!
+B005IHAIMA,12,0,This camera is quite good.
+B005IHAIMA,12,1,Very nice camera.
+B005IHAIMA,12,2,Awesome Camera!
+B005IHAIMA,12,3,Buy it only if you want jacketable camera.
+B005IHAIMA,12,4,I am very happy with this camera.
+B005IHAIMA,12,5,Great camera.
+B005IHAIMA,12,6,Great camera.
+B005IHAIMA,12,7,Great camera.
+B005IHAIMA,12,8,Great camera.
+B005IHAIMA,12,9,The camera is great.
+B005IHAIMA,12,10,Great value.
+B005IHAIMA,12,11,Great Camera.
+B005IHAIMA,12,12,Great Camera.
+B005IHAIMA,12,13,Great camera!
+B005IHAIMA,12,14,Great Product.
+B005IHAIMA,12,15,very good camera.
+B005IHAIMA,12,16,I'm using 21/4 Skopar, 28/3.5 Skopar, 35/1.7 Ultron, 50/1.5 Ultron with great results.
+B005IHAIMA,12,17,Love it!!!! Love it love it!!!!
+B005IHAIMA,12,18,Good.
+B005IHAIMA,12,19,Great Camera.
+B005IHAIMA,12,20,Really a good cameraI.
+B005IHAIMA,12,21,I love it.
+B005IHAIMA,12,22,great camera.
+B005IHAIMA,12,23,This is a great camera!
+B005IHAIMA,12,24,Great little camera.
+B005IHAIMA,13,0,should be camera of the year.
+B005IHAIMA,13,1,Steve Huff's review clinched it for me.
+B005IHAIMA,13,2,DO NOT BUY THIS CAMERA.
+B005IHAIMA,13,3,It's sensor is one of the sharpest sensors I've ever seen.
+B005IHAIMA,13,4,Dump the DSLR, get this now!
+B005IHAIMA,13,5,Trying just about every camera, I could not find anything I really liked.
+B005IHAIMA,13,6,Lets get too the point  !
+B005IHAIMA,13,7,Sony really did their homework on this camera.
+B005IHAIMA,13,8,Sony does it all.
+B005IHAIMA,13,9,This camera is everything I expected.
+B005IHAIMA,14,0,But it must go back, the sound is uncalled for.
+B005IHAIMA,14,1,What's going on with Sony?
+B005IHAIMA,14,2,Still clicks.
+B005IHAIMA,14,3,Don't buy this camera.
+B005IHAIMA,14,4,Now my constant companion!
+B005IHAIMA,14,5,This is annoying.
+B005IHAIMA,14,6,This is a beautiful camera.
+B005IHAIMA,14,7,There are always stubborn streaks on the screen.
+B005IHAIMA,14,8,What I got was far more than I expected.
+B005IHAIMA,14,9,My computer already labours with my 18mp camera.
+B005IHAIMA,15,0,This is my first "real" camera.
+B005IHAIMA,15,1,Great camera.
+B005IHAIMA,15,2,DO NOT BUY THIS CAMERA.
+B005IHAIMA,15,3,But it does have its limits.
+B005IHAIMA,15,4,best ever.
+B005IHAIMA,15,5,(Other than more lenses)
+B005IHAIMA,15,6,This camera is everything I expected.
+B005IHAIMA,15,7,Everything I Expected and More!
+B005IHAIMA,15,8,Buy it.
+B005IHAIMA,15,9,New camera just as I have expected.
+B005IHAIMA,16,0,Problems fixed.
+B005IHAIMA,16,1,What's going on with Sony?
+B005IHAIMA,16,2,Still clicks.
+B005IHAIMA,16,3,One star.***
+B005IHAIMA,16,4,Right out of the box.
+B005IHAIMA,16,5,I've just noticed it.
+B005IHAIMA,16,6,It clicks!
+B005IHAIMA,16,7,unreliable !
+B005IHAIMA,16,8,I have gone through two NEX-5ns.
+B005IHAIMA,16,9,I purchased the A57 and haven't looked back.
+B005IHAIMA,17,0,DO NOT BUY THIS CAMERA.
+B005IHAIMA,17,1,It's colour is very beautiful.
+B005IHAIMA,17,2,I love it.
+B005IHAIMA,17,3,I mostly got the camera for still shots.
+B005IHAIMA,17,4,Battery lasts for a while.
+B005IHAIMA,17,5,Buy it.
+B005IHAIMA,17,6,This camera is everything I expected.
+B005IHAIMA,17,7,Everything I Expected and More!
+B005IHAIMA,17,8,New camera just as I have expected.
+B005IHAIMA,17,9,Lets get too the point  !
+B005IHAIMA,18,0,Every expectation was to my satisfaction.
+B005IHAIMA,18,1,Steve Huff's review clinched it for me.
+B005IHAIMA,18,2,That has no bearing on the camera's performance, obviously.
+B005IHAIMA,18,3,New Photographer.
+B005IHAIMA,18,4,Only took 250 shots so far.
+B005IHAIMA,18,5,There are always stubborn streaks on the screen.
+B005IHAIMA,18,6,I am hoping that it will be different now.
+B005IHAIMA,18,7,Trying just about every camera, I could not find anything I really liked.
+B005IHAIMA,18,8,This camera is everything I expected.
+B005IHAIMA,18,9,Everything I Expected and More!
+B005IHAIMA,19,0,Negatif yani ise lens portfoyunun zayif olmasi.
+B005IHAIMA,19,1,buy it nowww!
+B005IHAIMA,19,2,The camera was easy to use also.
+B005IHAIMA,19,3,My primary camera.
+B005IHAIMA,19,4,(I did look thoroughly.
+B005IHAIMA,19,5,DO NOT BUY THIS CAMERA.
+B005IHAIMA,19,6,I mostly got the camera for still shots.
+B005IHAIMA,19,7,This camera is everything I expected.
+B005IHAIMA,19,8,Everything I Expected and More!
+B005IHAIMA,19,9,New camera just as I have expected.
+B005IHAIMA,20,0,Used it in a trip to Maui.
+B005IHAIMA,20,1,Its a sony.
+B005IHAIMA,20,2,Drug it all over heck, helicopters and boats and planes.
+B005IHAIMA,20,3,No problem at all.
+B005IHAIMA,20,4,DO NOT BUY THIS CAMERA.
+B005IHAIMA,20,5,What is ISO?
+B005IHAIMA,20,6,This camera is everything I expected.
+B005IHAIMA,20,7,Everything I Expected and More!
+B005IHAIMA,20,8,Lets get too the point  !
+B005IHAIMA,20,9,New camera just as I have expected.
+B005IHAIMA,21,0,There are always stubborn streaks on the screen.
+B005IHAIMA,21,1,Zero wake up time.
+B005IHAIMA,21,2,No problem at all.
+B005IHAIMA,21,3,Battery lasts for a while.
+B005IHAIMA,21,4,I found this camera very easy to use.
+B005IHAIMA,21,5,I also have the Sony E 55-210mm F4.5-6.3
+B005IHAIMA,21,6,The camera is great.
+B005IHAIMA,21,7,Would I say must buy?
+B005IHAIMA,21,8,I am hoping that it will be different now.
+B005IHAIMA,21,9,I purchased the A57 and haven't looked back.
+B005IHAIMA,22,0,A camcoder can't be any better regarding picture.
+B005IHAIMA,22,1,Still, in this regard the Lx3 is better.
+B005IHAIMA,22,2,I've just noticed it.
+B005IHAIMA,22,3,And this takes a lot of getting used to.
+B005IHAIMA,22,4,I can live with that.
+B005IHAIMA,22,5,I found this was not the case.
+B005IHAIMA,22,6,The camera captures what you see very well.
+B005IHAIMA,22,7,a very capable camera.
+B005IHAIMA,22,8,I miss the quick menu of the LX5.
+B005IHAIMA,22,9,Almost Great.
+B005IHAIMA,23,0,unreliable !
+B005IHAIMA,23,1,DO NOT BUY THIS CAMERA.
+B005IHAIMA,23,2,Negatif yani ise lens portfoyunun zayif olmasi.
+B005IHAIMA,23,3,Lets get too the point  !
+B005IHAIMA,23,4,I wanted something smaller that I can take anywhere.
+B005IHAIMA,23,5,Buy it.
+B005IHAIMA,23,6,(Other than more lenses)
+B005IHAIMA,23,7,This camera is everything I expected.
+B005IHAIMA,23,8,Everything I Expected and More!
+B005IHAIMA,23,9,Great camera.
+B005IHAIMA,24,0,DO NOT BUY THIS CAMERA.
+B005IHAIMA,24,1,Buy it.
+B005IHAIMA,24,2,This camera is everything I expected.
+B005IHAIMA,24,3,Everything I Expected and More!
+B005IHAIMA,24,4,This was not an impulse buy.
+B005IHAIMA,24,5,Sony really did their homework on this camera.
+B005IHAIMA,24,6,New camera just as I have expected.
+B005IHAIMA,24,7,Battery lasts for a while.
+B005IHAIMA,24,8,Sony does it all.
+B005IHAIMA,24,9,Don't buy this camera.
+B005IHAIMA,25,0,Don't buy this camera.
+B005IHAIMA,25,1,If not, send it back.Now, back to the camera.
+B005IHAIMA,25,2,Buy it only if you want jacketable camera.
+B005IHAIMA,25,3,You will NOT be disappointed.
+B005IHAIMA,25,4,Negatif yani ise lens portfoyunun zayif olmasi.
+B005IHAIMA,25,5,will Sony do?
+B005IHAIMA,25,6,I purchased the A57 and haven't looked back.
+B005IHAIMA,25,7,again and suggest you purchase elsewhere.
+B005IHAIMA,25,8,One star.***
+B005IHAIMA,25,9,Hopefully it lasts.2)
+B002IPHIEG,0,0,Great Camera.
+B002IPHIEG,0,1,It did this with the battery that came with the camera.
+B002IPHIEG,0,2,Purchased in May 2011.
+B002IPHIEG,0,3,don't buy this camera.
+B002IPHIEG,0,4,Just back from Antigua vacation.
+B002IPHIEG,0,5,One stop shot!
+B002IPHIEG,0,6,I LOVED it!
+B002IPHIEG,0,7,perfect camera.
+B002IPHIEG,0,8,I found this product.
+B002IPHIEG,0,9,My boyfriend had this camera in black.
+B002IPHIEG,0,10,If only it took good pictures..
+B002IPHIEG,0,11,I carefully cancelled out of either.
+B002IPHIEG,0,12,For me, it was all about picture quality.
+B002IPHIEG,0,13,It still doesn't seem to be as good as my "old" cameras).-
+B002IPHIEG,0,14,Awesome.
+B002IPHIEG,0,15,Almost the Perfect Camera!
+B002IPHIEG,0,16,This is readily noticeable.
+B002IPHIEG,0,17,I would not be without this feature.
+B002IPHIEG,0,18,The two florescent settings are just goofy.
+B002IPHIEG,0,19,I was "forced" to use his camera.
+B002IPHIEG,0,20,Not happy.
+B002IPHIEG,0,21,It won't.
+B002IPHIEG,0,22,Very easy to use once you get into it.-
+B002IPHIEG,0,23,Do not buy this camera.
+B002IPHIEG,0,24,great camera.
+B002IPHIEG,1,0,It was NOT good at all.
+B002IPHIEG,1,1,great camera.
+B002IPHIEG,1,2,Great Camera.
+B002IPHIEG,1,3,Great camera for a while.
+B002IPHIEG,1,4,Excellent Camera!
+B002IPHIEG,1,5,It's amazing!
+B002IPHIEG,1,6,I love it!
+B002IPHIEG,1,7,I love this little camera...and I mean little.
+B002IPHIEG,1,8,Best camera I've ever had.
+B002IPHIEG,1,9,So many features and specialties.
+B002IPHIEG,1,10,Resoultion is awesome.
+B002IPHIEG,1,11,It still doesn't seem to be as good as my "old" cameras).-
+B002IPHIEG,1,12,Overall it is AWESOME!
+B002IPHIEG,1,13,So far, i like it very much, but have a lot tolearn.
+B002IPHIEG,1,14,Otherwise, very much worth the $$$$$.
+B002IPHIEG,1,15,Each one is better then the last.
+B002IPHIEG,1,16,Everything I expected.
+B002IPHIEG,1,17,Are you happy to see me or did your camera just come on?
+B002IPHIEG,1,18,Potent pocket.
+B002IPHIEG,1,19,All pixels on.
+B002IPHIEG,1,20,I've owned Sony's DSC-P72, W5, W7 and W300.
+B002IPHIEG,1,21,We are having so much fun.
+B002IPHIEG,1,22,Gotta Love It.
+B002IPHIEG,1,23,Very portable.
+B002IPHIEG,1,24,Very easy to use once you get into it.-
+B002IPHIEG,2,0,Almost very happy.
+B002IPHIEG,2,1,Maybe I should know what "noise" is without having to look it up, but I don't.
+B002IPHIEG,2,2,don't have an SLR and I don't want one.
+B002IPHIEG,2,3,There are many problems with the camera.
+B002IPHIEG,2,4,I wouldn't pay any more for it than that.
+B002IPHIEG,2,5,great camera.
+B002IPHIEG,2,6,Almost looks like some of the layers are separating.
+B002IPHIEG,2,7,All the features are a little hard to grasp.
+B002IPHIEG,2,8,Do not buy this camera.
+B002IPHIEG,2,9,Great little camera.
+B002IPHIEG,2,10,Great Camera.
+B002IPHIEG,2,11,Did I pay too much?
+B002IPHIEG,2,12,Great Camera.
+B002IPHIEG,2,13,Great camera for a while.
+B002IPHIEG,2,14,Elegant looking camera, love it!
+B002IPHIEG,2,15,Overall is good.
+B002IPHIEG,2,16,Really good camera.
+B002IPHIEG,2,17,Great
+B002IPHIEG,2,18,Great little camera.
+B002IPHIEG,2,19,This is a great little camera.
+B002IPHIEG,2,20,I Love this camera.
+B002IPHIEG,2,21,Such a great camera!
+B002IPHIEG,2,22,she loves it.
+B002IPHIEG,2,23,Love it!
+B002IPHIEG,2,24,Great Little Camera.
+B002IPHIEG,3,0,Such a great camera!
+B002IPHIEG,3,1,He loved it!
+B002IPHIEG,3,2,Elegant looking camera, love it!
+B002IPHIEG,3,3,Great Little Camera.
+B002IPHIEG,3,4,Quite Impressive!
+B002IPHIEG,3,5,I'm happy with this camera.
+B002IPHIEG,3,6,I got it for $159 and feel like I stole it.
+B002IPHIEG,3,7,I do NOT recommend this camera not even at $100
+B002IPHIEG,3,8,Sony DSC-TX1/P.
+B002IPHIEG,3,9,In the end, it was hard to make him stop playing with it!
+B002IPHIEG,3,10,Not overly impressed.
+B002IPHIEG,3,11,I'm very happy with this camera.
+B002IPHIEG,3,12,I have only used this camera for a few days and I would say that I really like it.
+B002IPHIEG,3,13,VERY happy with this camera.
+B002IPHIEG,3,14,Best camera I've had so far.
+B002IPHIEG,3,15,great camera.
+B002IPHIEG,3,16,Great little camera.
+B002IPHIEG,3,17,Great Camera.
+B002IPHIEG,3,18,All the features are a little hard to grasp.
+B002IPHIEG,3,19,Great Camera.
+B002IPHIEG,3,20,Great camera for a while.
+B002IPHIEG,3,21,Overall is good.
+B002IPHIEG,3,22,Really good camera.
+B002IPHIEG,3,23,Great
+B002IPHIEG,3,24,Great little camera.
+B002IPHIEG,4,0,Nice Camera.
+B002IPHIEG,4,1,nice!!!!!!!
+B002IPHIEG,4,2,I use it all the time.
+B002IPHIEG,4,3,I'm very happy with this camera.
+B002IPHIEG,4,4,Overall, awesome camera!
+B002IPHIEG,4,5,Amazing little camera.
+B002IPHIEG,4,6,Perfect... no.
+B002IPHIEG,4,7,I am really content with both of this toys!!!
+B002IPHIEG,4,8,It is truly pocketable.
+B002IPHIEG,4,9,AWESOME CAMERA!!!
+B002IPHIEG,4,10,This is a technological tour-de-force.
+B002IPHIEG,4,11,great camera.
+B002IPHIEG,4,12,All the features are a little hard to grasp.
+B002IPHIEG,4,13,Overall is good.
+B002IPHIEG,4,14,Really good camera.
+B002IPHIEG,4,15,Do not buy this camera.
+B002IPHIEG,4,16,Great little camera.
+B002IPHIEG,4,17,Great Camera.
+B002IPHIEG,4,18,Great Camera.
+B002IPHIEG,4,19,Great camera for a while.
+B002IPHIEG,4,20,Great
+B002IPHIEG,4,21,Great little camera.
+B002IPHIEG,4,22,This is a great little camera.
+B002IPHIEG,4,23,Elegant looking camera, love it!
+B002IPHIEG,4,24,Such a great camera!
+B002IPHIEG,5,0,What a great camera.
+B002IPHIEG,5,1,Awesome.
+B002IPHIEG,5,2,Sadly, it went back.
+B002IPHIEG,5,3,Gotta Love It.
+B002IPHIEG,5,4,I do NOT recommend this camera not even at $100
+B002IPHIEG,5,5,In other cases they were less so.
+B002IPHIEG,5,6,I really can't recommend this to anyone.
+B002IPHIEG,5,7,If you can grab the now-discontinued DSC-W300 -- get one while you can.
+B002IPHIEG,5,8,My first camera was a Leica M2 that my grandfather gave to me.
+B002IPHIEG,5,9,Fantastic Camera all around!!! :)
+B002IPHIEG,5,10,I had a wide variety of pictures to take in Northern Minnesota.
+B002IPHIEG,5,11,This camera doesn't take such nice pictures.
+B002IPHIEG,5,12,I use a camera to take nice looking pictures.
+B002IPHIEG,5,13,But this is my favorite by far!!!!
+B002IPHIEG,5,14,Do not buy this camera.
+B002IPHIEG,5,15,great camera.
+B002IPHIEG,5,16,Overall is good.
+B002IPHIEG,5,17,Really good camera.
+B002IPHIEG,5,18,All the features are a little hard to grasp.
+B002IPHIEG,5,19,So check, check, and check!
+B002IPHIEG,5,20,Great little camera.
+B002IPHIEG,5,21,Great Camera.
+B002IPHIEG,5,22,With that, I am very pleased with my new WX-1 camera.
+B002IPHIEG,5,23,Great Camera.
+B002IPHIEG,5,24,Great camera for a while.
+B002IPHIEG,6,0,It still doesn't seem to be as good as my "old" cameras).-
+B002IPHIEG,6,1,Sorry Sony.
+B002IPHIEG,6,2,Sorry Sony!
+B002IPHIEG,6,3,At first I looked at the Sony W290.
+B002IPHIEG,6,4,Sorry Sony.
+B002IPHIEG,6,5,Sorry Sony!
+B002IPHIEG,6,6,I didn't see the need for it.VIDEO:
+B002IPHIEG,6,7,Love it.
+B002IPHIEG,6,8,Not happy.
+B002IPHIEG,6,9,I did purchase this camera elsewhere.
+B002IPHIEG,6,10,The Camera That Stole Me Away From Canon!
+B002IPHIEG,6,11,Very happy with it.
+B002IPHIEG,6,12,Very easy to use once you get into it.-
+B002IPHIEG,6,13,I've had this camera for about a month now.
+B002IPHIEG,6,14,Overall I am not very impressed.
+B002IPHIEG,6,15,Maybe I should know what "noise" is without having to look it up, but I don't.
+B002IPHIEG,6,16,But how often do you spin around in circles taking pano shots?
+B002IPHIEG,6,17,But this one is the best so far.
+B002IPHIEG,6,18,Not with the TX1!
+B002IPHIEG,6,19,Wonderful camera.
+B002IPHIEG,6,20,Cool Camera.
+B002IPHIEG,6,21,We have been very pleased with every one of those products.
+B002IPHIEG,6,22,Enjoy it
+B002IPHIEG,6,23,don't have an SLR and I don't want one.
+B002IPHIEG,6,24,Exactly What I Was Looking For.
+B002IPHIEG,7,0,Great Camera.
+B002IPHIEG,7,1,Really good camera.
+B002IPHIEG,7,2,Great camera for a while.
+B002IPHIEG,7,3,I really love this camera.
+B002IPHIEG,7,4,she loves it.
+B002IPHIEG,7,5,A really nice camera.
+B002IPHIEG,7,6,Amazing !
+B002IPHIEG,7,7,It still doesn't seem to be as good as my "old" cameras).-
+B002IPHIEG,7,8,I have had this camera for a little over a year.
+B002IPHIEG,7,9,I love it!
+B002IPHIEG,7,10,Gotta Love It.
+B002IPHIEG,7,11,Sony DSC-TX1 camera.
+B002IPHIEG,7,12,It is amazing.
+B002IPHIEG,7,13,I have really been amazed by this camera.
+B002IPHIEG,7,14,Very easy to use once you get into it.-
+B002IPHIEG,7,15,I have a DSLR that can do that.Conclusion:
+B002IPHIEG,7,16,Nice while it lasted but...
+B002IPHIEG,7,17,It's been in a drawer for some time now.
+B002IPHIEG,7,18,I ended up with both cameras and have used them for about a year.
+B002IPHIEG,7,19,Awesome camera.
+B002IPHIEG,7,20,Easy to use2.-
+B002IPHIEG,7,21,It didn't last long.
+B002IPHIEG,7,22,battery life5.-touch
+B002IPHIEG,7,23,Not happy.
+B002IPHIEG,7,24,At first I looked at the Sony W290.
+B002IPHIEG,8,0,For me, it was all about picture quality.
+B002IPHIEG,8,1,If only it took good pictures..
+B002IPHIEG,8,2,I have a DSLR that can do that.Conclusion:
+B002IPHIEG,8,3,Sorry Sony.
+B002IPHIEG,8,4,Sorry Sony!
+B002IPHIEG,8,5,Sorry Sony.
+B002IPHIEG,8,6,Sorry Sony!
+B002IPHIEG,8,7,Takes better pictures than any other camera I've owned.
+B002IPHIEG,8,8,I would not be without this feature.
+B002IPHIEG,8,9,It just works.
+B002IPHIEG,8,10,Best camera I've had so far.
+B002IPHIEG,8,11,The two florescent settings are just goofy.
+B002IPHIEG,8,12,Only control over resolution.Photos are inky looking.
+B002IPHIEG,8,13,Decrease the EV setting by .07.
+B002IPHIEG,8,14,I Love this camera.
+B002IPHIEG,8,15,AWESOME CAMERA!!!
+B002IPHIEG,8,16,Ansel would have had one in his pocket!
+B002IPHIEG,8,17,Also, I tried a Canon SD940IS.
+B002IPHIEG,8,18,Easy to use2.-
+B002IPHIEG,8,19,Excellent Camera!
+B002IPHIEG,8,20,I ended up with both cameras and have used them for about a year.
+B002IPHIEG,8,21,battery life5.-touch
+B002IPHIEG,8,22,Who would have thought......
+B002IPHIEG,8,23,It is amazing.
+B002IPHIEG,8,24,I have really been amazed by this camera.
+B002IPHIEG,9,0,But how often do you spin around in circles taking pano shots?
+B002IPHIEG,9,1,Overall is good.
+B002IPHIEG,9,2,What shots I took!
+B002IPHIEG,9,3,Great Camera.
+B002IPHIEG,9,4,Decrease the EV setting by .07.
+B002IPHIEG,9,5,One stop shot!
+B002IPHIEG,9,6,I didn't see the need for it.VIDEO:
+B002IPHIEG,9,7,However this feature makes a difference.
+B002IPHIEG,9,8,Not even fixed focus.
+B002IPHIEG,9,9,nothing better.
+B002IPHIEG,9,10,The two florescent settings are just goofy.
+B002IPHIEG,9,11,Very nice camera.
+B002IPHIEG,9,12,So many features and specialties.
+B002IPHIEG,9,13,Nice while it lasted but...
+B002IPHIEG,9,14,This camera doesn't take such nice pictures.
+B002IPHIEG,9,15,I use a camera to take nice looking pictures.
+B002IPHIEG,9,16,It's been in a drawer for some time now.
+B002IPHIEG,9,17,I love this camera.
+B002IPHIEG,9,18,Amazing little camera.
+B002IPHIEG,9,19,It is just there all the time.
+B002IPHIEG,9,20,Perfect... no.
+B002IPHIEG,9,21,Best camera I've had so far.
+B002IPHIEG,9,22,What a great camera.
+B002IPHIEG,9,23,Amazing! Just, amazing!
+B002IPHIEG,9,24,I would not be without this feature.
+B002IPHIEG,10,0,Great
+B002IPHIEG,10,1,Great little camera.
+B002IPHIEG,10,2,Great little camera.
+B002IPHIEG,10,3,This is a great little camera.
+B002IPHIEG,10,4,A great camera.
+B002IPHIEG,10,5,Great camera.
+B002IPHIEG,10,6,Most pictures come out great.
+B002IPHIEG,10,7,Great Camera.
+B002IPHIEG,10,8,It just is TOO small.
+B002IPHIEG,10,9,Love it!
+B002IPHIEG,10,10,Love it.
+B002IPHIEG,10,11,Very nice camera.
+B002IPHIEG,10,12,This camera doesn't take such nice pictures.
+B002IPHIEG,10,13,I use a camera to take nice looking pictures.
+B002IPHIEG,10,14,This camera is perfection.
+B002IPHIEG,10,15,Excellent camera.
+B002IPHIEG,10,16,So far it has worked really well.
+B002IPHIEG,10,17,I'd recommend this camera to others.
+B002IPHIEG,10,18,nice!!!!!!!
+B002IPHIEG,10,19,I Love this camera.
+B002IPHIEG,10,20,Screen delamination or is it moisture haze?
+B002IPHIEG,10,21,I've been very happy with it!
+B002IPHIEG,10,22,Very Happy with this camera!
+B002IPHIEG,10,23,Slimmer then a LG Xenon if anyone has that phone.
+B002IPHIEG,10,24,I really can't recommend this to anyone.
+B002IPHIEG,11,0,Small camera.
+B002IPHIEG,11,1,If only it took good pictures..
+B002IPHIEG,11,2,For me, it was all about picture quality.
+B002IPHIEG,11,3,Not Happy.
+B002IPHIEG,11,4,So many features and specialties.
+B002IPHIEG,11,5,It still doesn't seem to be as good as my "old" cameras).-
+B002IPHIEG,11,6,Awesome Little Camera.
+B002IPHIEG,11,7,Each one is better then the last.
+B002IPHIEG,11,8,It is amazing.
+B002IPHIEG,11,9,I have really been amazed by this camera.
+B002IPHIEG,11,10,Very easy to use once you get into it.-
+B002IPHIEG,11,11,H. Rang.
+B002IPHIEG,11,12,Awesome camera.
+B002IPHIEG,11,13,I'm very happy with this camera.
+B002IPHIEG,11,14,Exactly What I Was Looking For.
+B002IPHIEG,11,15,Only control over resolution.Photos are inky looking.
+B002IPHIEG,11,16,The rest is icing on the cake.
+B002IPHIEG,11,17,I ended up with both cameras and have used them for about a year.
+B002IPHIEG,11,18,This is readily noticeable.
+B002IPHIEG,11,19,Not happy.
+B002IPHIEG,11,20,At first I looked at the Sony W290.
+B002IPHIEG,11,21,Each has its advantages and disadvantages.
+B002IPHIEG,11,22,The videos do look good though.
+B002IPHIEG,11,23,great camera.
+B002IPHIEG,11,24,Cool Camera.
+B002IPHIEG,12,0,Great Little Camera.
+B002IPHIEG,12,1,best camera ive used so far.
+B002IPHIEG,12,2,What shots I took!
+B002IPHIEG,12,3,Fantastic Camera all around!!! :)
+B002IPHIEG,12,4,Wonderful camera.
+B002IPHIEG,12,5,But this is my favorite by far!!!!
+B002IPHIEG,12,6,Not overly impressed.
+B002IPHIEG,12,7,We have been very pleased with every one of those products.
+B002IPHIEG,12,8,great camera.
+B002IPHIEG,12,9,All the features are a little hard to grasp.
+B002IPHIEG,12,10,Great little camera.
+B002IPHIEG,12,11,Great Camera.
+B002IPHIEG,12,12,Great Camera.
+B002IPHIEG,12,13,Great camera for a while.
+B002IPHIEG,12,14,Great
+B002IPHIEG,12,15,Great little camera.
+B002IPHIEG,12,16,Overall is good.
+B002IPHIEG,12,17,Really good camera.
+B002IPHIEG,12,18,This is a great little camera.
+B002IPHIEG,12,19,Such a great camera!
+B002IPHIEG,12,20,I'm still learning about everything it does.
+B002IPHIEG,12,21,Most pictures come out great.
+B002IPHIEG,12,22,Great camera.
+B002IPHIEG,12,23,Great Camera.
+B002IPHIEG,12,24,Elegant looking camera, love it!
+B002IPHIEG,13,0,The Camera That Stole Me Away From Canon!
+B002IPHIEG,13,1,Sony DSC-TX1/P.
+B002IPHIEG,13,2,Screen delamination or is it moisture haze?
+B002IPHIEG,13,3,It did this with the battery that came with the camera.
+B002IPHIEG,13,4,What shots I took!
+B002IPHIEG,13,5,So far, i like it very much, but have a lot tolearn.
+B002IPHIEG,13,6,I have had this camera for a little over a year.
+B002IPHIEG,13,7,No regrets.
+B002IPHIEG,13,8,I use it all the time.
+B002IPHIEG,13,9,nothing better.
+B002IPHIEG,14,0,It is just there all the time.
+B002IPHIEG,14,1,I've owned Sony's DSC-P72, W5, W7 and W300.
+B002IPHIEG,14,2,Very disappointing.
+B002IPHIEG,14,3,At first I looked at the Sony W290.
+B002IPHIEG,14,4,Purchased in May 2011.
+B002IPHIEG,14,5,Very easy to use once you get into it.-
+B002IPHIEG,14,6,No complaints at all!
+B002IPHIEG,14,7,The only two drawback I found so far is1.
+B002IPHIEG,14,8,So far it has worked really well.
+B002IPHIEG,14,9,7x would give more flexibility when taking pictures.
+B002IPHIEG,15,0,So far it has worked really well.
+B002IPHIEG,15,1,I use it all the time.
+B002IPHIEG,15,2,nothing better.
+B002IPHIEG,15,3,I have had this camera for a little over a year.
+B002IPHIEG,15,4,Slimmer then a LG Xenon if anyone has that phone.
+B002IPHIEG,15,5,No problems encountered so far.
+B002IPHIEG,15,6,Everything I expected.
+B002IPHIEG,15,7,It just works.
+B002IPHIEG,15,8,It's been in a drawer for some time now.
+B002IPHIEG,15,9,It just is TOO small.
+B002IPHIEG,16,0,There are many problems with the camera.
+B002IPHIEG,16,1,No problems encountered so far.
+B002IPHIEG,16,2,don't buy this camera.
+B002IPHIEG,16,3,Wonderful camera.
+B002IPHIEG,16,4,Some of the pictures I took are simply astounding.
+B002IPHIEG,16,5,Enjoy!
+B002IPHIEG,16,6,I use it all the time.
+B002IPHIEG,16,7,I have had this camera for a little over a year.
+B002IPHIEG,16,8,Love it.
+B002IPHIEG,16,9,So far it has worked really well.
+B002IPHIEG,17,0,We have been very pleased with every one of those products.
+B002IPHIEG,17,1,I use it all the time.
+B002IPHIEG,17,2,So far it has worked really well.
+B002IPHIEG,17,3,I ended up with both cameras and have used them for about a year.
+B002IPHIEG,17,4,Quick and simple, just what I need.
+B002IPHIEG,17,5,I got it for $159 and feel like I stole it.
+B002IPHIEG,17,6,I have a DSLR that can do that.Conclusion:
+B002IPHIEG,17,7,One stop shot!
+B002IPHIEG,17,8,I have had this camera for a little over a year.
+B002IPHIEG,17,9,nothing better.
+B002IPHIEG,18,0,Takes terrible pictures.
+B002IPHIEG,18,1,I wouldn't pay any more for it than that.
+B002IPHIEG,18,2,It's thin.
+B002IPHIEG,18,3,But I was proven very wrong.
+B002IPHIEG,18,4,In other cases they were less so.
+B002IPHIEG,18,5,Almost looks like some of the layers are separating.
+B002IPHIEG,18,6,nothing better.
+B002IPHIEG,18,7,I have had this camera for a little over a year.
+B002IPHIEG,18,8,Everything I expected.
+B002IPHIEG,18,9,I use it all the time.
+B002IPHIEG,19,0,I use it all the time.
+B002IPHIEG,19,1,I have a DSLR that can do that.Conclusion:
+B002IPHIEG,19,2,ha ha ha, Don't be fooled.
+B002IPHIEG,19,3,So far it has worked really well.
+B002IPHIEG,19,4,It's been in a drawer for some time now.
+B002IPHIEG,19,5,nothing better.
+B002IPHIEG,19,6,One stop shot!
+B002IPHIEG,19,7,Very easy to use once you get into it.-
+B002IPHIEG,19,8,At first I looked at the Sony W290.
+B002IPHIEG,19,9,I have had this camera for a little over a year.
+B002IPHIEG,20,0,Do not buy this camera.
+B002IPHIEG,20,1,There are many problems however:1.
+B002IPHIEG,20,2,Tried all suggestions by previous authors - didn't help much.
+B002IPHIEG,20,3,It's been in a drawer for some time now.
+B002IPHIEG,20,4,It does not, i was disappointed.
+B002IPHIEG,20,5,It didn't last long.
+B002IPHIEG,20,6,I have only used this camera for a few days and I would say that I really like it.
+B002IPHIEG,20,7,Each one is better then the last.
+B002IPHIEG,20,8,So many features and specialties.
+B002IPHIEG,20,9,Pocket Rocket.
+B002IPHIEG,21,0,All the features are a little hard to grasp.
+B002IPHIEG,21,1,The two florescent settings are just goofy.
+B002IPHIEG,21,2,Not even fixed focus.
+B002IPHIEG,21,3,Small camera.
+B002IPHIEG,21,4,I'm still learning about everything it does.
+B002IPHIEG,21,5,I would not be without this feature.
+B002IPHIEG,21,6,There are many problems with the camera.
+B002IPHIEG,21,7,However this feature makes a difference.
+B002IPHIEG,21,8,I carefully cancelled out of either.
+B002IPHIEG,21,9,Both disappointed.
+B002IPHIEG,22,0,Very disappointing.
+B002IPHIEG,22,1,For me, it was all about picture quality.
+B002IPHIEG,22,2,Also, I tried a Canon SD940IS.
+B002IPHIEG,22,3,The two florescent settings are just goofy.
+B002IPHIEG,22,4,This is readily noticeable.
+B002IPHIEG,22,5,Decrease the EV setting by .07.
+B002IPHIEG,22,6,Both disappointed.
+B002IPHIEG,22,7,That means it only gets worse from there.
+B002IPHIEG,22,8,In other cases they were less so.
+B002IPHIEG,22,9,Only control over resolution.Photos are inky looking.
+B002IPHIEG,23,0,Haven't used it extensively, but whatever I have used it, liked it.
+B002IPHIEG,23,1,So far it has worked really well.
+B002IPHIEG,23,2,All pixels on.
+B002IPHIEG,23,3,I use it all the time.
+B002IPHIEG,23,4,I have had this camera for a little over a year.
+B002IPHIEG,23,5,nothing better.
+B002IPHIEG,23,6,Potent pocket.
+B002IPHIEG,23,7,No problems encountered so far.
+B002IPHIEG,23,8,I've had this camera for about a month now.
+B002IPHIEG,23,9,Quick and simple, just what I need.
+B002IPHIEG,24,0,battery life5.-touch
+B002IPHIEG,24,1,Easy to use2.-
+B002IPHIEG,24,2,NO DOCK.
+B002IPHIEG,24,3,Sony DSC-TX1 camera.
+B002IPHIEG,24,4,I don't care what you own---you need this camera.
+B002IPHIEG,24,5,Ansel would have had one in his pocket!
+B002IPHIEG,24,6,Who would have thought......
+B002IPHIEG,24,7,great camera.
+B002IPHIEG,24,8,Quick and simple, just what I need.
+B002IPHIEG,24,9,Did I pay too much?
+B002IPHIEG,25,0,It just works.
+B002IPHIEG,25,1,Takes better pictures than any other camera I've owned.
+B002IPHIEG,25,2,We have been very pleased with every one of those products.
+B002IPHIEG,25,3,I ended up with both cameras and have used them for about a year.
+B002IPHIEG,25,4,It did this with the battery that came with the camera.
+B002IPHIEG,25,5,Sorry Sony.
+B002IPHIEG,25,6,Sorry Sony!
+B002IPHIEG,25,7,Did I pay too much?
+B002IPHIEG,25,8,So check, check, and check!
+B002IPHIEG,25,9,Exactly What I Was Looking For.
+B00DMS0LCO,0,0,Did not work.
+B00DMS0LCO,0,1,It would still work but it was not tactile.
+B00DMS0LCO,0,2,This is a great camera.
+B00DMS0LCO,0,3,Magnificent DSLR.
+B00DMS0LCO,0,4,My fault and not the camera.
+B00DMS0LCO,0,5,Consider Other Suppliers.
+B00DMS0LCO,0,6,fine camera.
+B00DMS0LCO,0,7,Good Camera.
+B00DMS0LCO,0,8,However, it's still very good.
+B00DMS0LCO,0,9,It will be returned.
+B00DMS0LCO,0,10,Too good for me.
+B00DMS0LCO,0,11,Amazon said it was new, it was not.
+B00DMS0LCO,0,12,So Far, So Good.
+B00DMS0LCO,0,13,Auto-focus.
+B00DMS0LCO,0,14,Just briefly, I did try it out and it is a tremendous step up.
+B00DMS0LCO,0,15,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,0,16,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,0,17,so far so good.
+B00DMS0LCO,0,18,Amazing!
+B00DMS0LCO,0,19,Over priced.
+B00DMS0LCO,0,20,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,0,21,Should be better in 2013.
+B00DMS0LCO,0,22,I've always been a Canon loyalist.
+B00DMS0LCO,0,23,They were polite and blamed them selves not the canon.
+B00DMS0LCO,0,24,I really like the features of this camera.
+B00DMS0LCO,1,0,So Far, So Good.
+B00DMS0LCO,1,1,This was an upgrade for me.
+B00DMS0LCO,1,2,Good Camera.
+B00DMS0LCO,1,3,However, it's still very good.
+B00DMS0LCO,1,4,Too good for me.
+B00DMS0LCO,1,5,Over priced.
+B00DMS0LCO,1,6,fine camera.
+B00DMS0LCO,1,7,This is a great camera.
+B00DMS0LCO,1,8,Did not work.
+B00DMS0LCO,1,9,Should be better in 2013.
+B00DMS0LCO,1,10,It would still work but it was not tactile.
+B00DMS0LCO,1,11,Excellant Camera.
+B00DMS0LCO,1,12,I really like the features of this camera.
+B00DMS0LCO,1,13,Amazing!
+B00DMS0LCO,1,14,Amazon said it was new, it was not.
+B00DMS0LCO,1,15,so far so good.
+B00DMS0LCO,1,16,It will be returned.
+B00DMS0LCO,1,17,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,1,18,I've always been a Canon loyalist.
+B00DMS0LCO,1,19,They were polite and blamed them selves not the canon.
+B00DMS0LCO,1,20,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,1,21,Net result is that I have more "keeper" shots than before.
+B00DMS0LCO,1,22,a sony RX100?
+B00DMS0LCO,1,23,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,1,24,You expect much more from a 20.2mp camera.
+B00DMS0LCO,2,0,Over priced.
+B00DMS0LCO,2,1,So we wait.....
+B00DMS0LCO,2,2,Magnificent DSLR.
+B00DMS0LCO,2,3,In short.
+B00DMS0LCO,2,4,Good Camera.
+B00DMS0LCO,2,5,Amazon said it was new, it was not.
+B00DMS0LCO,2,6,However, it's still very good.
+B00DMS0LCO,2,7,Too good for me.
+B00DMS0LCO,2,8,My fault and not the camera.
+B00DMS0LCO,2,9,For a $1200 camera it should have a full frame senor.Their still not there yet.
+B00DMS0LCO,2,10,fine camera.
+B00DMS0LCO,2,11,So Far, So Good.
+B00DMS0LCO,2,12,Should be better in 2013.
+B00DMS0LCO,2,13,Did not work.
+B00DMS0LCO,2,14,It would still work but it was not tactile.
+B00DMS0LCO,2,15,This is a great camera.
+B00DMS0LCO,2,16,Amazing!
+B00DMS0LCO,2,17,Excellant Camera.
+B00DMS0LCO,2,18,It will be returned.
+B00DMS0LCO,2,19,I really like the features of this camera.
+B00DMS0LCO,2,20,This was an upgrade for me.
+B00DMS0LCO,2,21,Same issues.
+B00DMS0LCO,2,22,I've always been a Canon loyalist.
+B00DMS0LCO,2,23,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,2,24,so far so good.
+B00DMS0LCO,3,0,Good Camera.
+B00DMS0LCO,3,1,However, it's still very good.
+B00DMS0LCO,3,2,Amazon said it was new, it was not.
+B00DMS0LCO,3,3,Too good for me.
+B00DMS0LCO,3,4,So Far, So Good.
+B00DMS0LCO,3,5,It will be returned.
+B00DMS0LCO,3,6,Over priced.
+B00DMS0LCO,3,7,This is a great camera.
+B00DMS0LCO,3,8,Did not work.
+B00DMS0LCO,3,9,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,3,10,It would still work but it was not tactile.
+B00DMS0LCO,3,11,fine camera.
+B00DMS0LCO,3,12,Should be better in 2013.
+B00DMS0LCO,3,13,Excellant Camera.
+B00DMS0LCO,3,14,I really like the features of this camera.
+B00DMS0LCO,3,15,Amazing!
+B00DMS0LCO,3,16,so far so good.
+B00DMS0LCO,3,17,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,3,18,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,3,19,I've always been a Canon loyalist.
+B00DMS0LCO,3,20,They were polite and blamed them selves not the canon.
+B00DMS0LCO,3,21,date was set on the first camera.
+B00DMS0LCO,3,22,You expect much more from a 20.2mp camera.
+B00DMS0LCO,3,23,Magnificent DSLR.
+B00DMS0LCO,3,24,Same issues.
+B00DMS0LCO,4,0,Good Camera.
+B00DMS0LCO,4,1,However, it's still very good.
+B00DMS0LCO,4,2,Too good for me.
+B00DMS0LCO,4,3,So Far, So Good.
+B00DMS0LCO,4,4,Amazon said it was new, it was not.
+B00DMS0LCO,4,5,Did not work.
+B00DMS0LCO,4,6,It would still work but it was not tactile.
+B00DMS0LCO,4,7,This is a great camera.
+B00DMS0LCO,4,8,Over priced.
+B00DMS0LCO,4,9,fine camera.
+B00DMS0LCO,4,10,Should be better in 2013.
+B00DMS0LCO,4,11,Amazing!
+B00DMS0LCO,4,12,I really like the features of this camera.
+B00DMS0LCO,4,13,It will be returned.
+B00DMS0LCO,4,14,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,4,15,so far so good.
+B00DMS0LCO,4,16,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,4,17,Excellant Camera.
+B00DMS0LCO,4,18,I've always been a Canon loyalist.
+B00DMS0LCO,4,19,They were polite and blamed them selves not the canon.
+B00DMS0LCO,4,20,You expect much more from a 20.2mp camera.
+B00DMS0LCO,4,21,date was set on the first camera.
+B00DMS0LCO,4,22,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,4,23,Magnificent DSLR.
+B00DMS0LCO,4,24,This was an upgrade for me.
+B00DMS0LCO,5,0,It would still work but it was not tactile.
+B00DMS0LCO,5,1,You expect much more from a 20.2mp camera.
+B00DMS0LCO,5,2,I've always been a Canon loyalist.
+B00DMS0LCO,5,3,Same issues.
+B00DMS0LCO,5,4,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,5,5,If you have any questions, please let me know.
+B00DMS0LCO,5,6,Disappointing Camera.
+B00DMS0LCO,5,7,Amazon said it was new, it was not.
+B00DMS0LCO,5,8,Good Camera.
+B00DMS0LCO,5,9,It will be returned.
+B00DMS0LCO,5,10,However, it's still very good.
+B00DMS0LCO,5,11,Too good for me.
+B00DMS0LCO,5,12,So Far, So Good.
+B00DMS0LCO,5,13,Did not work.
+B00DMS0LCO,5,14,Will comment again as I make more use of this camera.
+B00DMS0LCO,5,15,fine camera.
+B00DMS0LCO,5,16,Should be better in 2013.
+B00DMS0LCO,5,17,Over priced.
+B00DMS0LCO,5,18,This is a great camera.
+B00DMS0LCO,5,19,so far so good.
+B00DMS0LCO,5,20,I really like the features of this camera.
+B00DMS0LCO,5,21,Amazing!
+B00DMS0LCO,5,22,Excellant Camera.
+B00DMS0LCO,5,23,They were polite and blamed them selves not the canon.
+B00DMS0LCO,5,24,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,6,0,Net result is that I have more "keeper" shots than before.
+B00DMS0LCO,6,1,Amazon said it was new, it was not.
+B00DMS0LCO,6,2,Good Camera.
+B00DMS0LCO,6,3,However, it's still very good.
+B00DMS0LCO,6,4,Too good for me.
+B00DMS0LCO,6,5,So Far, So Good.
+B00DMS0LCO,6,6,Did not work.
+B00DMS0LCO,6,7,It would still work but it was not tactile.
+B00DMS0LCO,6,8,This is a great camera.
+B00DMS0LCO,6,9,fine camera.
+B00DMS0LCO,6,10,Should be better in 2013.
+B00DMS0LCO,6,11,Over priced.
+B00DMS0LCO,6,12,so far so good.
+B00DMS0LCO,6,13,It will be returned.
+B00DMS0LCO,6,14,Will comment again as I make more use of this camera.
+B00DMS0LCO,6,15,I really like the features of this camera.
+B00DMS0LCO,6,16,Excellant Camera.
+B00DMS0LCO,6,17,Amazing!
+B00DMS0LCO,6,18,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,6,19,a sony RX100?
+B00DMS0LCO,6,20,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,6,21,This was an upgrade for me.
+B00DMS0LCO,6,22,I've always been a Canon loyalist.
+B00DMS0LCO,6,23,They were polite and blamed them selves not the canon.
+B00DMS0LCO,6,24,Same issues.
+B00DMS0LCO,7,0,Too good for me.
+B00DMS0LCO,7,1,Excellant Camera.
+B00DMS0LCO,7,2,date was set on the first camera.
+B00DMS0LCO,7,3,a sony RX100?
+B00DMS0LCO,7,4,Mine were all loose.-The
+B00DMS0LCO,7,5,Mine were loose.-The
+B00DMS0LCO,7,6,Got a used camera from Amazon.
+B00DMS0LCO,7,7,Not cool.
+B00DMS0LCO,7,8,I received an obviously used camera.
+B00DMS0LCO,7,9,Good Camera.
+B00DMS0LCO,7,10,However, it's still very good.
+B00DMS0LCO,7,11,So Far, So Good.
+B00DMS0LCO,7,12,fine camera.
+B00DMS0LCO,7,13,The only way to recover from this was to remove and reseat the battery.-The
+B00DMS0LCO,7,14,Just don't unknowingly get someone else's problem.
+B00DMS0LCO,7,15,This is a great camera.
+B00DMS0LCO,7,16,Amazon said it was new, it was not.
+B00DMS0LCO,7,17,Over priced.
+B00DMS0LCO,7,18,Amazing!
+B00DMS0LCO,7,19,Should be better in 2013.
+B00DMS0LCO,7,20,so far so good.
+B00DMS0LCO,7,21,I really like the features of this camera.
+B00DMS0LCO,7,22,It will be returned.
+B00DMS0LCO,7,23,Did not work.
+B00DMS0LCO,7,24,Magnificent DSLR.
+B00DMS0LCO,8,0,However, it's still very good.
+B00DMS0LCO,8,1,so far so good.
+B00DMS0LCO,8,2,They were polite and blamed them selves not the canon.
+B00DMS0LCO,8,3,I really like the features of this camera.
+B00DMS0LCO,8,4,I've always been a Canon loyalist.
+B00DMS0LCO,8,5,This is a great camera.
+B00DMS0LCO,8,6,Should be better in 2013.
+B00DMS0LCO,8,7,a sony RX100?
+B00DMS0LCO,8,8,Net result is that I have more "keeper" shots than before.
+B00DMS0LCO,8,9,the on camera flash.
+B00DMS0LCO,8,10,I wish I can assign the WB to a button, but you can not.
+B00DMS0LCO,8,11,intial impressions.
+B00DMS0LCO,8,12,Auto-focus.
+B00DMS0LCO,8,13,Way over rated.
+B00DMS0LCO,8,14,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,8,15,Consider Other Suppliers.
+B00DMS0LCO,8,16,A 4 or 5 steps.
+B00DMS0LCO,8,17,In short.
+B00DMS0LCO,8,18,Just briefly, I did try it out and it is a tremendous step up.
+B00DMS0LCO,8,19,its not charging ?
+B00DMS0LCO,8,20,Rebel.
+B00DMS0LCO,8,21,check out this vid: [...]
+B00DMS0LCO,8,22,7 fps.
+B00DMS0LCO,8,23,Same as the 6D.
+B00DMS0LCO,8,24,Either way you cant lose.
+B00DMS0LCO,9,0,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,9,1,Amazing!
+B00DMS0LCO,9,2,Magnificent DSLR.
+B00DMS0LCO,9,3,Auto-focus.
+B00DMS0LCO,9,4,There was no difference between using FEL and not using it on my T3i.
+B00DMS0LCO,9,5,Then I tried using FEL with the T3i.
+B00DMS0LCO,9,6,My fault and not the camera.
+B00DMS0LCO,9,7,7 fps.
+B00DMS0LCO,9,8,Just briefly, I did try it out and it is a tremendous step up.
+B00DMS0LCO,9,9,Good Camera.
+B00DMS0LCO,9,10,check out this vid: [...]
+B00DMS0LCO,9,11,However, it's still very good.
+B00DMS0LCO,9,12,In short.
+B00DMS0LCO,9,13,Too good for me.
+B00DMS0LCO,9,14,So Far, So Good.
+B00DMS0LCO,9,15,Did not work.
+B00DMS0LCO,9,16,It would still work but it was not tactile.
+B00DMS0LCO,9,17,fine camera.
+B00DMS0LCO,9,18,Wireless.
+B00DMS0LCO,9,19,Amazon said it was new, it was not.
+B00DMS0LCO,9,20,I really like the features of this camera.
+B00DMS0LCO,9,21,Helpful, great illustrations.
+B00DMS0LCO,9,22,This is a great camera.
+B00DMS0LCO,9,23,Should be better in 2013.
+B00DMS0LCO,9,24,date was set on the first camera.
+B00DMS0LCO,10,0,Good Camera.
+B00DMS0LCO,10,1,Have the 60D as well and they are quite similar.
+B00DMS0LCO,10,2,However, it's still very good.
+B00DMS0LCO,10,3,Too good for me.
+B00DMS0LCO,10,4,So Far, So Good.
+B00DMS0LCO,10,5,Over priced.
+B00DMS0LCO,10,6,This is a great camera.
+B00DMS0LCO,10,7,Amazon said it was new, it was not.
+B00DMS0LCO,10,8,I really like the features of this camera.
+B00DMS0LCO,10,9,Excellant Camera.
+B00DMS0LCO,10,10,Did not work.
+B00DMS0LCO,10,11,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,10,12,It would still work but it was not tactile.
+B00DMS0LCO,10,13,Amazing!
+B00DMS0LCO,10,14,Should be better in 2013.
+B00DMS0LCO,10,15,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,10,16,so far so good.
+B00DMS0LCO,10,17,It will be returned.
+B00DMS0LCO,10,18,fine camera.
+B00DMS0LCO,10,19,Will comment again as I make more use of this camera.
+B00DMS0LCO,10,20,I've always been a Canon loyalist.
+B00DMS0LCO,10,21,They were polite and blamed them selves not the canon.
+B00DMS0LCO,10,22,This was an upgrade for me.
+B00DMS0LCO,10,23,You expect much more from a 20.2mp camera.
+B00DMS0LCO,10,24,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,11,0,Did not work.
+B00DMS0LCO,11,1,so far so good.
+B00DMS0LCO,11,2,its not charging ?
+B00DMS0LCO,11,3,the on camera flash.
+B00DMS0LCO,11,4,a sony RX100?
+B00DMS0LCO,11,5,intial impressions.
+B00DMS0LCO,11,6,Good Camera.
+B00DMS0LCO,11,7,However, it's still very good.
+B00DMS0LCO,11,8,Too good for me.
+B00DMS0LCO,11,9,So Far, So Good.
+B00DMS0LCO,11,10,fine camera.
+B00DMS0LCO,11,11,It would still work but it was not tactile.
+B00DMS0LCO,11,12,Over priced.
+B00DMS0LCO,11,13,This is a great camera.
+B00DMS0LCO,11,14,Amazon said it was new, it was not.
+B00DMS0LCO,11,15,Excellant Camera.
+B00DMS0LCO,11,16,Should be better in 2013.
+B00DMS0LCO,11,17,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,11,18,I really like the features of this camera.
+B00DMS0LCO,11,19,Amazing!
+B00DMS0LCO,11,20,It will be returned.
+B00DMS0LCO,11,21,This was an upgrade for me.
+B00DMS0LCO,11,22,date was set on the first camera.
+B00DMS0LCO,11,23,I've always been a Canon loyalist.
+B00DMS0LCO,11,24,Net result is that I have more "keeper" shots than before.
+B00DMS0LCO,12,0,I've always been a Canon loyalist.
+B00DMS0LCO,12,1,Good Camera.
+B00DMS0LCO,12,2,However, it's still very good.
+B00DMS0LCO,12,3,Too good for me.
+B00DMS0LCO,12,4,So Far, So Good.
+B00DMS0LCO,12,5,Amazon said it was new, it was not.
+B00DMS0LCO,12,6,This is a great camera.
+B00DMS0LCO,12,7,Did not work.
+B00DMS0LCO,12,8,It would still work but it was not tactile.
+B00DMS0LCO,12,9,It will be returned.
+B00DMS0LCO,12,10,Excellant Camera.
+B00DMS0LCO,12,11,I really like the features of this camera.
+B00DMS0LCO,12,12,fine camera.
+B00DMS0LCO,12,13,Over priced.
+B00DMS0LCO,12,14,Will comment again as I make more use of this camera.
+B00DMS0LCO,12,15,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,12,16,so far so good.
+B00DMS0LCO,12,17,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,12,18,Should be better in 2013.
+B00DMS0LCO,12,19,Just garbage
+B00DMS0LCO,12,20,Amazing!
+B00DMS0LCO,12,21,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,12,22,They were polite and blamed them selves not the canon.
+B00DMS0LCO,12,23,date was set on the first camera.
+B00DMS0LCO,12,24,This was an upgrade for me.
+B00DMS0LCO,13,0,I've always been a Canon loyalist.
+B00DMS0LCO,13,1,Did not work.
+B00DMS0LCO,13,2,Should be better in 2013.
+B00DMS0LCO,13,3,It would still work but it was not tactile.
+B00DMS0LCO,13,4,They were polite and blamed them selves not the canon.
+B00DMS0LCO,13,5,Over priced.
+B00DMS0LCO,13,6,I really like the features of this camera.
+B00DMS0LCO,13,7,I also own a Canon PowerShot s95.
+B00DMS0LCO,13,8,a sony RX100?
+B00DMS0LCO,13,9,Disappointing Camera.
+B00DMS0LCO,14,0,Just garbage
+B00DMS0LCO,14,1,Magnificent DSLR.
+B00DMS0LCO,14,2,Did not work.
+B00DMS0LCO,14,3,Over priced.
+B00DMS0LCO,14,4,I really like the features of this camera.
+B00DMS0LCO,14,5,It would still work but it was not tactile.
+B00DMS0LCO,14,6,Should be better in 2013.
+B00DMS0LCO,14,7,I tried 3 cameras and all have the same problem.
+B00DMS0LCO,14,8,Good Camera.
+B00DMS0LCO,14,9,fine camera.
+B00DMS0LCO,15,0,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,15,1,Did not work.
+B00DMS0LCO,15,2,Too good for me.
+B00DMS0LCO,15,3,Wireless.
+B00DMS0LCO,15,4,I really like the features of this camera.
+B00DMS0LCO,15,5,If you have any questions, please let me know.
+B00DMS0LCO,15,6,It would still work but it was not tactile.
+B00DMS0LCO,15,7,Over priced.
+B00DMS0LCO,15,8,Just briefly, I did try it out and it is a tremendous step up.
+B00DMS0LCO,15,9,Same as the 6D.
+B00DMS0LCO,16,0,I tried 3 cameras and all have the same problem.
+B00DMS0LCO,16,1,It will be returned.
+B00DMS0LCO,16,2,They were polite and blamed them selves not the canon.
+B00DMS0LCO,16,3,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,16,4,There was no difference between using FEL and not using it on my T3i.
+B00DMS0LCO,16,5,Then I tried using FEL with the T3i.
+B00DMS0LCO,16,6,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,16,7,Way over rated.
+B00DMS0LCO,16,8,I wish I can assign the WB to a button, but you can not.
+B00DMS0LCO,16,9,A 4 or 5 steps.
+B00DMS0LCO,17,0,its not charging ?
+B00DMS0LCO,17,1,the on camera flash.
+B00DMS0LCO,17,2,Just don't unknowingly get someone else's problem.
+B00DMS0LCO,17,3,date was set on the first camera.
+B00DMS0LCO,17,4,In short.
+B00DMS0LCO,17,5,Did not work.
+B00DMS0LCO,17,6,The only way to recover from this was to remove and reseat the battery.-The
+B00DMS0LCO,17,7,so far so good.
+B00DMS0LCO,17,8,Either way you cant lose.
+B00DMS0LCO,17,9,When I get the battery, there is no power in it.
+B00DMS0LCO,18,0,It would still work but it was not tactile.
+B00DMS0LCO,18,1,Will comment again as I make more use of this camera.
+B00DMS0LCO,18,2,fine camera.
+B00DMS0LCO,18,3,Rebel.
+B00DMS0LCO,18,4,Over priced.
+B00DMS0LCO,18,5,Did not work.
+B00DMS0LCO,18,6,I really like the features of this camera.
+B00DMS0LCO,18,7,Should be better in 2013.
+B00DMS0LCO,18,8,So we wait.....
+B00DMS0LCO,18,9,Good Camera.
+B00DMS0LCO,19,0,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,19,1,Did not work.
+B00DMS0LCO,19,2,So we wait.....
+B00DMS0LCO,19,3,It would still work but it was not tactile.
+B00DMS0LCO,19,4,Over priced.
+B00DMS0LCO,19,5,I wish I can assign the WB to a button, but you can not.
+B00DMS0LCO,19,6,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,19,7,Should be better in 2013.
+B00DMS0LCO,19,8,I really like the features of this camera.
+B00DMS0LCO,19,9,Disappointing Camera.
+B00DMS0LCO,20,0,Disappointing Camera.
+B00DMS0LCO,20,1,Same issues.
+B00DMS0LCO,20,2,You expect much more from a 20.2mp camera.
+B00DMS0LCO,20,3,Excellant Camera.
+B00DMS0LCO,20,4,Did not work.
+B00DMS0LCO,20,5,I really like the features of this camera.
+B00DMS0LCO,20,6,Over priced.
+B00DMS0LCO,20,7,Have the 60D as well and they are quite similar.
+B00DMS0LCO,20,8,Good Camera.
+B00DMS0LCO,20,9,However, it's still very good.
+B00DMS0LCO,21,0,date was set on the first camera.
+B00DMS0LCO,21,1,Just don't unknowingly get someone else's problem.
+B00DMS0LCO,21,2,So Far, So Good.
+B00DMS0LCO,21,3,This was an upgrade for me.
+B00DMS0LCO,21,4,Net result is that I have more "keeper" shots than before.
+B00DMS0LCO,21,5,The only way to recover from this was to remove and reseat the battery.-The
+B00DMS0LCO,21,6,She begins to cry after a few photos if I'm using FEL for each one.
+B00DMS0LCO,21,7,It goes without saying that the hood was not reversible.
+B00DMS0LCO,21,8,Mine were all loose.-The
+B00DMS0LCO,21,9,Mine were loose.-The
+B00DMS0LCO,22,0,Should be better in 2013.
+B00DMS0LCO,22,1,Disappointing Camera.
+B00DMS0LCO,22,2,It will be returned.
+B00DMS0LCO,22,3,Same issues.
+B00DMS0LCO,22,4,You expect much more from a 20.2mp camera.
+B00DMS0LCO,22,5,Auto-focus.
+B00DMS0LCO,22,6,a sony RX100?
+B00DMS0LCO,22,7,If this camera was for me I would keep it because I never use the auto-mode anyway, but it's my wife's and she does.
+B00DMS0LCO,22,8,7 fps.
+B00DMS0LCO,22,9,Did not work.
+B00DMS0LCO,23,0,Did not work.
+B00DMS0LCO,23,1,Over priced.
+B00DMS0LCO,23,2,It would still work but it was not tactile.
+B00DMS0LCO,23,3,Good Camera.
+B00DMS0LCO,23,4,However, it's still very good.
+B00DMS0LCO,23,5,I really like the features of this camera.
+B00DMS0LCO,23,6,Should be better in 2013.
+B00DMS0LCO,23,7,I tried 3 cameras and all have the same problem.
+B00DMS0LCO,23,8,fine camera.
+B00DMS0LCO,23,9,Just don't unknowingly get someone else's problem.
+B00DMS0LCO,24,0,Amazon said it was new, it was not.
+B00DMS0LCO,24,1,I tried 3 cameras and all have the same problem.
+B00DMS0LCO,24,2,They were polite and blamed them selves not the canon.
+B00DMS0LCO,24,3,check out this vid: [...]
+B00DMS0LCO,24,4,Way over rated.
+B00DMS0LCO,24,5,Did not work.
+B00DMS0LCO,24,6,I wish I can assign the WB to a button, but you can not.
+B00DMS0LCO,24,7,A 4 or 5 steps.
+B00DMS0LCO,24,8,Over priced.
+B00DMS0LCO,24,9,Good Camera.
+B00DMS0LCO,25,0,Just don't unknowingly get someone else's problem.
+B00DMS0LCO,25,1,If you get a camera that is used I would return it and keep doing so until you get a new one.
+B00DMS0LCO,25,2,Got a used camera from Amazon.
+B00DMS0LCO,25,3,I received an obviously used camera.
+B00DMS0LCO,25,4,If you have any questions, please let me know.
+B00DMS0LCO,25,5,Same issues.
+B00DMS0LCO,25,6,date was set on the first camera.
+B00DMS0LCO,25,7,Mine were all loose.-The
+B00DMS0LCO,25,8,Mine were loose.-The
+B00DMS0LCO,25,9,Consider Other Suppliers.

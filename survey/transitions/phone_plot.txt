@@ -1,0 +1,32 @@
+digraph finite_state_machine {
+	rankdir=TB;
+	size="10,7"
+	node [shape = circle];
+	{rank=same; start screen_P app_P price_P battery_P;}
+	{rank=same; sound_P camera_P storage_P call_P servic_P;}
+	{rank=same; cpu_P keyboard_P design_P text_P screen_N;}
+	start -> screen_P [ label = "0.061" ];
+	start -> app_P [ label = "0.022" ];
+	start -> price_P [ label = "0.074" ];
+	start -> battery_P [ label = "0.039" ];
+	start -> sound_P [ label = "0.038" ];
+	start -> camera_P [ label = "0.028" ];
+	start -> storage_P [ label = "0.038" ];
+	start -> call_P [ label = "0.038" ];
+	start -> servic_P [ label = "0.048" ];
+	start -> cpu_P [ label = "0.032" ];
+	start -> keyboard_P [ label = "0.081" ];
+	screen_P -> app_P [ label = "0.399" ];
+	app_P -> price_P [ label = "0.459" ];
+	price_P -> battery_P [ label = "0.422" ];
+	battery_P -> sound_P [ label = "0.443" ];
+	sound_P -> camera_P [ label = "0.341" ];
+	camera_P -> storage_P [ label = "0.371" ];
+	storage_P -> call_P [ label = "0.424" ];
+	call_P -> servic_P [ label = "0.369" ];
+	servic_P -> cpu_P [ label = "0.545" ];
+	cpu_P -> keyboard_P [ label = "0.315" ];
+	keyboard_P -> design_P [ label = "0.389" ];
+	design_P -> text_P [ label = "0.337" ];
+	text_P -> screen_N [ label = "0.384" ];
+}

@@ -1,0 +1,8 @@
+S0-T0,S0-T1,S0-T2,S0-T3,S0-T4,S0-T5,S0-T6,S0-T7,S0-T8,S0-T9,S0-T10,S0-T11,S0-T12,S1-T0,S1-T1,S1-T2,S1-T3,S1-T4,S1-T5,S1-T6,S1-T7,S1-T8,S1-T9,S1-T10,S1-T11,S1-T12,
+card,money,app,good,work,work,month,screen,work,great,good,good,work,app,servic,call,screen,sim,work,window,batteri,work,love,good,call,batteri,
+sd,work,window,camera,good,great,plan,great,unlock,price,work,work,great,card,call,screen,good,work,tmobil,android,good,return,great,work,time,charg,
+sim,good,work,great,great,expect,work,fast,good,good,great,great,batteri,memori,custom,work,case,card,servic,great,android,buy,bought,text,work,life,
+work,wast,good,qualiti,screen,good,great,good,batteri,smart,love,sound,el,sd,work,time,drop,unlock,call,price,screen,product,work,call,problem,day,
+memori,batteri,great,screen,love,price,good,batteri,product,work,batteri,qualiti,good,storag,time,app,button,att,signal,app,camera,batteri,good,screen,good,work,
+decent,messag,big,deal,test,speed,wo,heavi,paid,cool,total,game,worth,media,switch,os,worri,difficult,move,long,bloatwar,happi,refurbish,number,read,cheap,
+money,app,camera,work,expect,month,screen,work,great,love,sound,batteri,card,servic,screen,good,sim,tmobil,window,batteri,work,love,text,time,batteri,app,

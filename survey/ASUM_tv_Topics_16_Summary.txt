@@ -1,0 +1,840 @@
+B0074FGLUM,0,0,Great picture.
+B0074FGLUM,0,1,Not good...
+B0074FGLUM,0,2,Smashed screen.
+B0074FGLUM,0,3,It still doesn't work!
+B0074FGLUM,0,4,Good value..
+B0074FGLUM,0,5,Way to go out on a limb there, Samsung.
+B0074FGLUM,0,6,Smart TV???
+B0074FGLUM,0,7,Might be a trade-off -- stability for weight.
+B0074FGLUM,0,8,Never had any issues with that.
+B0074FGLUM,0,9,Even now it will shift from time to time.
+B0074FGLUM,0,10,Wouldn't recommend.
+B0074FGLUM,0,11,For trying to be a smart TV, it's only 3-stars "smart."
+B0074FGLUM,0,12,I haven't even owned the TV for 6 months.
+B0074FGLUM,0,13,NOT as "smart" as liked it to be.
+B0074FGLUM,0,14,T.V. is public school smart.
+B0074FGLUM,0,15,Surely some other TV maker can do better.
+B0074FGLUM,0,16,Still wouldn't work.
+B0074FGLUM,0,17,The first one conked out after about six months.
+B0074FGLUM,0,18,Decent TV.
+B0074FGLUM,0,19,Don't buy it.
+B0074FGLUM,0,20,It is not at all smart.
+B0074FGLUM,0,21,I was very happy with how it was a used tv and I could hardly tell that it had been used.
+B0074FGLUM,0,22,Complete trash.
+B0074FGLUM,0,23,So, I did just that and the picture was even better.
+B0074FGLUM,0,24,I have no idea how this got sent out.
+B0074FGLUM,1,0,Well, it has never worked right.
+B0074FGLUM,1,1,The picture on this TV is great.
+B0074FGLUM,1,2,Looks good.
+B0074FGLUM,1,3,Great!
+B0074FGLUM,1,4,im very pissed off with this buy.
+B0074FGLUM,1,5,It's not a very good tv.
+B0074FGLUM,1,6,Arrived Smashed.
+B0074FGLUM,1,7,I only used it for 5 months.
+B0074FGLUM,1,8,This is being going around since past 15 days.
+B0074FGLUM,1,9,Samsung never again!
+B0074FGLUM,1,10,I returned the TV.
+B0074FGLUM,1,11,The TV worked again.
+B0074FGLUM,1,12,The TV is very nice but.
+B0074FGLUM,1,13,Doesn't work after 1 yr 3 mths.
+B0074FGLUM,1,14,Wasn't apparent until it was actually turned on.
+B0074FGLUM,1,15,But this experience was awful.
+B0074FGLUM,1,16,You have to turn it on yourself.
+B0074FGLUM,1,17,Dammage TV can not be exchanged.
+B0074FGLUM,1,18,I strongly recommend the 5500 !
+B0074FGLUM,1,19,I really want to give them No stars!
+B0074FGLUM,1,20,This TV was sent to me broken.
+B0074FGLUM,1,21,And it was processed quickly.
+B0074FGLUM,1,22,All they did was send me someone else's malfunctioning tv.
+B0074FGLUM,1,23,WATCH OUT FOR MISSING PARTS.
+B0074FGLUM,1,24,TV Picture is awesome.
+B0074FGLUM,2,0,Good.
+B0074FGLUM,2,1,I can't tell if the tv is great or not.
+B0074FGLUM,2,2,THe picture is very good.
+B0074FGLUM,2,3,Picture and everything is great.
+B0074FGLUM,2,4,The TV itself is great.
+B0074FGLUM,2,5,Nice TV.
+B0074FGLUM,2,6,Nice.
+B0074FGLUM,2,7,Come on Samsung.
+B0074FGLUM,2,8,Poor Quality.
+B0074FGLUM,2,9,Great picture2.)
+B0074FGLUM,2,10,There doesn't seem to be a happy medium.
+B0074FGLUM,2,11,Can this not be fixed by Samsung?
+B0074FGLUM,2,12,It's a nice tv.
+B0074FGLUM,2,13,Great...when it works.
+B0074FGLUM,2,14,Ok for The money.
+B0074FGLUM,2,15,They should know better.
+B0074FGLUM,2,16,Smart tv is not so smart.
+B0074FGLUM,2,17,DO  NOT BUY.
+B0074FGLUM,2,18,It's actual size is just 31".
+B0074FGLUM,2,19,For the most part I love this TV.
+B0074FGLUM,2,20,Overall, I would not recommend this.
+B0074FGLUM,2,21,The tv is awesome.
+B0074FGLUM,2,22,Why would Samsung put such cr
+B0074FGLUM,2,23,My issues are with some of the add-ons.
+B0074FGLUM,2,24,Don't purchase this TV.
+B0074FGLUM,3,0,A great TV.
+B0074FGLUM,3,1,Remote is still old traditional remote.
+B0074FGLUM,3,2,This TV was good... while it lasted...
+B0074FGLUM,3,3,not very smart.
+B0074FGLUM,3,4,Nice.
+B0074FGLUM,3,5,Nice picture.
+B0074FGLUM,3,6,It has a nice picture.
+B0074FGLUM,3,7,Don't buy!!!
+B0074FGLUM,3,8,The sound on this TV was unbearable!
+B0074FGLUM,3,9,This has its own issues.
+B0074FGLUM,3,10,Now it doesn't work.
+B0074FGLUM,3,11,I strongly recommend the 5500 !
+B0074FGLUM,3,12,Poor quality.
+B0074FGLUM,3,13,There was no happy place with this tv.
+B0074FGLUM,3,14,Samsung should fix this.
+B0074FGLUM,3,15,Sounded like it was somewhere in Asia.
+B0074FGLUM,3,16,On to another model.
+B0074FGLUM,3,17,Fantastic TV and picture.
+B0074FGLUM,3,18,Nice TV, but...
+B0074FGLUM,3,19,Very poor manual.
+B0074FGLUM,3,20,This was a really stingy move on their part.
+B0074FGLUM,3,21,She said that even the new models will have this deficiency.
+B0074FGLUM,3,22,Do I like a baffling, unintuitive interface?-
+B0074FGLUM,3,23,2)Tech support pitiful.
+B0074FGLUM,3,24,Picture is fine.
+B0074FGLUM,4,0,It's great but...
+B0074FGLUM,4,1,PICTURE QUALITY.
+B0074FGLUM,4,2,Nope, I don't like it at all, and really don't have much good to say about this TV!
+B0074FGLUM,4,3,MAYBE IT CAN BE ADJUSTED.....I DON'T KNOW.
+B0074FGLUM,4,4,Samsung UN46E5300.
+B0074FGLUM,4,5,Even now it will shift from time to time.
+B0074FGLUM,4,6,Each time is different.
+B0074FGLUM,4,7,Samsung should fix this.
+B0074FGLUM,4,8,What has happened to SAMSUNG?
+B0074FGLUM,4,9,Not as I expected.
+B0074FGLUM,4,10,So, I did just that and the picture was even better.
+B0074FGLUM,4,11,I do expect they blend more, with less mosaic effect.
+B0074FGLUM,4,12,It looks fantastic.
+B0074FGLUM,4,13,Sometimes it even works.
+B0074FGLUM,4,14,I got this thinking I was upgrading my tv.
+B0074FGLUM,4,15,Not what I was hoping for.
+B0074FGLUM,4,16,Neither are in 1080p.
+B0074FGLUM,4,17,I had issue with its cursor also.
+B0074FGLUM,4,18,Turn on the TV.2.
+B0074FGLUM,4,19,Not So Smart.
+B0074FGLUM,4,20,Smart TV?
+B0074FGLUM,4,21,We can not say it is a smart TV.
+B0074FGLUM,4,22,Doesn't fix things.)15.
+B0074FGLUM,4,23,It should work.
+B0074FGLUM,4,24,That was the final straw for me.
+B0074FGLUM,5,0,I have a Samsung washer and dryer.
+B0074FGLUM,5,1,It was and is great.
+B0074FGLUM,5,2,I researched and saw that Samsung was the bomb.com
+B0074FGLUM,5,3,The TV is great.
+B0074FGLUM,5,4,Samsung 46EH5300.
+B0074FGLUM,5,5,Not as good.
+B0074FGLUM,5,6,Poor quality.
+B0074FGLUM,5,7,hi amazon!
+B0074FGLUM,5,8,this tv doses not work in Australia.
+B0074FGLUM,5,9,DO NOT BUY.
+B0074FGLUM,5,10,DO NOT BUY THIS!
+B0074FGLUM,5,11,A great TV.
+B0074FGLUM,5,12,$1200 and it will not last 2 years.
+B0074FGLUM,5,13,One is going in a rental and the other will make a nice xmas present.
+B0074FGLUM,5,14,Not a mature product.
+B0074FGLUM,5,15,I cannot recommend this tv.
+B0074FGLUM,5,16,Not recommended.
+B0074FGLUM,5,17,TV has been returned
+B0074FGLUM,5,18,Smart TV isn't.
+B0074FGLUM,5,19,Smart TV isn't so smart anymore.
+B0074FGLUM,5,20,This new technology is challenging to the everyday brain.
+B0074FGLUM,5,21,That didn't work either.
+B0074FGLUM,5,22,Picture image just seems mushy.
+B0074FGLUM,5,23,Not a 'Smart' tv.
+B0074FGLUM,5,24,DO NOT PURCHASE THIS TV!!!!!!!!!
+B0074FGLUM,6,0,Please fix the apps!
+B0074FGLUM,6,1,Now, however, nothing seems to work.
+B0074FGLUM,6,2,Stopped working.
+B0074FGLUM,6,3,Work.
+B0074FGLUM,6,4,I will try those tips to see if any of them worked.
+B0074FGLUM,6,5,Great picture2.)
+B0074FGLUM,6,6,It isn't smart enough to qualify for that name.
+B0074FGLUM,6,7,It should work.
+B0074FGLUM,6,8,I want to love this TV, but can't.
+B0074FGLUM,6,9,Looks good.
+B0074FGLUM,6,10,an "ok" smart tv.
+B0074FGLUM,6,11,But the "smart" part is really a toy.
+B0074FGLUM,6,12,Netflix.
+B0074FGLUM,6,13,It has a pretty picture, but...
+B0074FGLUM,6,14,We can not say it is a smart TV.
+B0074FGLUM,6,15,no amazon still.
+B0074FGLUM,6,16,It has RAM issues.
+B0074FGLUM,6,17,Not Smart at All.
+B0074FGLUM,6,18,.just exceptionally slow.
+B0074FGLUM,6,19,This means another remote.
+B0074FGLUM,6,20,Nice overall designCons:1.)
+B0074FGLUM,6,21,It is frustrating.
+B0074FGLUM,6,22,SMART TV is not really SMART.
+B0074FGLUM,6,23,This won't do it.
+B0074FGLUM,6,24,Run away from this "smart" tv!
+B0074FGLUM,7,0,Great picture.
+B0074FGLUM,7,1,The picture is great.
+B0074FGLUM,7,2,NOT A GOOD TV.
+B0074FGLUM,7,3,Good value..
+B0074FGLUM,7,4,works as it should so far.
+B0074FGLUM,7,5,We use the TV for our cable.
+B0074FGLUM,7,6,The picture on this TV is great.
+B0074FGLUM,7,7,This TV was good... while it lasted...
+B0074FGLUM,7,8,Nope, I don't like it at all, and really don't have much good to say about this TV!
+B0074FGLUM,7,9,not really a smart tv.
+B0074FGLUM,7,10,It should work.
+B0074FGLUM,7,11,Excellent TV.
+B0074FGLUM,7,12,Once I have all that hooked up we'll see if everything jives.
+B0074FGLUM,7,13,DO NOT PURCHASE THIS TV!!!!!!!!!
+B0074FGLUM,7,14,I think I love this TV.
+B0074FGLUM,7,15,The TV itself is great.
+B0074FGLUM,7,16,I don't have cable.
+B0074FGLUM,7,17,Smart seems to be a misnomer.
+B0074FGLUM,7,18,Smart?
+B0074FGLUM,7,19,Allshare doesn't play RMVB vedio.6.
+B0074FGLUM,7,20,Do something Samsung.
+B0074FGLUM,7,21,I did like the picture a lot Well, until now.
+B0074FGLUM,7,22,No thanks Samsung.
+B0074FGLUM,7,23,Geez, thanks Samsung.
+B0074FGLUM,7,24,Don't buy it.
+B0074FGLUM,8,0,Smashed screen.
+B0074FGLUM,8,1,We are very disappointed with the TV.
+B0074FGLUM,8,2,DO NOT BUY.
+B0074FGLUM,8,3,Again, VERY DISAPPOINTED!!!!!!!
+B0074FGLUM,8,4,Dont get a samsung tv !!!
+B0074FGLUM,8,5,Really disappointed with this . .
+B0074FGLUM,8,6,WATCH OUT FOR MISSING PARTS.
+B0074FGLUM,8,7,You have to turn it on yourself.
+B0074FGLUM,8,8,I really want to give them No stars!
+B0074FGLUM,8,9,This TV was sent to me broken.
+B0074FGLUM,9,0,$1200 and it will not last 2 years.
+B0074FGLUM,9,1,Worked for less than 24hrs!
+B0074FGLUM,9,2,Doesn't work after 1 yr 3 mths.
+B0074FGLUM,9,3,Now it doesn't work.
+B0074FGLUM,9,4,The first one conked out after about six months.
+B0074FGLUM,9,5,Don't buy.
+B0074FGLUM,9,6,The TV worked again.
+B0074FGLUM,9,7,Well you betcha I have problems.
+B0074FGLUM,9,8,works as it should so far.
+B0074FGLUM,9,9,DO  NOT BUY.
+B0074FGLUM,10,0,The sound on this TV was unbearable!
+B0074FGLUM,10,1,Sounded like it was somewhere in Asia.
+B0074FGLUM,10,2,Can this not be fixed by Samsung?
+B0074FGLUM,10,3,Samsung UN46E5300.
+B0074FGLUM,10,4,So far I don't see a problem.
+B0074FGLUM,10,5,This has its own issues.
+B0074FGLUM,10,6,Received SHATTERED.
+B0074FGLUM,10,7,So, I did just that and the picture was even better.
+B0074FGLUM,10,8,Not as I expected.
+B0074FGLUM,10,9,Not Smart at All.
+B0074FGLUM,11,0,Nothing happened so I called again.
+B0074FGLUM,11,1,Come on Samsung.
+B0074FGLUM,11,2,They really know how to treat customers.
+B0074FGLUM,11,3,I researched and saw that Samsung was the bomb.com
+B0074FGLUM,11,4,This is being going around since past 15 days.
+B0074FGLUM,11,5,What has happened to SAMSUNG?
+B0074FGLUM,11,6,TV RETURNED.
+B0074FGLUM,11,7,Well you betcha I have problems.
+B0074FGLUM,11,8,TV. Had to send this back.
+B0074FGLUM,11,9,Most support personnel are clueless.
+B0074FGLUM,12,0,Don't take on this problem.
+B0074FGLUM,12,1,Disappointed.
+B0074FGLUM,12,2,WATCH OUT FOR MISSING PARTS.
+B0074FGLUM,12,3,What a disappointment.
+B0074FGLUM,12,4,TERRIBLE!
+B0074FGLUM,12,5,(sometimes white also.)
+B0074FGLUM,12,6,Picture dims.
+B0074FGLUM,12,7,I pretty much like the t.v.
+B0074FGLUM,12,8,Very hard on the eyes.
+B0074FGLUM,12,9,This has been going on for two days.
+B0074FGLUM,13,0,32" Samsung TV.
+B0074FGLUM,13,1,NOT ACTUALLY A 120HZ TV.
+B0074FGLUM,13,2,Very disappointing!
+B0074FGLUM,13,3,Not 120Hz.
+B0074FGLUM,13,4,I have a Samsung washer and dryer.
+B0074FGLUM,13,5,Now, however, nothing seems to work.
+B0074FGLUM,13,6,Stopped working.
+B0074FGLUM,13,7,I am very very very disappointed with the picture.
+B0074FGLUM,13,8,It isn't smart enough to qualify for that name.
+B0074FGLUM,13,9,Not as advertised!
+B0074FGLUM,14,0,Not very smart.
+B0074FGLUM,14,1,This is not a smart TV.
+B0074FGLUM,14,2,So it's 50% smart TV not a 100%.
+B0074FGLUM,14,3,Smart TV my ass!
+B0074FGLUM,14,4,Go back to the Smart TV menu.7.
+B0074FGLUM,14,5,This is NOT a Smart TV!.
+B0074FGLUM,14,6,It is not smart at all.
+B0074FGLUM,14,7,Smart TV?
+B0074FGLUM,14,8,not Smart.
+B0074FGLUM,14,9,smart tv???
+B0074FGLUM,15,0,The connectivity to this TV is quite poor.
+B0074FGLUM,15,1,function  a little..
+B0074FGLUM,15,2,Sounded like it was somewhere in Asia.
+B0074FGLUM,15,3,Samsung should fix this.
+B0074FGLUM,15,4,So disappointing.
+B0074FGLUM,15,5,Neither are in 1080p.
+B0074FGLUM,15,6,2)Tech support pitiful.
+B0074FGLUM,15,7,Unit is OK / I Like it.
+B0074FGLUM,15,8,I've given up on this TV and will return it.
+B0074FGLUM,15,9,After this TV I am actually regretting just thinking about it.
+B00BCGROJG,0,0,Great TV.
+B00BCGROJG,0,1,This Tv is a Great value.
+B00BCGROJG,0,2,Great TV.
+B00BCGROJG,0,3,Great picture.
+B00BCGROJG,0,4,But it looks great.
+B00BCGROJG,0,5,Great tv.
+B00BCGROJG,0,6,Great TV.
+B00BCGROJG,0,7,Great picture.
+B00BCGROJG,0,8,Very nice TV.
+B00BCGROJG,0,9,Just OK not great.
+B00BCGROJG,0,10,Samsung.
+B00BCGROJG,0,11,We love this tv.
+B00BCGROJG,0,12,Love it!
+B00BCGROJG,0,13,When it comes to TV, Samsung is a no brainer.
+B00BCGROJG,0,14,Great so far.
+B00BCGROJG,0,15,love it!
+B00BCGROJG,0,16,love it!
+B00BCGROJG,0,17,Picture is great.
+B00BCGROJG,0,18,That maybe why we get such good results.-
+B00BCGROJG,0,19,I got this for the picture quality.
+B00BCGROJG,0,20,Samsung TV.
+B00BCGROJG,0,21,I think I need to tweek the picture on it a little more but it looks great.
+B00BCGROJG,0,22,Great TV after Adjustment/Tuning.
+B00BCGROJG,0,23,I love this TV.
+B00BCGROJG,0,24,Great TV.
+B00BCGROJG,1,0,This is a great TV.
+B00BCGROJG,1,1,Great TV.
+B00BCGROJG,1,2,great TV.
+B00BCGROJG,1,3,Good.
+B00BCGROJG,1,4,Its picture is very good and cant get enough of it.
+B00BCGROJG,1,5,very good.
+B00BCGROJG,1,6,Great TV.
+B00BCGROJG,1,7,it works.
+B00BCGROJG,1,8,Thanks Amazon!
+B00BCGROJG,1,9,can work with it but it often does undesired actions.--the
+B00BCGROJG,1,10,Bought the 65".
+B00BCGROJG,1,11,I Love his TV.
+B00BCGROJG,1,12,Love it.
+B00BCGROJG,1,13,supper happy
+B00BCGROJG,1,14,I would recommend
+B00BCGROJG,1,15,quick delivery.
+B00BCGROJG,1,16,Here is what i found on the lcdtvbuyingguide setting.
+B00BCGROJG,1,17,The TV worked again.
+B00BCGROJG,1,18,You will be very happy.
+B00BCGROJG,1,19,Perfect TV.
+B00BCGROJG,1,20,Boo Samsung, boo!
+B00BCGROJG,1,21,Oops gotta order another part, sorry.
+B00BCGROJG,1,22,We are SO happy we did!
+B00BCGROJG,1,23,Delivery went unhitched also - a first!
+B00BCGROJG,1,24,Beautiful.
+B00BCGROJG,2,0,Great tv.
+B00BCGROJG,2,1,Great TV!
+B00BCGROJG,2,2,Great TV.
+B00BCGROJG,2,3,I don't but this is a great TV.
+B00BCGROJG,2,4,Great TV.
+B00BCGROJG,2,5,Great Picture.
+B00BCGROJG,2,6,Great TV.
+B00BCGROJG,2,7,so good.
+B00BCGROJG,2,8,very very good~!! Um..
+B00BCGROJG,2,9,Great TV.
+B00BCGROJG,2,10,Very Good TV.
+B00BCGROJG,2,11,Good picture.
+B00BCGROJG,2,12,TV is great.
+B00BCGROJG,2,13,Good tv.
+B00BCGROJG,2,14,Not great at all.
+B00BCGROJG,2,15,Great tv
+B00BCGROJG,2,16,Everything is good.
+B00BCGROJG,2,17,great TV.
+B00BCGROJG,2,18,Excellent tv.
+B00BCGROJG,2,19,The picture is excellent.
+B00BCGROJG,2,20,excellent.
+B00BCGROJG,2,21,Excellent!
+B00BCGROJG,2,22,Excellent.
+B00BCGROJG,2,23,Excellent!
+B00BCGROJG,2,24,Realism is the best.
+B00BCGROJG,3,0,This TV is GREAT!
+B00BCGROJG,3,1,Word cannot say what a great picture this TV has.
+B00BCGROJG,3,2,Than is a great TV.
+B00BCGROJG,3,3,But the tv picture looks great.
+B00BCGROJG,3,4,Great TV.
+B00BCGROJG,3,5,Great TV.
+B00BCGROJG,3,6,Great TV.
+B00BCGROJG,3,7,About 3D.
+B00BCGROJG,3,8,Its good.
+B00BCGROJG,3,9,The remote, however, is dysfunctional.
+B00BCGROJG,3,10,Great picture.
+B00BCGROJG,3,11,But tv works well overall.
+B00BCGROJG,3,12,But it looks great.
+B00BCGROJG,3,13,Great tv!
+B00BCGROJG,3,14,3d has too much crosstalk.
+B00BCGROJG,3,15,Everything else is "As good as it gets."
+B00BCGROJG,3,16,SO FAR SO GOOD.
+B00BCGROJG,3,17,This is a great TV!
+B00BCGROJG,3,18,Picture is great.
+B00BCGROJG,3,19,I said you know what this TV has 3D and I've never used it.
+B00BCGROJG,3,20,Not great at all.
+B00BCGROJG,3,21,Samsung UN46F7100.
+B00BCGROJG,3,22,Love my Jumbo TV.
+B00BCGROJG,3,23,Overall, we love it.
+B00BCGROJG,3,24,Love this tv.
+B00BCGROJG,4,0,Great TV.
+B00BCGROJG,4,1,Great TV, but be alerted...
+B00BCGROJG,4,2,Great tv but.
+B00BCGROJG,4,3,great but.
+B00BCGROJG,4,4,A great value.
+B00BCGROJG,4,5,I think I need to tweek the picture on it a little more but it looks great.
+B00BCGROJG,4,6,Great TV after Adjustment/Tuning.
+B00BCGROJG,4,7,Very good TV.
+B00BCGROJG,4,8,All I want to do now is watch something on this TV!
+B00BCGROJG,4,9,Everyone would commend on how great the picture is.
+B00BCGROJG,4,10,Awsome picture quality.
+B00BCGROJG,4,11,10 is more than enough with this set.
+B00BCGROJG,4,12,The truth about this set.
+B00BCGROJG,4,13,It was like a whole new movie!
+B00BCGROJG,4,14,Best TV I have ever owned.
+B00BCGROJG,4,15,You have to adjust the picture.
+B00BCGROJG,4,16,The picture of this TV is just amazing.
+B00BCGROJG,4,17,Amazing.
+B00BCGROJG,4,18,It's excellent.
+B00BCGROJG,4,19,Excellent.
+B00BCGROJG,4,20,Well, not much work.
+B00BCGROJG,4,21,It is bright and brilliant.
+B00BCGROJG,4,22,A really excellent TV.
+B00BCGROJG,4,23,The picture is even better.
+B00BCGROJG,4,24,Nice TV.
+B00BCGROJG,5,0,The Samsung 7100 was in a league of it's own.
+B00BCGROJG,5,1,Great tv.
+B00BCGROJG,5,2,Great tv.
+B00BCGROJG,5,3,Great picture.
+B00BCGROJG,5,4,Good value for $1600.
+B00BCGROJG,5,5,good.
+B00BCGROJG,5,6,Great TV.
+B00BCGROJG,5,7,Insane Picture Quality.
+B00BCGROJG,5,8,That made all the difference in my purchase.
+B00BCGROJG,5,9,Great TV.
+B00BCGROJG,5,10,We vowed NEVER to get another Samsung again.
+B00BCGROJG,5,11,Great tv
+B00BCGROJG,5,12,Everyone would commend on how great the picture is.
+B00BCGROJG,5,13,Which of these two tv's are we going to buy?
+B00BCGROJG,5,14,Best tv ever.
+B00BCGROJG,5,15,Everything is good.
+B00BCGROJG,5,16,I bought this for my arcade.
+B00BCGROJG,5,17,Best Tv I have ever owned.
+B00BCGROJG,5,18,If it becomes toast like my Samsung you still win.
+B00BCGROJG,5,19,The picture is even better.
+B00BCGROJG,5,20,Love the tv.
+B00BCGROJG,5,21,Go with the Samsung.
+B00BCGROJG,5,22,Love the tv.
+B00BCGROJG,5,23,I would recommend it to anyone looking for a large TV.
+B00BCGROJG,5,24,DO NOT BUY THIS TV!!!
+B00BCGROJG,6,0,So far so good....
+B00BCGROJG,6,1,Love it!
+B00BCGROJG,6,2,Love it!
+B00BCGROJG,6,3,I love it.
+B00BCGROJG,6,4,Very good TV.
+B00BCGROJG,6,5,TV shows look so much better now.
+B00BCGROJG,6,6,Yet it is nice knowing they are there and can be used anytime I want.
+B00BCGROJG,6,7,With allot of features that I dont if use.
+B00BCGROJG,6,8,We enjoy all shows more .
+B00BCGROJG,6,9,Best TV I Ever Owned.
+B00BCGROJG,6,10,ALso - the tv is not that smart.
+B00BCGROJG,6,11,We LOVE our TV!!!!
+B00BCGROJG,6,12,Excellent TV.
+B00BCGROJG,6,13,But i'm hard to please and I would still recommend either of them.
+B00BCGROJG,6,14,beautiful picture.
+B00BCGROJG,6,15,I HAVE A COMPUTER FOR THAT.
+B00BCGROJG,6,16,Not too smart.
+B00BCGROJG,6,17,Now I am the one hosting the superbowl party.
+B00BCGROJG,6,18,Go with the Samsung.
+B00BCGROJG,6,19,it works.
+B00BCGROJG,6,20,Great TV.
+B00BCGROJG,6,21,Great picture.
+B00BCGROJG,6,22,Great TV.
+B00BCGROJG,6,23,No issues here.
+B00BCGROJG,6,24,good.
+B00BCGROJG,7,0,great!
+B00BCGROJG,7,1,Other than that great TV.
+B00BCGROJG,7,2,Great TV but a quirk.
+B00BCGROJG,7,3,This is a great TV!
+B00BCGROJG,7,4,Great TV.
+B00BCGROJG,7,5,Great so far.
+B00BCGROJG,7,6,Yet it is nice knowing they are there and can be used anytime I want.
+B00BCGROJG,7,7,With allot of features that I dont if use.
+B00BCGROJG,7,8,AWESOME.
+B00BCGROJG,7,9,I've also made sure I'm on a channel with little-to-no interference.
+B00BCGROJG,7,10,Best TV I ever had.
+B00BCGROJG,7,11,Awesome.
+B00BCGROJG,7,12,Very pleased with Purchase.
+B00BCGROJG,7,13,Love my new tv.
+B00BCGROJG,7,14,The picture is perfect.
+B00BCGROJG,7,15,I love the TV.
+B00BCGROJG,7,16,Here are my impressions:1.
+B00BCGROJG,7,17,Just buy it.
+B00BCGROJG,7,18,I didn't see any.I will say that the remote takes some getting used to.
+B00BCGROJG,7,19,The picture is brilliant in all modes.4.
+B00BCGROJG,7,20,Love it!
+B00BCGROJG,7,21,This is perfect what I was looking for.
+B00BCGROJG,7,22,When it comes to TV, Samsung is a no brainer.
+B00BCGROJG,7,23,Very pleased with this purchase.
+B00BCGROJG,7,24,Apps are ok, but not stellar.
+B00BCGROJG,8,0,It worked like a champ.
+B00BCGROJG,8,1,The television is as it says.
+B00BCGROJG,8,2,The remote, however, is dysfunctional.
+B00BCGROJG,8,3,Quality Picture.
+B00BCGROJG,8,4,60" is the right size.
+B00BCGROJG,8,5,3D TV.
+B00BCGROJG,8,6,Like the LGs that I ried at the stores.
+B00BCGROJG,8,7,This if forgivable as you DO NOT WANT TO USE THEIR SMART TV anyway if you can.
+B00BCGROJG,8,8,Thanks Amazon!
+B00BCGROJG,8,9,We purchased this TV in September 2013.
+B00BCGROJG,9,0,If it becomes toast like my Samsung you still win.
+B00BCGROJG,9,1,Having Problems.
+B00BCGROJG,9,2,We vowed NEVER to get another Samsung again.
+B00BCGROJG,9,3,I didn't have any problems with TV.
+B00BCGROJG,9,4,DO NOT BUY THIS TV!!!
+B00BCGROJG,9,5,2000.00 to repair.
+B00BCGROJG,9,6,The TV worked again.
+B00BCGROJG,9,7,Disappointing as I have had 3 Sammys previously.
+B00BCGROJG,9,8,Well you betcha I have problems.
+B00BCGROJG,9,9,Got caught into the reviews hype.
+B00BCGROJG,10,0,Samsung TV.
+B00BCGROJG,10,1,I got this for the picture quality.
+B00BCGROJG,10,2,I'm not sure what I should have expected.
+B00BCGROJG,10,3,I didn't see any.I will say that the remote takes some getting used to.
+B00BCGROJG,10,4,Not too smart.
+B00BCGROJG,10,5,The normal picture is so much better.
+B00BCGROJG,10,6,Once it turned off by itself.
+B00BCGROJG,10,7,can work with it but it often does undesired actions.--the
+B00BCGROJG,10,8,Watching it is a pleasure.
+B00BCGROJG,10,9,Well, not much work.
+B00BCGROJG,11,0,Boo Samsung, boo!
+B00BCGROJG,11,1,Pray that you don't have any problems with it.
+B00BCGROJG,11,2,Samsung UN46F7100.
+B00BCGROJG,11,3,Well you betcha I have problems.
+B00BCGROJG,11,4,I do not want this repaired.
+B00BCGROJG,11,5,There went another $20 on Amazon.
+B00BCGROJG,11,6,Oops gotta order another part, sorry.
+B00BCGROJG,11,7,Delivery went unhitched also - a first!
+B00BCGROJG,11,8,Just buy it.
+B00BCGROJG,11,9,I will revise this review once I get the TV.
+B00BCGROJG,12,0,Here is what i found on the lcdtvbuyingguide setting.
+B00BCGROJG,12,1,I got the 65", and Yes, it does have some leakage light on the 4 conners.
+B00BCGROJG,12,2,No problems.
+B00BCGROJG,12,3,Picture settings.
+B00BCGROJG,12,4,It's dark down there.
+B00BCGROJG,12,5,Problem gone!
+B00BCGROJG,12,6,No issues here.
+B00BCGROJG,12,7,But I just can't get past the leakage of the blacks.
+B00BCGROJG,12,8,Once it turned off by itself.
+B00BCGROJG,12,9,This one was a UH01 panel.
+B00BCGROJG,13,0,Samsung 65 in.
+B00BCGROJG,13,1,Led.
+B00BCGROJG,13,2,TV shows look so much better now.
+B00BCGROJG,13,3,You will not be disappointed with this TV.
+B00BCGROJG,13,4,Picture settings.
+B00BCGROJG,13,5,Beautiful  picture.
+B00BCGROJG,13,6,Fabulous picture and technology.
+B00BCGROJG,13,7,We enjoy all shows more .
+B00BCGROJG,13,8,beautiful picture.
+B00BCGROJG,13,9,I think Samsung should still look into this.
+B00BCGROJG,14,0,bottom-line is this smart TV just like a Not-Smart-TV.
+B00BCGROJG,14,1,This if forgivable as you DO NOT WANT TO USE THEIR SMART TV anyway if you can.
+B00BCGROJG,14,2,It doesn't work.
+B00BCGROJG,14,3,The Samsung has proven to be a challenge for me regardless.
+B00BCGROJG,14,4,I'm sure they will become so over time.
+B00BCGROJG,14,5,Apps can't be reorganized.
+B00BCGROJG,14,6,I think that if I don't want an app, I should be able to de-install it.
+B00BCGROJG,14,7,Samsung.
+B00BCGROJG,14,8,Previews are available on like 10 different apps.
+B00BCGROJG,14,9,This will take time getting used too.
+B00BCGROJG,15,0,Sorry, doesn't work.
+B00BCGROJG,15,1,Every thing is great...except.
+B00BCGROJG,15,2,IT IS LETS ADD THIS OR THAT!
+B00BCGROJG,15,3,Well you betcha I have problems.
+B00BCGROJG,15,4,I'd rather have buttons.
+B00BCGROJG,15,5,Apps are ok, but not stellar.
+B00BCGROJG,15,6,I HAVE A COMPUTER FOR THAT.
+B00BCGROJG,15,7,Bought the 65".
+B00BCGROJG,15,8,It worked like a champ.
+B00BCGROJG,15,9,The 'smart' is anything but.
+B00AOA9BL0,0,0,doesn't work.
+B00AOA9BL0,0,1,not to good.
+B00AOA9BL0,0,2,good enough.
+B00AOA9BL0,0,3,Overall good.
+B00AOA9BL0,0,4,good.
+B00AOA9BL0,0,5,not good.
+B00AOA9BL0,0,6,NEEDS WORK.
+B00AOA9BL0,0,7,Other than that I am happy.
+B00AOA9BL0,0,8,expected more.
+B00AOA9BL0,0,9,Other than that, I love it!
+B00AOA9BL0,0,10,volume.
+B00AOA9BL0,0,11,Other then that it's work well.
+B00AOA9BL0,0,12,it actualy works.
+B00AOA9BL0,0,13,Still can't get it to work.
+B00AOA9BL0,0,14,would not work.
+B00AOA9BL0,0,15,Des omnibus.Teach those who can't fly to fall faster.Dan
+B00AOA9BL0,0,16,dont work to well.
+B00AOA9BL0,0,17,hasn't worked and still trying.
+B00AOA9BL0,0,18,Does not work.
+B00AOA9BL0,0,19,Try to make it work, no dice.
+B00AOA9BL0,0,20,It functions quite well.
+B00AOA9BL0,0,21,does the job.
+B00AOA9BL0,0,22,I fond it hard to lose myself lately.
+B00AOA9BL0,0,23,Not bad!
+B00AOA9BL0,0,24,I keep trying and it keeps freezing.
+B00AOA9BL0,1,0,great.
+B00AOA9BL0,1,1,Good value, especially if you like binge-watching tv shows.
+B00AOA9BL0,1,2,Okay product.
+B00AOA9BL0,1,3,It stops working.
+B00AOA9BL0,1,4,nice.
+B00AOA9BL0,1,5,Awesome.
+B00AOA9BL0,1,6,not recommend it to anyone
+B00AOA9BL0,1,7,Awesome!!!
+B00AOA9BL0,1,8,Not complete enough.
+B00AOA9BL0,1,9,Impressed.
+B00AOA9BL0,1,10,it actualy works.
+B00AOA9BL0,1,11,Other then that it's work well.
+B00AOA9BL0,1,12,Still can't get it to work.
+B00AOA9BL0,1,13,would not work.
+B00AOA9BL0,1,14,dont work to well.
+B00AOA9BL0,1,15,Does not work.
+B00AOA9BL0,1,16,hasn't worked and still trying.
+B00AOA9BL0,1,17,Try to make it work, no dice.
+B00AOA9BL0,1,18,no live tv.
+B00AOA9BL0,1,19,forget it.
+B00AOA9BL0,1,20,its great but...
+B00AOA9BL0,1,21,great but not.
+B00AOA9BL0,1,22,great.
+B00AOA9BL0,1,23,Great except.
+B00AOA9BL0,1,24,was great.
+B00AOA9BL0,2,0,Ok but not great.
+B00AOA9BL0,2,1,Great ap.
+B00AOA9BL0,2,2,Very nice.
+B00AOA9BL0,2,3,So far so good.
+B00AOA9BL0,2,4,Awesome.
+B00AOA9BL0,2,5,Otherwise you can't hear it.
+B00AOA9BL0,2,6,Awesome!!!
+B00AOA9BL0,2,7,its worth it
+B00AOA9BL0,2,8,glad this is available.
+B00AOA9BL0,2,9,Cable went out during a recent ice storm.
+B00AOA9BL0,2,10,live tv.
+B00AOA9BL0,2,11,Just wish it had some of the shows I watch on it.
+B00AOA9BL0,2,12,Maybe one day it will.
+B00AOA9BL0,2,13,Still can't get it to work.
+B00AOA9BL0,2,14,it actualy works.
+B00AOA9BL0,2,15,Other then that it's work well.
+B00AOA9BL0,2,16,would not work.
+B00AOA9BL0,2,17,dont work to well.
+B00AOA9BL0,2,18,Does not work.
+B00AOA9BL0,2,19,hasn't worked and still trying.
+B00AOA9BL0,2,20,Try to make it work, no dice.
+B00AOA9BL0,2,21,SLOW and poor volumn.
+B00AOA9BL0,2,22,its great but...
+B00AOA9BL0,2,23,great but not.
+B00AOA9BL0,2,24,great.
+B00AOA9BL0,3,0,Works Okay.
+B00AOA9BL0,3,1,Works very well.
+B00AOA9BL0,3,2,Did not work with my TV.
+B00AOA9BL0,3,3,very nice.
+B00AOA9BL0,3,4,doesn't work.
+B00AOA9BL0,3,5,nice, but....
+B00AOA9BL0,3,6,Saw what wanted and VOILA!! Excellent!
+B00AOA9BL0,3,7,Doesn't get much better than that.
+B00AOA9BL0,3,8,Like Netflix, I've yet to use it.
+B00AOA9BL0,3,9,There are a lot of shows/movies.
+B00AOA9BL0,3,10,Everything I tried would stop and start.
+B00AOA9BL0,3,11,The only source for many shows.
+B00AOA9BL0,3,12,Interesting, but also aggravating.
+B00AOA9BL0,3,13,Searching for a particular show/episode can be a challenge.
+B00AOA9BL0,3,14,Couldn't get through after 30 minutes I gave up.
+B00AOA9BL0,3,15,Other then that it's work well.
+B00AOA9BL0,3,16,it actualy works.
+B00AOA9BL0,3,17,Still can't get it to work.
+B00AOA9BL0,3,18,would not work.
+B00AOA9BL0,3,19,email.
+B00AOA9BL0,3,20,dont work to well.
+B00AOA9BL0,3,21,handy.
+B00AOA9BL0,3,22,Does not work.
+B00AOA9BL0,3,23,hasn't worked and still trying.
+B00AOA9BL0,3,24,Try to make it work, no dice.
+B00AOA9BL0,4,0,not good.
+B00AOA9BL0,4,1,NEEDS WORK.
+B00AOA9BL0,4,2,You go into the main dropdown menu.
+B00AOA9BL0,4,3,Awesome.
+B00AOA9BL0,4,4,I'm not impressed.
+B00AOA9BL0,4,5,This is not as polished as HBO2GO - but gets the job done.
+B00AOA9BL0,4,6,More expanded filters should be available as well.
+B00AOA9BL0,4,7,it actualy works.
+B00AOA9BL0,4,8,Other then that it's work well.
+B00AOA9BL0,4,9,Still can't get it to work.
+B00AOA9BL0,4,10,would not work.
+B00AOA9BL0,4,11,dont work to well.
+B00AOA9BL0,4,12,Does not work.
+B00AOA9BL0,4,13,hasn't worked and still trying.
+B00AOA9BL0,4,14,Try to make it work, no dice.
+B00AOA9BL0,4,15,Meh...
+B00AOA9BL0,4,16,great.
+B00AOA9BL0,4,17,its great but...
+B00AOA9BL0,4,18,great but not.
+B00AOA9BL0,4,19,great.
+B00AOA9BL0,4,20,not to good.
+B00AOA9BL0,4,21,good enough.
+B00AOA9BL0,4,22,good.
+B00AOA9BL0,4,23,good.
+B00AOA9BL0,4,24,Good but...
+B00AOA9BL0,5,0,never worked.
+B00AOA9BL0,5,1,Great.
+B00AOA9BL0,5,2,It didn't work.
+B00AOA9BL0,5,3,Otherwise I love it.
+B00AOA9BL0,5,4,Also tried them at Starbucks, didn't really work there.
+B00AOA9BL0,5,5,Not What Expected.
+B00AOA9BL0,5,6,I think that's what they called it?
+B00AOA9BL0,5,7,Take care!
+B00AOA9BL0,5,8,I guess I have to give you  more words.
+B00AOA9BL0,5,9,Could not figure what it does or how to use it.
+B00AOA9BL0,5,10,What programs.
+B00AOA9BL0,5,11,My advice?
+B00AOA9BL0,5,12,can't hear anything!
+B00AOA9BL0,5,13,it actualy works.
+B00AOA9BL0,5,14,Still can't get it to work.
+B00AOA9BL0,5,15,Other then that it's work well.
+B00AOA9BL0,5,16,would not work.
+B00AOA9BL0,5,17,It's a monopoly so I have no alternative.
+B00AOA9BL0,5,18,dont work to well.
+B00AOA9BL0,5,19,hasn't worked and still trying.
+B00AOA9BL0,5,20,Does not work.
+B00AOA9BL0,5,21,Try to make it work, no dice.
+B00AOA9BL0,5,22,Meh, s'ok that's all.
+B00AOA9BL0,5,23,garbage.
+B00AOA9BL0,5,24,Ridiculous.
+B00AOA9BL0,6,0,The app does what it says very well.
+B00AOA9BL0,6,1,Well keep using this app.
+B00AOA9BL0,6,2,I like this app.
+B00AOA9BL0,6,3,So far I really dig this app.
+B00AOA9BL0,6,4,I really like this app.
+B00AOA9BL0,6,5,Must have app.
+B00AOA9BL0,6,6,I like this app.
+B00AOA9BL0,6,7,The potential for this app is there.
+B00AOA9BL0,6,8,Cannot use app.
+B00AOA9BL0,6,9,gGood app.
+B00AOA9BL0,6,10,Don't like the shortage of apps available.
+B00AOA9BL0,6,11,Ok. Ok app.
+B00AOA9BL0,6,12,You also need an ID to get into the app.
+B00AOA9BL0,6,13,NEEDS AN UPDATE/NEW APP.
+B00AOA9BL0,6,14,I wasn't able to get into this app.
+B00AOA9BL0,6,15,I haven't used this app much.
+B00AOA9BL0,6,16,Otherwise, the app is okay.
+B00AOA9BL0,6,17,Using this app.
+B00AOA9BL0,6,18,What has happened to this app?
+B00AOA9BL0,6,19,NOT A GO APP.
+B00AOA9BL0,6,20,This app.
+B00AOA9BL0,6,21,Please patch this app with a fix!
+B00AOA9BL0,6,22,this app is borked.
+B00AOA9BL0,6,23,I would like to see these incorporated into this app.
+B00AOA9BL0,6,24,Does not work at all.
+B00AOA9BL0,7,0,Good value, especially if you like binge-watching tv shows.
+B00AOA9BL0,7,1,fun on the go.
+B00AOA9BL0,7,2,I would like to see these incorporated into this app.
+B00AOA9BL0,7,3,But otherwise I do enjoy it.
+B00AOA9BL0,7,4,Can't see all of my current shows.
+B00AOA9BL0,7,5,Still can't get it to work.
+B00AOA9BL0,7,6,it actualy works.
+B00AOA9BL0,7,7,Other then that it's work well.
+B00AOA9BL0,7,8,would not work.
+B00AOA9BL0,7,9,dont work to well.
+B00AOA9BL0,7,10,hasn't worked and still trying.
+B00AOA9BL0,7,11,Does not work.
+B00AOA9BL0,7,12,Try to make it work, no dice.
+B00AOA9BL0,7,13,I will do some more exploring.
+B00AOA9BL0,7,14,its great but...
+B00AOA9BL0,7,15,great.
+B00AOA9BL0,7,16,great but not.
+B00AOA9BL0,7,17,great.
+B00AOA9BL0,7,18,restart.
+B00AOA9BL0,7,19,Great except.
+B00AOA9BL0,7,20,was great.
+B00AOA9BL0,7,21,Great.
+B00AOA9BL0,7,22,should be great.
+B00AOA9BL0,7,23,great.
+B00AOA9BL0,7,24,not to good.
+B00AOA9BL0,8,0,not bad.
+B00AOA9BL0,8,1,It's about time!
+B00AOA9BL0,8,2,not too bad but.
+B00AOA9BL0,8,3,how come it doesn't work on.the
+B00AOA9BL0,8,4,Not Easy.
+B00AOA9BL0,8,5,Please fix this app!!!
+B00AOA9BL0,8,6,I have seen worse.
+B00AOA9BL0,8,7,Did Walter White get away?
+B00AOA9BL0,8,8,terrible.
+B00AOA9BL0,8,9,Expect to miss the end of every 10th show.
+B00AOA9BL0,9,0,Have others had this problem??
+B00AOA9BL0,9,1,I use it all the time especially when on the go.
+B00AOA9BL0,9,2,works when it works.
+B00AOA9BL0,9,3,Okay product.
+B00AOA9BL0,9,4,No complaints so far.
+B00AOA9BL0,9,5,I am disappointed.
+B00AOA9BL0,9,6,failed to.
+B00AOA9BL0,9,7,Disappointed.
+B00AOA9BL0,9,8,I believe this to be unfair and scam to buyers.
+B00AOA9BL0,9,9,It's very annoying!
+B00AOA9BL0,10,0,Otherwise, there is no sound.
+B00AOA9BL0,10,1,Not hard when there are no other sounds around though.
+B00AOA9BL0,10,2,Gotta get these problems fixed or no one will want it!!
+B00AOA9BL0,10,3,Volume.
+B00AOA9BL0,10,4,volume is awful!
+B00AOA9BL0,10,5,This is the only way I can hear anything.
+B00AOA9BL0,10,6,its okay, but sometimes hard to hear.
+B00AOA9BL0,10,7,can't hear anything!
+B00AOA9BL0,10,8,Try to make it work, no dice.
+B00AOA9BL0,10,9,Works for me.
+B00AOA9BL0,11,0,Who do I call ?
+B00AOA9BL0,11,1,Yep, days.
+B00AOA9BL0,11,2,Happens about once every 2 weeks.
+B00AOA9BL0,11,3,Doesn't work.
+B00AOA9BL0,11,4,Buy a nook
+B00AOA9BL0,11,5,it works.
+B00AOA9BL0,11,6,Help!!
+B00AOA9BL0,11,7,Doesn't work.
+B00AOA9BL0,11,8,not bad.
+B00AOA9BL0,11,9,So far I have no complaints.
+B00AOA9BL0,12,0,only problem.
+B00AOA9BL0,12,1,Not bad.
+B00AOA9BL0,12,2,disappointed.
+B00AOA9BL0,12,3,Not bad!
+B00AOA9BL0,12,4,It's not bad.
+B00AOA9BL0,12,5,I don't miss a thing.
+B00AOA9BL0,12,6,Review.
+B00AOA9BL0,12,7,You will not be disappointed.
+B00AOA9BL0,12,8,Better!
+B00AOA9BL0,12,9,I think there are better, carriers out there.
+B00AOA9BL0,13,0,not bad.
+B00AOA9BL0,13,1,it actualy works.
+B00AOA9BL0,13,2,Not so bad.
+B00AOA9BL0,13,3,Very disappointed.
+B00AOA9BL0,13,4,VERY BAD.
+B00AOA9BL0,13,5,Disappointed and aggrivated now.
+B00AOA9BL0,13,6,Doesn't get any better.
+B00AOA9BL0,13,7,If I could rate this a zero I would so I rate as a one!
+B00AOA9BL0,13,8,Disappointed.
+B00AOA9BL0,13,9,Disappointed.
+B00AOA9BL0,14,0,hasn't worked and still trying.
+B00AOA9BL0,14,1,Does not work.
+B00AOA9BL0,14,2,dont work to well.
+B00AOA9BL0,14,3,I like this app!
+B00AOA9BL0,14,4,Still can't get it to work.
+B00AOA9BL0,14,5,Other then that it's work well.
+B00AOA9BL0,14,6,would not work.
+B00AOA9BL0,14,7,doesn't work.
+B00AOA9BL0,14,8,It didn't work.
+B00AOA9BL0,14,9,Is it me or has anyone else had this problem.
+B00AOA9BL0,15,0,Too bad.
+B00AOA9BL0,15,1,Can't get this to work at all!!
+B00AOA9BL0,15,2,Does not work.
+B00AOA9BL0,15,3,Try to make it work, no dice.
+B00AOA9BL0,15,4,What a disappointment!
+B00AOA9BL0,15,5,expected more.
+B00AOA9BL0,15,6,disappointed!
+B00AOA9BL0,15,7,Doesn't get much better than that.
+B00AOA9BL0,15,8,volume.
+B00AOA9BL0,15,9,Don't like the shortage of apps available.

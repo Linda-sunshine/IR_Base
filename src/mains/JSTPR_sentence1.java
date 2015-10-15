@@ -235,6 +235,71 @@ public class JSTPR_sentence1 {
 	}
 	
 
+	public void readcsvEMNaive(String real,int trainSize)
+	{
+		
+		
+		BufferedReader br_real = null;
+		BufferedReader br_pred = null;
+		String line = "";
+		
+		double pros_f1= 0; double cons_f1 = 0;
+		try {
+	 
+			br_real = new BufferedReader(new FileReader(real));
+			
+			while ((line = br_real.readLine()) != null) {
+				
+				if(line.contains("completeF1")){
+
+					String [] infos = line.split(",");
+					pros_f1 = Double.parseDouble(infos[1]);
+					cons_f1 = Double.parseDouble(infos[2]);
+					
+					
+				}
+				
+			}
+			
+			System.out.format("F1 measure:pros,cons: %.3f %.3f\n",pros_f1,cons_f1);
+			
+			if(!prosList.containsKey(trainSize)){
+				ArrayList<Double> list = new ArrayList<Double>();
+				list.add(pros_f1);
+				prosList.put(trainSize, list);
+			}
+			else{
+				ArrayList<Double> list = prosList.get(trainSize);
+				list.add(pros_f1);
+				prosList.put(trainSize, list);
+			}
+			
+			
+			if(!consList.containsKey(trainSize)){
+				ArrayList<Double> list = new ArrayList<Double>();
+				list.add(cons_f1);
+				consList.put(trainSize, list);
+			}
+			else{
+				ArrayList<Double> list = consList.get(trainSize);
+				list.add(cons_f1);
+				consList.put(trainSize, list);
+			}
+			
+			
+			pros_f1= 0; 
+			cons_f1 = 0;
+	 
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+	 
+	  
+	}
+	
+	
 	
 	
 	public void readcsvASUM(String real, int trainSize)
@@ -307,15 +372,10 @@ public class JSTPR_sentence1 {
 	
 	
 	public void writeGNUPlotfile(String category){
-		//String modellist[] = {"ASUM","HTSM","JST"};
-		//String categories[] = {"camera","phone","tablet","tv"};
-		
-		
-		
-			String path = "/home/nahid/workspace/plot/"+category+"_pros.csv";
+		String path = "/home/nahid/workspace/plot/"+category+"_pros.csv";
 			try{
 				PrintWriter writer = new PrintWriter(new File(path));
-				writer.println("#Model\tASUM\tHTSM\tJST");
+				writer.println("#Model\tASUM\tHTSM\tJST\tEM-NaiveBayes");
 				for(int trainSize = 0; trainSize<=5000;trainSize=trainSize+1000){
 					ArrayList<Double> list = prosList.get(trainSize);
 					writer.write(trainSize+"\t");
@@ -330,7 +390,7 @@ public class JSTPR_sentence1 {
 				
 				path = "/home/nahid/workspace/plot/"+category+"_cons.csv";
 				writer = new PrintWriter(new File(path));
-				writer.println("#Model\tASUM\tHTSM\tJST");
+				writer.println("#Model\tASUM\tHTSM\tJST\tEM-NaiveBayes");
 				for(int trainSize = 0; trainSize<=5000;trainSize=trainSize+1000){
 					ArrayList<Double> list = consList.get(trainSize);
 					writer.write(trainSize+"\t");
@@ -360,7 +420,7 @@ public class JSTPR_sentence1 {
 	public static void main(String[] args) {
 		
 		JSTPR_sentence1 com = new JSTPR_sentence1();
-		String modellist[] = {"ASUM","HTSM","JST"};
+		String modellist[] = {"ASUM","HTSM","JST", "EM-NB"};
 		
 		String categories[] = {"camera","phone","tablet","tv"};
 		int trainSize = 0;
@@ -411,6 +471,25 @@ public class JSTPR_sentence1 {
 						String filename1 = "/home/nahid/workspace/Nahid_IR_Base/model/LRHTSM_senti/result/"+category+"/"+trainSize+"/NewEggLoaded/aspectSentiPrior/"+"Topics_"+number_of_topics+"_Information.txt";
 						com.readcsvHTSM(filename1,trainSize);
 					}
+				}
+				
+				if(model.equalsIgnoreCase("EM-NB")){
+					if(category.equalsIgnoreCase("tablet"))
+						number_of_topics = 30;
+					else if(category.equalsIgnoreCase("camera"))
+						number_of_topics = 26;
+					else if(category.equalsIgnoreCase("phone"))
+						number_of_topics = 26;
+					else if(category.equalsIgnoreCase("tv"))
+						number_of_topics = 16;
+					
+					
+					for(trainSize = 0; trainSize<=5000;trainSize=trainSize+1000){
+						System.out.print("Category:"+category+", TrainSize: "+ trainSize+" ");
+						String resultPath = "./model/"+model+"/result/"+category+"/"+trainSize+"/"+category+"_information.txt";
+						com.readcsvEMNaive(resultPath,trainSize);
+					}
+					
 				}
 			}
 			

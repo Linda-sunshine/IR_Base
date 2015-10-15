@@ -1,0 +1,43 @@
+camera_1_1,camera_1_2
+135,6,5,94,
+39,4,3,2,
+44,2,2,0,
+Normal Kappa,0.905579399141631
+Intra Kappa,0.2820512820512815
+Inter Kappa,-0.043478260869567936
+camera_1_2,camera_1_3
+136,4,7,93,
+39,3,5,1,
+46,0,2,0,
+Normal Kappa,0.9053084648493545
+Intra Kappa,0.11111111111111184
+Inter Kappa,0.0
+camera_1_3,camera_1_1
+137,6,4,93,
+41,3,2,2,
+46,2,0,0,
+Normal Kappa,0.9137745203707697
+Intra Kappa,0.38775510204081637
+Inter Kappa,0.0
+camera_2_1,camera_2_2
+181,4,4,51,
+39,2,4,3,
+42,3,2,1,
+Normal Kappa,0.9056511056511057
+Intra Kappa,0.43083003952569177
+Inter Kappa,0.23076923076923084
+camera_2_2,camera_2_3
+181,4,3,52,
+39,4,0,5,
+44,0,4,0,
+Normal Kappa,0.9179687499999999
+Intra Kappa,0.670103092783505
+Inter Kappa,0.0
+camera_2_3,camera_2_1
+180,4,5,51,
+37,2,4,5,
+45,3,0,0,
+Normal Kappa,0.89453125
+Intra Kappa,0.5514018691588786
+Inter Kappa,0.0
+

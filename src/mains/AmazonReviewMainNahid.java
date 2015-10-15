@@ -33,7 +33,7 @@ public class AmazonReviewMainNahid {
 		String style = "SUP";
 		
 		//"NB", "LR", "SVM", "PR", "EM-NB"
-		String classifier = "EM-NB1"; //Which classifier to use.
+		String classifier = "EM-NB"; //Which classifier to use.
 		double C = 1.0;
 		String debugOutput = null; //"data/debug/LR.output";
 		
@@ -58,7 +58,7 @@ public class AmazonReviewMainNahid {
 		boolean m_LoadnewEggInTrain = true;
 		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
 		int lengthThreshold = 2; //Document is now sentence length threshold
-		boolean m_randomFold = true;
+		boolean m_randomFold = false;
 		int numberOfIteration = 200; // for EM-Naive Bayes
 		double varConverge = 1e-5; // for EM-Naive Bayes
 		
@@ -120,13 +120,6 @@ public class AmazonReviewMainNahid {
 				//Define a new EM-naive bayes with the parameters.
 				System.out.println("Start EM-naive bayes, wait...");
 				EMNaiveBayes myNB = new EMNaiveBayes(corpus,numberOfIteration,varConverge);
-				myNB.crossValidationNahid(CVFold, m_randomFold, m_LoadnewEggInTrain);
-			}
-			
-			else if(classifier.equals("EM-NB1")){
-				//Define a new EM-naive bayes with the parameters.
-				System.out.println("Start Prof EM-naive bayes, wait...");
-				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
 				myNB.setInfoWriter(resultPath);
 				myNB.crossValidationNahid(CVFold, m_randomFold, m_LoadnewEggInTrain);
 			}

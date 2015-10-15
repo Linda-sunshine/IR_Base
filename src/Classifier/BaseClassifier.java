@@ -32,6 +32,7 @@ public abstract class BaseClassifier {
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
+	
 	public void train() {
 		train(m_trainSet);
 	}
@@ -78,7 +79,8 @@ public abstract class BaseClassifier {
 		StringBuffer buffer = new StringBuffer(128);
 		for(int i=0; i<PRarray.length; i++) {
 			double p = PRarray[i][0], r = PRarray[i][1];
-			buffer.append(String.format("%d:%.3f ", i, 2*p*r/(p+r)));
+			//buffer.append(String.format("%d:%.3f ", i, 2*p*r/(p+r)));
+			buffer.append(String.format("%.3f,", 2*p*r/(p+r)));
 		}
 		return buffer.toString().trim();
 	}
@@ -158,6 +160,7 @@ public abstract class BaseClassifier {
 				double accuracy = test();
 				
 				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
+				infoWriter.write(getF1String());
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
@@ -185,7 +188,7 @@ public abstract class BaseClassifier {
 			int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 			
 			
-			/*if(m_randomFold==true){
+			if(m_randomFold==true){
 				perf = new double[k];
 				m_corpus.shuffle(k);
 				int[] masks = m_corpus.getMasks();
@@ -213,7 +216,7 @@ public abstract class BaseClassifier {
 					m_trainSet.clear();
 					m_testSet.clear();
 				}
-			}else */if(m_randomFold==true){
+			}/*else if(m_randomFold==true){
 				
 				perf = new double[k];
 				ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
@@ -303,7 +306,7 @@ public abstract class BaseClassifier {
 					m_trainSet.clear();
 					m_testSet.clear();
 				}
-			}
+			}*/
 			
 			else {
 				k = 1;
@@ -390,7 +393,7 @@ public abstract class BaseClassifier {
 			}
 			//output the performance statistics
 			calculateMeanVariance(m_precisionsRecalls);	
-			
+			/*
 			// calculate statistics for new folding mechanism
 			double trainSizeSum [][] = {{0,0},{0,0},{0,0},{0,0},{0,0},{0,0}};
 			for(int size = 0; size<=5; size = size+1){
@@ -403,7 +406,7 @@ public abstract class BaseClassifier {
 			
 			for(int size = 0; size<=5; size = size+1){
 				System.out.println("Train size:"+size*1000 +", Pros F1:"+trainSizeSum[size][0]/k+", Cons F1:"+trainSizeSum[size][1]/k);
-			}
+			}*/
 			
 		}	
 	
@@ -465,10 +468,10 @@ public abstract class BaseClassifier {
 		infoWriter.format("\t%.4f", correct/total);
 		
 		System.out.print("\nF1");
-		infoWriter.print("\nF1");
+		infoWriter.print("\ncompleteF1");
 		for(int i=0; i<m_classNo; i++){
-			System.out.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
-			infoWriter.format("\t%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+			System.out.format(",%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
+			infoWriter.format(",%.4f", 2.0 * columnSum[i] * prec[i] / (columnSum[i] + prec[i]));
 		}
 		System.out.println();
 		infoWriter.println();
