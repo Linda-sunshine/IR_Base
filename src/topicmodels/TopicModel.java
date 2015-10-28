@@ -541,6 +541,8 @@ public abstract class TopicModel {
 		debugWriter.close();
 	}
 	
+	
+	
 	public void calculatePrecisionRecall(int foldNumber){
 		int[][] precision_recall = new int [2][2];
 		precision_recall [0][0] = 0; // 0 is for pos
@@ -553,6 +555,14 @@ public abstract class TopicModel {
 		for(_Doc d:m_testSet) {
 			// if document is from newEgg which is 2 then calculate precision-recall
 			if(d.getSourceType()==2){
+				
+				for(int i=0; i<d.getSenetenceSize(); i++){
+					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
+					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
+					precision_recall[actualLabel][predictedLabel]++;
+				}
+			}
+			else if(d.getSourceType()==3){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
 					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
@@ -703,8 +713,7 @@ public abstract class TopicModel {
 		int newEggRatingCount[] = {0,0,0,0,0};
 		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
-		
-		/*if(m_randomFold==true){
+		if(m_randomFold==true){
 			perf = new double[k];
 			m_corpus.shuffle(k);
 			int[] masks = m_corpus.getMasks();
@@ -734,8 +743,8 @@ public abstract class TopicModel {
 			}
 			
 			
-		} */
-		if(m_randomFold==true){
+		} 
+		/*if(m_randomFold==true){
 			
 			perf = new double[k];
 			ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
@@ -868,7 +877,7 @@ public abstract class TopicModel {
 				
 			}
 		}
-
+		*/
 		
 		else {
 			k = 1;

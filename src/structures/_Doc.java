@@ -22,6 +22,10 @@ public class _Doc implements Comparable<_Doc> {
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the review.
 	
+	// used only in appReview Dataset
+	String m_appName;
+	String m_appVersion; 
+	
 	String m_source; //The content of the source file.
 	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
 	int m_totalLength; //The total length of the document in tokens
@@ -117,6 +121,24 @@ public class _Doc implements Comparable<_Doc> {
 		this.m_y_label = ylabel;
 		this.m_totalLength = 0;
 		this.m_timeStamp = timeStamp;
+		m_topics = null;
+		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
+		m_sentences = null;
+	}
+	
+	
+	public _Doc (int ID, String reviewID, String appID, String appName, String title, String source, String version, int rating){
+		this.m_ID = ID;
+		this.m_name = reviewID;
+		this.m_itemID = appID;
+		this.m_title = title;
+		this.m_source = source;
+		this.m_y_label = rating;
+		this.m_appName = appName;
+		this.m_appVersion = version;
+		this.m_totalLength = 0;
 		m_topics = null;
 		m_sstat = null;
 		m_words = null;

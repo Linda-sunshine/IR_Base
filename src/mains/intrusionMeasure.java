@@ -178,6 +178,7 @@ public class intrusionMeasure {
 		System.out.println("Recall Table");
 		System.out.format("%s & %.3f & %.3f & %.3f & %.3f \\\\\n", category, LDA_Inter_sum/(this.number_of_topics*annotator), HTMM_Inter_sum/(this.number_of_topics*annotator), ASUM_Inter_sum/(this.number_of_topics*annotator), HTSM_Inter_sum/(this.number_of_topics*annotator));
 		
+		System.out.println(HTSM_Inter_sum+";" +this.number_of_topics*annotator+ "a"+ annotator);
 		
 		
 		

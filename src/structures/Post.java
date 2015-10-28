@@ -14,7 +14,7 @@ import utils.Utils;
  * data structure for a forum discussion post 
  */
 public class Post {
-	//unique ID from the corresponding website
+	//unique review ID from the corresponding website
 	String m_ID;
 	public String getID() {
 		return m_ID;
