@@ -122,6 +122,19 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
+	//Constructor.
+	public _Doc (int ID, String prodID, String source, int ylabel){
+		this.m_ID = ID;
+		this.m_itemID = prodID;
+		this.m_source = source;
+		this.m_y_label = ylabel;
+		this.m_totalLength = 0;
+		m_topics = null;
+		m_sstat = null;
+		m_words = null;
+		m_topicAssignment = null;
+		m_sentences = null;
+	}
 	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;

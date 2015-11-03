@@ -585,4 +585,73 @@ public class DocAnalyzer extends Analyzer {
 		Utils.L1Normalization(tagVector);
 		return tagVector;
 	}
+	
+	//Load all the files in the directory.
+	public void LoadDirectory(String folder, String suffix) throws IOException {
+			if (folder==null || folder.isEmpty())
+				return;
+			
+			int current = m_corpus.getSize();
+			File dir = new File(folder);
+			for (File f : dir.listFiles()) {
+				if (f.isFile() && f.getName().endsWith(suffix)) {
+					LoadDoc(f.getAbsolutePath());
+				} else if (f.isDirectory())
+					LoadDirectory(f.getAbsolutePath(), suffix);
+			}
+			System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+		}
+	//Amazon review in SNAP: each file contains all the reviews in one category.
+	public void LoadSNAPFiles(String folder){
+		int count = 0;
+		if(folder == null || folder.isEmpty())
+			return;
+		File dir = new File(folder);
+		for(File f: dir.listFiles()){
+			if(f.isFile()){
+				LoadOneSNAPFile(f.getAbsolutePath());
+				count++;
+			}
+		}
+		System.out.format("Load files from %d categories in total.", count);
+	}
+	//Load reviews from each file and one file contains reviews from one category.	
+	public void LoadOneSNAPFile(String filename){
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			boolean rmFlag = false;
+			ArrayList<String> oneReview = new ArrayList<String>();
+			while ((line = reader.readLine()) != null) {
+				if(line.startsWith("ProductInfo")|| line.startsWith("summary") || line.startsWith("text") || line.startsWith("score")){
+					if(line.split(":").length == 1 && line.split(":")[0].equals("summary")){
+						System.out.print('S');
+					} else if(line.split(":").length == 1 && line.split(":")[0].equals("text")){
+						rmFlag = true;
+					} else
+						oneReview.add(line.split(":")[1]);
+				} else if (line.isEmpty()){
+					if(rmFlag){
+						oneReview.clear();
+						rmFlag = false;
+					}
+					else{
+						String content = oneReview.get(0);
+						int label = (int) (Double.valueOf(oneReview.get(2)) - 1);
+						_Doc review = new _Doc(m_corpus.getSize(), oneReview.get(1), content, label);
+						if(this.m_stnDetector!=null)
+							AnalyzeDocWithStnSplit(review);
+						else
+							AnalyzeDoc(review);
+						oneReview.clear();
+						continue;
+					}
+				}
+			}
+			reader.close();
+			System.out.format("Loading files from %s, %d files in total.\n", filename, m_corpus.getSize());
+		} catch(IOException e){
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}	
 }	

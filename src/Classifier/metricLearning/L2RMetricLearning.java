@@ -1,5 +1,8 @@
 package Classifier.metricLearning;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -49,6 +52,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_stepSize=1;
 	int m_maxIter = 300;
 	int m_windowSize = 20;
+	
 	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
@@ -140,13 +144,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public void train(Collection<_Doc> trainSet){
 		super.train(trainSet);
 		
 		L2RModelTraining();
 	}
-	
-	protected void L2RModelTraining() {
+
+	protected void L2RModelTraining(){
 		//select the training pairs
 		createTrainingCorpus();
 		
@@ -157,9 +161,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
+			m_fvs = fvs.toArray(new Feature[fvs.size()][]);
+			m_ys = labels.toArray(new Integer[labels.size()]);
 			
-			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
-			w = m_rankSVM.getFeatureWeights();	
+			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, 0);
+			w = m_rankSVM.getFeatureWeights();
+			
 		} else if(m_ranker==2) {//RankLR
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 			ArrayList<Integer> labels = new ArrayList<Integer>();
@@ -243,6 +250,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		calcLabeledSimilarities();
 		
 		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
+//		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_trainSet.size()-1);
+
 		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
 		
 		_Query q;		
@@ -274,23 +283,42 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					irrelevant ++;
 			}
 			
-			//inject some random neighbors 
-			int j = 0;
-			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
-				if (i!=j) {
-					dj = m_trainSet.get(j);
-					//if (Math.random()<0.02 && !neighbors.contains(dj)) {
-					if(!neighbors.contains(dj)){
-						neighbors.add(dj);
-						if (di.getYLabel() == dj.getYLabel())
-							relevant ++;
-						else
-							irrelevant ++;
-					}
-				}
-				
-				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
-			}
+			//find the top K similar documents by default similarity measure
+//			for(int k=0; k<m_topK; k++) {
+////				System.out.println("line not exc.");
+//				//add the most similar one.
+//				dj = m_trainSet.get(simRanker.get(k).m_index);
+//				neighbors.add(dj);
+//				if (di.getYLabel() == dj.getYLabel())
+//					relevant ++;
+//				else
+//					irrelevant ++;
+//				//add the least similar one.
+//				dj = m_trainSet.get(simRanker.get(m_trainSet.size()-2-k).m_index);
+//				neighbors.add(dj);
+//				if (di.getYLabel() == dj.getYLabel())
+//					relevant ++;
+//				else
+//					irrelevant ++;
+//			}
+//			System.out.println("Ratio: "+relevant/irrelevant);
+//			//inject some random neighbors 
+//			int j = 0;
+//			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
+//				if (i!=j) {
+//					dj = m_trainSet.get(j);
+//					//if (Math.random()<0.02 && !neighbors.contains(dj)) {
+//					if(!neighbors.contains(dj)){
+//						neighbors.add(dj);
+//						if (di.getYLabel() == dj.getYLabel())
+//							relevant ++;
+//						else
+//							irrelevant ++;
+//					}
+//				}
+//				
+//				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
+//			}
 			
 			if (relevant==0 || irrelevant==0 
 				|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ)){

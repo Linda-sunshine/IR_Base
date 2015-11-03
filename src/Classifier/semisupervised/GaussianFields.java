@@ -158,8 +158,9 @@ public class GaussianFields extends BaseClassifier {
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-		return Math.exp(getBoWSim(di, dj));
-		//return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
+//		return Math.exp(getBoWSim(di, dj));
+		return Math.exp(-getTopicalSim(di, dj));
+//		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void WaitUntilFinish(ActionType atype) {

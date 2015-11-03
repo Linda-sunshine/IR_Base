@@ -1,11 +1,15 @@
 package Classifier;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import Classifier.supervised.liblinear.Feature;
 
 import structures._Corpus;
 import structures._Doc;
@@ -29,6 +33,10 @@ public abstract class BaseClassifier {
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
 	protected double[][][] m_purityStat;
+	
+	protected Feature[][] m_fvs; //The data instances for testing svm, we don't need it in real L2R.
+	protected Integer[] m_ys; //The data labels for testing svm.
+	
 	public void train() {
 		train(m_trainSet);
 	}
@@ -38,7 +46,7 @@ public abstract class BaseClassifier {
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
-	
+
 	public double test() {
 		double acc = 0;
 		for(_Doc doc: m_testSet){
@@ -128,17 +136,18 @@ public abstract class BaseClassifier {
 			//Use this loop to iterate all the ten folders, set the train set and test set.
 			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
-					//more for testing
+					//two fold for training, eight fold for testing.
 					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
 						m_trainSet.add(docs.get(j));
 					else
 						m_testSet.add(docs.get(j));
 					
-//					//more for training
-//					if(masks[j]==i) 
-//						m_testSet.add(docs.get(j));
-//					else
+					//One fold for training, nine fold for testing.
+//					if( masks[j]==i ) // || masks[j]==(i+3)%k 
 //						m_trainSet.add(docs.get(j));
+//					else
+//						m_testSet.add(docs.get(j));
+					
 				}
 				
 				long start = System.currentTimeMillis();
@@ -155,6 +164,58 @@ public abstract class BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+//	public void crossValidation(int k, _Corpus c){
+//		m_purityStat = new double[k][4][3];
+//		try {
+//			if (m_debugOutput!=null){
+//				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
+//				m_debugWriter.write(this.toString() + "\n");
+//			}
+////			c.shuffle(k);
+//			c.mastInOrder(k);
+//			int[] masks = c.getMasks();
+//			ArrayList<_Doc> docs = c.getCollection();
+//			//Use this loop to iterate all the ten folders, set the train set and test set.
+//			for (int i = 0; i < k; i++) {
+//				for (int j = 0; j < masks.length; j++) {
+//					//more for testing
+//					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
+//						m_trainSet.add(docs.get(j));
+//					else
+//						m_testSet.add(docs.get(j));
+//				}
+//				
+////				long start = System.currentTimeMillis();
+//				train();
+//				save2File("./data/RankSVMDataFile1027.csv", 1000);
+////				double accuracy = test();				
+////				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
+////				m_trainSet.clear();
+////				m_testSet.clear();
+//			}
+////			calculateMeanVariance();	
+////			calculateMeanPurity();
+////			if (m_debugOutput!=null)
+////				m_debugWriter.close();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//	}
+	
+	//Print part of the instances for sanity check.
+	public void save2File(String filename, int n) throws FileNotFoundException{
+		PrintWriter printer = new PrintWriter(new File(filename));
+		for(int i=0; i<n; i++){
+			printer.print(m_ys[i]+",");//print the label first.
+			Feature[] tmp = m_fvs[i];
+			for(int j=0; j<tmp.length-1; j++){
+				printer.print(tmp[j].getIndex()+","+tmp[j].getValue()+",");
+			}
+			printer.print(tmp[tmp.length-1].getIndex()+","+tmp[tmp.length-1].getValue()+"\n");
+		}
+		printer.close();
 	}
 	
 	//Calculate the mean of purity. added by Lin.

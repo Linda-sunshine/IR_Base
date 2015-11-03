@@ -72,14 +72,14 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			
 			/****Walk through the top k' unlabeled neighbor for the current data.****/
 			for (_Edge edge:node.m_unlabeledEdges) {				
-				wijSumU += edge.getSimilarity(); //get the similarity between two nodes.
-				fSumU += edge.getSimilarity() * edge.getPred();
+				wijSumU += m_simFlag?edge.getSimilarity():1; //get the similarity between two nodes.
+				fSumU += m_simFlag?edge.getSimilarity() * edge.getPred(): edge.getPred();
 			}
 			
 			/****Walk through the top k labeled neighbor for the current data.****/
 			for (_Edge edge:node.m_labeledEdges) {
-				wijSumL += edge.getSimilarity(); //get the similarity between two nodes.
-				fSumL += edge.getSimilarity() * edge.getLabel();
+				wijSumL += m_simFlag?edge.getSimilarity():1; //get the similarity between two nodes.
+				fSumL += m_simFlag?edge.getSimilarity() * edge.getPred(): edge.getPred();
 			}
 			
 			node.m_pred = m_eta * (fSumL*wL + fSumU*wU) / (wijSumL*wL + wijSumU*wU) + (1-m_eta) * node.m_classifierPred;
@@ -262,8 +262,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			mean = wijSumL / m_k;
 			sd = Math.sqrt(sd/m_k - mean*mean);
 			
-			/****Get the top 5 elements from labeled neighbors******/
-			for(int k=0; k<5; k++){
+			/****Get the top 10 elements from labeled neighbors******/
+			for(int k=0; k<10; k++){
 				_Edge item = node.m_labeledEdges.get(k);
 				sim = item.getSimilarity()/wijSumL;
 				
@@ -288,8 +288,8 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			mean = wijSumU / m_kPrime;
 			sd = Math.sqrt(sd/m_kPrime - mean*mean);
 			
-			/****Get the top 5 elements from k'UU******/
-			for(int k=0; k<5; k++){
+			/****Get the top 10 elements from k'UU******/
+			for(int k=0; k<10; k++){
 				_Edge item = node.m_unlabeledEdges.get(k);
 				sim = item.getSimilarity()/wijSumU;
 				

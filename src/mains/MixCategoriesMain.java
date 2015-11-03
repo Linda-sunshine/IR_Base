@@ -19,13 +19,13 @@ import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 
 import Classifier.supervised.SVM;
 
-public class MyTransductiveMain2 {
+public class MixCategoriesMain {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
 				
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
-		int lengthThreshold = 5; //Document length threshold
+		int lengthThreshold = 10; //Document length threshold
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
 
 		/*****parameters for the two-topic topic model*****/
@@ -33,12 +33,13 @@ public class MyTransductiveMain2 {
 		
 		int number_of_topics = 30;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
-		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		double converge = -1, lambda = 0.6; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small/dedup/RawData";
-		String suffix = ".json";
+		String category = "13"; //"electronics"
+		String dataSize = "500"; //"50K", "100K"
+		String folder = String.format("./data/MixCategories/%s_%sCategories", category, dataSize);
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 //		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM"))
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for postagging.
@@ -52,10 +53,8 @@ public class MyTransductiveMain2 {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String infoFilePath = "./data/result/"+"Topics_"+number_of_topics+"Information.txt";
 		
-		String category = "tablets"; //"electronics"
-		String dataSize = "86jsons"; //"50K", "100K"
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
+		String fvFile = String.format("./data/Features/fv_%dgram_mixed_%s_%s.txt", Ngram, category, dataSize);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_mixed_%s_%s.txt", Ngram, category, dataSize);
 		String aspectlist = "./data/Model/aspect_output_simple.txt";
 
 		/*****Parameters in learning style.*****/
@@ -63,7 +62,7 @@ public class MyTransductiveMain2 {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -77,32 +76,24 @@ public class MyTransductiveMain2 {
 		
 		/*****Parameters in feature selection.*****/
 //		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
+//		String featureSelection = "IG"; //Feature selection method.
 //		double startProb = 0.2; // Used in feature selection, the starting point of the features.
 //		double endProb = 1.0; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-//		
+//		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Performing feature selection, wait...");
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+//		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.LoadSNAPFiles(folder);
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		Analyzer analyzer;
+		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, stnModel, tagModel, classNumber, fvFile, Ngram, lengthThreshold);
+		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
+		analyzer.LoadStopwords(stopword); //Load the sentiwordnet file.
+		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+		analyzer.LoadSNAPFiles(folder); //Load all the documents as the data set.
 		_Corpus c;
-		if(style.equals("SUP")){
-			stnModel = null;
-			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		} else{
-			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
-			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//			analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
+		if(style.equals("SEMI")){
 			analyzer.setFeatureValues("TF", 0);		
 			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
@@ -139,8 +130,8 @@ public class MyTransductiveMain2 {
 			double learningRatio = 1;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.6; // convergence of random walk, weight of random walk
-			boolean simFlag = false, weightedAvg = true;
+			double tDelta = 1e-4, tEta = 0.7; // convergence of random walk, weight of random walk
+			boolean simFlag = true, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2

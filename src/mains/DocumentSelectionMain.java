@@ -76,7 +76,7 @@ public class DocumentSelectionMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -234,7 +234,7 @@ public class DocumentSelectionMain {
 			double learningRatio = 1;
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.9; // convergence of random walk, weight of random walk
+			double tDelta = 1e-4, tEta = 0.7; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 20;
@@ -257,7 +257,7 @@ public class DocumentSelectionMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						topK, noiseRatio, ranker, multithread_LR);
 			}
-			mySemi.setSimilarity(simFlag);
+			mySemi.setSimilarity(false);
 			mySemi.setDebugOutput(debugOutput);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
