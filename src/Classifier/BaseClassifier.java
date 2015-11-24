@@ -36,7 +36,7 @@ public abstract class BaseClassifier {
 	
 	protected Feature[][] m_fvs; //The data instances for testing svm, we don't need it in real L2R.
 	protected Integer[] m_ys; //The data labels for testing svm.
-	
+	protected int m_kFold; //k-fold cross validation.
 	public void train() {
 		train(m_trainSet);
 	}
@@ -123,18 +123,19 @@ public abstract class BaseClassifier {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
-		m_purityStat = new double[k][4][3];
+		m_kFold = k;
+		m_purityStat = new double[m_kFold][4][3];
 		try {
 			if (m_debugOutput!=null){
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 				m_debugWriter.write(this.toString() + "\n");
 			}
-//			c.shuffle(k);
-			c.mastInOrder(k);
+			c.shuffle(m_kFold);
+//			c.mastInOrder(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.
-			for (int i = 0; i < k; i++) {
+			for (int i = 0; i < m_kFold; i++) {
 				for (int j = 0; j < masks.length; j++) {
 					//two fold for training, eight fold for testing.
 					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 

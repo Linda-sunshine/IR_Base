@@ -116,27 +116,36 @@ public class KMeansAlg extends BaseClassifier {
 	public ArrayList<ArrayList<_Doc>> getClustersDocs(){
 		return m_clustersDocs;
 	}
+	
 	//Write the cluster stat out to file, added by Lin.
-	public void writeStat(String filename) throws FileNotFoundException{
-		PrintWriter printer = new PrintWriter(new File(filename));
-		printer.write("class 0\tclass 1\tclass 2\tclass 3\tclass 4\tneg\tpos\tsum\tratio\n");
-		for(double[] stat: m_clusterStat)
-			printer.format("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%.3f\n", (int)stat[0], (int)stat[1], (int)stat[2], (int)stat[3], (int)stat[4], (int)stat[5], (int)stat[6], (int)stat[7], stat[8]);
-//		for(SparseVector sp : m_centroids)
-//			System.out.println(sp);
-		printer.close();
+	public void writeStat(String filename){
+		try{
+			PrintWriter printer = new PrintWriter(new File(filename));
+			printer.write("class 0\tclass 1\tclass 2\tclass 3\tclass 4\tneg\tpos\tsum\tratio\n");
+			for(double[] stat: m_clusterStat)
+				printer.format("%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%.3f\n", (int)stat[0], (int)stat[1], (int)stat[2], (int)stat[3], (int)stat[4], (int)stat[5], (int)stat[6], (int)stat[7], stat[8]);
+//			for(SparseVector sp : m_centroids)
+//				System.out.println(sp);
+			printer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 	
-	public void writeContent(String filename) throws FileNotFoundException{
-		PrintWriter printer = new PrintWriter(new File(filename));
-		for(int i=0; i< m_clustersDocs.size(); i++){
-			printer.format("=======================%dst cluster========================\n", i);
-			for(_Doc d: m_clustersDocs.get(i)){
-				printer.write("---------------------------------------------------------\n");
-				printer.write(d.getSource()+"\n");
+	public void writeContent(String filename){
+		try{
+			PrintWriter printer = new PrintWriter(new File(filename));
+			for(int i=0; i< m_clustersDocs.size(); i++){
+				printer.format("=======================%dst cluster========================\n", i);
+				for(_Doc d: m_clustersDocs.get(i)){
+					printer.write("---------------------------------------------------------\n");
+					printer.write(d.getSource()+"\n");
+				}
 			}
+			printer.close();
+		} catch(IOException e){
+			e.printStackTrace();
 		}
-		printer.close();
 	}
 	//assign to the closest cluster 
 	@Override

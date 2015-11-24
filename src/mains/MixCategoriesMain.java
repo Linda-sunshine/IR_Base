@@ -62,7 +62,7 @@ public class MixCategoriesMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW";
+		String method = "RW-L2R";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -87,7 +87,8 @@ public class MixCategoriesMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, stnModel, tagModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, stnModel, tagModel, classNumber, fvFile, Ngram, lengthThreshold);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel);
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); //Load the sentiwordnet file.
 		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
@@ -131,7 +132,7 @@ public class MixCategoriesMain {
 			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 1; // labeled data weight, unlabeled data weight
 			double tDelta = 1e-4, tEta = 0.7; // convergence of random walk, weight of random walk
-			boolean simFlag = true, weightedAvg = true;
+			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 6;
 			double noiseRatio = 1.5, negRatio = 1; //0.5, 1, 1.5, 2
@@ -153,9 +154,10 @@ public class MixCategoriesMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						topK, noiseRatio, ranker, multithread_LR);
 			}
-			mySemi.setSimilarity(simFlag);
+			mySemi.setSimiMethod("T");
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
+			mySemi.printInfo();
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");

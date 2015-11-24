@@ -1,4 +1,4 @@
-package mains;
+package SanityCheck;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -41,7 +41,7 @@ public class PuritySanityCheck {
 				for(int j=0; j<i; j++){
 					di = documents.get(i);
 					dj = documents.get(j);
-					m_similarity[i*(i-1)/2+j] = Utils.calculateSimilarity(di, dj);
+					m_similarity[getIndex(i, j)] = Utils.calculateSimilarity(di, dj);
 				}
 			}
 		} else if(m_method == 2){
@@ -49,7 +49,7 @@ public class PuritySanityCheck {
 				for(int j=0; j<i; j++){
 					di = documents.get(i);
 					dj = documents.get(j);
-					m_similarity[i*(i-1)/2+j] = Math.exp(-Utils.klDivergence(di.m_topics, dj.m_topics));
+					m_similarity[getIndex(i, j)] = Math.exp(-Utils.klDivergence(di.m_topics, dj.m_topics));
 				}
 			}
 		} else if(m_method == 3){
@@ -57,7 +57,7 @@ public class PuritySanityCheck {
 				for(int j=0; j<i; j++){
 					di = documents.get(i);
 					dj = documents.get(j);
-					m_similarity[i*(i-1)/2+j] = Math.exp(Utils.calculateSimilarity(di, dj)
+					m_similarity[getIndex(i, j)] = Math.exp(Utils.calculateSimilarity(di, dj)
 							                   -Utils.klDivergence(di.m_topics, dj.m_topics));
 				}
 			}
@@ -74,11 +74,13 @@ public class PuritySanityCheck {
 		return i*(i-1)/2+j;
 	}
 	//Calculate p@k for all the documents.
-	public void calculatePatK4All(){
-		m_PatK = new double[2][3];
+	public void calculatePatK4All(int topK, int itv){
 		_Doc tmpD;//the current document.
 		ArrayList<_Doc> documents = m_corpus.getCollection();
-		int[] neighbors = new int[20];
+		int[] neighbors = new int[topK];
+		
+		int interval = topK/itv;
+		m_PatK = new double[2][interval];
 
 		for(int i=0; i<m_size; i++){
 			tmpD = documents.get(i);
@@ -91,13 +93,13 @@ public class PuritySanityCheck {
 					neighbors[j] = neighbor.getYLabel();
 				}
 			} else{//else select neighbors based on similarity.
-				MyPriorityQueue<_RankItem> neighborQueue= new MyPriorityQueue<_RankItem>(20);
+				MyPriorityQueue<_RankItem> neighborQueue= new MyPriorityQueue<_RankItem>(topK);
 				//select top k most similar documents as neighbors.
 				for(int j=0; j<m_size; j++){
 					if(j==i)
 						continue;
 					else
-						neighborQueue.add(new _RankItem(j, m_similarity[getIndex(i, j)]));
+						neighborQueue.add(new _RankItem(j, m_similarity[getIndex(i, j)]/documents.get(j).getDocLength()));
 				}
 				//Traverse the top K neighbors to collect their labels.
 				for(int k=0; k<neighborQueue.size(); k++){
@@ -105,22 +107,30 @@ public class PuritySanityCheck {
 					neighbors[k] = documents.get(tmp.m_index).getYLabel();
 				}
 			}
-			m_PatK[tmpD.getYLabel()][0] += calcPatK(neighbors,5, tmpD.getYLabel());
-			m_PatK[tmpD.getYLabel()][1] += calcPatK(neighbors,10, tmpD.getYLabel());
-			m_PatK[tmpD.getYLabel()][2] += calcPatK(neighbors,20, tmpD.getYLabel());
+			for(int j=0; j<interval; j++)
+				m_PatK[tmpD.getYLabel()][j] += calcPatK(neighbors, 10*(j+1), tmpD.getYLabel());
 			m_counts[tmpD.getYLabel()]++;
 		}
-		for(int i=0; i<2; i++){
-			m_PatK[i][0] = m_PatK[i][0]/m_counts[i];//p@5
-			m_PatK[i][1] = m_PatK[i][1]/m_counts[i];//p@10
-			m_PatK[i][2] = m_PatK[i][2]/m_counts[i];//p@20
+		for(int j=0; j<interval; j++){
+			m_PatK[0][j] = m_PatK[0][j]/m_counts[0];
+			m_PatK[1][j] = m_PatK[1][j]/m_counts[1];
 		}
 	}
 	
-	public void printPatK(){
-		System.out.format("\tp@5\tp@10\tp@20\n");
-		System.out.format("neg:\t%.4f\t%.4f\t%.4f\n", m_PatK[0][0], m_PatK[0][1], m_PatK[0][2]);
-		System.out.format("pos:\t%.4f\t%.4f\t%.4f\n", m_PatK[1][0], m_PatK[1][1], m_PatK[1][2]);
+	public void printPatK(int topK, int itv){
+		int interval = topK/itv;
+		for(int i=0; i<interval; i++)
+			System.out.format("\tp@%d", (i+1)*itv);
+		System.out.println();
+		//Print out neg p@k.
+		for(int i=0; i<interval; i++)
+			System.out.format("\t%.4f", m_PatK[0][i]);
+		System.out.println();
+		//Print out pos p@k.
+		for(int i=0; i<interval; i++)
+			System.out.format("\t%.4f", m_PatK[1][i]);
+		System.out.println();
+		
 	}
 	
 	//calculate p@k for one document.

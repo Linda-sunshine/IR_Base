@@ -30,6 +30,7 @@ import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Stn;
+import structures._stat;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -299,8 +300,10 @@ public class DocAnalyzer extends Analyzer {
 					spVct.put(index, value);
 				} else {
 					spVct.put(index, 1.0);
-					if (docWordMap==null || !docWordMap.containsKey(index))
-						m_featureStat.get(token).addOneDF(y);
+					if (docWordMap==null || !docWordMap.containsKey(index)){
+						if(m_featureStat.containsKey(token))
+							m_featureStat.get(token).addOneDF(y);
+					}
 				}
 				m_featureStat.get(token).addOneTTF(y);
 			}

@@ -509,4 +509,8 @@ public abstract class Analyzer {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
+	
+	public ArrayList<String> getFeatures(){
+		return m_featureNames;
+	}
 }

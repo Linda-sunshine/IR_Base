@@ -117,7 +117,7 @@ public class SVMTestMain {
 		Problem libProblem = new Problem();
 		libProblem.l = m_fvs.length*2;
 		libProblem.n = 11;
-		libProblem.bias = 0;
+		libProblem.bias = -1;
 		Feature[][] x = new Feature[m_fvs.length*2][];
 		double[] y = new double[m_fvs.length*2];
 		for(int i=0; i<m_fvs.length; i++){
@@ -129,7 +129,7 @@ public class SVMTestMain {
 		
 		libProblem.x = x;
 		libProblem.y = y;
-		Model model = Linear.train(libProblem, new Parameter(type, 1, SVM.EPS));
+		Model model = Linear.train(libProblem, new Parameter(type, 0.5, SVM.EPS));
 		double[] weights = model.getWeights();
 		for(double w: weights)
 			System.out.print(w+"\t");
@@ -149,23 +149,23 @@ public class SVMTestMain {
 		
 		test.loadFvsYs("./data/RankSVMDataFile1027.csv");
 //		test.trainDouble();
-		test.trainDouble();
-		System.out.println("<x, y> is applied in this method.");
-		test.train(-1, 0);
-		System.out.println("<-x, -y> is applied in this method.");
+//		test.trainDouble();
+//		System.out.println("<x, y> is applied in this method.");
+//		test.train(-1, 0);
+//		System.out.println("<-x, -y> is applied in this method.");
 		test.train(-1, 1);
 		System.out.println("part<x, y> + part<-x, -y> is applied in this method.");
-		test.train(-1, 2);
+//		test.train(-1, 2);
 		
-		HashMap<String, Integer> test1 = new HashMap<String, Integer>();
-		test1.put("a", 2);
-		test1.put("b", 3);
-		test1.put("c", 4);
-		Iterator<Entry<String, Integer>> it = test1.entrySet().iterator();
-		while(it.hasNext()){
-			Map.Entry<String, Integer> pair = (Entry<String, Integer>) it.next();
-			System.out.println(pair.getKey()+","+pair.getValue());
-		}
+//		HashMap<String, Integer> test1 = new HashMap<String, Integer>();
+//		test1.put("a", 2);
+//		test1.put("b", 3);
+//		test1.put("c", 4);
+//		Iterator<Entry<String, Integer>> it = test1.entrySet().iterator();
+//		while(it.hasNext()){
+//			Map.Entry<String, Integer> pair = (Entry<String, Integer>) it.next();
+//			System.out.println(pair.getKey()+","+pair.getValue());
+//		}
 		
 	}
 }

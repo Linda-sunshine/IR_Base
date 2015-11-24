@@ -55,47 +55,48 @@ public class _Query {
 	}
 	
 	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
+		boolean negSgn = (fvs.size()%2)==0;		
 		Feature[] fvct;
 		for(_QUPair di:m_docList) {
 			if (di.m_betterURLs==null)
 				continue;
-			//We generate both positive instances and negative instances.
-			for(_QUPair dj:di.m_betterURLs) {
-				if ((fvct=dj.getDiffFv(di)) != null) {
-					fvs.add(fvct);
-					labels.add(1);
+
+			if(negSgn){
+				for(_QUPair dj:di.m_betterURLs) {
+					if ((fvct=di.getDiffFv(dj)) != null) {
+						fvs.add(fvct);
+						labels.add(-1);
+					}
+				}
+			} else{
+				for(_QUPair dj:di.m_betterURLs) {
+					if ((fvct=dj.getDiffFv(di)) != null) {
+						fvs.add(fvct);
+						labels.add(1);
+					}
 				}
 			}
-//			for(_QUPair dj:di.m_betterURLs) {
-//				if ((fvct=di.getDiffFv(dj)) != null) {
-//					fvs.add(fvct);
-//					labels.add(-1);
-//				}
-//			}
-//		}
+		}
 	}
+	
 //	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
-//		boolean negSgn = (fvs.size()%2)==0;		
-//		Feature[] fvct;
-//		for(_QUPair di:m_docList) {
-//			if (di.m_betterURLs==null)
-//				continue;
-//
-//			if(negSgn){
-//				for(_QUPair dj:di.m_betterURLs) {
-//					if ((fvct=di.getDiffFv(dj)) != null) {
-//						fvs.add(fvct);
-//						labels.add(-1);
-//					}
-//				}
-//			} else{
-//				for(_QUPair dj:di.m_betterURLs) {
-//					if ((fvct=dj.getDiffFv(di)) != null) {
-//						fvs.add(fvct);
-//						labels.add(1);
-//					}
-//				}
+//	Feature[] fvct;
+//	for(_QUPair di:m_docList) {
+//		if (di.m_betterURLs==null)
+//			continue;
+//		//We generate both positive instances and negative instances.
+//		for(_QUPair dj:di.m_betterURLs) {
+//			if ((fvct=dj.getDiffFv(di)) != null) {
+//				fvs.add(fvct);
+//				labels.add(1);
 //			}
 //		}
-	}
+////		for(_QUPair dj:di.m_betterURLs) {
+////			if ((fvct=di.getDiffFv(dj)) != null) {
+////				fvs.add(fvct);
+////				labels.add(-1);
+////			}
+////		}
+////	}
+	
 }

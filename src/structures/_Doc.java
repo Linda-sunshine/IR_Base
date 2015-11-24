@@ -135,6 +135,7 @@ public class _Doc implements Comparable<_Doc> {
 		m_topicAssignment = null;
 		m_sentences = null;
 	}
+	
 	public _Doc (int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
 		this.m_ID = ID;
 		this.m_name = name;

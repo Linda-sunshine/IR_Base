@@ -68,6 +68,11 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
 	
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
+	}
+	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
@@ -300,7 +305,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			
-			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
+//			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
 			doc.setSentiScore(sentiScore/spVct.size());//average sentence sentiWordNet score
 			
 			m_corpus.addDoc(doc);

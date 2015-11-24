@@ -161,8 +161,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-			m_fvs = fvs.toArray(new Feature[fvs.size()][]);
-			m_ys = labels.toArray(new Integer[labels.size()]);
+//			m_fvs = fvs.toArray(new Feature[fvs.size()][]);
+//			m_ys = labels.toArray(new Integer[labels.size()]);
 			
 			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, 0);
 			w = m_rankSVM.getFeatureWeights();

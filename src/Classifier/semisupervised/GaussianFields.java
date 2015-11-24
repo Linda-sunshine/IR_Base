@@ -42,6 +42,8 @@ public class GaussianFields extends BaseClassifier {
 	
 	double[][] m_onePurityStat; //Used to store the stat of one fold, added by Lin.
 	int m_purityCount=0;//added by Lin.
+	String m_simiMethod; //The similarity method used to select initial neighbors.
+	
 	public GaussianFields(_Corpus c, String classifier, double C){
 		super(c);
 		
@@ -59,6 +61,7 @@ public class GaussianFields extends BaseClassifier {
 		
 		m_nodeList = null;
 		setClassifier(classifier, C);
+		m_simiMethod = "BT";
 	}	
 	
 	public GaussianFields(_Corpus c, String classifier, double C, double ratio, int k, int kPrime){
@@ -78,12 +81,17 @@ public class GaussianFields extends BaseClassifier {
 		
 		m_nodeList = null;
 		setClassifier(classifier, C);
+		m_simiMethod = "BT";
 	}
 	
 	@Override
 	public String toString() {
 		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", 
 				m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
+	}
+	//Set the similarity selection method.
+	public void setSimiMethod(String s){
+		m_simiMethod = s;
 	}
 	
 	private void setClassifier(String classifier, double C) {
@@ -153,14 +161,20 @@ public class GaussianFields extends BaseClassifier {
 	}
 
 	protected double getAspectScore(_Doc di, _Doc dj){
-		return Utils.cosine(di.getAspVct(), dj.getAspVct());
+		if(di.getAspVct() == null || dj.getAspVct() == null)
+			return 0;
+		else 
+			return Utils.cosine(di.getAspVct(), dj.getAspVct());
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-//		return Math.exp(getBoWSim(di, dj));
-		return Math.exp(-getTopicalSim(di, dj));
-//		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
+		if(m_simiMethod.equals("B"))
+			return Math.exp(getBoWSim(di, dj));
+		else if(m_simiMethod.equals("T"))
+			return Math.exp(-getTopicalSim(di, dj));
+		else
+			return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void WaitUntilFinish(ActionType atype) {
@@ -438,6 +452,7 @@ public class GaussianFields extends BaseClassifier {
 			m_cProbs[i] = Math.exp(-Math.abs(i - pred)) / m_pYSum[i];
 		return Utils.maxOfArrayIndex(m_cProbs);
 	}
+	
 	
 	@Override
 	protected void debug(_Doc d) { }

@@ -2,6 +2,9 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import SanityCheck.FurtherPuritySanityCheck;
+import SanityCheck.PuritySanityCheck;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import Analyzer.Analyzer;
@@ -19,6 +22,7 @@ public class PuritySanityCheckMain {
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small/dedup/RawData";
+//		String folder = "./data/amazon/small/dedup/debug";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 
@@ -31,34 +35,51 @@ public class PuritySanityCheckMain {
 		Analyzer analyzer;
 		_Corpus c;
 		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		((DocAnalyzer) analyzer).setReleaseContent(false);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 		String topicFile = "./data/topicVectors";
+//		String topicFile = "./data/MI_TopicVectors_1110.txt";
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		c.mapLabels(3);
+		c.mapLabels(4);
 		
-		PuritySanityCheck checkRandom = new PuritySanityCheck(c);
-		checkRandom.calculateSimilarity();
-		checkRandom.calculatePatK4All();
-		checkRandom.printPatK();
+		FurtherPuritySanityCheck check = new FurtherPuritySanityCheck(c);
+//		check.calcDocLengthStat(1439, 80);
 		
-		PuritySanityCheck checkBow = new PuritySanityCheck(1, c);
-		checkBow.calculateSimilarity();
-		checkBow.calculatePatK4All();
-		checkBow.printPatK();
+		String resFolder = "./data/SanityCheck/";
+		check.calculateSimilarity();
+		check.constructCompareUnits(20);
+		check.setFeature(analyzer.getFeatures());
+		check.printDifference(resFolder);
+
+//		check.printBoWSimilarity(resFolder);
+//		check.printMeanVar(resFolder, "BoWMeanVar.xls");
+//		
+//		check.printTPSimilarity(resFolder);
+//		check.printMeanVar(resFolder, "TPMeanVar.xls");
 		
-		PuritySanityCheck checkTopic = new PuritySanityCheck(2, c);
-		checkTopic.calculateSimilarity();
-		checkTopic.calculatePatK4All();
-		checkTopic.printPatK();
+//		PuritySanityCheck checkRandom = new PuritySanityCheck(2, c);
+//		checkRandom.calculateSimilarity();
+//		checkRandom.calculatePatK4All(15000, 100);
+//		checkRandom.printPatK(15000, 100);
 		
-		PuritySanityCheck checkBoWTop = new PuritySanityCheck(3, c);
-		checkBoWTop.calculateSimilarity();
-		checkBoWTop.calculatePatK4All();
-		checkBoWTop.printPatK();		
+//		PuritySanityCheck checkBow = new PuritySanityCheck(1, c);
+//		checkBow.calculateSimilarity();
+//		checkBow.calculatePatK4All();
+//		checkBow.printPatK();
+//		
+//		PuritySanityCheck checkTopic = new PuritySanityCheck(2, c);
+//		checkTopic.calculateSimilarity();
+//		checkTopic.calculatePatK4All();
+//		checkTopic.printPatK();
+//		
+//		PuritySanityCheck checkBoWTop = new PuritySanityCheck(3, c);
+//		checkBoWTop.calculateSimilarity();
+//		checkBoWTop.calculatePatK4All();
+//		checkBoWTop.printPatK();		
 	}
 }

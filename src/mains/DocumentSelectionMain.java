@@ -1,16 +1,28 @@
 package mains;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Random;
+
+import Classifier.supervised.SVM;
+import structures._Corpus;
+import structures._Doc;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import clustering.KMeansAlg;
+
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
@@ -18,10 +30,9 @@ import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+
 import Classifier.semisupervised.LCSReader;
 import Classifier.semisupervised.LCSWriter;
-import Classifier.supervised.SVM;
-import structures._Corpus;
 import structures._Doc;
 import structures._Pair;
 import topicmodels.LDA_Gibbs;
@@ -33,9 +44,120 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
 public class DocumentSelectionMain {
+	
+	
+	public static void LCSWriteRead(_Corpus c){
+		/************LCS Write and Read operations.***************/
+		//Write the LCS to 8 files.
+		int cores = Runtime.getRuntime().availableProcessors();
+		Thread[] writeThreads = new Thread[cores];
+		int LCSStart = 0, LCSEnd; int total = c.getCollection().size()-1;
+		int LCSAvg = total / cores;
+		for(int i=0; i < cores; i++){
+			if(i == cores -1)
+				LCSEnd = total;
+			else LCSEnd = LCSStart + LCSAvg;
+			writeThreads[i] = new Thread(new LCSWriter(LCSStart, LCSEnd, i, c.getCollection()));
+			writeThreads[i].start();
+			LCSStart = LCSEnd;
+		}
+		for(int i=0; i<writeThreads.length; i++){
+			try {
+				writeThreads[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		//Read the LCS from 8 files.
+		HashMap<_Pair, Integer> LCSMap = new HashMap<_Pair, Integer>();
+		Thread[] ReadThreads = new Thread[cores];
+		LCSReader[] LCSReaders = new LCSReader[cores];
+		for(int i=0; i < cores; i++){
+			String filename = String.format("./data/LCS/LCS_%d", i);
+			LCSReaders[i] = new LCSReader(filename);
+			ReadThreads[i] = new Thread(LCSReaders[i]);
+			ReadThreads[i].start();
+		}
+		for(int i=0; i<cores; i++){
+			try {
+				ReadThreads[i].join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}	
+		//Merge all the hashmaps to one single hashmap.
+		for(int i=0; i<cores; i++){
+			LCSMap.putAll(LCSReaders[i].getLCSMap());
+		}
+	}
+	
+	public static void KmeansWrite(_Corpus c, int km){
+		//kmeans clutering among all review documents.
+		for (int k = 2; k <= 5; k++) {
+			KMeansAlg kmeans = new KMeansAlg(c, k);
+			kmeans.train(c.getCollection());
+			ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+
+			// Write out the results of clustering.
+			for (int i = 0; i < clusters.size(); i++) {
+				int[] stat = new int[5];
+				String filename = String.format("./data/kmeans/%dmeans_cluster_%d", k, i);
+				try{
+					PrintWriter printer = new PrintWriter(new File(filename));
+					for (_Doc d : clusters.get(i)) {
+						stat[d.getYLabel()]++;
+						printer.write(d.getYLabel() + "\n" + d.getSource() + "\n" + "******\n");
+					}
+					for (int j = 0; j < stat.length; j++)
+						printer.write(String.format("classNo: %d, count: %d, percentage: %.3f", j, stat[j], (double)j/(double)clusters.get(i).size()));
+					printer.close();
+				} catch(IOException e){
+					e.printStackTrace();
+				}
+			}
+		}
+		int noClusters = km;
+		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
+		kmeans.train(c.getCollection());
+		kmeans.tranferClusters2Docs();
+		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+
+		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
+		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
+		kmeans.writeStat(kmeansStatFile);
+		kmeans.writeContent(kmeansContentFile);
+//		c.mapLabels(4); // Do kmeans first, then map the labels.
+	}
+	
+	//Print out randomly selected 100 reviews files.
+	public static void print100Files(Analyzer analyzer, String fvStatFile){
+		try{
+			//Print out 100 documents to see the ratio.
+			int count = 0, index = 0;
+			ArrayList<_Doc> documents = analyzer.returnCorpus(fvStatFile).getCollection();
+			_Doc[] selectedDocs = new _Doc[100];
+			HashSet<Integer> checkIndexes = new HashSet<Integer>();
+			PrintWriter writer = new PrintWriter(new File("./Selected100Files.txt"));
+			Random r = new Random();
+			while(count < 100){
+				index = (int) (r.nextDouble()*documents.size());
+				if(!checkIndexes.contains(index)){
+					selectedDocs[count++] = documents.get(index);
+					checkIndexes.add(index);
+				}
+			}
+			for(int i=0; i<100; i++){
+				writer.format("Label: %d\n", selectedDocs[i].getYLabel()+1);
+				writer.write(selectedDocs[i].getSource() + "\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 
 	public static void main(String[] args) throws IOException, ParseException {	
-		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
@@ -67,13 +189,10 @@ public class DocumentSelectionMain {
 		
 		String category = "tablets"; //"electronics"
 		String dataSize = "86jsons"; //"50K", "100K"
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-		String aspectlist = "./data/Model/aspect_output_simple.txt";
-
+		
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SEMI";
+		String style = "SUP";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW";
@@ -89,12 +208,16 @@ public class DocumentSelectionMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-//		double endProb = 1.0; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
-//		
+		String stopwords = "./data/Model/stopwords.dat";
+		String featureSelection = "MI"; //Feature selection method.
+		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+		double endProb = 1.0; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
+		
+		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s_%s.txt", Ngram, featureSelection, category, dataSize);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
+		String aspectlist = "./data/Model/aspect_output_simple.txt";
+		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
@@ -107,7 +230,7 @@ public class DocumentSelectionMain {
 		if(style.equals("SUP")){
 			stnModel = null;
 			analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel);
-			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.			
 		} else{
 			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
 			((DocAnalyzer) analyzer).setReleaseContent(false);
@@ -142,92 +265,17 @@ public class DocumentSelectionMain {
 //			tModel.EMonCorpus();	
 
 		}
-		String topicFile = "./data/topicVectors";
+		String topicFile = "./data/MI_TopicVectors_1110.txt";
 //		analyzer.saveTopicVectors(topicFile);
-		
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
+		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
+		
 //		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
 		
-//		/************LCS Write and Read operations.***************/
-//		//Write the LCS to 8 files.
-//		Thread[] writeThreads = new Thread[cores];
-//		int LCSStart = 0, LCSEnd; int total = c.getCollection().size()-1;
-//		int LCSAvg = total / cores;
-//		for(int i=0; i < cores; i++){
-//			if(i == cores -1)
-//				LCSEnd = total;
-//			else LCSEnd = LCSStart + LCSAvg;
-//			writeThreads[i] = new Thread(new LCSWriter(LCSStart, LCSEnd, i, c.getCollection()));
-//			writeThreads[i].start();
-//			LCSStart = LCSEnd;
-//		}
-//		for(int i=0; i<writeThreads.length; i++){
-//			try {
-//				writeThreads[i].join();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		
-//		//Read the LCS from 8 files.
-//		HashMap<_Pair, Integer> LCSMap = new HashMap<_Pair, Integer>();
-//		Thread[] ReadThreads = new Thread[cores];
-//		LCSReader[] LCSReaders = new LCSReader[cores];
-//		for(int i=0; i < cores; i++){
-//			String filename = String.format("./data/LCS/LCS_%d", i);
-//			LCSReaders[i] = new LCSReader(filename);
-//			ReadThreads[i] = new Thread(LCSReaders[i]);
-//			ReadThreads[i].start();
-//		}
-//		for(int i=0; i<cores; i++){
-//			try {
-//				ReadThreads[i].join();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//		}	
-//		//Merge all the hashmaps to one single hashmap.
-//		for(int i=0; i<cores; i++){
-//			LCSMap.putAll(LCSReaders[i].getLCSMap());
-//		}
-		
-		//kmeans clutering among all review documents.
-//		for(int k=2; k<=5; k++){
-//			KMeansAlg kmeans = new KMeansAlg(c, k);
-//			kmeans.train(c.getCollection());
-//			ArrayList<ArrayList<_Doc>> clusters = kmeans.getClusters();
-//			
-//			//Write out the results of clustering.
-//			for(int i=0; i < clusters.size(); i++){
-//				int[] stat = new int[5];
-//				String filename = String.format("./data/kmeans/%dmeans_cluster_%d", k, i); 
-//				PrintWriter printer = new PrintWriter(new File(filename));
-//				for(_Doc d: clusters.get(i)){
-//					stat[d.getYLabel()]++;
-//					printer.write(d.getYLabel()+"\n"+d.getSource()+"\n"+"******\n");
-//				}
-//				for(int j=0; j < stat.length; j++)
-//					printer.write(String.format("classNo: %d, count: %d, percentage: %.3f", j, stat[j], (double)j/(double)clusters.get(i).size()));
-//				printer.close();
-//			}
-//		}
-//		int noClusters = 200; 
-//		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
-//		kmeans.train(c.getCollection());
-//		kmeans.tranferClusters2Docs();
-//		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
-//		
-//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
-//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
-//
-//		kmeans.writeStat(kmeansStatFile);
-//		kmeans.writeContent(kmeansContentFile);
-//		c.mapLabels(4); //Do kmeans first, then map the labels.
-//		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
@@ -257,11 +305,13 @@ public class DocumentSelectionMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						topK, noiseRatio, ranker, multithread_LR);
 			}
+			mySemi.setKFold(CVFold);
 			mySemi.setSimilarity(false);
 			mySemi.setDebugOutput(debugOutput);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
+			mySemi.printSimMeanVarStat();
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");
