@@ -17,6 +17,7 @@ public class LinAdaptMain {
 		int classNumber = 2; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
+		int featureGroupNo = 400; //There should be some feature grouping methods.
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/LinAdapt/selectedFeatures.csv"; // CV.
@@ -28,14 +29,20 @@ public class LinAdaptMain {
 		String featureGroupFile = "./data/LinAdapt/CrossGroups.txt";
 		String globalModel = "./data/LinAdapt/global.classifer";
 		analyzer.loadUserDir(folder);
-		analyzer.fillFeatureGroups(featureGroupFile);
+		analyzer.loadFeatureGroupIndexes(featureGroupFile);
 		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
-		//Create the instance of the LinAdapt model.
-		LinAdapt linAdapt = new LinAdapt(analyzer.getUsers(), analyzer.getFeatureSize(), analyzer.getFeatureGroupNo(), analyzer.getFeatureGroupIndex());
+		//Create the instances of the LinAdapt model.
+		LinAdapt linAdapt = new LinAdapt(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		linAdapt.setGlobalWeights(globalWeights);
 		linAdapt.init();
+		
+		//Online training.
 		linAdapt.onlineTrain();
-		linAdapt.calcPerformance(); //Calculate the performance of each user.	
+		linAdapt.calcOnlinePerformance(); //Calculate the performance of each user.	
+		
+		//Batch training.
+		linAdapt.batchTrainTest();
+		linAdapt.calcBatchPerformance();
 	}
 }

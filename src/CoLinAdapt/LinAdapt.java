@@ -17,21 +17,21 @@ public class LinAdapt {
 	
 	protected ArrayList<_User> m_users; //Mapping from users to models.
 	protected HashMap<String, Integer> m_userIDIndexMap; // key: userID, value: index.
-	protected TreeMap<Integer, ArrayList<Integer>> m_featureGroupIndex;
 	protected String[] m_userIDs; // If we know index, we can get the userID.
 	protected OneLinAdapt[] m_userModels; //The array contains all users's models.
 	protected MyLinkedList<_Review> m_trainQueue;
 	protected int m_featureNo, m_featureGroupNo;
 	protected double[] m_globalWeights;
+	protected int[] m_featureGroupIndexes;
 	
-	public LinAdapt(ArrayList<_User> users, int featureNo, int featureGroupNo, TreeMap<Integer, ArrayList<Integer>> featureGroupIndex){
+	public LinAdapt(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
 		m_users = users;
 		m_userIDs = new String[users.size()];
 		m_userModels = new OneLinAdapt[users.size()];
 		m_userIDIndexMap = new HashMap<String, Integer>();
 		m_featureNo = featureNo;
 		m_featureGroupNo = featureGroupNo;
-		m_featureGroupIndex = featureGroupIndex;
+		m_featureGroupIndexes = featureGroupIndexes;
 	}
 	
 	//Set the global weights.
@@ -46,11 +46,10 @@ public class LinAdapt {
 			user = m_users.get(i);
 			m_userIDs[i] = user.getUserID();
 			m_userIDIndexMap.put(user.getUserID(), i);
-			m_userModels[i] = new OneLinAdapt(user, m_featureGroupNo, m_featureNo, m_featureGroupIndex, m_globalWeights);
+			m_userModels[i] = new OneLinAdapt(user, m_featureNo, m_featureGroupNo, m_globalWeights, m_featureGroupIndexes);
 			m_userModels[i].init();
 		}
 	}
-	
 	
 	//In this process, we collect one review from each user and train online.
 	public void onlineTrain(){
@@ -77,15 +76,38 @@ public class LinAdapt {
 				trainSet.add(reviews.get(j));
 				model.train(trainSet);
 			}
-			model.fillTrueLabels(trueLabels);
-			model.fillPredLabels(predLabels);
+			model.setPerformanceStat(trueLabels, predLabels);
+		}
+	}
+	
+	public void batchTrainTest(){
+		OneLinAdapt model;
+		ArrayList<_Review> reviews;
+		
+		//Traverse all users and train their models based on the half of their reviews.
+		for(int i=0; i<m_users.size(); i++){
+			model = m_userModels[i];
+			reviews = m_users.get(i).getReviews();
+			//Split the reviews into two parts, one for training and another for testing.
+			ArrayList<_Review> trainSet = (ArrayList<_Review>) reviews.subList(0, reviews.size()/2);
+			ArrayList<_Review> testSet = (ArrayList<_Review>) reviews.subList(reviews.size()/2 + 1, reviews.size()-1);
+			model.train(trainSet);//Train the model.
+			model.test(testSet);
 		}
 	}
 	
 	//Accumulate the performance, accumulate all users and get stat.
-	public void calcPerformance(){
+	public void calcOnlinePerformance(){
 		for(OneLinAdapt l: m_userModels){
 			l.m_perfStat.calcuatePreRecF1();
+		}
+	}
+	
+	//Only One performance stat for one user.
+	public void calcBatchPerformance(){
+		for(OneLinAdapt l: m_userModels){
+			double[][] prf = l.m_perfStat.calculateCurrentPRF();
+			l.m_perfStat.setOnePRFStat(prf);
 		}
 	}
 }

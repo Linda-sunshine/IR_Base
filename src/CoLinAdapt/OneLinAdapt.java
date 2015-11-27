@@ -1,16 +1,9 @@
 package CoLinAdapt;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.TreeMap;
-
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
-
 import structures._PerformanceStat;
 import structures._Review;
 import structures._SparseFeature;
@@ -21,8 +14,8 @@ public class OneLinAdapt {
 	_User m_user;
 	int m_dim;//The dimension of scaling and shifting parameters.
 	int m_featureNo; //The total number of features.
+	int[] m_featureGroupIndexes;
 	double[] m_weights; //The weights of each user, which is also the model of the user.
-	TreeMap<Integer, ArrayList<Integer>> m_featureGroupIndex; //key: group index, values: feature indexes belonging to that group.
 	_PerformanceStat m_perfStat; //Performance of the user's prediction.
 	
 	//Trade-off parameters.
@@ -33,14 +26,17 @@ public class OneLinAdapt {
 	double[] m_diag; //parameter used in lbfgs.
 	double[] m_g;//optimized gradients. 
 	
-	protected int[][] m_predStat;
+	/****Online mode: the treu labels and predicted labels for each prediction
+	 * true labels: [0, 1, 0, 1]
+	 * pred labels: [1, 0, 1, 1]
+	 *****Batch mode: TP table*/
+//	protected int[][] m_predStat; 
 	
-	public OneLinAdapt(_User u, int fg, int fn, TreeMap<Integer, ArrayList<Integer>> featureGroupIndex){
+	public OneLinAdapt(_User u, int fg, int fn){
 		m_user = u;
 		m_featureNo = fn;
 		m_dim = fg + 1;//fg is the total number of feature groups.
 		
-		m_featureGroupIndex = featureGroupIndex;
 		m_weights = new double[m_dim*2];//one term for bias
 		m_A = new double[m_dim*2];//Two bias terms.
 		m_g = new double[m_dim*2];
@@ -48,23 +44,21 @@ public class OneLinAdapt {
 		
 		m_eta1 = 0.5;
 		m_eta2 = 0.5;
-		m_predStat = new int[2][m_user.getReviewSize()];
 	}   
 	
-	public OneLinAdapt(_User u, int fg, int fn, TreeMap<Integer, ArrayList<Integer>> featureGroupIndex, double[] globalWeights){
+	public OneLinAdapt(_User u, int fn, int fg, double[] globalWeights, int[] featureGroupIndexes){
 		m_user = u;
 		m_featureNo = fn;
 		m_dim = fg + 1;//fg is the total number of feature groups.
 		
-		m_featureGroupIndex = featureGroupIndex;
 		m_weights = globalWeights;//one term for bias
+		m_featureGroupIndexes = featureGroupIndexes;
 		m_A = new double[m_dim*2];//Two bias terms.
 		m_g = new double[m_dim*2];
 		m_diag = new double[m_dim*2];
 		
 		m_eta1 = 0.5;
 		m_eta2 = 0.5;
-		m_predStat = new int[2][m_user.getReviewSize()];
 	}  
 	
 	//Initialize the weights of the transformation matrix.
@@ -79,19 +73,14 @@ public class OneLinAdapt {
 		Arrays.fill(m_g, 0);
 	}
 	
-	//Global weights are fixed for all users while transformation matrix is personalized for each user.  
-	//The first term is the bias, w[0]=a[0]*w[0]+b[0].
-	public double[] getTransformedWeights(){
-		double[] weights = new double[m_featureNo+1];
-		//Use two for loops to access all features indexed by group indexes.
-		for(int groupIndex: m_featureGroupIndex.keySet()){
-			ArrayList<Integer> groupFeatures = m_featureGroupIndex.get(groupIndex);
-			for(int featureIndex: groupFeatures)
-				//m_A[groupIndex]=a, m_A[groupIndex+groupSize+1]=b, wi*a_{g_i}+b_{g_i}
-				weights[featureIndex] = m_A[groupIndex]*m_weights[featureIndex] + m_A[m_dim + groupIndex]; 
-		}
-//		weights[0] = m_A[0]*m_weights[0] + m_A[m_dim];//the dimension of a and b is (featureGroupNo+1).
-		return weights;
+	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
+	public void setPerformanceStat(int[] trueLs, int[] predLs){
+		m_perfStat = new _PerformanceStat(trueLs, predLs);
+	}
+	
+	//Create instance for the model with existing TPTable, used for batch mode.
+	public void setPerformanceStat(int[][] TPTable){
+		m_perfStat = new _PerformanceStat(TPTable);
 	}
 	
 	//Predict a new review.
@@ -99,7 +88,7 @@ public class OneLinAdapt {
 		_SparseFeature[] fv = review.getSparse();
 		int predL = 0;
 		// Calculate each class's probability.P(yd=1|xd)=1/(1+e^{-(AW)^T*xd})
-		double p1 = logit(fv, getTransformedWeights());
+		double p1 = logit(fv);
 		//Decide the label for the review.
 		if(p1 > 0.5) 
 			predL = 1;
@@ -119,7 +108,7 @@ public class OneLinAdapt {
 		for(_Review review: trainSet){
 			Yi = review.getYLabel();
 			fv = review.getSparse();
-			Pi = logit(fv, getTransformedWeights());
+			Pi = logit(fv);
 			if(Yi == 1)
 				fValue += Math.log(Pi);
 			else 
@@ -134,44 +123,39 @@ public class OneLinAdapt {
 		return -fValue + R1;
 	}
 	
-	//P(y=1|x)=1/1+exp(-w^T*x);P(Y=0|x)=1-P(y=1|x).w' = A*w
-	public double logit(_SparseFeature[] fv, double[] weights){
-		double value = -weights[0];
-		int index = 0;
-		for(_SparseFeature f: fv){
-			index = f.getIndex();
-			value -= weights[index+1]*f.getValue();
+	// We can do A*w*x at the same time to reduce computation.
+	public double logit(_SparseFeature[] fvs){
+		double value = -m_A[0]*m_weights[0] + m_A[m_dim];//Bias term: w0*a0+b0.
+		int featureIndex = 0, groupIndex = 0;
+		for(_SparseFeature fv: fvs){
+			featureIndex = fv.getIndex() + 1;
+			groupIndex = m_featureGroupIndexes[featureIndex];
+			value -= (m_A[groupIndex]*m_weights[featureIndex] + m_A[groupIndex + m_dim])*fv.getValue();
 		}
 		return 1/(1+Math.exp(value));
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
 	public void calculateGradients(ArrayList<_Review> trainSet){
-		double sumA = 0, sumB = 0, value = 0;
 		double Pi = 0;//Pi = P(yd=1|xd);
-		int Yi;
+		int Yi, featureIndex = 0, groupIndex = 0;
 		
 		m_g = new double[m_dim*2];
 		//Update gradients one review by one review.
 		for(_Review review: trainSet){
 			Yi = review.getYLabel();
-			Pi = logit(review.getSparse(), getTransformedWeights());
+			Pi = logit(review.getSparse());
 			
-//			//index by feature group indexes.
-//			m_g[0] -= (Yi - Pi)*m_weights[0]; //a[0] = w0*x0; x0=1???
-//			m_g[m_dim] -= (Yi - Pi);//b[0]
+			//Bias term.
+			m_g[0] -= (Yi - Pi)*m_weights[0]; //a[0] = w0*x0; x0=1
+			m_g[m_dim] -= (Yi - Pi);//b[0]
 			
-			for(int k: m_featureGroupIndex.keySet()){ //k starts from 0.
-				ArrayList<Integer> featureIndexes = m_featureGroupIndex.get(k);
-				for(int index: featureIndexes){
-					value = findFeatureValue(review, index);
-					sumA += m_weights[index]*value;//accumulate: \sum_{i, g(i)=k}{wi*xi}
-					sumB += value;//accumulate: \sum_{i, g(i)=k}{xi}
-				}
-				m_g[k] -= (Yi - Pi)*sumA;//update a with (Yi-Pi)*\sum_{i}{wi*xi}
-				m_g[k+m_dim] -= (Yi - Pi)*sumB;//update b with (Yi-Pi)*\sum_{i}{xi}
-				sumA = 0;
-				sumB = 0;
+			//Traverse all the feature dimension to calculate the gradient.
+			for(_SparseFeature fv: review.getSparse()){
+				featureIndex = fv.getIndex() + 1;
+				groupIndex = m_featureGroupIndexes[featureIndex];
+				m_g[groupIndex] -= (Yi - Pi) * m_weights[featureIndex] * fv.getValue();
+				m_g[m_dim + groupIndex] -= (Yi - Pi) * fv.getValue();  
 			}
 		}
 		//Add the regularization parts.
@@ -179,12 +163,14 @@ public class OneLinAdapt {
 			m_g[i] += 2*m_eta1*(m_A[i]-1);// add 2*eta1*(ak-1)
 			m_g[i+m_dim] += 2*m_eta2*m_A[i+m_dim]; // add 2*eta2*bk
 		}
-		double mag = 0;
-		for(int i=0; i<m_g.length; i++){
-			mag += m_g[i]*m_g[i];
+		double magA = 0, magB = 0 ;
+		for(int i=0; i<m_dim; i++){
+			magA += m_g[i]*m_g[i];
+			magB += m_g[i+m_dim]*m_g[i+m_dim];
 		}
-		System.out.println("Gradient mag is " + mag);
+		System.out.format("Gradient magnitude for A: %.5f\tB: %.5f\n", magA, magB);
 	}
+	
 	//In this function, given a review and feature index, if the review has this feature, return the value of this feature, otherwise, return 0.
 	public double findFeatureValue(_Review review, int index){
 		_SparseFeature[] fvs = review.getSparse();
@@ -203,6 +189,12 @@ public class OneLinAdapt {
 		return 0;
 	}
 	
+	// The same function with different names.
+	public void train(_Review review){
+		ArrayList<_Review> trainSet = new ArrayList<_Review>();
+		trainSet.add(review);
+		train(trainSet);
+	}
 	//Train each user's model with training reviews.
 	public void train(ArrayList<_Review> trainSet){
 		int[] iflag = {0}, iprint = {-1, 3};
@@ -221,11 +213,27 @@ public class OneLinAdapt {
 		}
 	}
 	
-	public void fillTrueLabels(int[] trueLs){
-		m_predStat[0] = trueLs;
-	}
+//	public void fillTrueLabels(int[] trueLs){
+//		if(m_predStat.length == 0 || m_predStat.equals(null))
+//			m_predStat = new int[2][m_user.getReviewSize()];
+//		m_predStat[0] = trueLs;
+//	}
+//	
+//	public void fillPredLabels(int[] predLs){
+//		if(m_predStat.length == 0 || m_predStat.equals(null))
+//			m_predStat = new int[2][m_user.getReviewSize()];
+//		m_predStat[1] = predLs;
+//	}
 	
-	public void fillPredLabels(int[] predLs){
-		m_predStat[1] = predLs;
+	//Batch mode: given a set of reviews and accumulate the TP table.
+	public void test(ArrayList<_Review> testSet){
+		int trueL = 0, predL = 0;
+		int[][] TPTable = new int[2][2];
+		for(int i=0; i<testSet.size(); i++){
+			trueL = testSet.get(i).getYLabel();
+			predL = predict(testSet.get(i));
+			TPTable[trueL][predL]++;
+		}
+		setPerformanceStat(TPTable);
 	}
 }

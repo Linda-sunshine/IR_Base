@@ -9,8 +9,8 @@ import structures._User;
 
 public class CoLinAdapt extends LinAdapt {
 	
-	public CoLinAdapt(ArrayList<_User> users, int featureNo, int featureGroupNo, TreeMap<Integer, ArrayList<Integer>> featureGroupIndex){
-		super(users, featureNo, featureGroupNo, featureGroupIndex);
+	public CoLinAdapt(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
+		super(users, featureNo, featureGroupNo, featureGroupIndexes);
 	}
 	
 	//Specify the neighbors of the current user.

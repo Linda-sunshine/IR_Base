@@ -16,16 +16,16 @@ import structures._Review;
 import structures._User;
 
 public class UserAnalyzer extends DocAnalyzer {
-
-	ArrayList<_User> m_users; // Store all users with their reviews.
+	
 	int m_count;
-	TreeMap<Integer, ArrayList<Integer>> m_featureGroupIndex;
+	ArrayList<_User> m_users; // Store all users with their reviews.
+	int[] m_featureGroupIndexes; //The array of feature group indexes.
+	
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_users = new ArrayList<_User>();
 		m_count = 0;
-		m_featureGroupIndex = new TreeMap<Integer, ArrayList<Integer>>();
 	}
 	
 	//Load all the users.
@@ -103,52 +103,27 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-//	public void loadFeatureGroups(String filename){
-//		try{
-//			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-//			String line = reader.readLine(); //There is only one line.
-//			String[] groupNos = line.split(",");
-//			int groupNo = 0;
-//			for(int i=0; i<groupNos.length; i++){
-//				groupNo = Integer.valueOf(groupNos[i]);
-//				
-//				if(!m_featureGroupIndex.containsKey(groupNo))
-//					m_featureGroupIndex.put(groupNo, new ArrayList<Integer>());//If this group hasn't shown up.
-//				m_featureGroupIndex.get(groupNo).add(i);
-//			}
-//			reader.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
-	
-	/***When we do feature selection, we will group features and store them in file.
-	 ***We load the feature group file and store it in hashtable for reference.
-	 ***/
-	public void fillFeatureGroups(String filename){
+	/***When we do feature selection, we will group features and store them in file. 
+	 * The index is the index of features and the corresponding number is the group index number.***/
+	public void loadFeatureGroupIndexes(String filename){
 		try{
-			int groupNo = 0;
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String[] features = reader.readLine().split(",");//Group information of each feature.
 			reader.close();
 			
-			//Analyze the features and corresponding groups, the format is as follows:<Group index, <feature index>>
-			m_featureGroupIndex = new TreeMap<Integer, ArrayList<Integer>>();
+			int[] m_groupIndexes = new int[features.length + 1]; //One more term for bias, bias=0.
+			//Group index starts from 0, so add 1 for it.
+			for(int i=0; i<features.length; i++)
+				m_groupIndexes[i+1] = Integer.valueOf(features[i]+1);
 			
-			//Put the first group in the  hashmap.
-			m_featureGroupIndex.put(0, new ArrayList<Integer>());
-			m_featureGroupIndex.get(0).add(0);//The key of the first group is 0 and the group member is also 0. 
-			for(int i=0; i <features.length; i++){
-				groupNo = Integer.valueOf(features[i]) + 1;//group index starts from 1, 0th element serves as bias.
-				if(!m_featureGroupIndex.containsKey(groupNo))//Create a new arraylist if the key does not exist.
-					m_featureGroupIndex.put(groupNo, new ArrayList<Integer>());
-				m_featureGroupIndex.get(groupNo).add(i+1);//Feature index starts from 1, 2....
-			}
 		} catch(IOException e){
 			System.err.format("Fail to open file %s.\n", filename);
 		}
 	}
 	
+	public int[] getFeatureGroupIndexes(){
+		return m_featureGroupIndexes;
+	}
 	//Load global model from file.
 	public double[] loadGlobalWeights(String filename){
 		double[] weights = null;
@@ -170,15 +145,5 @@ public class UserAnalyzer extends DocAnalyzer {
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
 		return m_users;
-	}
-	
-	//How many feature groups are there.
-	public int getFeatureGroupNo(){
-		return 	m_featureGroupIndex.size();
-	}
-	
-	//Return the feature group index and corresponding features.
-	public TreeMap<Integer, ArrayList<Integer>> getFeatureGroupIndex(){
-		return m_featureGroupIndex;
 	}
 }
