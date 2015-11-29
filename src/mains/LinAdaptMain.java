@@ -29,6 +29,7 @@ public class LinAdaptMain {
 		String featureGroupFile = "./data/LinAdapt/CrossGroups.txt";
 		String globalModel = "./data/LinAdapt/global.classifer";
 		analyzer.loadUserDir(folder);
+		analyzer.setFeatureValues("BM25", 2);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
 		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
@@ -37,9 +38,9 @@ public class LinAdaptMain {
 		linAdapt.setGlobalWeights(globalWeights);
 		linAdapt.init();
 		
-		//Online training.
-		linAdapt.onlineTrain();
-		linAdapt.calcOnlinePerformance(); //Calculate the performance of each user.	
+//		//Online training.
+//		linAdapt.onlineTrain();
+//		linAdapt.calcOnlinePerformance(); //Calculate the performance of each user.	
 		
 		//Batch training.
 		linAdapt.batchTrainTest();

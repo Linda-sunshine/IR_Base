@@ -125,14 +125,14 @@ public class OneLinAdapt {
 	
 	// We can do A*w*x at the same time to reduce computation.
 	public double logit(_SparseFeature[] fvs){
-		double value = -m_A[0]*m_weights[0] + m_A[m_dim];//Bias term: w0*a0+b0.
+		double value = m_A[0]*m_weights[0] + m_A[m_dim];//Bias term: w0*a0+b0.
 		int featureIndex = 0, groupIndex = 0;
 		for(_SparseFeature fv: fvs){
 			featureIndex = fv.getIndex() + 1;
 			groupIndex = m_featureGroupIndexes[featureIndex];
-			value -= (m_A[groupIndex]*m_weights[featureIndex] + m_A[groupIndex + m_dim])*fv.getValue();
+			value += (m_A[groupIndex]*m_weights[featureIndex] + m_A[groupIndex + m_dim])*fv.getValue();
 		}
-		return 1/(1+Math.exp(value));
+		return 1/(1+Math.exp(-value));
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
@@ -206,7 +206,7 @@ public class OneLinAdapt {
 			do{
 				fValue = calculateFunctionValue(trainSet);
 				calculateGradients(trainSet);
-				LBFGS.lbfgs(fSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-20, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(fSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-5, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
 			e.printStackTrace();

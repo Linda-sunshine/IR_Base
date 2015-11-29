@@ -83,14 +83,22 @@ public class LinAdapt {
 	public void batchTrainTest(){
 		OneLinAdapt model;
 		ArrayList<_Review> reviews;
+		int pivot = 0;
 		
 		//Traverse all users and train their models based on the half of their reviews.
 		for(int i=0; i<m_users.size(); i++){
 			model = m_userModels[i];
 			reviews = m_users.get(i).getReviews();
+			pivot = reviews.size()/2;
 			//Split the reviews into two parts, one for training and another for testing.
-			ArrayList<_Review> trainSet = (ArrayList<_Review>) reviews.subList(0, reviews.size()/2);
-			ArrayList<_Review> testSet = (ArrayList<_Review>) reviews.subList(reviews.size()/2 + 1, reviews.size()-1);
+			ArrayList<_Review> trainSet = new ArrayList<_Review>();
+			ArrayList<_Review> testSet = new ArrayList<_Review>();
+			for(int j=0; j<reviews.size(); j++){
+				if(j < pivot)
+					trainSet.add(reviews.get(j));
+				else 
+					testSet.add(reviews.get(j));
+			}
 			model.train(trainSet);//Train the model.
 			model.test(testSet);
 		}

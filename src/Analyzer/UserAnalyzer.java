@@ -70,20 +70,22 @@ public class UserAnalyzer extends DocAnalyzer {
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(m_count++, source, ylabel, userID, reviewID, category, timestamp);
-					AnalyzeDoc(review); //Create the sparse vector for the review.
-					reviews.add(review);
+					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, reviewID, category, timestamp);
+					if(AnalyzeDoc(review)) //Create the sparse vector for the review.
+						reviews.add(review);
 				}
 			}
-			if(reviews.size() != 0)
+			if(reviews.size() != 0){
 				m_users.add(new _User(userID, reviews)); //create new user from the file.
+				m_corpus.addDocs(reviews);
+			}
 			reader.close();
 		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}
 	
-	public void AnalyzeDoc(_Review doc){
+	public boolean AnalyzeDoc(_Review doc){
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
 		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
@@ -93,13 +95,14 @@ public class UserAnalyzer extends DocAnalyzer {
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
-//			m_corpus.addDoc(doc);
-//			m_classMemberNo[y]++;
+
 			if (m_releaseContent)
 				doc.clearSource();
+			return true;
 		} else {
 			/****Roll back here!!******/
 			rollBack(spVct, y);
+			return false;
 		}
 	}
 	
@@ -111,10 +114,10 @@ public class UserAnalyzer extends DocAnalyzer {
 			String[] features = reader.readLine().split(",");//Group information of each feature.
 			reader.close();
 			
-			int[] m_groupIndexes = new int[features.length + 1]; //One more term for bias, bias=0.
+			m_featureGroupIndexes = new int[features.length + 1]; //One more term for bias, bias=0.
 			//Group index starts from 0, so add 1 for it.
 			for(int i=0; i<features.length; i++)
-				m_groupIndexes[i+1] = Integer.valueOf(features[i]+1);
+				m_featureGroupIndexes[i+1] = Integer.valueOf(features[i]) + 1;
 			
 		} catch(IOException e){
 			System.err.format("Fail to open file %s.\n", filename);
