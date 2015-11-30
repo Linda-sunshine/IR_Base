@@ -11,7 +11,7 @@ public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		
-		int classNumber = 2; //Define the number of classes in this Naive Bayes.
+		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		int featureGroupNo = 400; //There should be some feature grouping methods.
