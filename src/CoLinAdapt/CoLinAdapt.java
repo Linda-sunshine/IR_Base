@@ -1,47 +1,54 @@
 package CoLinAdapt;
 
 import java.util.ArrayList;
-import java.util.TreeMap;
 
-import structures.MyLinkedList;
 import structures._Review;
 import structures._User;
 
-public class CoLinAdapt extends LinAdapt {
+public class CoLinAdapt extends LinAdapt{
+	double m_eta3; // Weight for R2.
+	ArrayList<_User> m_neighbors;
 	
-	public CoLinAdapt(ArrayList<_User> users, int featureNo, int featureGroupNo, TreeMap<Integer, ArrayList<Integer>> featureGroupIndex){
-		super(users, featureNo, featureGroupNo, featureGroupIndex);
+	public CoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes) {
+		super(fg, fn, globalWeights, featureGroupIndexes);
 	}
 	
-	//Specify the neighbors of the current user.
-	public void constructNeighborhood(){
-		
+	public void setNeighbors(ArrayList<_User> neighbors){
+		m_neighbors = neighbors;
 	}
-	//In the online mode, train them one by one and consider the order of the reviews.
-	public void onlineTrain(){
-		_Review tmp;
-		int userIndex, predL;
-		OneLinAdapt model;
-		m_trainQueue = new MyLinkedList<_Review>();//We use this to maintain the review pool.
-		//Construct the initial pool.
-		for(_User u: m_users)
-			m_trainQueue.add(u.getOneReview()); //Collect one review from each user.
-		
-		while(!m_trainQueue.isEmpty()){
-			//Get the head review: the most rescent one.
-			tmp = m_trainQueue.poll(); 
-			userIndex = m_userIDIndexMap.get(tmp.getUserID());
-			m_trainQueue.add(m_users.get(userIndex).getOneReview());
-			
-			// Predict first.
-			model = m_userModels[userIndex];
-			predL = model.predict(tmp);
-//			m_overallPerf.addOnePrediction(tmp.getYLabel(), predL);
-			
-			//Adapt based on the new review.
-			ArrayList<_Review> trainSet = new ArrayList<_Review>();
-			trainSet.add(tmp);
-			model.train(trainSet);
+	// Calculate the new function value.
+	public double calculateFunctionValue(ArrayList<_Review> trainSet){
+		double fValue = super.calculateFunctionValue(trainSet);
+		// Add the R2 part to the function value.
+		double R2 = 0, sim;
+		double[] A;
+		_User neighbor;
+		for(int i=0; i<m_neighbors.size(); i++){
+			neighbor = m_neighbors.get(i);
+			A = neighbor.getCoLinAdapt().getA();
+			sim = calculateSim(m_neighbors.get(i));
+			for(int j=0; j<m_dim; j++){
+				//(a_ki-a_kj)^2 + (b_ki-b_kj)^2
+				R2 += (m_A[j] - A[j])*(m_A[j] - A[j]) + (m_A[j + m_dim] - A[j + m_dim])*(m_A[j + m_dim] - A[j + m_dim]) ;
+			}
+			fValue -= sim * m_eta3 * R2;
 		}
+		return fValue ;
 	}
+	
+	// Calculate the similarity between two users.
+	public double calculateSim(_User u){
+		double sim = 0;
+		/****
+		 * Need to be filled.
+		 */
+		return sim;
+	}
+	//Calculate the gradients for the use in LBFGS.
+	public void calculateGradients(ArrayList<_Review> trainSet){
+		/****
+		 * Need to be filled.
+		 */
+	}
+	
 }
