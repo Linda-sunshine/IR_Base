@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import SanityCheck.FurtherPuritySanityCheck;
+import SanityCheck.PartSanityCheck;
 import SanityCheck.PuritySanityCheck;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
@@ -11,11 +12,11 @@ import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 
-public class PuritySanityCheckMain {
+public class SanityCheckMain {
 	//In this main function, I want to check the purity given by Random, BoW, Topic vectors, BoW+Topic 
 	//to see in which situation the similarity works and why? 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
+		int classNumber = 5;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold		
 		int number_of_topics = 30;
@@ -47,18 +48,40 @@ public class PuritySanityCheckMain {
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		
-		FurtherPuritySanityCheck check = new FurtherPuritySanityCheck(c);
-//		check.calcDocLengthStat(1439, 80);
+		PartSanityCheck check = new PartSanityCheck(c);
 		
-		String resFolder = "./data/SanityCheck/";
-		check.calculateSimilarity();
-		check.constructCompareUnits(20);
-		check.setFeature(analyzer.getFeatures());
-		check.printDifference(resFolder);
+//		check.loadCheckFile("./data/Selected100Files/100Files.txt"); //Load the 100 files I selected before.
+//		check.setTestFileIDs(); //Set the IDs for the 100 files.
+//		check.printFile("Selected100FilesWithIDs.txt"); //Print the file with IDs.
+		int topK = 10;
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		int[] groupSize = check.getGroupSize();
+		
+		//BoW and topic performance check.
+		double[] performance = check.constructPurity(topK, 1);//0: Bow; else: topic; return purity.
+		
+//		double[] performance = check.trainSVM(); // Return precision in this case.
+		
+		for(int i= 0; i<performance.length; i++)
+			System.out.format("%d\t", i);
+		System.out.println();
+		
+		for(int i= 0; i<groupSize.length; i++)
+			System.out.format("%d\t", groupSize[i]);
+		System.out.println();
+		
+		for(int i= 0; i<performance.length; i++)
+			System.out.format("%.4f\t", performance[i]);
+		System.out.println();
+		
+//		String resFolder = "./data/SanityCheck/";
+//		check.calculateSimilarity();
+//		check.constructCompareUnits(20);
+//		check.setFeature(analyzer.getFeatures());
+//		check.printDifference(resFolder);
 
 //		check.printBoWSimilarity(resFolder);
-//		check.printMeanVar(resFolder, "BoWMeanVar.xls");
-//		
+//		check.printMeanVar(resFolder, "BoWMeanVar.xls");	
 //		check.printTPSimilarity(resFolder);
 //		check.printMeanVar(resFolder, "TPMeanVar.xls");
 		

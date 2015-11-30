@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -94,7 +93,7 @@ public class FurtherPuritySanityCheck extends PuritySanityCheck {
 		m_diffUnits = new ArrayList<CompareUnit>();
 		m_documents = c.getCollection();
 	}
-
+	
 	public void setFeature(ArrayList<String> fs){
 		m_features = fs;
 	}

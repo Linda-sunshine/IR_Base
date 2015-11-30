@@ -2,13 +2,10 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures._User;
-import Analyzer.DocAnalyzer;
 import Analyzer.UserAnalyzer;
-import CoLinAdapt.LinAdapt;
+import CoLinAdapt.LinAdaptSchedule;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -34,16 +31,16 @@ public class LinAdaptMain {
 		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
 		//Create the instances of the LinAdapt model.
-		LinAdapt linAdapt = new LinAdapt(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		linAdapt.setGlobalWeights(globalWeights);
-		linAdapt.init();
+		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
+		linAdaptS.setGlobalWeights(globalWeights);
+		linAdaptS.init();
 		
 //		//Online training.
 //		linAdapt.onlineTrain();
 //		linAdapt.calcOnlinePerformance(); //Calculate the performance of each user.	
 		
 		//Batch training.
-		linAdapt.batchTrainTest();
-		linAdapt.calcBatchPerformance();
+		linAdaptS.batchTrainTest();
+		linAdaptS.calcBatchPerformance();
 	}
 }
