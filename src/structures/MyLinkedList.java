@@ -11,20 +11,14 @@ public class MyLinkedList<E extends Comparable<? super E>> extends LinkedList<E>
 	
 	//Add one element to the linked list ordered by the time stamps.
 	public boolean add(E object){
-		if(super.getFirst() == null){
-			super.addFirst(object);
-			return true;
-		}
-		else{
-			for(int i=0; i<super.size(); i++){
-				if(object.compareTo(super.get(i))==-1){//object.val < p.val
-					super.add(i, object);
-					return true;
-				}
+		for(int i=0; i<super.size(); i++){
+			if(object.compareTo(super.get(i))==-1){//object.val < p.val
+				super.add(i, object);
+				return true;
 			}
-			super.addLast(object);
-			return true;// If the inserted element is the largest, put it in the end.
 		}
+		super.addLast(object);
+		return true;// If the inserted element is the largest, put it in the end.
 	}
 
 	public static void main(String[] args){

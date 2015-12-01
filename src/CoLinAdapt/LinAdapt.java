@@ -34,46 +34,51 @@ public class LinAdapt {
 		m_featureNo = fn;
 		m_dim = fg + 1;//fg is the total number of feature groups.
 		
-		m_weights = new double[m_dim*2];//one term for bias
+		m_weights = new double[fn + 1];//one term for bias
 		m_A = new double[m_dim*2];//Two bias terms.
-		m_g = new double[m_dim*2];
-		m_diag = new double[m_dim*2];
 		
 		m_eta1 = 0.5;
 		m_eta2 = 0.5;
-		init();
 	}   
 	
-	public LinAdapt(int fn, int fg, double[] globalWeights, int[] featureGroupIndexes){
+	public LinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
 		m_featureNo = fn;
 		m_dim = fg + 1;//fg is the total number of feature groups.
 		
 		m_weights = globalWeights;//one term for bias
 		m_featureGroupIndexes = featureGroupIndexes;
 		m_A = new double[m_dim*2];//Two bias terms.
-		m_g = new double[m_dim*2];
-		m_diag = new double[m_dim*2];
 		
 		m_eta1 = 0.5;
 		m_eta2 = 0.5;
-		init();
 	}  
 	
 	//Initialize the weights of the transformation matrix.
-	public void init(){
+	public void initA(){
 		//Initial weights should be from global model.
 		for(int i=0; i < m_dim; i++)
 			m_A[i] = 1;//Initialize scaling to be 1 and shifting be 0.
 	}
 	
+	//Different ways of initialization.
+	public void initGradients(){
+		m_g = new double[m_dim*2];
+		m_diag = new double[m_dim*2];
+	}
+	
 	public void initLBFGS(){
+		if(m_g == null)
+			m_g = new double[m_dim*2];
+		if(m_diag == null)
+			m_diag = new double[m_dim*2];
+		
 		Arrays.fill(m_diag, 0);
 		Arrays.fill(m_g, 0);
 	}
 	
 	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
-	public void setPerformanceStat(int[] trueLs, int[] predLs){
-		m_perfStat = new _PerformanceStat(trueLs, predLs);
+	public void setPerformanceStat(int[] predLs, int[] trueLs){
+		m_perfStat = new _PerformanceStat(predLs, trueLs);
 	}
 	
 	//Create instance for the model with existing TPTable, used for batch mode.
@@ -95,30 +100,31 @@ public class LinAdapt {
 	
 	//Calculate the function value of the new added instance.
 	public double calculateFunctionValue(ArrayList<_Review> trainSet){
-		double fValue = 0;
+		double L = 0; //log likelihood.
 		int Yi;
 		_SparseFeature[] fv;
 		double Pi = 0;
 		//Init: R1 = (a[0]-1)^2 + b[0]^2;
-		double R1 = m_eta1*(m_A[0]-1)*(m_A[0]-1) +
-					m_eta2*m_A[m_dim]*m_A[m_dim];
+		double R1 = 0;
+//		double R1 = m_eta1*(m_A[0]-1)*(m_A[0]-1) +
+//					m_eta2*m_A[m_dim]*m_A[m_dim];
 		
 		for(_Review review: trainSet){
 			Yi = review.getYLabel();
 			fv = review.getSparse();
 			Pi = logit(fv);
 			if(Yi == 1)
-				fValue += Math.log(Pi);
+				L += Math.log(Pi);
 			else 
-				fValue += Math.log(1 - Pi);
+				L += Math.log(1 - Pi);
 		}
 		//Add regularization parts.
 		for(int i=0; i<m_dim; i++){
 			R1 += m_eta1*(m_A[i]-1)*(m_A[i]-1);//(a[i]-1)^2
-			R1 += m_eta2*(m_A[m_dim+i])*(m_dim+i);//b[i]^2
+			R1 += m_eta2*(m_A[m_dim+i])*(m_A[m_dim+i]);//b[i]^2
 		}
-		System.out.println("Fvalue is " + (-fValue+R1));
-		return -fValue + R1;
+		System.out.println("Fvalue is " + (-L+R1));
+		return -L + R1;
 	}
 	
 	// We can do A*w*x at the same time to reduce computation.
@@ -197,14 +203,14 @@ public class LinAdapt {
 	public void train(ArrayList<_Review> trainSet){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue;
-		int fSize = m_dim * 2;
+		int fSize = m_dim*2;
 		
 		initLBFGS();
 		try{
 			do{
 				fValue = calculateFunctionValue(trainSet);
 				calculateGradients(trainSet);
-				LBFGS.lbfgs(fSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-5, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(fSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
 			e.printStackTrace();

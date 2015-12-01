@@ -842,4 +842,31 @@ public class Utils {
 		return c[m][n];// Every cell contains the current longest common
 						// sequence of xi, yj.
 	}
+	
+	//If len = fill.length, then whole array fill will replace the part of the source array.
+	public static double[] fillPartOfArray(int index, int len, double[] source, double[] fill){
+		if(index > source.length || (index + len) > source.length)
+			System.err.println("Error!!");
+		for(int i=0; i<len; i++){
+			source[i+index] = fill[i];
+		}
+		return source;
+	}
+	
+	public static double[] getPartOfArray(int index, int len, double[] source){
+		if(source.length < len || source.length < (index + len)){
+			System.err.println("Length out of range.");
+			return null;
+		}
+		double[] res = new double[len];
+		for(int i=0; i<len; i++){
+			res[i] = source[index+i];
+		}
+		return res;
+	}
+//	public static void main(String[] args){
+//		double[] a = new double[]{1, 2, 3, 5, 1};
+//		double[] b = new double[]{7, 7};
+//		double[] c = getPartOfArray(3, 3, a);
+//	}
 }

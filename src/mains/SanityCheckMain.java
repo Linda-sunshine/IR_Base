@@ -53,12 +53,13 @@ public class SanityCheckMain {
 //		check.loadCheckFile("./data/Selected100Files/100Files.txt"); //Load the 100 files I selected before.
 //		check.setTestFileIDs(); //Set the IDs for the 100 files.
 //		check.printFile("Selected100FilesWithIDs.txt"); //Print the file with IDs.
-		int topK = 10;
+		int topK = 20;
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		int[] groupSize = check.getGroupSize();
-		
+		check.setFeature(analyzer.getFeatures());
+
 		//BoW and topic performance check.
-		double[] performance = check.constructPurity(topK, 1);//0: Bow; else: topic; return purity.
+		double[] performance = check.constructPurity(topK, 1, "data/SanityCheck/DiffGroupTP");//0: Bow; else: topic; return purity.
 		
 //		double[] performance = check.trainSVM(); // Return precision in this case.
 		

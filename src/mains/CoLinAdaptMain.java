@@ -2,13 +2,12 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
-import CoLinAdapt.LinAdaptSchedule;
+import CoLinAdapt.CoLinAdaptSchedule;
 
-public class LinAdaptMain {
-	//In the main function, we want to input the data and do adaptation 
+public class CoLinAdaptMain {
+
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		
 		int classNumber = 2;
@@ -31,13 +30,16 @@ public class LinAdaptMain {
 		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
 		//Create the instances of the LinAdapt model.
-		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		linAdaptS.setGlobalWeights(globalWeights);
-		linAdaptS.initSchedule();
+		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
+		coLinAdaptS.setGlobalWeights(globalWeights);
+		coLinAdaptS.initSchedule();
+		coLinAdaptS.constructNeighborhood();
+//		//If we know the number of neighbors in advance, we can init gradients before.
+//		coLinAdaptS.initGradients();
 		
 		//Online training.
-		linAdaptS.onlineTrain();
-		linAdaptS.calcOnlinePerformance(); //Calculate the performance of each user.	
+		coLinAdaptS.onlineTrain();
+		coLinAdaptS.calcOnlinePerformance(); //Calculate the performance of each user.	
 		
 		//Batch training.
 //		linAdaptS.batchTrainTest();

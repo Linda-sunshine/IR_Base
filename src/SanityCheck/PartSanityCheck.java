@@ -3,6 +3,7 @@ package SanityCheck;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -16,6 +17,7 @@ import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
+import structures._SparseFeature;
 import utils.Utils;
 
 public class PartSanityCheck extends FurtherPuritySanityCheck{
@@ -108,14 +110,29 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		return precision;
 	}
 	// Use BoW to calculate the purity.
-	public double[] constructPurity(int topK, int flag){
+	public double[] constructPurity(int topK, int flag, String filename) throws FileNotFoundException{
+		
 		double count = 0;
 		_Doc dj, tmp;
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
 		double[] purity = new double[m_groupIndexDocsMap.size()];
 		for(int index: m_groupIndexDocsMap.keySet()){
 			// Access each document.
+			PrintWriter writer = new PrintWriter(new File(filename+index));
 			for(_Doc d: m_groupIndexDocsMap.get(index)){
+				
+				//Write out the current document.
+				writer.write("==================================================\n");
+				writer.format("trueL:%d\n", d.getYLabel());
+				if(flag == 0){
+					for(_SparseFeature sf: d.getSparse())
+						writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
+				} else{
+					for(int j=0; j<d.getTopics().length; j++)
+						writer.format("(%d, %.4f)\t", j, d.getTopics()[j]);
+				}
+				writer.format("\n%s\n", d.getSource());
+
 				// Construct neighborhood.
 				for(int i=0; i<m_trainSet.size(); i++){
 					dj = m_trainSet.get(i);
@@ -125,17 +142,32 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 					else
 						queue.add(new _RankItem(i, Math.exp(-Utils.klDivergence(d.getTopics(), dj.getTopics()))));
 				}
+				
 				// Get the purity.
 				for(_RankItem item: queue){
 					tmp = m_trainSet.get(item.m_index);
 					if(d.getYLabel() == tmp.getYLabel())
 						count++;
+					
+					//Write the neighbors' information.
+					writer.format("trueL:%d\n", tmp.getYLabel());
+					if(flag == 0){
+						for(_SparseFeature sf: tmp.getSparse())
+							writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
+					} else{
+						for(int j=0; j<tmp.getTopics().length; j++)
+							writer.format("(%d, %.4f)\t", j, tmp.getTopics()[j]);
+					}
+					writer.format("\n%s\n", tmp.getSource());
 				}
-				purity[index] += count/topK;
+				purity[index] += count/(double) topK;
+				writer.format("Count:%d, Purity:%.4f\n", (int)count, count/(double)topK);
 				count = 0;
 				queue.clear();
 			}
 			purity[index] /= m_groupIndexDocsMap.get(index).size();
+			System.out.format("Finish writing %d group reviews.\n", index);
+			writer.close();
 		}
 		return purity;
 	}

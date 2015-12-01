@@ -15,7 +15,6 @@ public class LinAdaptSchedule {
 	protected ArrayList<_User> m_users; //Mapping from users to models.
 	protected HashMap<String, Integer> m_userIDIndexMap; // key: userID, value: index.
 	protected String[] m_userIDs; // If we know index, we can get the userID.
-//	protected OneLinAdapt[] m_userModels; //The array contains all users's models.
 	protected MyLinkedList<_Review> m_trainQueue;
 	protected int m_featureNo, m_featureGroupNo;
 	protected double[] m_globalWeights;
@@ -36,7 +35,7 @@ public class LinAdaptSchedule {
 	}
 
 	//Fill in the user related information map and array.
-	public void init(){
+	public void initSchedule(){
 		_User user;
 		for(int i=0; i<m_users.size(); i++){
 			user = m_users.get(i);
@@ -72,7 +71,7 @@ public class LinAdaptSchedule {
 				trainSet.add(reviews.get(j));
 				model.train(trainSet);
 			}
-			model.setPerformanceStat(trueLabels, predLabels);
+			model.setPerformanceStat(predLabels, trueLabels);
 		}
 	}
 	

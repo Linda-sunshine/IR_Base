@@ -29,10 +29,13 @@ public class _User {
 	
 	public void initLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
 		m_linAdapt = new LinAdapt(fg, fn, globalWeights, featureGroupIndexes);
+		m_linAdapt.initA();
+		m_linAdapt.initGradients();
 	}
 	
 	public void initCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
 		m_coLinAdapt = new CoLinAdapt(fg, fn, globalWeights, featureGroupIndexes);
+		m_coLinAdapt.initA();
 	}
 	//Return the linAdapt model.
 	public LinAdapt getLinAdapt(){
@@ -67,14 +70,35 @@ public class _User {
 	}
 	
 	//Construct the neigbors for the current user.
-	public void constructNeighbors(){
-		
+	public void constructNeighbors(ArrayList<_User> neighbors){
+		m_neighbors = neighbors;
 	}
 	
-	public void transferNeighbors2Model(){
+	//Given neighbors, pass them to model.
+	public void passNeighbors2Model(ArrayList<_User> neighbors){
+		m_coLinAdapt.setNeighbors(neighbors);
+	}
+	
+	public void passNeighbors2Model(){
 		m_coLinAdapt.setNeighbors(m_neighbors);
 	}
 	public ArrayList<_User> getNeighbors(){
 		return m_neighbors;
+	}
+	
+//	public void initGradients4CoLinAdapt(){
+//		m_coLinAdapt.initGradients();
+//	}
+	//Return the transformed matrix in LinAdapt.
+	public double[] getLinAdaptA(){
+		return m_linAdapt.getA();
+	}
+	
+	public double[] getCoLinAdaptA(){
+		return m_coLinAdapt.getA();
+	}
+	
+	public void updateA(double[] newA){
+		m_coLinAdapt.updateA(newA);
 	}
  }
