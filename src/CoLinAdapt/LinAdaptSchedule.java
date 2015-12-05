@@ -15,11 +15,11 @@ public class LinAdaptSchedule {
 	protected ArrayList<_User> m_users; //Mapping from users to models.
 	protected HashMap<String, Integer> m_userIDIndexMap; // key: userID, value: index.
 	protected String[] m_userIDs; // If we know index, we can get the userID.
-//	protected OneLinAdapt[] m_userModels; //The array contains all users's models.
 	protected MyLinkedList<_Review> m_trainQueue;
 	protected int m_featureNo, m_featureGroupNo;
 	protected double[] m_globalWeights;
 	protected int[] m_featureGroupIndexes;
+	protected double[][] m_avgPRF;
 	
 	public LinAdaptSchedule(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
 		m_users = users;
@@ -28,6 +28,7 @@ public class LinAdaptSchedule {
 		m_featureNo = featureNo;
 		m_featureGroupNo = featureGroupNo;
 		m_featureGroupIndexes = featureGroupIndexes;
+		m_avgPRF = new double[2][3];
 	}
 	
 	//Set the global weights.
@@ -36,7 +37,7 @@ public class LinAdaptSchedule {
 	}
 
 	//Fill in the user related information map and array.
-	public void init(){
+	public void initSchedule(){
 		_User user;
 		for(int i=0; i<m_users.size(); i++){
 			user = m_users.get(i);
@@ -49,9 +50,10 @@ public class LinAdaptSchedule {
 	
 	//In this process, we collect one review from each user and train online.
 	public void onlineTrain(){
-		int predL;
-		int[] predLabels;
-		int[] trueLabels;
+		int predL, trueL;
+		int[][] TPTable = new int[2][2];
+//		int[] predLabels;
+//		int[] trueLabels;
 		LinAdapt model;
 		ArrayList<_Review> reviews;
 		
@@ -59,20 +61,22 @@ public class LinAdaptSchedule {
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
 			reviews = m_users.get(i).getReviews();
-			predLabels = new int[reviews.size()];
-			trueLabels = new int[reviews.size()];
+//			predLabels = new int[reviews.size()];
+//			trueLabels = new int[reviews.size()];
 			for(int j=0; j<reviews.size(); j++){
 				//Predict first.
 				predL = model.predict(reviews.get(j));
-				predLabels[j] = predL;
-				trueLabels[j] = reviews.get(j).getYLabel();
+				trueL = reviews.get(j).getYLabel();
+				TPTable[predL][trueL]++;
+//				predLabels[j] = predL;
+//				trueLabels[j] = reviews.get(j).getYLabel();
 				
 				//Adapt based on the new review.
 				ArrayList<_Review> trainSet = new ArrayList<_Review>();
 				trainSet.add(reviews.get(j));
 				model.train(trainSet);
 			}
-			model.setPerformanceStat(trueLabels, predLabels);
+			model.setPerformanceStat(TPTable);
 		}
 	}
 	
@@ -101,22 +105,45 @@ public class LinAdaptSchedule {
 		}
 	}
 	
-	//Accumulate the performance, accumulate all users and get stat.
-	public void calcOnlinePerformance(){
-		LinAdapt model;
-		for(int i=0; i<m_users.size(); i++){
-			model = m_users.get(i).getLinAdapt();
-			model.m_perfStat.calcuatePreRecF1();
+	//Add one user's prf to the global prf.
+	public void addOneUserPRF(double[][] prf) {
+		if (prf.length == 0 || prf == null)
+			return;
+		if (prf.length != m_avgPRF.length)
+			return;
+		if (prf[0].length != m_avgPRF[0].length)
+			return;
+
+		for (int i = 0; i < prf.length; i++) {
+			for (int j = 0; j < prf[i].length; j++)
+				m_avgPRF[i][j] += prf[i][j];
 		}
 	}
 	
-	//Only One performance stat for one user.
-	public void calcBatchPerformance(){
+	//Accumulate the performance, accumulate all users.
+	public void calcPerformance(){
 		LinAdapt model;
+		
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
-			double[][] prf = model.m_perfStat.calculateCurrentPRF();
-			model.m_perfStat.setOnePRFStat(prf);
+			model.m_perfStat.calculatePRF();
+			addOneUserPRF(model.m_perfStat.getOneUserPRF());
+		}
+		
+		for(int i=0; i<m_avgPRF.length; i++){
+			for(int j=0; j<m_avgPRF[0].length; j++)
+				m_avgPRF[i][j] /= m_users.size();
+		}
+	}
+	
+	//Print out performance information.
+	public void printPerformance() {
+		System.out.format("\tprec\trecall\tF1\n");
+		for (int i = 0; i < m_avgPRF.length; i++) {
+			System.out.format("class %d\t", i);
+			for (int j = 0; j < m_avgPRF[0].length; j++)
+				System.out.format("%.4f\t", m_avgPRF[i][j]);
+			System.out.println();
 		}
 	}
 }
