@@ -14,8 +14,11 @@ import utils.Utils;
 
 public class CoLinAdapt extends LinAdapt{
 	double m_eta3; // Weight for R2.
-	ArrayList<_User> m_neighbors;
 	double[] m_As;
+	ArrayList<_User> m_neighbors;
+	ArrayList<Integer> m_neighborIndexes;
+	ArrayList<Double> m_neighborSims;
+
 	public CoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes) {
 		super(fg, fn, globalWeights, featureGroupIndexes);
 		m_eta3 = 0.5;
@@ -33,6 +36,22 @@ public class CoLinAdapt extends LinAdapt{
 
 	public void setNeighbors(ArrayList<_User> neighbors){
 		m_neighbors = neighbors;
+	}
+	
+	public void setNeighborSims(ArrayList<Double> sims){
+		m_neighborSims = sims;
+	}
+	
+	// We can do A*w*x at the same time to reduce computation.
+	public double logit(_SparseFeature[] fvs){
+		double value = m_As[0]*m_weights[0] + m_As[m_dim];//Bias term: w0*a0+b0.
+		int featureIndex = 0, groupIndex = 0;
+		for(_SparseFeature fv: fvs){
+			featureIndex = fv.getIndex() + 1;
+			groupIndex = m_featureGroupIndexes[featureIndex];
+			value += (m_As[groupIndex]*m_weights[featureIndex] + m_As[groupIndex + m_dim])*fv.getValue();
+		}
+		return 1/(1+Math.exp(-value));
 	}
 
 	// Calculate the new function value.
@@ -54,46 +73,31 @@ public class CoLinAdapt extends LinAdapt{
 		
 		//Add R1.
 		for(int i=0; i<m_dim; i++){
-			R1 += m_eta1*(m_A[i]-1)*(m_A[i]-1);//(a[i]-1)^2
-			R1 += m_eta2*(m_A[m_dim+i])*(m_A[m_dim+i]);//b[i]^2
-//			R1 += m_eta1*(m_As[i]-1)*(m_As[i]-1);//(a[i]-1)^2
-//			R1 += m_eta2*(m_As[m_dim+i])*(m_As[m_dim+i]);//b[i]^2
+			R1 += m_eta1*(m_As[i]-1)*(m_As[i]-1);//(a[i]-1)^2
+			R1 += m_eta2*(m_As[m_dim+i])*(m_As[m_dim+i]);//b[i]^2
 		}
 		fValue = -L + R1;
 		
 		// Add the R2 part to the function value.
-		double[] A;
-		_User neighbor;
 		for(int i=0; i<m_neighbors.size(); i++){
-			neighbor = m_neighbors.get(i);
-			A = neighbor.getCoLinAdapt().getA();
-			sim = calculateSim(m_neighbors.get(i));
+			sim = m_neighborSims.get(i);
 			for(int j=0; j<m_dim; j++){
 				//(a_ki-a_kj)^2 + (b_ki-b_kj)^2
-				R2 += (m_A[j] - A[j])*(m_A[j] - A[j]) + (m_A[j+m_dim] - A[j+m_dim])*(m_A[j+m_dim] - A[j+m_dim]);
-//				R2 += (m_As[j]-m_As[(i+1)*m_dim*2+j])*(m_As[j]-m_As[(i+1)*m_dim*2+j])+(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim])*(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim]);
+				R2 += (m_As[j]-m_As[(i+1)*m_dim*2+j])*(m_As[j]-m_As[(i+1)*m_dim*2+j])+(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim])*(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim]);
 			}
 			fValue += sim * m_eta3 * R2;
+			R2 = 0;
 		}
 		System.out.println("Fvalue is " + fValue);
 		return fValue;
 	}
 	
-	// Calculate the similarity between two users.
-	public double calculateSim(_User u){
-		double sim = 0.1;
-		/****
-		 * Need to be filled.
-		 */
-		return sim;
-	}
 	//Calculate the gradients for the use in LBFGS.
 	public void calculateGradients(ArrayList<_Review> trainSet){
 		//The gradients are for the current user and neighbors, thus, we use a big matrix to represent it. 
-		double Pi = 0;//Pi = P(yd=1|xd);
+		double Pi = 0, sim = 0;//Pi = P(yd=1|xd);
 		int Yi, featureIndex = 0, groupIndex = 0;
-		_User neighbor;
-		double[] A;
+		
 		m_g = new double[(m_neighbors.size()+1) * m_dim*2];//The big gradients matrix contains current user and all neighbors.
 		//Update gradients one review by one review.
 		for(_Review review: trainSet){
@@ -115,52 +119,42 @@ public class CoLinAdapt extends LinAdapt{
 		
 		//Add the R1 for the current user.
 		for(int i=0; i<m_dim; i++){
-//			m_g[i] += 2*m_eta1*(m_As[i]-1);// add 2*eta1*(ak-1)
-//			m_g[i+m_dim] += 2*m_eta2*m_As[i+m_dim]; // add 2*eta2*bk
-			m_g[i] += 2*m_eta1*(m_A[i]-1);// add 2*eta1*(ak-1)
-			m_g[i+m_dim] += 2*m_eta2*m_A[i+m_dim]; // add 2*eta2*bk
+			m_g[i] += 2*m_eta1*(m_As[i]-1);// add 2*eta1*(ak-1)
+			m_g[i+m_dim] += 2*m_eta2*m_As[i+m_dim]; // add 2*eta2*bk
 		}
 		
 		//Add the R2 for the current the pair (user, neighbor).
 		//R2 = [a for the current user,...m_dim, b for the current user..., a for the first neighbor..., b for the first neighbor....]
 		for(int i=0; i<m_neighbors.size(); i++){
-			neighbor = m_neighbors.get(i);
-			A = neighbor.getCoLinAdaptA();
+			sim = m_neighborSims.get(i);
 			for(int j=0; j<m_dim; j++){
-				m_g[j] += 2*m_eta3*(m_A[j] - A[j]); //ak for the current user.
-				m_g[j+m_dim] += 2*m_eta3*(m_A[m_dim+j] - A[j+m_dim]); //bk for the current user.
+				//Update for the user.
+				m_g[j] += 2*m_eta3*sim*(m_As[j]-m_As[(i+1)*m_dim*2+j]); //ak for the current user.
+				m_g[j+m_dim] += 2*m_eta3*sim*(m_As[m_dim+j]-m_As[(i+1)*m_dim*2+j+m_dim]); //bk for the current user.
 				//Update for the neighbor.
-				m_g[j+2*m_dim*i] += 2*m_eta3*(A[j]-m_A[j]);//ak for the neighbor.
-				m_g[j+2*m_dim*i+m_dim] += 2*m_eta3*(A[m_dim+j]-m_A[m_dim+j]);//bk for the neighbor.
-				
-//				//Update for the user.
-//				m_g[j] += 2*m_eta3*(m_As[j]-m_As[(i+1)*m_dim*2+j]); //ak for the current user.
-//				m_g[j+m_dim] += 2*m_eta3*(m_As[m_dim+j]-m_As[(i+1)*m_dim*2+j+m_dim]); //bk for the current user.
-//				//Update for the neighbor.
-//				m_g[j+2*m_dim*i] += 2*m_eta3*(m_As[(i+1)*m_dim*2+j]-m_As[j]);//ak for the neighbor.
-//				m_g[j+2*m_dim*i+m_dim] += 2*m_eta3*(m_As[(i+1)*m_dim*2+j+m_dim]-m_As[m_dim+j]);//bk for the neighbor.
+				m_g[j+2*m_dim*(i+1)] += 2*m_eta3*sim*(m_As[(i+1)*m_dim*2+j]-m_As[j]);//ak for the neighbor.
+				m_g[j+2*m_dim*(i+1)+m_dim] += 2*m_eta3*sim*(m_As[(i+1)*m_dim*2+j+m_dim]-m_As[m_dim+j]);//bk for the neighbor.
 			}
 		}
-		double magA = 0, magB = 0 ;
-		for(int i=0; i<m_dim; i++){
+		double magA = 0;
+		for(int i=0; i<m_g.length; i++){
 			magA += m_g[i]*m_g[i];
-			magB += m_g[i+m_dim]*m_g[i+m_dim];
 		}
-		System.out.format("Gradient magnitude for A: %.5f\tB: %.5f\n", magA, magB);
+		System.out.format("Gradient magnitude: %.5f\n", magA);
 	}
-	//Return the transformaed matrix.
+	
+	//Return the transformed matrix.
 	public double[] getCoLinAdaptA(){
 		return m_A;
 	}
 	
 	//Concatenate current user and neighbors' A matrix.
-	public double[] getAllAs(){
-		double[] As = new double[(m_neighbors.size()+1)*m_dim*2];
-		Utils.fillPartOfArray(0, m_dim*2, As, m_A); // Add the user's own A matrix.
+	public void setAs(){
+		m_As = new double[(m_neighbors.size()+1)*m_dim*2];
+		Utils.fillPartOfArray(0, m_dim*2, m_As, m_A); // Add the user's own A matrix.
 		for(int i=0; i<m_neighbors.size(); i++){
-			Utils.fillPartOfArray((i+1)*m_dim*2, m_dim*2, As, m_neighbors.get(i).getCoLinAdaptA());
+			Utils.fillPartOfArray((i+1)*m_dim*2, m_dim*2, m_As, m_neighbors.get(i).getCoLinAdaptA());
 		}
-		return As;
 	}
 	
 	//Add one predicted result to the 
@@ -177,25 +171,23 @@ public class CoLinAdapt extends LinAdapt{
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue;
 		int fSize = m_dim*2*(m_neighbors.size()+1);
-		m_As = getAllAs();
 		initLBFGS();
 		try{
 			do{
 				fValue = calculateFunctionValue(trainSet);
 				calculateGradients(trainSet);
 				LBFGS.lbfgs(fSize, 6, m_As, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
-				updateAll();
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
 			e.printStackTrace();
 		}
-//		updateAll();
+		updateAll(); //Update afterwards.
 	}
 	public void updateAll(){
 		double[] newA;
-		m_A = Utils.getPartOfArray(0, m_dim*2, m_As);
+		m_A = Arrays.copyOfRange(m_As, 0, m_dim*2);
 		for(int i=0 ; i<m_neighbors.size(); i++){
-			newA = Utils.getPartOfArray(m_dim*2*i, m_dim*2, m_As);
+			newA = Arrays.copyOfRange(m_As, m_dim*2*(i+1), m_dim*2*(i+2));
 			m_neighbors.get(i).updateA(newA);
 		}
 	}
@@ -204,4 +196,5 @@ public class CoLinAdapt extends LinAdapt{
 	public void updateA(double[] a){
 		m_A = a;
 	}
+
 }

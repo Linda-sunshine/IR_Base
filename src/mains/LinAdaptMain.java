@@ -17,14 +17,14 @@ public class LinAdaptMain {
 		int featureGroupNo = 400; //There should be some feature grouping methods.
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/LinAdapt/selectedFeatures.csv"; // CV.
+		String providedCV = "./data/CoLinAdapt/selectedFeatures.csv"; // CV.
 		
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		
 		//Load users too.
-		String folder = "./data/LinAdapt/Users";
-		String featureGroupFile = "./data/LinAdapt/CrossGroups.txt";
-		String globalModel = "./data/LinAdapt/global.classifer";
+		String folder = "./data/CoLinAdapt/Users";
+		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
+		String globalModel = "./data/CoLinAdapt/global.classifer";
 		analyzer.loadUserDir(folder);
 		analyzer.setFeatureValues("BM25", 2);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
@@ -37,7 +37,8 @@ public class LinAdaptMain {
 		
 		//Online training.
 		linAdaptS.onlineTrain();
-		linAdaptS.calcOnlinePerformance(); //Calculate the performance of each user.	
+		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
+		linAdaptS.printPerformance();
 		
 		//Batch training.
 //		linAdaptS.batchTrainTest();

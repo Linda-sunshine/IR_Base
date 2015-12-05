@@ -76,11 +76,11 @@ public class LinAdapt {
 		Arrays.fill(m_g, 0);
 	}
 	
-	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
-	public void setPerformanceStat(int[] predLs, int[] trueLs){
-		m_perfStat = new _PerformanceStat(predLs, trueLs);
-	}
-	
+//	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
+//	public void setPerformanceStat(int[] predLs, int[] trueLs){
+//		m_perfStat = new _PerformanceStat(predLs, trueLs);
+//	}
+
 	//Create instance for the model with existing TPTable, used for batch mode.
 	public void setPerformanceStat(int[][] TPTable){
 		m_perfStat = new _PerformanceStat(TPTable);

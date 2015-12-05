@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.TreeMap;
 
 import CoLinAdapt.CoLinAdapt;
 import CoLinAdapt.LinAdapt;
@@ -13,18 +14,22 @@ import CoLinAdapt.LinAdapt;
 public class _User {
 	
 	protected String m_userID;
+	protected int m_userIndex;
 	protected double[] m_lowDimRep;
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
 	protected _SparseFeature[] m_x_sparse; //The BoW representation of a user.	
 	protected ArrayList<_User> m_neighbors; //the neighbors of the current user.
+	protected ArrayList<Integer> m_neighborIndexes; // The indexes of neighbors.
 	protected int m_reviewCount; //Record how many reviews have been used to update.
 	protected LinAdapt m_linAdapt;
 	protected CoLinAdapt m_coLinAdapt;
 	
-	public _User(String userID, ArrayList<_Review> reviews){
+	public _User(String userID, ArrayList<_Review> reviews, int userIndex){
 		m_userID = userID;
 		m_reviews = reviews;	
 		m_reviewCount = 0;
+		m_userIndex = userIndex;
+		constructSparseVector();
 	}
 	
 	public void initLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
@@ -36,6 +41,10 @@ public class _User {
 	public void initCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
 		m_coLinAdapt = new CoLinAdapt(fg, fn, globalWeights, featureGroupIndexes);
 		m_coLinAdapt.initA();
+	}
+	
+	public int getIndex(){
+		return m_userIndex;
 	}
 	//Return the linAdapt model.
 	public LinAdapt getLinAdapt(){
@@ -51,6 +60,31 @@ public class _User {
 		return m_userID;
 	}
 	
+	public void constructSparseVector(){
+		TreeMap<Integer, Double> fvIndexValueMap = new TreeMap<Integer, Double>();
+		double value;
+		int index, count = 0;
+		for(_Review r: m_reviews){
+			for(_SparseFeature fv: r.getSparse()){
+				index = fv.getIndex();
+				if(!fvIndexValueMap.containsKey(index))
+					fvIndexValueMap.put(index, fv.getValue());
+				else{
+					value = fvIndexValueMap.get(fv.getIndex()) + fv.getValue();
+					fvIndexValueMap.put(index, value);
+				}
+			}
+		}
+		m_x_sparse = new _SparseFeature[fvIndexValueMap.size()];
+		for(int i: fvIndexValueMap.keySet()){
+			m_x_sparse[count++] = new _SparseFeature(i, fvIndexValueMap.get(i));
+		}
+	}
+	
+	//Get the sparse vector of the user.
+	public _SparseFeature[] getSparse(){
+		return m_x_sparse;
+	}
 	// Get one review from a user's reviews.
 	public _Review getOneReview(){
 		_Review rev = null;
@@ -70,20 +104,32 @@ public class _User {
 	}
 	
 	//Construct the neigbors for the current user.
-	public void constructNeighbors(ArrayList<_User> neighbors){
+	public void setNeighbors(ArrayList<_User> neighbors){
 		m_neighbors = neighbors;
 	}
-	
+
 	//Given neighbors, pass them to model.
-	public void passNeighbors2Model(ArrayList<_User> neighbors){
-		m_coLinAdapt.setNeighbors(neighbors);
-	}
-	
-	public void passNeighbors2Model(){
+	public void setCoLinAdaptNeighbors(){
 		m_coLinAdapt.setNeighbors(m_neighbors);
 	}
+	
+	public void setCoLinAdaptNeighborIndexes(ArrayList<Integer> indexes){
+		m_neighborIndexes = indexes;
+	}
+	
+	public void setCoLinAdpatNeighborSims(ArrayList<Double> sims){
+		m_coLinAdapt.setNeighborSims(sims);
+	}
+
 	public ArrayList<_User> getNeighbors(){
 		return m_neighbors;
+	}
+	
+	public int[] getNeighborIndexes(){
+		int[] indexes = new int[m_neighbors.size()];
+		for(int i=0; i<m_neighbors.size(); i++)
+			indexes[i] = m_neighbors.get(i).getIndex();
+		return indexes;
 	}
 	
 //	public void initGradients4CoLinAdapt(){

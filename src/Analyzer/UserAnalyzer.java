@@ -76,7 +76,7 @@ public class UserAnalyzer extends DocAnalyzer {
 				}
 			}
 			if(reviews.size() != 0){
-				m_users.add(new _User(userID, reviews)); //create new user from the file.
+				m_users.add(new _User(userID, reviews, m_users.size())); //create new user from the file.
 				m_corpus.addDocs(reviews);
 			}
 			reader.close();

@@ -16,14 +16,15 @@ public class CoLinAdaptMain {
 		int featureGroupNo = 400; //There should be some feature grouping methods.
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/LinAdapt/selectedFeatures.csv"; // CV.
+		String providedCV = "./data/CoLinAdapt/selectedFeatures.csv"; // CV.
 		
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
-		
-		//Load users too.
-		String folder = "./data/LinAdapt/Users";
-		String featureGroupFile = "./data/LinAdapt/CrossGroups.txt";
-		String globalModel = "./data/LinAdapt/global.classifer";
+		//Load users.
+		String folder = "./data/CoLinAdapt/Users";
+//		String folder = "./data/CoLinAdapt/Amazon/Users";
+
+		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
+		String globalModel = "./data/CoLinAdapt/global.classifer";
 		analyzer.loadUserDir(folder);
 		analyzer.setFeatureValues("BM25", 2);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
@@ -33,16 +34,20 @@ public class CoLinAdaptMain {
 		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		coLinAdaptS.setGlobalWeights(globalWeights);
 		coLinAdaptS.initSchedule();
-		coLinAdaptS.constructNeighborhood();
+		coLinAdaptS.calcluateSimilarities();
+		int topK = 5;
+		coLinAdaptS.constructNeighborhood(topK);
 //		//If we know the number of neighbors in advance, we can init gradients before.
 //		coLinAdaptS.initGradients();
 		
 		//Online training.
-		coLinAdaptS.onlineTrain();
-		coLinAdaptS.calcOnlinePerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.onlineTrain();
+//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.printPerformance();
 		
 		//Batch training.
-//		linAdaptS.batchTrainTest();
-//		linAdaptS.calcBatchPerformance();
+		coLinAdaptS.batchTrainTest();
+//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.printPerformance();
 	}
 }
