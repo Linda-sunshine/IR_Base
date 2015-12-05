@@ -2,13 +2,12 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
-import CoLinAdapt.LinAdaptSchedule;
+import CoLinAdapt.CoLinAdaptSchedule;
 
-public class LinAdaptMain {
-	//In the main function, we want to input the data and do adaptation 
+public class CoLinAdaptMain {
+
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		
 		int classNumber = 2;
@@ -20,9 +19,10 @@ public class LinAdaptMain {
 		String providedCV = "./data/CoLinAdapt/selectedFeatures.csv"; // CV.
 		
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
-		
-		//Load users too.
+		//Load users.
 		String folder = "./data/CoLinAdapt/Users";
+//		String folder = "./data/CoLinAdapt/Amazon/Users";
+
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/global.classifer";
 		analyzer.loadUserDir(folder);
@@ -31,17 +31,23 @@ public class LinAdaptMain {
 		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
 		//Create the instances of the LinAdapt model.
-		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		linAdaptS.setGlobalWeights(globalWeights);
-		linAdaptS.initSchedule();
+		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
+		coLinAdaptS.setGlobalWeights(globalWeights);
+		coLinAdaptS.initSchedule();
+		coLinAdaptS.calcluateSimilarities();
+		int topK = 5;
+		coLinAdaptS.constructNeighborhood(topK);
+//		//If we know the number of neighbors in advance, we can init gradients before.
+//		coLinAdaptS.initGradients();
 		
 		//Online training.
-		linAdaptS.onlineTrain();
-		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
-		linAdaptS.printPerformance();
+//		coLinAdaptS.onlineTrain();
+//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.printPerformance();
 		
 		//Batch training.
-//		linAdaptS.batchTrainTest();
-//		linAdaptS.calcBatchPerformance();
+		coLinAdaptS.batchTrainTest();
+//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.printPerformance();
 	}
 }
