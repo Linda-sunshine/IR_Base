@@ -34,7 +34,7 @@ public class TopicModelMainAppSentence {
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 2; //Document length threshold
-		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
+		int minimunNumberofSentence = 2; // each Document should have at least 2 sentences for HTSM, LRSHTM
 		
 		String category = "Games"; //Utilities, Travel, Sports, Social_Networking, Reference, Productivity, Photo_and_Video, News, Navigation, Music, Food_and_Drink, Finance, Education, Medical, Games, Business, Health_and_Fitness, Lifestyle
 		/*****parameters for the topic models*****/
@@ -65,7 +65,7 @@ public class TopicModelMainAppSentence {
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/app/newdata/annotated/";
-		String unfolder = "./data/app/newdata/un-annotated/";
+		String unfolder = "./data/app/newdata/un-annotated1/";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;

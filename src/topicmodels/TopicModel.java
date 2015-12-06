@@ -570,10 +570,10 @@ public abstract class TopicModel {
 					if(actualLabel==-1) continue;
 					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
 					precision_recall[actualLabel][predictedLabel]++;
-					if(actualLabel==0 && predictedLabel==1){
+					/*if(actualLabel==0 && predictedLabel==1){
 						System.out.print("\n"+d.getSentence(i).getRawSentence()+",");
 						
-					}
+					}*/
 						
 				}
 			}
@@ -816,12 +816,19 @@ public abstract class TopicModel {
 					System.out.println("Train Set Size "+m_trainSet.size());
 					System.out.println("Test Set Size "+m_testSet.size());
 
+					
+					infoWriter.println("Fold number "+i);
+					infoWriter.println("Train Set Size "+m_trainSet.size());
+					infoWriter.println("Test Set Size "+m_testSet.size());
+
+					
 					if(this instanceof HTSM)
 						normalizeFeature();
 					long start = System.currentTimeMillis();
 					EM();
 					perf[i] = Evaluation(i);
 					System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+					infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 					
 					
 					int precision_recall_local [][] = {{0,0},{0,0}};
@@ -831,6 +838,7 @@ public abstract class TopicModel {
 							int actualLabel = d.getSentence(s).getSentenceSenitmentLabel();
 							if(actualLabel==-1) continue;
 							int predictedLabel = d.getSentence(s).getSentencePredictedSenitmentLabel();
+							if(predictedLabel==-1) continue;
 							precision_recall_local[actualLabel][predictedLabel]++;
 						}
 					}

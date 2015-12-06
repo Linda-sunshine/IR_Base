@@ -23,13 +23,14 @@ public class HTSM extends HTMM {
 			System.exit(-1);
 		}
 		
-		this.sigma = Math.random();		
+		this.sigma = Math.random();	
+		createSpace();
 	}
 	
 	@Override
 	protected void createSpace() {
 		super.createSpace();
-		m_hmm = new FastRestrictedHMM_sentiment(epsilon, sigma, m_corpus.getLargestSentenceSize(), this.number_of_topics); 
+		m_hmm = new FastRestrictedHMM_sentiment(epsilon, this.sigma, m_corpus.getLargestSentenceSize(), this.number_of_topics); 
 	}
 	
 	@Override
