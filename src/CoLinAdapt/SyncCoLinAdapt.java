@@ -106,7 +106,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				sim = m_similarity[getIndex(i, index)];
 				for(int j=0; j<m_dim; j++){
 					oneR2 += (m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])//ak^2
-						    +(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);//bk^2 
+						    +(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim])*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);//bk^2 
 				}
 				fValue += m_eta3*sim*oneR2;
 				oneR2 = 0;

@@ -86,7 +86,7 @@ public class CoLinAdapt extends LinAdapt{
 				R2 += (m_As[j]-m_As[(i+1)*m_dim*2+j])*(m_As[j]-m_As[(i+1)*m_dim*2+j])+(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim])*(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim]);
 			}
 			fValue += sim * m_eta3 * R2;
-			R2 = 0;
+//			R2 = 0;
 		}
 		System.out.println("Fvalue is " + fValue);
 		return fValue;

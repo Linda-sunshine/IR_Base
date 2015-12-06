@@ -41,12 +41,12 @@ public class CoLinAdaptMain {
 //		coLinAdaptS.initGradients();
 		
 		//Online training.
-//		coLinAdaptS.onlineTrain();
-//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
-//		coLinAdaptS.printPerformance();
+		coLinAdaptS.onlineTrain();
+		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+		coLinAdaptS.printPerformance();
 		
 		//Batch training.
-		coLinAdaptS.batchTrainTest();
+//		coLinAdaptS.batchTrainTest();
 //		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
 //		coLinAdaptS.printPerformance();
 	}
