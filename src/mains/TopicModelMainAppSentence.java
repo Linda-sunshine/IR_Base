@@ -45,12 +45,12 @@ public class TopicModelMainAppSentence {
 		double burnIn = 0.4;
 		boolean display = true;
 		
-		int crossV = 5; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
+		int crossV = 2; // crossV is 1 means all the data in trainset and anything greater than 1 means some testset
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		
 		//String[] products = {"camera","tablet", "laptop", "phone", "surveillance", "tv"};
 		// change topic number and category
-		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
+		String topicmodel = "HTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
 		int number_of_topics = 20;
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		
@@ -64,10 +64,8 @@ public class TopicModelMainAppSentence {
 		boolean debugSentenceTransition = false;
 		
 		/*****The parameters used in loading files.*****/
-		//String folder = "./data/app/sentence/annotated/";
 		String folder = "./data/app/newdata/annotated/";
 		String unfolder = "./data/app/newdata/un-annotated/";
-		//String annotationFile = "./data/appLabel/judgement.txt";
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;

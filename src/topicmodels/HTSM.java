@@ -7,6 +7,7 @@ import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._Stn;
+import structures.annotationType;
 
 public class HTSM extends HTMM {
 	
@@ -39,7 +40,7 @@ public class HTSM extends HTMM {
 			Arrays.fill(emission[i], 0);
 			
 			int start = 0, end = this.number_of_topics;				
-			if(i==0 && d.getSourceType()==2){ // first sentence is specially handled for newEgg
+			if(i==0 && (d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)){ // first sentence is specially handled for newEgg
 				//get the sentiment label of the first sentence
 				int sentimentLabel = stn.getSentenceSenitmentLabel();
 				if(sentimentLabel==0) {// positive sentiment in the first half						

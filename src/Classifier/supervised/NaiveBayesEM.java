@@ -5,6 +5,7 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
+import structures.annotationType;
 import utils.Utils;
 import Classifier.supervised.NaiveBayes;
 
@@ -39,7 +40,7 @@ public class NaiveBayesEM extends NaiveBayes {
 	@Override
 	protected void init() {		
 		for(_Doc doc: m_trainSet){
-			if (doc.getSourceType()==1)
+			if (doc.getAnnotationType()==annotationType.UNANNOTATED)
 				doc.setTopics(m_classNo, m_deltaY);//create the storage space
 		}
 		
@@ -50,13 +51,13 @@ public class NaiveBayesEM extends NaiveBayes {
 		double likelihood = 0;
 		for(_Doc doc: m_trainSet){
 			score(doc, 0);//to compute p(x|y)p(y) and store it in m_cProbs
-			if (doc.getSourceType()==1) {//unlabeled data
+			if (doc.getAnnotationType()==annotationType.UNANNOTATED) {//unlabeled data
 				double sumY = Utils.logSumOfExponentials(m_cProbs);
 				for(int i=0; i<m_classNo; i++) {
 					doc.m_sstat[i] = Math.exp(m_cProbs[i] - sumY); // p(y|x)
 					likelihood += doc.m_sstat[i] * m_cProbs[i]; // p(x)
 				}
-			} else if (doc.getSourceType()==2) {//labeled data
+			} else if (doc.getAnnotationType()==annotationType.ANNOTATED || doc.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED) {//labeled data
 				likelihood += m_cProbs[doc.getYLabel()]; //p(x, y=Y)
 			}
 		}
@@ -68,12 +69,12 @@ public class NaiveBayesEM extends NaiveBayes {
 		super.init();
 		
 		for(_Doc doc: trainSet){
-			if (doc.getSourceType()==2) {// labeled data
+			if (doc.getAnnotationType()==annotationType.ANNOTATED || doc.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED) {// labeled data
 				int label = doc.getYLabel();
 				m_pY[label] ++;
 				for(_SparseFeature sf: doc.getSparse())
 					m_Pxy[label][sf.getIndex()] += m_presence?1.0:sf.getValue();
-			} else if (iter>0 && doc.getSourceType()==1) {// unlabeled data
+			} else if (iter>0 && doc.getAnnotationType()==annotationType.UNANNOTATED) {// unlabeled data
 				double[] label = doc.m_sstat;
 				for(int i=0; i<m_classNo; i++) {
 					m_pY[i] += label[i];
@@ -125,7 +126,7 @@ public class NaiveBayesEM extends NaiveBayes {
 		int testSize = 0;
 		for(_Doc doc: m_testSet){
 			// only Testing against newEggset
-			if(doc.getSourceType()==2){
+			if(doc.getAnnotationType()==annotationType.ANNOTATED || doc.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED){
 				testSize++;
 				doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
 				int pred = doc.getPredictLabel(), ans = doc.getYLabel();
