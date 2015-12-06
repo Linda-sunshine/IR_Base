@@ -1,0 +1,28 @@
+Total New Egg Doc:1408
+Total Amazon Doc:1964
+Neweeg Train Size: 1129 test Size: 279
+Amazon Train Size: 1575 test Size: 389
+Rating [0] and Amazon TrainSize:317 and newEgg TrainSize:65
+Rating [1] and Amazon TrainSize:316 and newEgg TrainSize:53
+Rating [2] and Amazon TrainSize:312 and newEgg TrainSize:68
+Rating [3] and Amazon TrainSize:317 and newEgg TrainSize:192
+Rating [4] and Amazon TrainSize:313 and newEgg TrainSize:751
+Combined Train Set Size 2704
+Combined Test Set Size 668
+Likelihood -948689.495 at step 0 converge to 1.000000...
+Likelihood -499760.314 at step 10 converge to 0.000646...
+Likelihood -498380.396 at step 20 converge to 0.000156...
+Likelihood -498000.936 at step 30 converge to 0.000054...
+Likelihood -497795.385 at step 40 converge to 0.000028...
+Likelihood -497699.776 after step 50 converge to 0.000035 after 170 seconds...
+Confusion Matrix
+859,129,
+193,425,
+pros_precision:0.8165399239543726 pros_recall:0.8694331983805668
+cons_precision:0.7671480144404332 cons_recall:0.6877022653721683
+F1 measure:pros:0.842156862745098, cons:0.7252559726962456
+Test set perplexity is 464.316 and log-likelihood is -207.181
+multi-thread LR-HTSM[k:26, alpha:1.010, beta:1.001, lambda:0.90] Train/Test finished in 203.45 seconds...
+Perplexity 464.316+/-0.000
+Cross Validated for 1 fold  Pros:0.000000, Cons:0.000000
+Cross Validated foe 1 fold Pros Var:0.000000, Cons Var:0.000000

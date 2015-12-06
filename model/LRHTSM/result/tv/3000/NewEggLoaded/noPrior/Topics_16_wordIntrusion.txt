@@ -1,0 +1,16 @@
+Topic 0(0.115):	pictur, great, qualiti, good, price, perform,set
+Topic 8(0.113):	app, work, kindl, watch, fire, pictur,screen
+Topic 10(0.076):	samsung, servic, call, problem, warranti, star,smart
+Topic 4(0.072):	great, price, purchas, review, buy, stuck,app
+Topic 13(0.070):	good, buy, pictur, sound, qualiti, reliabl,remot
+Topic 5(0.069):	app, watch, great, comcast, xfiniti, wait,3d
+Topic 11(0.065):	smart, samsung, app, work, netflix, limit,hdmi
+Topic 15(0.060):	sound, great, pictur, set, qualiti, heard,good
+Topic 3(0.051):	plasma, pictur, good, screen, price, wife,great
+Topic 2(0.048):	app, remot, smart, netflix, work, respons,plasma
+Topic 1(0.047):	set, pictur, color, bright, black, respons,app
+Topic 14(0.046):	remot, button, turn, power, work, angl,sound
+Topic 12(0.044):	hdmi, pictur, cabl, watch, input, blurri,good
+Topic 6(0.042):	3d, pictur, set, watch, movi, air,connect
+Topic 7(0.041):	connect, hdmi, sound, cabl, input, wire,app
+Topic 9(0.041):	screen, box, set, black, light, unpack,samsung

@@ -16,18 +16,20 @@ import utils.Utils;
  * @author lingong
  * General structure to present a document for DM/ML/IR
  */
+
 public class _Doc implements Comparable<_Doc> {
 	String m_name;
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the review.
+	int rating;
 	
 	// used only in appReview Dataset
 	String m_appName;
 	String m_appVersion; 
 	
 	String m_source; //The content of the source file.
-	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+	annotationType m_annotationType = annotationType.UNANNOTATED; // source is 1 for Amazon and 2 for newEgg
 	int m_totalLength; //The total length of the document in tokens
 	
 	int m_y_label; // classification target, that is the index of the labels.
@@ -45,12 +47,12 @@ public class _Doc implements Comparable<_Doc> {
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
 	public boolean forTest = false; // true mean it is for test
 	
-	public void setSourceType(int sourceName) {
-		m_sourceType = sourceName;
+	public void setAnnotationType(annotationType annotationType) {
+		m_annotationType = annotationType;
 	}
 	
-	public int getSourceType() {
-		return m_sourceType;
+	public annotationType getAnnotationType() {
+		return m_annotationType;
 	}
 	
 	public double getAvgIDF() {
@@ -129,13 +131,13 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	
-	public _Doc (int ID, String reviewID, String appID, String appName, String title, String source, String version, int rating){
+	public _Doc (int ID, String reviewID, String appID, String appName, String title, String source, String version){
 		this.m_ID = ID;
 		this.m_name = reviewID;
 		this.m_itemID = appID;
 		this.m_title = title;
 		this.m_source = source;
-		this.m_y_label = rating;
+		//this.m_y_label = rating;
 		this.m_appName = appName;
 		this.m_appVersion = version;
 		this.m_totalLength = 0;
@@ -197,6 +199,13 @@ public class _Doc implements Comparable<_Doc> {
 	//Set the Y value for the document, Y represents the class.
 	public void setYLabel(int label){
 		this.m_y_label = label;
+	}
+	
+	public void setRating(int rating){
+		this.rating = rating;
+	}
+	public int getRating(){
+		return this.rating;
 	}
 	
 	//Get the time stamp of the document.
@@ -261,6 +270,7 @@ public class _Doc implements Comparable<_Doc> {
 		m_x_sparse = Utils.createSpVct(spVct);
 		calcTotalLength();
 	}
+	
 	
 	public void setSpVct(_SparseFeature[] x) {
 		m_x_sparse = x;

@@ -4,6 +4,7 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
+import structures.annotationType;
 import utils.Utils;
 
 public class EMNaiveBayes extends NaiveBayes {
@@ -41,7 +42,7 @@ public class EMNaiveBayes extends NaiveBayes {
 	
 	protected void clearCache(Collection<_Doc> trainSet) {		
 		for(_Doc doc: m_trainSet){
-			if (doc.getSourceType()==1)
+			if (doc.getAnnotationType()==annotationType.UNANNOTATED)
 				doc.setTopics(m_classNo, m_deltaY);//create the storage space
 		}
 	}
@@ -49,7 +50,7 @@ public class EMNaiveBayes extends NaiveBayes {
 	protected void calculateLikelihoodForLabelledDocs(Collection<_Doc> trainSet){
 		// likelihood calculation
 		for(_Doc d: trainSet){
-			if(d.getSourceType()==2){// from NewEgg 
+			if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED ){// from NewEgg 
 				d.m_sstat = new double[m_classNo];
 				int i = d.getYLabel();
 				d.m_sstat[i] = m_pY[i];
@@ -63,7 +64,7 @@ public class EMNaiveBayes extends NaiveBayes {
 	public void initialTrain(Collection<_Doc> trainSet){
 		//initial Naive Bayes using only newEgg data
 		for(_Doc doc: trainSet){
-			if(doc.getSourceType()==2){// from NewEgg 
+			if(doc.getAnnotationType()==annotationType.ANNOTATED || doc.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED){// from NewEgg 
 				int label = doc.getYLabel();
 				m_pY[label] ++;
 				for(_SparseFeature sf: doc.getSparse())
@@ -119,7 +120,7 @@ public class EMNaiveBayes extends NaiveBayes {
 	// Use amazon dataset to estimate the label of the unlabelled doc 
 	public void E_step(Collection<_Doc> docSet){
 		for(_Doc d: docSet){
-			if(d.getSourceType()==1){// using the unlabelled Amazon dataset 
+			if(d.getAnnotationType()==annotationType.UNANNOTATED){// using the unlabelled Amazon dataset 
 				// all computation in logscale
 				for(int i = 0; i < m_classNo; i++){
 					d.m_sstat[i] = m_pY[i];
@@ -146,13 +147,13 @@ public class EMNaiveBayes extends NaiveBayes {
 		//Now use both newEgg and amazon
 		//here doing all thing in normal scale
 		for(_Doc d: docSet){
-			if(d.getSourceType()==2){
+			if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED){
 				int label = d.getYLabel();
 				m_pY[label] ++;
 				for(_SparseFeature sf: d.getSparse())
 					m_Pxy[label][sf.getIndex()] += m_presence?1.0:sf.getValue();
 			}
-			else if(d.getSourceType()==1){
+			else if(d.getAnnotationType()==annotationType.UNANNOTATED){
 				for(int label = 0; label < m_classNo; label++){
 					m_pY[label] += Math.exp(d.m_sstat[label]);
 					for(_SparseFeature sf: d.getSparse())

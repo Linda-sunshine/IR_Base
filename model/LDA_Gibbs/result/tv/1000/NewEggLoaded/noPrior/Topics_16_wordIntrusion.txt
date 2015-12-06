@@ -1,0 +1,16 @@
+Topic 3(0.070):	samsung, year, problem, month, warranti, resolv,set
+Topic 5(0.067):	day, servic, call, amazon, order, long,plasma
+Topic 1(0.065):	great, pictur, price, easi, deal, year,remot
+Topic 9(0.065):	sound, pictur, qualiti, speaker, great, mine,set
+Topic 13(0.064):	good, qualiti, price, pictur, better, hook,work
+Topic 7(0.064):	app, smart, watch, netflix, video, futur,stand
+Topic 6(0.064):	plasma, samsung, pictur, best, buy, rang,app
+Topic 15(0.063):	game, monitor, pc, input, comput, lcd,screen
+Topic 12(0.062):	hdmi, input, audio, port, connect, ship,good
+Topic 10(0.061):	set, pictur, black, view, panel, full,cabl
+Topic 11(0.061):	cabl, hd, channel, pictur, box, longer,hdmi
+Topic 2(0.061):	remot, control, button, easi, work, connect,samsung
+Topic 4(0.060):	set, 3d, featur, pictur, movi, sale,day
+Topic 14(0.058):	work, connect, vizio, purchas, internet, search,game
+Topic 0(0.058):	screen, imag, pixel, notic, watch, darker,great
+Topic 8(0.057):	stand, mount, wall, unit, screw, bezel,sound

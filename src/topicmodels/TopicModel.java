@@ -14,6 +14,7 @@ import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._Stn;
+import structures.annotationType;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -534,7 +535,7 @@ public abstract class TopicModel {
 		debugWriter.println("Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty");
 		for(_Doc d:m_testSet){
 			for(int i=0; i<d.getSenetenceSize(); i++){
-				debugWriter.format("%d,%d,%d,\"%s\",%d,%d,%d,%f,%f\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence().toLowerCase().replaceAll("[^a-z0-9.]", " ") ,d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel(), d.getSentence(i).getSentencePredictedTopic(), d.getSentence(i).getTopicTransition(),d.getSentence(i).getSentimentTransition());
+				debugWriter.format("%d,%d,%d,\"%s\",%d,%d,%d,%f,%f\n", d.getID(),d.getAnnotationType(),i,d.getSentence(i).getRawSentence().toLowerCase().replaceAll("[^a-z0-9.]", " ") ,d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel(), d.getSentence(i).getSentencePredictedTopic(), d.getSentence(i).getTopicTransition(),d.getSentence(i).getSentimentTransition());
 			}
 		}
 		debugWriter.flush();
@@ -554,7 +555,7 @@ public abstract class TopicModel {
 		
 		for(_Doc d:m_testSet) {
 			// if document is from newEgg which is 2 then calculate precision-recall
-			if(d.getSourceType()==2){
+			if(d.getAnnotationType()==annotationType.ANNOTATED){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
 					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
@@ -562,17 +563,23 @@ public abstract class TopicModel {
 					precision_recall[actualLabel][predictedLabel]++;
 				}
 			}
-			else if(d.getSourceType()==3){
+			else if(d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
 					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
+					if(actualLabel==-1) continue;
 					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
 					precision_recall[actualLabel][predictedLabel]++;
+					if(actualLabel==0 && predictedLabel==1){
+						System.out.print("\n"+d.getSentence(i).getRawSentence()+",");
+						
+					}
+						
 				}
 			}
 		}
 		
-		System.out.println("Confusion Matrix");
+		System.out.println("\nConfusion Matrix");
 		infoWriter.println("Confusion Matrix");
 		for(int i=0; i<2; i++)
 		{
@@ -713,18 +720,26 @@ public abstract class TopicModel {
 		int newEggRatingCount[] = {0,0,0,0,0};
 		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 		
-		if(m_randomFold==true){
+		/*if(m_randomFold==true){
 			perf = new double[k];
 			m_corpus.shuffle(k);
 			int[] masks = m_corpus.getMasks();
 			ArrayList<_Doc> docs = m_corpus.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.
 			for (int i = 0; i < k; i++) {
+				
 				for (int j = 0; j < masks.length; j++) {
+					
 					if( masks[j]==i ) 
 						m_testSet.add(docs.get(j));
 					else 
 						m_trainSet.add(docs.get(j));
+					
+					if(masks[j]==i || m_trainSet.size()<=0.8*docs.size())
+						m_trainSet.add(docs.get(j));
+					else
+						m_testSet.add(docs.get(j));
+					
 				}
 				
 				System.out.println("Fold number "+i);
@@ -744,13 +759,13 @@ public abstract class TopicModel {
 			
 			
 		} 
-		/*if(m_randomFold==true){
+		*/if(m_randomFold==true){
 			
 			perf = new double[k];
 			ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
 			
 			for(_Doc d:m_corpus.getCollection()){
-				if(d.getSourceType()==2)
+				if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)
 					neweggDocs.add(d);
 			}
 			
@@ -787,7 +802,7 @@ public abstract class TopicModel {
 							_Doc d = m_corpus.getCollection().get(l);
 							if(m>1000)
 								break;
-							if(d.getSourceType()==1){
+							if(d.getAnnotationType()==annotationType.UNANNOTATED){
 								m_trainSet.add(d);
 								m++;
 							}
@@ -814,6 +829,7 @@ public abstract class TopicModel {
 						
 						for(int s=0; s<d.getSenetenceSize(); s++){
 							int actualLabel = d.getSentence(s).getSentenceSenitmentLabel();
+							if(actualLabel==-1) continue;
 							int predictedLabel = d.getSentence(s).getSentencePredictedSenitmentLabel();
 							precision_recall_local[actualLabel][predictedLabel]++;
 						}
@@ -877,7 +893,7 @@ public abstract class TopicModel {
 				
 			}
 		}
-		*/
+		
 		
 		else {
 			k = 1;
@@ -886,11 +902,11 @@ public abstract class TopicModel {
 			int totalNewqEggDoc = 0;
 		    int totalAmazonDoc = 0;
 			for(_Doc d:m_corpus.getCollection()){
-				if(d.getSourceType()==2){
+				if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED ){
 					newEggRatingCount[d.getYLabel()]++;
 					totalNewqEggDoc++;
 					}
-				else if(d.getSourceType()==1){
+				else if(d.getAnnotationType()==annotationType.UNANNOTATED){
 					amazonRatingCount[d.getYLabel()]++;
 					totalAmazonDoc++;
 				}
@@ -907,7 +923,7 @@ public abstract class TopicModel {
 			
 			for(_Doc d:m_corpus.getCollection()){
 				
-				if(d.getSourceType()==1){ // from Amazon
+				if(d.getAnnotationType()==annotationType.UNANNOTATED){ // from Amazon
 					int rating = d.getYLabel();
 					
 					if(amazonTrainsetRatingCount[rating]<=0.8*amazonRatingCount[rating]){
@@ -920,7 +936,7 @@ public abstract class TopicModel {
 					}
 				}
 				
-				if(m_LoadnewEggInTrain==true && d.getSourceType()==2) {
+				if(m_LoadnewEggInTrain==true && (d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)) {
 					
 					int rating = d.getYLabel();
 					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
@@ -933,7 +949,7 @@ public abstract class TopicModel {
 					}
 					
 				}
-				if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
+				if(m_LoadnewEggInTrain==false && (d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED )) {
 					int rating = d.getYLabel();
 					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
 						// Do nothing simply ignore it make for different set

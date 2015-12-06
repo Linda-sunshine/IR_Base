@@ -1,0 +1,16 @@
+Topic 6(0.131):	pictur, qualiti, great, good, price, expens,input
+Topic 1(0.075):	NUM, great, ship, set, pictur, solid,easi
+Topic 7(0.074):	great, input, hdmi, connect, pictur, dvi,sound
+Topic 3(0.066):	NUM, monitor, game, cheap, great, reason,screen
+Topic 4(0.065):	NUM, great, screen, sound, bought, broken,pictur
+Topic 8(0.064):	sound, NUM, mount, qualiti, price, drive,hdmi
+Topic 2(0.061):	NUM, easi, price, light, pictur, feel,monitor
+Topic 5(0.060):	NUM, pictur, black, great, good, fine,qualiti
+Topic 12(0.060):	sound, speaker, set, audio, input, plan,box
+Topic 9(0.060):	NUM, hdmi, screen, input, cabl, half,app
+Topic 11(0.055):	NUM, turn, power, remot, problem, internet,sound
+Topic 15(0.049):	remot, button, control, pictur, input, test,NUM
+Topic 14(0.048):	NUM, replac, servic, custom, issu, money,remot
+Topic 13(0.048):	box, stand, NUM, con, remot, 1080p,replac
+Topic 10(0.044):	NUM, app, connect, time, call, second,turn
+Topic 0(0.040):	NUM, great, pixel, pictur, game, cheap,ship

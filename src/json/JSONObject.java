@@ -554,6 +554,8 @@ public class JSONObject {
         if (object instanceof JSONObject) {
             return (JSONObject)object;
         }
+        if(object == null)
+        	return null;
         throw new JSONException("JSONObject[" + quote(key) +
                 "] is not a JSONObject.");
     }

@@ -1,0 +1,1200 @@
+B0074FGLUM,0,0,Good, but not great.
+B0074FGLUM,0,1,We've had to change the lighting in our room when viewing.
+B0074FGLUM,0,2,Dead pixel.
+B0074FGLUM,0,3,The off axis viewing angle is not so good.
+B0074FGLUM,0,4,Light in image goes dark and light sometimes.
+B0074FGLUM,0,5,4. The best picture size setting is screen fit.
+B0074FGLUM,0,6,The Dreaded LED Viewing Angle Bugaboo!
+B0074FGLUM,0,7,Great picture, REALLY BAD GLARE.
+B0074FGLUM,0,8,I sit 9 feet from the screen.
+B0074FGLUM,0,9,Picture quality is good though.
+B0074FGLUM,0,10,Now there is a 1/4 diameter black circle on the bottom edge of the screen.
+B0074FGLUM,0,11,If you watch from the sides of from above, the colors seem to be a bit over-saturated.
+B0074FGLUM,0,12,Other than that it's nice, sleek, shiny frame and good stand.
+B0074FGLUM,0,13,I own six flat screens of varied sizes and brands.
+B0074FGLUM,0,14,Good.
+B0074FGLUM,0,15,The picture quality is great, no complaints there.
+B0074FGLUM,0,16,While watching TV, it can get dark for no reason.
+B0074FGLUM,0,17,Great picture, great sound, great value.
+B0074FGLUM,0,18,Great TV, excellent picture, ok sound for a bed room or office.
+B0074FGLUM,0,19,After 5 days the screen went black with the sound still working - not good!
+B0074FGLUM,0,20,reason of trying with all colors is sometimes these dead pixels only visible on specific color background2.
+B0074FGLUM,0,21,I can't tell you exactly how many degrees it takes to notice integrity loss of the picture but it seems like it's as little as about 15 degrees off center at a viewing distance of about 6-7 feet.
+B0074FGLUM,0,22,I pretty much like the t.v.
+B0074FGLUM,0,23,Inexpensive, good size, excellent picture, good inputs, etc.
+B0074FGLUM,0,24,Not good...
+B0074FGLUM,1,0,I purchased this TV at Wal-Mart at a very good price.
+B0074FGLUM,1,1,Great Picture, Smart TV isn't that great.
+B0074FGLUM,1,2,Good TV for its price.
+B0074FGLUM,1,3,Very Happy I Found a Bargain Price.
+B0074FGLUM,1,4,I purchased the Samsung not only because of the picture quality but the good reputation in the name.
+B0074FGLUM,1,5,It's a good TV, but the picture quality is not a good as my other Samsung product.
+B0074FGLUM,1,6,Picture quality is very good.
+B0074FGLUM,1,7,It was and is great.
+B0074FGLUM,1,8,SAMSUNG makes a great tv otherwise.
+B0074FGLUM,1,9,I have a Samsung washer and dryer.
+B0074FGLUM,1,10,Bargain Samsung HDTV not such a great buy.
+B0074FGLUM,1,11,At its discounted price, this TV was a good deal.
+B0074FGLUM,1,12,Price Good, TV Not so SMART.
+B0074FGLUM,1,13,I had previously owned two Samsung lcd TV's and was very happy with them - great picture.
+B0074FGLUM,1,14,It's not a very good tv.
+B0074FGLUM,1,15,Not as good.
+B0074FGLUM,1,16,The Sony TV is great I love it.
+B0074FGLUM,1,17,great functionality and quality for the price . . .
+B0074FGLUM,1,18,So I thought this Samsung Smart tv would be a great buy.
+B0074FGLUM,1,19,THe picture is very good.
+B0074FGLUM,1,20,Samsung never again!
+B0074FGLUM,1,21,Good Deal.
+B0074FGLUM,1,22,If I had it to do over again I would buy  LG.
+B0074FGLUM,1,23,TV picture quality was pretty good.
+B0074FGLUM,1,24,I had just gotten an LG 32" television for my birthday almost a year ago.
+B0074FGLUM,2,0,Sound quality.
+B0074FGLUM,2,1,As a TV it works well and sounds good.
+B0074FGLUM,2,2,The sound on this TV was unbearable!
+B0074FGLUM,2,3,THe picture is very good.
+B0074FGLUM,2,4,The speakers on this tv aren't good at all.
+B0074FGLUM,2,5,Great picture quality.
+B0074FGLUM,2,6,Sound quality is poor.
+B0074FGLUM,2,7,The picture quality is great and sound is better than I expected.However
+B0074FGLUM,2,8,Sound is an issue.
+B0074FGLUM,2,9,Good quality picture and sound.
+B0074FGLUM,2,10,It's a good TV with some issues.
+B0074FGLUM,2,11,The sound is very low, but I bought a philips sound bar... cheap but good.
+B0074FGLUM,2,12,Sound is amazing, the 3D effect is really nice and I found myself looking around as the surround parts happened as the sounds seemed to be really coming from the sides.
+B0074FGLUM,2,13,Great picture, sound quality is lacking.
+B0074FGLUM,2,14,The picture quality is great, no complaints there.
+B0074FGLUM,2,15,The TV is great, the picture and sound quality are exceptional.
+B0074FGLUM,2,16,That's a bug.Another issue is connections to an external speaker.
+B0074FGLUM,2,17,Granted, I could get a sound bar, but shouldn't have to.[b]non
+B0074FGLUM,2,18,Also if you have Samsung phone/tablet you can control the whole TV with an appPicture quality is actually very good if you set it up correctlySamsung Smart Hub and exclusive appsCons:Sound is very low.
+B0074FGLUM,2,19,Great picture, great sound, great value.
+B0074FGLUM,2,20,The wall behind the TV hears it good.
+B0074FGLUM,2,21,Did I mention 1950's tv??I gave it two stars because the picture and sound are adequate (sound is NOT good).
+B0074FGLUM,2,22,I am now running sound through my home theatre system and sound is greatly improved.
+B0074FGLUM,2,23,Sound - Pretty good for the price.
+B0074FGLUM,2,24,The volume variation is one issue.
+B0074FGLUM,3,0,Poor customer service.
+B0074FGLUM,3,1,TV arrived undamaged and well packaged.
+B0074FGLUM,3,2,But I'm an Amazon junky and can't stand the service at Best Buy.
+B0074FGLUM,3,3,Late shipping delivery for a broken tv that I must now ship back and the deal for the tv is now over.
+B0074FGLUM,3,4,ok let me say this came in fast and also was packaged great.
+B0074FGLUM,3,5,So they "lie" and act as if the problem is yours not theirs.
+B0074FGLUM,3,6,Wrong Order.
+B0074FGLUM,3,7,Based on what I've seen, Samsung KNOWS about this problem, and hasn't fixed it in years.Sigh.
+B0074FGLUM,3,8,I did not receive my "free samsung keyboard" which was part of the purchase deal; I also had to return the tv for a swap-poor quality control by samsung.
+B0074FGLUM,3,9,Thank God I bought it on amazon....
+B0074FGLUM,3,10,I have 5year old Samsung that has made me fan of Samsung.
+B0074FGLUM,3,11,After asking for a refund, I also ordered another TV here on Amazon as well, and oh boy, I am happy that this Samsung TV failed because the one I got afterwards, even if a bit more expensive, it's way better in any possible way.Thumbs up to Amazon for their awesome customer service.
+B0074FGLUM,3,12,(under your free shipping deal)
+B0074FGLUM,3,13,What kind of shipping is this????? Just replaced another order, and hope the next one would not be damaged!
+B0074FGLUM,3,14,Amazon gets an 'A' --  Samsung Does Not... I'll save all of the gory details of what went wrong with our new Samsung.
+B0074FGLUM,3,15,The following day I got off of work and found the tv at my house.
+B0074FGLUM,3,16,This is the worst experience I have had with Amazon in over 5 years.
+B0074FGLUM,3,17,We missed the 1st delivery day, no one was home to receive product.
+B0074FGLUM,3,18,I've call Samsung customer service and their official stance is that this is Netflix's fault and Amazon's fault, and, amazingly, not a breach of warranty.
+B0074FGLUM,3,19,Can I return it in another box?
+B0074FGLUM,3,20,Samsung promises many things for this product.
+B0074FGLUM,3,21,Samsung customer service is anything but service.
+B0074FGLUM,3,22,No HBO Go, Poor Customer Service.
+B0074FGLUM,3,23,The Amazon customer service does nothing except saying 'they will pick it up dont worry'Everytime I talk with a new lady at amazon customer service and she cant do anything about it except giving us a hope that UPS will pick up(damaged tv).We even got an email from amazon stating that if we dont return the damaged tv before the said date they will charge us 480$.
+B0074FGLUM,3,24,Poor Quality MaterialsThe tv arrived on time but the box was quite damaged, actually took pictures while opening package for proof in case  tv was damaged.
+B0074FGLUM,4,0,Not so great picture quality, though.
+B0074FGLUM,4,1,The TV is great, the picture and sound quality are exceptional.
+B0074FGLUM,4,2,Not great, but good
+B0074FGLUM,4,3,Picture quality is very good.
+B0074FGLUM,4,4,Picture quality is good though.
+B0074FGLUM,4,5,The picture is great, the sound is great, the navigation and settings are well laid out.
+B0074FGLUM,4,6,Has great sound and great features.
+B0074FGLUM,4,7,Great picture, easy to use, looks great on my tv mount.
+B0074FGLUM,4,8,The TV is great.
+B0074FGLUM,4,9,Great picture2.)
+B0074FGLUM,4,10,The picture quality is just okay, not great, even though many settings are offered to adjust the picture and the sound.
+B0074FGLUM,4,11,Great picture, great sound, great value.
+B0074FGLUM,4,12,GREAT, crisp picture.
+B0074FGLUM,4,13,Great sound quality3.)
+B0074FGLUM,4,14,Great picture, sound quality is lacking.
+B0074FGLUM,4,15,Excellent picture quality.
+B0074FGLUM,4,16,Picture quality is clear and I used other's settings mentioned on here for the picture adjustments.
+B0074FGLUM,4,17,This TV was easy to set up and has great picture quality.
+B0074FGLUM,4,18,Inexpensive, good size, excellent picture, good inputs, etc.
+B0074FGLUM,4,19,TV has a great picture, sounds great, and looks great but....................The TV when in Smart TV mode seems very sluggish when going through the apps.
+B0074FGLUM,4,20,Great picture but Netflix does NOT work.
+B0074FGLUM,4,21,TV picture quality was pretty good.
+B0074FGLUM,4,22,Picture dims.
+B0074FGLUM,4,23,Not the picture quality of the 8000 but a nice picture for the size and price.Pros:1.
+B0074FGLUM,4,24,Not as good.
+B0074FGLUM,5,0,Not great, but good
+B0074FGLUM,5,1,It was and is great.
+B0074FGLUM,5,2,Not so great picture quality, though.
+B0074FGLUM,5,3,It's a good TV, but the picture quality is not a good as my other Samsung product.
+B0074FGLUM,5,4,Has great sound and great features.
+B0074FGLUM,5,5,Not a good as the reviews said.
+B0074FGLUM,5,6,good TV but not very smart.
+B0074FGLUM,5,7,good TV for the money.
+B0074FGLUM,5,8,The TV is great for a low-priced smart TV.
+B0074FGLUM,5,9,Pictures great, but product is not as advertised.
+B0074FGLUM,5,10,I strongly recommend the 5500 !
+B0074FGLUM,5,11,The picture quality is great, but TV cannot do what is advertised.
+B0074FGLUM,5,12,However, I would still rate the product as inferior.
+B0074FGLUM,5,13,I don't see how people can think the picture quality is good, let alone great.
+B0074FGLUM,5,14,If I had it to do over again I would buy  LG.
+B0074FGLUM,5,15,I am very very very disappointed with the picture.
+B0074FGLUM,5,16,So I thought this Samsung Smart tv would be a great buy.
+B0074FGLUM,5,17,Picture is just as good, more reliable, less money.Good luck.------------------------------------------------------------------------------------------------------------------Bought
+B0074FGLUM,5,18,Sorry Samsung...love your products, but this one is a miss.
+B0074FGLUM,5,19,Not real happy with the quality of this product...
+B0074FGLUM,5,20,good product, but possibly not new.
+B0074FGLUM,5,21,I am disappointed in the product.
+B0074FGLUM,5,22,Ok for The money.
+B0074FGLUM,5,23,I would now never buy a samsung TV.This is my initial review:this is a great reasonably priced tv.
+B0074FGLUM,5,24,For the price and reviews I got a little trigger happy and bought two of these at one time.
+B0074FGLUM,6,0,Please fix the apps!
+B0074FGLUM,6,1,Then both of the apps stopped working.
+B0074FGLUM,6,2,Amazon app for my video's is not working well.
+B0074FGLUM,6,3,Great picture2.)
+B0074FGLUM,6,4,Great picture, the apps are slow.
+B0074FGLUM,6,5,This became an issue when I wanted to watch the same show that another user was watching.
+B0074FGLUM,6,6,The WI-FI also works great.
+B0074FGLUM,6,7,There are no apps for my favorite channels (or at least, I haven't found them yet - they are not well organized).
+B0074FGLUM,6,8,I know this isn't an issue with my internet connection, rather the apps on the TV themselves.3.)
+B0074FGLUM,6,9,I love having a smart TV, were able to have some of our favorite apps right on the tv but I feel they should have more apps available.I would love to see show time not just the preview of it but the full app.
+B0074FGLUM,6,10,The app on the TV does not differentiate between users on the same Netflix account.
+B0074FGLUM,6,11,We played same Netflix movie in parallel on both.
+B0074FGLUM,6,12,A lot of the apps don't function well.
+B0074FGLUM,6,13,When trying to watch anything on a app it runs super slow.
+B0074FGLUM,6,14,Nice TV - Good Picture - Nice Features - SLOW Apps.
+B0074FGLUM,6,15,It's not a very good tv.
+B0074FGLUM,6,16,I have installed the TV, haven't watched anything on it yet or played with it at all.
+B0074FGLUM,6,17,The apps load slowly when you try to open them.
+B0074FGLUM,6,18,Netflix app works by the way.
+B0074FGLUM,6,19,Easy to install and the apps works all right even though the load a bit slow now and then.
+B0074FGLUM,6,20,TV itself is freezing even while switching from one app to another.
+B0074FGLUM,6,21,However, I bought this for my parents to watch Netflix on, and the Netflix app does not work!
+B0074FGLUM,6,22,Apps are even slower - about 1.5 to 2 minutes before you can actually watch TV.Apps SHOULD boot automatically, that is if you were watching an APP, it should be the first thing that comes up...just like the last channel you were watching would on a regular TV.Other than that, Ilike the TV as a second TV...we use it in our Master Bath to watch the news/listen to music while getting up or going to bed.
+B0074FGLUM,6,23,LG has better apps.
+B0074FGLUM,6,24,Picture quality is great, but it freezes a lot while playing youtube.
+B0074FGLUM,7,0,The HDMI connection with only work with Samsung DVD players, Samsung computers, etc. and will not work for devices using the HDMI cable everyone else in the industry uses.
+B0074FGLUM,7,1,My internet connection is very good so it is not the connection it's the tv
+B0074FGLUM,7,2,I like the picture quality and the remote features, but after setting it up and connecting it to our antenna the reception has been poor, especially on local channels.
+B0074FGLUM,7,3,Instead one can go for a HD tv and all these can be streamed fron DVD players or any other game devices.
+B0074FGLUM,7,4,The setup was easy but the TV could not connect to internet with a direct or a WiFi connection.
+B0074FGLUM,7,5,The connectivity to this TV is quite poor.
+B0074FGLUM,7,6,TV Did not connect to my wireless.
+B0074FGLUM,7,7,This TV however has missed out on 16 Pin S-video input.
+B0074FGLUM,7,8,It had perfect synergy with our Samsung Blu-Ray player where all the settings we automatically set and the picture was perfect when watching Blu-Rays.
+B0074FGLUM,7,9,TV picture quality was pretty good.
+B0074FGLUM,7,10,The picture quality is just okay, not great, even though many settings are offered to adjust the picture and the sound.
+B0074FGLUM,7,11,Or, I got a signal booster to make it work.
+B0074FGLUM,7,12,When we first set this TV up, it worked fine.
+B0074FGLUM,7,13,No DVI or VGA port for computer input.Requires hdmi to DVI adapterPicture quality disappointing.Not good for computer monitor
+B0074FGLUM,7,14,The WI-FI also works great.
+B0074FGLUM,7,15,The audio and video jacks/ports at the back is limited and other systems cannot be connected.
+B0074FGLUM,7,16,However, Picture quality very good and has a great set of features...IT DOES NOT SUPPORT .MOV VIDEO FORMATS!!!
+B0074FGLUM,7,17,My sources have been apple tv, dvd, and digital cable (without converter).
+B0074FGLUM,7,18,Oh well I hooked up a cheap Sony Blu-ray player and everything works great.
+B0074FGLUM,7,19,If using blu-ray, or using 1080p streaming, this TV is great.I wish the TV has a setting that can bypass most video enhancement, with a nominal scaling setup
+B0074FGLUM,7,20,Nice TV - Good Picture - Nice Features - SLOW Apps.
+B0074FGLUM,7,21,If you have a rooftop antenna for digital reception, think twice about purchasing this TV.
+B0074FGLUM,7,22,My $60 blu-ray player I have in another room works far better than the TV does.
+B0074FGLUM,7,23,The only way I was able to get it work was to connect it directly to the LAN.
+B0074FGLUM,7,24,a good resolution when I plugged the BluRay to it though.
+B0074FGLUM,8,0,Smashed screen.
+B0074FGLUM,8,1,I looked at it, and noticed that the screen had been shattered at the top and had spread across half the screen.
+B0074FGLUM,8,2,The tv screen is already showing issues.
+B0074FGLUM,8,3,Now there is a 1/4 diameter black circle on the bottom edge of the screen.
+B0074FGLUM,8,4,Damaged Screen.
+B0074FGLUM,8,5,Sometimes the screen goes completely black.
+B0074FGLUM,8,6,Also the screen has a 3 inch blotch at the bottom that is visible when viewing dark scenes.
+B0074FGLUM,8,7,Another issue is that the TV makes a humming noise, which I've noticed tends to be loudest when a very bright image is on the screen.
+B0074FGLUM,8,8,3 months later I have dead pixels and dark lines across the screen.
+B0074FGLUM,8,9,It's like watching a bright animation.
+B0074FGLUM,8,10,The TV screen is totally shattered!!!!!
+B0074FGLUM,8,11,Will go to snow white and then fade to black.
+B0074FGLUM,8,12,screen dead after one week.
+B0074FGLUM,8,13,It's almost imperceptible with a light background, but when the background is dark, it becomes annoyingly prominent.
+B0074FGLUM,8,14,A solid gray line appeared on the right side of the screen running from top to bottom and about four inches wide.
+B0074FGLUM,8,15,I thought it was the tv protector so I left it up and I notice the screen Is just popped out from the Tv.
+B0074FGLUM,8,16,The picture on the tv was choppy and had lines going down as if lights were broken or something.
+B0074FGLUM,8,17,I sit down and turn it on and all I see is a white line on top.
+B0074FGLUM,8,18,the colors are very poor especially when viewed from one side not front.download
+B0074FGLUM,8,19,i got it set up and then started watching tv, then i started to notice something the sound comes and goes.
+B0074FGLUM,8,20,Two dark spots in the middle of the screen where the backlight was not uniform.
+B0074FGLUM,8,21,Everything is great except when I turn off the TV, the screen blinks with a dim light continuously.
+B0074FGLUM,8,22,I was extremely disappointed when I found out that the TV screen is totally shattered after I turned it on.
+B0074FGLUM,8,23,After 6 months of use I started seeing lots of vertical lines on screen irrespective of what channel, program I was watching.
+B0074FGLUM,8,24,We liked the large screen and the clear image.
+B0074FGLUM,9,0,I only used it for 5 months.
+B0074FGLUM,9,1,After 6 months of use Samsung UN40EH5300 stopped working!!
+B0074FGLUM,9,2,I purchased this TV and used it for about a month before returning it.
+B0074FGLUM,9,3,Only works until right after warranty is out... 1 year, 2 months.
+B0074FGLUM,9,4,I purchased this TV just a year and a few months ago and the power is out.
+B0074FGLUM,9,5,Samsung UN46E5300.
+B0074FGLUM,9,6,Should have bought a Vizio.
+B0074FGLUM,9,7,Do not Purchase this television.
+B0074FGLUM,9,8,But we will think twice before buying anything from amazon.
+B0074FGLUM,9,9,Will never buy a TV from Amazon.
+B0074FGLUM,9,10,I had no problem returning it to Amazon, and I got another Samsung (more expensive) smart TV from Amazon.
+B0074FGLUM,9,11,I purchased this TV on June 24, 2013, but it broke down on me in Nov. 2013.
+B0074FGLUM,9,12,Purchased during holiday season so was less expensive than most times of the year.
+B0074FGLUM,9,13,gave out after 1.5 years!
+B0074FGLUM,9,14,I had purchased Samsung UN40EH5300 smart TV almost a month ago.
+B0074FGLUM,9,15,For the price and reviews I got a little trigger happy and bought two of these at one time.
+B0074FGLUM,9,16,TV was great up until two months in.
+B0074FGLUM,9,17,I am from Trinidad and Tobago and I bought this television as my birthday gift to myself, in no time the television stopped working.
+B0074FGLUM,9,18,After a month or so, the TV went into a power recycling loop.
+B0074FGLUM,9,19,ONLY A MONTH AND HAVING PROBLEMS.
+B0074FGLUM,9,20,This is a good television however, the one reason I bought this tv doesn't work for what I bought it for.
+B0074FGLUM,9,21,After 6 months the TV malfunction, started to turn on and off by it self.
+B0074FGLUM,9,22,However, the issue returned on this same television within 6 months.
+B0074FGLUM,9,23,Next time I'll buy this in a store.
+B0074FGLUM,9,24,This television was working for two months but it recently started to power cycle.
+B0074FGLUM,10,0,The sound is so horrible I am contemplating getting a sound bar.
+B0074FGLUM,10,1,I am now running sound through my home theatre system and sound is greatly improved.
+B0074FGLUM,10,2,Problems with Speakers.
+B0074FGLUM,10,3,Need to add a sound bar if you like fuller sound.
+B0074FGLUM,10,4,It is not reinforced along the backbone with bends to keep it from being susceptible to vibrations from the *speaker ports* and wall mounts caused by the lower mounted speakers.
+B0074FGLUM,10,5,Sometimes, I can route the sound to an outside speaker (via my receiver) and sometimes it decides that no all sound must go through the TV,.
+B0074FGLUM,10,6,Audio problems.
+B0074FGLUM,10,7,The sound system on this TV is horrible!
+B0074FGLUM,10,8,You have to turn the sound up super-high to hear voices.
+B0074FGLUM,10,9,But we have had a problem with the sound on both monitors.
+B0074FGLUM,10,10,Don't buy- turns off & on.
+B0074FGLUM,10,11,This TV does not have a headphone jack on the television.Major deficiency.
+B0074FGLUM,10,12,The Picture is Awesome, the Sound is AWEFUL....Almost Unacceptable....The speakers are on the back on the bottom, it actually sounds better if you stand behind the display.....I'm getting a sound bar so this will no longer be a problem but if you'r expecting to use this TV without some sort of External Sound System your in for a surprise....WiFi is Great, Picture is Great, Sound is Horrible.......
+B0074FGLUM,10,13,Anyway, because of this problem alone, I wouldn't buy another one.
+B0074FGLUM,10,14,WiFi is Great, Picture is Great, Sound is Horrible.......
+B0074FGLUM,10,15,The picture, sound, build quality, and remote are all what I expected.
+B0074FGLUM,10,16,The image quality is still fine though :-) and I can get audio through external speakers.
+B0074FGLUM,10,17,It's light, easy to attach the base to the stand (just 8 small screws!), and the picture quality is good.Cons: The stand does not rotate or pivot.
+B0074FGLUM,10,18,I used both the built in speakers (noting the back panel vibration) as well as the SPDIF to amp digital.
+B0074FGLUM,10,19,sound and blank channel problems.
+B0074FGLUM,10,20,40 years owning tv's and I have never had the cable connector snap off of a tv set and yes 3 tv's in my home are on a pivotal wall mount.
+B0074FGLUM,10,21,It has a flimsy metal back and far less AV input & output jacks and the base doesn't swivel.
+B0074FGLUM,10,22,After having this TV for about six months it began turning itself off and on losing both picture and sound.
+B0074FGLUM,10,23,This TV does not have a headphone jack on the television.
+B0074FGLUM,10,24,The speakers no longer work after less than 4 months of ownership.
+B0074FGLUM,11,0,Samsung customer service is anything but service.
+B0074FGLUM,11,1,Nothing happened so I called again.
+B0074FGLUM,11,2,KNOWN PROBLEM! (BUT) Samsung fixed it!
+B0074FGLUM,11,3,Samsung "Customer Service" is no help, so you are on your own.
+B0074FGLUM,11,4,It has to "call home" first to Samsung.
+B0074FGLUM,11,5,I called Samsung and they outsource their tech support to somewhere in China.
+B0074FGLUM,11,6,So I called Samsung.
+B0074FGLUM,11,7,I waited patiently for 4 days and no calls from them.
+B0074FGLUM,11,8,Well 4 days later I called Samsung customer service and was informed 32 inch t.v.'s must be shipped to be serviced.
+B0074FGLUM,11,9,update: Called Samsung service.
+B0074FGLUM,11,10,When I called to have THAT replaced, I was told I had to wait another 2 weeks.
+B0074FGLUM,11,11,I went through a month of calls to Samsung, called Netflix, called my ISP.
+B0074FGLUM,11,12,Very poor customer support lines.
+B0074FGLUM,11,13,I've called support many times.
+B0074FGLUM,11,14,They're probably grumpy because they're fielding so many calls on this very issue.
+B0074FGLUM,11,15,I know the TV needed a hardware fix and Samsung should've sent someone out to service it, but I could not get any help from their Customer Service.
+B0074FGLUM,11,16,The remote was DOA on arrival and call after call to Samsung have got me nowhere.
+B0074FGLUM,11,17,I researched and saw that Samsung was the bomb.com
+B0074FGLUM,11,18,That's too long for a Southern New England service call.
+B0074FGLUM,11,19,Had a couple of problems with this TV and called Samsung for help.
+B0074FGLUM,11,20,What has happened to SAMSUNG?
+B0074FGLUM,11,21,Now i have to wait another week for someone to come out and service it.
+B0074FGLUM,11,22,Samsung support is so s***ty to work with, they don't do squat to hep me.
+B0074FGLUM,11,23,I had been waiting 4 days for a call I was never going to receive.
+B0074FGLUM,11,24,Called Samsung tech support, got the run-around, asked for a supervisor, got sent to an answering machine.
+B0074FGLUM,12,0,PICTURE QUALITY.
+B0074FGLUM,12,1,nO PICTURE.
+B0074FGLUM,12,2,Great picture.
+B0074FGLUM,12,3,Great picture quality BUT...review from an IT perspective!
+B0074FGLUM,12,4,Great TV and picture after you get the settings right.
+B0074FGLUM,12,5,Unsatisfactory picture.
+B0074FGLUM,12,6,The picture and color is not very good though.
+B0074FGLUM,12,7,Other than this picture quality and everything is very good.
+B0074FGLUM,12,8,The picture on this TV is great.
+B0074FGLUM,12,9,Great picture.
+B0074FGLUM,12,10,Picture and everything is great.
+B0074FGLUM,12,11,The picture on this TV was just not up to par.
+B0074FGLUM,12,12,It's great but...
+B0074FGLUM,12,13,Changed the picture settings (following the settings another reviewer suggested) and liked the picture quality.
+B0074FGLUM,12,14,Good quality picture and sound.
+B0074FGLUM,12,15,great picture and sound.
+B0074FGLUM,12,16,Poor quality.
+B0074FGLUM,12,17,Great picture, great sound, great value.
+B0074FGLUM,12,18,Great picture, terrible sound quality.
+B0074FGLUM,12,19,For a TV I always praise Samsung for the picture quality and this is the same!
+B0074FGLUM,12,20,This TV was easy to set up and has great picture quality.
+B0074FGLUM,12,21,great picture and tv works well
+B0074FGLUM,12,22,not a great image.
+B0074FGLUM,12,23,I don't see how people can think the picture quality is good, let alone great.
+B0074FGLUM,12,24,The Picture Quality is below my expectation.
+B0074FGLUM,13,0,Never again - I will never buy another Samsung product again.
+B0074FGLUM,13,1,I will go with the latter, and will never buy a Samsung product again.
+B0074FGLUM,13,2,Don't think I will ever buy another Samsung product.
+B0074FGLUM,13,3,If I could do it over again, I'D BUY ANY TV BUT A SAMSUNG SMART TV!
+B0074FGLUM,13,4,DO NOT buy this product.
+B0074FGLUM,13,5,Review of this TV.
+B0074FGLUM,13,6,I am really mad at myself for buying this and will never buy another smart tv.
+B0074FGLUM,13,7,It's much smarter than the samsung smart tv.
+B0074FGLUM,13,8,Bad Samsung.
+B0074FGLUM,13,9,Don't buy.
+B0074FGLUM,13,10,First time I've said that about a Samsung product.
+B0074FGLUM,13,11,review.
+B0074FGLUM,13,12,No thanks Samsung.
+B0074FGLUM,13,13,Geez, thanks Samsung.
+B0074FGLUM,13,14,I will be returning this and never buying a samsung tv again.
+B0074FGLUM,13,15,Don't buy!!!
+B0074FGLUM,13,16,Review for Samsung UN32EH5300 smart TV.
+B0074FGLUM,13,17,In summary, this product is awful.
+B0074FGLUM,13,18,Not recommended to purchase this immature product.
+B0074FGLUM,13,19,Not a mature product.
+B0074FGLUM,13,20,Purchased this product August, 2012.
+B0074FGLUM,13,21,I read many other reviews with the same issue.
+B0074FGLUM,13,22,Will not purchase from Samsung again.
+B0074FGLUM,13,23,Please do not buy this TV if you are looking to buy a smart TV.
+B0074FGLUM,13,24,Samsung got my money this time but never again.
+B0074FGLUM,14,0,not very smart.
+B0074FGLUM,14,1,not so smart TV.
+B0074FGLUM,14,2,not Smart.
+B0074FGLUM,14,3,samsung smart tv not so smart.
+B0074FGLUM,14,4,Samsung Smart TV.
+B0074FGLUM,14,5,For trying to be a smart TV, it's only 3-stars "smart."
+B0074FGLUM,14,6,SMART TV is not really SMART.
+B0074FGLUM,14,7,Samsung smart TV.
+B0074FGLUM,14,8,Netflix app works by the way.
+B0074FGLUM,14,9,It is not smart enough yet.
+B0074FGLUM,14,10,Dont get a samsung tv !!!
+B0074FGLUM,14,11,It is not smart at all.
+B0074FGLUM,14,12,Smart TV isn't so smart anymore.
+B0074FGLUM,14,13,Smart TV???
+B0074FGLUM,14,14,Smart seems to be a misnomer.
+B0074FGLUM,14,15,Smart?
+B0074FGLUM,14,16,I've tried using the Smart apps and what not.
+B0074FGLUM,14,17,We can not say it is a smart TV.
+B0074FGLUM,14,18,Can this not be fixed by Samsung?
+B0074FGLUM,14,19,I am only using the Netflix app with this TV.
+B0074FGLUM,14,20,Go back to the Smart TV menu.7.
+B0074FGLUM,14,21,There is no youtube app available anymore from samsung for this tv.
+B0074FGLUM,14,22,Samsung Smart Hub NOT so smart.
+B0074FGLUM,14,23,Netflix doesn't work TVP-805.
+B0074FGLUM,14,24,I got smart TV specifically so I can use Netflix and Youtube App in the TV.
+B0074FGLUM,15,0,Remote is still old traditional remote.
+B0074FGLUM,15,1,This means another remote.
+B0074FGLUM,15,2,Very hard to type using this remote.I like the LG TV remotes.
+B0074FGLUM,15,3,This set does not have any control buttons on the actual unit.
+B0074FGLUM,15,4,So all you see after you hook it up are the HDMI cables looping trying to get behind the TV.
+B0074FGLUM,15,5,The HDMI connection with only work with Samsung DVD players, Samsung computers, etc. and will not work for devices using the HDMI cable everyone else in the industry uses.
+B0074FGLUM,15,6,As it's a 'smart' TV, why don't you put a small keyboard on remote control?
+B0074FGLUM,15,7,It works this time.
+B0074FGLUM,15,8,universal remote [/b]Whose idea was it to include a complicated remote but not give it features for cable or a DVD player?
+B0074FGLUM,15,9,This is endless unless you unplug it, the power button on remote or TV have no capability to keep it off.
+B0074FGLUM,15,10,You have to use the remote to peck out each word and command like you do on say NetFlex or Comcast.
+B0074FGLUM,15,11,Winner of the worst remote control design ever!
+B0074FGLUM,15,12,The remote only works within a foot of the tv sensor and when you press your desired button 3+ times.
+B0074FGLUM,15,13,And (3) the Samsung SmartView remote control for my iPhone has also stopped working entirely."I
+B0074FGLUM,15,14,Transmitter connects to PC,receiver connects to TV.
+B0074FGLUM,15,15,the remote makes it difficult to manoeuvre the cursor.
+B0074FGLUM,15,16,When you adjust volume control, change channels, etc the remote gives off a "beep" noise.
+B0074FGLUM,15,17,But Samsung skimped on the remote so it's getting 3 stars.
+B0074FGLUM,15,18,AT TIMES DOES NOT POWER ONI really like this TV.
+B0074FGLUM,15,19,AT TIMES DOES NOT POWER ON.
+B0074FGLUM,15,20,What I hate about it is the remote.
+B0074FGLUM,15,21,I try cleaning the TV same problem and this happened to me on the second time I put on the TV to now and this day 23/01/2014 and the remote and TV has never fallen!
+B0074FGLUM,15,22,Turning off and on a few times seemed to get it back to normal.
+B0074FGLUM,15,23,What' is good about it: pictureWhat's not so great:  1) Remote layout awkward.
+B0074FGLUM,15,24,UI with remote is difficult.
+B00BCGROJG,0,0,This is the brightest and clearest viewing screen that you will ever view.
+B00BCGROJG,0,1,Great TV for the Living Room.
+B00BCGROJG,0,2,I think because it's 3D they gave it a nice strong black light and 10 is about where normal viewing should be.
+B00BCGROJG,0,3,I think I need to tweek the picture on it a little more but it looks great.
+B00BCGROJG,0,4,There are many, many settings that affect brightness, many settings that affect color balance, etc... so even the last few settings will make a big difference to how the picture looks.
+B00BCGROJG,0,5,3 out of 3 screens had a dead pixel.
+B00BCGROJG,0,6,The screen size is perfect for someone that likes movies.
+B00BCGROJG,0,7,It looks great In our conference room.
+B00BCGROJG,0,8,Great TV.
+B00BCGROJG,0,9,I mean if you want a good TV with a nice screen get it!!!
+B00BCGROJG,0,10,3D TV.
+B00BCGROJG,0,11,Also, the side viewing angle is not great as screen colors become significantly washed out.
+B00BCGROJG,0,12,The picture looks fantastic on these screens.
+B00BCGROJG,0,13,Perfect size, great picture and a smart TV too.
+B00BCGROJG,0,14,But it looks great.
+B00BCGROJG,0,15,We tried the 3D, but never really got too into it, but it does come with 4 Samsung 3D glasses.
+B00BCGROJG,0,16,Great TV - Very Thin - Good Value.
+B00BCGROJG,0,17,Am going to replace all sets I have with  Samsung 240 MHz 3D sets .
+B00BCGROJG,0,18,Great flat screen TV.
+B00BCGROJG,0,19,The picture was set perfectly right out of the box.
+B00BCGROJG,0,20,I was a little skeptical about the active 3D glasses but they work great.
+B00BCGROJG,0,21,Great Picture But..... Great picture with amazing contrast and color "pop" but.....the viewing angles are not great at all.
+B00BCGROJG,0,22,Picture quality is poor, and viewing angle is narrow.
+B00BCGROJG,0,23,Great bright picture, this tv is in our family room and the tv has no problem in a room with light.2.
+B00BCGROJG,0,24,In our living room there are off angle seats and you can tell the blacks are not as dark off angle.
+B00BCGROJG,1,0,Great TV.
+B00BCGROJG,1,1,Great tv at a great price.
+B00BCGROJG,1,2,Great tv
+B00BCGROJG,1,3,Great tv.
+B00BCGROJG,1,4,Everyone would commend on how great the picture is.
+B00BCGROJG,1,5,Its good for the price.
+B00BCGROJG,1,6,Samsung TV, so good.
+B00BCGROJG,1,7,Great TV.
+B00BCGROJG,1,8,But it looks great.
+B00BCGROJG,1,9,I love my Samsung TV!!
+B00BCGROJG,1,10,The best tv for the price.
+B00BCGROJG,1,11,Do I think the picture quality is as good as the PANNY?
+B00BCGROJG,1,12,I got a used one from the amazon warehouse and it is as good as new with phenomenal picture quality.
+B00BCGROJG,1,13,Its picture is very good and cant get enough of it.
+B00BCGROJG,1,14,Great Picture.
+B00BCGROJG,1,15,None of the Sonys we liked were available (2012 models); then, we saw this Samsung for a very good price and decided to buy.
+B00BCGROJG,1,16,Great tv.
+B00BCGROJG,1,17,Good value for $1600.
+B00BCGROJG,1,18,Good.
+B00BCGROJG,1,19,very good.
+B00BCGROJG,1,20,so good.
+B00BCGROJG,1,21,We've always loved Samsung and love this TV.
+B00BCGROJG,1,22,Love the tv.
+B00BCGROJG,1,23,Samsung has some great TVs.
+B00BCGROJG,1,24,The picture is even better.
+B00BCGROJG,2,0,Great Picture, poor sound.
+B00BCGROJG,2,1,Great Picture Quality but not so great sound quality.
+B00BCGROJG,2,2,Sound quality is good too.
+B00BCGROJG,2,3,The speakers are good too.
+B00BCGROJG,2,4,Overall picture quality is very good.
+B00BCGROJG,2,5,The picture quality is good.
+B00BCGROJG,2,6,Clear picture, and great sound even without sound system.
+B00BCGROJG,2,7,Its good.
+B00BCGROJG,2,8,The TV picture quality is amazing, however the sound quality is really poor.
+B00BCGROJG,2,9,Now I have the ultimate in sound and picture.
+B00BCGROJG,2,10,The sound is acceptable, but an external sound system is really necessary for sound immersion.
+B00BCGROJG,2,11,picture is great, sound is OK (but that's why you have a home theater system).
+B00BCGROJG,2,12,The sound is good, but I'm going to get some speakers for a better audio experience.
+B00BCGROJG,2,13,Everything is good.
+B00BCGROJG,2,14,The sound is not great at all.
+B00BCGROJG,2,15,Great picture, sound, etc....HIGHLY recommend!
+B00BCGROJG,2,16,As expected, the picture is great!
+B00BCGROJG,2,17,But the picture quality is great.
+B00BCGROJG,2,18,Also, this TV is not hooked up to a audio receiver, we are using the built in speakers and it sounds good.
+B00BCGROJG,2,19,The 3D is actually quite good under the right circumstances.
+B00BCGROJG,2,20,Looks good sounds good all around great set .
+B00BCGROJG,2,21,I am running sound through my Denon AVR E300 receiver and it is great.
+B00BCGROJG,2,22,TV is great.
+B00BCGROJG,2,23,I'm also really happy with the sound.
+B00BCGROJG,2,24,Great tv.
+B00BCGROJG,3,0,Great TV - Not So Great Delivery Service.
+B00BCGROJG,3,1,I have had tremendous success with Samsung and Amazon's service has always been good to me.
+B00BCGROJG,3,2,Samsung is great on all products we have owned.
+B00BCGROJG,3,3,Problem with my set.
+B00BCGROJG,3,4,Tried AMAZON ..4 days later, tv in house lookin' great.
+B00BCGROJG,3,5,I was very skeptical about ordering a tv through Amazon.
+B00BCGROJG,3,6,quick delivery.
+B00BCGROJG,3,7,I ordered it through Amazon, and had a delivery scheduled.
+B00BCGROJG,3,8,Great TV.
+B00BCGROJG,3,9,Another great Samsung product.
+B00BCGROJG,3,10,Amazon was great.
+B00BCGROJG,3,11,Best picture I have seen BUT poor customer service.
+B00BCGROJG,3,12,There went another $20 on Amazon.
+B00BCGROJG,3,13,I've not had a problem with Amazon so I haven't had to test their customer service.
+B00BCGROJG,3,14,Amazon delivery was on time and TV arrived in PERFECT condition.
+B00BCGROJG,3,15,Great Deal.
+B00BCGROJG,3,16,Fast, Well Packaged Delivery - Great TV.
+B00BCGROJG,3,17,Order this tv thru Amazon warehouse for $400 off the price because the original box was damaged.
+B00BCGROJG,3,18,TV arrived on time (2 days!) and worked no problem.
+B00BCGROJG,3,19,She finally concluded that I need to have the set serviced.
+B00BCGROJG,3,20,TV is great.
+B00BCGROJG,3,21,Awesome TV for 3 days, Delivery was not the best.
+B00BCGROJG,3,22,We ordered the TV through Amazon and they delivered on time and it was very easy to deal with them.
+B00BCGROJG,3,23,The Samsung 7100 was in a league of it's own.
+B00BCGROJG,3,24,Tv 5 stars samsung service 1 star.
+B00BCGROJG,4,0,Word cannot say what a great picture this TV has.
+B00BCGROJG,4,1,Great Picture.
+B00BCGROJG,4,2,Everyone would commend on how great the picture is.
+B00BCGROJG,4,3,Great TV.
+B00BCGROJG,4,4,Great TV.
+B00BCGROJG,4,5,Good picture.
+B00BCGROJG,4,6,Great picture.
+B00BCGROJG,4,7,But the picture quality is great.
+B00BCGROJG,4,8,Great picture.
+B00BCGROJG,4,9,Great picture.
+B00BCGROJG,4,10,great TV.
+B00BCGROJG,4,11,very good TV great picture.
+B00BCGROJG,4,12,Awsome picture quality.
+B00BCGROJG,4,13,Quality Picture.
+B00BCGROJG,4,14,Great Picture Quality but not so great sound quality.
+B00BCGROJG,4,15,Great TV, but be alerted...
+B00BCGROJG,4,16,The picture of this TV is just amazing.
+B00BCGROJG,4,17,The picture quality is great.
+B00BCGROJG,4,18,I think I need to tweek the picture on it a little more but it looks great.
+B00BCGROJG,4,19,I got this for the picture quality.
+B00BCGROJG,4,20,Great Picture, poor sound.
+B00BCGROJG,4,21,I don't but this is a great TV.
+B00BCGROJG,4,22,Great TV.
+B00BCGROJG,4,23,Great TV!
+B00BCGROJG,4,24,I'm old school and this TV is easy to set up and the picture is awesome.
+B00BCGROJG,5,0,Great TV.
+B00BCGROJG,5,1,Great Buy.
+B00BCGROJG,5,2,good.
+B00BCGROJG,5,3,This TV is GREAT!
+B00BCGROJG,5,4,Great picture.
+B00BCGROJG,5,5,Great picture.
+B00BCGROJG,5,6,Great tv.
+B00BCGROJG,5,7,Great buy!
+B00BCGROJG,5,8,Anyway, It is very very good product.
+B00BCGROJG,5,9,This product very good.
+B00BCGROJG,5,10,Buy It! Great TV!
+B00BCGROJG,5,11,Great TV.
+B00BCGROJG,5,12,Overall a great product.
+B00BCGROJG,5,13,very very good~!! Um..
+B00BCGROJG,5,14,Overall picture quality is very good.
+B00BCGROJG,5,15,I don't but this is a great TV.
+B00BCGROJG,5,16,Great TV.
+B00BCGROJG,5,17,Great picture, sound, etc....HIGHLY recommend!
+B00BCGROJG,5,18,Great TV, but be alerted...
+B00BCGROJG,5,19,Very good product.
+B00BCGROJG,5,20,Looks good sounds good all around great set .
+B00BCGROJG,5,21,I highly recommended.
+B00BCGROJG,5,22,This is a great TV.
+B00BCGROJG,5,23,Another great Samsung product.
+B00BCGROJG,5,24,Highly recommended.
+B00BCGROJG,6,0,They work ok, not great, but ok.
+B00BCGROJG,6,1,The apps are great and works well, only draw back is with remote.
+B00BCGROJG,6,2,Loaded with apps just like your smartphone.
+B00BCGROJG,6,3,Upscaling works great as well.
+B00BCGROJG,6,4,The internet apps (Netflix and Hulu) work great.
+B00BCGROJG,6,5,Its good.
+B00BCGROJG,6,6,I get a network error watching Netflix and Hulu, but I use the Plex app most of all.
+B00BCGROJG,6,7,Very good only one thing when u whatch back 90s or begining 20s movies look very fake movie lol i mean this tv has lot of tech those movie seems to be very stedio filmApp look ok but skype never come up
+B00BCGROJG,6,8,Works great on just WIFI.
+B00BCGROJG,6,9,Great Smart Features, they most likely have any app or service you could want.Cons:1.
+B00BCGROJG,6,10,So far so good....
+B00BCGROJG,6,11,The install went great and the tv worked well for about 2 months.
+B00BCGROJG,6,12,That seems to work.I love to watch my sports, specifically hockey and with the Stanley Cup Playoffs currently playing, to me it is like watching it Live- Awesome picture.
+B00BCGROJG,6,13,Smart TV...is great.
+B00BCGROJG,6,14,Can't wait to watch a 3D movie.
+B00BCGROJG,6,15,Great Smart TV.
+B00BCGROJG,6,16,Nearly all Apps are free.
+B00BCGROJG,6,17,Not a feature we were looking for but it works well.3.
+B00BCGROJG,6,18,Once on they worked perfectly.
+B00BCGROJG,6,19,Now I have friends over playing games and watching movies almost every day :)
+B00BCGROJG,6,20,Great picture.
+B00BCGROJG,6,21,I mean if you want a good TV with a nice screen get it!!!
+B00BCGROJG,6,22,3D does work, watched few 3D movies from Netflix.
+B00BCGROJG,6,23,The internet access works very well.
+B00BCGROJG,6,24,love this TV perfect picture, watched our first 3d movie it was great!!! everything we have is samsung and they all work together!
+B00BCGROJG,7,0,The HDMI to cable box connection assures a great out of the box picture.
+B00BCGROJG,7,1,I've only watched cable tv so far (via the cable box and HDMI), but I've seen the Samsung GUI and it looks amazing, so I'll be trying that as soon as the tv is connected to the internet.
+B00BCGROJG,7,2,Beside the HDMI inputs, you can connect only 1 component video source OR 1 composite video source, not both at the same time.
+B00BCGROJG,7,3,I connected them with HDMI cables, while hooking sound system with optical cable directly to TV.
+B00BCGROJG,7,4,I can't plug my Direct TV HDMI cable to the Samsung ARC input and maybe someone on here will be able to steer me to the right direction.
+B00BCGROJG,7,5,This Tv is a Great value.
+B00BCGROJG,7,6,I think I need to tweek the picture on it a little more but it looks great.
+B00BCGROJG,7,7,Great picture quality out the box!
+B00BCGROJG,7,8,Resolution looks amazing, especially while playing video games and watching HD (I wouldn't buy this TV if I didn't have these two).
+B00BCGROJG,7,9,I had to play with the settings on my tv and xbox to get it working again.
+B00BCGROJG,7,10,Beautiful picture, once set up.So this is a great tv.
+B00BCGROJG,7,11,With 4 HDMI inputs and all sorts of USB drive options you can watch an endless stream of video.The sound quality is very good.
+B00BCGROJG,7,12,Was plug and play right out of the box.
+B00BCGROJG,7,13,I have a connection of 30MB with cable connections, a very good, strong connection from an ASUS N66u Dual band router.
+B00BCGROJG,7,14,Picture is great.
+B00BCGROJG,7,15,Great picture quality (Out the box in Movie Mode).
+B00BCGROJG,7,16,I have home theater system, cable box and DVD and BRay.
+B00BCGROJG,7,17,The blu-ray movie I watched was Despicable me, if you have watched this movie before you would know the cute little minions.
+B00BCGROJG,7,18,The problem is that the tv only outputs 2 channel sound from this output, not 5.1 from the sources that are input into the tv (Cable box, DVD, etc.)  Although, it will output 5.1 from the smart apps, like Youtube, netfix, etc.)
+B00BCGROJG,7,19,I would rate it between 4 to 5 stars and here's why.After a few hours of playing with the picture settings and advanced settings, using a Time Warner cable box with HDMI connection, the picture is spectacular for 95% of the HD content.
+B00BCGROJG,7,20,The picture is amazingly clear and perfect on the HD channels.
+B00BCGROJG,7,21,Great Picture but so many settings it takes forever to set the colors and picture quality.
+B00BCGROJG,7,22,I also have a Samsung Galaxy S3 and the AllShare is great for sending my videos and pictures to the TV for viewing.
+B00BCGROJG,7,23,I set up each hdmi port specifically for their purpose, TV, Bluray, and 360.
+B00BCGROJG,7,24,Amazing TV!!! I'm still playing with this TV but I can tell you that so far I'm in love with it.
+B00BCGROJG,8,0,Defective screen.
+B00BCGROJG,8,1,This time, I had them set up the TV on the floor and look at both screens side by side.
+B00BCGROJG,8,2,The first set I took home had 6 - 8 gray bard radiating up vertically from top to bottom whenever the screen was black or letter-boxed -- VERY disturbing.
+B00BCGROJG,8,3,It also had this bouncing white square go across the top of the screen.
+B00BCGROJG,8,4,Picture is dark.
+B00BCGROJG,8,5,But when vertical bars radiate from  the bottom on a Macbook, it means the LED screen or bar at the bottom of the screen is going bad.
+B00BCGROJG,8,6,When he saw the screen he said they should not be this bad and I got a bad panel.
+B00BCGROJG,8,7,If you watch a movie with a lot of blacks, dark scenes, you will notice a significant amount of white clouding in the blacked out areas.
+B00BCGROJG,8,8,Once we got into watching DARK movies in a DARK room, we quickly realized that "CLOUDING" and "FLASH LIGHTING" was going to be an issue.
+B00BCGROJG,8,9,This means that you can see shadows, or flashlight patterns of light emanating from the corners of the TV pointing towards the center, this effect is usually only noticed in very dark movie scenes or pure black backgrounds.
+B00BCGROJG,8,10,Very noticeable in dark scenes.
+B00BCGROJG,8,11,Furthermore, room lighting must be nearly dark to notice this flaw.
+B00BCGROJG,8,12,Perfect screen with lighting issue gone!
+B00BCGROJG,8,13,Again, 4 red stuck pixels on the screen, and some pinkish hue to only the right side of the screen.
+B00BCGROJG,8,14,Nothing that will ever show the darkness flaws on the screen.Bottom Line: If you watch TV in a lit room, and don't watch dark movies like "The Dark Knight", "The Purge", "Star Trek into Darkness", or any movie with a prolonged dark scene, then get it.If you want see an perfectly amazing dark picture from a TV that retails for $5,000.
+B00BCGROJG,8,15,Turned the lights back on in the room to the ;level they usually are at when we watch TV.
+B00BCGROJG,8,16,My 40in Samsung had some light in the corners when black bars were present for movies.
+B00BCGROJG,8,17,At night, however, the edge-lit LEDs bleed into the screen from the corners and some other cloudy areas show up too.
+B00BCGROJG,8,18,The last tv panel was so bad it looked like I was watching movies through cloud cover....clouds that didn't move!!
+B00BCGROJG,8,19,most annoying aspect is that the screen has from time to time gone dark -- not completely dark but the brightness is only about a quarter of normal.
+B00BCGROJG,8,20,As soon as it powered on,  the lower left corner of the TV had an estimated 100+ of black and white pixels going jagged and horizontal across the screen.
+B00BCGROJG,8,21,The blu-ray movie I watched was Despicable me, if you have watched this movie before you would know the cute little minions.
+B00BCGROJG,8,22,I tried also watching "UnderWorld" which is another movie with a lot of night scenes and the clouding is prevalent.
+B00BCGROJG,8,23,It's dark down there.
+B00BCGROJG,8,24,Immediately noticed 2 red stuck pixels on the screen and some clouding in upper right and lower left sides of the TV.
+B00BCGROJG,9,0,TV was purchased for an 85 year old.
+B00BCGROJG,9,1,My first 2 Vizio TV's are still working fine and one is over 5 years old.
+B00BCGROJG,9,2,Samsung 65 in.
+B00BCGROJG,9,3,Great picture/dead in 3 months.
+B00BCGROJG,9,4,Television never worked from day one.
+B00BCGROJG,9,5,The price dropped $100 after I bought it and Amazon issued me refund!
+B00BCGROJG,9,6,Samsung TV's have serious problems.
+B00BCGROJG,9,7,*****W A R N I N G*****Do not buy SAMSUNG Televisions!!!
+B00BCGROJG,9,8,I made the mistake of not starting with Samsung when the problems first stared a year ago.Random turning itself off.
+B00BCGROJG,9,9,The Samsung picture is impressive yet the problems are significant.I think I will go back to buying Vizio.
+B00BCGROJG,9,10,Inside I found out was missing 4 3d tv glasses. 2 months later, I'm still dealing with samsung trying to get my missing 4 3d glasses.
+B00BCGROJG,9,11,Great purchase!
+B00BCGROJG,9,12,I am having issues with a 14 month old Samsung that cost $3000.It is a 65" LCD LED 3 D Samsung.I am in the Costco extended warranty.
+B00BCGROJG,9,13,It was the primary reason I bought it for.
+B00BCGROJG,9,14,If you purchase this TV expecting it to look like a plasma TV you will be disappointed, if you purchase this TV expecting to own one of the best LCD televisions on the market right now then you will be extremely happy.
+B00BCGROJG,9,15,BUYING A SAMSUNG IS A WASTE OF MONEY.
+B00BCGROJG,9,16,BUYING A SAMSUNG IS A WASTE OF MONEY.
+B00BCGROJG,9,17,They came down 3 times to my place and then completely lied to Samsung that they have fixed the problem when they didn't.
+B00BCGROJG,9,18,Great Purchase for Christmas.
+B00BCGROJG,9,19,I really wish I had purchased a TV with passive glasses.
+B00BCGROJG,9,20,As for the Tv itself, it works fine.
+B00BCGROJG,9,21,I got a replacement and that unit had the same issue on the same day!
+B00BCGROJG,9,22,I want my money back.I do not see the point of you not accepting a return without the box when AMAZON and SAMSUNG doesn't have any problems with the same item at all.
+B00BCGROJG,9,23,This is by far the best TV that I have ever bought.
+B00BCGROJG,9,24,For 58.00 more you now have a 5 year warranty.
+B00BCGROJG,10,0,Before someone tells me that I shouldn't use tv speakers and should instead use a surround sound system, I get that.
+B00BCGROJG,10,1,picture is great, sound is OK (but that's why you have a home theater system).
+B00BCGROJG,10,2,Sound is OK and the TV has a few different sound settings but nothing special.
+B00BCGROJG,10,3,Sound quality is good too.
+B00BCGROJG,10,4,The sound from the built-in speakers is fair but I use external speakers so that doesn't really matter too much to me.
+B00BCGROJG,10,5,First off, you bought a TV, not a sound system.
+B00BCGROJG,10,6,annoying was the TV speakers rattle sometimes, at low volume, when on surround sound mode.
+B00BCGROJG,10,7,OTHER REVIEWS COMPLAINED ABOUT THE SOUND NOT BEING LOUD ENOUGH BUT I DIDN'T SEEM TO THINK THAT WAS A PROBLEM.
+B00BCGROJG,10,8,The built in speakers S. U. C. K.!  But... what do you expect from a TV this thin?!?
+B00BCGROJG,10,9,Now, because the TV is so tall, I suggest bracing it to the wall or wall mounting it or mounting it to an actual entertainment center.
+B00BCGROJG,10,10,Also, this TV is not hooked up to a audio receiver, we are using the built in speakers and it sounds good.
+B00BCGROJG,10,11,every time when i turn on the TV, the sound bar is turned on automatically.
+B00BCGROJG,10,12,The sound is acceptable, but an external sound system is really necessary for sound immersion.
+B00BCGROJG,10,13,They also set it up to where I can have the TV sound only or switch to the 5.1 Surround Sound with one touch.
+B00BCGROJG,10,14,The sound is good, but I'm going to get some speakers for a better audio experience.
+B00BCGROJG,10,15,The apps on the TV cannot give you 5.1 sound because the output must go from your cable (or satellite) box to the home theater system, not from the digital audio out from the TV.
+B00BCGROJG,10,16,See  my reviews under URCMEThe TV  sound is fair but not spectacular, so I have my Samsung Sound Bar plugged into the digital outlet that Samsung provides giving the TV outstanding  sound.
+B00BCGROJG,10,17,We cannot wall mount it.The speakers are no doubt better on the sony which has speakers on either side of the screen.
+B00BCGROJG,10,18,very good TV great picture.
+B00BCGROJG,10,19,Once it turned off by itself.
+B00BCGROJG,10,20,Great Picture Quality but not so great sound quality.
+B00BCGROJG,10,21,Clear picture, and great sound even without sound system.
+B00BCGROJG,10,22,The louder you make the sound, the louder that dink noises becomes.
+B00BCGROJG,10,23,Mounts very close to the wall so the wires do not show.
+B00BCGROJG,10,24,Setup is quite easy; you assemble the stand parts (2) with 4 *very tiny* screws, and then attach the stand to the TV with yet another 4 of the same screws.
+B00BCGROJG,11,0,Samsung customer service wasn't very helpful in acknowledging the problem.
+B00BCGROJG,11,1,I called Samsung.
+B00BCGROJG,11,2,Boo Samsung, boo!
+B00BCGROJG,11,3,Called Samsung and we had service scheduled.
+B00BCGROJG,11,4,Customer service was no help.
+B00BCGROJG,11,5,A pattern is emerging, so a call to Samsung, not the service center.
+B00BCGROJG,11,6,After more than 2 hours on the call I got them to assign the ticket to a new customer service center.
+B00BCGROJG,11,7,Samsung customer service is the worst customer service that I have ever experienced.
+B00BCGROJG,11,8,TV great, customer service not so much.
+B00BCGROJG,11,9,We vowed NEVER to get another Samsung again.
+B00BCGROJG,11,10,Having Problems.
+B00BCGROJG,11,11,I have had the TV for a week now and am still waiting on repair.
+B00BCGROJG,11,12,Customer support was incompetent.
+B00BCGROJG,11,13,I called Samsung to exchange them.
+B00BCGROJG,11,14,Worst when I called support again to record the issue they give me a repair ticket number and a phone number to call.
+B00BCGROJG,11,15,Dont buy Samsung - they don't last.
+B00BCGROJG,11,16,Five days later I get a phone call finally acknowledging receipt of my email, and I was told it would take another seven to fourteen days for me to receive the needed hardware.
+B00BCGROJG,11,17,Call Samsung and have them replace the panel or live with it.
+B00BCGROJG,11,18,They came down 3 times to my place and then completely lied to Samsung that they have fixed the problem when they didn't.
+B00BCGROJG,11,19,I called Samsung back and was told that the email would arrive only after the exchange was approved by executive level customer service.
+B00BCGROJG,11,20,Well you betcha I have problems.
+B00BCGROJG,11,21,They will not replace them under warranty and say they are normal.
+B00BCGROJG,11,22,By then I can set up a delivery date that works for me.
+B00BCGROJG,11,23,Samsung will not replace the unit but wants to send a repairman out to fix it.
+B00BCGROJG,11,24,The delivery service NEVER reached out to me to set up a delivery time or to verify my phone #.
+B00BCGROJG,12,0,Insane Picture Quality.
+B00BCGROJG,12,1,The TV is great, picture quality is phenomenal.
+B00BCGROJG,12,2,Picture is phenomenal!
+B00BCGROJG,12,3,great!
+B00BCGROJG,12,4,But the tv picture looks great.
+B00BCGROJG,12,5,Very good picture quality.
+B00BCGROJG,12,6,Picture settings.
+B00BCGROJG,12,7,Very good Quality Tv.
+B00BCGROJG,12,8,Great tv but.
+B00BCGROJG,12,9,A great value.
+B00BCGROJG,12,10,The picture was ok.
+B00BCGROJG,12,11,The picture quality was much better though.
+B00BCGROJG,12,12,Let me know if anyone wants to compare picture settings.
+B00BCGROJG,12,13,Holy Cow..........what a Picture.
+B00BCGROJG,12,14,There are many, many settings that affect brightness, many settings that affect color balance, etc... so even the last few settings will make a big difference to how the picture looks.
+B00BCGROJG,12,15,Nice picture, once it is adjusted.What
+B00BCGROJG,12,16,great but.
+B00BCGROJG,12,17,Great Picture Quality but not so great sound quality.
+B00BCGROJG,12,18,Great TV.
+B00BCGROJG,12,19,Thus far the picture quality on this TV is great.. no doubt about that.
+B00BCGROJG,12,20,This TV has a perfect picture image.
+B00BCGROJG,12,21,I came along at least a very good thing.
+B00BCGROJG,12,22,Good tv.
+B00BCGROJG,12,23,The TV is still fantastic.Update about 6 months in; we're still marveling at the picture quality.
+B00BCGROJG,12,24,Out of the box the picture image is not so good.
+B00BCGROJG,13,0,Samsung UN65F7100 review.
+B00BCGROJG,13,1,Do not buy Samsung!!
+B00BCGROJG,13,2,Last Samsung I will ever buy.
+B00BCGROJG,13,3,(I even wrote a review about it under Samsung PN58C500.)
+B00BCGROJG,13,4,Last Samsung purchase.
+B00BCGROJG,13,5,Samsung TV purchased.
+B00BCGROJG,13,6,This is my first ever Samsung product.
+B00BCGROJG,13,7,I almost did not buy this TV after reading some of the 5-star reviews!
+B00BCGROJG,13,8,Beware before buying.
+B00BCGROJG,13,9,Besides that I would recommend this product for anyone looking for a new TV
+B00BCGROJG,13,10,We vowed NEVER to get another Samsung again.
+B00BCGROJG,13,11,*****W A R N I N G*****Do not buy SAMSUNG Televisions!!!
+B00BCGROJG,13,12,I will revise this review once I get the TV.
+B00BCGROJG,13,13,Boo Samsung, boo!
+B00BCGROJG,13,14,Review for Samsung UN75F7100  75" LED TV.
+B00BCGROJG,13,15,For the product a 5 stars.
+B00BCGROJG,13,16,In the end after all of my exhausted efforts on other TV's,  I purchased the Samsung UN46F7100.
+B00BCGROJG,13,17,Samsung phone/tablet division needs to take over it's TV division's software quality control.Don't buy this TV for it's smarts ... it really is NOT smart & very sluggish (slow) if you to do anything of substance on the web.Potentially a great product ... but Samsung TV division needs to fix its software quality control problems.
+B00BCGROJG,13,18,I would definitely buy it again and recommend it, but they need a redesign on their remote.
+B00BCGROJG,13,19,I have a few Samsung products including this TV.
+B00BCGROJG,13,20,Next time going with a Sony or LG.
+B00BCGROJG,13,21,If I have any problems I will update this review.
+B00BCGROJG,13,22,I read several different reviews on this product before purchasing so I was aware of difficulty of using before receiving.
+B00BCGROJG,13,23,By all means buy this TV but DO NOT EVEN WASTE YOUR TIME WITH THE ALLSHARE 'SOFTWARE PRODUCT'!
+B00BCGROJG,13,24,They came down 3 times to my place and then completely lied to Samsung that they have fixed the problem when they didn't.
+B00BCGROJG,14,0,Plus the smart tv with all the apps this tv has it all...
+B00BCGROJG,14,1,bottom-line is this smart TV just like a Not-Smart-TV.
+B00BCGROJG,14,2,The smart TV app?
+B00BCGROJG,14,3,There does seem to be a "flow" problem with the SMART tv at times.
+B00BCGROJG,14,4,wireless is not work.
+B00BCGROJG,14,5,This if forgivable as you DO NOT WANT TO USE THEIR SMART TV anyway if you can.
+B00BCGROJG,14,6,Getting back to the Smart Hub.
+B00BCGROJG,14,7,The internet apps (Netflix and Hulu) work great.
+B00BCGROJG,14,8,The same problem was found on the Amazon App in the Smart Hub but not as bad.
+B00BCGROJG,14,9,At the same times apps like netflix and amazon will be reset.
+B00BCGROJG,14,10,The is also prove that the Samsung TV has a very slow chip.
+B00BCGROJG,14,11,Samsung 1, users 0.Ultimately, we ignored all of Samsung's smart features, browser, etc.
+B00BCGROJG,14,12,Not too smart.
+B00BCGROJG,14,13,i couldn't use the Wi-fi to watch the internet TV.
+B00BCGROJG,14,14,I also found that every app in the Smart Hub was very fast and did not cause me to become impatient.
+B00BCGROJG,14,15,Unlike some smart TV's it has a browser that you can go anywhere on the internet that you can like a smart phone.
+B00BCGROJG,14,16,The is a smart TV. 5 star for the TV part. 1 start for "smart" part.
+B00BCGROJG,14,17,Samsung, please update and fix this hiccup.
+B00BCGROJG,14,18,Netflix, Amazon, and Youtube work as expected.
+B00BCGROJG,14,19,Samsung.
+B00BCGROJG,14,20,The only differences are the different smart hub, and the remotes.
+B00BCGROJG,14,21,Previews are available on like 10 different apps.
+B00BCGROJG,14,22,It doesn't work.
+B00BCGROJG,14,23,Great Picture, Poor Smarts.
+B00BCGROJG,14,24,Fortunately, you can use your smartphone or tablet that has the YouTube app to “cast” the video on the TV.
+B00BCGROJG,15,0,Here too, the remote is irritating.
+B00BCGROJG,15,1,The remote control is a little funky and takes time getting used to.
+B00BCGROJG,15,2,The remote, however, is dysfunctional.
+B00BCGROJG,15,3,I didn't see any.I will say that the remote takes some getting used to.
+B00BCGROJG,15,4,would anyone need 4 HDMI inputs?
+B00BCGROJG,15,5,Only issue is the remote contrôl.
+B00BCGROJG,15,6,It cannot be used to select a channel from the guide--I have to use my cable box remote to select channels.
+B00BCGROJG,15,7,The only thing I don't like is the remote.
+B00BCGROJG,15,8,If there is one thing that I dislike, it is the remote control.
+B00BCGROJG,15,9,It is the first metal remote I've seen.
+B00BCGROJG,15,10,There aren't any buttons!
+B00BCGROJG,15,11,I'd rather have buttons.
+B00BCGROJG,15,12,Intuitive.The remote with a touch pad works okay.
+B00BCGROJG,15,13,Instead you have to press the “more” button on the remote that will give you a virtual remote on the screen that will let you change to a specific channel.
+B00BCGROJG,15,14,The only issue i really have is the remote.
+B00BCGROJG,15,15,Could Samsung simplify the remote by not using the swype pad?
+B00BCGROJG,15,16,It also has Arc, so all you need is one HDMI to the TV/receiver.
+B00BCGROJG,15,17,I like and use the tv remote sometimes paired with the cable remote but my wife is strictly a cable remote user.
+B00BCGROJG,15,18,I would rather have a full feature remote with buttons.
+B00BCGROJG,15,19,Only in the remote did not find the mute button, that is more important to have it.
+B00BCGROJG,15,20,All HDMI ports don't work.
+B00BCGROJG,15,21,I hate the remote control.
+B00BCGROJG,15,22,It's now just a nice display with an irritating remote.
+B00BCGROJG,15,23,Well, gee, that's what I thought a TV with a remote should do.
+B00BCGROJG,15,24,It would be nice, though, to have these buttons on the remote.-
+B00AOA9BL0,0,0,Screen looks good but stops.
+B00AOA9BL0,0,1,Great.
+B00AOA9BL0,0,2,Watching on  such a small screen does.
+B00AOA9BL0,0,3,good.
+B00AOA9BL0,0,4,Works Great on My Ipod.
+B00AOA9BL0,0,5,good when it works.
+B00AOA9BL0,0,6,Watching movies is great!
+B00AOA9BL0,0,7,I do wish you could attach to a tv to watch on bigger screen.
+B00AOA9BL0,0,8,Still, all in all there is a great variety of shows available.
+B00AOA9BL0,0,9,good, but long way from great.
+B00AOA9BL0,0,10,i want watch walking dead while eating corn on the cob at the inlaws in Londrina Brasil.
+B00AOA9BL0,0,11,I love watching TV while I am using the treadmill but we have no TV in the exercise room.
+B00AOA9BL0,0,12,Being able to watch some shows live being away from home is great also.
+B00AOA9BL0,0,13,Works perfectly with excellent picture.
+B00AOA9BL0,0,14,I don't miss a thing.
+B00AOA9BL0,0,15,When it does work, the picture and sound quality are good.
+B00AOA9BL0,0,16,It allows me to be free to move around and view more things.
+B00AOA9BL0,0,17,I like to us this feature when I'm not by a TV and it works well.
+B00AOA9BL0,0,18,When I first got this app, it was great.
+B00AOA9BL0,0,19,It allows me to watch anywhere with great quality of video.
+B00AOA9BL0,0,20,Recent changes make this a BIG thumbs DOWN.
+B00AOA9BL0,0,21,The app works great, and now has live tv portion.
+B00AOA9BL0,0,22,AwesomeSauce!!! GREAT for entertainment! abcfamily should be made available though along with more recent movies.
+B00AOA9BL0,0,23,When it works it is good.
+B00AOA9BL0,0,24,This app is good for watching older shows but I'd like to be able to watch live tv especially sporting events.
+B00AOA9BL0,1,0,Best around.
+B00AOA9BL0,1,1,I love to bookmark my faves and just veg out and get caught up on my shows.
+B00AOA9BL0,1,2,good but could be better.
+B00AOA9BL0,1,3,Choppy at best.
+B00AOA9BL0,1,4,Good!
+B00AOA9BL0,1,5,But I have good reason now.
+B00AOA9BL0,1,6,Like others have said...Good but not great!
+B00AOA9BL0,1,7,Been trying for months and no success.
+B00AOA9BL0,1,8,Other than that it's a very good thing to have.
+B00AOA9BL0,1,9,I love all the shows they have to offer.
+B00AOA9BL0,1,10,Good but not great.
+B00AOA9BL0,1,11,When it does work, the picture and sound quality are good.
+B00AOA9BL0,1,12,Overall I am happy with it.
+B00AOA9BL0,1,13,I had no reason to believe it wouldn't be the same fantastic quality.
+B00AOA9BL0,1,14,Good but definitely needs more live tv.
+B00AOA9BL0,1,15,Pretty Good.
+B00AOA9BL0,1,16,I love it!
+B00AOA9BL0,1,17,That would be even better.
+B00AOA9BL0,1,18,I would love to use this but can't.
+B00AOA9BL0,1,19,I love watching TV while I am using the treadmill but we have no TV in the exercise room.
+B00AOA9BL0,1,20,This is great for traveling or when your just simply away from the tv and want to catch up.
+B00AOA9BL0,1,21,Needs work for better performance.
+B00AOA9BL0,1,22,Upgrade was good.
+B00AOA9BL0,1,23,Other than that, I love it!
+B00AOA9BL0,1,24,Its good, not great.
+B00AOA9BL0,2,0,Otherwise, there is no sound.
+B00AOA9BL0,2,1,Not hard when there are no other sounds around though.
+B00AOA9BL0,2,2,Sound issue.
+B00AOA9BL0,2,3,When it does work, the picture and sound quality are good.
+B00AOA9BL0,2,4,Its good, not great.
+B00AOA9BL0,2,5,Overall good.
+B00AOA9BL0,2,6,good.
+B00AOA9BL0,2,7,SO FAR SO GOOD.
+B00AOA9BL0,2,8,good.
+B00AOA9BL0,2,9,Picture is great  but I cannot hear the audio  very dissappointed .
+B00AOA9BL0,2,10,The sound is good with headphones.
+B00AOA9BL0,2,11,Good.
+B00AOA9BL0,2,12,Great so.
+B00AOA9BL0,2,13,Good App,but...
+B00AOA9BL0,2,14,volume.
+B00AOA9BL0,2,15,great but.
+B00AOA9BL0,2,16,And I have good hearing.
+B00AOA9BL0,2,17,Good but could be better.
+B00AOA9BL0,2,18,Pretty good!
+B00AOA9BL0,2,19,Good experience.
+B00AOA9BL0,2,20,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,2,21,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,2,22,good app.
+B00AOA9BL0,2,23,Good App, Horrible Sound.
+B00AOA9BL0,2,24,Volume controls are set to low, hard to hear.
+B00AOA9BL0,3,0,There's nowhere on Amazon to go to get help.
+B00AOA9BL0,3,1,Would be great if it worked.
+B00AOA9BL0,3,2,Good day, Sir.
+B00AOA9BL0,3,3,serviceable.
+B00AOA9BL0,3,4,who knows why either, as Amazon.
+B00AOA9BL0,3,5,worked great at first.
+B00AOA9BL0,3,6,It does not work with all the boxes in the house.
+B00AOA9BL0,3,7,That's one less homework assignment when you arrive home.
+B00AOA9BL0,3,8,Did not work with my TV.
+B00AOA9BL0,3,9,YOU GUYS NEED TO WORK ON IT.
+B00AOA9BL0,3,10,Called amazon, Comcast, no help.
+B00AOA9BL0,3,11,Doesn't work.
+B00AOA9BL0,3,12,how come it doesn't work on.the
+B00AOA9BL0,3,13,Though I am satisfied with my services, the customer service would rate at best a D-, and cost for those services about the same.
+B00AOA9BL0,3,14,Yep, days.
+B00AOA9BL0,3,15,Was aggravated when it didn't work.
+B00AOA9BL0,3,16,If anyone can help me figure out the problem please let me know.
+B00AOA9BL0,3,17,I love it because I can watch my shows the day after if I miss then... with on-demand I have to wait a week.
+B00AOA9BL0,3,18,Didn't know what this was and ordered it.
+B00AOA9BL0,3,19,It may prove useful in time.
+B00AOA9BL0,3,20,By having them in alphabetical order, they are very easy to find.
+B00AOA9BL0,3,21,Hopefully I will be able to find the time to decipher what all it does.
+B00AOA9BL0,3,22,Who do I call ?
+B00AOA9BL0,3,23,Has anyone else had this problem?
+B00AOA9BL0,3,24,Okay product.
+B00AOA9BL0,4,0,The picture and sound were both great.
+B00AOA9BL0,4,1,Great quality.
+B00AOA9BL0,4,2,The picture is excellent.
+B00AOA9BL0,4,3,good.
+B00AOA9BL0,4,4,Ok but not great.
+B00AOA9BL0,4,5,Great so.
+B00AOA9BL0,4,6,Easy to use
+B00AOA9BL0,4,7,Like others have said...Good but not great!
+B00AOA9BL0,4,8,nice layout and easy to use.
+B00AOA9BL0,4,9,Others looked great.
+B00AOA9BL0,4,10,Clear picture and sound, awesome to be able to watch shows on the go.
+B00AOA9BL0,4,11,Easy to use too.
+B00AOA9BL0,4,12,Still, all in all there is a great variety of shows available.
+B00AOA9BL0,4,13,great for watching shows on the go.
+B00AOA9BL0,4,14,Worked great!
+B00AOA9BL0,4,15,Otherwise good picture quality and user friendly.
+B00AOA9BL0,4,16,It works just sometimes it has to buffer to get really good picture and quality
+B00AOA9BL0,4,17,Works perfectly with excellent picture.
+B00AOA9BL0,4,18,Amazing amazing amazing
+B00AOA9BL0,4,19,great app...xfinity keep making it simple!
+B00AOA9BL0,4,20,Saw what wanted and VOILA!! Excellent!
+B00AOA9BL0,4,21,Simple to set-up and easy to use.
+B00AOA9BL0,4,22,It's really good and I like it a lot.
+B00AOA9BL0,4,23,Easy to use.
+B00AOA9BL0,4,24,Not Easy.
+B00AOA9BL0,5,0,I'm sure this is a great product.
+B00AOA9BL0,5,1,no good!
+B00AOA9BL0,5,2,Other than that it's a very good thing to have.
+B00AOA9BL0,5,3,If I could rate this a zero I would so I rate as a one!
+B00AOA9BL0,5,4,Has some good features.
+B00AOA9BL0,5,5,Review.
+B00AOA9BL0,5,6,I rated it why do I need to write a review?
+B00AOA9BL0,5,7,I rated it why do I need to write a review?
+B00AOA9BL0,5,8,It is great to be able to have mobile access to hundreds of great shows.
+B00AOA9BL0,5,9,good, but long way from great.
+B00AOA9BL0,5,10,would recommend
+B00AOA9BL0,5,11,I recommend that you get it,and give a try.
+B00AOA9BL0,5,12,It's free is the only good thing that I didn't buy it.
+B00AOA9BL0,5,13,not recommend it to anyone
+B00AOA9BL0,5,14,Good but definitely needs more live tv.
+B00AOA9BL0,5,15,Would not recommend.
+B00AOA9BL0,5,16,When I first got it it was awesome an worked great.
+B00AOA9BL0,5,17,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,5,18,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,5,19,Definite recommend.
+B00AOA9BL0,5,20,very nice.
+B00AOA9BL0,5,21,Like others have said...Good but not great!
+B00AOA9BL0,5,22,Being able to watch some shows live being away from home is great also.
+B00AOA9BL0,5,23,not what I wantednot how I wanted itI wouldnt recommend it to everyoneit cost too much money
+B00AOA9BL0,5,24,Waste of time it is no good should be taken off so no one else wastes their time What a shame
+B00AOA9BL0,6,0,Otherwise, the app is okay.
+B00AOA9BL0,6,1,What has happened to this app?
+B00AOA9BL0,6,2,Ok. Ok app.
+B00AOA9BL0,6,3,I like this app!
+B00AOA9BL0,6,4,Cannot use app.
+B00AOA9BL0,6,5,NOT A GO APP.
+B00AOA9BL0,6,6,Fix this app to make it more stable.
+B00AOA9BL0,6,7,NEEDS AN UPDATE/NEW APP.
+B00AOA9BL0,6,8,gGood app.
+B00AOA9BL0,6,9,Must have app.
+B00AOA9BL0,6,10,I would like to see these incorporated into this app.
+B00AOA9BL0,6,11,The potential for this app is there.
+B00AOA9BL0,6,12,I like this app.
+B00AOA9BL0,6,13,This app will not work on my reg.
+B00AOA9BL0,6,14,I really like this app.
+B00AOA9BL0,6,15,This app doesn't work at all!
+B00AOA9BL0,6,16,Don't like the shortage of apps available.
+B00AOA9BL0,6,17,Well keep using this app.
+B00AOA9BL0,6,18,So far I really dig this app.
+B00AOA9BL0,6,19,I downloaded this app, but it only works w/iTunes app.
+B00AOA9BL0,6,20,This app is great, when it works.
+B00AOA9BL0,6,21,When the app works, it's great.
+B00AOA9BL0,6,22,Great app when it works.
+B00AOA9BL0,6,23,You also need an ID to get into the app.
+B00AOA9BL0,6,24,I wasn't able to get into this app.
+B00AOA9BL0,7,0,No one else allies you to travel and take your cable with you.
+B00AOA9BL0,7,1,If I wanted to watch it at home I would use the cable box.
+B00AOA9BL0,7,2,Cable went out during a recent ice storm.
+B00AOA9BL0,7,3,Best to have a good internet connection.
+B00AOA9BL0,7,4,Help, I just bought a new hdtv to connect to my fire hd via hdmi cable, and no shows will play whether connected to the tv or not.
+B00AOA9BL0,7,5,Good.
+B00AOA9BL0,7,6,As if the price of cable wasn't enough.
+B00AOA9BL0,7,7,Does not allow HDMI output.
+B00AOA9BL0,7,8,I was able to watch ONE video and the same thing happened again.
+B00AOA9BL0,7,9,Cool app but if you try to connect to your tv via the cable it stops all video and asks you disconnect cable.
+B00AOA9BL0,7,10,When it works it is good.
+B00AOA9BL0,7,11,If anyone can make the video player actually work as described, please let me know!
+B00AOA9BL0,7,12,Otherwise, it's a very good player.
+B00AOA9BL0,7,13,That is really nice when you do not have a WiFi connection.
+B00AOA9BL0,7,14,I travel a lot so it is great.
+B00AOA9BL0,7,15,Great ap.
+B00AOA9BL0,7,16,Doesn't always want  to work though.
+B00AOA9BL0,7,17,Satellite or cable required.
+B00AOA9BL0,7,18,The HD quality is superb.
+B00AOA9BL0,7,19,Of course, it would be nice if Viacom network shows were available or if cable wasn't so absurdly overpriced, but you can't have everything.
+B00AOA9BL0,7,20,You can watch tv and movies which isn't at all what I wanted.
+B00AOA9BL0,7,21,Hope it would have the same features as on the PC such as viewing videos but alas no.
+B00AOA9BL0,7,22,The other main drawback is that it won't allow you to connect the video stream to a TV by HDMI.
+B00AOA9BL0,7,23,I'm on the go.Now i can watch TV on the go.
+B00AOA9BL0,7,24,When it does work, the picture and sound quality are good.
+B00AOA9BL0,8,0,There is a green bar at the top of your screen.
+B00AOA9BL0,8,1,Have to keep moving slide bar on time left in program.
+B00AOA9BL0,8,2,It's noticeable enough to be annoying.
+B00AOA9BL0,8,3,Really wanted this to work- tried to watch Hollywood Game Night.
+B00AOA9BL0,8,4,Only works part time.
+B00AOA9BL0,8,5,Just watch on your tv.
+B00AOA9BL0,8,6,Watching on  such a small screen does.
+B00AOA9BL0,8,7,Gotta get these problems fixed or no one will want it!!
+B00AOA9BL0,8,8,First show there were a few times it stopped and then started.
+B00AOA9BL0,8,9,Don't bother unless you have a larger device unless you'd like to watch TV on a little screen as it doesn't fill the entire screen with the show.Hope that this helps.Time to uninstall.
+B00AOA9BL0,8,10,Out of the 20+ times I've tried this, maybe 3 or 4 times I was actually able to watch something.
+B00AOA9BL0,8,11,Thankfully, after almost a year they FINALLY fixed that problem!More.recently,
+B00AOA9BL0,8,12,Been having a lot of issues with tv shows an  movies not playing.
+B00AOA9BL0,8,13,WIsh it actually worked half the time... ... WIsh it actually worked half the time....
+B00AOA9BL0,8,14,It gets very annoying when one is trying to watch a good movie or show.
+B00AOA9BL0,8,15,I just watched half of an hour long show, and got to see the same ad about 30 times.
+B00AOA9BL0,8,16,It's as if you're watching stop-motion video... everyone is moving just a little slow and choppy.
+B00AOA9BL0,8,17,Great concept but... Whenever I try to watch something, the program I'm watching will freeze about halfway through the program when it is coming back from a commercial break, and nothing I do to try to get it to let me watch the rest of my program works.
+B00AOA9BL0,8,18,Lots of shows & movies to watch.
+B00AOA9BL0,8,19,I watched a couple of shows with no problems.
+B00AOA9BL0,8,20,I can watch the programs that I want away from home, or even at home, if someone else is using the tv to watch something that I don't want to see.
+B00AOA9BL0,8,21,Other times it doesn't so I just watch a different program instead.If it didn't have the problem freezing I'd give it five stars.
+B00AOA9BL0,8,22,I've had cable TV for years but tend to watch the same programs all the time.
+B00AOA9BL0,8,23,Started off great, but as weeks went by, there was less & I was able to watch.
+B00AOA9BL0,8,24,I've watched around 5 movies so far.
+B00AOA9BL0,9,0,This has never worked in the 5 months I have it.
+B00AOA9BL0,9,1,Had It 5 Months- Never Worked.
+B00AOA9BL0,9,2,Thankfully, after almost a year they FINALLY fixed that problem!More.recently,
+B00AOA9BL0,9,3,And consider all problems.
+B00AOA9BL0,9,4,Buy a nook
+B00AOA9BL0,9,5,Did not work for me or many others.
+B00AOA9BL0,9,6,Waste of time.
+B00AOA9BL0,9,7,Dont waste your storage...or your time.
+B00AOA9BL0,9,8,I so wished I knew about this trouble before my purchase.
+B00AOA9BL0,9,9,Maybe It will be OK once I have time to spend on it to learn it.
+B00AOA9BL0,9,10,Hope will get better.
+B00AOA9BL0,9,11,It's a big deal for me.
+B00AOA9BL0,9,12,WIsh it actually worked half the time... ... WIsh it actually worked half the time....
+B00AOA9BL0,9,13,First show there were a few times it stopped and then started.
+B00AOA9BL0,9,14,If it isn't a big deal for you, you'll probably like this app.
+B00AOA9BL0,9,15,Must need to purchase something from Amazon to enjoy yet another free app.
+B00AOA9BL0,9,16,I've had this for a few months now and it has never worked once.
+B00AOA9BL0,9,17,One Big Piece of Junk app.
+B00AOA9BL0,9,18,After checking with some other users, this appears to be a common problem.
+B00AOA9BL0,9,19,This app has worked ok over the last year, but for the last three weeks it's been horrible!
+B00AOA9BL0,9,20,Kindof a waste considering I was really looking forward to it.
+B00AOA9BL0,9,21,Works - Most of the time.
+B00AOA9BL0,9,22,When it works, it works fine.
+B00AOA9BL0,9,23,Also with the last update the app no longer works on my Galaxy Note 8, which I specifically choose to purchase because at that time the app worked on that device.
+B00AOA9BL0,9,24,my app was working correctly on my new HDX for the first few weeks in Dec 2013 but then started lagging badly.
+B00AOA9BL0,10,0,When it does work, the picture and sound quality are good.
+B00AOA9BL0,10,1,expected more.
+B00AOA9BL0,10,2,Picture is great  but I cannot hear the audio  very dissappointed .
+B00AOA9BL0,10,3,I have a Bluetooth speaker for my kindle, so sound isn't a problem.
+B00AOA9BL0,10,4,As mentioned by others the volume is very low even with head phones and using external speakers only makes it slightly more of normal  volume level but not really loud so if your hard of hearing or are you are multitasking you may not really hear much.
+B00AOA9BL0,10,5,The picture and sound were both great.
+B00AOA9BL0,10,6,But to hear sound from app requires the use of earphones.
+B00AOA9BL0,10,7,The screen orientation won't honor the tablet's orientation setting.
+B00AOA9BL0,10,8,Sometimes it continues playing sound but has a blank screen.
+B00AOA9BL0,10,9,It's has bad volume on my kindle fire, you can hardly hear it unless you're alone and quite.
+B00AOA9BL0,10,10,Even when set to the highest level you can barely hear the sound.
+B00AOA9BL0,10,11,It makes waiting around quite bar able.
+B00AOA9BL0,10,12,The sound is good with headphones.
+B00AOA9BL0,10,13,Volume controls are set to low, hard to hear.
+B00AOA9BL0,10,14,various channels have different volume settings and is difficult toadjust sound properly.
+B00AOA9BL0,10,15,I found no internal preference setting to lock it down, either.
+B00AOA9BL0,10,16,Good picture, bad sound, no choices.
+B00AOA9BL0,10,17,Once the audio kept going but the picture froze (Bones) and the second  time (Castle) it  froze completely.
+B00AOA9BL0,10,18,My only issue is sometimes the sound cuts out for a second or two.
+B00AOA9BL0,10,19,It's not so bad that the audio & video are out of sync, but almost.
+B00AOA9BL0,10,20,Good App, Horrible Sound.
+B00AOA9BL0,10,21,When watching shows it won't play at full volume even if its set with the volume all the way up.
+B00AOA9BL0,10,22,It allows me to watch anywhere with great quality of video.
+B00AOA9BL0,10,23,Sound issue.
+B00AOA9BL0,10,24,Clear picture and sound, awesome to be able to watch shows on the go.
+B00AOA9BL0,11,0,I think that's what they called it?
+B00AOA9BL0,11,1,never worked.
+B00AOA9BL0,11,2,I even have emailed about this and was told to call and get help that way.
+B00AOA9BL0,11,3,Terrible customer service
+B00AOA9BL0,11,4,Tried this 3 or 4 time over 2 days.
+B00AOA9BL0,11,5,Horrible horrible customer service and company.
+B00AOA9BL0,11,6,I have the paid service, yet it work intermittly.
+B00AOA9BL0,11,7,Fix or I will get a different cable service all together.
+B00AOA9BL0,11,8,It didn't work.
+B00AOA9BL0,11,9,And on the many  phone calls to comcast for tech support, this was never mentioned!
+B00AOA9BL0,11,10,Why can't they just email me back and help me out that way?
+B00AOA9BL0,11,11,I wish I could give this service a better score, but it keeps going down.
+B00AOA9BL0,11,12,It tok a day and a few phone calls, but I finally got the app working.
+B00AOA9BL0,11,13,Installed three weeks ago, repair men have come to "fix" the problems only to have something else pop up or the repair that was made didn't quite fix it.
+B00AOA9BL0,11,14,Boo to not supporting your existing customer base.
+B00AOA9BL0,11,15,Tried contacting their online help about the app waited and waited and never got any kind of response.
+B00AOA9BL0,11,16,Didn't work, never worked, was only suitable as a 30 minute distraction while I fooled around with and and attempted to speak to some tech guys.
+B00AOA9BL0,11,17,WIsh it actually worked half the time... ... WIsh it actually worked half the time....
+B00AOA9BL0,11,18,What is the point of having them on here if they don't work?
+B00AOA9BL0,11,19,Waste of time.
+B00AOA9BL0,11,20,Dont waste your storage...or your time.
+B00AOA9BL0,11,21,I am getting close to changing to another paid service.
+B00AOA9BL0,11,22,Keep loosing the supposed "perks" of this package which involves phone calls to trouble shoot what is going on.
+B00AOA9BL0,11,23,horrible level service.
+B00AOA9BL0,11,24,Good. no problems yet.
+B00AOA9BL0,12,0,not to good.
+B00AOA9BL0,12,1,Quality is good and there are a ton of shows to watch.
+B00AOA9BL0,12,2,When it does work, the picture and sound quality are good.
+B00AOA9BL0,12,3,Great television for mobile people into the go.
+B00AOA9BL0,12,4,The picture and sound were both great.
+B00AOA9BL0,12,5,Clear picture and sound, awesome to be able to watch shows on the go.
+B00AOA9BL0,12,6,To this mobile thing.
+B00AOA9BL0,12,7,good, but long way from great.
+B00AOA9BL0,12,8,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,12,9,If it's good then it's good if it's bad then it's bad if it is excellent then it is.
+B00AOA9BL0,12,10,I thought this would be good.
+B00AOA9BL0,12,11,When the app does work the picture is crisp and it is a good experience.
+B00AOA9BL0,12,12,Good for tv shows if you have cable, terrible for movies if you only have streampix.
+B00AOA9BL0,12,13,One thing that brothers me, is some of the really good movies are taken off too soon.
+B00AOA9BL0,12,14,Playback a little jerky in spots but very good picture clarity and balance.
+B00AOA9BL0,12,15,Works perfectly with excellent picture.
+B00AOA9BL0,12,16,It gets very annoying when one is trying to watch a good movie or show.
+B00AOA9BL0,12,17,Good but not great.
+B00AOA9BL0,12,18,Like others have said...Good but not great!
+B00AOA9BL0,12,19,It allows me to watch anywhere with great quality of video.
+B00AOA9BL0,12,20,SO I JUST TRIED AGAIN AND THIS TIME I DOWNLOADED THE APP AND WITH IN LESS THAN A MINUTE I WAS WATCHING A SHOW.  SO I'VE GOT A GOOD HD PICTURE AND I'M WATCHING SHOWS THAT ARE ALREADY PAID FOR BECAUSE I HAVE X FINITY.
+B00AOA9BL0,12,21,television for mobile travel.
+B00AOA9BL0,12,22,So this app is a great way to view movies that i can't watch on TV because Comcast is screwy.
+B00AOA9BL0,12,23,I have Comcast for TV now but I could not get it set up for some reason.
+B00AOA9BL0,12,24,Watching movies is great!
+B00AOA9BL0,13,0,Twp Star Review.
+B00AOA9BL0,13,1,Will change review when I do
+B00AOA9BL0,13,2,You should be able to at least buy the upgrade or get a trade in and not have to buy a whole new device to be up to date.
+B00AOA9BL0,13,3,Not bad.
+B00AOA9BL0,13,4,Not too bad though.
+B00AOA9BL0,13,5,Now IMHO the way the Featured page is set up makes it almost useless.
+B00AOA9BL0,13,6,Too bad.
+B00AOA9BL0,13,7,A review that require me to say more than I wanted to is equally irritating
+B00AOA9BL0,13,8,Gave it a one star because it did not work, don't like the word hate.
+B00AOA9BL0,13,9,huge disappointment.
+B00AOA9BL0,13,10,Doesn't work.
+B00AOA9BL0,13,11,Disappointed and aggrivated now.
+B00AOA9BL0,13,12,Hate this product.
+B00AOA9BL0,13,13,There are no updates that would work.
+B00AOA9BL0,13,14,I believe this to be unfair and scam to buyers.
+B00AOA9BL0,13,15,As usual, I feel cheated in that I'm always required to buy a new device every year in order to keep up when there's NOTHING wrong with the device I already have.
+B00AOA9BL0,13,16,I tried a couple of times.
+B00AOA9BL0,13,17,Definitely not worth the headache.
+B00AOA9BL0,13,18,Be careful and get it in writing.
+B00AOA9BL0,13,19,Should be able to use without an account like online website not a usable product for the whole family not recommended
+B00AOA9BL0,13,20,I thought this would be good.
+B00AOA9BL0,13,21,Waste of time it is no good should be taken off so no one else wastes their time What a shame
+B00AOA9BL0,13,22,Not a bad app!
+B00AOA9BL0,13,23,I have a very long commute on public transportation so using this really helps.
+B00AOA9BL0,13,24,Hope it gets fixed soon.
+B00AOA9BL0,14,0,Does not work.
+B00AOA9BL0,14,1,dont work to well.
+B00AOA9BL0,14,2,I didn't have any problems with the old app.
+B00AOA9BL0,14,3,Works - Most of the time.
+B00AOA9BL0,14,4,The app itself works just fine.
+B00AOA9BL0,14,5,Even with a 105MB connection, the app was very slow.
+B00AOA9BL0,14,6,It didn't work.
+B00AOA9BL0,14,7,Never have this problem with Netflix app on the same device with the same Wi-Fi connection.
+B00AOA9BL0,14,8,It seems to be working now.
+B00AOA9BL0,14,9,I have this app on all my devices and it stops playing after about 30 every time.
+B00AOA9BL0,14,10,There are no updates that would work.
+B00AOA9BL0,14,11,It worked and then they did something so it will not let me connect to the internet through my router.
+B00AOA9BL0,14,12,Doesn't work.
+B00AOA9BL0,14,13,Maybe it's error but I have issues with this app.
+B00AOA9BL0,14,14,Works Fine.
+B00AOA9BL0,14,15,Works well by trial and error.
+B00AOA9BL0,14,16,I don't have this trouble with Netflix or other video streaming, so I know it's not my wireless connection.
+B00AOA9BL0,14,17,This issue I have with said content is its crippling effect on the app thus far.
+B00AOA9BL0,14,18,I probably will only use this app to watch BBC America while I am away at college.
+B00AOA9BL0,14,19,Just watch on your tv.
+B00AOA9BL0,14,20,First show there were a few times it stopped and then started.
+B00AOA9BL0,14,21,This was one of my favorite apps...until the last update.
+B00AOA9BL0,14,22,I have been unable to get this app to work.
+B00AOA9BL0,14,23,Gotta get these problems fixed or no one will want it!!
+B00AOA9BL0,14,24,I have no problem connecting other devices to my Wi-Fi.
+B00AOA9BL0,15,0,No HDMI out...boo!
+B00AOA9BL0,15,1,It's channel selection is almost useless and I cannot get picture,I only get sound when I can get a channel.
+B00AOA9BL0,15,2,Other wise everything else seems to work very well.
+B00AOA9BL0,15,3,Can't get this to work on ASUS MEMO pad HD7.
+B00AOA9BL0,15,4,Goes to 5 stars with the HDMI out working.
+B00AOA9BL0,15,5,Netflix has HDMI out.
+B00AOA9BL0,15,6,The app works great, when it works.
+B00AOA9BL0,15,7,Volume is toolow even on highest setting.
+B00AOA9BL0,15,8,Won't change the channel.
+B00AOA9BL0,15,9,Works well with Comcast although one has to be careful when scrolling thru the channel guide or you will be accidentally changing channels.Great having channel guide, DVR manager, Movies and more on one screen.
+B00AOA9BL0,15,10,The kicker is that once it starts this, it keeps doing it until you power off the device, wait 10 seconds or so, and then power it back on.
+B00AOA9BL0,15,11,Huh? I thought that this is cable TV to go.
+B00AOA9BL0,15,12,Works - Most of the time.
+B00AOA9BL0,15,13,Thank you-=  comcast needs to add more channels.
+B00AOA9BL0,15,14,Easy as Scroll, select, and watch.
+B00AOA9BL0,15,15,I would have thought there would be more of a selection of shows.
+B00AOA9BL0,15,16,Needs easier playback controls such as a 10 second rewind button.
+B00AOA9BL0,15,17,You need to be a Comcast infinity member and have a ID/email set up.
+B00AOA9BL0,15,18,On my iPad and iPhone I can change the channel, like a remote or record programs from outside my home.
+B00AOA9BL0,15,19,Works very well from laptop with Chromecast, -- but setting needs to be changed to make it work from Tablet.
+B00AOA9BL0,15,20,volume too low and needs quick rewind button.
+B00AOA9BL0,15,21,I haven't really had many problems with this app but I don't like that they will have a show such as Mickey Mouse Clubhouse listed but then there are no videos to watch.
+B00AOA9BL0,15,22,To this mobile thing.
+B00AOA9BL0,15,23,There is a default setting that needs to be changed to allow this to work on a Tablet - especially Samsung tablets.
+B00AOA9BL0,15,24,It has all the movies and shows I like at the touch of the finger.

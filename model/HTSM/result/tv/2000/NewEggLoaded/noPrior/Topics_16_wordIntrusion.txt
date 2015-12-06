@@ -1,0 +1,16 @@
+Topic 4(0.122):	pictur, great, qualiti, good, sound, mode,remot
+Topic 9(0.096):	app, work, watch, smart, time, uninstal,amazon
+Topic 1(0.089):	app, work, kindl, fire, watch, money,3d
+Topic 6(0.089):	price, great, pictur, buy, good, watch,game
+Topic 8(0.071):	pictur, qualiti, good, plasma, samsung, care,app
+Topic 10(0.068):	amazon, servic, call, samsung, day, sign,sound
+Topic 15(0.054):	screen, set, pictur, light, watch, sourc,cabl
+Topic 7(0.050):	great, game, pictur, set, hdmi, viera,qualiti
+Topic 3(0.050):	review, time, work, issu, day, pretti,pictur
+Topic 14(0.049):	sound, speaker, hdmi, input, cabl, program,screen
+Topic 12(0.048):	remot, turn, button, control, time, recommend,samsung
+Topic 5(0.047):	great, sound, remot, easi, good, cabl,price
+Topic 11(0.044):	sound, audio, work, connect, problem, bit,remot
+Topic 2(0.043):	3d, pictur, set, featur, smart, gorgeous,review
+Topic 13(0.041):	samsung, support, year, problem, call, hub,sound
+Topic 0(0.040):	cabl, hdmi, connect, input, set, edg,app

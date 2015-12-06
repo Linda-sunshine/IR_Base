@@ -1,0 +1,1574 @@
+Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty
+1060,2,0,"very light sensitive  had to turn down the brightness in the dvr software to 8 to get a non washed out pic.",0,1,23,1.000000,1.000000
+1060,2,1,"they were very inexpensive   80 black friday  so for what i paid  they re ok.",0,1,13,0.415566,0.101338
+1060,2,2,"night vision is good  but the ir leds are visible as a red ring.",0,1,25,0.689108,0.226035
+1060,2,3,"very narrow field of view.",1,1,17,0.719162,0.226035
+1060,2,4,"might as well be black and white  colors are very pale and washed out.",1,1,17,0.632011,0.161744
+1060,2,5,"resolution at 400 lines is iffy  unless someone is very close to the cam  15 20 ft   recognizable faces is not possible.",1,0,7,0.664900,0.160786
+1062,2,0,"weather proof n v works well",0,0,3,1.000000,1.000000
+1062,2,1,"i wasn t impressed with the picture quality.",1,0,9,0.625665,0.226035
+1062,2,2,"they advertise 40  of facial recognition but it might take an expert eye for that.",1,0,3,0.767577,0.295479
+1062,2,3,"i can t read the license plate of my vehicle parked  25  away.",1,0,3,0.200209,0.104009
+1064,2,0,"great canon camera",0,0,3,1.000000,1.000000
+1064,2,1,"the extra kit portion provided in this package is junk and not worth the extra cost.",1,0,3,0.632930,0.227277
+1072,2,0,"camera build quality  button location  flip out screen  the way it feels in the hand  high megapixel count  live view  it s a canon.",0,1,16,1.000000,1.000000
+1072,2,1,"high iso means nothing when the result is garbage.",1,1,17,0.425731,0.088737
+1072,2,2,"i actually owned two of these  after returning the first one.",1,1,25,0.699339,0.144694
+1072,2,3,"the average consumer might not notice this  but a professional should.",1,1,25,0.702478,0.214577
+1072,2,4,"and manual mode only produced very average results at best.",1,1,17,0.294167,0.139054
+1072,2,5,"indoors with all the lights on  it would jump up to iso 1600  full auto setting .",1,1,17,0.728633,0.268852
+1072,2,6,"yet  in a side by side comparison  my xti would sit comfortably at 400 iso.",1,1,25,0.315387,0.134132
+1072,2,7,"manual settings with the exact same lenses between the two produced nearly identical images.",1,1,22,0.675851,0.208492
+1072,2,8,"the 60d was not perceptibly better.",1,1,25,0.727080,0.159833
+1072,2,9,"for a brand new camera to produce results similar to  let alone worse than  a 6 year old camera is hugely disappointing.",1,1,25,0.623201,0.228523
+1072,2,10,"auto focus was not great either.",1,1,17,0.712272,0.208492
+1072,2,11,"images weren t crystal clear.",1,1,25,0.703661,0.228523
+1072,2,12,"colors not defined well.",1,1,25,0.715452,0.159833
+1072,2,13,"video is still not advanced enough yet to be more than a gimmick.",1,1,25,0.728381,0.195459
+1072,2,14,"manually focusing video is frustrating.",1,1,17,0.193814,0.074499
+1072,2,15,"makes the video feature almost useless.",1,1,25,0.344780,0.161400
+1086,2,0,"good build quality  good optical performance  not too big.",0,0,10,1.000000,1.000000
+1086,2,1,"auto focus is poor from 200mm to 300mm zoom.",1,1,17,0.713421,0.207326
+1109,2,0,"tons of features  can use in almost any situation easily.",0,0,9,1.000000,1.000000
+1109,2,1,"hdr has to be used with a tripod  too bad it isn t able to be held by hand or adjusted in camera to change the exposure times for each picture being taken.",1,1,17,0.644339,0.227277
+1110,2,0,"small   it is a compact camera after all.",0,0,5,1.000000,1.000000
+1110,2,1,"well built   surprisingly solid and hefty.",0,0,8,0.644962,0.146456
+1110,2,2,"much better than the sx230.",0,0,8,0.712829,0.146456
+1110,2,3,"larger image sensor than your typical compact.",0,0,4,0.702194,0.193240
+1110,2,4,"only 12 mp but the larger sensor has better looking pics than a 16 mp with a smaller sensor.",0,0,4,0.196599,0.075831
+1110,2,5,"ability to shoot raw.",0,0,12,0.724275,0.146456
+1110,2,6,"enough manual controls if you re into that.",0,0,12,0.705282,0.144694
+1110,2,7,"somewhat short battery life.",1,1,14,0.666056,0.160786
+1112,2,0,"has 4 video inputs.",0,1,16,1.000000,1.000000
+1112,2,1,"easy to find drivers on the manf.",0,1,22,0.666321,0.144694
+1112,2,2,"site  but the drivers don t work .",0,1,22,0.668835,0.146456
+1112,2,3,"usually with cheap electronics it takes an eternity to find the drivers  but this manf.",0,1,20,0.671338,0.161744
+1112,2,4,"sells  so that s a plus to know that sabrent somewhat cares about linux users.",0,1,15,0.673832,0.161744
+1112,2,5,"but this video adapter has no linux drivers.",0,1,15,0.676316,0.144694
+1112,2,6,"does not work.",1,0,7,0.777262,0.194347
+1112,2,7,"i ve tried with ubuntu linux  windows xp  2 pcs   and windows 7  nothing works.",1,0,7,0.219235,0.078809
+1112,2,8,"i would get bunch of errors when installing.",1,0,5,0.786188,0.195459
+1112,2,9,"can t remember  but on the off chance that it got installed  when running the program i would get  execution completed successfully  error  0000   or something like that.",1,0,5,0.077302,0.060413
+1112,2,10,"ironic  how can something be distressful when you get an error  i guess the error executed successfully.",1,0,5,0.306873,0.102421
+1113,2,0,"under  40  usb  4 video  left and right audio...",0,1,20,1.000000,1.000000
+1113,2,1,"1 egg is as low as i can go ",1,1,20,0.218441,0.083007
+1113,2,2,"this will not work with windows 7  don t even bother ",1,0,3,0.405960,0.146398
+1113,2,3,"it does not seem to work with windows xp either.",1,0,3,0.044708,0.050077
+1113,2,4,"i even downloaded the drivers from sabrent site  didn t help.",1,0,8,0.652767,0.161744
+1113,2,5,"both machines found it  neither could install it.",1,0,9,0.784749,0.193240
+1113,2,6,"w7 had a nice bsod during one attempt at installation.",1,0,9,0.057357,0.083908
+1113,2,7,"the software just says  install failed...  and xp can t find a driver  the hardware may not work.",1,0,3,0.364934,0.227369
+1113,2,8,"well  it does not work.",1,0,3,0.181007,0.067505
+1113,2,9," cannot install this hardware ",1,0,3,0.688344,0.211850
+1114,2,0,"took to an event in the bright hot sun over the weekend.",0,0,7,1.000000,1.000000
+1114,2,1,"photo quality clarity was superb.",0,0,8,0.688843,0.146456
+1114,2,2,"a lot of buttons to understand.",0,0,9,0.648519,0.144694
+1114,2,3,"i wish it came with a more complete owners guide.",0,0,1,0.716006,0.146456
+1114,2,4,"i ve looked up settings and advice online and fumbled some.",0,0,7,0.720611,0.214577
+1114,2,5,"still not sure what the best settings are but i m so very pleased with the clear crisp photos and the fps.",0,0,8,0.261306,0.135438
+1114,2,6,"super fast shipping with every item displayed.",0,0,9,0.694902,0.206164
+1114,2,7,"weight takes some getting use to and a  dslr for dummies  guide would help.",1,0,8,0.712575,0.145572
+1115,2,0,"very good picture quality  comparable to canons that are almost 3x the price of this one.",0,0,10,1.000000,1.000000
+1115,2,1,"also  great features for something in this price range.",0,0,0,0.513440,0.136841
+1120,2,0,"pictures come out great  compact  controls easy to use.",0,0,6,1.000000,1.000000
+1120,2,1,"1  run  don t walk  and buy rechargable batteries for this   it ll drain alkaline batteries fast.however  rechargable batteries will last much longer.",1,1,14,0.720552,0.295479
+1120,2,2,"2  the flash takes a while to reset after using  10  seconds   somewhat inconvenient.",1,1,18,0.586710,0.182110
+1120,2,3,"3  when the batteries run low  wierd things happen to the controls  e.g.",1,1,15,0.225474,0.085243
+1120,2,4,"stuck in slideshow mode and unable to stop or turn off w o removing batteries .",1,1,15,0.479126,0.135543
+1121,2,0,"grest price  clear pictures  great for beginners",0,0,0,1.000000,1.000000
+1121,2,1,"definitely get rechargable batteries   wore out alkanine batteries in 2 sessions  rechargable ones have lasted for 5  sessions.",1,1,19,0.654085,0.208492
+1121,2,2,"flash takes a long time to reset between pictures.",1,1,18,0.708982,0.145572
+1122,2,0,"awesome picture quality upto 5 megapixel resolution.",0,0,0,1.000000,1.000000
+1122,2,1,"easy upload to pc. cannot beat the price for a 5 megapixel digicam.",0,0,9,0.267723,0.195017
+1122,2,2,"consumes batteries quick when using flash.",1,1,14,0.726154,0.232109
+1123,2,0,"great camera for a beginner.",0,0,2,1.000000,1.000000
+1123,2,1,"price was excellent.",0,0,2,0.668416,0.146456
+1123,2,2,"was a christmas gift for my wife.",0,0,3,0.673002,0.206164
+1123,2,3,"she loves it and newegg got it to me in three days.",0,0,2,0.644339,0.208492
+1123,2,4,"software is for windows 98.",1,0,3,0.697934,0.206164
+1123,2,5,"it does work with xp but a novice with computers might not think it would.",1,0,3,0.707435,0.145572
+1124,2,0,"seems to be an excellent beginner digital camera.",0,0,2,1.000000,1.000000
+1124,2,1,"hard to beat a 5.0 megapixel camera for the price.",0,0,0,0.729188,0.295479
+1124,2,2,"chewed through the two aa s that came in the box in about 3 hours.",1,0,0,0.334025,0.085089
+1124,2,3,"better buy some rechargable batteries quick ",1,1,19,0.684321,0.145572
+1125,2,0,"easy to use.",0,0,9,1.000000,1.000000
+1125,2,1,"5.0 mp for  100  easy to playback video and pictures.",0,0,9,0.195376,0.078368
+1125,2,2,"very easy to upload pics and video to your pc.",0,0,9,0.283629,0.080063
+1125,2,3,"only takes sd cards up to 512mb.",1,1,24,0.721452,0.160786
+1126,2,0,"great camera  the 10.l megapixels is great for zooming in and getting a smaller picture.",0,0,4,1.000000,1.000000
+1126,2,1,"it is a little wider than the 7.1 megapixel version",1,0,4,0.465296,0.169151
+1127,2,0,"great camera for the price.",0,0,0,1.000000,1.000000
+1127,2,1,"it has a ton of best shot modes which is handy for people who don t know a great deal about the different settings.",0,0,0,0.278909,0.085089
+1127,2,2,"the design is well done and it takes amazing pictures.",0,0,0,0.714122,0.159833
+1127,2,3,"screen resolution could be higher.",1,1,18,0.680271,0.228523
+1127,2,4,"charging the battery can be a pain since you have to remove it completely.",1,1,14,0.669467,0.160786
+1128,2,0,"for the price of this camera you can t beat it.",0,0,2,1.000000,1.000000
+1128,2,1,"it is very small and easy to carry around.",0,0,11,0.644248,0.146456
+1128,2,2,"it is perfect to keep in you pocket with the case.",0,0,11,0.669336,0.208492
+1128,2,3,"the battery comes charged and lasted me a week and a half before having to charge it while costantly taking pictures with the flash.",0,0,6,0.633704,0.206164
+1128,2,4,"the package is also great.",0,0,3,0.719498,0.228523
+1128,2,5,"the extra battery fits perfectly in the case and the cleaning kit is very useful.",0,0,3,0.629642,0.159833
+1128,2,6,"i only used the tripod a few times but it is very durable.",0,0,12,0.715961,0.228523
+1128,2,7,"look at the prices of any other 10.1 mp camera and see if they compare.",0,0,8,0.666704,0.161744
+1128,2,8,"this thing is great",0,0,6,0.716719,0.228523
+1128,2,9,"what cons   ",1,1,24,0.719241,0.207326
+1129,2,0,"great camera  combined with the combo  extra battery and case w stand and 1gb sd card  it was well worth it.",0,1,13,1.000000,1.000000
+1129,2,1,"small zoom  but its 10 mp",1,0,4,0.709070,0.227277
+1130,2,0,"10 mp ccd  nice big bright viewscreen  compact size and light weight  video mode is decent quality with good audio   best shot  mode has good range of selections for your specific subject  fireworks  scenery  etc.   anti shake works very well  simple to operate  supports high capacity sd cards",0,0,10,1.000000,1.000000
+1130,2,1,"battery has to be removed to be recharged  power button on top is too small  pics seem slightly grainy",1,1,13,0.720537,0.227277
+1131,2,0,"very crisp photos  small size and arrived on time for my trip.",0,0,10,1.000000,1.000000
+1131,2,1,"images could be a tiny bit crisper but for the price who would complain ",1,1,20,0.688260,0.227277
+1132,2,0,"great pics  lots of colors and 10 megapixels helps bring out every single detail.",0,0,4,1.000000,1.000000
+1132,2,1,"battery life is good lasting for about 400 pics.",0,0,4,0.309293,0.081408
+1132,2,2,"screen is bright and the anti shake feature works amazingly.",0,0,7,0.674827,0.146456
+1132,2,3,"def. a 5 egg product  ",0,0,0,0.705508,0.206164
+1132,2,4,"has a little problem with my 2gb patriot sd card  seems to corrupt some files  not a problem though as long as my pics dont disappear  and they havent ",1,1,24,0.644406,0.292108
+1133,2,0,"this is the lowest cost 10  megapixel camera i could find.",0,0,4,1.000000,1.000000
+1133,2,1,"i appreciate it s small size.",0,0,5,0.701300,0.159833
+1133,2,2,"the 10 megapixel model is noticeably thicker than the 7 megapixel model.",1,1,13,0.705052,0.195459
+1133,2,3,"also  i noticed that the pictures i have taken so far with this camera  especially those taken indoors  even with flash  appear grainy compared to the canon powershot pro 1  8.0 megapixels  i used to use.",1,1,18,0.123250,0.073973
+1133,2,4,"even though the canon had two fewer megapixels  the pictures i took with it came out a lot better.",1,0,4,0.355462,0.106301
+1134,2,0,"camera takes pics fast and the quality was great.",0,0,2,1.000000,1.000000
+1134,2,1,"battery life was good for the day and a half that i used it",0,0,2,0.656077,0.144694
+1134,2,2,"video quality was horrible.",1,1,17,0.700305,0.228523
+1134,2,3,"it was very choppy and a huge dissapointment.",1,1,18,0.721671,0.144694
+1134,2,4,"also the charging concept on this unit sucks  not only do you need to take out the battery  you need two other parts to charge it  a charger and a cable to plug into the wall... weak   ",1,1,15,0.627238,0.145572
+1135,2,0,"awesome camera.",0,0,0,1.000000,1.000000
+1135,2,1,"i had used other people s slr cameras and fell in love with them.",0,0,3,0.620440,0.146456
+1135,2,2,"i never had the opportunity to grab my own until this company  through newegg  put the sl1 on sale for  479.",0,0,3,0.689320,0.318490
+1135,2,3,"i had my heart set on canon since that s the only brand i ve ever owned.",0,0,6,0.647505,0.230849
+1135,2,4,"i already had a tripod  bag  and cleaning tools.",0,0,3,0.671695,0.161744
+1135,2,5,"this camera has everything i expected and more.",0,0,1,0.715553,0.144694
+1135,2,6,"i m learning new things everyday  and i love all the custom settings   and there are a ton.",0,0,1,0.619275,0.206164
+1135,2,7,"even out of the box  your shots will be ten times better than they ever were.",0,0,1,0.698767,0.228523
+1135,2,8,"love the presets  and the ability to adjust the settings under them.",0,0,1,0.666441,0.206164
+1135,2,9,"great 3  screen that is very crisp and detailed.",0,0,0,0.681431,0.144694
+1135,2,10,"i still mistakenly use the buttons sometimes to navigate  forgetting it s a touchscreen.",0,0,9,0.720557,0.208492
+1135,2,11,"solid neck strap  great lens cover  and the battery charges very quickly.",0,0,7,0.714946,0.292539
+1135,2,12,"overall a great purchase  but for the price   i just could not pass it up ",0,0,0,0.416094,0.088741
+1135,2,13,"this isn t really a con  but if you re used to using the camera on your phone or a point and shoot  be ready for a steep learning curve because this is a professional camera.",1,1,24,0.663136,0.227277
+1136,2,0,"  easy to grip despite the small size  plus the light weight is nice if you are someone who carries a lot of things around   awesome pictures  quality kicks        the 18 55mm lens that comes with it is great for starting   auto focus is exceptional  but i find myself using mf frequently anyways   kicks     in light areas  does an exceptional job in low light areas   white balance options are kewlsies   records video at 60 fps which is a great feature if you want to slow down footage",0,0,6,1.000000,1.000000
+1136,2,1,"  battery life is not that long  about 3 4 hours   had to buy an extra 2 batteries.",1,0,4,0.714381,0.254814
+1136,2,2,"battery drains quickly especially when filming.   uhh.. idk can t really think of anything else  it does what it camera does ",1,0,4,0.331948,0.103139
+1137,2,0,"this camera does everything that i need it to do and that is take perfect shots.",0,0,11,1.000000,1.000000
+1137,2,1,"also being able to swap out lenses here and there is a plus.",0,0,12,0.700429,0.208492
+1137,2,2,"its a sweet piece of work that has good craftsmanship.",0,0,12,0.639566,0.206164
+1137,2,3,"the design is perfect fitting in your hands where it needs to go comfortable.",0,0,12,0.637512,0.146456
+1137,2,4,"its fast to take pictures and accurate as the photographer using it.",0,0,11,0.694798,0.228523
+1137,2,5,"i have no cons",1,1,13,0.732345,0.145572
+1138,2,0,"i purchased this to shoot interviews and green screen movies in hd  i.e. not a lot of movement and fixed focal length.",0,0,2,1.000000,1.000000
+1138,2,1,"it s light  as far as dslr s go and the focus motors are dead quiet.",0,0,11,0.708253,0.159833
+1138,2,2,"one thing i did not know when getting this is that it does not have a motorized zoom i.e. you have to twist the adjustment on the lens.",0,0,11,0.634078,0.161744
+1138,2,3,"the auxiliary audio input works great.",0,0,12,0.685921,0.226035
+1138,2,4,"i am using it with a wireless sony mic and it is nice and clear.",0,0,7,0.655139,0.144694
+1138,2,5,"i also use the hdmi out to go to a lcd monitor while shooting and that works well also.",0,0,7,0.689743,0.208492
+1138,2,6,"it displays the live feed coming from the camera and also around the edge of the frame it displays the modes and settings you are using.",0,0,10,0.642297,0.146456
+1138,2,7,"the only thing that is not so great is the auto focus.",0,0,12,0.698767,0.228523
+1138,2,8,"it easily gets confused if someone turns away from the camera.",0,0,11,0.710902,0.206164
+1138,2,9,"to resolve this i focus the camera before shooting then switch to manual focus.",0,1,17,0.718216,0.195459
+1138,2,10,"this is just a switch on the lens.",0,1,17,0.363573,0.093210
+1138,2,11,"it says it only shoots for about 10 min but it just starts a new file after 10min you can keep shooting.",0,0,11,0.721804,0.214577
+1138,2,12,"i.e. if you shoot for 25mini you wind up with 3 files.",0,0,11,0.038565,0.053053
+1138,2,13,"auto focus sucks for video  but fine for stills",1,1,17,0.663136,0.160786
+1139,2,0,"great pictures small  but works great for regular sized hands canon",0,0,6,1.000000,1.000000
+1139,2,1,"none that i can find within the 1st week",1,1,21,0.725770,0.207326
+1140,2,0,"excellent image quality.",0,0,10,1.000000,1.000000
+1140,2,1,"video quality is amazing as well  and the auto focus is silent when shooting.",0,0,10,0.296327,0.095194
+1140,2,2,"the touchscreen is a great feature  touch a person object on the screen while in video mode and the camera will track that person as they move around  keeping them in focus.",0,0,7,0.496973,0.127957
+1141,2,0,"so far great camera  got it as a gift for my mom  she loves it  very thin which for me makes the camera  nice big lcd and at 7.2 mp for the price you can t beat it",0,0,0,1.000000,1.000000
+1141,2,1,"the only con i have so far is that the battery came defective  the charger wouldn t charge it  but once i got a new one it worked great.",1,1,14,0.575380,0.144085
+1142,2,0,"this is a great camera for the price.",0,0,0,1.000000,1.000000
+1142,2,1,"i got tired of having blurry pictures so i wanted a small pocket camera with image stabilization.",0,0,10,0.622533,0.228523
+1142,2,2,"takes great pics.",0,0,0,0.713739,0.228523
+1142,2,3,"make sure to get a large sd card.",0,0,4,0.675608,0.206164
+1142,2,4,"turns on and takes pictures quickly.",0,0,0,0.679496,0.159833
+1142,2,5,"can be hard for people with large fingers.",1,1,18,0.683359,0.161744
+1142,2,6,"no optical viewfinder.",1,1,20,0.687198,0.145572
+1143,2,0,"got this camera about a month ago.",0,0,3,1.000000,1.000000
+1143,2,1,"i was suprised from the moment i took it out of box.",0,0,3,0.699807,0.144694
+1143,2,2,"great brushed finished  compact size  and bright lcd screen were very appealing.",0,0,7,0.694645,0.295479
+1143,2,3,"it has a good quality and resoultion picture compared to its size.",0,0,10,0.411348,0.100635
+1143,2,4,"it also has a very quick shutter speed and also turns on very quickly.",0,1,15,0.772654,0.295479
+1143,2,5,"one is easy mode which can be turned off.",1,1,15,0.264419,0.078809
+1143,2,6,"another is the low optical zoom but what do you expect from such a small camera.",1,1,16,0.661145,0.145572
+1144,2,0,"awesome camera.",0,0,11,1.000000,1.000000
+1144,2,1,"quick start up  great pictures  big screen  good color reproduction  very thin  so it fits in your pocket really well  which i m a fan of.",0,0,11,0.687362,0.214577
+1144,2,2,"its also got a really good video camera on it.",0,0,2,0.550904,0.173323
+1144,2,3,"it takes much better videos than any of my friends  point and shoot cameras.",0,0,2,0.236005,0.119341
+1144,2,4,"long battery life ",0,1,14,0.769863,0.212199
+1144,2,5,"you have to take the battery out to charge it.",1,1,14,0.219692,0.074499
+1144,2,6,"pictures sometimes look fuzzy on the screen.",1,1,18,0.660258,0.144694
+1144,2,7,"when they re transfered onto the computer  they look great  but it took a bit of getting used to.",1,1,19,0.668854,0.226035
+1144,2,8,"i kept thinking i had taken a slighly blurry picture.",1,1,18,0.718962,0.227277
+1145,2,0,"the picture quality has been great for me  and the movie quality is very impressive.",0,0,2,1.000000,1.000000
+1145,2,1,"equipped with a 4gb card  i can store 1600  pictures or almost 1.5 hours of video.",0,0,4,0.542550,0.206044
+1145,2,2,"picture quality degrades quite a bit when zoomed in  especially using the digital zoom  but",1,1,16,0.573681,0.145481
+1146,2,0,"small  high resolution  optical zoom  uses sd cards instead of cf.",0,0,10,1.000000,1.000000
+1146,2,1,"pictures on screen after they are taken seem fuzzy.",1,1,18,0.774546,0.212199
+1146,2,2,"default light settings takes green pictures.",1,1,23,0.415003,0.146398
+1146,2,3,"other light settings do not give this issue.",1,1,23,0.108655,0.080332
+1147,2,0,"good video quality",0,0,2,1.000000,1.000000
+1147,2,1,"doesn t have the capability of emailing motion detection via yahoo or google making it virtually worthless or security.",1,1,13,0.652722,0.228523
+1147,2,2,"wireless connection died within 3 months of usage.",1,1,24,0.747127,0.292539
+1147,2,3,"only works through ethernet connection now.",1,1,24,0.273617,0.078368
+1147,2,4,"these two items make this camera hardly better than a paperweight.",1,1,23,0.685665,0.145572
+1148,2,0,"for  40  it was a good deal.",0,0,7,1.000000,1.000000
+1148,2,1,"straightforward setup  customizable settings for http https ports  easy to position  works flawlessly with synology products",0,0,9,0.708670,0.214577
+1148,2,2,"integrated features work unreliably  can make device unreachable via wireless.",1,0,1,0.422643,0.147568
+1148,2,3,"ie only interface   beware non windows users.",1,0,9,0.711633,0.144694
+1148,2,4,"too flaky to pay full price.",1,1,21,0.663974,0.145572
+1149,2,0,"  low cost   ip enabled",0,0,11,1.000000,1.000000
+1149,2,1,"worked for 5 minutes then only displays white image.",1,1,25,0.623230,0.161744
+1149,2,2,"tried reset  different computers  etc.",1,1,23,0.724917,0.144694
+1149,2,3,"no new firmware available.",1,1,21,0.749474,0.193240
+1149,2,4,"camera has newer firmware than what is online.",1,1,21,0.057807,0.056304
+1149,2,5,"tech support said they would respond in 48 hrs  did not.",1,1,25,0.686560,0.145572
+1150,2,0,"when connected to the router or a system directly it works fine.",0,0,12,1.000000,1.000000
+1150,2,1,"does motion detection and capture ok.",0,0,10,0.696368,0.159833
+1150,2,2,"wireless   no joy  already did the firmware upgrade   checked router  etc.  other vendor wireless camera works no issue.",1,1,21,0.639468,0.161744
+1150,2,3,"this one will not connect.",1,1,15,0.736519,0.160786
+1152,2,0,"makes a good web cam  but thats not what i was looking for.",0,0,2,1.000000,1.000000
+1152,2,1,"very poor instuctions  not intuitive at all.",1,1,24,0.701300,0.208492
+1152,2,2,"will only work when connected to my computer.",1,1,24,0.707981,0.292539
+1152,2,3,"does not work with my wireless network and won t even work when connected with an ethernet cable to my network.",1,1,24,0.083908,0.067805
+1152,2,4,"i know price is reasonable  but even at this price point  no one should have to invest hours of their time to install something such as this.",1,1,16,0.676461,0.160786
+1153,2,0,"good picture quality  nice using it with the iphone ipad app",0,0,10,1.000000,1.000000
+1153,2,1,"impossible to set up for remote monitoring  won t work beyond my own network.",1,0,12,0.745555,0.271646
+1153,2,2,"and the motion detect either sends a continuous stream of images via email  or doesn t work at all.",1,1,13,0.455192,0.136841
+1154,2,0,"once you get it running  the menu s and options are all well explained enough to make the use of the product easy and reasonably trouble free.",0,0,12,1.000000,1.000000
+1154,2,1,"overall i m pretty happy with this purchase.",0,0,2,0.694169,0.206164
+1154,2,2,"the software absolutely requires you to use ie.",1,1,22,0.673002,0.208492
+1154,2,3,"if you don t have a computer that has ie that would definitely be a reason to look elsewhere.",1,1,20,0.677555,0.146456
+1154,2,4,"image resolution is a little low  but i knew that before purchasing the product.",1,1,20,0.655809,0.159833
+1154,2,5,"error messages are pretty bad in that they don t say anything useful.",1,1,20,0.711511,0.207326
+1155,2,0,"easy set up  nice functionality",0,0,10,1.000000,1.000000
+1155,2,1,"no time stamps  the motion detection simply takes a picture every interval  it doesn t detect motion at all  changing the location doesn t help  changing the sensitivity doesn t help  the camera emailed me 350 pictures of a blank chair in the course of two hours.",1,0,10,0.622301,0.228523
+1155,2,2,"what good is this ",1,0,2,0.739121,0.227277
+1156,2,0,"comes with secureview pro software 2.01.",0,0,8,1.000000,1.000000
+1156,2,1,"i have 16 trendnet tv ipxxx cams  several 110s  1 121w  3 312w s  2 312 s and 2 422w s.",1,0,7,0.173136,0.119224
+1156,2,2,"this one has the worst picture of all the cams i have  the new version firmware is missing a very important feature which is time date stamp overlay on the 121wn 1.2.2 build 23 firmware.",1,0,8,0.096587,0.093147
+1156,2,3,"video audio  camera overlay setting is just gone   ",1,0,8,0.738342,0.227277
+1157,2,0,"straightforward setup.",0,0,9,1.000000,1.000000
+1157,2,1,"good build quality and features for the price.",0,0,2,0.616357,0.228523
+1157,2,2,"free mobile app access   but see below.",0,1,14,0.781390,0.271646
+1157,2,3,"required a flash upgrade to perform documented functionality   direct url access to the video feed   to work with their ios app.",1,1,14,0.383523,0.118578
+1158,2,0,"after looking at 20 or so wireless cameras i came across this one which is exactly what i was looking for.",0,0,8,1.000000,1.000000
+1158,2,1,"i wanted a baby monitor that i could use with my android phone so i can listen and check on our baby.",0,0,10,0.667759,0.161744
+1158,2,2,"setup the camera just as the instructions said.",0,0,10,0.703532,0.159833
+1158,2,3,"then turned connected my android phone to my home wireless.",0,0,10,0.625085,0.161744
+1158,2,4,"then installed trendnet securview mobile  free app in android market  and pointed it at the camera s ip.",0,0,3,0.695426,0.144694
+1158,2,5,"works flawlessly.",0,0,12,0.704356,0.159833
+1158,2,6,"i m still trying to decide if i want to nat it through the firewall so that i can access it anywhere but i m not sure that i need that function.",0,0,8,0.665561,0.145572
+1159,2,0," easy to set up.",0,0,9,1.000000,1.000000
+1159,2,1,"all you need to do is follow instructions and have a little knowledge of how your router is set up.  free itunes and android market apps.",0,0,9,0.140170,0.076271
+1159,2,2," looks great on a xoom    website viewer  more in other thoughts    one way audio.",0,0,12,0.649533,0.206164
+1159,2,3," really nice for a baby monitor   infrared lens  motion detection system with event scheduling and email alerts.",0,1,13,0.637414,0.146456
+1159,2,4,"securview pro on the pc is kind of garbage.",1,1,24,0.715237,0.206164
+1159,2,5,"i just stick to the web browser when viewing on the computer.",1,1,15,0.683359,0.161744
+1159,2,6,"unfortunately to get the full functionality of the website viewer you need to use ie.",1,1,24,0.708049,0.207326
+1160,2,0,"setup was quick  i used web setup  wireless 11n worked flawlessly ui is responsive and seems stable ios viewer app",0,0,3,1.000000,1.000000
+1160,2,1,"ir leds only effective out to 60cm  work at 850nm  vga resolution is limiting internet explorer   activex required for setup of alarm events runs warm power cable is only about 5ft   160cm not poe",1,1,15,0.278761,0.116275
+1161,2,0,"great camera  ",0,0,12,1.000000,1.000000
+1161,2,1,"works wired with very little problems.",0,1,14,0.635728,0.226035
+1161,2,2,"wireless is unable to connect even with the one touch connection.",1,1,15,0.652767,0.208492
+1161,2,3,"this is why i had bought this product so i could monitor my backyard  it is useless unless i use a 250ft cord .technical support  ",1,1,15,0.729012,0.274255
+1161,2,4,"well i was chatting with a nice lady from a very poor connection in another country who you could hardly understand even with english.hopefully i will get a usa bound support for this otherwise",1,1,14,0.479126,0.198314
+1162,2,0,"great quality pictures  more mp than you re ever likely to need  leica lens.",0,0,0,1.000000,1.000000
+1162,2,1,"camera has a solid feel to it and looks professional.",0,0,1,0.691644,0.226035
+1162,2,2,"intelligent auto mode is noticeably better than regular point and shoot modes of other cameras.",0,0,7,0.711566,0.193240
+1162,2,3,"other modes give you somewhat more control than some comparable cameras for more advanced users.",0,0,6,0.276453,0.090301
+1162,2,4,"excellent for macro photography ",0,0,2,0.697308,0.206164
+1162,2,5,"720p hd video recording.",0,0,2,0.673654,0.206164
+1162,2,6,"sdhc support.",0,0,4,0.696890,0.146456
+1162,2,7,"great camera overall.",0,0,6,0.709070,0.206164
+1162,2,8,"this is the one i d take when i don t want to haul the slr but still want quality pictures.",0,0,6,0.634995,0.228523
+1162,2,9,"can get some digital noise in higher iso modes  as all compact digital cameras.",1,1,25,0.643561,0.161744
+1162,2,10,"this one might be a little worse than some in low light without flash  but i don t have that much experience with other cameras.",1,1,13,0.777235,0.214577
+1162,2,11,"for casual shooting the flash works fine  otherwise a small tripod will solve most low light issues.",1,1,14,0.546953,0.165415
+1162,2,12,"be aware though that the tripod mount is all the way on the side of the camera  which may cause the smallest tripods to topple over.",1,1,14,0.316166,0.090931
+1162,2,13,"no viewfinder might disappoint some people but wasn t a deal breaker for me in a compact camera.",1,1,25,0.689107,0.207326
+1163,2,0,"leica summicron optics  excellant wide angle capability  and terrific menu varieties.",0,0,7,1.000000,1.000000
+1163,2,1,"manual controls  and the ability to  add a leica spotting scope if you want some extreme high quality zoom  2000 3000 mm if  your feet are too sore for letting your walking do the zoom.",0,0,1,0.637893,0.208492
+1163,2,2,"the smaller size is a huge plus from bulky dslr s.",0,0,1,0.700083,0.144694
+1163,2,3,"leica optics can attract any image faster than  other makers of optics  regardless of the aperature used.",0,0,7,0.758822,0.271646
+1163,2,4,"panasonic makes leica optics affordable.",0,0,4,0.124977,0.093254
+1163,2,5,"after 40 years   i am finally able  to get off the nikon cannon bandwagon.",0,0,3,0.661588,0.144694
+1163,2,6,"i shopped elsewhere  because newegg is just now marketing the lx 3.",1,0,3,0.728060,0.145572
+1164,2,0,"what great glass  the sharp  f 2 fast  24mm wide lens is a standout at any size and true stunner on a compact.",0,0,8,1.000000,1.000000
+1164,2,1,"smart features like user settable auto iso limits  live historgrams  and aperture priority mode shooting make this a true photographers compact  but it still works great as a pure fully automatic point and shoot.",0,0,8,0.246195,0.080846
+1164,2,2,"raw capture  manual control  and outstanding build quality compete the package.",0,0,12,0.688327,0.206164
+1164,2,3,"while very small  the camera is still not really pocketable.",1,1,21,0.721005,0.161744
+1164,2,4,"the adapter tube for filters adds considerable bulk.",1,1,22,0.655585,0.159833
+1164,2,5,"the lack of an optical viewfinder exacerbates battery life issues  and the accessory viewfinder is absurdly expensive.",1,1,15,0.636540,0.146456
+1164,2,6,"manual controls are a bit awkward.",1,1,17,0.725409,0.159833
+1164,2,7,"the optical zoom is limited  so you you find yourself making much use of a long zoom this might not be the right choice for you.",1,1,22,0.650167,0.160786
+1165,2,0,"this is a great camera period.",0,0,6,1.000000,1.000000
+1165,2,1,"any small camera takes a while to get used to  so don t be so quick to judge this one.",0,0,6,0.666881,0.208492
+1165,2,2,"i use it in the mountains and on building job sites.",0,0,6,0.624854,0.159833
+1165,2,3,"great depth of field with fast f2.0 24mm lens  excellent lcd screen  good white balance  decent flash  lots of manual controls  good battery life  and good os features.",0,0,2,0.695351,0.295479
+1165,2,4,"this is not a con so much as a feature request  the only thing keeping this camera from a 5 star rating is the short optical zoom.",1,1,19,0.561889,0.163108
+1165,2,5,"here s hoping the lx4 bumps it up to 5x of so.",1,1,13,0.725507,0.159833
+1165,2,6,"like any p s  in bright snowy conditions  its hard to see the screen controls  particularly if you wear polarized sun glasses .",1,1,20,0.718816,0.195459
+1165,2,7,"like any small camera  its almost impossible to shoot with gloves on ... even thin liner gloves    the buttons are just too small when conditions are cold.",1,1,20,0.598842,0.185259
+1165,2,8,"have not shoot any video with this camera so can t say much about that.",1,1,20,0.453909,0.115312
+1166,2,0,"zoom  can save in raw",0,0,12,1.000000,1.000000
+1166,2,1,"worked for about 200 pictures then started having exposure issues in all different modes.",1,1,21,0.712088,0.214577
+1166,2,2,"problems got persistently worse as more pictures were taken.",1,1,22,0.455450,0.166734
+1167,2,0,"we bought this camera because our dog destroyed our older camera.",0,0,3,1.000000,1.000000
+1167,2,1,"it is a very good camera  slight barrel distortion at close up  wide angles.",0,0,0,0.644565,0.228523
+1167,2,2,"awesome battery life.",0,0,0,0.669949,0.144694
+1167,2,3,"very easy to use for beginner or hobbyist.",0,0,0,0.694378,0.208492
+1167,2,4,"lots of features.",0,0,6,0.676041,0.144694
+1167,2,5,"we are not a  home video  family per say  but  we do like having short videos shot with our digital camera.",1,0,6,0.711972,0.195459
+1167,2,6,"our older camera had decent video quality but great sound.",1,0,6,0.467608,0.236426
+1167,2,7,"this camera has excellent video but very poor sound.",1,0,6,0.188008,0.102628
+1167,2,8,"i am quite disappointed with that because it is such a great camera otherwise.",1,0,3,0.708865,0.160786
+1168,2,0,"great zoom  clear photos  great lens  long battery time  lots of manual options  lots of preset options as well.",0,0,6,1.000000,1.000000
+1168,2,1,"1 2000 sec shutter speed max  60sec exposure time max.",0,0,10,0.544897,0.145685
+1168,2,2,"720p hd video.",0,0,10,0.712988,0.144694
+1168,2,3,"good close up macro capability.",0,0,10,0.647505,0.206164
+1168,2,4,"lots of other pros i can t think of right now.",0,0,5,0.693118,0.208492
+1168,2,5,"works well with raynox 250 super macro lens.",0,0,7,0.633389,0.144694
+1168,2,6,"maxes out at 8f but that s not horrible for a compact point and shoot.",1,1,14,0.769512,0.214577
+1168,2,7,"the mic on this camera is horrible.",1,1,14,0.129478,0.062786
+1168,2,8,"the sound is extremely muffled sounding.",1,1,17,0.634995,0.161744
+1168,2,9,"camera doesn t come with lens converter for add on lenses.",1,1,22,0.681431,0.146456
+1168,2,10,"this review is for the product itself.",1,1,22,0.704356,0.159833
+1168,2,11,"that s why i gave it 5 stars.",1,1,19,0.782401,0.214577
+1168,2,12,"for shipping  i paid 27 bux for next day fedex and it took 5 days to receive it.",1,1,19,0.081366,0.061289
+1168,2,13,"newegg reimbursed me 20 bux of the shipping cost though.",1,1,19,0.263174,0.097705
+1169,2,0,"superb photos  superior leica designed lens with true 27mm wide angle  excellent optical image stabilization  effective face recognition algorithm  very light weight  raw jpeg capability  custom white balance settings  very good battery life  large and bright lcd screen and decent evf  hd video recording  improved sensor for low light sensitivity  still not as good as dslrs due to the sensor size limitation but heckuva lot better than previous generation models   tons of features.",0,0,10,1.000000,1.000000
+1169,2,1,"subjectively  the construction of the camera doesn t feel as stout as the comparable models from fujifilm and canon  but at this price  it s a terrific bargain for all it s features and i would cut them some slack about perceived lack of heavy duty build.",1,0,8,0.548707,0.145550
+1169,2,2,"low light sensitivity can still be improved upon and there are some concerns regarding poor service reputation with panasonic company.",1,0,8,0.711843,0.228523
+1169,2,3,"it s annoying to take off the lens cap before turning on the camera but it s same situation with other superzooms.",1,1,16,0.684321,0.227277
+1170,2,0,"i have the black version and this camera is great.",0,0,4,1.000000,1.000000
+1170,2,1,"from the minite u flip the on switch you realize where your money went.",0,0,7,0.666321,0.208492
+1170,2,2,"everything you touch is quick and responsive.",0,0,5,0.668835,0.159833
+1170,2,3,"sure there are cheaper point and shoots that get the job done but trust me if you like your camera to respond the precise second you tell it to this is the one.",0,0,3,0.630944,0.146456
+1170,2,4,"menus are also quick and responsive.",0,0,5,0.711677,0.144694
+1170,2,5,"battery life is massive i could easily take over 400 full resolution pictures on a single battery.",0,0,6,0.625843,0.144694
+1170,2,6,"and this camera makes it easy to do so.",0,0,9,0.732583,0.161744
+1170,2,7,"like other reviewers have said the auto function is great.",0,0,9,0.631132,0.226035
+1170,2,8,"it quickly detects faces  or if u need to open the flash etc.",0,0,7,0.683709,0.206164
+1170,2,9,"it doesn t come with a second battery.",1,1,15,0.783089,0.195459
+1170,2,10,"even though one can take a lot of pictures on one battery  the camera makes it so easy to do so that one battery might be insufficient for some.",1,1,15,0.155488,0.090675
+1171,2,0,"this is a big step up from our 4 year old olympus.",0,0,3,1.000000,1.000000
+1171,2,1,"it turns on instantly.",0,0,12,0.715755,0.146456
+1171,2,2,"continuous shooting modes work well.",0,0,12,0.622301,0.146456
+1171,2,3,"the flexible of the lens is amazing.",0,0,0,0.709070,0.206164
+1171,2,4,"both the wide angle and telephoto are very useful.",0,0,0,0.713334,0.206164
+1171,2,5,"it is smaller than i expected and much lighter than i expected.",0,0,1,0.642524,0.160786
+1172,2,0,"i researched this camera heavily before i bought it.",0,0,3,1.000000,1.000000
+1172,2,1,"camera is very light for the size.",0,0,11,0.633160,0.144694
+1172,2,2,"intelligent auto settings are accurate and fool proof.",0,0,11,0.636369,0.144694
+1172,2,3,"the pictures are sharp and clear even with the digital zoom at full extension.",0,0,10,0.650882,0.144694
+1172,2,4,"price was very reasonable considering the huge number of features.",0,0,2,0.757372,0.195459
+1172,2,5,"leica lens is excellent  it has many features of a digital slr without the painful cost.",0,0,2,0.565877,0.234438
+1172,2,6,"lens cannot extend with lens cap on which means that before turning on the camera  remove the cap.",1,1,21,0.500457,0.334949
+1172,2,7,"bulky but with a super zoom  wide angle lens what do you expect ",1,1,20,0.301011,0.135403
+1172,2,8,"watch the white saturation when taking indoor flash shots.",1,1,18,0.688047,0.160786
+1173,2,0,"this camera is great  love the external controls combined with the touch screen controls.",0,1,21,1.000000,1.000000
+1173,2,1,"panasonic got it right with this little camera.",0,1,16,0.723008,0.208492
+1173,2,2,"picture quality is great for everyday use.",0,1,16,0.630031,0.206164
+1173,2,3,"no zoom in video mode.",1,1,16,0.680271,0.206164
+1173,2,4,"doesn t matter that s what the digital camcorder is for..",1,1,16,0.706575,0.145572
+1174,2,0,"very wide angle f2.8 lens with low barrel distortion.",0,1,21,1.000000,1.000000
+1174,2,1,"3.0  usable touchscreen viewscreen.",0,1,21,0.708395,0.159833
+1174,2,2,"full manual controls  rare in this type of camera .",0,1,21,0.696400,0.195459
+1174,2,3,"full automatic mode   iauto mode.",0,1,17,0.545123,0.165276
+1174,2,4,"lots of scene modes.",0,1,17,0.168580,0.077298
+1174,2,5,"iso limiter to prevent finger paintings in low light.",0,1,23,0.674406,0.146456
+1174,2,6,"if you reduce resolution  you can get nearly 10x true optical zoom out of this little guy.",0,1,13,0.650017,0.159833
+1174,2,7,"it takes 720p hd video  too.",0,1,17,0.716126,0.161744
+1174,2,8,"macros are surprisingly good.",0,1,21,0.658824,0.226035
+1174,2,9,"can remove battery and memory card while on tripod.",0,1,14,0.656529,0.226035
+1174,2,10,"can t zoom while recording hd video.",1,1,17,0.766504,0.212199
+1174,2,11,"pictures a little soft at full 5x zoom.",1,0,10,0.343685,0.095904
+1174,2,12,"flash pretty useless.",1,0,12,0.704625,0.211850
+1175,2,0,"there are lots of settings  nice video recording  easy zoom  easy user interface  the touch screen is a plus  and theres lots of settings.",0,0,9,1.000000,1.000000
+1175,2,1,"no zoom adjustment when video is recording  no cable came with the camera to charge it on the computer.",1,1,15,0.532131,0.221915
+1175,2,2,"you have to take the battery out to charge it.",1,1,15,0.455450,0.127837
+1176,2,0,"this tiny piece of heaven is increadible.",0,0,2,1.000000,1.000000
+1176,2,1,"granted noise reduction could be a bit better for the price  the color reproduction is stunning.",0,0,10,0.607626,0.146456
+1176,2,2,"the picture quality is fabulous  especially when the camera is configured accordingly.",0,0,10,0.780408,0.212199
+1176,2,3,"the exposure customizability allows you to shoot pictures just how you want to  wherever  whenever.",0,0,10,0.211861,0.078368
+1176,2,4,"simply put  unbelievable.",0,0,3,0.720720,0.161744
+1176,2,5,"and it s a supercompact for a reason.",0,0,3,0.676316,0.144694
+1176,2,6,"batery lasts long enough for several shoots without recharging.",0,1,14,0.634245,0.146456
+1176,2,7,"has a built in speaker  so you can hear recorded videos.",0,1,14,0.681255,0.144694
+1176,2,8,"so many usefult tools  only takes a bit to learn them all.",0,1,14,0.704693,0.144694
+1176,2,9,"arduously long flash recharge  but not much different than comprable models.",1,1,14,0.728521,0.214577
+1176,2,10,"without flash  wonderfully fast.",1,0,10,0.406454,0.125463
+1177,2,0,"720p hd video.",0,0,0,1.000000,1.000000
+1177,2,1,"small  takes good pictures for a point and shoot.",0,0,11,0.627862,0.208492
+1177,2,2,"i didn t buy it for video  but video is nice to have when you take it with you.",0,0,0,0.756644,0.212199
+1177,2,3,"so for that  it s no  1 000   video camera  but it s everything and more i d want in a point and shoot.",0,0,0,0.202094,0.122009
+1177,2,4,"hd video is in a .mov",1,0,0,0.275271,0.077351
+1177,2,5,"format...with a 4 gig card  make sure the card you buy can have a sustained read write of over 10mbs or you can t record   720  only holds 16 minutes of video   30 fps.",1,1,16,0.484551,0.129124
+1178,2,0,"1  shake reduction 2  dust shake 3  weather seal  most   1000 cameras don t have it  4  10 megapixels 5  3 frames second   you can shoot jpegs at 3 f s until your card fills up 6  kit lens is pretty decent 7  compatible with any k mount lens 8  build quality is awesome 9  2.5 inch lcd 10  raw ...the list goes on...",0,0,4,1.000000,1.000000
+1178,2,1,"the bottom line unless you re willing to dish out  1100  you won t find a better camera.",1,1,21,0.258260,0.154206
+1179,2,0,"very affordable  high end camera",0,0,10,1.000000,1.000000
+1179,2,1,"lens options are limited compared to big 2",1,1,21,0.621371,0.145572
+1180,2,0,"this alows for stunning image quality where it counts  smooth tonal gradations  and tack sharp images.",0,0,10,1.000000,1.000000
+1180,2,1,"the 18  55 lens that comes with the kit is one of the best i have ever used.i have 15x22 prints  taken with this outfit and printed on and epson 4800  that will blow you away.",0,0,8,0.727091,0.268852
+1180,2,2,"it is much better than my nikon d2x  which recently found a new home  this camera and lens combo are the best value on the market bar none.",0,0,8,0.313177,0.082218
+1180,2,3,"disclaimer   all images that i have produced using the gx 10 and 18 55 lens were shot in raw mode  i don t shoot jpeg.",0,0,10,0.472365,0.181214
+1181,2,0,"the panasonic dmc fx150 is a blast to use.",0,0,8,1.000000,1.000000
+1181,2,1,"some might question the need for 14 megapixel images  however i have found this camera can capture excellent images.",0,0,10,0.696111,0.271646
+1181,2,2,"thanks to the max iso feature  you can be sure that image noise is not a problem  and the fx150 s effective image stabilization system helps fight image blur.",0,1,25,0.088848,0.104987
+1181,2,3,"with plenty of exposure options  i have been able to capture some great images.",0,0,9,0.327922,0.122273
+1181,2,4,"this is one of the few p s cameras that allows full manual control and raw.",0,0,12,0.690166,0.226035
+1181,2,5,"automatic exposure also works great.",0,0,12,0.696054,0.228523
+1181,2,6,"pictures are not as sharp as my pentax k20d digital slr  but no p s camera will ever be as sharp as a good slr.",1,0,8,0.659244,0.145572
+1182,2,0,"i got this cam because it has wide angle is ultraportable with a larger lens than i could find elsewhere at this size..  i also prefer panny for both cameras and camcorders.",0,0,7,1.000000,1.000000
+1182,2,1,"i get brand loyal with certain things and panny has won me over on these products.",0,0,3,0.707011,0.144694
+1182,2,2," knowing you a portion of the price went towards useless pixels... i think i might actually be embarrassed if anyone asked me how many pixels it had..  but that is probably more a reflection on my own issues than the camera itself.",1,1,15,0.651107,0.233374
+1182,2,3,"i have it set to use 10k.",1,1,23,0.733216,0.232109
+1183,2,0,"lots of cool features  resolution  28mm  hd video etc.",0,0,0,1.000000,1.000000
+1183,2,1,"i own the tz 5 but wanted the bigger sensor",0,0,7,0.710699,0.161744
+1183,2,2,"no zoom in hd.",1,0,0,0.673002,0.144694
+1183,2,3,"but more importantly the camera didn t work upon arrival.",1,0,7,0.709070,0.146456
+1183,2,4,"it turned on and shot pix but no image appeared on the lcd either when taking the shot or reviewing the pix.",1,0,7,0.624589,0.144694
+1183,2,5,"i am going to return it for replacement but i am definitely worried about the quality.",1,0,4,0.704503,0.160786
+1184,2,0,"takes very good pictures.",0,0,0,1.000000,1.000000
+1184,2,1,"very nice camera for the price",0,0,0,0.670713,0.159833
+1184,2,2,"eats batteries.",1,1,14,0.749474,0.292539
+1184,2,3,"eats alot of batteries.",1,1,14,0.054666,0.069915
+1185,2,0,"i bought this camera at a local electronic store and have been using it for almost a week now.",0,1,19,1.000000,1.000000
+1185,2,1,"the pictures and zoom are excellent compared to a dxg i bought and returned.",0,1,19,0.306157,0.126512
+1185,2,2,"it is really easy to figure out to operate.",0,0,9,0.704768,0.228523
+1185,2,3,"eats up batteries.",1,1,14,0.698767,0.144694
+1185,2,4,"what digital camera doesn t.",1,1,14,0.713334,0.161744
+1185,2,5,"invest in a charger.",1,1,14,0.686560,0.145572
+1186,2,0,"this is more a retort to the previous review.",0,1,14,1.000000,1.000000
+1186,2,1,"we ve had this camera for one month and have used it extensively.",0,1,14,0.667759,0.159833
+1186,2,2,"the software is not particularly intuitive but is not hard to figure out.",0,1,23,0.626706,0.161744
+1186,2,3,"the pictures are good but not as good as i ve seen with other digital cameras.",0,1,16,0.659149,0.206164
+1186,2,4,"i easily located a 512mb memory stick right here at newegg.",0,1,16,0.666441,0.228523
+1186,2,5,"i m suprised by how frequently we have to recharge the batteries.",1,1,14,0.720557,0.159833
+1186,2,6,"i don t know if this is true of all digital cameras or is limited to this one model",1,0,8,0.654468,0.160786
+1187,2,0,"cheap",0,1,20,1.000000,1.000000
+1187,2,1,"software is not very easy.",1,0,9,0.637170,0.146456
+1187,2,2,"memory stick not available.",1,0,4,0.677555,0.146456
+1187,2,3,"pictures not that great.",1,0,0,0.684321,0.207326
+1188,2,0,"i used an older olympus model at work.",0,0,3,1.000000,1.000000
+1188,2,1,"they have improved the features to be more easily understood and dynamic.",0,0,9,0.684642,0.146456
+1188,2,2,"the camera takes great pictures and navigating the included software is simple.",0,0,9,0.716412,0.292539
+1188,2,3,"every camera should include a basic case.",1,0,3,0.382253,0.140060
+1188,2,4,"getting a camera out of the box without even a simple plastic and fabric sleeve to keep it safe in is goofy.",1,1,20,0.682074,0.161744
+1188,2,5,"but that isn t a unique problem to this camera.",1,1,20,0.727472,0.207326
+1189,2,0,"excellent image quality  big lcd.",0,0,8,1.000000,1.000000
+1189,2,1,"new firmware fixes battery problem.",0,1,14,0.694169,0.226035
+1189,2,2,"easy to use.",0,0,0,0.714949,0.206164
+1189,2,3,"just great ",0,0,0,0.677555,0.228523
+1189,2,4,"no rechargeable battery pack.",1,1,15,0.637741,0.206164
+1189,2,5," not a big deal ",1,1,24,0.707435,0.160786
+1190,2,0,"nice black exterior.",0,0,4,1.000000,1.000000
+1190,2,1,"big lcd screen  tons of preset features that you can just point and shoot  very light and good price for the feature it offers.",0,0,6,0.690678,0.195459
+1190,2,2,"battery don t last long if you have lcd on all the time.",1,0,6,0.673274,0.244193
+1190,2,3,"cr v3 battery that came with it last longer than normal aa battery but very expensive.",1,0,6,0.213856,0.085346
+1190,2,4,"can t make the camera stay at shq mode.",1,0,6,0.731181,0.144694
+1190,2,5,"it will switch back to hq when shut off the camera  if anybody know how to make it stay at shq please let me know .",1,1,20,0.686560,0.145572
+1191,2,0,"this is a nice camera for those who aren t quite professional but want to get quality photos without the cost of professional cameras.",0,0,2,1.000000,1.000000
+1191,2,1,"i ve had this camera for about 6 months now and have put it through it s paces.",0,0,3,0.710699,0.226035
+1191,2,2,"it works wonderfully with the xd h1gig card.",0,0,3,0.650882,0.159833
+1191,2,3,"i really would suggest this camera to anyone if you don t want to take the jump to the professional cameras that require the add on lens but still want beautiful shots",0,1,13,0.720611,0.195459
+1191,2,4,"the optical zoom is only 3x but you can get an add on lens to add another 1.7 zoom.",1,1,13,0.233168,0.077351
+1191,2,5,"still get decent shots just when you re trying to take pictures of something afar it gets annoying sometimes",1,1,23,0.717561,0.160786
+1192,2,0,"the best part 8mp  ",0,0,1,1.000000,1.000000
+1192,2,1,"the color quality i get out of this camera is amazing  just by point and shoot too ",0,0,8,0.613196,0.159833
+1192,2,2,"i really like that it has a lot of manual settings but i am an amateur so i need to learn more about those settings.",0,0,1,0.660702,0.208492
+1192,2,3,"it is nice and small and it takes images in raw format which is a really superb feature.",0,0,8,0.666253,0.228523
+1192,2,4,"the 3x zoom leaves you wanting more  but fortunately there is an adapter tube yuou can buy and olympus offers some extra lenses but you can buy a different adapter  with the proper threading  and get a lot more options for lenses.",1,1,13,0.720412,0.195459
+1192,2,5,"one thing i do have to give a thumbs down for is in low light well regular house light at night on automatic w o the flash creates blurry photos  and i m sure this can be upgraded in the firmware  but i really don t like the onboard flash...which is another good reason that it has a hotshoe and an l brace you can buy for it...onboard flash just seems too contrasty for my likes  maybe if we all email olympus and tell them to upgrade the firmware for the low lighting lol.",1,1,14,0.467209,0.108278
+1192,2,6,"also the xd card is pricey compared to others  thankfully you get one free  you ll probably want a gig card though  i read somewhere that said they were capable of making them up to 8 gigs in the future but you ll pay less for this camera than an 8 gig card...and xd has slow transfer rates.",1,1,18,0.715654,0.160786
+1193,2,0,"i own a digital print shop that specializes in large posters.",0,1,16,1.000000,1.000000
+1193,2,1,"i was able to take an image from this camera and up sample it to 54 x 72 and get a perfect detailed poster out of it.",0,1,13,0.706056,0.271646
+1193,2,2,"i work with professional images all the time  and it usually requires a lot of time to prep them for large out put.",0,1,13,0.609772,0.244769
+1193,2,3,"to get a camera with the price tag and get a noiseless image that flawlessly up sampled 11x to 257 mbs and not go soft says everything",0,1,16,0.449391,0.102087
+1193,2,4,"i wish it had a  5x optical zoom.",1,0,7,0.766871,0.193240
+1193,2,5,"but for most people the size of the image will allow them to digitally zoom and crop in their computer.",1,0,7,0.429819,0.121926
+1194,2,0,"i have owned this camera for 4 months now  and am very pleased with it.",0,0,8,1.000000,1.000000
+1194,2,1,"the image resolution is excellent.",0,0,8,0.722201,0.292539
+1194,2,2,"i can now make very sharp prints even when severely cropping my images.",0,0,8,0.278496,0.122273
+1194,2,3,"this is an awesome camera for the price.",0,0,0,0.709070,0.206164
+1194,2,4,"short battery life.",1,1,14,0.734524,0.292539
+1194,2,5,"you will need to have extra batteries on hand if you plan to take a lot of pictures.",1,1,20,0.389525,0.116242
+1195,2,0,"you have to buy this camera ",0,0,0,1.000000,1.000000
+1195,2,1,"you can make some great pictures.",0,0,6,0.712175,0.292539
+1195,2,2,"for the first time in my life i ve make some great pictures and i am amazed of this camera capabilities  but you need to study it s manual  if you have no clue about pro.",0,0,6,0.117885,0.076271
+1195,2,3,"photography.",0,0,6,0.731472,0.206164
+1195,2,4,"what can i say   great camera ",0,0,6,0.682074,0.208492
+1195,2,5,"you need some good batteries  the big screen kills your batteries ",1,0,6,0.633389,0.160786
+1196,2,0,"works well in all conditions including dark conditions.",0,0,12,1.000000,1.000000
+1196,2,1,"it is very slim making it easy to put in your pocket.",0,0,1,0.710902,0.146456
+1196,2,2,"only con is that it did not come with a sd card  but it was no big deal because they are so cheap anyway.",1,1,24,0.637741,0.160786
+1197,2,0,"i am quite pleased with this product.",0,1,22,1.000000,1.000000
+1197,2,1,"  easy to figure out without reading the manual.",0,1,22,0.617408,0.146456
+1197,2,2,"  when the camera is connected via usb to a computer  it acts like drive  not requiring any software installation .",0,1,22,0.726347,0.195459
+1197,2,3,"  the included docking station easily allows the user to switch between recharge  usb transfer  and tv slideshow.",0,1,15,0.426269,0.104931
+1197,2,4,"  perfect size to put into your pocket.",0,1,25,0.723336,0.208492
+1197,2,5,"you cannot access the pictures not on the sd card while the sd card is in the camera.",1,0,6,0.653797,0.316955
+1198,2,0,"awsome camera  great gift.",0,0,12,1.000000,1.000000
+1198,2,1,"its sleak its thin its perfect",0,0,12,0.704768,0.144694
+1198,2,2,"when this is 10.1 mp and this then at teh same price ill get another",1,1,16,0.637741,0.227277
+1199,2,0,"camera is so slim it can fit in any pocket.",0,0,1,1.000000,1.000000
+1199,2,1,"the user interface for the camera is great  you can learn all the advanced features just by playing with the menus for 10 mins.",0,0,9,0.697190,0.271646
+1199,2,2,"battery life is great  i ve taken a good few pictures without the battery bar wearing down.",0,0,2,0.494844,0.106659
+1199,2,3,"i did alot of research before buying  and for it s appearance and what it can do  theres not many that can beat the price.",0,0,8,0.694902,0.207326
+1200,2,0,"great overall slim camera   great pics and great quality movies in a very small package.",0,0,2,1.000000,1.000000
+1200,2,1,"none that i could find  other than in low light the movies come out grainy  but that it with all cams.",1,1,17,0.585562,0.208648
+1201,2,0,"this camera has great photo quality.",0,0,0,1.000000,1.000000
+1201,2,1,"its probably the cheapest 8 megapixel you ll find on the market.",0,0,4,0.669336,0.228523
+1201,2,2,"the zoom is decent  the video is pretty par for digital cameras.",0,0,0,0.648271,0.159833
+1201,2,3,"its super tiny and easy to carry aroung.",0,0,8,0.693034,0.161744
+1201,2,4,"a must have for the point and shooter",0,0,8,0.731530,0.145572
+1202,2,0,"very nice.",0,0,9,1.000000,1.000000
+1202,2,1,"takes great pictures.",0,0,9,0.632575,0.161744
+1202,2,2,"fast start up  which is nice when you see something funny happening.",0,0,9,0.646581,0.146456
+1202,2,3,"buttons are easy to use and are in good places.",0,0,9,0.671338,0.159833
+1202,2,4,"not hard to figure out at all.",0,0,9,0.715718,0.228523
+1202,2,5,"i dont really bother w  the best shot modes  but its got alot of them.",0,0,1,0.625843,0.318490
+1202,2,6,"screen is kind of poor resolution.",1,1,18,0.694741,0.315423
+1202,2,7,"it always tricks me when i look at a picture i just took.",1,1,18,0.722580,0.208492
+1202,2,8,"it looks slightly grainy blurry on the screen.",1,1,20,0.683709,0.159833
+1202,2,9,"however  when you zoom in  you can see that it took a good pic.",1,1,17,0.642090,0.208492
+1202,2,10,"its a small thing... doesnt effect the overall quality of the picture  so i ve got no issues on it.",1,1,20,0.662593,0.227277
+1203,2,0,"works great  great pictures  easy to use...",0,0,0,1.000000,1.000000
+1203,2,1,"only lasted two months",1,0,0,0.727080,0.227277
+1204,2,0,"my first digital camera  so coming from a novice  it seems to be fairly easy to use.",0,0,9,1.000000,1.000000
+1204,2,1,"the controls are mostly intuitive.",0,0,1,0.687558,0.146456
+1204,2,2,"battery life is great.",0,0,6,0.645784,0.206164
+1204,2,3,"lcd is adequately bright.",0,0,7,0.691660,0.208492
+1204,2,4,"anti shake feature is great for taking pictures in wind or while riding in a vehicle.",0,0,6,0.725712,0.292539
+1204,2,5,"i m happy with the pictures and others have complimented the quality.",0,0,6,0.256509,0.087762
+1204,2,6,"it s a bit small for my hands  but manageable.",1,1,20,0.676507,0.226035
+1204,2,7,"the included usb cable is proprietary  so you can t use a standard one to connect to a computer.",1,1,15,0.640572,0.161744
+1204,2,8,"it is also fairly short.",1,1,21,0.724882,0.159833
+1204,2,9,"the usb cable connects in the bottom of the camera  so the camera must be laying down while connected to your computer.",1,1,15,0.643030,0.144694
+1204,2,10,"i specifically got it for a 2700 mile road trip and was disappointed that it stopped working with the lens stuck in the extended position a few hours into the first day.",1,1,13,0.739736,0.214577
+1204,2,11,"however  after removing the battery and turning it on and off a couple of times  it reset itself and started working again.",1,1,14,0.627653,0.189251
+1204,2,12,"it worked flawlessly the rest of the trip.",1,1,14,0.505658,0.133418
+1205,2,0,"  very compact    easy mode  for the beginers   big view screen   excellent quality photos    great battery life.",0,0,0,1.000000,1.000000
+1205,2,1,"  reviewing deleting photos feels slightly cumbersome.",1,0,0,0.411068,0.143256
+1205,2,2,"  i haven t found a  macro  mode yet  may or may not have ",1,1,17,0.682074,0.145572
+1206,2,0,"good image quality  ability to alter shot selection  black white  retro  nighttime  fireworks  etc   slim design fits right into my shirt pocket.",0,0,11,1.000000,1.000000
+1206,2,1,"i love this camera and am so glad i got it at such a deal from newegg ",0,0,3,0.719162,0.145572
+1207,2,0,"i m not an expert  but the overall product is great.",0,0,0,1.000000,1.000000
+1207,2,1,"shipped to me problem free.",0,0,0,0.701300,0.206164
+1207,2,2,"new egg is the best.",0,0,0,0.641479,0.208492
+1207,2,3,"usb cable doesn t charge the camera.",1,1,15,0.658393,0.206164
+1207,2,4,"so after having it plugged in to the computer  i forget to turn it off and then the next day the battery is drained.",1,1,15,0.659548,0.160786
+1208,2,0,"very thin  and fast start up.",0,0,9,1.000000,1.000000
+1208,2,1,"long battery life  and great outdoor pics.",0,0,2,0.622533,0.226035
+1208,2,2,"large lcd dislay  though resolution is low  and looks washed out   easy menu system.",0,0,9,0.662284,0.228523
+1208,2,3,"battery pack and the memory card are at the bottom of the camera  and the camera has to be off in order to change the card.",1,1,21,0.747799,0.212199
+1208,2,4,"also the battery gets in the way during this process.",1,1,21,0.399503,0.095918
+1208,2,5,"the flash is weak  and the indoor pics are a little dark.",1,0,2,0.643658,0.159833
+1208,2,6,"also buttons are small",1,1,20,0.724127,0.160786
+1209,2,0,"fantastic picture quality.",0,0,6,1.000000,1.000000
+1209,2,1,"awesome features.",0,0,6,0.690842,0.144694
+1209,2,2,"outstanding video clips.",0,0,0,0.674827,0.208492
+1209,2,3,"great deal.",0,0,0,0.680271,0.208492
+1209,2,4,"can t beat the price anywhere ",0,0,0,0.685665,0.227277
+1210,2,0,"amazing quality.",0,0,6,1.000000,1.000000
+1210,2,1,"i know that there are much higher resolution cameras out there but this one gets the job done well....very well.",0,0,6,0.643772,0.228523
+1210,2,2,"amazing video quality.",0,0,5,0.668416,0.226035
+1210,2,3,"very sleek and thin.",0,0,5,0.712829,0.228523
+1210,2,4,"cool finish on the front.",0,0,6,0.639566,0.161744
+1210,2,5,"3x optical zoom works great.",0,0,7,0.635110,0.226035
+1210,2,6,"very high res images.",0,0,10,0.715151,0.206164
+1210,2,7,"simple design.",0,0,5,0.679819,0.159833
+1210,2,8,"not a good first digital camera for people that arent very  tech savvy .",1,1,25,0.660258,0.228523
+1210,2,9,"buttons have several uses  because theres like 4 .",1,1,18,0.705282,0.206164
+1210,2,10,"so overall it s not the most user friendly for people with not too much experience.",1,1,25,0.686560,0.161744
+1210,2,11,"but if you have had a casio in the past you should have no problems.",1,1,25,0.719660,0.207326
+1211,2,0,"i was looking for a camera body to invest in as an initial foray into photography.",0,0,1,1.000000,1.000000
+1211,2,1,"i had used point and shoots before but was never satisfied with the noise they often had.",0,0,11,0.643432,0.318490
+1211,2,2,"the nikon d5500 was as pricey as i was looking to go for something to learn on and i have to say that i m not disappointed i bought it.",0,0,5,0.651107,0.318490
+1211,2,3,"the images that it produces are crisp and visually match what i m viewing with my naked eyes.",0,0,10,0.656478,0.226035
+1211,2,4,"it also cycles quickly which means i can shoot a quick succession of shots without having to worry about the buffer being filled mid series  though i m sure the class 10 card i m using helps .",0,0,0,0.641994,0.146456
+1211,2,5,"it s a fairly light body  somewhere around 1lb and has good ergonomics for my hands.",0,0,12,0.701949,0.226035
+1211,2,6,"it never feels like it s going to slip and my fingers aren t cramped.",0,0,12,0.713334,0.293574
+1211,2,7,"the ttl metering is done well  with it being spot on in most shots.",0,1,17,0.776280,0.301197
+1211,2,8,"there are situations where it can be wrong for what you re trying to do with a certain subject but i ve read that is a common occurrence with custom style shots.",0,1,17,0.166374,0.108605
+1211,2,9,"i haven t found any real cons just yet  i ve only logged 20 hours on it in the month or so i ve had it.",1,1,24,0.761885,0.271646
+1211,2,10,"my only real dislike thus far is the button placement.",1,1,20,0.483806,0.165971
+1211,2,11,"on this body the function button is on the left side near the flash button.",1,1,20,0.139169,0.069332
+1211,2,12,"this might not be an issue depending on taste but i have it set to allow for iso control via the control wheel and would have prefered it be placed around the aperture  shutter release and command wheel cluster.",1,0,1,0.672857,0.144694
+1211,2,13,"it isn t a massive problem  just a slight inconvenience with how i hold the camera when shooting.",1,0,12,0.729818,0.207326
+1212,2,0,"great looks  fast  slim ",0,0,0,1.000000,1.000000
+1212,2,1,"video mode quality is subpar",1,1,17,0.655585,0.207326
+1213,2,0,"sturdy  multi point autofocus  anti shake  several menu languages  several preset configurations for almost any situation  nice lcd  size and quality. ",0,0,1,1.000000,1.000000
+1213,2,1,"no optical viewfinder  typical of subcompacts like this ",1,1,20,0.725770,0.207326
+1214,2,0,"this camera has both optical and digital zoom  making the print quality of pictures incredible.",0,0,0,1.000000,1.000000
+1214,2,1,"the various file sizes are all print quality and this camera will permit you to set your own f stop and other various settings.",0,0,0,0.322359,0.084846
+1214,2,2,"it even has an  easy  mode if you want everything to be automatic ",0,0,9,0.713334,0.160786
+1215,2,0,"excellent image quality  small size  video quality  which is in quicktime format .",0,0,4,1.000000,1.000000
+1215,2,1,"digital zoom is very useful.",0,0,10,0.715755,0.206164
+1215,2,2,"software is also good.",0,0,10,0.673002,0.208492
+1215,2,3,"the styling is reminiscent of 1950s pocket cameras.",0,1,15,0.709070,0.206164
+1215,2,4,"usb cable is proprietary  flash seems bright.",1,1,15,0.628555,0.161744
+1215,2,5,"the intelligent auto settings seem to hunt around a bit.",1,1,17,0.711511,0.160786
+1216,2,0,"previously had the dmc fx30 which was also a great camera  this one was not a huge upgrade from that model other then the megapixels going to 8  the face detection and a few other tweaks.",0,0,10,1.000000,1.000000
+1216,2,1,"i love the size of the camera  pictures turn out great and the optical image stabilization works well.",0,0,0,0.456802,0.095981
+1216,2,2,"hate the proprietary usb to camera connector.",1,1,15,0.729883,0.227277
+1217,2,0,"the camera is red and cool looking and the shipping was free.",0,1,25,1.000000,1.000000
+1217,2,1,"never been so dissappointed with a product.",1,0,3,0.713831,0.213036
+1217,2,2,"i would have thought that being a 14megapixel camera  that the pics would be sharp  clear  and awesome.",1,0,9,0.614346,0.318490
+1217,2,3,"i should have researched more before buying this camera.",1,1,25,0.721426,0.206164
+1217,2,4,"looking at other online reviews with google  i realize that i messed up when i ordered this camera.",1,1,25,0.628974,0.226035
+1217,2,5,"the pics are not sharp  and there seems to be a spots on the pics.",1,0,8,0.748409,0.295479
+1217,2,6,"i assumed that the lense must be dirty  but after wiping lenses with soft cloth  i am still getting little circles showing up on the pics.",1,0,8,0.208832,0.075071
+1217,2,7,"the camera interface and the buttons on the camera are less than desirable  very cumbersome  and awkward.",1,0,9,0.702331,0.144694
+1217,2,8,"next time i m going with a sony or cannon.",1,0,3,0.683709,0.144694
+1217,2,9,"please dont waste your money on this camera  as you would be better off getting a cheap no name camera.",1,0,3,0.664480,0.290645
+1217,2,10,"this camera is probably going in my trash  as i wont take it on vaction  and risk ending up with poor quality  dark  bad pictures.",1,0,8,0.672467,0.160786
+1218,2,0,"fast  precise auto focus  outstanding low light performance  solid construction  dual cf card slots  unique situational focus modes  dual processors with one processor dedicated to focusing.",0,0,12,1.000000,1.000000
+1218,2,1,"canon has an  800.00 rebate good until 03jan2015 on the us spec 1dx.",0,0,3,0.722091,0.206164
+1218,2,2,"expensive  complex  full size camera.",1,0,3,0.723336,0.207326
+1219,2,0,"controls appear be well thought out  finish seems nice.",0,0,12,1.000000,1.000000
+1219,2,1,"got the wrong charger cord   could not even charge the battery and no mention was made on the product page that the camera does not come with a flash card and you cannot use it until you go buy one     wouldn t it be nice if that information was noted on the product page somewhere     when i calm down  get a flash card and the correct charger cord  i will submit a more thorough review of this camera.",1,1,15,0.525950,0.196471
+1220,2,0,"this camera has nearly everything on it that 95  of people would ever need.",0,1,18,1.000000,1.000000
+1220,2,1,"maybe if i were a professional photographer i might would get a higher end camera with a full frame sensor  but i don t think anyone can tell the difference anyway  i can t ",0,1,18,0.625665,0.161744
+1220,2,2,"ummmmmmmmmmmmmmmm................................................................................  other people get intimidated when you ask them to take a picture of you.",1,1,18,0.784749,0.212199
+1220,2,3,"so many people are like  oh man  i don t know how to use your camera  man   just look thru the viewfinder and snap the picture       what s a viewfinder  ",1,1,18,0.152903,0.090675
+1221,2,0,"upgraded from a d40 to this camera works great.",0,0,3,1.000000,1.000000
+1221,2,1,"after 10 months of usage we had to send it back to nikon it would no longer turn on.",1,0,3,0.637170,0.208492
+1221,2,2,"thankfully just within the warranty period.",1,0,2,0.729038,0.206164
+1221,2,3,"otherwise great camera",1,0,0,0.684321,0.145572
+1222,2,0,"great camera  awesome pics.",0,0,0,1.000000,1.000000
+1222,2,1,"great lens.",0,0,0,0.213236,0.073528
+1222,2,2,"knew alot about camera before buying.",0,0,2,0.749474,0.271646
+1222,2,3,"glad for november discounts made it easier to warrant buying.",0,0,2,0.106136,0.114079
+1223,2,0,"full featured  focus motor in camera  low noise to high iso ratio  and solidly built.",0,0,8,1.000000,1.000000
+1223,2,1,"this is a great camera.",0,0,0,0.732281,0.207326
+1224,2,0,"lots of photo capabilities  great sensor  iso 3200 very sensitive and great.",0,0,4,1.000000,1.000000
+1224,2,1,"some noise noticeable in long duration night shots.",0,0,10,0.689559,0.228523
+1224,2,2,"great options and great accessories available for real creativity.",0,0,0,0.666719,0.226035
+1224,2,3,"nice metering modes  focusing modes.",0,0,12,0.752597,0.193240
+1224,2,4,"great night shots  sceneries etc. can select focus point  and lock it.",0,0,12,0.385754,0.103393
+1224,2,5,"increase or decrease flash level.",0,0,12,0.713164,0.206164
+1224,2,6,"do bracketing exposure.",0,0,12,0.704313,0.146456
+1224,2,7,"one fn switch for custom function assignment.",0,0,1,0.629113,0.159833
+1224,2,8,"good lens in kit 18mm to 105mm.",0,0,8,0.675402,0.226035
+1224,2,9,"sunshade hood included.",0,0,9,0.718499,0.208492
+1224,2,10,"a few in camera editing and effects options.",0,0,9,0.645090,0.144694
+1224,2,11,"can connect wireless flashes etc. has many flash capabilities.",0,0,8,0.716602,0.212199
+1224,2,12," don t know if wireless capability is built in or not .",0,0,8,0.204255,0.080882
+1224,2,13,"warranty on lens is good from nikon check on web for exact duration  i forget .",0,0,10,0.656302,0.228523
+1224,2,14,"there is a learning curve.",1,0,10,0.721123,0.206164
+1224,2,15,"to get to taking great photos.",1,0,0,0.685383,0.208492
+1224,2,16,"playing with the focusing ring while off generates and f      error and playing with the zoom while off gives a e chg or something error.",1,0,3,0.642775,0.226035
+1224,2,17,"for remdying both have to remove lens and reattach otherwise the camera is locked.",1,1,15,0.728986,0.144694
+1224,2,18,"remote is optional and only activates shutter  can t use when connected to tv via hdmi to view photos manually.",1,1,15,0.640105,0.160786
+1225,2,0,"bought this camera to take on vacation in southwest.",0,1,24,1.000000,1.000000
+1225,2,1,"the 18mm 105mm good for most shots.",0,1,17,0.739448,0.292539
+1225,2,2,"refresh rate between shots is very good so you miss very few photo opportunities.",0,1,17,0.054425,0.056304
+1225,2,3,"you can set shutter speed to 1 2000 and take pictures out of your car windows straight to the side with little or no blur.",0,1,17,0.636616,0.228523
+1225,2,4,"high iso and still excellent shots.",0,1,16,0.704103,0.228523
+1225,2,5,"uses sdhc memory.",0,1,18,0.706095,0.206164
+1225,2,6,"battery lasts long time.",0,1,14,0.654503,0.144694
+1225,2,7,"flash unit nice as well.",0,1,14,0.699774,0.208492
+1225,2,8,"seeing through the viewfinder is prefered to seeing on the lcd  which often washes out in the sunlight.",0,1,20,0.723496,0.268852
+1225,2,9,"viewfinders in small pocket cameras are so small it is hard to tell what you have.",0,0,5,0.385086,0.089890
+1225,2,10,"a little heavy.",1,0,5,0.730777,0.159833
+1225,2,11,"pricey  but it does take hd video.",1,0,5,0.654158,0.144694
+1225,2,12,"do not expect to put this in your pocket.",1,0,1,0.688961,0.145572
+1226,2,0,"very user friendly.",0,0,11,1.000000,1.000000
+1226,2,1,"easy to use.",0,0,9,0.702603,0.161744
+1226,2,2,"heavy.",1,1,24,0.677555,0.144694
+1226,2,3,"can t autofocus when recording on hd video mode.",1,1,17,0.630975,0.145572
+1227,2,0,"i ve paired it with a tamron 18 250 di ii a18nii zoom lens  a nikon sb 600 speedlight and a patriot iris 16gb sdhc flash card.",0,0,4,1.000000,1.000000
+1227,2,1,"what this baby will do is just amazing.",0,0,4,0.730430,0.227277
+1228,2,0,"what can i say about this incredible piece of optical and electronic technology.",0,0,10,1.000000,1.000000
+1228,2,1,"uses all nikon lenses  light  totally customizable.",0,0,1,0.634078,0.144694
+1228,2,2,"many shooting  exposure  flash  metering  aperture  speed modes to cover any situation.",0,0,12,0.715205,0.214577
+1228,2,3,"the auto mode is a good compromise for most offhand shots.",0,0,12,0.615859,0.257264
+1228,2,4,"most experienced amateur photographers will use the aperture priority mode.",0,0,1,0.336007,0.126494
+1228,2,5,"the pictures from this camera are stunning and rival my old f with manual lenses.",0,0,6,0.683359,0.161744
+1228,2,6,"took me about 10 hours to learn the commands and options.",1,0,6,0.687198,0.160786
+1229,2,0,"pros  excellent image quality feels great in my hands very responsive loaded with features",0,0,10,1.000000,1.000000
+1229,2,1,"honestly cannot think of any at this point.",1,1,13,0.732281,0.292108
+1230,2,0,"just look at all the 5 star  5 egg  ratings.",0,1,24,1.000000,1.000000
+1230,2,1,"the advantages over the less expensive options would be higher resolution lcd  an extra control wheel  ability to add battery pack with vertical controls  4.5 fps  built in focus motor to make use of auto focus in older nikon lenses.",0,0,6,0.681417,0.195459
+1230,2,2,"battery life is excellent.",0,0,2,0.512108,0.139169
+1230,2,3,"maybe price.",1,0,2,0.711232,0.208492
+1230,2,4,"if you are looking to dabble with a dslr  you might be better off with a d5000 and kit lens.",1,0,8,0.619858,0.144694
+1230,2,5,"to really make use of this camera  carrying several lenses does the trick  each at its own price .",1,0,8,0.688551,0.146456
+1230,2,6,"weight.",1,0,8,0.716006,0.159833
+1230,2,7,"this is not a pocket camera and expect neck pain if you are going to try to use it as one.",1,0,1,0.642552,0.146456
+1230,2,8,"it is meant to shoot pretty much the entire time you are carrying it.",1,0,2,0.644339,0.161744
+1230,2,9,"again  a d5000 or something else smaller similar would be more comfortable around your neck all day.",1,1,22,0.695191,0.228523
+1230,2,10,"video.",1,1,24,0.787368,0.268852
+1230,2,11,"it s only real purpose is to use  live view  which is nice when you can t look through the regular viewfinder  it is not a video camera.",1,1,24,0.186426,0.112990
+1230,2,12,"flash.",1,1,20,0.799184,0.268852
+1230,2,13,"the built in flash pretty much stinks.",1,1,20,0.058805,0.056304
+1230,2,14,"i don t think i ve ever really used it other than to see how bad it really was  but that is typical of any camera s built in flash that i ve ever seen .",1,1,20,0.151528,0.112497
+1230,2,15,"get a hot shoe mount flash.",1,1,20,0.256474,0.148017
+1231,2,0,"  ergonomic design   outstanding lcd   solid feel construction   good menus  especially the  my menus  feature   fast   very good controls for white balance and color management.",0,0,2,1.000000,1.000000
+1231,2,1,"  and of course great picture quality",0,0,2,0.717819,0.144694
+1231,2,2,"  no compact flash slot   buttons don t feel as solid as my old d50",1,1,18,0.660258,0.227277
+1232,2,0,"first of all  its from nikon and newegg with newegg having one of the lowest prices out there.",0,0,8,1.000000,1.000000
+1232,2,1,"you rock newegg.",0,0,8,0.119254,0.063625
+1232,2,2,"great pictures.",0,0,0,0.671695,0.206164
+1232,2,3,"backwards compatable with my old nikon af lenses.",0,1,22,0.642297,0.226035
+1232,2,4,"this takes the best photos yet of my digitals and has reinvigorated my interest in photography.",0,0,1,0.679496,0.206164
+1232,2,5,"love the 4.5 fps continuous shooting mood.",0,0,9,0.670385,0.146456
+1232,2,6,"almost instant on and minimal shutter lag.",0,0,12,0.724127,0.227277
+1233,2,0,"need not say much about the product  service was excellent.",0,0,3,1.000000,1.000000
+1233,2,1,"product was sold out as soon as the 10  off was announced last week but price alert auto notify emailed me when item was available.",0,0,3,0.308367,0.141775
+1233,2,2,"happy with everything.",0,0,3,0.729038,0.226035
+1233,2,3,"better than a blackfriday deal",0,0,3,0.651443,0.207326
+1234,2,0,"impressive device.",0,1,19,1.000000,1.000000
+1234,2,1,"it looks good and has a nice weight and feel to it.",0,1,20,0.635728,0.144694
+1234,2,2,"the menus are detailed but easily navigated and custom settings can be dialed in quickly.",0,1,23,0.652767,0.208492
+1234,2,3,"could not be happier with the purchase.",0,1,20,0.731492,0.161744
+1234,2,4,"none have presented themselves in the first few hours of heavy  new toy  use.",1,1,19,0.652856,0.160786
+1235,2,0,"the high iso performance is amazing..",0,0,11,1.000000,1.000000
+1235,2,1,"i have a d70s as well and am a wedding photographer.",0,0,2,0.715151,0.228523
+1235,2,2,"the iso performance of that camera was my weak link.",0,0,2,0.626706,0.146456
+1235,2,3,"with the d90 that issue is a thing of the past.",0,0,5,0.696890,0.144694
+1235,2,4,"it is going to make weddings a breeze to shoot now.",0,0,11,0.710902,0.146456
+1235,2,5,"does not take compact flash memory.",1,1,18,0.716010,0.195459
+1235,2,6,"this is only a con if you have a bag full of compact flash cards.",1,1,18,0.198373,0.106710
+1236,2,0,"great camera  clear clean pictures of good quality  fast shutter time and great features.",0,0,8,1.000000,1.000000
+1236,2,1,"feels made well.",0,0,1,0.723024,0.208492
+1236,2,2,"nice color.",0,0,5,0.711847,0.268852
+1236,2,3,"nice size.",0,0,5,0.141495,0.067505
+1236,2,4,"fits well in both male and female hands.",0,0,1,0.672299,0.208492
+1236,2,5,"easy to navigate after you use it for afew minutes.",0,0,5,0.652333,0.159833
+1236,2,6,"if it  worked as it should  it would be a 5 egg product  keep that in mind  this is a great camera if you get one that works all the way.",0,0,0,0.643240,0.206164
+1236,2,7,"as always  newegg shipping was awesome and fast.",0,0,0,0.699774,0.146456
+1236,2,8,"power button is hard to hit at times  especially for women with nails.",1,1,20,0.680687,0.226035
+1236,2,9,"one very irritating issue is that when we plug the camera into the computer the camera shuts off making it impossible to transfer  i unplug it from the computer and it turns back on  plug it in and it shuts off.",1,1,23,0.729609,0.214577
+1236,2,10,"in my mind this means the camera s broken  it worked at first  we were able to transfer about a dozen pictures  and works perfectly at all times except now when we plug it into usb it shuts off.",1,1,23,0.299607,0.135747
+1236,2,11,"when it is plugged into usb and we try to start it  it just cycles its startup screen  never fully powering on while connected to pc.. i m very disappointed that kodak would produce a camera with problems like this.",1,1,15,0.388247,0.215610
+1236,2,12,"i will post a 2nd review if i find a way to resolve this problem  without this issue this camera is a 4 5 egg camera.",1,1,20,0.607012,0.192801
+1237,2,0,"nice zoom  good close ups  powerful flash  easy to use  manual controls  panoramic photo software seems good  nice lcd  two speed zoom  supports vista  live histogram  joystick  li ion battery and the buttons are all in a sensible place.",0,0,9,1.000000,1.000000
+1237,2,1,"noise problems at 100 iso   really slow raw editing software  small internal memory  cannot change card or battery when using a tripod  not to good movie mode the manual focus is not that easy to use  and no hot shoe might be a problem for some people.",1,1,18,0.422582,0.268226
+1238,2,0,"this camera comes with tons of features for many types of shots and scenarios.",0,0,6,1.000000,1.000000
+1238,2,1,"the 18x zoom can t be beat.",0,0,10,0.702603,0.144694
+1238,2,2,"the picture clarity was not as sharp as what i was used to on my old canon.",1,0,10,0.644339,0.146456
+1238,2,3,"wish i had spend the extra cash.",1,0,3,0.715452,0.145572
+1239,2,0,"fantastic leica lens  18x zoom  raw shooting capability  best feature set in price range.",0,0,6,1.000000,1.000000
+1239,2,1,"functions poorly in almost any typical indoor lighting conditions.",1,1,17,0.709704,0.228523
+1239,2,2,"noise is visible even at iso 100.",1,1,16,0.760879,0.292539
+1239,2,3,"anything above iso 200 almost useless except for snapshot size prints due to noise.",1,1,16,0.057357,0.094500
+1239,2,4,"shooting raw will help.",1,1,22,0.716719,0.232109
+1240,2,0,"the camera has a great zoom  good picture quality  and well in low light conditions.",0,0,11,1.000000,1.000000
+1240,2,1,"night mode works really good too.",0,0,12,0.434635,0.092157
+1240,2,2,"powerful flash",0,0,7,0.706493,0.206164
+1240,2,3,"in order to get the good pics in low light  you have to slow the shutter down and use a tripod.",1,1,17,0.708022,0.271646
+1240,2,4,"after that its good",1,1,17,0.380613,0.118502
+1241,2,0,"amazing picture quality while taking pics outdoor with enough lighting sharp images even at 18x zoom support for sdhc cards",0,0,4,1.000000,1.000000
+1241,2,1,"needs some tweaking to achieve best image quality not so good at night and image stabilizer doesn t work that well in low light conditions honestly  pictures look much better on the camera lcd display than on monitor or tv",1,0,12,0.309940,0.119906
+1242,2,0,"this camera is on of four 18x ultrazoom cameras available right now and after much research the panasonic is truly the best.",0,0,1,1.000000,1.000000
+1242,2,1,"it is very easy to use  the intelligent auto mode makes the amateur look good and is great for a quick shot with out much thinking.",0,0,12,0.619908,0.146456
+1242,2,2,"the zoom is amazing and with image stabilization works impeccably.",0,0,12,0.691373,0.159833
+1242,2,3,"this is hands down the best camera i have had.",0,0,12,0.781390,0.212199
+1242,2,4,"not a fan of proprietary batteries  had to buy a second one as a back up on hand when out shooting.",1,1,15,0.418849,0.238993
+1242,2,5,"regular batteries have one advantage of being available any where when you are in a pinch.",1,1,19,0.434261,0.125463
+1243,2,0,"very easy and fun to use  excellent picture quality  18x optical zoom  great battery life   flash range and light weight  compare to other super zoom .",0,0,6,1.000000,1.000000
+1243,2,1,"a little bit larger than compact models.",1,1,14,0.724998,0.207326
+1244,2,0,"i bought this camera only a few days after it was released here in us.    the low light capability  18x zoom  leica optics  and many other features were like nothing else in this price range.",0,0,9,1.000000,1.000000
+1244,2,1,"the photos and videos i shot there with this camera are amazing.",0,0,5,0.774938,0.292539
+1244,2,2,"the jpegs are great  but the raw images are just amazing.",0,0,8,0.343469,0.098222
+1244,2,3,"i got wide screen dvd quality videos  snaps of humming birds feeding  tropical rainforests  night time photos in the jungle  monkeys in the trees and people in the cities  indoors  outdoors  all handled beautifully by this camera  if you are looking for an excellent camera without spending big bucks  this one is definitely for you.",0,0,10,0.633122,0.146456
+1244,2,4,"nothing to complain about...",1,1,17,0.742520,0.227277
+1245,2,0,"8mp  18x optical zoom  leica wide angle lens  huge vivid lcd  comfy grip  user friendly  more features than you could possibly imagine.",0,0,7,1.000000,1.000000
+1245,2,1,"i d prefer a smooth finish to the rough matte one.",1,1,16,0.730430,0.160786
+1246,2,0,"get it simple.",0,0,9,1.000000,1.000000
+1246,2,1,"if you are comparing this camera and others.",0,0,3,0.666881,0.144694
+1246,2,2,"i ve tested every sub 400 dollar camera out this is the best.",0,0,3,0.624854,0.228523
+1246,2,3,"battery life is sufficient i d recommend another battery for long use.",0,0,2,0.646375,0.159833
+1246,2,4,"macro mode 1cm focal range 18x zoom sdhc compatable crisp images raw format   i won t use it much but  its there  no lens distortion at 18x zoom night pics are good manual mode is amazing.",0,0,12,0.705714,0.195459
+1246,2,5,"auto mode works great too shutter control iso control aperture control",0,0,12,0.571191,0.112721
+1246,2,6,"doesn t use aa batteries    that is about it.",1,1,19,0.731181,0.226035
+1246,2,7,"doesn t swim  don t cook  doesn t clean  takes to much of my time away.",1,1,19,0.755915,0.195459
+1246,2,8,"caution   you will be spending more time than you should with this camera",1,1,19,0.202994,0.104009
+1247,2,0,"i m a dslr user and looking for a compact size dc.",0,0,11,1.000000,1.000000
+1247,2,1,"you can t go wrong by selecting panasonic dc.",0,0,3,0.683146,0.208492
+1247,2,2,"the sharpness is excellent is this size.",0,0,10,0.669949,0.226035
+1247,2,3,"leica does a good job on the lens.",0,0,2,0.673002,0.159833
+1247,2,4,"it s fast  easy to use.",0,0,9,0.697308,0.208492
+1247,2,5,"for this price  you can t get anything better.",0,0,2,0.679065,0.146456
+1247,2,6,"relatively high noise in low light.",1,1,17,0.649082,0.161744
+1247,2,7,"this happens to all panasonic dcs.",1,1,25,0.730986,0.144694
+1247,2,8,"can t zoom in while movie recording  not even focus.",1,1,17,0.638425,0.145572
+1248,2,0,"image quality show alot of details at 200iso and below.",0,0,8,1.000000,1.000000
+1248,2,1,"image stabilization is very useful and most of the time it must be on all the time unless you re using a tripod.",0,0,12,0.542301,0.165415
+1248,2,2,"photoshots display smooth image rather than sharp.",0,0,10,0.383715,0.097448
+1248,2,3,"however it did not bother me at all because i do not see too much blur.",0,0,8,0.713408,0.146456
+1248,2,4,"movie recording among the best in an ultra compact camera with that kind of resolution  you can expect it s up to par with a regular camcorder.",0,0,6,0.614442,0.228523
+1248,2,5,"doesn t have a built in red eye removal tool.",1,1,23,0.707900,0.208492
+1248,2,6,"i ve compare the photoshot with a canon sd870 and panasonic show a smoother lighter color image than the canon.",1,1,25,0.731569,0.193240
+1248,2,7,"the canon auto color corrected a shot after or during you taking a picture so the color is more saturate than panasonic.",1,1,25,0.110923,0.096042
+1248,2,8,"those are in the day shot.",1,1,23,0.419383,0.143256
+1248,2,9,"at night  the panasonic show very little noise because panasonic has noise auto smoothing while there is visible noise with the canon that the dots look worser close up than panasonic.",1,1,25,0.632951,0.144694
+1248,2,10,"the photoshots were so similar  it s hard to decided which to buy but i ended up getting the underdog...why ",1,1,25,0.737075,0.160786
+1249,2,0,"leica lens.",0,0,0,1.000000,1.000000
+1249,2,1,"i ll repeat that  it has a leica lens which makes all of the difference and is german designed.",0,0,0,0.054151,0.056304
+1249,2,2,"german glass is still the best in the world.",0,0,12,0.669949,0.206164
+1249,2,3,"if you are in this price range this is the camera to own.",0,0,0,0.673002,0.226035
+1249,2,4,"it is fantastic and the pictures are incredible.",0,0,0,0.729090,0.268852
+1249,2,5,"on our honeymoon many people used our fz8 to take pictures of us and repeatedly people commented on how nice the camera took pictures.",0,0,0,0.200338,0.076129
+1249,2,6,"with a 2gb memory card you can record video for about 30 minutes as well.",0,0,5,0.663420,0.226035
+1249,2,7,"the battery lasts a long time and the software included works well.",0,0,0,0.763649,0.195459
+1249,2,8,"added bonus  it works flawlessly with digikam in linux.",0,0,12,0.435962,0.125463
+1250,2,0,"it s hard to know where to begin but this camera is simply awesome ",0,0,3,1.000000,1.000000
+1250,2,1,"it was between this and the s5 and i think i made the better choice.",0,0,3,0.668416,0.228523
+1250,2,2,"this camera is light  smaller than you think and takes awesome shots ",0,0,4,0.639566,0.226035
+1250,2,3,"start with a full charge because you ll kill the battery in about the time it takes you to try all of the stuff this camera has to offer.",0,0,6,0.730455,0.295479
+1250,2,4,"starting to get memory card errors but i haven t determined if it s the card or not.",1,1,18,0.622417,0.189665
+1250,2,5,"i tend to take and erase pictures often and i don t think the camera likes when the card gets fragmented.",1,1,18,0.206578,0.090675
+1251,2,0,"beautiful shots with little effort.",0,0,10,1.000000,1.000000
+1251,2,1,"read the manual and you ll be amazed at it s capability.",0,0,10,0.632170,0.208492
+1251,2,2,"my previous camera was and expensive kodak that i had outlived.",0,0,10,0.700094,0.228523
+1251,2,3,"when i purchased this one i was surprised at how light it was and i thought the quality might be affected.",0,0,4,0.629726,0.159833
+1251,2,4,"the telephoto feature will astound you.",0,0,1,0.722300,0.159833
+1251,2,5,"wait ... there s more.",0,0,1,0.674406,0.146456
+1251,2,6,"put in a 2gb sd card and take movies ... full screen  480x640   without flash and with only the available light and you ll be amazed at how well they turn out.",0,0,6,0.615574,0.228523
+1251,2,7,"read the manual and you ll become a pro.",0,0,1,0.722117,0.206164
+1251,2,8,"i took movies at an indoor western live show ... along with stills  put them together and authored a nice dvd.",0,0,10,0.664358,0.208492
+1251,2,9,"did the same at a jazz festival .. same great results.",0,0,6,0.728887,0.144694
+1251,2,10,"i paid  349 for a lesser model and this latter model has to be one of the best values you can find anywhere.",0,0,3,0.629229,0.146456
+1251,2,11,"amazing to me that they don t advertise more ",0,0,1,0.737472,0.159833
+1251,2,12,"i would prefer that the neck strap to be attached in the center of the camera body rather than at the top which causes it to hang a little cockeyed against your chest ",1,0,1,0.639408,0.227277
+1252,2,0,"take great pics  and love it ",0,0,0,1.000000,1.000000
+1252,2,1,"i have taken over 1000 pics in the last month ",0,0,0,0.325696,0.172947
+1252,2,2,"noisy indoor pics.",1,1,17,0.259260,0.088903
+1252,2,3,"my nose touches the screen when i use the eye piece.",1,1,23,0.684321,0.145572
+1253,2,0,"upon further review i now realize that the pict size settings that i discussed in a previous post refer to pixel size not file size.",0,1,16,1.000000,1.000000
+1253,2,1,"the camera  unlike the photographer  is  functioning perfectly.",0,1,21,0.713421,0.227277
+1254,2,0,"my second digital  bought an olympus six years and 10 000 snapshots ago and by the way  it s still as good as the day i bought it.",0,0,3,1.000000,1.000000
+1254,2,1,"anyway  the panasonic is working as well as i was expecting.",0,0,3,0.711024,0.226035
+1254,2,2,"i mainly bought it for the 12x optical zoom  which will extend to 18x if you don t max out the photo size  at least they claim it s zooming to 18x so i suppose it is.",0,0,4,0.708670,0.193240
+1254,2,3,"99  of my photos are for computer viewing  i rarely print   so setting to a smaller file size was no big deal to me.",0,0,8,0.351763,0.090145
+1254,2,4,"i ve taken 200 300 shots with zoom and i m quite pleased with the results.",0,0,7,0.633559,0.167488
+1254,2,5,"using the zoom with macro has produce some extraordinary pix of bees and wasps sucking pollen from flowers in my backyard.",0,0,2,0.282687,0.091412
+1254,2,6,"i imagine hardcore camera buffs would find plenty of flaws but to an average  guy like me who wants something beyond point and shoot but is too cheap to shell out more than 300 400 bucks it s nice.",0,1,21,0.719801,0.292539
+1254,2,7,"i don t know if there s something wrong with the camera  or if one of the 12 million settings is the problem  but no matter what file size i opt for in the setup menu my photo files always turn out to be exactly half that size  files set to 5mb come out as 2.5mb  7mb end up 3.5mb etc.",1,1,16,0.670117,0.256171
+1254,2,8,"like i said i m not sure if i m setting something wrong or what  the photos all look good to me though and i m not concerned with printing so i ll probably just live with it.",1,1,16,0.316350,0.118917
+1254,2,9,"i read the 130 page manual and did some online research but couldn t find the answer.",1,1,22,0.698850,0.160786
+1255,2,0,"12x optical zoom  image stabilization  ois   raw format ... need i say more ",0,1,18,1.000000,1.000000
+1255,2,1,"not 10mp and not compact  but adding getting those extra features costs serious moolah.",1,0,2,0.683787,0.146456
+1255,2,2,"note that i did an  extremely  thorough search and this unit is the best value in its price range.",1,0,0,0.694798,0.227277
+1256,2,0,"overall an excellent camera  great optical zoom  and ability to accept sdhc cards.",0,0,4,1.000000,1.000000
+1256,2,1,"comfortable to hold  though i ve always enjoyed  camera  shaped cameras.",0,0,1,0.717819,0.161744
+1256,2,2,"lcd screen on the back is unprotected  so a protective layer or extra care is needed to prevent scratches on it.",1,1,19,0.649082,0.207326
+1257,2,0,"camera has many features and is very easy to use.",0,0,6,1.000000,1.000000
+1257,2,1,"it has a great battery life.",0,0,6,0.650882,0.206164
+1257,2,2,"the zoom on this camera is outstanding better than my slr.",0,0,12,0.665781,0.207326
+1258,2,0,"fairly nice bundle but the case isn t that great.",0,0,6,1.000000,1.000000
+1258,2,1,"very poor picture quality.",1,1,16,0.702603,0.228523
+1258,2,2,"6 meg shots are compressed down to around 1.7 megs.",1,1,16,0.655585,0.226035
+1258,2,3,"this causes a very noticable blurring effect.",1,1,25,0.705282,0.160786
+1259,2,0,"small  nice case  charger and nimh batteries.",0,0,4,1.000000,1.000000
+1259,2,1,"good size and simplicity for a  point   shoot  camera.",0,0,2,0.689320,0.161744
+1259,2,2,"lots  very poor picture quality   could not match my 6mp kodak   costing  74  bought 2 years ago.",1,1,19,0.709125,0.271646
+1259,2,3,"12mp shots are uniformly fuzzy  6 mp are somewhat better but still far below the quality of my older camera.",1,1,16,0.280134,0.129362
+1259,2,4,"settings are okay  on line manual is strictly for info only with no help in debugging problems.",1,1,22,0.697666,0.206164
+1259,2,5,"am rma ing it in the hope that kodak s haven t taken a nose dive since my last purchase.",1,1,16,0.708457,0.208492
+1259,2,6,"have had better photos from 1mp agfa s   5 mp fuji s owned in the last 5 10 years.",1,1,25,0.649661,0.145572
+1260,2,0,"better iso than canon s5 is.",0,0,8,1.000000,1.000000
+1260,2,1,"powers up and takes multiple pictures very fast   works well in low light compared to many other cameras that are cheaper.",0,0,12,0.624912,0.161744
+1260,2,2,"feels good in the hand  good grip.",0,0,12,0.694798,0.228523
+1260,2,3,"easy to operate   understand compared to most other brands.",0,0,8,0.674143,0.206164
+1260,2,4,"the h3   h7 have a closer macro focus than any other camera in their class  1cm.",0,0,12,0.702913,0.146456
+1260,2,5,"purple fringing in zoomed photos is a problem.",1,1,24,0.680948,0.226035
+1260,2,6,"no noticable difference in the 5mp   8mp modes.",1,1,15,0.705282,0.228523
+1260,2,7,"no automatic lens cover  just a cap that is pushed off when you power up the camera.",1,1,15,0.643715,0.160786
+1261,2,0,"great optical zoom.",0,0,0,1.000000,1.000000
+1261,2,1,"very good focusing  up to 1cm close to the lens .",0,0,0,0.725256,0.195459
+1261,2,2,"zeiss lens so you get really good clarity.",0,0,0,0.112165,0.062786
+1261,2,3,"lots of features  for me at least .",0,0,6,0.692774,0.226035
+1261,2,4,"slr like so you can get a few different lenses for it.",0,0,12,0.673832,0.161744
+1261,2,5,"viewfinder incase you don t want to use lcd.",0,0,7,0.676316,0.146456
+1261,2,6,"photo editing inside of camera.",0,0,7,0.656863,0.144694
+1261,2,7,"really bright flash.",0,0,7,0.702331,0.146456
+1261,2,8,"memory stick pro duo pro duo.",1,1,21,0.683709,0.144694
+1261,2,9,"no case comes with it.",1,1,23,0.717179,0.144694
+1261,2,10,"like others  if iso is above 400 then pictures look alittle funny.",1,1,18,0.644688,0.145572
+1262,2,0,"15x optical zoom  good image quality  ability to focus really close  1 cm from lens .",0,0,10,1.000000,1.000000
+1262,2,1,"comes with lens hood for outdoor shooting.",0,0,10,0.439497,0.148377
+1262,2,2,"has a remote ",0,0,1,0.710699,0.159833
+1262,2,3,"continuous shooting mode is nice   fast.",0,0,9,0.616357,0.208492
+1262,2,4,"supposedly can compose a slideshow  even upload music into the camera   and run a slideshow directly from the camera to a tv  including 1080i hdtv support .",0,0,9,0.673002,0.208492
+1262,2,5,"features and function controls are a pita to find.",1,0,1,0.758551,0.193240
+1262,2,6,"advanced controls  settings    menus are not intuitive   took me 5 minutes to figure how to use manual focus  and never did find how to use digital zoom  .",1,0,1,0.266300,0.126483
+1262,2,7,"the manual included is for basic use only  with no index.",1,1,25,0.655438,0.243496
+1262,2,8,"supposedly there is a complete manual on the cd rom.",1,1,25,0.222074,0.073528
+1262,2,9,"has to re focus itself before every shot  unless you re using the continuous shooting mode  but when using continuous shooting mode  the display lag makes it very hard to keep moving subjects in the frames.",1,1,17,0.706773,0.195459
+1262,2,10,"video mode doesn t seem that good  slightly grainy   poor audio .",1,1,17,0.424014,0.099363
+1262,2,11,"no viewfinder hood.",1,1,20,0.737258,0.160786
+1263,2,0,"this is a great  bridge  camera.",0,0,12,1.000000,1.000000
+1263,2,1,"perfect for those of us who want more than a typical point and shoot but don t want to learn all the ins and outs of an slr.",0,0,12,0.620178,0.144694
+1263,2,2,"so far  out of the 500 or so pictures i ve taken with the camera  90  were taken in auto mode with auto flash and face recognition on.",0,0,9,0.703433,0.295479
+1263,2,3,"pictures look absolutely fantastic.",0,0,9,0.454180,0.136013
+1263,2,4,"great zoom abilities and i m very happy with the few macro pics i have taken.",0,0,2,0.637170,0.144694
+1263,2,5,"the lcd is clear and the menu interface is easy to understand and navigate.",0,0,9,0.736930,0.271646
+1263,2,6,"the viewfinder is also impressive and i prefer to use it over the lcd.",0,0,9,0.421883,0.133406
+1263,2,7,"battery life is better than i expected.",0,0,2,0.748009,0.268852
+1263,2,8,"took the camera out for a weekend  shot about 150 photos and the battery life still showed over half full.",0,0,2,0.202679,0.076619
+1263,2,9,"i ve taken pictures in forests  mountains  beaches  and in the backyard.",0,0,10,0.731961,0.159833
+1263,2,10,"they all look wonderful.",0,0,10,0.680948,0.159833
+1263,2,11,"i ve also used the video mode a few times... works very well for taking short clips when a pic just isn t enough.",0,0,12,0.626850,0.146456
+1263,2,12,"still a learning curve involved.",1,1,24,0.725409,0.144694
+1263,2,13,"there are a lot of modes and i try to use them as required  but honestly auto mode works great for most situations.",1,1,22,0.713464,0.271646
+1263,2,14,"some modes  like  twilight   have long lag times as the camera tries to adjust itself.",1,1,17,0.337628,0.121383
+1263,2,15,"the proprietary sony transfer cable is a little difficult to get connected to the camera port.",1,1,24,0.670912,0.160786
+1264,2,0,"the h7 is a winning combination of the face sensing technology from sony s high end slr camera series  8.1 mega pixel  versatility in settings and modes  and ease of use.",0,0,7,1.000000,1.000000
+1264,2,1,"this camera has more versatility than any other digital i have ever owned because it combines high shutter speed shooting and intelligent continuous auto focusing.",0,0,10,0.479038,0.097751
+1264,2,2,"the lag time is the lowest  meaning its the fastest camera  that i ve used.",0,0,12,0.716599,0.144694
+1264,2,3,"it can quickly focus on fast moving subjects by predicting where those subjects will be in the frame.",0,0,12,0.715567,0.195459
+1264,2,4,"this predictive technology also helps to reduce shutter lag  the time it takes for the camera to focus and shoot.",0,0,12,0.391362,0.093008
+1264,2,5,"the dsc h7 features powerful carl zeiss 15x optical zoom lenses for up close shots of big plays on the field.",0,0,7,0.661145,0.144694
+1264,2,6,"sony s new face detection technology can identify up to eight faces in the camera s lcd frame  and automatically adjust white balance and flash as well as focus and exposure for correctly exposed  sharp photos.",0,0,10,0.647188,0.228523
+1264,2,7,"proprietary battery  costs  50  instead of aas.",1,1,19,0.789955,0.268852
+1264,2,8,"grip is awkward and feels like 1 3 of an slr is missing.",1,1,20,0.556535,0.162600
+1264,2,9,"iso above 400 produces odd colors at fringes.",1,1,18,0.428749,0.117089
+1265,2,0,"was a good deal",0,0,2,1.000000,1.000000
+1265,2,1,"did not work upon powering on  and the reciever dvr was shocking me during powering on.",1,1,23,0.650882,0.226035
+1265,2,2,"i would rate no stars if i could.",1,1,16,0.723336,0.160786
+1266,2,0,"amazing camera  i purchased this camera to start learning how to take great pictures and get into the camera scene.",0,0,9,1.000000,1.000000
+1266,2,1,"i am learning daily at the amazing things this camera can do and have no regrets.",0,0,9,0.203781,0.107249
+1266,2,2,"not that this is on the camera  but the seller marked up the price to 799.99  then had it on sale for 459.99 .",1,1,21,0.747127,0.214577
+1266,2,3,"after the sale ended the price went to 499.99  with no type of sale.",1,1,21,0.050094,0.058224
+1266,2,4,"great marketing to bring in poor people looking to get a great deal.",1,1,16,0.659548,0.227277
+1267,2,0,"lens is perfect for  all around   use and nearly full sky astro photography.",0,0,10,1.000000,1.000000
+1267,2,1,"massive amount of features  but very easy to navigate menus and use them all.",0,0,0,0.642569,0.226035
+1267,2,2,"vibration reduction works flawlessly and doesn t degrade the image like digital vr on cheaper cameras.",0,0,12,0.663886,0.146456
+1267,2,3,"huge range of compatible lenses available.",0,0,7,0.701383,0.159833
+1267,2,4,"doesn t come with the simple ir remote for required for bulb mode and some other features.",1,1,15,0.672741,0.145572
+1268,2,0,"wonderful camera.",0,0,11,1.000000,1.000000
+1268,2,1,"for anyone looking to get into a dslr who knows a little bit about photography or who is just learning  this is the perfect camera for you.",0,0,6,0.697990,0.271646
+1268,2,2,"a step up from the d3200 with more features and amazing images  its just a great camera to learn on.",0,0,6,0.474982,0.135543
+1269,2,0,"good quality image  easy to use  light  good for travel and for someone who just switch from a digital camera to a first dslr.",0,0,9,1.000000,1.000000
+1269,2,1,"the view finder is little small but it is worth the price.",1,1,20,0.705659,0.145572
+1270,2,0,"price  swivel lcd and the sensor  image quality and relative ease of use.",0,0,8,1.000000,1.000000
+1270,2,1,"for 750 even the included kit lense is not bad.",0,0,8,0.676106,0.228523
+1270,2,2,"i have a d2x and d200 and a lot of good nikkor glass.",0,0,3,0.692403,0.206164
+1270,2,3,"i am 6 7 years behind the curve in dlsr bodies  so i am very excited what the nikon  sensors  not sony sensors in the d2s and 200s  can do.",0,0,7,0.625642,0.206164
+1270,2,4,"i also have large format printer and print quite often.",0,0,4,0.716599,0.161744
+1270,2,5,"not shooting for money anymore  so i saved 750 over the d7000.",0,0,4,0.714298,0.212199
+1270,2,6,"i usually go for the motto get it right the first time but that would mean getting the d3 and i do not have  6000 lying around or even 3k for the d300.",0,0,4,0.266252,0.087275
+1270,2,7,"the image capturing is good enough and i have 24  prints to prove it.",0,0,4,0.236380,0.119341
+1270,2,8,"video is better than any handycam i ve used.",0,0,4,0.712606,0.206164
+1270,2,9,"not good for older lenses  that s my only beef.",1,1,22,0.654178,0.228523
+1270,2,10,"and the manual operation is not that great.",1,1,14,0.677555,0.146456
+1270,2,11,"but my d2 and d200 still works.",1,1,14,0.720418,0.206164
+1270,2,12,"but really  i bought this camera so i can shoot video.",1,1,14,0.635820,0.146456
+1270,2,13,"my wife is happy too.",1,1,14,0.702686,0.226035
+1270,2,14,"also the color is not as neutral as the other high end models.",1,0,8,0.661189,0.228523
+1270,2,15,"i have my own glass and they look ridiculous in this camera.",1,0,8,0.725409,0.159833
+1270,2,16,"a 55 200 was part of the deal and to be honest that works better for video work any way than the big 2.8 lenses.",1,0,7,0.704645,0.195459
+1270,2,17,"i am sure one can argue about the autofoucs and the exposure database but it is 750 dollars.",1,1,21,0.263123,0.083150
+1270,2,18,"i have not dropped it hard yet but the plastic body may be suspect.",1,1,21,0.666748,0.161744
+1270,2,19,"battery also does not last as long.",1,1,14,0.710434,0.160786
+1271,2,0,"  swivel screen   takes video   easy to clean   adaptable lense.",0,0,8,1.000000,1.000000
+1271,2,1,"  live view finder   easy to use",0,0,8,0.395502,0.098697
+1271,2,2,"  slow shutter  my d3000 had a faster shutter..   video isnt that great  lag s a bit when alot is going on.",1,1,17,0.640553,0.208492
+1271,2,3,"  shoots in nef not dng native  need a converter ",1,1,13,0.738342,0.207326
+1272,2,0,"this camera is great.",0,0,6,1.000000,1.000000
+1272,2,1,"lots of features  reall easy to used  and feels good in your hands.",0,0,6,0.616474,0.161744
+1272,2,2,"once in a while  the time between photos can be a lil long  4 5sec. ",1,1,18,0.713334,0.227277
+1273,2,0,"i bought this camera just prior to a trip to wdw.",0,0,3,1.000000,1.000000
+1273,2,1,"it was easy to use without reading the manual.",0,0,1,0.644962,0.159833
+1273,2,2,"it took excellent pictures as long as nothing was moving including me.",0,0,10,0.720313,0.271646
+1273,2,3,"after some experimenting i got some excellent low light shots and fireworks shots  althought you have to compensate for lag time.",0,0,1,0.588660,0.174128
+1273,2,4,"also i dropped it several times with no apparent effect.",0,0,3,0.587316,0.227139
+1273,2,5,"very slow flash recharge time.",1,1,14,0.219282,0.077351
+1273,2,6,"if your taking pictures that require flash you had better be able to control all aspects of the shot.",1,1,23,0.536633,0.165276
+1273,2,7,"i found that i missed several good shots because of waiting several seconds fo the flash to recharge.",1,1,13,0.343023,0.173963
+1274,2,0,"excellent pictures  good battery life with alkalines  compact",0,0,2,1.000000,1.000000
+1274,2,1,"no viewfinder  so can be difficult to view frame photo in bright conditions  rechargeable battery life average to below average",1,1,20,0.402825,0.171175
+1275,2,0,"ther are lots of options for the images  but i liketo use it mostly for quick snap shots.",0,1,23,1.000000,1.000000
+1275,2,1,"the image program does require some reading if your a novice.",1,1,22,0.366350,0.096974
+1275,2,2,"i kinda picked up some of the useful features after a couple sessions.",1,1,22,0.677555,0.161744
+1275,2,3,"the red eye reduction settign on the cameradoes not seam to work  so i used the program to fix it.",1,1,23,0.671368,0.160786
+1276,2,0,"great camera  bought it for my wife as a gift   half an hour after receiving the camera she was able to take photos   not difficult at all.",0,0,3,1.000000,1.000000
+1276,2,1,"we have an apo military address  ordered the camera from newegg and they shipped the parcel via fedex  fedex does not deliver to apos  therefore the parcel was returned to newegg and they gave me a refund.",1,0,3,0.766789,0.271646
+1276,2,2,"then i ordered the same camera from another company for the same price  they shipped it via us postal service priority mail and i received the parcel within five days.",1,0,3,0.267967,0.081684
+1276,2,3,"we never received an explanation from newegg about their method of shipment.",1,0,3,0.514919,0.241392
+1276,2,4,"if you have an apo address beware  you will not receive your parcel from newegg.",1,0,3,0.028265,0.089812
+1277,2,0,"camera is great.",0,0,1,1.000000,1.000000
+1277,2,1,"newegg failed to ship 1 gb card.",1,0,3,0.698927,0.268852
+1277,2,2,"i read reviews before buying  so i made sure i choose the package with the free card.",1,0,3,0.365000,0.091139
+1277,2,3,"i feel like i just shopped at k mart.",1,0,1,0.736519,0.160786
+1278,2,0,"this camera takes excellent pictures and is very easy to use.",0,0,10,1.000000,1.000000
+1278,2,1,"the pictures a very clear and the video is nice with good sound.",0,0,10,0.310585,0.097153
+1278,2,2,"none that i have noticed.",1,1,25,0.733120,0.207326
+1279,2,0,"very easy to operate.",0,1,20,1.000000,1.000000
+1279,2,1,"very easy to download pics into pc.",0,1,24,0.209663,0.077351
+1279,2,2,"pictures are very clean and sharp.excellent price  ive seen the same camera sold elsewhere for  20 dollars more and up.software very easy to use.",0,1,21,0.341599,0.088305
+1279,2,3,"battery life is excellent if you use rechargables 2500mah.",0,1,19,0.690377,0.226035
+1279,2,4,"can take many photos with the 1g card received with my camera.",0,1,24,0.697934,0.208492
+1279,2,5,"no nothing...for the price paid  i cant complain...very good ",1,0,0,0.670385,0.160786
+1280,2,0,"it s great camera with good features for a new person  and with combo deal from newegg it was excellent as usual newegg are prompt on service and delivery it was ontime in 3 business days.",0,0,8,1.000000,1.000000
+1280,2,1,"not yet find ",1,1,20,0.733454,0.227277
+1281,2,0,"easy to use quiet shutter takes amazing photos.",0,0,8,1.000000,1.000000
+1281,2,1,"the lens is great and takes beautiful close ups.",0,0,8,0.677555,0.160786
+1282,2,0,"i can t say enough good about this.",0,0,0,1.000000,1.000000
+1282,2,1,"i run a photo club at the local high school and do some on the side shooting for weddings and sell landscape photography.",0,0,0,0.611928,0.228523
+1282,2,2,"this camera has worked in every situation i through at it.",0,0,12,0.707476,0.144694
+1282,2,3,"i didn t buy it from newegg because they didn t have it yet but newegg has never let me down on a purchase.",0,0,3,0.638608,0.213036
+1282,2,4,"this is a great camera for pro photography or entry level.",0,0,1,0.747127,0.394811
+1282,2,5,"it is well constructed and when i compared it to the current pro full frame dslr s it has come out on top almost every time.",0,0,8,0.372334,0.134826
+1282,2,6,"i love how easily it hooks up to all our studio equipment.",0,0,11,0.726609,0.206164
+1282,2,7,"list of highlights  fantastic picture sharpness  fast focus  great low noise at higher iso  built in focusing system for lenses that don t have it built in  colors ver accurate  lots of options for pro studio shooting and equipment  lots of customization  2 user settings  i use one for landscapes and one for portraits   raw   jpeg is nice and can be split between two sd cards  fast continuous shooting  easy access to contro",0,0,11,0.698493,0.195459
+1282,2,8,"not really cons but i felt i should mention   heavy but not a con because i know it has solid construction like the pro cameras which add to the weight and it is well balanced once you through a good lens on it.",1,0,1,0.612728,0.114428
+1282,2,9,"it would be nice to be full frame but that would make it a  different kind of camera and a very different price range.",1,0,6,0.719241,0.160786
+1283,2,0," low light improvement  video improvement  dual card memory slot  better control layout over d90 but with almost identical menu layout for easy upgrading",0,1,21,1.000000,1.000000
+1283,2,1," kit lens is just or beginners",1,0,0,0.721154,0.145572
+1284,2,0,"over all the best camera i ve every felt for the money.",0,0,3,1.000000,1.000000
+1284,2,1,"i have been a huge canon guy for years but this camera changed all that.",0,0,7,0.635728,0.226035
+1284,2,2,"the colors pop so well.",0,0,11,0.706493,0.161744
+1284,2,3,"the af system is completely flawless.",0,0,12,0.647188,0.159833
+1284,2,4,"i would recommend this camera to anyone",0,0,3,0.731530,0.227277
+1285,2,0,"best camera sensor",0,1,13,1.000000,1.000000
+1285,2,1,"was forced to buy it with rubbish consumer zoom kit since body only was out of stock",1,1,13,0.627169,0.207326
+1286,2,0,"i love this cam  as said before the low light is wonderful also the kit lens do a good job.",0,0,11,1.000000,1.000000
+1286,2,1,"overall its a great investment for years to come.",0,0,0,0.725770,0.160786
+1287,2,0,"  modeling flash   depth of field preview   super battery life   comes with a lcd protector  my d5k didn t ",0,0,7,1.000000,1.000000
+1287,2,1,"not all that much better than a d3100 or d5000   a lot of specification hype   marketing overload   shutter release button felt better on the d5k   iso performance claims seem a little over the top",1,1,17,0.661145,0.160786
+1288,2,0,"lots can be said  and has been elsewhere  dpreview  etc. .",0,0,11,1.000000,1.000000
+1288,2,1,"bottom line  however is this   this is the best low light photography currently on the market.",0,0,11,0.614764,0.228523
+1288,2,2,"the camera is capable of clear  usable pictures a iso 12 000  and even 25 000.",0,0,10,0.721881,0.271646
+1288,2,3,"with the right lens  this basically means taking hand held  no flash  frame able pictures in candlelight.",0,0,10,0.423464,0.090978
+1288,2,4,"beyond that  there is a long list of features to mention.",0,0,1,0.688423,0.161744
+1288,2,5,"it gives everything one would expect from a  1200 dslr body  but noteworthy are things like    dual sd card slots  the 2nd one settable as realtime back up of 1st  or as expanded space   hd video capability with your best slr glass and autofocus   16mp at 6 fps  14 bit raw files   hdmi  usb and various av outputs   multiple ways to change settings  including dedicated buttons  dual logically used multi purpose spinners  and a nice info screen   spectacular color handling  with more wide ranging and subtle in camera capabilities than ever before.",0,0,8,0.613077,0.228523
+1288,2,6,"  i m out of letters   go read othe",0,0,1,0.735911,0.206164
+1288,2,7,"price capabilities trade offs are always tricky  and nikon has done a good job of focusing on features more than a price point.",1,0,1,0.620836,0.228523
+1288,2,8,"still  a couple of things could have been done  that weren t   still in usb2 mode.",1,1,22,0.716351,0.208492
+1288,2,9,"  no 1 button 100  zoom capability.",1,1,25,0.682767,0.159833
+1288,2,10,"standard feature on my old d200  but missing here.",1,1,25,0.705779,0.146456
+1288,2,11,"no excuse   it s just programming ",1,1,22,0.717885,0.159833
+1288,2,12,"hopefully  there will be a firmware update to add this.",1,1,21,0.645087,0.160786
+1289,2,0,"uses aa batteries so no charger necessary.",0,0,4,1.000000,1.000000
+1289,2,1,"clear crisp pictures.",0,0,9,0.711552,0.144694
+1289,2,2,"videos are easy and clear.",0,0,9,0.707981,0.214577
+1289,2,3,"takes pictures with windows in background  blocks out the extra light for a clear picture.",0,0,9,0.348003,0.098697
+1289,2,4,"much more     easy to use ",0,0,9,0.736357,0.145572
+1290,2,0,"this was a gift for my sister who had a dmc tz3 that was showing its age.",0,0,3,1.000000,1.000000
+1290,2,1,"this camera was a great upgrade as its in the same lumix line and has familiar functions and controls.",0,0,12,0.697615,0.271646
+1290,2,2,"the zoom is great to have as well as the mobile phone remote control feature ",0,0,12,0.184735,0.074499
+1290,2,3,"the time between shots is nearly nothing and the time from power on to your first shot is incredibly short.",0,0,12,0.743815,0.268852
+1290,2,4,"short battery life  so i just got the extended batteries with it.",1,1,14,0.592817,0.130890
+1291,2,0,"small but works great for the price  nice case with belt loop  silicon cover fits like a glove.",0,0,6,1.000000,1.000000
+1291,2,1,"this is a great camera for the beach and hiking  you don t have to worry about it getting wet  i was out in the rain taking pictures.",0,0,6,0.416361,0.099965
+1291,2,2,"nice to see a 2gb card comming with the camera.",0,0,4,0.677555,0.159833
+1291,2,3,"play back sound not that loud.",1,0,6,0.705282,0.227277
+1292,2,0,"great photo quality  takes better pictures than my canon sd1000.",0,0,6,1.000000,1.000000
+1292,2,1,"i m usually not a fan of the scene settings  but this camera takes some of the best sunrise sunset pictures i ve seen from point and shoots.",0,0,6,0.408110,0.103393
+1292,2,2,"camera gets great battery life.",0,0,6,0.704768,0.159833
+1292,2,3,"i found that i typically get at least 200 shots per charge.",0,0,4,0.677555,0.228523
+1292,2,4,"lens is made of scratch resistant material  but is not otherwise protected.",1,1,21,0.723336,0.144694
+1292,2,5,"probably not an issue  but is mentally distressing nonetheless.",1,1,21,0.686560,0.145572
+1293,2,0,"it can fit in a shirt pocket  or front pocket pretty easily.",0,0,11,1.000000,1.000000
+1293,2,1,"it comes with all the accessories you d probably need.",0,0,2,0.718501,0.161744
+1293,2,2,"the battery doesn t take much longer than two hours to charge.",0,0,6,0.696400,0.193240
+1293,2,3,"also  the included battery charger is like a little brick  so it s easy to pack on a vacation.",0,0,2,0.348784,0.099965
+1293,2,4,"it takes pictures fast  and the included memory card holds about 400 pictures at the highest quality 10 megpixel setting.",0,0,0,0.444092,0.098318
+1293,2,5,"face detection technology in this is really nice  it can detect up to four faces  but sunglasses might give it a hard time  however  the face detection mode is totally optional.",0,0,12,0.674406,0.226035
+1293,2,6,"it takes sd cards or sdhc cards  which are easy to find.",0,0,6,0.773091,0.292539
+1293,2,7,"the scene recognition auto mode  or the other  regular auto mode  makes it easy to take nice pictures without hassle.",0,0,6,0.468011,0.159402
+1293,2,8,"it s small enough you might lose it.",1,1,21,0.735089,0.226035
+1293,2,9,"in water it sinks like a rock  but you can use the included float strap to solve that.",1,1,21,0.632753,0.146456
+1293,2,10,"to connect it to a computer  you need to keep the unique cable that it comes with.",1,1,15,0.700621,0.159833
+1293,2,11,"the sr auto mode  it s not the default option  don t worry  drains the battery faster  since the camera is constantly analyzing the scene  and adjusting sensitivity and aperture settings.",1,0,12,0.717338,0.193240
+1293,2,12,"it doesn t use aa batteries  so if you run out of power on the go  you might think to buy an extra np 45 battery.",1,1,14,0.487132,0.119851
+1294,2,0,"got a great package deal on a combo.",0,0,2,1.000000,1.000000
+1294,2,1,"not too good for a long trip if there is no electrical outlet to charge battery.",1,0,2,0.651107,0.160786
+1295,2,0,"compact  large lcd screen and ease of use.",0,0,5,1.000000,1.000000
+1295,2,1,"got the combo package which included everything i wanted.",0,0,3,0.701300,0.146456
+1295,2,2,"great deal for the price.",0,0,0,0.652767,0.206164
+1295,2,3,"camera came with a battery charger  but it didn t have an ac cord ",1,1,15,0.680271,0.228523
+1295,2,4,"according to manual  you d need to order that separately  which newegg forgot to mention on the specs or product description.",1,1,25,0.659548,0.145572
+1296,2,0,"this camera is light and so easy to use  just set to auto and push the shutter....pix are great    battery life is amazing...i have had canon and nikon cameras and this sony camera pack is all you need for the    ",0,0,9,1.000000,1.000000
+1296,2,1,"body is not all metal.",1,1,20,0.730193,0.226035
+1296,2,2,"other than that no issues...",1,1,20,0.682074,0.145572
+1297,2,0,"my experience with hp digital cameras tells me they are the kodak of the digital age.",0,0,3,1.000000,1.000000
+1297,2,1,"the r725 is the best digi cam i ve ever used when considering the balance of quality  ease of use and price.",0,0,2,0.644565,0.208492
+1297,2,2,"it is a very solidly built camera.",0,0,8,0.712120,0.228523
+1297,2,3,"the pictures are beautiful  it s sleek and small.",0,0,8,0.716412,0.193240
+1297,2,4,"the best parts are the functionality of the menus and the  built in photo advice  that tells you how to take the picture better the next time.",0,0,2,0.370718,0.149113
+1297,2,5,"the selling points of this camera to me where  hp s reputation  their camera os and features  and the built in rechargeable li ion battery.",0,0,2,0.456318,0.135356
+1297,2,6,"the photo management software that came with the camera is quite easy to use and offers a lot of features for the amateur photographer and computer user.",0,0,3,0.413671,0.095164
+1297,2,7,"the power button is in a weird spot.",1,1,15,0.733893,0.159833
+1297,2,8,"and when taking video  the zoom motor is loud and will be heard in your video.",1,1,17,0.666441,0.160786
+1298,2,0,"small  great pics and vids  very sleek on screen display system  rechargable battery",0,0,4,1.000000,1.000000
+1298,2,1,"akwardly placed power button",1,1,15,0.725770,0.227277
+1299,2,0,"camera is small  low battery consumption  comes w  a li ion pack and charger.",0,1,15,1.000000,1.000000
+1299,2,1,"sometimes takes a bit to process a picture  depending on the size.",1,0,10,0.690377,0.145572
+1300,2,0,"well this seems to be an awsome camera so far  hp has clearly done a good job",0,0,6,1.000000,1.000000
+1300,2,1,"kinda weird when it focus sbut mayb its just me.. this is my first camera  but other than that .. theres nothing wrong",1,1,17,0.677555,0.207326
+1301,2,0,"this is my first digital camera  but i have tons of experience with cameras and would be called a freelancer in the photo world.",0,0,3,1.000000,1.000000
+1301,2,1,"for it s size the picture quality is simply amazing.",0,0,4,0.670713,0.226035
+1301,2,2,"a great point and shoot camera.",0,0,11,0.702913,0.146456
+1301,2,3,"msduo2 cards are more expensive than sd  but the prices are going down.",1,1,21,0.668087,0.227277
+1302,2,0,"excellent picture quality  easy to use and very small.",0,0,6,1.000000,1.000000
+1302,2,1,"very quick in burst mode.",0,0,12,0.710902,0.226035
+1302,2,2,"extra battery is 40 dollars.",1,1,19,0.660258,0.145572
+1303,2,0,"excelent pictures  videos  sound  batteries  it is small  wery  wery fast.",0,0,2,1.000000,1.000000
+1303,2,1,"2gb memory card is filled wery fast  1.33h video and about 588pics at 7mp ",1,1,24,0.366458,0.161057
+1304,2,0,"quick power up time great image quality  the auto adjust settings offer superb color.",0,0,4,1.000000,1.000000
+1304,2,1,"captures motion well in well lit situations very light",0,0,11,0.772654,0.295479
+1304,2,2,"small amount of internal memory  56 mb fills up fast with 7.2 mp images the lightness of camera makes me worry about durability   make sure you get a warranty.",1,0,4,0.502943,0.144593
+1305,2,0,"just got back from three week vacation to scandinavia and russia   took all outdoor pics on  auto  and most indoor pics on  iso    99  came out great   the other 1  were due to me moving camera too soon   doh  ",0,0,2,1.000000,1.000000
+1305,2,1,"none i have found   except with lack of viewfinder   outdoor viewing of lcd is very challenging  ",1,1,20,0.612257,0.190030
+1306,2,0,"fantastic product.",0,0,12,1.000000,1.000000
+1306,2,1,"image presets work very well.",0,0,12,0.646149,0.226035
+1306,2,2,"takes good pictures in low light.",0,1,18,0.731233,0.295479
+1306,2,3,"my favoriate part is the extremely short time between pressing the button and taking the picture.",0,1,18,0.356440,0.130050
+1306,2,4,"the auto focus sometimes doesn t work on the first try.",1,0,7,0.788235,0.214577
+1306,2,5,"the zoom buttons don t work if the flash is charging or it is trying to autofocus.",1,0,7,0.129396,0.087198
+1307,2,0,"bigger lcd screen  good size  quality  design.",0,1,20,1.000000,1.000000
+1307,2,1,"have to buy new memory stick pro duo because wasnt compatible with regular memory stick",1,0,4,0.669402,0.207326
+1308,2,0,"it is a very easy to use camera.",0,1,20,1.000000,1.000000
+1308,2,1,"i d say the learning curve is an easy 15 minutes for anyone if they just fiddle with it for a bit.",0,1,20,0.158111,0.074499
+1308,2,2,"on the auto program mode it auto adjusts to close objects  like a flower .",0,1,17,0.710699,0.161744
+1308,2,3,"iso1000 provides shooting in low light conditions without flash.",0,1,17,0.630285,0.159833
+1308,2,4,"the 7.2mp is enough for clear pictures on even a large tv  37  crt   hdtv 16 9 even .",0,1,16,0.662031,0.146456
+1308,2,5,"if you have a  ms  pro duo 4gb you can have 15mp s dvd realtime quality movie video.",0,1,17,0.696577,0.161744
+1308,2,6,"up to 3 hours worth.",0,1,22,0.693538,0.226035
+1308,2,7,"over all it is a very easy camera with all the options any casual or advanced user would appreciate  without having to spend  xxx  xxxx for a manual camera.",0,1,21,0.646714,0.206164
+1308,2,8,"the anti shake icon practically never goes away in certain modes.",1,1,17,0.733120,0.233374
+1308,2,9,"you need a tripod to take a picture of specific things  like the moon.",1,1,16,0.640136,0.210670
+1308,2,10,"can t really find  sony rechargeable batteries  that are recommended on the box  in normal stores.",1,0,2,0.724688,0.292539
+1308,2,11,"probably have to go to a sony specific store.",1,0,2,0.213930,0.132759
+1309,2,0,"the sony cybershot series of cameras are of generally high quality.",0,0,2,1.000000,1.000000
+1309,2,1,"this model is no different.",0,0,3,0.717361,0.161744
+1309,2,2,"excellent quick settings tied to a command wheel allow quick on the fly image setting adjustments.",0,0,1,0.692964,0.292539
+1309,2,3,"an in viewer menu allows for greater customisation options ie.",0,0,1,0.409889,0.131661
+1309,2,4,"light level  iso speed  and preprogrammed scene conditions.",0,0,11,0.642751,0.159833
+1309,2,5,"typical built in flash  auto flash  red eye  nice high sensitivity and macro options round out the feature set.",0,0,8,0.736639,0.295479
+1309,2,6,"7.2 megapixel resolution is nice  the produo memory sticks are cheap and reliable too.",0,0,0,0.467599,0.094618
+1309,2,7,"zoom is only 3x which may be somewhat limited  but works fine under most conditions.",1,1,23,0.694138,0.208492
+1309,2,8,"the lack of a built in digital stabilizer is kind of weak  but if you have a steady hand that s not really much of a bother.",1,1,16,0.671913,0.160786
+1310,2,0,"6.0 mp for decent image quality.",0,0,4,1.000000,1.000000
+1310,2,1,"21x total zoom  12x before reduced quality .",0,0,11,0.341500,0.085554
+1310,2,2,"compact size.",0,0,11,0.690842,0.144694
+1310,2,3,"multiple photo modes.",0,0,0,0.672087,0.146456
+1310,2,4,"with a 1gig sd you can record 2 hours of video or take over 950 pictures at the default compression.",0,0,0,0.626733,0.146456
+1310,2,5,"built in battery recharger.",0,0,4,0.722006,0.144694
+1310,2,6,"auto flash is annoying  have to disable in many situations.",1,1,18,0.680271,0.146456
+1310,2,7,"low light mode is hard to use without tripod  even resting against a railing i had blur .",1,1,17,0.661189,0.159833
+1310,2,8,"does not come with ac adapter for built in charger  cannot charge via usb.",1,1,15,0.669467,0.233374
+1310,2,9,"need a steady hand in normal light as pictures can be blurry  which is impossible to tell via the 1.7  screen.",1,1,18,0.660442,0.211850
+1311,2,0,"this camera is great for the price.",0,0,0,1.000000,1.000000
+1311,2,1,"i do a lot of pictures for my auctions and it is better than my older sony camera.",0,0,4,0.627169,0.226035
+1311,2,2,"no need to try to remember the symbols for flash  auto flash etc. like my old camera.",0,0,7,0.697308,0.144694
+1311,2,3,"easier to delete pictures on this one too.",0,0,8,0.783242,0.195459
+1311,2,4,"smaller  easier to carry and instant viewing of the picture you just took.",0,0,8,0.121004,0.068403
+1311,2,5,"clear  crisp pictures.",0,0,0,0.319480,0.091412
+1311,2,6,"great value for the price ",0,0,0,0.708049,0.207326
+1312,2,0,"price  quality and functionality.",0,1,21,1.000000,1.000000
+1312,2,1,"the camera is actually smaller than i thought.",0,1,22,0.690842,0.146456
+1312,2,2,"overall  this is the same thing you can find in the w series just without the rechargable battery.",0,1,14,0.634628,0.146456
+1312,2,3,"no audio playback while playing videos even though there seems to be a speaker in the camera.",1,0,10,0.705508,0.161744
+1312,2,4,"you can t take pictures in high sensitivity mode while you are on the go pictures will come out blurry .",1,0,10,0.659548,0.160786
+1313,2,0,"price is superb ",0,0,8,1.000000,1.000000
+1313,2,1,"i needed this camera to take close ups of cancer tumors and skin conditions.",0,0,11,0.699339,0.159833
+1313,2,2,"the macro is the best i ve found in any camera.",0,0,2,0.637170,0.228523
+1313,2,3,"it will focus   1 .",0,0,11,0.674143,0.206164
+1313,2,4,"normal pictures are good.",0,0,11,0.677555,0.226035
+1313,2,5,"ease of use is very straight forward.",0,0,11,0.712272,0.228523
+1313,2,6,"connections to pc  easy without the sony cd.",0,0,11,0.634422,0.159833
+1313,2,7,"normal aa batteries.",0,0,4,0.718612,0.145572
+1314,2,0,"seems well built  very compact and relatively easy to operate.",0,0,9,1.000000,1.000000
+1314,2,1,"we ve had this for a while and have had a lot of troubles with the flash.",1,1,23,0.761975,0.292539
+1314,2,2,"it simply won t fire sometime despite being set to  flash on  with an ample battery.",1,1,19,0.239770,0.132237
+1314,2,3,"maybe its just a defective unit that i should send back.",1,1,23,0.733216,0.145572
+1315,2,0,"great picture quality  11 inch by 17 inch prints at full quality  nice lcd screen  3x optical zoom  same memory format as psps  sony quality",0,0,4,1.000000,1.000000
+1315,2,1,"less sturdy than my previous p92  no digital zoom  no audio playback from recorded video on camera itself you have to plug in the rca audio cable to an external audio receiver or tv to watch the recorded movies with sound without a pc ",1,1,20,0.652354,0.220914
+1316,2,0,"this is the best full frame camera for the money.",0,0,10,1.000000,1.000000
+1316,2,1,"it s been out for quite sometime now and it still holds up very well with the new ones that just came out this year.",0,0,1,0.697934,0.228523
+1316,2,2,"21 mp raw is awesome.",0,0,3,0.634078,0.226035
+1316,2,3,"you can post process the sh 1 out of them.",0,0,3,0.716960,0.226035
+1316,2,4,"has very good low light iso.",0,0,11,0.699863,0.295479
+1316,2,5,"you can probably shoot up to 1600 iso with minimal noise.",0,0,11,0.330077,0.138343
+1316,2,6,"very good build.",0,0,12,0.707231,0.226035
+1316,2,7,"it s weather sealed so you can take pictures in the mother natures elements  but i did hear that it doesn t work too well in the freezing cold.",0,0,12,0.644339,0.228523
+1316,2,8,"video recording sucks because you can only record 10 minutes.",1,1,17,0.657592,0.159833
+1316,2,9,"auto focus can be slow at times.",1,1,17,0.770737,0.194347
+1316,2,10,"the whole auto focusing system is out of date.",1,1,17,0.118943,0.063625
+1316,2,11,"file sizes are huge.",1,1,16,0.685282,0.159833
+1316,2,12,"you ll need to buy an extra hard drive or 2 to store your images.",1,1,13,0.735294,0.195459
+1316,2,13,"it has slow burst speed of only 3.9 fps so this camera is not that good for action shots.",1,1,18,0.500519,0.182489
+1317,2,0,"excellent image quality ",0,0,10,1.000000,1.000000
+1317,2,1,"shutter sounds nice     upgrading from a 5dc and its really worth it ",0,0,12,0.643999,0.146456
+1317,2,2,"full frame is the only way to go on image quality and dynamic range  colors are crisp and pictures sharp ",0,0,10,0.648106,0.206164
+1317,2,3,"video is a plus but really haven t tried it that much  i m an event and wedding photographer for 4 years now and getting this one will also be a plus on me   ",0,0,3,0.712086,0.145572
+1318,2,0,"great camera  great pictures.",0,0,0,1.000000,1.000000
+1318,2,1,"slow shipping  package with case and memory card is a joke.",1,1,15,0.644339,0.227277
+1319,2,0,"built for use   150 000 click shutter  powder coated magnesium body  weather resistant seals  a batter that goes and goes and goes and goes  sits in the hand like it was molded specifically for me ",0,0,8,1.000000,1.000000
+1319,2,1,"image quality is unreal ",0,0,8,0.711163,0.144694
+1319,2,2,"this thing resolves like a medium format camera with the right lenses and a knowledgeable photographer ",0,1,22,0.634078,0.144694
+1319,2,3,"the detail is insane compared to my 7d and xxd series bodies.",0,1,13,0.669730,0.146456
+1319,2,4,"it s true ",0,1,13,0.718762,0.144694
+1319,2,5,"you can shoot at 1600 all day  and 3200 and even 6400 when you need to and still get superb resolution and very manageable noise.",0,0,4,0.614250,0.146456
+1319,2,6,"get to know raw if you are serious  but what this thing can do with almost no available light is incredible.",0,0,10,0.699495,0.146456
+1319,2,7,"it s not as fast as my 7d.",1,0,10,0.727080,0.159833
+1319,2,8,"the focusing system is not up to the standard my 7d set.",1,1,25,0.629247,0.146456
+1319,2,9,"the center point is great though.",1,1,25,0.779356,0.292539
+1319,2,10,"focus points always visible in the viewfinder.",1,1,25,0.190705,0.109984
+1319,2,11,"i bet we ll see a mark 3 with the focusing system and advanced features from the 7d  price.",1,1,25,0.322779,0.086211
+1319,2,12,"canon definitely wants only serious photographers to have this kind of image performance.",1,1,18,0.678017,0.146456
+1319,2,13,"for my work  it s ideal though.",1,1,22,0.740813,0.145572
+1320,2,0,"at  2000 this full frame canon camera body rocks.",0,0,7,1.000000,1.000000
+1320,2,1,"fantastic resolution and ease of use.",0,0,10,0.704768,0.206164
+1320,2,2,"heavy to shoot with all day.",1,1,19,0.682074,0.227277
+1321,2,0,"image quality is the best available in the dslr form.",0,0,2,1.000000,1.000000
+1321,2,1,"downsize the 21mp images to the same smaller size as the 12mp nikon d700 d3 and you get lower image noise.",0,0,4,0.228206,0.128686
+1321,2,2,"same noise levels as the nikon d3s with better color  tone and sharpness.",0,0,8,0.317752,0.093995
+1321,2,3,"the included dpp software is the raw image converter.",0,0,8,0.767577,0.193240
+1321,2,4,"combined with the canon lens line  you have the dslr winner for overall image quality.",0,0,8,0.350999,0.088305
+1321,2,5,"wish features included auto iso parameter controls  dual cf sd card slots.",1,1,13,0.668040,0.145572
+1322,2,0,"  great controls  though switching from nikon to canon dslr s i found myself fumbling with some of the toggle wheels until their use became habitual .",0,0,1,1.000000,1.000000
+1322,2,1,"  excellent build quality  very sturdy  for a high tech piece of electronics  it can stand quite a beating    great support community out there  whether through canon or the civilian professional community     superb footage for such a  relatively  ",0,0,8,0.292875,0.095194
+1322,2,2,"cheap camera    premiere pro cs5  and others  now allow straight editing of the h.264 codec so no downtime for changing file types",0,0,1,0.694043,0.226035
+1322,2,3,"  poor audio quality  high automatic gain     i shoot video  and yes this is a dslr  so it s not exactly built for the ergonomics of filming  so extra accessories are highly recommended    you ll need to spend about as much on your lens  or two  as you did on the body alone...no point in putting so so glass on such a spectacular piece of equipment    no 60p recording  h.264 codec leaves something to be desired  great having a full sensor  but the codec can really take away from that  somehow  somewhere  i hope someone can rewrite the firmware so that raw data can be streamed from the camera.",1,1,17,0.709200,0.295479
+1322,2,4,"which brings me to my next point    no raw footage and no 1080p hdmi out for external monitor",1,1,15,0.553547,0.195740
+1323,2,0,"full frame  full sized sensor.",0,0,10,1.000000,1.000000
+1323,2,1,"robust quality built camera.",0,0,8,0.703919,0.159833
+1323,2,2,"quick and accurate focusing.",0,0,11,0.667265,0.161744
+1323,2,3,"low high iso noise.",0,0,11,0.635368,0.161744
+1323,2,4,"live view.",0,0,8,0.702603,0.144694
+1323,2,5,"long battery life.",0,0,2,0.725831,0.195459
+1323,2,6,"fast charging battery.",0,0,2,0.256280,0.079844
+1323,2,7,"ergonomically placed controls.",0,0,10,0.717587,0.159833
+1323,2,8,"large  sharp lcd screen.",0,0,10,0.632930,0.161744
+1323,2,9,"low shutter noise.",0,0,10,0.750933,0.193240
+1323,2,10,"sensor sensitive in low light.",0,0,11,0.262261,0.079844
+1323,2,11,"weather resistant  has good weather sealing.",0,0,8,0.666358,0.228523
+1323,2,12,"versatile.",0,0,10,0.730305,0.206164
+1323,2,13,"expensive  but worth it.",1,1,21,0.653209,0.207326
+1323,2,14,"heavy.",1,1,21,0.718612,0.206164
+1323,2,15,"can t use ef s lenses",1,1,21,0.689345,0.145572
+1324,2,0,"this is a robust solidly built camera and the quality shows.",0,0,8,1.000000,1.000000
+1324,2,1,"it s also a weather resistant  not weatherproof  camera so you can use it in bad weather provided you use the appropriate  l  lens with it.",0,0,8,0.651107,0.208492
+1324,2,2,"focusing is fast and accurate.",0,0,10,0.687835,0.206164
+1324,2,3,"also the camera menus is very easy to learn.",0,0,9,0.675608,0.146456
+1324,2,4,"since it is robust and solid  it s on the heavy side compared to the polycarbonate bodied cameras such as the 60d.",1,1,21,0.728308,0.212199
+1324,2,5,"if you use this camera with an  l  lens be prepared because it really gets heavy.",1,1,21,0.483806,0.165971
+1324,2,6,"depending on your stamina hiking with this lens will be a bit difficult in the long run.",1,1,20,0.291587,0.106780
+1325,2,0,"i ve used 2 of these 30ds for sports photography  and one i have well over 100 000 pictures on.",0,0,7,1.000000,1.000000
+1325,2,1,"when these came out the 5 frames a second is what caught my eye.",0,0,7,0.227108,0.084247
+1325,2,2,"i ve shot low light dance performances with a 70 200 is lens at 800 1000 iso and sold a lot of pictures  they where crisp and clear  now that i m talking about it i took 13 000 pictures in 2.5 days.",0,0,11,0.326533,0.159295
+1325,2,3,"now i figured the low light..... dancing i would have to trash half ....i kept over 10 000 pictures  and sold them too .",0,0,11,0.119235,0.062504
+1325,2,4,"i have shot nfl the masters tour nascar with my 30d s.",0,0,11,0.733120,0.159833
+1325,2,5,"now i have the 1d mark iii and keep a 30d as my side camera and the other 30d is in the bag as a backup",0,0,3,0.653797,0.160786
+1326,2,0,"i have used the 30d for over a year now and have gotten some great pics from it.",0,0,0,1.000000,1.000000
+1326,2,1,"l glass is of course the best choice.",0,0,3,0.652722,0.146456
+1326,2,2,"camera has worked flawlessly.",0,0,12,0.706493,0.226035
+1326,2,3,"i just bought a 40d and would suggest that if you can justifie the added cost that you buy it instead.",0,0,3,0.658393,0.161744
+1326,2,4,"better all the way around.",0,0,3,0.726648,0.145572
+1327,2,0,"excellent build quality.",0,0,10,1.000000,1.000000
+1327,2,1,"very sturdy.",0,0,5,0.710699,0.226035
+1327,2,2,"compact  fast  accurate  stylish ",0,0,10,0.628093,0.161744
+1327,2,3,"price ",1,1,16,0.719162,0.144694
+1327,2,4,"i don t know of any real cons.",1,1,24,0.649082,0.146456
+1327,2,5,"maybe the fact you end up spending lots of money on lenses and stuff  if you re like me   ",1,1,25,0.647053,0.145572
+1328,2,0,"i have used this camera on a school newspaper for a school year  with many different lenses  and all i can say is wow.",0,0,3,1.000000,1.000000
+1328,2,1,"it s image quality and responsiveness is unparalleled at this price point  and overall it s a stunning package.",0,0,2,0.619208,0.144694
+1328,2,2,"the 30d has a huge screen  larger than almost any other dslr out there  it has very easy to navigate menus.",0,0,5,0.671695,0.146456
+1328,2,3,"the camera has some heft  but to its credit   it feels solid and comfortable in the hand  and makes a very pleasing shutter sound  as if it had no intention of ever falling apart.",0,0,12,0.684825,0.228523
+1328,2,4,"in a school newspaper environment  lenses get exchanged very frequently for different sports etc.",1,1,13,0.730792,0.228523
+1328,2,5,"which means that there s wear and tear on the lens mount ring.",1,1,20,0.725954,0.193240
+1328,2,6,"sometimes a bit of grease or metal grindings will settle into the mount and make for a nasty hand washing if you happen to touch it.",1,1,20,0.319472,0.176440
+1329,2,0,"dual dial system is best i ve used  allows you to change two different values simultaneously  among aperture lens speed exposure  vafious info chart displays and histogram options are great when viewing  and of course the wide variety of canon accessories.",0,0,1,1.000000,1.000000
+1329,2,1,"5 frames per second.",0,1,18,0.718599,0.206164
+1329,2,2,"it can get a little awkward to move both the large dial with your thumb and the small dial with your finger at the same time  but as far as i know no other camera even lets you do this so it really isn t a con.",1,1,18,0.655809,0.145572
+1330,2,0,"besides the obvious technical advantages over other cameras  this camera feels great in your hands.",0,1,20,1.000000,1.000000
+1330,2,1,"the shutter sounds and feels great when you press that little button and the picture comes to life in the lcd.",0,1,20,0.246577,0.115259
+1331,2,0,"great camera.",0,0,0,1.000000,1.000000
+1331,2,1,"layout is funtional and easy to learn.",0,0,9,0.637170,0.228523
+1331,2,2,"takes great pics.",0,0,0,0.677555,0.228523
+1331,2,3,"instruction book easy to use.",0,0,9,0.715452,0.207326
+1332,2,0,"i ve been using it for more than 6 months and decided to write a review.",0,0,3,1.000000,1.000000
+1332,2,1,"it works fast  very good for sports photographer.",0,0,7,0.653965,0.208492
+1332,2,2,"i upgraded from fuji s7000  so it s a big different.if you buy the right lens  the image turns out sharp and focused.",0,0,10,0.717649,0.292539
+1332,2,3,"if you buy cheap  low quality lens.. the results will disappointed.",0,0,2,0.331273,0.137387
+1332,2,4,"the color and settings may take you a month to get used to.",0,0,8,0.776280,0.292539
+1332,2,5,"i used to look at my fuji colortone photos so when i switch to this  it s sometimes make me think that the canon doesn t produce the right color.",0,0,10,0.318418,0.087334
+1332,2,6,"it takes time and do some settings to get everything work as you d like it to be.",0,1,13,0.715452,0.144694
+1332,2,7,"i bought it six month ago so the price was 150  higher than now.",1,1,13,0.654971,0.145572
+1333,2,0,"i ll keep this short..  great digital camera by canon.",0,1,19,1.000000,1.000000
+1333,2,1,"not a bad price and works as expected.",0,1,19,0.673002,0.208492
+1333,2,2,"none at this time.",1,1,19,0.728255,0.227277
+1334,2,0,"great for zoom in shots  awesome photo features  light  easy to hold",0,0,9,1.000000,1.000000
+1334,2,1,"cant shoot at night  or as sun is setting at all.",1,0,9,0.714949,0.206164
+1334,2,2,"all pictures become blurry and shaky.",1,0,9,0.703119,0.145572
+1335,2,0,"i bought this primarily because i did not like the cheaper point and shoot i had  and i was going to vermont for a week.",0,0,3,1.000000,1.000000
+1335,2,1,"before going  as i practiced  i was surprised at how good the portrait setting shots were coming out.",0,0,12,0.741027,0.295479
+1335,2,2,"the camera made me look good.",0,0,12,0.209014,0.070912
+1335,2,3,"i find myself seeking out river walks  state forests  and wetlands  becoming addicted to the great landscape pictures i am getting.",0,0,12,0.630860,0.146456
+1335,2,4,"one shot will be a 26x zoom to a golden evergreen in a glade  the next a super macro on a flower with a bee or butterfly  and so forth.",0,0,12,0.663136,0.226035
+1335,2,5,"the only can think of is that it does not serve a hot breakfast.",1,1,23,0.729428,0.146456
+1335,2,6,"but anything i need a camera to do  it does  and it is not that difficult for me to figure out how.",1,1,23,0.654468,0.145572
+1336,2,0,"good photos in bright light.",0,1,23,1.000000,1.000000
+1336,2,1,"good zoom range.",0,1,23,0.307038,0.092595
+1336,2,2,"poor image quality in low light  such as indoors.",1,0,8,0.726544,0.292539
+1336,2,3,"my 10 year old olympus c 700uz takes better quality images in low light.",1,0,8,0.112238,0.134988
+1337,2,0,"for the price this camera is simply amazing  i picked it up on sale for  110  rare deal  but i d pay  200 for this outright it s that good.",0,1,19,1.000000,1.000000
+1337,2,1,"none i can think of  price per performance is amazing ",1,0,5,0.362897,0.119068
+1338,2,0,"small enough to carry and still feel like a mans camera when using.. with 14 mp along with the 26x optical zoom and setting features allows this camera to take some brilliant photos for a great price",0,0,0,1.000000,1.000000
+1338,2,1,"battery life should be longer or offer an extended life battery.. but then again if you turn off eye fi and set to power saver mode it holds up allot longer..  so i ordered extra batteries",1,1,14,0.613849,0.217662
+1339,2,0,"very nice camera  does everything a normal user could want.",0,0,5,1.000000,1.000000
+1339,2,1,"we are trying to learn all it does taking some time but getting there is the fun  i am  very  happy we bought before the price increase.",0,0,5,0.706261,0.214577
+1339,2,2,"none very happy with this purchase",1,1,25,0.429167,0.113141
+1340,2,0,"nice little point and shoot.",0,0,7,1.000000,1.000000
+1340,2,1,"haven t really had any issues  except for issues on my end when learning how to use it.",0,0,5,0.673002,0.208492
+1340,2,2,"lots of megapixels and a good zoem.",0,0,4,0.682074,0.227277
+1341,2,0,"great little camera.",0,0,0,1.000000,1.000000
+1341,2,1,"great zoom.",0,0,0,0.054354,0.056304
+1341,2,2,"good picture quality.",0,0,0,0.725167,0.214577
+1341,2,3,"good price.",0,0,0,0.359674,0.152677
+1341,2,4,"for the price its a great camera.",0,0,0,0.146730,0.067505
+1341,2,5,"only con i really have it it doesn t have a rechargeable battery.",1,1,19,0.661588,0.208492
+1341,2,6,"takes 4 double a s.",1,1,19,0.728060,0.145572
+1342,2,0,"got this during a short time sale the site offered before x mas at an absolute steal.",0,0,9,1.000000,1.000000
+1342,2,1,"amazing picture quality  one of the best 16mps i ve ever stumbled across ",0,0,0,0.650601,0.228523
+1342,2,2,"good interface  plenty of customization options  and access to everything you need.",0,0,6,0.724279,0.193240
+1342,2,3,"optical zoom that blows me away with the option to enable further digital zooming if you need it.",0,0,10,0.439544,0.137475
+1342,2,4,"nitpick 1   the lens cover does not secure very well   it will fall off if it is snagged on anything at all  such as the wall of a camera case or the sleeve of your shirt.",1,1,21,0.690377,0.146456
+1342,2,5,"good thing it comes with an attachment ",1,1,17,0.712272,0.226035
+1342,2,6,"nitpick 2  no option to change shutter speed.",1,1,17,0.720909,0.295479
+1342,2,7,"this camera is not for speed shots.",1,1,17,0.401787,0.110400
+1343,2,0,"easy  affordable camera.",0,0,9,1.000000,1.000000
+1343,2,1,"i bought this because i moved to montana  and wanted to document the inspirational setting.",0,0,9,0.624205,0.159833
+1343,2,2,"this camera does a great job  it has a simple interface  and very good quality pictures.",0,0,6,0.636591,0.206164
+1343,2,3,"i was impressed with the optical zoom as well  amazing for a camera at this price.",0,0,10,0.698416,0.146456
+1343,2,4,"can t change the shutter speed  would like to so i can take clearer pictures when i am in motion.",1,0,10,0.685665,0.207326
+1344,2,0,"i have never seen any other camera compare to this.",0,0,10,1.000000,1.000000
+1344,2,1,"the picture quality is fantastic.",0,0,10,0.621604,0.290645
+1344,2,2,"this camera pics up things i can t see with my own eyes.",0,0,10,0.669949,0.228523
+1344,2,3,"colors are spectacular.",0,0,10,0.714949,0.144694
+1344,2,4,"this is an easy camera to use.",0,0,11,0.676041,0.146456
+1344,2,5,"the lens makes a perfect match for this camera.",0,0,11,0.645923,0.206164
+1344,2,6,"i have had several publications that require  professional pictures   but i m no pro.",0,0,3,0.649082,0.228523
+1344,2,7,"a little heavy   ",1,1,24,0.730986,0.146456
+1344,2,8,"no cons really.",1,1,24,0.688047,0.160786
+1345,2,0,"very light weight  quick little camera.",0,0,11,1.000000,1.000000
+1345,2,1,"does lots of things ",0,0,11,0.668416,0.144694
+1345,2,2,"adds copyright  takes movies  applies filters before and after you take images.",0,1,22,0.639566,0.159833
+1345,2,3,"you can also hook it up to computer and see your photo shoots in real time.",0,1,22,0.664460,0.146456
+1345,2,4,"much to this camera  a newer user might be intimidated.",1,1,22,0.731181,0.144694
+1345,2,5,"pictures seem to run a little over exposed in easy preset camera modes  i find it best to shoot by taking it more towards a customized manual camera.",1,0,12,0.627245,0.227277
+1346,2,0,"perfect pictures  easy to use for beginners  tons of options",0,0,0,1.000000,1.000000
+1346,2,1,"can t really find any",1,1,20,0.729038,0.227277
+1347,2,0,"beautiful pics when you know what you re doing.",0,0,8,1.000000,1.000000
+1347,2,1,"hd video a bonus.",0,0,0,0.666881,0.144694
+1347,2,2,"support for sdxc means i can store my pics as raw and have plenty of space on my 64gb mem card.",0,0,3,0.624854,0.161744
+1347,2,3,"remote control software is neat.",0,0,3,0.704768,0.159833
+1347,2,4,"love the touch screen  and the ability to flip   tilt the screen out.",0,0,7,0.649533,0.208492
+1347,2,5,"long battery life.",0,0,2,0.704356,0.226035
+1347,2,6,"the included stm lens is absolutely silent.",0,0,3,0.682074,0.159833
+1347,2,7,"some buttons on the back of the camera are so soft  you accidently press them while handling the camera.",1,1,15,0.685068,0.161744
+1347,2,8,"no ability to do time lapse video.",1,1,17,0.708865,0.160786
+1348,2,0,"beautiful pictures   love the touch screen  quite responsive to touch.",0,0,0,1.000000,1.000000
+1348,2,1,"love the hd videos.",0,0,0,0.423250,0.101022
+1348,2,2,"newegg shipping was super fast  be careful don t buy from other resellers on newegg.com",0,0,0,0.641479,0.208492
+1348,2,3,"still 18 mp only .",1,1,16,0.786846,0.195459
+1348,2,4,"should be 24 mp for this price and as compare to others.",1,1,16,0.081568,0.077388
+1349,2,0,"good pictures and plenty of options.",0,0,9,1.000000,1.000000
+1349,2,1,"light weight enough to take backpacking.",0,0,11,0.709070,0.207326
+1350,2,0,"very rugged.",0,0,1,1.000000,1.000000
+1350,2,1,"lost of features.",0,0,1,0.669336,0.145572
+1350,2,2,"ease of use.",0,0,1,0.674827,0.144694
+1350,2,3,"this is the best camera of any kind that i have ever had.",0,0,0,0.647188,0.208492
+1350,2,4,"the directional keys are very narrow and hard to grasp with the fingers.",1,1,18,0.685665,0.207326
+1351,2,0,"takes great pictures under water and above.",0,0,6,1.000000,1.000000
+1351,2,1,"its my second underwater camera and has a lot of nice features that actually work well.",0,0,6,0.634766,0.144694
+1351,2,2,"under water the pictures are very clear.",0,0,6,0.704768,0.226035
+1351,2,3,"ive only had it for about a month but so far its been perfect.",0,0,3,0.698767,0.208492
+1351,2,4,"also the battery life is great.",0,0,6,0.660258,0.144694
+1351,2,5,"no cons so far.",1,1,24,0.727472,0.207326
+1352,2,0,"i do some professional photography and use this camera when i don t feel like carrying around my slr.",0,0,1,1.000000,1.000000
+1352,2,1,"unbelievable images with the obvious limitations of a pocket camera.",0,0,1,0.695050,0.144694
+1352,2,2,"love the in camera effects and i printed a 16x24 from a photo my daughter took with this camera ",0,0,3,0.674827,0.206164
+1352,2,3,"great underwater as well ",0,0,6,0.701383,0.159833
+1352,2,4,"the only thing i didn t like about this camera is that when you switch between settings you have to keep going back and taking flash off auto...",1,1,17,0.646104,0.207326
+1353,2,0,"durable without a doubt.",0,0,12,1.000000,1.000000
+1353,2,1,"i average 100 pictures a day.",0,0,0,0.697615,0.193240
+1353,2,2,"i have 5 people using the cameras.",0,0,0,0.268693,0.078368
+1353,2,3,"we ues them attics  crawlspaces  in pools etc. durable",0,0,0,0.711633,0.144694
+1353,2,4,"blur",1,0,0,0.685665,0.160786
+1354,2,0,"love this camera.",0,0,3,1.000000,1.000000
+1354,2,1,"it was very durable and a lot of fun to take snorkling while on vacation.",0,0,6,0.619858,0.161744
+1354,2,2,"in general  pictures were great.",0,1,17,0.763138,0.193240
+1354,2,3,"some zoomed in pictures in low light came out a little grainy.",1,1,17,0.387059,0.168000
+1355,2,0,"well built  nice looking ",0,0,8,1.000000,1.000000
+1355,2,1,"not very sharp images  for  300 i expected better images newegg has limeted replacement only on this so i m stuck with it",1,0,8,0.627169,0.207326
+1356,2,0,"it was a cheap high resolution camera.",0,1,20,1.000000,1.000000
+1356,2,1,"it took terrible blurry pictures.",1,1,23,0.669336,0.208492
+1356,2,2,"the response time of the shutter is awful.",1,1,18,0.747127,0.292539
+1356,2,3,"when you press the button it takes forever to snap the picture  sometimes you have to hold the button a couple of times for it to take the picture.",1,1,18,0.380525,0.102689
+1356,2,4,"it is very light and cheapy feeling.",1,1,20,0.733145,0.160786
+1357,2,0,"light  no need for aa batteries and such.",0,0,4,1.000000,1.000000
+1357,2,1,"comes with recharger.",0,0,4,0.709274,0.144694
+1357,2,2,"various colors to choose from  ",0,1,23,0.636369,0.146456
+1357,2,3,"the picture quality on this camera is terrible.",1,1,23,0.650882,0.208492
+1357,2,4,"it claims to be 16mp but that just can t be true.",1,1,22,0.717762,0.226035
+1357,2,5,"i compared my old 6mp camera to this one and could not see a single difference in image quality.",1,1,16,0.634537,0.161744
+1357,2,6,"the zoom is terrible as well.",1,1,23,0.771261,0.271646
+1357,2,7,"if you try to zoom and take a picture  the only thing you ll get is a blurry picture.",1,1,23,0.449812,0.221988
+1357,2,8,"i m rmaing this thing.",1,1,23,0.353541,0.104469
+1358,2,0,"simple to use  compact  and durable.",0,0,6,1.000000,1.000000
+1358,2,1,"immediately tested by dropping from 5  onto cement floor and it was un damaged.",0,0,3,0.667265,0.161744
+1358,2,2,"great ergonomics  and photos turned out fine.",0,0,4,0.654133,0.226035
+1358,2,3,"unfortunately  co workers dog took it off my desk and gnawed into the battery door.",1,1,14,0.773564,0.292539
+1358,2,4,"camera still works fine  but i destroyed the door opening it to charge the battery.",1,1,14,0.091033,0.094459
+1358,2,5,"only real con is that olympus uses proprietary usb connectors.",1,1,13,0.702035,0.159833
+1358,2,6,"they look identical  but standard usb cords don t work.",1,1,15,0.755276,0.195459
+1358,2,7,"there s no apparently good reason for using non standard connectors when standard ones work fine.",1,1,19,0.231325,0.143160
+1359,2,0,"  takes great pictures if the lighting is right.",0,0,11,1.000000,1.000000
+1359,2,1,"  takes awful pictures if there is low lighting  even with the flash.",1,0,11,0.138926,0.127895
+1360,2,0,"price.",0,1,16,1.000000,1.000000
+1360,2,1,"terrible picture quality.",1,1,23,0.700195,0.271646
+1360,2,2,"i took many pictures in different locations with this camera along with my old 6 megapixel canon from 2006 to do a side by side comparison and the old one is way better.",1,1,16,0.368851,0.135120
+1360,2,3,"i exchanged this camera twice  so ended up using three of them and all three were terrible.",1,1,19,0.714102,0.208492
+1360,2,4,"i have only owned and bought for my family canon digital cameras  6 7 of them .",1,1,13,0.724062,0.292539
+1360,2,5,"i ll buy again a canon  just not this model.",1,1,13,0.352793,0.095194
+1360,2,6,"the colors are saturated and unrealistic.",1,1,13,0.721671,0.144694
+1360,2,7,"at the same time there s an abundance of light in each picture making them look somewhat faded.",1,1,18,0.715648,0.195459
+1360,2,8,"the third thing i noticed is that the pictures look very two dimensional.",1,1,16,0.266501,0.079844
+1360,2,9,"depth is lost to a great degree compared to my other digital cameras.",1,1,16,0.688344,0.227277
+1361,2,0,"easy to use right out of the box  quick charge  lots of setting options  great pictures  wide angle  lots of megapixels  lots of battery time",0,0,9,1.000000,1.000000
+1361,2,1,"takes a little time to learn all the settings",1,0,9,0.465275,0.185050
+1362,2,0,"it takes great pix and easy to use out of the box.",0,0,9,1.000000,1.000000
+1362,2,1,"like the lcd screen size and the 5x optical zoom and red eye reduction.",0,0,10,0.632930,0.227277
+1363,2,0,"purchased for my wife and she is taking super pictures inside and out.",0,0,0,1.000000,1.000000
+1363,2,1,"focus is prefect.",0,0,11,0.716358,0.159833
+1363,2,2,"photos have very little noise  very sharp.",0,0,11,0.622533,0.146456
+1363,2,3,"16 mega pixels make outstanding large 4608x3456 shots.",0,0,4,0.653126,0.144694
+1363,2,4,"resolution is excellent.",0,0,10,0.703532,0.206164
+1363,2,5,"i could not be more surprised with results.",0,0,10,0.705385,0.228523
+1363,2,6,"color is vivid.",0,0,10,0.675608,0.159833
+1363,2,7,"flash within its range is very good.",0,0,2,0.710550,0.271646
+1363,2,8,"battery life is very good.",0,0,2,0.417165,0.148178
+1363,2,9,"almost as good as my 40d.",0,0,2,0.131497,0.070058
+1363,2,10,"battery charger is efficient and fast.",0,0,2,0.639110,0.228523
+1363,2,11,"light and small.",0,0,11,0.706206,0.159833
+1363,2,12,"we did have to return the first unit as i did not focus properly and pictures were fuzzy.",1,1,18,0.723587,0.214577
+1363,2,13,"if yours is not focusing properly send it back.",1,0,11,0.211670,0.102487
+1364,2,0,"light weight and compact.",0,0,11,1.000000,1.000000
+1364,2,1,"the basic functions were easy to figure out before looking at the owner s manual.",0,0,9,0.639703,0.161744
+1364,2,2,"everything you need to transfer the pictures to your computer.",0,0,9,0.695050,0.159833
+1364,2,3,"the 5x zoom is nice to have  but as expected with that  you need to keep the camera as still as you can to prevent blurred pics.",0,1,13,0.638608,0.208492
+1364,2,4,"i got this with a combo deal  and saved a few dollars on the combo package.",0,0,3,0.706493,0.208492
+1364,2,5,"the camera is compatible with a variety of memory cards.",0,0,3,0.749474,0.212199
+1364,2,6,"there is a card reader included as is an adapter to work on most wide screen tvs.",0,0,3,0.303301,0.085554
+1364,2,7,"it wasn t free.",1,1,13,0.731996,0.159833
+1364,2,8,"no memory card included.",1,1,24,0.641569,0.159833
+1364,2,9,"it s not worth taking off an egg.",1,1,13,0.709151,0.227277
+1365,2,0,"takes great pictures with flash inside and without outside.",0,0,0,1.000000,1.000000
+1365,2,1,"without the flash inside pictures are a little blurry",1,1,18,0.076176,0.109807
+1366,2,0,"the battery arrived somewhat charged so at least i got to take a few pictures before the battery gave out.",0,1,19,1.000000,1.000000
+1366,2,1,"the pictures that i took came out looking good on the lcd screen but i couldn t transfer them to my computer.",0,1,19,0.384461,0.134356
+1366,2,2,"the charging port arrived doa and would not charge  much less be recognized by windows through the usb cable.",1,1,24,0.673002,0.208492
+1366,2,3,"this is a defect that should have been caught during the  refurbishment  process.",1,1,24,0.729038,0.159833
+1366,2,4,"i noticed right away that the cable was loose and did not sit properly when i first plugged it in.",1,1,15,0.632011,0.161744
+1366,2,5,"i really regret buying this camera now and i question the build quality refurbishment quality.",1,1,20,0.702293,0.227277
+1367,2,0,"great features  fast lens  feels well made.",0,0,1,1.000000,1.000000
+1367,2,1,"almost no shutter lag ",0,0,12,0.706616,0.226035
+1367,2,2,"so far very satisfied with outdoor shots and macro capabilities.",0,0,10,0.639566,0.228523
+1367,2,3,"purchased to have a smaller camera  easy to travel with for camping  hiking and fishing.",0,0,8,0.693538,0.226035
+1367,2,4,"should do the job perfectly",0,0,2,0.703119,0.228523
+1367,2,5,"sure it s not dslr quality but it s not a dslr.",1,0,2,0.664900,0.227277
+1368,2,0,"rugged  lens is best in class.",0,0,10,1.000000,1.000000
+1368,2,1,"have already beat this thing up just for the hell of it  decent low light pictures.",0,0,10,0.648519,0.228523
+1368,2,2,"survived 107f plus water.",0,0,1,0.729038,0.144694
+1368,2,3,"needs more control  but what point in shoot doesn t",1,1,25,0.640136,0.145572
+1369,2,0,"powers up and can take a photo in 1 second ",0,0,7,1.000000,1.000000
+1369,2,1,"takes incredible macros and close ups.",0,0,8,0.681567,0.159833
+1369,2,2,"super high speed shutter and up to 60fps stills.",0,0,8,0.650042,0.146456
+1369,2,3,"sturdy construction  hefty feel.",0,0,1,0.684406,0.159833
+1369,2,4,"takes clear underwater photos.",0,0,5,0.669626,0.146456
+1369,2,5,"can be taken under water and in the rain.",0,0,1,0.713164,0.146456
+1369,2,6,"easy menu navigation.",0,0,9,0.705808,0.193240
+1369,2,7,"super easy video button.",0,0,9,0.279375,0.083194
+1369,2,8,"beautiful clear preview screen visible in bright sunlight.",0,0,7,0.675402,0.144694
+1369,2,9,"high price.",1,0,8,0.708393,0.146456
+1369,2,10,"poor distance photos.",1,0,8,0.709746,0.226035
+1369,2,11,"look like watercolors  no sharp detail.",1,0,8,0.646589,0.228523
+1369,2,12,"slow switching between modes.",1,1,17,0.659277,0.159833
+1369,2,13,"super high speed shutter drops down to 3mp.",1,1,17,0.656302,0.146456
+1369,2,14,"no lens cover  hard to grab without sticking a finger on the lens.",1,1,15,0.683967,0.159833
+1369,2,15,"in different modes super zoom and various other things are disabled  can t figure out sometimes which settings cripple which features.",1,0,9,0.740221,0.214577
+1369,2,16,"only a 4x zoom.",1,0,7,0.279762,0.085346
+1369,2,17,"hardly noticeable.",1,0,7,0.688203,0.144694
+1369,2,18,"video has a fishbowl effect if you move the camera around and the focus will hunt in video mode.",1,1,17,0.636682,0.160786
+1370,2,0," .4 leica lens is a step above the rest  for this price point of camera.",0,0,7,1.000000,1.000000
+1370,2,1,"its super small size was its main selling point for me.",0,0,7,0.322404,0.095904
+1370,2,2,"the lx7 has an outstanding lcd that is easy to see.",0,0,0,0.684297,0.161744
+1370,2,3,"it has more external controls on it than others also  like aperture ring  manual auto macro focus slider and even aspect ratio.",0,0,12,0.653591,0.144694
+1370,2,4,"nd filter built in  is a nice  if not necessary inclusion with a 1.4f  lens.",0,0,1,0.672299,0.208492
+1370,2,5,"everything feel solid and well thought out.",0,0,12,0.760530,0.268852
+1370,2,6,"the flash pops out with authority and feels solid once ready to fire.",0,0,12,0.101353,0.063625
+1370,2,7,"picture in raw at 100 iso almost rival my dslrs.",0,0,8,0.678601,0.159833
+1370,2,8,"lcd is not articulating but is large and has almost a million pixels.",1,0,8,0.712026,0.144694
+1370,2,9,"the evf is sold separately and is quite expensive but would make it larger.",1,0,7,0.682767,0.161744
+1370,2,10,"iso over 100 seems noisy to me but i am super picky about that and i don t think that s unusual  for this size of sensor.",1,0,11,0.640687,0.146456
+1370,2,11,"battery seems short lived per charge but its not much bigger than a book of matches.",1,1,14,0.697436,0.161744
+1370,2,12,"the nd   manual focus button seems a bit flimsy but that might just be because the other parts feel so solid.",1,1,18,0.678269,0.145572
+1371,2,0,"easy to use  small size  fairly quick cycle pictures.",0,0,6,1.000000,1.000000
+1371,2,1,"good battery life.",0,0,2,0.698559,0.226035
+1371,2,2,"small size makes it hard to hold steady  slow flash recharge",1,1,17,0.644241,0.227277
+1372,2,0,"easy to use and takes great pictures.",0,0,6,1.000000,1.000000
+1372,2,1,"very disappointed.",1,1,13,0.709274,0.206164
+1372,2,2,"my daughter had this camera for less than a year  approx 10 months  and it now does not turn on anymore.",1,1,13,0.619042,0.208492
+1372,2,3,"she called the help line to troubleshoot problems and was directed on how to reset it.",1,1,20,0.673002,0.206164
+1372,2,4,"however  that did not work.",1,1,19,0.722742,0.208492
+1372,2,5,"paid approx  99 for the camera and the replacement warranty is  10 cheaper.",1,1,19,0.701728,0.193240
+1372,2,6,"i didn t get the replacement warranty because of the added expense.",1,1,24,0.378086,0.138950
+1372,2,7,"i now know that if a replacement warranty is going to cost that much the company doesn t have faith in their product.",1,1,24,0.104998,0.070986
+1372,2,8,"my daughter googled the issues with the camera and found others with the same problem.",1,1,24,0.718962,0.227277
+1373,2,0,"reasonable price  decent pictures  decent zoom  decent manual options  pretty good battery life.",0,0,2,1.000000,1.000000
+1373,2,1,"manual under over exposure control  which helps balance some of the cons .",0,0,10,0.521828,0.142001
+1373,2,2,"slow lens  camera needs tons of light or a sloooow shutter speed to operate well.",1,0,10,0.729146,0.214577
+1373,2,3,"automatic settings only really do well in bright daylight  or with the flash enabled  which is tied to the slow lens .",1,0,10,0.288909,0.089767
+1373,2,4,"instructing the camera to under expose by 2 3 a stop generally allows enough leeway to take reasonable natural light only shots indoors and outdoors  in less than full sun daytime weather   but requires some post processing work.",1,0,10,0.655809,0.146456
+1373,2,5,"no raw shooting.",1,0,2,0.735242,0.145572
+1374,2,0,"so far it s been a great tv i also have been using it as a monitor and it has great quality and is in great shape for a refurbished product.",0,0,0,1.000000,1.000000
+1374,2,1,"did have a small broken part on the stand but it did not effect anything at all and seeing as i m not going to use the stand no big woof.",1,1,21,0.714949,0.228523
+1374,2,2,"also i do wish there were a few more options when it comes to screen resolution and hooking it up to a computer.",1,1,20,0.649082,0.145572
+1375,2,0,"decent enough videos  quick recovery time while taking still images compared to our digital camera purchased in 2005  light weight.",0,0,8,1.000000,1.000000
+1375,2,1,"horrible quality to pictures.",1,1,23,0.781136,0.193240
+1375,2,2,"grainy  dead appearance to pictures   whether taken indoors  outdoors   bright and sunny   with the flash it doesn t matter.",1,1,18,0.336850,0.099965
+1375,2,3,"we have our older model canon powershot a520 camera purchased years ago that takes much crisper pictures with less noise than this camera.",1,1,13,0.558242,0.144593
+1376,2,0,"the reason i purchased this camera is that it has a view finder.",0,1,20,1.000000,1.000000
+1376,2,1,"there are no other inexpensive cameras that have one that i could find.",0,1,20,0.699807,0.161744
+1376,2,2,"a view finder is a great asset and it is too bad the manufacturers have been leaving it out.",0,1,19,0.705029,0.195459
+1376,2,3,"great price   79  and the quality of the photos is what you would expect from a point and shoot.",0,1,25,0.421430,0.153285
+1376,2,4,"for those who want to use the extensive features take a look at the manual that is on the cd or download it from canon.",0,1,22,0.777822,0.271646
+1376,2,5,"the printed manual has  around 50 pages the pdf version has 150 pages.",0,1,22,0.385734,0.088737
+1376,2,6,"the recycle time for the flash is a little slow which effects time between shots.",1,1,18,0.674306,0.145572
+1377,2,0,"4x optical zoom  viewfinder  simple controls  very reasonable price.",0,1,15,1.000000,1.000000
+1377,2,1,"in low light settings i noticed that the picture seemed grainy on the lcd  but fortunatly didn t show up in the photo.",1,0,12,0.669402,0.160786
+1378,2,0,"has a viewfinder  uses 2 aa batteries  nice size for handling.",0,0,2,1.000000,1.000000
+1378,2,1,"fairly inexpensive.",0,0,10,0.706616,0.208492
+1378,2,2,"a nice looking camera.",0,0,10,0.704768,0.206164
+1378,2,3,"below average image quality  lacks sharpness  pictures tend to be grainy at iso above 80.",1,1,16,0.617486,0.228523
+1378,2,4,"colors a bit washed out.",1,1,17,0.723336,0.144694
+1378,2,5,"even the lcd display is pretty grainy to look at while composing a picture  and not very pleasing.",1,1,19,0.660480,0.145572
+1379,2,0,"the camera itself takes nice pictures  the colors are great and the resolution is excellent.",0,0,6,1.000000,1.000000
+1379,2,1,"small and fits in one s pocket.",0,0,6,0.699339,0.206164
+1379,2,2,"most of the features are automatic which is good for those who don t know much about photography but still want nice pictures.",0,0,6,0.637170,0.228523
+1379,2,3,"i already bought three of these cameras.",0,0,12,0.716006,0.226035
+1379,2,4,"fast enough for a point and shoot camera.",0,0,12,0.655585,0.146456
+1379,2,5,"cheap ",0,0,5,0.787368,0.212199
+1379,2,6,"plastic body makes it look a little cheap and seems not very compatible with the excellent performances.",1,0,5,0.169483,0.122009
+1379,2,7,"limited settings and one has to rely mostly on automatic setting.",1,0,6,0.708508,0.207326
+1380,2,0,"after setting it up i gave it a very good work out at my sons wedding.",0,0,12,1.000000,1.000000
+1380,2,1,"the pics were as good as alot more expensive cameras used there.",0,0,2,0.359411,0.113141
+1381,2,0,"this camera is amazing.",0,0,12,1.000000,1.000000
+1381,2,1,"as a photography amateur  i really like the features.",0,0,1,0.702803,0.268852
+1381,2,2,"the body is light and features easy to use.",0,0,1,0.280168,0.083194
+1381,2,3,"my lens is canon ef s 15 85mm f 3.5 5.6 is usm  thus heavier than the body but no big deal.",0,0,7,0.349110,0.098222
+1381,2,4,"if you are looking for a small and good slr  this camera is for you.",0,0,5,0.710658,0.227277
+1382,2,0,"sensor allows for video autofocus very small  lightweight durable all current  standard rebel line up features touchscreen high iso range",0,0,8,1.000000,1.000000
+1382,2,1,"this camera is a crop sensor like all the other rebels.",1,0,7,0.606009,0.180010
+1382,2,2,"know the difference between 1.6x crop sensors and full frame sensors before you buy a dslr  as it has an effect on focal length when buying lenses.",1,0,7,0.084592,0.069343
+1382,2,3,"this also has a somewhat different layout of buttons  it takes a little bit of work to get used to if you use lots of different cameras weight is so light shots can sometimes be shaky",1,0,11,0.698385,0.160786

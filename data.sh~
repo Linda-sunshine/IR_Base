@@ -1,0 +1,19 @@
+java -Xmx100g -jar camera_0.jar 
+java -Xmx100g -jar camera_1000.jar 
+java -Xmx100g -jar camera_2000.jar
+java -Xmx100g -jar camera_3000.jar 
+java -Xmx100g -jar camera_4000.jar 
+java -Xmx100g -jar camera_5000.jar 
+
+java -Xmx100g -jar tablet_0.jar 
+java -Xmx100g -jar tablet_1000.jar 
+java -Xmx100g -jar tablet_2000.jar
+java -Xmx100g -jar tablet_3000.jar 
+java -Xmx100g -jar tablet_4000.jar 
+java -Xmx100g -jar tablet_5000.jar 
+
+java -Xmx100g -jar phone_5000.jar 
+java -Xmx100g -jar tv_5000.jar 
+
+
+ 

@@ -1,0 +1,21 @@
+Likelihood -18116.730 at step 0 converge to 1.000000...
+Likelihood -13905.187 after step 10 converge to 0.001188 after 1 seconds...
+Confusion Matrix
+946,742,
+150,90,
+pros_precision:0.8631386861313869 pros_recall:0.5604265402843602
+cons_precision:0.10817307692307693 cons_recall:0.375
+F1 measure:pros:0.6795977011494254, cons:0.16791044776119404
+Test set perplexity is 256.654 and log-likelihood is -69.816
+Likelihood -19039.216 at step 0 converge to 1.000000...
+Likelihood -14176.143 after step 10 converge to 0.002205 after 0 seconds...
+Confusion Matrix
+983,709,
+119,124,
+pros_precision:0.8920145190562614 pros_recall:0.5809692671394799
+cons_precision:0.148859543817527 cons_recall:0.5102880658436214
+F1 measure:pros:0.7036506800286328, cons:0.23048327137546468
+Test set perplexity is 224.430 and log-likelihood is -66.281
+Perplexity 240.542+/-16.112
+Cross Validated for 2 fold  Pros:0.691624, Cons:0.199197
+Cross Validated foe 2 fold Pros Var:0.012026, Cons Var:0.031286

@@ -1,0 +1,16 @@
+Topic 4(0.164):	pictur, great, qualiti, color, easi, port,NUM
+Topic 1(0.082):	NUM, price, great, bought, pictur, start,sound
+Topic 15(0.066):	NUM, remot, hdmi, input, button, wo,screen
+Topic 11(0.061):	NUM, call, servic, ship, custom, half,pictur
+Topic 6(0.061):	game, great, 3d, NUM, work, player,hdmi
+Topic 7(0.060):	NUM, hdmi, input, connect, cabl, receiv,screen
+Topic 5(0.060):	NUM, qualiti, great, lg, high, type,game
+Topic 9(0.060):	NUM, price, year, con, purchas, motion,sound
+Topic 10(0.058):	sound, speaker, mount, audio, NUM, batteri,call
+Topic 8(0.057):	screen, NUM, dark, black, notic, basic,price
+Topic 3(0.052):	NUM, ship, day, great, newegg, bad,pictur
+Topic 13(0.051):	NUM, stand, control, remot, buy, time,app
+Topic 0(0.050):	screen, room, great, pixel, NUM, center,price
+Topic 14(0.044):	app, NUM, watch, work, movi, month,remot
+Topic 2(0.042):	sound, great, speaker, good, pictur, function,NUM
+Topic 12(0.032):	pictur, set, NUM, qualiti, color, deliveri,stand

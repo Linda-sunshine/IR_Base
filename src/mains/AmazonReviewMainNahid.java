@@ -33,7 +33,7 @@ public class AmazonReviewMainNahid {
 		String style = "SUP";
 		
 		//"NB", "LR", "SVM", "PR", "EM-NB"
-		String classifier = "EM-NB"; //Which classifier to use.
+		String classifier = "NB"; //Which classifier to use.
 		double C = 1.0;
 		String debugOutput = null; //"data/debug/LR.output";
 		

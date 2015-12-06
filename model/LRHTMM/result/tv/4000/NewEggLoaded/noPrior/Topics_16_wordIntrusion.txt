@@ -1,0 +1,16 @@
+Topic 1(0.156):	app, work, watch, kindl, great, hdx,turn
+Topic 3(0.101):	great, price, pictur, good, qualiti, 60hz,screen
+Topic 7(0.086):	servic, samsung, call, amazon, custom, today,sound
+Topic 9(0.084):	pictur, great, qualiti, good, sound, simpl,speaker
+Topic 6(0.077):	app, samsung, smart, netflix, work, account,servic
+Topic 13(0.066):	samsung, review, plasma, buy, purchas, futur,remot
+Topic 14(0.055):	remot, work, problem, month, turn, support,game
+Topic 0(0.048):	smart, samsung, room, buy, bought, care,app
+Topic 5(0.046):	stand, screen, mount, screw, box, wrong,app
+Topic 11(0.045):	set, pictur, 3d, color, great, panel,hdmi
+Topic 15(0.045):	game, monitor, great, pc, rate, upscal,smart
+Topic 12(0.043):	hdmi, cabl, input, audio, connect, soni,samsung
+Topic 10(0.042):	sound, speaker, recommend, buy, set, idea,pictur
+Topic 8(0.036):	sound, volum, speaker, buzz, screen, stereo,pictur
+Topic 4(0.035):	screen, color, black, watch, movi, accur,stand
+Topic 2(0.035):	watch, turn, screen, set, movi, creat,great

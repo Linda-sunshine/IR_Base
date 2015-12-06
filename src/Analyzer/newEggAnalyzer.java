@@ -22,6 +22,7 @@ import structures.NewEggPost;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Stn;
+import structures.annotationType;
 import utils.Utils;
 
 /**
@@ -200,7 +201,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				if (vPtr.size()>=m_lengthThreshold) {
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-					doc.setSourceType(2); // source = 2 means the Document is from newEgg
+					doc.setAnnotationType(annotationType.ANNOTATED);
 					doc.createSpVct(vPtr);
 					doc.setYLabel(y);
 					m_corpus.addDoc(doc);
@@ -221,7 +222,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 				if (vPtr.size()>=m_lengthThreshold) {
 					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-					doc.setSourceType(2); // source = 2 means the Document is from newEgg
+					doc.setAnnotationType(annotationType.ANNOTATED);
 					doc.createSpVct(vPtr);
 					doc.setYLabel(y);
 					m_corpus.addDoc(doc);
@@ -314,7 +315,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-			doc.setSourceType(2); // 2 means from newEgg
+			doc.setAnnotationType(annotationType.ANNOTATED);
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
 			m_corpus.addDoc(doc);
@@ -442,7 +443,7 @@ public class newEggAnalyzer extends jsonAnalyzer {
 			long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
 			//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
 			_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getProdId(), post.getTitle(), (m_releaseContent?null:buffer.toString()), y, timeStamp);			
-			doc.setSourceType(2); // source = 2 means the Document is from newEgg
+			doc.setAnnotationType(annotationType.ANNOTATED);
 			doc.createSpVct(spVcts);
 			doc.setYLabel(y);
 			doc.setSentences(stnList);

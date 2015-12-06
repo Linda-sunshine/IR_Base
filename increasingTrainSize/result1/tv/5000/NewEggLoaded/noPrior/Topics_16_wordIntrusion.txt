@@ -1,0 +1,16 @@
+Topic 1(0.000):	hdmi, cabl, input, connect, port, network,hd
+Topic 3(0.000):	color, set, screen, black, light, control,great
+Topic 5(0.000):	3d, great, featur, app, glass, blue,game
+Topic 7(0.000):	set, easi, remot, great, sound, amaz,call
+Topic 9(0.000):	app, work, watch, kindl, great, bother,sound
+Topic 11(0.000):	remot, channel, set, control, button, point,amazon
+Topic 13(0.000):	samsung, year, month, buy, problem, care,smart
+Topic 15(0.000):	screen, turn, remot, time, power, frequent,samsung
+Topic 14(0.000):	smart, app, samsung, work, netflix, allow,screen
+Topic 12(0.000):	amazon, deliveri, ship, day, price, high,samsung
+Topic 10(0.000):	sound, speaker, qualiti, audio, great, analog,remot
+Topic 8(0.000):	call, samsung, servic, custom, support, includ,app
+Topic 6(0.000):	game, set, watch, movi, motion, appear,easi
+Topic 4(0.000):	great, price, good, qualiti, buy, crt,3d
+Topic 2(0.000):	hd, channel, buzz, set, sound, help,color
+Topic 0(0.000):	samsung, review, plasma, set, led, includ,hdmi

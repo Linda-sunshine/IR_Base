@@ -1,0 +1,294 @@
+--------------------------------------------------------------------------------------
+Parameters of this run:
+ClassNumber: 2	Ngram: 1	FeatureValue: TF	Learning Method: SUP	Classifier: NB
+Cross validation: 5
+Window length: 0
+--------------------------------------------------------------------------------------
+Performing feature selection, wait...
+Loading 615 stopwords from ./data/Model/stopwords.dat
+Loading 1007 reviews from ./data/app/newdata/annotated/
+*******************************************************************
+Saving controlled vocabulary to ./data/app/newdata/annotated/fv_1gram_TF_DF_small.txt...
+370 features are selected!
+Creating feature vectors, wait...
+370 feature words loaded from ./data/app/newdata/annotated/fv_1gram_TF_DF_small.txt...
+Loading 822 reviews from ./data/app/newdata/annotated/
+Text feature generated for 822 documents...
+Start naive bayes, wait...
+a:0
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9517 and cons F1 0.5333 ..
+a:5000
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 Exception in thread "main" 0.9517 and cons F1 0.5333 ..
+a:10000
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9517 and cons F1 0.5333 ..
+a:15000
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9517 and cons F1 0.5333 ..
+a:20000
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9517 and cons F1 0.5333 ..
+a:25000
+Fold number 0
+Train Set Size 653
+Test Set Size 160
+
+Confusion Matrix
+138,2,
+12,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.01 seconds with pros F1 0.9517 and cons F1 0.5333 ..
+a:0
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:5000
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:10000
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:15000
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:20000
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:25000
+Fold number 1
+Train Set Size 636
+Test Set Size 177
+
+Confusion Matrix
+156,2,
+12,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9571 and cons F1 0.5000 ..
+a:0
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:5000
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:10000
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:15000
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:20000
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:25000
+Fold number 2
+Train Set Size 642
+Test Set Size 171
+
+Confusion Matrix
+148,2,
+13,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9518 and cons F1 0.5161 ..
+a:0
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:5000
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:10000
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:15000
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:20000
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:25000
+Fold number 3
+Train Set Size 644
+Test Set Size 169
+
+Confusion Matrix
+137,5,
+19,8,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9195 and cons F1 0.4000 ..
+a:0
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+a:5000
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+a:10000
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+a:15000
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+a:20000
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+a:25000
+Fold number 4
+Train Set Size 677
+Test Set Size 136
+
+Confusion Matrix
+117,1,
+11,7,
+Naive Bayes[C:3, F:370] Train/Test finished in 0.00 seconds with pros F1 0.9512 and cons F1 0.5385 ..
+*************************************************
+The final result of Naive Bayes[C:3, F:370] is as follows:
+java.lang.NullPointerException
+	at Classifier.BaseClassifier.calculateMeanVariance(BaseClassifier.java:557)
+	at Classifier.BaseClassifier.crossValidationNahid(BaseClassifier.java:428)
+	at mains.AmazonReviewMainApps.main(AmazonReviewMainApps.java:118)
+

@@ -147,8 +147,9 @@ public class LRHTSM extends HTSM {
 	
 	void estimateDelta() {
 		int[] iflag = {0}, iprint = { -1, 3 };
-		double fValue;
+		double fValue = 0.0;
 		int fSize = m_delta.length;
+		
 		
 		Arrays.fill(m_diag_delta, 0);//since we are reusing this space
 		try{
@@ -158,6 +159,7 @@ public class LRHTSM extends HTSM {
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
+			System.out.println("flag:" + fValue);
 		}
 	}
 	

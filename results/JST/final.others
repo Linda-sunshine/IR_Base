@@ -1,0 +1,20 @@
+data_dir=./data/5000/tablet/
+datasetFile=MR.dat
+result_dir=./result/5000/tablet/
+sentiLexFile=./data/mpqa1.constraint
+
+-------------------- Corpus statistics -----------------------
+numDocs=5569
+corpusSize=140849
+aveDocLength=25
+vocabSize=625
+
+---------------------- Model settings -----------------------
+numSentiLabs=3
+numTopics=15
+liter=100
+savestep=100
+updateParaStep=50
+_alpha=0.027778
+_beta=0.010000
+_gamma=0.416667

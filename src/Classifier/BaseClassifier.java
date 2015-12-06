@@ -12,6 +12,7 @@ import java.util.Random;
 
 import structures._Corpus;
 import structures._Doc;
+import structures.annotationType;
 import utils.Utils;
 
 
@@ -59,6 +60,7 @@ public abstract class BaseClassifier {
 		for(_Doc doc: m_testSet){
 			doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
 			int pred = doc.getPredictLabel(), ans = doc.getYLabel();
+			if(ans<0) continue;
 			m_TPTable[pred][ans] += 1; //Compare the predicted label and original label, construct the TPTable.
 			
 			if (pred != ans) {
@@ -70,6 +72,14 @@ public abstract class BaseClassifier {
 				acc ++;
 			}
 		}
+		
+		System.out.print("\nConfusion Matrix\n");
+		for(int i=0; i<2;i++){
+			for(int j=0; j<2;j++)
+				System.out.print(m_TPTable[j][i]+",");
+			System.out.println();
+		}
+		
 		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
 		return acc /m_testSet.size();
 	}
@@ -160,7 +170,7 @@ public abstract class BaseClassifier {
 				double accuracy = test();
 				
 				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
-				infoWriter.write(getF1String());
+				//infoWriter.write(getF1String());
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
@@ -188,13 +198,14 @@ public abstract class BaseClassifier {
 			int newEggTrainsetRatingCount[] = {0,0,0,0,0};
 			
 			
-			if(m_randomFold==true){
+			/*if(m_randomFold==true){
 				perf = new double[k];
-				m_corpus.shuffle(k);
+				//m_corpus.shuffle(k);
 				int[] masks = m_corpus.getMasks();
 				ArrayList<_Doc> docs = m_corpus.getCollection();
 				//Use this loop to iterate all the ten folders, set the train set and test set.
 				for (int i = 0; i < k; i++) {
+					m_corpus.shuffle(k);
 					for (int j = 0; j < masks.length; j++) {
 						if( masks[j]==i ){ 
 							m_testSet.add(docs.get(j));
@@ -202,6 +213,12 @@ public abstract class BaseClassifier {
 						else{ 
 							m_trainSet.add(docs.get(j));
 						}
+						
+
+						if(m_trainSet.size()<=0.8*docs.size())
+							m_trainSet.add(docs.get(j));
+						else
+							m_testSet.add(docs.get(j));
 					}
 					
 					System.out.println("Fold number "+i);
@@ -216,19 +233,19 @@ public abstract class BaseClassifier {
 					m_trainSet.clear();
 					m_testSet.clear();
 				}
-			}/*else if(m_randomFold==true){
+			}else */if(m_randomFold==true){
 				
 				perf = new double[k];
 				ArrayList<_Doc> neweggDocs= new ArrayList<_Doc>() ;
 				
 				for(_Doc d:m_corpus.getCollection()){
-					if(d.getSourceType()==2)
+					if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)
 						neweggDocs.add(d);
 				}
 				
 				// shuffling only newEgg docs
 				int[] masks = new int [neweggDocs.size()]; 
-				Random rand = new Random();
+				Random rand = new Random(0);
 				for(int i=0; i< masks.length; i++) {
 					masks[i] = rand.nextInt(k);
 				}
@@ -252,14 +269,16 @@ public abstract class BaseClassifier {
 					for(int a=0; a<=25000;a=a+5000){
 						System.out.println("a:"+ a);
 						
-						if(a!=0){
+						
+						// actiavte this for EM-Naive Bayes
+						/*if(a!=0){
 							int m = 0;
 							int l = index;
 							for(; ;l++){
 								_Doc d = m_corpus.getCollection().get(l);
 								if(m>5000)
 									break;
-								if(d.getSourceType()==1){
+								if(d.getAnnotationType()==annotationType.UNANNOTATED){
 									m_trainSet.add(d);
 									m++;
 								}
@@ -267,8 +286,8 @@ public abstract class BaseClassifier {
 							}
 							index = l;
 
-						}
-					
+						}*/
+						
 						System.out.println("Fold number "+i);
 						System.out.println("Train Set Size "+m_trainSet.size());
 						System.out.println("Test Set Size "+m_testSet.size());
@@ -281,10 +300,24 @@ public abstract class BaseClassifier {
 						for(_Doc doc: m_testSet){
 							doc.setPredictLabel(predict(doc)); //Set the predict label according to the probability of different classes.
 							int pred = doc.getPredictLabel(), ans = doc.getYLabel();
+							if(pred == -1 || ans ==-1) continue;
 							precision_recall[ans][pred] += 1; //Compare the predicted label and original label, construct the TPTable.
 				
 						}
 					    
+						System.out.println("\nConfusion Matrix");
+						//infoWriter.println("Confusion Matrix");
+						for(int z=0; z<2; z++)
+						{
+							for(int j=0; j<2; j++)
+							{
+								System.out.print(precision_recall[z][j]+",");
+							//	infoWriter.print(precision_recall[l][j]+",");
+							}
+							System.out.println();
+							//infoWriter.println();
+						}
+						
 					    double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
 						double cons_precision = (double)precision_recall[1][1]/(precision_recall[0][1] + precision_recall[1][1]);
 						
@@ -306,7 +339,7 @@ public abstract class BaseClassifier {
 					m_trainSet.clear();
 					m_testSet.clear();
 				}
-			}*/
+			}
 			
 			else {
 				k = 1;
@@ -314,11 +347,11 @@ public abstract class BaseClassifier {
 			    int totalNewqEggDoc = 0;
 			    int totalAmazonDoc = 0;
 				for(_Doc d:m_corpus.getCollection()){
-					if(d.getSourceType()==2){
+					if(d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED){
 						newEggRatingCount[d.getYLabel()]++;
 						totalNewqEggDoc++;
 						}
-					else if(d.getSourceType()==1){
+					else if(d.getAnnotationType()==annotationType.UNANNOTATED){
 						amazonRatingCount[d.getYLabel()]++;
 						totalAmazonDoc++;
 					}
@@ -333,7 +366,7 @@ public abstract class BaseClassifier {
 				
 				for(_Doc d:m_corpus.getCollection()){
 					
-					if(d.getSourceType()==1){ // from Amazon
+					if(d.getAnnotationType()==annotationType.UNANNOTATED){ // from Amazon
 						int rating = d.getYLabel();
 						
 						if(amazonTrainsetRatingCount[rating]<=0.8*amazonRatingCount[rating]){
@@ -346,7 +379,7 @@ public abstract class BaseClassifier {
 						}
 					}
 					
-					if(m_LoadnewEggInTrain==true && d.getSourceType()==2) {
+					if(m_LoadnewEggInTrain==true && (d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)) {
 						
 						int rating = d.getYLabel();
 						if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
@@ -359,7 +392,7 @@ public abstract class BaseClassifier {
 						}
 						
 					}
-					if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
+					if(m_LoadnewEggInTrain==false && (d.getAnnotationType()==annotationType.ANNOTATED || d.getAnnotationType()==annotationType.PARTIALLY_ANNOTATED)) {
 						int rating = d.getYLabel();
 						if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
 							// Do nothing simply ignore it make for different set

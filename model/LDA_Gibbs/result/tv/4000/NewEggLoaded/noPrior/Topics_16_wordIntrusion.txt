@@ -1,0 +1,16 @@
+Topic 9(0.076):	app, watch, work, kindl, download, sort,plasma
+Topic 11(0.070):	smart, samsung, netflix, app, updat, account,great
+Topic 12(0.067):	great, pictur, love, easi, price, compar,3d
+Topic 15(0.066):	samsung, servic, call, problem, custom, garbag,cabl
+Topic 3(0.064):	good, qualiti, pictur, price, better, toshiba,connect
+Topic 5(0.064):	set, color, screen, black, pictur, older,turn
+Topic 7(0.063):	amazon, ship, day, order, deliveri, wonder,stand
+Topic 6(0.062):	turn, issu, work, time, problem, pictur,amazon
+Topic 10(0.062):	plasma, samsung, panason, review, buy, retail,smart
+Topic 0(0.059):	cabl, hdmi, input, port, pictur, mode,remot
+Topic 2(0.059):	game, monitor, 1080p, pc, comput, 240hz,good
+Topic 14(0.059):	sound, speaker, pictur, volum, great, fine,samsung
+Topic 1(0.058):	remot, control, channel, button, set, extra,game
+Topic 4(0.058):	connect, work, internet, wireless, network, useless,set
+Topic 8(0.057):	stand, mount, wall, screen, size, read,app
+Topic 13(0.056):	3d, featur, vizio, movi, lg, bought,sound

@@ -1,0 +1,64 @@
+Product: B0074FGLUM, Topic: 0
+Smart TV vs Chromcast.	-3.620
+not Smart.	-3.630
+I  still use my chromcast for netflix since its quicker but I use the tv's other apps happily.	-3.714
+Product: B0074FGLUM, Topic: 1
+The TV has an external speaker connection.	-4.444
+It has 1 set of inputs component/composite video and L/R audio.  1 audio output jack and 1 optical audio output.	-4.574
+Cannot control external speaker volume.	-4.615
+Product: B0074FGLUM, Topic: 2
+Not so great picture quality, though.	-4.429
+Has great sound and great features.	-4.786
+This TV is great at displaying TV shows, movies, and all that.	-4.883
+Product: B0074FGLUM, Topic: 3
+Great TV.	-3.739
+The picture is great.	-4.028
+Great Purchase!	-4.128
+Product: B0074FGLUM, Topic: 4
+Sound quality.	-3.148
+Great picture, great price, ok sound.	-3.260
+The picture quality is OK.	-3.283
+Product: B0074FGLUM, Topic: 5
+Great buy.	-3.869
+DO NOT BUY.	-3.886
+Don't buy any Samsung TV's.	-3.918
+Product: B0074FGLUM, Topic: 6
+Once I used these settings picture was great.	-3.922
+It's great but...	-4.305
+This TV was easy to set up and has great picture quality.	-4.409
+Product: B0074FGLUM, Topic: 7
+Dead pixel.	-4.515
+screen dead after one week.	-4.522
+The screen was black and red, with white spiderweb-like lines all over the plasma screen.	-4.535
+Product: B0074FGLUM, Topic: 8
+The tv screen is already showing issues.	-4.468
+i got it set up and then started watching tv, then i started to notice something the sound comes and goes.	-4.596
+Great Screen.	-4.692
+Product: B0074FGLUM, Topic: 9
+So all you see after you hook it up are the HDMI cables looping trying to get behind the TV.	-4.141
+It has 3 HDMI inputs.	-4.314
+All HDMI ports don't work.	-4.342
+Product: B0074FGLUM, Topic: 10
+Samsung customer service is anything but service.	-3.820
+Samsung Customer Service.	-3.830
+Samsung "Customer Service" is no help, so you are on your own.	-4.113
+Product: B0074FGLUM, Topic: 11
+New Samsung.	-3.789
+KNOWN PROBLEM! (BUT) Samsung fixed it!	-4.051
+Don't buy.	-4.346
+Product: B0074FGLUM, Topic: 12
+NOT ACTUALLY A 120HZ TV.	-4.358
+The refresh rate for this TV is 60hz I was told by a crutchfield salesman that a 120hz rate is better so I sent this TV back and am trying a 120hz refresh rated TV.	-4.822
+After receiving the set and setting it up, I quickly noticed that the motion wasn't as smooth as my Vizio 120Hz set.	-4.932
+Product: B0074FGLUM, Topic: 13
+Remote is still old traditional remote.	-3.384
+This means another remote.	-4.063
+The TV comes with a "remote controller or wand".	-4.270
+Product: B0074FGLUM, Topic: 14
+Please fix the apps!	-3.118
+Then both of the apps stopped working.	-3.584
+great picture and tv works well	-3.895
+Product: B0074FGLUM, Topic: 15
+not so smart TV.	-3.508
+smart tv???	-3.509
+Not smart at all.	-3.514

@@ -1,0 +1,9 @@
+The final result of EM-Naive Bayes[C:2, F:704] is as follows:
+The total number of classes is 2
+Class 0:	precision(0.884+/-0.006)	recall(0.532+/-0.005)
+Class 1:	precision(0.242+/-0.013)	recall(0.681+/-0.024)
+	0	1	P
+0	4346	570	0.8841
+1	3824	1221	0.2420
+R	0.5319	0.6817	0.5589
+completeF1,0.6642,0.3572

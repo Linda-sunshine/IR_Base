@@ -1,0 +1,1149 @@
+Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty
+848,2,0,"decent image quality.",0,0,6,1.000000,1.000000
+848,2,1,"media play function is neat.",0,0,7,0.614539,0.128282
+848,2,2,"speakers better than some.",0,1,12,0.610780,0.155057
+848,2,3,"confusing remote.",1,1,15,0.600251,0.129329
+848,2,4,"tv picture lags a bit when changing channels.",1,1,9,0.528439,0.128282
+848,2,5,"usb quit working.",1,0,7,0.569253,0.156283
+848,2,6,"so so picture quality.",1,0,6,0.526176,0.142275
+853,2,0,"tv has great viewing angles and built in gaming mode for when you want to play games with it.",0,0,0,1.000000,1.000000
+853,2,1,"better looking image then other 4k tvs",0,0,3,0.621735,0.242761
+853,2,2,"smart tv has adds now and then which are a slight annoyance.",1,1,15,0.581268,0.156283
+853,2,3,"for good audio needs a sound bar or sound system.",1,1,12,0.518569,0.223050
+855,2,0,"great tv at a great price.",0,0,1,1.000000,1.000000
+855,2,1,"don t let the refurbished scare you off.",0,0,1,0.640931,0.241050
+855,2,2,"bought it about 6 months ago.",0,0,1,0.566358,0.156283
+855,2,3,"works great.",0,0,1,0.600251,0.204507
+855,2,4,"easy to set up.",0,0,1,0.562042,0.202993
+855,2,5,"nice selection of inputs.",0,0,7,0.530123,0.202993
+855,2,6,"not free....nothing that i ve found.",1,0,1,0.554230,0.221437
+856,2,0,"nice size  excellent picture  enough ports  digital audio out.",0,0,0,1.000000,1.000000
+856,2,1,"wish i could label hdmi ports and also remove ota tv from inputs list.",1,0,0,0.385230,0.142847
+856,2,2,"a very minor thing.",1,1,15,0.575155,0.142275
+857,2,0,"looks brand new out of the box  packaged and shipped well.",0,0,1,1.000000,1.000000
+857,2,1,"works like a new tv should.",0,0,1,0.631646,0.128282
+857,2,2,"great picture and color  after very little adjusting .",0,0,6,0.539546,0.242761
+857,2,3,"is as advertised.",0,0,3,0.571052,0.223050
+858,2,0,"wonderful picture  decent sound  easy setup  3 hdmi   digital coax out   thin bezel.",0,0,0,1.000000,1.000000
+858,2,1,"no analog sound out.",1,0,0,0.373386,0.085796
+858,2,2,"only 60mhz not 120mhz  but haven t noticed any ghosting.",1,0,0,0.550139,0.142275
+859,2,0,"i already had one sanyo 42  with a few more bells and whistles that i did a lot of research on before buying  but this one looks just as good.",0,0,1,1.000000,1.000000
+859,2,1,"considering i got the first one at you know where on black friday for  450 this is a great deal.",0,0,0,0.387043,0.127127
+862,2,0,"good deal for the money.",0,0,1,1.000000,1.000000
+862,2,1,"works just as it should.",0,0,1,0.628354,0.242761
+862,2,2,"doesn t have the sound issues that i have seen with more expensive tv s",0,0,5,0.543053,0.129329
+862,2,3,"more video inputs would be nice  but not gonna complain it holds all my current devices.",1,1,9,0.518569,0.141140
+863,2,0,"incredible picture quality  can plug my hardrive right into the usb port and watch movies and tv shows off of it  not many tv s can do it.",0,0,7,1.000000,1.000000
+863,2,1,"speakers are loud and clear.",0,0,7,0.621776,0.155057
+863,2,2,"one of the 4 hdmi ports is a pain sometimes.",1,0,7,0.536123,0.142275
+864,2,0,"just set this up this morning after getting it for eight hundred on black friday.",0,0,2,1.000000,1.000000
+864,2,1,"i love the ultra thin and simplistic bezel.",0,0,2,0.606265,0.204507
+864,2,2,"picture is stunning.",0,0,2,0.621046,0.202993
+864,2,3,"had some input lag when first connecting my xbox   this is eliminated by turning the tv to game mode  which i believe enables the  vyper drive   as i don t see a standalone option  and disabling the image processing options like opc  noise reduction  etc.",0,1,9,0.644201,0.204188
+864,2,4,"i didn t notice a drop in picture quality after doing this  and those options save specifically for your game console s input.",0,1,12,0.239052,0.077897
+864,2,5,"wifi set up was easy but had only medium connection strength....i ll likely go wired  but ymmv.",0,0,7,0.591543,0.156283
+864,2,6,"usb input is a big plus  and it plays many movie types   avi  mkv  asf  and more.",0,0,7,0.544506,0.155057
+864,2,7,"sound quality is as good as other sets  but i will be using my surround sound soon instead.",0,1,12,0.545959,0.242761
+864,2,8,"  only one component input   no biggie as i ll move over to hdmi.",1,1,12,0.547412,0.204507
+864,2,9,"  apps include vudu  netflix  youtube  but no hulu    maybe that will be updated  pleaseplease ",1,1,10,0.512299,0.142275
+865,2,0,"picture quality is outstanding  sound quality is very good for a thin tv  streams services like netflix very well  nice configuration options  uses the same lcd panel as samsung s top end products  passes through dd and dts sound from sources  streaming  hdmi  to the optical out connection   for the quality of the tv the price is very reasonable.",0,0,7,1.000000,1.000000
+865,2,1,"don t expect much in the web browsing area.",1,1,8,0.608746,0.223050
+866,2,0,"i am very impressed with this product the color and sound are excellentand the price got it during cyber monday last year.",0,0,2,1.000000,1.000000
+866,2,1,"after watching a movie if i did not go back out to select another program soon or exit out the end of the movie would stay locked on the screen and you could not cut the tv off by the tv off button or the remote off button.thankfully this was a common problem and a technian from vizio told how to reset the tv.after doing what he instructed me to do several times 4 or 5 it stopped and l have not had any other issues.",1,1,9,0.544804,0.223050
+868,2,0,"easy set up wifi works well with d link router vizio internet apps include netflix  youtube  and hulu perfect for the kitchen great value on refurbished equipment reasonable quality image  not great  not bad ",0,0,7,1.000000,1.000000
+868,2,1,"no hbo go sound okay but not great  though this is pretty much par for the course with most low cost flat screens  can hook into soundbar ",1,0,7,0.469206,0.131415
+869,2,0,"product arrived quickly and as dexcribed.",0,0,4,1.000000,1.000000
+869,2,1,"seems to work very sel lso far.",0,0,4,0.639423,0.155057
+869,2,2,"this is my first vizio  i have a larger samsung.",0,0,4,0.587289,0.129329
+869,2,3,"i was a little surprised at how light the tv is.",0,0,2,0.595529,0.155057
+869,2,4,"seems cheap but this may be normal for 32  tv.",0,0,3,0.583278,0.128282
+869,2,5,"i have some issue with wifi signal strenght but contacted vizio and spoke to an actual perosn who was most helpful  i like that a lot.",0,0,3,0.543053,0.156283
+869,2,6,"picture and sound quality are very good.",0,0,6,0.572357,0.204507
+869,2,7,"overall after a few days i must say i am quite please with the purchase.",0,0,4,0.566870,0.241050
+869,2,8,"extremelty easy to use app s  netflix ",0,0,2,0.519301,0.129329
+869,2,9,"wifi receiver a bit weak",1,1,13,0.510182,0.142275
+870,2,0,"arrived damaged  so can t comment",0,1,13,1.000000,1.000000
+870,2,1,"the tv arrived damaged  so i can t comment on its qualities",1,1,13,0.085580,0.092721
+871,2,0,"it is overall a great tv.",0,1,12,1.000000,1.000000
+871,2,1,"i ordered it to use my xbox on and it does that without a problem.",0,1,9,0.587455,0.202993
+871,2,2,"goes to 1080p with hdmi so i m not sure why the recommended hd was 720p.",0,1,9,0.580863,0.242761
+871,2,3,"if you are looking for a tv to play games on this is it i feel.",0,1,12,0.596178,0.202993
+871,2,4,"as far as television and movies it has great picture and sound quality.",0,1,8,0.625442,0.307512
+871,2,5,"the sound is astoundingly good from the built in speakers.",0,1,8,0.317806,0.085478
+871,2,6,"the only con i can think of is the base for the tv is a little cheap.",1,1,8,0.536725,0.221437
+873,2,0,"crisp clear picture  small bezel  easy interface and menu",0,0,2,1.000000,1.000000
+873,2,1,"built in speakers aren t very good.",1,1,8,0.596651,0.223050
+875,2,0,"not too heavy great size adequate bezel width great input options easy to configure sound is pretty decent too  wonderful color  great brigtness and lots of options for setting up.",0,0,1,1.000000,1.000000
+875,2,1,"the stand is glass  which is kind of a delicate substrate for it.",1,1,13,0.624702,0.202993
+875,2,2,"is not a  smart  tv   so you will have to provide your own  netflix   hulu  streaming etc. off brand with an almost comical  chinese  sounding name   but it adds to its charm.",1,1,15,0.533312,0.142275
+876,2,0,"very cheap for a 50 .",0,0,3,1.000000,1.000000
+876,2,1,"but it works nice even over a year now",0,0,3,0.557032,0.221437
+877,2,0,"pretty great tv for  359 with rebate card.",0,0,1,1.000000,1.000000
+877,2,1,"replaced my old 2006 42  pan plasma.",0,0,1,0.238877,0.125610
+877,2,2,"weighs less than half of that 100lb beast.",0,0,1,0.637516,0.156283
+877,2,3,"better speakers than the 32  one i bought.",0,0,4,0.564580,0.128282
+877,2,4," same brand   haven t hooked it up to the computer as of yet  but its intended for tv and movies.",0,0,3,0.583278,0.155057
+877,2,5,"very low heat compared to the old plasma s radiation.",0,0,4,0.581268,0.129329
+877,2,6,"hooks up to my lap top edge to edge with a few tweaks in display settings.",0,0,0,0.619197,0.205708
+877,2,7,"really really good picture on hd stuff and surfing thru the lap top.",0,0,0,0.349482,0.143015
+877,2,8,"wouldn t expect it to be a great computer monitor for gaming but will do a follow up after i try it out.",1,0,3,0.524938,0.155057
+877,2,9,"took a little tweaking to get the base set up straight.",1,0,3,0.537650,0.223050
+878,2,0,"  low cost  low cost  low cost   3 hdmi inputs   acceptable quality  blackness   refresh rate   easily adjustable picture balance",0,0,0,1.000000,1.000000
+878,2,1,"  turning on takes a few secs  no big deal   non existent customer service   it supposedly plays movies from a usb stick  but the formats i tried were not accepted.",1,1,14,0.542004,0.137937
+881,2,0,"works amazingly for a refurbished tv  i really settled when i decided to get a 720p tv and i actually dont regret it  the picture quality is amazing  the screen had no scratches or any signs of wear  i thought i might have been sent a new tv on accident ",0,0,1,1.000000,1.000000
+881,2,1,"the very few problems i did have with this tv were minor  the 3rd hdmi input does not work  but that doesnt matter to me.",1,1,15,0.430399,0.169223
+881,2,2,"the speakers are a little buggy  for the most part it works great  but if i play a game where the music blasts suddenly or has very high bass the speakers get really loud  beyond what the volume setting is  and it seems like the speakers will blow out.",1,1,12,0.440474,0.210427
+882,2,0,"great price and it suits all expected needs.",0,0,1,1.000000,1.000000
+882,2,1,"pleasant surprise that it had 4 hdmi ports.",0,0,7,0.601570,0.241050
+882,2,2,"my spouse is happy  actually has reconnected with tv viewing.",0,0,4,0.611763,0.202993
+882,2,3,"nicely packaged.",0,0,1,0.570922,0.128282
+882,2,4,"low volume output  but hope to rectify that with visio soundbar.",1,1,12,0.529092,0.241050
+882,2,5,"no batteries were included.",1,1,13,0.550227,0.142275
+883,2,0,"nice tv for the price.",0,0,6,1.000000,1.000000
+883,2,1,"nice picture.",0,0,6,0.186565,0.072948
+883,2,2,"this tv is new   walmart for 260.00 so buying refurb i saved about 50.00.",0,0,2,0.576732,0.241050
+883,2,3,"nice that it has many buttons on this side for power  etc.",0,0,2,0.579758,0.242761
+883,2,4,"i have another vizio that doesn t.",0,0,4,0.593041,0.204507
+883,2,5,"may come in handy when the kids loose the remote.",0,0,4,0.544166,0.156283
+883,2,6,"frame of tv has many scratches and scuffs",1,0,4,0.505016,0.141140
+884,2,0,"was rma able  one of two customer service reps was helpful.",0,1,14,1.000000,1.000000
+884,2,1,"functionality.    first tv was received may 30th and rma d due to a line at the top of the screen.",1,1,13,0.595462,0.156283
+884,2,2,"first customer service rep was very empathetic and helpful even offered rapid shipping.",1,1,14,0.672164,0.205708
+884,2,3,"tv shipped back june 2nd.",1,1,14,0.205908,0.075702
+884,2,4,"  second tv was received on june 19th and only half of a functioning screen  the right half .",1,1,9,0.600610,0.205708
+884,2,5,"second rep was less than helpful  didn t even seem to care that we originally ordered the tv on may 23rd and still have no television.",1,1,13,0.411445,0.131415
+885,2,0,"great condition.",0,0,1,1.000000,1.000000
+885,2,1,"works like new.",0,0,1,0.636500,0.202993
+885,2,2,"setup is easy.",0,0,2,0.581140,0.155057
+885,2,3,"very plug and play for a refurb  its not all that bad.",0,0,7,0.572587,0.241050
+885,2,4,"very little trash with packaging.",0,1,13,0.598349,0.202993
+885,2,5,"comes with remote  2 batteries   power cable  and a small setup guide...simple.",0,1,13,0.518503,0.155057
+885,2,6,"packaging was a little rough.",1,1,13,0.576232,0.129329
+885,2,7,"no detailed instruction manual  but it takes common sense to put it together.",1,1,13,0.502756,0.142275
+886,2,0,"surprisingly  it actually turns on  and it arrived relatively quick.",0,0,4,1.000000,1.000000
+886,2,1,"the television is in bad shape  poorly packaged and looked very used.",1,1,13,0.619666,0.241050
+886,2,2,"one of the clips on the stand for the base was broken  but that seemed minor compared to the rest.",1,0,4,0.591390,0.202993
+886,2,3,"i honestly couldn t believe vizio would actually send something like this to a customer.",1,1,14,0.611746,0.129329
+886,2,4,"i should have immediately sent it back  but i rather not deal with the grief of trying to return or exchange it.",1,1,14,0.596940,0.128282
+886,2,5,"i m just writing it off as money in the garbage.",1,1,14,0.591543,0.155057
+886,2,6,"sadly  i bought it as a present for my father  and now i find myself having to buy another television since i told him i was getting him one.",1,1,8,0.526946,0.155057
+886,2,7,"there was no way i could give him the set vizio sent me.",1,1,11,0.566870,0.128282
+886,2,8,"this was the very first time i purchased something  refurbished   and it the last time.",1,1,11,0.512247,0.156283
+886,2,9,"lesson learned  i tried to save a little money and in the end it will cost me a lot more.",1,1,14,0.520763,0.141140
+887,2,0," excellent picture quality  very rich deep blacks  smart tv works great.",0,0,6,1.000000,1.000000
+887,2,1,"wi fi set up is a snap.",0,0,7,0.648923,0.204507
+887,2,2," plays all formats of movies i have thrown at it over the network.",0,0,7,0.591401,0.129329
+887,2,3,"looks great in our family room.",0,0,4,0.684489,0.307512
+887,2,4," very little room reflection on the panel.",0,0,4,0.199452,0.153131
+887,2,5," remote is backlit",0,0,3,0.672268,0.170642
+887,2,6," would like the remote back light to be brighter.",1,0,3,0.077173,0.080716
+887,2,7," netflix app seems to be quiet low on volume compared to other transmissions  stand is kind of funky.",1,0,3,0.591925,0.170642
+887,2,8,"would have like a more solid stand.",1,0,3,0.345109,0.123323
+888,2,0,"the picture quality on this tv is extremely good.",0,0,6,1.000000,1.000000
+888,2,1,"the problem is that samsung plasma technology is unreliable.",0,0,5,0.694972,0.264404
+888,2,2,"the company will only warranty this very expensive high end plasma tv for one year  which is quite telling.",0,1,14,0.344843,0.167865
+888,2,3,"my tv developed a number of rows of dead pixels going from the right to the left of the display.",0,1,10,0.673738,0.171967
+888,2,4,"this happened a few weeks after the warranty period had ended and despite begging and pleading samsung told me that i was solely responsible for the  900 cost to replace the entire plasma display.",0,1,14,0.351599,0.107421
+888,2,5,"i had to throw the tv in the dumpster..... what a waste of money.",0,1,14,0.592175,0.204507
+888,2,6,"google  dead pixel samsung tv  to read about this frequent problem.",0,0,4,0.591813,0.205708
+888,2,7,"in the dumpster after one year  samsung customer support unwilling to help.",1,1,10,0.368045,0.203538
+889,2,0,"good picture quality  easy online access to netflix  youtube  etc.",0,0,6,1.000000,1.000000
+889,2,1,"sound is a little muddy  headphone jack and other jacks are inconveniently located in the back  when you first turn the tv on  the color is wrong and then resets.",1,1,9,0.588615,0.223050
+890,2,0,"clear crisp picture  included wifi",0,0,7,1.000000,1.000000
+890,2,1,"the apps on it are mediocre.",1,1,10,0.623767,0.155057
+890,2,2,"but i ve bought a roku anyways.",1,1,11,0.550139,0.142275
+891,2,0,"i m not a tv expert  thus don t have similar tv s to compare...that said  picture quality is great  setup easy  i choose free ship  went from memphis tn to florida in 2 days...ty newegg...i always shop around  and i always end up buying from newegg  best     shipping cust service...packaging was quality  airbags  wrapping....when u turn on tv  no pic is displayed  till you tell the tv where input is from   fyi  tv has no buttons   all done via remote...all settings via remote are easy...there are numerous choices  for adjusting pic quality...this was a refurb...came with remote power cord quick start quide...full guide is on screen  accessible by remote...everything is functioning perfectly  wired wireless good  no flaws   all pixels good  ...this is an eggcelent tv...a superb tv...i highly recommend...i would buy 10",0,0,4,1.000000,1.000000
+891,2,1,"3 screws to mount the base not included...i believe an oversite from refurb place...2 aaa batteries not included normal  fyi edging at the top popped off and was stuck on the top of tv..had to pull edging forward which quickly went into correct fitting...i again have to suspect refurb place  as edge is very tight around tv  so very unlikely shipping did that...i did have to call visio support  they are good   some smart tv apps weren t accessible... they had me go to a onscreen tab  and select update firmware...took 10 min...these cons  are very minor and all were fixed.",1,1,10,0.483900,0.132232
+892,2,0,"great picture  easy menu  easy setup with directv remote.",0,0,2,1.000000,1.000000
+892,2,1,"flimsy stand",1,1,13,0.606082,0.221437
+893,2,0,"the tv was cheap and seemed like a good deal.",0,1,15,1.000000,1.000000
+893,2,1,"i d like to assume all of the cons comes from this being a refurbished tv.",1,1,13,0.629940,0.204507
+893,2,2,"the screen has a group of dead dark pixels that made a black spot on the screen.",1,1,10,0.581140,0.155057
+893,2,3,"it s pretty big so i have no idea how that got past the quality control people.",1,1,15,0.578107,0.155057
+893,2,4,"there is no way i could deal with that  so i m returning it now.",1,1,15,0.595631,0.156283
+893,2,5,"the remote also hardly worked.",1,1,15,0.555354,0.156283
+893,2,6,"with fresh batteries it would take 3 4 clicks to make something happen.",1,1,13,0.539677,0.128282
+893,2,7,"the color also took forever to adjust as the defaults are really bad.",1,1,13,0.509816,0.221437
+894,2,0,"great picture  smart tv apps that i find useful  unlike those for many other tvs   easy setup.",0,0,2,1.000000,1.000000
+894,2,1,"no difficulties with the refurbished unit.",0,0,4,0.601739,0.221437
+895,2,0,"good tv  high resolution and good picture.",0,0,6,1.000000,1.000000
+895,2,1,"nice and bright with little light bleed from the top and the bottom.",0,0,2,0.607663,0.129329
+895,2,2,"sound is weak and tinny  not bad for tv speakers but not going to impress anyone.",1,1,12,0.583278,0.242761
+895,2,3,"smart interface can be slow and laggy at times.",1,1,10,0.566818,0.128282
+895,2,4,"wireless connection for internet seems flakey  with direct connection with ethernet  no issues.",1,1,10,0.519301,0.141140
+896,2,0,"the design is sleek and set up is easy.",0,0,7,1.000000,1.000000
+896,2,1,"the colors are bright and has many settings to customize.",0,0,7,0.344424,0.083415
+896,2,2,"vizio s tech support is great.",0,1,10,0.613220,0.241050
+896,2,3,"this model has the most basic network connectivity software.",1,1,10,0.676126,0.264404
+896,2,4,"it can only use wpa2 less sophisticated tkip cipher type to connect to the wifi.",1,1,10,0.494303,0.180860
+896,2,5,"this means that if you have a router that downgrades the wifi security from the normal eas down to basic tkip  then your newer devices such as laptops and ipads may not connect to the internet.",1,1,10,0.152536,0.072934
+896,2,6,"also  while the tv set up was easy  the network setup was unnecessarily difficult.",1,1,10,0.665294,0.205708
+896,2,7,"it required me and vizio s tech support over 2 hours to figure out that the tv is using the older outdated network software  which most updated home wifi systems will require wifi extenders configured down to meet both your newer ipads and this vizio s network requirements.",1,1,10,0.311186,0.086463
+896,2,8,"therefore  i m returing this tv because i can t use the smart tv functions.",1,1,10,0.593350,0.156283
+896,2,9,"also  this tv uses edge led lighting with not so great graphics display software.",1,1,9,0.604265,0.262593
+896,2,10,"this means that if you use this as an external monitor  you will be disappointed with even simple things as a plain black and white word document displaying just text.",1,1,15,0.498919,0.246660
+896,2,11,"don t let others tell you that a 1080p tv can easily serve as a computer monitor.",1,1,9,0.495154,0.287966
+896,2,12,"take my lessons learned  it can t  if you want a monitor  then invest in a good monitor.",1,1,9,0.212624,0.181214
+897,2,0,"i m using the tv as a monitor for my pc.",0,0,3,1.000000,1.000000
+897,2,1,"it s connected via the adapter s hdmi port so the picture quality is excellent.",0,0,7,0.668509,0.309503
+897,2,2,"it s also connected to a roof antenna and to my cable router.",0,0,7,0.349981,0.138163
+897,2,3,"the picture quality from pc streaming video and tv reception are both excellent.",0,0,7,0.558985,0.242761
+897,2,4,"the smart tv feature is a bonus.",0,0,7,0.589628,0.204507
+897,2,5,"i plan on a netflix subscription and expect it to work as well as streaming youtube direct to the tv works.",0,0,3,0.512504,0.155057
+897,2,6,"wish it had more than one hdmi port but that s not enough to take away an egg.",1,1,9,0.552485,0.142275
+898,2,0,"decent size for a 19 .",0,0,3,1.000000,1.000000
+898,2,1,"speakers sound great and screen clarity couldn t be better.",0,0,4,0.591390,0.242761
+898,2,2,"overall worth the money",0,0,1,0.607764,0.129329
+898,2,3,"only bad thing about mine was one of the buttons on the remote were a bit messed up but still functions.",1,1,15,0.528454,0.242761
+898,2,4,"not worth a loss of an egg.",1,1,8,0.563352,0.221437
+899,2,0,"delivered fast.",0,1,14,1.000000,1.000000
+899,2,1,"repair guys come to your home.",0,1,14,0.591458,0.129329
+899,2,2,"doa  called samsung and they are going to send someone out to my house to fix the issue.",1,1,14,0.524868,0.142275
+900,2,0,"this is my first lcd tv and i did quite a bit of looking around before i bought this.",0,0,3,1.000000,1.000000
+900,2,1,"when i was at the store i was impressed with it.",0,0,3,0.629940,0.204507
+900,2,2,"once i hooked it up at home  i was blown away by it.",0,0,0,0.621735,0.242761
+900,2,3,"i didn t realize how much detail we had been losing from our previous tv.",0,0,0,0.586351,0.155057
+900,2,4,"one of the great features  besides the inputs and the display quality  is the automatic brightness control.",0,0,7,0.535032,0.204507
+900,2,5,"it works very well and it is virtually seemless.",0,0,7,0.590875,0.242761
+900,2,6,"the picture just looks right regardless of the ambient light.",0,0,2,0.518569,0.128282
+900,2,7,"there is also a setting so you can see when it is adjusting the display brightness.",0,0,2,0.502756,0.142275
+901,2,0,"picture quality is outstanding  unit   looks very sleek.",0,0,5,1.000000,1.000000
+901,2,1,"bezel shows smudges  only 1 component input  and sound is weak.",1,1,9,0.563990,0.141140
+902,2,0,"great picture   using a dvi to hdmi cable it is an excellent monitor especially for someone with mediocre vision.",0,0,7,1.000000,1.000000
+902,2,1,"when the kids use the computer the games don t appear to ghost at all.",0,0,5,0.624837,0.202993
+902,2,2,"also it is bright and has a great matt to the screen   absolute zero glare.",0,0,6,0.575017,0.241050
+902,2,3,"the vga connection suhuhuhux   don t even bother.",1,1,9,0.583380,0.242761
+902,2,4,"use a dvi to hdmi connector.",1,1,9,0.533383,0.141140
+903,2,0,"crystal clear  sharp pictures.",0,0,6,1.000000,1.000000
+903,2,1,"no dead pixels.",0,0,0,0.627830,0.129329
+903,2,2,"sleek design.",0,0,5,0.597270,0.156283
+903,2,3,"great sound.",0,0,6,0.579758,0.242761
+903,2,4,"brightness automatically adjusts according to brightness of the room.",0,0,6,0.541087,0.202993
+903,2,5,"not the cheapest hdtv on the block  but more than made up in quality.",1,0,6,0.565093,0.129329
+903,2,6,"fixed stand doesn t swivel  tilt  etc.",1,0,4,0.526176,0.142275
+905,2,0,"it works and it s huge ",0,0,4,1.000000,1.000000
+905,2,1,"my wife and i were joking about how big the people are on the tv.",0,0,4,0.611679,0.155057
+905,2,2,"our old tv was a 32 inch.",0,0,3,0.591458,0.156283
+905,2,3,"watch a few movies on it  great ",0,0,3,0.640405,0.309503
+905,2,4,"hooked up my computer to it  great ",0,0,3,0.230166,0.080470
+905,2,5,"none so far i was worried about the quality  because so many people like to complain.",1,0,4,0.529180,0.221437
+906,2,0,"colors are realy nice  sides are very small  about 0.65 inch.",0,0,2,1.000000,1.000000
+906,2,1,"good for multi screen   low price  paid 525 with shipping   1080p  when the tv is closed it have a nice look.",0,0,1,0.306593,0.101595
+906,2,2,"refresh rate is realy disapointing.",1,1,12,0.622883,0.204507
+906,2,3,"playing any games will give you headache eye hurt.layed",1,1,12,0.570922,0.129329
+906,2,4,"black grey colors will make wierd black diagonal stripes like smoke.",1,1,12,0.550139,0.155057
+906,2,5,"speakers are no much a thing  not a lot of plugs.",1,1,12,0.508029,0.142275
+907,2,0,"the picture is fantastic.",0,0,6,1.000000,1.000000
+907,2,1,"the set up was a little confusing and i had to reset it a couple of times.",1,1,10,0.581140,0.241050
+907,2,2,"the sound is not  rich  as i was hoping but it will do.",1,1,12,0.581268,0.128282
+907,2,3,"   not really bad enough to take away an egg.",1,1,8,0.553675,0.223050
+908,2,0,"can run 1842x1036  about 1080p  at 60hz and colors are nice",0,0,5,1.000000,1.000000
+908,2,1,"my old sharp aquos looks better than this i use this for my pc and it makes maxed out games look really bad",1,1,12,0.562600,0.223050
+909,2,0,"picture is not bad if looking pretty straight on",0,1,12,1.000000,1.000000
+909,2,1,"sound is very weak.",1,1,12,0.615070,0.241050
+909,2,2,"remote controlsdon t work.",1,1,15,0.570922,0.156283
+909,2,3,"can only be used manually",1,1,15,0.560644,0.142275
+910,2,0,"good price.",0,0,6,1.000000,1.000000
+910,2,1,"picture ok.",0,0,6,0.627670,0.202993
+910,2,2,"lots of inputs",0,0,7,0.562548,0.129329
+910,2,3,"the remote was doa.",1,0,7,0.579256,0.155057
+910,2,4,"just no output.",1,0,7,0.533383,0.142275
+911,2,0,"great picture  great sound  easy to set up...excellent price.",0,0,6,1.000000,1.000000
+911,2,1,"none....for the price it was more than i expected.",1,0,6,0.425859,0.201320
+912,2,0,"nice picture when hooked up to hdmi",0,0,7,1.000000,1.000000
+912,2,1,"dvd cd player doesn t work.",1,0,7,0.621735,0.202993
+912,2,2,"sent to daughter at college who decided she didn t have room really...  just got it back 5 days out of warranty.",1,0,4,0.545855,0.129329
+912,2,3,"dvd cd doesn t work  never was used.",1,0,7,0.573126,0.163648
+913,2,0,"worked perfectly right out of the box  ordered one day and got it the next.",0,0,1,1.000000,1.000000
+913,2,1,"newegg  as usual  made ordering online a breeze.",0,0,4,0.324808,0.164797
+913,2,2,"great price and service.",0,0,1,0.550139,0.223050
+914,2,0,"1 year constant use no issues 2 hdmi inputs  i can use hdmi hub if i need more   40 inch 1080p    10 an inch  rated 8ms or less  average lcd monitor speed ",0,0,3,1.000000,1.000000
+914,2,1,"box had another label on it  like it was supposed to have been shipped to some doctor s office or similar business.",1,1,13,0.728892,0.171967
+914,2,2,"box had a few dents  and tape was nearly opened fully.",1,1,13,0.241547,0.121637
+914,2,3,"i was about to refuse shipment  but after inspection all parts where there  no added tape on box  and no physical damage to the tv.",1,1,13,0.176792,0.089357
+914,2,4,"so i decided to keep it.",1,1,13,0.608113,0.129329
+914,2,5,"i assume it must of been a refusal of delivery from a previous order  or a canceled order.",1,1,13,0.548757,0.128282
+914,2,6,"as far as non newegg related cons  i have none.",1,1,13,0.579103,0.156283
+914,2,7,"i heard horror stories about this product while doing research and i was scared.",1,1,13,0.574762,0.128282
+914,2,8,"glad i did not have similar issues.",1,1,8,0.542534,0.242761
+914,2,9,"so a con could be it did not live up to those expectations    ha ha ha.",1,1,8,0.502887,0.204507
+914,2,10,"newegg does not have anymore in stock.",1,1,14,0.547723,0.142275
+915,2,0,"very easy to set up  we got this for my husband for his birthday and the children  8 12   14  set it up for him.",0,0,1,1.000000,1.000000
+915,2,1,"we played with the picture a bit to match our space and inputs  but we had an  old fashioned  tv before and this is amazing colors.",0,0,0,0.607827,0.241050
+915,2,2,"looks like we are at the movie theater.",0,0,0,0.624122,0.202993
+915,2,3,"we like the sleek look.",0,0,0,0.600251,0.128282
+915,2,4,"we did not use the speakers since we already had a decent surround sound.",0,0,0,0.530550,0.155057
+915,2,5,"the only thing i worry about is the light weight  so we are getting a wall mount since we are worried that the kids might knock it off the desk that it sits on.",1,0,0,0.615060,0.171967
+915,2,6,"also don t sit really close or the picture looks weird  from the couch it is amazingly great  if you have a small room it may be too big.",1,0,0,0.398821,0.207881
+916,2,0,"nice picture when it worked.",0,0,6,1.000000,1.000000
+916,2,1," worked for about six weeks.",1,1,11,0.235358,0.125610
+916,2,2," toshiba warranty service was a joke  it took a long time to get it replaced.",1,1,11,0.629933,0.205708
+916,2,3,"bought 12 06  went out around 01 17  claim filed shortly thereafter  replaced with a refurbished unit with a dead pixel and scratched stand on 04 08.",1,0,4,0.431629,0.133869
+917,2,0,"great newegg pricing ",0,0,1,1.000000,1.000000
+917,2,1,"looking for basic 40 inch tv to replace old 27 inch model and this fit the bill.",0,0,1,0.544804,0.221437
+918,2,0,"great picture  couldn t beat price for 40  1080p   388 .",0,0,2,1.000000,1.000000
+918,2,1,"sound is a little tinny on the standard speakers.",1,1,12,0.594464,0.221437
+919,2,0,"decent tv for the price.",0,0,6,1.000000,1.000000
+919,2,1,"only 2 hdmi ports.",1,1,9,0.674587,0.205708
+919,2,2,"about once an hour  sometimes more  with comcast  the sound cuts out for about 3 seconds.",1,1,9,0.274355,0.081711
+919,2,3,"i m not sure where the problem is  but it never happened before with the same box  same cable on my old tv.",1,1,9,0.568897,0.276262
+919,2,4,"hard to get the right setting for contrast.",1,1,15,0.547412,0.254746
+920,2,0,"nice little basic hd tv...cheap price...all around not bad",0,0,2,1.000000,1.000000
+920,2,1,"ok...you shell out about  400 after all is said and done.open the box.start setting up and then...boom...where is the hdmi cable  ask the kids what they did with it...wife where is the cable..did you see it  ",1,1,9,0.658010,0.170642
+920,2,2,"you have to go out and buy a cable..it does not come with the tv wouldn t you think it would come with the unit  why is this done  now i have a bad taste in my mouth when i think of toshiba..bad move toshiba...is it that important to squeeze a miniscule amount of profit from us buyers...very bad move",1,1,12,0.405081,0.204417
+921,2,0,"good picture  dynabright is really nice.",0,0,6,1.000000,1.000000
+921,2,1,"stopped working after about 7 months of less than average use.",1,1,9,0.662761,0.307512
+921,2,2,"when power button is pressed  the green led turns on for 10 seconds  then turns off with the screen never turning on.",1,1,11,0.426003,0.153937
+922,2,0,"great price  got for under  200 at black friday.",0,0,1,1.000000,1.000000
+922,2,1,"once you go into the preferences and get rid of the energy saving picture mode  the picture is pretty good for a 60hz.",0,0,3,0.602971,0.156283
+922,2,2,"i haven t had a problem with the sound at all  i think it s better than average.",0,0,4,0.634406,0.204507
+922,2,3,"sturdy  doesn t feel like it will break.",0,0,4,0.635843,0.241050
+922,2,4,"has vga hook up.",0,1,9,0.576732,0.129329
+922,2,5,"there are only 2 hdmi ports...which is sufficient.",1,1,9,0.656886,0.171967
+922,2,6,"but don t get me started on how pointless and false advertising the usb port is that is on the set.",1,1,14,0.445329,0.182247
+922,2,7,"i quote has  usb media port  but the specs don t go into detail saying what it can and cannot play.",1,0,7,0.222273,0.092014
+922,2,8,"i get this bad boy home  plug in my usb  and to my surprise it will only  show  jpeg files and  play  mp3s....that s it.",1,0,7,0.238820,0.183600
+922,2,9,"i have home movies and other media items that i would love to watch and have watched on my vizio as long as they are avi files  which isn t an issue at all.",1,1,10,0.528254,0.294412
+922,2,10,"for the sticker price of this guy  i would expect that it could play avi files  i m very very upset that it can t do it.",1,1,9,0.371779,0.144144
+922,2,11,"it also lacks a quam tuner so if you don t have cable or satellite  then make sure you get it a tv tuner to watch your local stations.",1,1,9,0.528150,0.204507
+922,2,12,"the remote sensor is in the bottom left corner and it makes it difficult to respond if you are a few degrees off from it   aka don t point at the center of the tv.",1,1,11,0.611303,0.204188
+922,2,13,"the remote is also a little slow to respond compared to other tvs but it s not a deal breaker.",1,1,14,0.381298,0.128749
+923,2,0,"i guess since i m so familiar with good color quality  being a cgi designer   i probably should ve followed my first thought   not purchased this tv.",0,1,13,1.000000,1.000000
+923,2,1,"but because it was the midnight madness black friday sale at the local best b y  and this tv was only 179 bucks  i figured i d give it a shot.",0,1,8,0.624036,0.129329
+923,2,2,"sheesh... so many to mention  but let s start with color.",1,0,5,0.625037,0.241050
+923,2,3,"terrible.",1,0,1,0.618450,0.223050
+923,2,4,"and when you try to adjust it  your options are washed out or over saturated.",1,0,6,0.557003,0.204507
+923,2,5,"also  the picture is dark and the contrast setting comes pre set at 100  so you can t make it any brighter.",1,0,6,0.623353,0.205708
+923,2,6,"adjusting the actual  brightness  setting just gives it a washed out coloring.",1,0,6,0.304841,0.103334
+923,2,7,"the picture is also  cloudy  looking and no matter how high you adjust the sharpness  it doesn t clear things up at all.",1,0,6,0.287206,0.104389
+923,2,8,"and i m really surprised that regardless of the numerous adjustment settings  none of them help anything... lol  it s almost as if they put them there just to fool people who may be looking at the tv in the store.",1,0,4,0.391364,0.129790
+924,2,0,"great tv for the price  bought mine for  384.99 .",0,0,4,1.000000,1.000000
+924,2,1,"bought it as a gift for my mother.",0,0,4,0.243134,0.124153
+924,2,2,"it does what i would expect a tv to do.",0,0,1,0.613220,0.155057
+924,2,3,"i like my 40  panasonic better.",0,0,5,0.658573,0.170642
+924,2,4,"number 1 complaint  the audio is too low.",1,1,14,0.460492,0.234560
+924,2,5,"even when the volume is cranked up all of the way  the audio is too low ",1,1,15,0.170899,0.119842
+924,2,6,"the chipset for this tv must be cheap because its response time to the remote control is horrendous.",1,1,15,0.642285,0.204188
+924,2,7,"in other words  it takes too long for the tv to respond to a button press on the control.",1,1,15,0.484142,0.154226
+924,2,8,"so sometimes you press the button more than once thinking the tv didn t receive the signal  but it did and now you are two channels ahead of where you wanted to be.",1,1,15,0.171128,0.092670
+924,2,9,"the remote control distance is very short.",1,1,15,0.571979,0.156283
+924,2,10,"i d say about 4 5 feet at best.",1,1,10,0.523188,0.204507
+924,2,11,"i think it wouldn t have hurt to still include one dedicated composite input.",1,1,12,0.527563,0.241050
+924,2,12,"i know it is old  but there are still a lot of devices that use it.",1,1,12,0.531933,0.142275
+925,2,0,"the tv has been great.",0,0,1,1.000000,1.000000
+925,2,1,"we ve had no issue with the quality of the picture nor it s feature set.",0,0,1,0.568716,0.202993
+925,2,2,"all the plugs available are great as well as i run an hdmi cable from my computer to it as well.",0,0,0,0.570922,0.202993
+925,2,3,"it is fairly slow turning on  but that is a minor inconvenience in the grand scheme of things.",1,1,15,0.539677,0.221437
+926,2,0,"great tv  pretty inexpensive.",0,0,4,1.000000,1.000000
+926,2,1,"got it for my first college house  and love it.",0,0,4,0.601612,0.156283
+926,2,2,"the base of the tv is very large  it hangs off the ends of my tv stand.",1,1,8,0.570922,0.204507
+926,2,3,"not a big deal but just a thing to know",1,1,15,0.525616,0.141140
+927,2,0,"amazing picture quality and brightness.",0,0,6,1.000000,1.000000
+927,2,1,"can t stress enough how good it looks.",0,0,6,0.721229,0.204188
+927,2,2,"good   of usb video ports unbeatable price   350 nov  14  menus are easy to navigate included remote works great  have had it for a few months now  no complaints  often gets remarked by people coming over to watch movies.",0,0,4,0.304646,0.103887
+927,2,3,"disable most of the extraneous features and do some minor color calibration if you are picky.",0,0,1,0.619744,0.204507
+927,2,4,"the 120hz mode looks great for sports and gaming.",0,0,3,0.554243,0.202993
+927,2,5,"stand is very basic.",1,1,13,0.580301,0.241050
+927,2,6,"software is actively bad and slow.",1,1,10,0.525616,0.204507
+927,2,7,"processing for 120hz mode can sometimes lead to blur depending on source.",1,1,15,0.506992,0.221437
+928,2,0,"colors  price  decent wifi to stream from pc.  tv is fantastic  streams about any file type from the computers with the custom profile mezzmo created for me.",0,0,7,1.000000,1.000000
+928,2,1,"newegg rolled over on me again and denied the rebate",1,1,14,0.608487,0.223050
+929,2,0,"amazingly sharp picture quality strong ota hd channels reception  smart tv function 120 hz refresh rate native audio return channel   arc support auto firmware update.",0,0,7,1.000000,1.000000
+929,2,1,"wifi lan support dlna support  great sound",0,0,7,0.415146,0.086463
+929,2,2,"90 days warranty only due to refurbished unit.",1,1,11,0.583244,0.242761
+929,2,3,"limited apps.",1,1,10,0.595631,0.156283
+929,2,4,"no biggie if you had roku unit.",1,1,11,0.571008,0.156283
+929,2,5,"no picture in picture function",1,1,15,0.500969,0.142275
+930,2,0,"man  i bought samsung led smart tv from somewhere else and this one from newegg for my room and the guest room.",0,0,4,1.000000,1.000000
+930,2,1,"i think hisense is pulling a lot faster and smoother.",0,0,7,0.645572,0.128282
+930,2,2,"both were 120hz but somehow samsung one had lag which i was very surprised.",0,0,4,0.560427,0.156283
+930,2,3,"i highly recommend this product i am happy with my first newegg purchase as well and will be placing more orders often now.",0,0,4,0.553046,0.241050
+930,2,4,"none actually power button won t shut down at first but now is working fine and it tries to update but cant.",1,1,11,0.639556,0.309503
+930,2,5,"but everything i care is just netflix and connection with my pc which is perfectly fine so no cons for me",1,1,13,0.401715,0.207881
+931,2,0,"best tv for the price.. came to my house in perfect condition.",0,0,5,1.000000,1.000000
+931,2,1,"i cant even tell its been refurbished",0,0,4,0.603767,0.223050
+932,2,0,"vivid colors  fast response times  excellent built quality  aesthetically pleasing  etc.",0,0,0,1.000000,1.000000
+932,2,1,"for the price of  350  you cannot go wrong with this purchase.",0,0,4,0.639305,0.232693
+932,2,2,"while i have only had the unit for a few days  i have tested it out pretty thoroughly.",0,0,4,0.587039,0.274400
+932,2,3,"the smart features are robust enough  usb input works well  wifi is great.",0,0,7,0.645003,0.309503
+932,2,4,"i ve connected my laptop  xbox  and phone to test qualities and all worked without a hitch.",0,0,3,0.362321,0.143899
+932,2,5,"simply put  if you want a surprisingly exceptional tv on the cheap  this is your ticket.",0,0,7,0.565093,0.156283
+932,2,6,"minor issue with uneven back lighting  but its not bad  and i have seen worse on more expensive  brand name models.",1,1,14,0.501990,0.221437
+933,2,0,"i am happy with this tv.",0,0,4,1.000000,1.000000
+933,2,1,"i use the built in netflix and stream video from my laptop pc.",0,0,7,0.594156,0.204507
+933,2,2,"the picture seems fine to me.",0,0,7,0.719989,0.171967
+933,2,3,"the sound seems fine too.",0,0,7,0.187522,0.090120
+933,2,4,"consumer reports gave this model an adequate review.",0,1,10,0.610808,0.129329
+933,2,5,"shipping was quick  three days.",0,1,10,0.591992,0.156283
+933,2,6,"while attempting to navigate netflix and change picture settings the tv froze up  a couple times.",1,1,15,0.576848,0.129329
+933,2,7,"the firmware seems to need more work.",1,1,10,0.623802,0.155057
+933,2,8,"also some menu settings are useless.",1,1,15,0.589684,0.150283
+933,2,9,"for example the  auto volume level  option just makes things worse.",1,1,9,0.646550,0.235688
+933,2,10,"commercials are actually louder when  auto volume level  is switched on.",1,1,9,0.138951,0.070572
+933,2,11,"tv is obviously refurbished.",1,1,13,0.600992,0.128282
+933,2,12,"the packaging was beat up  even inside the box.",1,1,13,0.540320,0.155057
+933,2,13,"but the tv arrived undamaged.",1,1,13,0.590389,0.156283
+933,2,14,"the instructions appear to be xerox copies.",1,1,11,0.557392,0.129329
+933,2,15,"no batteries included.",1,1,11,0.530920,0.128282
+933,2,16,"the hisnese website lists a  merlin  motion sensing remote for this model.",1,1,11,0.610597,0.205708
+933,2,17,"however the actual remote is just a basic ir type.",1,1,11,0.257386,0.100721
+933,2,18,"no support.",1,1,10,0.646458,0.171967
+933,2,19,"i called tech support during business hours.",1,1,10,0.125046,0.090120
+933,2,20,"i gave up after a full 20 minutes on hold.",1,1,10,0.524607,0.129329
+933,2,21,"i emailed tech support also.",1,1,10,0.540220,0.156283
+933,2,22,"i sent the email three days ago  no response yet.",1,1,10,0.492438,0.142275
+934,2,0,"it was cheap  329 for a 48  refurbished tv.",0,1,11,1.000000,1.000000
+934,2,1,"the tv came with two dead pixels that permanently shine bright white.",1,0,0,0.614539,0.156283
+934,2,2,"the smart tv software on this tv is very sluggish and slow to respond to input.",1,0,2,0.607418,0.129329
+934,2,3,"the youtube app was poorly designed and is awkward to use.",1,0,3,0.579758,0.242761
+934,2,4,"chrome cast works  but the picture is not crisp.",1,0,6,0.645072,0.309503
+934,2,5,"the whole picture has a bit of fuzziness to it.",1,0,6,0.195704,0.077304
+934,2,6,"i would not recommend this tv to anyone.",1,0,6,0.547242,0.223050
+935,2,0,"easy setup great picture everything functions as suppose to.",0,0,2,1.000000,1.000000
+935,2,1,"heavy stand makes it secure.",0,1,13,0.615780,0.202993
+935,2,2,"don t really have any cons",1,1,13,0.571008,0.142275
+936,2,0,"inexpensive  good picture  easy to set up  fast shippingf",0,0,6,1.000000,1.000000
+936,2,1,"could use more detailed instructions  particularly for someone who hasn t used a  smart  tv before.",1,1,10,0.625712,0.202993
+936,2,2,"when it auto scans for the stations  there are sometimes 2 or more stations with the same number  ie  10 1  10 2  10 3.",1,1,10,0.545855,0.155057
+936,2,3,"one is regular broadcast  another hd  but the other is unknown.",1,1,9,0.564814,0.142275
+937,2,0," easy to connect to home network  native youtube vudu netflix  used tv speakers for a few minutes not too bad  optical out to connect to receiver when using hdmi 1 for uhd with non uhd receiver  small thin bezel",0,0,0,1.000000,1.000000
+937,2,1," stand if not hanging is terrible  limited compatibility of hisense apps to install  lack of 4k content in general  single uhd input  hdmi 1   lack of external controls on bezel  no power button etc ",1,1,9,0.440005,0.131142
+938,2,0,"tv shows a great picture for the price.",0,0,6,1.000000,1.000000
+938,2,1,"network capability with streaming your movies from a computer to this tv  you tube  3 hdmi ports and other port.",0,0,7,0.591345,0.202993
+938,2,2,"i purchased this tv to place in my kitchen to have something to watch while cooking.",1,0,7,0.636003,0.129329
+938,2,3,"tv was a great price and cost as much as an under the cabinet tv.",1,0,7,0.577741,0.242761
+938,2,4,"i wanted the smart tv function on the tv to be able to stream netflix along with connection it to my hard wired outside antenna that s in my attic of my home.",1,1,10,0.640378,0.264404
+938,2,5,"netflix upgraded there app to version 4.0.6 and the tv is stuck on version 4.0.3 and it seems as if the customer service department it guys don t know how to upgrade the netflix app or they don t care to try.",1,1,10,0.329206,0.107523
+938,2,6,"the reason i say that is because they have integrated roku systems into there newer line up of tv s.",1,1,10,0.586158,0.129329
+938,2,7,"i brought a hdmi roku stick and a google chrome cast stick but the problem with both of them are the a good for netflix but the wi fi signal that emits from them a so strong that it knocks out the antenna signal to the tv and you have to remove the usb cable to the sticks to cut the power from them to receive the antenna signal.",1,0,7,0.586064,0.204188
+938,2,8,"again its in my kitchen so i don t want a at t or cable box mounted to the wall to watch tv.",1,0,7,0.473597,0.135639
+939,2,0,"nice picture  good selection of ports  acceptable sound  feels solid  runs cool  serviceable remote  sturdy stand.",0,0,2,1.000000,1.000000
+939,2,1,"no observable motion blur on broadcast tv  eg  sports ",0,0,5,0.642156,0.241050
+939,2,2,"horrible  smart  functions  slow to respond and dated in appearance.",1,1,10,0.574983,0.155057
+939,2,3,"poor viewing angles.",1,1,10,0.595631,0.204507
+939,2,4,"picture quality varies depending on content  best with sports  not so hot on darker scenes .",1,1,12,0.522050,0.241050
+939,2,5,"takes several seconds to power up  hisense logo displays during this time.",1,1,9,0.543227,0.221437
+940,2,0,"very nice picture  decent speakers  good selection of inputs",0,0,7,1.000000,1.000000
+940,2,1,"the  smart  aspect of this tv left me with much to be desired.",1,1,10,0.636116,0.242761
+940,2,2,"apps were limited  flaky  and often the menu system would hang  necessitating cycling power.",1,1,10,0.558374,0.155057
+940,2,3,"i added a chromecast dongle for 25 bucks  and life is good.",1,1,9,0.583380,0.204507
+940,2,4,"can t complain about it much  considering the price.",1,1,9,0.519301,0.221437
+941,2,0,"low price  fast shipping  great picture  smart tv.",0,0,1,1.000000,1.000000
+941,2,1,"in all honesty non so far  aside from one little scuff on the back side of the tv.",1,1,13,0.606082,0.223050
+942,2,0,"it s an lg",0,0,5,1.000000,1.000000
+942,2,1,"i can t see the price without adding it to my cart and starting the checkout process ",1,1,9,0.563903,0.156283
+942,2,2,"i was going to buy a tv  but it won t be that one  and probably not from new egg now.",1,1,8,0.550139,0.142275
+943,2,0,"the image is very nice.",0,0,3,1.000000,1.000000
+943,2,1,"i bought this as an upgrade for a 12 year old 36  crt tv for the bedroom.",0,0,3,0.592703,0.242761
+943,2,2,"my wife loves it ",0,0,3,0.640773,0.242761
+943,2,3,"extremely limited input and output options.",1,1,12,0.645495,0.264404
+943,2,4,"i attempted to read the panasonic pages as well as the specification pages here on newegg but somehow i missed the fact that this thing has no analog audio outputs at all ",1,1,12,0.529365,0.159262
+943,2,5,"the only output is an optical digital.",1,1,12,0.522493,0.186982
+943,2,6,"optical digital is great if you want to hook into a home theater  but completely locks out a casual hookup to other equipment.",1,1,12,0.154769,0.122631
+943,2,7,"i had to scramble to get a headphone option for my wife as she like to listen to tv after i go to sleep   i had to hook up an old surround sound amp just to get headphones.",1,1,12,0.319376,0.167865
+943,2,8,"also  there are no analog audio inputs for use with video only hdmi.",1,1,12,0.618155,0.170642
+943,2,9,"i had hoped to hook this to the second  dvi  output of my htpc in the next room  but to have audio i have to mux the audio in   now i m waiting to get the siig ce hm0031 s1 dvi   audio to hdmi converter   another   160.",1,1,9,0.194209,0.113071
+944,2,0,"for integrated audio  it sounds great.",0,0,7,1.000000,1.000000
+944,2,1,"very sharp picture with directv input.",0,0,7,0.611679,0.241050
+944,2,2,"replacing a 24  tv and it is nice to see the larger images.",0,0,5,0.581182,0.241050
+944,2,3,"the manual leaves a lot to be desired.",1,1,15,0.591543,0.202993
+944,2,4,"i had to get assistance from toshiba to even get a picture.",1,1,15,0.571008,0.129329
+944,2,5,"the technical manual writers need to go back to school.",1,1,15,0.529180,0.141140
+945,2,0,"great for the price.",0,0,6,1.000000,1.000000
+945,2,1,"works as tv or pc monitor.",0,0,3,0.577741,0.242761
+945,2,2,"not led  this is an lcd.",1,0,3,0.564076,0.142275
+946,2,0,"easy setup great picture quality  multiple choices for aspect ratios 2 000 000 1 contrast ratio excellent visibility from any viewing angle straightforward menu reasonable sound quality clean lines no image streaking  excellent sports viewing sd card input",0,0,2,1.000000,1.000000
+946,2,1,"no anti glare coating single digital optical audio output limits sound options two hdmi ports limits number of external devices cats  auto dimming  feature is more of a nuisance than a benefit",1,1,12,0.544991,0.216559
+947,2,0,"good size  good picture  simple menus.",0,0,2,1.000000,1.000000
+947,2,1,"best of all    the price.",0,0,2,0.628354,0.155057
+947,2,2,"like all plasma screens  the glossy screen reflects a bit.",1,1,8,0.545855,0.202993
+947,2,3,"not a big deal though.",1,1,14,0.564814,0.142275
+948,2,0,"price point excelent.",0,0,2,1.000000,1.000000
+948,2,1,"set very easy.",0,0,2,0.635596,0.223050
+948,2,2,"the hd in 720p is stunning.",0,0,0,0.599739,0.129329
+948,2,3,"could have used audio output pair.",0,1,12,0.617373,0.156283
+948,2,4,"but has optical out  so no lost egg.",0,1,12,0.594591,0.129329
+948,2,5,"tv sound is about right or flat panal tvs.",0,1,12,0.571395,0.156283
+948,2,6,"has a little glare  but not a problem.",0,1,12,0.670306,0.307512
+948,2,7,"burn in wont be a problem with this unit.",0,1,12,0.191960,0.110635
+948,2,8,"lots of adjustments for tweekers like me.",0,1,12,0.570450,0.234363
+948,2,9,"the price i got from newegg will be hard too beat. 566",0,0,2,0.525857,0.156283
+948,2,10,"with discount coupon and free door delivery.",0,0,1,0.558244,0.128282
+948,2,11,"in fact ait took it in the house for me.",0,0,4,0.527563,0.129329
+948,2,12,"all in all  i would highly recommend this tv for people looking for great value and outstanding hdtv...",0,0,4,0.489611,0.223050
+949,2,0,"love this tv.",0,0,4,1.000000,1.000000
+949,2,1,"this is first plasma tv purchase  and after much research choose this set.",0,0,4,0.587455,0.242761
+949,2,2,"it took 30 minutes to start watching television atfter wall mounting.",0,0,4,0.573774,0.155057
+949,2,3,"easily integrated with receiver for the best possible sound.",0,0,4,0.677521,0.262593
+949,2,4,"hook up satellite receiver  dvd player  next purchase is blu ray player  and wii.",0,0,0,0.334841,0.172968
+949,2,5,"still have plenty of hdmi ports to use.",0,0,7,0.570292,0.155057
+949,2,6,"sound out of speakers is not that great.",1,0,7,0.526176,0.223050
+950,2,0,"after 15 days searching  surfing and reading reviews i did but this one.",0,0,4,1.000000,1.000000
+950,2,1,"incredible colors  amazing black levels  my eyes got exited playing fifa09 with my ps3 hooked via hdmi.",0,0,0,0.585005,0.242761
+950,2,2,"unpacked  10 min later i was watching tv.",0,0,0,0.614922,0.242761
+950,2,3,"easy setup.",0,0,6,0.558478,0.129329
+950,2,4,"not really a con but spread a lot of heat in my living room.",1,1,13,0.512247,0.142275
+951,2,0,"i didn t purchase this particular tv  but it s very similar.",0,0,4,1.000000,1.000000
+951,2,1,"i do highly recommend buying a tv from newegg.com.",0,0,4,0.591345,0.204507
+951,2,2,"this is my 3rd tv  the first 2 were niko lcd s  one was a 19  and the other was a 26 .",0,0,4,0.675217,0.264404
+951,2,3,"i never had a problem with either one  i just decided to put the niko 26  in the bedroom and get a 50  plazma for the living room.",0,0,4,0.112745,0.157693
+951,2,4,"i read a lot of reviews about lcd s and plazmas and it does seem to be a toss up.",0,0,4,0.595409,0.232693
+951,2,5,"and now after owning both i can say it s still a toss up...they are both excellent...but the samsung is a far better tv than the niko.",0,0,4,0.584730,0.156283
+951,2,6,"i also recommend dishnetwork...they have awesome hd programming.",0,0,2,0.614080,0.264404
+951,2,7,"my lcd in the bedroom doesn t even have the hd box and the picture is phenomenal  way better than the charter we used to have.",0,0,2,0.287206,0.169172
+951,2,8,"the remote that comes with dishnetwork controls all the tv controls too.",0,0,2,0.543256,0.142275
+952,2,0,"this tv is a fantstic buy.",0,0,1,1.000000,1.000000
+952,2,1,"i got it in january  so samsung still has the  200 nfl.com rebate  which is just an added bonus ",0,0,1,0.591373,0.156283
+952,2,2,"the picture is amazing  and it is very user friendly.",0,0,1,0.570836,0.204507
+952,2,3,"i had my tv 4 days after i purchased it ",0,1,14,0.662840,0.264404
+952,2,4,"the speakers kind of suck  but hey  if you are buying a 50 inch plasma  you better be connecting it to a surround sound anyways.",1,1,12,0.300208,0.087203
+952,2,5,"that said  the only other minor issue is i don t really like the remote  but again  buy a universal people.",1,1,14,0.438219,0.132527
+953,2,0,"1.  hd over the air is excellent   internal tuner is great  2.  big 3.  swivel stand 4.  images on hdmi  cable and ota were crisp  but  see cons ...",0,0,2,1.000000,1.000000
+953,2,1,"...the images from the vga  pc  and the component1  wii  were awful.",1,1,9,0.653970,0.254033
+953,2,2,"there was a grayish tint to the images for these two inputs.",1,1,9,0.265375,0.079604
+953,2,3,"i am using component cables for the wii and a dvi out from the pc and the image was just unacceptable.",1,1,9,0.250889,0.134534
+953,2,4,"i m not sure if this is a plasma versus lcd issue  but it was just  gray .",1,1,8,0.571008,0.242761
+953,2,5,"also  the adjustments were lacking  no separate color settings   and the overall image was just dark when i got the set home.",1,1,15,0.505004,0.141140
+954,2,0,"this is the best picture i have seen.",0,0,6,1.000000,1.000000
+954,2,1,"with the built in tuner all my sports games from nbc and cbs are in 1080i and fox is 720p.",0,1,15,0.591345,0.202993
+954,2,2,"the descrambler lets me get my dtv channels from comcast without paying 80bucks a month for a box and the same channels.",0,0,1,0.611707,0.156283
+954,2,3,"the burn in protection works very well.",0,0,1,0.694166,0.170642
+954,2,4,"my wife and i fell asleep watching a dvd and the menu stayed on and stationary for about three hours  after runnning the anti burn scrolling grey  which does not reduce picture life  that and the pixel shift there was absolutley nothing there.",0,0,4,0.285768,0.103547
+954,2,5,"blue ray looks perfect  checkout walle don t laugh it is amazing picture quality .",0,0,0,0.380009,0.144274
+954,2,6,"too many pros too list",0,0,0,0.583415,0.241050
+954,2,7,"if you have cable there will be some lines in the picture do to the 480i being sent from the cable company to the tv  not all channels  but don t worry if you see it.",1,0,0,0.502352,0.156283
+954,2,8,"if you have multiple samsung products in one room the remote will turn those items on or off even if you don t want them to.",1,0,4,0.522167,0.141140
+955,2,0,"if you re debating to buy plasma or not like i was stop.",0,0,1,1.000000,1.000000
+955,2,1,"this tv is amazing.",0,0,6,0.638125,0.204507
+955,2,2,"easy to set up.",0,0,6,0.584559,0.204507
+955,2,3,"was watching tv in 10 minutes  very customizable to your liking.",0,0,3,0.577741,0.128282
+955,2,4,"very attractive tv with a nice sturdy swivel base.",0,0,3,0.577798,0.242761
+955,2,5,"pip is pretty cool also.",0,0,3,0.577856,0.204507
+955,2,6,"sitting in my chair to long watching tv   you just can t help it.",1,0,3,0.614080,0.170642
+955,2,7,"my wife gets a little irratated because i m always calling her over to look at the amazing picture when i m watching sports.",1,0,3,0.279209,0.167585
+955,2,8,"the speakers on this set are not the greatest but no biggy since i m running it through my receiver.",1,1,12,0.539048,0.221437
+956,2,0,"like many  i spent literally hours of research into televisions.",0,1,13,1.000000,1.000000
+956,2,1,"i have an online subscription to that independent consumer testing agency  that cannot be named directly  but you know who it is  and it rated this tv a best buy  and was only 2 points below their best rated tv period  which was also a samsung.",0,1,11,0.672927,0.345867
+956,2,2,"as before  they didn t let me down on their ratings and testing.",0,0,5,0.187453,0.136231
+956,2,3,"deep blacks  no motion blur  awesome color even with the standard settings.",0,0,6,0.663675,0.307512
+956,2,4,"a main concern of mine was how regular standard def channels displayed   and i am pleased with the results.",0,0,6,0.584342,0.246905
+956,2,5,"many  if not most flat panel hd tvs display standard def horribly   some much worse than a crt.",0,0,6,0.256060,0.097326
+956,2,6,"in some cases  the sd is actually better than crt.",0,0,5,0.622442,0.128282
+956,2,7,"minimal glare as well which is unusual for a plasma  and even less than my old crt 36 .",0,0,4,0.573401,0.155057
+956,2,8,"color and brightness not an issue even in my room full of windows and lights all the way on.",0,0,3,0.556939,0.129329
+956,2,9,"oh  and the hd   so sharp and detailed its unbelieveable.",0,0,3,0.597672,0.156283
+956,2,10,"all these cons are really minor to me  but the tv seems a bit wobbly on the stand mount.",1,1,13,0.550949,0.155057
+956,2,11,"it does swivel  so maybe it just seems loose.",1,1,13,0.594167,0.129329
+956,2,12,"hasn t been a problem though.",1,1,9,0.554532,0.202993
+956,2,13,"it does throw some heat out  but since my family room is half underground in northern michigan  it stays cold all the time  so the little extra heat is just a welcome bonus for me and less i have to run the furnace.",1,1,9,0.514191,0.241050
+956,2,14,"there is some glare.",1,1,13,0.574755,0.129329
+956,2,15,"if your windows are facing the tv screen  i.e.",1,1,13,0.513578,0.156283
+956,2,16,"behind you the viewer   it could be a problem.",1,1,13,0.549127,0.241050
+956,2,17,"i have a lot of windows  but they are behind or to the side of the tv  and not really an issue for me.",1,1,13,0.489668,0.204507
+956,2,18,"the black levels could be better  but you d pay hundreds or thousands more for the slight improvement that would bring  and i m really not sure how much blacker it could get anyway.",1,1,8,0.514775,0.141140
+957,2,0,"wow   the picture is awesome.",0,0,6,1.000000,1.000000
+957,2,1,"it was extremely easy to set up.",0,0,2,0.606265,0.242761
+957,2,2,"took only 5 days to hand deliver.",0,0,5,0.607663,0.129329
+957,2,3,"great picture with dvds.",0,0,2,0.688122,0.262593
+957,2,4,"newegg has great prices vs box stores and no tax ",0,0,2,0.246082,0.080516
+957,2,5,"that will save you hundreds of dollars alone.",0,0,2,0.603767,0.241050
+957,2,6,"i can see why it was rated the top tv in the ratings.",0,0,2,0.530465,0.128282
+957,2,7,"you can not go wrong with this tv from newegg.",0,0,2,0.573791,0.241050
+957,2,8,"need 2 people to lift tv due to size not weight.",1,1,8,0.587739,0.309503
+957,2,9,"comes attached to the stand   a con for me   i hung my tv on the wall and had to unscrew the 8 screws. ",1,1,8,0.329078,0.125433
+958,2,0,"the product has served us without problem for three years.",0,1,11,1.000000,1.000000
+958,2,1,"the delivery process was flawless.",0,1,13,0.611763,0.242761
+958,2,2,"no cons.",1,1,13,0.571008,0.142275
+959,2,0,"i saw this tv at best buy and could not tell it wasn t 1080p.",0,0,5,1.000000,1.000000
+959,2,1,"i wanted to get a 1080p plasma but my wife would only go so far with the money.",0,0,5,0.280461,0.157626
+959,2,2,"i ordered this tv from newegg and could not be happier with it.",0,0,5,0.610780,0.156283
+959,2,3,"fast shipping great picture.",0,0,1,0.558985,0.242761
+959,2,4,"lots of control over settings.",0,0,2,0.572441,0.204507
+959,2,5,"did i say great picture.",0,0,1,0.558139,0.242761
+959,2,6,"just buy it.",0,0,1,0.547242,0.221437
+960,2,0,"i got this on sale for  1000  so i can t complain about that.",0,0,5,1.000000,1.000000
+960,2,1,"sleek style and beautiful picture.",0,0,5,0.611679,0.202993
+960,2,2,"sound quality sucks.",1,1,8,0.605034,0.129329
+960,2,3,"there were two tiny 3 inch 10 watt speakers that started to crackle after a few days for certain frequencies.",1,1,9,0.543053,0.128282
+960,2,4,"also  i occasionally get a robotic pitch after watching for a while.",1,1,9,0.584787,0.156283
+960,2,5,"it fixes itself when you change the channel  but annoying nonetheless.",1,1,9,0.500969,0.142275
+961,2,0,"incredible tv for the price.",0,0,2,1.000000,1.000000
+961,2,1,"i had to buy mine locally since newegg does not ship tvs to hawaii.",0,0,2,0.668509,0.205708
+961,2,2,"mine has little different product number  pn50b450d  but has the same specs.",0,0,4,0.366586,0.105265
+961,2,3,"the picture is incredible.",0,0,6,0.600251,0.129329
+961,2,4,"720p is all you need.",0,1,9,0.582777,0.129329
+961,2,5,"more controls than you will ever need.",0,1,9,0.544166,0.156283
+961,2,6,"could have used one more hdmi port.",1,1,9,0.505016,0.142275
+962,2,0,"wow...ordered tuesday...delivered friday ...ca to il....newegg rocks when it comes to getting you your goods.",0,1,13,1.000000,1.000000
+962,2,1,"not newegg s biggest customer but the biggest fan.",0,1,14,0.672164,0.262593
+962,2,2,"got a deal at 949.00....3 days later newegg had it for 1199.00...hooked up tv and its beautiful....great value.",0,1,14,0.303590,0.193840
+963,2,0,"lots of audio video connections for older game systems.",0,0,7,1.000000,1.000000
+963,2,1,"just enough compenent connections.",0,0,7,0.270285,0.096113
+963,2,2,"beautiful picture even at 720p.",0,0,6,0.543053,0.155057
+963,2,3,"i love the tv.",1,0,6,0.567589,0.223050
+964,2,0,"great picture no ps3 burn in lowest priced 50  plasma amazing",0,0,5,1.000000,1.000000
+964,2,1,"i suppose its a bit heavy....but i did put it on the shelf myself but would def recommend 2 people for the job",1,1,12,0.467228,0.131264
+965,2,0,"large screen.. hdmi ..hd.",0,0,0,1.000000,1.000000
+965,2,1,"built in tuner.. great picture.",0,0,7,0.597518,0.221437
+965,2,2,"got it for  999.99",0,0,0,0.613807,0.204507
+965,2,3,"got it and my ps3 the same day even if it was suposed to arrive the 2nd of march",0,0,0,0.530465,0.156283
+965,2,4,"heavy well 80lbs spaced awkwardly.",1,1,13,0.561366,0.141140
+966,2,0,"great price when i ordered it  free shipping sealed the deal.",0,0,1,1.000000,1.000000
+966,2,1,"720p is all i need at 10 feet away  swear you can t tell.",0,0,0,0.641367,0.202993
+966,2,2,"plenty o jacks  nice look",0,0,0,0.638152,0.202993
+966,2,3,"first one came in and i used it for 4 days w  no problem.",1,1,11,0.656380,0.264404
+966,2,4,"only 4 hours of use in those 4 days cuz i wasn t really ready for it.",1,1,11,0.093615,0.131917
+966,2,5,"treated it like a faberge egg.",1,1,11,0.611805,0.129329
+966,2,6,"on the 5th day  still under 6 hours of use  it powered off 30 mins into wii session.",1,1,11,0.536036,0.156283
+966,2,7,"dead.",1,1,11,0.594993,0.129329
+966,2,8,"unit powers up and saw it attempted to flicker when hit  source  on remote  but nothin  but black.",1,1,11,0.516409,0.155057
+966,2,9,"newegg was nice  rma  charges me no shipping  and swapped tvs when teh new one came in  savign me an extra  week w  no tv.",1,1,14,0.527628,0.242761
+966,2,10,"2nd one works great... for now.",1,1,11,0.559196,0.128282
+966,2,11,"been 2 months  no problems yet.",1,1,11,0.504543,0.221437
+967,2,0,"beautiful picture  amazing 3d.",0,0,6,1.000000,1.000000
+967,2,1,"magic remote was faulty  only power button worked and lg gave me a few things to try but was faulty in the end.",1,1,11,0.674587,0.307512
+967,2,2,"didn t feel like going through rma  to return 1 remote so went to a competitor s website and bought a brand new one.",1,1,11,0.371233,0.088521
+967,2,3," seriously newegg  i could not say that name ",1,1,11,0.593932,0.155057
+967,2,4," 4 eggs for your attitude  ",1,1,11,0.512247,0.142275
+968,2,0,"2 hdmi ports and weight towards the bottom of the tv is great for having the tv sitting on a counter",0,0,0,1.000000,1.000000
+968,2,1,"is kind of bulky depth wise.",1,1,13,0.626037,0.202993
+968,2,2,"also the buttons are on the left side of the tv instead of the front  so if you lose your remote you have to pull the tv out and see which buttons do what.",1,1,13,0.514999,0.141140
+969,2,0,"replacement for a 7 year old unit that died.",0,1,11,1.000000,1.000000
+969,2,1,"used as a tv and monitor",0,1,11,0.601739,0.142275
+970,2,0,"this is a great hdtv and pc monitor.",0,0,3,1.000000,1.000000
+970,2,1,"my games look great with no lag whatsoever on the pc.",0,0,3,0.184743,0.090120
+970,2,2,"skyrim on 1920x1080 looks simply amazing.",0,0,3,0.611763,0.128282
+970,2,3,"it couldn t look any better while watching movies either.",0,0,3,0.557032,0.241050
+970,2,4,"it works great ",1,0,3,0.646963,0.264404
+970,2,5,"great price for what you get.",1,0,3,0.186325,0.110328
+971,2,0,"worked the first week that i tried it   so i put it up until i needed it.",0,0,1,1.000000,1.000000
+971,2,1,"i need it a year later.",0,0,3,0.638125,0.129329
+971,2,2,"the reason i bought it was that it was a 1080p resolution.",0,0,3,0.574235,0.129329
+971,2,3,"of course i needed it 1 yr and 2 weeks later.",1,1,14,0.601654,0.155057
+971,2,4,"guess what ",1,1,8,0.605090,0.129329
+971,2,5,"no picture  no light on screen  no nothing ",1,1,8,0.536065,0.129329
+971,2,6,"it does chime when turned on and off  tho.",1,1,8,0.577913,0.156283
+971,2,7,"how do i get a fricken picture and sound   ",1,1,8,0.515057,0.156283
+971,2,8,"i guess i can use it for a  160 door chime.",1,1,8,0.522167,0.141140
+972,2,0,"this is the second one of these i have purchased.",0,1,9,1.000000,1.000000
+972,2,1,"makes a great bedroom tv and doubles as a computer monitor.",0,1,9,0.550052,0.223050
+973,2,0,"great screen.",0,0,7,1.000000,1.000000
+973,2,1,"many ways to change picture.",0,0,7,0.614539,0.241050
+973,2,2,"thin bevel.",0,0,7,0.617473,0.128282
+973,2,3,"built in speaker is very good.",0,0,7,0.552011,0.242761
+973,2,4,"very thin.",0,0,7,0.589628,0.242761
+973,2,5,"2 hdmi inputs.",1,0,7,0.516031,0.129329
+973,2,6,"only way to connect external audio is via optical out  i m using a sound bar .",1,1,12,0.505016,0.142275
+974,2,0,"i refuse to write anything nice about this purchase",0,1,13,1.000000,1.000000
+974,2,1,"the tv cuts off all the time by itself.",1,1,13,0.627670,0.204507
+974,2,2,"it s that simple.",1,1,13,0.583278,0.129329
+974,2,3,"newegg can take their crumby products and stick em.",1,1,13,0.537493,0.155057
+974,2,4,"i ll stick to shopping at a different online retailer.",1,1,13,0.554399,0.142275
+975,2,0,"great image  color is very good after slight tweaking in the menus  plays videos from a thumb drive  lots of different codecs   looks very sleek with the thin bezel  exception noted in the  cons  section .",0,0,0,1.000000,1.000000
+975,2,1,"also  has an audio output jack that a headphone can plug into  3.5mm",0,0,7,0.645561,0.241050
+975,2,2,"has a great  game mode  with very low input lag  not noticeable to me when i use it for pc games via hdmi .",0,0,0,0.651008,0.264404
+975,2,3,"sleek bezel has this odd one inch square plastic bit hanging down for the remote sensor  and its off to one side on the bottom  and has an always on red led so its hard not to notice it.",1,1,9,0.593707,0.254205
+975,2,4,"not sure why it couldn t be put in the center bottom with the samsung logo.",1,1,13,0.363353,0.106451
+975,2,5,"also  the audio out jack on the back is at a fixed level  so if you plug in headphones there  they are at a fixed level and not very loud  and the volume is disabled if you turn off the internal speakers.",1,1,9,0.605463,0.171967
+975,2,6,"in  game mode  you cannot adjust picture properties  you must adjust them prior to turning on game mode.",1,1,12,0.450204,0.156677
+976,2,0,"beautiful sound sturdy",0,0,7,1.000000,1.000000
+976,2,1,"the stand does seem a bit cheap but i ve had no problems with it picture always seems blurry to me",1,1,13,0.545855,0.221437
+977,2,0,"good tv for a price.",0,0,6,1.000000,1.000000
+977,2,1,"full 1080p hd  clear and crisp image   colors are very bright and vibrant.",0,0,6,0.570793,0.242761
+977,2,2,"the menu and controls are a bit wonky  and instructions are not helpful.",1,1,15,0.591543,0.129329
+977,2,3,"had to research some stuff  see other thoughts below.",1,1,8,0.571052,0.141140
+978,2,0,"good price",0,0,6,1.000000,1.000000
+978,2,1,"won t stand on the provided base and the remote doesn t work",1,0,0,0.545855,0.223050
+979,2,0,"beautiful tv.",0,0,2,1.000000,1.000000
+979,2,1,"very thin.",0,0,2,0.607663,0.156283
+979,2,2,"best price for the tech.",0,0,4,0.555586,0.204507
+979,2,3,"ait worldwide logistics delivered it very damaged.",1,1,13,0.572357,0.202993
+979,2,4,"i suggest newegg gets with shipping company to make sure tvs are not just thrown around and are placed in secondary boxes with extra supports.",1,1,14,0.503171,0.142275
+980,2,0,"good tv",0,0,6,1.000000,1.000000
+980,2,1,"i ordered it and it came with the base and the tv but no way to connect the two.",1,1,9,0.574249,0.204507
+980,2,2,"you would expect them to have all the parts for anything regardless whether or not it was used or not.",1,1,8,0.598349,0.155057
+980,2,3,"i didnt buy this from a yards sale you know.",1,1,8,0.518569,0.141140
+981,2,0,"picture is beautiful",0,0,6,1.000000,1.000000
+981,2,1,"had it out of the box for 6 hours  on for 3. stopped working already..",1,1,10,0.577009,0.155057
+981,2,2,"pretty depressing.",1,1,10,0.603767,0.128282
+981,2,3,"turns off after a few minutes of being on then wont turn on again unless you unplug it for a while.",1,1,9,0.511515,0.163648
+982,2,0,"nice picture.",0,0,6,1.000000,1.000000
+982,2,1,"reasonable price.",0,0,2,0.601612,0.202993
+982,2,2,"poor speakers.",1,1,12,0.591543,0.241050
+982,2,3,"tv lasted just over 25 months.",1,1,11,0.518569,0.221437
+983,2,0,"as i mentioned before quality was good.",0,0,5,1.000000,1.000000
+983,2,1,"sound is terrible",1,1,12,0.584701,0.221437
+984,2,0,"what a great tv at a great price.",0,0,1,1.000000,1.000000
+984,2,1,"beautiful picture  no dead pixels  and served as my pc gaming monitor for about a year.",0,0,3,0.668357,0.307512
+984,2,2,"i don t know how the panel industry has shifted in the last few years  but when i compare this tv to newer ones i still appreciate the quality and price.",0,0,3,0.362523,0.105567
+984,2,3,"remote is finicky  but flashing a new firmware seemed to broaden the range ",1,1,10,0.583380,0.156283
+984,2,4,"i m not sure what s up with that  but i was happy.",1,1,10,0.554399,0.221437
+985,2,0,"crisp clear great tv for the price.",0,0,6,1.000000,1.000000
+985,2,1,"slight lag when turning on the tv.",1,1,9,0.611763,0.204507
+985,2,2,"tv jwill not function untill you have the perfect angle with the remote.",1,1,13,0.529092,0.223050
+986,2,0,"  this is a unique model  the picture is amazing   clear  crisp   what makes it more unique is that the sound on this particular toshiba model is amazing   3 hdmi ports   all 3 ports running strong",0,0,7,1.000000,1.000000
+986,2,1,"when all 3 hdmi ports are connected simultaneously  when switching from one to the other picture may disrupt causing you to get up and manually unplug and then re plug the hdmi cable.",1,1,9,0.244587,0.178691
+987,2,0,"excellent build quality  features and picture quality.",0,0,6,1.000000,1.000000
+987,2,1,"my games and blu ray s look excellent.",0,0,6,0.377408,0.104389
+987,2,2,"i for one  love the glossy bezel and screen.",0,0,2,0.570922,0.129329
+987,2,3,"highly recommended for the price.",0,0,1,0.539677,0.142275
+988,2,0,"stunning picture.",0,0,1,1.000000,1.000000
+988,2,1,"after several months i am still amazed at the quality of the picture and the build of this tv.",0,0,1,0.305286,0.192796
+989,2,0,"i love the image quality  the colors  the features.",0,0,6,1.000000,1.000000
+989,2,1,"three hdmi in the rear is a nice additional and it will control my old dvr when it s plugged in  a magnavox .",0,1,11,0.601612,0.156283
+989,2,2,"however it will not play video off my usb devices.",1,0,0,0.660944,0.309503
+989,2,3,"it s a  feature  of the tv that it won t play video.",1,0,0,0.192806,0.110328
+990,2,0,"what a great deal  part of an email flyer sale with a promo code and free shipping ",0,0,1,1.000000,1.000000
+990,2,1,"you bet   439 is quite a steal and it helps that it s a toshiba so i feel a little more comfortable but i m still keeping my eyes open on how it will operate.",0,0,1,0.601612,0.156283
+990,2,2,"seen a few people mention cons  so i will hope that i will not have the same.",0,1,8,0.579204,0.241050
+990,2,3,"none at this point.",1,1,8,0.571052,0.141140
+991,2,0,"great picture  and great looking tv.",0,0,1,1.000000,1.000000
+991,2,1,"after 4 months  the screen started displaying strait lines across  so the main board had to be swapped  told by tv repair shop .",1,0,1,0.653228,0.309503
+991,2,2,"toshiba does not even have that part in stock so i have been without a tv for 3 weeks already and still waiting for them to ship the part.",1,0,1,0.403292,0.128390
+992,2,0,"works great ",0,0,1,1.000000,1.000000
+992,2,1,"gives 60hz under windows 8. replaced 2 28  monitors with one of these and it is sooooo much better.",0,0,3,0.643570,0.309503
+992,2,2,"using with a evga gtx 980 sc fyi",0,0,3,0.099604,0.094238
+993,2,0,"the image quality is excellent.",0,0,6,1.000000,1.000000
+993,2,1,"playing ps3 on it is a dream  vivid colors  great tv and awesome sound.",0,0,0,0.588445,0.129329
+993,2,2,"this is nitpicking  but it doesn t display the time when you press the display button  my older tv used to do it.",1,1,15,0.597295,0.242761
+993,2,3,"just hard to break the habit  i guess.",1,1,15,0.605118,0.156283
+993,2,4,"also  doesn t let you turn off inputs  so you have to shuffle through them all to get to the one you want.",1,1,15,0.529092,0.128282
+993,2,5,"other tvs let you do this or rename them.",1,1,15,0.550227,0.142275
+994,2,0,"we ve owned two of these for a couple of years now  were around  1 000 then  and they are still working 100 .",0,0,3,1.000000,1.000000
+994,2,1,"i have two pc s connected to mine   one via vga  and one via hdmi and they both look amazing at native resolution of 1360x768.",0,0,3,0.676356,0.264404
+994,2,2,"most new games support the resolution as well  and if not this baby supports most popular aspect ratios anyway.",0,0,3,0.394104,0.143899
+994,2,3,"with the p.i.p. i can have both pc s on the screen at once for mmo power gaming       the picture while watching hdtv is as amazing as hd can be.",0,0,0,0.624889,0.307512
+994,2,4,"i can t afford another one..  but that s not there fault  this is an amazing deal.",1,0,0,0.355349,0.123323
+995,2,0,"cheap  720p  hdmi s  great size for my location.",0,0,0,1.000000,1.000000
+995,2,1,"doesn t have that glossy finish like those samsungs   ",1,1,10,0.603767,0.221437
+996,2,0,"great picture.",0,0,6,1.000000,1.000000
+996,2,1,"displays 1080p even though it says its a 720p tv.",0,0,5,0.594117,0.241050
+996,2,2,"decent sound.",0,0,6,0.596940,0.129329
+996,2,3,"confusing menu system  but you get used to it.",1,0,6,0.558478,0.128282
+996,2,4,"decent sound.",1,0,6,0.533383,0.141140
+997,2,0,"worked good for 1yr.",0,1,11,1.000000,1.000000
+997,2,1,"and 2 months  and yes the warranty is for 1 yr. was happy with it till it suddenly quit working  it will not power up  looking at a totally black screen.",0,1,11,0.327245,0.103896
+997,2,2,"called support tried unplugging everything for a couple of hours as told but i had already tried this before with same results  dead lcd hdtv",0,1,8,0.592402,0.202993
+997,2,3,"i guess this is just a high priced throw away product.",1,1,8,0.576303,0.155057
+997,2,4,"if the main board costs  400 to fix this  what fool would go that route.",1,1,11,0.554399,0.141140
+998,2,0,"low price.",0,0,4,1.000000,1.000000
+998,2,1,"the warm up time grows longer and longer until after 6 months it won t turn on at all.",1,1,11,0.566680,0.155057
+998,2,2,"all i had was a constant blue light and no response with buttons or remote.",1,1,15,0.550139,0.142275
+999,2,0,"a very good price on a second best in class product  according to consumerreports.",0,0,6,1.000000,1.000000
+999,2,1,"i ve been extremely happy with this television so far.",0,0,6,0.614539,0.156283
+999,2,2,"looks good  has plenty of connections  and is actually only a one person lift  despite claims on the box to the contrary.",0,0,6,0.587039,0.128282
+999,2,3,"very strange on screen menu system.",1,1,12,0.600251,0.241050
+999,2,4,"takes some time to get used to.",1,1,15,0.582777,0.129329
+999,2,5,"cycling through all inputs to get to the one you want.",1,1,15,0.544166,0.128282
+999,2,6,"incredibly bright blue  off  led  which turns on when the tv turns off  can be disabled from menu .",1,1,15,0.489887,0.142275
+1000,2,0,"i bought a refurbished unit and can t say enough good things about it.",0,0,4,1.000000,1.000000
+1000,2,1,"great picture in both hd and sd.",0,0,6,0.627653,0.128282
+1000,2,2,"i looked for a long time before finally settling on the 537h.",0,0,2,0.672164,0.264404
+1000,2,3,"split screen is pretty sweet if you like to watch dvds and a game at the same time.",0,1,12,0.278540,0.101484
+1000,2,4,"the tuner is a little slow to change channels but i knew that going in and was willing to live with that in exchange for a great picture at a great price.",1,1,15,0.531437,0.202993
+1000,2,5,"plan on hooking it up to a home theater system  the speakers are pretty bad.",1,1,12,0.538551,0.221437
+1001,2,0,"a great lcd hdtv for function and price ",0,0,4,1.000000,1.000000
+1001,2,1,"i ve had this beauty for a couple years now  and have had no trouble whatsoever.",0,0,4,0.638209,0.204507
+1001,2,2,"it s made here in the us  which makes me happy to see some competition for a change with overseas manufacturers.",0,0,5,0.613220,0.202993
+1001,2,3,"i ve hauled this tv back and forth between apartments and used it for pc gaming and the usual movie television stuff.",0,0,3,0.617373,0.242761
+1001,2,4,"it s fairly rugged and lightweight.",0,0,4,0.594591,0.129329
+1001,2,5,"even the built in speakers have a decent range.",0,0,7,0.571395,0.155057
+1001,2,6,"more than enough audio video data inputs to please most users.",0,0,7,0.589422,0.156283
+1001,2,7,"no dead pixels....beautiful picture ",0,0,6,0.545228,0.128282
+1001,2,8,"keep up the good work olevia ",0,0,6,0.577356,0.242761
+1001,2,9,"thanks newegg ",0,0,4,0.567826,0.156283
+1001,2,10,"i had no trouble while performing the firmware upgrade.",1,0,7,0.509082,0.204507
+1001,2,11,"i found it simple enough  but can imagine it could be difficult for the normal home user to figure out.",1,1,13,0.527563,0.241050
+1001,2,12,"i don t believe it is going to always be necessary to update it  but the process should come with better documentation for the less tech savvy.",1,1,10,0.507262,0.141140
+1002,2,0,"tv looks great.",0,0,4,1.000000,1.000000
+1002,2,1,"easy to setup and mount.",0,0,4,0.656380,0.262593
+1002,2,2,"lightweight which helped with mounting on the wall.",0,0,4,0.264392,0.100721
+1002,2,3,"got a great price on this tv with a new egg sale.",1,1,8,0.539677,0.221437
+1003,2,0,"you won t find a better television .",0,1,8,1.000000,1.000000
+1003,2,1,"when you set this tv up the right way it will take your breath away.",0,1,8,0.637516,0.155057
+1003,2,2,"not sure about the  other guy s   review.",0,1,8,0.562548,0.129329
+1003,2,3,"i actually purchased his returned set ",0,1,11,0.544506,0.128282
+1003,2,4,"just more 4k content which isn t samsung s fault",1,0,6,0.533383,0.142275
+1004,2,0,"amazing picture with 4k source",0,0,5,1.000000,1.000000
+1004,2,1,"this television is years ahead of technology  yes that s a bad thing  ",1,0,5,0.606480,0.241050
+1004,2,2,"according to samsung  very helpful troubleshooting   the 4k takes the source and multiplies it by 4. what s this mean to the average buyer ",1,1,9,0.590458,0.242761
+1004,2,3,"1080i is unwatchable  1080p is shaky at best.",1,0,5,0.600251,0.204507
+1004,2,4,"i had an av expert come and spend 2 hours trying to change the settings to make it usable without success.",1,0,4,0.635313,0.309503
+1004,2,5,"also  my set had an issue with the sound through the tv speakers that caused me to have to unplug it every other time the set was used to correct.",1,0,4,0.205493,0.130200
+1004,2,6,"samsung finally admitted that source technology is not there   that it really is only good for up converted blu rays.",1,0,5,0.526176,0.142275
+1005,2,0,"this tv has to many pro s to list  it s one of the fastest smart tv s  you have to accept that it is only 60hz really w  their clear motion and game more it the best looking 32  tv on the market today   60hz.",0,0,5,1.000000,1.000000
+1005,2,1,"now if you want true 120hz then this isn t the tv for you but if your looking for a very sweet looking 60hz smart tv with lots of inputs and nice gaming and movie quality  then look no further.",0,0,5,0.242349,0.096763
+1005,2,2,"not true 120mhz",1,0,5,0.342441,0.191348
+1006,2,0,"i have lg tvs for 3 years   this one i bought about year ago and it s been repaired 5 times for same issues by lg.",0,1,11,1.000000,1.000000
+1006,2,1,"tech   but still have same issues with tv   plus going thru lg customer care team is worst.",0,0,5,0.300874,0.131609
+1006,2,2,".i am not buying lg again ..",0,0,5,0.350033,0.176198
+1006,2,3,"lg customer care is worst service i ever received .",1,0,5,0.279122,0.192796
+1007,2,0,"bought this for my father for father s day.",0,1,11,1.000000,1.000000
+1007,2,1,"he had an older tv that was not a flat screen and was not high def.",0,1,14,0.577741,0.155057
+1007,2,2,"after setting it up for him  it looks darn good  especially compared to his previous tv.",0,1,14,0.550139,0.221437
+1008,2,0,"very nice clear picture.",0,0,6,1.000000,1.000000
+1008,2,1,"good price but all tv s have been dropping in price.",0,0,6,0.591415,0.128282
+1008,2,2,"i have several lg tv s and have been very happy with them",0,0,4,0.591543,0.128282
+1008,2,3,"none  not a smart tv but i understood that prior to purchase",1,0,4,0.539677,0.221437
+1009,2,0,"this 32 inch tv by lg is a good tv.",0,0,5,1.000000,1.000000
+1009,2,1,"it has all the features i need and they all works good.",0,0,7,0.222858,0.076641
+1009,2,2,"the tv setup quickly and easily and was easy to handle and manage.",0,0,4,0.591458,0.242761
+1009,2,3,"the picture is good.",0,0,6,0.584701,0.204507
+1009,2,4,"there is no con on this tv but the blacks in tv viewing could be better.",1,1,8,0.614080,0.262593
+1009,2,5,"it might be cuz it s a small tv but i had a 46 inch panasonic plasma and the blacks were better.",1,1,8,0.207509,0.112443
+1010,2,0,"excellent picture and sound at a very competitive price.",0,0,6,1.000000,1.000000
+1010,2,1,"very satisfied as a bedroom tv.",0,0,4,0.601739,0.142275
+1011,2,0,"good price  fast newegg shipping and easy setup",0,0,1,1.000000,1.000000
+1011,2,1,"specifications list swivel stand.",1,1,8,0.624578,0.202993
+1011,2,2,"that is what ultimately was the difference that separated it from the samsung i was considering.",1,1,13,0.584701,0.155057
+1011,2,3,"unfortunately despite also being listed on lg s website specifications  lg support says the tv does not come with a swivel stand.",1,1,14,0.511515,0.223050
+1012,2,0,"it turns off by it self   no picture and stay blank for while  not a good tv",0,0,7,1.000000,1.000000
+1012,2,1,"don t buy this tv",1,1,11,0.601739,0.221437
+1013,2,0,"really is nice when i put in a blu ray movie.",0,0,3,1.000000,1.000000
+1013,2,1,"3d is kinda cool when im playing games and stuff.",0,0,3,0.601570,0.204507
+1013,2,2,"holding your finger on the dot button allows you to point at the screen and do stuff just like a wii remote.",0,0,0,0.573799,0.156283
+1013,2,3,"very colorful tv",0,0,0,0.606082,0.129329
+1013,2,4,"though the tv is great for movies and stuff  its a little big for gaming  plus its not as fast as my small monitor.",1,0,0,0.513991,0.242761
+1013,2,5,"otherwise its a really nice tv",1,0,0,0.565155,0.141140
+1014,2,0,"a guy i know purchased this tv and ended up having to rma it because it was broken upon delivery.",0,1,13,1.000000,1.000000
+1014,2,1,"when he rma s it  they ended up sending him 2 tv s by accident.",0,1,10,0.339784,0.083051
+1014,2,2,"when he called them about the additional tv  they just said to keep it.",0,1,10,0.610454,0.155057
+1014,2,3,"he basically got this tv for free...i d say that was a pro",0,0,1,0.537493,0.128282
+1014,2,4,"menu is a little finicky and the colors are a little washed out but nothing a few setting changes can t fix.",1,0,1,0.512247,0.141140
+1015,2,0,"curve reduces nearly all of the light reflecting from surrounding room lights.",0,0,4,1.000000,1.000000
+1015,2,1,"high def clarity is astounding and the picture is beautiful.",0,0,6,0.627653,0.155057
+1015,2,2,"remote control features are easy to use and versatile.",0,0,6,0.581182,0.129329
+1015,2,3,"still unable to connect the set to my home network.",1,1,10,0.581268,0.155057
+1015,2,4,"phone support from samsung was average at best.",1,1,10,0.533312,0.202993
+1015,2,5,"i had to download a file for firmware upgrade right out of the box that did not immediately resolve the problem.",1,1,10,0.529180,0.221437
+1016,2,0,"1.  price 2.  brand name 3.  screen quality  4.  easy remote control w  easy set up 3.  shipping   handling   undamaged in 3 days    ",0,0,2,1.000000,1.000000
+1016,2,1,"limited connections  2 hdmi and 1 usb  1 component ",1,1,9,0.140473,0.100081
+1017,2,0,"10 bit 4 4 4 chroma at 30fps is very nice.",0,1,13,1.000000,1.000000
+1017,2,1,"input delay is acceptable.",0,1,12,0.704793,0.309503
+1017,2,2,"game mode supports 8bit 60fps with very low input delay.",0,1,12,0.246082,0.080516
+1017,2,3,"no 4 4 4 at 60fps.",1,1,12,0.591594,0.129329
+1017,2,4,"no 24p frame rate.",1,1,12,0.512247,0.142275
+1018,2,0,"  great crisp picture   elegant curves   ample hdmi plugs and other media ports   usb plug for my chromecast so i dont have to have another electrical plug in the wall      very nice remote",0,0,7,1.000000,1.000000
+1018,2,1,"would be very nice if these could get under the 1k price point.",1,0,7,0.433132,0.127435
+1018,2,2,"that being said you do get what you pay for.",1,1,14,0.577913,0.221437
+1019,2,0,"crisp picture  operates well  easy interface  apps work great.",0,0,1,1.000000,1.000000
+1019,2,1,"great streaming capabilities  cuts out the middle man ps4  xbox  or blu ray player that you usually stream entertainment on ",0,0,7,0.417803,0.109175
+1019,2,2,"no hbo go app on this tv as default  no app in app store for samsung.",1,1,10,0.562091,0.221437
+1020,2,0,"picture quality is great and it s easy to use.",0,0,6,1.000000,1.000000
+1020,2,1,"price is awesome.",0,0,6,0.634406,0.129329
+1020,2,2,"when i try to use netflix the tv resets itself and goes back to channel 2. i have a strong internet connection so i don t know what the heck the problem is.",1,1,10,0.567843,0.241050
+1020,2,3,"it s really annoying that the smart features suck that bad.",1,1,15,0.597343,0.128282
+1020,2,4,"i would have gotten a regular tv if i knew this would happen.",1,1,9,0.673607,0.262593
+1020,2,5,"just watching regular tv is fine.",1,1,9,0.107083,0.085763
+1020,2,6,"hopefully the bug works itself out.",1,1,9,0.540235,0.142275
+1021,2,0,"connected to dorm room cable and wireless effortlessly.",0,0,7,1.000000,1.000000
+1021,2,1,"great picture.",0,0,7,0.611763,0.204507
+1021,2,2,"doesn t come with hdmi cables....",1,0,7,0.550139,0.223050
+1022,2,0,"super fast shipping from tn to nc  2 days with eggsaver .",0,0,1,1.000000,1.000000
+1022,2,1,"easy set up.",0,0,6,0.633955,0.156283
+1022,2,2,"netflix and hbogo worked first time no prob.",0,0,3,0.596335,0.129329
+1022,2,3,"mounted easily.",0,0,4,0.612342,0.129329
+1022,2,4,"picture quality quite good  from the limited time it worked .",0,0,6,0.560127,0.241050
+1022,2,5,"set it up and mounted it on saturday night.",1,0,4,0.603867,0.204507
+1022,2,6,"everything was working great.",1,0,4,0.565276,0.241050
+1022,2,7,"sunday morning it wouldn t turn on.",1,1,11,0.574762,0.204507
+1022,2,8,"standby power light wasn t even lit.",1,1,11,0.521441,0.156283
+1022,2,9,"it was completely dead.",1,1,11,0.531091,0.129329
+1022,2,10,"rma back to newegg.",1,1,11,0.519614,0.142275
+1023,2,0,"this is the best tv i have ever owned ",0,0,6,1.000000,1.000000
+1023,2,1,"i bought it as a second tv for the other living room  but it is now my main tv replacing my 1 year old 60  plasma tv.",0,0,4,0.580502,0.241050
+1023,2,2,"crisp clear picture that is almost like you are standing there with you favorite sports teams  news anchors  or favorite tv stars ",0,0,6,0.619518,0.241050
+1023,2,3,"i love this tv ",0,0,6,0.618804,0.129329
+1023,2,4,"picture is too realistic.",1,0,6,0.570922,0.241050
+1023,2,5,"i had to turn off the the clear motion 240 in order to watch tv shows because it all felt like i was sitting on the set and watching the show being made.",1,0,3,0.603408,0.204188
+1023,2,6,"it honestly felt like someone made all the shows and movies i watched look like they were made with a cheap hand held camera because the picture is so good.",1,0,3,0.431503,0.275147
+1023,2,7,"it does make it awesome when watching football though ",1,0,3,0.308157,0.120276
+1024,2,0,"none  see cons ",0,1,13,1.000000,1.000000
+1024,2,1,"tv arrived  box looked fine  open tv   screen was completely destroyed",1,1,13,0.536036,0.141140
+1025,2,0,"absolutely magnificent image quality.",0,1,8,1.000000,1.000000
+1025,2,1,"motion rates beyond virtually all other devices.",0,1,12,0.611679,0.129329
+1025,2,2,"powerful and flexible operating system.",0,1,12,0.591458,0.156283
+1025,2,3,"highly configurable to your needs.",0,1,8,0.598349,0.128282
+1025,2,4,"serious lack of 4k content out there.",1,0,6,0.522050,0.155057
+1025,2,5,"sound is  sufficient   you really need a soundbar or home theater setup.",1,0,6,0.529180,0.142275
+1026,2,0,"great picture",0,0,7,1.000000,1.000000
+1026,2,1,"if you want to use this tv as a monitor  as i do  you will be disappointed.",1,0,3,0.636500,0.202993
+1026,2,2,"it has a pip function  but the pip can show only the coax input.",1,0,7,0.662722,0.307512
+1026,2,3,"this tv has 4 hdmi 2.0 inputs  but you cannot use any of them as an input for the pip ",1,0,7,0.167883,0.086978
+1026,2,4,"there is a multi link function that allows you to display two inputs side by side  but it reduces your screen area by up to 50 .",1,0,7,0.195156,0.110075
+1026,2,5,"you are better off with two monitors ",1,0,3,0.587620,0.155057
+1026,2,6,"there is just no technology reason for this in a product with an msrp of almost  3000.",1,0,5,0.518569,0.129329
+1026,2,7,"samsung should be ashamed ",1,0,5,0.555485,0.141140
+1027,2,0,"great product with excellent picture quality ",0,0,6,1.000000,1.000000
+1027,2,1,"speedy delivery ",0,0,1,0.603767,0.221437
+1028,2,0,"this is our second samsung tv and both purchases were based on great reviews.",0,0,4,1.000000,1.000000
+1028,2,1,"the quality of the product and value and unbeatable ",0,0,1,0.618450,0.241050
+1028,2,2,"no cons",1,1,13,0.571008,0.142275
+1029,2,0,"great colors  pretty light weight and easy to assemble.",0,0,4,1.000000,1.000000
+1029,2,1,"got it on sale for  330",0,0,1,0.618450,0.204507
+1029,2,2,"stand isn t adjustable and firmware or software is pretty lag and not that responsive.",1,1,10,0.520036,0.141140
+1030,2,0,"good price looks good  while it works ",0,0,1,1.000000,1.000000
+1030,2,1,"does not fit standard tv mounts stops turning on after a few months terrible warranty service and customer support",1,1,14,0.545855,0.221437
+1031,2,0,"hdmi  built in hd tuner  vga  great for watching videos from my laptop   fairly high brightness  no dead or stuck pixels after 6 months.",0,0,0,1.000000,1.000000
+1031,2,1,"as with all cheaper lcd s  smooth color gradients have visible color steps  think underwater scenes in u571  or the grayish skies in gladiator .",1,1,12,0.639960,0.204507
+1031,2,2,"this is only noticeable if you re looking for it though  not bad enough to draw your attention from the movie.",1,1,12,0.583278,0.242761
+1031,2,3,"remote sensor not very powerful for me.",1,1,11,0.586124,0.202993
+1031,2,4,"not sure if this is the tv but artifacts appear on edges and cornes of everything while using an n64 on this tv.",1,1,10,0.512247,0.142275
+1032,2,0,"good tv and surprisingly good for comp monitor.",0,0,7,1.000000,1.000000
+1032,2,1,"fuzzy w o hd",0,0,0,0.621735,0.204507
+1032,2,2,"refuses to turn on about 40  of the time after being off over night and i have to unplug and replug it back in.",1,1,11,0.640405,0.170642
+1032,2,3,"sometimes when i turn it on it has green lines all over and i have to turn it off and on again.",1,1,11,0.164997,0.105988
+1033,2,0,"looks great with the xbox 360  and pc using vga out  the wii looks as good as a wii can look too ",0,1,12,1.000000,1.000000
+1033,2,1,"the remote works great for me  i programmed my mce remote to turn the tv on off and how to use the volume control in about 10seconds.",0,1,15,0.426491,0.091104
+1033,2,2,"it even took a wiimote to the screen  and the paint from the wiimote came off with a little bit of water  resilient ",0,1,13,0.581354,0.223050
+1034,2,0,"crisp picture  good color when it worked.",0,0,6,1.000000,1.000000
+1034,2,1,"dead after 13 months  slow source switching  gray ish blacks.",1,1,11,0.559023,0.223050
+1035,2,0,"price after reading reviews i got skeptical.",0,0,4,1.000000,1.000000
+1035,2,1,"but most reviewers were nitpicking.",0,0,4,0.159780,0.070572
+1035,2,2,"displaying deep blacks is this displays weakness but not a fault.",1,1,14,0.621998,0.205708
+1035,2,3,"this displays biggest weakness is my dishpvr remote won t control the television.",1,1,9,0.207164,0.111535
+1036,2,0,"excellent hdtv picture.",0,0,6,1.000000,1.000000
+1036,2,1,"no dead pixels.",0,0,0,0.637286,0.242761
+1036,2,2,"no ghosting from computer or sports channel.",0,0,0,0.676719,0.170642
+1036,2,3,"i don t have a game system hooked up  so i can t say what they might do  but my computer is cutting edge.",0,0,0,0.343093,0.103334
+1036,2,4,"setup is fairly simple.",0,0,2,0.617741,0.129329
+1036,2,5,"lots of inputs.",0,0,7,0.607552,0.128282
+1036,2,6,"great as a computer monitor.",0,0,7,0.572587,0.202993
+1036,2,7,"it plays well with dvd players too.",0,0,0,0.578656,0.242761
+1036,2,8,"big  big  big.",0,1,15,0.570922,0.156283
+1036,2,9,"the air  antenna  input needs to be reactivated every time the tv is turned on.",1,1,15,0.552705,0.129329
+1036,2,10,"i have 2 of these units  so i know it s not just a defective unit.",1,1,11,0.565790,0.155057
+1036,2,11,"it doesn t need to have the automatic channel scan run  just  switched  on in the setup menu.",1,1,15,0.621593,0.205708
+1036,2,12,"the remote changes the channels slowly.",1,1,15,0.256335,0.081711
+1036,2,13,"it s not too bad  but if you are a chronic channel surfer and aren t going to use a cable box  this could get annoying.",1,1,15,0.247884,0.163516
+1036,2,14,"when you first turn on the tv  there is a 30 second delay before you can change channels  or access the setup menu.",1,1,9,0.464436,0.288891
+1036,2,15,"if you shut it off on anything other than the cable tv input  you won t be able to see anything until you turn the channel and go to the setup menu to activate the  air  input.",1,1,9,0.185687,0.111585
+1037,2,0,"i appreciate the look of this tv    mostly black.",0,0,5,1.000000,1.000000
+1037,2,1,"the hd digital cable channels are stunning    especially football  baseball  basketball.",0,0,0,0.584166,0.156283
+1037,2,2,"i ve had very reliable service from this unit  with absolutely no problems.",0,0,5,0.609707,0.204507
+1037,2,3,"i paid over  900 for this tv in january 2006  but it was worth every penny.",0,0,1,0.586351,0.204507
+1037,2,4,"i like the panels that come off to reveal the connections on the back of the tv  then go back into place  keeping the wires at least somewhat organized.",0,0,7,0.591543,0.241050
+1037,2,5,"in a room with lots of windows  i get no glare on the screen.",0,0,4,0.530126,0.129329
+1037,2,6,"i really haven t found any  but i m not an audiophile  nor am i particularly techy about anything but computers  not into ipod  mp3s  etc.  tivo.",1,0,0,0.573126,0.156283
+1037,2,7,"give me a dvd player  digital cable  and i m happy enough.",1,0,0,0.490048,0.221437
+1038,2,0,"hd tuner is crystal clear.",0,0,7,1.000000,1.000000
+1038,2,1,"picture is very nice.",0,0,6,0.629940,0.242761
+1038,2,2,"biggest computer monitor i have.",0,0,3,0.601612,0.204507
+1038,2,3,"nice tv.",0,0,3,0.606741,0.242761
+1038,2,4,"box was almost destroyed upon delivery.",1,1,13,0.550052,0.202993
+1038,2,5,"it was obviously dropped on the side.",1,1,13,0.555354,0.155057
+1038,2,6,"tv works great with no problems.",1,1,11,0.525616,0.128282
+1038,2,7,"broken piece of plastic wedged under the lcd screen but i cant figure out where it came from.",1,1,11,0.506992,0.141140
+1039,2,0,"no dead pixels.",0,1,8,1.000000,1.000000
+1039,2,1,"the tv scales accurately to 1080p from all but one hdmi port for some reason.",0,1,9,0.587289,0.129329
+1039,2,2,"overall a great value for the price.",0,1,8,0.603717,0.242761
+1039,2,3,"no rca input for sound from the vga port.",1,0,7,0.618055,0.309503
+1039,2,4,"the component video input shares sound with the composite rca.",1,0,7,0.162835,0.107632
+1040,2,0,"i bought this from a brick and mortar store because a 5 year protection plan was available.",0,0,4,1.000000,1.000000
+1040,2,1,"i bought this tv to use both as a computer monitor and tv.",0,0,3,0.360198,0.083764
+1040,2,2,"as a monitor the one requirement that it absolutely had to have was 4k  60hz  4 4 4 chroma subsampling.",0,0,3,0.538562,0.188017
+1040,2,3,"for pc  older or less expensive uhd or hd tvs may use 4 2 2 or 4 2 0 which compress the signal.",0,0,7,0.375068,0.168503
+1040,2,4,"sources other than pc don t use 4 4 4.",0,0,7,0.183605,0.071711
+1040,2,5,"this tv has hdmi 2.0 which is the only version so far that can do 4 4 4.",0,0,2,0.196381,0.091493
+1040,2,6,"without 4 4 4 the picture quality is less that what you would have with a regular computer monitor.",0,0,2,0.269851,0.097568
+1040,2,7,"without 4 4 4  i noticed that small black text on a red backround  uneven number of pixels  and excel charts looked bad  bars had compression artifacts or ghost image surrounding them.",0,0,0,0.415492,0.090468
+1040,2,8,"lines were inconsistent color .",0,1,9,0.721342,0.171967
+1040,2,9,"to get it to work you need these things   a nvidia geforce gtx 900 series or amd equivalent  use only hdmi port 1 on tv  set hdmi uhd color to on  and set device type to pc  press source  select port 1  then press tools  and select device type. ",0,1,9,0.362270,0.107130
+1040,2,10,"once this is done the picture looks absolutely perfect.",0,1,8,0.638775,0.204507
+1040,2,11,"also  dvi to hdmi cables will work  4k  60hz  4 4 4  and will work in any of the 3 other ports at lower resolutions and or frequencies.",0,1,9,0.652449,0.307512
+1040,2,12,"the salesperson will try to sell you expensive cables.",0,1,9,0.598952,0.159559
+1040,2,13,"he said  40 per cable was the minimum that i should spend.",0,1,9,0.175123,0.072948
+1040,2,14,"you definitely do not need to buy expensive hdmi cable s  as long as they are 6 feet or less and you won t be plugging unplugging all the time.",0,1,9,0.178160,0.092670
+1040,2,15,"the only requirement is that the cable be a  high speed  hdmi cable.",0,1,9,0.261534,0.079391
+1040,2,16,"the free cable that came with my dvr works very well  4k  60hz  4 4 4.",0,1,14,0.463187,0.182787
+1040,2,17,"however another  2.50 cable caused the pc audio and video to cut out for a second or two on rare occasion  so i used that one for my dvr  where it works good.",0,1,9,0.178585,0.147251
+1040,2,18,"the colors are more vibrant than anything i ve seen before.",0,1,9,0.617730,0.202993
+1040,2,19,"the framerate is interpolated to 60 hz  which i do notice sometimes.",0,1,8,0.558580,0.128282
+1040,2,20,"the motion looks smoother in what is sometimes called the  soap opera effect .",0,1,8,0.576550,0.156283
+1040,2,21,"the tv came with the eco sensor turned on.",0,1,9,0.594320,0.129329
+1040,2,22,"it will dim the picture more in a darker room to save energy.",0,1,14,0.539546,0.156283
+1040,2,23,"you can also set a minumum backlight brightness when it is turned on.",0,1,11,0.568101,0.129329
+1040,2,24,"i measured that the tv uses 114 to 133 watts without eco sensor and about 39 to 44 watts with it on  but the picture is too dark imo .",0,1,9,0.635088,0.205708
+1040,2,25,"it was about 73 to 74 watts with the minimum set to 5.  when playing video games on the pc  the input lag is low enough that it is not an issue at all.",0,1,9,0.167023,0.149463
+1040,2,26,"some older video games sometimes  or always  crash when the resolution is set to 3840 x 2160.",0,1,9,0.092147,0.065208
+1040,2,27,"i won t be using console  game mode  on this tv because i only play games on the pc.",0,1,9,0.300342,0.084774
+1040,2,28,"at first i couldn t get the 4 4 4 to work because i didn t set the device type to pc.",1,1,9,0.526303,0.192327
+1040,2,29,"i chatted with a samsung rep online and he didn t know enough about it to tell me that  and he wasn t even sure that it could do 4 4 4.",1,1,11,0.471987,0.184206
+1040,2,30,"when i bought it  the salesman didn t seem to know either and so i almost returned it because i wasn t sure it could do 4 4 4.",1,1,11,0.228809,0.098392
+1040,2,31,"the 3rd day  i figured it out on my own and all was good.",1,1,8,0.545389,0.204507
+1040,2,32,"i tried hooking up my 20 year old yamaha yst m10 computer speakers  also 10w per channel  and they sounded so much better than the tv speakers that i will keep using them even though i can t control the volume with the remote control.",1,1,12,0.511823,0.242761
+1040,2,33,"there is a stereo mini plug and an optical out on the back of the tv for this.",1,1,12,0.573880,0.129329
+1040,2,34,"i also noticed that when using my computer the sound now comes through the hdmi cable and it is not initialized until the windows startup sound has almost finished playing  so you never hear the beginning of the startup sound.",1,1,12,0.589942,0.234011
+1040,2,35,"when i first connected the tv to the internet  i couldn t get it to accept the wi fi password  so i connected the lan cable and it worked.",1,1,9,0.561643,0.226788
+1040,2,36,"i later got the wi fi to work by pressing the wps button on my router  i need to use the one ethernet cable for the computer .",1,1,9,0.182688,0.076641
+1040,2,37,"over the first 3 days  the tv used 2 to 3 gb of data and i only used the tv web browser for a few minutes.",1,1,9,0.619931,0.205708
+1040,2,38,"i have a 10 gb limit per month with my satellite internet service so i need to be able to easily turn wireless on and off.",1,1,9,0.209558,0.081055
+1040,2,39,"i chatted with a rep and he said there is no way to easily toggle connectivity on and off.",1,1,9,0.442663,0.182959
+1040,2,40,"you can disconnect easily  but to turn it back on  you have to hit the wps button on the router again.",1,1,9,0.164521,0.077304
+1040,2,41,"my router has a simple button that toggles the wireless on and off  so it is easier for me to do it that way.",1,1,9,0.343975,0.144922
+1040,2,42,"but i have to make sure the tv is turned off whenever i use wireless for something else.",1,1,9,0.177263,0.094593
+1040,2,43,"there will be times where both will need to be on so then i will need to disconnect the tv.",1,1,9,0.532134,0.141140
+1041,2,0,"great buy for the price   free shipping.",0,0,1,1.000000,1.000000
+1041,2,1,"using this mainly as a gaming monitor.",0,0,3,0.595631,0.223050
+1042,2,0,"lightweight  good price  excellent picture  good sound",0,0,6,1.000000,1.000000
+1042,2,1,"remote could be less cluttered if it were slightly larger",1,1,15,0.606082,0.223050
+1043,2,0,"beautiful picture.",0,0,6,1.000000,1.000000
+1043,2,1,"good variety of inputs including dvi",0,0,7,0.591373,0.241050
+1043,2,2,"i have had this tv for over a year.",1,1,11,0.621776,0.204507
+1043,2,3,"it broke after only 8 months and again after another 3 months  apparently with the same problem.",1,1,11,0.537440,0.242761
+1043,2,4,"sony service was awful.",1,1,10,0.575155,0.204507
+1043,2,5,"it took them 2 months to get the tv back the first time and 1 month the second.",1,1,11,0.500969,0.142275
+1044,2,0,"beautiful screen  when adjusted correctly fast processor easy to understand",0,0,2,1.000000,1.000000
+1044,2,1,"not free not a plasma",1,0,2,0.595631,0.223050
+1045,2,0,"amazing quality  it was a battle choosing which version of this tv i wanted.",0,0,1,1.000000,1.000000
+1045,2,1,"this blows my previous samsung 720p 3 d plasma tv out of the water.",0,0,5,0.591415,0.242761
+1045,2,2,"i would recommend this tv to everyone interested in upgrading.",0,0,1,0.591543,0.202993
+1045,2,3,"the time to get this tv and the miss communication between new egg and the third party warehouse was a bit of a hassle but still the tv is worth it.",1,0,5,0.518569,0.142275
+1046,2,0,"i love this tv ",0,0,6,1.000000,1.000000
+1046,2,1,"the picture quality is phenomenal   blacks are really black and the colors are fantastic.",0,0,6,0.577655,0.155057
+1046,2,2,"the curved design adds a little depth to any movie  which adds another dimension when not watching a 3d movie.",0,0,6,0.585595,0.242761
+1046,2,3,"the sound quality is much better than expected.",0,0,6,0.588615,0.155057
+1046,2,4,"the 3d feature is great and the glasses are comfortable.",0,0,6,0.550139,0.202993
+1046,2,5,"every time i watch a movie on this tv i am amazed at the overall quality and i am truly happy that i purchased it.",0,0,6,0.511054,0.141140
+1047,2,0,"best tv bought so far  awesome on gaming  took me a min to figure out how to fill the full screen just needed to enable the gpu scaling on my video card in the radeon catalist  not seeing any game lag at all.",0,0,3,1.000000,1.000000
+1047,2,1,"not vary comfortable on how the composite hook ups are as adaptors ",1,1,12,0.604504,0.141140
+1048,2,0,"excellent  great quality display.",0,0,6,1.000000,1.000000
+1048,2,1,"accurate colors  good contrast  quite good black levels in a dark room.",0,0,5,0.596461,0.128282
+1048,2,2,"1080p content still looks great.",0,0,6,0.626704,0.155057
+1048,2,3,"good viewing angle  generally responsive  nice and smooth motion in 60hz w  4k resolution.",0,0,5,0.641968,0.171967
+1048,2,4,"other guy was right  does not support 4 4 4 in 60hz 4k  but picture still looks fine.",1,1,14,0.304392,0.164012
+1048,2,5,"the only time you can tell is with very small text.",1,1,15,0.660867,0.204188
+1048,2,6,"normal black text  on white  shows noticeable artifacts and very small red text becomes blurred  but the text is still readable.",1,1,15,0.094598,0.084683
+1048,2,7,"full screen gaming at 60hz does not work.",1,1,12,0.539743,0.141140
+1049,2,0,"ips  smart tv  etc  etc.",0,0,3,1.000000,1.000000
+1049,2,1,"for 3840x2160   60 hz  it only supports ycbcr 4 2 0.",1,0,3,0.656380,0.171967
+1049,2,2,"for the full color space  4 4 4   you have to run it at 30hz.",1,0,3,0.081030,0.079721
+1049,2,3,"this shows up mostly when used as a pc monitor where 4 2 0 causes artifacts on text rendering.",1,0,3,0.242332,0.115677
+1050,2,0,"very sharp picture  easy to set up and a ton of features.",0,0,6,1.000000,1.000000
+1050,2,1,"you can turn off or adjust motion rate to get rid of the  soap opera effect  but the picture still looks great.",0,0,6,0.376887,0.170942
+1050,2,2,"true 120hz refresh  not faked.",0,0,5,0.611763,0.204507
+1050,2,3,"narrow viewing angle  i can tell a difference when i am off center but i didn t tell my family to see if they would notice anything and no one has said a word.",1,1,8,0.643650,0.170642
+1050,2,4,"so unless you are looking for a change when viewing off center  its hard to notice.",1,1,8,0.073567,0.064262
+1050,2,5,"motion rate is designed to reduce blurring in action scenes or sports  but causes the  soap opera effect ",1,0,5,0.515087,0.141140
+1051,2,0,"good refund policy.",0,0,6,1.000000,1.000000
+1051,2,1,"i had a chat online with the rep.",0,0,4,0.607663,0.202993
+1051,2,2,"and she was very helpful.",0,0,4,0.583278,0.129329
+1051,2,3,"tv arrived with a strange nacreous  order  which still exist   i noticed something that look like a crack on the screen which i thought was the plastic  so me and my father followed the instructions and attached the stand  hdmi cable and rf antenna.",1,1,9,0.605984,0.171967
+1051,2,4,"i was so excited to plug it in and turn it on to see nothing but a smashed screen.",1,1,9,0.418589,0.129799
+1052,2,0,"good price with free shipping",0,0,1,1.000000,1.000000
+1052,2,1,"dead on arrival.",1,1,13,0.611763,0.202993
+1052,2,2,"screen lit up some  but didn t work at all.",1,1,13,0.550139,0.142275
+1053,2,0,"easy to use interface  great picture adjustments for low end  overall great picture  hard to beat price  apps seem to flow.",0,0,6,1.000000,1.000000
+1053,2,1,"a lil bit of white edge light shows in darker rooms  even with black levels adjusted there is still a trace on left and right edge.",1,1,10,0.515960,0.214052
+1054,2,0,"nice picture.",0,0,6,1.000000,1.000000
+1054,2,1,"dead pixels  sluggish  some options locked",1,0,6,0.557032,0.223050
+1055,2,0,"it arrived in 1 piece.",0,1,10,1.000000,1.000000
+1055,2,1,"in less than 6 weeks complete system failure",1,1,10,0.284129,0.117997
+1056,2,0,"great picture crummy sound",0,0,6,1.000000,1.000000
+1056,2,1,"started noticing contrast changes randomly popping up.",1,1,15,0.601570,0.241050
+1056,2,2,"not cable.",1,1,9,0.621776,0.128282
+1056,2,3,"old crt has no problem regarding contrast.",1,1,15,0.550052,0.204507
+1056,2,4,"remote fires but not all the time which actually made a simple setup tooth pulling.",1,1,15,0.529092,0.242761
+1056,2,5,"some menu selections just won t come up.",1,1,11,0.539721,0.141140
+1057,2,0,"good picture  120hz  fast response   preset picture settings  built in wifi   netflix hulu and others preinstalled.",0,1,15,1.000000,1.000000
+1057,2,1,"no channel or volume buttons on tv.",1,1,15,0.619782,0.204507
+1057,2,2,"i use this as a computer monitor and it would be nice to be able to change the inputs from the tv itself and not walk around with the remote strapped to my hip.",1,1,9,0.529092,0.221437
+1058,2,0,"tv has excellent quality pictures and very good wifi range.",0,0,7,1.000000,1.000000
+1058,2,1,"price is a steal",0,0,2,0.603767,0.223050
+1059,2,0,"looked like a nice tv  still has possibilities.",0,1,14,1.000000,1.000000
+1059,2,1,"nice big screen  minimal bezel.",0,1,14,0.160592,0.072948
+1059,2,2,"visio is replacing my tv because of screen issues",0,1,14,0.281197,0.134534
+1059,2,3,"shipping was free  i believe it was brought by pack mule across the country as long as it took.",1,0,1,0.539677,0.142275
+1060,2,0,"had really good picture if you have it on cable  dsl or hdmi cable to something.",0,0,2,1.000000,1.000000
+1060,2,1,"bout all i can say good about it.",0,0,2,0.280986,0.095305
+1060,2,2,"bad antenna  right out of the box.",1,0,2,0.574249,0.241050
+1060,2,3,"channel 10  64  6  2. all where blotchy at best.",1,0,2,0.648434,0.262593
+1060,2,4,"went from 26 channels down to 22 or less.",1,0,2,0.047597,0.094942
+1060,2,5,"it s too bad  seemed like it could have been a good tv.",1,0,2,0.569256,0.155057
+1060,2,6,"also very slow with going to the next channel.",1,0,2,0.539677,0.128282
+1060,2,7,"doesn t take that long with a phillips i have or samsung or sharp for that matter and all are older.",1,0,3,0.502756,0.141140
+1061,2,0,"none.  it doesn t work  junk.",0,1,10,1.000000,1.000000
+1061,2,1,"brightness doesn t hold.",1,1,10,0.570836,0.242761
+1061,2,2,"antenna gets no signal",1,1,10,0.550139,0.142275
+1062,2,0,"price",0,1,14,1.000000,1.000000
+1062,2,1,"received my replacement for the first order where the pieces didn t fit.",1,1,14,0.570793,0.156283
+1062,2,2,"this one arrived with poor packing for shipping and it is broken.",1,1,13,0.662840,0.307512
+1062,2,3,"tv screen is shattered on arrival.",1,1,13,0.252854,0.184602
+1063,2,0,"price",0,1,8,1.000000,1.000000
+1063,2,1,"i m guessing because it s refurbished is why the tv stand did not fit together with the tv base.",1,1,8,0.558339,0.156283
+1063,2,2,"had to return.",1,1,14,0.583415,0.141140
+1064,2,0,"amazing picture.",0,0,6,1.000000,1.000000
+1064,2,1,"anyone that is concerned about motion blur with sports  rest assured.",0,0,5,0.678281,0.264404
+1064,2,2,"this tv handles fast motion amazingly as it is  in large part  the reason it was purchased by me.",0,0,5,0.295809,0.164797
+1064,2,3,"seamlessly works as a giant computer monitor.",0,1,9,0.668497,0.262593
+1064,2,4,"i am using a dvi to hdmi cable to use the computer  and every time i restart my computer i must hook the dvi up to a monitor until after i log into windows in order for the display to show up on the tv.",1,1,9,0.160888,0.093367
+1064,2,5,"i suspect this is a video card driver issue though.",1,1,9,0.560687,0.142275
+1065,2,0,"outstanding picture.",0,0,6,1.000000,1.000000
+1065,2,1,"second to none and i ve compared it to many.",0,0,5,0.623069,0.156283
+1065,2,2,"very clear  correct colors.",0,0,5,0.614539,0.204507
+1065,2,3,"much better than average sd picture.",0,0,5,0.592372,0.242761
+1065,2,4,"stable stand.",0,0,0,0.624122,0.129329
+1065,2,5,"sound is excellent.",0,0,0,0.567880,0.204507
+1065,2,6,"no need for audio system unless you want it very  very loud  or for surround.",0,0,0,0.565936,0.242761
+1065,2,7,"plenty of inputs.",0,0,7,0.584701,0.128282
+1065,2,8,"dvd s look great using regular progressive scan player.",0,0,7,0.625442,0.307512
+1065,2,9,"upconverting dvd player actually wasn t quite as good.",0,0,7,0.126819,0.085763
+1065,2,10,"720p.",1,1,9,0.572021,0.223050
+1065,2,11,"note that with the demise of hd dvd  blu ray is the only 1080p source most people have.",1,1,15,0.503466,0.156283
+1065,2,12,"hd broadcasts are 720p or 1080i  and this set gets the most out of either.",1,1,15,0.526176,0.129329
+1065,2,13,"limited stretch modes  no variable zoom   though i ve always found one that works for me.",1,1,9,0.527722,0.142275
+1066,2,0,"using this tv as a monitor for my computer.",0,0,3,1.000000,1.000000
+1066,2,1,"operating using dvi to hdmi cable at 1920 x 1080 with 60hz refresh.",0,1,9,0.670186,0.205708
+1066,2,2,"sitting 3 4 feet away from the screen everything is perfectly clear.",0,1,9,0.334105,0.164797
+1066,2,3,"hd channels from cable look amazing  standard tv looks better from farther away  which will be case with most tv s .",0,0,3,0.670546,0.171967
+1066,2,4,"games on the tv  via the computer  hdmi   also look pretty amazing at 1080p  won t ever be able to go back to a smaller monitor for my computer.",0,0,3,0.570520,0.195087
+1066,2,5,"most of the time i use a tv tuner card on the computer for watching tv.",0,0,3,0.283413,0.133667
+1066,2,6,"i make a 15 20  window for the tv program which makes the standard cable channels look much better.",0,0,0,0.540501,0.156283
+1066,2,7,"all in all  it s been an awesome tv.",0,0,3,0.581665,0.204507
+1066,2,8,"sometimes has a little bit of trouble keeping pictures from the computer in focus.it seems to try and focus a couple times before the picture is clear.",1,0,3,0.497118,0.242761
+1066,2,9,"only happens sometimes  not really and issue as it refocuses so fast.",1,1,14,0.550860,0.223050
+1067,2,0,"the display looks great.",0,0,1,1.000000,1.000000
+1067,2,1,"the tv arrived with no damage and setup quickly.",0,0,1,0.598180,0.204507
+1067,2,2,"the sound is good.",0,1,8,0.605034,0.202993
+1067,2,3,"the tv developed one dead pixel near the center of the screen.",1,1,8,0.550052,0.204507
+1067,2,4,"most of the time i don t notice but it shows up on bright uniform images as a black spot.",1,1,8,0.541738,0.156283
+1067,2,5,"i don t know if it would be worth it to buy at a retail chain to be able to return the tv for a dead pixel.",1,1,14,0.529180,0.223050
+1068,2,0,"3 hdmi inputs and plenty of others  clear  bright picture  easy to use and well designed on screen menus  attractive look  great price for a 42  1080p screen.",0,0,3,1.000000,1.000000
+1068,2,1,"this does not do so well as a computer monitor.",1,0,3,0.647901,0.202993
+1068,2,2,"as others have mentioned  it will handle 1024x768 through vga just fine  but through hdmi  it crops the image in many resolutions  even 640x480   and it does not appear to actually handle 1080p at 60hz  always giving me a  no signal  message.",1,1,9,0.647148,0.205708
+1068,2,3,"it will handle 1080p from my pc at 40hz or so.",1,1,9,0.353858,0.085322
+1068,2,4,"also  does not handle unusual resolutions at all.",1,1,9,0.582777,0.156283
+1068,2,5,"in hdmi  you give it 640x480  1280x720  720p    1080i  or 1920x1080  1080p  and that is it.",1,1,9,0.512504,0.129329
+1068,2,6,"it does not attempt to scale other resolutions    it simply refuses to display anything at all.",1,1,9,0.536725,0.142275
+1069,2,0,"good picture  reasonable cost  especially when available for less than  1000.",0,0,2,1.000000,1.000000
+1069,2,1,"won t do 1980x1080 with the vga input  only the hdmi input.",1,1,9,0.609707,0.274400
+1069,2,2,"won t do 1600x1050 to clone a desktop display.",1,1,9,0.601739,0.129329
+1069,2,3,"i don t like side inputs for video 2  would rather bottom.",1,1,9,0.505867,0.164929
+1070,2,0,"picture is excellent.",0,0,6,1.000000,1.000000
+1070,2,1,"replaced a back projection hdtv and is much better.",0,0,3,0.598180,0.242761
+1070,2,2,"very good value",0,0,6,0.618450,0.204507
+1070,2,3,"the set i received had an 8  verical white stripe just to the right of center.",1,1,10,0.537440,0.242761
+1070,2,4,"an obvious manufacturing defect  which i find very rare in my experience with toshiba.",1,1,14,0.566852,0.129329
+1070,2,5,"toshibe stepped and provided the response and guidance to get the set replaced.",1,1,10,0.529180,0.141140
+1071,2,0,"this tv is bright  with very good black levels.",0,0,5,1.000000,1.000000
+1071,2,1,"the tuner is atsc and qam enabled  and scanning our local comcast cable gave us all local hd chanels  analog channels  and music channels.",0,0,2,0.599503,0.242761
+1071,2,2,"i bought 5 of these  and hooked one to a pc.",0,0,3,0.627670,0.129329
+1071,2,3,"at the max res for vga it looked very good  but you will want to use hdmi get get higher resolutions.",0,0,1,0.587340,0.242761
+1071,2,4,"overall  picture quality was fantastic.",0,0,6,0.679620,0.204188
+1071,2,5,"you won t beat the picture by paying twice the price.",0,0,5,0.436415,0.236239
+1071,2,6,"i paid a few hundred more than this on a governement contracted price.",0,0,2,0.265512,0.099279
+1071,2,7,"we used a chief mounting that was perfect for or needs.",0,0,4,0.545959,0.202993
+1071,2,8,"it let the tv come straight out from the wall by a couple of feet  then roatate fully left or right.",0,0,3,0.512247,0.242761
+1071,2,9,"none  this is a case of getting more than you pay for.",1,0,5,0.541860,0.141140
+1072,2,0,"great design.",0,0,5,1.000000,1.000000
+1072,2,1,"picture is bright and contrast is reasonable for an lcd.",0,0,5,0.597459,0.241050
+1072,2,2,"no burn in.",0,0,1,0.643354,0.129329
+1072,2,3,"solid  heavy stand.",0,0,1,0.574249,0.156283
+1072,2,4,"many picture options.",0,0,7,0.605034,0.128282
+1072,2,5,"decent remote that ended up also being able to work my dvd player and direct tv box by entering a simple 3 number code for each.",0,0,7,0.631865,0.204188
+1072,2,6,"3 hdmi inputs.",0,0,7,0.371759,0.087203
+1072,2,7,"i too have noticed a pop when it turns on  but i don t find it a bother.",1,1,12,0.560557,0.156283
+1072,2,8,"reflective frame is beautiful but a fingerprint magnate.",1,1,12,0.550139,0.128282
+1072,2,9,"not packed well as there was only a very thin strip of cardboard between the lcd and the outer box wall.",1,1,8,0.529136,0.155057
+1072,2,10,"image won t be mistaken for a good plasma.",1,1,8,0.529180,0.242761
+1072,2,11,"had 5 dead pixels.",1,1,8,0.529224,0.221437

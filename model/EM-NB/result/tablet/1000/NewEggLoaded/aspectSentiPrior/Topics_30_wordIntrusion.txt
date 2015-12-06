@@ -1,0 +1,5 @@
+Topic 25(0.077):	nt, kindl, screen, devic, fire, app, 2nd
+Topic 2(0.071):	price, great, bought, good, nt, love, blue
+Topic 18(0.058):	charg, batteri, nt, turn, power, time, 
+Topic 17(0.058):	buy, nt, bought, price, money, purchas, spen
+Topic 28(0.052):	support, nt, call, custom, servic, replac, 

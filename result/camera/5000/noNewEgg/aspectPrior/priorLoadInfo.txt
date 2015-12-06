@@ -1,0 +1,131 @@
+Loading aspect list from ./data/Model/aspect_camera.txt
+Prior loaded:<battery> panason plug situat die remov ship seal charg cell indic dock dead life aa suck door broke forev dri long shut pay short b
+est month extra flimsi charger compart day messag coupl refus wo warranti power period sit wait batteri pack water fulli repair time three minut 
+hour leak longer recharg spare
+Prior keywords for Topic 0 (<battery>): 50/52
+Unigram loaded:50, Bigram loaded:0
+Prior loaded:<screen> star frame touch display difficult outdoor broken head screen visibl generat center averag lit monitor samsung damag sunlig
+ht hd big plastic lcd biggest consum hot sunni bare imposs bright black middl compani protect easili worri market daylight tv view book tini blue
+ rate sun eye scratch help
+Prior keywords for Topic 1 (<screen>): 41/47
+Unigram loaded:41, Bigram loaded:0
+Prior loaded:<viewfinder> increas mode wear enabl proper finder optic add trade choos pro live assum electron lack autofocus faster troubl useles
+s wors remain af plenti wonder comment upgrad lock solv meter updat cheap suppos rebel viewfind firmwar prefer seri consider view version eventu 
+glass subject promis dim address t3i
+Prior keywords for Topic 2 (<viewfinder>): 40/47
+Unigram loaded:40, Bigram loaded:0
+Prior loaded:<record> movi backup loud phone number person talk everyday connect terribl automat report web email smile step audio tech sound ext
+rem purpos car heard question claim hit technic search told extern sensit call engin attempt experi complain earli hear send click track servic d
+escrib qualiti record wifi horribl answer custom support contact free hate limit
+Prior keywords for Topic 3 (<record>): 47/54
+Unigram loaded:47, Bigram loaded:0
+Prior loaded:<mode> distanc flower program full smart panorama intend object casual default dslr raw photograph intellig portrait motion automat 
+switch auto environ cool smile handheld pointandshoot select manual correct scene face adjust mode lot point exposur detect closeup focus macro n
+ight shoot balanc featur set fun burst shot comfort continu special parti landscap compens view white tripod
+Prior keywords for Topic 4 (<mode>): 50/55
+Unigram loaded:50, Bigram loaded:0
+Prior loaded:<shutter> mechan d610 occur iso sport lag feel respons half delay action frustrat lower second shake enjoy shutter button catch mind
+ fire incred push luck snap final releas apertur activ prioriti readi reset despit moment slow minim movement stand speed compens secur move pres
+s hold d600 freez exact fast
+Prior keywords for Topic 5 (<shutter>): 43/48
+Unigram loaded:43, Bigram loaded:0
+Prior loaded:<memori> stick case rememb built indoor ruin locat comput weak shadow fill cabl dark memori drive sd pop pretti compat fault feet wi
+reless transfer write card usb flash separ expens instal love micro requir builtin break bother manag buy unit forward pc space intern drawback r
+eader download includ devic
+Prior keywords for Topic 6 (<memori>): 45/48
+Unigram loaded:45, Bigram loaded:0
+Prior loaded:<zoom> desir inexpens dynam finepix length pocket bulki powershot attract steadi slr construct older mega purs definit top lighter s
+ell malfunct form focal factor inch cannon film fujifilm depend elph digit rang 35mm optic durabl adequ versatil buck zoom spec canon familiar 3x
+ carri eo smaller cybershot save lumix mp posit megapixel compact crop
+Prior keywords for Topic 7 (<zoom>): 46/53
+Unigram loaded:46, Bigram loaded:0
+Prior loaded:<len> googl kit accessori standard gear heavi epl2 lens spot junk nex d80 angl cover fall slide corner sold 50mm stuck weight bag fi
+t common clean equival d7000 mount care error open bodi apertur attach filter receiv loos packag cap prime futur len mark extend leica nex5n tele
+photo distort adapt dust front
+Prior keywords for Topic 8 (<len>): 45/51
+Unigram loaded:45, Bigram loaded:0
+Prior loaded:<picture> soft blurri compar noisi clariti amaz graini crisp produc vivid clear tone print excel accur detail color expect size high
+ captur disappoint contrast low condit satur blur photoshop beauti pixel imag jpeg wash upload sensor sharper light famili better comparison phot
+o natur work qualiti good higher great sharp deliv nois stabil perform
+Prior keywords for Topic 9 (<picture>): 49/52
+Unigram loaded:49, Bigram loaded:0
+Prior loaded:<price> son item close vacat reason coolpix brand easyshar refund local amazon glad sale week happi money read replac paid product t
+urn drop small wast origin christma return allow review purchas year larger refurbish price kodak light deal bought insid pictur snorkel regret t
+rip worth
+Prior keywords for Topic 10 (<price>): 43/44
+Unigram loaded:43, Bigram loaded:0
+Prior loaded:<Instruction> dial function busi profession term control basic complic abil access setup menu touchscreen 60d amateur beginn 7d impr
+ov system manual understand solid interfac pentax pick confus interest easier intuit sturdi type complet grip easi learn 70d varieti oper photogr
+aphi advanc eas level novic remot menus softwar simpl user navig chang entri invest instruct chose
+Prior keywords for Topic 11 (<Instruction>): 52/54
+Unigram loaded:52, Bigram loaded:0
+Prior loaded:<video> piec surpris option bewar facebook pic awesom talk snapshot window plan afford mistak explain figur outstand quiet huge buye
+r format play soni bad wow issu respond capabl dslrs box annoy flaw aspect nikon lose realiz awar playback fan video hd camcord shame check sad t
+on file clip lost pool websit watch smooth
+Prior keywords for Topic 12 (<video>): 45/52
+Unigram loaded:45, Bigram loaded:0
+Prior loaded:<battery> panason plug situat die remov ship seal charg cell indic dock dead life aa suck door broke forev dri long shut pay short b
+est month extra flimsi charger compart day messag coupl refus wo warranti power period sit wait batteri pack water fulli repair time three minut 
+hour leak longer recharg spare
+Prior keywords for Topic 13 (<battery>): 50/52
+Unigram loaded:50, Bigram loaded:0
+Prior loaded:<screen> star frame touch display difficult outdoor broken head screen visibl generat center averag lit monitor samsung damag sunlig
+ht hd big plastic lcd biggest consum hot sunni bare imposs bright black middl compani protect easili worri market daylight tv view book tini blue
+ rate sun eye scratch help
+Prior keywords for Topic 14 (<screen>): 41/47
+Unigram loaded:41, Bigram loaded:0
+Prior loaded:<viewfinder> increas mode wear enabl proper finder optic add trade choos pro live assum electron lack autofocus faster troubl useles
+s wors remain af plenti wonder comment upgrad lock solv meter updat cheap suppos rebel viewfind firmwar prefer seri consider view version eventu 
+glass subject promis dim address t3i
+Prior keywords for Topic 15 (<viewfinder>): 40/47
+Unigram loaded:40, Bigram loaded:0
+Prior loaded:<record> movi backup loud phone number person talk everyday connect terribl automat report web email smile step audio tech sound ext
+rem purpos car heard question claim hit technic search told extern sensit call engin attempt experi complain earli hear send click track servic d
+escrib qualiti record wifi horribl answer custom support contact free hate limit
+Prior keywords for Topic 16 (<record>): 47/54
+Unigram loaded:47, Bigram loaded:0
+Prior loaded:<mode> distanc flower program full smart panorama intend object casual default dslr raw photograph intellig portrait motion automat 
+switch auto environ cool smile handheld pointandshoot select manual correct scene face adjust mode lot point exposur detect closeup focus macro n
+ight shoot balanc featur set fun burst shot comfort continu special parti landscap compens view white tripod
+Prior keywords for Topic 17 (<mode>): 50/55
+Unigram loaded:50, Bigram loaded:0
+Prior loaded:<shutter> mechan d610 occur iso sport lag feel respons half delay action frustrat lower second shake enjoy shutter button catch mind
+ fire incred push luck snap final releas apertur activ prioriti readi reset despit moment slow minim movement stand speed compens secur move pres
+s hold d600 freez exact fast
+Prior keywords for Topic 18 (<shutter>): 43/48
+Unigram loaded:43, Bigram loaded:0
+Prior loaded:<memori> stick case rememb built indoor ruin locat comput weak shadow fill cabl dark memori drive sd pop pretti compat fault feet wi
+reless transfer write card usb flash separ expens instal love micro requir builtin break bother manag buy unit forward pc space intern drawback r
+eader download includ devic
+Prior keywords for Topic 19 (<memori>): 45/48
+Unigram loaded:45, Bigram loaded:0
+Prior loaded:<zoom> desir inexpens dynam finepix length pocket bulki powershot attract steadi slr construct older mega purs definit top lighter s
+ell malfunct form focal factor inch cannon film fujifilm depend elph digit rang 35mm optic durabl adequ versatil buck zoom spec canon familiar 3x
+ carri eo smaller cybershot save lumix mp posit megapixel compact crop
+Prior keywords for Topic 20 (<zoom>): 46/53
+Unigram loaded:46, Bigram loaded:0
+Prior loaded:<len> googl kit accessori standard gear heavi epl2 lens spot junk nex d80 angl cover fall slide corner sold 50mm stuck weight bag fi
+t common clean equival d7000 mount care error open bodi apertur attach filter receiv loos packag cap prime futur len mark extend leica nex5n tele
+photo distort adapt dust front
+Prior keywords for Topic 21 (<len>): 45/51
+Unigram loaded:45, Bigram loaded:0
+Prior loaded:<picture> soft blurri compar noisi clariti amaz graini crisp produc vivid clear tone print excel accur detail color expect size high
+ captur disappoint contrast low condit satur blur photoshop beauti pixel imag jpeg wash upload sensor sharper light famili better comparison phot
+o natur work qualiti good higher great sharp deliv nois stabil perform
+Prior keywords for Topic 22 (<picture>): 49/52
+Unigram loaded:49, Bigram loaded:0
+Prior loaded:<price> son item close vacat reason coolpix brand easyshar refund local amazon glad sale week happi money read replac paid product t
+urn drop small wast origin christma return allow review purchas year larger refurbish price kodak light deal bought insid pictur snorkel regret t
+rip worth
+Prior keywords for Topic 23 (<price>): 43/44
+Unigram loaded:43, Bigram loaded:0
+Prior loaded:<Instruction> dial function busi profession term control basic complic abil access setup menu touchscreen 60d amateur beginn 7d impr
+ov system manual understand solid interfac pentax pick confus interest easier intuit sturdi type complet grip easi learn 70d varieti oper photogr
+aphi advanc eas level novic remot menus softwar simpl user navig chang entri invest instruct chose
+Prior keywords for Topic 24 (<Instruction>): 52/54
+Unigram loaded:52, Bigram loaded:0
+Prior loaded:<video> piec surpris option bewar facebook pic awesom talk snapshot window plan afford mistak explain figur outstand quiet huge buye
+r format play soni bad wow issu respond capabl dslrs box annoy flaw aspect nikon lose realiz awar playback fan video hd camcord shame check sad t
+on file clip lost pool websit watch smooth
+Prior keywords for Topic 25 (<video>): 45/52
+Unigram loaded:45, Bigram loaded:0

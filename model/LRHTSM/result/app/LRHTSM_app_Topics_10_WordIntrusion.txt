@@ -1,0 +1,10 @@
+Topic 1(0.000):	NUM, great, love, featur, photo, io,type
+Topic 3(0.000):	NUM, crash, call, time, file, program,game
+Topic 5(0.000):	NUM, work, updat, io, pay, check,game
+Topic 7(0.000):	ipad, open, updat, simpl, game, check,NUM
+Topic 9(0.000):	great, love, game, best, work, enjoy,fun
+Topic 8(0.000):	NUM, work, great, crash, updat, sound,love
+Topic 6(0.000):	game, play, NUM, updat, time, photo,ipad
+Topic 4(0.000):	NUM, game, thing, good, great, week,work
+Topic 2(0.000):	NUM, type, work, ipad, great, second,crash
+Topic 0(0.000):	game, love, fun, great, work, help,NUM

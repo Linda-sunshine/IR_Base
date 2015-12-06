@@ -1,0 +1,16 @@
+Topic 6(0.139):	app, work, watch, great, kindl, point,hdmi
+Topic 1(0.084):	great, price, samsung, purchas, bought, christma,sound
+Topic 5(0.081):	good, qualiti, great, price, smart, return,app
+Topic 14(0.076):	app, smart, samsung, netflix, work, select,remot
+Topic 4(0.063):	set, color, great, easi, 3d, lcd,good
+Topic 9(0.061):	year, samsung, month, buy, purchas, friday,sound
+Topic 11(0.060):	samsung, call, servic, custom, problem, solut,set
+Topic 2(0.056):	sound, great, good, speaker, qualiti, second,amazon
+Topic 15(0.055):	remot, work, cabl, hdmi, connect, scan,screen
+Topic 13(0.053):	review, samsung, product, buy, purchas, size,app
+Topic 3(0.051):	amazon, deliveri, ship, day, order, truck,set
+Topic 7(0.050):	hdmi, cabl, input, hd, connect, control,screen
+Topic 0(0.048):	screen, room, great, view, good, deal,price
+Topic 8(0.046):	screen, light, black, dark, set, cover,year
+Topic 12(0.041):	set, color, qualiti, good, game, amaz,review
+Topic 10(0.038):	sound, speaker, audio, mount, volum, love,samsung

@@ -104,7 +104,7 @@ public class pLSA extends twoTopic {
 					//here for checking we have added the stemming
 					// but stemming is reducing the number of prior loaded
 					// so we turn off the loading of stemming
-					//container[i] = SnowballStemming(container[i]); // stemmer added
+					container[i] = SnowballStemming(container[i]); // stemmer added
 					if (featureNameIndex.containsKey(container[i])) {
 						wid = featureNameIndex.get(container[i]); // map it to a controlled vocabulary term
 						prior[wid] = eta;

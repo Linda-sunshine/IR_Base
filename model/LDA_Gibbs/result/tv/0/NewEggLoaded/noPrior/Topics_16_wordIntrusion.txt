@@ -1,0 +1,16 @@
+Topic 5(0.068):	NUM, hdmi, color, price, screen, chang,pictur
+Topic 3(0.067):	newegg, NUM, call, ship, servic, compar,pictur
+Topic 1(0.067):	sound, qualiti, pictur, speaker, good, plenti,NUM
+Topic 0(0.064):	3d, app, connect, smart, samsung, terribl,sound
+Topic 14(0.063):	monitor, game, comput, pc, input, channel,set
+Topic 13(0.063):	hdmi, input, cabl, audio, port, extrem,monitor
+Topic 2(0.062):	NUM, turn, vizio, year, power, reset,newegg
+Topic 12(0.062):	remot, button, easi, control, great, capabl,hdmi
+Topic 7(0.062):	great, pictur, work, easi, price, build,good
+Topic 15(0.061):	set, time, pictur, color, display, feel,3d
+Topic 8(0.061):	pictur, great, price, good, qualiti, stand,mount
+Topic 4(0.060):	pictur, plasma, color, black, screen, notic,NUM
+Topic 9(0.060):	mount, stand, pictur, wall, nice, blue,great
+Topic 10(0.060):	pictur, great, good, price, work, energi,qualiti
+Topic 11(0.060):	good, pictur, great, price, qualiti, blue,remot
+Topic 6(0.059):	pictur, screen, great, work, price, backlight,easi

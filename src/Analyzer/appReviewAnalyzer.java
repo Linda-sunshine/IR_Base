@@ -4,6 +4,7 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -25,6 +26,7 @@ import structures.Product;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Stn;
+import structures.annotationType;
 import utils.Utils;
 
 /**
@@ -35,6 +37,13 @@ public class appReviewAnalyzer extends DocAnalyzer{
 	
 	SimpleDateFormat m_dateFormatter;
 	HashMap<String, Integer> annotation = new HashMap<String, Integer>();
+	int bugCounter =0;
+	int normalCounter = 0;
+	String category = "";
+	
+	public void setCategory(String category){
+		this.category = category;
+	}
 	
 	//Constructor with ngram and fValue.
 	public appReviewAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -86,27 +95,92 @@ public class appReviewAnalyzer extends DocAnalyzer{
 
 	}
 	
+	public void printStat(){
+		
+		System.out.println("Normal review: "+normalCounter+"\nBug Review: "+bugCounter);
+	}
 	
-	protected boolean AnalyzeAppReviewWithSentence(AppReviewPost post, String reviewID, int label) throws ParseException {
-		String content;
+	
+	public void AnalyzeAppReviewSentenceClassification(AppReviewPost post) throws ParseException {
+		
+		ArrayList<String> content;
+		TokenizeResult result;
+		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
+		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+
+		/*Analyzing Content Section*/
+		if ((content=post.getSentences()) != null) {// tokenize 
+			for(int i=0; i<content.size();i++) {
+				result = TokenizerNormalizeStemmer(content.get(i));
+				int y = post.getSentenJudgedLabel().get(i);
+				//if(y<0) continue;
+				vPtr = constructSpVct(result.getTokens(), y<0? 0: y, docVct);
+				if (vPtr.size()>=m_lengthThreshold) {
+					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getAppId(), post.getAppName(), post.getTitle(), post.getContent(), post.getVersion());
+					if(y<0)
+						doc.setAnnotationType(annotationType.UNANNOTATED);
+					else
+						doc.setAnnotationType(annotationType.PARTIALLY_ANNOTATED); // source = 2 means the Document has judgement
+					doc.createSpVct(vPtr);
+					doc.setYLabel(y);
+					m_corpus.addDoc(doc);
+					m_classMemberNo[y<0? 0: y]++;
+				}
+			}
+			if (!m_releaseContent)
+				buffer.append(String.format("Content: %s\n", content));
+		}
+	}
+	
+	
+	public void AnalyzeAppReviewUnannotatedSentenceClassification(AppReviewPost post) throws ParseException {
+
+		ArrayList<String> content;
+		TokenizeResult result;
+		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
+		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
+
+		/*Analyzing Content Section*/
+		if ((content=post.getSentences()) != null) {// tokenize 
+			for(int i=0; i<content.size();i++) {
+				result = TokenizerNormalizeStemmer(content.get(i));
+				int y = 0;
+				vPtr = constructSpVct(result.getTokens(), y, docVct);
+				if (vPtr.size()>=m_lengthThreshold) {
+					_Doc doc = new _Doc(m_corpus.getSize(), post.getID(), post.getAppId(), post.getAppName(), post.getTitle(), post.getContent(), post.getVersion());
+					//doc.setSourceType(1); // source = 1 means the Document has no judgement
+					doc.setAnnotationType(annotationType.UNANNOTATED);
+					doc.createSpVct(vPtr);
+					doc.setYLabel(y);
+					m_corpus.addDoc(doc);
+					m_classMemberNo[y]++;
+				}
+			}
+			if (!m_releaseContent)
+				buffer.append(String.format("Content: %s\n", content));
+		}
+	}
+	
+	
+	protected boolean AnalyzeAppReviewWithSentence(AppReviewPost post, String reviewID, annotationType AnnotationType) throws ParseException {
+		ArrayList<String> content;
 		TokenizeResult result;
 		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // to avoid empty sentences
 		ArrayList<HashMap<Integer, Double>> spVcts = new ArrayList<HashMap<Integer, Double>>(); // Collect the index and counts of features.
 		StringBuffer buffer = m_releaseContent?null:new StringBuffer(256);
 		HashMap<Integer, Double> vPtr, docVct = new HashMap<Integer, Double>(); // docVct is used to collect DF
-		int y = label, uniWordsInSections = 0;
+		int y = 0; int uniWordsInSections = 0;
 		
-		
-
-		if ((content=post.getContent()) != null) {// tokenize 
-			for(String sentence : m_stnDetector.sentDetect(content)) {
-				result = TokenizerNormalizeStemmer(sentence);
-				vPtr = constructSpVct(result.getTokens(), y, docVct);
+		if ((content=post.getSentences()) != null) {// tokenize 
+			for(int i=0; i<content.size();i++) {
+				result = TokenizerNormalizeStemmer(content.get(i));
+				y = post.getSentenJudgedLabel().get(i);
+				//if(y<0 && AnnotationType==annotationType.PARTIALLY_ANNOTATED) continue;
+				vPtr = constructSpVct(result.getTokens(), y<0?0:y, docVct);
 
 				if (vPtr.size()>0) {//avoid empty sentence
 					String[] posTags = m_tagger.tag(result.getRawTokens()); // only tokenize then POS tagging
-
-					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, sentence, label));
+					stnList.add(new _Stn(Utils.createSpVct(vPtr), result.getRawTokens(), posTags, content.get(i), y));
 					uniWordsInSections += vPtr.size();
 					Utils.mergeVectors(vPtr, docVct);
 					spVcts.add(vPtr);
@@ -116,53 +190,83 @@ public class appReviewAnalyzer extends DocAnalyzer{
 				buffer.append(String.format("Content: %s\n", content));
 		}
 		if (uniWordsInSections>=m_lengthThreshold && stnList.size()>=m_stnSizeThreshold) {
-			_Doc doc = new _Doc(m_corpus.getSize(), reviewID, post.getAppId(), post.getAppName(), post.getTitle(), content, post.getVersion(), label);
-			doc.setSourceType(3); // 3 means has app data
+			_Doc doc = new _Doc(m_corpus.getSize(), reviewID, post.getAppId(), post.getAppName(), post.getTitle(), post.getContent(), post.getVersion());
+			doc.setAnnotationType(annotationType.PARTIALLY_ANNOTATED);
 			doc.createSpVct(spVcts);
-			doc.setYLabel(y);
+			//doc.setYLabel(y<0?2:y); // because annotation can be -1 but we transformed to 2
+			doc.setYLabel(post.getRating()-1); // because annotation can be -1 but we transformed to 2
 			doc.setSentences(stnList);
 			setStnFvs(doc);
 			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
+			m_classMemberNo[post.getRating()-1]++;
 			return true;
 		} else
 			return false;
 	}
 
+	
+	
+	//Load all the files in the directory.
+	public void LoadDirectory(String folder, String suffix, boolean annotated) throws IOException {
+		if (folder==null || folder.isEmpty())
+			return;
+
+		int current = m_corpus.getSize();
+		File dir = new File(folder);
+		for (File f : dir.listFiles()) {
+			if (f.isFile() && f.getName().endsWith(suffix)) {
+				if(annotated)
+					LoadAnnotatedDoc(f.getAbsolutePath());
+				else
+					LoadUnAnnotatedDoc(f.getAbsolutePath());
+			} else if (f.isDirectory())
+				LoadDirectory(f.getAbsolutePath(), suffix);
+		}
+		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
+	}
+	
+	
+	
 	//Load a document and analyze it.
-	@Override
-	public void LoadDoc(String filename) {
+
+	public void LoadUnAnnotatedDoc(String filename) {
 		JSONObject json = null;
 		
 		try {
 			json = LoadJson(filename);
-			AppReviewPost post = new AppReviewPost(json);
 			
+			AppReviewPost post = new AppReviewPost(json);
 			String content;
-			if (Utils.endWithPunct(post.getTitle()))
-				content = post.getTitle() + " " + post.getContent();
-			else
-				content = post.getTitle() + ". " + post.getContent();
-
-			//public _Doc (int ID, String reviewID, String appID, String appName, String title, String source, String version, int rating){
+			
+			content = post.getContent();
+			//System.out.println("Filename:"+filename);
+			//System.out.println("c:"+ content);
+			String reviewCategory = post.getCategory();
+			if(!reviewCategory.equalsIgnoreCase(category))
+				return;
+			for(int i:post.getSentenJudgedLabel())
+			{
+				if(i==0)
+					normalCounter++;
+				if(i==1)
+					bugCounter++;
+			}
 			
 			String reviewID = post.getID();
-			int annotationLabel = -1;
-			if(annotation.containsKey(reviewID))
-			{
-				annotationLabel = annotation.get(reviewID);
-			}
-			else{
-				System.out.println("Annotation unavailable for reviewID: "+reviewID);
-				annotationLabel = 0;
-			}
-			_Doc review = new _Doc(m_corpus.getSize(), reviewID, post.getAppId(), post.getAppName(), post.getTitle(), content, post.getVersion(), annotationLabel);
-			review.setSourceType(3); // 3 means has app data
+			_Doc review = new _Doc(m_corpus.getSize(), reviewID, post.getAppId(), post.getAppName(), post.getTitle(), content, post.getVersion());
+			review.setAnnotationType(annotationType.UNANNOTATED); // 1 means has app data has no judgement
+			annotationType AnnotationType = annotationType.UNANNOTATED;
 			
 			if(this.m_stnDetector!=null && !m_classifierOrTopicmodel)
-				AnalyzeAppReviewWithSentence(post, reviewID, annotationLabel);
-			else if(!m_classifierOrTopicmodel) // if false
-				AnalyzeDoc(review);
+				AnalyzeAppReviewWithSentence(post, reviewID, AnnotationType);
+			else{ /*if(!m_classifierOrTopicmodel) // if false
+				AnalyzeDoc(review);*/
+				if(!m_classifierOrTopicmodel) // if false
+					AnalyzeDoc(review);
+				else // if true
+					AnalyzeAppReviewUnannotatedSentenceClassification(post);
+			}
+		
 		} 
 		catch (Exception e) {
 			System.out.println("Cannot load "+filename);
@@ -170,6 +274,56 @@ public class appReviewAnalyzer extends DocAnalyzer{
 			return;
 		}	
 	}
+	
+	
+	public void LoadAnnotatedDoc(String filename) {
+		JSONObject json = null;
+		
+		try {
+			json = LoadJson(filename);
+			
+			AppReviewPost post = new AppReviewPost(json);
+			String content;
+			
+			content = post.getContent();
+			//System.out.println("Filename:"+filename);
+			//System.out.println("c:"+ content);
+			String reviewCategory = post.getCategory();
+			if(!reviewCategory.equalsIgnoreCase(category))
+				return;
+			for(int i:post.getSentenJudgedLabel())
+			{
+				if(i==0)
+					normalCounter++;
+				if(i==1)
+					bugCounter++;
+			}
+			
+			String reviewID = post.getID();
+			_Doc review = new _Doc(m_corpus.getSize(), reviewID, post.getAppId(), post.getAppName(), post.getTitle(), content, post.getVersion());
+			review.setAnnotationType(annotationType.PARTIALLY_ANNOTATED); // 1 means has app data has no judgement
+			annotationType AnnotationType = annotationType.PARTIALLY_ANNOTATED;
+			
+			if(this.m_stnDetector!=null && !m_classifierOrTopicmodel)
+				AnalyzeAppReviewWithSentence(post, reviewID, AnnotationType);
+			else{ /*if(!m_classifierOrTopicmodel) // if false
+				AnalyzeDoc(review);*/
+				if(!m_classifierOrTopicmodel) // if false
+					AnalyzeDoc(review);
+				else // if true
+					AnalyzeAppReviewSentenceClassification(post);
+			}
+		
+		} 
+		catch (Exception e) {
+			System.out.println("Cannot load "+filename);
+			e.printStackTrace();
+			return;
+		}	
+	}
+	
+	
+	
 	//sample code for loading the json file
 	JSONObject LoadJson(String filename) {
 		try {

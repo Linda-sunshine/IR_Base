@@ -31,6 +31,7 @@ import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Stn;
+import structures.annotationType;
 import utils.Utils;
 
 public class DocAnalyzer extends Analyzer {
@@ -405,7 +406,7 @@ public class DocAnalyzer extends Analyzer {
 			
 			if (vPtr.size()>=m_lengthThreshold) {			
 				_Doc doc = new _Doc(m_corpus.getSize(), post.getID(),prodID, post.getTitle(), content, post.getLabel()-1, timeStamp);
-				doc.setSourceType(1); // source = 1 means the Document is from Amazon
+				doc.setAnnotationType(annotationType.UNANNOTATED);
 				doc.createSpVct(vPtr);
 				doc.setYLabel(y);
 				m_corpus.addDoc(doc);

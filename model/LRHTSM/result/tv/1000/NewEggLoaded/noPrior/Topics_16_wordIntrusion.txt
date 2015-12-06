@@ -1,0 +1,16 @@
+Topic 2(0.085):	pictur, great, price, nice, color, bad,hdmi
+Topic 4(0.085):	pictur, great, qualiti, sound, good, superb,set
+Topic 8(0.077):	app, work, connect, watch, remot, real,hdmi
+Topic 12(0.073):	buy, servic, product, custom, samsung, consid,remot
+Topic 6(0.067):	pictur, price, good, great, qualiti, produc,work
+Topic 7(0.065):	great, work, price, newegg, bought, spend,app
+Topic 10(0.065):	pictur, set, sound, screen, color, green,remot
+Topic 9(0.064):	hdmi, input, audio, sound, cabl, wors,pictur
+Topic 5(0.064):	set, buy, samsung, great, panason, process,pictur
+Topic 15(0.063):	problem, samsung, servic, call, warranti, display,set
+Topic 3(0.062):	hdmi, input, connect, pictur, set, contrast,great
+Topic 13(0.052):	remot, sound, control, button, qualiti, bigger,box
+Topic 1(0.052):	samsung, plasma, lcd, price, pictur, real,great
+Topic 14(0.049):	box, mount, work, screw, stand, video,problem
+Topic 0(0.042):	set, movi, pictur, watch, 3d, amount,samsung
+Topic 11(0.035):	set, remot, pictur, samsung, 3d, watch,buy

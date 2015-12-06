@@ -54,6 +54,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 		
 		try {
 			JSONObject json = LoadJson(filename);
+			
 			prod = new Product(json.getJSONObject("ProductInfo"));
 			jarray = json.getJSONArray("Reviews");
 		} catch (Exception e) {

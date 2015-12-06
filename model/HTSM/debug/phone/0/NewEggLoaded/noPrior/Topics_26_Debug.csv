@@ -1,0 +1,845 @@
+Doc ID, Source, SentenceIndex,Sentence, ActualSentiment, PredictedSentiment, PredictedTopic, TopicTransitionProbabilty, SentimentTransitionProbabilty
+509,2,0,"1 .after power recharge full it will black screen   2. have not chinese type keyboard input  3. ram only 1.45 gb  much more less then product to brag 4gb",0,0,6,1.000000,1.000000
+509,2,1,"big screen with clear display",1,1,22,0.585227,0.141594
+515,2,0,"looks new and it is a samsung galaxy s3",0,0,7,1.000000,1.000000
+515,2,1,"this phone is not new  i can t perform a factory data reset of any kind  the phone will take me to an initial page that is in chinese but clearly states quens reset counter xda  chainfire   which means with absolutely no doubts this phone was rooted  custon roms were installed and was sent back after a reset of the flash counter  but they forgot to set it back to the original state and now i will have to reinstall the whole factory settings on the phone myself if i want to keep it.",1,1,17,0.608181,0.148520
+521,2,0,"larger sceen  ability to download cracked apps",0,1,24,1.000000,1.000000
+521,2,1,"android os apps automatically load into memory even after you  kill  them or change settings to prevent them from starting up.",1,1,24,0.400651,0.119710
+521,2,2,"this causes increased battery drain and uses internal ram  with unlocked version you ll have a hard time updating firmware in android s already fragmented update process.",1,1,15,0.696630,0.165082
+521,2,3,"each carrier  may  offer an update and it s usually at different times.",1,1,15,0.419979,0.143723
+521,2,4,"unlike iphone  the updates are carrier specific.",1,1,18,0.158170,0.104301
+521,2,5,"many people with an unbranded android have to install a non supported firmware like a cyanogenmod.",1,1,18,0.687828,0.178737
+521,2,6,"anti virus apps scan after you have installed the app   after you ve been infected  not before installing.",1,1,18,0.185565,0.114685
+521,2,7,"samsung kies  similar to itunes  is useless and problematic  very poor product support from samsung.",1,1,20,0.543375,0.251376
+531,2,0,"decent phone  .takes",0,0,0,1.000000,1.000000
+531,2,1,"decent pictures.",0,0,0,0.130078,0.094725
+531,2,2,"good gps.",0,0,9,0.700507,0.222037
+531,2,3,"gets phone signal where a lot of other phones don t.",0,0,9,0.673774,0.229889
+531,2,4,"i am not a fan of windows os for it.",1,1,15,0.645862,0.151451
+531,2,5,"lot apps that are normally free they charge you for.",1,1,18,0.591219,0.157312
+531,2,6,"phone is a pain 2 update.",1,1,18,0.612912,0.151451
+531,2,7,"my next phone will not be a windows phone .if",1,1,15,0.583015,0.154359
+545,2,0,"1.very nice keyboard  easy to use.",0,0,6,1.000000,1.000000
+545,2,1,"2.speakers are more improved  comparing with x1a version.",0,0,6,0.747862,0.238033
+545,2,2,"3.design structure is very nice.",0,0,6,0.738876,0.229985
+545,2,3,"1. 1.i used this phone for less than a month and first what s happened  touch screen start making a noise like a broken peace under screen panel.",1,1,25,0.661631,0.229889
+545,2,4,"i was trying to set rma for return to exchange with sonny ericsson  but they only fix phones  even if you just purchased.",1,1,16,0.705631,0.151381
+545,2,5,"it means after you paid  470.00 for a brand new phone  you will be given a refurbished version.",1,0,1,0.652511,0.157312
+545,2,6,"this is worst    2. panel button  under  call  button.",1,1,18,0.735338,0.249665
+545,2,7,"there is no reason to place this button on the top of the phone  because you pressed all the time by mistake  and this is make you slow down on the phone call.",1,1,18,0.139971,0.165010
+545,2,8,"designers did a big mistake by placing this button on the main top   3.",1,1,16,0.243136,0.118694
+545,2,9,"most common bug happening at least 20 times a day   ",1,1,16,0.482277,0.155416
+545,2,10,"i have to restart the phone 20 times daily because of lag with all software s loading and entire windows files.",1,1,16,0.141201,0.109086
+545,2,11,"when you tab the screen 3 times  quickly   it freezes the display and you cannot do anything as just restarting the phone.",1,1,22,0.265585,0.144401
+546,2,0,"  fast gps   windows mobile 6.5   spb mobile shell 3.5",0,0,8,1.000000,1.000000
+546,2,1,"  unstable  locks up constantly    unreliable  corrupted memory card with all pictures and music lost    accelerometers are worthless  only work with a very few programs    lags like a an old 486 running today s software   poor reception   no assignable buttons  no ms voice command    reboots randomly for no reason.",1,1,24,0.433580,0.191376
+546,2,2,"  locks up and turns off screen during call  not allowing me to hang up   speaker quality is very bad.",1,1,17,0.546101,0.142738
+550,2,0,"when it works  everything is functional.",0,0,1,1.000000,1.000000
+550,2,1,"sony s us customer service   repair center is a joke.",1,1,17,0.629306,0.154359
+553,2,0,"was cheap  seemed higher spec for the  ",0,0,4,1.000000,1.000000
+553,2,1,"this phone is loaded with malware that by nature of the android os  cannot be removed   i later learned most cheapo china phones have malware from day one .",1,1,16,0.654254,0.170271
+553,2,2,"malware installed   android pup.riskpay.skymobi  android trojan.fadeb.a",1,1,18,0.647256,0.167123
+554,2,0,"excellent cell phone met the needs of dual sim  was easy to use and nice design.",0,0,2,1.000000,1.000000
+554,2,1,"however after 4 months the phone died  because i had some very small cracks on the screen  caused about 2 weeks after purchase  the supplier would not uphold the warranty",0,1,23,0.747673,0.258171
+554,2,2,"warranty not worth anything from nlj technologies",1,1,25,0.469711,0.216364
+559,2,0,"great phone   good size  comfortable to hold  fast and responsive  great battery life",0,0,10,1.000000,1.000000
+559,2,1,"received a spanish la phone that is not covered under us warranty",1,1,25,0.677916,0.225939
+561,2,0,"the phone is in great condition and works perfectly with gsm   lte.",0,0,12,1.000000,1.000000
+561,2,1,"1 egg subtracted for the phone clearly not being new.",1,1,17,0.754558,0.229889
+561,2,2,"the box was in cellophane wrapping  but it is the kind you see in the back of someone s shop and not a manufacturer wrapping.",1,1,25,0.785816,0.172241
+561,2,3,"the box was dirty inside and out.",1,1,25,0.208576,0.108571
+561,2,4,"this would have been acceptable if newegg indicated anywhere on the product page that this would be a refurbished product.  1 egg subtracted for false advertising.",1,1,14,0.642822,0.157312
+561,2,5,"this i am most upset about and i am considering a return.",1,1,25,0.695752,0.238033
+561,2,6,"this phone is not unlocked as it shows in the title.",1,1,15,0.745664,0.258275
+561,2,7,"newegg even has you accept a disclaimer for buying an unlocked phone during checkout.",1,1,15,0.124346,0.108571
+561,2,8,"what i received was not only a locked phone  but it has the latest updated android kit kat  with hboot 1.56 and s on.",1,1,25,0.581160,0.151451
+561,2,9,"anyone that knows about what i just mentioned knows that it is extremely difficult to put a custom ruu on this phone in its current state.",1,1,17,0.612912,0.157312
+561,2,10,"this may not be a deal breaker for me  but surely will be for some.",1,1,15,0.601678,0.151451
+561,2,11,"i hope this review helps others to make a more informed purchase.",1,1,25,0.506246,0.148520
+562,2,0,"phone is great in terms of features and build.",0,0,10,1.000000,1.000000
+562,2,1,"phone arrived with one problem.",1,1,16,0.736528,0.229889
+562,2,2,"the back home light stays on whether the phone is on or off.",1,1,14,0.783959,0.258275
+562,2,3,"when off the lights are on and drains the batter.",1,1,14,0.043568,0.087016
+562,2,4,"did a full reset on the phone and it did not solve the issue.",1,1,14,0.604039,0.157312
+562,2,5,"let newegg know and wanted to send it back for a replacement  customer service said i had to call the vendor that ships it for rma.",1,1,19,0.558255,0.151451
+562,2,6,"currently waiting for either vendor newegg to respond back after receiving the returned phone.",1,1,16,0.591046,0.148520
+563,2,0,"for some reason my previous  detailed review has been rejected by newegg mod  may be because of too many good words about the device.",0,1,15,1.000000,1.000000
+563,2,1,"just compare nubia specs and price to unlocked iphone 6 and you will see what i mean.",0,1,21,0.675013,0.229889
+563,2,2,"a battery is not as easy accessible as in most handsets.",1,0,9,0.632396,0.148520
+564,2,0,"crisp  bright  sharp  display  easy and stable touch response  slim and sturdy case.",0,0,10,1.000000,1.000000
+564,2,1,"powerful quad core cpu and 13 rear  5 front  megapixel cameras  16 gb internal rom .",0,0,4,0.783049,0.172164
+564,2,2,"as to ram size  1.6 gb of 2 gb available are usually free.",0,0,4,0.363846,0.133106
+564,2,3,"though it supports external sdhc card up to 32 gb  12 gb available is more than enough for me.",0,0,4,0.103557,0.100354
+564,2,4,"only necessary applications minimum is installed  so you don t have to clean out all that garbage mobile companies ship their devices with.",0,1,18,0.658404,0.157312
+564,2,5,"and it is unlocked.",0,1,18,0.673652,0.151451
+564,2,6,"a system  back  button located at right from  home  button where in most android devices  menu  situated.",1,1,18,0.650928,0.178737
+564,2,7,"there is no  menu  button in the device.",1,1,18,0.079826,0.096901
+564,2,8,"all settings screens come with bright white background that affects battery charge negatively.",1,1,20,0.517629,0.154359
+566,2,0,"great phone for the price.",0,0,4,1.000000,1.000000
+566,2,1,"it runs a pretty slim version of android  not alot of bloat .",0,0,4,0.718370,0.229889
+566,2,2,"works with either at t or t mobile towers.",0,0,1,0.714547,0.145703
+566,2,3,"one of the biggest plus s for me was the micro sd slot..",0,0,4,0.767514,0.178737
+566,2,4,"i bought a 32gb sd card and installed it before booting up the phone.",0,0,4,0.517606,0.159529
+566,2,5,"so far all apps files are going directly to the sd card  which is great due to the reletively small internal storage.",0,0,4,0.410614,0.217631
+566,2,6,"there is an option under storage to choose sd or internal as default storage.",0,1,22,0.277900,0.217402
+566,2,7,"internal storage is listed as 16gb  but in reality it is only 12gb.",1,1,22,0.115299,0.100928
+566,2,8,"if it wasn t for this i would have givin the phone 5 stars.",1,1,22,0.626684,0.157312
+566,2,9,"as it is though you can store everything you want on cheap cheap sds.",1,1,22,0.535171,0.151381
+566,2,10,"no software updates insight.",1,1,20,0.565965,0.148520
+567,2,0,"the phone arrived quickly",0,0,12,1.000000,1.000000
+567,2,1,"the phone is only showing 8gb of storage not 16 as described in listing i don t don t know if it actually supports 64gb as actually listed but i will soon find out",1,1,14,0.603904,0.154359
+568,2,0,"do not buy from this seller.",0,0,8,1.000000,1.000000
+568,2,1,"poor customer service.",0,0,8,0.728681,0.229985
+568,2,2,"they sat on my order for 5 days at a different market place before responding to my cancellation request.",0,0,1,0.757149,0.258275
+568,2,3,"i had been notified the item was shipped on the 25th  and someone they were able to cancel my order for me on the 30th.",0,1,25,0.371362,0.117735
+568,2,4,"because it hadn t left the warehouse.",0,0,3,0.689868,0.151451
+568,2,5,"the only positive thing i can say is that they did apologize and they did cancel my order.",0,0,3,0.607812,0.238033
+568,2,6,"a lot of good that did me  while my money was tied up and i thought they gift i bought was on the way.",0,0,11,0.575919,0.145703
+568,2,7,"the cons are that this should have been seller feedback for blutekusa but you can t leave seller feedback if you didn t order from them on newegg.",1,1,25,0.666340,0.258275
+568,2,8,"i ordered from them at a different vendor.",1,1,25,0.289700,0.127262
+569,2,0,"  holds large amounts of charge   i recharged my wife and my iphones at least 5 times  and the battery had 50  charge left.",0,1,20,1.000000,1.000000
+569,2,1,"  fast charging capabilities   2.1 a charger charges iphone 5 from 10  to 80  within the hour.",0,1,20,0.162820,0.100164
+569,2,2,"  has flashlight  useful when you least expect it.",0,1,20,0.752687,0.151451
+569,2,3,"  has two usb charging ports  can charge two devices at once   has bright blue led gauge to show battery power levels.",0,0,3,0.654526,0.151451
+569,2,4,"  bulky   this thing is fat and heavy.",1,0,3,0.710506,0.145703
+569,2,5,"this battery weighs 2 3 lbs.",1,0,3,0.656139,0.151381
+569,2,6,"  i keep hitting the stupid flashlight button i put this thing in my book bag or in my pocket.",1,0,11,0.693262,0.178737
+569,2,7,"it is embarrassing to have the flashlight go off in your pocket during a meeting and there s this bright white light coming out from your pants pocket  making everyone around you think that you have radiation poisoning   when this battery charges  it blinks blue led light.",1,0,3,0.271071,0.117791
+569,2,8,"when you charge it at overnight in the dark  your room will glow blue while this thing is charging.",1,0,3,0.500016,0.161475
+569,2,9,"  1a output port charges at a snail like speed.",1,0,3,0.249552,0.140088
+569,2,10,"i pretend this port doesn t exist.",1,0,3,0.164894,0.117132
+570,2,0,"nice shiny design.",0,0,3,1.000000,1.000000
+570,2,1,"nice little pouch that has room for the micro usb cable.",0,0,3,0.327788,0.119270
+570,2,2,"it charges every device i ve thrown at it.",0,0,3,0.783959,0.258275
+570,2,3,"the 2a port really does discharge at 2a since i see no difference from the charging of my galaxy note 3 from the original wall charger and this device.",0,0,3,0.159390,0.110551
+570,2,4,"the same is true for the blackberry passport.",0,0,9,0.671299,0.157312
+570,2,5,"it takes a long time to charge but that is expected for a 15k mah device.",1,1,24,0.553706,0.151451
+570,2,6,"the case is a little slippery but usable.",1,1,19,0.602867,0.148520
+571,2,0," holds a lot of charge  charges devices quickly  1a and 2a port  power level leds are nice  built in flashlight  nice rounded design...wont scratch other gear  reliable",0,1,22,1.000000,1.000000
+571,2,1," recharges slowly  but then again it holds a lot of charge  flashlight can be easily turned on accidentally",1,1,22,0.311872,0.206087
+572,2,0,"i can charge my sansa clip  fiio e06  and galax s3 for at least two days on this.",0,1,20,1.000000,1.000000
+572,2,1,"it works perfectly.",0,1,18,0.725345,0.238033
+572,2,2,"i normally leave it in my pocket and charge whichever device on the go  and it really isn t as terribly big as i thought it would be.",0,1,22,0.635784,0.229889
+572,2,3,"it s surprisingly slim for what it s worth  and yet it doesn t melt through my pants with heat.",0,0,7,0.663853,0.229889
+572,2,4,"let s hope it doesn t explode on me  though.",1,0,7,0.575010,0.233985
+573,2,0,"works great and charges my s4 really fast out in the field.",0,0,3,1.000000,1.000000
+573,2,1,"easy to carry.",0,0,8,0.718847,0.229985
+573,2,2,"one charge last all week.",0,0,3,0.581160,0.154359
+574,2,0,"powerful.",0,0,9,1.000000,1.000000
+574,2,1,"fast charging iphones and galaxy 4 comes with cable to charge unit only.",0,0,9,0.659623,0.157312
+574,2,2,"fairly heavy.",1,1,13,0.687616,0.151451
+574,2,3,"need to supply your own usb cable to charge your device.",1,1,13,0.547570,0.154359
+575,2,0,"i own and run a computer company so we have to stay up to date with tech to the day.",0,0,7,1.000000,1.000000
+575,2,1,"picked up an s6 edge today and i am just floored with the speed of this thing.",0,0,0,0.731904,0.145703
+575,2,2,"fastest camera in the west and i haven t had even a single jitter like previous models had.",0,0,0,0.682823,0.151381
+575,2,3,"i don t like that the transition effects were removed.",1,1,22,0.745664,0.172241
+575,2,4,"samsung is still packing this thing with bloatware but a lot less  took about 5 minutes to remove it all because of the speed of this thing.",1,1,22,0.241126,0.117161
+575,2,5,"amazn apps are having a hard time with it  must be too new.",1,1,15,0.607388,0.148520
+576,2,0,"great phone  excellent camera",0,0,12,1.000000,1.000000
+576,2,1,"no 4g in t mobile  but it was expected",1,1,18,0.645862,0.233985
+577,2,0,"great phone  as expected.",0,0,5,1.000000,1.000000
+577,2,1,"i almost didnt try out this seller given some of the one eggs.",0,0,8,0.682823,0.229985
+577,2,2,"product arrived a day before scheduled date  and in great condition.",0,0,0,0.575919,0.233985
+578,2,0,"1. incredible battery life  usually lasts me about 2.5 to 3 days even when i m streaming a lot of video 2. fast operating system with no noticeable glitches 3. beautiful resolution and display 4. great call quality 5.",0,0,6,1.000000,1.000000
+578,2,1,"many options for customization 6. excellent camera 7. 4g and wifi are both very fast and can be used in tandem for even faster download speeds",0,0,0,0.269727,0.107725
+578,2,2,"i was initially annoyed that the charging port on the s5 is not the micro usb that has become standard across  basically all non apple devices.",1,1,15,0.726137,0.238033
+578,2,3,"i have a collection of these chargers and didn t want to have to switch.",1,1,16,0.710390,0.145703
+578,2,4,"however  i recently learned that the usb 3.0 port on the s5 is backwards compatible.",1,1,18,0.612441,0.151381
+578,2,5,"the phone can be charged using a micro usb charger.",1,1,16,0.714101,0.172241
+578,2,6,"however  the usb 3.0 charger it comes with charges much more quickly  usually a full charge within 60 80 minutes .",1,1,16,0.094958,0.106975
+578,2,7,"so i suppose this is not a  con  at all.",1,1,16,0.602472,0.148520
+579,2,0,"  fast   unlocked   great camera   added space   crystal clear   good battery life",0,0,4,1.000000,1.000000
+579,2,1,"  too big  but i have small hands ",1,1,22,0.677916,0.225939
+580,2,0,"fast phone  screen looks amazing  light  thin  comes with 48gb of free dropbox for two years  lots of settings fully customization  heart rate monitor.",0,0,4,1.000000,1.000000
+580,2,1,"comes with a ton of apps from samsung.",1,1,15,0.683109,0.233985
+581,2,0,"pretty phone",0,0,10,1.000000,1.000000
+581,2,1,"doa   everything functions nicely until i put in the sim and sd card.",1,1,18,0.674256,0.238033
+581,2,2,"then it says i have a dead battery  and it won t charge ",1,1,20,0.677743,0.229889
+581,2,3,"sim works fine in my old nokia 800  but not in this phone.",1,1,18,0.704456,0.172241
+581,2,4,"i tried it three times but  it will not work with sim installed.",1,1,18,0.198691,0.125892
+582,2,0,"i allways love nokia products there for all i have is pro s.",0,0,6,1.000000,1.000000
+582,2,1,"the lumia520 is a very good smartphone for a very low price  you can t go wrong.",0,0,10,0.620910,0.233985
+583,2,0,"i really like this phone  it s my first windows phone and i own an iphone and android phone as well   i use this as my primary phone right now.",0,1,18,1.000000,1.000000
+583,2,1,"it s a bit slow  but for  100 not a problem  but it is not fully unlocked.",1,1,18,0.663914,0.222037
+583,2,2,"it is an at t branded phone and yes you can put another simm in it and it works  but you can t use the phone for tethering as that feature is locked by at t.",1,1,25,0.598494,0.233985
+584,2,0,"took the phone with me on an extended visit to the uk    purchased a sim card and service from 3 mobile    using data  4g  and phone service without any problems.",0,1,18,1.000000,1.000000
+584,2,1,"paying 13 gbp month for 600 minutes of calls and 1 terabyte of data.",0,1,18,0.368218,0.173783
+584,2,2,"it s a great deal.",0,0,0,0.680147,0.238033
+584,2,3,"no cons so far",1,1,24,0.612912,0.233985
+585,2,0,"i purchased this phone because i was pushed into a pool  my galaxy note 2 was in my trunks pocket  and well it didn t survive the plunge.",0,1,22,1.000000,1.000000
+585,2,1,"i got this phone on sale for  60 and was expecting a sluggish device in both ui  feature set  and browsing speed.",0,1,18,0.482519,0.117234
+585,2,2,"ui   wp8 runs surprisingly well on this phone  even for it s budget specs.",0,1,18,0.769225,0.151381
+585,2,3,"aside from app load times  the phone moves seamlessly through the ui and even multitasks well.",0,1,24,0.695660,0.151451
+585,2,4,"this is my first windows phone  and although this is just for temporary use  i found it amazingly easy to get accustomed to.",0,0,8,0.732006,0.238033
+585,2,5,"features   being a budget phone there are some sacrifices here.",0,0,12,0.742218,0.238033
+585,2,6,"no lte  but hspa  or whatever it s called on at t i d say the speeds are tolerable.",0,0,12,0.671754,0.151451
+585,2,7,"camera is rather lackluster  no flash 5mp  small lense.",0,0,6,0.709764,0.157312
+585,2,8,"the biggest surprise to me was that there are absolutely no google apps  and not that many good apps at all anyway.",0,0,0,0.672089,0.238033
+585,2,9,"the big ones are there  fb  twitter  instagram  beta  .",0,1,15,0.718847,0.222037
+585,2,10,"no real snapchat app  use 6snap if you re looking for one .",0,1,15,0.650771,0.151451
+585,2,11,"but i guess if this isn t your permanent phone you can get along fine knowing that the main ones are there.",0,1,24,0.762742,0.172164
+585,2,12,"this phone also does have a microsd slot i have a msdhc 32gb card and it works fine.",0,1,24,0.197705,0.110152
+585,2,13,"i found it rather annoying that  like google with gmail  with this ms phone you need to route everything through outlook.",0,1,15,0.678810,0.145703
+585,2,14,"i didn t feel like having my gmail forwarded to outlook  so i just pinned the browser shortcut to gmail on the start screen.",0,0,9,0.624997,0.145703
+585,2,15,"battery life has been pretty good  you can easily get a full 12 hour day out of this phone with moderate app browsing and brightness set to medium.",0,0,3,0.680594,0.266969
+585,2,16,"again  i got this phone on sale for  60.00  and coming from a 5.5  galaxy note 2 to this 4  wp8 i ve really kind of enjoyed it as a pleasant change of pace so far.",0,0,3,0.327549,0.190300
+585,2,17,"while i have been impressed in some areas  there are definite weak points about the phone   camera  small lens  no flash  no front facing camera  you get the point.",1,0,6,0.623069,0.229985
+585,2,18,"apps  actually lack thereof.",1,1,15,0.720224,0.266969
+585,2,19,"no snapchat app  watchespn  hbogo  hulu.",1,1,15,0.094383,0.098694
+585,2,20,"i have most of my music on a microsd card.",1,1,24,0.642269,0.172241
+585,2,21,"there are no decent music players that are just geared toward playing local music.",1,0,8,0.154947,0.113527
+585,2,22,"the default nokia app is geared much more toward streaming and downloading  you can t create local playlists or anything like that.",1,0,9,0.597501,0.157312
+585,2,23,"there s xbox music  which plays local files  but again lacks many of the convenient features of android s default music player.",1,0,9,0.526825,0.157312
+585,2,24,"that has definitely been a point of frustration.",1,1,21,0.597004,0.145703
+585,2,25,"no google apps   not even gmail.",1,1,21,0.517371,0.151451
+585,2,26,"ie mobile   browser is garbage  there aren t any big name alternative browsers i.e.  firefox  dolphin  opera  etc. browsing with ie takes me back to days when i used a blackberry bold and thought i was cool.",1,1,21,0.502788,0.148520
+586,2,0,"powerful phone.",0,1,21,1.000000,1.000000
+586,2,1,"the phone is fine.",1,1,25,0.700507,0.151451
+586,2,2,"however  it seems newegg did not double check what they were selling as this item is advertised as being 1.4ghz when it is in fact 1.2ghz.",1,1,21,0.691450,0.172164
+586,2,3,"anyone who is not tech oriented may not care  but this is a huge bother for me and the first time newegg has ever flubbed with me.",1,1,15,0.378405,0.139518
+587,2,0,"quad core  with 1g ram.",0,0,6,1.000000,1.000000
+587,2,1,"runs nice and fast.",0,0,6,0.736528,0.238033
+587,2,2,"3g with straight talk.",0,0,1,0.677545,0.229889
+587,2,3,"dual sim.",0,0,1,0.677792,0.145703
+587,2,4,"sd card.",0,0,4,0.629439,0.157312
+587,2,5,"great value.",0,1,13,0.621311,0.229985
+587,2,6,"short battery but with a 5.5  screen was to be expected",1,1,13,0.518361,0.225939
+588,2,0,"quick quad core.",0,0,6,1.000000,1.000000
+588,2,1,"great screen size.",0,0,10,0.702868,0.229985
+588,2,2,"gf loved it.",0,0,6,0.713018,0.151451
+588,2,3,"3g with at t straight talk.",0,0,1,0.620910,0.229889
+588,2,4,"battery life low.",1,1,13,0.674938,0.172241
+588,2,5,"need to plug in a lot  5.5  screen sucks the 2100ma battery dry rather fast.",1,1,13,0.333350,0.139053
+589,2,0,"slim  light weight  good finish",0,0,10,1.000000,1.000000
+589,2,1,"battery life  storage space",1,0,11,0.633476,0.225939
+590,2,0,"works well  big screen  will be upgraded to android 4.4 by blu.",0,1,23,1.000000,1.000000
+590,2,1,"not upgraded yet  still waiting for the upgrade to be pushed by blu.",1,1,23,0.293609,0.122858
+591,2,0," unlocked  competitive price  dual sim  recent android version  big screen  large battery  straight talk has at t coverage",0,0,12,1.000000,1.000000
+591,2,1," almost too large to fit in pocket  accessories only available online",1,1,19,0.685689,0.148520
+592,2,0,"the phone is fantastic.",0,0,8,1.000000,1.000000
+592,2,1,"it has been a great buy.",0,0,8,0.704045,0.151381
+592,2,2,"the screen resolution is amazing.",0,0,6,0.685261,0.145703
+592,2,3,"it is better than either of my samsung  s4 or my s5.",0,0,1,0.673774,0.229889
+592,2,4,"i can t say enough about the blu products.",0,0,6,0.738810,0.178737
+592,2,5,"over a year ago i purchased the 5.3 blu studio phone and fell in love with them.",0,0,6,0.251075,0.180687
+592,2,6,"i had to try the quad core over the dual and i m glad i did.",0,0,8,0.607800,0.157312
+592,2,7,"the only bad thing was that when i received the shipment  the phone was already used and was missing the screen protector and the phone case that should have been there.",1,1,19,0.530013,0.233985
+593,2,0,"the phone is fantastic.",0,0,8,1.000000,1.000000
+593,2,1,"this is the second time i have purchased blu phones.",0,1,22,0.695660,0.229889
+593,2,2,"all have been amazing.",0,0,4,0.738577,0.233985
+593,2,3,"they are well built and do line up against my s4 and my s5.",0,0,4,0.659101,0.238033
+593,2,4,"actually the blu has a better screen resolution than both of my samsung.",0,1,19,0.628832,0.151451
+593,2,5,"i can t say anything bad about the phones.",0,0,5,0.747405,0.266969
+593,2,6,"the only bad thing about this phone is the seller.",1,0,5,0.115593,0.104301
+593,2,7,"i received the phone and opened the box to find that it had already been used.",1,1,19,0.567264,0.238033
+593,2,8,"screen protector was missing and the new phone labels were already removed.",1,1,22,0.566503,0.154359
+594,2,0,"exceptional large 5.5 screen.",0,0,10,1.000000,1.000000
+594,2,1,"fast   accepts root and runs root applications ok.",0,0,9,0.712612,0.151381
+594,2,2,"decent case but excellent build quality.",0,0,10,0.708819,0.238033
+594,2,3,"all the thrill of the latest android with the big screen experience.",0,0,7,0.700507,0.222037
+594,2,4,"blu is out of florida so it s a step up from the generic china phone.",0,0,1,0.786841,0.172164
+594,2,5,"i expect blu to become a main brand based on the great performance of this unit.",0,0,1,0.223049,0.180878
+594,2,6,"the only con is the resolution as mentioned in other reviews.",1,1,13,0.662075,0.222037
+594,2,7,"it is not a big deal.",1,1,15,0.651456,0.157312
+594,2,8,"text is clean and sharp  display is clear and precise.",1,0,6,0.589855,0.145703
+594,2,9,"why would you need more resolution on a 5.5  tv screen anyhow ",1,0,6,0.587123,0.151381
+594,2,10,"runs at 2g speed with tmobile  but does 3g with at t.",1,1,20,0.641675,0.172241
+594,2,11,"my wife uses at t and i use tmobile and the slower speed isn t an issue unless you like to stream video s  etc.",1,1,20,0.123076,0.120148
+595,2,0,"it can take being dropped  works pretty well.",0,0,2,1.000000,1.000000
+595,2,1,"great camera  good speed",0,0,0,0.689112,0.222037
+595,2,2,"alarm doesnt always work  download app tonfix the problem.",1,1,16,0.645862,0.229889
+595,2,3,"sometimes it take a second to reload home page after loading a huge internet page",1,0,0,0.587123,0.233985
+596,2,0,"cheap smart phone",0,0,1,1.000000,1.000000
+596,2,1,"battery started to drain quicker than it could charge.",1,1,19,0.767644,0.178737
+596,2,2,"phone was getting to hot  but no where near the battery.",1,1,19,0.272772,0.112029
+596,2,3,"it is at the point where i cannot even turn it on and will have to buy a new phone.",1,1,19,0.622782,0.163947
+596,2,4,"first signs of problems was when the os started becoming less stable  and the battery meter would jump from full to 48  in a minute while idling.",1,1,16,0.537125,0.242922
+597,2,0,"cheap price",0,1,23,1.000000,1.000000
+597,2,1,"the os started to glitch out on me after i put a new sd card in.",1,0,7,0.761192,0.178737
+597,2,2,"the sd card was formatted before putting it in.",1,0,7,0.123576,0.094725
+597,2,3,"i tried doing the factory reset  but that did not help at all  in fact it only seemed to make it worse.",1,0,9,0.647680,0.157312
+597,2,4,"if i can fix it  i am just going to flash a new os on to it.",1,0,9,0.548556,0.154359
+598,2,0,"cheap price",0,0,1,1.000000,1.000000
+598,2,1,"battery time is no way near to what it claim to be  i only made like 30min of phone call a day  and most time it is standby  but battery still run out in 3 days",1,1,20,0.608181,0.148520
+599,2,0,"small",0,1,20,1.000000,1.000000
+599,2,1,"charger doesnt charge  barly used the phone and the battery is dead.",1,1,20,0.608181,0.154359
+600,2,0,"2gb ram  dual core 1.5ghz cpu  hspa  and lte",0,0,8,1.000000,1.000000
+600,2,1,"only con would be it s hard to find screen protectors that fit the beveled display.",1,1,22,0.637625,0.154359
+601,2,0,"dual sim was a nice  unexpected  plus  pretty good screen for the resolution  very bright",0,0,10,1.000000,1.000000
+601,2,1,"the orange is a little brighter than i was expecting  i was hoping for more of the later model corvette burnt orange color",1,0,7,0.670044,0.233985
+602,2,0,"good  screen  battery  cell phone  sound  power  speed  design  form factor  minimalist software",0,0,10,1.000000,1.000000
+602,2,1,"went into headset instead of headphone   resulted in terrible sound until it went back into headphone mode.",1,1,14,0.472464,0.189451
+602,2,2,"seems to sense automatically no extras  ringtones  software  and the accessories are cheap cheaper materials  adequate but not fancy does not have the speed of top phones  still pretty good resolution is average installed buzzer ringtone is annoying",1,1,24,0.569223,0.225939
+603,2,0,"very fast  large screen   thin and lightweight  cool features.",0,0,11,1.000000,1.000000
+603,2,1,"based on the other reviews  apparently newegg shipped the other guys n9000  octa  models instead of the n9005  snapdragon  ",1,1,19,0.717926,0.151381
+603,2,2,"the two phones are very similar but the n9000 seems to be better suited for worldwide use while the n9005 is better for western countries or areas that have active lte service.",1,1,20,0.776363,0.172241
+603,2,3,"this assumes the  western countries  owner is even using a phone company that offers lte data service.",1,1,20,0.292632,0.118694
+603,2,4,"no cons for me personally.",1,1,24,0.686794,0.151451
+603,2,5,"best phone i ve ever owned hands down.",1,1,22,0.633116,0.229985
+603,2,6,"i think the swype input method could use some tweaking  often times it thinks i m swyping some random word that i m not.",1,1,25,0.632396,0.238033
+603,2,7,"but many other phones have this issue and it could even be my fault potentially  who knows.",1,1,25,0.580406,0.157312
+603,2,8,"love this phone  hope it lasts for years but i bought insurance just in case.",1,1,25,0.510469,0.233985
+604,2,0,"nice phone.",0,1,19,1.000000,1.000000
+604,2,1,"not what i ordered.",1,0,9,0.771526,0.249665
+604,2,2,"received sm n900 instead of this n9005   which i ordered due to it s 4k video recording capability.",1,0,9,0.164601,0.107723
+604,2,3,"i just verified this model does not have that option   me unhappy.",1,0,7,0.612912,0.148520
+605,2,0,"very nice phone   but....",0,1,19,1.000000,1.000000
+605,2,1,"very nice phone   but not the one i ordered that is listed here.",1,1,19,0.165184,0.104250
+605,2,2,"i ordered the n9005 specifically  above other note3 models due to it s 4k video recording capability.",1,1,20,0.310082,0.182547
+605,2,3,"i received the sg n900 instead.",1,1,19,0.625583,0.154359
+606,2,0,"sweet phone   but not what i ordered.",0,0,9,1.000000,1.000000
+606,2,1,"i ordered this n 9005 specifically for the snapdragon 800 and it s 4k video capability..... received the sm n900   which has neither.",0,0,9,0.403773,0.144018
+606,2,2,"did not received what i ordered.",1,1,19,0.165508,0.097803
+606,2,3,"specifically sought out and paid a  very high  premium for the n 9005  bnib    and received the sm n900 instead.",1,1,19,0.227332,0.111975
+606,2,4,"just verified that it does not have 4k video capture as an option.",1,1,24,0.624028,0.145703
+606,2,5,"very displeased  as i have a 4k tv i was hoping to test with native content... waited anxiously for it s arrival only to be disappointed.",1,1,19,0.540328,0.225939
+607,2,0,"top notch design one of the best out timeless pretty much everything except",0,0,10,1.000000,1.000000
+607,2,1," the display...",1,0,10,0.716669,0.229985
+607,2,2," read on in my other thoughts   some parts of the u.i.",1,1,21,0.581160,0.154359
+608,2,0,"beautiful display.",0,0,2,1.000000,1.000000
+608,2,1,"comfortable to hold.",0,0,6,0.732424,0.222037
+608,2,2,"fast quad core processor.",0,0,6,0.631626,0.229889
+608,2,3,"4.4.2",0,1,16,0.659844,0.151451
+608,2,4,"weird battery issue out of the box  resolved .",1,1,16,0.539669,0.154359
+609,2,0,"compact size for a 5  full hd display.",0,0,10,1.000000,1.000000
+609,2,1,"good camera.",0,0,10,0.746797,0.229985
+609,2,2,"at the 10 month mark  lte would go in and out.",1,1,18,0.722560,0.238033
+609,2,3,"then it just decided to start powering itself off randomly.",1,1,16,0.728110,0.172241
+609,2,4,"it only stays on if charging from wall power.",1,1,16,0.187985,0.107723
+609,2,5,"of course i formatted it  tried putting it back to jellybean  then back to kitkat  many hours later  same thing.",1,1,16,0.616919,0.151381
+609,2,6,"bad hardware on a sony flagship model.",1,1,23,0.560847,0.222037
+609,2,7,"always in a case and well taken care of.",1,1,23,0.583015,0.225939
+610,2,0,"it works well with tmobile lte   h  networks.",0,0,3,1.000000,1.000000
+610,2,1,"small size for big screen phone.",0,0,10,0.717612,0.151451
+610,2,2,"quad cores run apps smoothly ",0,0,9,0.682823,0.151381
+610,2,3,"battery capacity is relatively small.",1,0,9,0.670044,0.145703
+610,2,4,"it runs kind of hot after heavily uses  but cooler than my old samsung s2.",1,1,15,0.589855,0.151381
+610,2,5,"the front camera is located at the lower left corner.",1,1,14,0.553644,0.148520
+611,2,0,"very fast and smooth  i work outside and the screen in the sun is super.",0,0,12,1.000000,1.000000
+611,2,1,"great phone   ",0,0,12,0.684142,0.233985
+612,2,0,"as close to stock android ui you can get.",0,1,23,1.000000,1.000000
+612,2,1,"the phone is smooth as butter.",0,1,23,0.767919,0.145703
+612,2,2,"comes shipped with a non removable screen protector which is not your run of the mill plastic protector.",0,1,23,0.697637,0.145703
+612,2,3,"camera is unbelievable.",0,1,14,0.817876,0.172241
+612,2,4,"front camera is just as gorgeous.",0,1,14,0.123812,0.098646
+612,2,5,"the speaker clarity is by far the best in the industry.",0,1,14,0.705230,0.229985
+612,2,6,"i get constant compliments about the phone  and people always asking me  what phone is that  ",0,1,14,0.718003,0.238033
+612,2,7,"the screen to bezel ratio isn t done justice in the pictures.",0,1,23,0.662481,0.145703
+612,2,8,"the phone  as big as it is  fits nicely in the hand and despite the plastic back  does not feel cheap.",0,1,23,0.641772,0.238033
+612,2,9,"i ve already dropped it from a pretty good distance a few times on a hardwood floor and it hasn t left the slightest scratch or shown any signs of issues due to it.",0,1,14,0.666273,0.151381
+612,2,10,"i m coming from a blackberry torch  bold  z10  iphone 4gs and galaxy s3 as some of my previous phones  and none hold the slightest candle to this beast.",0,1,23,0.669861,0.222037
+612,2,11,"another key thing i ve noticed on this phone is the wifi.",0,1,14,0.741566,0.172241
+612,2,12,"this phone picks up wifi signals that no other phone i have can grab.",0,1,14,0.403502,0.152077
+612,2,13,"i ve tested all of my phones side by side and none of them pick up the same signals or quality signals.",0,1,14,0.170008,0.109086
+612,2,14,"i m not sure the reason for this  but this for me is a huge bonus that i didn t expect when purchasing.",0,1,22,0.624379,0.151381
+612,2,15,"due to my job s constant traveling and visiting different retailers and locations  i m constantly relying on wifi.",0,1,14,0.628883,0.145703
+612,2,16,"and to have a reliable signal is key  being able to pick up further  stronger signals  is for sure a great perk ",0,1,14,0.575188,0.238033
+612,2,17,"viewing angles aren t the greatest  so i have to put that as a con.",1,1,14,0.616041,0.238033
+612,2,18,"but for me  and others it is not really a bad thing  as it provides  privacy  in the phone and for me that s important as i m constantly using my phone for company documents as well as personal items  all of which are on the same phone.",1,0,5,0.528034,0.222037
+612,2,19,"but  this can be a huge turnoff to people  especially considering the media capabilities of this phone.",1,0,1,0.570032,0.229889
+612,2,20,"and really a turn off.",1,0,5,0.587824,0.145703
+612,2,21,"for a phone geared so much towards its video and sound capabilities  a dock should of been the biggest investment in manufacturing for this phone.",1,0,5,0.496821,0.148520
+613,2,0,"was a nice phone until it died",0,0,2,1.000000,1.000000
+613,2,1,"their customer support is terrible  they can t even fix a phone.",1,1,20,0.695893,0.229889
+613,2,2,"useless warranty.",1,1,20,0.699252,0.247175
+613,2,3,"it died in less than six months and they can t fix it.",1,1,20,0.597219,0.170271
+613,2,4,"i ll never buy a sony product again.",1,1,20,0.557412,0.160893
+614,2,0,"   phone is very fast and hardly lags.",0,0,0,1.000000,1.000000
+614,2,1,"switching between screens is a breeze.",0,0,12,0.824277,0.172241
+614,2,2," super sharp excellent screen that beats most high end phones currently.",0,0,12,0.234684,0.174524
+614,2,3," lte  and can go either t mobile or at t   doesn t come with a lot of installed junk.",0,0,9,0.725636,0.222037
+614,2,4,"there is about 10 11 gigs of free space available when you first get this phone.",0,0,11,0.745343,0.229889
+614,2,5," remote control works great ",0,1,18,0.802055,0.258275
+614,2,6,"i just selected my brand of tv  tested the controls  and it worked right away ",0,1,18,0.243902,0.174524
+614,2,7,"this is both for my tv and top cable box.. it worked on both    i love the extra bar that has popup apps   was easily updated to android jellybean 4.2.2 as soon as i powered up the phone.",0,1,18,0.402984,0.187194
+614,2,8,"it automatically asked me if i want to update as soon as i have it set up on my wi fi network.",0,1,16,0.525608,0.192047
+614,2,9," that little notification light at the bottom of the phone looks really sick  in a good way .",0,0,11,0.722560,0.238033
+614,2,10," takes excellent photos and videos.",0,0,12,0.679268,0.151381
+614,2,11,"it has a dedicated button for taking pictures ",0,0,12,0.703929,0.222037
+614,2,12," after updating to android 4.2.2  it will now support 64gb microsd cards now too ",0,0,11,0.729226,0.178737
+614,2,13,"make sure you get a class 10 though.",0,0,11,0.302713,0.107587
+614,2,14," has stamina mode that works and saves you some battery power.",0,0,9,0.712333,0.165859
+614,2,15," the phone charges pretty quick plugging it directly on a power source.",0,0,9,0.401493,0.120976
+614,2,16,"from 50   i got back to 100  in about approx.",0,0,11,0.756007,0.178737
+614,2,17,"30 mins or so.",0,0,11,0.046316,0.090650
+614,2,18,"   the sound lacks depth and  boom  factor.",1,0,11,0.620910,0.151451
+614,2,19,"don t get me wrong  it can play loud but the quality isn t what i was hoping for.",1,0,6,0.614382,0.238033
+614,2,20,"maybe its just i m so used to my surround system.",1,0,9,0.669701,0.229985
+614,2,21,"i have a more pleasant experience using the earphones though as the audio sounds much better.",1,0,5,0.588250,0.157312
+614,2,22," if you set the brightness high and uses a lot of apps that runs in the background  this will zap your battery pretty fast.",1,0,5,0.594556,0.151381
+614,2,23," it comes with a pre applied screen protector that is not meant to be removed.",1,1,22,0.723974,0.178737
+614,2,24,"the screen protector it comes with is easily scratched so i suggest you buy another screen protector to put on top of it.",1,1,22,0.088750,0.096381
+614,2,25,"putting another screen protector will hardly degrade the quality of the screen as long as you put a good one.",1,0,11,0.120863,0.166984
+614,2,26,"i used skinomi on mine.",1,0,11,0.636192,0.229985
+614,2,27,"it uses wet application method but i think this technique is easier than dry application ones.",1,0,5,0.560847,0.151451
+614,2,28," some might find the position of the front facing camera odd but this really doesn t bother me much.",1,0,6,0.554027,0.229889
+614,2,29," if you are considering buying this phone  i m sure you have read watched reviews regarding its  bad  viewing angles.",1,1,15,0.660165,0.249665
+614,2,30,"don t pay attention too much to these reviews.",1,1,15,0.233181,0.184750
+614,2,31,"the viewing angles isn t that bad.",1,1,15,0.671775,0.258171
+614,2,32,"sure it might degrade a little but not that bad at all.",1,1,15,0.028004,0.087016
+614,2,33,"i mean  who actually does look on their smartphones sideways all the time ",1,1,15,0.519671,0.222037
+614,2,34,"i showed pictures and videos to my co works and they all can just see it fine and they re standing at my side.",1,1,16,0.512767,0.151381
+614,2,35,"the screen is crystal clear and really sharp... and this with a 2nd screen protector on top of it.",1,1,17,0.521967,0.148520
+615,2,0,"smaller form factor with 1080p screen.",0,0,4,1.000000,1.000000
+615,2,1,"it s fast  has plenty of memory  supports sd card expansion  battery life is above average  supports all protocols frequencies for t mobile.",0,0,4,0.676816,0.151381
+615,2,2,"if you don t like the giant size of today s premium android offerings  but don t want to compromise on features quality this is a pretty good way to go.",0,0,4,0.705631,0.229889
+615,2,3,"just ordered my wife one too.",0,0,1,0.674779,0.229985
+615,2,4,"non removable battery  as others have stated.",1,1,13,0.632396,0.145703
+615,2,5,"not much of a con for me.",1,1,13,0.566884,0.154359
+616,2,0,"phone is excellent.",0,0,11,1.000000,1.000000
+616,2,1,"pure android without any carrier software or branding.",0,0,11,0.665630,0.229985
+616,2,2,"newegg price is almost double of what google is selling.",1,1,15,0.724748,0.178737
+616,2,3,"the nexus 5 is coming out soon and the price should be adjusted.",1,0,11,0.360354,0.132037
+617,2,0,"first in line for android updates direct from google.",0,0,7,1.000000,1.000000
+617,2,1,"no bloatware or carrier software hotspot for your wifi devices doesn t need to be activated by your carrier  i m on t mo  ymmv  very solid feeling phone  both sides are glass.",0,1,22,0.757262,0.178737
+617,2,2,"doesn t flex like a el cheapo feeling plastic phone has an lte receiver even though it is not sold or billed as having lte  really only works on t mo us ",0,0,2,0.518195,0.127236
+617,2,3,"no expansion slot for additional storage capacity.",1,1,22,0.655812,0.151451
+617,2,4,"glass isn t hard to scratch  i still prefer my phone with no screen protector and only a official bumper for protection   since the phone is so sexy ",1,1,22,0.543227,0.148520
+618,2,0,"fast.",0,0,10,1.000000,1.000000
+618,2,1,"great screen.",0,0,10,0.688258,0.238033
+618,2,2,"no bloatware.",0,0,9,0.691664,0.229985
+618,2,3,"fast os updates",0,0,9,0.588571,0.157312
+618,2,4,"no external storage  glass back",1,1,14,0.592420,0.154359
+619,2,0,"great specs  especially for the price.",0,0,10,1.000000,1.000000
+619,2,1,"i d recommend ordering it directly from google because it s  100 cheaper through them.",0,0,1,0.721917,0.157312
+619,2,2,"everything i do on this phone runs at an amazing speed  even downloading through wifi.",0,0,0,0.800858,0.165859
+619,2,3,"i ran a speed test on this phone and my laptop and the nexus 4 is faster ",0,0,0,0.427330,0.185298
+619,2,4,"the quad core and 2 gb of ram make this phone great for multitasking and running any android game on the market.",0,0,6,0.453157,0.191418
+619,2,5,"the last phone i had was the original droid incredible  which was over 2 years old  so this phone was a huge upgrade.",0,0,8,0.512100,0.200780
+619,2,6,"the os is very intuitive  easy to use and comes with a lot of added features.",0,0,9,0.694006,0.145703
+619,2,7,"i ve noticed that it has a much better battery life than my old phone  even with the much more powerful processor.",0,0,6,0.727960,0.172164
+619,2,8,"i would listen to music on my nexus 4 while my old incredible  which isn t so incredible anymore  was on standby and the battery would drain much faster on the htc incredible ",0,0,9,0.638309,0.171521
+619,2,9,"maybe the nexus 4 also has a bigger battery too  but everything runs smooth and efficient on it.",0,0,9,0.270807,0.117600
+619,2,10,"i love this phone ",0,0,6,0.662467,0.229985
+619,2,11,"the biggest con would be that the ringtone and call volume are very quiet  so i wouldn t recommend this phone to the hard of hearing.",1,1,17,0.572807,0.157312
+619,2,12,"for some reason every other sound this phone makes is louder  be it notifications  music or alarms  which should be louder anyway .",1,1,22,0.610576,0.229985
+619,2,13,"this isn t a deal breaker as i would like my ringtone to be quiet in most situations  but you can t talk in a noisy area on this phone without having to plug your other ear or put on earphones headset.",1,0,6,0.600873,0.145703
+619,2,14,"another issue is that there s no micro sd slot to expand your memory and it comes with about 12.09 gb of available data storage because the formatting and os take up space.",1,0,4,0.524920,0.145703
+619,2,15,"also  there is no 4g  but it does have hsdpa and works great on the t mobile network.",1,0,4,0.585589,0.238033
+619,2,16,"both of these were minor issues since i m not a media hoarder when it comes to phones and i always use wifi when i can.",1,0,9,0.572192,0.225939
+620,2,0,"contract free ",0,0,1,1.000000,1.000000
+620,2,1,"41 mbps radio that has been proven to work with lte   4.2.2 update removes feature to enable radio in lte.",0,0,9,0.686621,0.151381
+620,2,2,"gorilla glass ii is amazing  no scratches since purchase during initial release.",0,0,2,0.787578,0.249665
+620,2,3,"the performance is amazing and the screen is great  games aps fly and look great at 60hz which is def a noticeable difference  has miracast  stock droid with updates directly from google",0,0,7,0.424907,0.125322
+620,2,4,"no micro sd card  no otg cable  progress has been made to activate host mode manually  glass backing dangerous because easily slips and drops  battery sucks  bad  and can t be replaced  unable to open.",1,1,17,0.706642,0.258171
+620,2,5,"camera does ok in daylight but is pretty bad otherwise.",1,1,17,0.405166,0.128892
+620,2,6,"jellybean doesn t allow facebook to sync  had to use a step around ap and still don t have all my numbers assiciated with facebook",1,1,24,0.578619,0.233985
+621,2,0,"easily the best phone money can buy.",0,0,1,1.000000,1.000000
+621,2,1,"always responsive and smooth  high quality display and construction  and good battery life.",0,0,12,0.677483,0.157312
+621,2,2,"you ll be paying at least twice as much for something comparable  like the s3  s4  note ii  razr hd  htc one  lg optimus  etc.",0,0,1,0.664076,0.229889
+621,2,3,"cheaper on the official google play store.",1,1,15,0.607800,0.148520
+622,2,0,"totally awesome.",0,0,0,1.000000,1.000000
+622,2,1,"freedom from carrier lock in.",0,0,1,0.710841,0.222037
+622,2,2,"straight talk is your friend.",0,0,1,0.635784,0.151381
+622,2,3,"but  why would i buy at this high price when it is available directly from the google play store for  349.00 ",0,0,7,0.675738,0.172164
+622,2,4,"newegg s price.",1,0,7,0.404956,0.139518
+623,2,0,"display  i thought i would miss my old super amoled display  but the ips display on this unit is very attractive.",0,1,24,1.000000,1.000000
+623,2,1,"it doesn t disappoint.",0,1,24,0.772992,0.222037
+623,2,2,"speed  it s an over used term  but buttery smooth performance is probably the best description.",0,0,12,0.696890,0.229889
+623,2,3,"as you navigate and open and close apps  there is never any stutter and the animations remain fluid.",0,1,21,0.719378,0.247074
+623,2,4,"os  it came with jelly bean right out of the box.",0,1,18,0.730366,0.157885
+623,2,5,"as with any nexus device  it should receive updates first.",0,1,18,0.674615,0.157312
+623,2,6,"phone  call quality is great.",0,1,17,0.698039,0.229985
+623,2,7,"voices are crystal clear.",0,1,17,0.690725,0.229985
+623,2,8,"build  very solid.",0,0,10,0.663621,0.151381
+623,2,9,"but the reflective back is both a pro and a con.",0,0,10,0.675808,0.151451
+623,2,10,"it looks beautiful  but it s glass and be easily scratched.",0,0,2,0.685835,0.178737
+623,2,11,"so much glass ",1,0,2,0.200929,0.107776
+623,2,12,"it is a beautiful phone  but you must be careful.",1,0,7,0.589636,0.157312
+623,2,13,"a good protective case is a must.",1,0,12,0.585625,0.222037
+623,2,14,"most people may not hear this  but the audio quality is a slight step down from my previous phone  galaxy s2 .",1,0,1,0.663443,0.266969
+623,2,15,"i m using klipsch image x10 earphones which are well above standard quality  so that may be the only reason i m noticing.",1,0,1,0.272822,0.117735
+623,2,16,"don t get me wrong  it still sounds great.",1,0,4,0.582264,0.145703
+623,2,17,"you cannot replace the battery  not a deal breaker  but it s a con .",1,0,4,0.525117,0.170271
+623,2,18,"there is no sd card slot  so you cannot expand on local storage.",1,0,4,0.528135,0.148520
+624,2,0,"two batteries was in the box  so you have a spare one.",0,1,19,1.000000,1.000000
+624,2,1,"1.",1,0,4,0.813622,0.175466
+624,2,2,"2. the phone is locked to make it work only with some sims.",1,0,4,0.356329,0.141027
+624,2,3,"it did not work with my sim.",1,0,4,0.134765,0.094725
+624,2,4,"please note  that other my cell phone works well with this sim  3. waterproof        back cover plate is not sealed with a rubber gasket  so do not even try to put it under water.",1,0,4,0.125415,0.106069
+624,2,5,"4. has fake buttons on the sides.",1,0,8,0.544356,0.155488
+624,2,6,"5.",1,0,3,0.156849,0.106417
+624,2,7,"the port for charger is not mini micro usb  but it is the old cylindrical socket  which was popular 15 years back.",1,0,3,0.160429,0.114685
+624,2,8,"6. heavy   weight is about 130g.",1,0,3,0.298352,0.119301
+624,2,9,"this is like a modern smart phone.",1,0,1,0.585674,0.148520
+625,2,0,"item arrived fast.",0,1,25,1.000000,1.000000
+625,2,1,"ordered on friday and it came on monday.",0,1,25,0.729685,0.157312
+625,2,2,"yet to start using it to see how it works.",0,1,25,0.620910,0.145703
+625,2,3,"this rating is based on promptness of delivery only not the quality and functioning of the phone.",0,1,17,0.587123,0.154359
+626,2,0,"good call quality  no drops i think the battery life is excellent overall very pleased with phone",0,0,5,1.000000,1.000000
+626,2,1,"lack of pre installed call profile app  solved by downloading free one ",1,1,15,0.522158,0.219934
+627,2,0,"pros include phone having a flash for taking pictures.",0,0,0,1.000000,1.000000
+627,2,1,"app compatible  and is compatible to hold an microsd card.",0,0,11,0.695332,0.151381
+627,2,2,"the phones android os is great ",0,0,7,0.775824,0.249665
+627,2,3,"the internal storage is not that great  if i had known when i bought this phone that even though i had an microsd card in and the phone was programmed by me to store the apps on the microsd  the apps was still going to take internal memory for system files.",1,1,24,0.587412,0.163400
+627,2,4,"another con was by default the apps cant be stored on an microsd card  you have to use a program for android phones to set a new path for the apps to be stored on the microsd card by default  i did not worry about trying to root the phone  due to my lack of knowledge on rooting smartphones.",1,1,24,0.138309,0.164823
+627,2,5,"the other con i did not like was the phones lack of random access memory  it make it very hard to do many things at once it  and i had to close most of my apps before i could place a call or even text.",1,1,14,0.365903,0.138573
+628,2,0,"my first android phone and i love it.",0,0,7,1.000000,1.000000
+628,2,1,"i do not use it with a data plan  mms settings can be provisioned easily so that this phone only uses internet for mms.",0,1,14,0.710632,0.238033
+628,2,2,"voice quality is great  a very neat smartphone for people that want to upgrade their dumbphones.",0,1,18,0.715147,0.229985
+628,2,3,"main reason i bought this phone is for the looks  it is slick indeed.",0,0,1,0.736638,0.229985
+628,2,4,"fits perfectly on your palm.",0,0,1,0.692997,0.229985
+628,2,5,"as far as functionality it is great  it has everything android platform has to offer at the googleplay market.",0,0,1,0.648875,0.157312
+628,2,6,"battery life is good for a smartphone  depending what is running your phones background.",0,0,9,0.746914,0.172241
+628,2,7,"if you are smart tech wise  this phone is very easy to modify  so that you can uninstall any bloatware google maps etc  that kills your ram and battery life.",0,0,9,0.242111,0.183014
+628,2,8,"defenetively an iphone 4 killer for the price  even though iphone 5 was out for some time already.",0,0,7,0.636573,0.157312
+628,2,9,"i use wifi internet only.",0,0,0,0.646121,0.151451
+628,2,10,"great phone overall.",0,0,3,0.621311,0.238033
+628,2,11,"comes with two back lids  usb data cable  charger and manual.",0,0,3,0.538751,0.222037
+628,2,12,"once again  love this phone.",0,0,6,0.600291,0.229889
+628,2,13,"0",1,0,6,0.543480,0.233985
+629,2,0,"mine came with android 2.3.6 installed  aka gingerbread .",0,1,18,1.000000,1.000000
+629,2,1,"no need to spend time upgrading.",0,1,18,0.753159,0.157312
+629,2,2,"also the description says 3.5 inch screen in one place and 5. 0 screen in another place.",0,1,18,0.764466,0.165859
+629,2,3,"it s a 3.5 inch screen.",0,1,18,0.055920,0.087016
+629,2,4,"i only expect to use this for gmail and calendar access.",0,1,13,0.750981,0.172241
+629,2,5,"i have no reason to expect it to have any trouble with that.",0,1,24,0.194988,0.174524
+629,2,6,"i was quickly impressed with the maps app.",0,1,24,0.635448,0.238033
+629,2,7,"for the price i pleased.",0,1,24,0.639378,0.229985
+629,2,8,"haven t used it long enough to really tell.",1,1,24,0.592595,0.145703
+629,2,9,"the case doesn t appear super durable  back cover to be specific... but it s not a high end phone so i didn t expect it to be.",1,0,12,0.614722,0.172164
+629,2,10,"comes with a spare white back cover if it is ever a problem.",1,0,12,0.395569,0.215961
+630,2,0,"fast boot  sleek easy memory up to 32 gb.",0,0,4,1.000000,1.000000
+630,2,1,"t mobile from the start up",0,0,9,0.710076,0.151451
+630,2,2,"none really but wow phones cost too much  i use a 50 dollar one  ",1,0,4,0.607073,0.148520
+631,2,0,"bought this for my wife.",0,0,1,1.000000,1.000000
+631,2,1,"decent battery life on edge for an android phone  2 days with average use   adequate screen quality and cpu performance.",0,0,6,0.775128,0.178737
+631,2,2,"this phone now ships with gingerbread 2.3.6 and is quite stable.",0,0,6,0.519710,0.121560
+631,2,3,"light weight  comes with two back plate  black and white  of course the wife chose the white cover because it s  prettier  .",0,0,3,0.760435,0.172164
+631,2,4,"overall as a light weight smart phone it works quite well for an averge user.",0,0,6,0.394459,0.122056
+631,2,5,"work perfectly fine on t mobile usa network over edge.",0,0,1,0.447853,0.182118
+631,2,6,"3g bands only for at t or red pocket.",0,1,22,0.775121,0.266969
+631,2,7,"battery life unknown on 3g as t mobie is our current carrier.",0,0,11,0.338769,0.113151
+631,2,8,"good build quality for a budget phone.",0,0,10,0.675510,0.222037
+631,2,9,"decent swype keyboard  but see the small keyboard comment in cons .",0,0,6,0.632069,0.229889
+631,2,10,"gorilla glass.",0,0,6,0.678456,0.151451
+631,2,11,"quick gps fix  decent rf signal quality and call clarify.",0,0,11,0.586703,0.151451
+631,2,12,"small internal memory  can only carry a small number of apps for light weight users  not intended for heavy app user.",1,1,21,0.670795,0.178737
+631,2,13," 150mb internal memory free for apps.",1,1,15,0.196844,0.109086
+631,2,14,"low resolution screen  makes apps like maps  and touch typing a bit crampped  but the swype keyboard makes this a little better.",1,0,11,0.334681,0.128892
+631,2,15,"the phone case is plastic and does not seem to be very scratch resistent and the back plate is popped on with no latching system  so it s probably wise to get one of those tpu cases to prevent scratches and the case splitting from accident drops.",1,0,2,0.583385,0.151381
+631,2,16,"the cover for the usb port is a bit annoying  i would simply just leave open all the time to prevent damage from sliding it open and close repeated.",1,1,16,0.646518,0.172164
+631,2,17,"touchwiz samsung interface is a bit clunky  i like the android sense interface on my own htc high end phone much better.",1,1,17,0.568464,0.165894
+631,2,18,"the flash memory card door is a bit finicky  i m glad it s not something one has to fiddle with very often.",1,1,22,0.432062,0.220823
+632,2,0,"phone works great.",0,0,12,1.000000,1.000000
+632,2,1,"purchased to rid myself of high data rate plans as i have wifi available most of the day.",0,0,1,0.699439,0.229985
+632,2,2,"with all of the free apps at the play store i have all of the features i could ever want.",0,0,7,0.713652,0.157312
+632,2,3,"since the phone is made for the latin american market  i though i would have to switch it with instructions found on the web.",0,0,7,0.710076,0.151451
+632,2,4,"camera is weak in low light situations and indoors.",1,1,17,0.642110,0.145703
+632,2,5,"voice dial not pre installed.",1,1,17,0.665727,0.157312
+632,2,6,"had to download an app for that.",1,1,15,0.581160,0.151451
+632,2,7,"my last 3 non smartphones had that feature.",1,1,18,0.562861,0.157312
+632,2,8,"battery life is not the best.",1,1,13,0.553261,0.225939
+633,2,0,"fast processor makes applications work great with lots of great app s     easy to use",0,0,5,1.000000,1.000000
+633,2,1,"camera is not as good as i had hoped     terrible battery life compared to non smart phone    lasts a day on standby    i thought there was something wrong with it till i read this is what you should expect with smart phones",1,0,6,0.630591,0.233985
+634,2,0,"does fit a regular hand.",0,1,19,1.000000,1.000000
+634,2,1,"very fast and responsive.",0,0,4,0.682823,0.151451
+634,2,2,"the back cover could have a different locking system.",1,0,4,0.589855,0.154359
+635,2,0,"finger print unlock works well.",0,0,2,1.000000,1.000000
+635,2,1,"very good clarity of picture.",0,0,0,0.682823,0.238033
+635,2,2,"aluminum chassis is very soft and easy to dent",1,0,2,0.632396,0.233985
+636,2,0,"this phone is great ",0,0,6,1.000000,1.000000
+636,2,1,"the hardware boost and makes this phone not only fast  but fun to use.",0,0,6,0.677483,0.151381
+636,2,2,"the camera is much faster and takes better pictures than the older blackberry devices.",0,0,6,0.695259,0.249665
+636,2,3,"i also love it because it supports virtual any gsm band in the world  meaning i can get 3g or better speeds anywhere i travel internationally.",0,0,1,0.449603,0.221134
+637,2,0,"not much in the  pro  catagory with blackberry",0,1,15,1.000000,1.000000
+637,2,1,"browser crashes most of the time  phone freezes  keyboard gets glitchy all requiring  battery pulls  to reset the device.",1,1,20,0.674256,0.151451
+637,2,2,"as of the bb world wide service fiasco the phone is crashing randomly  almost daily and rebooting itself.",1,1,20,0.705245,0.151381
+637,2,3,"there are very few app makers  no flash support  even remotely entertaining the bb os  any version  anymore.",1,1,15,0.581613,0.157312
+637,2,4,"their customer service is virtually non existant and no help at all.",1,1,20,0.595876,0.148520
+638,2,0," 1 reason to buy this phone   own a smartphone without paying for a data plan ",0,0,1,1.000000,1.000000
+638,2,1,"some people call this a phablet  but others sell  phablets  that have data capability  so i don t really know the true definition of  phablet .",0,1,18,0.719028,0.162064
+638,2,2,"there is no 3g capability in this phone.",0,1,18,0.457253,0.117791
+638,2,3,"you can insert your gsm sim card and use it as a telephone.",0,0,1,0.716536,0.157312
+638,2,4,"you can send and receive text messages.",0,0,0,0.713426,0.157312
+638,2,5,"you cannot use data.",0,0,0,0.811703,0.186159
+638,2,6,"to be safe  i set up android to not even try to use cellular data.",0,0,0,0.121863,0.107388
+638,2,7,"i have owned this device for 10 months now  and it has been connected to at t the whole time.",0,0,12,0.748424,0.172164
+638,2,8,"they are not able to detect this device as an android smartphone  so they have not tried to force me to pay for a data plan.",0,0,0,0.653567,0.161196
+638,2,9,"this is actually a pretty great device.",0,0,12,0.435440,0.179612
+638,2,10,"quality is much better than i could have expected.",0,0,12,0.682823,0.238033
+638,2,11,"it s got all the other goods  including gps for mapping.",0,0,11,0.675594,0.229889
+638,2,12,"fairly recent version of android 4.2.2 ",0,0,7,0.668282,0.222037
+638,2,13,"screen looks and works great.",0,0,12,0.737785,0.258171
+638,2,14,"it even came with two batteries  a carry case and screen protectors ",0,0,12,0.317223,0.189426
+638,2,15,"5mp camera works pretty well  although it s not up to iphone 5 quality.",0,0,0,0.629306,0.151381
+638,2,16,"i love the back cover.",0,0,4,0.670630,0.222037
+638,2,17,"it s got a rubberized  grippy surface that won t show scratches or damage very easily.",0,0,1,0.613700,0.238033
+638,2,18,"i don t feel like i need anything more than a screen protector with this phone.",0,0,4,0.622782,0.145703
+638,2,19,"most important   the wifi works great and has very good range.",0,0,0,0.686045,0.266969
+638,2,20,"you ve got internet with this phone anywhere you can find wifi.",0,0,0,0.469125,0.224923
+638,2,21,"my iphone has hotspot  and i ve used that to give wifi service to my cubot.",0,0,0,0.250378,0.115554
+638,2,22,"works great.",0,1,18,0.691591,0.258275
+638,2,23,"fyi  phone had trouble using some of my 32gb microsd cards  but works great with a 64gb card.",0,1,18,0.121886,0.172180
+638,2,24,"there are a few issues with this phone.",1,1,18,0.616401,0.151451
+638,2,25,"it s just not enough   and there is nothing you can do about it when you are low on space except delete apps.",1,1,20,0.531417,0.157312
+638,2,26,"i use google chrome and navigon.",1,1,22,0.593701,0.151451
+638,2,27,"they do take quite a bit of space all by themselves.",1,1,22,0.613619,0.178737
+638,2,28,"i ve moved everything android will allow to the memory card  and i m still running out of space.",1,0,4,0.357528,0.147785
+638,2,29,"phone had trouble using some of my 32gb microsd cards  but works great with a 64gb card.",1,0,4,0.294210,0.136217
+639,2,0,"the phone is awesome .. but i recommend buying it elsewhere.",0,0,0,1.000000,1.000000
+639,2,1,"newegg use to be my goto place but now i see all they do is mark items up to crazy prices then act like they are cutting you a deal....",0,0,7,0.711484,0.238033
+639,2,2,"this phone has been 660 outright at any phone dealer since release.",0,0,7,0.726193,0.145703
+639,2,3,"newegg does this with just about everything.",0,0,7,0.661948,0.145703
+639,2,4,"they make you think you are getting a deal by saying it costs 200 more then slashing that fake price to the original price to make it seem like you save 200.",0,0,7,0.584606,0.157312
+639,2,5,"this is a pathetic tactic tactic newegg.",0,0,7,0.640084,0.151451
+639,2,6,"i am so disappointed in you.",0,0,7,0.561057,0.233985
+640,2,0,"it s a great phone.",0,0,12,1.000000,1.000000
+640,2,1,"i have it in a speck pixelskin case  and that keeps it scratch and crack free  even after multiple drops on concrete and other hard surfaces.",0,0,12,0.646924,0.229889
+640,2,2,"now that the iphone 5 is out  it s not an iphone 5.",1,1,18,0.607073,0.154359
+641,2,0,"i m free from the grips of at t verizon ",0,0,1,1.000000,1.000000
+641,2,1,"absolutely no limitations on what i can do with this phone.",0,0,7,0.739473,0.157312
+641,2,2,"especially compared to a locked at t iphone.",0,0,1,0.706917,0.145703
+641,2,3,"using this one with t mobile.",0,0,1,0.811703,0.172241
+641,2,4,"can tether at will  without a tether plan  just gotta hide my user agent from t mobile  easy as heck. ",0,0,1,0.206210,0.112170
+641,2,5,"everything except visual voicemail works with t mobile.",0,0,1,0.345808,0.114634
+641,2,6,"speeds are way faster than at t s hspa  and even verizon s lte.",0,1,18,0.736242,0.178737
+641,2,7,"at t s joke of an lte is not even worth mentioning.",0,1,18,0.538127,0.232944
+641,2,8,"whoops  did i mention it ",0,1,18,0.178426,0.169306
+641,2,9,"hella expensive  why i took off a star. ",1,1,20,0.645862,0.157312
+641,2,10,"no lte  t mobile s hspa  on the 4s is faster than verizon s lte anyway. ",1,1,20,0.594929,0.151451
+641,2,11,"iphone 5 right around the corner  already knew that when i bought this. ",1,1,25,0.713265,0.178737
+641,2,12,"don t care about a slightly longer screen  4s will get all the ios 6 features except for taking a picture while recording video.",1,1,16,0.484722,0.164057
+641,2,13,"who cares ",1,1,16,0.252388,0.115743
+641,2,14,"i ll just get 5s 6 factory unlocked whenever they come out.",1,1,22,0.580406,0.157312
+641,2,15,"t mobile hspa  1900mhz  3g 4g on iphone  coverage a little spotty.",1,1,22,0.540328,0.151451
+641,2,16,"sometimes get edge speeds if i travel too far out.",1,1,20,0.579651,0.151451
+641,2,17,"t mobile is refarming and adding more 1900mhz coverage  they say they ll be very close to complete by the end of the year.",1,1,20,0.499334,0.154359
+642,2,0,"the screen is very sharp the camera takes extremely good shots even in low light.",0,0,0,1.000000,1.000000
+642,2,1,"the performance is on par with a flagship smart phone.",0,0,12,0.729685,0.222037
+642,2,2,"the battery life is decent even a heavy user should get 7 hours of use out of one charge  it has the ability to install an sd card for more storage and to change the battery",0,0,5,0.602679,0.157312
+642,2,3,"it s come with a lot of in house software from samsung the only wait to get the software off is to root your phone",1,0,9,0.616549,0.148520
+643,2,0,"better battery life than most.",0,1,19,1.000000,1.000000
+643,2,1,"enough processing power to handle pretty much anything i throw at it.",0,1,23,0.736528,0.151451
+643,2,2,"big screen just makes that 1080p image just pop.",0,1,22,0.692997,0.157312
+643,2,3,"camera takes pictures good enough to read a book you photographed earlier but not quite good enough to see the fine details and patterns on a fruit fly.",0,0,6,0.629174,0.222037
+643,2,4,"it has almost every single feature you could want in a phone and is definitely one of the most versatile on the market.",0,0,6,0.654141,0.229889
+643,2,5,"also  if you own any other sony products like playstatoin 3 or 4 an entire other world of cool stuff opens up that is just plain convenient.",0,0,0,0.661252,0.165859
+643,2,6,"sometimes the camera crashes when activated from sleep mode but a mild amount of patience in unlocking the phone first  then opening the camera  solves this one issue.",1,0,0,0.439418,0.141126
+644,2,0,"phone has no issues.",0,1,15,1.000000,1.000000
+644,2,1,"but received an international version",0,1,21,0.768176,0.178737
+644,2,2,"be aware this phone comes in 2 versions  rm 995 for the usa  and rm 994 international.",1,1,21,0.144310,0.104541
+644,2,3,"though reseller refunded my money  i had no idea there were 2 versions when ordering.",1,1,21,0.160436,0.100131
+644,2,4,"i ended up with the 994  the highest speeds i could get in metropolitan phoenix was 2g edge.",1,1,20,0.468987,0.155450
+644,2,5,"i would give the phone a 4.5  but considering the frustration and money to return  2 stars.",1,1,25,0.137798,0.101975
+644,2,6,"be aware as which model is not specified for this item you may get either.",1,1,21,0.700211,0.178737
+644,2,7,"unless you don t care which you get  avoid until newegg specifies which this item is.",1,1,21,0.226283,0.130756
+645,2,0,"good battery life",0,1,13,1.000000,1.000000
+645,2,1,"in addition to my earlier review i just noticed that this phone does not turn off while being charged.",1,1,13,0.746545,0.258171
+645,2,2,"if you turn it off while plugged in it turns back on again all by self.",1,1,13,0.239703,0.120976
+646,2,0," great phone for the price  265 on sale   newegg   perfect for using it as a gps with fully downloadable no data connection required maps  screen is bigger than most standalone gps units",0,0,5,1.000000,1.000000
+646,2,1," low on storage memory  system takes up to half out of the box  gotta buy a memory card   ringtone isnt that loud at max volume   one flaw is when you set it to ring and vibrate at the same time for some reason it only vibrates once and then just keeps on ringing without vibrating  very annoying   usually when you buy an unlocked phone that doesnt belong to any carrier you can use it as a wifi hotspot right away but for some reason this one gave a message that said  to contact att to set it up which means att will prob try to charge you extra for it.",1,1,22,0.749795,0.266969
+646,2,2,"all unlocked phones i had before sony xperia z1 and samsung galaxy s 2 never did that.",1,1,15,0.709672,0.180857
+646,2,3,"kind of disappointing because this is one of the main reasons i like to buy unlocked phones and not get them from the carrier",1,1,22,0.424743,0.235446
+647,2,0,"i moved from a nokia lumia 521 to this phone.",0,0,7,1.000000,1.000000
+647,2,1,"this gets the t mobile lte network.",0,0,3,0.723225,0.157312
+647,2,2,"updated to windows 8.1 very easily.",0,1,18,0.782334,0.172241
+647,2,3,"so many more features than the 521.",0,1,18,0.363522,0.119270
+647,2,4,"great screen.",0,0,12,0.697015,0.222037
+647,2,5,"battery on medium usage lasts 2 days ",0,0,3,0.667104,0.229985
+647,2,6,"it feels big in the hand   takes getting used to.",0,0,10,0.668282,0.157312
+647,2,7,"i have used ios  android and windows.",0,0,12,0.745161,0.172241
+647,2,8,"i like the windows platform best.",0,0,12,0.182974,0.174524
+647,2,9,"not as many aps in the windows store but i m not a heavy app user.",0,0,5,0.255782,0.180606
+647,2,10,"originally wanted a nokia 1520 but this saved me so much money and very similar features.",0,0,7,0.690458,0.165859
+647,2,11,"the only poor feature is the 5mp camera.",0,0,6,0.280347,0.180606
+647,2,12,"great price on newegg.",0,0,7,0.557412,0.225939
+647,2,13,"highly recommend this phone.",0,0,6,0.576307,0.157312
+647,2,14,"as mentioned before  camera.",1,0,6,0.542304,0.233985
+648,2,0,"look nice.",0,0,2,1.000000,1.000000
+648,2,1,"function good.",0,0,1,0.706917,0.151451
+648,2,2,"nothing much negative can be say about samsung galaxy.",0,0,1,0.706274,0.238033
+648,2,3,"the phone is not definitely new as advertised.",1,0,6,0.682823,0.145703
+648,2,4,"the earpiece was used and put into a small ziploc bag with a permanent sticker sealing the bag.",1,0,6,0.682151,0.151451
+648,2,5,"after i connected the phone to the computer to retrieve some pics  i noticed there were some folders created by previous owner.",1,1,14,0.607812,0.151451
+648,2,6,"so the phone is not new but rather reconditioned or refurbished by the good guys.",1,1,19,0.712948,0.266969
+648,2,7,"i am disappointed from being deceived by the good guys.",1,1,19,0.072430,0.154793
+648,2,8,"if i had known about it first  i wouldn t buy it.",1,1,19,0.579651,0.154359
+649,2,0,"great phone   all the features i wanted   replaceable battery and ability to use a micro sd card.",0,0,4,1.000000,1.000000
+649,2,1,"work perfectly on at t network.",0,0,1,0.787359,0.172241
+649,2,2,"came with android 4.2.2 but with at t i was able to upgrade it to lollypop.",0,1,18,0.529896,0.244431
+649,2,3,"if you don t have at t service  and an at t sim card  with this unlocked phone you may have a problem applying upgrades.",1,1,18,0.203406,0.189051
+650,2,0,"i got it for free.",0,0,12,1.000000,1.000000
+650,2,1,"sturdy design camera is pretty good.",0,0,12,0.702815,0.238033
+650,2,2,"choice of trackpad or touchscreen functionality",0,0,1,0.751501,0.222037
+650,2,3,"the software support is terrible and the appworld apps are riddled with ads if they are free.",1,1,24,0.667495,0.222037
+650,2,4,"the trackpad glitches and will scroll down on its own for no reason  have to take out the battery and restart it.",1,1,23,0.783895,0.266969
+650,2,5,"the  full power off  is misleading and it actually does not restart the phone  you need to pull out the battery to do that.",1,1,23,0.322705,0.133329
+650,2,6,"the media player glitches and will not play  have to take out battery to fix this.",1,1,13,0.423756,0.146377
+650,2,7,"no way of killing apps if they are frozen  you have to take out the battery for that.",1,1,13,0.182212,0.107776
+650,2,8,"sometimes the phone browser will just ignore your clicks to links  and you have to restart the mobile connection to get it to do anything.",1,1,16,0.619178,0.157312
+650,2,9,"the battery indicator is a lie  sometimes it will stay at 90  and then turn off your radio because the battery dropped to less than 10  when you do pull out the battery sometimes it will just murder up to 25  of the battery charge  or maybe it actually updated the battery indicator.",1,1,13,0.556657,0.157312
+650,2,10,"sometimes the phones message indicator glitches and will say you have notifications when there aren t any.",1,1,16,0.629805,0.151381
+650,2,11,"the battery life lasts 1 day regardless of use.",1,1,13,0.613583,0.165859
+650,2,12,"  i am writing this review after i updated it to the last o s as of 9 19 2013   fixed nothing",1,1,15,0.338815,0.139518
+651,2,0,"disregard previous review.",0,0,7,1.000000,1.000000
+651,2,1,"this phone sounds fantastic  i even gave my zune player to my girlfriend because this phone sounded way better than my zune and does the job better than my zune.",0,0,11,0.674256,0.229889
+651,2,2,"second thing  this is how all the bb should ve been  fast and reliable.",0,0,0,0.687060,0.229985
+651,2,3,"this is con is not worth taking an egg off.",1,1,18,0.622782,0.229985
+651,2,4,"the problem is the memory  i wonder why did rim made the bold 9650 with more app memory than this  i remember i used to have a lot of memory with my old bold  but i couldn t use it anyways because the phone is too slow  compared to this one  ",1,1,15,0.539669,0.225939
+652,2,0,"nice wide keyboard like the original bold 9000.",0,0,4,1.000000,1.000000
+652,2,1,"snappy performance.",0,0,8,0.756824,0.229985
+652,2,2,"nice touchscreen with track pad option.",0,0,8,0.677483,0.229985
+652,2,3,"audio quality for the person you are calling is low volume  with somewhat muffled treble  making it difficult for the person on the other end to hear what you re saying.",1,1,17,0.718896,0.258171
+652,2,4,"the torch 9800 has much better audio quality.",1,1,17,0.482271,0.145140
+652,2,5,"hard to believe rim would produce a phone with poor audio quality at this day and age.",1,1,17,0.142300,0.163011
+652,2,6,"mute button is placed between the volume up down buttons  and there is no spacing between the buttons.",1,1,14,0.653245,0.258275
+652,2,7,"this poor location makes it far too easy to inadvertently activate the mute feature when you re just trying to change the volume level.",1,1,14,0.442772,0.222726
+653,2,0,"provided exactly what i needed   a good inexpensive unlocked gsm phone to use overseas with multiple sim cards.",0,0,1,1.000000,1.000000
+653,2,1,"compared to the new smart phones the blackberry 9000 is nothing special but it still can get the job done.",0,0,1,0.709448,0.229985
+653,2,2,"older phone but i knew i wasn t going to get a new iphone for what i was looking to pay.",1,0,1,0.670044,0.157312
+653,2,3,"this phone is still very functional at it s base level.",1,0,1,0.612912,0.154359
+654,2,0,"price was low and i needed an international capable phone quickly.",0,1,24,1.000000,1.000000
+654,2,1,"i have had this phone for less than 2 months and there are so many problems   1  newegg sold this phone as  new   but the battery is a non oem cheap chinese battery.",1,1,24,0.751286,0.258275
+654,2,2," 2  the back cover is shaky and constantly falls off   3  the home screen key paint started peeling within 1 month of ownership ",1,1,25,0.176259,0.170436
+654,2,3,"i am extremely disappointed that newegg would sell an obviously refurbished phone as new and refuse to issue a refund or replacement.",1,1,25,0.629969,0.229889
+654,2,4,"they referred me to blackberry for service but refused to even admit that they sold a refurbished old phone as  new. ",1,1,23,0.609601,0.233985
+655,2,0,"i got this phone to replace my htc fuze.",0,1,17,1.000000,1.000000
+655,2,1,"coming from windows mobile phones  this review may be a bit biased.",0,1,23,0.700328,0.151451
+655,2,2,"the bold runs great  it has great functionality  a beautiful screen  easy to use media management  many device settings  font size  color  face  etc  and rarely lags while in use.",0,1,17,0.738481,0.266969
+655,2,3,"speakers on the device are excellent  with load and clear sounds.",0,1,17,0.510488,0.121975
+655,2,4,"speakerphone quality isn t the best  wifi could have better functionality  but it runs.",1,0,1,0.637756,0.157312
+655,2,5,"free apps would be nice but can be dealt without.",1,0,12,0.616240,0.151451
+655,2,6,"browser is decent but could be upgraded.",1,0,8,0.578619,0.225939
+656,2,0,"nice screen  nice looking  appears sold",0,0,10,1.000000,1.000000
+656,2,1,"poor call quality in phila metro area.",1,1,17,0.811939,0.258171
+656,2,2,"terrible call echo.",1,1,17,0.233850,0.112170
+656,2,3,"i have had 2 units replaced via warranty exchange.",1,1,25,0.659101,0.229985
+656,2,4,"back cover falls off.",1,1,25,0.693688,0.157312
+656,2,5,"apps  which are free on iphone cost money on bb.",1,1,15,0.677186,0.172241
+656,2,6,"fonts in apps are terribly small.",1,1,16,0.326852,0.191654
+656,2,7,"att navigation is impossible to see the text.",1,1,13,0.580406,0.229889
+656,2,8,"3g browser is terrible.",1,1,20,0.570897,0.225939
+657,2,0,"your buying a  rogers  unlocked phone the one i got works great.",0,0,1,1.000000,1.000000
+657,2,1,"i put my sim card in   worked right out the box no need to download any settings.",0,0,5,0.429987,0.195655
+657,2,2,"my old phone doesn t even compare to this   ",0,0,1,0.685689,0.151381
+657,2,3,"media card slot   its a pain to add   remove the card",1,1,22,0.547570,0.154359
+658,2,0,"it s unlocked  nice screen.",0,0,2,1.000000,1.000000
+658,2,1,"branded by rogers  canadian carrier  and not as pictured.",1,1,21,0.645862,0.225939
+659,2,0,"extremely fast hardware",0,0,0,1.000000,1.000000
+659,2,1,"oem os is slow and buggy  load up the beta os .210",1,1,16,0.625957,0.154359
+660,2,0,"it very good display",0,0,10,1.000000,1.000000
+660,2,1,"buy your self a sd card",1,1,22,0.629306,0.233985
+661,2,0,"update on the phone i bought   cubot s208  and the seller sd2k.",0,1,25,1.000000,1.000000
+661,2,1,"i supposedly have a brand new phone and i have now determined it is not a charger or battery problem  most likely  but a bad  bent ",0,1,20,0.708504,0.238033
+661,2,2,"usb charging port.",0,1,14,0.718230,0.229985
+661,2,3,"i have emailed the seller several times with no further response after they sent a different charger.",0,1,25,0.732345,0.165859
+661,2,4,"seller phone number originally went to voicemail  now it just rings and rings and says memory full.",0,1,20,0.390535,0.127129
+661,2,5,"contacted the manufacturer with no response.",0,1,25,0.717018,0.172241
+661,2,6,"contacted newegg and they have received no response from seller.",0,1,25,0.135450,0.107031
+661,2,7,"poor customer service.",1,1,20,0.588232,0.225939
+662,2,0,"pleasantly surprised on this phones features for the price.",0,0,1,1.000000,1.000000
+662,2,1,"easy to set up and use.",0,0,5,0.739473,0.145703
+662,2,2,"if you only have one sim card  put it in the first slot to avoid annoying messages.",0,1,21,0.702443,0.151381
+662,2,3,"screen is good quality  back doesnt look cheap.",0,0,10,0.726243,0.238033
+662,2,4,"calls are clear.",0,0,10,0.728068,0.229985
+662,2,5,"i get 3g through consumer cellular for  20 per month including data.",0,0,1,0.666653,0.157312
+662,2,6,"i had no problem setting up my mail and phone apps.",0,0,5,0.701146,0.238033
+662,2,7,"sufficient storage for a phone.",0,0,5,0.701572,0.229985
+662,2,8,"i use my tablet   also purchased at newegg  thanks newegg  for memory hogging apps.",0,0,5,0.618743,0.229889
+662,2,9,"have used the back camera with good reults and indoor lighting conditions.",0,0,0,0.655633,0.151451
+662,2,10,"okay  battery time is awful with wi fi turned on.",1,1,20,0.645507,0.238033
+662,2,11,"i get no more than 5 hours per charge.",1,1,20,0.620181,0.151381
+662,2,12,"i am in the process of getting a new battery to see if that makes a difference.",1,1,20,0.640684,0.151451
+662,2,13,"seller sent a very cheap charger  case  and earphones.",1,1,20,0.642387,0.172164
+662,2,14,"the charger did not work at all.",1,1,16,0.401151,0.149577
+662,2,15,"to his credit  he was responsive when contacted and sent a better charger that did work.",1,1,16,0.085224,0.101837
+662,2,16,"another problem with this seller is that no tracking number was sent for the phone until i contacted newegg and the seller.",1,1,25,0.326119,0.185094
+662,2,17,"as advertised shipping took about 15 business days.",1,0,5,0.557302,0.225939
+663,2,0,"all that is listed there.",0,0,8,1.000000,1.000000
+663,2,1,"the 1.3ghz quad core allows for fast responses  the high resolution ips screen is vibrant  detailed and smooth.",0,0,8,0.689302,0.157312
+663,2,2,"mali graphics provide excellent transitions between apps.",0,0,12,0.739728,0.229985
+663,2,3,"good boot up time and 16gb of fast memory on board.",0,0,0,0.659101,0.151451
+663,2,4,"works great with 32gb microsd cards.",0,0,12,0.658404,0.151451
+663,2,5,"also excellent reception for bell phone calls.",0,0,12,0.645507,0.157312
+663,2,6,"mine arrived with kitkat 4.4.2 and an application management feature.",0,0,12,0.586384,0.229985
+663,2,7," very minor  camera images look a little washed out or could user more contrast.",1,0,12,0.611452,0.157312
+663,2,8,"this problem may have just been my lighting for those pictures.",1,1,17,0.535490,0.225939
+664,2,0,"i ordered the phone and it arrived on time and in the original packaging.",0,1,25,1.000000,1.000000
+664,2,1,"i would definitely order from this vendor again.",0,1,25,0.328960,0.130756
+665,2,0,"screen a little bigger than her last lumia.",0,1,19,1.000000,1.000000
+665,2,1,"seems to be a bit snappier better camera.",0,1,19,0.669605,0.151381
+665,2,2,"she s on it all the time  for some guys  this may be a pro  costed me money.",1,1,19,0.645862,0.151451
+665,2,3,"price lowered about 4 bucks a few weeks after i got it.",1,1,23,0.587123,0.148520
+666,2,0,"it does much much more than you would expect from a phone at this price point.",0,0,4,1.000000,1.000000
+666,2,1,"comes with case and screen protector installed.",0,0,4,0.659101,0.151451
+666,2,2,"blu is hit or miss at the lower end  but this one is solid",1,1,22,0.619816,0.154359
+667,2,0,"the xperia z ultra is great  but not the one i recieved",0,1,17,1.000000,1.000000
+667,2,1,"the phone sold by saletagz is a poor quality phone  you can almost not tell the difference to a  normal  z ultra.",1,1,17,0.780179,0.266969
+667,2,2,"but my friend has an xperia z ultra and when you put the phones side by side this one is slightly taller the screen has a yellow tint with inacurate color reproduction  and the camera quality does not compare.",1,1,17,0.283316,0.180687
+667,2,3,"its the same phone model 8633 his is black mine white.",1,1,23,0.720959,0.172241
+667,2,4,"i reccomend getting from a different seller i plan on returning the phone for a better one this phone ready has 1 dead pixel and no matter of massaging can fix it.",1,1,25,0.412632,0.137907
+668,2,0,"feel good in hand   fast  clear and bright",0,0,10,1.000000,1.000000
+668,2,1,"this model will not do att lte",1,1,21,0.670044,0.225939
+669,2,0,"nice display  nice feel in hand",0,0,10,1.000000,1.000000
+669,2,1,"watch this model c6833 dose not have band 17 for att.",1,1,21,0.772063,0.258171
+669,2,2,"can get h  and in atl around 4 to 7 mbs",1,1,18,0.189596,0.121913
+670,2,0,"i m writing a review again  i told ya guys that i bought it for my brother  and when i called him  i couldn t hear him  and neither he did ",0,1,25,1.000000,1.000000
+670,2,1,"it s really awful  it s the worst phone i ever bought ",0,1,25,0.208576,0.156977
+670,2,2,"i would never recommend nbd  it s really bad",0,1,15,0.702797,0.285897
+670,2,3,"i don t recommend nobody at all",1,1,15,0.125638,0.172716
+671,2,0,"outside of the trackball   weak stock battery it s  physically  relatively durable... somewhat... my screen developed a black dot bleed for no apparent reason.",0,1,23,1.000000,1.000000
+671,2,1,"this is truly the worst blackberry phone you can buy.",1,0,1,0.759759,0.229889
+671,2,2,"the trackball will fail   become a problem.",1,0,9,0.735956,0.151451
+671,2,3,"i can t possibly fathom that any other blackberry wouldn t be a better choice.",1,1,23,0.672521,0.229889
+671,2,4,"the default battery  which i replaced with a larger one that sticks out more  gave terrible battery life.",1,1,20,0.647401,0.222037
+671,2,5,"as some one else mentioned  signal strength is a problem with this phone.",1,1,20,0.675271,0.151451
+671,2,6,"i don t think i ve ever seen full bars.",1,1,20,0.667960,0.229889
+671,2,7,"dropped calls at least a 2 3 times a week.",1,1,20,0.572781,0.151451
+671,2,8,"blackberry s desktop software is coded by a bunch of dropouts under the management of some one who goes out of their way to give a rip about what people want ask for.",1,0,9,0.613178,0.145703
+671,2,9,"this company is dying for a reason.",1,0,2,0.657340,0.165859
+671,2,10,"i paid a reasonable   200 for an android phone for my gf and it wipes the floor with this thing.",1,0,2,0.316810,0.139053
+672,2,0,"it can make calls  most of the time",0,1,17,1.000000,1.000000
+672,2,1,"gps fails trackball not easily replaceable  trackball fails often kinda drops calls often  after 3 replacements  gave up  waited out contract and swapped to a droid.",1,0,11,0.428047,0.141625
+673,2,0,"i got this phone couple weeks ago  this is a gift for my brother  but firstly i decided to set up the phone  and while doing  i didn t like it ",0,1,21,1.000000,1.000000
+673,2,1,"it s not so good ",0,1,21,0.739387,0.229889
+673,2,2,"i use iphone and may be that s why i didn t like it ",0,1,21,0.668282,0.222037
+673,2,3,"u cannot use video camera if u ain t for memory card ",0,1,24,0.584226,0.170271
+673,2,4,"it s good for  114",1,1,24,0.601042,0.251376
+674,2,0,"its goof to have has a nice back up phone.",0,0,10,1.000000,1.000000
+674,2,1,"nice camera looks nice also.",0,0,10,0.063198,0.091074
+674,2,2,"can hear through it perfectly this is a good phone to get if u really want  balckberry on the go",0,0,10,0.662075,0.157312
+674,2,3,"takes long to start.",1,1,24,0.587123,0.225939
+675,2,0,"slow  freezes a lot  trackball randomly stops working  no updates  built in browser freezes every 15 secs and is horribly slow  downloading anything makes the phone freeze  and this is not a 3g phone.",1,1,20,1.000000,1.000000
+675,2,1,"it is the horribly slow edge.",1,1,20,0.312566,0.127839
+676,2,0,"fast phone nice camera  flash is bright  great flashlight  decent battery life its a blackberry...",0,0,10,1.000000,1.000000
+676,2,1,"no longer getting software updates  final version was os 5.",1,1,16,0.772063,0.258171
+676,2,2,"no os 6... trackball on some over time stop responding correctly  but it has been for the most part fixed.",1,1,16,0.257832,0.189265
+677,2,0,"the phone was great but because it was unlocked i could not use my t mobile hotspot which i use a lot.",0,0,1,1.000000,1.000000
+677,2,1,"i love",0,0,1,0.733204,0.145703
+677,2,2,"the phone cellar was difficult to communicate with until i spoke with newegg customer service.",1,1,19,0.695259,0.258171
+677,2,3,"they did not want to issue a rma or pay for the return but the wonderful staff at newegg took care of issuing a rma   they refunded my shipping cost to return the item.",1,1,25,0.420178,0.139508
+678,2,0,"great phone  has dual sim  additional memory slot",0,0,4,1.000000,1.000000
+678,2,1,"microsoft is have a difficult time fixing the screen software and everyone is complaining about it.",1,1,25,0.718230,0.229889
+678,2,2,"can t type text messages  select an icon and something else opens up.",1,1,16,0.633476,0.229985
+678,2,3,"i think they really want wait until windows 10 comes out  because the fixes they are trying are not working.",1,1,16,0.587123,0.154359
+679,2,0,"not expensive with reasonable features.",0,1,24,1.000000,1.000000
+679,2,1,"black screen after two months of use.",1,0,12,0.682823,0.151451
+679,2,2,"windows recovery tool and other suggested tricks did not fix the issue.",1,0,12,0.624028,0.154359
+680,2,0,"bought this phone as a replacement for my grandson s wrecked phone.",0,0,11,1.000000,1.000000
+680,2,1,"wifi   worked without a sim.",0,0,1,0.767644,0.178737
+680,2,2,"took to an att store for a new sim and it was installed and working within minutes.",0,0,1,0.201963,0.109086
+680,2,3,"liked it so much i bought a second one to replace my granddaughters  smaller htc phone.",0,0,1,0.639462,0.157312
+680,2,4,"the grandson has dropped his twice already and it still works fine.",0,0,2,0.588088,0.154359
+681,2,0,"nice touch screen smart phone.",0,0,12,1.000000,1.000000
+681,2,1,"took mine to my at   t subscriber retailer store for my upgrade and was taken care of free of charge.",0,0,11,0.773509,0.266969
+681,2,2,"like the cotana voice feature for calling  etc. free with the phone.",0,0,6,0.444843,0.122020
+681,2,3,"like windows 8.1 screen and options.",0,0,8,0.724748,0.165859
+681,2,4,"nice 5  screen make everything easier to see.",0,0,8,0.137313,0.163011
+681,2,5,"still leaning all of windows 8.1  which can be kind of confusing for the average user.",1,1,15,0.333350,0.212770
+682,2,0,"bought this phone on 01 02  received on 01 07 nice windows phone  buggy display  update coming soon updated phone 01 25  display still buggy  now not so nice windows phone  on 02 13 my display backlight dies contact newegg 02 16 about a bad phone  they are no help so i contact microsoft and they are also no help  im told this phone was not to be sold in the us and they cant help i contact microsoft customer service and they take my info and say they will call back  on 02 18 i get a call and im told to take the phone to a 3rd party repair shop and that i would have to cover the repair because im in north america  so if you live in the usa don t buy this junk  i have less than 2 month old paper weight  i have been with newegg for a long time  may be time to find a new source for my electronics",0,1,19,1.000000,1.000000
+682,2,1,"lots of youtube videos on this phone and its bugs don t buy  you will be stuck with a paper weight that rings and you have no idea who is calling you",1,0,11,0.553635,0.144189
+683,2,0,"light weight  good battery life  big and bright display  nice volume and clarity from the speakers  5 mp inward facing camera for selfie fans  fairly quick camera  sd card slot to expand the memory to your needs.",0,0,10,1.000000,1.000000
+683,2,1,"automatic brightness sensor and touch panel are often buggy.",1,0,10,0.490794,0.188028
+683,2,2,"only up to 480p video recording.",1,0,10,0.645862,0.151451
+683,2,3,"3d game graphics are often choppy.",1,0,10,0.587123,0.154359
+684,2,0,"new condition   unlocked   non branded phone  dual sim slot  micro sd  slim and light weight  good size  good price point  customizable text and themes  works very good so far.",0,0,10,1.000000,1.000000
+684,2,1,"camera is okay  not the best only 8gb internal memory availability of apps from microsoft marketplace although it s quad core  it s sluggish when playing candy crush saga and watching hd videos.",1,0,8,0.733826,0.157312
+684,2,2,"2g or 3g  connectivity to 4g network is noticeably slower.",1,1,18,0.681754,0.229985
+684,2,3,"win8 os on screen navigator bar takes up 1 4 inch of the screen  making the viewing area 1 4 inch smaller.",1,1,18,0.704456,0.172164
+684,2,4,"so   i am getting a 4 3 4 inch screen  not 5 inch screen.",1,1,18,0.072853,0.109266
+685,2,0,"comes with extra battery  extra screen protector and a free plastic phone case.",0,0,4,1.000000,1.000000
+685,2,1,"photo and video quality is awesome.",0,0,0,0.732424,0.222037
+685,2,2,"this arrived about a week after i placed my order which is impressive since it was coming from overseas.",0,0,3,0.668282,0.151451
+685,2,3,"cost less than other phones with similar features.",0,0,5,0.647680,0.222037
+685,2,4,"if only the phone charger cord could be bit longer.",1,0,3,0.557412,0.148520
