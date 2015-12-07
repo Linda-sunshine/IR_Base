@@ -426,6 +426,22 @@ public class Utils {
 		return spVct;
 	}
 	
+	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		
+		for(_SparseFeature[] fv:vcts) {
+			for(_SparseFeature f:fv) {
+				int x = f.getIndex();
+				if (vct.containsKey(x)) {
+					vct.put(x, vct.get(x) + f.getValue());
+				} else {
+					vct.put(x, f.getValue());
+				}
+			}
+		}
+		return Utils.createSpVct(vct);
+	}
+	
 	static public _SparseFeature[] createSpVct(ArrayList<HashMap<Integer, Double>> vcts) {
 		HashMap<Integer, _SparseFeature> spVcts = new HashMap<Integer, _SparseFeature>();
 		HashMap<Integer, Double> vPtr;

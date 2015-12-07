@@ -5,23 +5,24 @@ import java.util.Arrays;
 
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
-
 import structures._PerformanceStat;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
-import utils.Utils;
 
-public class SyncCoLinAdapt extends CoLinAdapt {
+public class SyncCoLinAdapt extends LinAdapt {
 	double[] m_allAs; //All users transformation matrixes.
 	double[] m_allGs; //All users gradients.
 	ArrayList<_User> m_users;
 	ArrayList<String> m_userIndexes;
 	double[] m_similarity;//It contains all user pair's similarity.
-
+	double m_eta3; // Weight for R2.
+	
 	public SyncCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes, ArrayList<_User> users) {
 		super(fg, fn, globalWeights, featureGroupIndexes);
 		m_users = users;
+		m_vSize = m_dim*2*m_users.size();
+		m_eta3 = 0.5;
 	}
 
 	public void init(){
@@ -34,18 +35,8 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		for(int i=0; i<m_users.size(); i++){
 			user = m_users.get(i);
 			m_userIndexes.add(user.getUserID());
-			Utils.fillPartOfArray(i*m_dim*2, m_dim*2, m_allAs, user.getCoLinAdaptA());
+			System.arraycopy(user.getCoLinAdaptA(), 0, m_allAs, m_dim*2*(i+1), m_dim*2);
 		}
-	}
-	
-	public void initLBFGS(){
-		if(m_allGs == null)
-			m_allGs = new double[m_dim*2*m_users.size()];
-		if(m_diag == null)
-			m_diag = new double[m_dim*2*m_users.size()];
-		
-		Arrays.fill(m_diag, 0);
-		Arrays.fill(m_allGs, 0);
 	}
 	
 	public int getIndex(int i, int j){
@@ -60,13 +51,13 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	
 	//Since we have a big A matrix, the calculation of logit function is different.
 	public double logit(_SparseFeature[] fvs, int userIndex){
-		int featureIndex = 0, groupIndex = 0, offset = m_dim*2*userIndex;
+		int n = 0, k = 0, offset = m_dim*2*userIndex;
 		double value = m_allAs[offset]*m_weights[0] + m_allAs[offset+m_dim];//Bias term: w0*a0+b0.
 		
 		for(_SparseFeature fv: fvs){
-			featureIndex = fv.getIndex() + 1;
-			groupIndex = m_featureGroupIndexes[featureIndex];
-			value += (m_allAs[offset+groupIndex]*m_weights[featureIndex] + m_allAs[offset+groupIndex + m_dim])*fv.getValue();
+			n = fv.getIndex() + 1;
+			k = m_featureGroupIndexes[n];
+			value += (m_allAs[offset+k]*m_weights[n] + m_allAs[offset+k + m_dim])*fv.getValue();
 		}
 		return 1/(1+Math.exp(-value));
 	}

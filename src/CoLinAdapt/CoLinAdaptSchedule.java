@@ -144,7 +144,6 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	}
 	
 	public double calcSim4TwoUsers(_User ui, _User uj){
-//		return 0.2;
 		return 	Utils.cosine(ui.getSparse(), uj.getSparse());
 	}
 	
