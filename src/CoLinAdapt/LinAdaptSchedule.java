@@ -1,9 +1,11 @@
 package CoLinAdapt;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import structures.MyLinkedList;
 import structures._Review;
+import structures._SparseFeature;
 import structures._User;
 
 /****
@@ -20,7 +22,10 @@ public class LinAdaptSchedule {
 	protected double[] m_globalWeights;
 	protected int[] m_featureGroupIndexes;
 	protected double[][] m_avgPRF;
+	int m_failCount = 0;
 	
+//	ArrayList<String> m_features;
+
 	public LinAdaptSchedule(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
 		m_users = users;
 		m_userIDs = new String[users.size()];
@@ -51,31 +56,36 @@ public class LinAdaptSchedule {
 	//In this process, we collect one review from each user and train online.
 	public void onlineTrain(){
 		int predL, trueL;
-		int[][] TPTable = new int[2][2];
-//		int[] predLabels;
-//		int[] trueLabels;
+		int[][] TPTable;;
 		LinAdapt model;
 		ArrayList<_Review> reviews;
 		
+//		int index;
+//		String feature;
 		//The review order doesn't matter, so we can adapt one user by one user.
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
+//			if(m_users.get(i).getUserID().equals("A1A0GJYUB0DP8H"))
+//				System.out.println("Stop");
 			reviews = m_users.get(i).getReviews();
-//			predLabels = new int[reviews.size()];
-//			trueLabels = new int[reviews.size()];
+			TPTable = new int[2][2];
 			for(int j=0; j<reviews.size(); j++){
 				//Predict first.
+//				for(_SparseFeature f: reviews.get(j).getSparse()){
+//					index = f.getIndex();
+//					feature = m_features.get(index);
+//					System.out.format("(%s, %.4f)\t", feature, f.getValue());
+//				}
+//			    System.out.println();
 				predL = model.predict(reviews.get(j));
 				trueL = reviews.get(j).getYLabel();
 				TPTable[predL][trueL]++;
-//				predLabels[j] = predL;
-//				trueLabels[j] = reviews.get(j).getYLabel();
 				
 				//Adapt based on the new review.
 				ArrayList<_Review> trainSet = new ArrayList<_Review>();
 				trainSet.add(reviews.get(j));
-				model.train(trainSet);
-			}
+//				model.train(trainSet);
+			}	
 			model.setPerformanceStat(TPTable);
 		}
 	}
@@ -85,7 +95,6 @@ public class LinAdaptSchedule {
 		LinAdapt model;
 		ArrayList<_Review> reviews;
 		int pivot = 0;
-		
 		//Traverse all users and train their models based on the half of their reviews.
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
@@ -100,7 +109,7 @@ public class LinAdaptSchedule {
 				else 
 					testSet.add(reviews.get(j));
 			}
-			model.train(trainSet);//Train the model.
+//			model.train(trainSet);//Train the model.
 			model.test(testSet);
 		}
 	}
@@ -146,4 +155,8 @@ public class LinAdaptSchedule {
 			System.out.println();
 		}
 	}
+	 
+//	public void setFeatures(ArrayList<String> features){
+//		m_features = features;
+//	}
 }

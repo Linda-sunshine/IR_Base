@@ -243,12 +243,16 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					double TF =  Math.log10(sf.getValue())+ 1 ;// normalized TF
+//					double DF = Utils.sumOfArray(stat.getDF());
+//					double IDF = Math.log10((25265)/DF)+ 1;
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
 					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
 					avgIDF += IDF;
+//					(1+Math.log10(r.m_VSM.get(key)))*(1+Math.log10(Config.NumberOfReviewsInTraining/m_Vocabs.get(key).getValue())));
 				}
 				
 				//compute average IDF
@@ -389,7 +393,6 @@ public abstract class Analyzer {
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

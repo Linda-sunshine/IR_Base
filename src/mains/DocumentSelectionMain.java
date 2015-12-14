@@ -192,7 +192,7 @@ public class DocumentSelectionMain {
 		
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
-		String style = "SUP";
+		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
 		String method = "RW";
@@ -208,17 +208,18 @@ public class DocumentSelectionMain {
 		double C = 1.0;
 		
 		/*****Parameters in feature selection.*****/
-		String stopwords = "./data/Model/stopwords.dat";
-		String featureSelection = "MI"; //Feature selection method.
+		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.2; // Used in feature selection, the starting point of the features.
 		double endProb = 1.0; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 25; // Filter the features with DFs smaller than this threshold.
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s_%s.txt", Ngram, featureSelection, category, dataSize);
+		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-		String aspectlist = "./data/Model/aspect_output_simple.txt";
 		
-//		System.out.println("Performing feature selection, wait...");
+		int numOfAspects = 28; // 12, 14, 24, 28
+		String aspectlist = String.format("./data/Model/%d_aspect_tablet.txt", numOfAspects);
+
+		//		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
@@ -243,30 +244,35 @@ public class DocumentSelectionMain {
 			analyzer.setFeatureValues("TF", 0);		
 			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-//			pLSA tModel = null;
-//			if (topicmodel.equals("pLSA")) {			
-//				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-//						lambda, number_of_topics, alpha);
-//			} else if (topicmodel.equals("LDA_Gibbs")) {		
-//				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-//					lambda, number_of_topics, alpha, 0.4, 50);
-//			}  else if (topicmodel.equals("LDA_Variational")) {		
-//				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-//						lambda, number_of_topics, alpha, 10, -1);
-//			} else {
-//				System.out.println("The selected topic model has not developed yet!");
-//				return;
-//			}
-//		
-//			tModel.setDisplay(true);
-//			tModel.setInforWriter(infoFilePath);
-//			tModel.setSentiAspectPrior(true);
-//			tModel.LoadPrior(aspectlist, eta);
-//			tModel.EMonCorpus();	
-
+			pLSA tModel = null;
+			if (topicmodel.equals("pLSA")) {			
+				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+						lambda, number_of_topics, alpha);
+			} else if (topicmodel.equals("LDA_Gibbs")) {		
+				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+					lambda, number_of_topics, alpha, 0.4, 50);
+			}  else if (topicmodel.equals("LDA_Variational")) {		
+				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+						lambda, number_of_topics, alpha, 10, -1);
+			} else {
+				System.out.println("The selected topic model has not developed yet!");
+				return;
+			}
+		
+			tModel.setDisplay(true);
+			tModel.setInforWriter(infoFilePath);
+			tModel.setSentiAspectPrior(true);
+			tModel.LoadPrior(aspectlist, eta);
+			tModel.EMonCorpus();
+			//Write out the topK words under each topic.
+			int topK = 20;
+			String topWordsFile = String.format("./data/TopicVectors/%dAspects_top%dWords_corpus.txt", numOfAspects, topK);
+			tModel.writeTopWords(topWordsFile, topK);
 		}
-		String topicFile = "./data/MI_TopicVectors_1110.txt";
-//		analyzer.saveTopicVectors(topicFile);
+		
+		String topicFile = String.format("./data/TopicVectors/%dAspects_topicVectors_corpus.txt", numOfAspects);
+		analyzer.saveTopicVectors(topicFile);
+		/****
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		
 		//construct effective feature values for supervised classifiers 
@@ -318,5 +324,6 @@ public class DocumentSelectionMain {
 			SVM mySVM = new SVM(c, C);
 			mySVM.crossValidation(CVFold, c);
 		}
+		***/
 	}
 }

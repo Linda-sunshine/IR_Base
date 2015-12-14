@@ -77,6 +77,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		_Review tmp, next;
 		int userIndex, predL;
 		CoLinAdapt model;
+		int count = 0;
 		m_trainQueue = new MyLinkedList<_Review>();//We use this to maintain the review pool.
 		//Construct the initial pool.
 		for(_User u: m_users)
@@ -87,8 +88,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			tmp = m_trainQueue.poll(); 
 			userIndex = m_userIDIndexMap.get(tmp.getUserID());
 			next = m_users.get(userIndex).getOneReview();
-			if(next.equals(null))
-				m_trainQueue.add(m_users.get(userIndex).getOneReview());
+			if(next != null)
+				m_trainQueue.add(next);
 			
 			// Predict first.
 			model = m_users.get(userIndex).getCoLinAdapt();
@@ -96,7 +97,11 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			predL = model.predict(tmp);
 			model.addOnePredResult(predL, tmp.getYLabel());
 			model.train(tmp);
+			count++;
+			if(count % 1000 == 0)
+				System.out.print(".");
 		}
+//		System.out.println("total: " + count);
 	}
 
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.

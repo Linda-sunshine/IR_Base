@@ -31,15 +31,18 @@ public class SanityCheckMain {
 		String dataSize = "86jsons"; //"50K", "100K"
 		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-				
+		String stopwords = "./data/Model/stopwords.dat";
+		
 		System.out.println("Creating feature vectors, wait...");
 		Analyzer analyzer;
 		_Corpus c;
 		analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		((DocAnalyzer) analyzer).setReleaseContent(false);
+		((DocAnalyzer) analyzer).LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
-		String topicFile = "./data/topicVectors";
+		int numOfAspects = 14; // 12, 14, 24, 28
+		String topicFile = String.format("./data/TopicVectors/%dAspects_topicVectors_corpus.txt", numOfAspects);
 //		String topicFile = "./data/MI_TopicVectors_1110.txt";
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		
@@ -48,32 +51,34 @@ public class SanityCheckMain {
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		
-		PartSanityCheck check = new PartSanityCheck(c);
-		
-//		check.loadCheckFile("./data/Selected100Files/100Files.txt"); //Load the 100 files I selected before.
-//		check.setTestFileIDs(); //Set the IDs for the 100 files.
-//		check.printFile("Selected100FilesWithIDs.txt"); //Print the file with IDs.
-		int topK = 20;
-		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-		int[] groupSize = check.getGroupSize();
-		check.setFeature(analyzer.getFeatures());
-
-		//BoW and topic performance check.
-		double[] performance = check.constructPurity(topK, 1, "data/SanityCheck/DiffGroupTP");//0: Bow; else: topic; return purity.
-		
-//		double[] performance = check.trainSVM(); // Return precision in this case.
-		
-		for(int i= 0; i<performance.length; i++)
-			System.out.format("%d\t", i);
-		System.out.println();
-		
-		for(int i= 0; i<groupSize.length; i++)
-			System.out.format("%d\t", groupSize[i]);
-		System.out.println();
-		
-		for(int i= 0; i<performance.length; i++)
-			System.out.format("%.4f\t", performance[i]);
-		System.out.println();
+//		PartSanityCheck check = new PartSanityCheck(c);
+//		
+////		check.loadCheckFile("./data/Selected100Files/100Files.txt"); //Load the 100 files I selected before.
+////		check.setTestFileIDs(); //Set the IDs for the 100 files.
+////		check.printFile("Selected100FilesWithIDs.txt"); //Print the file with IDs.
+//		
+//		int topK = 20;
+//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		int[] groupSize = check.getGroupSize();
+//		check.setFeature(analyzer.getFeatures());
+//
+//		//BoW and topic performance check.
+//		String tGroup = String.format("data/SanityCheck/DiffGroupTP_%dAspects_", numOfAspects);
+//		double[] performance = check.constructPurity(topK, 1, tGroup);//0: Bow; else: topic; return purity.
+//		
+////		double[] performance = check.trainSVM(); // Return precision in this case.
+//		
+//		for(int i= 0; i<performance.length; i++)
+//			System.out.format("%d\t", i);
+//		System.out.println();
+//		
+//		for(int i= 0; i<groupSize.length; i++)
+//			System.out.format("%d\t", groupSize[i]);
+//		System.out.println();
+//		
+//		for(int i= 0; i<performance.length; i++)
+//			System.out.format("%.4f\t", performance[i]);
+//		System.out.println();
 		
 //		String resFolder = "./data/SanityCheck/";
 //		check.calculateSimilarity();
@@ -91,16 +96,21 @@ public class SanityCheckMain {
 //		checkRandom.calculatePatK4All(15000, 100);
 //		checkRandom.printPatK(15000, 100);
 		
-//		PuritySanityCheck checkBow = new PuritySanityCheck(1, c);
-//		checkBow.calculateSimilarity();
-//		checkBow.calculatePatK4All();
-//		checkBow.printPatK();
-//		
-//		PuritySanityCheck checkTopic = new PuritySanityCheck(2, c);
-//		checkTopic.calculateSimilarity();
-//		checkTopic.calculatePatK4All();
-//		checkTopic.printPatK();
-//		
+		PuritySanityCheck checkRandom = new PuritySanityCheck(0, c);
+//		checkRandom.calculateSimilarity();
+		checkRandom.calculatePatK4All();
+		checkRandom.printPatK();
+		
+		PuritySanityCheck checkBow = new PuritySanityCheck(1, c);
+		checkBow.calculateSimilarity();
+		checkBow.calculatePatK4All();
+		checkBow.printPatK();
+		
+		PuritySanityCheck checkTopic = new PuritySanityCheck(2, c);
+		checkTopic.calculateSimilarity();
+		checkTopic.calculatePatK4All();
+		checkTopic.printPatK();
+		
 //		PuritySanityCheck checkBoWTop = new PuritySanityCheck(3, c);
 //		checkBoWTop.calculateSimilarity();
 //		checkBoWTop.calculatePatK4All();

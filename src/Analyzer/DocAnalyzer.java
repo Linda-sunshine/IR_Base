@@ -206,7 +206,7 @@ public class DocAnalyzer extends Analyzer {
 		//Normalize them and stem them.		
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
-		
+			
 		LinkedList<String> Ngrams = new LinkedList<String>();
 		int tokenLength = tokens.length, N = m_Ngram;			
 		

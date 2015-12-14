@@ -49,8 +49,8 @@ public class LinAdapt {
 		m_featureGroupIndexes = featureGroupIndexes;
 		m_A = new double[m_dim*2];//Two bias terms.
 		
-		m_eta1 = 0.5;
-		m_eta2 = 0.5;
+		m_eta1 = 0.1;
+		m_eta2 = 0.001;
 	}  
 	
 	//Initialize the weights of the transformation matrix.
@@ -64,8 +64,9 @@ public class LinAdapt {
 	public void initGradients(){
 		m_g = new double[m_dim*2];
 		m_diag = new double[m_dim*2];
+		Arrays.fill(m_g, 0.1);
 	}
-	
+
 	public void initLBFGS(){
 		if(m_g == null)
 			m_g = new double[m_dim*2];
@@ -73,7 +74,7 @@ public class LinAdapt {
 			m_diag = new double[m_dim*2];
 		
 		Arrays.fill(m_diag, 0);
-		Arrays.fill(m_g, 0);
+		Arrays.fill(m_g, 0.1);
 	}
 	
 //	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
@@ -123,7 +124,7 @@ public class LinAdapt {
 			R1 += m_eta1*(m_A[i]-1)*(m_A[i]-1);//(a[i]-1)^2
 			R1 += m_eta2*(m_A[m_dim+i])*(m_A[m_dim+i]);//b[i]^2
 		}
-		System.out.println("Fvalue is " + (-L+R1));
+//		System.out.println("Fvalue is " + (-L+R1));
 		return -L + R1;
 	}
 	
@@ -144,7 +145,7 @@ public class LinAdapt {
 		double Pi = 0;//Pi = P(yd=1|xd);
 		int Yi, featureIndex = 0, groupIndex = 0;
 		
-		m_g = new double[m_dim*2];
+		Arrays.fill(m_g, 0);
 		//Update gradients one review by one review.
 		for(_Review review: trainSet){
 			Yi = review.getYLabel();
@@ -167,12 +168,12 @@ public class LinAdapt {
 			m_g[i] += 2*m_eta1*(m_A[i]-1);// add 2*eta1*(ak-1)
 			m_g[i+m_dim] += 2*m_eta2*m_A[i+m_dim]; // add 2*eta2*bk
 		}
-		double magA = 0, magB = 0 ;
-		for(int i=0; i<m_dim; i++){
-			magA += m_g[i]*m_g[i];
-			magB += m_g[i+m_dim]*m_g[i+m_dim];
-		}
-		System.out.format("Gradient magnitude for A: %.5f\tB: %.5f\n", magA, magB);
+//		double mag = 0;
+//		for(int i=0; i<m_g.length; i++){
+//			mag += m_g[i]*m_g[i];
+//		}
+//		System.out.format("Gradient magnitude: %.5f\n", mag);
+//		return mag;
 	}
 	
 	//In this function, given a review and feature index, if the review has this feature, return the value of this feature, otherwise, return 0.
@@ -181,7 +182,7 @@ public class LinAdapt {
 		if(fvs == null || fvs.length == 0)
 			return 0;
 		int start = 0, end = fvs.length, middle = 0;
-		while(middle < end && start < end){
+		while(start <= end){
 			middle = (start + end) / 2;
 			if(fvs[middle].getIndex() == index)
 				return fvs[middle].getValue();
@@ -190,6 +191,7 @@ public class LinAdapt {
 			else
 				end = middle - 1;
 		}
+		System.err.println("Index not found!");
 		return 0;
 	}
 	
@@ -204,7 +206,6 @@ public class LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue;
 		int fSize = m_dim*2;
-		
 		initLBFGS();
 		try{
 			do{
@@ -224,7 +225,7 @@ public class LinAdapt {
 		for(int i=0; i<testSet.size(); i++){
 			trueL = testSet.get(i).getYLabel();
 			predL = predict(testSet.get(i));
-			TPTable[trueL][predL]++;
+			TPTable[predL][trueL]++;
 		}
 		setPerformanceStat(TPTable);
 	}

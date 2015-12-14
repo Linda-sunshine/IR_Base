@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import Classifier.supervised.SVM;
 
@@ -109,29 +112,71 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		}
 		return precision;
 	}
+	//Given an array and a value,return the index of the value.
+	public static int findValue(double[] a, double val){
+		int start = 0, end = a.length -1, middle = 0;
+		while(start <= end){
+			middle = (start + end)/2;
+			if(a[middle] == val)
+				return middle;
+			else if(a[middle] < val)
+				start = middle + 1;
+			else 
+				end = middle - 1;
+		}
+		System.err.print("Index not found!");
+		return -1;
+	}
+	
+	public static void main(String[] args){
+		double[] a = new double[]{1, 2, 3, 5};
+		double val = 5;
+		int index = findValue(a, val);
+		System.out.println(index);
+	}
 	// Use BoW to calculate the purity.
 	public double[] constructPurity(int topK, int flag, String filename) throws FileNotFoundException{
 		
-		double count = 0;
+		double count = 0, val;
+		int in = 0, length;
 		_Doc dj, tmp;
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
 		double[] purity = new double[m_groupIndexDocsMap.size()];
+		double[] values;
+		
 		for(int index: m_groupIndexDocsMap.keySet()){
 			// Access each document.
-			PrintWriter writer = new PrintWriter(new File(filename+index));
+			PrintWriter writer = new PrintWriter(new File(filename+index+".xls"));
 			for(_Doc d: m_groupIndexDocsMap.get(index)){
 				
 				//Write out the current document.
-				writer.write("==================================================\n");
+//				writer.write("==================================================\n");
 				writer.format("trueL:%d\n", d.getYLabel());
 				if(flag == 0){
 					for(_SparseFeature sf: d.getSparse())
 						writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
 				} else{
-					for(int j=0; j<d.getTopics().length; j++)
-						writer.format("(%d, %.4f)\t", j, d.getTopics()[j]);
+					length = d.getTopics().length;//Get the length of the topics.
+					values = Arrays.copyOf(d.getTopics(), length);
+					Arrays.sort(values); //Sort the topic vector.
+					
+					//Construct the value-index map.
+					HashMap<Double, Integer> valIndexMap = new HashMap<Double, Integer>();
+					for(int i=0; i<d.getTopics().length; i++)
+						valIndexMap.put(d.getTopics()[i], i);
+					
+					//Print out the value and index.
+					for(int j=0; j<length; j++){
+						val = values[length-1-j];
+						in = valIndexMap.get(val);
+						//I want to print topic in a descending order based on values.
+						writer.format("(%d, %.4f)\t", in, val);
+					}
 				}
-				writer.format("\n%s\n", d.getSource());
+//					for(int i=0; i<length; i++)
+//						writer.format("(%d, %.4f)\t", i, d.getTopics()[i]);
+//				}
+//				writer.format("\n%s\n", d.getSource());
 
 				// Construct neighborhood.
 				for(int i=0; i<m_trainSet.size(); i++){
@@ -149,16 +194,16 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 					if(d.getYLabel() == tmp.getYLabel())
 						count++;
 					
-					//Write the neighbors' information.
-					writer.format("trueL:%d\n", tmp.getYLabel());
-					if(flag == 0){
-						for(_SparseFeature sf: tmp.getSparse())
-							writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
-					} else{
-						for(int j=0; j<tmp.getTopics().length; j++)
-							writer.format("(%d, %.4f)\t", j, tmp.getTopics()[j]);
-					}
-					writer.format("\n%s\n", tmp.getSource());
+//					//Write the neighbors' information.
+//					writer.format("trueL:%d\n", tmp.getYLabel());
+//					if(flag == 0){
+//						for(_SparseFeature sf: tmp.getSparse())
+//							writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
+//					} else{
+//						for(int j=0; j<tmp.getTopics().length; j++)
+//							writer.format("(%d, %.4f)\t", j, tmp.getTopics()[j]);
+//					}
+//					writer.format("\n%s\n", tmp.getSource());
 				}
 				purity[index] += count/(double) topK;
 				writer.format("Count:%d, Purity:%.4f\n", (int)count, count/(double)topK);

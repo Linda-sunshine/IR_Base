@@ -25,23 +25,27 @@ public class LinAdaptMain {
 		String folder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/global.classifer";
+		analyzer.LoadStopwords("./data/Model/custom.stop");
 		analyzer.loadUserDir(folder);
-		analyzer.setFeatureValues("BM25", 2);
+		analyzer.setFeatureValues("BM25", 0);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
-		
 		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
 		//Create the instances of the LinAdapt model.
 		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		linAdaptS.setGlobalWeights(globalWeights);
 		linAdaptS.initSchedule();
-		
+//		linAdaptS.setFeatures(analyzer.getFeatures());
+
 		//Online training.
 		linAdaptS.onlineTrain();
 		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
 		linAdaptS.printPerformance();
 		
 		//Batch training.
-//		linAdaptS.batchTrainTest();
-//		linAdaptS.calcBatchPerformance();
+		linAdaptS.initSchedule();
+		linAdaptS.batchTrainTest();
+		linAdaptS.calcPerformance();
+		linAdaptS.printPerformance();
+
 	}
 }

@@ -72,23 +72,23 @@ public class CoLinAdapt extends LinAdapt{
 		}
 		
 		//Add R1.
-		for(int i=0; i<m_dim; i++){
-			R1 += m_eta1*(m_As[i]-1)*(m_As[i]-1);//(a[i]-1)^2
-			R1 += m_eta2*(m_As[m_dim+i])*(m_As[m_dim+i]);//b[i]^2
+		for(int k=0; k<m_dim; k++){
+			R1 += m_eta1*(m_As[k]-1)*(m_As[k]-1);//(a[i]-1)^2
+			R1 += m_eta2*(m_As[m_dim+k])*(m_As[m_dim+k]);//b[i]^2
 		}
 		fValue = -L + R1;
 		
 		// Add the R2 part to the function value.
 		for(int i=0; i<m_neighbors.size(); i++){
 			sim = m_neighborSims.get(i);
-			for(int j=0; j<m_dim; j++){
+			for(int k=0; k<m_dim; k++){
 				//(a_ki-a_kj)^2 + (b_ki-b_kj)^2
-				R2 += (m_As[j]-m_As[(i+1)*m_dim*2+j])*(m_As[j]-m_As[(i+1)*m_dim*2+j])+(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim])*(m_As[j+m_dim]-m_As[(i+1)*m_dim*2+j+m_dim]);
+				R2 += (m_As[k]-m_As[(i+1)*m_dim*2+k])*(m_As[k]-m_As[(i+1)*m_dim*2+k])+(m_As[k+m_dim]-m_As[(i+1)*m_dim*2+k+m_dim])*(m_As[k+m_dim]-m_As[(i+1)*m_dim*2+k+m_dim]);
 			}
 			fValue += sim * m_eta3 * R2;
-//			R2 = 0;
+			R2 = 0;
 		}
-		System.out.println("Fvalue is " + fValue);
+//		System.out.println("Fvalue is " + fValue);
 		return fValue;
 	}
 	
@@ -140,7 +140,7 @@ public class CoLinAdapt extends LinAdapt{
 		for(int i=0; i<m_g.length; i++){
 			magA += m_g[i]*m_g[i];
 		}
-		System.out.format("Gradient magnitude: %.5f\n", magA);
+//		System.out.format("Gradient magnitude: %.5f\n", magA);
 	}
 	
 	//Return the transformed matrix.
@@ -165,7 +165,7 @@ public class CoLinAdapt extends LinAdapt{
 			m_perfStat.addOnePredResult(predL, trueL);
 		}
 	}
-	
+
 	//Train each user's model with training reviews.
 	public void train(ArrayList<_Review> trainSet){
 		int[] iflag = {0}, iprint = {-1, 3};

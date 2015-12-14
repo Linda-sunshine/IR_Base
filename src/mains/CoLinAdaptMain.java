@@ -20,7 +20,7 @@ public class CoLinAdaptMain {
 		
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		//Load users.
-		String folder = "./data/CoLinAdapt/Users";
+		String folder = "./data/CoLinAdapt/Amazon/Users";
 //		String folder = "./data/CoLinAdapt/Amazon/Users";
 
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
@@ -35,7 +35,7 @@ public class CoLinAdaptMain {
 		coLinAdaptS.setGlobalWeights(globalWeights);
 		coLinAdaptS.initSchedule();
 		coLinAdaptS.calcluateSimilarities();
-		int topK = 5;
+		int topK = 20;
 		coLinAdaptS.constructNeighborhood(topK);
 //		//If we know the number of neighbors in advance, we can init gradients before.
 //		coLinAdaptS.initGradients();

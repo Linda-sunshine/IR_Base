@@ -112,7 +112,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				oneR2 = 0;
 			}
 		}
-		System.out.println("Fvalue is " + fValue);
+//		System.out.println("Fvalue is " + fValue);
 		return fValue;
 	}
 
@@ -120,7 +120,8 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	public void calculateGradients(ArrayList<_Review> trainSet) {
 		double Pi = 0, sim = 0;// Pi = P(yd=1|xd);
 		int Yi, userIndex = 0, featureIndex = 0, groupIndex = 0;
-		m_allGs = new double[m_users.size()*m_dim*2];
+		//m_allGs = new double[m_users.size()*m_dim*2];
+		Arrays.fill(m_allGs, 0);
 		int[] neighborIndexes;
 		
 		// Update gradients one review by one review.
@@ -170,7 +171,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		for (int i = 0; i < m_allGs.length; i++) {
 			magA += m_allGs[i]*m_allGs[i];
 		}
-		System.out.format("Gradient magnitude: %.5f\n", magA);
+//		System.out.format("Gradient magnitude: %.5f\n", magA);
 	}
 
 	// Return the transformed matrix.

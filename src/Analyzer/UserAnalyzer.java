@@ -37,12 +37,14 @@ public class UserAnalyzer extends DocAnalyzer {
 		for(File f: dir.listFiles()){
 			if(f.isFile()){
 				loadOneUser(f.getAbsolutePath());
+				if(count%100 == 0)
+					System.out.print(".");
 				count++;
 			}
 			else 
 				loadUserDir(f.getAbsolutePath());
 		}
-		System.out.format("%d users are loaded from %s.", count, folder);
+		System.out.format("\n%d users are loaded from %s.", count, folder);
 	}
 	
 	// Load one file as a user here. 

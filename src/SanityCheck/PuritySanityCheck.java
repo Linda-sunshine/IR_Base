@@ -73,6 +73,7 @@ public class PuritySanityCheck {
 		}
 		return i*(i-1)/2+j;
 	}
+	
 	//Calculate p@k for all the documents.
 	public void calculatePatK4All(int topK, int itv){
 		_Doc tmpD;//the current document.
@@ -117,6 +118,63 @@ public class PuritySanityCheck {
 		}
 	}
 	
+	//Calculate p@5, p@10, p@20
+	public void calculatePatK4All(){
+		_Doc tmpD;//the current document.
+		ArrayList<_Doc> documents = m_corpus.getCollection();
+		int[] neighbors = new int[20];
+		
+		m_PatK = new double[2][3];//p@5, p@10, p@20
+
+		for(int i=0; i<m_size; i++){
+			tmpD = documents.get(i);
+			
+			//Select random documents as neighbors.
+			if(m_method == 0){
+				Random r = new Random();
+				for(int j=0; j<20; j++){
+					_Doc neighbor = documents.get((int)(r.nextDouble()*m_size));
+					neighbors[j] = neighbor.getYLabel();
+				}
+			} else{//else select neighbors based on similarity.
+				MyPriorityQueue<_RankItem> neighborQueue= new MyPriorityQueue<_RankItem>(20);
+				//select top k most similar documents as neighbors.
+				for(int j=0; j<m_size; j++){
+					if(j==i)
+						continue;
+					else
+						neighborQueue.add(new _RankItem(j, m_similarity[getIndex(i, j)]/documents.get(j).getDocLength()));
+				}
+				//Traverse the top K neighbors to collect their labels.
+				for(int k=0; k<neighborQueue.size(); k++){
+					_RankItem tmp = neighborQueue.get(k);
+					neighbors[k] = documents.get(tmp.m_index).getYLabel();
+				}
+			}
+			m_PatK[tmpD.getYLabel()][0] += calcPatK(neighbors, 5, tmpD.getYLabel());
+			m_PatK[tmpD.getYLabel()][1] += calcPatK(neighbors, 10, tmpD.getYLabel());
+			m_PatK[tmpD.getYLabel()][2] += calcPatK(neighbors, 20, tmpD.getYLabel());
+			m_counts[tmpD.getYLabel()]++;
+		}
+		for(int j=0; j<3; j++){
+			m_PatK[0][j] /= m_counts[0];
+			m_PatK[1][j] /= m_counts[1];
+		}
+	}
+	//Print p@5, p@10, p@20
+	public void printPatK(){
+		System.out.format("\tp@5\tp@10\tp@20\n");
+		//Print out neg p@k.
+		System.out.print("neg:");
+		for(int i=0; i<3; i++)
+			System.out.format("\t%.4f", m_PatK[0][i]);
+		System.out.println();
+		//Print out pos p@k.
+		System.out.print("pos:");
+		for(int i=0; i<3; i++)
+			System.out.format("\t%.4f", m_PatK[1][i]);
+		System.out.println();
+	}
 	public void printPatK(int topK, int itv){
 		int interval = topK/itv;
 		for(int i=0; i<interval; i++)
