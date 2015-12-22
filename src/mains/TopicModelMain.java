@@ -10,30 +10,32 @@ import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
+import topicmodels.ParentChild_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalyzer;
 import Analyzer.newEggAnalyzer;
 
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 2; //The default value is unigram. 
+		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LRHTSM"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM
-		
+		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
+	
 		String category = "tablet";
-		int number_of_topics = 40;
+		int number_of_topics = 20;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
-		int loadAspectSentiPrior = 1; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
+		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
@@ -54,6 +56,9 @@ public class TopicModelMain {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
+		String yahooNewsFolder = "./data/AT-YahooArticles";
+		String yahooCommentsFolder = "./data/AT-YahooComments";
+		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -77,31 +82,48 @@ public class TopicModelMain {
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
 		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
+		////store top k words distribution over topic
+		String topWordPath = "./data/results/beta_" + number_of_topics + "_" + topicmodel + "_" + ".txt";
 		
 		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
-		
+		String stopwords = "./data/Model/stopwords.dat";
+		String featureSelection = "DF"; //Feature selection method.
+		double startProb = 0.5; // Used in feature selection, the starting point of the features.
+		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+//		
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		////*******parent child topic model feature selection********////
+		////for parent child topic model, need to load two directory
+//		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel,
+//				 classNumber, null, Ngram, lengthThreshold);
+//		analyzer.LoadParentDirectory(yahooNewsFolder, suffix);
+//		analyzer.LoadChildDirectory(yahooCommentsFolder, suffix);
+		////***************////
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-
+		
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
-		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
+//		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
+		
+	////*******parent child topic model********////
+	//for parent child topic model, need to load two directory
+		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		analyzer.LoadParentDirectory(yahooNewsFolder, suffix);
+		analyzer.LoadChildDirectory(yahooCommentsFolder, suffix);
+//	////***************////
+//		
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		}
 		
-		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
-		analyzer.LoadDirectory(amazonFolder, suffix);				
+//		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
+//		analyzer.LoadDirectory(amazonFolder, suffix);				
 		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
@@ -141,12 +163,19 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-//				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
-//						number_of_topics, alpha,
-//						lambda);
+////				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
+////						number_of_topics, alpha,
+////						lambda);
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
+			}else if (topicmodel.equals("ParentChild_Gibbs")) {
+				int indicatorNum = 2;
+				double[] gamma = new double[2];
+				gamma[0] = 2;
+				gamma[1] = 2;
+				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
+						gibbs_lag, gamma, indicatorNum);
 			}
 			
 			model.setDisplay(display);
@@ -167,7 +196,11 @@ public class TopicModelMain {
 						
 			if (crossV<=1) {
 				model.EMonCorpus();
-				model.printTopWords(topK);
+				if(topWordPath == null)
+					model.printTopWords(topK);
+				else{
+					model.printTopWords(topK, topWordPath);
+				}
 			} else {
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
