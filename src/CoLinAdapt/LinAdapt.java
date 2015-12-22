@@ -24,10 +24,6 @@ public class LinAdapt {
 	double[] m_diag; //parameter used in lbfgs.
 	double[] m_g;//optimized gradients. 
 	
-	/****Online mode: the treu labels and predicted labels for each prediction
-	 * true labels: [0, 1, 0, 1]
-	 * pred labels: [1, 0, 1, 1]
-	 *****Batch mode: TP table*/
 //	protected int[][] m_predStat; 
 	
 	public LinAdapt(int fg, int fn){
@@ -49,8 +45,8 @@ public class LinAdapt {
 		m_featureGroupIndexes = featureGroupIndexes;
 		m_A = new double[m_dim*2];//Two bias terms.
 		
-		m_eta1 = 0.1;
-		m_eta2 = 0.001;
+		m_eta1 = 0.5;
+		m_eta2 = 0.5;
 	}  
 	
 	//Initialize the weights of the transformation matrix.
@@ -76,11 +72,6 @@ public class LinAdapt {
 		Arrays.fill(m_diag, 0);
 		Arrays.fill(m_g, 0.1);
 	}
-	
-//	//Create instance for the model with pred labels and true labels, used for online mode since we need the middle data.
-//	public void setPerformanceStat(int[] predLs, int[] trueLs){
-//		m_perfStat = new _PerformanceStat(predLs, trueLs);
-//	}
 
 	//Create instance for the model with existing TPTable, used for batch mode.
 	public void setPerformanceStat(int[][] TPTable){
@@ -101,7 +92,7 @@ public class LinAdapt {
 	
 	//Calculate the function value of the new added instance.
 	public double calculateFunctionValue(ArrayList<_Review> trainSet){
-		double L = 0; //log likelihood.
+		double L = 0, fValue = 0; //log likelihood.
 		int Yi;
 		_SparseFeature[] fv;
 		double Pi = 0;
@@ -116,16 +107,19 @@ public class LinAdapt {
 			Pi = logit(fv);
 			if(Yi == 1)
 				L += Math.log(Pi);
-			else 
-				L += Math.log(1 - Pi);
+			else{
+				if( Pi != 1)
+					L += Math.log(1 - Pi);
+			}
 		}
 		//Add regularization parts.
 		for(int i=0; i<m_dim; i++){
 			R1 += m_eta1*(m_A[i]-1)*(m_A[i]-1);//(a[i]-1)^2
 			R1 += m_eta2*(m_A[m_dim+i])*(m_A[m_dim+i]);//b[i]^2
 		}
-//		System.out.println("Fvalue is " + (-L+R1));
-		return -L + R1;
+		fValue = -L / trainSet.size() + R1; //Normalize the L by the size of training set.
+//		System.out.println("Fvalue is " + fValue);
+		return fValue;
 	}
 	
 	// We can do A*w*x at the same time to reduce computation.
@@ -136,14 +130,20 @@ public class LinAdapt {
 			featureIndex = fv.getIndex() + 1;
 			groupIndex = m_featureGroupIndexes[featureIndex];
 			value += (m_A[groupIndex]*m_weights[featureIndex] + m_A[groupIndex + m_dim])*fv.getValue();
+			 
+//			double val=fv.getValue();
+//			 
+//			if(val>0)
+//			System.out.println(featureIndex+" "+m_weights[featureIndex]+" "+val);
 		}
 		return 1/(1+Math.exp(-value));
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
-	public void calculateGradients(ArrayList<_Review> trainSet){
+	public double calculateGradients(ArrayList<_Review> trainSet){
 		double Pi = 0;//Pi = P(yd=1|xd);
 		int Yi, featureIndex = 0, groupIndex = 0;
+		int N = trainSet.size();
 		
 		Arrays.fill(m_g, 0);
 		//Update gradients one review by one review.
@@ -163,17 +163,22 @@ public class LinAdapt {
 				m_g[m_dim + groupIndex] -= (Yi - Pi) * fv.getValue();  
 			}
 		}
+		//Normalize the gradients for training set by the number of total reviews.
+		for(int i=0; i<m_dim; i++){
+			m_g[i] /= N;
+			m_g[i+m_dim] /= N;
+		}
 		//Add the regularization parts.
 		for(int i=0; i<m_dim; i++){
 			m_g[i] += 2*m_eta1*(m_A[i]-1);// add 2*eta1*(ak-1)
 			m_g[i+m_dim] += 2*m_eta2*m_A[i+m_dim]; // add 2*eta2*bk
 		}
-//		double mag = 0;
-//		for(int i=0; i<m_g.length; i++){
-//			mag += m_g[i]*m_g[i];
-//		}
+		double mag = 0;
+		for(int i=0; i<m_g.length; i++){
+			mag += m_g[i]*m_g[i];
+		}
 //		System.out.format("Gradient magnitude: %.5f\n", mag);
-//		return mag;
+		return mag;
 	}
 	
 	//In this function, given a review and feature index, if the review has this feature, return the value of this feature, otherwise, return 0.
@@ -196,25 +201,33 @@ public class LinAdapt {
 	}
 	
 	// The same function with different names.
-	public void train(_Review review){
+	public boolean train(_Review review){
 		ArrayList<_Review> trainSet = new ArrayList<_Review>();
 		trainSet.add(review);
-		train(trainSet);
+		return train(trainSet);
 	}
 	//Train each user's model with training reviews.
-	public void train(ArrayList<_Review> trainSet){
+	public boolean train(ArrayList<_Review> trainSet){
 		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue;
+		double fValue, preMag = 0, curMag = 0;
 		int fSize = m_dim*2;
 		initLBFGS();
 		try{
 			do{
 				fValue = calculateFunctionValue(trainSet);
-				calculateGradients(trainSet);
+				curMag = calculateGradients(trainSet);
+				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
+					System.out.print("*");
+					break;
+				}
+				preMag = curMag;
 				LBFGS.lbfgs(fSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
+			System.out.print(".");
+			return true;
 		} catch(ExceptionWithIflag e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			return false;
 		}
 	}
 	

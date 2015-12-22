@@ -117,7 +117,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	}
 
 	// Calculate the gradients for the use in LBFGS.
-	public void calculateGradients(ArrayList<_Review> trainSet) {
+	public double calculateGradients(ArrayList<_Review> trainSet) {
 		double Pi = 0, sim = 0;// Pi = P(yd=1|xd);
 		int Yi, userIndex = 0, featureIndex = 0, groupIndex = 0;
 		//m_allGs = new double[m_users.size()*m_dim*2];
@@ -171,6 +171,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		for (int i = 0; i < m_allGs.length; i++) {
 			magA += m_allGs[i]*m_allGs[i];
 		}
+		return magA;
 //		System.out.format("Gradient magnitude: %.5f\n", magA);
 	}
 
@@ -178,17 +179,6 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	public double[] getCoLinAdaptA() {
 		return m_A;
 	}
-
-//	// Concatenate current user and neighbors' A matrix.
-//	public void setAs() {
-//		m_As = new double[(m_neighbors.size() + 1) * m_dim * 2];
-//		Utils.fillPartOfArray(0, m_dim * 2, m_As, m_A); // Add the user's own A
-//														// matrix.
-//		for (int i = 0; i < m_neighbors.size(); i++) {
-//			Utils.fillPartOfArray((i + 1) * m_dim * 2, m_dim * 2, m_As,
-//					m_neighbors.get(i).getCoLinAdaptA());
-//		}
-//	}
 
 	// Add one predicted result to the
 	public void addOnePredResult(int predL, int trueL) {
@@ -200,21 +190,28 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	}
 
 	// Train each user's model with training reviews.
-	public void train(ArrayList<_Review> trainSet) {
+	public boolean train(ArrayList<_Review> trainSet) {
 		int[] iflag = { 0 }, iprint = { -1, 3 };
-		double fValue;
+		double fValue, curMag = 0, preMag = 0;
 		int fSize = m_dim * 2 * m_users.size();
 		initLBFGS();
 		try {
 			do {
 				fValue = calculateFunctionValue(trainSet);
 				calculateGradients(trainSet);
+				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
+					System.out.print("*");
+					break;
+				}
+				preMag = curMag;
 				LBFGS.lbfgs(fSize, 6, m_allAs, fValue, m_allGs, false, m_diag, iprint, 1e-4, 1e-10, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			return false;
 		}
 		updateAll(); // Update afterwards.
+		return true;
 	}
 
 	public void updateAll() {

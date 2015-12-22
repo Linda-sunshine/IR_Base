@@ -35,8 +35,8 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 	// 1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.
 	HashMap<Integer, ArrayList<_Doc>> m_groupIndexDocsMap; 
 	
-	public PartSanityCheck(_Corpus c) {
-		super(c);
+	public PartSanityCheck(_Corpus c, String method) {
+		super(c, method);
 		m_testSet = new ArrayList<_Doc>();
 		m_sourceIndexMap = new HashMap<String, Integer>();
 		m_testIndexes = new ArrayList<Integer>();
@@ -247,8 +247,6 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		for(int i=0; i<m_documents.size(); i++){
 			tmp = m_documents.get(i);
 			if(m_sourceIndexMap.containsKey(tmp.getSource())){
-//				System.out.println("test: " + m_testDocs.get(m_sourceIndexMap.get(tmp.getSource())).getSource());
-//				System.out.println("collection: " + tmp.getSource());
 				ID = m_documents.get(i).getID();
 				m_testSet.get(m_sourceIndexMap.get(tmp.getSource())).setID(ID);
 			}
@@ -270,6 +268,5 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		} catch(IOException e){
 			e.printStackTrace();
 		}
-		
 	}
 }

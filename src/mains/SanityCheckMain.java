@@ -41,23 +41,23 @@ public class SanityCheckMain {
 		((DocAnalyzer) analyzer).LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
-		int numOfAspects = 14; // 12, 14, 24, 28
-		String topicFile = String.format("./data/TopicVectors/%dAspects_topicVectors_corpus.txt", numOfAspects);
-//		String topicFile = "./data/MI_TopicVectors_1110.txt";
-		analyzer.loadTopicVectors(topicFile, number_of_topics);
+//		int numOfAspects = 28; // 12, 14, 24, 28
+//		String topicFile = String.format("./data/TopicVectors/%dAspects_topicVectors_corpus.txt", numOfAspects);
+//		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		
-//		PartSanityCheck check = new PartSanityCheck(c);
-//		
-////		check.loadCheckFile("./data/Selected100Files/100Files.txt"); //Load the 100 files I selected before.
-////		check.setTestFileIDs(); //Set the IDs for the 100 files.
-////		check.printFile("Selected100FilesWithIDs.txt"); //Print the file with IDs.
-//		
-//		int topK = 20;
+		int topK = 20;
+		String anchorNodeFile = "./data/SanityCheck/AnchorNode.txt";
+		PuritySanityCheck check = new PuritySanityCheck(c, "BoW");
+		check.calculateSimilarity();
+		check.calculateInlinks(topK);
+		check.calculatePatK4All(topK);
+		check.writePatK(anchorNodeFile);
+
 //		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 //		int[] groupSize = check.getGroupSize();
 //		check.setFeature(analyzer.getFeatures());
@@ -80,40 +80,5 @@ public class SanityCheckMain {
 //			System.out.format("%.4f\t", performance[i]);
 //		System.out.println();
 		
-//		String resFolder = "./data/SanityCheck/";
-//		check.calculateSimilarity();
-//		check.constructCompareUnits(20);
-//		check.setFeature(analyzer.getFeatures());
-//		check.printDifference(resFolder);
-
-//		check.printBoWSimilarity(resFolder);
-//		check.printMeanVar(resFolder, "BoWMeanVar.xls");	
-//		check.printTPSimilarity(resFolder);
-//		check.printMeanVar(resFolder, "TPMeanVar.xls");
-		
-//		PuritySanityCheck checkRandom = new PuritySanityCheck(2, c);
-//		checkRandom.calculateSimilarity();
-//		checkRandom.calculatePatK4All(15000, 100);
-//		checkRandom.printPatK(15000, 100);
-		
-		PuritySanityCheck checkRandom = new PuritySanityCheck(0, c);
-//		checkRandom.calculateSimilarity();
-		checkRandom.calculatePatK4All();
-		checkRandom.printPatK();
-		
-		PuritySanityCheck checkBow = new PuritySanityCheck(1, c);
-		checkBow.calculateSimilarity();
-		checkBow.calculatePatK4All();
-		checkBow.printPatK();
-		
-		PuritySanityCheck checkTopic = new PuritySanityCheck(2, c);
-		checkTopic.calculateSimilarity();
-		checkTopic.calculatePatK4All();
-		checkTopic.printPatK();
-		
-//		PuritySanityCheck checkBoWTop = new PuritySanityCheck(3, c);
-//		checkBoWTop.calculateSimilarity();
-//		checkBoWTop.calculatePatK4All();
-//		checkBoWTop.printPatK();		
 	}
 }

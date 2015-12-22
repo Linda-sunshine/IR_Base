@@ -39,6 +39,7 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
+	int m_inlink = 0; //How many documents select this document as neighbor.
 	
 	/**Added by Lin for storing tokens after tokenization, normalization, stemming for computing LCS.**/
 	String[] m_tokens;
@@ -456,6 +457,14 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public double[] getAspVct(){
 		return m_x_aspVct;
+	}
+	
+	public void addOneInlink(){
+		m_inlink++;
+	}
+	
+	public int getInlink(){
+		return m_inlink;
 	}
 
 }

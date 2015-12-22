@@ -93,7 +93,7 @@ public class CoLinAdapt extends LinAdapt{
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
-	public void calculateGradients(ArrayList<_Review> trainSet){
+	public double calculateGradients(ArrayList<_Review> trainSet){
 		//The gradients are for the current user and neighbors, thus, we use a big matrix to represent it. 
 		double Pi = 0, sim = 0;//Pi = P(yd=1|xd);
 		int Yi, featureIndex = 0, groupIndex = 0;
@@ -141,6 +141,7 @@ public class CoLinAdapt extends LinAdapt{
 			magA += m_g[i]*m_g[i];
 		}
 //		System.out.format("Gradient magnitude: %.5f\n", magA);
+		return magA;
 	}
 	
 	//Return the transformed matrix.
@@ -167,21 +168,28 @@ public class CoLinAdapt extends LinAdapt{
 	}
 
 	//Train each user's model with training reviews.
-	public void train(ArrayList<_Review> trainSet){
+	public boolean train(ArrayList<_Review> trainSet){
 		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue;
+		double fValue, curMag = 0, preMag = 0;
 		int fSize = m_dim*2*(m_neighbors.size()+1);
 		initLBFGS();
 		try{
 			do{
 				fValue = calculateFunctionValue(trainSet);
-				calculateGradients(trainSet);
+				curMag = calculateGradients(trainSet);
+				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
+					System.out.print("*");
+					break;
+				}
+				preMag = curMag;
 				LBFGS.lbfgs(fSize, 6, m_As, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
-			e.printStackTrace();
+//			e.printStackTrace();
+			return false;
 		}
 		updateAll(); //Update afterwards.
+		return true;
 	}
 	public void updateAll(){
 		double[] newA;

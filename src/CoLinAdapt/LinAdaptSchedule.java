@@ -59,24 +59,14 @@ public class LinAdaptSchedule {
 		int[][] TPTable;;
 		LinAdapt model;
 		ArrayList<_Review> reviews;
-		
-//		int index;
-//		String feature;
+
 		//The review order doesn't matter, so we can adapt one user by one user.
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
-//			if(m_users.get(i).getUserID().equals("A1A0GJYUB0DP8H"))
-//				System.out.println("Stop");
 			reviews = m_users.get(i).getReviews();
 			TPTable = new int[2][2];
 			for(int j=0; j<reviews.size(); j++){
 				//Predict first.
-//				for(_SparseFeature f: reviews.get(j).getSparse()){
-//					index = f.getIndex();
-//					feature = m_features.get(index);
-//					System.out.format("(%s, %.4f)\t", feature, f.getValue());
-//				}
-//			    System.out.println();
 				predL = model.predict(reviews.get(j));
 				trueL = reviews.get(j).getYLabel();
 				TPTable[predL][trueL]++;
@@ -84,19 +74,24 @@ public class LinAdaptSchedule {
 				//Adapt based on the new review.
 				ArrayList<_Review> trainSet = new ArrayList<_Review>();
 				trainSet.add(reviews.get(j));
-//				model.train(trainSet);
+				if(!model.train(trainSet))
+					m_failCount++;
 			}	
 			model.setPerformanceStat(TPTable);
 		}
+		System.out.format("\n%d fails in online optimization.\n", m_failCount);
 	}
 	
 	//In batch mode, we use half of one user's reviews as training set.
 	public void batchTrainTest(){
+		m_failCount = 0;
 		LinAdapt model;
 		ArrayList<_Review> reviews;
 		int pivot = 0;
 		//Traverse all users and train their models based on the half of their reviews.
 		for(int i=0; i<m_users.size(); i++){
+//			if(m_users.get(i).getUserID().equals("A1A0GJYUB0DP8H"))
+//				System.out.println("Stop");
 			model = m_users.get(i).getLinAdapt();
 			reviews = m_users.get(i).getReviews();
 			pivot = reviews.size()/2;
@@ -109,9 +104,11 @@ public class LinAdaptSchedule {
 				else 
 					testSet.add(reviews.get(j));
 			}
-//			model.train(trainSet);//Train the model.
+			if(!model.train(trainSet))
+				m_failCount++;
 			model.test(testSet);
 		}
+		System.out.format("\n%d fails in batch optimization.\n", m_failCount);
 	}
 	
 	//Add one user's prf to the global prf.
@@ -131,6 +128,8 @@ public class LinAdaptSchedule {
 	
 	//Accumulate the performance, accumulate all users.
 	public void calcPerformance(){
+		for(int i=0; i<m_avgPRF.length; i++)
+			Arrays.fill(m_avgPRF[i], 0);
 		LinAdapt model;
 		
 		for(int i=0; i<m_users.size(); i++){

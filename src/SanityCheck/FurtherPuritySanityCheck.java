@@ -88,8 +88,8 @@ public class FurtherPuritySanityCheck extends PuritySanityCheck {
 //		}
 	}
 	
-	public FurtherPuritySanityCheck(_Corpus c){
-		super(c);
+	public FurtherPuritySanityCheck(_Corpus c, String method){
+		super(c, method);
 		m_diffUnits = new ArrayList<CompareUnit>();
 		m_documents = c.getCollection();
 	}

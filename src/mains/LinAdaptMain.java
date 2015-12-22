@@ -17,24 +17,29 @@ public class LinAdaptMain {
 		int featureGroupNo = 400; //There should be some feature grouping methods.
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/CoLinAdapt/selectedFeatures.csv"; // CV.
-		
-		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
-		
-		//Load users too.
-		String folder = "./data/CoLinAdapt/Users";
+		String providedCV = "./data/CoLinAdapt/5000Features.txt"; // CV.
+		String CVStat = "./data/CoLinAdapt/SelectedVocab.csv";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
-		String globalModel = "./data/CoLinAdapt/global.classifer";
-		analyzer.LoadStopwords("./data/Model/custom.stop");
-		analyzer.loadUserDir(folder);
-		analyzer.setFeatureValues("BM25", 0);
+
+		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
+		String folder = "./data/CoLinAdapt/Amazon/Users";
+
+		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold); //CV is loaded here.
+		analyzer.LoadCVStat(CVStat);
+//		analyzer.LoadStopwords("./data/Model/custom.stop"); //No need since stop words are not in features.
+
+		analyzer.setReleaseContent(false);//Do not release the content of the review.
+		analyzer.loadUserDir(folder); //Load users.		
+		analyzer.setFeatureValues(25265, "TFIDF", 0);
+	
+		analyzer.loadGlobalWeights(globalModel);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
-		double[] globalWeights = analyzer.loadGlobalWeights(globalModel);
+//		linAdaptS.setFeatures(analyzer.getFeatures());
+
 		//Create the instances of the LinAdapt model.
 		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		linAdaptS.setGlobalWeights(globalWeights);
+		linAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		linAdaptS.initSchedule();
-//		linAdaptS.setFeatures(analyzer.getFeatures());
 
 		//Online training.
 		linAdaptS.onlineTrain();

@@ -1,6 +1,8 @@
 package CoLinAdapt;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
 import structures.MyLinkedList;
 import structures.MyPriorityQueue;
 import structures._RankItem;
@@ -96,16 +98,18 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			model.setAs();
 			predL = model.predict(tmp);
 			model.addOnePredResult(predL, tmp.getYLabel());
-			model.train(tmp);
+			if(!model.train(tmp))
+				m_failCount++;
 			count++;
 			if(count % 1000 == 0)
 				System.out.print(".");
 		}
-//		System.out.println("total: " + count);
+		System.out.format("\n%d fails in online optimization.\n", m_failCount);
 	}
 
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.
 	public void batchTrainTest() {
+		m_failCount = 0;
 		SyncCoLinAdapt sync = new SyncCoLinAdapt(m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes, m_users);
 //		CoLinAdapt model;
 		ArrayList<_Review> reviews;
@@ -129,12 +133,16 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		}
 		sync.init();
 		sync.setSimilarities(m_similarity);
-		sync.train(trainSet);// Train the model.
+		if(!sync.train(trainSet))
+			m_failCount++;// Train the model.
 		sync.test(testSet);
 	}
 	
 	//Calculate each user's performance.
 	public void calcPerformance(){
+		for(int i=0; i<m_avgPRF.length; i++)
+			Arrays.fill(m_avgPRF[i], 0);
+
 		CoLinAdapt model;
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getCoLinAdapt();
