@@ -2,12 +2,14 @@ package Analyzer;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +32,8 @@ import utils.Utils;
  * Keyword based bootstrapping for aspect annotation
  */
 public class AspectAnalyzer extends jsonAnalyzer {
+	
+	//A new class for aspect analysis.
 	class _Aspect{
 		String m_name;
 		HashSet<Integer> m_keywords; // index corresponding to the controlled vocabulary
@@ -61,7 +65,13 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	boolean m_aspFlag=false;
+	boolean m_aspFlag=false; //The flag for constructing aspect vector or not.
+	
+	//Added by Lin for calculating average similarity.
+	double[] m_BoWSimCache;
+	double[] m_TPSimCache;
+	double[] m_JcdSimCache;
+	double[][] m_avg;
 	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
@@ -305,7 +315,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.createPOSVct(posTaggingVct);//added by Lin.
 			
-//			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
+			doc.setAspVct(detectAspects(spVct));//Added by Lin for detecting aspects of a document.
 			doc.setSentiScore(sentiScore/spVct.size());//average sentence sentiWordNet score
 			
 			m_corpus.addDoc(doc);
@@ -320,44 +330,126 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			return false;
 		}
 	}
-
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		int classNumber = 5; //Define the number of classes
-		int Ngram = 2; //The default value is bigram. 
-		int lengthThreshold = 10; //Document length threshold
-		
-//		/*****Parameters in feature selection.*****/
-		String featureSelection = "DF"; //Feature selection method.
-		int chiSize = 50; // top ChiSquare words for aspect keyword selection
-		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
-		
-		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
-		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
-		
-		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
-		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
-		
-		/****Loading json files*****/
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		
-//		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.SaveCVStat(fvStatFile);
-		
-		/****Aspect annotation*****/
-		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
+	//Calculate the avg BoW sim for each document in the corpus.
+	public void writeAvgSimilarity(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(int i=0; i<m_corpus.getCollection().size(); i++)
+				writer.format("%.4f,%.4f,%.4f\n", m_avg[i][0], m_avg[i][1], m_avg[i][2]);
+			writer.close();
+		}
+		catch (IOException e){
+			e.printStackTrace();
+		}
 	}
+
+	//this is an important feature and will be used repeated
+	public void calcAvgSimilarities(){
+		
+		_Doc di, dj;
+		ArrayList<_Doc> documents = m_corpus.getCollection();
+		int L = documents.size(), size = L*(L-1)/2;//no need to compute diagonal
+		
+		m_avg = new double[L][3];
+		m_BoWSimCache = new double[size];
+		m_TPSimCache = new double[size];
+		m_JcdSimCache = new double[size];
+		
+		//Construct similarity cache for different measures.
+		for(int i=1; i<documents.size(); i++) {
+			di = documents.get(i);
+			for(int j=0; j<i; j++) {
+				dj = documents.get(j);
+				m_BoWSimCache[getIndex(i,j)] = Utils.calculateSimilarity(di, dj);
+				m_TPSimCache[getIndex(i,j)] = Utils.klDivergence(di.getTopics(), dj.getTopics());
+				m_JcdSimCache[getIndex(i,j)] = Utils.jaccard(di.getSparse(), dj.getSparse());
+			}
+		}
+		//Traverse all documents to calculate average similarity.
+		for(int i=0; i<L; i++){
+			for(int j=0; j<L; j++){
+				if(i == j) continue;
+				m_avg[i][0] += m_BoWSimCache[getIndex(i,j)];
+				m_avg[i][1] += m_TPSimCache[getIndex(i,j)];
+				m_avg[i][2] += m_JcdSimCache[getIndex(i,j)];
+			}
+			m_avg[i][0] /= L;
+			m_avg[i][1] /= L;
+			m_avg[i][2] /= L;
+		}		
+	}
+	
+	public int getIndex(int i, int j) {
+		if (i<j) {//swap
+			int t = i;
+			i = j;
+			j = t;
+		}
+		return i*(i-1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
+	}
+	
+	public void loadAvgSimilarity(String filename){
+		if(filename == null || filename.isEmpty())
+			return;
+		try{
+			String line;
+			int index = 0;
+			String[] avgStrs;
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			ArrayList<_Doc> documents = m_corpus.getCollection();
+			while((line = reader.readLine()) != null){
+				avgStrs = line.split(",");
+				if(avgStrs.length == 3){
+					documents.get(index).setAvgBoW(Double.valueOf(avgStrs[0]));
+					documents.get(index).setAvgTP(Double.valueOf(avgStrs[1]));
+					documents.get(index).setAvgJcd(Double.valueOf(avgStrs[2]));
+				}
+				index++;
+			}
+			reader.close();
+			System.out.format("Read %d sets of similarity into collection.\n", index);
+		} catch(IOException e){
+			System.err.format("Fail to open file %s.", filename);
+		}
+	}
+
+//	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
+//		int classNumber = 5; //Define the number of classes
+//		int Ngram = 2; //The default value is bigram. 
+//		int lengthThreshold = 10; //Document length threshold
+//		
+////		/*****Parameters in feature selection.*****/
+//		String featureSelection = "DF"; //Feature selection method.
+//		int chiSize = 50; // top ChiSquare words for aspect keyword selection
+//		String stopwords = "./data/Model/stopwords.dat";
+//		double startProb = 0.2; // Used in feature selection, the starting point of the features.
+//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
+//		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+//		
+//		/*****The parameters used in loading files.*****/
+//		String folder = "./data/amazon/small";
+//		String suffix = ".json";
+//		String tokenModel = "./data/Model/en-token.bin"; //Token model
+//		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
+//		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
+//		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
+//		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
+//		
+//		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
+//		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
+//		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
+//		
+//		/****Loading json files*****/
+////		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
+//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		
+////		/****Feature selection*****/
+////		System.out.println("Performing feature selection, wait...");
+////		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+////		analyzer.SaveCVStat(fvStatFile);
+//		
+//		/****Aspect annotation*****/
+//		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
+//	}
 }

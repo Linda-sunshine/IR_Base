@@ -148,9 +148,7 @@ public abstract class BaseClassifier {
 //						m_trainSet.add(docs.get(j));
 //					else
 //						m_testSet.add(docs.get(j));
-					
 				}
-				
 				long start = System.currentTimeMillis();
 				train();
 				double accuracy = test();				

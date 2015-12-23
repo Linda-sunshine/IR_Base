@@ -5,7 +5,6 @@ package clustering;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -37,6 +36,8 @@ public class KMeansAlg extends BaseClassifier {
 	int m_k;
 	Metric m_distance = new CosineDistance();
 	ArrayList<ArrayList<_Doc>> m_clustersDocs;
+//	ArrayList<ArrayList<Integer>> m_docsClusterNo; //Each arraylist contains the document indexes of one cluster.
+	
 	double[][] m_clusterStat;//added by Lin for basic stat.
 	
 	public KMeansAlg(_Corpus c, int k) {
@@ -112,6 +113,25 @@ public class KMeansAlg extends BaseClassifier {
 			m_clustersDocs.add(cluster);
 		}
 	}
+	
+	//Assign different cluster number to documents.
+	public void setDocsClusterNo(){
+		_Doc doc;
+		ArrayList<_Doc> documents = m_corpus.getCollection();
+//		m_docsClusterNo = new ArrayList<ArrayList<Integer>>();
+		for(int i=0; i<m_k; i++){
+//			m_docsClusterNo.add(new ArrayList<Integer>());
+			for(Instance ins: m_clusters[i]){
+				doc = (_Doc) ins.getSource();
+				documents.get(doc.getID()).setClusterNo(i);
+			}
+		}
+		System.out.println("Finish setting document cluster indexes.");
+	}
+	
+//	public ArrayList<ArrayList<Integer>> getDocsClusterNo(){
+//		return m_docsClusterNo;
+//	}
 	
 	public ArrayList<ArrayList<_Doc>> getClustersDocs(){
 		return m_clustersDocs;

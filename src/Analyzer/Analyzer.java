@@ -322,8 +322,7 @@ public abstract class Analyzer {
 		} else {
 			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
 		}
-		
-		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
+//		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 	
 	//Select the features and store them in a file.
@@ -512,5 +511,4 @@ public abstract class Analyzer {
 	public ArrayList<String> getFeatures(){
 		return m_featureNames;
 	}
-	
 }

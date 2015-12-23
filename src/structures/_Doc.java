@@ -39,7 +39,81 @@ public class _Doc implements Comparable<_Doc> {
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
-	int m_inlink = 0; //How many documents select this document as neighbor.
+	int m_inlink = 0; //How many documents select this document as neighbor, added by Lin
+	
+	//Query features, added by Lin.
+	int m_qDim = 0;
+	double m_avgBoW = 0;
+	double m_avgTP = 0;
+	double m_avgJcd = 0;
+	int[] m_queryIndices;
+	double[] m_x_queryValues;
+	
+	int m_clusterNo = 0;
+	
+	public void setClusterNo(int c){
+		m_clusterNo = c;
+	}
+	
+	public int getCluseterNo(){
+		return m_clusterNo;
+	}
+	
+	public void setQueryDim(int dim){
+		m_qDim = dim;
+	}
+	
+	public int[] getQueryIndices(){
+		m_queryIndices = new int[m_qDim];
+		for(int i=0; i<m_qDim; i++)
+			m_queryIndices[i] = i;
+		return m_queryIndices;
+	}
+	public void setAvgBoW(double b){
+		m_avgBoW = b;
+	}
+	
+	public void setAvgTP(double t){
+		m_avgTP = t;
+	}
+	
+	public void setAvgJcd(double j){
+		m_avgJcd = j;
+	}
+	//Construct the query features.
+	public void setQueryValues(){
+		m_x_queryValues = new double[m_qDim];
+	
+		//feature[0]: avg BoW.
+		m_x_queryValues[0] = m_avgBoW;
+		
+		//feature[1]: avg TP.
+		m_x_queryValues[1] = m_avgTP;
+		
+		//feature[2]: avg Jaccard.
+		m_x_queryValues[2] = m_avgJcd;
+		
+		//feature[3]: avg IDF.		
+		m_x_queryValues[3] = m_avgIDF;
+		
+		//feature[4]: stopwordProportion
+		m_x_queryValues[4] = m_stopwordProportion;
+		
+		//feature[5]: document length.
+		m_x_queryValues[5] = getDocLength();
+		
+		//feature[6]: sentiment score
+		m_x_queryValues[6] = getSentiScore();
+		
+		//feature[7]: inlink.
+		m_x_queryValues[7] = getInlink();
+		
+	}
+	
+	//Access the query features.
+	public double[] getQueryValues(){
+		return m_x_queryValues;
+	}
 	
 	/**Added by Lin for storing tokens after tokenization, normalization, stemming for computing LCS.**/
 	String[] m_tokens;

@@ -22,12 +22,14 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import clustering.KMeansAlg;
+import clustering.KMeansAlg4Query;
 
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
+import Classifier.metricLearning.L2RWithQueryClustering;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 
@@ -117,17 +119,7 @@ public class DocumentSelectionMain {
 				}
 			}
 		}
-		int noClusters = km;
-		KMeansAlg kmeans = new KMeansAlg(c, noClusters);
-		kmeans.train(c.getCollection());
-		kmeans.tranferClusters2Docs();
-		ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
-
-		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
-		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
-		kmeans.writeStat(kmeansStatFile);
-		kmeans.writeContent(kmeansContentFile);
-//		c.mapLabels(4); // Do kmeans first, then map the labels.
+		
 	}
 	
 	//Print out randomly selected 100 reviews files.
@@ -164,12 +156,11 @@ public class DocumentSelectionMain {
 		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences for HTSM, LRSHTM
 
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
-		
+//		String topicmodel = "pLSA"; // pLSA, LDA_Gibbs, LDA_Variational
 		int number_of_topics = 30;
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
-		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int number_of_iteration = 100;
+//		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
+//		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+//		int number_of_iteration = 100;
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small/dedup/RawData";
@@ -195,7 +186,7 @@ public class DocumentSelectionMain {
 		String style = "SEMI";
 		
 		//"RW", "RW-ML", "RW-L2R"
-		String method = "RW-L2R";
+		String method = "RW-L2R-C";
 				
 		/*****Parameters in transductive learning.*****/
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
@@ -234,7 +225,7 @@ public class DocumentSelectionMain {
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.			
 		} else{
 			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-			((DocAnalyzer) analyzer).setReleaseContent(false);
+//			((DocAnalyzer) analyzer).setReleaseContent(false);
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
@@ -242,7 +233,7 @@ public class DocumentSelectionMain {
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 //			analyzer.LoadTopicSentiment("./data/Sentiment/sentiment.csv", 2*number_of_topics);
 			analyzer.setFeatureValues("TF", 0);		
-			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
+//			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
 //			pLSA tModel = null;
 //			if (topicmodel.equals("pLSA")) {			
@@ -272,13 +263,32 @@ public class DocumentSelectionMain {
 		
 		String topicFile = String.format("./data/TopicVectors/%dAspects_topicVectors_corpus.txt", numOfAspects);
 //		analyzer.saveTopicVectors(topicFile);
-		
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		c.mapLabels(4);
+
+		//Write the average similarity into file.
+		String SimFile = "./data/BoWTPJcdSimFile.txt";
+//		((AspectAnalyzer) analyzer).calcAvgSimilarities();
+//		((AspectAnalyzer) analyzer).writeAvgSimilarity(SimFile);
+		
+		//Load the average simialrity into corpus.
+		((AspectAnalyzer) analyzer).loadAvgSimilarity(SimFile);
+		
+		/***kmeans clustering***/
+		int clusterNo = 5;
+		int dim = 8; //Currently, we have 8 features for the query clustering.
+		KMeansAlg4Query kmeans = new KMeansAlg4Query(c, clusterNo, dim);
+		kmeans.train(c.getCollection());
+		kmeans.setDocsClusterNo();
+		
+//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
+//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
+//		kmeans.writeStat(kmeansStatFile);
+//		kmeans.writeContent(kmeansContentFile);
+		c.mapLabels(4); // Do kmeans first, then map the labels.
 		
 //		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
 		
@@ -294,6 +304,7 @@ public class DocumentSelectionMain {
 			int topK = 20;
 			double noiseRatio = 0, negRatio = 1; //0.5, 1, 1.5, 2
 			int ranker = 0;//0-RankSVM; 1-lambda rank.
+			
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 
@@ -310,14 +321,18 @@ public class DocumentSelectionMain {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						topK, noiseRatio, ranker, multithread_LR);
-			}
+			} else if (method.equals("RW-L2R-C"))
+				mySemi = new L2RWithQueryClustering(c, multipleLearner, C, 
+						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
+						topK, noiseRatio, ranker, multithread_LR);
+			
 			mySemi.setKFold(CVFold);
-			mySemi.setSimilarity(false);
 			mySemi.setDebugOutput(debugOutput);
+			((L2RWithQueryClustering) mySemi).setClusterNo(clusterNo);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
-			mySemi.printSimMeanVarStat();
+
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");
