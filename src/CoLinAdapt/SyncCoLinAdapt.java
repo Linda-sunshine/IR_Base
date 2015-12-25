@@ -85,8 +85,11 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 			Pi = logit(fv, userIndex);
 			if (Yi == 1)
 				L += Math.log(Pi);
-			else
-				L += Math.log(1 - Pi);
+			else{
+				if(Pi != 1)
+					L += Math.log(1 - Pi);
+
+			}
 		}
 
 		// Add R1 for all users.
@@ -97,13 +100,19 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 			}
 		}
 		fValue = -L + R1;
-
+		
+		int index;
 		int[] neighborIndexes;
+		ArrayList<Double> neighborSims;
 		// Add the R2 part to the function value.
 		for(int i=0; i<m_users.size(); i++){
 			neighborIndexes = m_users.get(i).getNeighborIndexes();
-			for(int index: neighborIndexes){//Access each neighbor.
-				sim = m_similarity[getIndex(i, index)];
+			neighborSims = m_users.get(i).getNeighborSims();
+			for(int in=0; in<neighborIndexes.length; in++){
+				index = neighborIndexes[in];
+				sim = neighborSims.get(in);
+//			for(int index: neighborIndexes){//Access each neighbor.
+//				sim = m_similarity[getIndex(i, index)];
 				for(int j=0; j<m_dim; j++){
 					oneR2 += (m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])//ak^2
 						    +(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim])*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);//bk^2 
@@ -112,7 +121,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				oneR2 = 0;
 			}
 		}
-//		System.out.println("Fvalue is " + fValue);
+		System.out.println("Fvalue is " + fValue);
 		return fValue;
 	}
 
@@ -151,12 +160,18 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				m_allGs[m_dim*2*i+j+m_dim] += 2*m_eta2*m_allAs[m_dim*2*i+j+m_dim]; // add 2*eta2*bk
 			}
 		}
-
-		// Add the R2 for all users.
-		for (int i=0; i<m_users.size(); i++) {// Access each user.
+		
+		
+		int index;
+		ArrayList<Double> neighborSims;
+		// Add the R2 part to the function value.
+		for(int i=0; i<m_users.size(); i++){
 			neighborIndexes = m_users.get(i).getNeighborIndexes();
-			for(int index: neighborIndexes){//Access each neighbor.
-				sim = m_similarity[getIndex(i, index)];
+			neighborSims = m_users.get(i).getNeighborSims();
+			for(int in=0; in<neighborIndexes.length; in++){
+				index = neighborIndexes[in];
+				sim = neighborSims.get(in);
+				// Add the R2 for all users.
 				for(int j=0; j<m_dim; j++){
 					//Update a: current user: a - a_neighbor; neighbor: a_neihgbor - a.
 					m_allGs[m_dim*2*i+j] += 2*sim*m_eta3*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j]);
@@ -166,13 +181,29 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 					m_allGs[m_dim*2*index+j+m_dim] += 2*sim*m_eta3*(m_allAs[m_dim*2*index+j+m_dim]-m_allAs[m_dim*2*i+j+m_dim]);
 				}
 			}
-		}
+		}		
+
+//		// Add the R2 for all users.
+//		for (int i=0; i<m_users.size(); i++) {// Access each user.
+//			neighborIndexes = m_users.get(i).getNeighborIndexes();
+//			for(int index: neighborIndexes){//Access each neighbor.
+//				sim = m_similarity[getIndex(i, index)];
+//				for(int j=0; j<m_dim; j++){
+//					//Update a: current user: a - a_neighbor; neighbor: a_neihgbor - a.
+//					m_allGs[m_dim*2*i+j] += 2*sim*m_eta3*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j]);
+//					m_allGs[m_dim*2*i+j+m_dim] += 2*sim*m_eta3*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);
+//					//Update b: similar with a.
+//					m_allGs[m_dim*2*index+j] += 2*sim*m_eta3*(m_allAs[m_dim*2*index+j]-m_allAs[m_dim*2*i+j]);
+//					m_allGs[m_dim*2*index+j+m_dim] += 2*sim*m_eta3*(m_allAs[m_dim*2*index+j+m_dim]-m_allAs[m_dim*2*i+j+m_dim]);
+//				}
+//			}
+//		}
 		double magA = 0;
 		for (int i = 0; i < m_allGs.length; i++) {
 			magA += m_allGs[i]*m_allGs[i];
 		}
+		System.out.format("Gradient magnitude: %.5f\n", magA);
 		return magA;
-//		System.out.format("Gradient magnitude: %.5f\n", magA);
 	}
 
 	// Return the transformed matrix.
@@ -198,7 +229,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		try {
 			do {
 				fValue = calculateFunctionValue(trainSet);
-				calculateGradients(trainSet);
+				curMag = calculateGradients(trainSet);
 				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
 					System.out.print("*");
 					break;
@@ -207,7 +238,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				LBFGS.lbfgs(fSize, 6, m_allAs, fValue, m_allGs, false, m_diag, iprint, 1e-4, 1e-10, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			return false;
 		}
 		updateAll(); // Update afterwards.
@@ -231,6 +262,8 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 			trueL = review.getYLabel();
 			userIndex = m_userIndexes.indexOf(review.getUserID());
 			predL = predict(review, userIndex);
+//			if(predL == 1)
+//				System.out.print("1");
 			m_users.get(userIndex).getCoLinAdapt().addOnePredResult(predL, trueL);
 		}
 	}
@@ -241,13 +274,14 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		int predL = 0;
 		// Calculate each class's probability.P(yd=1|xd)=1/(1+e^{-(AW)^T*xd})
 		double p1 = logit(fv, userIndex);
+//		System.out.print(p1 + "\t");
 		//Decide the label for the review.
 		if(p1 > 0.5) 
 			predL = 1;
 		return predL;
 	}
 	
-	public void setSimilarities(double[] sims){
-		m_similarity = sims;
-	}
+//	public void setSimilarities(double[] sims){
+//		m_similarity = sims;
+//	}
 }

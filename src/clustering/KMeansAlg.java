@@ -120,13 +120,13 @@ public class KMeansAlg extends BaseClassifier {
 		ArrayList<_Doc> documents = m_corpus.getCollection();
 //		m_docsClusterNo = new ArrayList<ArrayList<Integer>>();
 		for(int i=0; i<m_k; i++){
-//			m_docsClusterNo.add(new ArrayList<Integer>());
+			System.out.print(m_clusters[i].size() + "\t");
 			for(Instance ins: m_clusters[i]){
 				doc = (_Doc) ins.getSource();
 				documents.get(doc.getID()).setClusterNo(i);
 			}
 		}
-		System.out.println("Finish setting document cluster indexes.");
+		System.out.println("\nFinish setting document cluster indexes.");
 	}
 	
 //	public ArrayList<ArrayList<Integer>> getDocsClusterNo(){

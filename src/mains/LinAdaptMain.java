@@ -22,7 +22,7 @@ public class LinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Amazon/Users";
+		String folder = "./data/CoLinAdapt/Users";
 
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold); //CV is loaded here.
 		analyzer.LoadCVStat(CVStat);

@@ -124,6 +124,7 @@ public class LinAdaptSchedule {
 			for (int j = 0; j < prf[i].length; j++)
 				m_avgPRF[i][j] += prf[i][j];
 		}
+//		System.out.format("%.4f\t%.4f\t%.4f\n", m_avgPRF[1][0], m_avgPRF[1][1], m_avgPRF[1][2]);
 	}
 	
 	//Accumulate the performance, accumulate all users.

@@ -61,7 +61,11 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 		//Train different cluster of documents respectively.
 		for(int cNo: m_clusterNoDocs.keySet()){
 			m_trainSet = m_clusterNoDocs.get(cNo);
-//			System.out.println("labeled size is " + m_labeled.size() + "\n");
+			//Get some stat of training reviews.
+			int[] count = new int[2];
+			for(_Doc d: m_trainSet)
+				count[d.getYLabel()]++;
+			System.out.format("There are %d (pos:%d, neg:%d) training documents in the corpus.\n", m_trainSet.size(), count[1], count[0]);
 			L2RModelTraining();
 			m_rankSVMs[cNo] = returnModel();
 		}

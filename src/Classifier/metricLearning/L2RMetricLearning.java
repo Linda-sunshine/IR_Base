@@ -308,8 +308,8 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 //				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
 //			}
 			
-			if (relevant==0 || irrelevant==0 
-				|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ)){
+			if (relevant==0 || irrelevant==0){
+//				|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ)){
 				//|| (di.getYLabel()==1 && relevant/irrelevant > m_documentRatio)
 				//clear the cache for next query
 				simRanker.clear();
@@ -336,7 +336,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			neighbors.clear();
 		}
 		
-		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
+		System.out.format("Generate %d(pos:%d, neg:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return pairSize;
 	}
 	// Added by Lin, pass the clustering results back to L2R.

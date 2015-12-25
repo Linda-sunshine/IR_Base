@@ -20,6 +20,7 @@ public class _User {
 	protected _SparseFeature[] m_x_sparse; //The BoW representation of a user.	
 	protected ArrayList<_User> m_neighbors; //the neighbors of the current user.
 	protected ArrayList<Integer> m_neighborIndexes; // The indexes of neighbors.
+	protected ArrayList<Double> m_neighborSims;
 	protected int m_reviewCount; //Record how many reviews have been used to update.
 	protected LinAdapt m_linAdapt;
 	protected CoLinAdapt m_coLinAdapt;
@@ -107,18 +108,22 @@ public class _User {
 	public void setNeighbors(ArrayList<_User> neighbors){
 		m_neighbors = neighbors;
 	}
-
+	public void setNeighborSims(ArrayList<Double> sims){
+		m_neighborSims = sims;
+	}
+	public void setNeighborIndexes(ArrayList<Integer> indexes){
+		m_neighborIndexes = indexes;
+	}
+	
 	//Given neighbors, pass them to model.
 	public void setCoLinAdaptNeighbors(){
 		m_coLinAdapt.setNeighbors(m_neighbors);
 	}
-	
-	public void setCoLinAdaptNeighborIndexes(ArrayList<Integer> indexes){
-		m_neighborIndexes = indexes;
+	public void setCoLinAdaptNeighborIndexes(){
+		m_coLinAdapt.setNeighborIndexes(m_neighborIndexes);
 	}
-	
-	public void setCoLinAdpatNeighborSims(ArrayList<Double> sims){
-		m_coLinAdapt.setNeighborSims(sims);
+	public void setCoLinAdpatNeighborSims(){
+		m_coLinAdapt.setNeighborSims(m_neighborSims);
 	}
 
 	public ArrayList<_User> getNeighbors(){
@@ -130,6 +135,10 @@ public class _User {
 		for(int i=0; i<m_neighbors.size(); i++)
 			indexes[i] = m_neighbors.get(i).getIndex();
 		return indexes;
+	}
+	
+	public ArrayList<Double> getNeighborSims(){
+		return m_neighborSims;
 	}
 	
 //	public void initGradients4CoLinAdapt(){

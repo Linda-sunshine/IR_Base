@@ -1,5 +1,11 @@
 package CoLinAdapt;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -47,7 +53,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	public void constructNeighborhood(int topK){
 		_User user;
 		ArrayList<_User> neighbors = new ArrayList<_User>();
-//		ArrayList<Integer> neighborIndexes = new ArrayList<Integer>();
+		ArrayList<Integer> neighborIndexes = new ArrayList<Integer>();
 		ArrayList<Double> neighborSims = new ArrayList<Double>();
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
 		
@@ -60,20 +66,95 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			// Add the neighbors.
 			for(_RankItem item: queue){
 				neighbors.add(m_users.get(item.m_index));
-//				neighborIndexes.add(item.m_index);
+				neighborIndexes.add(item.m_index);
 				neighborSims.add(item.m_value);
 			}
 			user.setNeighbors(new ArrayList<_User>(neighbors));//Set the neighbors for the user.
 			user.setCoLinAdaptNeighbors(); //Pass neighbors to the coLinAdapt model.
-//			user.setCoLinAdaptNeighborIndexes(neighborIndexes);
-			user.setCoLinAdpatNeighborSims(new ArrayList<Double>(neighborSims));
+			user.setNeighborIndexes(new ArrayList<Integer>(neighborIndexes));
+			user.setNeighborSims(new ArrayList<Double>(neighborSims));
+			user.setCoLinAdpatNeighborSims();
+
 			queue.clear();
 			neighbors.clear();
 			neighborSims.clear();
-			neighborSims.clear();
-			
+			neighborIndexes.clear();
 		}
 	}
+	
+	//Load the neighbors for each user from neighbor file.
+	public void loadUserNeighbors(String filename, int topK){
+		try{
+			int userIndex = 0, neighborIndex = 0;;
+			_User user;
+			String neighborFile = String.format("%s_%d.txt", filename, topK);
+			String line;
+			String[] strs;
+			ArrayList<_User> neighbors = new ArrayList<_User>();
+			ArrayList<Double> neighborSims = new ArrayList<Double>();
+			ArrayList<Integer> neighborIndexes = new ArrayList<Integer>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(neighborFile), "UTF-8"));
+			while((line = reader.readLine()) != null){
+				strs = line.split(",");
+				if(strs.length == 2*topK){
+					for(int i=0; i<strs.length-1; i+=2){
+						neighborIndex = Integer.valueOf(strs[i]);
+						neighborIndexes.add(neighborIndex);
+						neighbors.add(m_users.get(neighborIndex));
+						neighborSims.add(Double.valueOf(strs[i+1]));
+					}
+				} else
+					System.err.println("Wrong number of neighbors.");
+				
+				user = m_users.get(userIndex);
+				
+				user.setNeighborIndexes(new ArrayList<Integer>(neighborIndexes));
+				user.setCoLinAdaptNeighborIndexes();
+				
+				user.setNeighbors(new ArrayList<_User>(neighbors));
+				user.setCoLinAdaptNeighbors();
+				
+				user.setNeighborSims(new ArrayList<Double>(neighborSims));
+				user.setCoLinAdpatNeighborSims();
+				
+				neighborIndexes.clear();
+				neighbors.clear();
+				neighborSims.clear();
+				userIndex++;
+			}
+			reader.close();
+			System.out.format("Neighbors for %d users are loaded.\n", m_users.size());
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	//Write neighbors and sims for each user.
+	public void writeUserNeighbors(String filename, int topK){
+		try{
+			_User user;
+			int[] neighborIndexes;
+			ArrayList<Double> neighborSims;
+			String neighborFile = String.format("%s_%d.txt", filename, topK);
+			PrintWriter writer = new PrintWriter(new File(neighborFile));
+			//Write neighbor ID and sim into file.
+			for(int i=0; i<m_users.size(); i++){
+				user = m_users.get(i);
+				neighborIndexes = user.getNeighborIndexes();
+				neighborSims = user.getNeighborSims();
+				if(neighborIndexes.length == neighborSims.size()){
+					for(int j=0; j < neighborIndexes.length; j++){
+						writer.format("%d,%.4f,", neighborIndexes[j], neighborSims.get(j));
+					}
+				}
+				writer.write("\n");
+			}
+			writer.close();
+			System.out.format("Finish writing neighbors for %d users.", m_users.size());
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
 	//In the online mode, train them one by one and consider the order of the reviews.
 	public void onlineTrain(){
 		_Review tmp, next;
@@ -132,7 +213,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			}
 		}
 		sync.init();
-		sync.setSimilarities(m_similarity);
+		System.out.println("Start batch training....");
+//		sync.setSimilarities(m_similarity);
 		if(!sync.train(trainSet))
 			m_failCount++;// Train the model.
 		sync.test(testSet);
@@ -157,7 +239,6 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	}
 	
 	public double calcSim4TwoUsers(_User ui, _User uj){
-//		return 0.2;
 		return 	Utils.cosine(ui.getSparse(), uj.getSparse());
 	}
 	

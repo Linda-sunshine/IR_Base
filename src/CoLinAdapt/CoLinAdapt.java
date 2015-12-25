@@ -39,7 +39,15 @@ public class CoLinAdapt extends LinAdapt{
 	}
 	
 	public void setNeighborSims(ArrayList<Double> sims){
-		m_neighborSims = sims;
+		m_neighborSims = new ArrayList<Double>(sims);
+	}
+	
+	public void setNeighborIndexes(ArrayList<Integer> indexes){
+		m_neighborIndexes = indexes;
+	}
+	
+	public ArrayList<Double> getNeighborSims(){
+		return m_neighborSims;
 	}
 	
 	// We can do A*w*x at the same time to reduce computation.
@@ -67,8 +75,10 @@ public class CoLinAdapt extends LinAdapt{
 			Pi = logit(fv);
 			if(Yi == 1)
 				L += Math.log(Pi);
-			else 
-				L += Math.log(1 - Pi);
+			else{
+				if( Pi != 1)
+					L += Math.log(1 - Pi);
+			}
 		}
 		
 		//Add R1.
