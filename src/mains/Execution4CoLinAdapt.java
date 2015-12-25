@@ -29,31 +29,34 @@ public class Execution4CoLinAdapt {
 
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.LoadCVStat(CVStat);
-
 		analyzer.loadUserDir(folder);//Load users.	
 		analyzer.setFeatureValues(25265, "TFIDF", 0);
-	
 		analyzer.loadGlobalWeights(globalModel);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
 	
 		//Create the instances of the LinAdapt model.
 		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
-		coLinAdaptS.initSchedule();
-//		int topK = 15;
-		String neighborFile = "./data/CoLinAdapt/Neighbor";
-		coLinAdaptS.calcluateSimilarities();
-		coLinAdaptS.constructNeighborhood(param.m_topK);
-	
+
 //		coLinAdaptS.writeUserNeighbors(neighborFile, topK);
 //		coLinAdaptS.loadUserNeighbors(neighborFile, param.m_topK);
 	
+		coLinAdaptS.setShift(param.m_eta1);
+		coLinAdaptS.setScale(param.m_eta2);
+		coLinAdaptS.setR2(param.m_eta3);
+		
+		coLinAdaptS.initSchedule();
+		coLinAdaptS.calcluateSimilarities();
+		coLinAdaptS.constructNeighborhood(param.m_topK);
+		
 		//Online training.
+		System.out.println("Start online training....");
 		coLinAdaptS.onlineTrain();
 		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
 		coLinAdaptS.printPerformance();
 	
 		//Batch training.
+		System.out.println("Start batch training....");
 		coLinAdaptS.initSchedule();
 		coLinAdaptS.batchTrainTest();
 		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	

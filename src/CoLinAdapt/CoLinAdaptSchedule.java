@@ -18,11 +18,15 @@ import utils.Utils;
 
 public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	double[] m_similarity;//It contains all user pair's similarity.
+	double m_eta3 = 0.5;// Coefficient for R2.
 	
 	public CoLinAdaptSchedule(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
 		super(users, featureNo, featureGroupNo, featureGroupIndexes);
 	}
 	
+	public void setR2(double r2){
+		m_eta3 = r2;
+	}
 	//Fill in the user related information map and array.
 	public void initSchedule() {
 		_User user;
@@ -31,6 +35,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			m_userIDs[i] = user.getUserID();
 			m_userIDIndexMap.put(user.getUserID(), i);
 			user.initCoLinAdapt(m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes); // Init each user's CoLinAdapt model.
+			user.setCoefficients(m_eta1, m_eta2, m_eta3); //Set the coefficients for the model.
 		}
 	}
 	//Specify the neighbors of the current user.
@@ -185,7 +190,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			if(count % 1000 == 0)
 				System.out.print(".");
 		}
-		System.out.format("\n%d fails in online optimization.\n", m_failCount);
+		System.out.format("%d fails in online optimization.\n", m_failCount);
 	}
 
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.
@@ -213,7 +218,6 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			}
 		}
 		sync.init();
-		System.out.println("Start batch training....");
 //		sync.setSimilarities(m_similarity);
 		if(!sync.train(trainSet))
 			m_failCount++;// Train the model.

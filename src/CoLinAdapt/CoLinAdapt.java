@@ -24,6 +24,11 @@ public class CoLinAdapt extends LinAdapt{
 		m_eta3 = 0.5;
 	}
 	
+	public void setCoefficients(double shift, double scale, double r2){
+		m_eta1 = shift;
+		m_eta2 = scale;
+		m_eta3 = r2;
+	}
 	public void initLBFGS(){
 		if(m_g == null)
 			m_g = new double[m_dim*2*(m_neighbors.size()+1)];

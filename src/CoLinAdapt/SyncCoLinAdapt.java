@@ -121,7 +121,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				oneR2 = 0;
 			}
 		}
-		System.out.println("Fvalue is " + fValue);
+//		System.out.println("Fvalue is " + fValue);
 		return fValue;
 	}
 
@@ -202,7 +202,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		for (int i = 0; i < m_allGs.length; i++) {
 			magA += m_allGs[i]*m_allGs[i];
 		}
-		System.out.format("Gradient magnitude: %.5f\n", magA);
+//		System.out.format("Gradient magnitude: %.5f\n", magA);
 		return magA;
 	}
 
@@ -222,6 +222,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 
 	// Train each user's model with training reviews.
 	public boolean train(ArrayList<_Review> trainSet) {
+		int count = 0;
 		int[] iflag = { 0 }, iprint = { -1, 3 };
 		double fValue, curMag = 0, preMag = 0;
 		int fSize = m_dim * 2 * m_users.size();
@@ -230,6 +231,9 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 			do {
 				fValue = calculateFunctionValue(trainSet);
 				curMag = calculateGradients(trainSet);
+				count++;
+				if(count % 1000 == 0)
+					System.out.println(".");
 				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
 					System.out.print("*");
 					break;

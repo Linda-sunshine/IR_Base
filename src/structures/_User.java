@@ -44,6 +44,9 @@ public class _User {
 		m_coLinAdapt.initA();
 	}
 	
+	public void setCoefficients(double shift, double scale, double r2){
+		m_coLinAdapt.setCoefficients(shift, scale, r2);
+	}
 	public int getIndex(){
 		return m_userIndex;
 	}

@@ -221,7 +221,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			reader.close();
 //			m_featureNames = new ArrayList<String>(Arrays.asList(m_features));
-			System.out.format("%d feature stat is loaded.\n", m_DFs.length);
+			System.out.format("%d feature stats are loaded.\n", m_DFs.length);
 			return true;
 		}
 		catch(IOException e){

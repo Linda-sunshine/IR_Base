@@ -24,6 +24,9 @@ public class LinAdaptSchedule {
 	protected double[][] m_avgPRF;
 	int m_failCount = 0;
 	
+	protected double m_eta1; //Coefficient for shift.
+	protected double m_eta2; //Coefficient for scale.
+	
 //	ArrayList<String> m_features;
 
 	public LinAdaptSchedule(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
@@ -34,6 +37,14 @@ public class LinAdaptSchedule {
 		m_featureGroupNo = featureGroupNo;
 		m_featureGroupIndexes = featureGroupIndexes;
 		m_avgPRF = new double[2][3];
+	}
+	
+	public void setShift(double s){
+		m_eta1 = s;
+	}
+	
+	public void setScale(double s){
+		m_eta2 = s;
 	}
 	
 	//Set the global weights.
