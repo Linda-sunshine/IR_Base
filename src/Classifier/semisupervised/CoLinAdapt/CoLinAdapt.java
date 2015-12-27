@@ -26,7 +26,7 @@ public class CoLinAdapt extends LinAdapt {
 		super(classNo, featureSize, globalModel, featureGroupMap);
 		m_eta3 = 0.5;
 		m_topK = topK; // when topK<0, we will use a fully connected graph 
-		m_sType = SimType.ST_BoW;
+		m_sType = SimType.ST_BoW; // default neighborhood by BoW
 	}
 
 	public void setTradeOffs(double eta1, double eta2, double eta3) {
@@ -89,11 +89,11 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	protected double calculateFunctionValue(_LinAdaptStruct ui) {
-		double fValue = super.calculateFunctionValue(ui), R2 = 0, diff;
+	protected double calculateFuncValue(_LinAdaptStruct ui) {
+		double fValue = super.calculateFuncValue(ui), R2 = 0, diff;
 		
 		_LinAdaptStruct uj;
-		for(_RankItem nit:((_CoLinAdaptStruct)ui).getNeighborhood()) {
+		for(_RankItem nit:((_CoLinAdaptStruct)ui).getNeighbors()) {
 			uj = m_userList.get(nit.m_index);
 			diff = 0;
 			for(int k=0; k<m_dim; k++) {
@@ -116,7 +116,7 @@ public class CoLinAdapt extends LinAdapt {
 		int offset = m_dim*2;
 		double coef, dA, dB;
 		
-		for(_RankItem nit:ui.getNeighborhood()) {
+		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			coef = 2* nit.m_value * m_eta3;
 			
@@ -166,7 +166,7 @@ public class CoLinAdapt extends LinAdapt {
 				
 				// accumulate function values and gradients from each user
 				for(_LinAdaptStruct user:m_userList) {
-					fValue += calculateFunctionValue(user);
+					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
 				

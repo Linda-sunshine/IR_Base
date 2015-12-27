@@ -21,7 +21,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	
 	static double[] sharedA;
 	int m_id;
-	MyPriorityQueue<_RankItem> m_neighbors;//top-K neighborhood, this graph structure is asymmetric
+	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	
 	public _CoLinAdaptStruct(_User user, int dim, int id, int topK) {
 		super(user, dim);
@@ -40,7 +40,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 			return user.m_user.getSVDSim(m_user);
 	}
 	
-	public Vector<_RankItem> getNeighborhood() {
+	public Vector<_RankItem> getNeighbors() {
 		return m_neighbors;
 	}
 
@@ -59,6 +59,11 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	//get the shifting operation for this group
 	@Override
 	public double getShifting(int gid) {
+		if (gid<0 || gid>m_dim) {
+			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			return Double.NaN;
+		}
+		
 		int offset = m_id * m_dim * 2;
 		return sharedA[offset+m_dim+gid];
 	}
@@ -66,6 +71,11 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	//get the shifting operation for this group
 	@Override
 	public double getScaling(int gid) {
+		if (gid<0 || gid>m_dim) {
+			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			return Double.NaN;
+		}
+		
 		int offset = m_id * m_dim * 2;
 		return sharedA[offset+gid];
 	}

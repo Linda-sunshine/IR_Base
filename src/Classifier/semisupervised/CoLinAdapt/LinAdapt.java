@@ -77,7 +77,7 @@ public class LinAdapt extends BaseClassifier {
 	public void loadGlobalModel(String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] features = reader.readLine().split(",");//Group information of each feature.
+			String[] features = reader.readLine().split(",");
 			reader.close();
 			
 			m_gWeights = new double[features.length];
@@ -115,13 +115,13 @@ public class LinAdapt extends BaseClassifier {
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			value += user.getShifting(k)*m_gWeights[n] + user.getScaling(k)*fv.getValue();
+			value += (user.getScaling(k)*m_gWeights[n] + user.getShifting(k)) * fv.getValue();
 		}
 		return 1/(1+Math.exp(-value));
 	}
 	
 	//Calculate the function value of the new added instance.
-	protected double calculateFunctionValue(_LinAdaptStruct user){
+	protected double calculateFuncValue(_LinAdaptStruct user){
 		double L = 0; //log likelihood.
 		double Pi = 0, R1 = 0;
 		
@@ -138,8 +138,8 @@ public class LinAdapt extends BaseClassifier {
 		
 		//Add regularization parts.
 		for(int i=0; i<m_dim; i++){
-			R1 += m_eta1*(user.getShifting(i)-1)*(user.getShifting(i)-1);//(a[i]-1)^2
-			R1 += m_eta2*user.getScaling(i)*user.getScaling(i);//b[i]^2
+			R1 += m_eta1 * (user.getScaling(i)-1) * (user.getScaling(i)-1);//(a[i]-1)^2
+			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
 		
 		return R1 - L;
@@ -206,14 +206,14 @@ public class LinAdapt extends BaseClassifier {
 			try{
 				A = user.getA();
 				do{
-					fValue = calculateFunctionValue(user);
+					fValue = calculateFuncValue(user);
 					System.out.println("Fvalue is " + fValue);
 					
 					Arrays.fill(m_g, 0); // initialize gradient
 					calculateGradients(user);
 					gradientTest();
 					
-					LBFGS.lbfgs(vSize, 6, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
+					LBFGS.lbfgs(vSize, 5, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 				} while(iflag[0] != 0);
 			} catch(ExceptionWithIflag e) {
 				e.printStackTrace();
@@ -224,11 +224,14 @@ public class LinAdapt extends BaseClassifier {
 	
 	void setPersonalizedModel(_LinAdaptStruct user) {
 		int gid;
-		double[] A = user.getA();
 		
+		//set bias term
+		m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
+		
+		//set the other features
 		for(int i=0; i<m_featureSize; i++) {
-			gid = m_featureGroupMap[i];
-			m_pWeights[i] = A[gid] * m_gWeights[i] + A[gid+m_dim];
+			gid = m_featureGroupMap[1+i];
+			m_pWeights[1+i] = user.getScaling(gid) * m_gWeights[1+i] + user.getShifting(gid);
 		}
 		user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
 	}
