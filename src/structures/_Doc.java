@@ -73,7 +73,7 @@ public class _Doc implements Comparable<_Doc> {
 	}
 
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
+	protected _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
@@ -159,6 +159,10 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public String getTitle(){
 		return m_title;
+	}
+	
+	public void setTitle(String title){
+		m_title = title;
 	}
 	
 	//Get the source content of a document.

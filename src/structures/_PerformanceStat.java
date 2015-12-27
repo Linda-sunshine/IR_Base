@@ -35,4 +35,8 @@ public class _PerformanceStat {
 	public double[][] getOneUserPRF(){
 		return m_prf;
 	}
+	
+	public double getAccuracy() {
+		return 0;
+	}
 }

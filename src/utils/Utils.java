@@ -354,6 +354,10 @@ public class Utils {
 			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
+	public static double cosine(double[] a, double[] b) {
+		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
+	}
+	
 	//Calculate the similarity between two sparse vectors.
 	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		if (spVct1==null || spVct2==null)
@@ -771,22 +775,4 @@ public class Utils {
 	      }
 	      return klDiv / log2; 
 	 }
-	
-
-	public static double cosine(double[] t1, double[] t2){
-		double similarity = 0, sum1 = 0, sum2 = 0;
-		if(t1.length == t2.length){
-			for(int i=0; i < t1.length; i++){
-				similarity += t1[i] * t2[i];
-				sum1 += t1[i] * t1[i];
-				sum2 += t2[i] * t2[i];
-			}
-			if(sum1 != 0 && sum2 != 0){
-				sum1 = Math.sqrt(sum1);
-				sum2 = Math.sqrt(sum2);
-				similarity = similarity / (sum1 * sum2);
-			} else similarity = 0;
-		}
-		return similarity;
-	}
 }
