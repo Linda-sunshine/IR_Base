@@ -40,6 +40,8 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	public void loadUsers(ArrayList<_User> userList){	
+		int vSize = 2*m_dim;
+		
 		//step 1: create space
 		m_userList = new ArrayList<_LinAdaptStruct>();		
 		for(int i=0; i<userList.size(); i++) {
@@ -47,9 +49,9 @@ public class CoLinAdapt extends LinAdapt {
 			m_userList.add(new _CoLinAdaptStruct(user, m_dim, i, m_topK));
 		}
 		m_pWeights = new double[m_gWeights.length];
+		_CoLinAdaptStruct.sharedA = new double[vSize*m_userList.size()];
 		
-		//step 2: copy each user's A to shared A in _CoLinAdaptStruct
-		int vSize = 2*m_dim;
+		//step 2: copy each user's A to shared A in _CoLinAdaptStruct		
 		_LinAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++) {
 			user = m_userList.get(i);
