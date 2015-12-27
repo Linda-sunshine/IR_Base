@@ -247,7 +247,7 @@ public class LinAdapt extends BaseClassifier {
 					continue;
 				trueL = r.getYLabel();
 				predL = user.predict(r); // evoke user's own model
-				TPTable[trueL][predL]++;
+				TPTable[trueL][predL]++; // macro average
 			}
 		}
 		
