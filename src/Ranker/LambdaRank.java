@@ -23,7 +23,7 @@ public class LambdaRank {
 		OT_PAIR
 	}
 	
-	static final int NDCG_K = 40; 
+	public static final int NDCG_K = 40; 
 	
 	double m_lambda;
 	int m_trainingSize;

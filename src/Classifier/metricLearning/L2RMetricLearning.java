@@ -13,24 +13,27 @@ import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
 import Ranker.LambdaRank;
 import Ranker.LambdaRank.OptimizationType;
+import Ranker.evaluator.Evaluator;
+import Ranker.evaluator.MAP_Evaluator;
+import Ranker.evaluator.NDCG_Evaluator;
 import Ranker.LambdaRankParallel;
+import Ranker.RankNet;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
 	int m_topK;//top K initial ranking results 
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
-	protected Model m_rankSVM;
-	protected LambdaRank m_lambdaRank;
+
+	double[] m_weights;
 	double m_tradeoff;
 	boolean m_multithread = false; // by default we will use single thread
 	
-	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank
+	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank; 2: RankNet
 	ArrayList<_Query> m_queries = new ArrayList<_Query>();
 	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	double[] m_mean, m_std; // to normalize the ranking features
@@ -67,13 +70,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	//NOTE: this similarity is no longer symmetric!!
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
-		double similarity = 0;
-		
-		if (m_ranker==0) 
-			similarity = Linear.predictValue(m_rankSVM, normalize(genRankingFV(di, dj)), 0);
-		else
-			similarity = m_lambdaRank.score(normalize(genRankingFV(di, dj)));
-		
+		double similarity = Utils.dotProduct(m_weights, normalize(genRankingFV(di, dj)));
 		if (Double.isNaN(similarity)){
 			System.out.println("similarity calculation hits NaN!");
 			System.exit(-1);
@@ -106,34 +103,66 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		//select the training pairs
 		createTrainingCorpus();
 		
-		double[] w;
 		if (m_ranker==0) {
 			ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 			ArrayList<Integer> labels = new ArrayList<Integer>();
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-			m_rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
+			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			
-			w = m_rankSVM.getFeatureWeights();			
-		} else {//all the rest use LambdaRank with different evaluator
+			m_weights = rankSVM.getFeatureWeights();	
+			System.out.format("RankSVM training performance:\nMAP: %.4f\n", evaluate(OptimizationType.OT_MAP));
+
+		} else if (m_ranker==1) {//all the rest use LambdaRank with different evaluator
+			LambdaRank lambdaRank;
 			if (m_multithread) {
 				/**** multi-thread version ****/
-				m_lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
-				m_lambdaRank.setSigns(getRankingFVSigns());
-				m_lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
+				lambdaRank = new LambdaRankParallel(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP, 10);
+				lambdaRank.setSigns(getRankingFVSigns());
+				lambdaRank.train(100, 100, 1.0, 0.95);//lambdaRank specific parameters
 			} else {
 				/**** single-thread version ****/
-				m_lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
-				m_lambdaRank.setSigns(getRankingFVSigns());
-				m_lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
+				lambdaRank = new LambdaRank(RankFVSize, m_tradeoff, m_queries, OptimizationType.OT_MAP);
+				lambdaRank.setSigns(getRankingFVSigns());
+				lambdaRank.train(300, 20, 1.0, 0.98);//lambdaRank specific parameters
 			}			
-			w = m_lambdaRank.getWeights();
-		}
+			m_weights = lambdaRank.getWeights();
+		} else if (m_ranker==2) {
+			RankNet ranknet = new RankNet(RankFVSize, 5.0);
+			ArrayList<double[]> rfvs = new ArrayList<double[]>();
+			for(_Query q:m_queries)
+				q.extractPairs4RankNet(rfvs);
+			ranknet.setSigns(getRankingFVSigns());
+			double likelihood = ranknet.train(rfvs);
+			m_weights = ranknet.getWeights();
+			
+			System.out.format("RankNet training performance:\nlog-likelihood: %.4f\t MAP: %.4f\n", likelihood, evaluate(OptimizationType.OT_MAP));
+		}		
 		
 		for(int i=0; i<RankFVSize; i++)
-			System.out.format("%.5f ", w[i]);
+			System.out.format("%.5f ", m_weights[i]);
 		System.out.println();
+	}
+	
+	double evaluate (OptimizationType otype) {
+		Evaluator eval;
+		
+		if (otype.equals(OptimizationType.OT_MAP))
+			eval = new MAP_Evaluator();
+		else if (otype.equals(OptimizationType.OT_NDCG))
+			eval = new NDCG_Evaluator(LambdaRank.NDCG_K);
+		else
+			eval = new Evaluator();
+		
+		double perf = 0;
+		for(_Query q:m_queries) {
+			for(_QUPair qu:q.m_docList)
+				qu.score(m_weights);
+			
+			perf += eval.eval(q);
+		}
+		return perf/m_queries.size();
 	}
 	
 	//this is an important feature and will be used repeated

@@ -23,7 +23,7 @@ public class _Doc implements Comparable<_Doc> {
 	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
-	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+	int m_sourceType = 1; // source is 1 for Amazon (unlabeled) and 2 for newEgg (labeled)
 	int m_totalLength; //The total length of the document in tokens
 	
 	int m_y_label; // classification target, that is the index of the labels.
@@ -73,7 +73,7 @@ public class _Doc implements Comparable<_Doc> {
 	}
 
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
+	protected _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
@@ -159,6 +159,10 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public String getTitle(){
 		return m_title;
+	}
+	
+	public void setTitle(String title){
+		m_title = title;
 	}
 	
 	//Get the source content of a document.

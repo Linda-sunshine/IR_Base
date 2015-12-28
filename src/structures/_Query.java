@@ -3,6 +3,8 @@ package structures;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import utils.Utils;
+
 import Classifier.supervised.liblinear.Feature;
 
 public class _Query {
@@ -75,6 +77,20 @@ public class _Query {
 						labels.add(1);
 					}
 				}
+			}
+		}
+	}
+	
+	public void extractPairs4RankNet(ArrayList<double[]> fvs) {
+		double[] diff;
+		for(_QUPair di:m_docList) {
+			if (di.m_worseURLs==null)
+				continue;			
+			
+			for(_QUPair dj:di.m_worseURLs) {
+				diff = Utils.diff(di.m_rankFv, dj.m_rankFv);
+				if (diff!=null)
+					fvs.add(diff);	
 			}
 		}
 	}

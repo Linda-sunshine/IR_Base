@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
@@ -211,6 +211,20 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double[] diff(double[] a, double[] b) {
+		if (a.length != b.length)
+			return null;
+		
+		double[] diff = new double[a.length];
+		boolean nonzero = false;
+		for(int i=0; i<a.length; i++) {
+			diff[i] = a[i] - b[i];
+			if (Math.abs(diff[i])>1e-10)
+				nonzero = true;
+		}
+		return nonzero?diff:null;
+	}
+	
 	public static void scaleArray(double[] a, double b) {
 		for (int i=0; i<a.length; i++)
 			a[i] *= b;
@@ -340,6 +354,10 @@ public class Utils {
 			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
+	public static double cosine(double[] a, double[] b) {
+		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
+	}
+	
 	//Calculate the similarity between two sparse vectors.
 	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		if (spVct1==null || spVct2==null)
@@ -410,6 +428,22 @@ public class Utils {
 		}
 		Arrays.sort(spVct);		
 		return spVct;
+	}
+	
+	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		
+		for(_SparseFeature[] fv:vcts) {
+			for(_SparseFeature f:fv) {
+				int x = f.getIndex();
+				if (vct.containsKey(x)) {
+					vct.put(x, vct.get(x) + f.getValue());
+				} else {
+					vct.put(x, f.getValue());
+				}
+			}
+		}
+		return Utils.createSpVct(vct);
 	}
 	
 	static public _SparseFeature[] createSpVct(ArrayList<HashMap<Integer, Double>> vcts) {
@@ -558,17 +592,23 @@ public class Utils {
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 	
-	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
-		Feature[] node = new Feature[1+spVct.length]; 
+	static public Feature[] createLibLinearFV(_SparseFeature[] spVct, int fSize) {
+		Feature[] node;
+		if (fSize>0)//include bias term in the end
+			node = new Feature[1+spVct.length]; 
+		else//ignore bias term
+			node = new Feature[spVct.length];
+		
 		int fid = 0;
 		for(_SparseFeature fv:spVct)
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
-		node[fid] = new FeatureNode(8541, 1);//add bias term to the end
+		if (fSize>0)
+			node[fid] = new FeatureNode(1+fSize, 1.0);
 		return node;
 	}
 	
-	static public Feature[] createLibLinearFV(_Doc doc) {
-		return Utils.createLibLinearFV(doc.getSparse());
+	static public Feature[] createLibLinearFV(_Doc doc, int fSize) {
+		return Utils.createLibLinearFV(doc.getSparse(), fSize);
 	}
 	
 	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {
@@ -730,27 +770,9 @@ public class Utils {
 		  for (int i = 0; i < p1.length; ++i) {
 	        if (p1[i] == 0) { continue; }
 	        if (p2[i] == 0.0) { continue; } 
-
+	
 	      klDiv += p1[i] * Math.log( p1[i] / p2[i] );
 	      }
 	      return klDiv / log2; 
 	 }
-	
-
-	public static double cosine(double[] t1, double[] t2){
-		double similarity = 0, sum1 = 0, sum2 = 0;
-		if(t1.length == t2.length){
-			for(int i=0; i < t1.length; i++){
-				similarity += t1[i] * t2[i];
-				sum1 += t1[i] * t1[i];
-				sum2 += t2[i] * t2[i];
-			}
-			if(sum1 != 0 && sum2 != 0){
-				sum1 = Math.sqrt(sum1);
-				sum2 = Math.sqrt(sum2);
-				similarity = similarity / (sum1 * sum2);
-			} else similarity = 0;
-		}
-		return similarity;
-	}
 }
