@@ -15,7 +15,6 @@ public class _User {
 	
 	//text reviews associated with this user
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
-	protected int m_reviewCount; //Record how many reviews have been used to update.
 	
 	//profile for this user
 	protected double[] m_lowDimProfile;
@@ -26,18 +25,14 @@ public class _User {
 	protected int m_classNo;
 	protected int m_featureSize;
 	
-	//neighborhood for this user
-	protected ArrayList<_User> m_neighbors; //the neighbors of the current user.
-	protected ArrayList<Integer> m_neighborIndexes; // The indexes of neighbors.
-	
 	public _User(String userID, ArrayList<_Review> reviews){
 		m_userID = userID;
-		m_reviews = reviews;	
-		m_reviewCount = 0;
+		m_reviews = reviews;
+
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
 		m_pWeight = null;
-		
+
 		constructSparseVector();
 	}
 	
@@ -65,16 +60,6 @@ public class _User {
 	//Get the sparse vector of the user.
 	public _SparseFeature[] getBoWProfile(){
 		return m_BoWProfile;
-	}
-	
-	// Get one review from a user's reviews.
-	public _Review getOneReview(){
-		_Review rev = null;
-		if(m_reviewCount < m_reviews.size()){
-			rev = m_reviews.get(m_reviewCount);
-			m_reviewCount++; //Move to the next review of the current user.
-		}
-		return rev;
 	}
 	
 	public ArrayList<_Review> getReviews(){

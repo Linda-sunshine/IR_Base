@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
@@ -770,7 +770,7 @@ public class Utils {
 		  for (int i = 0; i < p1.length; ++i) {
 	        if (p1[i] == 0) { continue; }
 	        if (p2[i] == 0.0) { continue; } 
-
+	
 	      klDiv += p1[i] * Math.log( p1[i] / p2[i] );
 	      }
 	      return klDiv / log2; 

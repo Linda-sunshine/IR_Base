@@ -125,7 +125,7 @@ public class LinAdapt extends BaseClassifier {
 		double L = 0; //log likelihood.
 		double Pi = 0, R1 = 0;
 		
-		for(_Review review: user.getReviews()){
+		for(_Review review:user.getReviews()){
 			if (review.getType() != rType.ADAPTATION)
 				continue; // only touch the adaptation data
 			
@@ -145,37 +145,42 @@ public class LinAdapt extends BaseClassifier {
 		return R1 - L;
 	}
 	
-	protected void gradientByFunc(_LinAdaptStruct user) {
-		double delta;
-		int n, k; // feature index and feature group index
-		
+	protected void gradientByFunc(_LinAdaptStruct user) {		
 		//Update gradients one review by one review.
-		for(_Review review: user.getReviews()){
+		for(_Review review:user.getReviews()){
 			if (review.getType() != rType.ADAPTATION)
-				continue; // only touch the adaptation data
+				continue;
 			
-			delta = review.getYLabel() - logit(review.getSparse(), user);
-			
-			//Bias term.
-			m_g[0] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
-			m_g[m_dim] -= delta;//b[0]
-			
-			//Traverse all the feature dimension to calculate the gradient.
-			for(_SparseFeature fv: review.getSparse()){
-				n = fv.getIndex() + 1;
-				k = m_featureGroupMap[n];
-				m_g[k] -= delta * m_gWeights[n] * fv.getValue();
-				m_g[m_dim + k] -= delta * fv.getValue();  
-			}
+			gradientByFunc(user, review);
+		}
+	}
+	
+	//shared gradient calculation by batch and online updating
+	protected void gradientByFunc(_LinAdaptStruct user, _Review review) {
+		int n, k; // feature index and feature group index
+		double delta = review.getYLabel() - logit(review.getSparse(), user);
+		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
+		
+		//Bias term.
+		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
+		m_g[offset + m_dim] -= delta;//b[0]
+		
+		//Traverse all the feature dimension to calculate the gradient.
+		for(_SparseFeature fv: review.getSparse()){
+			n = fv.getIndex() + 1;
+			k = m_featureGroupMap[n];
+			m_g[offset + k] -= delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + m_dim + k] -= delta * fv.getValue();  
 		}
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
 	protected void gradientByR1(_LinAdaptStruct user){
+		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++){
-			m_g[k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)
-			m_g[k+m_dim] += 2 * m_eta2 * user.getShifting(k); // add 2*eta2*b_k
+			m_g[offset + k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)
+			m_g[offset + k + m_dim] += 2 * m_eta2 * user.getShifting(k); // add 2*eta2*b_k
 		}
 	}
 		
@@ -206,10 +211,10 @@ public class LinAdapt extends BaseClassifier {
 			try{
 				A = user.getA();
 				do{
+					Arrays.fill(m_g, 0); // initialize gradient					
 					fValue = calculateFuncValue(user);
-					System.out.println("Fvalue is " + fValue);
+					System.out.println("Fvalue is " + fValue);					
 					
-					Arrays.fill(m_g, 0); // initialize gradient
 					calculateGradients(user);
 					gradientTest();
 					
