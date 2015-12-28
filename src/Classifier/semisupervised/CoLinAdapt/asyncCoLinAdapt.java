@@ -13,7 +13,7 @@ import utils.Utils;
  * @author Hongning Wang
  * asynchronized CoLinAdapt with zero order gradient update, i.e., we will only touch the current user's gradient
  */
-public abstract class asyncCoLinAdapt extends CoLinAdapt {
+public class asyncCoLinAdapt extends CoLinAdapt {
 
 	int[] m_userOrder; // visit order of different users during online learning
 	
