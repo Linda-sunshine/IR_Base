@@ -33,6 +33,8 @@ public class LinAdapt extends BaseClassifier {
 	double[] m_diag; //parameter used in lbfgs.
 	double[] m_g;//optimized gradients. 
 	
+	int m_displayLv;//0: display nothing during training; 1: display the change of objective function; 2: display everything
+	
 	public LinAdapt(int classNo, int featureSize, String globalModel, String featureGroupMap){
 		super(classNo, featureSize);
 		m_userList = null;				
@@ -210,26 +212,36 @@ public class LinAdapt extends BaseClassifier {
 	//this is batch training in each individual user
 	public void train(){
 		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue, A[];
+		double fValue, A[], oldFValue = Double.MAX_VALUE;
 		int vSize = 2*m_dim;
 		
 		for(_LinAdaptStruct user:m_userList) {
 			initLBFGS();
 			try{
 				A = user.getA();
+				oldFValue = Double.MAX_VALUE; 
 				do{
 					Arrays.fill(m_g, 0); // initialize gradient					
 					fValue = calculateFuncValue(user);
-					System.out.println("Fvalue is " + fValue);					
-					
 					calculateGradients(user);
-					gradientTest();
+					
+					if (m_displayLv==2) {
+						System.out.println("Fvalue is " + fValue);
+						gradientTest();
+					} else if (m_displayLv==1) {
+						if (fValue<oldFValue)
+							System.out.print("o");
+						else
+							System.out.print("x");
+					} 
+					oldFValue = fValue;
 					
 					LBFGS.lbfgs(vSize, 5, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 				} while(iflag[0] != 0);
 			} catch(ExceptionWithIflag e) {
 				e.printStackTrace();
 			}
+			System.out.println();
 			setPersonalizedModel(user);
 		}
 	}
@@ -245,7 +257,7 @@ public class LinAdapt extends BaseClassifier {
 			gid = m_featureGroupMap[1+i];
 			m_pWeights[1+i] = user.getScaling(gid) * m_gWeights[1+i] + user.getShifting(gid);
 		}
-		user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
+		user.setPersonalizedModel(m_gWeights, m_classNo, m_featureSize);
 	}
 	
 	//Batch mode: given a set of reviews and accumulate the TP table.

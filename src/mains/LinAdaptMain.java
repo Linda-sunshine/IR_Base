@@ -3,9 +3,9 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import Analyzer.UserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.LinAdapt;
 import opennlp.tools.util.InvalidFormatException;
+import Analyzer.UserAnalyzer;
+import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -18,7 +18,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 5;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/CoLinAdapt/selectedFeatures.csv"; // CV.
+		String providedCV = "./data/CoLinAdapt/5000Features.txt"; // CV.
 		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
@@ -29,11 +29,11 @@ public class LinAdaptMain {
 		analyzer.setFeatureValues("BM25", 2);		
 		
 		//Create the instances of a LinAdapt model.
-		LinAdapt linAdapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile);
-		linAdapt.loadUsers(analyzer.getUsers());
-		
-		linAdapt.train();
-		linAdapt.test();
+//		LinAdapt linAdapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile);
+//		linAdapt.loadUsers(analyzer.getUsers());
+//		
+//		linAdapt.train();
+//		linAdapt.test();
 		
 		//Create the instances of an asyncLinAdapt model.
 //		asyncLinAdapt aLinAdaptS = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile);
@@ -43,11 +43,11 @@ public class LinAdaptMain {
 //		aLinAdaptS.test();
 		
 		//Create the instances of a CoLinAdapt model.
-//		CoLinAdapt coLinAdapt = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);
-//		coLinAdapt.loadUsers(analyzer.getUsers());
-//		
-//		coLinAdapt.train();
-//		coLinAdapt.test();
+		CoLinAdapt coLinAdapt = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);
+		coLinAdapt.loadUsers(analyzer.getUsers());
+		
+		coLinAdapt.train();
+		coLinAdapt.test();
 		
 		//Create the instances of an zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt coLinAdaptZeroOrder = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);

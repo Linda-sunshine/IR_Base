@@ -161,7 +161,7 @@ public class CoLinAdapt extends LinAdapt {
 	//this is batch training in each individual user
 	public void train(){
 		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue;
+		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = 2*m_dim*m_userList.size();
 		
 		initLBFGS();
@@ -176,14 +176,23 @@ public class CoLinAdapt extends LinAdapt {
 					calculateGradients(user);
 				}
 				
-				System.out.println("Fvalue is " + fValue);	
-				gradientTest();
+				if (m_displayLv==2) {
+					System.out.println("Fvalue is " + fValue);
+					gradientTest();
+				} else if (m_displayLv==1) {
+					if (fValue<oldFValue)
+						System.out.print("o");
+					else
+						System.out.print("x");
+				} 
+				oldFValue = fValue;
 				
 				LBFGS.lbfgs(vSize, 4, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
+			System.out.println();
 		} catch(ExceptionWithIflag e) {
 			e.printStackTrace();
-		}
+		}		
 		
 		for(_LinAdaptStruct user:m_userList)
 			setPersonalizedModel(user);
