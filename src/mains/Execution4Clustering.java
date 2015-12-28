@@ -29,6 +29,7 @@ import Classifier.supervised.SVM;
 public class Execution4Clustering  {
 	static public void main(String[] args) throws IOException, ParseException {
 		Parameter param = new Parameter(args);
+		System.out.println(args);
 		System.out.println(param.toString());
 		
 		//Used in experiments. added by Lin.

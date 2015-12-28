@@ -8,6 +8,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+
+import org.apache.commons.math.optimization.GoalType;
+import org.apache.commons.math.optimization.OptimizationException;
+import org.apache.commons.math.optimization.RealPointValuePair;
+import org.apache.commons.math.optimization.linear.LinearConstraint;
+import org.apache.commons.math.optimization.linear.LinearObjectiveFunction;
+import org.apache.commons.math.optimization.linear.Relationship;
+import org.apache.commons.math.optimization.linear.SimplexSolver;
 
 import structures.MyLinkedList;
 import structures.MyPriorityQueue;
@@ -18,14 +27,22 @@ import utils.Utils;
 
 public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	double[] m_similarity;//It contains all user pair's similarity.
-	double m_eta3 = 0.5;// Coefficient for R2.
+	double m_eta3 = 0.5;// scale for R2.
+	double m_eta4 = 0.5; // shift for R2.
+	double[] m_newSimilarity;
+	
+	//Parameters for simplex optimization.
+	LinearObjectiveFunction m_LPObj; // The linear objective function.
+	Collection m_LPConstrains = new ArrayList();
+	RealPointValuePair m_solution;
 	
 	public CoLinAdaptSchedule(ArrayList<_User> users, int featureNo, int featureGroupNo, int[] featureGroupIndexes){
 		super(users, featureNo, featureGroupNo, featureGroupIndexes);
 	}
 	
-	public void setR2(double r2){
-		m_eta3 = r2;
+	public void setCoefficients4R2(double a4r2, double b4r2){
+		m_eta3 = a4r2;
+		m_eta4 = b4r2;
 	}
 	//Fill in the user related information map and array.
 	public void initSchedule() {
@@ -34,8 +51,9 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			user = m_users.get(i);
 			m_userIDs[i] = user.getUserID();
 			m_userIDIndexMap.put(user.getUserID(), i);
-			user.initCoLinAdapt(m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes); // Init each user's CoLinAdapt model.
-			user.setCoefficients(m_eta1, m_eta2, m_eta3); //Set the coefficients for the model.
+			user.initCoLinAdapt(i, m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes); // Init each user's CoLinAdapt model.
+			user.setCoefficients(m_eta1, m_eta2, m_eta3, m_eta4); //Set the coefficients for the model.
+			user.setCoLinAdaptSimilarity(m_similarity);
 		}
 	}
 	//Specify the neighbors of the current user.
@@ -77,8 +95,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			user.setNeighbors(new ArrayList<_User>(neighbors));//Set the neighbors for the user.
 			user.setCoLinAdaptNeighbors(); //Pass neighbors to the coLinAdapt model.
 			user.setNeighborIndexes(new ArrayList<Integer>(neighborIndexes));
-			user.setNeighborSims(new ArrayList<Double>(neighborSims));
-			user.setCoLinAdpatNeighborSims();
+//			user.setNeighborSims(new ArrayList<Double>(neighborSims));
+//			user.setCoLinAdpatNeighborSims();
 
 			queue.clear();
 			neighbors.clear();
@@ -119,8 +137,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 				user.setNeighbors(new ArrayList<_User>(neighbors));
 				user.setCoLinAdaptNeighbors();
 				
-				user.setNeighborSims(new ArrayList<Double>(neighborSims));
-				user.setCoLinAdpatNeighborSims();
+//				user.setNeighborSims(new ArrayList<Double>(neighborSims));
+//				user.setCoLinAdpatNeighborSims();
 				
 				neighborIndexes.clear();
 				neighbors.clear();
@@ -166,6 +184,9 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		int userIndex, predL;
 		CoLinAdapt model;
 		int count = 0;
+		boolean flag;
+		
+		int[] neighborIndexes;
 		m_trainQueue = new MyLinkedList<_Review>();//We use this to maintain the review pool.
 		//Construct the initial pool.
 		for(_User u: m_users)
@@ -184,20 +205,54 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			model.setAs();
 			predL = model.predict(tmp);
 			model.addOnePredResult(predL, tmp.getYLabel());
-			if(!model.train(tmp))
+			if(!(flag = model.train(tmp)))
 				m_failCount++;
 			count++;
 			if(count % 1000 == 0)
 				System.out.print(".");
+//			if(flag){
+//				//Train the similarity of the neighbors.
+//				m_newSimilarity = trainSimilarity(model.getR2Vct());
+//				//Update the neighbor similarity.
+//				neighborIndexes = m_users.get(userIndex).getNeighborIndexes();
+//				for(int i=0; i<neighborIndexes.length; i++){
+//					m_similarity[getIndex(userIndex, neighborIndexes[i])] = m_newSimilarity[i];
+//				}
+//			}
 		}
 		System.out.format("%d fails in online optimization.\n", m_failCount);
+	}
+	
+	//Use linear programming to train the similairty among current user and neighbors.
+	public double[] trainSimilarity(double[] R2Vct) {
+		try{
+			double[] solution = new double[R2Vct.length];
+			m_LPObj = new LinearObjectiveFunction(R2Vct, 0);
+			//Constrains:
+			double[][] constrains = new double[R2Vct.length][R2Vct.length];
+			for(int i=0; i<R2Vct.length; i++){
+				constrains[i][i] = 1;
+				m_LPConstrains.add(new LinearConstraint(constrains[i], Relationship.GEQ, 0));
+			}
+			double[] constrain = new double[R2Vct.length];
+			Arrays.fill(constrain, 1);
+			m_LPConstrains.add(new LinearConstraint(constrain, Relationship.EQ, 1));
+		
+			m_solution = new SimplexSolver().optimize(m_LPObj, m_LPConstrains, GoalType.MINIMIZE, false);
+			solution = m_solution.getPoint();
+			return solution;
+		} catch(OptimizationException e){
+//			e.printStackTrace();
+			return null;
+		}
 	}
 
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.
 	public void batchTrainTest() {
 		m_failCount = 0;
-		SyncCoLinAdapt sync = new SyncCoLinAdapt(m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes, m_users);
+		SyncCoLinAdapt sync = new SyncCoLinAdapt(m_featureGroupNo, m_featureNo, m_globalWeights, m_featureGroupIndexes, m_users, m_similarity);
 //		CoLinAdapt model;
+		sync.setCoefficients(m_eta1, m_eta2, m_eta3, m_eta4);
 		ArrayList<_Review> reviews;
 		int pivot = 0;
 

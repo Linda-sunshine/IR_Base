@@ -11,9 +11,9 @@ import CoLinAdapt.CoLinAdaptSchedule;
 public class Execution4CoLinAdapt {
 	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		
+		 
 		CoLinAdaptParameter param = new CoLinAdaptParameter(args);
-		
+
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
@@ -37,18 +37,19 @@ public class Execution4CoLinAdapt {
 		//Create the instances of the LinAdapt model.
 		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
-
+		System.out.println("debug");
 //		coLinAdaptS.writeUserNeighbors(neighborFile, topK);
 //		coLinAdaptS.loadUserNeighbors(neighborFile, param.m_topK);
 	
-		coLinAdaptS.setShift(param.m_eta1);
-		coLinAdaptS.setScale(param.m_eta2);
-		coLinAdaptS.setR2(param.m_eta3);
+		coLinAdaptS.setCoefficients4R1(param.m_eta1, param.m_eta2);
+		coLinAdaptS.setCoefficients4R2(param.m_eta3, param.m_eta4);
 		
-		coLinAdaptS.initSchedule();
 		coLinAdaptS.calcluateSimilarities();
+
+		coLinAdaptS.initSchedule();
 		coLinAdaptS.constructNeighborhood(param.m_topK);
 		
+		param.printParameters();
 		//Online training.
 		System.out.println("Start online training....");
 		coLinAdaptS.onlineTrain();

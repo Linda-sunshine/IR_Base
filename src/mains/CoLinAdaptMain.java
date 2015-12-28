@@ -35,16 +35,16 @@ public class CoLinAdaptMain {
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		
 		int topK = 15;
-		double eta1 = 0.3, eta2 = 0.3, eta3 = 0.3;
-		coLinAdaptS.setShift(eta1);
-		coLinAdaptS.setScale(eta2);
-		coLinAdaptS.setR2(eta3);
+		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.8, eta4 = 0.1;
+		coLinAdaptS.setCoefficients4R1(eta1, eta2);
+		coLinAdaptS.setCoefficients4R2(eta3, eta4);
+		
+		coLinAdaptS.calcluateSimilarities();
 		
 		coLinAdaptS.initSchedule();
 		String neighborFile = "./data/CoLinAdapt/Neighbor";
-		coLinAdaptS.calcluateSimilarities();
 		coLinAdaptS.constructNeighborhood(topK);
-		
+
 //		coLinAdaptS.writeUserNeighbors(neighborFile, topK);
 //		coLinAdaptS.loadUserNeighbors(neighborFile, topK);
 		

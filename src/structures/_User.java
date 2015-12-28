@@ -39,13 +39,13 @@ public class _User {
 		m_linAdapt.initGradients();
 	}
 	
-	public void initCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
-		m_coLinAdapt = new CoLinAdapt(fg, fn, globalWeights, featureGroupIndexes);
+	public void initCoLinAdapt(int i, int fg, int fn, double[] globalWeights, int[] featureGroupIndexes){
+		m_coLinAdapt = new CoLinAdapt(i, fg, fn, globalWeights, featureGroupIndexes);
 		m_coLinAdapt.initA();
 	}
 	
-	public void setCoefficients(double shift, double scale, double r2){
-		m_coLinAdapt.setCoefficients(shift, scale, r2);
+	public void setCoefficients(double a4r1, double b4r1, double a4r2, double b4r2){
+		m_coLinAdapt.setCoefficients(a4r1, b4r1, a4r2, b4r2);
 	}
 	public int getIndex(){
 		return m_userIndex;
@@ -125,9 +125,9 @@ public class _User {
 	public void setCoLinAdaptNeighborIndexes(){
 		m_coLinAdapt.setNeighborIndexes(m_neighborIndexes);
 	}
-	public void setCoLinAdpatNeighborSims(){
-		m_coLinAdapt.setNeighborSims(m_neighborSims);
-	}
+//	public void setCoLinAdpatNeighborSims(){
+//		m_coLinAdapt.setNeighborSims(m_neighborSims);
+//	}
 
 	public ArrayList<_User> getNeighbors(){
 		return m_neighbors;
@@ -158,5 +158,9 @@ public class _User {
 	
 	public void updateA(double[] newA){
 		m_coLinAdapt.updateA(newA);
+	}
+	
+	public void setCoLinAdaptSimilarity(double[] sims){
+		m_coLinAdapt.setSimilarity(sims);
 	}
  }

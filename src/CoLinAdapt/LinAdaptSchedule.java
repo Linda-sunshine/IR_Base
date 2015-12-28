@@ -39,12 +39,9 @@ public class LinAdaptSchedule {
 		m_avgPRF = new double[2][3];
 	}
 	
-	public void setShift(double s){
-		m_eta1 = s;
-	}
-	
-	public void setScale(double s){
-		m_eta2 = s;
+	public void setCoefficients4R1(double a4r1, double b4r1){
+		m_eta1 = a4r1;
+		m_eta2 = b4r1;
 	}
 	
 	//Set the global weights.

@@ -19,9 +19,10 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	ArrayList<String> m_userIndexes;
 	double[] m_similarity;//It contains all user pair's similarity.
 
-	public SyncCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes, ArrayList<_User> users) {
+	public SyncCoLinAdapt(int fg, int fn, double[] globalWeights, int[] featureGroupIndexes, ArrayList<_User> users, double[] similarity) {
 		super(fg, fn, globalWeights, featureGroupIndexes);
 		m_users = users;
+		m_similarity = similarity;
 	}
 
 	public void init(){
@@ -72,7 +73,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	
 	// Calculate the new function value.
 	public double calculateFunctionValue(ArrayList<_Review> trainSet){
-		int Yi, userIndex;
+		int Yi, userIndex, userReviewNo;
 		_SparseFeature[] fv;
 		double Pi = 0, sim = 0;
 		double fValue = 0, L = 0, R1 = 0, oneR2 = 0;
@@ -80,14 +81,15 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		//Likelihood is for every training review, sum up.
 		for (_Review review : trainSet) {
 			userIndex = m_userIndexes.indexOf(review.getUserID());
+			userReviewNo = m_users.get(userIndex).getReviewSize();
 			Yi = review.getYLabel();
 			fv = review.getSparse();
 			Pi = logit(fv, userIndex);
 			if (Yi == 1)
-				L += Math.log(Pi);
+				L += Math.log(Pi)/userReviewNo; //Normalize by the number of reviews the user has.
 			else{
 				if(Pi != 1)
-					L += Math.log(1 - Pi);
+					L += Math.log(1 - Pi)/userReviewNo;
 
 			}
 		}
@@ -103,21 +105,22 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		
 		int index;
 		int[] neighborIndexes;
-		ArrayList<Double> neighborSims;
+//		ArrayList<Double> neighborSims;
 		// Add the R2 part to the function value.
 		for(int i=0; i<m_users.size(); i++){
 			neighborIndexes = m_users.get(i).getNeighborIndexes();
-			neighborSims = m_users.get(i).getNeighborSims();
-			for(int in=0; in<neighborIndexes.length; in++){
-				index = neighborIndexes[in];
-				sim = neighborSims.get(in);
+//			neighborSims = m_users.get(i).getNeighborSims();
+			for(int j=0; j<neighborIndexes.length; j++){
+				index = neighborIndexes[j];
+				sim = m_similarity[getIndex(i, index)];
+//				sim = neighborSims.get(in);
 //			for(int index: neighborIndexes){//Access each neighbor.
 //				sim = m_similarity[getIndex(i, index)];
-				for(int j=0; j<m_dim; j++){
-					oneR2 += (m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j])//ak^2
-						    +(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim])*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);//bk^2 
+				for(int k=0; k<m_dim; k++){
+					oneR2 += m_eta3 * (m_allAs[m_dim*2*i+k]-m_allAs[m_dim*2*index+k])*(m_allAs[m_dim*2*i+k]-m_allAs[m_dim*2*index+k])//ak^2
+						    + m_eta4 * (m_allAs[m_dim*2*i+k+m_dim]-m_allAs[m_dim*2*index+k+m_dim])*(m_allAs[m_dim*2*i+k+m_dim]-m_allAs[m_dim*2*index+k+m_dim]);//bk^2 
 				}
-				fValue += m_eta3*sim*oneR2;
+				fValue += sim*oneR2;
 				oneR2 = 0;
 			}
 		}
@@ -128,7 +131,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 	// Calculate the gradients for the use in LBFGS.
 	public double calculateGradients(ArrayList<_Review> trainSet) {
 		double Pi = 0, sim = 0;// Pi = P(yd=1|xd);
-		int Yi, userIndex = 0, featureIndex = 0, groupIndex = 0;
+		int Yi, userIndex = 0, featureIndex = 0, groupIndex = 0, userReviewNo;
 		//m_allGs = new double[m_users.size()*m_dim*2];
 		Arrays.fill(m_allGs, 0);
 		int[] neighborIndexes;
@@ -136,19 +139,21 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		// Update gradients one review by one review.
 		for (_Review review : trainSet) {
 			userIndex = m_userIndexes.indexOf(review.getUserID());
+			userReviewNo = m_users.get(userIndex).getReviewSize();
+
 			Yi = review.getYLabel();
 			Pi = logit(review.getSparse(), userIndex);
 
 			// Bias term.
-			m_allGs[m_dim*2*userIndex] -= (Yi - Pi) * m_weights[0]; // a[0] = w0*x0; x0=1
-			m_allGs[m_dim*2*userIndex+m_dim] -= (Yi - Pi);// b[0]
+			m_allGs[m_dim*2*userIndex] -= (Yi - Pi) * m_weights[0]/userReviewNo; // a[0] = w0*x0; x0=1
+			m_allGs[m_dim*2*userIndex+m_dim] -= (Yi - Pi)/userReviewNo;// b[0]
 
 			// Traverse all the feature dimension to calculate the gradient.
 			for (_SparseFeature fv : review.getSparse()) {
 				featureIndex = fv.getIndex() + 1;
 				groupIndex = m_featureGroupIndexes[featureIndex];
-				m_allGs[m_dim*2*userIndex+groupIndex] -= (Yi - Pi)*m_weights[featureIndex]*fv.getValue();
-				m_allGs[m_dim*2*userIndex+m_dim+groupIndex] -= (Yi - Pi) * fv.getValue();
+				m_allGs[m_dim*2*userIndex+groupIndex] -= (Yi - Pi)*m_weights[featureIndex]*fv.getValue()/userReviewNo;
+				m_allGs[m_dim*2*userIndex+m_dim+groupIndex] -= (Yi - Pi) * fv.getValue()/userReviewNo;
 			}
 		}
 
@@ -163,22 +168,23 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		
 		
 		int index;
-		ArrayList<Double> neighborSims;
+//		ArrayList<Double> neighborSims;
 		// Add the R2 part to the function value.
 		for(int i=0; i<m_users.size(); i++){
 			neighborIndexes = m_users.get(i).getNeighborIndexes();
-			neighborSims = m_users.get(i).getNeighborSims();
+//			neighborSims = m_users.get(i).getNeighborSims();
 			for(int in=0; in<neighborIndexes.length; in++){
 				index = neighborIndexes[in];
-				sim = neighborSims.get(in);
+				sim = m_similarity[getIndex(i, index)];
+//				sim = neighborSims.get(in);
 				// Add the R2 for all users.
 				for(int j=0; j<m_dim; j++){
 					//Update a: current user: a - a_neighbor; neighbor: a_neihgbor - a.
 					m_allGs[m_dim*2*i+j] += 2*sim*m_eta3*(m_allAs[m_dim*2*i+j]-m_allAs[m_dim*2*index+j]);
-					m_allGs[m_dim*2*i+j+m_dim] += 2*sim*m_eta3*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);
+					m_allGs[m_dim*2*i+j+m_dim] += 2*sim*m_eta4*(m_allAs[m_dim*2*i+j+m_dim]-m_allAs[m_dim*2*index+j+m_dim]);
 					//Update b: similar with a.
 					m_allGs[m_dim*2*index+j] += 2*sim*m_eta3*(m_allAs[m_dim*2*index+j]-m_allAs[m_dim*2*i+j]);
-					m_allGs[m_dim*2*index+j+m_dim] += 2*sim*m_eta3*(m_allAs[m_dim*2*index+j+m_dim]-m_allAs[m_dim*2*i+j+m_dim]);
+					m_allGs[m_dim*2*index+j+m_dim] += 2*sim*m_eta4*(m_allAs[m_dim*2*index+j+m_dim]-m_allAs[m_dim*2*i+j+m_dim]);
 				}
 			}
 		}		
