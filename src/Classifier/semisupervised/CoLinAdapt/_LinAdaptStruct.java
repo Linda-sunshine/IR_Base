@@ -17,7 +17,7 @@ public class _LinAdaptStruct {
 	
 	//structures for online model update
 	protected LinkedList<_Review> m_adaptCache;// adaptation cache to hold most recent observations, default size is one
-	protected int m_cacheSize = 1;
+	protected int m_cacheSize = 2;
 	private int m_adaptPtr, m_adaptStartPos, m_adaptEndPos;		
 	
 	public _LinAdaptStruct(_User user, int dim) {
@@ -30,9 +30,10 @@ public class _LinAdaptStruct {
 		
 		//trace to the first and last adaptation instance
 		//we assume the instances are ordered and then separate into [train, adapt, test]
+		m_adaptStartPos = -1;
 		ArrayList<_Review> reviews = user.getReviews();
 		for(int i=0; i<reviews.size(); i++) {
-			if (reviews.get(i).getType() == rType.ADAPTATION)
+			if (m_adaptStartPos==-1 && reviews.get(i).getType() == rType.ADAPTATION)
 				m_adaptStartPos = i;
 			else if (reviews.get(i).getType() == rType.TEST) {
 				m_adaptEndPos = i;

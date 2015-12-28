@@ -76,16 +76,22 @@ public class _User {
 	
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
-		double maxScore = Utils.dotProduct(m_pWeight, fv, 0), score;
-		int pred = 0; 
+		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
 		
-		for(int i = 1; i < m_classNo; i++) {
-			score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
-			if (score>maxScore) {
-				maxScore = score;
-				pred = i;
+		if (m_classNo==2) {
+			return maxScore>0?1:0;
+		} else {//we will have k classes for multi-class classification
+			double score;
+			int pred = 0; 
+			
+			for(int i = 1; i < m_classNo; i++) {
+				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
+				if (score>maxScore) {
+					maxScore = score;
+					pred = i;
+				}
 			}
+			return pred;
 		}
-		return pred;
 	}
  }

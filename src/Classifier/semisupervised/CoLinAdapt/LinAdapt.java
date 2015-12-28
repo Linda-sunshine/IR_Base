@@ -67,6 +67,9 @@ public class LinAdapt extends BaseClassifier {
 				if (m_dim < m_featureGroupMap[i+1])
 					m_dim = m_featureGroupMap[i+1];
 			}
+			m_dim ++;
+			
+			System.out.format("[Info]Feature group size %d\n", m_dim);
 		} catch(IOException e){
 			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
@@ -76,13 +79,18 @@ public class LinAdapt extends BaseClassifier {
 	public void loadGlobalModel(String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] features = reader.readLine().split(",");
+			String line, features[];
+			int pos = 0;
+			
+			m_gWeights = new double[m_featureSize+1];//to include the bias term
+			while((line=reader.readLine()) != null) {
+				features = line.split(":");
+				m_gWeights[pos] = Double.valueOf(features[1]);
+				if (++pos>m_featureSize+1)
+					break;
+			}
+			
 			reader.close();
-			
-			m_gWeights = new double[features.length];
-			for(int i=0; i<features.length; i++)
-				m_gWeights[i] = Double.valueOf(features[i]);
-			
 		} catch(IOException e){
 			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
@@ -255,6 +263,14 @@ public class LinAdapt extends BaseClassifier {
 			}
 		}
 		
+		System.out.println("\t0\t1");
+		for(int i=0; i<2; i++) {
+			System.out.print(i);
+			for(int j=0; j<2; j++) {
+				System.out.print("\t" + TPTable[i][j]);
+			}
+			System.out.println();
+		}
 		return 0;
 	}
 
