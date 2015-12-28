@@ -31,7 +31,7 @@ public abstract class asyncCoLinAdapt extends CoLinAdapt {
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)(m_userList.get(i));
 			for(_RankItem nit:ui.getNeighbors()) {
-				uj = (_CoLinAdaptStruct)(m_userList.get(nit.m_index));
+				uj = (_CoLinAdaptStruct)(m_userList.get(nit.m_index));//uj is a neighbor of ui
 				
 				uj.addReverseNeighbor(i, nit.m_value);
 			}
@@ -48,7 +48,7 @@ public abstract class asyncCoLinAdapt extends CoLinAdapt {
 			}
 		}
 		
-		Utils.shuffle(m_userOrder, adaptSize);//using random order?
+		Utils.shuffle(m_userOrder, adaptSize);//using random order for now
 	}
 	
 	@Override
@@ -56,6 +56,35 @@ public abstract class asyncCoLinAdapt extends CoLinAdapt {
 		//Update gradients one review by one review.
 		for(_Review review:user.nextAdaptationIns())
 			gradientByFunc(user, review);
+	}
+	
+	@Override
+	protected void gradientByR2(_LinAdaptStruct user){		
+		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
+		
+		for(_RankItem nit:ui.getNeighbors()) {
+			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
+			gradientByR2(ui, uj, nit.m_value);
+		}
+		
+		for(_RankItem nit:ui.getReverseNeighbors()) {
+			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
+			gradientByR2(ui, uj, nit.m_value);
+		}
+	}
+	
+	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
+		double coef = 2 * sim, dA, dB;
+		int offset = m_dim*2*ui.m_id;
+		
+		for(int k=0; k<m_dim; k++) {
+			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
+			dB = coef * m_eta4 * (ui.getShifting(k) - uj.getShifting(k));
+			
+			// update ui's gradient
+			m_g[offset + k] += dA;
+			m_g[offset + k + m_dim] += dB;
+		}
 	}
 	
 	protected double gradientTest(_CoLinAdaptStruct user) {
@@ -93,36 +122,7 @@ public abstract class asyncCoLinAdapt extends CoLinAdapt {
 			setPersonalizedModel(user);
 		}
 	}
-	
-	@Override
-	protected void gradientByR2(_LinAdaptStruct user){		
-		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
 		
-		for(_RankItem nit:ui.getNeighbors()) {
-			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			gradientByR2(ui, uj, nit.m_value);
-		}
-		
-		for(_RankItem nit:ui.getReverseNeighbors()) {
-			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			gradientByR2(ui, uj, nit.m_value);
-		}
-	}
-	
-	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
-		double coef = 2 * sim * m_eta3, dA, dB;
-		int offset = m_dim*2;
-		
-		for(int k=0; k<m_dim; k++) {
-			dA = coef * (ui.getScaling(k) - uj.getScaling(k));
-			dB = coef * (ui.getShifting(k) - uj.getShifting(k));
-			
-			// update ui's gradient
-			m_g[offset*ui.m_id + k] += dA;
-			m_g[offset*ui.m_id + k + m_dim] += dB;
-		}
-	}
-	
 	// update this current user
 	void gradientDescent(_CoLinAdaptStruct user, double stepSize) {
 		double a, b;

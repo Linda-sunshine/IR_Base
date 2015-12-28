@@ -20,15 +20,14 @@ import structures._User;
 public class LinAdapt extends BaseClassifier {
 	ArrayList<_LinAdaptStruct> m_userList;//a list of users for adapting personalized models
 	
-	//The number of feature groups k, so the total number of dimensions of weights is 2k+2.	
-	int m_dim;//The dimension of scaling and shifting parameters (including the bias term)
+	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
 	int[] m_featureGroupMap; // bias term is at position 0
 	double[] m_gWeights; //global model weight
 	double[] m_pWeights; // cache for personalized weight
 	
 	//Trade-off parameters	
-	double m_eta1; // weight for scaling.
-	double m_eta2; // weight for shifting.
+	double m_eta1; // weight for scaling in R1.
+	double m_eta2; // weight for shifting in R2.
 	
 	//shared space for LBFGS optimization
 	double[] m_diag; //parameter used in lbfgs.
@@ -47,7 +46,7 @@ public class LinAdapt extends BaseClassifier {
 		m_eta2 = 0.5;
 	}  
 	
-	public void setTradeOffs(double eta1, double eta2) {
+	public void setR1TradeOffs(double eta1, double eta2) {
 		m_eta1 = eta1;
 		m_eta2 = eta2;
 	}

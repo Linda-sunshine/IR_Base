@@ -19,26 +19,25 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	@Override
 	protected void calculateGradients(_LinAdaptStruct user){
 		super.calculateGradients(user);
-		gradientByR2(user);
 		gradientByRelatedR1((_CoLinAdaptStruct)user);
 	}
 
 	@Override
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
-		double coef = 2 * sim * m_eta3, dA, dB;
-		int offset = m_dim*2;
+		double coef = 2 * sim, dA, dB;
+		int offseti = m_dim*2*ui.m_id, offsetj = m_dim*2*uj.m_id;
 		
 		for(int k=0; k<m_dim; k++) {
-			dA = coef * (ui.getScaling(k) - uj.getScaling(k));
-			dB = coef * (ui.getShifting(k) - uj.getShifting(k));
+			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
+			dB = coef * m_eta4 * (ui.getShifting(k) - uj.getShifting(k));
 			
 			// update ui's gradient
-			m_g[offset*ui.m_id + k] += dA;
-			m_g[offset*ui.m_id + k + m_dim] += dB;
+			m_g[offseti + k] += dA;
+			m_g[offseti + k + m_dim] += dB;
 			
 			// update uj's gradient
-			m_g[offset*uj.m_id + k] -= dA;
-			m_g[offset*uj.m_id + k + m_dim] -= dB;
+			m_g[offsetj + k] -= dA;
+			m_g[offsetj + k + m_dim] -= dB;
 		}
 	}
 	
@@ -59,7 +58,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 
 	@Override
 	void gradientDescent(_CoLinAdaptStruct ui, double stepSize) {
-		super.gradientDescent(ui, stepSize);
+		super.gradientDescent(ui, stepSize);//update the current user
 		
 		_CoLinAdaptStruct uj;
 		

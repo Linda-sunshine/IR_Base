@@ -20,7 +20,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 		ST_SVD
 	}
 	
-	static double[] sharedA;	
+	static double[] sharedA;//this stores shared transformation operation across all uesrs	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
 	
@@ -36,7 +36,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	}
 	
 	public void addReverseNeighbor(int id, double similarity) {
-		for(_RankItem it:m_neighbors) {
+		for(_RankItem it:m_neighbors) {//we need to check this condition to avoid duplicates
 			if (it.m_index == id)
 				return;
 		}
@@ -59,7 +59,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 		return m_reverseNeighbors;
 	}
 
-	
+	//access to the shared A matrix
 	static public double[] getSharedA() {
 		return sharedA;
 	}
@@ -76,7 +76,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	@Override
 	public double getShifting(int gid) {
 		if (gid<0 || gid>m_dim) {
-			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
 			return Double.NaN;
 		}
 		
@@ -86,7 +86,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	
 	public void setShifting(int gid, double value) {
 		if (gid<0 || gid>m_dim) {
-			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
 			System.exit(-1);
 		}
 		
@@ -98,7 +98,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	@Override
 	public double getScaling(int gid) {
 		if (gid<0 || gid>m_dim) {
-			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
 			return Double.NaN;
 		}
 		
@@ -108,7 +108,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	
 	public void setScaling(int gid, double value) {
 		if (gid<0 || gid>m_dim) {
-			System.err.format("[Error]%d is beyond the scope of feature grouping!\n", gid);
+			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
 			System.exit(-1);
 		}
 		
