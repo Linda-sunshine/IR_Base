@@ -22,9 +22,8 @@ public class _ChildDoc extends _Doc {
 		m_parentDoc = pDoc;
 	}
 	
-	public void setTopics4Gibbs(int k, double alpha, int indicatorNum, double[] gamma){
+	public void setTopics4Gibbs(int k, int indicatorNum, double[] gamma){
 		if(m_topics==null||m_topics.length != k){
-		
 			m_topics = new double[k];
 			m_xTopicSstat = new double[indicatorNum][k];
 		}
