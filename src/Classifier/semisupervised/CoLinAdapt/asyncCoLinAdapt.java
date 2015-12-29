@@ -4,6 +4,7 @@
 package Classifier.semisupervised.CoLinAdapt;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 import structures._RankItem;
 import structures._Review;
@@ -17,8 +18,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 
 	int[] m_userOrder; // visit order of different users during online learning
 	
-	public asyncCoLinAdapt(int classNo, int featureSize, int topK, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, topK, globalModel, featureGroupMap);
+	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 	}
 
 	@Override
@@ -96,31 +97,49 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 			magA += m_g[offset]*m_g[offset];
 			magB += m_g[offset+m_dim]*m_g[offset+m_dim];
 		}
-	
-		System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
+		
+		if (m_displayLv==2)
+			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
 		return magA + magB;
 	}
 	
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 1.0;
+		double initStepSize = 0.50, gNorm, gNormOld = Double.MAX_VALUE;
+		int updateCount = 0;
 		_CoLinAdaptStruct user;
 		
 		initLBFGS();
 		for(int t=0; t<m_userOrder.length; t++) {
 			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
 
-			while(user.hasNextAdaptationIns()) {
+			if(user.hasNextAdaptationIns()) {
 				Arrays.fill(m_g, 0); // initialize gradient	
 				calculateGradients(user);
-				gradientTest(user);
+				gNorm = gradientTest(user);
+				
+				if (m_displayLv==1) {
+					if (gNorm<gNormOld)
+						System.out.print("o");
+					else
+						System.out.print("x");
+				}
 				
 				//gradient descent
 				gradientDescent(user, initStepSize/(1.0+user.getAdaptedCount()));
-			}
-			setPersonalizedModel(user);
+				gNormOld = gNorm;
+				
+				if (m_displayLv>0 && ++updateCount%100==99)
+					System.out.println();
+			}			
 		}
+		
+		if (m_displayLv>0)
+			System.out.println();
+		
+		for(_LinAdaptStruct u:m_userList)
+			setPersonalizedModel(u);
 	}
 		
 	// update this current user

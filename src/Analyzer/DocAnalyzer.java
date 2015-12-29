@@ -299,10 +299,12 @@ public class DocAnalyzer extends Analyzer {
 					spVct.put(index, value);
 				} else {
 					spVct.put(index, 1.0);
-					if (docWordMap==null || !docWordMap.containsKey(index))
+					if (!m_isCVStatLoaded && (docWordMap==null || !docWordMap.containsKey(index)))
 						m_featureStat.get(token).addOneDF(y);
 				}
-				m_featureStat.get(token).addOneTTF(y);
+				
+				if (!m_isCVStatLoaded)
+					m_featureStat.get(token).addOneTTF(y);
 			}
 			// if the token is not in the vocabulary, nothing to do.
 		}

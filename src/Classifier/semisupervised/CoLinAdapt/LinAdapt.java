@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import Classifier.BaseClassifier;
 import LBFGS.LBFGS;
@@ -33,15 +34,15 @@ public class LinAdapt extends BaseClassifier {
 	double[] m_diag; //parameter used in lbfgs.
 	double[] m_g;//optimized gradients. 
 	
-	int m_displayLv;//0: display nothing during training; 1: display the change of objective function; 2: display everything
+	int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
 	
-	public LinAdapt(int classNo, int featureSize, String globalModel, String featureGroupMap){
+	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize);
 		m_userList = null;				
 		m_pWeights = null;
 		
 		loadFeatureGroupMap(featureGroupMap);
-		loadGlobalModel(globalModel);
+		loadGlobalModel(featureMap, globalModel);
 		
 		// default value of trade-off parameters
 		m_eta1 = 0.5;
@@ -78,18 +79,25 @@ public class LinAdapt extends BaseClassifier {
 	}
 	
 	//Load global model from file.
-	public void loadGlobalModel(String filename){
+	public void loadGlobalModel(HashMap<String, Integer> featureMap, String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line, features[];
-			int pos = 0;
+			int pos;
 			
 			m_gWeights = new double[m_featureSize+1];//to include the bias term
 			while((line=reader.readLine()) != null) {
 				features = line.split(":");
-				m_gWeights[pos] = Double.valueOf(features[1]);
-				if (++pos>m_featureSize+1)
-					break;
+				if (features[0].equals("BIAS"))
+					m_gWeights[0] = Double.valueOf(features[1]);
+				else if (featureMap.containsKey(features[0])){
+					pos = featureMap.get(features[0]);
+					if (pos>=0 && pos<m_featureSize)
+						m_gWeights[pos+1] = Double.valueOf(features[1]);
+					else
+						System.err.println("[Warning]Unknown feature " + features[0]);
+				} else 
+					System.err.println("[Warning]Unknown feature " + features[0]);
 			}
 			
 			reader.close();
@@ -205,7 +213,9 @@ public class LinAdapt extends BaseClassifier {
 			magA += m_g[i]*m_g[i];
 			magB += m_g[i+m_dim]*m_g[i+m_dim];
 		}
-		System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
+		
+		if (m_displayLv==2)
+			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
 		return magA + magB;
 	}
 	
@@ -241,7 +251,9 @@ public class LinAdapt extends BaseClassifier {
 			} catch(ExceptionWithIflag e) {
 				e.printStackTrace();
 			}
-			System.out.println();
+			
+			if (m_displayLv>0)
+				System.out.println();
 			setPersonalizedModel(user);
 		}
 	}
@@ -257,7 +269,7 @@ public class LinAdapt extends BaseClassifier {
 			gid = m_featureGroupMap[1+i];
 			m_pWeights[1+i] = user.getScaling(gid) * m_gWeights[1+i] + user.getShifting(gid);
 		}
-		user.setPersonalizedModel(m_gWeights, m_classNo, m_featureSize);
+		user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
 	}
 	
 	//Batch mode: given a set of reviews and accumulate the TP table.

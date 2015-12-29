@@ -3,6 +3,8 @@
  */
 package Classifier.semisupervised.CoLinAdapt;
 
+import java.util.HashMap;
+
 import structures._RankItem;
 
 /**
@@ -11,9 +13,9 @@ import structures._RankItem;
  */
 public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 
-	public asyncCoLinAdaptFirstOrder(int classNo, int featureSize, int topK, String globalModel,
+	public asyncCoLinAdaptFirstOrder(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap) {
-		super(classNo, featureSize, topK, globalModel, featureGroupMap);
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 	}
 	
 	@Override

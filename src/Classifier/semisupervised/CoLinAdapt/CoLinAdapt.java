@@ -5,6 +5,7 @@ package Classifier.semisupervised.CoLinAdapt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import Classifier.semisupervised.CoLinAdapt._CoLinAdaptStruct.SimType;
 import LBFGS.LBFGS;
@@ -23,8 +24,8 @@ public class CoLinAdapt extends LinAdapt {
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
 	
-	public CoLinAdapt(int classNo, int featureSize, int topK, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, globalModel, featureGroupMap);
+	public CoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
+		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
 		m_eta3 = 0.5;
 		m_eta4 = 0.5;
 		m_topK = topK; // when topK<0, we will use a fully connected graph 

@@ -10,7 +10,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 
 import structures._Corpus;
 import structures._Doc;
@@ -28,9 +30,12 @@ public abstract class Analyzer {
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
-	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
+	/* Indicate if we can allow new features. After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
-	protected boolean m_isCVLoaded;
+	protected boolean m_isCVLoaded = false;
+	
+	// indicate if we will collect corpus-level feature statistics
+	protected boolean m_isCVStatLoaded = false;
 	
 	//minimal length of indexed document
 	protected int m_lengthThreshold = 5;
@@ -68,6 +73,10 @@ public abstract class Analyzer {
 		m_featureNameIndex.clear();
 		m_featureStat.clear();
 		m_corpus.reset();
+	}
+	
+	public HashMap<String, Integer> getFeatureMap() {
+		return m_featureNameIndex;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -182,10 +191,20 @@ public abstract class Analyzer {
 		}
 	}
 	
+	int getTotalDF() {
+		int TotalDF = 0;
+		Iterator<Map.Entry<String, _stat>> it = m_featureStat.entrySet().iterator();
+		while(it.hasNext()) {
+			Map.Entry<String, _stat> entry = it.next();
+			TotalDF += Utils.sumOfArray(entry.getValue().getDF());
+		}
+		return TotalDF;
+	}
+	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
 	public void setFeatureValues(String fValue, int norm) {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = docs.size();
+		int N = getTotalDF();
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
 			for (int i = 0; i < docs.size(); i++) {

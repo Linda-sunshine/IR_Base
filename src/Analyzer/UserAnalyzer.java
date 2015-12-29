@@ -13,6 +13,8 @@ import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
+import structures._stat;
+import utils.Utils;
 
 public class UserAnalyzer extends DocAnalyzer {
 	
@@ -41,6 +43,44 @@ public class UserAnalyzer extends DocAnalyzer {
 		
 		m_trainRatio = train;
 		m_adaptRatio = adapt;
+	}
+	
+	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	protected boolean LoadCV(String filename) {
+		if (filename==null || filename.isEmpty())
+			return false;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line, stats[];
+			int ngram = 0, DFs[]= {0, 0};
+			m_Ngram = 1;//default value of Ngram
+			while ((line = reader.readLine()) != null) {
+				stats = line.split(",");
+				expandVocabulary(stats[1]);
+				DFs[0] = (int)(Double.parseDouble(stats[2]));
+				DFs[1] = (int)(Double.parseDouble(stats[3]));
+				setVocabStat(stats[1], DFs);
+				
+				ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
+				if (m_Ngram<ngram)
+					m_Ngram = ngram;
+			}
+			reader.close();
+			
+			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			m_isCVLoaded = true;
+			
+			return true;
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+	}
+	
+	void setVocabStat(String term, int[] DFs) {
+		_stat stat = m_featureStat.get(term);
+		stat.setDF(DFs);
 	}
 	
 	//Load all the users.
@@ -92,10 +132,8 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			
 			if(reviews.size() != 0){
-				allocateReviews(reviews);
-				
+				allocateReviews(reviews);				
 				m_users.add(new _User(userID, reviews)); //create new user from the file.
-				m_corpus.addDocs(reviews);
 			}
 			reader.close();
 		} catch(IOException e){

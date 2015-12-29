@@ -2,10 +2,11 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
-import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
+import Classifier.semisupervised.CoLinAdapt.asyncCoLinAdaptFirstOrder;
+import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -15,10 +16,10 @@ public class LinAdaptMain {
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
-		int topKNeighbors = 5;
+		int topKNeighbors = 20;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/CoLinAdapt/5000Features.txt"; // CV.
+		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
 		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
@@ -26,41 +27,42 @@ public class LinAdaptMain {
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.config(trainRatio, adaptRatio);
 		analyzer.loadUserDir(userFolder); // load user and reviews
-		analyzer.setFeatureValues("BM25", 2);		
+		analyzer.setFeatureValues("TFIDF", 0);	
+		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-		//Create the instances of a LinAdapt model.
-//		LinAdapt linAdapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile);
+//		//Create the instances of a LinAdapt model.
+//		LinAdapt linAdapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 //		linAdapt.loadUsers(analyzer.getUsers());
 //		
 //		linAdapt.train();
 //		linAdapt.test();
 		
-		//Create the instances of an asyncLinAdapt model.
-//		asyncLinAdapt aLinAdaptS = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile);
+//		//Create the instances of an asyncLinAdapt model.
+//		asyncLinAdapt aLinAdaptS = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 //		aLinAdaptS.loadUsers(analyzer.getUsers());
 //		
 //		aLinAdaptS.train();
 //		aLinAdaptS.test();
-		
+//		
 		//Create the instances of a CoLinAdapt model.
-		CoLinAdapt coLinAdapt = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);
-		coLinAdapt.loadUsers(analyzer.getUsers());
-		
-		coLinAdapt.train();
-		coLinAdapt.test();
-		
-		//Create the instances of an zero-order asyncCoLinAdapt model.
-//		asyncCoLinAdapt coLinAdaptZeroOrder = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt coLinAdapt = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		coLinAdapt.loadUsers(analyzer.getUsers());
+//		
+//		coLinAdapt.train();
+//		coLinAdapt.test();
+//		
+//		//Create the instances of an zero-order asyncCoLinAdapt model.
+//		asyncCoLinAdapt coLinAdaptZeroOrder = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 //		coLinAdaptZeroOrder.loadUsers(analyzer.getUsers());
 //		
 //		coLinAdaptZeroOrder.train();
 //		coLinAdaptZeroOrder.test();
-		
-		//Create the instances of an zero-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder coLinAdaptZeroOrder = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), topKNeighbors, globalModel, featureGroupFile);
-//		coLinAdaptZeroOrder.loadUsers(analyzer.getUsers());
 //		
-//		coLinAdaptZeroOrder.train();
-//		coLinAdaptZeroOrder.test();
+//		//Create the instances of an zero-order asyncCoLinAdapt model.
+		asyncCoLinAdaptFirstOrder coLinAdaptFirstOrder = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		coLinAdaptFirstOrder.loadUsers(analyzer.getUsers());
+		
+		coLinAdaptFirstOrder.train();
+		coLinAdaptFirstOrder.test();
 	}
 }

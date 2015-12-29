@@ -62,6 +62,15 @@ public class Utils {
 		return minOfArrayIndex(probs, probs.length);
 	}
 	
+	public static int countOccurrencesOf(String text, String pat) {
+		int start = 0, count = 0;
+		while ((start = text.indexOf(pat, start))!=-1) {
+			count ++;
+			start ++;
+		}
+		return count;
+	}
+	
 	public static int minOfArrayIndex(double[] probs, int length){
 		int minIndex = 0;
 		double minValue = probs[0];

@@ -33,6 +33,12 @@ public class _stat {
 		return this.m_DF;
 	}
 	
+	public void setDF(int[] DFs) {
+		if (DFs.length != m_DF.length)
+			return;
+		System.arraycopy(DFs, 0, m_DF, 0, DFs.length);
+	}
+	
 	public int[] getTTF(){
 		return this.m_TTF;
 	}
