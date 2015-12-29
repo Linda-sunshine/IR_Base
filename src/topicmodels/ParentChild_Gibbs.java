@@ -92,7 +92,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 				}
 			}else{
 				if(d instanceof _ChildDoc){
-					((_ChildDoc) d).setTopics4Gibbs(number_of_topics, d_alpha, m_indicatorNum, m_gamma);
+					((_ChildDoc) d).setTopics4Gibbs(number_of_topics, m_indicatorNum, m_gamma);
 					for(int i=0; i<d.m_words.length; i++){
 						m_childWordTopicSstat[d.m_topicAssignment[i]][d.m_words[i]]++;
 						m_childSstat[d.m_topicAssignment[i]]++;
@@ -307,35 +307,26 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 
 	}
 	
+	
 	protected void collectParentStats(_ParentDoc d) {
-		for (int k = 0; k < number_of_topics; k++) {
-			d.m_topics[k]
+		for (int k = 0; k < this.number_of_topics; k++) {
+			d.m_topics[k] += (d.m_sstat[k] + d_alpha);
 		}
 	}
 	
-	// protected void collectParentStats(_ParentDoc d){
-	// for(int k=0; k<this.number_of_topics; k++){
-	// d.m_topics[k] += (d.m_sstat[k]+d_alpha);
-	// }
-	// }
-	
-	// protected void collectChildStats(_ChildDoc d){
-	// for (int j = 0; j < m_indicatorNum; j++) {
-	// // for (int k = 0; k < this.number_of_topics; k++) {
-	// // d.m_xTopics[j][k] += (d.m_xTopicSstat[j][k] + d_alpha);
-	// // }
-	//
-	// d.m_xProportion[j] += d.m_xSstat[j] + m_gamma[j];
-	// }
-	//
-	// // used to output the topK words and parameters
-	// for (int k = 0; k < this.number_of_topics; k++) {
-	// d.m_xTopics[1][k] += (d.m_xTopicSstat[1][k] + d_alpha);
-	// d.m_xTopics[0][k] += (d.m_xTopicSstat[0][k] + d_alpha +
-	// d.m_parentDoc.m_sstat[k]);
-	// d.m_topics[k] += d.m_xTopics[1][k] + d.m_xTopics[0][k];
-	// }
-	// }
+	protected void collectChildStats(_ChildDoc d) {
+		for (int j = 0; j < m_indicatorNum; j++) {
+
+			d.m_xProportion[j] += d.m_xSstat[j] + m_gamma[j];
+		}
+
+		// used to output the topK words and parameters
+		for (int k = 0; k < this.number_of_topics; k++) {
+			d.m_xTopics[1][k] += (d.m_xTopicSstat[1][k] + d_alpha);
+			d.m_xTopics[0][k] += (d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k]);
+			d.m_topics[k] += d.m_xTopics[1][k] + d.m_xTopics[0][k];
+		}
+	}
 	
 	protected void finalEst() {
 		for (int i = 0; i < this.number_of_topics; i++) {
@@ -506,6 +497,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 
 	}
 
+	//p(w, z)=p(w|z)p(z) multinomial-dirichlet
 	public void calLogLikelihood(int iter) {
 		double logLikelihood = 0.0;
 		double parentLogLikelihood = 0.0;
@@ -649,6 +641,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 		return tempLogLikelihood;
 	}
 
+	
+	//p(w)=\sum_z p(w|z)p(z|d)
 	public double calLogLikelihood2(int iter) {
 		double logLikelihood = 0.0;
 		double parentLogLikelihood = 0.0;
