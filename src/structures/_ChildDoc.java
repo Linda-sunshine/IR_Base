@@ -5,11 +5,15 @@ import java.util.Random;
 
 public class _ChildDoc extends _Doc {
 	public int[] m_xIndicator;
+
 	public double[][] m_xTopicSstat;//0 from general, 1 from specific
-	public double[] m_xSstat;
+	public double[] m_xSstat; // sufficient statistics for x
+
+	public double[][] m_xTopics; // proportion of topics
+	public double[] m_xProportion; // proportion of x
+
 	public _ParentDoc m_parentDoc;
 	
-
 	public _ChildDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
 		m_parentDoc = null;
@@ -22,21 +26,22 @@ public class _ChildDoc extends _Doc {
 		m_parentDoc = pDoc;
 	}
 	
-	public void setTopics4Gibbs(int k, double alpha, int indicatorNum, double[] gamma){
+	public void setTopics4Gibbs(int k, int indicatorNum, double[] gamma){
 		if(m_topics==null||m_topics.length != k){
 		
 			m_topics = new double[k];
 			m_xTopicSstat = new double[indicatorNum][k];
+			m_xTopics = new double[indicatorNum][k];
 		}
 		
 		m_xSstat = new double[indicatorNum];
-		
+		m_xProportion = new double[indicatorNum];
 		for(int i=0; i<indicatorNum; i++){
 			m_xSstat[i] = 0;
-			Arrays.fill(m_xTopicSstat[i], 0);
+			m_xProportion[i] = 0;
+			Arrays.fill(m_xTopicSstat[i], 0);	
 		}
-
-		
+	
 		//_SparseFeature[] x_sparse = getSparse();
 		
 		int docSize = getTotalDocLength();
