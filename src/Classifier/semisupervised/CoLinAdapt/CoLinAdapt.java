@@ -163,7 +163,7 @@ public class CoLinAdapt extends LinAdapt {
 	public void train(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
-		int vSize = 2*m_dim*m_userList.size();
+		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
 		
 		initLBFGS();
 		try{
@@ -185,6 +185,8 @@ public class CoLinAdapt extends LinAdapt {
 						System.out.print("o");
 					else
 						System.out.print("x");
+					if (displayCount++%100==0)
+						System.out.println();
 				} 
 				oldFValue = fValue;
 				

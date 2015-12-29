@@ -49,6 +49,10 @@ public class LinAdapt extends BaseClassifier {
 		m_eta2 = 0.5;
 	}  
 	
+	public void setDisplayLv(int level) {
+		m_displayLv = level;
+	}
+	
 	public void setR1TradeOffs(double eta1, double eta2) {
 		m_eta1 = eta1;
 		m_eta2 = eta2;
@@ -246,10 +250,11 @@ public class LinAdapt extends BaseClassifier {
 					} 
 					oldFValue = fValue;
 					
-					LBFGS.lbfgs(vSize, 5, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-10, iflag);//In the training process, A is updated.
+					LBFGS.lbfgs(vSize, 6, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-32, iflag);//In the training process, A is updated.
 				} while(iflag[0] != 0);
 			} catch(ExceptionWithIflag e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.print("X");
 			}
 			
 			if (m_displayLv>0)

@@ -17,6 +17,7 @@ public class LinAdaptMain {
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 20;
+		int displayLv = 1;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
@@ -27,42 +28,28 @@ public class LinAdaptMain {
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.config(trainRatio, adaptRatio);
 		analyzer.loadUserDir(userFolder); // load user and reviews
-		analyzer.setFeatureValues("TFIDF", 0);	
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
 //		//Create the instances of a LinAdapt model.
-//		LinAdapt linAdapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-//		linAdapt.loadUsers(analyzer.getUsers());
-//		
-//		linAdapt.train();
-//		linAdapt.test();
-		
+//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+
 //		//Create the instances of an asyncLinAdapt model.
-//		asyncLinAdapt aLinAdaptS = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-//		aLinAdaptS.loadUsers(analyzer.getUsers());
-//		
-//		aLinAdaptS.train();
-//		aLinAdaptS.test();
-//		
-		//Create the instances of a CoLinAdapt model.
-//		CoLinAdapt coLinAdapt = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//		coLinAdapt.loadUsers(analyzer.getUsers());
-//		
-//		coLinAdapt.train();
-//		coLinAdapt.test();
-//		
-//		//Create the instances of an zero-order asyncCoLinAdapt model.
-//		asyncCoLinAdapt coLinAdaptZeroOrder = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//		coLinAdaptZeroOrder.loadUsers(analyzer.getUsers());
-//		
-//		coLinAdaptZeroOrder.train();
-//		coLinAdaptZeroOrder.test();
-//		
-//		//Create the instances of an zero-order asyncCoLinAdapt model.
-		asyncCoLinAdaptFirstOrder coLinAdaptFirstOrder = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-		coLinAdaptFirstOrder.loadUsers(analyzer.getUsers());
+//		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
-		coLinAdaptFirstOrder.train();
-		coLinAdaptFirstOrder.test();
+		//Create the instances of a CoLinAdapt model.
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
+//		//Create the instances of an zero-order asyncCoLinAdapt model.
+//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+
+//		//Create the instances of an zero-order asyncCoLinAdapt model.
+		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		
+		adaptation.train();
+		adaptation.test();
 	}
 }

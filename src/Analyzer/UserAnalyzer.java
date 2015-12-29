@@ -57,20 +57,25 @@ public class UserAnalyzer extends DocAnalyzer {
 			m_Ngram = 1;//default value of Ngram
 			while ((line = reader.readLine()) != null) {
 				stats = line.split(",");
-				expandVocabulary(stats[1]);
-				DFs[0] = (int)(Double.parseDouble(stats[2]));
-				DFs[1] = (int)(Double.parseDouble(stats[3]));
-				setVocabStat(stats[1], DFs);
 				
-				ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
-				if (m_Ngram<ngram)
-					m_Ngram = ngram;
+				if (stats[1].equals("TOTALDF")) {
+					m_TotalDF = (int)(Double.parseDouble(stats[2]));
+				} else {
+					expandVocabulary(stats[1]);
+					DFs[0] = (int)(Double.parseDouble(stats[3]));
+					DFs[1] = (int)(Double.parseDouble(stats[4]));
+					setVocabStat(stats[1], DFs);
+					
+					ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
+					if (m_Ngram<ngram)
+						m_Ngram = ngram;
+				}
 			}
 			reader.close();
 			
 			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
 			m_isCVLoaded = true;
-			
+			m_isCVStatLoaded = true;
 			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);

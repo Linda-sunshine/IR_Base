@@ -10,9 +10,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 
 import structures._Corpus;
 import structures._Doc;
@@ -36,6 +34,7 @@ public abstract class Analyzer {
 	
 	// indicate if we will collect corpus-level feature statistics
 	protected boolean m_isCVStatLoaded = false;
+	protected int m_TotalDF = -1;
 	
 	//minimal length of indexed document
 	protected int m_lengthThreshold = 5;
@@ -181,7 +180,11 @@ public abstract class Analyzer {
 					}
 				}
 			}
-		} else{//If CV is loaded, we can minus the DF and TTF directly.
+		} else{//If CV is loaded and CV's statistics are loaded from file, no need to change it
+			if (m_isCVStatLoaded)
+				return;
+			
+			// otherwise, we can minus the DF and TTF directly.
 			for(int index: spVct.keySet()){
 				String token = m_featureNames.get(index);
 				_stat stat = m_featureStat.get(token);
@@ -191,20 +194,11 @@ public abstract class Analyzer {
 		}
 	}
 	
-	int getTotalDF() {
-		int TotalDF = 0;
-		Iterator<Map.Entry<String, _stat>> it = m_featureStat.entrySet().iterator();
-		while(it.hasNext()) {
-			Map.Entry<String, _stat> entry = it.next();
-			TotalDF += Utils.sumOfArray(entry.getValue().getDF());
-		}
-		return TotalDF;
-	}
-	
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
 	public void setFeatureValues(String fValue, int norm) {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = getTotalDF();
+		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
 			for (int i = 0; i < docs.size(); i++) {
@@ -233,6 +227,25 @@ public abstract class Analyzer {
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
+					double TFIDF = TF * IDF;
+					sf.setValue(TFIDF);
+					avgIDF += IDF;
+				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
+		} else if (fValue.equals("TFIDF-sublinear")) {
+			for (int i = 0; i < docs.size(); i++) {
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
+				for (_SparseFeature sf : sfs) {
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
+					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
+					double DF = Utils.sumOfArray(stat.getDF());
+					double IDF = 1 + Math.log10(N / DF);
 					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
 					avgIDF += IDF;
