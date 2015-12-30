@@ -21,7 +21,7 @@ public class CoLinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Users";
+		String folder = "./data/CoLinAdapt/Users2";
 
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.LoadCVStat(CVStat);
@@ -35,7 +35,7 @@ public class CoLinAdaptMain {
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		
 		int topK = 15;
-		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.8, eta4 = 0.1;
+		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5;
 		coLinAdaptS.setCoefficients4R1(eta1, eta2);
 		coLinAdaptS.setCoefficients4R2(eta3, eta4);
 		

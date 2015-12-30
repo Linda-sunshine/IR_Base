@@ -291,6 +291,13 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 		return predL;
 	}
 	
+	public double[] getAllAs(){
+		return m_allAs;
+	}
+	
+	public int getDimension(){
+		return m_dim;
+	}
 //	public void setSimilarities(double[] sims){
 //		m_similarity = sims;
 //	}

@@ -47,8 +47,13 @@ public class CoLinAdapt extends LinAdapt{
 		m_eta4 = b4r2;
 	}
 	
-	public double[] getR2Vct(){
-		return m_R2Vct;
+	public double[] getR2Vct4LP(){
+		int length = m_R2Vct.length/2;
+		double[] R2Vct4LP = new double[length];
+		for(int i=0; i<R2Vct4LP.length; i++){
+			R2Vct4LP[i] = m_R2Vct[i] + m_R2Vct[i + length];
+		}
+		return R2Vct4LP;
 	}
 	
 	//Pass the reference of similarity to the CoLinAdapt model.

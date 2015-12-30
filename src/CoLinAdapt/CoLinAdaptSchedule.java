@@ -29,7 +29,6 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	double[] m_similarity;//It contains all user pair's similarity.
 	double m_eta3 = 0.5;// scale for R2.
 	double m_eta4 = 0.5; // shift for R2.
-	double[] m_newSimilarity;
 	
 	//Parameters for simplex optimization.
 	LinearObjectiveFunction m_LPObj; // The linear objective function.
@@ -212,41 +211,52 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 				System.out.print(".");
 //			if(flag){
 //				//Train the similarity of the neighbors.
-//				m_newSimilarity = trainSimilarity(model.getR2Vct());
-//				//Update the neighbor similarity.
-//				neighborIndexes = m_users.get(userIndex).getNeighborIndexes();
-//				for(int i=0; i<neighborIndexes.length; i++){
-//					m_similarity[getIndex(userIndex, neighborIndexes[i])] = m_newSimilarity[i];
+//				m_newSimilarity = trainSimilarity(model.getR2Vct4LP());
+//				if(m_newSimilarity != null){
+//					System.out.print("lp.");
+//					//Update the neighbor similarity.
+//					neighborIndexes = m_users.get(userIndex).getNeighborIndexes();
+//					for(int i=0; i<neighborIndexes.length; i++)
+//						m_similarity[getIndex(userIndex, neighborIndexes[i])] = m_newSimilarity[i];
 //				}
 //			}
 		}
 		System.out.format("%d fails in online optimization.\n", m_failCount);
 	}
 	
-	//Use linear programming to train the similairty among current user and neighbors.
-	public double[] trainSimilarity(double[] R2Vct) {
-		try{
-			double[] solution = new double[R2Vct.length];
-			m_LPObj = new LinearObjectiveFunction(R2Vct, 0);
-			//Constrains:
-			double[][] constrains = new double[R2Vct.length][R2Vct.length];
-			for(int i=0; i<R2Vct.length; i++){
-				constrains[i][i] = 1;
-				m_LPConstrains.add(new LinearConstraint(constrains[i], Relationship.GEQ, 0));
-			}
-			double[] constrain = new double[R2Vct.length];
-			Arrays.fill(constrain, 1);
-			m_LPConstrains.add(new LinearConstraint(constrain, Relationship.EQ, 1));
-		
-			m_solution = new SimplexSolver().optimize(m_LPObj, m_LPConstrains, GoalType.MINIMIZE, false);
-			solution = m_solution.getPoint();
-			return solution;
-		} catch(OptimizationException e){
-//			e.printStackTrace();
-			return null;
-		}
-	}
+//	//Use linear programming to train the similairty among current user and neighbors.
+//	public double[] trainSimilarity(double[] R2Vct) {
+//		try{
+//			double[] solution = new double[R2Vct.length];
+//			m_LPObj = new LinearObjectiveFunction(R2Vct, 0);
+//			//Constrains:
+//			double[][] constrains = new double[R2Vct.length][R2Vct.length];
+//			for(int i=0; i<R2Vct.length; i++){
+//				constrains[i][i] = 1;
+//				m_LPConstrains.add(new LinearConstraint(constrains[i], Relationship.GEQ, 0));
+//			}
+//			double[] constrain = new double[R2Vct.length];
+//			Arrays.fill(constrain, 1);
+//			m_LPConstrains.add(new LinearConstraint(constrain, Relationship.EQ, 1));
+//		
+//			m_solution = new SimplexSolver().optimize(m_LPObj, m_LPConstrains, GoalType.MINIMIZE, false);
+//			solution = m_solution.getPoint();
+//			return solution;
+//		} catch(OptimizationException e){
+////			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
+//	public double[] trainSimilarity(){
+//		try{
+//			int topK = m_users.get(0).getNeighbors().size();
+//			double[] solution = new double[m_users.size() * topK];
+//			m_LPObj = new LinearObjectiveFunciton();
+//		} catch(OptimizationException e){
+//			return null;
+//		}
+//	}
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.
 	public void batchTrainTest() {
 		m_failCount = 0;
@@ -255,7 +265,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		sync.setCoefficients(m_eta1, m_eta2, m_eta3, m_eta4);
 		ArrayList<_Review> reviews;
 		int pivot = 0;
-
+	
 		ArrayList<_Review> trainSet = new ArrayList<_Review>();
 		ArrayList<_Review> testSet = new ArrayList<_Review>();
 		
@@ -273,14 +283,89 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			}
 		}
 		sync.init();
-//		sync.setSimilarities(m_similarity);
-		if(!sync.train(trainSet))
+		double simDiff = 100;
+		double[] preSimilarity = new double[m_similarity.length];
+		while(simDiff > 1e-16){
+			if(!sync.train(trainSet))
 			m_failCount++;// Train the model.
+		
+			// Add Logistics regression to predict the similarities.
+			int topK = m_users.get(0).getNeighbors().size();
+			double[][] Diffs = calculateDiffAs(sync.getAllAs(), sync.getDimension()*2, topK);
+			LogisticRegression4Similarity lr4Sim = new LogisticRegression4Similarity(m_users, Diffs);
+			//Train the weights of each user's models.
+			lr4Sim.train();
+			//Update similarity based on each user's weight.
+			updateSimilarity(lr4Sim.getWeights());
+			//Calculate the difference of similarities.
+			simDiff = calcSimDiff(preSimilarity);
+			preSimilarity = Arrays.copyOf(m_similarity, m_similarity.length);
+		}
 		sync.test(testSet);
+	}
+	
+	public double calcSimDiff(double[] preSim){
+		double diff = 0;
+		if(preSim.length != m_similarity.length){
+			return diff;
+		}
+		for(int i=0; i<preSim.length; i++){
+			diff += (preSim[i] - m_similarity[i]) * (preSim[i] - m_similarity[i]);
+		}
+		return diff;
+	}
+	
+	//ws: [w0_u0, w1_u0, w0_u1, w1_u1....]
+	public void updateSimilarity(double[] ws){
+		int index, dim = 2;
+		int[] neighborIndexes;
+		double sim = 0, bias = 1;
+		double[] wi;
+		for(int i=0; i<m_users.size(); i++){
+			neighborIndexes = m_users.get(i).getNeighborIndexes();
+			for(int j=0; j<neighborIndexes.length; j++){
+				index = neighborIndexes[j];
+				//Currently, the feature vector is two-dimension.
+				wi = Arrays.copyOfRange(ws, i*dim, (i+1)*dim);
+				sim = wi[0] * bias + wi[1] * Utils.cosine(m_users.get(i).getSparse(), m_users.get(index).getSparse());
+				m_similarity[getIndex(i, index)] = sim;
+			}
+		}
+	}
+	
+	//Dim here is the 2*dim, for both a and b.
+	public double[][] calculateDiffAs(double[] allAs, int dim, int topK){
+		double[][] Diffs = new double[m_users.size()][topK];
+		double Diff[] = new double[topK];
+		_User user;
+		int index;
+		int[] neighborIndexes;
+		// Calculate the difference between each user with neighbors. ||Ai-Aj||^2
+		for(int i=0; i<m_users.size(); i++){
+			user = m_users.get(i);
+			neighborIndexes = user.getNeighborIndexes();
+			for(int j=0; j<neighborIndexes.length; j++){
+				index = neighborIndexes[j];
+				Diff[j] = calculateOneDiff(Arrays.copyOfRange(allAs, i*dim, (i+1)*dim), Arrays.copyOfRange(allAs, index*dim, (index+1)*dim));
+			}
+			Diffs[i] = Diff;
+		}
+		return Diffs;
+	}
+	
+	public double calculateOneDiff(double[] Ai, double[] Aj){
+		double diff = 0;
+		if(Ai.length != Aj.length)
+			return diff;
+		for(int i =0; i<Ai.length; i++)
+			diff += (Ai[i] - Aj[i]) * (Ai[i] - Aj[i]);
+		return diff;
 	}
 	
 	//Calculate each user's performance.
 	public void calcPerformance(){
+//		for(int i=0; i<m_TPall.length; i++)
+//			Arrays.fill(m_TPall[i], 0);
 		for(int i=0; i<m_avgPRF.length; i++)
 			Arrays.fill(m_avgPRF[i], 0);
 
@@ -288,6 +373,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getCoLinAdapt();
 			model.m_perfStat.calculatePRF();
+//			addOneUserTPTable(model.m_perfStat.getTPTable());
 			addOneUserPRF(model.m_perfStat.getOneUserPRF());
 		}
 		for(int i=0; i<m_avgPRF.length; i++){
@@ -295,6 +381,12 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 				m_avgPRF[i][j] /= m_users.size();
 			}
 		}
+//		// Print out the TPTable.
+//		for (int i = 0; i < m_TPall.length; i++) {
+//			for (int j = 0; j < m_TPall[0].length; j++)
+//				System.out.print(m_TPall[i][j] + "\t");
+//			System.out.println();
+//		}
 	}
 	
 	public double calcSim4TwoUsers(_User ui, _User uj){

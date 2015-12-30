@@ -24,6 +24,7 @@ public class LinAdaptSchedule {
 	protected double[][] m_avgPRF;
 	int m_failCount = 0;
 	
+	protected int[][] m_TPall = new int [2][2];
 	protected double m_eta1; //Coefficient for shift.
 	protected double m_eta2; //Coefficient for scale.
 	
@@ -98,8 +99,6 @@ public class LinAdaptSchedule {
 		int pivot = 0;
 		//Traverse all users and train their models based on the half of their reviews.
 		for(int i=0; i<m_users.size(); i++){
-//			if(m_users.get(i).getUserID().equals("A1A0GJYUB0DP8H"))
-//				System.out.println("Stop");
 			model = m_users.get(i).getLinAdapt();
 			reviews = m_users.get(i).getReviews();
 			pivot = reviews.size()/2;
@@ -137,6 +136,8 @@ public class LinAdaptSchedule {
 	
 	//Accumulate the performance, accumulate all users.
 	public void calcPerformance(){
+		for(int i=0; i<m_TPall.length; i++)
+			Arrays.fill(m_TPall[i], 0);
 		for(int i=0; i<m_avgPRF.length; i++)
 			Arrays.fill(m_avgPRF[i], 0);
 		LinAdapt model;
@@ -144,15 +145,31 @@ public class LinAdaptSchedule {
 		for(int i=0; i<m_users.size(); i++){
 			model = m_users.get(i).getLinAdapt();
 			model.m_perfStat.calculatePRF();
+			addOneUserTPTable(model.m_perfStat.getTPTable());
 			addOneUserPRF(model.m_perfStat.getOneUserPRF());
 		}
-		
+		//Print out the TPTable.
+		for(int i=0; i<m_TPall.length; i++){
+			for(int j=0; j<m_TPall[0].length; j++)
+				System.out.print(m_TPall[i][j]+"\t");
+			System.out.println();
+		}
+		//Print out the precision/recall/F1.
 		for(int i=0; i<m_avgPRF.length; i++){
 			for(int j=0; j<m_avgPRF[0].length; j++)
 				m_avgPRF[i][j] /= m_users.size();
 		}
 	}
 	
+	public void addOneUserTPTable(int[][] tp){
+		if(tp.length != m_TPall.length)
+			return;
+		for(int i=0; i<tp.length; i++){
+			for(int j=0; j<tp[0].length; j++){
+				m_TPall[i][j] += tp[i][j];
+			}
+		}
+	}
 	//Print out performance information.
 	public void printPerformance() {
 		System.out.format("\tprec\trecall\tF1\n");

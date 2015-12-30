@@ -51,4 +51,8 @@ public class _PerformanceStat {
 	public double[][] getOneUserPRF(){
 		return m_prf;
 	}
+	
+	public int[][] getTPTable(){
+		return m_TPTable;
+	}
 }
