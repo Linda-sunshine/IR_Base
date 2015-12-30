@@ -17,6 +17,7 @@ import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
+import utils.Utils;
 
 public class LinAdapt extends BaseClassifier {
 	ArrayList<_LinAdaptStruct> m_userList;//a list of users for adapting personalized models
@@ -151,10 +152,17 @@ public class LinAdapt extends BaseClassifier {
 				continue; // only touch the adaptation data
 			
 			Pi = logit(review.getSparse(), user);
-			if(review.getYLabel() == 1)
-				L += Math.log(Pi);
-			else 
-				L += Math.log(1 - Pi);
+			if(review.getYLabel() == 1) {
+				if (Pi>0.0)
+					L += Math.log(Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			} else {
+				if (Pi<1.0)
+					L += Math.log(1 - Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			}
 		}
 		
 		//Add regularization parts.
@@ -163,7 +171,7 @@ public class LinAdapt extends BaseClassifier {
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
 		
-		return R1 - L;
+		return R1 - L /user.getAdaptationSize();
 	}
 	
 	protected void gradientByFunc(_LinAdaptStruct user) {		
@@ -178,9 +186,9 @@ public class LinAdapt extends BaseClassifier {
 	
 	//shared gradient calculation by batch and online updating
 	protected void gradientByFunc(_LinAdaptStruct user, _Review review) {
-		int n, k; // feature index and feature group index
-		double delta = review.getYLabel() - logit(review.getSparse(), user);
+		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
+		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / user.getAdaptationSize();
 		
 		//Bias term.
 		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
@@ -231,6 +239,7 @@ public class LinAdapt extends BaseClassifier {
 		
 		for(_LinAdaptStruct user:m_userList) {
 			initLBFGS();
+			iflag[0] = 0;
 			try{
 				A = user.getA();
 				oldFValue = Double.MAX_VALUE; 

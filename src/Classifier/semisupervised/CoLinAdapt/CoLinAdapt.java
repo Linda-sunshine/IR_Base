@@ -174,6 +174,9 @@ public class CoLinAdapt extends LinAdapt {
 				// accumulate function values and gradients from each user
 				for(_LinAdaptStruct user:m_userList) {
 					fValue += calculateFuncValue(user);
+					if (Double.isInfinite(fValue) || Double.isNaN(fValue))
+						System.out.println("Error");
+					
 					calculateGradients(user);
 				}
 				
@@ -185,7 +188,8 @@ public class CoLinAdapt extends LinAdapt {
 						System.out.print("o");
 					else
 						System.out.print("x");
-					if (displayCount++%100==0)
+					
+					if (++displayCount%100==0)
 						System.out.println();
 				} 
 				oldFValue = fValue;

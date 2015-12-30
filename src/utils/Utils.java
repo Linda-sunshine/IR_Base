@@ -17,6 +17,8 @@ import structures._SparseFeature;
 
 public class Utils {
 	
+	public static double MAX_VALUE = 1e5;
+	
 	public static void shuffle(int[] order, int size){
 		Random rand = new Random();
 		int t, j;

@@ -522,14 +522,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 		double term4 = 0.0;
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int n = 0; n < vocabulary_size; n++) {
-				term3 += Utils.logGamma(d_beta + m_parentWordTopicSstat[k][n]);
+				term3 += Utils.lgamma(d_beta + m_parentWordTopicSstat[k][n]);
 			}
-			term4 -= Utils
-					.logGamma(vocabulary_size * d_beta + m_parentSstat[k]);
+			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_parentSstat[k]);
 		}
 
-		term1 = number_of_topics * Utils.logGamma(vocabulary_size * d_beta);
-		term2 = -number_of_topics * (vocabulary_size * Utils.logGamma(d_beta));
+		term1 = number_of_topics * Utils.lgamma(vocabulary_size * d_beta);
+		term2 = -number_of_topics * (vocabulary_size * Utils.lgamma(d_beta));
 
 		parentLogLikelihood += term1 + term2 + term3 + term4;
 
@@ -539,13 +538,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 		term4 = 0.0;
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int n = 0; n < vocabulary_size; n++) {
-				term3 += Utils.logGamma(d_beta + m_childWordTopicSstat[k][n]);
+				term3 += Utils.lgamma(d_beta + m_childWordTopicSstat[k][n]);
 			}
-			term4 -= Utils.logGamma(vocabulary_size * d_beta + m_childSstat[k]);
+			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_childSstat[k]);
 		}
 
-		term1 = number_of_topics * Utils.logGamma(vocabulary_size * d_beta);
-		term2 = -number_of_topics * (vocabulary_size * Utils.logGamma(d_beta));
+		term1 = number_of_topics * Utils.lgamma(vocabulary_size * d_beta);
+		term2 = -number_of_topics * (vocabulary_size * Utils.lgamma(d_beta));
 
 		childLogLikelihood += term1 + term2 + term3 + term4;
 
@@ -572,14 +571,14 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 		double term2 = 0.0;
 		
 		for (int k = 0; k < number_of_topics; k++) {
-			term2 += Utils.logGamma(pDoc.m_sstat[k] + d_alpha);
+			term2 += Utils.lgamma(pDoc.m_sstat[k] + d_alpha);
 		}
 		term2 = term2
-				- Utils.logGamma((double) (number_of_topics * d_alpha + pDoc
+				- Utils.lgamma((double) (number_of_topics * d_alpha + pDoc
 						.getDocLength()));
 		
-		term1 = Utils.logGamma(number_of_topics * d_alpha) - number_of_topics
-				* Utils.logGamma(d_alpha);
+		term1 = Utils.lgamma(number_of_topics * d_alpha) - number_of_topics
+				* Utils.lgamma(d_alpha);
 
 		tempLogLikelihood = term1 + term2;
 
@@ -602,34 +601,34 @@ public class ParentChild_Gibbs extends LDA_Gibbs{
 		double term21 = 0.0;
 		
 		for (int k = 0; k < number_of_topics; k++) {
-			term12 -= Utils.logGamma(d_alpha + cDoc.m_parentDoc.m_sstat[k]);
-			term13 += Utils.logGamma(d_alpha + cDoc.m_parentDoc.m_sstat[k]
+			term12 -= Utils.lgamma(d_alpha + cDoc.m_parentDoc.m_sstat[k]);
+			term13 += Utils.lgamma(d_alpha + cDoc.m_parentDoc.m_sstat[k]
 					+ cDoc.m_xTopicSstat[0][k]);
 			
-			term21 += Utils.logGamma(d_alpha + cDoc.m_xTopicSstat[1][k]);
+			term21 += Utils.lgamma(d_alpha + cDoc.m_xTopicSstat[1][k]);
 		}
-		term11 = Utils.logGamma(number_of_topics * d_alpha
+		term11 = Utils.lgamma(number_of_topics * d_alpha
 				+ cDoc.m_parentDoc.getTotalDocLength());
-		term14 = -(Utils.logGamma(number_of_topics * d_alpha
+		term14 = -(Utils.lgamma(number_of_topics * d_alpha
 				+ cDoc.m_parentDoc.getTotalDocLength() + cDoc.m_xSstat[0]));
 
 		tempLogLikelihood1 = term11 + term12 + term13 + term14;
 
-		tempLogLikelihood2 = Utils.logGamma(number_of_topics * d_alpha)
-				- number_of_topics * Utils.logGamma(d_alpha) + term21
-				- Utils.logGamma(number_of_topics * d_alpha + cDoc.m_xSstat[1]);
+		tempLogLikelihood2 = Utils.lgamma(number_of_topics * d_alpha)
+				- number_of_topics * Utils.lgamma(d_alpha) + term21
+				- Utils.lgamma(number_of_topics * d_alpha + cDoc.m_xSstat[1]);
 
-		weight1 = Utils.logGamma(m_gamma[0] + m_gamma[1])
-				- Utils.logGamma(m_gamma[0]) - Utils.logGamma(m_gamma[1])
-				+ Utils.logGamma(m_gamma[0] + cDoc.m_xSstat[0])
-				+ Utils.logGamma(m_gamma[1])
-				- Utils.logGamma(m_gamma[0] + m_gamma[1] + cDoc.m_xSstat[0]);
+		weight1 = Utils.lgamma(m_gamma[0] + m_gamma[1])
+				- Utils.lgamma(m_gamma[0]) - Utils.lgamma(m_gamma[1])
+				+ Utils.lgamma(m_gamma[0] + cDoc.m_xSstat[0])
+				+ Utils.lgamma(m_gamma[1])
+				- Utils.lgamma(m_gamma[0] + m_gamma[1] + cDoc.m_xSstat[0]);
 
-		weight2 = Utils.logGamma(m_gamma[0] + m_gamma[1])
-				- Utils.logGamma(m_gamma[0]) - Utils.logGamma(m_gamma[1])
-				+ Utils.logGamma(m_gamma[0])
-				+ Utils.logGamma(m_gamma[1] + cDoc.m_xSstat[1])
-				- Utils.logGamma(m_gamma[0] + m_gamma[1] + cDoc.m_xSstat[1]);
+		weight2 = Utils.lgamma(m_gamma[0] + m_gamma[1])
+				- Utils.lgamma(m_gamma[0]) - Utils.lgamma(m_gamma[1])
+				+ Utils.lgamma(m_gamma[0])
+				+ Utils.lgamma(m_gamma[1] + cDoc.m_xSstat[1])
+				- Utils.lgamma(m_gamma[0] + m_gamma[1] + cDoc.m_xSstat[1]);
 
 
 		// tempLogLikelihood = tempLogLikelihood1 * cDoc.m_xProportion[0]
