@@ -4,9 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
+import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
 import Classifier.semisupervised.CoLinAdapt.asyncCoLinAdaptFirstOrder;
-import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -17,13 +17,13 @@ public class LinAdaptMain {
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 20;
-		int displayLv = 1;
+		int displayLv = 0;
 		
 		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users";
+		String userFolder = "./data/CoLinAdapt/Amazon/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
@@ -45,7 +45,7 @@ public class LinAdaptMain {
 //		//Create the instances of an zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
-//		//Create the instances of an zero-order asyncCoLinAdapt model.
+//		//Create the instances of an first-order asyncCoLinAdapt model.
 		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 		adaptation.loadUsers(analyzer.getUsers());

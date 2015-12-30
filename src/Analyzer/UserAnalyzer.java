@@ -136,7 +136,7 @@ public class UserAnalyzer extends DocAnalyzer {
 				}
 			}
 			
-			if(reviews.size() != 0){
+			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				allocateReviews(reviews);				
 				m_users.add(new _User(userID, reviews)); //create new user from the file.
 			}
