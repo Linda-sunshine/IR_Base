@@ -22,7 +22,7 @@ public class asyncLinAdapt extends LinAdapt {
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 1.50, A[], gNorm, gNormOld = Double.MAX_VALUE;;
+		double initStepSize = 0.50, A[], gNorm, gNormOld = Double.MAX_VALUE;;
 		
 		initLBFGS();
 		for(_LinAdaptStruct user:m_userList) {

@@ -17,7 +17,7 @@ public class _LinAdaptStruct {
 	
 	//structures for online model update
 	protected LinkedList<_Review> m_adaptCache;// adaptation cache to hold most recent observations, default size is one
-	protected int m_cacheSize = 2;
+	protected int m_cacheSize = 3;
 	private int m_adaptPtr, m_adaptStartPos, m_adaptEndPos;		
 	
 	public _LinAdaptStruct(_User user, int dim) {

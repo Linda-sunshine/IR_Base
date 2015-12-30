@@ -130,7 +130,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				gradientDescent(user, initStepSize/(1.0+user.getAdaptedCount()));
 				gNormOld = gNorm;
 				
-				if (m_displayLv>0 && ++updateCount%100==99)
+				if (m_displayLv>0 && ++updateCount%100==0)
 					System.out.println();
 			}			
 		}
