@@ -25,7 +25,10 @@ public class _User {
 	protected int m_classNo;
 	protected int m_featureSize;
 	
-	public _User(String userID, ArrayList<_Review> reviews){
+	// performance statistics
+	_PerformanceStat m_perfStat;
+	
+	public _User(String userID, int classNo, ArrayList<_Review> reviews){
 		m_userID = userID;
 		m_reviews = reviews;
 
@@ -33,6 +36,8 @@ public class _User {
 		m_BoWProfile = null;
 		m_pWeight = null;
 
+		m_perfStat = new _PerformanceStat(classNo);
+		
 		constructSparseVector();
 	}
 	
@@ -97,5 +102,13 @@ public class _User {
 			}
 			return pred;
 		}
+	}
+	
+	public void addOnePredResult(int predL, int trueL){
+		m_perfStat.addOnePredResult(predL, trueL);
+	}
+	
+	public _PerformanceStat getPerfStat() {
+		return m_perfStat;
 	}
  }

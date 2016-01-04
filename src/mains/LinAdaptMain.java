@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.UserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
+import Classifier.semisupervised.CoLinAdapt.asyncCoLinAdaptFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
+import structures._PerformanceStat.TestMode;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -15,7 +16,7 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.50;
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		
@@ -40,16 +41,17 @@ public class LinAdaptMain {
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create the instances of a CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create the instances of an zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create the instances of an first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
+		adaptation.setTestMode(TestMode.TM_hybrid);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		

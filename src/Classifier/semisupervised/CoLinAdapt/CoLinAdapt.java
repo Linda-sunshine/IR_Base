@@ -12,6 +12,7 @@ import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._RankItem;
 import structures._User;
+import structures._PerformanceStat.TestMode;
 
 /**
  * @author Hongning Wang
@@ -29,6 +30,9 @@ public class CoLinAdapt extends LinAdapt {
 		m_eta3 = 0.5;
 		m_eta4 = 0.5;
 		m_topK = topK; // when topK<0, we will use a fully connected graph 
+		
+		// the only possible test modes for CoLinAdapt is batch mode
+		m_testmode = TestMode.TM_batch;
 	}
 
 	public void setR2TradeOffs(double eta3, double eta4) {

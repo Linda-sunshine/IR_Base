@@ -6,8 +6,10 @@ package Classifier.semisupervised.CoLinAdapt;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import structures._PerformanceStat;
 import structures._RankItem;
 import structures._Review;
+import structures._PerformanceStat.TestMode;
 import utils.Utils;
 
 /**
@@ -20,8 +22,15 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+		
+		// all three test modes for asyncCoLinAdapt is possible, and default is online
+		m_testmode = TestMode.TM_online;
 	}
 
+	public void setTestMode(TestMode mode) {
+		m_testmode = mode;
+	}
+	
 	@Override
 	void constructNeighborhood() {
 		super.constructNeighborhood();
@@ -109,13 +118,25 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		double initStepSize = 0.50, gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
+		int predL, trueL;
+		_Review doc;
+		_PerformanceStat perfStat;
 		
 		initLBFGS();
 		for(int t=0; t<m_userOrder.length; t++) {
 			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
 
 			if(user.hasNextAdaptationIns()) {
-				Arrays.fill(m_g, 0); // initialize gradient	
+				// test the latest model
+				if (m_testmode!=TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
+					perfStat = user.getPerfStat();
+					predL = predict(doc, user);
+					trueL = doc.getYLabel();
+					perfStat.addOnePredResult(predL, trueL);
+				} // in batch mode we will not accumulate the performance during adaptation			
+				
+				// prepare to adapt: initialize gradient	
+				Arrays.fill(m_g, 0); 
 				calculateGradients(user);
 				gNorm = gradientTest(user);
 				

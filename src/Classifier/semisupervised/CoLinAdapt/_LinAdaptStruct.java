@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import structures._Doc;
+import structures._PerformanceStat;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
@@ -33,11 +34,10 @@ public class _LinAdaptStruct {
 		m_adaptStartPos = -1;
 		ArrayList<_Review> reviews = user.getReviews();
 		for(int i=0; i<reviews.size(); i++) {
-			if (m_adaptStartPos==-1 && reviews.get(i).getType() == rType.ADAPTATION)
-				m_adaptStartPos = i;
-			else if (reviews.get(i).getType() == rType.TEST) {
+			if (reviews.get(i).getType() == rType.ADAPTATION) {
+				if (m_adaptStartPos==-1)
+					m_adaptStartPos = i;
 				m_adaptEndPos = i;
-				break;
 			}
 		}
 		
@@ -86,6 +86,14 @@ public class _LinAdaptStruct {
 		return m_adaptCache;
 	}
 	
+	public _Review getLatestTestIns() {
+		ArrayList<_Review> reviews = m_user.getReviews();
+		if(m_adaptPtr < m_adaptEndPos)
+			return reviews.get(m_adaptPtr);
+		else
+			return null;
+	}
+	
 	public int getAdaptationCacheSize() {
 		return m_adaptCache.size();
 	}
@@ -100,6 +108,10 @@ public class _LinAdaptStruct {
 	
 	public int predict(_Doc doc) {
 		return m_user.predict(doc);
+	}
+	
+	public _PerformanceStat getPerfStat() {
+		return m_user.getPerfStat();
 	}
 	
 	public double[] getA() {

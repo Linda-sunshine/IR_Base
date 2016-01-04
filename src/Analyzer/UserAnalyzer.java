@@ -138,7 +138,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				allocateReviews(reviews);				
-				m_users.add(new _User(userID, reviews)); //create new user from the file.
+				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 			}
 			reader.close();
 		} catch(IOException e){

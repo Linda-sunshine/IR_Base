@@ -13,6 +13,8 @@ import Classifier.BaseClassifier;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
@@ -36,6 +38,7 @@ public class LinAdapt extends BaseClassifier {
 	double[] m_g;//optimized gradients. 
 	
 	int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
+	TestMode m_testmode; // test mode of different algorithms 
 	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize);
@@ -48,6 +51,9 @@ public class LinAdapt extends BaseClassifier {
 		// default value of trade-off parameters
 		m_eta1 = 0.5;
 		m_eta2 = 0.5;
+		
+		// the only test mode for LinAdapt is batch
+		m_testmode = TestMode.TM_batch;
 	}  
 	
 	public void setDisplayLv(int level) {
@@ -140,6 +146,13 @@ public class LinAdapt extends BaseClassifier {
 			value += (user.getScaling(k)*m_gWeights[n] + user.getShifting(k)) * fv.getValue();
 		}
 		return 1/(1+Math.exp(-value));
+	}
+	
+	protected int predict(_Doc review, _LinAdaptStruct user) {
+		if (review==null)
+			return -1;
+		else
+			return logit(review.getSparse(), user)>0.5?1:0;
 	}
 	
 	//Calculate the function value of the new added instance.
@@ -296,56 +309,59 @@ public class LinAdapt extends BaseClassifier {
 	@Override
 	public double test(){
 		int trueL = 0, predL = 0, count = 0;
-		int[][] TPTableMacro = new int[2][2], TPTableMicro = new int[2][2];
-		double posF, negF, avgPosF = 0, avgNegF = 0, demoniator;
+		double[] microF1 = new double[m_classNo];
+		_PerformanceStat macroStat = new _PerformanceStat(m_classNo), microStat;
+		
 		for(_LinAdaptStruct user:m_userList) {
-			if (user.getTestSize()<1)
-				continue;//no testing data
+			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+				continue;
 			
-			Arrays.fill(TPTableMicro[0], 0);
-			Arrays.fill(TPTableMicro[1], 0);
-			
-			for(_Review r:user.getReviews()) {
-				if (r.getType() != rType.TEST)
-					continue;
-				trueL = r.getYLabel();
-				predL = user.predict(r); // evoke user's own model
-				TPTableMicro[trueL][predL]++;
-				TPTableMacro[trueL][predL]++; // macro average
+			microStat = user.getPerfStat();			
+			if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
+				//record prediction results
+				for(_Review r:user.getReviews()) {
+					if (r.getType() != rType.TEST)
+						continue;
+					trueL = r.getYLabel();
+					predL = user.predict(r); // evoke user's own model
+					microStat.addOnePredResult(predL, trueL);
+				}
 			}
 			
+			microStat.calculatePRF();
+			
+			for(int i=0; i<m_classNo; i++)
+				microF1[i] += microStat.getF1(i);
+			macroStat.accumulateConfusionMat(microStat);
 			count ++;
-			
-			demoniator = 2.0*TPTableMicro[0][0] + TPTableMicro[0][1] + TPTableMicro[1][0];
-			if (demoniator>0)
-				negF = 2.0*TPTableMicro[0][0] / demoniator;
-			else
-				negF = 0;
-			avgNegF += negF;
-			
-			demoniator = 2.0*TPTableMicro[1][1] + TPTableMicro[0][1] + TPTableMicro[1][0];
-			if (demoniator>0)
-				posF = 2.0*TPTableMicro[1][1] / demoniator;
-			else
-				posF = 0;
-			avgPosF += posF;			
 		}
+		macroStat.calculatePRF();
 		
-		System.out.println("Macro TP table:\n\t0\t1");
-		for(int i=0; i<2; i++) {
+		System.out.println("Macro confusion matrix:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.print("\t" + i);
+		System.out.println();
+		
+		for(int i=0; i<m_classNo; i++) {
 			System.out.print(i);
-			for(int j=0; j<2; j++) {
-				System.out.print("\t" + TPTableMacro[i][j]);
+			for(int j=0; j<m_classNo; j++) {
+				System.out.print("\t" + macroStat.getEntry(i, j));
 			}
 			System.out.println();
 		}
 		
-		posF = 2.0*TPTableMacro[1][1] / (2.0*TPTableMacro[1][1] + TPTableMacro[0][1] + TPTableMacro[1][0]);
-		negF = 2.0*TPTableMacro[0][0] / (2.0*TPTableMacro[0][0] + TPTableMacro[0][1] + TPTableMacro[1][0]);
+		// macro average
+		System.out.println("Macro F1:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.3f\t", i, macroStat.getF1(i));
 		
-		System.out.format("Macro F-measures:\nPos-F1 %.3f, Neg-F1 %.3f\n", posF, negF);
-		System.out.format("Micro F-measures:\nPos-F1 %.3f, Neg-F1 %.3f\n", avgPosF/count, avgNegF/count);
-		return negF + posF;
+		// micro average
+		System.out.println("\nMicro F1:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.3f\t", i, microF1[i]/count);
+		return Utils.sumOfArray(microF1);
 	}
 
 	@Override
