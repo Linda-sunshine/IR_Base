@@ -62,6 +62,10 @@ public class _User {
 		return m_BoWProfile;
 	}
 	
+	public int getReviewSize() {
+		return m_reviews.size();
+	}
+	
 	public ArrayList<_Review> getReviews(){
 		return m_reviews;
 	}

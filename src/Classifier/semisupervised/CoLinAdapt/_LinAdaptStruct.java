@@ -62,6 +62,10 @@ public class _LinAdaptStruct {
 		return m_adaptEndPos - m_adaptStartPos;
 	}
 	
+	public int getTestSize() {
+		return m_user.getReviewSize() - m_adaptEndPos;
+	}
+	
 	//already utilized adaptation reviews
 	public int getAdaptedCount() {
 		return m_adaptPtr - m_adaptStartPos;
@@ -80,6 +84,10 @@ public class _LinAdaptStruct {
 			m_adaptPtr++; //Move to the next review of the current user.
 		}
 		return m_adaptCache;
+	}
+	
+	public int getAdaptationCacheSize() {
+		return m_adaptCache.size();
 	}
 	
 	public boolean hasNextAdaptationIns() {

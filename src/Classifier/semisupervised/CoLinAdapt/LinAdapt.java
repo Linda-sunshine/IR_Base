@@ -171,7 +171,7 @@ public class LinAdapt extends BaseClassifier {
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
 		
-		return R1 - L /user.getAdaptationSize();
+		return R1 - L /getAdaptationSize(user);
 	}
 	
 	protected void gradientByFunc(_LinAdaptStruct user) {		
@@ -184,11 +184,15 @@ public class LinAdapt extends BaseClassifier {
 		}
 	}
 	
+	protected int getAdaptationSize(_LinAdaptStruct user) {
+		return user.getAdaptationSize();
+	}
+	
 	//shared gradient calculation by batch and online updating
 	protected void gradientByFunc(_LinAdaptStruct user, _Review review) {
 		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / user.getAdaptationSize();
+		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
 		
 		//Bias term.
 		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
@@ -262,8 +266,10 @@ public class LinAdapt extends BaseClassifier {
 					LBFGS.lbfgs(vSize, 6, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-32, iflag);//In the training process, A is updated.
 				} while(iflag[0] != 0);
 			} catch(ExceptionWithIflag e) {
-				//e.printStackTrace();
-				System.out.print("X");
+				if (m_displayLv>0)
+					System.out.print("X");
+				else
+					System.out.println("X");
 			}
 			
 			if (m_displayLv>0)
@@ -289,27 +295,57 @@ public class LinAdapt extends BaseClassifier {
 	//Batch mode: given a set of reviews and accumulate the TP table.
 	@Override
 	public double test(){
-		int trueL = 0, predL = 0;
-		int[][] TPTable = new int[2][2];
+		int trueL = 0, predL = 0, count = 0;
+		int[][] TPTableMacro = new int[2][2], TPTableMicro = new int[2][2];
+		double posF, negF, avgPosF = 0, avgNegF = 0, demoniator;
 		for(_LinAdaptStruct user:m_userList) {
+			if (user.getTestSize()<1)
+				continue;//no testing data
+			
+			Arrays.fill(TPTableMicro[0], 0);
+			Arrays.fill(TPTableMicro[1], 0);
+			
 			for(_Review r:user.getReviews()) {
 				if (r.getType() != rType.TEST)
 					continue;
 				trueL = r.getYLabel();
 				predL = user.predict(r); // evoke user's own model
-				TPTable[trueL][predL]++; // macro average
+				TPTableMicro[trueL][predL]++;
+				TPTableMacro[trueL][predL]++; // macro average
 			}
+			
+			count ++;
+			
+			demoniator = 2.0*TPTableMicro[0][0] + TPTableMicro[0][1] + TPTableMicro[1][0];
+			if (demoniator>0)
+				negF = 2.0*TPTableMicro[0][0] / demoniator;
+			else
+				negF = 0;
+			avgNegF += negF;
+			
+			demoniator = 2.0*TPTableMicro[1][1] + TPTableMicro[0][1] + TPTableMicro[1][0];
+			if (demoniator>0)
+				posF = 2.0*TPTableMicro[1][1] / demoniator;
+			else
+				posF = 0;
+			avgPosF += posF;			
 		}
 		
-		System.out.println("\t0\t1");
+		System.out.println("Macro TP table:\n\t0\t1");
 		for(int i=0; i<2; i++) {
 			System.out.print(i);
 			for(int j=0; j<2; j++) {
-				System.out.print("\t" + TPTable[i][j]);
+				System.out.print("\t" + TPTableMacro[i][j]);
 			}
 			System.out.println();
 		}
-		return 0;
+		
+		posF = 2.0*TPTableMacro[1][1] / (2.0*TPTableMacro[1][1] + TPTableMacro[0][1] + TPTableMacro[1][0]);
+		negF = 2.0*TPTableMacro[0][0] / (2.0*TPTableMacro[0][0] + TPTableMacro[0][1] + TPTableMacro[1][0]);
+		
+		System.out.format("Macro F-measures:\nPos-F1 %.3f, Neg-F1 %.3f\n", posF, negF);
+		System.out.format("Micro F-measures:\nPos-F1 %.3f, Neg-F1 %.3f\n", avgPosF/count, avgNegF/count);
+		return negF + posF;
 	}
 
 	@Override

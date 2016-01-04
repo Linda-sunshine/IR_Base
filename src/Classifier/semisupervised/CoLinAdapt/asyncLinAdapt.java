@@ -50,6 +50,11 @@ public class asyncLinAdapt extends LinAdapt {
 	}
 	
 	@Override
+	protected int getAdaptationSize(_LinAdaptStruct user) {
+		return user.getAdaptationCacheSize();
+	}
+	
+	@Override
 	protected void gradientByFunc(_LinAdaptStruct user) {		
 		//Update gradients one review by one review.
 		for(_Review review:user.nextAdaptationIns())
