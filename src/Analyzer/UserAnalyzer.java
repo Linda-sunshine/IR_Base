@@ -104,14 +104,21 @@ public class UserAnalyzer extends DocAnalyzer {
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
+	String extractUserID(String text) {
+		int index = text.indexOf('.');
+		if (index==-1)
+			return text;
+		else
+			return text.substring(0, index);
+	}
+	
 	// Load one file as a user here. 
 	public void loadOneUser(String filename){
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			String[] names = filename.split("/");
-			int endIndex = names[names.length-1].lastIndexOf(".");
-			String userID = names[names.length-1].substring(0, endIndex); //UserId is contained in the filename.
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;			
+			String userID = extractUserID(file.getName()); //UserId is contained in the filename.
 			// Skip the first line since it is user name.
 			reader.readLine(); 
 			

@@ -46,6 +46,10 @@ public class _User {
 		return m_userID;
 	}
 	
+	public String toString() {
+		return String.format("%s-R:%d", m_userID, getReviewSize());
+	}
+	
 	public void setModel(double[] weight, int classNo, int featureSize) {
 		m_pWeight = new double[weight.length];
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
@@ -68,7 +72,7 @@ public class _User {
 	}
 	
 	public int getReviewSize() {
-		return m_reviews.size();
+		return m_reviews==null?0:m_reviews.size();
 	}
 	
 	public ArrayList<_Review> getReviews(){

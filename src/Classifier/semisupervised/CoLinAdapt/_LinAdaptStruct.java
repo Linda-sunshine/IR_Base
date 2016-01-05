@@ -32,6 +32,7 @@ public class _LinAdaptStruct {
 		//trace to the first and last adaptation instance
 		//we assume the instances are ordered and then separate into [train, adapt, test]
 		m_adaptStartPos = -1;
+		m_adaptEndPos = -1;
 		ArrayList<_Review> reviews = user.getReviews();
 		for(int i=0; i<reviews.size(); i++) {
 			if (reviews.get(i).getType() == rType.ADAPTATION) {
@@ -41,8 +42,16 @@ public class _LinAdaptStruct {
 			}
 		}
 		
+		if (m_adaptEndPos!=-1)
+			m_adaptEndPos ++;//point to the next testing data or the end of reviews
+		
 		resetAdaptPtr();
-	}		
+	}	
+	
+	@Override
+	public String toString() {		
+		return String.format("%d-A:%d-T:%d", m_id, getAdaptationSize(), getTestSize());
+	}
 	
 	public void resetAdaptPtr() {
 		m_adaptPtr = m_adaptStartPos;

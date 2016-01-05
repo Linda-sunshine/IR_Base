@@ -45,4 +45,9 @@ public class _Review extends _Doc {
 	public String getUserID(){
 		return m_userID;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s-%s-%s-%s", m_userID, m_reviewID, m_category, m_type);
+	}
 }
