@@ -3,9 +3,11 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
 import CoLinAdapt.LinAdaptSchedule;
+
+import opennlp.tools.util.InvalidFormatException;
+
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -22,7 +24,7 @@ public class LinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Amazon/Users";
+		String folder = "./data/CoLinAdapt/Users2";
 
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold); //CV is loaded here.
 		analyzer.LoadCVStat(CVStat);
@@ -42,9 +44,9 @@ public class LinAdaptMain {
 		linAdaptS.initSchedule();
 
 		//Online training.
-//		linAdaptS.onlineTrain();
-//		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
-//		linAdaptS.printPerformance();
+		linAdaptS.onlineTrain();
+		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
+		linAdaptS.printPerformance();
 		
 		//Batch training.
 		linAdaptS.initSchedule();

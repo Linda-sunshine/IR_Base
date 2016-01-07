@@ -239,7 +239,7 @@ public class SyncCoLinAdapt extends CoLinAdapt {
 				curMag = calculateGradients(trainSet);
 				count++;
 				if(count % 1000 == 0)
-					System.out.println(".");
+					System.out.print(".");
 				if(curMag == 0 || Math.abs(curMag - preMag) < 1e-16){
 					System.out.print("*");
 					break;

@@ -268,7 +268,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	
 		ArrayList<_Review> trainSet = new ArrayList<_Review>();
 		ArrayList<_Review> testSet = new ArrayList<_Review>();
-		
+	
 		// Traverse all users and train their models based on the half of their reviews.
 		for (int i = 0; i < m_users.size(); i++) {
 //			model = m_users.get(i).getCoLinAdapt();
@@ -283,24 +283,44 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			}
 		}
 		sync.init();
+		if(!sync.train(trainSet))
+			m_failCount++;// Train the model.
+		
+		int iterCount = 0;
 		double simDiff = 100;
 		double[] preSimilarity = new double[m_similarity.length];
 		while(simDiff > 1e-16){
 			if(!sync.train(trainSet))
-			m_failCount++;// Train the model.
+				m_failCount++;// Train the model.
 		
 			// Add Logistics regression to predict the similarities.
 			int topK = m_users.get(0).getNeighbors().size();
-			double[][] Diffs = calculateDiffAs(sync.getAllAs(), sync.getDimension()*2, topK);
-			LogisticRegression4Similarity lr4Sim = new LogisticRegression4Similarity(m_users, Diffs);
+			
+			/***We have two different similarity calculation methods, Euclidean distance and cosine similarity.***/
+			//Euclidean distance.
+			double[][] EucDiffs = calculateEucSims(sync.getAllAs(), sync.getDimension()*2, topK);
+			
+			//Cosine similarity.
+			double[][] CosineSims = calculateCosineSims(sync.getAllAs(), sync.getDimension()*2, topK);
+			
+			//We can either pass Euclidean distance similarity or cosine similarity.
+			LogisticRegression4Similarity lr4Sim = new LogisticRegression4Similarity(m_users, CosineSims);
+			
 			//Train the weights of each user's models.
 			lr4Sim.train();
+			
 			//Update similarity based on each user's weight.
 			updateSimilarity(lr4Sim.getWeights());
+			
 			//Calculate the difference of similarities.
 			simDiff = calcSimDiff(preSimilarity);
 			preSimilarity = Arrays.copyOf(m_similarity, m_similarity.length);
+			iterCount++;
+			if(iterCount % 100 == 0)
+				System.out.print(".");
 		}
+		System.out.format("%d iterations in the training process.", iterCount);
+		System.out.format("%d fails in batch optimization.\n", m_failCount);
 		sync.test(testSet);
 	}
 	
@@ -319,7 +339,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	public void updateSimilarity(double[] ws){
 		int index, dim = 2;
 		int[] neighborIndexes;
-		double sim = 0, bias = 1;
+		double sim = 0, bias = 1, vsum = 0;
 		double[] wi;
 		for(int i=0; i<m_users.size(); i++){
 			neighborIndexes = m_users.get(i).getNeighborIndexes();
@@ -327,16 +347,38 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 				index = neighborIndexes[j];
 				//Currently, the feature vector is two-dimension.
 				wi = Arrays.copyOfRange(ws, i*dim, (i+1)*dim);
-				sim = wi[0] * bias + wi[1] * Utils.cosine(m_users.get(i).getSparse(), m_users.get(index).getSparse());
+				vsum = wi[0] * bias + wi[1] * Utils.cosine(m_users.get(i).getSparse(), m_users.get(index).getSparse());
+				sim = 1/(1 + Math.exp(-vsum)); //logit function.
+//				System.out.print(sim + "\t");
 				m_similarity[getIndex(i, index)] = sim;
 			}
 		}
 	}
 	
 	//Dim here is the 2*dim, for both a and b.
-	public double[][] calculateDiffAs(double[] allAs, int dim, int topK){
-		double[][] Diffs = new double[m_users.size()][topK];
-		double Diff[] = new double[topK];
+	public double[][] calculateEucSims(double[] allAs, int dim, int topK){
+		double[][] EucSims = new double[m_users.size()][topK];
+		double[] EucSim = new double[topK];
+		_User user;
+		int index;
+		int[] neighborIndexes;
+		// Calculate the difference between each user with neighbors, take the inverse to get similarity. ||Ai-Aj||^2
+		for(int i=0; i<m_users.size(); i++){
+			user = m_users.get(i);
+			neighborIndexes = user.getNeighborIndexes();
+			for(int j=0; j<neighborIndexes.length; j++){
+				index = neighborIndexes[j];
+				EucSim[j] = calculateOneEucSim(Arrays.copyOfRange(allAs, i*dim, (i+1)*dim), Arrays.copyOfRange(allAs, index*dim, (index+1)*dim));
+			}
+			EucSims[i] = Arrays.copyOf(EucSim, topK);
+			Arrays.fill(EucSim, 0);
+		}
+		return EucSims;
+	}
+	
+	public double[][] calculateCosineSims(double[] allAs, int dim, int topK){
+		double[][] CosineSims = new double[m_users.size()][topK];
+		double[] CosineSim = new double[topK];
 		_User user;
 		int index;
 		int[] neighborIndexes;
@@ -346,20 +388,20 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			neighborIndexes = user.getNeighborIndexes();
 			for(int j=0; j<neighborIndexes.length; j++){
 				index = neighborIndexes[j];
-				Diff[j] = calculateOneDiff(Arrays.copyOfRange(allAs, i*dim, (i+1)*dim), Arrays.copyOfRange(allAs, index*dim, (index+1)*dim));
+				CosineSim[j] = Utils.cosine(Arrays.copyOfRange(allAs, i*dim, (i+1)*dim), Arrays.copyOfRange(allAs, index*dim, (index+1)*dim));
 			}
-			Diffs[i] = Diff;
+			CosineSims[i] = Arrays.copyOf(CosineSim, topK);
+			Arrays.fill(CosineSim, 0);
 		}
-		return Diffs;
+		return CosineSims;
 	}
-	
-	public double calculateOneDiff(double[] Ai, double[] Aj){
-		double diff = 0;
+	public double calculateOneEucSim(double[] Ai, double[] Aj){
+		double EucDis = 0;
 		if(Ai.length != Aj.length)
-			return diff;
+			return EucDis;
 		for(int i =0; i<Ai.length; i++)
-			diff += (Ai[i] - Aj[i]) * (Ai[i] - Aj[i]);
-		return diff;
+			EucDis += (Ai[i] - Aj[i]) * (Ai[i] - Aj[i]);
+		return 1/EucDis;
 	}
 	
 	//Calculate each user's performance.

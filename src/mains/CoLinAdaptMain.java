@@ -21,7 +21,7 @@ public class CoLinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Users2";
+		String folder = "./data/CoLinAdapt/Amazon/Users";
 
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.LoadCVStat(CVStat);
@@ -34,8 +34,8 @@ public class CoLinAdaptMain {
 		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		
-		int topK = 15;
-		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5;
+		int topK = 5;
+		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.5, eta4 = 0.01;
 		coLinAdaptS.setCoefficients4R1(eta1, eta2);
 		coLinAdaptS.setCoefficients4R2(eta3, eta4);
 		
@@ -49,10 +49,10 @@ public class CoLinAdaptMain {
 //		coLinAdaptS.loadUserNeighbors(neighborFile, topK);
 		
 		//Online training.
-		System.out.println("Start online training....");
-		coLinAdaptS.onlineTrain();
-		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
-		coLinAdaptS.printPerformance();
+//		System.out.println("Start online training....");
+//		coLinAdaptS.onlineTrain();
+//		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+//		coLinAdaptS.printPerformance();
 		
 		//Batch training.
 		System.out.println("Start batch training....");
