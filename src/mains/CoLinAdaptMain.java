@@ -22,14 +22,16 @@ public class CoLinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Amazon/Users";
-
+		String folder = "./data/CoLinAdapt/Users2";
+		
+		String svdFile = "./data/CoLinAdapt/SVD/UserWordMatrix_nonN_U.mm";
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		analyzer.LoadCVStat(CVStat);
 		analyzer.loadUserDir(folder);//Load users.	
 		analyzer.setFeatureValues(25265, "TFIDF", 0);
 		analyzer.loadGlobalWeights(globalModel);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
+//		analyzer.loadSVD(svdFile);// Load low dimension representation of users.
 		
 //		//Multi-task SVM training and testing.
 //		MultiTaskSVM MTSVM = new MultiTaskSVM(analyzer.getUsers(), analyzer.getFeatureSize());
@@ -42,11 +44,11 @@ public class CoLinAdaptMain {
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		
 		int topK = 5;
-		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.8, eta4 = 0.1;
+		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.5, eta4 = 0.01;
 		coLinAdaptS.setCoefficients4R1(eta1, eta2);
 		coLinAdaptS.setCoefficients4R2(eta3, eta4);
 		
-		coLinAdaptS.calcluateSimilarities();
+		coLinAdaptS.calcluateSimilarities("Euc");//"Euc", "cosine"
 		
 		coLinAdaptS.initSchedule();
 		String neighborFile = "./data/CoLinAdapt/Neighbor";

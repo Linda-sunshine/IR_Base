@@ -44,7 +44,7 @@ public class Execution4CoLinAdapt {
 		coLinAdaptS.setCoefficients4R1(param.m_eta1, param.m_eta2);
 		coLinAdaptS.setCoefficients4R2(param.m_eta3, param.m_eta4);
 		
-		coLinAdaptS.calcluateSimilarities();
+		coLinAdaptS.calcluateSimilarities("cosine");
 
 		coLinAdaptS.initSchedule();
 		coLinAdaptS.constructNeighborhood(param.m_topK);

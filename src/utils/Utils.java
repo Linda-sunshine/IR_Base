@@ -887,6 +887,17 @@ public class Utils {
 		}
 		return res;
 	}
+	
+	// The way we used to calcuate the index in a mXm symmetric matrix.
+	public static int getIndex(int i, int j){
+		//Swap i and j.
+		if(i < j){
+			int t = j;
+			j = i;
+			i = t;
+		}
+		return i*(i-1)/2+j;
+	}
 //	public static void main(String[] args){
 //		double[] a = new double[]{1, 2, 3, 5, 1};
 //		double[] b = new double[]{7, 7};
