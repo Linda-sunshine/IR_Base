@@ -367,6 +367,28 @@ public class Utils {
 		}
 	}
 	
+	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
+		if (spVct1.length==0 || spVct2.length==0)
+			return 0;
+		else{
+			double similarity = 0;
+			int pointer1 = 0, pointer2 = 0;
+			while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+				_SparseFeature temp1 = spVct1[pointer1];
+				_SparseFeature temp2 = spVct2[pointer2];
+				if (temp1.getIndex() == temp2.getIndex()) {
+					similarity += (temp1.getValue() - temp2.getValue()) * (temp1.getValue() - temp2.getValue());
+					pointer1++;
+					pointer2++;
+				} else if (temp1.getIndex() > temp2.getIndex())
+					pointer2++;
+				else
+					pointer1++;
+			}
+			return Math.exp(-similarity);
+		}
+	}
+	
 	//Calculate the similarity between two sparse vectors.
 	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		if (spVct1==null || spVct2==null)
@@ -790,6 +812,7 @@ public class Utils {
 		}
 		return similarity;
 	}
+	
 	//The Euclidean distance for two arrays of the same length.
 	public static double EuclideanDistance(double[] t1, double[] t2){
 		double sum = 0;

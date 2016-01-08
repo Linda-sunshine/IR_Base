@@ -257,6 +257,7 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 //			return null;
 //		}
 //	}
+	
 	//In batch mode, we use half of one user's reviews as training set and we concatenate all users' reviews.
 	public void batchTrainTest() {
 		m_failCount = 0;
@@ -286,49 +287,62 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		if(!sync.train(trainSet))
 			m_failCount++;// Train the model.
 		
-		int iterCount = 0;
-		double simDiff = 100;
-		double[] preSimilarity = new double[m_similarity.length];
-		while(simDiff > 1e-16){
-			if(!sync.train(trainSet))
-				m_failCount++;// Train the model.
-		
-			// Add Logistics regression to predict the similarities.
-			int topK = m_users.get(0).getNeighbors().size();
-			
-			/***We have two different similarity calculation methods, Euclidean distance and cosine similarity.***/
-			//Euclidean distance.
-			double[][] EucDiffs = calculateEucSims(sync.getAllAs(), sync.getDimension()*2, topK);
-			
-			//Cosine similarity.
-			double[][] CosineSims = calculateCosineSims(sync.getAllAs(), sync.getDimension()*2, topK);
-			
-			//We can either pass Euclidean distance similarity or cosine similarity.
-			LogisticRegression4Similarity lr4Sim = new LogisticRegression4Similarity(m_users, CosineSims);
-			
-			//Train the weights of each user's models.
-			lr4Sim.train();
-			
-			//Update similarity based on each user's weight.
-			updateSimilarity(lr4Sim.getWeights());
-			
-			//Calculate the difference of similarities.
-			simDiff = calcSimDiff(preSimilarity);
-			preSimilarity = Arrays.copyOf(m_similarity, m_similarity.length);
-			iterCount++;
-			if(iterCount % 100 == 0)
-				System.out.print(".");
-		}
-		System.out.format("%d iterations in the training process.", iterCount);
+		/*** Add Logistics regression to predict the similarities.****/
+//		int iterCount = 0; //Count the iteration times.
+//		//Difference between similarities, between As.
+//		double simDiff = 100, AsDiff = 100;
+//		double[] preSimilarity = new double[m_similarity.length];
+//		double[] preAs = Arrays.copyOf(sync.getAllAs(), sync.getAllAs().length);
+//		
+//		while(simDiff > 1e-16 && AsDiff > 1e-16){
+//			
+//			//Train As and calculate the difference between As.
+//			if(!sync.train(trainSet))
+//				m_failCount++;// Train the model.
+//			AsDiff = calcAsDiff(preAs, sync.getAllAs());
+//			preAs = Arrays.copyOf(sync.getAllAs(), sync.getAllAs().length);
+//			
+//			int topK = m_users.get(0).getNeighbors().size();
+//			
+//			// Two different similarity calculation methods, 1/Euclidean distance and cosine similarity.//
+//			double[][] EucSims = calculateEucSims(sync.getAllAs(), sync.getDimension()*2, topK);
+//			double[][] CosineSims = calculateCosineSims(sync.getAllAs(), sync.getDimension()*2, topK);
+//			
+////			writeSimilarities("./data/EuclideanSim.txt", EucSims);
+////			writeSimilarities("./data/CosineSim.txt", CosineSims);
+//			
+//			//We can either pass 1/Euclidean distance or cosine similarity.
+//			LogisticRegression4Similarity lr4Sim = new LogisticRegression4Similarity(m_users, CosineSims);
+//			//Train the weights of each user's models.
+//			lr4Sim.train();
+//			//Update similarity based on each user's weight.
+//			updateSimilarity(lr4Sim.getWeights());
+//			
+//			//Calculate the difference of similarities.
+//			simDiff = calcSimDiff(preSimilarity);
+//			preSimilarity = Arrays.copyOf(m_similarity, m_similarity.length);
+//			iterCount++;
+//			if(iterCount % 100 == 0)
+//				System.out.print(".");
+//		}
+//		System.out.format("%d iterations in the training process.", iterCount);
 		System.out.format("%d fails in batch optimization.\n", m_failCount);
 		sync.test(testSet);
 	}
 	
+	public double calcAsDiff(double[] preAs, double[] curAs){
+		double diff = 0;
+		if(preAs.length != curAs.length)
+			return diff;
+		for(int i=0; i<preAs.length; i++)
+			diff += (preAs[i] - curAs[i]) * (preAs[i] - curAs[i]);
+		return diff;
+	}
+	
 	public double calcSimDiff(double[] preSim){
 		double diff = 0;
-		if(preSim.length != m_similarity.length){
+		if(preSim.length != m_similarity.length)
 			return diff;
-		}
 		for(int i=0; i<preSim.length; i++){
 			diff += (preSim[i] - m_similarity[i]) * (preSim[i] - m_similarity[i]);
 		}
@@ -395,6 +409,21 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 		}
 		return CosineSims;
 	}
+	
+	//Write out the similarities of Euclidean similarity or cosine similarity.
+	public void writeSimilarities(String filename, double[][] sims){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(int i=0; i<sims.length; i++){
+				for(int j=0; j<sims[0].length; j++)
+					writer.write(sims[i][j] + "\t");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 	public double calculateOneEucSim(double[] Ai, double[] Aj){
 		double EucDis = 0;
 		if(Ai.length != Aj.length)
@@ -432,7 +461,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 	}
 	
 	public double calcSim4TwoUsers(_User ui, _User uj){
-		return 	Utils.cosine(ui.getSparse(), uj.getSparse());
+		return Utils.EuclideanSimilarity(ui.getSparse(), uj.getSparse());
+//		return Utils.cosine(ui.getSparse(), uj.getSparse());
 	}
 	
 	public int getIndex(int i, int j){

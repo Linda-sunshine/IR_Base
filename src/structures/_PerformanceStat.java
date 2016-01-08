@@ -1,5 +1,7 @@
 package structures;
 
+import java.util.Arrays;
+
 import utils.Utils;
 
 public class _PerformanceStat {
@@ -10,7 +12,11 @@ public class _PerformanceStat {
 
 	//Constructor for batch mode.
 	public _PerformanceStat(int[][] TPTable){
-		m_TPTable = TPTable;
+		
+		m_TPTable = new int[TPTable.length][];
+		for(int i=0; i<TPTable.length; i++)
+			m_TPTable[i] = Arrays.copyOf(TPTable[i], TPTable[i].length);
+
 		m_prf = new double[m_TPTable.length][3];//column: 0-1 class; row: precision, recall, F1.
 	}
 	

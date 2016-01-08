@@ -5,6 +5,7 @@ import java.io.IOException;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.UserAnalyzer;
 import CoLinAdapt.CoLinAdaptSchedule;
+import CoLinAdapt.MultiTaskSVM;
 
 public class CoLinAdaptMain {
 
@@ -30,12 +31,18 @@ public class CoLinAdaptMain {
 		analyzer.loadGlobalWeights(globalModel);
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
 		
-		//Create the instances of the LinAdapt model.
+//		//Multi-task SVM training and testing.
+//		MultiTaskSVM MTSVM = new MultiTaskSVM(analyzer.getUsers(), analyzer.getFeatureSize());
+//		MTSVM.batchTrainTest();
+//		MTSVM.calcPerformance();
+//		MTSVM.printPerformance();
+		
+		//Create the instances of the CoLinAdapt model.
 		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
 		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
 		
 		int topK = 5;
-		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.5, eta4 = 0.01;
+		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.8, eta4 = 0.1;
 		coLinAdaptS.setCoefficients4R1(eta1, eta2);
 		coLinAdaptS.setCoefficients4R2(eta3, eta4);
 		
