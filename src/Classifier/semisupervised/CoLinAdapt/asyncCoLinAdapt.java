@@ -3,14 +3,16 @@
  */
 package Classifier.semisupervised.CoLinAdapt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
-import structures._PerformanceStat.TestMode;
-import utils.Utils;
+import structures._Review.rType;
 
 /**
  * @author Hongning Wang
@@ -34,7 +36,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	@Override
 	void constructNeighborhood() {
 		super.constructNeighborhood();
-		int adaptSize = 0, aPtr = 0;//total number of adaptation instances
+		int adaptSize = 0;//total number of adaptation instances
 		
 		//construct the reverse link
 		_CoLinAdaptStruct ui, uj;
@@ -49,16 +51,22 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		}
 		
 		//construct the order of online updating
-		m_userOrder = new int[adaptSize];
+		ArrayList<_RankItem> userorder = new ArrayList<_RankItem>();
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)(m_userList.get(i));
-			for(int j=0; j<ui.getAdaptationSize(); j++) {
-				m_userOrder[aPtr] = i;
-				aPtr ++;
+			
+			for(_Review r:ui.getReviews()) {//reviews in each user is already ordered by time
+				if (r.getType() == rType.ADAPTATION) {
+					userorder.add(new _RankItem(i, r.getTimeStamp()));//to be in ascending order
+				}
 			}
 		}
 		
-		Utils.shuffle(m_userOrder, adaptSize);//using random order for now
+		Collections.sort(userorder);
+		
+		m_userOrder = new int[adaptSize];
+		for(int i=0; i<adaptSize; i++)
+			m_userOrder[i] = userorder.get(i).m_index;
 	}
 	
 	@Override
