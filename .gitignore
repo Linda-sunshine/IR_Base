@@ -5,3 +5,4 @@ data/Features/
 .classpath
 compile
 run
+/bin/

@@ -19,7 +19,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		
-		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01;
+		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01,neighborsHistoryWeight=1;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
@@ -46,7 +46,7 @@ public class LinAdaptMain {
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create the instances of an first-order asyncCoLinAdapt model.
-		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);

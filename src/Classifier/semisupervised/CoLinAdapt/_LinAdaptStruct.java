@@ -94,7 +94,10 @@ public class _LinAdaptStruct {
 		}
 		return m_adaptCache;
 	}
-	
+	// Get a mini-batch of reviews for online learning without moving the adaptation pointer forward
+	public Collection<_Review> getAdaptationCache(){
+		return m_adaptCache;
+	}
 	public _Review getLatestTestIns() {
 		ArrayList<_Review> reviews = m_user.getReviews();
 		if(m_adaptPtr < m_adaptEndPos)
