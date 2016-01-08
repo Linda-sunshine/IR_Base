@@ -123,7 +123,7 @@ public class CoLinAdapt extends LinAdapt {
 	
 	//Calculate the gradients for the use in LBFGS.
 	protected void gradientByR2(_LinAdaptStruct user){		
-		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)user, uj;
 		int offseti = m_dim*2*ui.m_id, offsetj;
 		double coef, dA, dB;
 		

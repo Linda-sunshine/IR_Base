@@ -193,7 +193,7 @@ public class LinAdapt extends BaseClassifier {
 			if (review.getType() != rType.ADAPTATION)
 				continue;
 			
-			gradientByFunc(user, review);
+			gradientByFunc(user, review, 1.0);//weight all the instances equally
 		}
 	}
 	
@@ -202,41 +202,24 @@ public class LinAdapt extends BaseClassifier {
 	}
 	
 	//shared gradient calculation by batch and online updating
-	protected void gradientByFunc(_LinAdaptStruct user, _Review review) {
-		int n, k; // feature index and feature group index		
-		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
-		
-		//Bias term.
-		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
-		m_g[offset + m_dim] -= delta;//b[0]
-		
-		//Traverse all the feature dimension to calculate the gradient.
-		for(_SparseFeature fv: review.getSparse()){
-			n = fv.getIndex() + 1;
-			k = m_featureGroupMap[n];
-			m_g[offset + k] -= delta * m_gWeights[n] * fv.getValue();
-			m_g[offset + m_dim + k] -= delta * fv.getValue();  
-		}
-	}
-	// weighted gradient calculation (online updating)
-	protected void weightedGradientByFunc(_LinAdaptStruct user, _Review review,double weight) {
+	protected void gradientByFunc(_LinAdaptStruct user, _Review review, double weight) {
 		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
 
 		//Bias term.
-		m_g[offset] -=weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
-		m_g[offset + m_dim] -=weight*delta;//b[0]
+		m_g[offset] -= weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
+		m_g[offset + m_dim] -= weight*delta;//b[0]
 
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			m_g[offset + k] -=weight*delta * m_gWeights[n] * fv.getValue();
-			m_g[offset + m_dim + k] -=weight*delta * fv.getValue();  
+			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + m_dim + k] -= weight * delta * fv.getValue();  
 		}
 	}
+	
 	//Calculate the gradients for the use in LBFGS.
 	protected void gradientByR1(_LinAdaptStruct user){
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt

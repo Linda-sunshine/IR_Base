@@ -13,38 +13,40 @@ import structures._Review;
  * asynchronized CoLinAdapt with first order gradient descent, i.e., we will touch both the current user's R2 and all immediately related users
  */
 public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
+	
 	double m_neighborsHistoryWeight; // used to reweight the gradient of historical observations from neighbors
+	
 	public asyncCoLinAdaptFirstOrder(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel,
-			String featureGroupMap,double neighborsHistoryWeight) {
+			String featureGroupMap, double neighborsHistoryWeight) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		m_neighborsHistoryWeight=neighborsHistoryWeight;
+		m_neighborsHistoryWeight = neighborsHistoryWeight;
 	}
 	
 	@Override
 	protected void calculateGradients(_LinAdaptStruct user){
 		super.calculateGradients(user);
-		weightedGradientByNeighorsFunc(user,m_neighborsHistoryWeight);
+		if (m_neighborsHistoryWeight>0)
+			cachedGradientByNeighorsFunc(user, m_neighborsHistoryWeight);
 		gradientByRelatedR1((_CoLinAdaptStruct)user);
-	}
-	protected void weightedGradientByFunc(_LinAdaptStruct user,double weight) {		
-		for(_Review review:user.getAdaptationCache())
-			weightedGradientByFunc(user, review,weight);
 	}
 	 
 	//Calculate the reweighted gradients from neighbors' historical observations
-	protected void weightedGradientByNeighorsFunc(_LinAdaptStruct user,double weight){		
+	protected void cachedGradientByNeighorsFunc(_LinAdaptStruct user, double weight){		
 		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
 
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			weightedGradientByFunc(uj, weight);
+			for(_Review r:uj.getAdaptationCache())
+				gradientByFunc(uj, r, weight);
 		}
 
 		for(_RankItem nit:ui.getReverseNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			weightedGradientByFunc(uj, weight);
+			for(_Review r:uj.getAdaptationCache())
+				gradientByFunc(uj, r, weight);
 		}
 	}
+	
 	@Override
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
 		double coef = 2 * sim, dA, dB;
@@ -94,6 +96,5 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			super.gradientDescent(uj, stepSize);
 		}
-
 	}
 }

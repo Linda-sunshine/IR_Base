@@ -19,7 +19,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		
-		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01,neighborsHistoryWeight=1;
+		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.

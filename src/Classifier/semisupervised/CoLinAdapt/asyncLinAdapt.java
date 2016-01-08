@@ -40,7 +40,7 @@ public class asyncLinAdapt extends LinAdapt {
 		for(_LinAdaptStruct user:m_userList) {
 			A = user.getA();
 			while(user.hasNextAdaptationIns()) {
-				// test the latest model
+				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
 					perfStat = user.getPerfStat();
 					predL = predict(doc, user);
@@ -80,6 +80,6 @@ public class asyncLinAdapt extends LinAdapt {
 	protected void gradientByFunc(_LinAdaptStruct user) {		
 		//Update gradients one review by one review.
 		for(_Review review:user.nextAdaptationIns())
-			gradientByFunc(user, review);
+			gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
 	}
 }

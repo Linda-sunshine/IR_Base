@@ -20,7 +20,7 @@ import structures._Review.rType;
  */
 public class asyncCoLinAdapt extends CoLinAdapt {
 
-	int[] m_userOrder; // visit order of different users during online learning
+	int[] m_userOrder; // visiting order of different users during online learning
 	
 	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
@@ -71,9 +71,9 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	@Override
 	protected void gradientByFunc(_LinAdaptStruct user) {		
-		//Update gradients one review by one review.
+		//Update gradients review by review within the latest adaptation cache.
 		for(_Review review:user.nextAdaptationIns())
-			gradientByFunc(user, review);
+			gradientByFunc(user, review, 1.0); // equal weights for this user's own adaptation data
 	}
 	
 	@Override
@@ -91,6 +91,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		}
 	}
 	
+	//we will only update ui but keep uj as constant
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
 		double coef = 2 * sim, dA, dB;
 		int offset = m_dim*2*ui.m_id;
@@ -123,7 +124,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 0.50, gNorm, gNormOld = Double.MAX_VALUE;
+		double initStepSize = 1.50, gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
 		int predL, trueL;
@@ -156,7 +157,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				}
 				
 				//gradient descent
-				gradientDescent(user, initStepSize/(1.0+user.getAdaptedCount()));
+				gradientDescent(user, (0.1+0.9*Math.random())*initStepSize/(1.0+user.getAdaptedCount()));
 				gNormOld = gNorm;
 				
 				if (m_displayLv>0 && ++updateCount%100==0)
@@ -171,7 +172,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 			setPersonalizedModel(u);
 	}
 		
-	// update this current user
+	// update this current user only
 	void gradientDescent(_CoLinAdaptStruct user, double stepSize) {
 		double a, b;
 		int offset = 2*m_dim*user.m_id;
