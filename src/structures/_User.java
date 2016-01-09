@@ -13,7 +13,6 @@ import utils.Utils;
 public class _User {
 	
 	protected String m_userID;
-<<<<<<< HEAD
 	protected int m_userIndex;
 	protected double[] m_lowDimRep;
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
@@ -45,8 +44,7 @@ public class _User {
 	
 	public int getIndex(){
 		return m_userIndex;
-=======
-	
+	}	
 	//text reviews associated with this user
 	protected ArrayList<_Review> m_reviews; //The reviews the user have, they should be by ordered by time stamps.
 	
@@ -82,7 +80,6 @@ public class _User {
 	
 	public String toString() {
 		return String.format("%s-R:%d", m_userID, getReviewSize());
->>>>>>> a295e5588371af6ab3be6d5fb2c8aa1b119220ce
 	}
 	
 	public void setModel(double[] weight, int classNo, int featureSize) {
@@ -106,7 +103,6 @@ public class _User {
 		return m_BoWProfile;
 	}
 	
-<<<<<<< HEAD
 	public void constructSparseVector(){
 		TreeMap<Integer, Double> fvIndexValueMap = new TreeMap<Integer, Double>();
 		double value;
@@ -140,10 +136,9 @@ public class _User {
 			m_reviewCount++; //Move to the next review of the current user.
 		}
 		return rev;
-=======
+	}
 	public int getReviewSize() {
 		return m_reviews==null?0:m_reviews.size();
->>>>>>> a295e5588371af6ab3be6d5fb2c8aa1b119220ce
 	}
 	
 	public ArrayList<_Review> getReviews(){
@@ -158,7 +153,6 @@ public class _User {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
 	
-<<<<<<< HEAD
 	//Construct the neigbors for the current user.
 	public void setNeighbors(ArrayList<_User> neighbors){
 		m_neighbors = neighbors;
@@ -179,7 +173,7 @@ public class _User {
 
 	public ArrayList<_User> getNeighbors(){
 		return m_neighbors;
-=======
+	}
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
 		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
@@ -207,7 +201,6 @@ public class _User {
 	
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
->>>>>>> a295e5588371af6ab3be6d5fb2c8aa1b119220ce
 	}
 	
 	public int[] getNeighborIndexes(){
