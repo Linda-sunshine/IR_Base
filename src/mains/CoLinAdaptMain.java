@@ -22,7 +22,7 @@ public class CoLinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Users2";
+		String folder = "./data/CoLinAdapt/Users";
 		
 		String svdFile = "./data/CoLinAdapt/SVD/UserWordMatrix_nonN_U.mm";
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
@@ -33,41 +33,41 @@ public class CoLinAdaptMain {
 		analyzer.loadFeatureGroupIndexes(featureGroupFile);
 //		analyzer.loadSVD(svdFile);// Load low dimension representation of users.
 		
-//		//Multi-task SVM training and testing.
-//		MultiTaskSVM MTSVM = new MultiTaskSVM(analyzer.getUsers(), analyzer.getFeatureSize());
-//		MTSVM.batchTrainTest();
-//		MTSVM.calcPerformance();
-//		MTSVM.printPerformance();
+		//Multi-task SVM training and testing.
+		MultiTaskSVM MTSVM = new MultiTaskSVM(analyzer.getUsers(), analyzer.getFeatureSize());
+		MTSVM.batchTrainTest();
+		MTSVM.calcPerformance();
+		MTSVM.printPerformance();
 		
-		//Create the instances of the CoLinAdapt model.
-		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
-		
-		int topK = 5;
-		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.5, eta4 = 0.01;
-		coLinAdaptS.setCoefficients4R1(eta1, eta2);
-		coLinAdaptS.setCoefficients4R2(eta3, eta4);
-		
-		coLinAdaptS.calcluateSimilarities("Euc");//"Euc", "cosine"
-		
-		coLinAdaptS.initSchedule();
-		String neighborFile = "./data/CoLinAdapt/Neighbor";
-		coLinAdaptS.constructNeighborhood(topK);
-
-//		coLinAdaptS.writeUserNeighbors(neighborFile, topK);
-//		coLinAdaptS.loadUserNeighbors(neighborFile, topK);
-		
-		//Online training.
-//		System.out.println("Start online training....");
-//		coLinAdaptS.onlineTrain();
+//		//Create the instances of the CoLinAdapt model.
+//		CoLinAdaptSchedule coLinAdaptS = new CoLinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
+//		coLinAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
+//		
+//		int topK = 5;
+//		double eta1 = 0.5, eta2 = 0.01, eta3 = 0.8, eta4 = 0.1;
+//		coLinAdaptS.setCoefficients4R1(eta1, eta2);
+//		coLinAdaptS.setCoefficients4R2(eta3, eta4);
+//		
+//		coLinAdaptS.calcluateSimilarities("cosine");//"Euc", "cosine"
+//		
+//		coLinAdaptS.initSchedule();
+//		String neighborFile = "./data/CoLinAdapt/Neighbor";
+//		coLinAdaptS.constructNeighborhood(topK);
+//
+////		coLinAdaptS.writeUserNeighbors(neighborFile, topK);
+////		coLinAdaptS.loadUserNeighbors(neighborFile, topK);
+//		
+//		//Online training.
+////		System.out.println("Start online training....");
+////		coLinAdaptS.onlineTrain();
+////		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
+////		coLinAdaptS.printPerformance();
+//		
+//		//Batch training.
+//		System.out.println("Start batch training....");
+//		coLinAdaptS.initSchedule();
+//		coLinAdaptS.batchTrainTest();
 //		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
 //		coLinAdaptS.printPerformance();
-		
-		//Batch training.
-		System.out.println("Start batch training....");
-		coLinAdaptS.initSchedule();
-		coLinAdaptS.batchTrainTest();
-		coLinAdaptS.calcPerformance(); //Calculate the performance of each user.	
-		coLinAdaptS.printPerformance();
 	}
 }

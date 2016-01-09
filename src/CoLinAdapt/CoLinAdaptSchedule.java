@@ -429,8 +429,8 @@ public class CoLinAdaptSchedule extends LinAdaptSchedule {
 			return EucDis;
 		for(int i =0; i<Ai.length; i++)
 			EucDis += (Ai[i] - Aj[i]) * (Ai[i] - Aj[i]);
-		return 1/EucDis;
-//		return Math.exp(-EucDis);
+//		return 1/EucDis;
+		return Math.exp(-EucDis);
 	}
 	
 	//Calculate each user's performance.

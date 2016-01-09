@@ -27,6 +27,7 @@ public class MultiTaskSVM {
 	Feature[][] m_Fvs; // Features of all tasks.
 	double[] m_Ys; // Label of all samples.
 	Model m_libModel; // Libmodel trained by liblinear.
+	double m_bias; // Bias term for liblinear.
 	
 	_PerformanceStat[] m_perfStats; // Used to calculate the performance statictics.
 	double[][] m_avgPRF; 
@@ -35,7 +36,8 @@ public class MultiTaskSVM {
 		m_u = 0.1;
 		m_learningRate = 0.5;
 		m_users = users;
-		m_featureNo = fn;
+		m_featureNo = fn + 1; //1 is for bias term.
+		m_bias = 1;
 		m_perfStats = new _PerformanceStat[m_users.size()];
 		m_avgPRF = new double[2][3];
 	}
@@ -71,6 +73,8 @@ public class MultiTaskSVM {
 		libProblem.n = m_featureNo * (m_noTasks + 1);
 		libProblem.x = fvs;
 		libProblem.y = ys;
+		libProblem.bias = m_bias;//bias term in liblinear.
+		
 		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
 		double C = 1, EPS = 0.001;
 		m_libModel = Linear.train(libProblem, new Parameter(type, C, EPS));
