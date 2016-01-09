@@ -32,4 +32,12 @@ public class _RankItem implements Comparable<_RankItem> {
 		else
 			return 0;
 	}
+	
+	@Override
+	public String toString() {
+		if (m_name==null)
+			return String.format("%d-%.4f-%d", m_index, m_value, m_label);
+		else
+			return String.format("%d-%s-%.4f-%d", m_index, m_name, m_value, m_label);
+	}
 }

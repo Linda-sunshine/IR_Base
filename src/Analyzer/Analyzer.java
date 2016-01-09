@@ -28,9 +28,13 @@ public abstract class Analyzer {
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
-	/* Indicate if we can allow new features.After loading the CV file, the flag is set to true, 
+	/* Indicate if we can allow new features. After loading the CV file, the flag is set to true, 
 	 * which means no new features will be allowed.*/
-	protected boolean m_isCVLoaded;
+	protected boolean m_isCVLoaded = false;
+	
+	// indicate if we will collect corpus-level feature statistics
+	protected boolean m_isCVStatLoaded = false;
+	protected int m_TotalDF = -1;
 	
 	//minimal length of indexed document
 	protected int m_lengthThreshold = 5;
@@ -68,6 +72,10 @@ public abstract class Analyzer {
 		m_featureNameIndex.clear();
 		m_featureStat.clear();
 		m_corpus.reset();
+	}
+	
+	public HashMap<String, Integer> getFeatureMap() {
+		return m_featureNameIndex;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -172,7 +180,11 @@ public abstract class Analyzer {
 					}
 				}
 			}
-		} else{//If CV is loaded, we can minus the DF and TTF directly.
+		} else{//If CV is loaded and CV's statistics are loaded from file, no need to change it
+			if (m_isCVStatLoaded)
+				return;
+			
+			// otherwise, we can minus the DF and TTF directly.
 			for(int index: spVct.keySet()){
 				String token = m_featureNames.get(index);
 				_stat stat = m_featureStat.get(token);
@@ -185,7 +197,8 @@ public abstract class Analyzer {
 	//Give the option, which would be used as the method to calculate feature value and returned corpus, calculate the feature values.
 	public void setFeatureValues(String fValue, int norm) {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = docs.size();
+		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
 			for (int i = 0; i < docs.size(); i++) {
@@ -214,6 +227,25 @@ public abstract class Analyzer {
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
+					double TFIDF = TF * IDF;
+					sf.setValue(TFIDF);
+					avgIDF += IDF;
+				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
+		} else if (fValue.equals("TFIDF-sublinear")) {
+			for (int i = 0; i < docs.size(); i++) {
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
+				for (_SparseFeature sf : sfs) {
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
+					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
+					double DF = Utils.sumOfArray(stat.getDF());
+					double IDF = 1 + Math.log10(N / DF);
 					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
 					avgIDF += IDF;

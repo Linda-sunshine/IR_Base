@@ -126,6 +126,12 @@ public class _Corpus {
 	public void addDoc(_Doc doc){
 		m_collection.add(doc);
 	}
+	
+	//Add a set of docs to the corpus.
+	public void addDocs(ArrayList<_Review> docs){
+		m_collection.addAll(docs);
+	}
+	
 	public void removeDoc(int index){
 		m_collection.remove(index);
 	}

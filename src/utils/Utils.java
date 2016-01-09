@@ -8,14 +8,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
+	
+	public static double MAX_VALUE = 1e5;
 	
 	public static void shuffle(int[] order, int size){
 		Random rand = new Random();
@@ -60,6 +62,15 @@ public class Utils {
 	
 	public static int minOfArrayIndex(double[] probs){
 		return minOfArrayIndex(probs, probs.length);
+	}
+	
+	public static int countOccurrencesOf(String text, String pat) {
+		int start = 0, count = 0;
+		while ((start = text.indexOf(pat, start))!=-1) {
+			count ++;
+			start ++;
+		}
+		return count;
 	}
 	
 	public static int minOfArrayIndex(double[] probs, int length){
@@ -354,6 +365,10 @@ public class Utils {
 			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
+	public static double cosine(double[] a, double[] b) {
+		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
+	}
+	
 	//Calculate the similarity between two sparse vectors.
 	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		if (spVct1==null || spVct2==null)
@@ -424,6 +439,22 @@ public class Utils {
 		}
 		Arrays.sort(spVct);		
 		return spVct;
+	}
+	
+	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		
+		for(_SparseFeature[] fv:vcts) {
+			for(_SparseFeature f:fv) {
+				int x = f.getIndex();
+				if (vct.containsKey(x)) {
+					vct.put(x, vct.get(x) + f.getValue());
+				} else {
+					vct.put(x, f.getValue());
+				}
+			}
+		}
+		return Utils.createSpVct(vct);
 	}
 	
 	static public _SparseFeature[] createSpVct(ArrayList<HashMap<Integer, Double>> vcts) {
@@ -750,27 +781,9 @@ public class Utils {
 		  for (int i = 0; i < p1.length; ++i) {
 	        if (p1[i] == 0) { continue; }
 	        if (p2[i] == 0.0) { continue; } 
-
+	
 	      klDiv += p1[i] * Math.log( p1[i] / p2[i] );
 	      }
 	      return klDiv / log2; 
 	 }
-	
-
-	public static double cosine(double[] t1, double[] t2){
-		double similarity = 0, sum1 = 0, sum2 = 0;
-		if(t1.length == t2.length){
-			for(int i=0; i < t1.length; i++){
-				similarity += t1[i] * t2[i];
-				sum1 += t1[i] * t1[i];
-				sum2 += t2[i] * t2[i];
-			}
-			if(sum1 != 0 && sum2 != 0){
-				sum1 = Math.sqrt(sum1);
-				sum2 = Math.sqrt(sum2);
-				similarity = similarity / (sum1 * sum2);
-			} else similarity = 0;
-		}
-		return similarity;
-	}
 }
