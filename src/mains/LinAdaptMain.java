@@ -2,8 +2,10 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 
+import Analyzer.MultiThreadedUserAnalyzer;
 import Analyzer.UserAnalyzer;
 import Classifier.semisupervised.CoLinAdapt.asyncCoLinAdaptFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
@@ -18,7 +20,7 @@ public class LinAdaptMain {
 		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
 		int displayLv = 0;
-		
+		int numberOfCores=8;
 		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -27,7 +29,8 @@ public class LinAdaptMain {
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
-		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
+//		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
+		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold,numberOfCores);
 		analyzer.config(trainRatio, adaptRatio);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
@@ -47,7 +50,6 @@ public class LinAdaptMain {
 
 //		//Create the instances of an first-order asyncCoLinAdapt model.
 		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
-
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 //		adaptation.setTestMode(TestMode.TM_batch);
