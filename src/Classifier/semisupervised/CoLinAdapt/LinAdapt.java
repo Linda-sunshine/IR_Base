@@ -309,8 +309,8 @@ public class LinAdapt extends BaseClassifier {
 	@Override
 	public double test(){
 		int trueL = 0, predL = 0, count = 0;
-		double[] microF1 = new double[m_classNo];
-		_PerformanceStat macroStat = new _PerformanceStat(m_classNo), microStat;
+		double[] macroF1 = new double[m_classNo];
+		_PerformanceStat microStat = new _PerformanceStat(m_classNo), userPerfStat;
 		
 		for(_LinAdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
@@ -318,7 +318,7 @@ public class LinAdapt extends BaseClassifier {
 				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
 				continue;
 			
-			microStat = user.getPerfStat();			
+			userPerfStat = user.getPerfStat();			
 			if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
 				//record prediction results
 				for(_Review r:user.getReviews()) {
@@ -326,18 +326,18 @@ public class LinAdapt extends BaseClassifier {
 						continue;
 					trueL = r.getYLabel();
 					predL = user.predict(r); // evoke user's own model
-					microStat.addOnePredResult(predL, trueL);
+					userPerfStat.addOnePredResult(predL, trueL);
 				}
 			}
 			
-			microStat.calculatePRF();
+			userPerfStat.calculatePRF();
 			
 			for(int i=0; i<m_classNo; i++)
-				microF1[i] += microStat.getF1(i);
-			macroStat.accumulateConfusionMat(microStat);
+				macroF1[i] += userPerfStat.getF1(i);
+			microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		macroStat.calculatePRF();
+		microStat.calculatePRF();
 		
 		System.out.println("Macro confusion matrix:");
 		for(int i=0; i<m_classNo; i++)
@@ -347,21 +347,21 @@ public class LinAdapt extends BaseClassifier {
 		for(int i=0; i<m_classNo; i++) {
 			System.out.print(i);
 			for(int j=0; j<m_classNo; j++) {
-				System.out.print("\t" + macroStat.getEntry(i, j));
+				System.out.print("\t" + microStat.getEntry(i, j));
 			}
 			System.out.println();
 		}
 		
 		// macro average
-		System.out.println("Macro F1:");
+		System.out.println("Micro F1:");
 		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, macroStat.getF1(i));
+			System.out.format("Class %d: %.3f\t", i, microStat.getF1(i));
 		
 		// micro average
-		System.out.println("\nMicro F1:");
+		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, microF1[i]/count);
-		return Utils.sumOfArray(microF1);
+			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+		return Utils.sumOfArray(macroF1);
 	}
 
 	@Override
