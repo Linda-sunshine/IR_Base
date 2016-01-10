@@ -45,6 +45,7 @@ public class MultiTaskSVM {
 	public void setTradeOffParam(double u){
 		m_u = u;
 	}
+	
 	public void init(){
 		m_noTasks = m_users.size();
 		for(int i=0; i<m_users.size(); i++)
@@ -67,6 +68,7 @@ public class MultiTaskSVM {
 				rid++;
 			}
 		}
+		
 		// Train a liblinear model based on all reviews.
 		Problem libProblem = new Problem();
 		libProblem.l = rid;
@@ -127,8 +129,9 @@ public class MultiTaskSVM {
 		for(int i=0; i<m_perfStats.length; i++){
 			stat = m_perfStats[i];
 			stat.calculatePRF();
-			addOneUserPRF(stat.getOneUserPRF());
+			addOneUserPRF(stat.getPerformanceTable());
 		}
+		
 		//Print out the precision/recall/F1.
 		for(int i=0; i<m_avgPRF.length; i++){
 			for(int j=0; j<m_avgPRF[0].length; j++)

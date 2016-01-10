@@ -37,6 +37,10 @@ public class _PerformanceStat {
 		}
 	}
 	
+	public double[][] getPerformanceTable() {
+		return m_perfTable;
+	}
+	
 	public void calculatePRF(){
 		double PP, TP, sumP;
 		for(int i=0; i<m_confusionMat.length; i++){

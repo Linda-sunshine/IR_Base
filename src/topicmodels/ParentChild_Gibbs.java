@@ -28,7 +28,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	public double[] m_gamma;
 	
 	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, int indicatorNum) {
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
 
 		m_gamma = new double[gamma.length];
