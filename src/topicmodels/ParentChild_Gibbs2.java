@@ -81,12 +81,13 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs_extra {
 	// @Override
 
 	public double calculate_E_step(_Doc d) {
-		d.permutation();
+		
 		if (d instanceof _ParentDoc2) {
-			sampleParentDocTopic((_ParentDoc2) d);
-
+			((_ParentDoc2) d).permutation();
+			sampleParentDocTopic((_ParentDoc2) d);	
 		} else {
 			if (d instanceof _ChildDoc2) {
+				((_ChildDoc2) d).permutation();
 				sampleChildDocTopic((_ChildDoc2) d);
 			}
 		}
@@ -366,6 +367,7 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs_extra {
 			estStnThetaInParentDoc((_ParentDoc2) d);
 		} else if (d instanceof _ChildDoc2) {
 			Utils.L1Normalization(((_ChildDoc2) d).m_xProportion);
+
 			Utils.L1Normalization(d.m_topics);
 			for (int x = 0; x < m_gamma.length; x++) {
 				Utils.L1Normalization(((_ChildDoc2) d).m_xTopics[x]);
