@@ -17,7 +17,7 @@ import structures._SparseFeature;
 import structures._Stn;
 import utils.Utils;
 
-public class ParentChild_Gibbs2 extends ParentChild_Gibbs_extra {
+public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 	public double m_mu;
 
 	public ParentChild_Gibbs2(int number_of_iteration, double converge,
