@@ -98,6 +98,7 @@ public class ParentChildAnalyzer2 extends ParentChildAnalyzer {
 					d.setParentDoc2(pDoc);
 					pDoc.addChildDoc(d);
 				}
+			}
 
 		}
 

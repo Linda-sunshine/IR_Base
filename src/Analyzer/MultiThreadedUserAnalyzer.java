@@ -7,8 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -23,7 +21,6 @@ import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
 import structures._User;
-import structures._Review.rType;
 
 /**
  * @author Mohammad Al Boni
@@ -31,16 +28,18 @@ import structures._Review.rType;
  */
 public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
-
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
-	private Object Lock=null,Lock2=null;
+	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
+	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold,int numberOfCores)
 					throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		
 		m_numberOfCores=numberOfCores;
+		
 		// since DocAnalyzer already contains a tokenizer, then we can user it and define a pool with length of m_numberOfCores - 1
 		m_tokenizerPool = new Tokenizer[m_numberOfCores-1]; 
 		m_stemmerPool = new SnowballStemmer[m_numberOfCores-1];
@@ -48,9 +47,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			m_tokenizerPool[i]=new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 			m_stemmerPool[i]=new englishStemmer();
 		}
-		Lock=new Object();
-		Lock2=new Object();
+		
+		m_allocReviewLock = new Object();
+		m_corpusLock = new Object();
+		m_rollbackLock = new Object();
 	}
+	
 	//Load all the users.
 	@Override
 	public void loadUserDir(String folder){
@@ -102,8 +104,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
+	
 	// Load one file as a user here. 
-	public void loadOneUser(String filename,int core){
+	public void loadOneUser(String filename, int core){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -134,7 +137,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			}
 
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
-				synchronized (Lock) {
+				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				
 					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 				}
@@ -144,22 +147,25 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			e.printStackTrace();
 		}
 	}
+	
 	//Tokenizing input text string
-	protected String[] Tokenizer(String source,int core){
+	protected String[] Tokenizer(String source, int core){
 		String[] tokens = getTokenizer(core).tokenize(source);
 		return tokens;
 	}
+	
 	//Snowball Stemmer.
-	protected String SnowballStemming(String token,int core){
-		SnowballStemmer stemmer=getStemmer(core);
+	protected String SnowballStemming(String token, int core){
+		SnowballStemmer stemmer = getStemmer(core);
 		stemmer.setCurrent(token);
 		if(stemmer.stem())
 			return stemmer.getCurrent();
 		else
 			return token;
 	}
+	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	protected TokenizeResult TokenizerNormalizeStemmer(String source,int core){
+	protected TokenizeResult TokenizerNormalizeStemmer(String source, int core){
 		String[] tokens = Tokenizer(source, core); //Original tokens.
 		TokenizeResult result = new TokenizeResult(tokens);
 
@@ -195,8 +201,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		result.setTokens(Ngrams.toArray(new String[Ngrams.size()]));
 		return result;
 	}
+	
 	/*Analyze a document and add the analyzed document back to corpus.*/
-	protected boolean AnalyzeDoc(_Doc doc,int core) {
+	protected boolean AnalyzeDoc(_Doc doc, int core) {
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource(),core);// Three-step analysis.
 		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
@@ -206,9 +213,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
-			synchronized (Lock2) {
-			m_corpus.addDoc(doc);
-			m_classMemberNo[y]++;
+			synchronized (m_corpusLock) {
+				m_corpus.addDoc(doc);
+				m_classMemberNo[y]++;
 			}
 			if (m_releaseContent)
 				doc.clearSource();
@@ -216,10 +223,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			return true;
 		} else {
 			/****Roll back here!!******/
-			rollBack(spVct, y);
+			synchronized (m_rollbackLock) {
+				rollBack(spVct, y);
+			}
 			return false;
 		}
 	}
+	
 	// return a tokenizer using the core number
 	protected Tokenizer getTokenizer(int index){
 		if(index==m_numberOfCores-1)
@@ -227,6 +237,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		else
 			return m_tokenizerPool[index];
 	}
+	
 	// return a stemmer using the core number
 	protected SnowballStemmer getStemmer(int index){
 		if(index==m_numberOfCores-1)

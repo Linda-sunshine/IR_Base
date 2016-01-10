@@ -29,7 +29,7 @@ public class _Stn {
 	
 	String[] m_rawTokens; // raw token sequence after tokenization
 	String[] m_sentencePOSTag; // corresponding POS tags
-	String m_rawSource;
+	String m_rawSource; // original sentence string content
 	
 	//structure for topic assignment
 	int m_topic; //topic/aspect assignment
@@ -83,7 +83,6 @@ public class _Stn {
 			m_rawTokens[n] = rawTokens.get(n);
 			m_words[n] = words.get(n);
 		}
-
 	}
 
 	public _SparseFeature[] getFv() {
