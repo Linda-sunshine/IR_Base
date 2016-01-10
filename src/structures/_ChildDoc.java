@@ -72,6 +72,10 @@ public class _ChildDoc extends _Doc {
 		}
 	}
 	
+	public void permutation(int flag){
+		super.permutation();
+	}
+
 	//add swapping x_indicator
 	public void permutation(){
 		int s, t;
