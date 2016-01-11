@@ -254,6 +254,7 @@ public class LinAdapt extends BaseClassifier {
 		double fValue, A[], oldFValue = Double.MAX_VALUE;
 		int vSize = 2*m_dim;
 		
+		init();
 		for(_LinAdaptStruct user:m_userList) {
 			initLBFGS();
 			iflag[0] = 0;
@@ -318,8 +319,9 @@ public class LinAdapt extends BaseClassifier {
 				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
 				continue;
 			
-			userPerfStat = user.getPerfStat();			
-			if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
+			userPerfStat = user.getPerfStat();	
+			
+			if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
 				//record prediction results
 				for(_Review r:user.getReviews()) {
 					if (r.getType() != rType.TEST)
@@ -342,6 +344,7 @@ public class LinAdapt extends BaseClassifier {
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+		System.out.println();
 		return Utils.sumOfArray(macroF1);
 	}
 
@@ -367,8 +370,9 @@ public class LinAdapt extends BaseClassifier {
 
 	@Override
 	protected void init() {		
-		System.err.println("[Error]init() is not implemented in LinAdapt!");
-		System.exit(-1);
+		for(_LinAdaptStruct user:m_userList) {
+			user.getPerfStat().clear();
+		}			
 	}
 
 	@Override

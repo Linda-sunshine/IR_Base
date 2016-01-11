@@ -37,6 +37,7 @@ public class asyncLinAdapt extends LinAdapt {
 		_PerformanceStat perfStat;
 		
 		initLBFGS();
+		init();
 		for(_LinAdaptStruct user:m_userList) {
 			A = user.getA();
 			while(user.hasNextAdaptationIns()) {

@@ -170,6 +170,7 @@ public class CoLinAdapt extends LinAdapt {
 		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
 		
 		initLBFGS();
+		init();
 		try{
 			do{
 				fValue = 0;

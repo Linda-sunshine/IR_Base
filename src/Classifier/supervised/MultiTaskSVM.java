@@ -42,7 +42,8 @@ public class MultiTaskSVM extends BaseClassifier {
 	public void init(){
 		m_userSize = 0;
 		for(int i=0; i<m_userList.size(); i++){
-			ArrayList<_Review> reviews = m_userList.get(i).getReviews();
+			_User user = m_userList.get(i);
+			ArrayList<_Review> reviews = user.getReviews();
 			boolean validUser = false;
 			for(_Review r:reviews) {
 				if (r.getType() == rType.ADAPTATION) {
@@ -52,6 +53,7 @@ public class MultiTaskSVM extends BaseClassifier {
 					}
 				}
 			}
+			user.getPerfStat().clear();
 		}
 	}
 	
@@ -153,6 +155,7 @@ public class MultiTaskSVM extends BaseClassifier {
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+		System.out.println();
 		return Utils.sumOfArray(macroF1);
 	}
 

@@ -132,6 +132,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		_PerformanceStat perfStat;
 		
 		initLBFGS();
+		init();
 		for(int t=0; t<m_userOrder.length; t++) {
 			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
 
