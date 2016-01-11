@@ -15,7 +15,6 @@ public class _ChildDoc2 extends _ChildDoc {
 	public _ChildDoc2(int ID, String name, String title, String source,
 			int ylabel) {
 		super(ID, name, title, source, ylabel);
-		// m_parentDoc2 = null;
 		m_parentDoc2 = null;
 		m_index = null;
 	}
