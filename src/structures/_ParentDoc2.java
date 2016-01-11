@@ -24,8 +24,6 @@ public class _ParentDoc2 extends _ParentDoc {
 		m_sentenceMap = new HashMap<Integer, _Stn>();
 		setName(name);
 		setTitle(title);
-
-		// TODO Auto-generated constructor stub
 	}
 
 	public void addChildDoc(_ChildDoc2 cDoc) {

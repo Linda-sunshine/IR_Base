@@ -6,10 +6,10 @@ import java.util.Random;
 public class _ChildDoc extends _Doc {
 	public int[] m_xIndicator;
 
-	public double[][] m_xTopicSstat;//0 from general, 1 from specific
+	public double[][] m_xTopicSstat;//joint assignment of <x,z>: 0 from general, 1 from specific
 	public double[] m_xSstat; // sufficient statistics for x
 
-	public double[][] m_xTopics; // proportion of topics
+	public double[][] m_xTopics; // proportion of topics (0 from general, 1 from specific)
 	public double[] m_xProportion; // proportion of x
 
 	public _ParentDoc m_parentDoc;
@@ -19,7 +19,6 @@ public class _ChildDoc extends _Doc {
 		m_parentDoc = null;
 		setName(name);
 		setTitle(title);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public void setParentDoc(_ParentDoc pDoc){

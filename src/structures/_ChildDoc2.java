@@ -1,4 +1,3 @@
-//////////////************used to store the parentDoc2***************////////////
 package structures;
 
 import java.util.ArrayList;
@@ -9,7 +8,7 @@ public class _ChildDoc2 extends _ChildDoc {
 
 	public _ParentDoc2 m_parentDoc2;
 
-	// //record the index of the token and remain constant
+	//record the index of the token and remain constant
 	public int[] m_index;
 	public int[] m_positionInDoc;
 
@@ -19,8 +18,6 @@ public class _ChildDoc2 extends _ChildDoc {
 		// m_parentDoc2 = null;
 		m_parentDoc2 = null;
 		m_index = null;
-
-		// TODO Auto-generated constructor stub
 	}
 
 	public void setIndex(ArrayList<Integer> indexList) {
@@ -79,8 +76,6 @@ public class _ChildDoc2 extends _ChildDoc {
 			m_xSstat[m_xIndicator[j]]++;
 
 		}
-		// System.out.println();
-
 	}
 
 	public void permutation(int flag) {
@@ -119,8 +114,6 @@ public class _ChildDoc2 extends _ChildDoc {
 					m_positionInDoc[i] = position2;
 				}
 			}
-			
-
 		}
 	}
 

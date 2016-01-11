@@ -17,9 +17,7 @@ public class _ParentDoc extends _Doc {
 		m_childDocs = new ArrayList<_ChildDoc>();
 		setName(name);
 		setTitle(title);
-		// TODO Auto-generated constructor stub
 	}
-	
 	
 	public void addChildDoc(_ChildDoc cDoc){
 		m_childDocs.add(cDoc);
@@ -56,9 +54,4 @@ public class _ParentDoc extends _Doc {
 			}
 		}
 	}
-	
-//	public void  setTopics4Gibbs(int k, double alpha){
-//	
-//	}
-
 }

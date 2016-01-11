@@ -11,15 +11,15 @@ import java.util.Set;
  * Sentence structure for text documents
  */
 public class _Stn {
-	//added by Renqin
+	//added by Renqin in Parent-Child Topic Model
 	public int[] m_wordPositionInDoc;
 	public double m_stnLength;
 	public int[] m_words;
-	public double[] m_topics;
+	public double[] m_topics; // topic proportion to align with parent document
 
 	_SparseFeature[] m_x_sparse; // bag of words for a sentence
 	
-	//structure for HTMMM
+	//structure for HTSM
 	public double[] m_transitFv; // features for determine topic transition
 	double m_transitStat; // posterior topic transit probability
 
@@ -31,7 +31,7 @@ public class _Stn {
 	String[] m_sentencePOSTag; // corresponding POS tags
 	String m_rawSource; // original sentence string content
 	
-	//structure for topic assignment
+	//structure for topic assignment used in HTSM and LR-HTSM, one topic per sentence
 	int m_topic; //topic/aspect assignment
 	
 	//attribute label for NewEgg data
@@ -89,18 +89,22 @@ public class _Stn {
 		return m_x_sparse;
 	}
 	
-	public void setSentencePredictedSenitmentLabel(int label){
+	public void setStnPredSentiLabel(int label){
 		m_predictedSentimentLabel = label;
 	}
 	
-	public int getSentencePredictedSenitmentLabel(){
+	public int getStnPredSentiLabel(){
 		return m_predictedSentimentLabel;
 	}
 	
-	public void setSentenceSenitmentLabel(int label){
+	public void setStnSentiLabel(int label){
 		m_sentimentLabel = label;
 	}
-
+	
+	public int getStnSentiLabel(){
+		return m_sentimentLabel;
+	}
+	
 	public String getRawSentence(){
 		return m_rawSource;
 	}
@@ -112,10 +116,6 @@ public class _Stn {
 	public String[] getSentencePosTag(){
 		return m_sentencePOSTag;
 	}	
-	
-	public int getSentenceSenitmentLabel(){
-		return m_sentimentLabel;
-	}
 	
 	public double[] getTransitFvs() {
 		return m_transitFv;
@@ -137,6 +137,7 @@ public class _Stn {
 		return m_sentiTransitStat;
 	}
 	
+	// this is not actually document length, given we might normalize the values in m_x_sparse
 	public double getLength() {
 		double length = 0;
 		for(_SparseFeature f:m_x_sparse)

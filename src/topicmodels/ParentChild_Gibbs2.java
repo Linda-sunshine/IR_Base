@@ -27,8 +27,6 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 				alpha, burnIn, lag, gamma);
 		m_mu = mu;
 		// converge = 0
-
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -56,15 +54,13 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 					m_parentSstat[d.m_topicAssignment[i]]++;
 				}
 			} else if (d instanceof _ChildDoc2) {
-					((_ChildDoc2) d).setTopics4Gibbs(number_of_topics, m_gamma);
-					for (int i = 0; i < d.m_words.length; i++) {
-						m_childWordTopicSstat[d.m_topicAssignment[i]][d.m_words[i]]++;
-						m_childSstat[d.m_topicAssignment[i]]++;
+				((_ChildDoc2) d).setTopics4Gibbs(number_of_topics, m_gamma);
+				for (int i = 0; i < d.m_words.length; i++) {
+					m_childWordTopicSstat[d.m_topicAssignment[i]][d.m_words[i]]++;
+					m_childSstat[d.m_topicAssignment[i]]++;
 
-					}
-
+				}
 			}
-
 		}
 
 		imposePrior();
@@ -72,16 +68,13 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 
 	@Override
 	public String toString() {
-		return String
-				.format("Parent Child topic model 2 [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, mu:%.2f Gibbs Sampling]",
+		return String.format("Parent Child topic model 2 [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, mu:%.2f Gibbs Sampling]",
 						number_of_topics, d_alpha, d_beta, m_gamma[1],
 						m_gamma[2], m_mu);
 	}
 
-	// @Override
-
-	public double calculate_E_step(_Doc d) {
-		
+	@Override
+	public double calculate_E_step(_Doc d) {		
 		if (d instanceof _ParentDoc2) {
 			((_ParentDoc2) d).permutation();
 			sampleParentDocTopic((_ParentDoc2) d);	
@@ -420,7 +413,6 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 				}
 				Utils.L1Normalization(stnObject.m_topics);
 			}
-
 		}
 
 	}
@@ -477,27 +469,7 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 	}
 
 	public double computeSimilarity(double[] topic1, double[] topic2) {
-		double similarity = 0.0;
-		double numerator = 0.0;
-		double denominator1 = 0.0;
-		double denominator2 = 0.0;
-		for (int k = 0; k < number_of_topics; k++) {
-
-			numerator += topic1[k] * topic2[k];
-			denominator1 += topic1[k] * topic1[k];
-			denominator2 += topic2[k] * topic2[k];
-		}
-
-		if ((denominator1 == 0) || (denominator2 == 0)) {
-			similarity = 0;
-			return similarity;
-		}
-
-		similarity = Math.log(numerator) - Math.log(Math.sqrt(denominator1))
-				- Math.log(Math.sqrt(denominator2));
-
-		similarity = Math.exp(similarity);
-		return similarity;
+		return Math.exp(Utils.cosine(topic1, topic2));
 	}
 	
 	public void printParentTopicAssignment(_ParentDoc2 d) {
@@ -962,6 +934,4 @@ public class ParentChild_Gibbs2 extends ParentChild_Gibbs {
 		}
 		return likelihood;
 	}
-
-	
 }
