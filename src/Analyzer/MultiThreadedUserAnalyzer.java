@@ -34,23 +34,23 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
-			String providedCV, int Ngram, int threshold,int numberOfCores)
+			String providedCV, int Ngram, int threshold, int numberOfCores)
 					throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		
-		m_numberOfCores=numberOfCores;
+		m_numberOfCores = numberOfCores;
 		
 		// since DocAnalyzer already contains a tokenizer, then we can user it and define a pool with length of m_numberOfCores - 1
 		m_tokenizerPool = new Tokenizer[m_numberOfCores-1]; 
 		m_stemmerPool = new SnowballStemmer[m_numberOfCores-1];
 		for(int i=0;i<m_numberOfCores-1;++i){
-			m_tokenizerPool[i]=new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-			m_stemmerPool[i]=new englishStemmer();
+			m_tokenizerPool[i] = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+			m_stemmerPool[i] = new englishStemmer();
 		}
 		
-		m_allocReviewLock = new Object();
-		m_corpusLock = new Object();
-		m_rollbackLock = new Object();
+		m_allocReviewLock = new Object();// lock when collecting review statistics
+		m_corpusLock = new Object(); // lock when collecting class statistics 
+		m_rollbackLock = new Object(); // lock when revising corpus statistics
 	}
 	
 	//Load all the users.
@@ -66,25 +66,23 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				int core;
 				public void run() {
 					try {
-
-						for (int j = 0; j + core <files.length; j +=m_numberOfCores)
-						{
-							File f=files[j+core];
-							if(f.isFile()){
-								//Load User
+						for (int j = 0; j + core <files.length; j +=m_numberOfCores) {
+							File f = files[j+core];
+							if(f.isFile()){//load the user								
 								loadOneUser(f.getAbsolutePath(),core);
 							}
 						}
-					}
-					catch(Exception ex){
+					} catch(Exception ex) {
 						ex.printStackTrace(); 
 					}
 				}
+				
 				private Thread initialize(int core ) {
 					this.core = core;
 					return this;
 				}
 			}).initialize(i));
+			
 			threads.get(i).start();
 		}
 		for(int i=0;i<m_numberOfCores;++i){
@@ -94,6 +92,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				e.printStackTrace();
 			} 
 		} 
+		
 		// process sub-directories
 		int count=0;
 		for(File f:files ) 

@@ -9,6 +9,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._PerformanceStat;
 import utils.Utils;
 
 
@@ -24,7 +25,8 @@ public abstract class BaseClassifier {
 	//for cross-validation
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
-
+	protected _PerformanceStat m_microStat; // this structure can replace the previous two arrays
+	
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
@@ -80,6 +82,7 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_microStat = new _PerformanceStat(m_classNo);
 		m_debugOutput = null;
 	}
 	
@@ -95,6 +98,7 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_microStat = new _PerformanceStat(m_classNo);
 		m_debugOutput = null;
 	}
 	
@@ -156,6 +160,28 @@ public abstract class BaseClassifier {
 	}
 	
 	abstract public void saveModel(String modelLocation);
+	
+	protected void calcMicroPerfStat() {
+		m_microStat.calculatePRF();
+		
+		System.out.println("Micro confusion matrix:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.print("\t" + i);
+		System.out.println();
+		
+		for(int i=0; i<m_classNo; i++) {
+			System.out.print(i);
+			for(int j=0; j<m_classNo; j++) {
+				System.out.print("\t" + m_microStat.getEntry(i, j));
+			}
+			System.out.println();
+		}
+		
+		// micro average
+		System.out.println("Micro F1:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.3f\t", i, m_microStat.getF1(i));
+	}
 	
 	//Calculate the precision and recall for one folder tests.
 	public double[][] calculatePreRec(int[][] tpTable) {

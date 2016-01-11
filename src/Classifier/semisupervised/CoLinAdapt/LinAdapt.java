@@ -310,7 +310,7 @@ public class LinAdapt extends BaseClassifier {
 	public double test(){
 		int trueL = 0, predL = 0, count = 0;
 		double[] macroF1 = new double[m_classNo];
-		_PerformanceStat microStat = new _PerformanceStat(m_classNo), userPerfStat;
+		_PerformanceStat userPerfStat;
 		
 		for(_LinAdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
@@ -330,34 +330,15 @@ public class LinAdapt extends BaseClassifier {
 				}
 			}
 			
-			userPerfStat.calculatePRF();
-			
+			userPerfStat.calculatePRF();			
 			for(int i=0; i<m_classNo; i++)
 				macroF1[i] += userPerfStat.getF1(i);
-			microStat.accumulateConfusionMat(userPerfStat);
+			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		microStat.calculatePRF();
-		
-		System.out.println("Macro confusion matrix:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.print("\t" + i);
-		System.out.println();
-		
-		for(int i=0; i<m_classNo; i++) {
-			System.out.print(i);
-			for(int j=0; j<m_classNo; j++) {
-				System.out.print("\t" + microStat.getEntry(i, j));
-			}
-			System.out.println();
-		}
+		calcMicroPerfStat();
 		
 		// macro average
-		System.out.println("Micro F1:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, microStat.getF1(i));
-		
-		// micro average
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);

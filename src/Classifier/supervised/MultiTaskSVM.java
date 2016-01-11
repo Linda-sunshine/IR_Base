@@ -1,12 +1,9 @@
 package Classifier.supervised;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 
-import structures._PerformanceStat;
-import structures._Review;
-import structures._SparseFeature;
-import structures._User;
+import Classifier.BaseClassifier;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -14,160 +11,177 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+import structures._Doc;
+import structures._PerformanceStat;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
+import utils.Utils;
 
-public class MultiTaskSVM {
-	double m_u; // Trade-off parameters between global model and individual model.
-	double m_learningRate; // How many will be used as the training samples.
+public class MultiTaskSVM extends BaseClassifier {
+	double m_u = 0.1; // trade-off parameter between global model and individual model.
+	double m_C = 1.0; // trade-off parameter for SVM training 
 	
-	int m_noTasks; // Total number of tasks(users).
-	int m_featureNo; // Total number of features.
-	int m_noXs;
-	
-	ArrayList<_User> m_users;
-	Feature[][] m_Fvs; // Features of all tasks.
-	double[] m_Ys; // Label of all samples.
+	ArrayList<_User> m_userList;	
+	int m_userSize; // valid user size
 	Model m_libModel; // Libmodel trained by liblinear.
-	double m_bias; // Bias term for liblinear.
 	
-	_PerformanceStat[] m_perfStats; // Used to calculate the performance statictics.
-	double[][] m_avgPRF; 
-	
-	public MultiTaskSVM(ArrayList<_User> users, int fn){
-		m_u = 0.1;
-		m_learningRate = 0.5;
-		m_users = users;
-		m_featureNo = fn + 1; //1 is for bias term.
-		m_bias = 1;
-		m_perfStats = new _PerformanceStat[m_users.size()];
-		m_avgPRF = new double[2][3];
+	public MultiTaskSVM(int classNo, int featureSize, ArrayList<_User> users){
+		super(classNo, featureSize);
+		
+		m_userList = users;
 	}
 	
-	public void setTradeOffParam(double u){
+	public void setTradeOffParam(double u, double C){
 		m_u = u;
+		m_C = C;
 	}
 	
+	@Override
 	public void init(){
-		m_noTasks = m_users.size();
-		for(int i=0; i<m_users.size(); i++)
-			m_noXs += m_users.get(i).getReviews().size() * m_learningRate;// Get the total number of reviews.
+		m_userSize = 0;
+		for(int i=0; i<m_userList.size(); i++){
+			ArrayList<_Review> reviews = m_userList.get(i).getReviews();
+			boolean validUser = false;
+			for(_Review r:reviews) {
+				if (r.getType() == rType.ADAPTATION) {
+					if (validUser==false) {
+						validUser = true;
+						m_userSize ++;
+					}
+				}
+			}
+		}
 	}
 	
+	@Override
 	public void train(){
+		init();
+		
 		//Transfer all user reviews to instances recognized by SVM, indexed by users.
-		int rid = 0, trainNo = 0;
-		Feature [][] fvs = new Feature[m_noXs][];
-		double[] ys = new double [m_noXs];
-		ArrayList<_Review> reviews;
+		int trainSize = 0;
+		ArrayList<Feature []> fvs = new ArrayList<Feature []>();
+		ArrayList<Double> ys = new ArrayList<Double>();		
+		
 		//Two for loop to access the reviews, indexed by users.
-		for(int i=0; i<m_users.size(); i++){
-			reviews = m_users.get(i).getReviews();
-			trainNo = (int) (reviews.size() * m_learningRate);
-			for(int j=0; j < trainNo; j++){
-				fvs[rid] = createLibLinearFV(reviews.get(j), i);
-				ys[rid] = reviews.get(j).getYLabel();
-				rid++;
-			}
+		ArrayList<_Review> reviews;
+		for(int i=0; i<m_userList.size(); i++){
+			reviews = m_userList.get(i).getReviews();			
+			for(_Review r:reviews) {
+				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
+					fvs.add(createLibLinearFV(r, i));
+					ys.add(new Double(r.getYLabel()));
+					trainSize ++;
+				}
+			}			
 		}
 		
 		// Train a liblinear model based on all reviews.
 		Problem libProblem = new Problem();
-		libProblem.l = rid;
-		libProblem.n = m_featureNo * (m_noTasks + 1);
-		libProblem.x = fvs;
-		libProblem.y = ys;
-		libProblem.bias = m_bias;//bias term in liblinear.
+		libProblem.l = trainSize;
+		libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
+		libProblem.x = new Feature[trainSize][];
+		libProblem.y = new double[trainSize];
+		for(int i=0; i<trainSize; i++) {
+			libProblem.x[i] = fvs.get(i);
+			libProblem.y[i] = ys.get(i);
+		}
+		
+		libProblem.bias = 1;//bias term in liblinear.
 		
 		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
-		double C = 1, EPS = 0.001;
-		m_libModel = Linear.train(libProblem, new Parameter(type, C, EPS));
+		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
 	}
 	
-	//create an instance of svm.
+	//create a training instance of svm.
+	//for MT-SVM feature vector construction: we put user features in front of global model
 	public Feature[] createLibLinearFV(_Review r, int userIndex){
-		
+		int fIndex; double fValue;
 		_SparseFeature fv;
 		_SparseFeature[] fvs = r.getSparse();
-		Feature[] node = new Feature[fvs.length * 2];//0-th: x//sqrt(u); t-th: x.
+		Feature[] node = new Feature[(1+fvs.length) * 2];//0-th: x//sqrt(u); t-th: x.
 		for(int i = 0; i < fvs.length; i++){
 			fv = fvs[i];
+			fIndex = fv.getIndex() + 1;//liblinear's feature index starts from one
+			fValue = fv.getValue();
+			
 			//Construct the global part of the training instance.
-			node[i] = new FeatureNode(fv.getIndex() + 1, fv.getValue() / m_u);
-			//Construct the t-th part of the training instance.
-			node[i + fvs.length] = new FeatureNode(fv.getIndex() + 1 + m_featureNo * (userIndex + 1), fv.getValue());
+			node[i] = new FeatureNode((m_featureSize + 1) * userIndex + fIndex, fValue);
+			
+			//Construct the user part of the training instance.
+			node[i + fvs.length + 1] = new FeatureNode((m_featureSize + 1)*m_userSize + fIndex, fValue/m_u); // global model's bias term has to be moved to the last
 		}
+		
+		//add the bias term
+		node[fvs.length] = new FeatureNode((m_featureSize + 1) * (userIndex + 1), 1.0);//user model's bias
+		node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
+		
 		return node;
 	}
 	
 	//Use the each user's remaining reviews for testing.
-	public void predict(){
-		int trueL = 0, predL = 0, start = 0;
-		int[][] TPTable = new int[2][2];
-		ArrayList<_Review> reviews;
-		_Review review;
-		for(int i = 0; i < m_users.size(); i++) {
-			reviews = m_users.get(i).getReviews();
-			start = (int) (reviews.size() * m_learningRate);
-			for(int j = start; j < reviews.size(); j++){
-				review = reviews.get(j);
-				predL = (int) Linear.predict(m_libModel, createLibLinearFV(review, i));
-				trueL = review.getYLabel();
-				TPTable[predL][trueL]++;
-			}
-			m_perfStats[i] = new _PerformanceStat(TPTable);
-			clearTPTable(TPTable);
-		}
-	}
-	
-	public void clearTPTable(int[][] TPTable){
-		for(int i=0; i<TPTable.length; i++)
-			Arrays.fill(TPTable[i], 0);
-	}
-	
-	//Accumulate the performance, accumulate all users.
-	public void calcPerformance(){
-		_PerformanceStat stat;
-		for(int i=0; i<m_perfStats.length; i++){
-			stat = m_perfStats[i];
-			stat.calculatePRF();
-			addOneUserPRF(stat.getPerformanceTable());
-		}
+	@Override
+	public double test(){
+		int trueL = 0, predL = 0, count = 0;
+		_PerformanceStat userPerfStat;
+		double[] macroF1 = new double[m_classNo];
 		
-		//Print out the precision/recall/F1.
-		for(int i=0; i<m_avgPRF.length; i++){
-			for(int j=0; j<m_avgPRF[0].length; j++)
-				m_avgPRF[i][j] /= m_users.size();
+		for(int i=0; i<m_userList.size(); i++) {
+			_User user = m_userList.get(i);
+			userPerfStat = user.getPerfStat();
+			
+			for(_Review r:user.getReviews()){
+				if (r.getType() != rType.TEST)
+					continue;
+				
+				predL = (int) Linear.predict(m_libModel, createLibLinearFV(r, i));
+				trueL = r.getYLabel();
+				userPerfStat.addOnePredResult(predL, trueL);
+			}
+			m_microStat.accumulateConfusionMat(userPerfStat);
+			
+			userPerfStat.calculatePRF();			
+			for(int n=0; n<m_classNo; n++)
+				macroF1[n] += userPerfStat.getF1(n);
+			
+			count ++;
 		}
+		calcMicroPerfStat();
+		
+		// macro average
+		System.out.println("\nMacro F1:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+		return Utils.sumOfArray(macroF1);
 	}
-	
-	//Add one user's prf to the global prf.
-	public void addOneUserPRF(double[][] prf) {
-		if (prf.length == 0 || prf == null)
-			return;
-		if (prf.length != m_avgPRF.length)
-			return;
-		if (prf[0].length != m_avgPRF[0].length)
-			return;
 
-		for (int i = 0; i < prf.length; i++) {
-			for (int j = 0; j < prf[i].length; j++)
-				m_avgPRF[i][j] += prf[i][j];
-		}
+	@Override
+	public void train(Collection<_Doc> trainSet) {
+		System.err.println("[Error]train(Collection<_Doc> trainSet) is not implemented in MultiTaskSVM!");
+		System.exit(-1);
 	}
-	
-	//Print out performance information.
-	public void printPerformance() {
-		System.out.format("\tprec\trecall\tF1\n");
-		for (int i = 0; i < m_avgPRF.length; i++) {
-			System.out.format("class %d\t", i);
-			for (int j = 0; j < m_avgPRF[0].length; j++)
-				System.out.format("%.4f\t", m_avgPRF[i][j]);
-			System.out.println();
-		}
+
+	@Override
+	public int predict(_Doc doc) {//predict by global model		
+		return -1;
 	}
-	
-	public void batchTrainTest(){
-		init();
-		train();
-		predict();
+
+	@Override
+	public double score(_Doc d, int label) {//prediction score by global model
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	protected void debug(_Doc d) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void saveModel(String modelLocation) {
+		// TODO Auto-generated method stub
+		
 	}
 }
