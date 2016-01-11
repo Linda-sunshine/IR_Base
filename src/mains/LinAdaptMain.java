@@ -60,6 +60,7 @@ public class LinAdaptMain {
 		
 		//Create the instance of MT-SVM
 		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
+		mtsvm.setBias(false);
 		mtsvm.train();
 		mtsvm.test();
 	}
