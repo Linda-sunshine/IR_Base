@@ -111,14 +111,16 @@ public class MultiTaskSVM extends BaseClassifier {
 	
 	void setPersonalizedModel() {
 		double[] weight = m_libModel.getWeights(), pWeight = new double[m_featureSize+1];//our model always assume the bias term
+		int class0 = m_libModel.getLabels()[0];
+		double sign = class0 > 0 ? 1 : -1;
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
 		for(_User user:m_userList) {
 			for(int i=0; i<m_featureSize; i++) {
-				pWeight[i+1] = -weight[globalOffset+i]/m_u - weight[userOffset+i];
+				pWeight[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
 			}
 			
 			if (m_bias) {
-				pWeight[0] = -weight[globalOffset+m_featureSize]/m_u - weight[userOffset+m_featureSize];
+				pWeight[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
 				userOffset += m_featureSize+1;
 			} else
 				userOffset += m_featureSize;
