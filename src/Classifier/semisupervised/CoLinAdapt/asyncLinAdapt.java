@@ -7,8 +7,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import structures._PerformanceStat;
-import structures._Review;
 import structures._PerformanceStat.TestMode;
+import structures._Review;
 import utils.Utils;
 
 /**
@@ -28,10 +28,14 @@ public class asyncLinAdapt extends LinAdapt {
 		m_testmode = mode;
 	}
 	
+	static double getStepSize(double initStepSize, _LinAdaptStruct user) {
+		return (0.1+0.9*Math.random()) * initStepSize/(2.0+user.getUpdateCount());
+	}
+	
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 0.50, A[], gNorm, gNormOld = Double.MAX_VALUE;;
+		double initStepSize = 0.50, gNorm, gNormOld = Double.MAX_VALUE;;
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
@@ -39,7 +43,6 @@ public class asyncLinAdapt extends LinAdapt {
 		initLBFGS();
 		init();
 		for(_LinAdaptStruct user:m_userList) {
-			A = user.getA();
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
@@ -62,7 +65,7 @@ public class asyncLinAdapt extends LinAdapt {
 				}
 				
 				//gradient descent
-				Utils.add2Array(A, m_g, -initStepSize/(1.0+user.getAdaptedCount()));
+				gradientDescent(user, initStepSize);
 				gNormOld = gNorm;
 			}
 			
@@ -71,6 +74,13 @@ public class asyncLinAdapt extends LinAdapt {
 			setPersonalizedModel(user);
 		}
 	}
+	
+	// update this current user only
+	void gradientDescent(_LinAdaptStruct user, double initStepSize) {
+		double stepSize = asyncLinAdapt.getStepSize(initStepSize, user);
+		Utils.add2Array(user.getA(), m_g, -stepSize);
+		user.incUpdatedCount(1.0);
+	}	
 	
 	@Override
 	protected int getAdaptationSize(_LinAdaptStruct user) {

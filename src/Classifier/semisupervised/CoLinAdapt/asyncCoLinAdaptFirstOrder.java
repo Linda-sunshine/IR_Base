@@ -82,19 +82,19 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 
 	@Override
-	void gradientDescent(_CoLinAdaptStruct ui, double stepSize) {
-		super.gradientDescent(ui, stepSize);//update the current user
+	void gradientDescent(_CoLinAdaptStruct ui, double initStepSize, double inc) {
+		super.gradientDescent(ui, initStepSize, inc);//update the current user
 		
 		_CoLinAdaptStruct uj;
 		
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			super.gradientDescent(uj, stepSize);//how should we pick the step size?
+			super.gradientDescent(uj, initStepSize, inc/3);
 		}
 		
 		for(_RankItem nit:ui.getReverseNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			super.gradientDescent(uj, stepSize);
+			super.gradientDescent(uj, initStepSize, inc/3);
 		}
 	}
 }

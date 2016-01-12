@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
+import Classifier.semisupervised.CoLinAdapt.asyncCoLinAdaptFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
+import structures._PerformanceStat.TestMode;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -41,16 +42,16 @@ public class LinAdaptMain {
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instances of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instances of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instances of first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
+		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-//		adaptation.setTestMode(TestMode.TM_batch);
+		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		

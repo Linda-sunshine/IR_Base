@@ -121,10 +121,15 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		return magA + magB;
 	}
 	
+	@Override
+	protected int getAdaptationSize(_LinAdaptStruct user) {
+		return user.getAdaptationCacheSize();
+	}
+	
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 5.50, gNorm, gNormOld = Double.MAX_VALUE, stepSize;
+		double initStepSize = 1.0, gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
 		int predL, trueL;
@@ -158,8 +163,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				}
 				
 				//gradient descent
-				stepSize = (0.1+0.9*Math.random())*initStepSize/(1.0+user.getAdaptedCount());
-				gradientDescent(user, stepSize);
+				gradientDescent(user, initStepSize, 1.0);
+				//gradientDescent(user, asyncLinAdapt.getStepSize(initStepSize, user));
 				gNormOld = gNorm;
 				
 				if (m_displayLv>0 && ++updateCount%100==0)
@@ -175,8 +180,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 		
 	// update this current user only
-	void gradientDescent(_CoLinAdaptStruct user, double stepSize) {
-		double a, b;
+	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
+		double a, b, stepSize = asyncLinAdapt.getStepSize(initStepSize, user);
 		int offset = 2*m_dim*user.m_id;
 		for(int k=0; k<m_dim; k++) {
 			a = user.getScaling(k) - stepSize * m_g[offset + k];
@@ -185,5 +190,6 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
 			user.setShifting(k, b);
 		}
+		user.incUpdatedCount(inc);
 	}	
 }

@@ -20,6 +20,7 @@ public class _LinAdaptStruct {
 	protected LinkedList<_Review> m_adaptCache;// adaptation cache to hold most recent observations, default size is one
 	protected int m_cacheSize = 3;
 	private int m_adaptPtr, m_adaptStartPos, m_adaptEndPos;		
+	private double m_updateCount;
 	
 	public _LinAdaptStruct(_User user, int dim) {
 		m_user = user;
@@ -54,6 +55,7 @@ public class _LinAdaptStruct {
 	}
 	
 	public void resetAdaptPtr() {
+		m_updateCount = 0;
 		m_adaptPtr = m_adaptStartPos;
 		if (m_adaptCache==null) 
 			m_adaptCache = new LinkedList<_Review>();
@@ -69,6 +71,14 @@ public class _LinAdaptStruct {
 	//total number of adaptation reviews
 	public int getAdaptationSize() {
 		return m_adaptEndPos - m_adaptStartPos;
+	}
+	
+	public void incUpdatedCount(double inc) {
+		m_updateCount += inc;
+	}
+	
+	public double getUpdateCount() {
+		return m_updateCount;
 	}
 	
 	public int getTestSize() {
@@ -94,20 +104,22 @@ public class _LinAdaptStruct {
 		}
 		return m_adaptCache;
 	}
+	
 	// Get a mini-batch of reviews for online learning without moving the adaptation pointer forward
 	public Collection<_Review> getAdaptationCache(){
 		return m_adaptCache;
 	}
+	
+	public int getAdaptationCacheSize() {
+		return m_adaptCache.size();
+	}	
+	
 	public _Review getLatestTestIns() {
 		ArrayList<_Review> reviews = m_user.getReviews();
 		if(m_adaptPtr < m_adaptEndPos)
 			return reviews.get(m_adaptPtr);
 		else
 			return null;
-	}
-	
-	public int getAdaptationCacheSize() {
-		return m_adaptCache.size();
 	}
 	
 	public boolean hasNextAdaptationIns() {
