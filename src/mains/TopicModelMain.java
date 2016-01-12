@@ -168,13 +168,13 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-			}else if (topicmodel.equals("ParentChild_Gibbs")) {
-				double[] gamma = new double[2];
-				gamma[0] = 2;
-				gamma[1] = 2;
-				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
-						gibbs_lag, gamma);
-			}
+//			}else if (topicmodel.equals("ParentChild_Gibbs")) {
+//				double[] gamma = new double[2];
+//				gamma[0] = 2;
+//				gamma[1] = 2;
+//				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
+//						gibbs_lag, gamma);
+//			}
 			
 			model.setDisplay(display);
 			model.setInforWriter(infoFilePath);
