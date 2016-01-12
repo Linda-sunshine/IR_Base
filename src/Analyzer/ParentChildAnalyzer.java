@@ -3,14 +3,10 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import json.JSONArray;
-import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures.TokenizeResult;
 import structures._ChildDoc;
 import structures._ParentDoc;
 import structures._Stn;

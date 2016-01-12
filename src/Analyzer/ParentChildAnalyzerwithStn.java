@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javafx.scene.Parent;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;

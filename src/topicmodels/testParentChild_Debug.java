@@ -3,14 +3,13 @@ package topicmodels;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.time.LocalTime;
+import java.util.Calendar;
 
-import Analyzer.ParentChildAnalyzer;
-import Analyzer.ParentChildAnalzyerDebug;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalzyerDebug;
 
 public class testParentChild_Debug {
 	public static void main(String[] args) throws IOException, ParseException {
@@ -99,7 +98,8 @@ public class testParentChild_Debug {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
-		LocalTime today = LocalTime.now();
+//		LocalTime today = LocalTime.now();
+		Calendar today = Calendar.getInstance();
 		
 		File resultRootFolder = new File("./data/results");
 		if (!resultRootFolder.exists()) {
@@ -107,7 +107,7 @@ public class testParentChild_Debug {
 			resultRootFolder.mkdir();
 		}
 		
-		String filePrefix = "./data/results/"+today.getHour()+today.getMinute()+topicmodel;
+		String filePrefix = "./data/results/"+today.get(Calendar.DATE)+today.get(Calendar.HOUR_OF_DAY)+topicmodel;
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
 			System.out.println("creating directory" + resultFolder);
