@@ -3,6 +3,7 @@
  */
 package Classifier.semisupervised.CoLinAdapt;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,19 +72,48 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	void constructNeighborhood() {
-		_CoLinAdaptStruct ui, uj;
-		double sim;
-		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)(m_userList.get(i));
-			for(int j=i+1; j<m_userList.size(); j++) {
-				uj = (_CoLinAdaptStruct)(m_userList.get(j));
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_CoLinAdaptStruct ui, uj;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							ui = (_CoLinAdaptStruct)(m_userList.get(i+core));
+							for(int j=0; j<m_userList.size(); j++) {
+								if (j == i+core)
+									continue;
+								uj = (_CoLinAdaptStruct)(m_userList.get(j));
+								
+								ui.addNeighbor(j, ui.getSimilarity(uj, m_sType));
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
 				
-				sim = ui.getSimilarity(uj, m_sType);
-				
-				ui.addNeighbor(j, sim);
-				uj.addNeighbor(i, sim);
-			}
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
 		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+
 		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_userList.size());
 	}
 	

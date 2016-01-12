@@ -124,7 +124,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	//this is online training in each individual user
 	@Override
 	public void train(){
-		double initStepSize = 1.50, gNorm, gNormOld = Double.MAX_VALUE;
+		double initStepSize = 5.50, gNorm, gNormOld = Double.MAX_VALUE, stepSize;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
 		int predL, trueL;
@@ -158,7 +158,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				}
 				
 				//gradient descent
-				gradientDescent(user, (0.1+0.9*Math.random())*initStepSize/(1.0+user.getAdaptedCount()));
+				stepSize = (0.1+0.9*Math.random())*initStepSize/(1.0+user.getAdaptedCount());
+				gradientDescent(user, stepSize);
 				gNormOld = gNorm;
 				
 				if (m_displayLv>0 && ++updateCount%100==0)

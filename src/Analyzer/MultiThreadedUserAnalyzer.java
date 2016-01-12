@@ -66,7 +66,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				int core;
 				public void run() {
 					try {
-						for (int j = 0; j + core <files.length; j +=m_numberOfCores) {
+						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
 							if(f.isFile()){//load the user								
 								loadOneUser(f.getAbsolutePath(),core);

@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
-import Classifier.supervised.MultiTaskSVM;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -59,9 +58,9 @@ public class LinAdaptMain {
 		adaptation.test();
 		
 		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }
