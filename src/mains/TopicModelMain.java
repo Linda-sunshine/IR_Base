@@ -168,7 +168,8 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-//			}else if (topicmodel.equals("ParentChild_Gibbs")) {
+			}
+//				else if (topicmodel.equals("ParentChild_Gibbs")) {
 //				double[] gamma = new double[2];
 //				gamma[0] = 2;
 //				gamma[1] = 2;
