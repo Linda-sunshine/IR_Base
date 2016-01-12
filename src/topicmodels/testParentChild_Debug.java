@@ -50,8 +50,8 @@ public class testParentChild_Debug {
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 0;
 		// int gibbs_iteration = 1500, gibbs_lag = 50;
-		//int gibbs_iteration = 200, gibbs_lag = 50;
-		 int gibbs_iteration = 4, gibbs_lag = 2;
+		int gibbs_iteration = 200, gibbs_lag = 50;
+		// int gibbs_iteration = 4, gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 
