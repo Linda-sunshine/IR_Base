@@ -1,5 +1,7 @@
 package structures;
 
+import java.util.Arrays;
+
 import utils.Utils;
 
 public class _PerformanceStat {
@@ -25,6 +27,14 @@ public class _PerformanceStat {
 		m_perfTable = new double[classNo][3];//column: 0-1 class; row: precision, recall, F1.
 	}
 	
+	public void clear() {
+		for(int i=0; i<m_confusionMat.length; i++)
+			Arrays.fill(m_confusionMat[i], 0);
+		
+		for(int i=0; i<m_perfTable.length; i++)
+			Arrays.fill(m_perfTable[i], 0);
+	}
+	
 	public void addOnePredResult(int predL, int trueL){
 		m_confusionMat[predL][trueL]++;
 	}
@@ -35,6 +45,10 @@ public class _PerformanceStat {
 				m_confusionMat[i][j] += stat.m_confusionMat[i][j];
 			}
 		}
+	}
+	
+	public double[][] getPerformanceTable() {
+		return m_perfTable;
 	}
 	
 	public void calculatePRF(){

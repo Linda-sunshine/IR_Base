@@ -12,10 +12,9 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._ChildDoc;
-import structures._Doc;
-//import structures._ChildDoc2;
+import structures._ChildDoc2;
 import structures._ParentDoc;
-//import structures._ParentDoc2;
+import structures._ParentDoc2;
 import structures._Stn;
 import structures._stat;
 import utils.Utils;
@@ -72,12 +71,13 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 
 		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-		
+	
 		AnalyzeDoc(d);
+
 		if (m_corpus.getCollection().contains(d)) {
 			parentHashMap.put(name, d);
 		}
-	
+
 	}
 
 	public void loadChildDoc(String fileName) {
@@ -94,7 +94,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, title, content, 0);
 		
 		AnalyzeDoc(d);
-		
+
 		if (m_corpus.getCollection().contains(d)) {
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
@@ -103,5 +103,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			}
 		}
 	}
+	
 
 }

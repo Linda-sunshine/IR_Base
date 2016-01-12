@@ -254,6 +254,7 @@ public class LinAdapt extends BaseClassifier {
 		double fValue, A[], oldFValue = Double.MAX_VALUE;
 		int vSize = 2*m_dim;
 		
+		init();
 		for(_LinAdaptStruct user:m_userList) {
 			initLBFGS();
 			iflag[0] = 0;
@@ -308,9 +309,62 @@ public class LinAdapt extends BaseClassifier {
 	//Batch mode: given a set of reviews and accumulate the TP table.
 	@Override
 	public double test(){
-		int trueL = 0, predL = 0, count = 0;
-		double[] microF1 = new double[m_classNo];
-		_PerformanceStat macroStat = new _PerformanceStat(m_classNo), microStat;
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_LinAdaptStruct user;
+					_PerformanceStat userPerfStat;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							userPerfStat = user.getPerfStat();								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									int trueL = r.getYLabel();
+									int predL = user.predict(r); // evoke user's own model
+									userPerfStat.addOnePredResult(predL, trueL);
+								}
+							}							
+							userPerfStat.calculatePRF();	
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+		
+		int count = 0;
+		double[] macroF1 = new double[m_classNo];
+		_PerformanceStat userPerfStat;
 		
 		for(_LinAdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
@@ -318,50 +372,20 @@ public class LinAdapt extends BaseClassifier {
 				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
 				continue;
 			
-			microStat = user.getPerfStat();			
-			if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
-				//record prediction results
-				for(_Review r:user.getReviews()) {
-					if (r.getType() != rType.TEST)
-						continue;
-					trueL = r.getYLabel();
-					predL = user.predict(r); // evoke user's own model
-					microStat.addOnePredResult(predL, trueL);
-				}
-			}
-			
-			microStat.calculatePRF();
-			
+			userPerfStat = user.getPerfStat();
 			for(int i=0; i<m_classNo; i++)
-				microF1[i] += microStat.getF1(i);
-			macroStat.accumulateConfusionMat(microStat);
+				macroF1[i] += userPerfStat.getF1(i);
+			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		macroStat.calculatePRF();
-		
-		System.out.println("Macro confusion matrix:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.print("\t" + i);
-		System.out.println();
-		
-		for(int i=0; i<m_classNo; i++) {
-			System.out.print(i);
-			for(int j=0; j<m_classNo; j++) {
-				System.out.print("\t" + macroStat.getEntry(i, j));
-			}
-			System.out.println();
-		}
+		calcMicroPerfStat();
 		
 		// macro average
-		System.out.println("Macro F1:");
+		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, macroStat.getF1(i));
-		
-		// micro average
-		System.out.println("\nMicro F1:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, microF1[i]/count);
-		return Utils.sumOfArray(microF1);
+			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+		System.out.println();
+		return Utils.sumOfArray(macroF1);
 	}
 
 	@Override
@@ -386,8 +410,9 @@ public class LinAdapt extends BaseClassifier {
 
 	@Override
 	protected void init() {		
-		System.err.println("[Error]init() is not implemented in LinAdapt!");
-		System.exit(-1);
+		for(_LinAdaptStruct user:m_userList) {
+			user.getPerfStat().clear();
+		}			
 	}
 
 	@Override

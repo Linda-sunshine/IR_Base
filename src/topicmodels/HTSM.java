@@ -41,7 +41,7 @@ public class HTSM extends HTMM {
 			int start = 0, end = this.number_of_topics;				
 			if(i==0 && d.getSourceType()==2){ // first sentence is specially handled for newEgg
 				//get the sentiment label of the first sentence
-				int sentimentLabel = stn.getSentenceSenitmentLabel();
+				int sentimentLabel = stn.getStnSentiLabel();
 				if(sentimentLabel==0) {// positive sentiment in the first half						
 					end = this.number_of_topics / 2;
 					for(int k=end; k<this.number_of_topics; k++)

@@ -304,7 +304,7 @@ public abstract class TopicModel {
 		debugWriter.println("Doc ID, Source, SentenceIndex, ActualSentiment, PredictedSentiment");
 		for(_Doc d:m_corpus.getCollection()){
 			for(int i=0; i<d.getSenetenceSize(); i++){
-				debugWriter.format("%d,%d,%d,%s,%d,%d\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence(),d.getSentence(i).getSentenceSenitmentLabel(),d.getSentence(i).getSentencePredictedSenitmentLabel());
+				debugWriter.format("%d,%d,%d,%s,%d,%d\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence(),d.getSentence(i).getStnSentiLabel(),d.getSentence(i).getStnPredSentiLabel());
 			}
 		}
 		debugWriter.flush();
@@ -325,8 +325,8 @@ public abstract class TopicModel {
 			if(d.getSourceType()==2){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
-					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
-					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
+					actualLabel = d.getSentence(i).getStnSentiLabel();
+					predictedLabel = d.getSentence(i).getStnPredSentiLabel();
 					precision_recall[actualLabel][predictedLabel]++;
 				}
 			}

@@ -4,6 +4,8 @@
 package structures;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+
 import java.util.Set;
 
 /**
@@ -11,15 +13,16 @@ import java.util.Set;
  * Sentence structure for text documents
  */
 public class _Stn {
+
 	//added by Renqin
 //	public int[] m_wordPositionInDoc;
 //	public double m_stnLength;
 //	public int[] m_words;
 	public double[] m_topics;
-
+	
 	_SparseFeature[] m_x_sparse; // bag of words for a sentence
 	
-	//structure for HTMMM
+	//structure for HTSM
 	public double[] m_transitFv; // features for determine topic transition
 	double m_transitStat; // posterior topic transit probability
 
@@ -29,9 +32,9 @@ public class _Stn {
 	
 	String[] m_rawTokens; // raw token sequence after tokenization
 	String[] m_sentencePOSTag; // corresponding POS tags
-	String m_rawSource;
+	String m_rawSource; // original sentence string content
 	
-	//structure for topic assignment
+	//structure for topic assignment used in HTSM and LR-HTSM, one topic per sentence
 	int m_topic; //topic/aspect assignment
 	
 	//attribute label for NewEgg data
@@ -74,25 +77,42 @@ public class _Stn {
 	//initial topic proportion
 	public void setTopicsVct(int k) {
 		m_topics = new double[k];
+
 		Arrays.fill(m_topics, 0);
 	}
+
+//	//added by Renqin
+//	public void setWordInStn(ArrayList<Integer> positionInStn,
+//			ArrayList<String> rawTokens, ArrayList<Integer> words) {
+//		for (int n = 0; n < positionInStn.size(); n++) {
+//			m_wordPositionInDoc[n] = positionInStn.get(n);
+//			m_rawTokens[n] = rawTokens.get(n);
+//			m_words[n] = words.get(n);
+//		}
+//
+//=======
+//	}
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;
 	}
 	
-	public void setSentencePredictedSenitmentLabel(int label){
+	public void setStnPredSentiLabel(int label){
 		m_predictedSentimentLabel = label;
 	}
 	
-	public int getSentencePredictedSenitmentLabel(){
+	public int getStnPredSentiLabel(){
 		return m_predictedSentimentLabel;
 	}
 	
-	public void setSentenceSenitmentLabel(int label){
+	public void setStnSentiLabel(int label){
 		m_sentimentLabel = label;
 	}
-
+	
+	public int getStnSentiLabel(){
+		return m_sentimentLabel;
+	}
+	
 	public String getRawSentence(){
 		return m_rawSource;
 	}
@@ -104,10 +124,6 @@ public class _Stn {
 	public String[] getSentencePosTag(){
 		return m_sentencePOSTag;
 	}	
-	
-	public int getSentenceSenitmentLabel(){
-		return m_sentimentLabel;
-	}
 	
 	public double[] getTransitFvs() {
 		return m_transitFv;
@@ -129,6 +145,7 @@ public class _Stn {
 		return m_sentiTransitStat;
 	}
 	
+	// this is not actually document length, given we might normalize the values in m_x_sparse
 	public double getLength() {
 		double length = 0;
 		for(_SparseFeature f:m_x_sparse)
