@@ -3,7 +3,6 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
@@ -16,6 +15,7 @@ import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 
@@ -172,8 +172,9 @@ public class TopicModelMain {
 				double[] gamma = new double[2];
 				gamma[0] = 2;
 				gamma[1] = 2;
+				double mu = 0.5;
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
-						gibbs_lag, gamma);
+						gibbs_lag, gamma, mu);
 			}
 			
 			model.setDisplay(display);

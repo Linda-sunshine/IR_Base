@@ -3,20 +3,12 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import json.JSONArray;
-import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures.TokenizeResult;
 import structures._ChildDoc;
-import structures._ChildDoc2;
 import structures._ParentDoc;
-import structures._ParentDoc2;
-import structures._Stn;
-import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
