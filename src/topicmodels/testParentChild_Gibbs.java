@@ -28,7 +28,7 @@ public class testParentChild_Gibbs {
 		// String topicmodel = "CTM_Variational"; // 2topic, pLSA, HTMM, LRHTMM,
 		// Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTS
 		
-		String topicmodel = "LDA_GibbsParentChild"; //ParentChild_Gibbs, LDA_GibbsParentChild
+		String topicmodel = "ParentChild_Gibbs"; //ParentChild_Gibbs, LDA_GibbsParentChild
 
 		String category = "tablet";
 		int number_of_topics = 20;

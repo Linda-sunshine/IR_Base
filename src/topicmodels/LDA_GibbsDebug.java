@@ -148,7 +148,7 @@ public class LDA_GibbsDebug extends LDA_Gibbs {
 	public void printParameter(String parameterFile) {
 
 		try {
-			System.out.println("print childParameterFile");
+			System.out.println("print ParameterFile");
 			PrintWriter paraOut = new PrintWriter(new File(parameterFile));
 
 			for (_Doc d : m_trainSet) {

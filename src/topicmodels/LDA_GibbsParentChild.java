@@ -505,6 +505,11 @@ public class LDA_GibbsParentChild extends LDA_Gibbs {
 					}
 				}
 			}
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
 		}
 		catch (Exception ex) {
 			System.err.print("File Not Found");

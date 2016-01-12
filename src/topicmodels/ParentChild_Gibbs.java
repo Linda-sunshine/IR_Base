@@ -604,6 +604,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
+		System.out.println("printing topic assignment parent documents");
+		
 		String topicAssignmentFile = d.getName() + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(parentFolder,
@@ -626,7 +628,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	public void printChildTopicAssignment(_ChildDoc d, File childFolder) {
-		String topicAssignmentfile = d.getName() + "_.txt";
+		System.out.println("printing topic assignment child documents");
+		
+		String topicAssignmentfile = d.getName() + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(childFolder,
 					topicAssignmentfile));
@@ -649,7 +653,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 
 	public void printParameter(String parentParameterFile, String childParameterFile){
+		System.out.println("printing parameter");
 		try{
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
 			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
 			for(_Doc d: m_trainSet){
@@ -662,9 +670,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					
 					for(int i=0; i<((_ParentDoc)d).m_sentenceMap.size();i++){
 						_Stn stnObj = ((_ParentDoc)d).m_sentenceMap.get(i);
+							
 						parentParaOut.print("sentence"+(i+1)+"\t");
 						for(int k=0; k<number_of_topics;k++){
-							parentParaOut.print(stnObj.m_topics[k]+"\t");
+							if(stnObj==null)
+								parentParaOut.print("0\t");
+							else
+								parentParaOut.print(stnObj.m_topics[k]+"\t");
 						}
 					}
 					
@@ -700,9 +712,17 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					}
 				}
 			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
 		}
-		catch (Exception ex) {
-			System.err.print("File Not Found");
+		catch (Exception e) {
+			e.printStackTrace();
+//			e.printStackTrace();
+//			System.err.print("para File Not Found");
 		}
 
 	}
