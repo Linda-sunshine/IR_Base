@@ -5,13 +5,17 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
+import jdk.internal.org.objectweb.asm.tree.IntInsnNode;
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._RankItem;
+import structures._SparseFeature;
+import structures._Stn;
 import utils.Utils;
 
 public class ParentChild_Gibbs extends LDA_Gibbs {
@@ -26,11 +30,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	// public double[][][] m_childXTopicTermProb; // xIndicator*topics*wordTerms
 	
 	public double[] m_gamma;
+	public double m_mu;
 	
 	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma) {
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
 
+		m_mu = mu;
 		m_gamma = new double[gamma.length];
 		System.arraycopy(gamma, 0, m_gamma, 0, gamma.length);
 	}
@@ -39,21 +45,21 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	protected void createSpace(){
 		super.createSpace();
 
-		//sufficient statistics the number of each word assigned to a topic in parent documents
-		m_parentWordTopicSstat = new double[number_of_topics][vocabulary_size];
-		//sufficient statistics the number of each word assigned to a topic in child documents
-		m_childWordTopicSstat = new double[number_of_topics][vocabulary_size];
+		// //sufficient statistics the number of each word assigned to a topic in parent documents
+		// m_parentWordTopicSstat = new double[number_of_topics][vocabulary_size];
+		// //sufficient statistics the number of each word assigned to a topic in child documents
+		// m_childWordTopicSstat = new double[number_of_topics][vocabulary_size];
 		
-		// store the number of words of each topic in parent document
-		m_parentSstat = new double[number_of_topics];
-		//store the number of words in each topic
-		m_childSstat = new double[number_of_topics];
+		// // store the number of words of each topic in parent document
+		// m_parentSstat = new double[number_of_topics];
+		// //store the number of words in each topic
+		// m_childSstat = new double[number_of_topics];
 		
-		//the probability of a word assigned to a topic
-		m_parentTopicTermProb = new double[number_of_topics][vocabulary_size];//\phi^p
-		m_childTopicTermProb = new double[number_of_topics][vocabulary_size];//\phi^c
-		// m_childTopicTermProb = new
-		// double[m_indicatorNum][number_of_topics][vocabulary_size];
+		// //the probability of a word assigned to a topic
+		// m_parentTopicTermProb = new double[number_of_topics][vocabulary_size];//\phi^p
+		// m_childTopicTermProb = new double[number_of_topics][vocabulary_size];//\phi^c
+		// // m_childTopicTermProb = new
+		// // double[m_indicatorNum][number_of_topics][vocabulary_size];
 	}
 	
 	@Override
@@ -66,24 +72,22 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	protected void initialize_probability(Collection<_Doc> collection){
 		
 		for(int i=0; i<number_of_topics; i++){
-			Arrays.fill(m_parentWordTopicSstat[i], 0);
-			Arrays.fill(m_childWordTopicSstat[i], 0);
+			Arrays.fill(word_topic_sstat[i], 0);
 		}
-		Arrays.fill(m_parentSstat, 0);
-		Arrays.fill(m_childSstat, 0);
+		Arrays.fill(m_sstat, 0);
 		
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
 				((_ParentDoc) d).setTopics4Gibbs(number_of_topics);
 				for (int i = 0; i < d.m_words.length; i++) {
-					m_parentWordTopicSstat[d.m_topicAssignment[i]][d.m_words[i]]++;
-					m_parentSstat[d.m_topicAssignment[i]]++;
+					word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]]++;
+					m_sstat[d.m_topicAssignment[i]]++;
 				}
 			}else if(d instanceof _ChildDoc){
 				((_ChildDoc) d).setTopics4Gibbs(number_of_topics, m_gamma);
 				for(int i=0; i<d.m_words.length; i++){
-					m_childWordTopicSstat[d.m_topicAssignment[i]][d.m_words[i]]++;
-					m_childSstat[d.m_topicAssignment[i]]++;								
+					word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]]++;
+					m_sstat[d.m_topicAssignment[i]]++;								
 				}
 			} // what would be the other possibilities?
 		}
@@ -106,9 +110,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	void sampleParentDocTopic(_ParentDoc d){
 		int samplingTopic = 0;
 		int wid, tid;
-		double[] topicProb = new double[number_of_topics];
+		double[] probRatio = new double[number_of_topics];
 		double prob;
 		double normalizedProb;
+		
 		
 		for(int i=0; i<d.m_words.length; i++){
 			normalizedProb = 0;
@@ -118,32 +123,30 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			
 			d.m_sstat[tid] --;
 			if(m_collectCorpusStats){
-				m_parentWordTopicSstat[tid][wid] --;
-				m_parentSstat[tid] --;
+				word_topic_sstat[tid][wid] --;
+				m_sstat[tid] --;
 			}
-			
+
+			probRatio[0] = 1;
+			normalizedProb += probRatio[0];
 			for(tid=0; tid<number_of_topics; tid++){
-				topicProb[tid] = 0;
-				double term1 = (m_parentWordTopicSstat[tid][wid] + d_beta)
-								/ (m_parentSstat[tid] + vocabulary_size * d_beta);
-				double term2 = (d.m_sstat[tid]+d_alpha);
-				double term3 = 1;
+				probRatio[tid] = 0;
 
-				// System.out.println("parent" + d.getName());
-
-				for(_ChildDoc cDoc: d.m_childDocs){
-					// System.out.println("child" + cDoc.getName());
-
-					term3 *= (d.m_sstat[tid]+cDoc.m_xTopicSstat[0][tid]+d_alpha)/(d.m_sstat[tid]+d_alpha);
-				}
+				double term1 = calSampleParentWordTopicTerm(tid, wid);
+				double term2 = calSampleParentTopicDocTerm(tid, d);
+				double term3 = calSampleParentChildInfluenceTerm(tid, d);
 					
-				topicProb[tid] = term1*term2*term3;
-				normalizedProb += topicProb[tid];
+				probRatio[tid] = term1*term2*term3;
+				normalizedProb += probRatio[tid];
 			}
 			
-			prob = normalizedProb * m_rand.nextDouble();			
+			for(int k=0; k<number_of_topics; k++){
+				probRatio[k] = probRatio[k]/normalizedProb;
+			}
+
+			prob = m_rand.nextDouble();			
 			for(tid=0; tid<number_of_topics; tid++){
-				prob -= topicProb[tid];
+				prob -= probRatio[tid];
 				if(prob<=0)
 					break;
 			}
@@ -155,9 +158,65 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			d.m_topicAssignment[i] = samplingTopic;
 			d.m_sstat[samplingTopic] ++;
 			if(m_collectCorpusStats){
-				m_parentWordTopicSstat[samplingTopic][wid] ++;
-				m_parentSstat[samplingTopic] ++;
+				word_topic_sstat[samplingTopic][wid] ++;
+				m_sstat[samplingTopic] ++;
 			}
+		}
+	}
+
+
+//probability of word given topic
+	protected double calSampleParentWordTopicTerm(int tid, int wid){
+		double term1 = (d_beta + word_topic_sstat[tid][wid])/(d_beta + word_topic_sstat[0][wid]);
+		double term2 = (vocabulary_size * d_beta + m_sstat[0])/(vocabulary_size * d_beta + m_sstat[tid]);
+		return term1*term2;
+	}
+
+//probability of topic given doc
+	protected double calSampleParentTopicDocTerm(int tid, _ParentDoc d){
+		double term1 = (d_alpha + d.m_sstat[tid])/ (d_alpha + d.m_sstat[0]);
+		return term1;
+	}
+
+	protected double calSampleParentChildInfluenceTerm(int tid, _ParentDoc d){
+		double term = 1;
+		double docLength = d.m_words.length;
+		for (_ChildDoc cDoc : d.m_childDocs) {
+			double term5 = 0.0;
+
+			double term11 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0]) / (docLength) + cDoc.m_xTopicSstat[0][0]));
+			double term12 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0] + 1) / (docLength)+ cDoc.m_xTopicSstat[0][0]));
+
+			double term21 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid] + 1) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
+			double term22 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid]) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
+
+			double term31 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0] + 1) / (docLength)));
+			double term32 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0]) / (docLength)));
+
+			double term41 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid]) / (docLength)));
+			double term42 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid] + 1) / (docLength)));
+
+			term5 = term11 - term12 + term21 - term22 + term31 - term32 + term41 - term42;
+			term *= Math.exp(term5);
+
+			if (invalidValue(term11) || invalidValue(term12)
+							|| invalidValue(term21) || invalidValue(term22)
+							|| invalidValue(term31) || invalidValue(term32)
+							|| invalidValue(term41) || invalidValue(term42)
+							|| invalidValue(term5) || invalidValue(term)) {
+				System.out.println("invalid term");
+			}
+		} 
+
+		return term;
+	}
+
+	public boolean invalidValue(double term) {
+		if (Math.abs(term) == Double.MAX_VALUE - 1) {
+			System.out.println(term);
+			return true;
+		} else {
+			return false;
 		}
 	}
 
@@ -181,17 +240,16 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			d.m_xTopicSstat[xid][tid] --;
 			d.m_xSstat[xid] --;
 			if(m_collectCorpusStats){
-				m_childWordTopicSstat[tid][wid]--;
-				m_childSstat[tid]--;
+				word_topic_sstat[tid][wid]--;
+				m_sstat[tid]--;
 			}
 			
 			//p(z=tid,x=1) from specific
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = (m_childWordTopicSstat[tid][wid] + d_beta)
-						/ (m_childSstat[tid] + d_beta * vocabulary_size);
-				double term2 = (d.m_xTopicSstat[1][tid]+d_alpha)/(number_of_topics*d_alpha+d.m_xSstat[1]);
+				double term1 = calSampleChildWordTopicTerm(tid, wid);
+				double term2 = calSampleChildTopicDocTerm(tid, 1, d);
 //				double term3 = (m_gamma[1]+d.m_xSstat[0])/(m_gamma[1]+m_gamma[2]+d.m_xSstat[0]+d.m_xSstat[1]);
-				double term3 = (m_gamma[1]+d.m_xSstat[1]);
+				double term3 = calSampleChildParentInfluenceTerm(1, d);
 				xTopicProb[1][tid] = term1*term2*term3;
 				normalizedProb += xTopicProb[1][tid];
 			}
@@ -202,10 +260,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			
 			//p(z=tid,x=0) from background
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = (m_childWordTopicSstat[tid][wid] + d_beta)
-						/ (m_childSstat[tid] + d_beta * vocabulary_size);
-				double term2 = (d_alpha+d.m_parentDoc.m_sstat[tid]+d.m_xTopicSstat[0][tid])/(number_of_topics*d_alpha+d.m_parentDoc.getTotalDocLength()+d.m_xSstat[0]);
-				double term3 = (m_gamma[0]+d.m_xSstat[0]);
+				double term1 = calSampleChildWordTopicTerm(tid, wid);
+				double term2 = calSampleChildTopicDocTerm(tid, 0, d);
+				double term3 = calSampleChildParentInfluenceTerm(0, d);
 				xTopicProb[0][tid] = term1*term2*term3;
 				normalizedProb += xTopicProb[0][tid];
 			}
@@ -240,22 +297,49 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			d.m_xTopicSstat[samplingX][samplingTopic] ++;
 			d.m_xSstat[samplingX] ++;
 			if(m_collectCorpusStats){
-				m_childWordTopicSstat[samplingTopic][wid]++;
-				m_childSstat[samplingTopic]++;
+				word_topic_sstat[samplingTopic][wid]++;
+				m_sstat[samplingTopic]++;
 			}
 			
 		}
 	}
 
+//probability of word given topic
+	public double calSampleChildWordTopicTerm(int tid, int wid){
+		double term1 = (d_beta + word_topic_sstat[tid][wid])/(d_beta*vocabulary_size + m_sstat[tid]);
+		return term1;		
+	}
+
+//probability of topic given doc
+	public double calSampleChildTopicDocTerm(int tid, int xid, _ChildDoc d){
+		double term = 0.0;
+		double docLength = d.m_parentDoc.getTotalDocLength();
+
+		if(xid==1){
+			term = (d_alpha + d.m_xTopicSstat[1][tid])/(number_of_topics*d_alpha + d.m_xSstat[1]);
+		}else if(xid==0){
+			term = (d_alpha + m_mu*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
+					/(number_of_topics*d_alpha+m_mu+d.m_xSstat[0]);
+		}
+
+		return term;
+	}
+
+	public double calSampleChildParentInfluenceTerm(int xid, _ChildDoc d){
+		double term = 0.0;
+		term = m_gamma[xid]+ d.m_xSstat[xid];
+
+		return term;
+	}	
+
 	public void calculate_M_step(int iter){
-		if (iter % m_lag == 0) 
-			calLogLikelihood2(iter);
+//		if (iter % m_lag == 0) 
+//			calLogLikelihood2(iter);
 
 		if(iter>m_burnIn && iter%m_lag==0){
 			for(int i=0; i<this.number_of_topics; i++){
 				for(int v=0; v<this.vocabulary_size; v++){
-					m_parentTopicTermProb[i][v] += (m_parentWordTopicSstat[i][v] + d_beta);
-					m_childTopicTermProb[i][v] += (m_childWordTopicSstat[i][v] + d_beta);
+					topic_term_probabilty[i][v] += word_topic_sstat[i][v];
 				}
 			}
 			
@@ -281,28 +365,37 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for (int j = 0; j < m_gamma.length; j++)
 			d.m_xProportion[j] += d.m_xSstat[j] + m_gamma[j];
 
+		double parentDocLength = d.m_parentDoc.getTotalDocLength();
 		// used to output the topK words and parameters
 		for (int k = 0; k < this.number_of_topics; k++) {
 			d.m_xTopics[1][k] += (d.m_xTopicSstat[1][k] + d_alpha);
-			d.m_xTopics[0][k] += (d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k]);
+			d.m_xTopics[0][k] += d.m_xTopics[0][k] += (d.m_xTopicSstat[0][k] + d_alpha + m_mu
+					* d.m_parentDoc.m_sstat[k] / parentDocLength);
 			d.m_topics[k] += d.m_xTopics[1][k] + d.m_xTopics[0][k];
 		}
 	}
 	
 	protected void finalEst() {
-		for (int i = 0; i < this.number_of_topics; i++) {
-			Utils.L1Normalization(m_parentTopicTermProb[i]);
-			Utils.L1Normalization(m_childTopicTermProb[i]);
-		}
+		normalizedTopicTermProb();
 
 		for (_Doc d : m_trainSet)
 			estThetaInDoc(d);
 		discoverSpecificComments();
 	}
+
+	protected void normalizedTopicTermProb(){
+		for (int i = 0; i < this.number_of_topics; i++) {
+			Utils.L1Normalization(topic_term_probabilty[i]);
+		}
+
+	}
 	
 	protected void estThetaInDoc(_Doc d) {
 		if (d instanceof _ParentDoc){
 			Utils.L1Normalization(d.m_topics);
+
+		// estimate topic proportion of sentences in parent documents
+			estStnThetaInParentDoc((_ParentDoc) d);
 		} else if (d instanceof _ChildDoc) {
 			Utils.L1Normalization(((_ChildDoc) d).m_xProportion);
 			Utils.L1Normalization(d.m_topics);
@@ -313,97 +406,247 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	}
 	
-	public void printTopWords(int k, String betaFile) {
-		Arrays.fill(m_parentSstat, 0);
-		Arrays.fill(m_childSstat, 0);
+	public void estStnThetaInParentDoc(_ParentDoc d) {
+		_SparseFeature[] fv = d.getSparse();
+		double[][] phi = new double[fv.length][number_of_topics];
+		HashMap<Integer, Integer> indexMap = new HashMap<Integer, Integer>();
 
-		System.out.println("print top words");
-		for (_Doc d : m_trainSet) {
-			if (d instanceof _ParentDoc) {
-				for (int i = 0; i < number_of_topics; i++)
-					m_parentSstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-							: d.m_topics[i];
-			} else if (d instanceof _ChildDoc) {
-				for (int i = 0; i < number_of_topics; i++)
-					m_childSstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-							: d.m_topics[i];
+		// //computeWordTopicProportionInDoc
+		////compute phi
+		for (int i = 0; i < fv.length; i++) {
+			int index = fv[i].getIndex();
+			indexMap.put(index, i);
+		}
+
+		for (int n = 0; n < d.m_words.length; n++) {
+			int index = d.m_words[n];
+			int topic = d.m_topicAssignment[n];
+			phi[indexMap.get(index)][topic]++;
+		}
+
+		for (int i = 0; i < fv.length; i++) {
+			Utils.L1Normalization(phi[i]);
+		}
+
+		////compute topic proportion
+		//// sentenceMap:HashMap<sentenceID, _stn> in _ParentDoc2
+		for (int i = 0; i < d.m_sentenceMap.size(); i++) {
+			
+			_Stn stnObject = d.m_sentenceMap.get(i);
+			if(stnObject==null){
+				continue;
 			}
+			// initial topic proportions (m_topics) of sentences
+			_SparseFeature[] sv = stnObject.getFv();
+			
+			//m_stnLength: the length of sentence
+			//m_words: the index in CV of each word in the sentence 
+			stnObject.setTopicsVct(number_of_topics);
+			for (int j = 0; j < sv.length; j++) {
+				int index = sv[j].getIndex();
+				double value = sv[j].getValue();
+				for (int k = 0; k < number_of_topics; k++) {
+					stnObject.m_topics[k] += value*phi[indexMap.get(index)][k];
+				}
+			}
+			Utils.L1Normalization(stnObject.m_topics);
+		
 
 		}
 
-		Utils.L1Normalization(m_parentSstat);
-		Utils.L1Normalization(m_childSstat);
-		
-		String parentBetaFile = betaFile.replace(".txt", "parent.txt");
-		String childBetaFile = betaFile.replace(".txt", "child.txt");
-		
-		printParentTopWords(k, parentBetaFile);
-		printChildTopWords(k, childBetaFile);
-		
-		String parentParameterFile = parentBetaFile.replace("beta", "parameter");
-		String childParameterFile = childBetaFile.replace("beta", "parameter");
-		printParameter(parentParameterFile, childParameterFile);
+	}
+
+	public void discoverSpecificComments() {
+		System.out.println("topic similarity");
+		String fileName = "topicSimilarity.txt";
+
+		try {
+			PrintWriter pw = new PrintWriter(new File(fileName));
+
+			for (_Doc doc : m_trainSet) {
+				if (doc instanceof _ParentDoc) {
+					pw.print(doc.getName() + "\t");
+					double stnTopicSimilarity = 0.0;
+					double docTopicSimilarity = 0.0;
+					for (_ChildDoc cDoc : ((_ParentDoc) doc).m_childDocs) {
+						pw.print(cDoc.getName() + ":");
+
+						docTopicSimilarity = computeSimilarity(
+								((_ParentDoc) doc).m_topics, cDoc.m_topics);
+						pw.print(docTopicSimilarity);
+						for (int i = 0; i < ((_ParentDoc) doc).m_sentenceMap
+								.size(); i++) {
+							_Stn stnObj = ((_ParentDoc) doc).m_sentenceMap
+									.get(i);
+
+							if (stnObj == null) {
+								// some sentences are normalized into zero
+								//length sentences, the similarity is set to be 0
+								pw.print(":0");
+								continue;
+							}
+							double[] stnTopics = stnObj.m_topics;
+
+							stnTopicSimilarity = computeSimilarity(stnTopics,
+									cDoc.m_topics);
+							pw.print(":" + stnTopicSimilarity);
+						}
+						pw.print("\t");
+					}
+					pw.println();
+				} else {
+					continue;
+				}
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public double computeSimilarity(double[] topic1, double[] topic2) {
+		double similarity = 0.0;
+		double numerator = 0.0;
+		double denominator1 = 0.0;
+		double denominator2 = 0.0;
+		for (int k = 0; k < number_of_topics; k++) {
+
+			numerator += topic1[k] * topic2[k];
+			denominator1 += topic1[k] * topic1[k];
+			denominator2 += topic2[k] * topic2[k];
+		}
+
+		if ((denominator1 == 0) || (denominator2 == 0)) {
+			similarity = 0;
+			return similarity;
+		}
+
+		similarity = Math.log(numerator) - Math.log(Math.sqrt(denominator1))
+				- Math.log(Math.sqrt(denominator2));
+
+		similarity = Math.exp(similarity);
+		return similarity;
 	}
 	
-	public void printParentTopWords(int k, String parentBetaFile) {
+	public void printTopWords(int k, String betaFile) {
+		Arrays.fill(m_sstat, 0);
+
+		System.out.println("print top words");
+		for (_Doc d : m_trainSet) {
+			for (int i = 0; i < number_of_topics; i++)
+				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
+						: d.m_topics[i];	
+		}
+
+		Utils.L1Normalization(m_sstat);
+
 		try {
-			System.out.println("parent beta file");
-			PrintWriter parentBetaOut = new PrintWriter(new File(parentBetaFile));
-			for (int i = 0; i < m_parentTopicTermProb.length; i++) {
+			System.out.println("beta file");
+			PrintWriter betaOut = new PrintWriter(new File(betaFile));
+			for (int i = 0; i < topic_term_probabilty.length; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						k);
 				for (int j = 0; j < vocabulary_size; j++)
 					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							m_parentTopicTermProb[i][j]));
+							topic_term_probabilty[i][j]));
 
-				parentBetaOut.format("Topic %d(%.3f):\t", i, m_parentSstat[i]);
+				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 				for (_RankItem it : fVector) {
-					parentBetaOut.format("%s(%.3f)\t", it.m_name,
+					betaOut.format("%s(%.3f)\t", it.m_name,
 							m_logSpace ? Math.exp(it.m_value) : it.m_value);
 					System.out.format("%s(%.3f)\t", it.m_name,
 						m_logSpace ? Math.exp(it.m_value) : it.m_value);
 				}
-				parentBetaOut.println();
+				betaOut.println();
 				System.out.println();
 			}
 	
-			parentBetaOut.flush();
-			parentBetaOut.close();
+			betaOut.flush();
+			betaOut.close();
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
 		}
+
+		String filePrefix = betaFile.replace("topWords.txt", "");
+		debugOutput(filePrefix);
+		
 	}
 	
-	public void printChildTopWords(int k, String childBetaFile) {
+	public void debugOutput(String filePrefix){
+
+		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
+		File childTopicFolder = new File(filePrefix + "childTopicAssignment");
+		if (!parentTopicFolder.exists()) {
+			System.out.println("creating directory" + parentTopicFolder);
+			parentTopicFolder.mkdir();
+		}
+		if (!childTopicFolder.exists()) {
+			System.out.println("creating directory" + childTopicFolder);
+			childTopicFolder.mkdir();
+		}
+
+		for (_Doc d : m_trainSet) {
+		if (d instanceof _ParentDoc) {
+				printParentTopicAssignment((_ParentDoc) d, parentTopicFolder);
+			} else if (d instanceof _ChildDoc) {
+				printChildTopicAssignment((_ChildDoc) d, childTopicFolder);
+			}
+
+		}
+
+		String parentParameterFile = filePrefix + "parentParameter.txt";
+		String childParameterFile = filePrefix + "childParameter.txt";
+		printParameter(parentParameterFile, childParameterFile);
+
+	}
+
+	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
+		String topicAssignmentFile = d.getName() + ".txt";
 		try {
-			System.out.println("child beta file");
-			PrintWriter childBetaOut = new PrintWriter(new File(childBetaFile));
-
-			for (int i = 0; i < m_childTopicTermProb.length; i++) {
-				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
-						k);
-				for (int j = 0; j < vocabulary_size; j++)
-					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							m_childTopicTermProb[i][j]));
-
-				childBetaOut.format("Topic %d(%.3f):\t", i, m_childSstat[i]);
-				System.out.format("Topic %d(%.3f):\t", i, m_childSstat[i]);
-				for (_RankItem it : fVector) {
-					childBetaOut.format("%s(%.3f)\t", it.m_name,
-							m_logSpace ? Math.exp(it.m_value) : it.m_value);
-					System.out.format("%s(%.3f)\t", it.m_name,
-							m_logSpace ? Math.exp(it.m_value) : it.m_value);
-				}
-				childBetaOut.println();
-				System.out.println();
+			PrintWriter pw = new PrintWriter(new File(parentFolder,
+					topicAssignmentFile));
+			
+			for(int n=0; n<d.m_words.length; n++){
+				int index = d.m_words[n];
+				int topic = d.m_topicAssignment[n];
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + topic + "\t");
 			}
-
-			childBetaOut.flush();
-			childBetaOut.close();
-		} catch (Exception ex) {
-			System.err.print("File Not Found");
+			
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+
 	}
+
+	public void printChildTopicAssignment(_ChildDoc d, File childFolder) {
+		String topicAssignmentfile = d.getName() + "_.txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childFolder,
+					topicAssignmentfile));
+
+			for (int n = 0; n < d.m_words.length; n++) {
+				int index = d.m_words[n];
+				int topic = d.m_topicAssignment[n];
+				String featureName = m_corpus.getFeature(index);
+					
+				pw.print(featureName + ":" + topic + "\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
 
 	public void printParameter(String parentParameterFile, String childParameterFile){
 		try{
@@ -416,6 +659,15 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					for(int k=0; k<number_of_topics; k++){
 						parentParaOut.print(d.m_topics[k]+"\t");
 					}
+					
+					for(int i=0; i<((_ParentDoc)d).m_sentenceMap.size();i++){
+						_Stn stnObj = ((_ParentDoc)d).m_sentenceMap.get(i);
+						parentParaOut.print("sentence"+(i+1)+"\t");
+						for(int k=0; k<number_of_topics;k++){
+							parentParaOut.print(stnObj.m_topics[k]+"\t");
+						}
+					}
+					
 					parentParaOut.println();
 					
 				}else{
@@ -590,119 +842,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	
 	//p(w)=\sum_z p(w|z)p(z|d)
-	public double calLogLikelihood2(int iter) {
-		double logLikelihood = 0.0;
-		double parentLogLikelihood = 0.0;
-		double childLogLikelihood = 0.0;
-
-		for (_Doc doc : m_trainSet) {
-			if (doc instanceof _ParentDoc)
-				parentLogLikelihood += calParentLogLikelihood2((_ParentDoc) doc);
-			else if (doc instanceof _ChildDoc)
-				childLogLikelihood += calChildLogLikelihood2((_ChildDoc) doc);
-		}
-
-		System.out.format("iter %d, parent log likelihood %.3f\n", iter,
-				parentLogLikelihood);
-		infoWriter.format("iter %d, parent log likelihood %.3f\n", iter,
-				parentLogLikelihood);
-		System.out.format("iter %d, child log likelihood %.3f\n", iter,
-				childLogLikelihood);
-		infoWriter.format("iter %d, child log likelihood %.3f\n", iter,
-				childLogLikelihood);
-
-		logLikelihood = parentLogLikelihood + childLogLikelihood;
-
-		System.out
-				.format("iter %d, log likelihood %.3f\n", iter, logLikelihood);
-		infoWriter
-				.format("iter %d, log likelihood %.3f\n", iter, logLikelihood);
-		return logLikelihood;
-	}
 	
-	public double calParentLogLikelihood2(_ParentDoc pDoc) {
-		double likelihood = 0.0;
-
-		int tid = 0;
-		int wid = 0;
-		double term1 = 0.0;
-		double term2 = 0.0;
-		for (int n = 0; n < pDoc.getTotalDocLength(); n++) {
-			wid = pDoc.m_words[n];
-			tid = pDoc.m_topicAssignment[n];
-			// normalize
-			term1 = m_parentWordTopicSstat[tid][wid] / m_parentSstat[tid];
-			term2 = pDoc.m_sstat[tid]/pDoc.getTotalDocLength();
-
-			likelihood += Math.log(term1) + Math.log(term2);
-		}
-		
-		return likelihood;
-	}
-	
-	public double calChildLogLikelihood2(_ChildDoc cDoc) {
-		double likelihood = 0.0;
-
-		int tid = 0;
-		int wid = 0;
-		double term1 = 0.0;
-		double term2 = 0.0;
-
-		for (int n = 0; n < cDoc.getTotalDocLength(); n++) {
-			wid = cDoc.m_words[n];
-			tid = cDoc.m_topicAssignment[n];
-
-			term1 = m_childWordTopicSstat[tid][wid] / (double)m_childSstat[tid];
-			term2 = (cDoc.m_xTopicSstat[0][tid] + cDoc.m_xTopicSstat[1][tid])
-					/ (double) cDoc.getTotalDocLength();
-
-			likelihood += Math.log(term1) + Math.log(term2);
-		}
-		return likelihood;
-	}
-	
-	public void discoverSpecificComments() {
-		String fileName = "topicSimilarity.txt";
-
-		try {
-			PrintWriter pw = new PrintWriter(new File(fileName));
-
-			for (_Doc doc : m_trainSet) {
-				if (doc instanceof _ParentDoc) {
-					pw.print(doc.getName() + "\t");
-					double topicSimilarity = 0.0;
-					for (_ChildDoc cDoc : ((_ParentDoc) doc).m_childDocs) {
-						topicSimilarity = computeSimilarity((_ParentDoc) doc, cDoc);
-						pw.print(cDoc.getName() + ":" + topicSimilarity + "\t");
-					}
-					pw.println();
-				} else {
-					continue;
-				}
-			}
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		
-	}
-	
-	public double computeSimilarity(_ParentDoc pDoc, _ChildDoc cDoc) {
-		double similarity = 0.0;
-		double numerator = 0.0;
-		double denominator1 = 0.0;
-		double denominator2 = 0.0;
-		for (int k = 0; k < number_of_topics; k++) {
-			numerator += pDoc.m_topics[k] * cDoc.m_topics[k];
-			denominator1 += pDoc.m_topics[k] * pDoc.m_topics[k];
-			denominator2 += cDoc.m_topics[k] * cDoc.m_topics[k];
-		}
-		similarity = Math.log(numerator) - Math.log(Math.sqrt(denominator1))
-				- Math.log(Math.sqrt(denominator2));
-
-		return similarity;
-	}
 
 }

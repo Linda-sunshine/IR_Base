@@ -2,19 +2,23 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 
 import utils.Utils;
 
 public class _ParentDoc extends _Doc {
-	////inherit from _Doc
-	//public int[] m_words;
-	//public int[] m_topicAssignment;
+
 	public ArrayList<_ChildDoc> m_childDocs;
-	
+	public HashMap<Integer, _Stn> m_sentenceMap;
+
+
 	public _ParentDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
+
 		m_childDocs = new ArrayList<_ChildDoc>();
+		m_sentenceMap = new HashMap<Integer, _Stn>();
+
 		setName(name);
 		setTitle(title);
 		// TODO Auto-generated constructor stub
