@@ -3,26 +3,19 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import json.JSONArray;
-import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures.TokenizeResult;
 import structures._ChildDoc;
-import structures._ChildDoc2;
+import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc2;
-import structures._Stn;
-import structures._stat;
 import utils.Utils;
 
-public class ParentChildAnalyzer extends jsonAnalyzer {
+public class ParentChildAnalzyerDebug extends jsonAnalyzer{
 	public HashMap<String, _ParentDoc> parentHashMap;
 
-	public ParentChildAnalyzer(String tokenModel, int classNo,
+	public ParentChildAnalzyerDebug(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		parentHashMap = new HashMap<String, _ParentDoc>();
@@ -70,14 +63,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-	
+		_Doc d = new _Doc(m_corpus.getSize(),  content, 0);
+		d.setName(name);
+		d.setTitle(title);
 		AnalyzeDoc(d);
-
-		if (m_corpus.getCollection().contains(d)) {
-			parentHashMap.put(name, d);
-		}
-
+		
 	}
 
 	public void loadChildDoc(String fileName) {
@@ -91,18 +81,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, title, content, 0);
-		
+		_Doc d = new _Doc(m_corpus.getSize(),  content, 0);
+		d.setName(name);
+		d.setTitle(title);
 		AnalyzeDoc(d);
-
-		if (m_corpus.getCollection().contains(d)) {
-			if (parentHashMap.containsKey(parent)) {
-				_ParentDoc pDoc = parentHashMap.get(parent);
-				d.setParentDoc(pDoc);
-				pDoc.addChildDoc(d);
-			}
-		}
+		
 	}
-	
 
 }
