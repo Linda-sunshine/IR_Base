@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
@@ -177,5 +178,46 @@ public class UserAnalyzer extends DocAnalyzer {
 	public ArrayList<_User> getUsers(){
 		System.out.format("[Info]Training size: %d, adaptation size: %d, and testing size: %d\n", m_trainSize, m_adaptSize,m_testSize);
 		return m_users;
+	}
+	
+	// Load the svd file to get the low dim representation of users.
+	public void loadSVDFile(String filename){
+		try{
+			// Construct the <userID, user> map first.
+			int count = 0;
+			HashMap<String, double[]> IDLowDimMap = new HashMap<String, double[]>();
+			
+			int skip = 3;
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line, userID;
+			String[] strs;
+			double[] lowDims;
+			//Skip the first three lines.
+			while(skip-- > 0)
+				reader.readLine();
+			while((line = reader.readLine()) != null){
+				strs = line.split("\\s+");
+				userID = strs[0];
+				lowDims = new double[strs.length - 1];
+				for(int i=1; i<strs.length; i++)
+					lowDims[i-1] = Double.valueOf(strs[i]);
+				IDLowDimMap.put(userID, lowDims);
+				count++;
+			}
+			// Currently, there are missing low dimension representation of users.
+			for(_User u: m_users){
+				if(IDLowDimMap.containsKey(u.getUserID()))
+					u.setLowDimProfile(IDLowDimMap.get(u.getUserID()));
+				else {
+					System.out.println("[Warning]" + u.getUserID() + " : low dim profile missing.");
+					u.setLowDimProfile(new double[11]);
+				}
+			}
+			reader.close();
+			System.out.format("Ther are %d users and %d users' low dimension profile are loaded.\n", m_users.size(), count);
+		} catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 }
