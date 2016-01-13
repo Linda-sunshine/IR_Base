@@ -18,7 +18,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		//added by Renqin
+		//null used to initialize stnModel and posModel
+		super(tokenModel, classNo, providedCV, Ngram, threshold, null, null);
 		parentHashMap = new HashMap<String, _ParentDoc>();
 	}
 

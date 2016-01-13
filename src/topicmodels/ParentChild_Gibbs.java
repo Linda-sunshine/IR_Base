@@ -423,7 +423,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 						docTopicSimilarity = computeSimilarity(
 								((_ParentDoc) doc).m_topics, cDoc.m_topics);
-						pw.print(docTopicSimilarity);
+						pw.print(docTopicSimilarity+":");
 						for (_Stn stnObj:doc.getSentences()) {
 							double[] stnTopics = stnObj.m_topics;
 							stnTopicSimilarity = computeSimilarity(stnTopics,
@@ -663,9 +663,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		double term4 = 0.0;
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int n = 0; n < vocabulary_size; n++) {
-				term3 += Utils.lgamma(d_beta + m_parentWordTopicSstat[k][n]);
+				term3 += Utils.lgamma(d_beta + word_topic_sstat[k][n]);
 			}
-			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_parentSstat[k]);
+			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_sstat[k]);
 		}
 
 		term1 = number_of_topics * Utils.lgamma(vocabulary_size * d_beta);
@@ -679,9 +679,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		term4 = 0.0;
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int n = 0; n < vocabulary_size; n++) {
-				term3 += Utils.lgamma(d_beta + m_childWordTopicSstat[k][n]);
+				term3 += Utils.lgamma(d_beta + word_topic_sstat[k][n]);
 			}
-			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_childSstat[k]);
+			term4 -= Utils.lgamma(vocabulary_size * d_beta + m_sstat[k]);
 		}
 
 		term1 = number_of_topics * Utils.lgamma(vocabulary_size * d_beta);

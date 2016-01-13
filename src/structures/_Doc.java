@@ -348,7 +348,7 @@ public class _Doc implements Comparable<_Doc> {
 		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
-		int docSize = getDocLength();
+		int docSize = getTotalDocLength();
 		if (m_words==null || m_words.length != docSize) {
 			m_topicAssignment = new int[docSize];
 			m_words = new int[docSize];
@@ -359,7 +359,8 @@ public class _Doc implements Comparable<_Doc> {
 			m_rand = new Random();
 		for(_SparseFeature fv:m_x_sparse) {
 			for(int j=0; j<fv.getValue(); j++) {
-				m_words[wIndex] = fv.getIndex();
+				int debugIndex = fv.getIndex();
+				m_words[wIndex] = debugIndex;
 				m_topicAssignment[wIndex] = m_rand.nextInt(k); // randomly initializing the topics inside a document
 				m_sstat[m_topicAssignment[wIndex]] ++; // collect the topic proportion
 				

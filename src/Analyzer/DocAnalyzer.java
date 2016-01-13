@@ -375,8 +375,12 @@ public class DocAnalyzer extends Analyzer {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
 			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);// construct bag-of-word vector based on normalized tokens	
 
-			if (sentence_vector.size()>0) {//avoid empty sentence				
-				String[] posTags = m_tagger.tag(result.getRawTokens());
+			if (sentence_vector.size()>0) {//avoid empty sentence	
+				String[] posTags;
+				if(m_tagger==null)
+					posTags = null;
+				else
+					posTags = m_tagger.tag(result.getRawTokens());
 				
 				stnList.add(new _Stn(index, Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
@@ -393,7 +397,8 @@ public class DocAnalyzer extends Analyzer {
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.setSentences(stnList);
 			
-			setStnFvs(doc);
+			if(m_tagger!=null)
+				setStnFvs(doc);
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
