@@ -167,4 +167,12 @@ public class MultiTaskSVM {
 		train();
 		predict();
 	}
+	
+	public double getNegF1(){
+		return m_avgPRF[0][2];
+	}
+	
+	public double getPosF1(){
+		return m_avgPRF[1][2];
+	}
 }
