@@ -5,12 +5,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
+import json.JSONArray;
+import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
 import structures._ParentDoc;
-import structures._Stn;
-import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -63,40 +63,43 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String title = Utils.getJSONValue(json, "title");
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
-
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-	
-		AnalyzeDoc(d);
-
-		if (m_corpus.getCollection().contains(d)) {
-			parentHashMap.put(name, d);
+		String[] sentences = null;
+		
+		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0); 
+		
+		try {
+			JSONArray sentenceArray = json.getJSONArray("sentences");
+			sentences = new String[sentenceArray.length()];
+			//shall we add title into this sentence array
+			for (int i = 0; i < sentenceArray.length(); i++)
+				sentences[i] = Utils.getJSONValue(sentenceArray.getJSONObject(i), "sentence");
+			
+			if (AnalyzeDocByStn(d, sentences))
+				parentHashMap.put(name, d);
+		} catch (JSONException e) {
+			e.printStackTrace();
 		}
-
 	}
 
 	public void loadChildDoc(String fileName) {
-		if (fileName == null) {
+		if (fileName == null || fileName.isEmpty())
 			return;
-		}
 
 		JSONObject json = LoadJson(fileName);
-		String title = Utils.getJSONValue(json, "title");
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, title, content, 0);
+		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 		
-		AnalyzeDoc(d);
-
-		if (m_corpus.getCollection().contains(d)) {
+		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
 				d.setParentDoc(pDoc);
 				pDoc.addChildDoc(d);
-			}
+			} else {
+				System.err.format("[Warning]Missing parent document %s!\n", parent);
+			}			
 		}
 	}
-	
-
 }

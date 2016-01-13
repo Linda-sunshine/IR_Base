@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 
+import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.ParentChildAnalyzerwithStn;
 
 public class testParentChild_Gibbs {
 	public static void main(String[] args) throws IOException, ParseException {
@@ -184,8 +184,7 @@ public class testParentChild_Gibbs {
 		// DFthreshold); // Select the features.
 
 		/***** parent child topic model *****/
-		ParentChildAnalyzerwithStn analyzer = new ParentChildAnalyzerwithStn(tokenModel,
-				classNumber, fvFile, Ngram, lengthThreshold);
+		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
 		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
 		analyzer.setFeatureValues(featureValue, norm);
@@ -249,12 +248,6 @@ public class testParentChild_Gibbs {
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
-			} else if (topicmodel.equals("LDA_GibbsParentChild")) {
-				// in gibbs sampling, no need to compute log-likelihood during
-				// sampling
-				model = new LDA_GibbsParentChild(gibbs_iteration, 0,
-						beta, c, lambda, number_of_topics, alpha, burnIn,
-						gibbs_lag);
 			}
 			
 			model.setDisplay(display);
@@ -290,21 +283,6 @@ public class testParentChild_Gibbs {
 				model.crossValidation(crossV);
 				model.printTopWords(topK);
 			}
-
-			if (sentence) {
-				String summaryFilePath = "./data/results/Topics_"
-						+ number_of_topics + "_Summary.txt";
-				model.setSummaryWriter(summaryFilePath);
-				if (category.equalsIgnoreCase("camera"))
-					((HTMM) model).docSummary(cameraProductList);
-				else if (category.equalsIgnoreCase("tablet"))
-					((HTMM) model).docSummary(tabletProductList);
-				else if (category.equalsIgnoreCase("phone"))
-					((HTMM) model).docSummary(phoneProductList);
-				else if (category.equalsIgnoreCase("tv"))
-					((HTMM) model).docSummary(tvProductList);
-			}
-
 		}
 
 	}
