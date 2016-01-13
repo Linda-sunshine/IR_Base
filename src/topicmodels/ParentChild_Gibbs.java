@@ -603,7 +603,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
-		System.out.println("printing topic assignment parent documents");
+	//	System.out.println("printing topic assignment parent documents");
 		
 		String topicAssignmentFile = d.getName() + ".txt";
 		try {
@@ -627,7 +627,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	public void printChildTopicAssignment(_ChildDoc d, File childFolder) {
-		System.out.println("printing topic assignment child documents");
+	//	System.out.println("printing topic assignment child documents");
 		
 		String topicAssignmentfile = d.getName() + ".txt";
 		try {
