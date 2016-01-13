@@ -4,8 +4,6 @@
 package structures;
 
 import java.util.Arrays;
-import java.util.ArrayList;
-
 import java.util.Set;
 
 /**
@@ -15,10 +13,8 @@ import java.util.Set;
 public class _Stn {
 
 	//added by Renqin
-//	public int[] m_wordPositionInDoc;
-//	public double m_stnLength;
-//	public int[] m_words;
 	public double[] m_topics;
+	int m_index; // position in the document
 	
 	_SparseFeature[] m_x_sparse; // bag of words for a sentence
 	
@@ -43,16 +39,9 @@ public class _Stn {
 	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
 	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
-	
-	//added by Renqin
-//	public _Stn(int stnLength) {
-//		m_stnLength = stnLength;
-//		m_wordPositionInDoc = new int[stnLength];
-//		m_rawTokens = new String[stnLength];
-//		m_words = new int[stnLength]; // record index;
-//	}
 
-	public _Stn(_SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
+	public _Stn(int index, _SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
+		m_index = index;
 		m_x_sparse = x;
 		m_rawTokens = rawTokens;
 		m_sentencePOSTag = posTags;
@@ -80,18 +69,10 @@ public class _Stn {
 
 		Arrays.fill(m_topics, 0);
 	}
-
-//	//added by Renqin
-//	public void setWordInStn(ArrayList<Integer> positionInStn,
-//			ArrayList<String> rawTokens, ArrayList<Integer> words) {
-//		for (int n = 0; n < positionInStn.size(); n++) {
-//			m_wordPositionInDoc[n] = positionInStn.get(n);
-//			m_rawTokens[n] = rawTokens.get(n);
-//			m_words[n] = words.get(n);
-//		}
-//
-//=======
-//	}
+	
+	public int getIndex() {
+		return m_index;
+	}
 
 	public _SparseFeature[] getFv() {
 		return m_x_sparse;

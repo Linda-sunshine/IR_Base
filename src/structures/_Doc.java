@@ -348,7 +348,7 @@ public class _Doc implements Comparable<_Doc> {
 		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
-		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);
+		int docSize = getDocLength();
 		if (m_words==null || m_words.length != docSize) {
 			m_topicAssignment = new int[docSize];
 			m_words = new int[docSize];

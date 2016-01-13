@@ -363,12 +363,10 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
-
-	// adding sentence splitting function, modified for HTMM
-	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+	
+	protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {
 		TokenizeResult result;
-		int y = doc.getYLabel();
-		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		int y = doc.getYLabel(), index = 0;		
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // sparse sentence feature vectors 
 		double stopwordCnt = 0, rawCnt = 0;
@@ -380,12 +378,13 @@ public class DocAnalyzer extends Analyzer {
 			if (sentence_vector.size()>0) {//avoid empty sentence				
 				String[] posTags = m_tagger.tag(result.getRawTokens());
 				
-				stnList.add(new _Stn(Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
+				stnList.add(new _Stn(index, Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
 				
 				stopwordCnt += result.getStopwordCnt();
 				rawCnt += result.getRawCnt();
 			}
+			index ++;
 		} // End For loop for sentence	
 	
 		//the document should be long enough
@@ -407,6 +406,12 @@ public class DocAnalyzer extends Analyzer {
 			rollBack(spVct, y);
 			return false;
 		}
+	}
+
+	// adding sentence splitting function, modified for HTMM
+	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		return AnalyzeDocByStn(doc, sentences);		
 	}
 	
 	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment
