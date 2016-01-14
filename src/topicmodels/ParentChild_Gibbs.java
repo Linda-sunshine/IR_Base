@@ -18,8 +18,9 @@ import structures._Stn;
 import utils.Utils;
 
 public class ParentChild_Gibbs extends LDA_Gibbs {
-	public double[] m_gamma;
-	public double m_mu;
+	double[] m_gamma, m_topicProbCache;
+	double[][] m_xTopicProbCache;
+	double m_mu;
 	
 	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu) {
@@ -28,6 +29,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		m_mu = mu;
 		m_gamma = new double[gamma.length];
 		System.arraycopy(gamma, 0, m_gamma, 0, gamma.length);
+		m_topicProbCache = new double[number_of_topics];
+		m_xTopicProbCache = new double[gamma.length][number_of_topics];
 	}
 	
 	@Override
@@ -67,24 +70,18 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		d.permutation();
 		
 		if(d instanceof _ParentDoc)
-			sampleParentDocTopic((_ParentDoc)d);
+			sampleInParentDoc((_ParentDoc)d);
 		else if(d instanceof _ChildDoc)
-			sampleChildDocTopic((_ChildDoc)d);
+			sampleInChildDoc((_ChildDoc)d);
 		
 		return 1;
 	}
 	
-	void sampleParentDocTopic(_ParentDoc d){
-		int samplingTopic = 0;
+	void sampleInParentDoc(_ParentDoc d){
 		int wid, tid;
-		double[] topicProb = new double[number_of_topics];
-		double prob;
-		double normalizedProb;
-		
+		double normalizedProb;		
 		
 		for(int i=0; i<d.m_words.length; i++){
-			normalizedProb = 0;
-			prob = 0;
 			wid = d.m_words[i];
 			tid = d.m_topicAssignment[i];
 			
@@ -94,85 +91,73 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				m_sstat[tid] --;
 			}
 
+			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
-				topicProb[tid] = 0;
-
 				double term1 = parentWordByTopicProb(tid, wid);
-				double term2 = parentTopicInDocProb(tid, d);
+				double term2 = topicInParentDocProb(tid, d);
 				double term3 = parentChildInfluenceProb(tid, d);
 					
-				topicProb[tid] = term1*term2*term3;
-				normalizedProb += topicProb[tid];
-			}
-			
-			for(int k=0; k<number_of_topics; k++){
-				topicProb[k] = topicProb[k]/normalizedProb;
+				m_topicProbCache[tid] = term1*term2*term3;
+				normalizedProb += m_topicProbCache[tid];
 			}
 
-			prob = m_rand.nextDouble();			
+			normalizedProb *= m_rand.nextDouble();			
 			for(tid=0; tid<number_of_topics; tid++){
-				prob -= topicProb[tid];
-				if(prob<=0)
+				normalizedProb -= m_topicProbCache[tid];
+				if(normalizedProb <= 0)
 					break;
 			}
 			
-			if(tid==number_of_topics)
+			if(tid == number_of_topics)
 				tid --;
-			samplingTopic = tid;
 			
-			d.m_topicAssignment[i] = samplingTopic;
-			d.m_sstat[samplingTopic] ++;
+			d.m_topicAssignment[i] = tid;
+			d.m_sstat[tid] ++;
 			if(m_collectCorpusStats){
-				word_topic_sstat[samplingTopic][wid] ++;
-				m_sstat[samplingTopic] ++;
+				word_topic_sstat[tid][wid] ++;
+				m_sstat[tid] ++;
 			}
 		}
 	}
 
-
-	//probability of word given topic
+	//probability of word given topic p(w|z, phi^p, beta)
 	protected double parentWordByTopicProb(int tid, int wid){
-		double term1 = (d_beta+word_topic_sstat[tid][wid])/(d_beta*vocabulary_size+m_sstat[tid]);
-		return term1;
+		return (d_beta+word_topic_sstat[tid][wid])/(d_beta*vocabulary_size+m_sstat[tid]);
 	}
 
-	//probability of topic given doc
-	protected double parentTopicInDocProb(int tid, _ParentDoc d){
-		double term1 = (d_alpha+d.m_sstat[tid]);
-		return term1;
+	//probability of topic given doc p(z|d, alpha)
+	protected double topicInParentDocProb(int tid, _ParentDoc d){
+		return d_alpha+d.m_sstat[tid];
 	}
 
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
-		double term = 1;
-		double docLength = d.m_words.length;
+		double term = 0;
+		double docLength = d.getTotalDocLength()/m_mu;
 		for (_ChildDoc cDoc : d.m_childDocs) {
-			double term5 = 0.0;
+			double term11 = (Utils.lgamma(d_alpha + (d.m_sstat[0]) / (docLength) + cDoc.m_xTopicSstat[0][0]));
+			double term12 = (Utils.lgamma(d_alpha + (d.m_sstat[0] + 1) / (docLength)+ cDoc.m_xTopicSstat[0][0]));
 
-			double term11 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0]) / (docLength) + cDoc.m_xTopicSstat[0][0]));
-			double term12 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0] + 1) / (docLength)+ cDoc.m_xTopicSstat[0][0]));
+			double term21 = (Utils.lgamma(d_alpha + (d.m_sstat[tid] + 1) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
+			double term22 = (Utils.lgamma(d_alpha + (d.m_sstat[tid]) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
 
-			double term21 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid] + 1) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
-			double term22 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid]) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
+			double term31 = (Utils.lgamma(d_alpha + (d.m_sstat[0] + 1) / (docLength)));
+			double term32 = (Utils.lgamma(d_alpha + (d.m_sstat[0]) / (docLength)));
 
-			double term31 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0] + 1) / (docLength)));
-			double term32 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[0]) / (docLength)));
+			double term41 = (Utils.lgamma(d_alpha + (d.m_sstat[tid]) / (docLength)));
+			double term42 = (Utils.lgamma(d_alpha + (d.m_sstat[tid] + 1) / (docLength)));
 
-			double term41 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid]) / (docLength)));
-			double term42 = (Utils.lgamma(d_alpha + m_mu * (d.m_sstat[tid] + 1) / (docLength)));
-
-			term5 = term11 - term12 + term21 - term22 + term31 - term32 + term41 - term42;
-			term *= Math.exp(term5);
+			term += term11 - term12 + term21 - term22 + term31 - term32 + term41 - term42;
 
 			if (invalidValue(term11) || invalidValue(term12)
 							|| invalidValue(term21) || invalidValue(term22)
 							|| invalidValue(term31) || invalidValue(term32)
 							|| invalidValue(term41) || invalidValue(term42)
-							|| invalidValue(term5) || invalidValue(term)) {
+							|| invalidValue(term)) {
 				System.out.println("invalid term");
 			}
 		} 
 
-		return term;
+		return Math.exp(term);
 	}
 
 	public boolean invalidValue(double term) {
@@ -184,19 +169,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		}
 	}
 
-	public void sampleChildDocTopic(_ChildDoc d){
-		int wid, tid, xid;
+	public void sampleInChildDoc(_ChildDoc d){
+		int wid, tid, xid;		
+		double normalizedProb;
 		
-		double[][] xTopicProb = new double[2][number_of_topics];
-		double prob;
-		double normalizedProb = 0;
-		
-		for(int i=0; i<d.m_words.length; i++){
-			int samplingX = 0;
-			int samplingTopic = 0;
-			prob = 0;
-			normalizedProb = 0;
-			
+		for(int i=0; i<d.m_words.length; i++){			
 			wid = d.m_words[i];
 			tid = d.m_topicAssignment[i];
 			xid = d.m_xIndicator[i];
@@ -208,6 +185,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				m_sstat[tid]--;
 			}
 			
+			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
 				double term1 = childWordByTopicProb(tid, wid);
 				
@@ -219,19 +197,19 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				double term4 = childTopicInDocProb(tid, 0, d);
 				double term5 = childXInDocProb(0, d);
 				
-				xTopicProb[1][tid] = term1*term2*term3;
-				normalizedProb += xTopicProb[1][tid];
+				m_xTopicProbCache[1][tid] = term1*term2*term3;
+				normalizedProb += m_xTopicProbCache[1][tid];
 				
-				xTopicProb[0][tid] = term1*term4*term5;
-				normalizedProb += xTopicProb[0][tid];
+				m_xTopicProbCache[0][tid] = term1*term4*term5;
+				normalizedProb += m_xTopicProbCache[0][tid];
 			}
 			
 			boolean finishLoop = false;
-			prob = normalizedProb*m_rand.nextDouble();
+			normalizedProb *= m_rand.nextDouble();
 			for(xid=0; xid<m_gamma.length; xid++){
 				for(tid=0; tid<number_of_topics; tid++){
-					prob -= xTopicProb[xid][tid];
-					if(prob<=0){
+					normalizedProb -= m_xTopicProbCache[xid][tid];
+					if(normalizedProb<=0){
 						finishLoop = true;
 						break;
 					}
@@ -240,54 +218,45 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					break;
 			}
 
-			if( xid==2 )
+			if (xid == 2)
 				xid--;
 			
-			if (tid==number_of_topics)
+			if (tid == number_of_topics)
 				tid--;
 			
-			samplingX = xid;
-			samplingTopic = tid;
-			
-			d.m_topicAssignment[i] = samplingTopic;
-			d.m_xIndicator[i] = samplingX;
+			d.m_topicAssignment[i] = tid;
+			d.m_xIndicator[i] = xid;
 
-			d.m_xTopicSstat[samplingX][samplingTopic] ++;
-			d.m_xSstat[samplingX] ++;
+			d.m_xTopicSstat[xid][tid] ++;
+			d.m_xSstat[xid] ++;
 			if(m_collectCorpusStats){
-				word_topic_sstat[samplingTopic][wid]++;
-				m_sstat[samplingTopic]++;
-			}
-			
+				word_topic_sstat[tid][wid]++;
+				m_sstat[tid]++;
+			}			
 		}
 	}
 
-	//probability of word given topic
+	//probability of word given topic p(w|z, phi^c, beta)
 	public double childWordByTopicProb(int tid, int wid){
-		double term1 = (d_beta + word_topic_sstat[tid][wid])/(d_beta*vocabulary_size + m_sstat[tid]);
-		return term1;		
+		return (d_beta + word_topic_sstat[tid][wid])/(d_beta*vocabulary_size + m_sstat[tid]);
 	}
 
-	//probability of topic given doc
+	//probability of topic in given child doc p(z^c|d, alpha, z^p)
 	public double childTopicInDocProb(int tid, int xid, _ChildDoc d){
-		double term = 0.0;
 		double docLength = d.m_parentDoc.getTotalDocLength();
 
-		if(xid==1){
-			term = (d_alpha + d.m_xTopicSstat[1][tid])/(number_of_topics*d_alpha + d.m_xSstat[1]);
-		}else if(xid==0){
-			term = (d_alpha + m_mu*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
-					/(number_of_topics*d_alpha+m_mu+d.m_xSstat[0]);
-		}
-
-		return term;
+		if(xid == 1){
+			return (d_alpha + d.m_xTopicSstat[1][tid])
+					/(number_of_topics*d_alpha + d.m_xSstat[1]);
+		} else if(xid == 0){
+			return (d_alpha + m_mu*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
+					/(number_of_topics*d_alpha + m_mu + d.m_xSstat[0]);
+		} else
+			return -1;//this branch is impossible
 	}
 
 	public double childXInDocProb(int xid, _ChildDoc d){
-		double term = 0.0;
-		term = m_gamma[xid]+ d.m_xSstat[xid];
-
-		return term;
+		return m_gamma[xid]+ d.m_xSstat[xid];
 	}	
 
 	public void calculate_M_step(int iter){
@@ -309,9 +278,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					collectChildStats((_ChildDoc)d);
 			}
 		}
-
-	}
-	
+	}	
 	
 	protected void collectParentStats(_ParentDoc d) {
 		for (int k = 0; k < this.number_of_topics; k++) {
