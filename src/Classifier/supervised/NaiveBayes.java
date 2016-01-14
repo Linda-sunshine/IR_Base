@@ -66,7 +66,8 @@ public class NaiveBayes extends BaseClassifier {
 	}
 	
 	//Train the data set.
-	public void train(Collection<_Doc> trainSet){
+	@Override
+	public double train(Collection<_Doc> trainSet){
 		init();
 		
 		for(_Doc doc: trainSet){
@@ -83,6 +84,7 @@ public class NaiveBayes extends BaseClassifier {
 			for(int j = 0; j < m_featureSize; j++)
 				m_Pxy[i][j] = Math.log(m_deltaXY+m_Pxy[i][j]) - sum;
 		}
+		return 0;//we should compute the log-likelihood
 	}
 		
 	//Predict the label for one document.

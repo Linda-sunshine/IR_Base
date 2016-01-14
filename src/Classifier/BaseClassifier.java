@@ -30,11 +30,11 @@ public abstract class BaseClassifier {
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
-	public void train() {
-		train(m_trainSet);
+	public double train() {
+		return train(m_trainSet);
 	}
 	
-	public abstract void train(Collection<_Doc> trainSet);
+	public abstract double train(Collection<_Doc> trainSet);
 	public abstract int predict(_Doc doc);//predict the class label
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts

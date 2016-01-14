@@ -194,7 +194,8 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	//this is batch training in each individual user
-	public void train(){
+	@Override
+	public double train(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
@@ -235,5 +236,6 @@ public class CoLinAdapt extends LinAdapt {
 		
 		for(_LinAdaptStruct user:m_userList)
 			setPersonalizedModel(user);
+		return oldFValue;
 	}
 }

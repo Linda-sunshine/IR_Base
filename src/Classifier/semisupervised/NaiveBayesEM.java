@@ -98,7 +98,7 @@ public class NaiveBayesEM extends NaiveBayes {
 	}
 	
 	//EM-training on the data set.
-	public void train(Collection<_Doc> trainSet){
+	public double train(Collection<_Doc> trainSet){
 		init();
 		
 		double current = 0, last = -1.0, converge = 1.0;
@@ -118,5 +118,6 @@ public class NaiveBayesEM extends NaiveBayes {
 		} while(iter<m_maxIter && converge>m_converge);
 		
 		System.out.format("NaiveBayes-EM converge to %.4f after %d iterations...\n", converge, iter);
+		return last;
 	}
 }

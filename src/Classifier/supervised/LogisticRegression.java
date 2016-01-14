@@ -59,9 +59,9 @@ public class LogisticRegression extends BaseClassifier {
 	 * turns to 0, it finds the final point and we get the best beta.
 	 */	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
-		double fValue;
+		double fValue = 0;
 		int fSize = m_beta.length;
 		
 		init();
@@ -73,6 +73,8 @@ public class LogisticRegression extends BaseClassifier {
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
 		}
+		
+		return fValue;
 	}
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multi-class LR.

@@ -14,12 +14,12 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 	
 	int m_fDim; // The dimension of feature for a pair of users, including bias term.
 	int m_neiDim; // The dimension of neighborhood learninng
-	double[] m_w; // THe array contains all user's weights.
+	double[] m_w; // The array contains all user's weights.
 	double[] m_gN, m_diagN; // The gradient matrix and diag matrix, used in lbfgs.
 	double m_lambda; // Parameter for regularization.
 	
 	double m_diffA, m_diffSim, m_tol;// Tolerance of the comparison.
-	double[] m_APre, m_ACur, m_simA, m_simNei;
+	double[] m_APre, m_ACur, m_simA; //, m_simNei;
 	double[][] m_xijs; // The structure stores all training instances.
 	
 	public CoLinAdaptWithNeighborhoodLearning (int classNo, int featureSize, HashMap<String, Integer> featureMap,
@@ -30,7 +30,7 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 	}
 	
 	// Load users before initNeiLearn(), we need the number of users.
-	public void initNeiLearn(){
+	void initNeiLearn(){
 		
 		m_neiDim = m_fDim * m_userList.size();
 		m_w = new double[m_neiDim];
@@ -40,27 +40,28 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 		m_diffA = Double.MAX_VALUE;
 		m_diffSim = Double.MAX_VALUE;
 		m_simA = new double[m_topK * m_userList.size()];
-		m_simNei = new double[m_topK * m_userList.size()];
 		
 		m_tol = 1e-10;
 	}
 
-	public void initLBFGSNeiLearn(){
+	void initLBFGSNeiLearn(){
 		Arrays.fill(m_diagN, 0);
 		Arrays.fill(m_gN, 0);
 	}
 	
-	public void train(){
+	@Override
+	public double train(){
 		initNeiLearn();
 		constructXijs(); // Construct all training instances.
 		m_ACur = _CoLinAdaptStruct.getSharedA();
+		double fValue = 0;
 
 		while(m_diffA > m_tol && m_diffSim > m_tol){
 			// Step 1: Get the previous A matrix, copy into m_preA.
 			m_APre = Arrays.copyOfRange(m_ACur, 0, m_ACur.length);
 			
 			// Step 2: Train the A matrix, with m_curA, update the m_diffA.
-			super.train();
+			fValue = super.train();
 			updateDiffA();
 			
 			// Step 3: Calculate the similarity between As for training.
@@ -72,7 +73,8 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 			// Step 5: Update the neighbor similarity based on the new weights.
 			// m_DiffSim is calculated inside update.
 			updateNeighborhood();
-		}		
+		}	
+		return fValue;
 	}
 	
 	// Construct all training instances.
@@ -187,7 +189,7 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 			// Traverse all neighbors.
 			wi = Arrays.copyOfRange(m_w, i * m_fDim, (i + 1) * m_fDim);
 			for(int j=0; j<ui.getNeighbors().size(); j++){
-				exp = Math.exp(-Utils.dotProduct(m_xijs[i * m_topK + j ], wi));
+				exp = Math.exp(-Utils.dotProduct(m_xijs[i * m_topK + j], wi));
 				fValue += m_simA[i * m_topK + j] * Math.log(1 + exp);
 				
 				// Update the gradients.
@@ -217,7 +219,6 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 				sim = logit(i, j); // New similarity between a pair of users.
 				m_diffSim += (sim - nit.m_value) * (sim - nit.m_value);
 				nit.m_value = sim; // Update similarity of neighbor.
-				m_simNei[m_topK * i + j] = sim; // Update the similarity too.
 				j++;
 			}
 		}
