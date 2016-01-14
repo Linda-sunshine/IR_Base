@@ -44,8 +44,14 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		Arrays.fill(m_sstat, 0);
 		
 		for(_Doc d:collection){
+			if(d instanceof _ParentDoc){
+				for(_Stn stnObj: d.getSentences()){
+					stnObj.setTopicsVct(number_of_topics);
+				}
+			}
 			if(d instanceof _ChildDoc)
 				((_ChildDoc) d).createXSpace(number_of_topics, m_gamma.length);
+			
 			d.setTopics4Gibbs(number_of_topics, 0);
 			for (int i = 0; i < d.m_words.length; i++) {
 				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]]++;
@@ -71,7 +77,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	void sampleParentDocTopic(_ParentDoc d){
 		int samplingTopic = 0;
 		int wid, tid;
-		double[] probRatio = new double[number_of_topics];
+		double[] topicProb = new double[number_of_topics];
 		double prob;
 		double normalizedProb;
 		
@@ -88,26 +94,24 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				m_sstat[tid] --;
 			}
 
-			probRatio[0] = 1;
-			normalizedProb += probRatio[0];
 			for(tid=0; tid<number_of_topics; tid++){
-				probRatio[tid] = 0;
+				topicProb[tid] = 0;
 
 				double term1 = parentWordByTopicProb(tid, wid);
 				double term2 = parentTopicInDocProb(tid, d);
 				double term3 = parentChildInfluenceProb(tid, d);
 					
-				probRatio[tid] = term1*term2*term3;
-				normalizedProb += probRatio[tid];
+				topicProb[tid] = term1*term2*term3;
+				normalizedProb += topicProb[tid];
 			}
 			
 			for(int k=0; k<number_of_topics; k++){
-				probRatio[k] = probRatio[k]/normalizedProb;
+				topicProb[k] = topicProb[k]/normalizedProb;
 			}
 
 			prob = m_rand.nextDouble();			
 			for(tid=0; tid<number_of_topics; tid++){
-				prob -= probRatio[tid];
+				prob -= topicProb[tid];
 				if(prob<=0)
 					break;
 			}
@@ -128,14 +132,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	//probability of word given topic
 	protected double parentWordByTopicProb(int tid, int wid){
-		double term1 = (d_beta + word_topic_sstat[tid][wid])/(d_beta + word_topic_sstat[0][wid]);
-		double term2 = (vocabulary_size * d_beta + m_sstat[0])/(vocabulary_size * d_beta + m_sstat[tid]);
-		return term1 * term2;
+		double term1 = (d_beta+word_topic_sstat[tid][wid])/(d_beta*vocabulary_size+m_sstat[tid]);
+		return term1;
 	}
 
 	//probability of topic given doc
 	protected double parentTopicInDocProb(int tid, _ParentDoc d){
-		double term1 = (d_alpha + d.m_sstat[tid])/ (d_alpha + d.m_sstat[0]);
+		double term1 = (d_alpha+d.m_sstat[tid]);
 		return term1;
 	}
 
@@ -173,7 +176,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	public boolean invalidValue(double term) {
-		if (Math.abs(term) == Double.MAX_VALUE - 1) {
+		if (Math.abs(term) > Double.MAX_VALUE - 1) {
 			System.out.println(term);
 			return true;
 		} else {
@@ -210,11 +213,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				
 				//p(z=tid,x=1) from specific
 				double term2 = childTopicInDocProb(tid, 1, d);
-				double term3 = childParentInfluenceProb(1, d);
+				double term3 = childXInDocProb(1, d);
 				
 				//p(z=tid,x=0) from background
 				double term4 = childTopicInDocProb(tid, 0, d);
-				double term5 = childParentInfluenceProb(0, d);
+				double term5 = childXInDocProb(0, d);
 				
 				xTopicProb[1][tid] = term1*term2*term3;
 				normalizedProb += xTopicProb[1][tid];
@@ -280,7 +283,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return term;
 	}
 
-	public double childParentInfluenceProb(int xid, _ChildDoc d){
+	public double childXInDocProb(int xid, _ChildDoc d){
 		double term = 0.0;
 		term = m_gamma[xid]+ d.m_xSstat[xid];
 
@@ -314,6 +317,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for (int k = 0; k < this.number_of_topics; k++) {
 			d.m_topics[k] += (d.m_sstat[k] + d_alpha);
 		}
+		collectStnStats(d);
 	}
 	
 	protected void collectChildStats(_ChildDoc d) {
@@ -329,6 +333,46 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			d.m_topics[k] += d.m_xTopics[1][k] + d.m_xTopics[0][k];
 		}
 	}
+	
+	public void collectStnStats(_Doc d) {
+		_SparseFeature[] fv = d.getSparse();
+		double[][] phi = new double[fv.length][number_of_topics];
+		HashMap<Integer, Integer> indexMap = new HashMap<Integer, Integer>();
+
+		// //computeWordTopicProportionInDoc
+		////compute phi
+		for (int i = 0; i < fv.length; i++) {
+			int index = fv[i].getIndex();
+			indexMap.put(index, i);
+		}
+
+		for (int n = 0; n < d.m_words.length; n++) {
+			int index = d.m_words[n];
+			int topic = d.m_topicAssignment[n];
+			phi[indexMap.get(index)][topic]++;
+		}
+
+		for (int i = 0; i < fv.length; i++) {
+			Utils.L1Normalization(phi[i]);
+		}
+
+		for (_Stn stnObject:d.getSentences()) {
+			// initial topic proportions (m_topics) of sentences
+			_SparseFeature[] sv = stnObject.getFv();
+			
+			//m_stnLength: the length of sentence
+			//m_words: the index in CV of each word in the sentence 
+			for (int j = 0; j < sv.length; j++) {
+				int index = sv[j].getIndex();
+				double value = sv[j].getValue();
+				for (int k = 0; k < number_of_topics; k++) {
+					stnObject.m_topics[k] += value*phi[indexMap.get(index)][k];
+				}
+			}
+		}
+
+	}
+
 	
 	protected void finalEst() {
 		normalizedTopicTermProb();
@@ -361,51 +405,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	}
 	
-	public void estStnThetaInParentDoc(_ParentDoc d) {
-		_SparseFeature[] fv = d.getSparse();
-		double[][] phi = new double[fv.length][number_of_topics];
-		HashMap<Integer, Integer> indexMap = new HashMap<Integer, Integer>();
-
-		// //computeWordTopicProportionInDoc
-		////compute phi
-		for (int i = 0; i < fv.length; i++) {
-			int index = fv[i].getIndex();
-			indexMap.put(index, i);
+	public void estStnThetaInParentDoc(_Doc d){
+		for(_Stn stnObj: d.getSentences()){
+			Utils.L1Normalization(stnObj.m_topics);
 		}
-
-		for (int n = 0; n < d.m_words.length; n++) {
-			int index = d.m_words[n];
-			int topic = d.m_topicAssignment[n];
-			phi[indexMap.get(index)][topic]++;
-		}
-
-		for (int i = 0; i < fv.length; i++) {
-			Utils.L1Normalization(phi[i]);
-		}
-
-		////compute topic proportion
-		//// sentenceMap:HashMap<sentenceID, _stn> in _ParentDoc2
-		for (_Stn stnObject:d.getSentences()) {
-			// initial topic proportions (m_topics) of sentences
-			_SparseFeature[] sv = stnObject.getFv();
-			
-			//m_stnLength: the length of sentence
-			//m_words: the index in CV of each word in the sentence 
-			stnObject.setTopicsVct(number_of_topics);
-			for (int j = 0; j < sv.length; j++) {
-				int index = sv[j].getIndex();
-				double value = sv[j].getValue();
-				for (int k = 0; k < number_of_topics; k++) {
-					stnObject.m_topics[k] += value*phi[indexMap.get(index)][k];
-				}
-			}
-			Utils.L1Normalization(stnObject.m_topics);
-		
-
-		}
-
 	}
-
+	
+	
 	public void discoverSpecificComments() {
 		System.out.println("topic similarity");
 		String fileName = "topicSimilarity.txt";
@@ -423,12 +429,14 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 						docTopicSimilarity = computeSimilarity(
 								((_ParentDoc) doc).m_topics, cDoc.m_topics);
-						pw.print(docTopicSimilarity+":");
+						pw.print(docTopicSimilarity);
 						for (_Stn stnObj:doc.getSentences()) {
 							double[] stnTopics = stnObj.m_topics;
 							stnTopicSimilarity = computeSimilarity(stnTopics,
 									cDoc.m_topics);
-							pw.print(stnObj.getIndex() + ":" + stnTopicSimilarity);
+//							pw.println("add");
+//							System.out.println("index"+stnObj.getIndex());
+							pw.print(":"+(stnObj.getIndex()+1) + ":"+stnTopicSimilarity);
 						}
 						pw.print("\t");
 					}
