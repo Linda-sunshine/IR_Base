@@ -54,7 +54,7 @@ public class KMeansAlg extends BaseClassifier {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		init();
 		
 		for(_Doc d:trainSet)			
@@ -64,6 +64,7 @@ public class KMeansAlg extends BaseClassifier {
 		Clustering result = alg.cluster(m_instances);	
 		m_centroids = alg.getClusterMeans();
 		m_clusters = result.getClusters();
+		return 0; // we can compute the corresponding loss function
 	}
 
 	//assign to the closest cluster 

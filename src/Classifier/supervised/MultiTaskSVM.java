@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import Classifier.BaseClassifier;
-import Classifier.semisupervised.CoLinAdapt._LinAdaptStruct;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -64,7 +63,7 @@ public class MultiTaskSVM extends BaseClassifier {
 	}
 	
 	@Override
-	public void train(){
+	public double train(){
 		init();
 		
 		//Transfer all user reviews to instances recognized by SVM, indexed by users.
@@ -107,6 +106,8 @@ public class MultiTaskSVM extends BaseClassifier {
 		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
 		
 		setPersonalizedModel();
+		
+		return 0;
 	}
 	
 	void setPersonalizedModel() {
@@ -208,9 +209,10 @@ public class MultiTaskSVM extends BaseClassifier {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		System.err.println("[Error]train(Collection<_Doc> trainSet) is not implemented in MultiTaskSVM!");
 		System.exit(-1);
+		return 0;
 	}
 
 	@Override

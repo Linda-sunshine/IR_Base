@@ -34,7 +34,7 @@ public class asyncLinAdapt extends LinAdapt {
 	
 	//this is online training in each individual user
 	@Override
-	public void train(){
+	public double train(){
 		double initStepSize = 0.50, gNorm, gNormOld = Double.MAX_VALUE;;
 		int predL, trueL;
 		_Review doc;
@@ -73,6 +73,7 @@ public class asyncLinAdapt extends LinAdapt {
 				System.out.println();
 			setPersonalizedModel(user);
 		}
+		return 0;//we do not evaluate function value
 	}
 	
 	// update this current user only

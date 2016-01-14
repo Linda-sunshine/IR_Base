@@ -249,9 +249,9 @@ public class LinAdapt extends BaseClassifier {
 	}
 	
 	//this is batch training in each individual user
-	public void train(){
+	public double train(){
 		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue, A[], oldFValue = Double.MAX_VALUE;
+		double fValue = 0, A[], oldFValue = Double.MAX_VALUE, totalFvalue = 0;
 		int vSize = 2*m_dim;
 		
 		init();
@@ -289,7 +289,10 @@ public class LinAdapt extends BaseClassifier {
 			if (m_displayLv>0)
 				System.out.println();
 			setPersonalizedModel(user);
+			
+			totalFvalue += fValue;
 		}
+		return totalFvalue;
 	}
 	
 	void setPersonalizedModel(_LinAdaptStruct user) {
@@ -389,9 +392,10 @@ public class LinAdapt extends BaseClassifier {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {	
+	public double train(Collection<_Doc> trainSet) {	
 		System.err.println("[Error]train(Collection<_Doc> trainSet) is not implemented in LinAdapt!");
 		System.exit(-1);
+		return 0;
 	}
 
 	@Override

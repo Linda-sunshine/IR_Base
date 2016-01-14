@@ -47,6 +47,14 @@ public class LinAdaptMain {
 //		//Create an instances of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
+		/** Added by lin for calling neighborhood learning.
+		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
+		int fDim = 3; // xij contains <bias, bow, svd_sim>
+		String svdFile = "./data/CoLinAdapt/Amazon_SVD_Scaled.mm";
+		analyzer.loadSVDFile(svdFile);
+		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
+		*/
+		
 //		//Create an instances of first-order asyncCoLinAdapt model.
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		adaptation.loadUsers(analyzer.getUsers());

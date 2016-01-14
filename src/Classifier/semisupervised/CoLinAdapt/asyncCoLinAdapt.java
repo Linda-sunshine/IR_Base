@@ -128,7 +128,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	//this is online training in each individual user
 	@Override
-	public void train(){
+	public double train(){
 		double initStepSize = 1.0, gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
@@ -177,6 +177,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		
 		for(_LinAdaptStruct u:m_userList)
 			setPersonalizedModel(u);
+		
+		return 0; // we do not evaluate function value
 	}
 		
 	// update this current user only

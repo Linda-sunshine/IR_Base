@@ -115,4 +115,13 @@ public class _User {
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
 	}
+	
+	// Added by Lin for lowDimProfile.
+	public void setLowDimProfile(double[] ld){
+		m_lowDimProfile = ld;
+	}
+	// Added by Lin to access the low dim profile.
+	public double[] getLowDimProfile(){
+		return m_lowDimProfile;
+	}
  }

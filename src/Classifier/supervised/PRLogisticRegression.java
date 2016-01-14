@@ -59,7 +59,7 @@ public class PRLogisticRegression extends LogisticRegression {
 	 * turns to 0, it finds the final point and we get the best beta.
 	 */	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
 		double fValue = 0, lastFValue = 1, converge;
 		int fSize = m_beta.length, iter = 0;
@@ -85,6 +85,7 @@ public class PRLogisticRegression extends LogisticRegression {
 			System.out.print(lastFValue + ", ");
 		} while (++iter<10 && Math.abs(converge)>1e-3);
 		System.out.println();
+		return fValue;
 	}
 	
 	void Estep(Collection<_Doc> trainSet) {

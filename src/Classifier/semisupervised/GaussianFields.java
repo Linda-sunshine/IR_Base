@@ -105,7 +105,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	//Train the data set.
-	public void train(Collection<_Doc> trainSet){
+	public double train(Collection<_Doc> trainSet){
 		init();
 		
 		//using all labeled data for classifier training
@@ -125,6 +125,8 @@ public class GaussianFields extends BaseClassifier {
 		//set up labeled and unlabeled instance size
 		m_U = m_testSet.size();
 		m_L = m_labeled.size();
+		
+		return 0; // we can compute the corresponding objective function value
 	}
 	
 	public _Doc getTestDoc(int i) {

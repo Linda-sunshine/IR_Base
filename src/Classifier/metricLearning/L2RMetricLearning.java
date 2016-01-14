@@ -93,10 +93,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		super.train(trainSet);
 		
 		L2RModelTraining();
+		
+		return 0;
 	}
 	
 	protected void L2RModelTraining() {
