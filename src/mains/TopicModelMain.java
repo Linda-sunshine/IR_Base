@@ -27,13 +27,13 @@ public class TopicModelMain {
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
-		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
+		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
-		int number_of_topics = 20;
+		int number_of_topics = 40;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -43,7 +43,7 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 1500, gibbs_lag = 50;
+		int gibbs_iteration = 2000, gibbs_lag = 50;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -74,10 +74,7 @@ public class TopicModelMain {
 			sentence = true;
 		}
 		
-		String fvFile = String.format(
-				"./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram,
-				articleType);
-		
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 	
@@ -94,7 +91,9 @@ public class TopicModelMain {
 		String topWordPath = "./data/results/beta_" + number_of_topics + "_" + topicmodel + "_" + ".txt";
 		
 		Calendar today = Calendar.getInstance();
-		String filePrefix = "./data/results/"+today.get(Calendar.DATE)+today.get(Calendar.HOUR_OF_DAY)+topicmodel;
+		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
+						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
+		
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
 			System.out.println("creating directory" + resultFolder);
@@ -107,7 +106,7 @@ public class TopicModelMain {
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
-//		
+
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
