@@ -1705,14 +1705,17 @@ public class Linear {
         if (prob.n == 0) throw new IllegalArgumentException("problem has zero features");
         if (prob.l == 0) throw new IllegalArgumentException("problem has zero instances");
 
+        int xid = 0;
         for (Feature[] nodes : prob.x) {
             int indexBefore = 0;
             for (Feature n : nodes) {
                 if (n.getIndex() <= indexBefore) {
+                	System.out.println(xid);
                     throw new IllegalArgumentException("feature nodes must be sorted by index in ascending order");
                 }
                 indexBefore = n.getIndex();
             }
+            xid ++;
         }
 
         int l = prob.l;

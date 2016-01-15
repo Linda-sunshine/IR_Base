@@ -159,7 +159,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	//[adapt, 1] for testing purpose
 	void allocateReviews(ArrayList<_Review> reviews) {
 		Collections.sort(reviews);// sort the reviews by timestamp
-		int train = (int)(reviews.size() * m_trainRatio), adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+		int train = (int)(reviews.size() * m_trainRatio), adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
 		for(int i=0; i<reviews.size(); i++) {
 			if (i<train) {
 				reviews.get(i).setType(rType.TRAIN);
