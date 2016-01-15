@@ -3,6 +3,8 @@ package structures;
 import java.util.Arrays;
 import java.util.Random;
 
+import utils.Utils;
+
 public class _ChildDoc extends _Doc {
 	public int[] m_xIndicator;
 	public double[][] m_xTopicSstat;//joint assignment of <x,z>: 0 from general, 1 from specific
@@ -33,7 +35,7 @@ public class _ChildDoc extends _Doc {
 	
 	@Override
 	public void setTopics4Gibbs(int k, double alpha){		
-		if(m_topics==null||m_topics.length != k){		
+		if(m_topics==null || m_topics.length != k){		
 			m_topics = new double[k];
 			m_sstat = new double[k];
 		}
@@ -51,16 +53,18 @@ public class _ChildDoc extends _Doc {
 		if(m_rand == null)
 			m_rand =  new Random();
 		
+		int wid, gammaSize = m_xSstat.length;
 		for(_SparseFeature fv: m_x_sparse){
+			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
-				m_words[wIndex] = fv.getIndex();
+				m_words[wIndex] = wid;
 				m_topicAssignment[wIndex] = m_rand.nextInt(k);
-				m_xIndicator[wIndex] = m_rand.nextInt(m_xSstat.length);
+				m_xIndicator[wIndex] = m_rand.nextInt(gammaSize);
 
 				m_xTopicSstat[m_xIndicator[wIndex]][m_topicAssignment[wIndex]] ++;
 				m_xSstat[m_xIndicator[wIndex]] ++;
 						
-				wIndex += 1;
+				wIndex ++;
 			}
 		}
 	}
@@ -87,4 +91,10 @@ public class _ChildDoc extends _Doc {
  			}
 		}
 	}	
+	
+	public void estGlobalLocalTheta() {
+		Utils.L1Normalization(m_xProportion);
+		for(int x=0; x<m_xTopics.length; x++)
+			Utils.L1Normalization(m_xTopics[x]);
+	}
 }

@@ -357,10 +357,12 @@ public class _Doc implements Comparable<_Doc> {
 		int wIndex = 0;
 		if (m_rand==null)
 			m_rand = new Random();
+		
+		int wid;
 		for(_SparseFeature fv:m_x_sparse) {
-			for(int j=0; j<fv.getValue(); j++) {
-				int debugIndex = fv.getIndex();
-				m_words[wIndex] = debugIndex;
+			wid = fv.getIndex();
+			for(int j=0; j<fv.getValue(); j++) {				
+				m_words[wIndex] = wid;
 				m_topicAssignment[wIndex] = m_rand.nextInt(k); // randomly initializing the topics inside a document
 				m_sstat[m_topicAssignment[wIndex]] ++; // collect the topic proportion
 				
