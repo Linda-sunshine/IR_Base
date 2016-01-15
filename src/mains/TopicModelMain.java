@@ -1,7 +1,9 @@
 package mains;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Calendar;
 
 import structures._Corpus;
 import structures._Doc;
@@ -25,13 +27,13 @@ public class TopicModelMain {
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
-		int minimunNumberofSentence = 2; // each sentence should have at least 2 sentences
+		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
 		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
-		int number_of_topics = 20;
+		int number_of_topics = 40;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -41,7 +43,7 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 1500, gibbs_lag = 50;
+		int gibbs_iteration = 2000, gibbs_lag = 50;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -55,8 +57,11 @@ public class TopicModelMain {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
+		String articleType = "ArsTech";
 		String yahooNewsFolder = "./data/AT-YahooArticles";
 		String yahooCommentsFolder = "./data/AT-YahooComments";
+		String TechArticlesFolder = "./data/ParentChildTopicModel/ArsTechnicaArticles";
+		String TechCommentsFolder = "./data/ParentChildTopicModel/ArsTechnicaComments";
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -69,7 +74,8 @@ public class TopicModelMain {
 			sentence = true;
 		}
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
+		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 	
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
@@ -84,37 +90,38 @@ public class TopicModelMain {
 		////store top k words distribution over topic
 		String topWordPath = "./data/results/beta_" + number_of_topics + "_" + topicmodel + "_" + ".txt";
 		
+		Calendar today = Calendar.getInstance();
+		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
+						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
+		
+		File resultFolder = new File(filePrefix);
+		if (!resultFolder.exists()) {
+			System.out.println("creating directory" + resultFolder);
+			resultFolder.mkdir();
+		}
+		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
-//		
+
 //		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		////*******parent child topic model feature selection********////
-		////for parent child topic model, need to load two directory
-//		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel,
-//				 classNumber, null, Ngram, lengthThreshold);
-//		analyzer.LoadParentDirectory(yahooNewsFolder, suffix);
-//		analyzer.LoadChildDirectory(yahooCommentsFolder, suffix);
-		////***************////
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 //		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
 		
-	////*******parent child topic model********////
-	//for parent child topic model, need to load two directory
+		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
-		analyzer.LoadParentDirectory(yahooNewsFolder, suffix);
-		analyzer.LoadChildDirectory(yahooCommentsFolder, suffix);
-//	////***************////
-//		
+		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
+		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
+
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
@@ -169,25 +176,18 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 
-			}else if (topicmodel.equals("ParentChild_Gibbs")) {
-				double[] gamma = new double[2];
-				gamma[0] = 2;
-				gamma[1] = 2;
-				double mu = 0.5;
-				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
-						gibbs_lag, gamma, mu);
+			} else if (topicmodel.equals("ParentChild_Gibbs")) {
+				alpha = alpha - 1;
+				double mu = 1.0;
+				double[] gamma = {2, 2};
+				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
+						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
+						gamma, mu);
 			}
-//				else if (topicmodel.equals("ParentChild_Gibbs")) {
-//				double[] gamma = new double[2];
-//				gamma[0] = 2;
-//				gamma[1] = 2;
-//				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c, lambda, number_of_topics, alpha, burnIn,
-//						gibbs_lag, gamma);
-//			}
 			
 			model.setDisplay(display);
 			model.setInforWriter(infoFilePath);
-			model.setNewEggLoadInTrain(loadNewEggInTrain);
+//			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){
 				System.out.println("Loading aspect-senti list from "+aspectSentiList);
@@ -201,13 +201,13 @@ public class TopicModelMain {
 				System.out.println("No prior is added!!");
 			}
 						
+			topWordPath = filePrefix + "/topWords.txt";
 			if (crossV<=1) {
 				model.EMonCorpus();
 				if(topWordPath == null)
 					model.printTopWords(topK);
-				else{
+				else
 					model.printTopWords(topK, topWordPath);
-				}
 			} else {
 				model.setRandomFold(setRandomFold);
 				model.crossValidation(crossV);
