@@ -49,8 +49,8 @@ public class testParentChild_Gibbs {
 		double varConverge = 1e-5;
 		int topK = 10, number_of_iteration = 50, crossV = 0;
 		// int gibbs_iteration = 1500, gibbs_lag = 50;
-		//int gibbs_iteration = 200, gibbs_lag = 50;
-		 int gibbs_iteration = 4, gibbs_lag = 2;
+		int gibbs_iteration = 200, gibbs_lag = 50;
+		 //int gibbs_iteration = 4, gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 
@@ -241,6 +241,7 @@ public class testParentChild_Gibbs {
 				// varConverge);
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
 				alpha = alpha - 1;
+				beta = beta-1;
 				double mu = 0.001;
 				double[] gamma = new double[2];
 				gamma[0] = 2;
