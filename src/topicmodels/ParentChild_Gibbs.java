@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
 
 import structures.MyPriorityQueue;
@@ -308,7 +309,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	@Override
 	protected void finalEst() {
 		super.finalEst();
-		discoverSpecificComments(MatchPair.MP_ChildDoc);
 	}
 	
 	@Override
@@ -322,12 +322,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		}
 	}
 	
-	public void discoverSpecificComments(MatchPair matchType) {
+	public void discoverSpecificComments(MatchPair matchType, String similarityFile) {
 		System.out.println("topic similarity");
-		String fileName = "topicSimilarity.txt";
-
+	
 		try {
-			PrintWriter pw = new PrintWriter(new File(fileName));
+			PrintWriter pw = new PrintWriter(new File(similarityFile));
 
 			for (_Doc doc : m_trainSet) {
 				if (doc instanceof _ParentDoc) {
@@ -434,6 +433,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 		printParameter(parentParameterFile, childParameterFile);
+
+		String similarityFile = filePrefix+"topicSimilarity.txt";
+		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
 
 	}
 

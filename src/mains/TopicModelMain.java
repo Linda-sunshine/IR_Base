@@ -33,7 +33,7 @@ public class TopicModelMain {
 		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
-		int number_of_topics = 40;
+		int number_of_topics = 20;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -42,8 +42,9 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 10, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
+		//int gibbs_iteration = 4, gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
