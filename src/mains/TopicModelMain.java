@@ -18,6 +18,7 @@ import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.ParentChildAnalyzer;
+import jdk.management.resource.internal.inst.FileChannelImplRMHooks;
 
 public class TopicModelMain {
 
@@ -87,9 +88,11 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
-		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
-		////store top k words distribution over topic
-		String topWordPath = "./data/results/beta_" + number_of_topics + "_" + topicmodel + "_" + ".txt";
+		File rootFolder = new File("./data/results");
+		if(!rootFolder.exists()){
+			System.out.println("creating root directory"+rootFolder);
+			rootFolder.mkdir();
+		}
 		
 		Calendar today = Calendar.getInstance();
 		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
@@ -100,6 +103,10 @@ public class TopicModelMain {
 			System.out.println("creating directory" + resultFolder);
 			resultFolder.mkdir();
 		}
+		
+		String infoFilePath = filePrefix + "/Information.txt";
+		////store top k words distribution over topic
+		String topWordPath = filePrefix + "/topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
@@ -202,7 +209,6 @@ public class TopicModelMain {
 				System.out.println("No prior is added!!");
 			}
 						
-			topWordPath = filePrefix + "/topWords.txt";
 			if (crossV<=1) {
 				model.EMonCorpus();
 				if(topWordPath == null)
