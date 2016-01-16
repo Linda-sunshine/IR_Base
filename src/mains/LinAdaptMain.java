@@ -4,10 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
-import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.MultiTaskSVM;
+import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -16,21 +16,22 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.50;
 		int topKNeighbors = 20;
-		int displayLv = 0;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.0647, eta2 = 0.1529, eta3 = 0.0859, eta4 = 0.0862, neighborsHistoryWeight = 0.5;
+		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Amazon/Users";
+		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold,numberOfCores);
-		analyzer.config(trainRatio, adaptRatio);
+		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -67,9 +68,9 @@ public class LinAdaptMain {
 		adaptation.test();
 		
 		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }

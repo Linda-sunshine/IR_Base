@@ -23,6 +23,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	double m_trainRatio = 0.25; // by default, the first 25% for training global model 
 	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
 	int m_trainSize = 0, m_adaptSize = 0, m_testSize = 0;
+	boolean m_enforceAdapt = false;
 	
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
@@ -30,7 +31,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		m_users = new ArrayList<_User>();
 	}
 	
-	public void config(double train, double adapt) {
+	public void config(double train, double adapt, boolean enforceAdpt) {
 		if (train<0 || train>1) {
 			System.err.format("[Error]Incorrect setup of training ratio %.3f, which has to be in [0,1]\n", train);
 			return;
@@ -43,7 +44,8 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 		
 		m_trainRatio = train;
-		m_adaptRatio = adapt;
+		m_adaptRatio = adapt;	
+		m_enforceAdapt = enforceAdpt;
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
@@ -159,7 +161,12 @@ public class UserAnalyzer extends DocAnalyzer {
 	//[adapt, 1] for testing purpose
 	void allocateReviews(ArrayList<_Review> reviews) {
 		Collections.sort(reviews);// sort the reviews by timestamp
-		int train = (int)(reviews.size() * m_trainRatio), adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+		int train = (int)(reviews.size() * m_trainRatio), adapt;
+		if (m_enforceAdapt)
+			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
+		else
+			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+		
 		for(int i=0; i<reviews.size(); i++) {
 			if (i<train) {
 				reviews.get(i).setType(rType.TRAIN);

@@ -46,18 +46,9 @@ public class MultiTaskSVM extends BaseClassifier {
 	@Override
 	public void init(){
 		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
-		for(int i=0; i<m_userList.size(); i++){
-			_User user = m_userList.get(i);
-			ArrayList<_Review> reviews = user.getReviews();
-			boolean validUser = false;
-			for(_Review r:reviews) {
-				if (r.getType() == rType.ADAPTATION) {
-					if (validUser==false) {
-						validUser = true;
-						m_userSize ++;
-					}
-				}
-			}
+		for(_User user:m_userList){			
+			if (user.hasAdaptationData()) 				
+				m_userSize ++;	
 			user.getPerfStat().clear(); // clear accumulate performance statistics
 		}
 	}
@@ -67,21 +58,26 @@ public class MultiTaskSVM extends BaseClassifier {
 		init();
 		
 		//Transfer all user reviews to instances recognized by SVM, indexed by users.
-		int trainSize = 0;
+		int trainSize = 0, validUserIndex = 0;
 		ArrayList<Feature []> fvs = new ArrayList<Feature []>();
 		ArrayList<Double> ys = new ArrayList<Double>();		
 		
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
 		for(int i=0; i<m_userList.size(); i++){
-			reviews = m_userList.get(i).getReviews();			
-			for(_Review r:reviews) {
+			reviews = m_userList.get(i).getReviews();		
+			boolean validUser = false;
+			for(_Review r:reviews) {				
 				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
-					fvs.add(createLibLinearFV(r, i));
+					fvs.add(createLibLinearFV(r, validUserIndex));
 					ys.add(new Double(r.getYLabel()));
 					trainSize ++;
+					validUser = true;
 				}
-			}			
+			}
+			
+			if (validUser)
+				validUserIndex ++;
 		}
 		
 		// Train a liblinear model based on all reviews.
@@ -116,15 +112,22 @@ public class MultiTaskSVM extends BaseClassifier {
 		double sign = class0 > 0 ? 1 : -1;
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
 		for(_User user:m_userList) {
-			for(int i=0; i<m_featureSize; i++) {
-				pWeight[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+			if (user.hasAdaptationData()) {
+				for(int i=0; i<m_featureSize; i++) 
+					pWeight[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+				
+				if (m_bias) {
+					pWeight[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
+					userOffset += m_featureSize+1;
+				} else
+					userOffset += m_featureSize;
+			} else {
+				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
+					pWeight[i+1] = sign*weight[globalOffset+i]/m_u;
+				
+				if (m_bias)
+					pWeight[0] = sign*weight[globalOffset+m_featureSize]/m_u;
 			}
-			
-			if (m_bias) {
-				pWeight[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
-				userOffset += m_featureSize+1;
-			} else
-				userOffset += m_featureSize;
 			
 			user.setModel(pWeight, m_classNo, m_featureSize);//our model always assume the bias term
 		}
