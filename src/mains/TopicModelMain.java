@@ -45,7 +45,8 @@ public class TopicModelMain {
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
-		//int gibbs_iteration = 4, gibbs_lag = 2;
+		gibbs_iteration = 4;
+		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -220,6 +221,8 @@ public class TopicModelMain {
 				model.crossValidation(crossV);
 				model.printTopWords(topK);
 			}
+			
+			model.closeWriter();
 			
 			if (sentence) {
 				String summaryFilePath =  "./data/results/Topics_" + number_of_topics + "_Summary.txt";
