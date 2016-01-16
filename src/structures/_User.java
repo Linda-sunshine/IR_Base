@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 
+import structures._Review.rType;
 import utils.Utils;
 
 /***
@@ -48,6 +49,15 @@ public class _User {
 	
 	public String toString() {
 		return String.format("%s-R:%d", m_userID, getReviewSize());
+	}
+	
+	public boolean hasAdaptationData() {
+		for(_Review r:m_reviews) {
+			if (r.getType() == rType.ADAPTATION) {
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	public void setModel(double[] weight, int classNo, int featureSize) {
