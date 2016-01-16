@@ -20,7 +20,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.0647, eta2 = 0.1529, eta3 = 0.0859, eta4 = 0.0862, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -68,9 +68,9 @@ public class LinAdaptMain {
 		adaptation.test();
 		
 		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }
