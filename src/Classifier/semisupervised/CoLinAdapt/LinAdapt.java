@@ -388,7 +388,7 @@ public class LinAdapt extends BaseClassifier {
 		// macro average
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
+			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
 		System.out.println();
 		return Utils.sumOfArray(macroF1);
 	}
