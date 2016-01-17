@@ -19,7 +19,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.0647, eta2 = 0.1529, eta3 = 0.0859, eta4 = 0.0862, neighborsHistoryWeight = 0.5;
+		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
