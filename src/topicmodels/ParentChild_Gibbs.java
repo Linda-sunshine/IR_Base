@@ -98,11 +98,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = parentWordByTopicProb(tid, wid);
-				double term2 = topicInParentDocProb(tid, d);
-				double term3 = parentChildInfluenceProb(tid, d);
+				double pWordTopic = parentWordByTopicProb(tid, wid);
+				double pTopicPdoc = topicInParentDocProb(tid, d);
+				double pTopicCdoc = parentChildInfluenceProb(tid, d);
 					
-				m_topicProbCache[tid] = term1*term2*term3;
+				m_topicProbCache[tid] = pWordTopic * pTopicPdoc * pTopicCdoc;
 				normalizedProb += m_topicProbCache[tid];
 			}
 
@@ -157,12 +157,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 //	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
-		if (tid==0)
-			return 1.0;//reference point
-		
-		double muDp = m_mu / pDoc.getTotalDocLength();
 		double term = 1.0;
 //		double term = 0.0;
+		
+		if (tid==0)
+			return term;//reference point
+		
+		double muDp = m_mu / pDoc.getTotalDocLength();
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			double term1 = gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
 			double term2 = gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -214,21 +215,22 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			}
 			
 			normalizedProb = 0;
+			double pLambdaOne = childXInDocProb(1, d);
+			double pLambdaZero = childXInDocProb(0, d);
+			
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = childWordByTopicProb(tid, wid);
+				double pWordTopic = childWordByTopicProb(tid, wid);
 				
 				//p(z=tid,x=1) from specific
-				double term2 = childTopicInDocProb(tid, 1, d);
-				double term3 = childXInDocProb(1, d);
+				double pTopicLocal = childTopicInDocProb(tid, 1, d);				
 				
 				//p(z=tid,x=0) from background
-				double term4 = childTopicInDocProb(tid, 0, d);
-				double term5 = childXInDocProb(0, d);
+				double pTopicGlobal = childTopicInDocProb(tid, 0, d);				
 				
-				m_xTopicProbCache[1][tid] = term1*term2*term3;
+				m_xTopicProbCache[1][tid] = pWordTopic * pTopicLocal * pLambdaOne;
 				normalizedProb += m_xTopicProbCache[1][tid];
 				
-				m_xTopicProbCache[0][tid] = term1*term4*term5;
+				m_xTopicProbCache[0][tid] = pWordTopic * pTopicGlobal * pLambdaZero;
 				normalizedProb += m_xTopicProbCache[0][tid];
 			}
 			

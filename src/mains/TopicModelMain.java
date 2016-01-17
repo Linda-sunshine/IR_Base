@@ -93,7 +93,7 @@ public class TopicModelMain {
 		}
 		
 		Calendar today = Calendar.getInstance();
-		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
+		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", 1+today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
 						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
 		
 		File resultFolder = new File(filePrefix);
