@@ -99,6 +99,23 @@ public abstract class TopicModel {
 		}
 	}
 	
+	public void closeWriter(){
+		if(infoWriter!=null){
+			infoWriter.flush();
+			infoWriter.close();
+		}
+		
+		if(summaryWriter!=null){
+			summaryWriter.flush();
+			summaryWriter.close();
+		}
+		
+		if(debugWriter!=null){
+			debugWriter.flush();
+			debugWriter.close();
+		}
+	}
+	
 	//initialize necessary model parameters
 	protected abstract void initialize_probability(Collection<_Doc> collection);	
 	

@@ -18,6 +18,7 @@ import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.ParentChildAnalyzer;
+import jdk.management.resource.internal.inst.FileChannelImplRMHooks;
 
 public class TopicModelMain {
 
@@ -33,7 +34,7 @@ public class TopicModelMain {
 		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
-		int number_of_topics = 40;
+		int number_of_topics = 20;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = false; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -42,8 +43,10 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 10, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
+		gibbs_iteration = 4;
+		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -86,9 +89,11 @@ public class TopicModelMain {
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
 
-		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
-		////store top k words distribution over topic
-		String topWordPath = "./data/results/beta_" + number_of_topics + "_" + topicmodel + "_" + ".txt";
+		File rootFolder = new File("./data/results");
+		if(!rootFolder.exists()){
+			System.out.println("creating root directory"+rootFolder);
+			rootFolder.mkdir();
+		}
 		
 		Calendar today = Calendar.getInstance();
 		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
@@ -99,6 +104,10 @@ public class TopicModelMain {
 			System.out.println("creating directory" + resultFolder);
 			resultFolder.mkdir();
 		}
+		
+		String infoFilePath = filePrefix + "/Information.txt";
+		////store top k words distribution over topic
+		String topWordPath = filePrefix + "/topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
@@ -201,7 +210,6 @@ public class TopicModelMain {
 				System.out.println("No prior is added!!");
 			}
 						
-			topWordPath = filePrefix + "/topWords.txt";
 			if (crossV<=1) {
 				model.EMonCorpus();
 				if(topWordPath == null)
@@ -213,6 +221,8 @@ public class TopicModelMain {
 				model.crossValidation(crossV);
 				model.printTopWords(topK);
 			}
+			
+			model.closeWriter();
 			
 			if (sentence) {
 				String summaryFilePath =  "./data/results/Topics_" + number_of_topics + "_Summary.txt";
