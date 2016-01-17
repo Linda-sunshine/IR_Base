@@ -1,7 +1,9 @@
 package Classifier.semisupervised.CoLinAdapt;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileInputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -426,8 +428,23 @@ public class LinAdapt extends BaseClassifier {
 	}
 
 	@Override
-	public void saveModel(String modelLocation) {
-		System.err.println("[Error]saveModel(String modelLocation) is not implemented in LinAdapt!");
-		System.exit(-1);
+	public void saveModel(String modelLocation) {	
+		for(_LinAdaptStruct user:m_userList) {
+			try {
+	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.m_user.getUserID()+".classifer"));
+	            StringBuilder buffer = new StringBuilder(512);
+	            double[] pWeights = user.getPWeights();
+	            for(int i=0; i<pWeights.length; i++) {
+	            	buffer.append(pWeights[i]);
+	            	if (i<pWeights.length-1)
+	            		buffer.append(',');
+	            }
+	            writer.write(buffer.toString());
+	            writer.close();
+	        } catch (Exception e) {
+	            e.printStackTrace(); 
+	        } 
+		}
+		System.out.format("[Info]Save personalized models to %s.", modelLocation);
 	}
 }

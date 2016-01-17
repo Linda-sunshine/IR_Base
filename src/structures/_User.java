@@ -67,6 +67,10 @@ public class _User {
 		m_featureSize = featureSize;
 	}
 	
+	public double[] getPersonalizedModel() {
+		return m_pWeight;
+	}
+	
 	public void constructSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
 

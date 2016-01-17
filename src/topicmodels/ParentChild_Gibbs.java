@@ -198,7 +198,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return result;
 	}
 
-	public void sampleInChildDoc(_ChildDoc d){
+	void sampleInChildDoc(_ChildDoc d){
 		int wid, tid, xid;		
 		double normalizedProb;
 		
@@ -267,12 +267,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	//probability of word given topic p(w|z, phi^c, beta)
-	public double childWordByTopicProb(int tid, int wid){
+	protected double childWordByTopicProb(int tid, int wid){
 		return word_topic_sstat[tid][wid] / m_sstat[tid];
 	}
 
 	//probability of topic in given child doc p(z^c|d, alpha, z^p)
-	public double childTopicInDocProb(int tid, int xid, _ChildDoc d){
+	protected double childTopicInDocProb(int tid, int xid, _ChildDoc d){
 		double docLength = d.m_parentDoc.getTotalDocLength();
 
 		if(xid == 1){//local topics
@@ -285,10 +285,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			return -1;//this branch is impossible
 	}
 
-	public double childXInDocProb(int xid, _ChildDoc d){
+	protected double childXInDocProb(int xid, _ChildDoc d){
 		return m_gamma[xid] + d.m_xSstat[xid];
 	}	
 
+	@Override
 	public void calculate_M_step(int iter){
 //		if (iter % m_lag == 0) 
 //			calLogLikelihood2(iter);
@@ -347,7 +348,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		}
 	}
 	
-	public void discoverSpecificComments(MatchPair matchType, String similarityFile) {
+	void discoverSpecificComments(MatchPair matchType, String similarityFile) {
 		System.out.println("topic similarity");
 	
 		try {
@@ -385,10 +386,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	}
 
-	public double computeSimilarity(double[] topic1, double[] topic2) {
+	double computeSimilarity(double[] topic1, double[] topic2) {
 		return Utils.cosine(topic1, topic2);
 	}
 	
+	@Override
 	public void printTopWords(int k, String betaFile) {
 		Arrays.fill(m_sstat, 0);
 
@@ -582,7 +584,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 
 	//p(w, z)=p(w|z)p(z) multinomial-dirichlet
-	public void calLogLikelihood(int iter) {
+	protected void calLogLikelihood(int iter) {
 		double logLikelihood = 0.0;
 		double parentLogLikelihood = 0.0;
 		double childLogLikelihood = 0.0;
@@ -646,7 +648,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 	
 	// log space
-	public double calParentLogLikelihood(_ParentDoc pDoc) {
+	protected double calParentLogLikelihood(_ParentDoc pDoc) {
 		double term1 = 0.0;
 		double term2 = 0.0;
 		
@@ -661,7 +663,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 	
 	// sum_x p(z|x)p(x)
-	public double calChildLogLikelihood(_ChildDoc cDoc) {
+	protected double calChildLogLikelihood(_ChildDoc cDoc) {
 		double tempLogLikelihood = 0.0;
 		double tempLogLikelihood1 = 0.0;
 		double tempLogLikelihood2 = 0.0;
@@ -713,9 +715,4 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 		return tempLogLikelihood;
 	}
-
-	
-	//p(w)=\sum_z p(w|z)p(z|d)
-	
-
 }

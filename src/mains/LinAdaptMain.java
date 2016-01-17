@@ -65,6 +65,7 @@ public class LinAdaptMain {
 		
 		adaptation.train();
 		adaptation.test();
+//		adaptation.saveModel("data/results/colinadapt/models");
 		
 		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());

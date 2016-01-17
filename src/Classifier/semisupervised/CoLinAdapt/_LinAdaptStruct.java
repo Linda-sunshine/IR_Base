@@ -142,6 +142,10 @@ public class _LinAdaptStruct {
 		return m_A;
 	}
 	
+	public double[] getPWeights() {
+		return m_user.getPersonalizedModel();
+	}
+	
 	//get the shifting operation for this group
 	public double getShifting(int gid) {
 		if (gid<0 || gid>m_dim) {
