@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 
+import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
@@ -17,8 +18,6 @@ import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
-import Analyzer.ParentChildAnalyzer;
-import jdk.management.resource.internal.inst.FileChannelImplRMHooks;
 
 public class TopicModelMain {
 
@@ -40,13 +39,11 @@ public class TopicModelMain {
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
-		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
+		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
-		gibbs_iteration = 4;
-		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -189,7 +186,7 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
+				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
 			}

@@ -5,11 +5,11 @@ package Classifier.semisupervised;
 
 import java.util.Collection;
 
+import Classifier.supervised.NaiveBayes;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.NaiveBayes;
 
 /**
  * @author hongning

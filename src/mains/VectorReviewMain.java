@@ -1,11 +1,8 @@
 package mains;
 
-import influence.PageRank;
-
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures._Corpus;
 import Analyzer.VctAnalyzer;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -15,6 +12,8 @@ import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.PRLogisticRegression;
 import Classifier.supervised.SVM;
+import influence.PageRank;
+import structures._Corpus;
 
 public class VectorReviewMain {
 

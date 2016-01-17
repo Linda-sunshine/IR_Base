@@ -3,13 +3,13 @@ package Classifier.supervised;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Classifier.BaseClassifier;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.BaseClassifier;
 
 public class NaiveBayes extends BaseClassifier {
 	// both quantities in log space

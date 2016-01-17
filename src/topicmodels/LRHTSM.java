@@ -5,12 +5,12 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import markovmodel.LRFastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 // HTMM parameter both in log space
 public class LRHTSM extends HTSM {	

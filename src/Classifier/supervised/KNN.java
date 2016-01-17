@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
+import Classifier.BaseClassifier;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
-import Classifier.BaseClassifier;
 
 public class KNN extends BaseClassifier{
 	int m_k;

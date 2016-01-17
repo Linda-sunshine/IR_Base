@@ -273,7 +273,7 @@ public abstract class TopicModel {
 				}
 			}
 			
-			if (Math.abs(delta)<m_converge)
+			if (m_converge>0 && Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
 		

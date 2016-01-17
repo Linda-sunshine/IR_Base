@@ -3,8 +3,8 @@
  */
 package LBFGS.linesearch;
 
-import utils.Utils;
 import LBFGS.Optimizable;
+import utils.Utils;
 
 /**
  * @author hongning

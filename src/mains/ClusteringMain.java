@@ -3,9 +3,9 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures._Corpus;
 import Analyzer.jsonAnalyzer;
 import clustering.KMeansAlg;
+import structures._Corpus;
 
 public class ClusteringMain {
 

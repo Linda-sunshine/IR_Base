@@ -3,9 +3,8 @@ package structures;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import utils.Utils;
-
 import Classifier.supervised.liblinear.Feature;
+import utils.Utils;
 
 public class _Query {
 	public ArrayList<_QUPair> m_docList;

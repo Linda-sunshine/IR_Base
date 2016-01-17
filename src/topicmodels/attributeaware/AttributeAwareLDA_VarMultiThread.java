@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Analyzer.newEggAnalyzer;
 import optimization.gradientBasedMethods.ProjectedGradientDescent;
 import optimization.gradientBasedMethods.stats.OptimizerStats;
 import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
@@ -21,7 +22,6 @@ import structures._SparseFeature;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.posteriorRegularization.PairwiseAttributeConstraints;
 import utils.Utils;
-import Analyzer.newEggAnalyzer;
 
 /**
  * @author hongning

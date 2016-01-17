@@ -10,8 +10,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import structures._Corpus;
-import structures._Doc;
 import Classifier.BaseClassifier;
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.KMeans;
@@ -21,6 +19,8 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
+import structures._Corpus;
+import structures._Doc;
 
 /**
  * @author hongning

@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 
 import structures.MyPriorityQueue;
@@ -25,13 +24,15 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	
 	double[] m_gamma, m_topicProbCache;
 	double[][] m_xTopicProbCache;
-	double m_mu;
+	double m_mu, m_kAlpha;
 	
 	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
 
 		m_mu = mu;
+		m_kAlpha = d_alpha * number_of_topics;
+		
 		m_gamma = new double[gamma.length];
 		System.arraycopy(gamma, 0, m_gamma, 0, gamma.length);
 		m_topicProbCache = new double[number_of_topics];
@@ -48,16 +49,15 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
 		for(int i=0; i<number_of_topics; i++)
-			Arrays.fill(word_topic_sstat[i], 0);
-		Arrays.fill(m_sstat, 0);
+			Arrays.fill(word_topic_sstat[i], d_beta);
+		Arrays.fill(m_sstat, d_beta*vocabulary_size); // avoid adding such prior later on
 		
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
 				for(_Stn stnObj: d.getSentences()){
 					stnObj.setTopicsVct(number_of_topics);
 				}
-			}
-			if(d instanceof _ChildDoc)
+			} else if(d instanceof _ChildDoc)
 				((_ChildDoc) d).createXSpace(number_of_topics, m_gamma.length);
 			
 			d.setTopics4Gibbs(number_of_topics, 0);
@@ -127,7 +127,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	//probability of word given topic p(w|z, phi^p, beta)
 	protected double parentWordByTopicProb(int tid, int wid){
-		return (d_beta+word_topic_sstat[tid][wid])/(d_beta*vocabulary_size+m_sstat[tid]);
+		return word_topic_sstat[tid][wid] / m_sstat[tid];
 	}
 
 	//probability of topic given doc p(z|d, alpha)
@@ -135,43 +135,63 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return d_alpha + d.m_sstat[tid];
 	}
 
-	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
-		double term = 0;
-		double docLength = d.getTotalDocLength()/m_mu;
-		for (_ChildDoc cDoc : d.m_childDocs) {
-			double term11 = (Utils.lgamma(d_alpha + (d.m_sstat[0]) / (docLength) + cDoc.m_xTopicSstat[0][0]));
-			double term12 = (Utils.lgamma(d_alpha + (d.m_sstat[0] + 1) / (docLength)+ cDoc.m_xTopicSstat[0][0]));
-
-			double term21 = (Utils.lgamma(d_alpha + (d.m_sstat[tid] + 1) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
-			double term22 = (Utils.lgamma(d_alpha + (d.m_sstat[tid]) / (docLength) + cDoc.m_xTopicSstat[0][tid]));
-
-			double term31 = (Utils.lgamma(d_alpha + (d.m_sstat[0] + 1) / (docLength)));
-			double term32 = (Utils.lgamma(d_alpha + (d.m_sstat[0]) / (docLength)));
-
-			double term41 = (Utils.lgamma(d_alpha + (d.m_sstat[tid]) / (docLength)));
-			double term42 = (Utils.lgamma(d_alpha + (d.m_sstat[tid] + 1) / (docLength)));
-
-			term += term11 - term12 + term21 - term22 + term31 - term32 + term41 - term42;
-
-			if (invalidValue(term11) || invalidValue(term12)
-							|| invalidValue(term21) || invalidValue(term22)
-							|| invalidValue(term31) || invalidValue(term32)
-							|| invalidValue(term41) || invalidValue(term42)
-							|| invalidValue(term)) {
-				System.out.println("invalid term");
-			}
+//	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
+//		double docLength = pDoc.getTotalDocLength()/m_mu;
+//		
+//		double a = d_alpha + (pDoc.m_sstat[0] + 1) / docLength;
+//		double b = d_alpha + pDoc.m_sstat[0] / docLength;
+//		double c = d_alpha + pDoc.m_sstat[tid] / docLength;
+//		double d = d_alpha + (pDoc.m_sstat[tid] + 1) / docLength;
+//		
+//		double term = Utils.lgamma(a) - Utils.lgamma(b) + Utils.lgamma(c) - Utils.lgamma(d);		
+//		term *= pDoc.m_childDocs.size();
+//		
+//		for (_ChildDoc cDoc : pDoc.m_childDocs) {
+//			double term1 = Utils.lgamma(b + cDoc.m_xTopicSstat[0][0]) - Utils.lgamma(a + cDoc.m_xTopicSstat[0][0]);
+//			double term2 = Utils.lgamma(d + cDoc.m_xTopicSstat[0][tid]) - Utils.lgamma(c + cDoc.m_xTopicSstat[0][tid]);
+//
+//			term += term1 - term2;
+//		} 
+//
+//		return Math.exp(term);
+//	}
+	
+	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
+		if (tid==0)
+			return 1.0;//reference point
+		
+		double muDp = m_mu / pDoc.getTotalDocLength(), term = 1.0;
+		for (_ChildDoc cDoc : pDoc.m_childDocs) {
+//			double term1 = gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
+//			double term2 = gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
+//			term *= term1 / term2;
+			
+			double term1 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
+			double term2 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
+			term += term1 - term2;
 		} 
 
 		return Math.exp(term);
 	}
-
-	public boolean invalidValue(double term) {
-		if (Math.abs(term) > Double.MAX_VALUE - 1) {
-			System.out.println(term);
-			return true;
-		} else {
-			return false;
-		}
+	
+	double gammaFuncRatio(int nc, double muDp, double alphaMuNp) {
+		if (nc==0)
+			return 1.0;
+		
+		double result = 1.0;
+		for(int n=1; n<=nc; n++) 
+			result *= 1 + muDp / (alphaMuNp + n);
+		return result;
+	}
+	
+	double logGammaFuncRatio(int nc, double muDp, double alphaMuNp) {
+		if (nc==0)
+			return 0.0;
+		
+		double result = 0;
+		for(int n=1; n<=nc; n++) 
+			result += Math.log(1 + muDp / (alphaMuNp + n));
+		return result;
 	}
 
 	public void sampleInChildDoc(_ChildDoc d){
@@ -223,7 +243,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					break;
 			}
 
-			if (xid == 2)
+			if (xid == m_gamma.length)
 				xid--;
 			
 			if (tid == number_of_topics)
@@ -243,7 +263,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	//probability of word given topic p(w|z, phi^c, beta)
 	public double childWordByTopicProb(int tid, int wid){
-		return (d_beta + word_topic_sstat[tid][wid])/(d_beta*vocabulary_size + m_sstat[tid]);
+		return word_topic_sstat[tid][wid] / m_sstat[tid];
 	}
 
 	//probability of topic in given child doc p(z^c|d, alpha, z^p)
@@ -252,16 +272,16 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 		if(xid == 1){//local topics
 			return (d_alpha + d.m_xTopicSstat[1][tid])
-					/(number_of_topics*d_alpha + d.m_xSstat[1]);
+					/(m_kAlpha + d.m_xSstat[1]);
 		} else if(xid == 0){//global topics
 			return (d_alpha + m_mu*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
-					/(number_of_topics*d_alpha + m_mu + d.m_xSstat[0]);
+					/(m_kAlpha + m_mu + d.m_xSstat[0]);
 		} else
 			return -1;//this branch is impossible
 	}
 
 	public double childXInDocProb(int xid, _ChildDoc d){
-		return m_gamma[xid]+ d.m_xSstat[xid];
+		return m_gamma[xid] + d.m_xSstat[xid];
 	}	
 
 	public void calculate_M_step(int iter){

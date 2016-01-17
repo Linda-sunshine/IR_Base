@@ -3,16 +3,16 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures._Corpus;
-import topicmodels.LDA_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.AspectAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
+import structures._Corpus;
+import topicmodels.LDA_Gibbs;
+import topicmodels.pLSA;
+import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA_multithread;
 
 public class TransductiveMain {
 	

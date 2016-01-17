@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import structures._Corpus;
-import structures._Doc;
-import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.Linear;
@@ -14,6 +11,9 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+import structures._Corpus;
+import structures._Doc;
+import utils.Utils;
 
 
 /**

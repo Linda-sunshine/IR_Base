@@ -7,13 +7,13 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Classifier.BaseClassifier;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.BaseClassifier;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class LogisticRegression extends BaseClassifier {
 

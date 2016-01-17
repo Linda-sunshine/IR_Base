@@ -1,17 +1,16 @@
 package mains;
 
-import influence.PageRank;
-
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures._Corpus;
 import Analyzer.jsonAnalyzer;
 import Classifier.semisupervised.GaussianFields;
 import Classifier.semisupervised.NaiveBayesEM;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
+import influence.PageRank;
+import structures._Corpus;
 
 public class AmazonReviewMain {
 

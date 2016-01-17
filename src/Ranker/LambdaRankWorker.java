@@ -6,14 +6,14 @@ package Ranker;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import structures._QUPair;
-import structures._Query;
-import utils.Utils;
 import Ranker.LambdaRank.OptimizationType;
 import Ranker.LambdaRankParallel.OperationType;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;
+import structures._QUPair;
+import structures._Query;
+import utils.Utils;
 
 /**
  * @author hongning

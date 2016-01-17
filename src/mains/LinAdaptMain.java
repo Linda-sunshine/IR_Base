@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
-import Classifier.supervised.MultiTaskSVM;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {

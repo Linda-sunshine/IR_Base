@@ -2,11 +2,11 @@ package mains;
 
 import java.io.IOException;
 
-import structures._Corpus;
 import Analyzer.DocAnalyzer;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
+import structures._Corpus;
 
 public class MovieReviewMain {
 	/*****************************Main function*******************************/

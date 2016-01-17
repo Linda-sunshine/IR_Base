@@ -2,9 +2,9 @@ package structures;
 
 import java.util.ArrayList;
 
-import utils.Utils;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
+import utils.Utils;
 
 public class _QUPair implements Comparable<_QUPair>{
 	public int m_y;

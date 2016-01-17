@@ -6,11 +6,10 @@ package Ranker;
 import java.util.Arrays;
 import java.util.Collection;
 
-import cern.jet.random.tdouble.Normal;
-
-import utils.Utils;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tdouble.Normal;
+import utils.Utils;
 
 /**
  * @author hongning

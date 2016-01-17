@@ -7,8 +7,8 @@ import utils.Utils;
 
 public class _ChildDoc extends _Doc {
 	public int[] m_xIndicator;
-	public double[][] m_xTopicSstat;//joint assignment of <x,z>: 0 from general, 1 from specific
-	public double[] m_xSstat; // sufficient statistics for x
+	public int[][] m_xTopicSstat;//joint assignment of <x,z>: 0 from general, 1 from specific
+	public int[] m_xSstat; // sufficient statistics for x
 
 	public double[][] m_xTopics; // proportion of topics (0 from general, 1 from specific)
 	public double[] m_xProportion; // proportion of x
@@ -27,9 +27,9 @@ public class _ChildDoc extends _Doc {
 	}
 	
 	public void createXSpace(int k, int gammaSize) {
-		m_xTopicSstat = new double[gammaSize][k];
+		m_xTopicSstat = new int[gammaSize][k];
 		m_xTopics = new double[gammaSize][k];
-		m_xSstat = new double[gammaSize];
+		m_xSstat = new int[gammaSize];
 		m_xProportion = new double[gammaSize];
 	}
 	

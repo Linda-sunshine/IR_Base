@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
-import structures._Corpus;
-import structures._Doc;
-import structures._Edge;
-import structures._Node;
-import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.semisupervised.PairwiseSimCalculator.ActionType;
 import Classifier.supervised.LogisticRegression;
@@ -18,6 +13,11 @@ import Classifier.supervised.SVM;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+import structures._Corpus;
+import structures._Doc;
+import structures._Edge;
+import structures._Node;
+import utils.Utils;
 
 public class GaussianFields extends BaseClassifier {
 	

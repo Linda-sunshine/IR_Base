@@ -3,13 +3,13 @@ package Ranker;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import structures._QUPair;
-import structures._Query;
-import utils.Utils;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;
 import cern.jet.random.tdouble.Normal;
+import structures._QUPair;
+import structures._Query;
+import utils.Utils;
 
 /**
  * @author wang296

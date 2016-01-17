@@ -3,13 +3,6 @@ package Classifier.metricLearning;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import structures.MyPriorityQueue;
-import structures._Corpus;
-import structures._Doc;
-import structures._QUPair;
-import structures._Query;
-import structures._RankItem;
-import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -17,11 +10,18 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
 import Ranker.LambdaRank;
 import Ranker.LambdaRank.OptimizationType;
+import Ranker.LambdaRankParallel;
+import Ranker.RankNet;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;
-import Ranker.LambdaRankParallel;
-import Ranker.RankNet;
+import structures.MyPriorityQueue;
+import structures._Corpus;
+import structures._Doc;
+import structures._QUPair;
+import structures._Query;
+import structures._RankItem;
+import utils.Utils;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	

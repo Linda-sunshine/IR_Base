@@ -3,7 +3,6 @@
  */
 package Classifier.semisupervised.CoLinAdapt;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,9 +10,9 @@ import java.util.HashMap;
 import Classifier.semisupervised.CoLinAdapt._CoLinAdaptStruct.SimType;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._User;
-import structures._PerformanceStat.TestMode;
 
 /**
  * @author Hongning Wang
@@ -227,7 +226,7 @@ public class CoLinAdapt extends LinAdapt {
 				} 
 				oldFValue = fValue;
 				
-				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 5e-2, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {

@@ -3,12 +3,11 @@ package Classifier.semisupervised.CoLinAdapt;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._RankItem;
 import structures._User;
 import utils.Utils;
-
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 	
