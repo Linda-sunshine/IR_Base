@@ -198,6 +198,7 @@ public class CoLinAdapt extends LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
+		double oldMag = 0;
 		
 		initLBFGS();
 		init();
@@ -211,6 +212,12 @@ public class CoLinAdapt extends LinAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
+				
+				//added by Lin for stopping lbfgs.
+				double curMag = calcGradientMag();
+				if(Math.abs(oldMag -curMag)<1) 
+					break;
+				oldMag = curMag;
 				
 				if (m_displayLv==2) {
 					System.out.println("Fvalue is " + fValue);
@@ -236,5 +243,13 @@ public class CoLinAdapt extends LinAdapt {
 		for(_LinAdaptStruct user:m_userList)
 			setPersonalizedModel(user);
 		return oldFValue;
+	}
+	
+	// added by Lin for calculating the mag of gradients.
+	public double calcGradientMag(){
+		double mag = 0;
+		for(double g: m_g)
+			mag += g * g;
+		return mag;
 	}
 }
