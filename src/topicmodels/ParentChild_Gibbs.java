@@ -160,18 +160,21 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		if (tid==0)
 			return 1.0;//reference point
 		
-		double muDp = m_mu / pDoc.getTotalDocLength(), term = 1.0;
+		double muDp = m_mu / pDoc.getTotalDocLength();
+		double term = 1.0;
+//		double term = 0.0;
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
-//			double term1 = gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
-//			double term2 = gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
-//			term *= term1 / term2;
+			double term1 = gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
+			double term2 = gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
+			term *= term1 / term2;
 			
-			double term1 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
-			double term2 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
-			term += term1 - term2;
+//			double term1 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
+//			double term2 = logGammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
+//			term += term1 - term2;
 		} 
 
-		return Math.exp(term);
+		return term;
+//		return Math.exp(term);
 	}
 	
 	double gammaFuncRatio(int nc, double muDp, double alphaMuNp) {
