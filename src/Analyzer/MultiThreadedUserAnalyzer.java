@@ -209,7 +209,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
 			synchronized (m_corpusLock) {
