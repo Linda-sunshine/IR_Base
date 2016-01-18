@@ -1,12 +1,8 @@
-package Classifier.supervised;
+package Classifier.supervised.modelAdaptation;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 
-import Classifier.BaseClassifier;
-import Classifier.semisupervised.CoLinAdapt._LinAdaptStruct;
+import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -14,27 +10,32 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
-import structures._Doc;
-import structures._PerformanceStat;
+import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
-import utils.Utils;
 
-public class MultiTaskSVM extends BaseClassifier {
+public class MultiTaskSVM extends ModelAdaptation {
 	double m_u = 0.1; // trade-off parameter between global model and individual model.
 	double m_C = 1.0; // trade-off parameter for SVM training 
 	
-	ArrayList<_User> m_userList;	
-	int m_userSize; // valid user size
 	Model m_libModel; // Libmodel trained by liblinear.
 	boolean m_bias = true; // whether use bias term in SVM; by default, we will use it
 	
-	public MultiTaskSVM(int classNo, int featureSize, ArrayList<_User> users){
-		super(classNo, featureSize);
+	public MultiTaskSVM(int classNo, int featureSize){
+		super(classNo, featureSize, null, null);
 		
-		m_userList = users;
+		// the only test mode for MultiTaskSVM is batch
+		m_testmode = TestMode.TM_batch;
+	}
+	
+	public void loadUsers(ArrayList<_User> userList) {
+		m_userList = new ArrayList<_AdaptStruct>();
+		for(_User user:userList) 
+			m_userList.add(new _AdaptStruct(user));
+		m_pWeights = new double[m_featureSize+1];
 	}
 	
 	public void setTradeOffParam(double u, double C){
@@ -47,17 +48,7 @@ public class MultiTaskSVM extends BaseClassifier {
 	}
 	
 	@Override
-	public void init(){
-		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
-		for(_User user:m_userList){			
-			if (user.hasAdaptationData()) 				
-				m_userSize ++;	
-			user.getPerfStat().clear(); // clear accumulate performance statistics
-		}
-	}
-	
-	@Override
-	public double train(){
+	public double train() {
 		init();
 		
 		//Transfer all user reviews to instances recognized by SVM, indexed by users.
@@ -67,8 +58,8 @@ public class MultiTaskSVM extends BaseClassifier {
 		
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
-		for(int i=0; i<m_userList.size(); i++){
-			reviews = m_userList.get(i).getReviews();		
+		for(_AdaptStruct user:m_userList){
+			reviews = user.getReviews();		
 			boolean validUser = false;
 			for(_Review r:reviews) {				
 				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
@@ -109,30 +100,31 @@ public class MultiTaskSVM extends BaseClassifier {
 		return 0;
 	}
 	
-	void setPersonalizedModel() {
-		double[] weight = m_libModel.getWeights(), pWeight = new double[m_featureSize+1];//our model always assume the bias term
+	@Override
+	protected void setPersonalizedModel() {
+		double[] weight = m_libModel.getWeights();//our model always assume the bias term
 		int class0 = m_libModel.getLabels()[0];
 		double sign = class0 > 0 ? 1 : -1;
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
-		for(_User user:m_userList) {
-			if (user.hasAdaptationData()) {
+		for(_AdaptStruct user:m_userList) {
+			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
-					pWeight[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
 				
 				if (m_bias) {
-					pWeight[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
+					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
 					userOffset += m_featureSize+1;
 				} else
 					userOffset += m_featureSize;
 			} else {
 				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
-					pWeight[i+1] = sign*weight[globalOffset+i]/m_u;
+					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
 				
 				if (m_bias)
-					pWeight[0] = sign*weight[globalOffset+m_featureSize]/m_u;
+					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
 			}
 			
-			user.setModel(pWeight, m_classNo, m_featureSize);//our model always assume the bias term
+			user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);//our model always assume the bias term
 		}
 	}
 	
@@ -176,87 +168,5 @@ public class MultiTaskSVM extends BaseClassifier {
 			node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
 		}
 		return node;
-	}
-	
-	//Use the each user's remaining reviews for testing.
-	@Override
-	public double test(){
-		int trueL = 0, predL = 0, count = 0;
-		_PerformanceStat userPerfStat;
-		double[] macroF1 = new double[m_classNo];
-		
-		for(int i=0; i<m_userList.size(); i++) {
-			_User user = m_userList.get(i);
-			userPerfStat = user.getPerfStat();
-			
-			for(_Review r:user.getReviews()){
-				if (r.getType() != rType.TEST)
-					continue;
-				predL = user.predict(r);
-				trueL = r.getYLabel();
-				userPerfStat.addOnePredResult(predL, trueL);
-			}
-			m_microStat.accumulateConfusionMat(userPerfStat);
-			
-			userPerfStat.calculatePRF();			
-			for(int n=0; n<m_classNo; n++)
-				macroF1[n] += userPerfStat.getF1(n);
-			
-			count ++;
-		}
-		calcMicroPerfStat();
-		
-		// macro average
-		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.3f\t", i, macroF1[i]/count);
-		System.out.println();
-		return Utils.sumOfArray(macroF1);
-	}
-
-	@Override
-	public double train(Collection<_Doc> trainSet) {
-		System.err.println("[Error]train(Collection<_Doc> trainSet) is not implemented in MultiTaskSVM!");
-		System.exit(-1);
-		return 0;
-	}
-
-	@Override
-	public int predict(_Doc doc) {//predict by global model		
-		return -1;
-	}
-
-	@Override
-	public double score(_Doc d, int label) {//prediction score by global model
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
-	protected void debug(_Doc d) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void saveModel(String modelLocation) {
-		for(_User user:m_userList) {
-			try {
-	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
-	            StringBuilder buffer = new StringBuilder(512);
-	            double[] pWeights = user.getPersonalizedModel();
-	            for(int i=0; i<pWeights.length; i++) {
-	            	buffer.append(pWeights[i]);
-	            	if (i<pWeights.length-1)
-	            		buffer.append(',');
-	            }
-	            writer.write(buffer.toString());
-	            writer.close();
-	        } catch (Exception e) {
-	            e.printStackTrace(); 
-	        } 
-		}
-		System.out.format("[Info]Save personalized models to %s.", modelLocation);
-		
 	}
 }

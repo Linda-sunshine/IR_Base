@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -24,10 +24,6 @@ public class asyncLinAdapt extends LinAdapt {
 		m_testmode = TestMode.TM_online;
 	}
 	
-	public void setTestMode(TestMode mode) {
-		m_testmode = mode;
-	}
-	
 	static double getStepSize(double initStepSize, _LinAdaptStruct user) {
 		return (0.1+0.9*Math.random()) * initStepSize/(2.0+user.getUpdateCount());
 	}
@@ -39,10 +35,13 @@ public class asyncLinAdapt extends LinAdapt {
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
+		_LinAdaptStruct user;
 		
 		initLBFGS();
 		init();
-		for(_LinAdaptStruct user:m_userList) {
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_LinAdaptStruct)m_userList.get(i);
+			
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
@@ -71,8 +70,9 @@ public class asyncLinAdapt extends LinAdapt {
 			
 			if (m_displayLv>0)
 				System.out.println();
-			setPersonalizedModel(user);
 		}
+		
+		setPersonalizedModel();
 		return 0;//we do not evaluate function value
 	}
 	
@@ -84,7 +84,7 @@ public class asyncLinAdapt extends LinAdapt {
 	}	
 	
 	@Override
-	protected int getAdaptationSize(_LinAdaptStruct user) {
+	protected int getAdaptationSize(_AdaptStruct user) {
 		return user.getAdaptationCacheSize();
 	}
 	

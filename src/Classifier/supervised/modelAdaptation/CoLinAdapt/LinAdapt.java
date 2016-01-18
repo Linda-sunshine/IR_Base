@@ -1,21 +1,17 @@
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 
-import Classifier.BaseClassifier;
+import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
-import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
@@ -23,13 +19,9 @@ import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 
-public class LinAdapt extends BaseClassifier {
-	ArrayList<_LinAdaptStruct> m_userList;//a list of users for adapting personalized models
-	
+public class LinAdapt extends ModelAdaptation {
 	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
 	int[] m_featureGroupMap; // bias term is at position 0
-	double[] m_gWeights; //global model weight
-	double[] m_pWeights; // cache for personalized weight
 	
 	//Trade-off parameters	
 	double m_eta1; // weight for scaling in R1.
@@ -39,16 +31,11 @@ public class LinAdapt extends BaseClassifier {
 	double[] m_diag; //parameter used in lbfgs.
 	double[] m_g;//optimized gradients. 
 	
-	int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
-	TestMode m_testmode; // test mode of different algorithms 
-	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
-		super(classNo, featureSize);
-		m_userList = null;				
-		m_pWeights = null;
+		super(classNo, featureSize, featureMap, globalModel);
+		m_userList = null;
 		
 		loadFeatureGroupMap(featureGroupMap);
-		loadGlobalModel(featureMap, globalModel);
 		
 		// default value of trade-off parameters
 		m_eta1 = 0.5;
@@ -57,10 +44,6 @@ public class LinAdapt extends BaseClassifier {
 		// the only test mode for LinAdapt is batch
 		m_testmode = TestMode.TM_batch;
 	}  
-	
-	public void setDisplayLv(int level) {
-		m_displayLv = level;
-	}
 	
 	public void setR1TradeOffs(double eta1, double eta2) {
 		m_eta1 = eta1;
@@ -91,37 +74,10 @@ public class LinAdapt extends BaseClassifier {
 		}
 	}
 	
-	//Load global model from file.
-	public void loadGlobalModel(HashMap<String, Integer> featureMap, String filename){
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line, features[];
-			int pos;
-			
-			m_gWeights = new double[m_featureSize+1];//to include the bias term
-			while((line=reader.readLine()) != null) {
-				features = line.split(":");
-				if (features[0].equals("BIAS"))
-					m_gWeights[0] = Double.valueOf(features[1]);
-				else if (featureMap.containsKey(features[0])){
-					pos = featureMap.get(features[0]);
-					if (pos>=0 && pos<m_featureSize)
-						m_gWeights[pos+1] = Double.valueOf(features[1]);
-					else
-						System.err.println("[Warning]Unknown feature " + features[0]);
-				} else 
-					System.err.println("[Warning]Unknown feature " + features[0]);
-			}
-			
-			reader.close();
-		} catch(IOException e){
-			System.err.format("[Error]Fail to open file %s.\n", filename);
-		}
-	}
-	
 	//Initialize the weights of the transformation matrix.
-	public void loadUsers(ArrayList<_User> userList){	
-		m_userList = new ArrayList<_LinAdaptStruct>();
+	@Override
+	public void loadUsers(ArrayList<_User> userList){
+		m_userList = new ArrayList<_AdaptStruct>();
 		
 		for(_User user:userList)
 			m_userList.add(new _LinAdaptStruct(user, m_dim));
@@ -199,10 +155,6 @@ public class LinAdapt extends BaseClassifier {
 		}
 	}
 	
-	protected int getAdaptationSize(_LinAdaptStruct user) {
-		return user.getAdaptationSize();
-	}
-	
 	//shared gradient calculation by batch and online updating
 	protected void gradientByFunc(_LinAdaptStruct user, _Review review, double weight) {
 		int n, k; // feature index and feature group index		
@@ -257,7 +209,10 @@ public class LinAdapt extends BaseClassifier {
 		int vSize = 2*m_dim;
 		
 		init();
-		for(_LinAdaptStruct user:m_userList) {
+		_LinAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_LinAdaptStruct)m_userList.get(i);
+			
 			initLBFGS();
 			iflag[0] = 0;
 			try{
@@ -289,162 +244,31 @@ public class LinAdapt extends BaseClassifier {
 			}
 			
 			if (m_displayLv>0)
-				System.out.println();
-			setPersonalizedModel(user);
+				System.out.println();			
 			
 			totalFvalue += fValue;
 		}
+		
+		setPersonalizedModel();
 		return totalFvalue;
 	}
 	
-	void setPersonalizedModel(_LinAdaptStruct user) {
+	@Override
+	protected void setPersonalizedModel() {
 		int gid;
-		
-		//set bias term
-		m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
-		
-		//set the other features
-		for(int i=0; i<m_featureSize; i++) {
-			gid = m_featureGroupMap[1+i];
-			m_pWeights[1+i] = user.getScaling(gid) * m_gWeights[1+i] + user.getShifting(gid);
-		}
-		user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
-	}
-	
-	//Batch mode: given a set of reviews and accumulate the TP table.
-	@Override
-	public double test(){
-		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		
-		for(int k=0; k<numberOfCores; ++k){
-			threads.add((new Thread() {
-				int core, numOfCores;
-				public void run() {
-					_LinAdaptStruct user;
-					_PerformanceStat userPerfStat;
-					try {
-						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-							user = m_userList.get(i+core);
-							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-								continue;
-								
-							userPerfStat = user.getPerfStat();								
-							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-								//record prediction results
-								for(_Review r:user.getReviews()) {
-									if (r.getType() != rType.TEST)
-										continue;
-									int trueL = r.getYLabel();
-									int predL = user.predict(r); // evoke user's own model
-									userPerfStat.addOnePredResult(predL, trueL);
-								}
-							}							
-							userPerfStat.calculatePRF();	
-						}
-					} catch(Exception ex) {
-						ex.printStackTrace(); 
-					}
-				}
-				
-				private Thread initialize(int core, int numOfCores) {
-					this.core = core;
-					this.numOfCores = numOfCores;
-					return this;
-				}
-			}).initialize(k, numberOfCores));
+		_LinAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_LinAdaptStruct)m_userList.get(i);
 			
-			threads.get(k).start();
-		}
-		
-		for(int k=0;k<numberOfCores;++k){
-			try {
-				threads.get(k).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} 
-		}
-		
-		int count = 0;
-		double[] macroF1 = new double[m_classNo];
-		_PerformanceStat userPerfStat;
-		
-		for(_LinAdaptStruct user:m_userList) {
-			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-				continue;
+			//set bias term
+			m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
 			
-			userPerfStat = user.getPerfStat();
-			for(int i=0; i<m_classNo; i++)
-				macroF1[i] += userPerfStat.getF1(i);
-			m_microStat.accumulateConfusionMat(userPerfStat);
-			count ++;
+			//set the other features
+			for(int n=0; n<m_featureSize; n++) {
+				gid = m_featureGroupMap[1+n];
+				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
+			}
+			user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
 		}
-		calcMicroPerfStat();
-		
-		// macro average
-		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-		System.out.println();
-		return Utils.sumOfArray(macroF1);
-	}
-
-	@Override
-	public double train(Collection<_Doc> trainSet) {	
-		System.err.println("[Error]train(Collection<_Doc> trainSet) is not implemented in LinAdapt!");
-		System.exit(-1);
-		return 0;
-	}
-
-	@Override
-	public int predict(_Doc doc) {
-		System.err.println("[Error]predict(_Doc doc) is not implemented in LinAdapt!");
-		System.exit(-1);
-		return 0;
-	}
-
-	@Override
-	public double score(_Doc d, int label) {
-		System.err.println("[Error]score(_Doc d, int label) is not implemented in LinAdapt!");
-		System.exit(-1);
-		return 0;
-	}
-
-	@Override
-	protected void init() {		
-		for(_LinAdaptStruct user:m_userList) {
-			user.getPerfStat().clear();
-		}			
-	}
-
-	@Override
-	protected void debug(_Doc d) {
-		System.err.println("[Error]debug(_Doc d) is not implemented in LinAdapt!");
-		System.exit(-1);
-	}
-
-	@Override
-	public void saveModel(String modelLocation) {	
-		for(_LinAdaptStruct user:m_userList) {
-			try {
-	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.m_user.getUserID()+".classifer"));
-	            StringBuilder buffer = new StringBuilder(512);
-	            double[] pWeights = user.getPWeights();
-	            for(int i=0; i<pWeights.length; i++) {
-	            	buffer.append(pWeights[i]);
-	            	if (i<pWeights.length-1)
-	            		buffer.append(',');
-	            }
-	            writer.write(buffer.toString());
-	            writer.close();
-	        } catch (Exception e) {
-	            e.printStackTrace(); 
-	        } 
-		}
-		System.out.format("[Info]Save personalized models to %s.", modelLocation);
 	}
 }

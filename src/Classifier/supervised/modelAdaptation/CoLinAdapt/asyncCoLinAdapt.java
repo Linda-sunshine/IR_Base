@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,10 +27,6 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		
 		// all three test modes for asyncCoLinAdapt is possible, and default is online
 		m_testmode = TestMode.TM_online;
-	}
-
-	public void setTestMode(TestMode mode) {
-		m_testmode = mode;
 	}
 	
 	@Override
@@ -122,7 +118,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	protected int getAdaptationSize(_LinAdaptStruct user) {
+	protected int getAdaptationSize(_AdaptStruct user) {
 		return user.getAdaptationCacheSize();
 	}
 	
@@ -175,9 +171,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		if (m_displayLv>0)
 			System.out.println();
 		
-		for(_LinAdaptStruct u:m_userList)
-			setPersonalizedModel(u);
-		
+		setPersonalizedModel();		
 		return 0; // we do not evaluate function value
 	}
 		

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.HashMap;
 

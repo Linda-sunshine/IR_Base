@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdaptFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -17,9 +17,9 @@ public class LinAdaptMain {
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.50;
 		int topKNeighbors = 20;
-		int displayLv = 2;
+		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.02, eta2 = 0.02, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -42,10 +42,13 @@ public class LinAdaptMain {
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instances of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instances of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+
+//		//Create an instances of first-order asyncCoLinAdapt model.
+		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
@@ -55,8 +58,6 @@ public class LinAdaptMain {
 		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
 		*/
 		
-//		//Create an instances of first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 //		adaptation.setTestMode(TestMode.TM_batch);
@@ -68,7 +69,8 @@ public class LinAdaptMain {
 //		adaptation.saveModel("data/results/colinadapt/models");
 		
 		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize(), analyzer.getUsers());
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
