@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.CoLinAdapt;
+import Classifier.semisupervised.CoLinAdapt.LinAdapt;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -17,7 +17,7 @@ public class LinAdaptMain {
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.50;
 		int topKNeighbors = 20;
-		int displayLv = 2;
+		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
@@ -36,13 +36,13 @@ public class LinAdaptMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
 //		//Create an instances of LinAdapt model.
-//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 //		//Create an instances of asyncLinAdapt model.
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instances of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instances of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -61,7 +61,7 @@ public class LinAdaptMain {
 		adaptation.setDisplayLv(displayLv);
 //		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();
 		adaptation.test();
