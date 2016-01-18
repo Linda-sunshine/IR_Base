@@ -1,13 +1,14 @@
 /**
  * 
  */
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
@@ -19,7 +20,7 @@ import structures._Review.rType;
  * asynchronized CoLinAdapt with zero order gradient update, i.e., we will only touch the current user's gradient
  */
 public class asyncCoLinAdapt extends CoLinAdapt {
-
+	double m_initStepSize = 1.50;
 	int[] m_userOrder; // visiting order of different users during online learning
 	
 	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
@@ -28,9 +29,9 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		// all three test modes for asyncCoLinAdapt is possible, and default is online
 		m_testmode = TestMode.TM_online;
 	}
-
-	public void setTestMode(TestMode mode) {
-		m_testmode = mode;
+	
+	public void setInitStepSize(double initStepSize) {
+		m_initStepSize = initStepSize;
 	}
 	
 	@Override
@@ -70,7 +71,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	protected void gradientByFunc(_LinAdaptStruct user) {		
+	protected void gradientByFunc(_AdaptStruct user) {		
 		//Update gradients review by review within the latest adaptation cache.
 		for(_Review review:user.nextAdaptationIns())
 			gradientByFunc(user, review, 1.0); // equal weights for this user's own adaptation data
@@ -122,14 +123,14 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	protected int getAdaptationSize(_LinAdaptStruct user) {
+	protected int getAdaptationSize(_AdaptStruct user) {
 		return user.getAdaptationCacheSize();
 	}
 	
 	//this is online training in each individual user
 	@Override
 	public double train(){
-		double initStepSize = 1.0, gNorm, gNormOld = Double.MAX_VALUE;
+		double gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
 		_CoLinAdaptStruct user;
 		int predL, trueL;
@@ -163,7 +164,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				}
 				
 				//gradient descent
-				gradientDescent(user, initStepSize, 1.0);
+				gradientDescent(user, m_initStepSize, 1.0);
 				//gradientDescent(user, asyncLinAdapt.getStepSize(initStepSize, user));
 				gNormOld = gNorm;
 				
@@ -175,15 +176,13 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		if (m_displayLv>0)
 			System.out.println();
 		
-		for(_LinAdaptStruct u:m_userList)
-			setPersonalizedModel(u);
-		
+		setPersonalizedModel();		
 		return 0; // we do not evaluate function value
 	}
 		
 	// update this current user only
 	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
-		double a, b, stepSize = asyncLinAdapt.getStepSize(initStepSize, user);
+		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
 		int offset = 2*m_dim*user.m_id;
 		for(int k=0; k<m_dim; k++) {
 			a = user.getScaling(k) - stepSize * m_g[offset + k];
