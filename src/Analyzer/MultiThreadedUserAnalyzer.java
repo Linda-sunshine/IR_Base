@@ -114,13 +114,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			// Skip the first line since it is user name.
 			reader.readLine(); 
 
-			String reviewID, source, category;
+			String productID, source, category;
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
 			long timestamp;
 			while((line = reader.readLine()) != null){
-				reviewID = line;
+				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
@@ -129,7 +129,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, reviewID, category, timestamp);
+					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
 					if(AnalyzeDoc(review,core)) //Create the sparse vector for the review.
 						reviews.add(review);
 				}

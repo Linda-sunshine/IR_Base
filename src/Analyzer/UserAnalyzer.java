@@ -125,13 +125,13 @@ public class UserAnalyzer extends DocAnalyzer {
 			// Skip the first line since it is user name.
 			reader.readLine(); 
 			
-			String reviewID, source, category;
+			String productID, source, category;
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
 			long timestamp;
 			while((line = reader.readLine()) != null){
-				reviewID = line;
+				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
@@ -140,7 +140,7 @@ public class UserAnalyzer extends DocAnalyzer {
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, reviewID, category, timestamp);
+					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
 					if(AnalyzeDoc(review)) //Create the sparse vector for the review.
 						reviews.add(review);
 				}
@@ -187,7 +187,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		return m_users;
 	}
 	
-	// Added by Lin: Load the svd file to get the low dim representation of users.
+// Added by Lin: Load the svd file to get the low dim representation of users.
 	public void loadSVDFile(String filename){
 		try{
 			// Construct the <userID, user> map first.
