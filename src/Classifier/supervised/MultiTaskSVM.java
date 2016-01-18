@@ -1,9 +1,12 @@
 package Classifier.supervised;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 
 import Classifier.BaseClassifier;
+import Classifier.semisupervised.CoLinAdapt._LinAdaptStruct;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -237,7 +240,23 @@ public class MultiTaskSVM extends BaseClassifier {
 
 	@Override
 	public void saveModel(String modelLocation) {
-		// TODO Auto-generated method stub
+		for(_User user:m_userList) {
+			try {
+	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
+	            StringBuilder buffer = new StringBuilder(512);
+	            double[] pWeights = user.getPersonalizedModel();
+	            for(int i=0; i<pWeights.length; i++) {
+	            	buffer.append(pWeights[i]);
+	            	if (i<pWeights.length-1)
+	            		buffer.append(',');
+	            }
+	            writer.write(buffer.toString());
+	            writer.close();
+	        } catch (Exception e) {
+	            e.printStackTrace(); 
+	        } 
+		}
+		System.out.format("[Info]Save personalized models to %s.", modelLocation);
 		
 	}
 }

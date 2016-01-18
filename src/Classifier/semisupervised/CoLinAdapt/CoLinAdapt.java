@@ -13,6 +13,7 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._User;
+import utils.Utils;
 
 /**
  * @author Hongning Wang
@@ -245,11 +246,8 @@ public class CoLinAdapt extends LinAdapt {
 		return oldFValue;
 	}
 	
-	// added by Lin for calculating the mag of gradients.
+	// added by Lin for calculating the magnitude of gradients.
 	public double calcGradientMag(){
-		double mag = 0;
-		for(double g: m_g)
-			mag += g * g;
-		return mag;
+		return Utils.L2Norm(m_g);
 	}
 }
