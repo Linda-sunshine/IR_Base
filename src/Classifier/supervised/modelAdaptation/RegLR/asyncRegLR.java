@@ -1,28 +1,33 @@
 /**
  * 
  */
-package Classifier.supervised.modelAdaptation.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.RegLR;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
+import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
+import utils.Utils;
 
 /**
  * @author Hongning Wang
- * online learning of LinAdapt
+ * online learning of RegLR
  */
-public class asyncLinAdapt extends LinAdapt {
+public class asyncRegLR extends RegLR {
 	double m_initStepSize = 0.50;
 	
-	public asyncLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
+	public asyncRegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
+		super(classNo, featureSize, featureMap, globalModel);
 		
-		// all three test modes for asyncLinAdapt is possible, and default is online
+		// all three test modes for asyncRegLR is possible, and default is online
 		m_testmode = TestMode.TM_online;
+	}
+	
+	public static double getStepSize(double initStepSize, _AdaptStruct user) {
+		return (0.1+0.9*Math.random()) * initStepSize/(2.0+user.getUpdateCount());
 	}
 	
 	public void setInitStepSize(double initStepSize) {
@@ -36,13 +41,10 @@ public class asyncLinAdapt extends LinAdapt {
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
-		_LinAdaptStruct user;
 		
 		initLBFGS();
 		init();
-		for(int i=0; i<m_userList.size(); i++) {
-			user = (_LinAdaptStruct)m_userList.get(i);
-			
+		for(_AdaptStruct user:m_userList) {
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
@@ -65,7 +67,7 @@ public class asyncLinAdapt extends LinAdapt {
 				}
 				
 				//gradient descent
-				asyncRegLR.gradientDescent(user, m_initStepSize, m_g);
+				gradientDescent(user, m_initStepSize, m_g);
 				gNormOld = gNorm;
 			}
 			
@@ -75,6 +77,13 @@ public class asyncLinAdapt extends LinAdapt {
 		
 		setPersonalizedModel();
 		return 0;//we do not evaluate function value
+	}
+	
+	// update this current user only
+	public static void gradientDescent(_AdaptStruct user, double initStepSize, double[] g) {
+		double stepSize = asyncRegLR.getStepSize(initStepSize, user);
+		Utils.add2Array(user.getUserModel(), g, -stepSize);
+		user.incUpdatedCount(1.0);
 	}	
 	
 	@Override

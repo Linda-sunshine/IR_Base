@@ -15,11 +15,11 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		double trainRatio = 0, adaptRatio = 0.50;
+		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.02, eta2 = 0.02, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -35,21 +35,27 @@ public class LinAdaptMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-//		//Create an instances of LinAdapt model.
+//		//Create an instance of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
-//		//Create an instances of asyncLinAdapt model.
+//		//Create an instance of asyncLinAdapt model.
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
-		//Create an instances of CoLinAdapt model.
+		//Create an instance of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
-//		//Create an instances of zero-order asyncCoLinAdapt model.
+//		//Create an instance of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
-//		//Create an instances of first-order asyncCoLinAdapt model.
+//		//Create an instance of first-order asyncCoLinAdapt model.
 		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
+		//Create an instance of Regularized LogitReg model.
+//		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
+		//Create an instance of asynchronized Regularized LogitReg model.
+//		asyncRegLR adaptation = new asyncRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
 		int fDim = 3; // xij contains <bias, bow, svd_sim>
@@ -61,7 +67,8 @@ public class LinAdaptMain {
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 //		adaptation.setTestMode(TestMode.TM_batch);
-		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR1TradeOff(eta1);
+//		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();

@@ -126,7 +126,9 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	protected double calculateFuncValue(_LinAdaptStruct ui) {
+	protected double calculateFuncValue(_AdaptStruct u) {
+		_LinAdaptStruct ui = (_LinAdaptStruct)u;
+		
 		double fValue = super.calculateFuncValue(ui), R2 = 0, diffA, diffB;
 		
 		//R2 regularization
@@ -145,7 +147,9 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	protected void calculateGradients(_LinAdaptStruct user){
+	protected void calculateGradients(_AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
+		
 		super.calculateGradients(user);
 		gradientByR2(user);
 	}

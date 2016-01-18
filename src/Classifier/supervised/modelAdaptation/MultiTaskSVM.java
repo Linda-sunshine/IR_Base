@@ -124,7 +124,7 @@ public class MultiTaskSVM extends ModelAdaptation {
 					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
 			}
 			
-			user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);//our model always assume the bias term
+			user.setPersonalizedModel(m_pWeights);//our model always assume the bias term
 		}
 	}
 	

@@ -16,7 +16,8 @@ public class _LinAdaptStruct extends _AdaptStruct {
 			m_A[i] = 1;//Scaling in the first dim dimensions. Initialize scaling to be 1 and shifting be 0.
 	}	
 
-	public double[] getA() {
+	@Override
+	public double[] getUserModel() {
 		return m_A;
 	}
 	

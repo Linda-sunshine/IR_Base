@@ -8,28 +8,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
+import Classifier.supervised.modelAdaptation.RegLR.RegLR;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
-import utils.Utils;
 
-public class LinAdapt extends ModelAdaptation {
+public class LinAdapt extends RegLR {
 	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
 	int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
-	double m_eta1; // weight for scaling in R1.
 	double m_eta2; // weight for shifting in R2.
-	
-	//shared space for LBFGS optimization
-	double[] m_diag; //parameter used in lbfgs.
-	double[] m_g;//optimized gradients. 
 	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
@@ -84,6 +74,7 @@ public class LinAdapt extends ModelAdaptation {
 		m_pWeights = new double[m_gWeights.length];
 	}
 	
+	@Override
 	protected void initLBFGS(){
 		if(m_g == null)
 			m_g = new double[m_dim*2];
@@ -95,7 +86,9 @@ public class LinAdapt extends ModelAdaptation {
 	}
 
 	// We can do A*w*x at the same time to reduce computation.
-	protected double logit(_SparseFeature[] fvs, _LinAdaptStruct user){
+	@Override
+	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		double value = user.getScaling(0)*m_gWeights[0] + user.getShifting(0);//Bias term: w0*a0+b0.
 		int n = 0, k = 0; // feature index and feature group index
 		for(_SparseFeature fv: fvs){
@@ -106,35 +99,13 @@ public class LinAdapt extends ModelAdaptation {
 		return 1/(1+Math.exp(-value));
 	}
 	
-	protected int predict(_Doc review, _LinAdaptStruct user) {
-		if (review==null)
-			return -1;
-		else
-			return logit(review.getSparse(), user)>0.5?1:0;
-	}
-	
 	//Calculate the function value of the new added instance.
-	protected double calculateFuncValue(_LinAdaptStruct user){
-		double L = 0; //log likelihood.
-		double Pi = 0, R1 = 0;
+	@Override
+	protected double calculateFuncValue(_AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		
-		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION)
-				continue; // only touch the adaptation data
-			
-			Pi = logit(review.getSparse(), user);
-			if(review.getYLabel() == 1) {
-				if (Pi>0.0)
-					L += Math.log(Pi);					
-				else
-					L -= Utils.MAX_VALUE;
-			} else {
-				if (Pi<1.0)
-					L += Math.log(1 - Pi);					
-				else
-					L -= Utils.MAX_VALUE;
-			}
-		}
+		double L = calcLogLikelihood(user); //log likelihood.
+		double R1 = 0;
 		
 		//Add regularization parts.
 		for(int i=0; i<m_dim; i++){
@@ -142,21 +113,14 @@ public class LinAdapt extends ModelAdaptation {
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
 		
-		return R1 - L /getAdaptationSize(user);
-	}
-	
-	protected void gradientByFunc(_LinAdaptStruct user) {		
-		//Update gradients one review by one review.
-		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION)
-				continue;
-			
-			gradientByFunc(user, review, 1.0);//weight all the instances equally
-		}
+		return R1 - L;
 	}
 	
 	//shared gradient calculation by batch and online updating
-	protected void gradientByFunc(_LinAdaptStruct user, _Review review, double weight) {
+	@Override
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
+		
 		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
@@ -175,7 +139,9 @@ public class LinAdapt extends ModelAdaptation {
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
-	protected void gradientByR1(_LinAdaptStruct user){
+	@Override
+	protected void gradientByR1(_AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++){
@@ -183,13 +149,8 @@ public class LinAdapt extends ModelAdaptation {
 			m_g[offset + k + m_dim] += 2 * m_eta2 * user.getShifting(k); // add 2*eta2*b_k
 		}
 	}
-		
-	//Calculate the gradients for the use in LBFGS.
-	protected void calculateGradients(_LinAdaptStruct user){
-		gradientByFunc(user);
-		gradientByR1(user);
-	}
 	
+	@Override
 	protected double gradientTest() {
 		double magA = 0, magB = 0 ;
 		for(int i=0; i<m_dim; i++){
@@ -200,57 +161,6 @@ public class LinAdapt extends ModelAdaptation {
 		if (m_displayLv==2)
 			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
 		return magA + magB;
-	}
-	
-	//this is batch training in each individual user
-	public double train(){
-		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue = 0, A[], oldFValue = Double.MAX_VALUE, totalFvalue = 0;
-		int vSize = 2*m_dim;
-		
-		init();
-		_LinAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++) {
-			user = (_LinAdaptStruct)m_userList.get(i);
-			
-			initLBFGS();
-			iflag[0] = 0;
-			try{
-				A = user.getA();
-				oldFValue = Double.MAX_VALUE; 
-				do{
-					Arrays.fill(m_g, 0); // initialize gradient					
-					fValue = calculateFuncValue(user);
-					calculateGradients(user);
-					
-					if (m_displayLv==2) {
-						System.out.println("Fvalue is " + fValue);
-						gradientTest();
-					} else if (m_displayLv==1) {
-						if (fValue<oldFValue)
-							System.out.print("o");
-						else
-							System.out.print("x");
-					} 
-					oldFValue = fValue;
-					
-					LBFGS.lbfgs(vSize, 6, A, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-32, iflag);//In the training process, A is updated.
-				} while(iflag[0] != 0);
-			} catch(ExceptionWithIflag e) {
-				if (m_displayLv>0)
-					System.out.print("X");
-				else
-					System.out.println("X");
-			}
-			
-			if (m_displayLv>0)
-				System.out.println();			
-			
-			totalFvalue += fValue;
-		}
-		
-		setPersonalizedModel();
-		return totalFvalue;
 	}
 	
 	@Override
@@ -268,7 +178,7 @@ public class LinAdapt extends ModelAdaptation {
 				gid = m_featureGroupMap[1+n];
 				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
 			}
-			user.setPersonalizedModel(m_pWeights, m_classNo, m_featureSize);
+			user.setPersonalizedModel(m_pWeights);
 		}
 	}
 }

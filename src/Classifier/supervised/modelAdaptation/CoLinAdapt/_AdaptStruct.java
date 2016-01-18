@@ -50,6 +50,10 @@ public class _AdaptStruct {
 		resetAdaptPtr();
 	}
 	
+	public int getId() {
+		return m_id;
+	}
+	
 	@Override
 	public String toString() {		
 		return String.format("%d-A:%d-T:%d", m_id, getAdaptationSize(), getTestSize());
@@ -57,6 +61,10 @@ public class _AdaptStruct {
 	
 	public String getUserID() {
 		return m_user.getUserID();
+	}
+	
+	public double[] getUserModel() {
+		return getPWeights(); // equivalent to this
 	}
 
 	public void resetAdaptPtr() {
@@ -131,8 +139,8 @@ public class _AdaptStruct {
 		return m_adaptPtr < m_adaptEndPos;
 	}
 	
-	public void setPersonalizedModel(double[] pWeight, int classNo, int featureSize) {
-		m_user.setModel(pWeight, classNo, featureSize);
+	public void setPersonalizedModel(double[] pWeight) {
+		m_user.setModel(pWeight);
 	}
 	
 	public int predict(_Doc doc) {

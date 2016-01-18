@@ -66,7 +66,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 	
 	//this operation becomes very expensive in _CoLinStruct
 	@Override
-	public double[] getA() {
+	public double[] getUserModel() {
 		int offset = m_id * m_dim * 2;
 		System.arraycopy(sharedA, offset, m_A, 0, m_dim*2);
 		return m_A;
