@@ -15,12 +15,11 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
-import structures._RankItem;
 import structures._PerformanceStat.TestMode;
+import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
@@ -154,7 +153,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		//construct the order of online updating
 		ArrayList<_RankItem> userorder = new ArrayList<_RankItem>();
 		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)(m_userList.get(i));
+			ui = (CoAdaptStruct)(m_userList.get(i));
 			
 			for(_Review r:ui.getReviews()) {//reviews in each user is already ordered by time
 				if (r.getType() == rType.ADAPTATION) {

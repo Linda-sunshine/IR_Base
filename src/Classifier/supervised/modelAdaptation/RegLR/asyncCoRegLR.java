@@ -1,14 +1,13 @@
 /**
  * 
  */
-package Classifier.supervised.modelAdaptation.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.RegLR;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
-import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
@@ -16,19 +15,19 @@ import structures._Review;
 
 /**
  * @author Hongning Wang
- * asynchronized CoLinAdapt with zero order gradient update, i.e., we will only touch the current user's gradient
+ * zero-order asynchronized CoRegLR implementation
  */
-public class asyncCoLinAdapt extends CoLinAdapt {
+public class asyncCoRegLR extends CoRegLR {
 	double m_initStepSize = 1.50;
 	int[] m_userOrder; // visiting order of different users during online learning
 	
-	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		
+	public asyncCoRegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel,
+			int topK) {
+		super(classNo, featureSize, featureMap, globalModel, topK);
 		// all three test modes for asyncCoLinAdapt is possible, and default is online
 		m_testmode = TestMode.TM_online;
 	}
-	
+
 	public void setInitStepSize(double initStepSize) {
 		m_initStepSize = initStepSize;
 	}
@@ -48,47 +47,44 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	@Override
 	protected void gradientByR2(_AdaptStruct user){		
-		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
+		_CoRegLRAdaptStruct ui = (_CoRegLRAdaptStruct)user, uj;
 		
 		for(_RankItem nit:ui.getNeighbors()) {
-			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
+			uj = (_CoRegLRAdaptStruct)m_userList.get(nit.m_index);
 			gradientByR2(ui, uj, nit.m_value);
 		}
 		
 		for(_RankItem nit:ui.getReverseNeighbors()) {
-			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
+			uj = (_CoRegLRAdaptStruct)m_userList.get(nit.m_index);
 			gradientByR2(ui, uj, nit.m_value);
 		}
 	}
 	
 	//we will only update ui but keep uj as constant
-	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
-		double coef = 2 * sim, dA, dB;
-		int offset = m_dim*2*ui.getId();
+	void gradientByR2(_CoRegLRAdaptStruct ui, _CoRegLRAdaptStruct uj, double sim) {
+		double coef = 2 * sim * m_eta2, diff;
+		int offset = (m_featureSize+1)*ui.getId();
 		
-		for(int k=0; k<m_dim; k++) {
-			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
-			dB = coef * m_eta4 * (ui.getShifting(k) - uj.getShifting(k));
+		for(int k=0; k<m_featureSize+1; k++) {
+			diff = coef  * (ui.getPWeight(k) - uj.getPWeight(k));
 			
-			// update ui's gradient
-			m_g[offset + k] += dA;
-			m_g[offset + k + m_dim] += dB;
+			// update ui's gradient only
+			m_g[offset + k] += diff;
 		}
 	}
 	
 	protected double gradientTest(_AdaptStruct user) {
-		int offset, uid = 2*m_dim*user.getId();
-		double magA = 0, magB = 0;
+		int offset, uid = (m_featureSize+1)*user.getId();
+		double mag = 0;
 		
-		for(int i=0; i<m_dim; i++){
+		for(int i=0; i<m_featureSize+1; i++){
 			offset = uid + i;
-			magA += m_g[offset]*m_g[offset];
-			magB += m_g[offset+m_dim]*m_g[offset+m_dim];
+			mag += m_g[offset] * m_g[offset];
 		}
 		
 		if (m_displayLv==2)
-			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
-		return magA + magB;
+			System.out.format("Gradient magnitude for user %d, b: %.5f\n", user.getId(), mag);
+		return mag;
 	}
 	
 	@Override
@@ -98,19 +94,19 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	//this is online training in each individual user
 	@Override
-	public double train(){
+	public double train() {
 		double gNorm, gNormOld = Double.MAX_VALUE;
 		int updateCount = 0;
-		_CoLinAdaptStruct user;
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
+		_CoRegLRAdaptStruct user;
 		
 		initLBFGS();
 		init();
 		for(int t=0; t<m_userOrder.length; t++) {
-			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
-
+			user = (_CoRegLRAdaptStruct)m_userList.get(m_userOrder[t]);
+			
 			if(user.hasNextAdaptationIns()) {
 				// test the latest model
 				if (m_testmode!=TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
@@ -134,7 +130,6 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				
 				//gradient descent
 				gradientDescent(user, m_initStepSize, 1.0);
-				//gradientDescent(user, asyncLinAdapt.getStepSize(initStepSize, user));
 				gNormOld = gNorm;
 				
 				if (m_displayLv>0 && ++updateCount%100==0)
@@ -148,18 +143,15 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		setPersonalizedModel();		
 		return 0; // we do not evaluate function value
 	}
-		
+	
 	// update this current user only
-	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
-		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
-		int offset = 2*m_dim*user.getId();
-		for(int k=0; k<m_dim; k++) {
-			a = user.getScaling(k) - stepSize * m_g[offset + k];
-			user.setScaling(k, a);
-			
-			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
-			user.setShifting(k, b);
+	void gradientDescent(_CoRegLRAdaptStruct user, double initStepSize, double inc) {
+		double a, stepSize = asyncRegLR.getStepSize(initStepSize, user);
+		int offset = (m_featureSize+1)*user.getId();
+		for(int k=0; k<=m_featureSize; k++) {
+			a = user.getPWeight(k) - stepSize * m_g[offset + k];
+			user.setPWeight(k, a);
 		}
 		user.incUpdatedCount(inc);
-	}	
+	}
 }
