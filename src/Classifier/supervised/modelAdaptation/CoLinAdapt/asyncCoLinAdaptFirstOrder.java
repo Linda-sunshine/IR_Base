@@ -24,9 +24,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	
 	@Override
-	protected void calculateGradients(_AdaptStruct u){
-		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		
+	protected void calculateGradients(_AdaptStruct user){		
 		super.calculateGradients(user);
 		if (m_neighborsHistoryWeight>0)
 			cachedGradientByNeighorsFunc(user, m_neighborsHistoryWeight);
@@ -34,7 +32,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	 
 	//Calculate the reweighted gradients from neighbors' historical observations
-	protected void cachedGradientByNeighorsFunc(_LinAdaptStruct user, double weight){		
+	protected void cachedGradientByNeighorsFunc(_AdaptStruct user, double weight){		
 		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
 
 		for(_RankItem nit:ui.getNeighbors()) {

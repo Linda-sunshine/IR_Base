@@ -61,7 +61,7 @@ public class asyncCoRegLR extends CoRegLR {
 	}
 	
 	//we will only update ui but keep uj as constant
-	void gradientByR2(_CoRegLRAdaptStruct ui, _CoRegLRAdaptStruct uj, double sim) {
+	void gradientByR2(_AdaptStruct ui, _AdaptStruct uj, double sim) {
 		double coef = 2 * sim * m_eta2, diff;
 		int offset = (m_featureSize+1)*ui.getId();
 		

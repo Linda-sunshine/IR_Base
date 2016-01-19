@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.RegLR.asyncCoRegLR;
+import Classifier.supervised.modelAdaptation.RegLR.asyncCoRegLRFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -48,7 +48,8 @@ public class LinAdaptMain {
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
+//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
+//				featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
 		//Create an instance of Regularized LogitReg model.
 //		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
@@ -60,7 +61,11 @@ public class LinAdaptMain {
 //		CoRegLR adaptation = new CoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
 		
 		//Create an instance of zero-order Collaboratively Regularized LogitReg model.
-		asyncCoRegLR adaptation = new asyncCoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+//		asyncCoRegLR adaptation = new asyncCoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+
+		//Create an instance of first-order Collaboratively Regularized LogitReg model.
+		asyncCoRegLRFirstOrder adaptation = new asyncCoRegLRFirstOrder(classNumber, analyzer.getFeatureSize(), 
+				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
