@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._User;
 
 public class _LinAdaptStruct extends _AdaptStruct {

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.RegLR;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
@@ -122,7 +123,7 @@ public class LinAdapt extends RegLR {
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		
 		int n, k; // feature index and feature group index		
-		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
 
 		//Bias term.
@@ -142,7 +143,7 @@ public class LinAdapt extends RegLR {
 	@Override
 	protected void gradientByR1(_AdaptStruct u){
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		int offset = 2*m_dim*user.m_id;//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++){
 			m_g[offset + k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)

@@ -5,6 +5,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._RankItem;
 import structures._Review;
 
@@ -52,7 +53,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	@Override
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
 		double coef = 2 * sim, dA, dB;
-		int offseti = m_dim*2*ui.m_id, offsetj = m_dim*2*uj.m_id;
+		int offseti = m_dim*2*ui.getId(), offsetj = m_dim*2*uj.getId();
 		
 		for(int k=0; k<m_dim; k++) {
 			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));

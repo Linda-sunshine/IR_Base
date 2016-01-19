@@ -3,17 +3,16 @@
  */
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
-import structures._Review.rType;
 
 /**
  * @author Hongning Wang
@@ -35,39 +34,9 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	void constructNeighborhood() {
-		super.constructNeighborhood();
-		int adaptSize = 0;//total number of adaptation instances
-		
-		//construct the reverse link
-		_CoLinAdaptStruct ui, uj;
-		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)(m_userList.get(i));
-			for(_RankItem nit:ui.getNeighbors()) {
-				uj = (_CoLinAdaptStruct)(m_userList.get(nit.m_index));//uj is a neighbor of ui
-				
-				uj.addReverseNeighbor(i, nit.m_value);
-			}
-			adaptSize += ui.getAdaptationSize();
-		}
-		
-		//construct the order of online updating
-		ArrayList<_RankItem> userorder = new ArrayList<_RankItem>();
-		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)(m_userList.get(i));
-			
-			for(_Review r:ui.getReviews()) {//reviews in each user is already ordered by time
-				if (r.getType() == rType.ADAPTATION) {
-					userorder.add(new _RankItem(i, r.getTimeStamp()));//to be in ascending order
-				}
-			}
-		}
-		
-		Collections.sort(userorder);
-		
-		m_userOrder = new int[adaptSize];
-		for(int i=0; i<adaptSize; i++)
-			m_userOrder[i] = userorder.get(i).m_index;
+	protected void constructNeighborhood(SimType sType) {
+		super.constructNeighborhood(sType);
+		m_userOrder = constructReverseNeighborhood();
 	}
 	
 	@Override
@@ -95,7 +64,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	//we will only update ui but keep uj as constant
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
 		double coef = 2 * sim, dA, dB;
-		int offset = m_dim*2*ui.m_id;
+		int offset = m_dim*2*ui.getId();
 		
 		for(int k=0; k<m_dim; k++) {
 			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
@@ -108,7 +77,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	protected double gradientTest(_CoLinAdaptStruct user) {
-		int offset, uid = 2*m_dim*user.m_id;
+		int offset, uid = 2*m_dim*user.getId();
 		double magA = 0, magB = 0;
 		
 		for(int i=0; i<m_dim; i++){
@@ -183,7 +152,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	// update this current user only
 	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
 		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
-		int offset = 2*m_dim*user.m_id;
+		int offset = 2*m_dim*user.getId();
 		for(int k=0; k<m_dim; k++) {
 			a = user.getScaling(k) - stepSize * m_g[offset + k];
 			user.setScaling(k, a);

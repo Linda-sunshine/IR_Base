@@ -11,12 +11,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
+import structures._RankItem;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
@@ -84,6 +87,90 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	}
 	
 	abstract public void loadUsers(ArrayList<_User> userList);
+	
+	protected void constructNeighborhood(final SimType sType) {
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				
+				@Override
+				public void run() {
+					CoAdaptStruct ui, uj;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							ui = (CoAdaptStruct)m_userList.get(i+core);
+							for(int j=0; j<m_userList.size(); j++) {
+								if (j == i+core)
+									continue;
+								uj = (CoAdaptStruct)(m_userList.get(j));
+								
+								ui.addNeighbor(j, ui.getSimilarity(uj, sType));
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+
+		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", sType, m_userList.size());
+	}
+	
+	protected int[] constructReverseNeighborhood() {
+		int adaptSize = 0;//total number of adaptation instances
+		
+		//construct the reverse link
+		CoAdaptStruct ui, uj;
+		for(int i=0; i<m_userList.size(); i++) {
+			ui = (CoAdaptStruct)(m_userList.get(i));
+			for(_RankItem nit:ui.getNeighbors()) {
+				uj = (CoAdaptStruct)(m_userList.get(nit.m_index));//uj is a neighbor of ui
+				
+				uj.addReverseNeighbor(i, nit.m_value);
+			}
+			adaptSize += ui.getAdaptationSize();
+		}
+		
+		//construct the order of online updating
+		ArrayList<_RankItem> userorder = new ArrayList<_RankItem>();
+		for(int i=0; i<m_userList.size(); i++) {
+			ui = (_CoLinAdaptStruct)(m_userList.get(i));
+			
+			for(_Review r:ui.getReviews()) {//reviews in each user is already ordered by time
+				if (r.getType() == rType.ADAPTATION) {
+					userorder.add(new _RankItem(i, r.getTimeStamp()));//to be in ascending order
+				}
+			}
+		}
+		
+		Collections.sort(userorder);
+		
+		int[] userOrder = new int[adaptSize];
+		for(int i=0; i<adaptSize; i++)
+			userOrder[i] = userorder.get(i).m_index;
+		return userOrder;
+	}
+	
 	
 	@Override
 	protected void init(){

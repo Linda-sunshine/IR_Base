@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;

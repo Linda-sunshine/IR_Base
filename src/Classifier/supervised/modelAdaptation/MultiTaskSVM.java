@@ -10,7 +10,6 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
