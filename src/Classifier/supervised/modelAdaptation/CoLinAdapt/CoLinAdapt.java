@@ -81,15 +81,13 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	protected double calculateFuncValue(_AdaptStruct u) {
-		_LinAdaptStruct ui = (_LinAdaptStruct)u;
-		
-		double fValue = super.calculateFuncValue(ui), R2 = 0, diffA, diffB;
+	protected double calculateFuncValue(_AdaptStruct u) {		
+		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
 		
 		//R2 regularization
-		_LinAdaptStruct uj;
-		for(_RankItem nit:((_CoLinAdaptStruct)ui).getNeighbors()) {
-			uj = (_LinAdaptStruct)m_userList.get(nit.m_index);
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		for(_RankItem nit:ui.getNeighbors()) {
+			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
 			diffB = 0;
 			for(int k=0; k<m_dim; k++) {
@@ -103,14 +101,12 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected void calculateGradients(_AdaptStruct u){
-		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		
-		super.calculateGradients(user);
-		gradientByR2(user);
+		super.calculateGradients(u);
+		gradientByR2(u);
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
-	protected void gradientByR2(_LinAdaptStruct user){		
+	protected void gradientByR2(_AdaptStruct user){		
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)user, uj;
 		int offseti = m_dim*2*ui.getId(), offsetj;
 		double coef, dA, dB;

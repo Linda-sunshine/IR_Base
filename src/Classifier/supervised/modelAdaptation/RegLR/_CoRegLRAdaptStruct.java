@@ -21,10 +21,12 @@ public class _CoRegLRAdaptStruct extends _AdaptStruct implements CoAdaptStruct {
 	static double[] sharedW;//this stores shared model weights across all users	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
-
-	public _CoRegLRAdaptStruct(_User user, int id, int topK) {
+	int m_featureSize;
+	
+	public _CoRegLRAdaptStruct(_User user, int id, int featureSize, int topK) {
 		super(user);
 		m_id = id;
+		m_featureSize = featureSize;
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
 	}
@@ -52,5 +54,14 @@ public class _CoRegLRAdaptStruct extends _AdaptStruct implements CoAdaptStruct {
 	@Override
 	public Collection<_RankItem> getReverseNeighbors() {
 		return m_reverseNeighbors;
+	}
+	
+	static public double[] getSharedW() {
+		return sharedW;
+	}
+	
+	@Override
+	public double getPWeight(int n) {
+		return sharedW[m_id*m_featureSize + n];
 	}
 }

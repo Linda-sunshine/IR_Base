@@ -64,7 +64,10 @@ public class RegLR extends ModelAdaptation {
 	}
 	
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct user){
-		return Utils.logistic(Utils.dotProduct(user.getPWeights(), fvs, 0));
+		double sum = user.getPWeight(0); // bias term
+		for(_SparseFeature f:fvs) 
+			sum += user.getPWeight(f.getIndex()+1) * f.getValue();		
+		return Utils.logistic(sum);
 	}
 	
 	protected int predict(_Doc review, _AdaptStruct user) {
@@ -103,11 +106,11 @@ public class RegLR extends ModelAdaptation {
 	//Calculate the function value of the new added instance.
 	protected double calculateFuncValue(_AdaptStruct user){
 		double L = calcLogLikelihood(user); //log likelihood.
-		double R1 = 0, w[] = user.getPWeights();
+		double R1 = 0;
 		
 		//Add regularization parts.
 		for(int i=0; i<m_featureSize+1; i++)
-			R1 += (w[i] - m_gWeights[i]) * (w[i] - m_gWeights[i]);//(w^u_i-w^g_i)^2
+			R1 += (user.getPWeight(i) - m_gWeights[i]) * (user.getPWeight(i) - m_gWeights[i]);//(w^u_i-w^g_i)^2
 		return m_eta1*R1 - L;
 	}
 
@@ -123,7 +126,7 @@ public class RegLR extends ModelAdaptation {
 	
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n; // feature index
-		int offset = 2*(m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = (m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
 
 		//Bias term.
@@ -138,11 +141,10 @@ public class RegLR extends ModelAdaptation {
 	
 	//Calculate the gradients for the use in LBFGS.
 	protected void gradientByR1(_AdaptStruct user){
-		int offset = 2*(m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double[] pWeights = user.getPWeights();
+		int offset = (m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_featureSize+1; k++)
-			m_g[offset + k] += 2 * m_eta1 * (pWeights[k] - m_gWeights[k]);// add 2*eta1*(w^u_k-w^g_k)
+			m_g[offset + k] += 2 * m_eta1 * (user.getPWeight(k) - m_gWeights[k]);// add 2*eta1*(w^u_k-w^g_k)
 	}
 	
 	//Calculate the gradients for the use in LBFGS.

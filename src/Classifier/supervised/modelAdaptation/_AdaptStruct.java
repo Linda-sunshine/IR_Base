@@ -85,6 +85,10 @@ public class _AdaptStruct {
 		return m_user;
 	}	
 	
+	public double getPWeight(int n) {
+		return m_user.getPersonalizedModel()[n];
+	}
+	
 	public double getSimilarity(CoAdaptStruct user, SimType sType) {
 		if (sType == SimType.ST_BoW)
 			return user.getUser().getBoWSim(m_user);

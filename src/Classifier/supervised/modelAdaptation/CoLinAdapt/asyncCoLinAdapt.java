@@ -47,7 +47,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	protected void gradientByR2(_LinAdaptStruct user){		
+	protected void gradientByR2(_AdaptStruct user){		
 		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
 		
 		for(_RankItem nit:ui.getNeighbors()) {
