@@ -8,6 +8,7 @@ import java.util.HashMap;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
+import Classifier.supervised.liblinear.SolverType;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
@@ -68,7 +69,7 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 				count[d.getYLabel()]++;
 			System.out.format("There are %d (pos:%d, neg:%d) training documents in the corpus.\n", m_trainSet.size(), count[1], count[0]);
 			L2RModelTraining();
-			Model rankSVM = SVM.libSVMTrain
+			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			m_allWeights[cNo] = ;
 		}
 		return 0;
