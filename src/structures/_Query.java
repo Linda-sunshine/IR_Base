@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import Classifier.supervised.liblinear.Feature;
+import utils.Utils;
 
 public class _Query {
 	public ArrayList<_QUPair> m_docList;
@@ -79,24 +80,17 @@ public class _Query {
 		}
 	}
 	
-//	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
-//	Feature[] fvct;
-//	for(_QUPair di:m_docList) {
-//		if (di.m_betterURLs==null)
-//			continue;
-//		//We generate both positive instances and negative instances.
-//		for(_QUPair dj:di.m_betterURLs) {
-//			if ((fvct=dj.getDiffFv(di)) != null) {
-//				fvs.add(fvct);
-//				labels.add(1);
-//			}
-//		}
-////		for(_QUPair dj:di.m_betterURLs) {
-////			if ((fvct=di.getDiffFv(dj)) != null) {
-////				fvs.add(fvct);
-////				labels.add(-1);
-////			}
-////		}
-////	}
-	
+	public void extractPairs4RankNet(ArrayList<double[]> fvs) {
+		double[] diff;
+		for(_QUPair di:m_docList) {
+			if (di.m_worseURLs==null)
+				continue;			
+			
+			for(_QUPair dj:di.m_worseURLs) {
+				diff = Utils.diff(di.m_rankFv, dj.m_rankFv);
+				if (diff!=null)
+					fvs.add(diff);	
+			}
+		}
+	}
 }

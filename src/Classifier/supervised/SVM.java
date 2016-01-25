@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import structures._Corpus;
-import structures._Doc;
-import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.Linear;
@@ -14,6 +11,9 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+import structures._Corpus;
+import structures._Doc;
+import utils.Utils;
 
 
 /**
@@ -164,8 +164,9 @@ public class SVM extends BaseClassifier {
 	}
 	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
-		m_libModel = libSVMTrain(trainSet, m_featureSize, m_type, m_C, -1);
+	public double train(Collection<_Doc> trainSet) {
+		m_libModel = libSVMTrain(trainSet, 1+m_featureSize, m_type, m_C, 1);
+		return 0;
 	}
 	
 	public static Model libSVMTrain(Collection<_Doc> trainSet, int fSize, SolverType type, double C, double bias) {
@@ -174,14 +175,18 @@ public class SVM extends BaseClassifier {
 		
 		int fid = 0; // file id
 		for(_Doc d:trainSet) {
-			fvs[fid] = Utils.createLibLinearFV(d);
+			if (bias>0)
+				fvs[fid] = Utils.createLibLinearFV(d, fSize);
+			else
+				fvs[fid] = Utils.createLibLinearFV(d, 0);
+			
 			y[fid] = d.getYLabel();
 			fid ++;
 		}
 		
 		Problem libProblem = new Problem();
 		libProblem.l = fid;
-		libProblem.n = fSize;
+		libProblem.n = bias>=0?1+fSize:fSize;
 		libProblem.x = fvs;
 		libProblem.y = y;
 		libProblem.bias = bias;
@@ -211,12 +216,12 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (int)Linear.predict(m_libModel, Utils.createLibLinearFV(doc));
+		return (int)Linear.predict(m_libModel, Utils.createLibLinearFV(doc, m_featureSize));
 	}
 	
 	@Override
 	public double score(_Doc doc, int label) {
-		return Linear.predictValue(m_libModel, Utils.createLibLinearFV(doc), label);
+		return Linear.predictValue(m_libModel, Utils.createLibLinearFV(doc, m_featureSize), label);
 	}
 	
 	@Override

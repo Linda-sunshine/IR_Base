@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
+import Classifier.BaseClassifier;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
-import Classifier.BaseClassifier;
 
 public class KNN extends BaseClassifier{
 	int m_k;
@@ -58,11 +58,11 @@ public class KNN extends BaseClassifier{
 	
 	//Group all the documents based on their hashcodes.
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		init();
 		
 		if (m_l<=0)//no need to perform random projection
-			return;
+			return 0;
 		
 		for(_Doc d: trainSet){
 			int hashCode = getHashCode(d);
@@ -74,6 +74,7 @@ public class KNN extends BaseClassifier{
 				m_buckets.put(hashCode, docs);
 			}
 		}
+		return 0;
 	}
 
 	//Get the hashcode for every document.

@@ -13,6 +13,7 @@ import Classifier.supervised.liblinear.Feature;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._PerformanceStat;
 import utils.Utils;
 
 
@@ -28,20 +29,24 @@ public abstract class BaseClassifier {
 	//for cross-validation
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
-
+	protected _PerformanceStat m_microStat; // this structure can replace the previous two arrays
+	
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
 	protected double[][][] m_purityStat;
-	
 	protected Feature[][] m_fvs; //The data instances for testing svm, we don't need it in real L2R.
 	protected Integer[] m_ys; //The data labels for testing svm.
 	protected int m_kFold; //k-fold cross validation.
-	public void train() {
-		train(m_trainSet);
+	
+//	public void train() {
+//		train(m_trainSet);
+	
+	public double train() {
+		return train(m_trainSet);
 	}
 	
-	public abstract void train(Collection<_Doc> trainSet);
+	public abstract double train(Collection<_Doc> trainSet);
 	public abstract int predict(_Doc doc);//predict the class label
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
@@ -55,7 +60,7 @@ public abstract class BaseClassifier {
 			m_TPTable[pred][ans] += 1; //Compare the predicted label and original label, construct the TPTable.
 			
 			if (pred != ans) {
-				if (m_debugOutput!=null)
+				if (m_debugOutput!=null && Math.random()<0.2)//try to reduce the output size
 					debug(doc);
 			} else {//also print out some correctly classified samples
 				if (m_debugOutput!=null && Math.random()<0.02)
@@ -89,6 +94,7 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_microStat = new _PerformanceStat(m_classNo);
 		m_debugOutput = null;
 	}
 	
@@ -104,6 +110,7 @@ public abstract class BaseClassifier {
 		m_TPTable = new int[m_classNo][m_classNo];
 		m_confusionMat = new int[m_classNo][m_classNo];
 		m_precisionsRecalls = new ArrayList<double[][]>();
+		m_microStat = new _PerformanceStat(m_classNo);
 		m_debugOutput = null;
 	}
 	
@@ -241,6 +248,28 @@ public abstract class BaseClassifier {
 		return sum;
 	}
 	abstract public void saveModel(String modelLocation);
+	
+	protected void calcMicroPerfStat() {
+		m_microStat.calculatePRF();
+		
+		System.out.println("Micro confusion matrix:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.print("\t" + i);
+		System.out.println();
+		
+		for(int i=0; i<m_classNo; i++) {
+			System.out.print(i);
+			for(int j=0; j<m_classNo; j++) {
+				System.out.print("\t" + m_microStat.getEntry(i, j));
+			}
+			System.out.println();
+		}
+		
+		// micro average
+		System.out.println("Micro F1:");
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.4f\t", i, m_microStat.getF1(i));
+	}
 	
 	//Calculate the precision and recall for one folder tests.
 	public double[][] calculatePreRec(int[][] tpTable) {

@@ -89,7 +89,8 @@ public class SentiWordNet {
 					for (String synTermSplit : synTermsSplit) {
 						// Get synterm and synterm rank
 						String[] synTermAndRank = synTermSplit.split("#");
-						String synTerm = synTermAndRank[0] + "#" + wordTypeMarker;
+						String synTerm = synTermAndRank[0] + "#" 
+										+ wordTypeMarker;
 
 						int synTermRank = Integer.parseInt(synTermAndRank[1]);
 						// What we get here is a map of the type:
@@ -97,11 +98,13 @@ public class SentiWordNet {
 
 						// Add map to term if it doesn't have one
 						if (!tempDictionary.containsKey(synTerm)) {
-							tempDictionary.put(synTerm, new HashMap<Integer, Double>());
+							tempDictionary.put(synTerm, 
+											new HashMap<Integer, Double>());
 						}
 
 						// Add synset link to synterm
-						tempDictionary.get(synTerm).put(synTermRank, synsetScore);
+						tempDictionary.get(synTerm).put(synTermRank, 
+										synsetScore);
 					}
 				}
 			}

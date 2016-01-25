@@ -8,14 +8,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
+	
+	public static double MAX_VALUE = 1e5;
 	
 	public static void shuffle(int[] order, int size){
 		Random rand = new Random();
@@ -58,30 +60,17 @@ public class Utils {
 		return maxIndex;
 	}
 	
-	public static int maxOfArrayIndex(int[] probs){
-		int maxIndex = 0;
-		int maxValue = probs[0];
-		for(int i = 1; i < probs.length; i++){
-			if(probs[i] > maxValue){
-				maxValue = probs[i];
-				maxIndex = i;
-			}
-		}
-		return maxIndex;
-	}
-	
-	public static int maxOfArrayValue(int[] count){
-		int maxValue = count[0];
-		if(count.length <=1 && count.length >0)
-			return maxValue;
-		for(int i=1; i < count.length; i++){
-			if(count[i] < maxValue)
-				maxValue = count[i];
-		}
-		return maxValue;
-	}
 	public static int minOfArrayIndex(double[] probs){
 		return minOfArrayIndex(probs, probs.length);
+	}
+	
+	public static int countOccurrencesOf(String text, String pat) {
+		int start = 0, count = 0;
+		while ((start = text.indexOf(pat, start))!=-1) {
+			count ++;
+			start ++;
+		}
+		return count;
 	}
 	
 	public static int minOfArrayIndex(double[] probs, int length){
@@ -193,8 +182,6 @@ public class Utils {
 	}
 	
 	public static double dotProduct(double[] a, double[] b) {
-		if (a == null || b == null)
-			return 0;
 		if (a.length != b.length)
 			return Double.NaN;
 		double sum = 0;
@@ -205,6 +192,15 @@ public class Utils {
 	
 	public static double L2Norm(double[] a) {
 		return Math.sqrt(dotProduct(a,a));
+	}
+	
+	public static double L2Norm(double[] a, double[] b) {
+		if (a.length != b.length)
+			return Double.NaN;
+		double diff=0;
+		for(int i=0; i<a.length; i++)
+			diff += (a[i]-b[i])*(a[i]-b[i]);
+		return diff;
 	}
 	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
@@ -233,6 +229,20 @@ public class Utils {
 		for (double i : a)
 			sum += i;
 		return sum;
+	}
+	
+	public static double[] diff(double[] a, double[] b) {
+		if (a.length != b.length)
+			return null;
+		
+		double[] diff = new double[a.length];
+		boolean nonzero = false;
+		for(int i=0; i<a.length; i++) {
+			diff[i] = a[i] - b[i];
+			if (Math.abs(diff[i])>1e-10)
+				nonzero = true;
+		}
+		return nonzero?diff:null;
 	}
 	
 	public static void scaleArray(double[] a, double b) {
@@ -301,7 +311,6 @@ public class Utils {
 			double value = feature.getValue();
 			sum += value * value;
 		}
-//		System.out.println(sum);
 		return Math.sqrt(sum);
 	}
 	
@@ -361,32 +370,12 @@ public class Utils {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
 		if (spVct1L2==0 || spVct2L2==0)
 			return 0;
-		else{
-			double sim = calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
-			return sim;
-		}
+		else
+			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
-	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
-		if (spVct1.length==0 || spVct2.length==0)
-			return 0;
-		else{
-			double similarity = 0;
-			int pointer1 = 0, pointer2 = 0;
-			while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
-				_SparseFeature temp1 = spVct1[pointer1];
-				_SparseFeature temp2 = spVct2[pointer2];
-				if (temp1.getIndex() == temp2.getIndex()) {
-					similarity += (temp1.getValue() - temp2.getValue()) * (temp1.getValue() - temp2.getValue());
-					pointer1++;
-					pointer2++;
-				} else if (temp1.getIndex() > temp2.getIndex())
-					pointer2++;
-				else
-					pointer1++;
-			}
-			return Math.exp(-similarity);
-		}
+	public static double cosine(double[] a, double[] b) {
+		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
 	}
 	
 	//Calculate the similarity between two sparse vectors.
@@ -459,6 +448,22 @@ public class Utils {
 		}
 		Arrays.sort(spVct);		
 		return spVct;
+	}
+	
+	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		
+		for(_SparseFeature[] fv:vcts) {
+			for(_SparseFeature f:fv) {
+				int x = f.getIndex();
+				if (vct.containsKey(x)) {
+					vct.put(x, vct.get(x) + f.getValue());
+				} else {
+					vct.put(x, f.getValue());
+				}
+			}
+		}
+		return Utils.createSpVct(vct);
 	}
 	
 	static public _SparseFeature[] createSpVct(ArrayList<HashMap<Integer, Double>> vcts) {
@@ -607,16 +612,23 @@ public class Utils {
 		return vectorList.toArray(new _SparseFeature[vectorList.size()]);
 	}
 	
-	static public Feature[] createLibLinearFV(_SparseFeature[] spVct) {
-		Feature[] node = new Feature[spVct.length]; 
+	static public Feature[] createLibLinearFV(_SparseFeature[] spVct, int fSize) {
+		Feature[] node;
+		if (fSize>0)//include bias term in the end
+			node = new Feature[1+spVct.length]; 
+		else//ignore bias term
+			node = new Feature[spVct.length];
+		
 		int fid = 0;
 		for(_SparseFeature fv:spVct)
 			node[fid++] = new FeatureNode(1 + fv.getIndex(), fv.getValue());//svm's feature index starts from 1
+		if (fSize>0)
+			node[fid] = new FeatureNode(1+fSize, 1.0);
 		return node;
 	}
 	
-	static public Feature[] createLibLinearFV(_Doc doc) {
-		return Utils.createLibLinearFV(doc.getSparse());
+	static public Feature[] createLibLinearFV(_Doc doc, int fSize) {
+		return Utils.createLibLinearFV(doc.getSparse(), fSize);
 	}
 	
 	static public Feature[] createLibLinearFV(HashMap<Integer, Double> spVct) {
@@ -666,15 +678,7 @@ public class Utils {
 			value += vct[fv.getIndex()] * fv.getValue();
 		return value;
 	}
-	//Dot product of two binary arrays.
-	public static int dotProduct(int[] a, int[] b){
-		int sum = 0;
-		if(a.length == b.length){
-			for(int i = 0; i < a.length; i++)
-				sum += a[i] & b[i];
-		}
-		return sum;
-	}
+
 	//Sgn function: >= 0 1; < 0; 0.
 	public static int sgn(double a){
 		if (a >= 0) return 1;
@@ -780,6 +784,74 @@ public class Utils {
 		return sum;
 	}
 	
+	public static double klDivergence(double[] p1, double[] p2) {
+		double log2 = Math.log(2);
+		double klDiv = 0.0;
+		for (int i = 0; i < p1.length; ++i) {
+			if (p1[i] == 0.0) { continue; }
+			if (p2[i] == 0.0) { continue; } 
+			
+			klDiv += p1[i] * Math.log( p1[i] / p2[i] );
+		}
+		return klDiv / log2; 
+	}
+	
+	/****Added by Lin.***/
+	public static int maxOfArrayIndex(int[] probs){
+		int maxIndex = 0;
+		int maxValue = probs[0];
+		for(int i = 1; i < probs.length; i++){
+			if(probs[i] > maxValue){
+				maxValue = probs[i];
+				maxIndex = i;
+			}
+		}
+		return maxIndex;
+	}
+	
+	public static int maxOfArrayValue(int[] count){
+		int maxValue = count[0];
+		if(count.length <=1 && count.length >0)
+			return maxValue;
+		for(int i=1; i < count.length; i++){
+			if(count[i] < maxValue)
+				maxValue = count[i];
+		}
+		return maxValue;
+	}
+	
+	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
+		if (spVct1.length==0 || spVct2.length==0)
+			return 0;
+		else{
+			double similarity = 0;
+			int pointer1 = 0, pointer2 = 0;
+			while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+				_SparseFeature temp1 = spVct1[pointer1];
+				_SparseFeature temp2 = spVct2[pointer2];
+				if (temp1.getIndex() == temp2.getIndex()) {
+					similarity += (temp1.getValue() - temp2.getValue()) * (temp1.getValue() - temp2.getValue());
+					pointer1++;
+					pointer2++;
+				} else if (temp1.getIndex() > temp2.getIndex())
+					pointer2++;
+				else
+					pointer1++;
+			}
+			return Math.exp(-similarity);
+		}
+	}
+	
+	//Dot product of two binary arrays.
+	public static int dotProduct(int[] a, int[] b){
+		int sum = 0;
+		if(a.length == b.length){
+			for(int i = 0; i < a.length; i++)
+				sum += a[i] & b[i];
+		}
+		return sum;
+	}
+	
 	public static double calculateMDistance(_Doc d1, _Doc d2, double[][] A){
 		double distance = 0, tmp = 0;
 		double[] t1 = d1.getTopics(), t2 = d2.getTopics();
@@ -796,23 +868,6 @@ public class Utils {
 		return distance;
 	}
 	
-	public static double cosine(double[] t1, double[] t2){
-		double similarity = 0, sum1 = 0, sum2 = 0;
-		if(t1.length == t2.length){
-			for(int i=0; i < t1.length; i++){
-				similarity += t1[i] * t2[i];
-				sum1 += t1[i] * t1[i];
-				sum2 += t2[i] * t2[i];
-			}
-			if(sum1 != 0 && sum2 != 0){
-				sum1 = Math.sqrt(sum1);
-				sum2 = Math.sqrt(sum2);
-				similarity = similarity / (sum1 * sum2);
-			} else similarity = 0;
-		}
-		return similarity;
-	}
-	
 	//The Euclidean distance for two arrays of the same length.
 	public static double EuclideanDistance(double[] t1, double[] t2){
 		double sum = 0;
@@ -822,22 +877,6 @@ public class Utils {
 			}	
 		}
 		return sum;
-	}
-	
-	public static double klDivergence(double[] p1, double[] p2) {
-		double log2 = Math.log(2);
-		double klDiv = 0.0;
-		for (int i = 0; i < p1.length; ++i) {
-			if (p1[i] == 0) {
-				continue;
-			}
-			if (p2[i] == 0.0) {
-				continue;
-			}
-
-			klDiv += p1[i] * Math.log(p1[i] / p2[i]);
-		}
-		return klDiv / log2;
 	}
 	
 	// added by Lin for computing LCS.
@@ -866,28 +905,6 @@ public class Utils {
 						// sequence of xi, yj.
 	}
 	
-	//If len = fill.length, then whole array fill will replace the part of the source array.
-	public static double[] fillPartOfArray(int index, int len, double[] source, double[] fill){
-		if(index > source.length || (index + len) > source.length)
-			System.err.println("Error!!");
-		for(int i=0; i<len; i++){
-			source[i+index] = fill[i];
-		}
-		return source;
-	}
-	
-	public static double[] getPartOfArray(int index, int len, double[] source){
-		if(source.length < len || source.length < (index + len)){
-			System.err.println("Length out of range.");
-			return null;
-		}
-		double[] res = new double[len];
-		for(int i=0; i<len; i++){
-			res[i] = source[index+i];
-		}
-		return res;
-	}
-	
 	// The way we used to calcuate the index in a mXm symmetric matrix.
 	public static int getIndex(int i, int j){
 		//Swap i and j.
@@ -898,9 +915,4 @@ public class Utils {
 		}
 		return i*(i-1)/2+j;
 	}
-//	public static void main(String[] args){
-//		double[] a = new double[]{1, 2, 3, 5, 1};
-//		double[] b = new double[]{7, 7};
-//		double[] c = getPartOfArray(3, 3, a);
-//	}
 }

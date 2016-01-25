@@ -2,9 +2,9 @@ package structures;
 
 import java.util.ArrayList;
 
-import utils.Utils;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
+import utils.Utils;
 
 public class _QUPair implements Comparable<_QUPair>{
 	public int m_y;
@@ -58,11 +58,6 @@ public class _QUPair implements Comparable<_QUPair>{
 	
 	public double score(double[] w){
 		m_score = Utils.dotProduct(w, m_rankFv);
-		if(Double.isNaN(m_score)){
-			System.out.println("Nan in score!");
-			m_score = Utils.dotProduct(w, m_rankFv);
-		}
-			
 		return m_score;
 	}
 	
@@ -75,4 +70,14 @@ public class _QUPair implements Comparable<_QUPair>{
 		else 
 			return 0;
 	}
+	
+//	public double score(double[] w){
+//		m_score = Utils.dotProduct(w, m_rankFv);
+//		if(Double.isNaN(m_score)){
+//			System.out.println("Nan in score!");
+//			m_score = Utils.dotProduct(w, m_rankFv);
+//		}
+//			
+//		return m_score;
+//	}
 }

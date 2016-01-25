@@ -67,9 +67,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		//initialize transitionMatrix
 		for(int i=0; i<this.length_of_seq; i++){
 			for(int j=0; j<this.constant*this.number_of_topic; j++){
-				for(int k=0; k<this.constant*this.number_of_topic; k++){
-					m_transitMatrix[i][j][k] = Double.NEGATIVE_INFINITY;
-				}
+				Arrays.fill(m_transitMatrix[i][j], Double.NEGATIVE_INFINITY);
 			}
 		}
 		
@@ -138,12 +136,12 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		generateTransitionMatrix(theta);
 		double logLikelihood = 0, norm = Double.NEGATIVE_INFINITY;//log0
 		
-		int previousSentenceSenitment = this.m_docPtr.getSentence(0).getSentenceSenitmentLabel();
+		int previousSentenceSenitment = this.m_docPtr.getSentence(0).getStnSentiLabel();
 		int currentSentenceSenitment;
 		
 		for (int t = 1; t < this.length_of_seq; t++) {
 			norm = Double.NEGATIVE_INFINITY;			
-			currentSentenceSenitment = this.m_docPtr.getSentence(t).getSentenceSenitmentLabel();
+			currentSentenceSenitment = this.m_docPtr.getSentence(t).getStnSentiLabel();
 		
 			if(currentSentenceSenitment==-1 || previousSentenceSenitment==-1){
 				//this means this document is not from newEgg
@@ -193,11 +191,11 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		double sum = Double.NEGATIVE_INFINITY, probj;
 		int ai, si, aj, sj, tj;
 		
-		int nextSentenceSenitment = this.m_docPtr.getSentence(this.length_of_seq-1).getSentenceSenitmentLabel();
+		int nextSentenceSenitment = this.m_docPtr.getSentence(this.length_of_seq-1).getStnSentiLabel();
 		int currentSentenceSenitment;
 	
 		for(int t=this.length_of_seq-2; t>=0; t--) {
-			currentSentenceSenitment = this.m_docPtr.getSentence(t).getSentenceSenitmentLabel();
+			currentSentenceSenitment = this.m_docPtr.getSentence(t).getStnSentiLabel();
 
 			if(currentSentenceSenitment==-1 || nextSentenceSenitment==-1){
 				for (int i = 0; i < this.number_of_topic; i++) {
@@ -373,7 +371,7 @@ public class FastRestrictedHMM_sentiment extends FastRestrictedHMM {
 		
 		for(int i=0; i<this.length_of_seq; i++){
 			int predictedSentiment = sentimentMapper(path[i]);
-			d.getSentence(i).setSentencePredictedSenitmentLabel(predictedSentiment);
+			d.getSentence(i).setStnPredSentiLabel(predictedSentiment);
 		}
 	}
 }

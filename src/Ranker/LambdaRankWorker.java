@@ -6,14 +6,14 @@ package Ranker;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import structures._QUPair;
-import structures._Query;
-import utils.Utils;
 import Ranker.LambdaRank.OptimizationType;
 import Ranker.LambdaRankParallel.OperationType;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;
+import structures._QUPair;
+import structures._Query;
+import utils.Utils;
 
 /**
  * @author hongning
@@ -55,6 +55,10 @@ class LambdaRankWorker implements Runnable {
 	
 	public void addQuery(_Query q) {
 		m_queries.add(q);
+	}
+	
+	public void clearQueries() {
+		m_queries.clear();
 	}
 	
 	public void setType(OperationType type){
@@ -143,8 +147,7 @@ class LambdaRankWorker implements Runnable {
 				for(i=0; i<m_weight.length; i++)
 					m_g[i] = m_g[i]/pSize + m_lambda * m_weight[i];
 				
-				//mu = Math.random()*m_step;
-				mu = 0.1;
+				mu = Math.random()*m_step;
 				for(i=0; i<m_weight.length; i++)
 					m_weight[i] -= mu * m_g[i];
 			}			
@@ -191,4 +194,3 @@ class LambdaRankWorker implements Runnable {
 		m_misorder /= 2;
 	}
 }
-

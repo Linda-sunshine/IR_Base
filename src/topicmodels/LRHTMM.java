@@ -3,12 +3,12 @@ package topicmodels;
 import java.util.Arrays;
 import java.util.Collection;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import markovmodel.LRFastRestrictedHMM;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 // HTMM parameter both in log space
 public class LRHTMM extends HTMM {	

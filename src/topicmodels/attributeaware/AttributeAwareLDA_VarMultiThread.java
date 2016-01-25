@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Analyzer.newEggAnalyzer;
 import optimization.gradientBasedMethods.ProjectedGradientDescent;
 import optimization.gradientBasedMethods.stats.OptimizerStats;
 import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
@@ -21,7 +22,6 @@ import structures._SparseFeature;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.posteriorRegularization.PairwiseAttributeConstraints;
 import utils.Utils;
-import Analyzer.newEggAnalyzer;
 
 /**
  * @author hongning
@@ -307,6 +307,8 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int topK = 20, number_of_iteration = 100;
 		int attributeSize = 2;//pro and con in NewEgg
+		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
+		
 		
 		/*****The parameters used in loading files.*****/
 		String pCategory = "camera"; // camera
@@ -333,7 +335,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, pCategory);
+		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, pCategory, loadProsCons);
 		analyzer.LoadNewEggDirectory(newEggFolder, suffix); // load NewEgg reviews
 		analyzer.LoadDirectory(amazonFolder, suffix); // load amazon reviews
 		

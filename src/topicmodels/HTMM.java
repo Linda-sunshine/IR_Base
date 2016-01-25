@@ -88,7 +88,7 @@ public class HTMM extends pLSA {
 	public double calculate_E_step(_Doc d) {
 		//Step 1: pre-compute emission probability
 		if (m_collectCorpusStats)//indicates this is training
-			ComputeEmissionProbsForDoc(d);
+			ComputeEmissionProbsForDoc(d);//in training, this will be called beforehand
 		
 		//Step 2: use forword/backword algorithm to compute the posterior
 		double logLikelihood = m_hmm.ForwardBackward(d, emission);
@@ -100,8 +100,8 @@ public class HTMM extends pLSA {
 		estThetaInDoc(d);//get the posterior of theta
 		
 		if (m_collectCorpusStats) {
-			accEpsilonStat(d);
-			accPhiStat(d);
+			accEpsilonStat(d);//topic transition
+			accPhiStat(d);//word distribution under topics
 		}
 		
 		return logLikelihood + docThetaLikelihood(d);
@@ -181,7 +181,7 @@ public class HTMM extends pLSA {
 	public double inference(_Doc d) {
 		ComputeEmissionProbsForDoc(d);//to avoid repeatedly computing emission probability 
 		
-		double current = super.inference(d);
+		double current = super.inference(d);//coordinate ascend for different latent variables
 		
 		int path[] = get_MAP_topic_assignment(d);
 		_Stn[] sentences = d.getSentences();
@@ -211,9 +211,14 @@ public class HTMM extends pLSA {
 				}				
 				
 				System.out.format("Product: %s, Topic: %d\n", prodID, i);
-				for(_RankItem it:stnQueue)
-					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);				
+				summaryWriter.format("Product: %s, Topic: %d\n", prodID, i);
+				for(_RankItem it:stnQueue){
+					System.out.format("%s\t%.3f\n", it.m_name, it.m_value);	
+					summaryWriter.format("%s\t%.3f\n", it.m_name, it.m_value);	
+				}			
 			}
 		}
+		summaryWriter.flush();
+		summaryWriter.close();
 	}
 }

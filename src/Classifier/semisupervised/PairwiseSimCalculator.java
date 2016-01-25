@@ -22,7 +22,6 @@ public class PairwiseSimCalculator implements Runnable {
 		m_GFObj = obj;
 		m_start = start;
 		m_end = end;
-		m_aType = ActionType.AT_node;
 		m_aType = atype;
 	}
 	

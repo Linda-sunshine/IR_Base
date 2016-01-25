@@ -333,30 +333,4 @@ public class pLSA extends twoTopic {
 			System.out.println();
 		}
 	}
-	
-	public void writeTopWords(String filename, int topK){
-		try{
-			PrintWriter writer = new PrintWriter(new File(filename));
-			Arrays.fill(m_sstat, 0);
-			for(_Doc d:m_trainSet) {
-				for(int i=0; i<number_of_topics; i++)
-					m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
-			}
-			Utils.L1Normalization(m_sstat);			
-		
-			for(int i=0; i<topic_term_probabilty.length; i++) {
-				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(topK);
-				for(int j = 0; j < vocabulary_size; j++)
-					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
-				writer.format("Topic %d(%.3f):\t", i, m_sstat[i]);
-				for(_RankItem it:fVector)
-					writer.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
-				writer.write("\n");
-			}
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		
-	}
 }

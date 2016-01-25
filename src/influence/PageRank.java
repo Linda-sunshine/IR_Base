@@ -7,15 +7,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Classifier.BaseClassifier;
+import cern.colt.matrix.tdouble.DoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
-import Classifier.BaseClassifier;
-import cern.colt.matrix.tdouble.DoubleMatrix2D;
-import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
 
 /**
  * @author hongning
@@ -43,7 +43,7 @@ public class PageRank extends BaseClassifier {
 	}
 
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		ArrayList<_Doc> graph = new ArrayList<_Doc>();
 		
 		String lastItemID = null;
@@ -63,6 +63,7 @@ public class PageRank extends BaseClassifier {
 		//for the last product
 		if (graph.size()>5)//otherwise the graph is too small
 			calcPageRank(graph);
+		return 0;
 	}
 	
 	private void constructSparseGraph(ArrayList<_Doc> collection) {

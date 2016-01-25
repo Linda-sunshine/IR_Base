@@ -3,6 +3,8 @@ package Classifier.supervised;
 import java.util.Arrays;
 import java.util.Collection;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import optimization.gradientBasedMethods.ProjectedGradientDescent;
 import optimization.gradientBasedMethods.stats.OptimizerStats;
 import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
@@ -16,8 +18,6 @@ import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class PRLogisticRegression extends LogisticRegression {
 
@@ -59,7 +59,7 @@ public class PRLogisticRegression extends LogisticRegression {
 	 * turns to 0, it finds the final point and we get the best beta.
 	 */	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
 		double fValue = 0, lastFValue = 1, converge;
 		int fSize = m_beta.length, iter = 0;
@@ -85,6 +85,7 @@ public class PRLogisticRegression extends LogisticRegression {
 			System.out.print(lastFValue + ", ");
 		} while (++iter<10 && Math.abs(converge)>1e-3);
 		System.out.println();
+		return fValue;
 	}
 	
 	void Estep(Collection<_Doc> trainSet) {

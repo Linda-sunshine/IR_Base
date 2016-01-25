@@ -40,10 +40,6 @@ public class GaussianFields extends BaseClassifier {
 	
 	Thread[] m_threadpool;
 	
-	double[][] m_onePurityStat; //Used to store the stat of one fold, added by Lin.
-	int m_purityCount=0;//added by Lin.
-	String m_simiMethod; //The similarity method used to select initial neighbors.
-	
 	public GaussianFields(_Corpus c, String classifier, double C){
 		super(c);
 		
@@ -61,9 +57,8 @@ public class GaussianFields extends BaseClassifier {
 		
 		m_nodeList = null;
 		setClassifier(classifier, C);
-		m_simiMethod = "BT";
+//		m_simiMethod = "BT";
 	}	
-	
 	public GaussianFields(_Corpus c, String classifier, double C, double ratio, int k, int kPrime){
 		super(c);
 		
@@ -81,19 +76,14 @@ public class GaussianFields extends BaseClassifier {
 		
 		m_nodeList = null;
 		setClassifier(classifier, C);
-		m_simiMethod = "BT";
+//		m_simiMethod = "BT";
 	}
-	
 	@Override
 	public String toString() {
 		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", 
 				m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
 	}
-	//Set the similarity selection method.
-	public void setSimiMethod(String s){
-		m_simiMethod = s;
-	}
-	
+
 	private void setClassifier(String classifier, double C) {
 		if (classifier.equals("NB"))
 			m_classifier = new NaiveBayes(m_classNo, m_featureSize);
@@ -115,7 +105,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	//Train the data set.
-	public void train(Collection<_Doc> trainSet){
+	public double train(Collection<_Doc> trainSet){
 		init();
 		
 		//using all labeled data for classifier training
@@ -135,6 +125,8 @@ public class GaussianFields extends BaseClassifier {
 		//set up labeled and unlabeled instance size
 		m_U = m_testSet.size();
 		m_L = m_labeled.size();
+		
+		return 0;
 	}
 	
 	public _Doc getTestDoc(int i) {
@@ -161,20 +153,12 @@ public class GaussianFields extends BaseClassifier {
 	}
 
 	protected double getAspectScore(_Doc di, _Doc dj){
-		if(di.getAspVct() == null || dj.getAspVct() == null)
-			return 0;
-		else 
-			return Utils.cosine(di.getAspVct(), dj.getAspVct());
+		return Utils.cosine(di.getAspVct(), dj.getAspVct());
 	}
 	
 	public double getSimilarity(_Doc di, _Doc dj) {
 //		return Math.random();//just for debugging purpose
-		if(m_simiMethod.equals("B"))
-			return Math.exp(getBoWSim(di, dj));
-		else if(m_simiMethod.equals("T"))
-			return Math.exp(-getTopicalSim(di, dj));
-		else
-			return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
+		return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
 	}
 	
 	protected void WaitUntilFinish(ActionType atype) {
@@ -227,13 +211,31 @@ public class GaussianFields extends BaseClassifier {
 		_Node node;
 		_Edge neighbor;
 		
-		int y;
+		int y, uPred, lPred, cPred;
+		double dMean = 0, dStd = 0;
 		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
 		double[][][] total = new double[3][2][2];
+		int[][][] acc = new int[5][2][2]; // combined prediction, classifier's prediction, labeled neighbors prediction, unlabeled neighbors prediction, optimal
 		
 		for(int i = 0; i < m_U; i++) {
 			node = m_nodeList[i];//nearest neighbor graph
 			y = (int)node.m_label;
+			
+			dMean += node.m_pred - node.m_classifierPred;
+			dStd += (node.m_pred - node.m_classifierPred) * (node.m_pred - node.m_classifierPred);
+			
+			/****Check different prediction methods' performance******/
+			cPred = (int)(node.m_classifierPred);
+			lPred = (int)(node.weightAvgInLabeledNeighbors()+0.5);
+			uPred = (int)(node.weightAvgInUnlabeledNeighbors()+0.5);
+			acc[0][y][getLabel(node.m_pred)] ++;
+			acc[1][y][cPred] ++;				
+			acc[2][y][lPred] ++;
+			acc[3][y][uPred] ++;
+			if (cPred==y || lPred==y || uPred==y)
+				acc[4][y][y] ++;//one of these predictions is correct
+			else
+				acc[4][y][1-y] ++;
 			
 			/****Check the nearest unlabeled neighbors******/
 			double precision = 0;
@@ -277,38 +279,23 @@ public class GaussianFields extends BaseClassifier {
 				}
 			}
 		}
-		//Store the purity information for further average, added by Lin.
+		
+		dMean /= m_U;
+		dStd = Math.sqrt(dStd/m_U - dMean*dMean);
+		
 		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
-		m_onePurityStat = new double[4][3];
-		m_onePurityStat[0][0] = prec[0][1][0]/total[0][1][0];
-		m_onePurityStat[0][1] = prec[1][1][0]/total[1][1][0];
-		m_onePurityStat[0][2] = prec[2][1][0]/total[2][1][0];
+		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
+		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
+		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
+		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
 		
-		m_onePurityStat[1][0] = prec[0][1][1]/total[0][1][1];
-		m_onePurityStat[1][1] = prec[1][1][1]/total[1][1][1];
-		m_onePurityStat[1][2] = prec[2][1][1]/total[2][1][1];
+		System.out.format("W-C: %.4f/%.4f\n\n", dMean, dStd);
 		
-		m_onePurityStat[2][0] = prec[0][0][0]/total[0][0][0];
-		m_onePurityStat[2][1] = prec[1][0][0]/total[1][0][0];
-		m_onePurityStat[2][2] = prec[2][0][0]/total[2][0][0];
-		
-		m_onePurityStat[3][0] = prec[0][0][1]/total[0][0][1];
-		m_onePurityStat[3][1] = prec[1][0][1]/total[1][0][1];
-		m_onePurityStat[3][2] = prec[2][0][1]/total[2][0][1];
-		
-		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[0][0], m_onePurityStat[0][1], m_onePurityStat[0][2]);
-		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[1][0], m_onePurityStat[1][1], m_onePurityStat[1][2]);
-		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[2][0], m_onePurityStat[2][1], m_onePurityStat[2][2]);
-		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", m_onePurityStat[3][0], m_onePurityStat[3][1], m_onePurityStat[3][2] );
-		
-		if(m_purityCount > m_purityStat.length)
-			System.out.println("Purity dimension out of range.\n");
-		else
-			m_purityStat[m_purityCount++] = m_onePurityStat;
-//		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
-//		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
-//		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
-//		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+		System.out.format("W TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[0][0][0], acc[0][0][1], acc[0][1][0], acc[0][1][1]);
+		System.out.format("C TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[1][0][0], acc[1][0][1], acc[1][1][0], acc[1][1][1]);
+		System.out.format("L TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[2][0][0], acc[2][0][1], acc[2][1][0], acc[2][1][1]);
+		System.out.format("U TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[3][0][0], acc[3][0][1], acc[3][1][0], acc[3][1][1]);
+		System.out.format("O TN:%d\tFP:%d\tFN:%d\tTP:%d\n", acc[4][0][0], acc[4][0][1], acc[4][1][0], acc[4][1][1]);
 	}
 	
 	protected void constructGraph(boolean createSparseGraph) {		
@@ -453,7 +440,6 @@ public class GaussianFields extends BaseClassifier {
 		return Utils.maxOfArrayIndex(m_cProbs);
 	}
 	
-	
 	@Override
 	protected void debug(_Doc d) { }
 	
@@ -472,4 +458,112 @@ public class GaussianFields extends BaseClassifier {
 	public void saveModel(String modelLocation) {
 		
 	}
+	
+	/*****The following functions are added by Lin*******/
+//	public double getSimilarity(_Doc di, _Doc dj) {
+//		if(m_simiMethod.equals("B"))
+//			return Math.exp(getBoWSim(di, dj));
+//		else if(m_simiMethod.equals("T"))
+//			return Math.exp(-getTopicalSim(di, dj));
+//		else
+//			return Math.exp(getBoWSim(di, dj) - getTopicalSim(di, dj));
+//	}
+//	
+//	double[][] m_onePurityStat; //Used to store the stat of one fold, added by Lin.
+//	int m_purityCount=0;//added by Lin.
+//	String m_simiMethod; //The similarity method used to select initial neighbors.
+//	
+//	//Set the similarity selection method.
+//	public void setSimiMethod(String s){
+//		m_simiMethod = s;
+//	}
+//	
+//	void SimilarityCheck() {
+//		_Node node;
+//		_Edge neighbor;
+//		
+//		int y;
+//		double[][][] prec = new double[3][2][2]; // p@5, p@10, p@20; p, n; U, L;
+//		double[][][] total = new double[3][2][2];
+//		
+//		for(int i = 0; i < m_U; i++) {
+//			node = m_nodeList[i];//nearest neighbor graph
+//			y = (int)node.m_label;
+//			
+//			/****Check the nearest unlabeled neighbors******/
+//			double precision = 0;
+//			for(int pos=0; pos<m_kPrime; pos++){
+//				neighbor = node.m_unlabeledEdges.get(pos);
+//				
+//				if (getLabel(neighbor.getPred()) == y)//neighbor's prediction against the ground-truth
+//					precision ++;
+//				
+//				if (pos==4) {
+//					prec[0][y][0] += precision/5.0;
+//					total[0][y][0] ++;
+//				} else if (pos==9) {
+//					prec[1][y][0] += precision/10.0;
+//					total[1][y][0] ++;
+//				} else if (pos==19) {
+//					prec[2][y][0] += precision/20.0;
+//					total[2][y][0] ++;
+//					break;
+//				}
+//			}
+//			
+//			/****Check the nearest labeled neighbors******/
+//			precision = 0;
+//			for(int pos=0; pos<m_k; pos++){
+//				neighbor = node.m_labeledEdges.get(pos);
+//				
+//				if ((int)neighbor.getLabel() == y)//neighbor's true label against the ground-truth
+//					precision ++;
+//				
+//				if (pos==4) {
+//					prec[0][y][1] += precision/5.0;
+//					total[0][y][1] ++;
+//				} else if (pos==9) {
+//					prec[1][y][1] += precision/10.0;
+//					total[1][y][1] ++;
+//				} else if (pos==19) {
+//					prec[2][y][1] += precision/20.0;
+//					total[2][y][1] ++;
+//					break;
+//				}
+//			}
+//		}
+//		//Store the purity information for further average, added by Lin.
+//		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
+//		m_onePurityStat = new double[4][3];
+//		m_onePurityStat[0][0] = prec[0][1][0]/total[0][1][0];
+//		m_onePurityStat[0][1] = prec[1][1][0]/total[1][1][0];
+//		m_onePurityStat[0][2] = prec[2][1][0]/total[2][1][0];
+//		
+//		m_onePurityStat[1][0] = prec[0][1][1]/total[0][1][1];
+//		m_onePurityStat[1][1] = prec[1][1][1]/total[1][1][1];
+//		m_onePurityStat[1][2] = prec[2][1][1]/total[2][1][1];
+//		
+//		m_onePurityStat[2][0] = prec[0][0][0]/total[0][0][0];
+//		m_onePurityStat[2][1] = prec[1][0][0]/total[1][0][0];
+//		m_onePurityStat[2][2] = prec[2][0][0]/total[2][0][0];
+//		
+//		m_onePurityStat[3][0] = prec[0][0][1]/total[0][0][1];
+//		m_onePurityStat[3][1] = prec[1][0][1]/total[1][0][1];
+//		m_onePurityStat[3][2] = prec[2][0][1]/total[2][0][1];
+//		
+//		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[0][0], m_onePurityStat[0][1], m_onePurityStat[0][2]);
+//		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[1][0], m_onePurityStat[1][1], m_onePurityStat[1][2]);
+//		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", m_onePurityStat[2][0], m_onePurityStat[2][1], m_onePurityStat[2][2]);
+//		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", m_onePurityStat[3][0], m_onePurityStat[3][1], m_onePurityStat[3][2] );
+//		
+//		if(m_purityCount > m_purityStat.length)
+//			System.out.println("Purity dimension out of range.\n");
+//		else
+//			m_purityStat[m_purityCount++] = m_onePurityStat;
+////		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", prec[0][1][0]/total[0][1][0], prec[1][1][0]/total[1][1][0], prec[2][1][0]/total[2][1][0]);
+////		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", prec[0][1][1]/total[0][1][1], prec[1][1][1]/total[1][1][1], prec[2][1][1]/total[2][1][1]);
+////		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", prec[0][0][0]/total[0][0][0], prec[1][0][0]/total[1][0][0], prec[2][0][0]/total[2][0][0]);
+////		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", prec[0][0][1]/total[0][0][1], prec[1][0][1]/total[1][0][1], prec[2][0][1]/total[2][0][1]);
+//	}
 }
+

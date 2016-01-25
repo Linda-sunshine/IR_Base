@@ -1,0 +1,1 @@
+java -Xmx8G -Xms4G -cp ./bin:./libs/parallelcolt-0.9.4.jar:./libs/jsoup-1.7.3.jar:libs/jwnl-1.3.3.jar:./libs/opennlp-maxent-3.0.3.jar:./libs/opennlp-tools-1.5.3.jar:./libs/optimization.jar:./libs/trove-2.0.2.jar mains.LinAdaptMain

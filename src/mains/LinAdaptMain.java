@@ -2,12 +2,10 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
-import Analyzer.UserAnalyzer;
-import CoLinAdapt.LinAdaptSchedule;
-
+import java.util.HashMap;
+import Analyzer.MultiThreadedUserAnalyzer;
+import Classifier.supervised.modelAdaptation.RegLR.asyncCoRegLRFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
-
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -16,43 +14,85 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		int featureGroupNo = 400; //There should be some feature grouping methods.
+
+		double trainRatio = 0, adaptRatio = 1.0;
+		int topKNeighbors = 20;
+		int displayLv = 0;
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		boolean enforceAdapt = false;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String providedCV = "./data/CoLinAdapt/5000Features.txt"; // CV.
-		String CVStat = "./data/CoLinAdapt/SelectedVocab.csv";
+		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
+		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
-
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
-		String folder = "./data/CoLinAdapt/Users2";
-
-		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold); //CV is loaded here.
-		analyzer.LoadCVStat(CVStat);
-//		analyzer.LoadStopwords("./data/Model/custom.stop"); //No need since stop words are not in features.
-
-		analyzer.setReleaseContent(false);//Do not release the content of the review.
-		analyzer.loadUserDir(folder); //Load users.		
-		analyzer.setFeatureValues(25265, "TFIDF", 0);
-	
-		analyzer.loadGlobalWeights(globalModel);
-		analyzer.loadFeatureGroupIndexes(featureGroupFile);
-//		linAdaptS.setFeatures(analyzer.getFeatures());
-
-		//Create the instances of the LinAdapt model.
-		LinAdaptSchedule linAdaptS = new LinAdaptSchedule(analyzer.getUsers(), analyzer.getFeatureSize(), featureGroupNo, analyzer.getFeatureGroupIndexes());
-		linAdaptS.setGlobalWeights(analyzer.getGlobalWeights());
-		linAdaptS.initSchedule();
-
-		//Online training.
-		linAdaptS.onlineTrain();
-		linAdaptS.calcPerformance(); //Calculate the performance of each user.	
-		linAdaptS.printPerformance();
 		
-		//Batch training.
-		linAdaptS.initSchedule();
-		linAdaptS.batchTrainTest();
-		linAdaptS.calcPerformance();
-		linAdaptS.printPerformance();
+//		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
+		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold,numberOfCores);
+		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadUserDir(userFolder); // load user and reviews
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
+		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		
+//		//Create an instance of LinAdapt model.
+//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
+//		//Create an instance of asyncLinAdapt model.
+//		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+		
+		//Create an instance of CoLinAdapt model.
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
+//		//Create an instance of zero-order asyncCoLinAdapt model.
+//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+
+//		//Create an instance of first-order asyncCoLinAdapt model.
+//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
+//				featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
+
+		//Create an instance of Regularized LogitReg model.
+//		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
+		//Create an instance of asynchronized Regularized LogitReg model.
+//		asyncRegLR adaptation = new asyncRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
+		//Create an instance of Collaboratively Regularized LogitReg model.
+//		CoRegLR adaptation = new CoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+		
+		//Create an instance of zero-order Collaboratively Regularized LogitReg model.
+//		asyncCoRegLR adaptation = new asyncCoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+
+		//Create an instance of first-order Collaboratively Regularized LogitReg model.
+		asyncCoRegLRFirstOrder adaptation = new asyncCoRegLRFirstOrder(classNumber, analyzer.getFeatureSize(), 
+				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
+
+		/** Added by lin for calling neighborhood learning.
+		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
+		int fDim = 3; // xij contains <bias, bow, svd_sim>
+		String svdFile = "./data/CoLinAdapt/Amazon_SVD_Scaled.mm";
+		analyzer.loadSVDFile(svdFile);
+		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
+		*/
+		
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+//		adaptation.setTestMode(TestMode.TM_batch);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
+
+//		adaptation.setR1TradeOff(eta1);
+		adaptation.setTradeOffs(1.0, 0.1);
+		
+		adaptation.train();
+		adaptation.test();
+//		adaptation.saveModel("data/results/colinadapt/models");
+		
+		//Create the instance of MT-SVM
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }

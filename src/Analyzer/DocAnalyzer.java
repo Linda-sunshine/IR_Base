@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
@@ -22,10 +25,6 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
@@ -300,12 +299,12 @@ public class DocAnalyzer extends Analyzer {
 					spVct.put(index, value);
 				} else {
 					spVct.put(index, 1.0);
-					if (docWordMap==null || !docWordMap.containsKey(index)){
-						if(m_featureStat.containsKey(token))
-							m_featureStat.get(token).addOneDF(y);
-					}
+					if (!m_isCVStatLoaded && (docWordMap==null || !docWordMap.containsKey(index)))
+						m_featureStat.get(token).addOneDF(y);
 				}
-				m_featureStat.get(token).addOneTTF(y);
+				
+				if (!m_isCVStatLoaded)
+					m_featureStat.get(token).addOneTTF(y);
 			}
 			// if the token is not in the vocabulary, nothing to do.
 		}
@@ -349,7 +348,7 @@ public class DocAnalyzer extends Analyzer {
 		
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
+		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
 			
@@ -364,12 +363,10 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
-
-	// adding sentence splitting function, modified for HTMM
-	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+	
+	protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {
 		TokenizeResult result;
-		int y = doc.getYLabel();
-		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		int y = doc.getYLabel(), index = 0;		
 		HashMap<Integer, Double> spVct = new HashMap<Integer, Double>(); // Collect the index and counts of features.
 		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // sparse sentence feature vectors 
 		double stopwordCnt = 0, rawCnt = 0;
@@ -378,15 +375,20 @@ public class DocAnalyzer extends Analyzer {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
 			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);// construct bag-of-word vector based on normalized tokens	
 
-			if (sentence_vector.size()>0) {//avoid empty sentence				
-				String[] posTags = m_tagger.tag(result.getRawTokens());
+			if (sentence_vector.size()>0) {//avoid empty sentence	
+				String[] posTags;
+				if(m_tagger==null)
+					posTags = null;
+				else
+					posTags = m_tagger.tag(result.getRawTokens());
 				
-				stnList.add(new _Stn(Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
+				stnList.add(new _Stn(index, Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
 				Utils.mergeVectors(sentence_vector, spVct);
 				
 				stopwordCnt += result.getStopwordCnt();
 				rawCnt += result.getRawCnt();
 			}
+			index ++;
 		} // End For loop for sentence	
 	
 		//the document should be long enough
@@ -395,7 +397,8 @@ public class DocAnalyzer extends Analyzer {
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.setSentences(stnList);
 			
-			setStnFvs(doc);
+			if(m_tagger!=null)
+				setStnFvs(doc);
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
@@ -408,6 +411,12 @@ public class DocAnalyzer extends Analyzer {
 			rollBack(spVct, y);
 			return false;
 		}
+	}
+
+	// adding sentence splitting function, modified for HTMM
+	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
+		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
+		return AnalyzeDocByStn(doc, sentences);		
 	}
 	
 	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment

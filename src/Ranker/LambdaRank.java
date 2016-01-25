@@ -3,14 +3,13 @@ package Ranker;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import structures._QUPair;
-import structures._Query;
-import utils.Utils;
-import Classifier.metricLearning.L2RMetricLearning;
 import Ranker.evaluator.Evaluator;
 import Ranker.evaluator.MAP_Evaluator;
 import Ranker.evaluator.NDCG_Evaluator;
 import cern.jet.random.tdouble.Normal;
+import structures._QUPair;
+import structures._Query;
+import utils.Utils;
 
 /**
  * @author wang296
@@ -24,10 +23,11 @@ public class LambdaRank {
 		OT_PAIR
 	}
 	
-	static final int NDCG_K = 40; 
+	public static final int NDCG_K = 40; 
 	
 	double m_lambda;
 	int m_trainingSize;
+	int[] m_signs; // sign of feature weights during random initialization
 	
 	ArrayList<_Query> m_queries;//list of pointers to queries
 	int[] m_order;//randomly shuffle the order for stochastic gradient descent
@@ -64,6 +64,17 @@ public class LambdaRank {
 		lambda = 1.0/Math.sqrt(lambda);
 		for(int i=0; i<m_weight.length; i++)
 			m_weight[i] = Normal.staticNextDouble(0, lambda);
+		
+		if (m_signs!=null) {//enforce sign over the initial setting of feature weights
+			for(int i=0; i<m_weight.length; i++) {
+				if (m_signs[i]*m_weight[i]<0)
+					m_weight[i] = -m_weight[i];
+			}
+		}
+	}
+	
+	public void setSigns(int[] signs) {
+		m_signs = signs;
 	}
 	
 	protected void init(){//create the pointer array to the training queries
@@ -100,8 +111,6 @@ public class LambdaRank {
 			if (pair.m_betterURLs!=null){
 				for(_QUPair betterURL:pair.m_betterURLs){//force to moving down
 					diff -= Utils.logistic(pair.m_score-betterURL.m_score) * m_eval.delta(betterURL, pair);
-					if(Double.isNaN(diff))
-						System.out.println("Nan in gradient update!");
 					trainSize ++;
 				}
 			}
@@ -169,7 +178,7 @@ public class LambdaRank {
 			qid = 0;
 			while(qid<m_trainingSize){
 				pSize = 0;
-				Arrays.fill(m_g, 0);
+				Arrays.fill(m_g, 0.0);
 				
 				for(j=0; j<windowSize; j++){//collect the gradients in mini-batch
 					pSize += gradientUpdate(m_queries.get(m_order[qid%m_trainingSize]));

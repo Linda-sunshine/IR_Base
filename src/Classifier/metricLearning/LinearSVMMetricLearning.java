@@ -5,10 +5,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
-import structures._Corpus;
-import structures._Doc;
-import structures._SparseFeature;
-import utils.Utils;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -16,6 +12,10 @@ import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.SolverType;
+import structures._Corpus;
+import structures._Doc;
+import structures._SparseFeature;
+import utils.Utils;
 
 public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 	

@@ -1,14 +1,16 @@
 package topicmodels;
 
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import markovmodel.LRFastRestrictedHMM_sentiment;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 // HTMM parameter both in log space
 public class LRHTSM extends HTSM {	
@@ -97,12 +99,13 @@ public class LRHTSM extends HTSM {
 	void estimateOmega() {
 		int[] iflag = {0}, iprint = { -1, 3 };
 		double fValue;
-		int fSize = m_omega.length;
+		int fSize = m_omega.length; // iter = 0;
 		
 		Arrays.fill(m_diag_omega, 0);//since we are reusing this space
 		try{
 			do {
 				fValue = calcOmegaFuncGradient();
+//				System.out.format("Stn transit: %d, %.4f\n", iter++, fValue);
 				LBFGS.lbfgs(fSize, 4, m_omega, fValue, m_g_omega, false, m_diag_omega, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
@@ -146,19 +149,19 @@ public class LRHTSM extends HTSM {
 	void estimateDelta() {
 		int[] iflag = {0}, iprint = { -1, 3 };
 		double fValue;
-		int fSize = m_delta.length;
+		int fSize = m_delta.length;// iter = 0;
 		
 		Arrays.fill(m_diag_delta, 0);//since we are reusing this space
 		try{
 			do {
 				fValue = calcDeltaFuncGradient();
+//				System.out.format("Senti transit: %d, %.4f\n", iter++, fValue);
 				LBFGS.lbfgs(fSize, 4, m_delta, fValue, m_g_delta, false, m_diag_delta, iprint, 1e-2, 1e-32, iflag);
 			} while (iflag[0] != 0);
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
 		}
-	}
-	
+	}	
 	
 	//log-likelihood: 0.5\lambda * w^2 + \sum_x [q(y=1|x) logp(y=1|x,w) + (1-q(y=1|x)) log(1-p(y=1|x,w))]
 	//NOTE: L-BFGS code is for minimizing a problem
@@ -191,6 +194,29 @@ public class LRHTSM extends HTSM {
 		}
 		
 		return loglikelihood;
+	}
+	
+	public void writeOmegaDelta(String file){
+		PrintWriter deltaOmegaWriter = null;
+		try {
+			deltaOmegaWriter = new PrintWriter(file);
+			
+			deltaOmegaWriter.println("Topical feature weight values");
+			
+			for(int i=0; i<m_omega.length;i++)
+				deltaOmegaWriter.format("%.3f,", m_omega[i]);
+			
+			deltaOmegaWriter.println("\nSentiment feature weight values");
+			
+			for(int i=0; i<m_delta.length;i++)
+				deltaOmegaWriter.format("%.3f,", m_delta[i]);
+			
+		} catch (FileNotFoundException e) {
+			System.err.format("%s Not Found", file);
+		}
+		
+		deltaOmegaWriter.flush();
+		deltaOmegaWriter.close();		
 	}
 	
 }

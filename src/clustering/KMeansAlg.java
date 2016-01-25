@@ -11,8 +11,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import structures._Corpus;
-import structures._Doc;
+
 import Classifier.BaseClassifier;
 import cc.mallet.cluster.Clustering;
 import cc.mallet.cluster.KMeans;
@@ -22,6 +21,8 @@ import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
+import structures._Corpus;
+import structures._Doc;
 
 /**
  * @author hongning
@@ -35,10 +36,10 @@ public class KMeansAlg extends BaseClassifier {
 	ArrayList<SparseVector> m_centroids;
 	int m_k;
 	Metric m_distance = new CosineDistance();
-	ArrayList<ArrayList<_Doc>> m_clustersDocs;
-//	ArrayList<ArrayList<Integer>> m_docsClusterNo; //Each arraylist contains the document indexes of one cluster.
 	
-	double[][] m_clusterStat;//added by Lin for basic stat.
+	ArrayList<ArrayList<_Doc>> m_clustersDocs; // Added by Lin for storing clustered documents.
+	ArrayList<ArrayList<Integer>> m_docsClusterNo; // Added by Lin, each arraylist contains the document indexes of one cluster.
+	double[][] m_clusterStat; // Added by Lin for basic stat.
 	
 	public KMeansAlg(_Corpus c, int k) {
 		super(c);
@@ -59,7 +60,7 @@ public class KMeansAlg extends BaseClassifier {
 	}
 	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		init();
 		
 		for(_Doc d:trainSet)			
@@ -69,11 +70,66 @@ public class KMeansAlg extends BaseClassifier {
 		Clustering result = alg.cluster(m_instances);	
 		m_centroids = alg.getClusterMeans();
 		m_clusters = result.getClusters();
-		sortClustersBySize();
-//		for(InstanceList cluster: m_clusters)
-//			System.out.println(cluster.size());
+		return 0; // we can compute the corresponding loss function
 	}
 	
+	//assign to the closest cluster 
+	@Override
+	public int predict(_Doc doc) {
+		int cid = 0;
+		SparseVector spVct = createInstance(doc);
+		double minDistance = m_distance.distance(m_centroids.get(0), spVct), dist;
+		for(int i=1; i<m_centroids.size(); i++) {
+			dist = m_distance.distance(m_centroids.get(i), spVct);
+			if (dist<minDistance) {
+				minDistance = dist;
+				cid = i;
+			}
+		}
+		return cid;
+	}
+	
+	//distance to the corresponding cluster
+	@Override
+	public double score(_Doc d, int label) {
+		if (label>=m_centroids.size())
+			return -1;
+		
+		return m_distance.distance(m_centroids.get(label), createInstance(d));
+	}
+
+	@Override
+	protected void init() {
+		m_dict = new Alphabet();
+		m_instances = new InstanceList(m_dict, null);
+	}
+
+	@Override
+	protected void debug(_Doc d) {
+		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public void saveModel(String modelLocation) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelLocation), "UTF-8"));
+			for(SparseVector spVct:m_centroids) {
+				int[] indices = spVct.getIndices();
+				double[] values = spVct.getValues();
+				for(int i=0; i<indices.length; i++) {
+					writer.write(String.format("%d:%.5f ", indices[i], values[i]));
+				}
+				writer.write("\n");
+			}
+			
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*************The following functions are added by Lin.*****************/
+	// Sort eh 
 	public void sortClustersBySize(){
 		int tmp = 0;
 		for(int i=1; i<m_clusters.length; i++){
@@ -129,9 +185,9 @@ public class KMeansAlg extends BaseClassifier {
 		System.out.println("\nFinish setting document cluster indexes.");
 	}
 	
-//	public ArrayList<ArrayList<Integer>> getDocsClusterNo(){
-//		return m_docsClusterNo;
-//	}
+	public ArrayList<ArrayList<Integer>> getDocsClusterNo(){
+		return m_docsClusterNo;
+	}
 	
 	public ArrayList<ArrayList<_Doc>> getClustersDocs(){
 		return m_clustersDocs;
@@ -167,60 +223,20 @@ public class KMeansAlg extends BaseClassifier {
 			e.printStackTrace();
 		}
 	}
-	//assign to the closest cluster 
-	@Override
-	public int predict(_Doc doc) {
-		int cid = 0;
-		SparseVector spVct = createInstance(doc);
-		double minDistance = m_distance.distance(m_centroids.get(0), spVct), dist;
-		for(int i=1; i<m_centroids.size(); i++) {
-			dist = m_distance.distance(m_centroids.get(i), spVct);
-			if (dist<minDistance) {
-				minDistance = dist;
-				cid = i;
-			}
-		}
-		return cid;
-	}
 
-	//distance to the corresponding cluster
-	@Override
-	public double score(_Doc d, int label) {
-		if (label>=m_centroids.size())
-			return -1;
-		
-		return m_distance.distance(m_centroids.get(label), createInstance(d));
-	}
-
-	@Override
-	protected void init() {
-		m_dict = new Alphabet();
-		m_instances = new InstanceList(m_dict, null);
-	}
-
-	@Override
-	protected void debug(_Doc d) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void saveModel(String modelLocation) {
-		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelLocation), "UTF-8"));
-			for(SparseVector spVct:m_centroids) {
-				int[] indices = spVct.getIndices();
-				double[] values = spVct.getValues();
-				for(int i=0; i<indices.length; i++) {
-					writer.write(String.format("%d:%.5f ", indices[i], values[i]));
-				}
-				writer.write("\n");
-			}
-			
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
+//	@Override
+//	public void train(Collection<_Doc> trainSet) {
+//		init();
+//		
+//		for(_Doc d:trainSet)			
+//			m_instances.add(new Instance(createInstance(d), null, null, d));
+//		
+//		KMeans alg = new KMeans(m_instances.getPipe(), m_k, m_distance);
+//		Clustering result = alg.cluster(m_instances);	
+//		m_centroids = alg.getClusterMeans();
+//		m_clusters = result.getClusters();
+//		sortClustersBySize();
+////		for(InstanceList cluster: m_clusters)
+////			System.out.println(cluster.size());
+//	}
 }

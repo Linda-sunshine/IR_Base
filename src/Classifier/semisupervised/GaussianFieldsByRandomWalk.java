@@ -17,8 +17,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double m_delta; // convergence criterion for random walk
 	boolean m_weightedAvg; // random walk strategy: True - weighted average; False - majority vote
 	boolean m_simFlag; //This flag is used to determine whether we'll consider similarity as weight or not.
-	double[][] m_simiStat;
-	int m_foldCount = 0;
+	
 	//Default constructor without any default parameters.
 	public GaussianFieldsByRandomWalk(_Corpus c, String classifier, double C){
 		super(c, classifier, C);
@@ -43,10 +42,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		m_simFlag = false;
 	}
 	
-	public void setKFold(int k){
-		m_kFold = k;
-		m_simiStat = new double[m_kFold][4];
-	}
 	@Override
 	public String toString() {
 		if (m_weightedAvg)
@@ -64,7 +59,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	//The random walk algorithm to generate new labels for unlabeled data.
 	//Take the average of all neighbors as the new label until they converge.
 	double randomWalkByWeightedSum(){//construct the sparse graph on the fly every time
-		//double wL = m_alpha / (m_k + m_beta*m_kPrime), wU = m_beta * wL;
 		double wL = m_alpha, wU = m_beta, acc = 0;
 		_Node node;
 		
@@ -102,7 +96,6 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	double randomWalkByMajorityVote(){//construct the sparse graph on the fly every time
 		double similarity = 0, acc = 0;
 		int label;
-//		double wL = m_eta * m_alpha / (m_k + m_beta*m_kPrime), wU = m_eta * m_beta * wL;
 		double wL = m_eta*m_alpha, wU = m_eta*m_beta;
 		_Node node;
 		
@@ -206,64 +199,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		
 		return acc/m_U;
 	}
-	//Check the mean and variance of the 
-	public void checkSimilarityVariance(){
-		double[] stat;
-		double[] avgStat = new double[4];
-		_Node node;
-		for(int i=0; i<m_U; i++){
-			node = m_nodeList[i];
-			stat = calcMeanVar4OneNode(node);
-			avgStat = addOneNodeStat(avgStat, stat);
-		}
-		
-		for(int i=0; i<avgStat.length; i++){
-			avgStat[i] = avgStat[i] / m_U;
-		}
-		m_simiStat[m_foldCount++] = avgStat;
-	}
 	
-	public double[] addOneNodeStat(double[] avgStat, double[] one){
-		if(avgStat.length == one.length){
-			for(int i=0; i<avgStat.length; i++){
-				avgStat[i] += one[i];
-			}
-		}
-		return avgStat;
-	}
-	
-	public double[] calcMeanVar4OneNode(_Node n){
-		double[] stat4OneNode = new double[4];
-		double sum = 0, mean = 0, var = 0;
-		_Edge neighbor;
-		for(int j=0; j<m_kPrime; j++){
-			neighbor = n.m_unlabeledEdges.get(j);
-			sum += neighbor.getSimilarity();
-		}
-		mean = sum / m_kPrime;
-		stat4OneNode[0] = mean;//mean of unlabeled neighbors' similarities.
-		for(int j=0; j<m_kPrime; j++){
-			neighbor = n.m_unlabeledEdges.get(j);
-			var += (neighbor.getSimilarity() - mean)*(neighbor.getSimilarity() - mean);
-		}
-		var = Math.sqrt(var/m_kPrime);
-		stat4OneNode[1] = var;//variance of unlabeled neighbors' similarities.
-	
-		sum = 0; mean = 0; var = 0;//clear for the calculation of the labeled neighbors.
-		for(int j=0; j<m_k; j++){
-			neighbor = n.m_labeledEdges.get(j);
-			sum += neighbor.getSimilarity();
-		}
-		mean = sum / m_k;
-		stat4OneNode[2] = mean;//mean of unlabeled neighbors' similarities.
-		for(int j=0; j<m_k; j++){
-			neighbor = n.m_labeledEdges.get(j);
-			var += (neighbor.getSimilarity() - mean)*(neighbor.getSimilarity() - mean);
-		}
-		var = Math.sqrt(var/m_k);
-		stat4OneNode[3] = var;//variance of unlabeled neighbors' similarities.
-		return stat4OneNode;
-	}
 	@Override
 	protected void debug(_Doc d) {
 		debugSummary(d);
@@ -368,13 +304,81 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		}
 	} 
 	
+	/******Added by Lin*****/
+	double[][] m_simiStat;
+	int m_foldCount = 0;
+	
+	public void setKFold(int k){
+		m_kFold = k;
+		m_simiStat = new double[m_kFold][4];
+	}
+	
+	//Check the mean and variance of the 
+	public void checkSimilarityVariance(){
+		double[] stat;
+		double[] avgStat = new double[4];
+		_Node node;
+		for(int i=0; i<m_U; i++){
+			node = m_nodeList[i];
+			stat = calcMeanVar4OneNode(node);
+			avgStat = addOneNodeStat(avgStat, stat);
+		}
+		
+		for(int i=0; i<avgStat.length; i++){
+			avgStat[i] = avgStat[i] / m_U;
+		}
+		m_simiStat[m_foldCount++] = avgStat;
+	}
+	
+	public double[] addOneNodeStat(double[] avgStat, double[] one){
+		if(avgStat.length == one.length){
+			for(int i=0; i<avgStat.length; i++){
+				avgStat[i] += one[i];
+			}
+		}
+		return avgStat;
+	}
+	
+	public double[] calcMeanVar4OneNode(_Node n){
+		double[] stat4OneNode = new double[4];
+		double sum = 0, mean = 0, var = 0;
+		_Edge neighbor;
+		for(int j=0; j<m_kPrime; j++){
+			neighbor = n.m_unlabeledEdges.get(j);
+			sum += neighbor.getSimilarity();
+		}
+		mean = sum / m_kPrime;
+		stat4OneNode[0] = mean;//mean of unlabeled neighbors' similarities.
+		for(int j=0; j<m_kPrime; j++){
+			neighbor = n.m_unlabeledEdges.get(j);
+			var += (neighbor.getSimilarity() - mean)*(neighbor.getSimilarity() - mean);
+		}
+		var = Math.sqrt(var/m_kPrime);
+		stat4OneNode[1] = var;//variance of unlabeled neighbors' similarities.
+	
+		sum = 0; mean = 0; var = 0;//clear for the calculation of the labeled neighbors.
+		for(int j=0; j<m_k; j++){
+			neighbor = n.m_labeledEdges.get(j);
+			sum += neighbor.getSimilarity();
+		}
+		mean = sum / m_k;
+		stat4OneNode[2] = mean;//mean of unlabeled neighbors' similarities.
+		for(int j=0; j<m_k; j++){
+			neighbor = n.m_labeledEdges.get(j);
+			var += (neighbor.getSimilarity() - mean)*(neighbor.getSimilarity() - mean);
+		}
+		var = Math.sqrt(var/m_k);
+		stat4OneNode[3] = var;//variance of unlabeled neighbors' similarities.
+		return stat4OneNode;
+	}
+	
 	public void printSimMeanVarStat(){
 		System.out.format("Unlabeled Avg\tUnlabeled Var\tLabeled Avg\tLabeled Var\n");
 		for(int i=0; i<m_kFold; i++){
 			System.out.format("%.4f\t%.4f\t%.4f\t%.4f\t\n", m_simiStat[i][0], m_simiStat[i][1], m_simiStat[i][2], m_simiStat[i][3]);
 		}
 	}
-	public void printInfo(){
-		System.out.format("Similarity selection method: %s, similarity included: %s\n", m_simiMethod, m_simFlag);
-	}
+//	public void printInfo(){
+//		System.out.format("Similarity selection method: %s, similarity included: %s\n", m_simiMethod, m_simFlag);
+//	}
 }

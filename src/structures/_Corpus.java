@@ -84,6 +84,20 @@ public class _Corpus {
 		return m_collection.size();
 	}
 	
+	//just for debugging purpose, should be removed soon!!!
+	public void setUnlabeled() {
+		int unlabeledSize = 0;
+		for(_Doc d:m_collection) {
+			if (d.m_ID % 3==0) {
+				d.m_sourceType = 1;
+				unlabeledSize ++;
+			} else
+				d.m_sourceType = 2;
+		}
+		
+		System.out.format("Created %d unlabeled instances...", unlabeledSize);
+	}
+	
 	public int getLargestSentenceSize()
 	{
 		int max = 0;
@@ -108,20 +122,16 @@ public class _Corpus {
 		}
 	}
 	
-	//Assign the masks in order for each document.
-	public void mastInOrder(int k){
-		for(int i=0; i< m_mask.length; i++){
-			this.m_mask[i] = i % k;
-		}
-	}
 	//Add a new doc to the corpus.
 	public void addDoc(_Doc doc){
 		m_collection.add(doc);
 	}
+	
 	//Add a set of docs to the corpus.
 	public void addDocs(ArrayList<_Review> docs){
 		m_collection.addAll(docs);
 	}
+	
 	public void removeDoc(int index){
 		m_collection.remove(index);
 	}

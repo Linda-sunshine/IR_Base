@@ -7,13 +7,13 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
+import Classifier.BaseClassifier;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.BaseClassifier;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class LogisticRegression extends BaseClassifier {
 
@@ -59,9 +59,9 @@ public class LogisticRegression extends BaseClassifier {
 	 * turns to 0, it finds the final point and we get the best beta.
 	 */	
 	@Override
-	public void train(Collection<_Doc> trainSet) {
+	public double train(Collection<_Doc> trainSet) {
 		int[] iflag = {0}, iprint = { -1, 3 };
-		double fValue;
+		double fValue = 0;
 		int fSize = m_beta.length;
 		
 		init();
@@ -73,6 +73,8 @@ public class LogisticRegression extends BaseClassifier {
 		} catch (ExceptionWithIflag e){
 			e.printStackTrace();
 		}
+		
+		return fValue;
 	}
 	
 	//This function is used to calculate Pij = P(Y=yi|X=xi) in multi-class LR.
@@ -149,12 +151,6 @@ public class LogisticRegression extends BaseClassifier {
 			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
 		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
 	}
-//	//added by Lin.
-//	public double score(double[] fv, int label){
-//		for(int i = 0; i < m_classNo; i++)
-////			m_cache[i] = Utils.dotProduct(m_beta, fv, i*(m_featureSize + 1));
-//		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
-//	}
 	
 	protected void debug(_Doc d) {
 		try {
@@ -215,10 +211,6 @@ public class LogisticRegression extends BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	//access the parameter, added by Lin.
-	public double[] getParameter(){
-		return m_beta;
+		
 	}
 }

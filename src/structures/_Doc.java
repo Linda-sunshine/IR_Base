@@ -23,7 +23,7 @@ public class _Doc implements Comparable<_Doc> {
 	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
-	int m_sourceType = 1; // source is 1 for Amazon and 2 for newEgg
+	int m_sourceType = 1; // source is 1 for Amazon (unlabeled) and 2 for newEgg (labeled)
 	int m_totalLength; //The total length of the document in tokens
 	
 	int m_y_label; // classification target, that is the index of the labels.
@@ -157,7 +157,7 @@ public class _Doc implements Comparable<_Doc> {
 	}
 
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	private _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
+	protected _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
@@ -263,6 +263,10 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public String getTitle(){
 		return m_title;
+	}
+	
+	public void setTitle(String title){
+		m_title = title;
 	}
 	
 	//Get the source content of a document.
@@ -451,7 +455,7 @@ public class _Doc implements Comparable<_Doc> {
 		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
-		int docSize = (int)Utils.sumOfFeaturesL1(m_x_sparse);
+		int docSize = getTotalDocLength();
 		if (m_words==null || m_words.length != docSize) {
 			m_topicAssignment = new int[docSize];
 			m_words = new int[docSize];
@@ -460,9 +464,12 @@ public class _Doc implements Comparable<_Doc> {
 		int wIndex = 0;
 		if (m_rand==null)
 			m_rand = new Random();
+		
+		int wid;
 		for(_SparseFeature fv:m_x_sparse) {
-			for(int j=0; j<fv.getValue(); j++) {
-				m_words[wIndex] = fv.getIndex();
+			wid = fv.getIndex();
+			for(int j=0; j<fv.getValue(); j++) {				
+				m_words[wIndex] = wid;
 				m_topicAssignment[wIndex] = m_rand.nextInt(k); // randomly initializing the topics inside a document
 				m_sstat[m_topicAssignment[wIndex]] ++; // collect the topic proportion
 				

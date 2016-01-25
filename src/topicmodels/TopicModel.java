@@ -37,7 +37,9 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	public PrintWriter infoWriter;	
+	public PrintWriter infoWriter;
+	public PrintWriter summaryWriter;
+	public PrintWriter debugWriter;
 	
 	public TopicModel(int number_of_iteration, double converge, double beta, _Corpus c) {
 		this.vocabulary_size = c.getFeatureSize();
@@ -76,6 +78,41 @@ public abstract class TopicModel {
 			infoWriter = new PrintWriter(new File(path));
 		}catch(Exception e){
 			System.err.println(path+" Not found!!");
+		}
+	}
+	
+	public void setSummaryWriter(String path){
+		System.out.println("Summary File Path: "+ path);
+		try{
+			summaryWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
+	}
+	
+	public void setDebugWriter(String path){
+		System.out.println("Debug File Path: "+ path);
+		try{
+			debugWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
+	}
+	
+	public void closeWriter(){
+		if(infoWriter!=null){
+			infoWriter.flush();
+			infoWriter.close();
+		}
+		
+		if(summaryWriter!=null){
+			summaryWriter.flush();
+			summaryWriter.close();
+		}
+		
+		if(debugWriter!=null){
+			debugWriter.flush();
+			debugWriter.close();
 		}
 	}
 	
@@ -164,9 +201,17 @@ public abstract class TopicModel {
 		
 		//evenly allocate the testing work load
 		int workerID = 0;
-		for(_Doc d:m_testSet) {
-			m_workers[workerID%m_workers.length].addDoc(d);
-			workerID++;
+		
+		if(debugWriter==null){
+			for(_Doc d:m_testSet) {
+				m_workers[workerID%m_workers.length].addDoc(d);
+				workerID++;
+			}
+		}else{
+			for(_Doc d:m_corpus.getCollection()) {
+				m_workers[workerID%m_workers.length].addDoc(d);
+				workerID++;
+			}
 		}
 			
 		for(int i=0; i<m_workers.length; i++) {
@@ -228,7 +273,7 @@ public abstract class TopicModel {
 				}
 			}
 			
-			if (Math.abs(delta)<m_converge)
+			if (m_converge>0 && Math.abs(delta)<m_converge)
 				break;//to speed-up, we don't need to compute likelihood in many cases
 		} while (++i<this.number_of_iteration);
 		
@@ -245,17 +290,19 @@ public abstract class TopicModel {
 		
 		if (m_multithread) {
 			multithread_inference();
-			
+			System.out.println("In thread");
 			for(TopicModelWorker worker:m_workers) {
 				sumLikelihood += worker.getLogLikelihood();
 				perplexity += worker.getPerplexity();
 			}
 		} else {
+			System.out.println("In Normal");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
 				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 			}
+			
 		}
 		perplexity /= m_testSet.size();
 		sumLikelihood /= m_testSet.size();
@@ -269,7 +316,18 @@ public abstract class TopicModel {
 		return perplexity;
 	}
 
-		
+	
+	public void debugOutputWrite(){
+		debugWriter.println("Doc ID, Source, SentenceIndex, ActualSentiment, PredictedSentiment");
+		for(_Doc d:m_corpus.getCollection()){
+			for(int i=0; i<d.getSenetenceSize(); i++){
+				debugWriter.format("%d,%d,%d,%s,%d,%d\n", d.getID(),d.getSourceType(),i,d.getSentence(i).getRawSentence(),d.getSentence(i).getStnSentiLabel(),d.getSentence(i).getStnPredSentiLabel());
+			}
+		}
+		debugWriter.flush();
+		debugWriter.close();
+	}
+	
 	public void calculatePrecisionRecall(){
 		int[][] precision_recall = new int [2][2];
 		precision_recall [0][0] = 0; // 0 is for pos
@@ -284,8 +342,8 @@ public abstract class TopicModel {
 			if(d.getSourceType()==2){
 				
 				for(int i=0; i<d.getSenetenceSize(); i++){
-					actualLabel = d.getSentence(i).getSentenceSenitmentLabel();
-					predictedLabel = d.getSentence(i).getSentencePredictedSenitmentLabel();
+					actualLabel = d.getSentence(i).getStnSentiLabel();
+					predictedLabel = d.getSentence(i).getStnPredSentiLabel();
 					precision_recall[actualLabel][predictedLabel]++;
 				}
 			}
@@ -417,8 +475,14 @@ public abstract class TopicModel {
 					
 				}
 				if(m_LoadnewEggInTrain==false && d.getSourceType()==2) {
-					m_testSet.add(d);
-					newEggTestSize++;
+					int rating = d.getYLabel();
+					if(newEggTrainsetRatingCount[rating]<=0.8*newEggRatingCount[rating]){
+						// Do nothing simply ignore it make for similar for two different configurations (i.e. newEgg loaded and not loaded in trainset) set
+						newEggTrainsetRatingCount[rating]++;
+					}else{
+						m_testSet.add(d);
+						newEggTestSize++;
+					}
 				}
 			}
 			

@@ -3,23 +3,10 @@
  */
 package mains;
 
-import influence.PageRank;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures.Parameter;
-import structures._Corpus;
-import topicmodels.HTMM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Variational;
-import topicmodels.LRHTMM;
-import topicmodels.TopicModel;
-import topicmodels.pLSA;
-import topicmodels.twoTopic;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
@@ -32,6 +19,18 @@ import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.PRLogisticRegression;
 import Classifier.supervised.SVM;
+import influence.PageRank;
+import structures.Parameter;
+import structures._Corpus;
+import topicmodels.HTMM;
+import topicmodels.LDA_Gibbs;
+import topicmodels.LDA_Variational;
+import topicmodels.LRHTMM;
+import topicmodels.TopicModel;
+import topicmodels.pLSA;
+import topicmodels.twoTopic;
+import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA_multithread;
 
 /**
  * @author hongning

@@ -2,16 +2,17 @@ package mains;
 
 import java.io.IOException;
 import java.text.ParseException;
-import structures._Corpus;
-import topicmodels.LDA_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
+
 import Analyzer.AspectAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
+import structures._Corpus;
+import topicmodels.LDA_Gibbs;
+import topicmodels.pLSA;
+import topicmodels.multithreads.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA_multithread;
 
 public class TransductiveMain {
 	
@@ -31,7 +32,7 @@ public class TransductiveMain {
 		boolean aspectSentiPrior = true;
 		
 		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/tablet/small";
+		String folder = "./data/amazon/tablet/topicmodel";
 		String suffix = ".json";
 		String stopword = "./data/Model/stopwords.dat";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -123,19 +124,19 @@ public class TransductiveMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c.mapLabels(4);
+		c.mapLabels(3);//how to set this reasonably
 		
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
 			double learningRatio = 1.0;
-			int k = 20, kPrime = 20; // k nearest labeled, k' nearest unlabeled
+			int k = 30, kPrime = 20; // k nearest labeled, k' nearest unlabeled
 			double tAlpha = 1.0, tBeta = 0.1; // labeled data weight, unlabeled data weight
-			double tDelta = 1e-4, tEta = 0.1; // convergence of random walk, weight of random walk
+			double tDelta = 1e-5, tEta = 0.6; // convergence of random walk, weight of random walk
 			boolean simFlag = false, weightedAvg = true;
 			int bound = 0; // bound for generating rating constraints (must be zero in binary case)
 			int topK = 25; // top K similar documents for constructing pairwise ranking targets
-			double noiseRatio = 2.0;
+			double noiseRatio = 1.0;
 			boolean metricLearning = true;
 			boolean multithread_LR = true;//training LambdaRank with multi-threads
 			
@@ -151,7 +152,7 @@ public class TransductiveMain {
 			} else if (method.equals("RW-L2R")) {
 				mySemi = new L2RMetricLearning(c, multipleLearner, C, 
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
-						topK, noiseRatio, 1, multithread_LR);
+						topK, noiseRatio, multithread_LR);
 			}
 			
 			mySemi.setSimilarity(simFlag);

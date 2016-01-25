@@ -1,6 +1,5 @@
 package LBFGS;
 
-import utils.Utils;
 import LBFGS.linesearch.LineSearch;
 import LBFGS.linesearch.LineSearchMoreThuente;
 import LBFGS.optimzationTest.Problem1;
@@ -11,6 +10,7 @@ import LBFGS.optimzationTest.Problem3;
 import LBFGS.optimzationTest.Problem5;
 import LBFGS.optimzationTest.Problem6;
 import LBFGS.optimzationTest.QuadraticTest;
+import utils.Utils;
 
 public class ProjectedGradient {
 	

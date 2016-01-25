@@ -7,33 +7,88 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.TreeMap;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures.TokenizeResult;
-import structures._Doc;
 import structures._Review;
-import structures._SparseFeature;
+import structures._Review.rType;
 import structures._User;
 import structures._stat;
 import utils.Utils;
 
 public class UserAnalyzer extends DocAnalyzer {
 	
-	int m_count;
 	ArrayList<_User> m_users; // Store all users with their reviews.
-	int[] m_featureGroupIndexes; // The array of feature group indexes.
-	double[] m_DFs; // The array stores the total DF for all features.
-	ArrayList<Double> m_globalWeights;
+	double m_trainRatio = 0.25; // by default, the first 25% for training global model 
+	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
+	int m_trainSize = 0, m_adaptSize = 0, m_testSize = 0;
+	boolean m_enforceAdapt = false;
 	
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		m_users = new ArrayList<_User>();
-		m_count = 0;
-		m_globalWeights = new ArrayList<Double>();
+	}
+	
+	public void config(double train, double adapt, boolean enforceAdpt) {
+		if (train<0 || train>1) {
+			System.err.format("[Error]Incorrect setup of training ratio %.3f, which has to be in [0,1]\n", train);
+			return;
+		} else if (adapt<0 || adapt>1) {
+			System.err.format("[Error]Incorrect setup of adaptation ratio %.3f, which has to be in [0,1]\n", adapt);
+			return;
+		} else if (train+adapt>1) {
+			System.err.format("[Error]Incorrect setup of training and adaptation ratio (%.3f, %.3f), whose sum has to be in (0,1]\n", train, adapt);
+			return;
+		}
+		
+		m_trainRatio = train;
+		m_adaptRatio = adapt;	
+		m_enforceAdapt = enforceAdpt;
+	}
+	
+	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	protected boolean LoadCV(String filename) {
+		if (filename==null || filename.isEmpty())
+			return false;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line, stats[];
+			int ngram = 0, DFs[]= {0, 0};
+			m_Ngram = 1;//default value of Ngram
+			while ((line = reader.readLine()) != null) {
+				stats = line.split(",");
+				
+				if (stats[1].equals("TOTALDF")) {
+					m_TotalDF = (int)(Double.parseDouble(stats[2]));
+				} else {
+					expandVocabulary(stats[1]);
+					DFs[0] = (int)(Double.parseDouble(stats[3]));
+					DFs[1] = (int)(Double.parseDouble(stats[4]));
+					setVocabStat(stats[1], DFs);
+					
+					ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
+					if (m_Ngram<ngram)
+						m_Ngram = ngram;
+				}
+			}
+			reader.close();
+			
+			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			m_isCVLoaded = true;
+			m_isCVStatLoaded = true;
+			return true;
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+	}
+	
+	void setVocabStat(String term, int[] DFs) {
+		_stat stat = m_featureStat.get(term);
+		stat.setDF(DFs);
 	}
 	
 	//Load all the users.
@@ -45,49 +100,55 @@ public class UserAnalyzer extends DocAnalyzer {
 		for(File f: dir.listFiles()){
 			if(f.isFile()){
 				loadOneUser(f.getAbsolutePath());
-				if(count%100 == 0)
-					System.out.print(".");
 				count++;
-			}
-			else 
+			} else if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
 		}
-		System.out.format("\n%d users are loaded from %s.", count, folder);
+		System.out.format("%d users are loaded from %s...\n", count, folder);
+	}
+	
+	String extractUserID(String text) {
+		int index = text.indexOf('.');
+		if (index==-1)
+			return text;
+		else
+			return text.substring(0, index);
 	}
 	
 	// Load one file as a user here. 
 	public void loadOneUser(String filename){
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			String[] names = filename.split("/");
-			int endIndex = names[names.length-1].lastIndexOf(".");
-			String userID = names[names.length-1].substring(0, endIndex); //UserId is contained in the filename.
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;			
+			String userID = extractUserID(file.getName()); //UserId is contained in the filename.
 			// Skip the first line since it is user name.
 			reader.readLine(); 
-			String reviewID, source, category;
+			
+			String productID, source, category;
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
 			long timestamp;
 			while((line = reader.readLine()) != null){
-				reviewID = line;
-				source = reader.readLine();
-				category = reader.readLine();
+				productID = line;
+				source = reader.readLine(); // review content
+				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
 				
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
-					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, reviewID, category, timestamp);
+					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
 					if(AnalyzeDoc(review)) //Create the sparse vector for the review.
 						reviews.add(review);
 				}
 			}
-			if(reviews.size() != 0){
-				m_users.add(new _User(userID, reviews, m_users.size())); //create new user from the file.
-				m_corpus.addDocs(reviews);
+			
+			if(reviews.size() > 1){//at least one for adaptation and one for testing
+				allocateReviews(reviews);				
+				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 			}
 			reader.close();
 		} catch(IOException e){
@@ -95,247 +156,75 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-	public boolean AnalyzeDoc(_Review doc){
-		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-		String[] tokens = result.getTokens();
-		int y = doc.getYLabel();
+	//[0, train) for training purpose
+	//[train, adapt) for adaptation purpose
+	//[adapt, 1] for testing purpose
+	void allocateReviews(ArrayList<_Review> reviews) {
+		Collections.sort(reviews);// sort the reviews by timestamp
+		int train = (int)(reviews.size() * m_trainRatio), adapt;
+		if (m_enforceAdapt)
+			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
+		else
+			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
 		
-		// Construct the sparse vector.
-		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>=m_lengthThreshold) {//temporary code for debugging purpose
-			doc.createSpVct(spVct);
-			doc.setStopwordProportion(result.getStopwordProportion());
-
-			if (m_releaseContent)
-				doc.clearSource();
-			return true;
-		} else {
-			/****Roll back here!!******/
-			rollBack(spVct, y);
-			return false;
-		}
-	}
-	
-	/***When we do feature selection, we will group features and store them in file. 
-	 * The index is the index of features and the corresponding number is the group index number.***/
-	public void loadFeatureGroupIndexes(String filename){
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] features = reader.readLine().split(",");//Group information of each feature.
-			reader.close();
-			
-			m_featureGroupIndexes = new int[features.length + 1]; //One more term for bias, bias=0.
-			//Group index starts from 0, so add 1 for it.
-			for(int i=0; i<features.length; i++)
-				m_featureGroupIndexes[i+1] = Integer.valueOf(features[i]) + 1;
-			
-		} catch(IOException e){
-			System.err.format("Fail to open file %s.\n", filename);
-		}
-	}
-	
-	public int[] getFeatureGroupIndexes(){
-		return m_featureGroupIndexes;
-	}
-	
-	//This file only contains the weights for global model.
-//	public double[] loadGlobalWeights(String filename){
-//		double[] weights = null;
-//		try{
-//			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-//			String[] features = reader.readLine().split(",");//Group information of each feature.
-//			reader.close();
-//			
-//			weights = new double[features.length];
-//			for(int i=0; i<features.length; i++)
-//				weights[i] = Double.valueOf(features[i]);
-//			
-//		} catch(IOException e){
-//			System.err.format("Fail to open file %s.\n", filename);
-//		}
-//		return weights;
-//	}
-	
-	//Load global model from file, each line is as follows: feature, feature weight.
-	public void loadGlobalWeights(String filename){
-		try{
-			String line, feature = null;
-			double weight = 0;
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] featureWeight;
-			
-			while((line = reader.readLine()) != null){
-				featureWeight = line.split(":");//Group information of each feature.
-				if(featureWeight.length == 2)
-//					feature = featureWeight[0];
-					weight = Double.valueOf(featureWeight[1]);
-//					if(!feature.equals("bais"))
-//						m_featureNames.add(feature);//Add the feature to the feature list.
-					m_globalWeights.add(weight);//Add the global weight.
+		for(int i=0; i<reviews.size(); i++) {
+			if (i<train) {
+				reviews.get(i).setType(rType.TRAIN);
+				m_trainSize ++;
+			} else if (i<adapt) {
+				reviews.get(i).setType(rType.ADAPTATION);
+				m_adaptSize ++;
+			} else {
+				reviews.get(i).setType(rType.TEST);
+				m_testSize ++;
 			}
-			System.out.format("%d weigths are loaded.\n", m_globalWeights.size());
-			reader.close();
-		} catch(IOException e){
-			System.err.format("Fail to open file %s.\n", filename);
 		}
 	}
-	
-	//Transfer the global weights to array and return it.
-	public double[] getGlobalWeights(){
-		double[] weights = new double[m_globalWeights.size()];
-		for(int i=0; i<m_globalWeights.size(); i++)
-			weights[i] = m_globalWeights.get(i);
-		return weights;
-	}
+
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
+		System.out.format("[Info]Training size: %d, adaptation size: %d, and testing size: %d\n", m_trainSize, m_adaptSize,m_testSize);
 		return m_users;
 	}
 	
-	//Overwrite the LoadCV function since we need the stat of the features from the training data of global model.
-                   
-	public boolean LoadCVStat(String filename){
-		if(filename==null || filename.isEmpty())
-			return false;
+// Added by Lin: Load the svd file to get the low dim representation of users.
+	public void loadSVDFile(String filename){
 		try{
-			String line, feature;
-			String[] fvStat;
-			int index;
-			double DF;
-//			m_features = new String[5000];
-			m_DFs = new double[5000]; //Assign the space beforehand.
+			// Construct the <userID, user> map first.
+			int count = 0;
+			HashMap<String, double[]> IDLowDimMap = new HashMap<String, double[]>();
 			
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			int skip = 3;
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line, userID;
+			String[] strs;
+			double[] lowDims;
+			//Skip the first three lines.
+			while(skip-- > 0)
+				reader.readLine();
 			while((line = reader.readLine()) != null){
-				fvStat = line.split(",");
-				//Split the string and get the DF of one feature.
-				if(fvStat.length == 5){
-					feature = fvStat[1];
-					index=super.m_featureNames.indexOf(feature);
-					DF = Double.valueOf(fvStat[2]);
-//					m_features[index] = feature;
-					m_DFs[index] = DF;
-//					m_featureNameIndex.put(feature, index);
-//					m_featureStat.put(feature, new _stat(m_classNo));
+				strs = line.split("\\s+");
+				userID = strs[0];
+				lowDims = new double[strs.length - 1];
+				for(int i=1; i<strs.length; i++)
+					lowDims[i-1] = Double.valueOf(strs[i]);
+				IDLowDimMap.put(userID, lowDims);
+				count++;
+			}
+			// Currently, there are missing low dimension representation of users.
+			for(_User u: m_users){
+				if(IDLowDimMap.containsKey(u.getUserID()))
+					u.setLowDimProfile(IDLowDimMap.get(u.getUserID()));
+				else {
+					System.out.println("[Warning]" + u.getUserID() + " : low dim profile missing.");
+					u.setLowDimProfile(new double[11]);
 				}
 			}
 			reader.close();
-//			m_featureNames = new ArrayList<String>(Arrays.asList(m_features));
-			System.out.format("%d feature stats are loaded.\n", m_DFs.length);
-			return true;
-		}
-		catch(IOException e){
+			System.out.format("Ther are %d users and %d users' low dimension profile are loaded.\n", m_users.size(), count);
+		} catch (IOException e){
 			e.printStackTrace();
-			return false;
 		}
-	}
-	
-	//Overwrite the setting function with stat from global data set.
-	public void setFeatureValues(int N, String fValue, int norm){
-		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents in the corpus.
-		if (fValue.equals("TF")){
-			//the original feature is raw TF
-			for (int i = 0; i < docs.size(); i++) {
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				double avgIDF = 0;
-				for (_SparseFeature sf : sfs) {
-					double DF = m_DFs[sf.getIndex()];
-					double IDF = Math.log((N + 1) / DF); //The N is the total number of docs in training data.
-					avgIDF += IDF;
-				}
-				//compute average IDF
-				temp.setAvgIDF(avgIDF/sfs.length);
-			}
-		} else if (fValue.equals("TFIDF")) {
-			for (int i = 0; i < docs.size(); i++) {
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				double avgIDF = 0;
-				for (_SparseFeature sf : sfs) {
-					double TF =  Math.log10(sf.getValue())+ 1 ;// normalized TF
-					double DF = m_DFs[sf.getIndex()];
-					double IDF = Math.log10((25265)/DF)+ 1;
-//					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
-//					double TF = sf.getValue();
-//					double DF = m_DFs[sf.getIndex()];
-//					double IDF = Math.log((N + 1) / DF);
-					double TFIDF = TF * IDF;
-					sf.setValue(TFIDF);
-					avgIDF += IDF;
-//					(1+Math.log10(r.m_VSM.get(key)))*(1+Math.log10(Config.NumberOfReviewsInTraining/m_Vocabs.get(key).getValue())));
-				}
-				//compute average IDF
-				temp.setAvgIDF(avgIDF/sfs.length);
-			}
-		} else if (fValue.equals("BM25")) {
-			double k1 = 1.5; // [1.2, 2]
-			double b = 0.75; // (0, 1000]
-			// Iterate all the documents to get the average document length.
-			double navg = 0;
-			for (int k = 0; k < N; k++)
-				navg += docs.get(k).getTotalDocLength();
-			navg /= N;
-
-			for (int i = 0; i < docs.size(); i++) {
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				double n = temp.getTotalDocLength() / navg, avgIDF = 0;
-				for (_SparseFeature sf : sfs) {
-					String featureName = m_featureNames.get(sf.getIndex());
-					_stat stat = m_featureStat.get(featureName);
-					double TF = sf.getValue();
-					double DF = Utils.sumOfArray(stat.getDF());
-					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
-					double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
-					sf.setValue(BM25);
-					avgIDF += IDF;
-				}
-				//compute average IDF
-				temp.setAvgIDF(avgIDF/sfs.length);
-			}
-		} else if (fValue.equals("PLN")) {
-			double s = 0.5; // [0, 1]
-			// Iterate all the documents to get the average document length.
-			double navg = 0;
-			for (int k = 0; k < N; k++)
-				navg += docs.get(k).getTotalDocLength();
-			navg /= N;
-
-			for (int i = 0; i < docs.size(); i++) {
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				double n = temp.getTotalDocLength() / navg, avgIDF = 0;
-				for (_SparseFeature sf : sfs) {
-					String featureName = m_featureNames.get(sf.getIndex());
-					_stat stat = m_featureStat.get(featureName);
-					double TF = sf.getValue();
-					double DF = Utils.sumOfArray(stat.getDF());
-					double IDF = Math.log((N + 1) / DF);
-					double PLN = (1 + Math.log(1 + Math.log(TF)) / (1 - s + s * n)) * IDF;
-					sf.setValue(PLN);
-					avgIDF += IDF;
-				}
-				//compute average IDF
-				temp.setAvgIDF(avgIDF/sfs.length);
-			}
-		} else {
-			//The default value is just keeping the raw count of every feature.
-			System.out.println("No feature value is set, keep the raw count of every feature.");
-		}
-		
-		//rank the documents by product and time in all the cases
-		//Collections.sort(m_corpus.getCollection());
-		if (norm == 1){
-			for(_Doc d:docs)			
-				Utils.L1Normalization(d.getSparse());
-		} else if(norm == 2){
-			for(_Doc d:docs)			
-				Utils.L2Normalization(d.getSparse());
-		} else {
-			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
-		}
-		
-		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 }

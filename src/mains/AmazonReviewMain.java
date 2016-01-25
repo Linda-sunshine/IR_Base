@@ -1,16 +1,16 @@
 package mains;
 
-import influence.PageRank;
-
 import java.io.IOException;
 import java.text.ParseException;
 
-import structures._Corpus;
 import Analyzer.jsonAnalyzer;
 import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.NaiveBayesEM;
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.NaiveBayes;
 import Classifier.supervised.SVM;
+import influence.PageRank;
+import structures._Corpus;
 
 public class AmazonReviewMain {
 
@@ -21,15 +21,17 @@ public class AmazonReviewMain {
 		int lengthThreshold = 10; //Document length threshold
 		
 		//"TF", "TFIDF", "BM25", "PLN"
-		String featureValue = "BM25"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
-		int norm = 2;//The way of normalization.(only 1 and 2)
+		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
+		int norm = 0;//The way of normalization.(only 1 and 2)
 		int CVFold = 10; //k fold-cross validation
 	
 		//"SUP", "SEMI", "FV", "ASPECT"
-		String style = "FV";
+		String style = "SEMI";
 		
 		//"NB", "LR", "SVM", "PR"
-		String classifier = "SVM"; //Which classifier to use.
+		String classifier = "NB-EM"; //Which classifier to use.
+		//"GF", "NB-EM"
+		String model = "NB-EM";
 		double C = 1.0;
 //		String modelPath = "./data/Model/";
 		String debugOutput = null; //"data/debug/LR.output";
@@ -50,7 +52,7 @@ public class AmazonReviewMain {
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model
 		
-		String pattern = String.format("%dgram_%s_%s", Ngram, featureValue, featureSelection);
+		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
 		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
 		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
 		String vctFile = String.format("data/Fvs/vct_%s_tablet_small.dat", pattern);		
@@ -109,8 +111,17 @@ public class AmazonReviewMain {
 				
 			} else System.out.println("Classifier has not developed yet!");
 		} else if (style.equals("SEMI")) {
-			GaussianFields mySemi = new GaussianFields(corpus, classifier, C);
-			mySemi.crossValidation(CVFold, corpus);
+			if (model.equals("GF")) {
+				System.out.println("Start Gaussian Field, wait...");
+				GaussianFields mySemi = new GaussianFields(corpus, classifier, C);
+				mySemi.crossValidation(CVFold, corpus); 
+			} else if (model.equals("NB-EM")) {
+				corpus.setUnlabeled();
+				
+				System.out.println("Start Naive Bayes with EM, wait...");
+				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
+				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
+			}
 		} else if (style.equals("FV")) {
 			corpus.save2File(vctFile);
 			System.out.format("Vectors saved to %s...\n", vctFile);
