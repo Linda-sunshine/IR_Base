@@ -12,7 +12,7 @@ import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.jsonAnalyzer;
 
-public class SanityCheckMain {
+public class MySanityCheckMain {
 	//In this main function, I want to check the purity given by Random, BoW, Topic vectors, BoW+Topic 
 	//to see in which situation the similarity works and why? 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{

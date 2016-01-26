@@ -13,7 +13,7 @@ import structures._Corpus;
 import structures._Doc;
 import utils.Utils;
 /***
- * Learning to rank for different cluster of queries.
+ * Learning to rank for different clusters of queries.
  * @author lin
  */
 public class L2RWithQueryClustering extends L2RMetricLearning {
@@ -68,9 +68,8 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 			for(_Doc d: m_trainSet)
 				count[d.getYLabel()]++;
 			System.out.format("There are %d (pos:%d, neg:%d) training documents in the corpus.\n", m_trainSet.size(), count[1], count[0]);
-			L2RModelTraining();
-			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
-			m_allWeights[cNo] = ;
+			super.L2RModelTraining();
+			m_allWeights[cNo] = getWeights();
 		}
 		return 0;
 	}

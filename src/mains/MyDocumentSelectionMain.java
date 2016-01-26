@@ -8,19 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
-
 import Classifier.supervised.SVM;
 import structures._Corpus;
 import structures._Doc;
-
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import clustering.KMeansAlg;
 import clustering.KMeansAlg4Query;
 
@@ -45,7 +39,7 @@ import utils.Utils;
 import cc.mallet.types.Instance;
 import cc.mallet.types.InstanceList;
 
-public class DocumentSelectionMain {
+public class MyDocumentSelectionMain {
 	
 	
 	public static void LCSWriteRead(_Corpus c){
@@ -274,7 +268,7 @@ public class DocumentSelectionMain {
 //		((AspectAnalyzer) analyzer).calcAvgSimilarities();
 //		((AspectAnalyzer) analyzer).writeAvgSimilarity(SimFile);
 		
-		//Load the average simialrity into corpus.
+		//Load the average similarity into corpus.
 		((AspectAnalyzer) analyzer).loadAvgSimilarity(SimFile);
 		
 		/***kmeans clustering***/

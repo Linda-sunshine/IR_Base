@@ -16,7 +16,7 @@ import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 
-public class YelpReviewMain {
+public class MyYelpReviewMain {
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 2; //The default value is unigram. 

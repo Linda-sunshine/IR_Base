@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import clustering.KMeansAlg;
+import structures.L2RParameter;
 import structures.Parameter;
 import structures._Corpus;
 import structures._Doc;
@@ -26,9 +27,9 @@ import Classifier.supervised.SVM;
 /**
  * @author Lin
  */
-public class Execution4Clustering  {
+public class MyExecution4Clustering  {
 	static public void main(String[] args) throws IOException, ParseException {
-		Parameter param = new Parameter(args);
+		L2RParameter param = new L2RParameter(args);
 		System.out.println(args);
 		System.out.println(param.toString());
 		
@@ -52,7 +53,7 @@ public class Execution4Clustering  {
 		double C = 1.0;
 		String method = "RW-L2R";
 		String multipleLearner = "SVM";
-		String debugOutput = String.format("data/debug/%s_topK%d_noCluster%d_debug.output", method, param.m_topK, param.m_noC);
+//		String debugOutput = String.format("data/debug/%s_topK%d_noCluster%d_debug.output", method, param.m_topK, param.m_noC);
 
 		//String stnModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_stnModel:null;
 		//String posModel = (param.m_model.equals("HTMM")||param.m_model.equals("LRHTMM"))?param.m_posModel:null;
@@ -200,11 +201,11 @@ public class Execution4Clustering  {
 			((L2RMetricLearning) mySemi).setLambda(param.m_lambda4L2R);
 			((L2RMetricLearning) mySemi).setShrinkage(param.m_shrinkage);
 			((L2RMetricLearning) mySemi).setStepSize(param.m_stepSize);
-			((L2RMetricLearning) mySemi).setWindowSize(param.m_windowSize);
-			((L2RMetricLearning) mySemi).setMaxIter(param.m_maxIter);
+//			((L2RMetricLearning) mySemi).setWindowSize(param.m_windowSize);
+//			((L2RMetricLearning) mySemi).setMaxIter(param.m_maxIter);
 			
 			mySemi.setSimilarity(simFlag);
-			mySemi.setDebugOutput(debugOutput);
+//			mySemi.setDebugOutput(debugOutput);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(LCSMap);
 			System.out.print(String.format("------Parameters--------\n" +

@@ -63,11 +63,17 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	boolean m_aspFlag=false;
+	boolean m_aspFlag = false; // Whether we use the absolute value or binary value.
 		
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+	}
+	
+	//Added by Lin.
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
 	}
 	
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) 
@@ -301,6 +307,32 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			/****Roll back here!!******/
 			rollBack(spVct, y);
 			return false;
+		}
+	}
+	
+	// Added by Lin for getting the average similarity of each document.
+	public void loadAvgSimilarity(String filename){
+		if(filename == null || filename.isEmpty())
+			return;
+		try{
+			String line;
+			int index = 0;
+			String[] avgStrs;
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			ArrayList<_Doc> documents = m_corpus.getCollection();
+			while((line = reader.readLine()) != null){
+				avgStrs = line.split(",");
+				if(avgStrs.length == 3){
+					documents.get(index).setAvgBoW(Double.valueOf(avgStrs[0]));
+					documents.get(index).setAvgTP(Double.valueOf(avgStrs[1]));
+					documents.get(index).setAvgJcd(Double.valueOf(avgStrs[2]));
+				}
+				index++;
+			}
+			reader.close();
+			System.out.format("Read %d sets of similarity into collection.\n", index);
+		} catch(IOException e){
+			System.err.format("Fail to open file %s.", filename);
 		}
 	}
 	

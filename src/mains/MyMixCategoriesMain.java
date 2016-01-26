@@ -19,7 +19,7 @@ import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 
 import Classifier.supervised.SVM;
 
-public class MixCategoriesMain {
+public class MyMixCategoriesMain {
 	
 	public static void main(String[] args) throws IOException, ParseException {	
 				
@@ -154,10 +154,10 @@ public class MixCategoriesMain {
 						learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg, 
 						topK, noiseRatio, ranker, multithread_LR);
 			}
-			mySemi.setSimiMethod("T");
+//			mySemi.setSimiMethod("T");
 			mySemi.setDebugOutput(debugOutput);
 			mySemi.crossValidation(CVFold, c);
-			mySemi.printInfo();
+//			mySemi.printInfo();
 		} else if (style.equals("SUP")) {
 			//perform supervised learning
 			System.out.println("Start SVM, wait...");

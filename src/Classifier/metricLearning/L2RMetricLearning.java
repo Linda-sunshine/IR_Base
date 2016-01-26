@@ -403,8 +403,12 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_queryRatio; // added by Lin, control the ratio of the class sentiment.
 	double m_documentRatio; // added by Lin, controlt the ratio of the document selection for each query.
 	ArrayList<ArrayList<_Doc>> m_clusters;
-		
-	//In lambdaRank, the tradeoff = lambda.added by Lin.
+	
+	// Get the trained weights from learning to rank.
+	public double[] getWeights(){
+		return m_weights;
+	}
+	// In lambdaRank, the tradeoff = lambda.added by Lin.
 	public void setLambda(double lambda){
 		m_tradeoff = lambda;
 	}
