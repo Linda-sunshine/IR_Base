@@ -1,14 +1,8 @@
 package Classifier.metricLearning;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-
-import Classifier.supervised.SVM;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Model;
-import Classifier.supervised.liblinear.SolverType;
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;

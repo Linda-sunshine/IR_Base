@@ -11,13 +11,7 @@ import java.util.Random;
 import Classifier.supervised.SVM;
 import structures._Corpus;
 import structures._Doc;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
-import clustering.KMeansAlg;
 import clustering.KMeansAlg4Query;
-
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
@@ -26,10 +20,8 @@ import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.L2RWithQueryClustering;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
-
 import Classifier.semisupervised.LCSReader;
 import Classifier.semisupervised.LCSWriter;
-import structures._Doc;
 import structures._Pair;
 import topicmodels.LDA_Gibbs;
 import topicmodels.pLSA;
@@ -88,33 +80,32 @@ public class MyDocumentSelectionMain {
 		}
 	}
 	
-	public static void KmeansWrite(_Corpus c, int km){
-		//kmeans clutering among all review documents.
-		for (int k = 2; k <= 5; k++) {
-			KMeansAlg kmeans = new KMeansAlg(c, k);
-			kmeans.train(c.getCollection());
-			ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
-
-			// Write out the results of clustering.
-			for (int i = 0; i < clusters.size(); i++) {
-				int[] stat = new int[5];
-				String filename = String.format("./data/kmeans/%dmeans_cluster_%d", k, i);
-				try{
-					PrintWriter printer = new PrintWriter(new File(filename));
-					for (_Doc d : clusters.get(i)) {
-						stat[d.getYLabel()]++;
-						printer.write(d.getYLabel() + "\n" + d.getSource() + "\n" + "******\n");
-					}
-					for (int j = 0; j < stat.length; j++)
-						printer.write(String.format("classNo: %d, count: %d, percentage: %.3f", j, stat[j], (double)j/(double)clusters.get(i).size()));
-					printer.close();
-				} catch(IOException e){
-					e.printStackTrace();
-				}
-			}
-		}
-		
-	}
+//	public static void KmeansWrite(_Corpus c, int km){
+//		//kmeans clutering among all review documents.
+//		for (int k = 2; k <= 5; k++) {
+//			KMeansAlg kmeans = new KMeansAlg(c, k);
+//			kmeans.train(c.getCollection());
+//			ArrayList<ArrayList<_Doc>> clusters = kmeans.getClustersDocs();
+//
+//			// Write out the results of clustering.
+//			for (int i = 0; i < clusters.size(); i++) {
+//				int[] stat = new int[5];
+//				String filename = String.format("./data/kmeans/%dmeans_cluster_%d", k, i);
+//				try{
+//					PrintWriter printer = new PrintWriter(new File(filename));
+//					for (_Doc d : clusters.get(i)) {
+//						stat[d.getYLabel()]++;
+//						printer.write(d.getYLabel() + "\n" + d.getSource() + "\n" + "******\n");
+//					}
+//					for (int j = 0; j < stat.length; j++)
+//						printer.write(String.format("classNo: %d, count: %d, percentage: %.3f", j, stat[j], (double)j/(double)clusters.get(i).size()));
+//					printer.close();
+//				} catch(IOException e){
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//	}
 	
 	//Print out randomly selected 100 reviews files.
 	public static void print100Files(Analyzer analyzer, String fvStatFile){
