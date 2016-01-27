@@ -426,12 +426,25 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			System.out.println("creating directory" + childTopicFolder);
 			childTopicFolder.mkdir();
 		}
+		
+		File parentPhiFolder = new File(filePrefix + "parentPhi");
+		File childPhiFolder = new File(filePrefix + "childPhi");
+		if (!parentPhiFolder.exists()) {
+			System.out.println("creating directory" + parentPhiFolder);
+			parentPhiFolder.mkdir();
+		}
+		if (!childPhiFolder.exists()) {
+			System.out.println("creating directory" + childPhiFolder);
+			childPhiFolder.mkdir();
+		}
 
 		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
 				printParentTopicAssignment((_ParentDoc) d, parentTopicFolder);
+				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printChildTopicAssignment((_ChildDoc) d, childTopicFolder);
+//				printChildPhi((_ChildDoc)d, childPhiFolder);
 			}
 
 		}
@@ -442,7 +455,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
-
+		
+		printEntropy(filePrefix);
 	}
 
 	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
@@ -561,6 +575,51 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	}
 
+	public void printParentPhi(_ParentDoc d, File phiFolder){
+		String parentPhiFileName = d.getName()+".txt";
+		_SparseFeature[] fv = d.getSparse();
+		
+		try{
+			PrintWriter parentPW = new PrintWriter(new File(phiFolder, parentPhiFileName));
+		
+			for(int n=0; n<fv.length; n++){
+				int index = fv[n].getIndex();
+				String featureName = m_corpus.getFeature(index);
+				parentPW.print(featureName + ":\t");
+				for(int k=0; k<number_of_topics; k++)
+					parentPW.print(d.m_phi[n][k]+"\t");
+				parentPW.println();
+			}
+			parentPW.flush();
+			parentPW.close();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+	}
+	
+	protected void printEntropy(String filePrefix){
+		String entropyFile = filePrefix+"entropy.txt";
+		boolean logScale = true;
+		
+		try{
+			PrintWriter entropyPW = new PrintWriter(new File(entropyFile));
+			
+			for(_Doc d: m_trainSet){
+				double entropyValue = 0.0;
+				entropyValue = Utils.entropy(d.m_topics, logScale);
+				entropyPW.print(d.getName()+"\t"+entropyValue);
+				entropyPW.println();
+			}
+			entropyPW.flush();
+			entropyPW.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+		
+		
+	} 
+
 	//p(w)= \sum_z p(w|z)p(z)
 	protected double calLogLikelihoodByIntegrateTopics(int iter){
 		double logLikelihood = 0.0;
@@ -596,7 +655,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		
 		return docLogLikelihood;
 	}
-	
 	
 	// p(w, z)=p(w|z)p(z) multinomial-dirichlet
 	protected void calLogLikelihoodByIntegrateThetaPhi(int iter) {
