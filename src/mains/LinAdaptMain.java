@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdaptFirstOrder;
+import Classifier.supervised.modelAdaptation.RegLR.asyncCoRegLRFirstOrder;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -48,7 +48,8 @@ public class LinAdaptMain {
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
-		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
+//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
+//				featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
 		//Create an instance of Regularized LogitReg model.
 //		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
@@ -56,6 +57,16 @@ public class LinAdaptMain {
 		//Create an instance of asynchronized Regularized LogitReg model.
 //		asyncRegLR adaptation = new asyncRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
+		//Create an instance of Collaboratively Regularized LogitReg model.
+//		CoRegLR adaptation = new CoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+		
+		//Create an instance of zero-order Collaboratively Regularized LogitReg model.
+//		asyncCoRegLR adaptation = new asyncCoRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, topKNeighbors);
+
+		//Create an instance of first-order Collaboratively Regularized LogitReg model.
+		asyncCoRegLRFirstOrder adaptation = new asyncCoRegLRFirstOrder(classNumber, analyzer.getFeatureSize(), 
+				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
+
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
 		int fDim = 3; // xij contains <bias, bow, svd_sim>
@@ -67,9 +78,11 @@ public class LinAdaptMain {
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 //		adaptation.setTestMode(TestMode.TM_batch);
-//		adaptation.setR1TradeOff(eta1);
 //		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.setR2TradeOffs(eta3, eta4);
+
+//		adaptation.setR1TradeOff(eta1);
+		adaptation.setTradeOffs(1.0, 0.1);
 		
 		adaptation.train();
 		adaptation.test();

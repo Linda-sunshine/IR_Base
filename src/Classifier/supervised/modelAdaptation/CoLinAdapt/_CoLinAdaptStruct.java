@@ -6,6 +6,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import Classifier.supervised.modelAdaptation.CoAdaptStruct;
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;
@@ -14,11 +15,7 @@ import structures._User;
  * @author Hongning Wang
  * Add the shared structure for efficiency purpose
  */
-public class _CoLinAdaptStruct extends _LinAdaptStruct {
-	public enum SimType {
-		ST_BoW,
-		ST_SVD
-	}
+public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct {
 	
 	static double[] sharedA;//this stores shared transformation operation across all uesrs	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
@@ -31,10 +28,12 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 		m_reverseNeighbors = new LinkedList<_RankItem>();
 	}
 	
+	@Override
 	public void addNeighbor(int id, double similarity) {
 		m_neighbors.add(new _RankItem(id, similarity));
 	}
 	
+	@Override
 	public void addReverseNeighbor(int id, double similarity) {
 		for(_RankItem it:m_neighbors) {//we need to check this condition to avoid duplicates
 			if (it.m_index == id)
@@ -44,17 +43,12 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct {
 		m_reverseNeighbors.add(new _RankItem(id, similarity));
 	}
 	
-	public double getSimilarity(_CoLinAdaptStruct user, SimType sType) {
-		if (sType == SimType.ST_BoW)
-			return user.m_user.getBoWSim(m_user);
-		else
-			return user.m_user.getSVDSim(m_user);
-	}
-	
+	@Override
 	public Collection<_RankItem> getNeighbors() {
 		return m_neighbors;
 	}
 	
+	@Override
 	public Collection<_RankItem> getReverseNeighbors() {
 		return m_reverseNeighbors;
 	}

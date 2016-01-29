@@ -194,6 +194,15 @@ public class Utils {
 		return Math.sqrt(dotProduct(a,a));
 	}
 	
+	public static double L2Norm(double[] a, double[] b) {
+		if (a.length != b.length)
+			return Double.NaN;
+		double diff=0;
+		for(int i=0; i<a.length; i++)
+			diff += (a[i]-b[i])*(a[i]-b[i]);
+		return diff;
+	}
+	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
 	public static double logistic(double[] fv, double[] w){
 		double sum = w[0];//start from bias term

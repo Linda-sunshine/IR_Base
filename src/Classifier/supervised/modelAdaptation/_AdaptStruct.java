@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier.supervised.modelAdaptation.CoLinAdapt;
+package Classifier.supervised.modelAdaptation;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,15 +10,20 @@ import java.util.LinkedList;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._Review;
-import structures._User;
 import structures._Review.rType;
+import structures._User;
 
 /**
  * @author Hongning Wang
  * shared adaptation structure
  */
 public class _AdaptStruct {
-
+	public enum SimType {
+		ST_BoW,
+		ST_SVD,
+		ST_Rand
+	}
+	
 	protected int m_id = 0; // by default all users have the same user ID
 	protected _User m_user; // unit to store train/adaptation/test data and final personalized model
 	
@@ -74,6 +79,25 @@ public class _AdaptStruct {
 			m_adaptCache = new LinkedList<_Review>();
 		else
 			m_adaptCache.clear();				
+	}
+	
+	public _User getUser() {
+		return m_user;
+	}	
+	
+	public double getPWeight(int n) {
+		return m_user.getPersonalizedModel()[n];
+	}
+	
+	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+		if (sType == SimType.ST_BoW)
+			return user.getUser().getBoWSim(m_user);
+		else if (sType == SimType.ST_SVD)
+			return user.getUser().getSVDSim(m_user);
+		else if (sType == SimType.ST_Rand)
+			return Math.random();
+		else
+			return 0;
 	}
 	
 	//return all the reviews
