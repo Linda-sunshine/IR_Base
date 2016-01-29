@@ -256,22 +256,22 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			}
 			
 			
-			//inject some random neighbors 
-			int j = 0;
-			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
-				if (i!=j) {
-					dj = m_trainSet.get(j);
-					if (Math.random()<0.02 && !neighbors.contains(dj)) {
-						neighbors.add(dj);
-						if (di.getYLabel() == dj.getYLabel())
-							relevant ++;
-						else
-							irrelevant ++;
-					}
-				}
-				
-				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
-			}
+//			//inject some random neighbors 
+//			int j = 0;
+//			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
+//				if (i!=j) {
+//					dj = m_trainSet.get(j);
+//					if (Math.random()<0.02 && !neighbors.contains(dj)) {
+//						neighbors.add(dj);
+//						if (di.getYLabel() == dj.getYLabel())
+//							relevant ++;
+//						else
+//							irrelevant ++;
+//					}
+//				}
+//				
+//				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
+//			}
 			
 			if (relevant==0 || irrelevant==0 
 				|| (di.getYLabel() == 1 && negQ < 1.1*posQ)){

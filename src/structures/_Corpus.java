@@ -258,4 +258,11 @@ public class _Corpus {
 		else
 			return String.format("%d\t%d", j, i);
 	}
+	
+	// Added by Lin: assign the masks in order to get rid of randomness for each document.
+	public void mastInOrder(int k){
+		for(int i=0; i< m_mask.length; i++){
+			this.m_mask[i] = i % k;
+		}
+	}
 }

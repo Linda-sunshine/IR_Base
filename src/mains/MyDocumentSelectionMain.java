@@ -210,7 +210,7 @@ public class MyDocumentSelectionMain {
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.			
 		} else{
 			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
-//			((DocAnalyzer) analyzer).setReleaseContent(false);
+			((DocAnalyzer) analyzer).setReleaseContent(false);
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
@@ -260,7 +260,7 @@ public class MyDocumentSelectionMain {
 //		((AspectAnalyzer) analyzer).writeAvgSimilarity(SimFile);
 		
 		//Load the average similarity into corpus.
-		((AspectAnalyzer) analyzer).loadAvgSimilarity(SimFile);
+//		((AspectAnalyzer) analyzer).loadAvgSimilarity(SimFile);
 		
 		/***kmeans clustering***/
 		int clusterNo = 5;
@@ -269,8 +269,9 @@ public class MyDocumentSelectionMain {
 		kmeans.train(c.getCollection());
 		kmeans.setDocsClusterNo();
 		
-//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", noClusters);
-//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", noClusters);
+		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", clusterNo);
+		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", clusterNo);
+//		kmeans.tranferClusters2Docs();
 //		kmeans.writeStat(kmeansStatFile);
 //		kmeans.writeContent(kmeansContentFile);
 		c.mapLabels(4); // Do kmeans first, then map the labels.

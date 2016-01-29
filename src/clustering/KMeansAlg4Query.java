@@ -107,7 +107,7 @@ public class KMeansAlg4Query extends KMeansAlg{
 			for(int i=0; i< m_clustersDocs.size(); i++){
 				printer.format("=======================%dst cluster========================\n", i);
 				for(_Doc d: m_clustersDocs.get(i)){
-					printer.write("---------------------------------------------------------\n");
+					printer.format("-----------------------label: %d-----------------------------------\n", d.getYLabel());
 					printer.write(d.getSource()+"\n");
 				}
 			}

@@ -375,7 +375,10 @@ public class Utils {
 	}
 	
 	public static double cosine(double[] a, double[] b) {
-		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
+		if(L2Norm(a) == 0 || L2Norm(b) == 0)
+			return 0;
+		else
+			return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
 	}
 	
 	//Calculate the similarity between two sparse vectors.

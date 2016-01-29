@@ -142,63 +142,63 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		return m_difference/m_U;
 	}
 	
-	//The test for random walk algorithm.
-	public double test(){
-		/***Construct the nearest neighbor graph****/
-		constructGraph(false);
-		
-		if (m_pred_last==null || m_pred_last.length<m_U)
-			m_pred_last = new double[m_U]; //otherwise we can reuse the current memory
-		
-		//record the starting point
-		for(int i=0; i<m_U; i++)
-			m_pred_last[i] = m_nodeList[i].m_pred;//random walk starts from multiple learner
-		
-		/***use random walk to solve matrix inverse***/
-		System.out.println("Random walk starts:");
-		int iter = 0;
-		double diff = 0, accuracy;
-		do {
-			if (m_weightedAvg)
-				accuracy = randomWalkByWeightedSum();	
-			else
-				accuracy = randomWalkByMajorityVote();
-			
-			diff = updateFu();
-			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
-		} while(diff > m_delta && iter<50);//maximum 50 iterations 
-		
-		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
-		SimilarityCheck();
-		checkSimilarityVariance();
-		/***get some statistics***/
-		for(int i = 0; i < m_U; i++){
-			for(int j=0; j<m_classNo; j++)
-				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
-		}
-		
-		/***evaluate the performance***/
-		double acc = 0;
-		int pred, ans;
-		for(int i = 0; i < m_U; i++) {
-			//pred = getLabel(m_fu[i]);
-			pred = getLabel(m_nodeList[i].m_pred);
-			ans = m_testSet.get(i).getYLabel();
-			m_TPTable[pred][ans] += 1;
-			
-			if (pred != ans) {
-				if (m_debugOutput!=null)
-					debug(m_testSet.get(i));
-			} else {
-				if (m_debugOutput!=null && Math.random()<0.02)
-					debug(m_testSet.get(i));
-				acc ++;
-			}
-		}
-		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
-		
-		return acc/m_U;
-	}
+//	//The test for random walk algorithm.
+//	public double test(){
+//		/***Construct the nearest neighbor graph****/
+//		constructGraph(false);
+//		
+//		if (m_pred_last==null || m_pred_last.length<m_U)
+//			m_pred_last = new double[m_U]; //otherwise we can reuse the current memory
+//		
+//		//record the starting point
+//		for(int i=0; i<m_U; i++)
+//			m_pred_last[i] = m_nodeList[i].m_pred;//random walk starts from multiple learner
+//		
+//		/***use random walk to solve matrix inverse***/
+//		System.out.println("Random walk starts:");
+//		int iter = 0;
+//		double diff = 0, accuracy;
+//		do {
+//			if (m_weightedAvg)
+//				accuracy = randomWalkByWeightedSum();	
+//			else
+//				accuracy = randomWalkByMajorityVote();
+//			
+//			diff = updateFu();
+//			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
+//		} while(diff > m_delta && iter<50);//maximum 50 iterations 
+//		
+//		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
+//		SimilarityCheck();
+//		checkSimilarityVariance();
+//		/***get some statistics***/
+//		for(int i = 0; i < m_U; i++){
+//			for(int j=0; j<m_classNo; j++)
+//				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
+//		}
+//		
+//		/***evaluate the performance***/
+//		double acc = 0;
+//		int pred, ans;
+//		for(int i = 0; i < m_U; i++) {
+//			//pred = getLabel(m_fu[i]);
+//			pred = getLabel(m_nodeList[i].m_pred);
+//			ans = m_testSet.get(i).getYLabel();
+//			m_TPTable[pred][ans] += 1;
+//			
+//			if (pred != ans) {
+//				if (m_debugOutput!=null)
+//					debug(m_testSet.get(i));
+//			} else {
+//				if (m_debugOutput!=null && Math.random()<0.02)
+//					debug(m_testSet.get(i));
+//				acc ++;
+//			}
+//		}
+//		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+//		
+//		return acc/m_U;
+//	}
 	
 	@Override
 	protected void debug(_Doc d) {
@@ -377,6 +377,73 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		for(int i=0; i<m_kFold; i++){
 			System.out.format("%.4f\t%.4f\t%.4f\t%.4f\t\n", m_simiStat[i][0], m_simiStat[i][1], m_simiStat[i][2], m_simiStat[i][3]);
 		}
+	}
+	
+	
+	// Added by Lin to test if clustering works for l2r.
+	//The test for random walk algorithm.
+	public double test(){
+		/***Construct the nearest neighbor graph****/
+		constructGraph(false);
+		
+		if (m_pred_last==null || m_pred_last.length<m_U)
+			m_pred_last = new double[m_U]; //otherwise we can reuse the current memory
+		
+		//record the starting point
+		for(int i=0; i<m_U; i++)
+			m_pred_last[i] = m_nodeList[i].m_pred;//random walk starts from multiple learner
+		
+		/***use random walk to solve matrix inverse***/
+		System.out.println("Random walk starts:");
+		int iter = 0;
+		double diff = 0, accuracy;
+		do {
+			if (m_weightedAvg)
+				accuracy = randomWalkByWeightedSum();	
+			else
+				accuracy = randomWalkByMajorityVote();
+			
+			diff = updateFu();
+			System.out.format("Iteration %d, converge to %.3f with accuracy %.4f...\n", ++iter, diff, accuracy);
+		} while(diff > m_delta && iter<50);//maximum 50 iterations 
+		
+		/***check the purity of newly constructed neighborhood graph after random walk with ground-truth labels***/
+		SimilarityCheck();
+		checkSimilarityVariance();
+		/***get some statistics***/
+		for(int i = 0; i < m_U; i++){
+			for(int j=0; j<m_classNo; j++)
+				m_pYSum[j] += Math.exp(-Math.abs(j-m_nodeList[i].m_pred));			
+		}
+		
+		/***evaluate the performance***/
+		double acc = 0;
+		int pred, ans, clusterNo;
+		double[] accStat = new double[10];
+		for(int i = 0; i < m_U; i++) {
+			//pred = getLabel(m_fu[i]);
+			pred = getLabel(m_nodeList[i].m_pred);
+			ans = m_testSet.get(i).getYLabel();
+			clusterNo = m_testSet.get(i).getCluseterNo();
+			m_TPTable[pred][ans] += 1;
+			if(pred == ans)
+				accStat[clusterNo*2]++;
+			accStat[clusterNo*2+1]++;
+			
+			if (pred != ans) {
+				if (m_debugOutput!=null)
+					debug(m_testSet.get(i));
+			} else {
+				if (m_debugOutput!=null && Math.random()<0.02)
+					debug(m_testSet.get(i));
+				acc ++;
+			}
+		}
+		m_precisionsRecalls.add(calculatePreRec(m_TPTable));
+		for(int i=0; i<5 ;i++)
+			System.out.format("%.4f\t", accStat[i*2]/accStat[i*2+1]);
+		System.out.println();
+		return acc/m_U;
 	}
 //	public void printInfo(){
 //		System.out.format("Similarity selection method: %s, similarity included: %s\n", m_simiMethod, m_simFlag);
