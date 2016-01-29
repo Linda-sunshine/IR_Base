@@ -10,12 +10,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-
 import Classifier.supervised.SVM;
-
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -23,7 +19,7 @@ import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 
-public class PartSanityCheck extends FurtherPuritySanityCheck{
+public class AnnotatedSanityCheck extends BaseSanityCheck{
 	
 	ArrayList<_Doc> m_testSet; // There are the part of docs need to be checked.
 	HashMap<String, Integer> m_sourceIndexMap;
@@ -33,17 +29,17 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 	
 	// Key: group index, value: documents arraylist.
 	// 1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.
-	HashMap<Integer, ArrayList<_Doc>> m_groupIndexDocsMap; 
+	HashMap<Integer, ArrayList<_Doc>> m_groupTrainSets; 
 	
-	public PartSanityCheck(_Corpus c, String method) {
-		super(c, method);
+	public AnnotatedSanityCheck(_Corpus c, SimType sType) {
+		super(c, sType);
 		m_testSet = new ArrayList<_Doc>();
 		m_sourceIndexMap = new HashMap<String, Integer>();
 		m_testIndexes = new ArrayList<Integer>();
-		m_groupIndexDocsMap = new HashMap<Integer, ArrayList<_Doc>>();
+		m_groupTrainSets = new HashMap<Integer, ArrayList<_Doc>>();
 		m_trainSet = new ArrayList<_Doc>(c.getCollection()); //Copy all the files as train set, filter later.
 	}
-	
+
 	//Load the file with IDs and human annotations.
 	public void loadAnnotatedFile(String filename){
 		try{
@@ -63,9 +59,9 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 					m_testSet.add(doc); //Add it to the test set.
 					m_testIndexes.add(ID);
 //					m_trainSet.remove(ID); //Remove it from the train set.
-					if(!m_groupIndexDocsMap.containsKey(group))
-						m_groupIndexDocsMap.put(group, new ArrayList<_Doc>());
-					m_groupIndexDocsMap.get(group).add(doc);
+					if(!m_groupTrainSets.containsKey(group))
+						m_groupTrainSets.put(group, new ArrayList<_Doc>());
+					m_groupTrainSets.get(group).add(doc);
 				}
 				lineCount++;
 			}
@@ -90,25 +86,29 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 	
 	//Get the size of each group.
 	public int[] getGroupSize(){
-		int[] gSize = new int[m_groupIndexDocsMap.size()];
-		for(int index: m_groupIndexDocsMap.keySet()){
-			gSize[index] = m_groupIndexDocsMap.get(index).size();
+		int[] gSize = new int[m_groupTrainSets.size()];
+		for(int index: m_groupTrainSets.keySet()){
+			gSize[index] = m_groupTrainSets.get(index).size();
 		}
 		return gSize;
 	}
 	
+	// In this function, we will use leave-one-out cross validation to calculate the AP for each query.
+	public void LOOCrossValidation(){
+		
+	}
 	//Train liblinear based on the trainSet.
 	public double[] trainSVM(){
 		double C = 1.0;
-		double[] precision = new double[m_groupIndexDocsMap.size()];
+		double[] precision = new double[m_groupTrainSets.size()];
 		m_svm = new SVM(m_corpus, C);
 		m_svm.train(m_trainSet);
-		for(int index: m_groupIndexDocsMap.keySet()){
-			for(_Doc d: m_groupIndexDocsMap.get(index)){
+		for(int index: m_groupTrainSets.keySet()){
+			for(_Doc d: m_groupTrainSets.get(index)){
 				if(m_svm.predict(d) == d.getYLabel())
 					precision[index]++;
 			}
-			precision[index] /= m_groupIndexDocsMap.get(index).size();
+			precision[index] /= m_groupTrainSets.get(index).size();
 		}
 		return precision;
 	}
@@ -128,12 +128,6 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		return -1;
 	}
 	
-	public static void main(String[] args){
-		double[] a = new double[]{1, 2, 3, 5};
-		double val = 5;
-		int index = findValue(a, val);
-		System.out.println(index);
-	}
 	// Use BoW to calculate the purity.
 	public double[] constructPurity(int topK, int flag, String filename) throws FileNotFoundException{
 		
@@ -141,13 +135,13 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 		int in = 0, length;
 		_Doc dj, tmp;
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
-		double[] purity = new double[m_groupIndexDocsMap.size()];
+		double[] purity = new double[m_groupTrainSets.size()];
 		double[] values;
 		
-		for(int index: m_groupIndexDocsMap.keySet()){
+		for(int index: m_groupTrainSets.keySet()){
 			// Access each document.
 			PrintWriter writer = new PrintWriter(new File(filename+index+".xls"));
-			for(_Doc d: m_groupIndexDocsMap.get(index)){
+			for(_Doc d: m_groupTrainSets.get(index)){
 				
 				//Write out the current document.
 //				writer.write("==================================================\n");
@@ -210,7 +204,7 @@ public class PartSanityCheck extends FurtherPuritySanityCheck{
 				count = 0;
 				queue.clear();
 			}
-			purity[index] /= m_groupIndexDocsMap.get(index).size();
+			purity[index] /= m_groupTrainSets.get(index).size();
 			System.out.format("Finish writing %d group reviews.\n", index);
 			writer.close();
 		}

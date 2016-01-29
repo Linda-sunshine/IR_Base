@@ -6,27 +6,37 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Random;
-
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
 
-public class PuritySanityCheck {
-	String m_method; //similarity calculation method.
-	_Corpus m_corpus;
-	ArrayList<_Doc> m_documents;
+public class BaseSanityCheck {
+	
+	// Different types of similarity calculation.
+	public enum SimType {
+		ST_BoW,  // BoW similarity
+		ST_TP,   // Topic similarity
+		ST_STP,	 // Sentiment topic similarity
+		ST_Rand, // Random similarity
+		ST_L2R	 // L2R similarity
+	}
+	
 	int m_size; // the total number of documents.
 	double[] m_similarity;
 	double[][] m_avgPatK;//m_PatK[0] is for negative class and m_PatK[1] is for positive class.
 	double[][] m_PatK; //PatK for each document.
 	double[] m_counts;
+	
+	SimType m_sType;
+	_Corpus m_corpus;
+	ArrayList<_Doc> m_documents;
+	ArrayList<String> m_features;
 	MyPriorityQueue<_RankItem> m_neighborQueue;
 	
-	public PuritySanityCheck(_Corpus c){
-		m_method = "Random"; //Specify random as default.
+	public BaseSanityCheck(_Corpus c){
+		m_sType = SimType.ST_Rand; //Specify random as default.
 		m_corpus = c;
 		m_size = c.getCollection().size();
 		m_counts = new double[2];
@@ -34,8 +44,8 @@ public class PuritySanityCheck {
 		m_neighborQueue = new MyPriorityQueue<_RankItem>(20);
 	}
 	
-	public PuritySanityCheck(_Corpus c, String method){
-		m_method = method; //"BoW", "TP", "STP"
+	public BaseSanityCheck(_Corpus c, SimType sType){
+		m_sType = sType; //"BoW", "TP", "L2R"
 		m_corpus = c;
 		m_size = c.getCollection().size();
 		m_counts = new double[2];
@@ -47,32 +57,28 @@ public class PuritySanityCheck {
 		_Doc di, dj;
 		ArrayList<_Doc> documents = m_corpus.getCollection();
 		m_similarity = new double[m_size*(m_size-1)/2];
-		if(m_method.equals("BoW")){
-			for(int i=1; i<m_size; i++){
-				for(int j=0; j<i; j++){
-					di = documents.get(i);
-					dj = documents.get(j);
-					m_similarity[getIndex(i, j)] = Utils.calculateSimilarity(di, dj);
-				}
-			}
-		} else if(m_method.equals("TP") || m_method.equals("STP")){
-			for(int i=1; i<m_size; i++){
-				for(int j=0; j<i; j++){
-					di = documents.get(i);
-					dj = documents.get(j);
-					m_similarity[getIndex(i, j)] = Math.exp(-Utils.klDivergence(di.m_topics, dj.m_topics));
-				}
-			}
-		} else if(m_method.equals("BoW+TP")){
-			for(int i=1; i<m_size; i++){
-				for(int j=0; j<i; j++){
-					di = documents.get(i);
-					dj = documents.get(j);
-					m_similarity[getIndex(i, j)] = Math.exp(Utils.calculateSimilarity(di, dj)
-							                   -Utils.klDivergence(di.m_topics, dj.m_topics));
-				}
+		
+		for(int i=1; i<m_size; i++){
+			for(int j=0; j<i; j++){
+				di = documents.get(i);
+				dj = documents.get(j);
+				m_similarity[getIndex(i, j)] = calculateSimilarity(di, dj, m_sType);
 			}
 		}
+	}
+	
+	// Calcualte similarity based on different calculation methods.
+	public double calculateSimilarity(_Doc di, _Doc dj, SimType sType){
+		if(m_sType == SimType.ST_Rand)
+			return Math.random();
+		if(m_sType == SimType.ST_BoW)
+			return Utils.calculateSimilarity(di, dj);
+		else if(m_sType == SimType.ST_TP)
+			return Utils.klDivergence(di.getTopics(), dj.getTopics());
+		else if(m_sType == SimType.ST_L2R)
+			return 0;
+		else
+			return 0;
 	}
 	
 	public int getIndex(int i, int j){
@@ -98,10 +104,9 @@ public class PuritySanityCheck {
 		for(int i=0; i<m_size; i++){
 			doc = m_documents.get(i);
 			//If we use random similarity.
-			if(m_method.equals("Random")){
-				Random r = new Random();
+			if(m_sType == SimType.ST_BoW){
 				for(int j=0; j<20; j++){
-					_Doc neighbor = m_documents.get((int)(r.nextDouble()*m_size));
+					_Doc neighbor = m_documents.get((int)(Math.random() * m_size));
 					neighbors[j] = neighbor.getYLabel();
 				}
 			} else{//else select neighbors based on similarity.
