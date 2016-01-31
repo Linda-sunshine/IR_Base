@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import SanityCheck.AnnotatedSanityCheck;
-
+import SanityCheck.BaseSanityCheck;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Corpus;
 import Analyzer.Analyzer;
@@ -52,30 +52,9 @@ public class MyL2RSanityCheck {
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		
-		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, SimType.ST_BoW);
+		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, BaseSanityCheck.SimType.ST_BoW);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		int[] groupSize = check.getGroupSize();
-		check.setFeature(analyzer.getFeatures());
-		
 
-		
-		
-//		//BoW and topic performance check.
-//		String tGroup = String.format("data/SanityCheck/DiffGroupTP_%dAspects_", numOfAspects);
-//		double[] performance = check.constructPurity(topK, 1, tGroup);//0: Bow; else: topic; return purity.
-//		
-////		double[] performance = check.trainSVM(); // Return precision in this case.
-//		
-//		for(int i= 0; i<performance.length; i++)
-//			System.out.format("%d\t", i);
-//		System.out.println();
-//		
-//		for(int i= 0; i<groupSize.length; i++)
-//			System.out.format("%d\t", groupSize[i]);
-//		System.out.println();
-//		
-//		for(int i= 0; i<performance.length; i++)
-//			System.out.format("%.4f\t", performance[i]);
-//		System.out.println();
-			}
+	}
 }

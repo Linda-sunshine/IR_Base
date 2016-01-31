@@ -21,26 +21,21 @@ import utils.Utils;
 
 public class AnnotatedSanityCheck extends BaseSanityCheck{
 	
-	ArrayList<_Doc> m_testSet; // There are the part of docs need to be checked.
-	HashMap<String, Integer> m_sourceIndexMap;
-	ArrayList<Integer> m_testIndexes; // The documents loaded as test documents.
-	ArrayList<_Doc> m_trainSet;
 	SVM m_svm; //liblinear model.
 	
-	// Key: group index, value: documents arraylist.
-	// 1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.
-	HashMap<Integer, ArrayList<_Doc>> m_groupTrainSets; 
+	/*** Key: group index, value: documents arraylist.
+	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
+	HashMap<Integer, ArrayList<_Doc>> m_groupDocs; 
 	
 	public AnnotatedSanityCheck(_Corpus c, SimType sType) {
 		super(c, sType);
-		m_testSet = new ArrayList<_Doc>();
-		m_sourceIndexMap = new HashMap<String, Integer>();
-		m_testIndexes = new ArrayList<Integer>();
-		m_groupTrainSets = new HashMap<Integer, ArrayList<_Doc>>();
-		m_trainSet = new ArrayList<_Doc>(c.getCollection()); //Copy all the files as train set, filter later.
+//		m_sourceIndexMap = new HashMap<String, Integer>();
+//		m_testSet = new ArrayList<_Doc>();
+//		m_testIndexes = new ArrayList<Integer>();
+		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 
-	//Load the file with IDs and human annotations.
+	//Load the file with IDs and human annotations into different groups.
 	public void loadAnnotatedFile(String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
@@ -56,23 +51,57 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 					group = Integer.valueOf(strs[3]); // The human annotated group information.
 				
 					doc = m_corpus.getCollection().get(ID);
-					m_testSet.add(doc); //Add it to the test set.
-					m_testIndexes.add(ID);
-//					m_trainSet.remove(ID); //Remove it from the train set.
-					if(!m_groupTrainSets.containsKey(group))
-						m_groupTrainSets.put(group, new ArrayList<_Doc>());
-					m_groupTrainSets.get(group).add(doc);
+					if(!m_groupDocs.containsKey(group))
+						m_groupDocs.put(group, new ArrayList<_Doc>());
+					m_groupDocs.get(group).add(doc);
 				}
 				lineCount++;
 			}
 			System.out.format("%d reviews loaded into sytem.\n", lineCount/2);
 			reader.close();
-			rmTestDocs();
 		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}
 	
+	public void diffGroupLOOCV(){
+		double[] MAPs = new double[m_groupDocs.size() - 1];
+		for(int groupNo: m_groupDocs.keySet()){
+			if(groupNo == 0) 
+				continue;
+			else
+				MAPs[groupNo-1] = LOOCV(m_groupDocs.get(groupNo));
+		}
+	}
+	// Leave-one-out cross validation.
+	public double LOOCV(ArrayList<_Doc> groupDocs){
+		double MAP = 0, AP = 0;
+		_Doc testDoc; // There is only one test doc in LOOCV.
+		ArrayList<_Doc> trainSet;
+		for(int i=0; i < groupDocs.size(); i++){
+			testDoc = groupDocs.get(i); // Get the test document.
+			trainSet = new ArrayList<_Doc>(groupDocs);
+			trainSet.remove(i); // Leave one out to contruct the training set.
+			
+			// Train L2R model.
+			trainL2R(trainSet); 
+			
+			// Get the permutation of for the test document.
+			
+			// Calculate the AP for the test document.
+			
+		}
+		// Calculate the MAP for all the test documents.
+		
+		return MAP;
+	}
+	
+	// Train different learning to rank models for different groups.
+	public void trainL2R(ArrayList<_Doc> trainSet){
+		
+	}
+	
+	/***
 	//Init: trainSet = corpus.getCollection(); remove the testSet to get the trainSet.
 	public void rmTestDocs(){
 		Collections.sort(m_testIndexes, Collections.reverseOrder());
@@ -86,9 +115,9 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 	
 	//Get the size of each group.
 	public int[] getGroupSize(){
-		int[] gSize = new int[m_groupTrainSets.size()];
-		for(int index: m_groupTrainSets.keySet()){
-			gSize[index] = m_groupTrainSets.get(index).size();
+		int[] gSize = new int[m_groupDocs.size()];
+		for(int index: m_groupDocs.keySet()){
+			gSize[index] = m_groupDocs.get(index).size();
 		}
 		return gSize;
 	}
@@ -100,15 +129,15 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 	//Train liblinear based on the trainSet.
 	public double[] trainSVM(){
 		double C = 1.0;
-		double[] precision = new double[m_groupTrainSets.size()];
+		double[] precision = new double[m_groupDocs.size()];
 		m_svm = new SVM(m_corpus, C);
-		m_svm.train(m_trainSet);
-		for(int index: m_groupTrainSets.keySet()){
-			for(_Doc d: m_groupTrainSets.get(index)){
+		m_svm.train(m_groupDocs);
+		for(int index: m_groupDocs.keySet()){
+			for(_Doc d: m_groupDocs.get(index)){
 				if(m_svm.predict(d) == d.getYLabel())
 					precision[index]++;
 			}
-			precision[index] /= m_groupTrainSets.get(index).size();
+			precision[index] /= m_groupDocs.get(index).size();
 		}
 		return precision;
 	}
@@ -135,13 +164,13 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 		int in = 0, length;
 		_Doc dj, tmp;
 		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
-		double[] purity = new double[m_groupTrainSets.size()];
+		double[] purity = new double[m_groupDocs.size()];
 		double[] values;
 		
-		for(int index: m_groupTrainSets.keySet()){
+		for(int index: m_groupDocs.keySet()){
 			// Access each document.
 			PrintWriter writer = new PrintWriter(new File(filename+index+".xls"));
-			for(_Doc d: m_groupTrainSets.get(index)){
+			for(_Doc d: m_groupDocs.get(index)){
 				
 				//Write out the current document.
 //				writer.write("==================================================\n");
@@ -263,4 +292,5 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 			e.printStackTrace();
 		}
 	}
+***/
 }
