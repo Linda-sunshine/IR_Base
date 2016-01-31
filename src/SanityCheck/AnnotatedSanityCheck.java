@@ -11,27 +11,35 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+
+import Ranker.LambdaRank.OptimizationType;
+import SanityCheck.BaseSanityCheck.SimType;
+import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.supervised.SVM;
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.Model;
+import Classifier.supervised.liblinear.SolverType;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._QUPair;
+import structures._Query;
 import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
 
-public class AnnotatedSanityCheck extends BaseSanityCheck{
-	
-	SVM m_svm; //liblinear model.
-	
+public class AnnotatedSanityCheck extends L2RMetricLearning{
+		
 	/*** Key: group index, value: documents arraylist.
 	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
-	HashMap<Integer, ArrayList<_Doc>> m_groupDocs; 
+	HashMap<Integer, ArrayList<_Doc>> m_groupDocs;
+	ArrayList<_Doc> m_allDocs;
 	
-	public AnnotatedSanityCheck(_Corpus c, SimType sType) {
-		super(c, sType);
-//		m_sourceIndexMap = new HashMap<String, Integer>();
-//		m_testSet = new ArrayList<_Doc>();
-//		m_testIndexes = new ArrayList<Integer>();
+	ArrayList<_Doc> m_trainSet;
+	_Doc m_testDoc;
+	
+	public AnnotatedSanityCheck(_Corpus c, String classifier, double C, int topK, SimType sType) {
+		super(c, classifier, C, topK);
 		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 
@@ -58,6 +66,12 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 				lineCount++;
 			}
 			System.out.format("%d reviews loaded into sytem.\n", lineCount/2);
+			
+			// Merge all the docuements into one set.
+			m_allDocs = new ArrayList<_Doc>();
+			for(int groupNo: m_groupDocs.keySet())
+				m_allDocs.addAll(m_groupDocs.get(groupNo));
+			
 			reader.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -76,17 +90,18 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 	// Leave-one-out cross validation.
 	public double LOOCV(ArrayList<_Doc> groupDocs){
 		double MAP = 0, AP = 0;
-		_Doc testDoc; // There is only one test doc in LOOCV.
-		ArrayList<_Doc> trainSet;
 		for(int i=0; i < groupDocs.size(); i++){
-			testDoc = groupDocs.get(i); // Get the test document.
-			trainSet = new ArrayList<_Doc>(groupDocs);
-			trainSet.remove(i); // Leave one out to contruct the training set.
+			m_testDoc = groupDocs.get(i); // Get the test document.
+			
+			// Leave one out to contruct the training set.
+			m_trainSet = new ArrayList<_Doc>(groupDocs);
+			m_trainSet.remove(i); 
 			
 			// Train L2R model.
-			trainL2R(trainSet); 
+			trainL2R(); 
 			
 			// Get the permutation of for the test document.
+			permutate();
 			
 			// Calculate the AP for the test document.
 			
@@ -96,11 +111,73 @@ public class AnnotatedSanityCheck extends BaseSanityCheck{
 		return MAP;
 	}
 	
-	// Train different learning to rank models for different groups.
-	public void trainL2R(ArrayList<_Doc> trainSet){
+	public void trainL2R(){
+		createTrainingCorpus();
 		
+		ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
+		ArrayList<Integer> labels = new ArrayList<Integer>();
+		
+		for(_Query q: m_queries)
+			q.extractPairs4RankSVM(fvs, labels);
+		
+		Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
+		m_weights = rankSVM.getFeatureWeights();
+		System.out.format("RankSVM training performance:\nMAP: %.4f\n", evaluate(OptimizationType.OT_MAP));	
 	}
 	
+	// Train different learning to rank models for different groups.
+	public int createTrainingCorpus(){
+		_Query q;
+		_Doc di, dj;
+		int pairSize = 0, posQ = 0, negQ = 0;
+		double relevant = 0, irrelevant = 0;
+		for(int i=0; i<m_trainSet.size(); i++){
+			di = m_trainSet.get(i);
+			relevant = 0;
+			irrelevant = 0;
+			
+			// Construct query-document pairs among all the 100 files.
+			for(int j=0; j<m_allDocs.size(); j++){
+				dj = m_allDocs.get(j);
+				// Filter the test document and current query document.
+				if(dj.getID() == di.getID() || dj.getID() == m_testDoc.getID())
+					continue;
+				else{
+					if(di.getYLabel() == dj.getYLabel())
+						relevant++;
+					else 
+						irrelevant++;
+				}
+			}
+			
+			// Judge if the document has both relevant and irrelevant documents.
+			if(relevant == 0 || irrelevant == 0)
+				continue;
+			else if(di.getYLabel() == 1)
+				posQ++;
+			else 
+				negQ++;
+				
+			q = new _Query();
+			m_queries.add(q);
+			for(int j=0; j<m_allDocs.size(); j++){
+				dj = m_allDocs.get(j);
+				if(dj.getID() == di.getID() || dj.getID() == m_testDoc.getID())
+					continue;
+				else{
+					q.addQUPair(new _QUPair(di.getYLabel() == dj.getYLabel()?1:0, genRankingFV(di, dj)));
+				}
+			}
+			pairSize += q.createRankingPairs();
+		}
+		
+		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
+		return pairSize;
+	}
+	
+	public void permutate(){
+		for(int i=0; i<)
+	}
 	/***
 	//Init: trainSet = corpus.getCollection(); remove the testSet to get the trainSet.
 	public void rmTestDocs(){

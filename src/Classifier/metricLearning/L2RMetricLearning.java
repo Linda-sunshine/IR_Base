@@ -29,13 +29,13 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	
-	double[] m_weights;
-	double m_tradeoff;
+	protected double[] m_weights;
+	protected double m_tradeoff;
 	boolean m_multithread = false; // by default we will use single thread
 
 	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank; 2: RankNet
-	ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	final int RankFVSize = 10;// features to be defined in genRankingFV()
+	protected ArrayList<_Query> m_queries = new ArrayList<_Query>();
+	protected final int RankFVSize = 10;// features to be defined in genRankingFV()
 	double[] m_mean, m_std; // to normalize the ranking features
 
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
@@ -170,7 +170,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		System.out.println();
 	}
 	
-	double evaluate (OptimizationType otype) {
+	protected double evaluate (OptimizationType otype) {
 		Evaluator eval;
 		
 		if (otype.equals(OptimizationType.OT_MAP))
@@ -357,7 +357,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	//generate ranking features for a query document pair
-	double[] genRankingFV(_Doc q, _Doc d) {
+	protected double[] genRankingFV(_Doc q, _Doc d) {
 		double[] fv = new double[RankFVSize];
 		
 		//Part I: pairwise features for query document pair
