@@ -2,34 +2,22 @@ package topicmodels;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Random;
-import Jama.Matrix;
-import cern.jet.random.Normal;
-import cern.jet.random.engine.DRand;
-import cern.jet.random.engine.RandomEngine;
+
+import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DRand;
 import structures._ChildDoc;
 import structures._ChildDocProbitModel;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._Stn;
-import utils.Utils;
 
-public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
+public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs {
 	public Normal m_Normal;
 	public ParentChild_GibbsProbitModel(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
-		RandomEngine engine = new DRand();
-		m_Normal = new Normal(0, 1, engine);
-		
-		m_mu = mu;
-		m_kAlpha = d_alpha * number_of_topics;
-
-		m_gamma = new double[gamma.length];
-		System.arraycopy(gamma, 0, m_gamma, 0, gamma.length);
-		m_topicProbCache = new double[number_of_topics];
-		m_xTopicProbCache = new double[gamma.length][number_of_topics];
+		m_Normal = new Normal(0, 1, new DRand());
 	}
 	
 	public String toString(){
@@ -37,6 +25,8 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
 	}
 	
+	//will be called before entering EM iterations
+	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
@@ -51,8 +41,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 			}else if(d instanceof _ChildDocProbitModel){
 				((_ChildDocProbitModel)d).createXSpace(number_of_topics, m_gamma.length);
 				((_ChildDocProbitModel)d).setTopics4Gibbs(number_of_topics, 0, m_corpus);
-			}
-			
+			}			
 			
 			for(int i=0; i<d.m_words.length; i++){
 				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]] ++;
@@ -63,6 +52,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 		imposePrior();
 	}
 
+	@Override
 	public double calculate_E_step(_Doc d){
 		d.permutation();
 		
@@ -79,6 +69,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 		double xVal = 0.0;
 		double normalizedProb;
 		
+		//sampling the indicator variable 
 		for(int i=0; i<d.m_words.length; i++){
 			xVal = d.m_xIndicator[i];
 			tid = d.m_topicAssignment[i];
@@ -91,7 +82,6 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 			d.m_xSstat[xid] --;
 			d.m_xTopicSstat[xid][tid] --;
 			
-//			xPredictiveProb(d, i);
 			xVal = xPredictiveProb(d, i);
 			d.m_xIndicator[i] = xVal;
 			
@@ -101,8 +91,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 				xid = 0;
 			
 			d.m_xSstat[xid] ++;
-			d.m_xTopicSstat[xid][tid] ++;
-			
+			d.m_xTopicSstat[xid][tid] ++;			
 		}
 		
 		for(int i=0; i<d.m_words.length; i++){
@@ -125,32 +114,24 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 			
 			normalizedProb = 0.0;
 			
-			for(tid=0; tid<number_of_topics; tid++){
-				
+			for(tid=0; tid<number_of_topics; tid++){				
 				double pWordTopic = childWordByTopicProb(tid, wid);
-				if(xid == 1){
-					//p(z=tid,x=1) from specific
+				if(xid == 1){//p(z=tid,x=1) from specific					
 					double pTopicLocal = childTopicInDocProb(tid, 1, d);
-					m_topicProbCache[tid] = pWordTopic*pTopicLocal;
-					
-				}
-				else{
-					//p(z=tid,x=0) from background
+					m_topicProbCache[tid] = pWordTopic*pTopicLocal;					
+				} else {//p(z=tid,x=0) from background					
 					double pTopicGlobal = childTopicInDocProb(tid, 0, d);	
-					m_topicProbCache[tid] = pWordTopic*pTopicGlobal;
-					
+					m_topicProbCache[tid] = pWordTopic*pTopicGlobal;					
 				}
 				
 				normalizedProb += m_topicProbCache[tid];
 			}
 			
-			normalizedProb *= m_rand.nextDouble();
-			
+			normalizedProb *= m_rand.nextDouble();			
 			for(tid=0; tid<number_of_topics; tid++){
 				normalizedProb -= m_topicProbCache[tid];
-				if(normalizedProb<=0){
+				if(normalizedProb<=0)
 					break;
-				}
 			}
 
 			if (tid == number_of_topics)
@@ -163,8 +144,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 			if(m_collectCorpusStats){
 				word_topic_sstat[tid][wid]++;
 				m_sstat[tid]++;
-			}	
-			
+			}			
 		}
 	}
 	
@@ -185,13 +165,6 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
 		
-//		Random m_rand = new Random();
-//		double n1 = m_rand.nextDouble();
-//		double n2 = m_rand.nextDouble();
-//		
-//		double gaussianVal = Math.sqrt(-2*Math.log(n2))*Math.cos(2*Math.PI*n1);
-//		gaussianVal = gaussianVal*sigma + mu;
-
 		gaussianVal = m_Normal.nextDouble();
 		gaussianVal = gaussianVal*Math.sqrt(sigma) + mu;
 		return gaussianVal;
