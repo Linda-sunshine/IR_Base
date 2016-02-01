@@ -1,17 +1,11 @@
 package SanityCheck;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-
 import Ranker.LambdaRank.OptimizationType;
 import SanityCheck.BaseSanityCheck.SimType;
 import Classifier.metricLearning.L2RMetricLearning;
@@ -25,21 +19,22 @@ import structures._Doc;
 import structures._QUPair;
 import structures._Query;
 import structures._RankItem;
-import structures._SparseFeature;
 import utils.Utils;
 
 public class AnnotatedSanityCheck extends L2RMetricLearning{
-		
+	
+	_Doc m_testDoc;
+	ArrayList<_Doc> m_allDocs;
+	ArrayList<_Doc> m_trainSet;
+	SimType m_sType;
+	
 	/*** Key: group index, value: documents arraylist.
 	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
 	HashMap<Integer, ArrayList<_Doc>> m_groupDocs;
-	ArrayList<_Doc> m_allDocs;
-	
-	ArrayList<_Doc> m_trainSet;
-	_Doc m_testDoc;
 	
 	public AnnotatedSanityCheck(_Corpus c, String classifier, double C, int topK, SimType sType) {
 		super(c, classifier, C, topK);
+		m_sType = sType;
 		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
 	}
 
@@ -86,10 +81,14 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			else
 				MAPs[groupNo-1] = LOOCV(m_groupDocs.get(groupNo));
 		}
+		System.out.println("---------------------------------");
+		for(double map: MAPs)
+			System.out.format("%.4f\t", map);
+		System.out.println();
 	}
 	// Leave-one-out cross validation.
 	public double LOOCV(ArrayList<_Doc> groupDocs){
-		double MAP = 0, AP = 0;
+		double MAP = 0;
 		for(int i=0; i < groupDocs.size(); i++){
 			m_testDoc = groupDocs.get(i); // Get the test document.
 			
@@ -98,17 +97,14 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			m_trainSet.remove(i); 
 			
 			// Train L2R model.
-			trainL2R(); 
+			if(m_sType == SimType.ST_L2R)
+				trainL2R(); 
 			
-			// Get the permutation of for the test document.
-			permutate();
-			
-			// Calculate the AP for the test document.
-			
+			// Get the permutation of for the test query and calculate corresponding AP.
+			MAP += permutate();			
 		}
 		// Calculate the MAP for all the test documents.
-		
-		return MAP;
+		return MAP / groupDocs.size();
 	}
 	
 	public void trainL2R(){
@@ -126,8 +122,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	
 	// Train different learning to rank models for different groups.
-	public int createTrainingCorpus(){
 		_Query q;
+		public int createTrainingCorpus(){
 		_Doc di, dj;
 		int pairSize = 0, posQ = 0, negQ = 0;
 		double relevant = 0, irrelevant = 0;
@@ -140,9 +136,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			for(int j=0; j<m_allDocs.size(); j++){
 				dj = m_allDocs.get(j);
 				// Filter the test document and current query document.
-				if(dj.getID() == di.getID() || dj.getID() == m_testDoc.getID())
-					continue;
-				else{
+				if(dj.getID() != di.getID() && dj.getID() != m_testDoc.getID()){
 					if(di.getYLabel() == dj.getYLabel())
 						relevant++;
 					else 
@@ -162,21 +156,53 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			m_queries.add(q);
 			for(int j=0; j<m_allDocs.size(); j++){
 				dj = m_allDocs.get(j);
-				if(dj.getID() == di.getID() || dj.getID() == m_testDoc.getID())
-					continue;
-				else{
+				if(dj.getID() != di.getID() && dj.getID() != m_testDoc.getID())
 					q.addQUPair(new _QUPair(di.getYLabel() == dj.getYLabel()?1:0, genRankingFV(di, dj)));
-				}
 			}
 			pairSize += q.createRankingPairs();
 		}
 		
+		normalize();
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return pairSize;
 	}
 	
-	public void permutate(){
-		for(int i=0; i<)
+	// For the current test document, get the permutation of all the remaining documents.
+	public double permutate(){
+		double count = 0, totalCount = 0;
+		double sim = 0, AP = 0;
+		_Doc di;
+		MyPriorityQueue<_RankItem> rankDocs = new MyPriorityQueue<_RankItem>(m_topK);
+		for(int i=0; i<m_allDocs.size(); i++){
+			di = m_allDocs.get(i);
+			if(di.getID() != m_testDoc.getID()){
+				sim = getSimilarity(di, m_testDoc);
+				rankDocs.add(new _RankItem(i, sim));
+			}
+		}
+		for(_RankItem r: rankDocs){
+			totalCount++;
+			if(m_allDocs.get(r.m_index).getYLabel() == m_testDoc.getYLabel()){
+				count++;
+				AP += count / totalCount;
+			}
+		}
+		return AP / count; // AP for the test query.
+	}
+	
+	//NOTE: this similarity is no longer symmetric!!
+	@Override
+	public double getSimilarity(_Doc di, _Doc dj) {
+		double similarity = 0;
+		if(m_sType == SimType.ST_L2R)
+			similarity = Utils.dotProduct(m_weights, normalize(genRankingFV(di, dj)));	
+		else if(m_sType == SimType.ST_BoW)
+			similarity = getBoWSim(di, dj);
+		else if(m_sType == SimType.ST_TP)
+			similarity = getTopicalSim(di, dj);
+		else if(m_sType == SimType.ST_Rand)
+			similarity = Math.random();
+		return similarity;
 	}
 	/***
 	//Init: trainSet = corpus.getCollection(); remove the testSet to get the trainSet.

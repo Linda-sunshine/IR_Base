@@ -25,7 +25,7 @@ import utils.Utils;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
-	int m_topK;//top K initial ranking results 
+	protected int m_topK;//top K initial ranking results 
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
 	
@@ -303,7 +303,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		return pairSize;
 	}
 	
-	void normalize() {
+	protected void normalize() {
 		m_mean = new double[RankFVSize];
 		m_std = new double[RankFVSize];
 		
@@ -330,7 +330,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 	}
 	
-	double[] normalize(double[] fv) {
+	protected double[] normalize(double[] fv) {
 		for(int i=0; i<RankFVSize; i++)
 			fv[i] = (fv[i] - m_mean[i]) / m_std[i];
 		return fv;

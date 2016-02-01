@@ -212,7 +212,6 @@ public class MyDocumentSelectionMain {
 			analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
 			((DocAnalyzer) analyzer).setReleaseContent(false);
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			((DocAnalyzer) analyzer).LoadStopwords(stopword); //Load the sentiwordnet file.
 			((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
