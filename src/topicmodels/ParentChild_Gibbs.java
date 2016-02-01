@@ -308,11 +308,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	}
 	
 	@Override
-	protected void finalEst() {
-		super.finalEst();
-	}
-	
-	@Override
 	protected void estThetaInDoc(_Doc d) {
 		super.estThetaInDoc(d);
 		if (d instanceof _ParentDoc){
@@ -358,7 +353,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	double computeSimilarity(double[] topic1, double[] topic2) {
