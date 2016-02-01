@@ -25,6 +25,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	double[] m_MAPs;
 	ArrayList<_Doc> m_allDocs;
 	SimType m_sType;
+	int m_numberOfCores;
+	Object m_MAPLock = new Object();
 	
 	/*** Key: group index, value: documents arraylist.
 	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
@@ -34,7 +36,6 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		super(c, classifier, C, topK);
 		m_sType = sType;
 		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
-		m_MAPs = new double[m_groupDocs.size() -1];
 	}
 
 	//Load the file with IDs and human annotations into different groups.
@@ -66,6 +67,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			for(int groupNo: m_groupDocs.keySet())
 				m_allDocs.addAll(m_groupDocs.get(groupNo));
 			
+			m_MAPs = new double[m_groupDocs.size() -1];
 			reader.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -87,15 +89,16 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	
 	// Leave-one-out cross validation.
 	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
-		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		m_numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 
-		for(int k=0; k<numberOfCores; k++){
+		for(int k=0; k<m_numberOfCores; k++){
 			threads.add((new Thread() {
-				int core, numOfCores;
+				int core;
 				public void run() {
 					try{
-						for(int i=0; i+core < groupDocs.size(); i += numOfCores){
+						for(int i=0; i+core < groupDocs.size(); i += m_numberOfCores){
+							System.out.println("----Current index is " + (i+core));
 							// Leave one out to contruct the training set.
 							_Doc testDoc = groupDocs.get(i+core); // Get the test document.
 							ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
@@ -105,27 +108,31 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 							if(m_sType == SimType.ST_L2R){
 								double[] weights = trainL2R(trainSet, testDoc);
 								// Get the permutation of for the test query and calculate corresponding AP.
-								m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
+								synchronized(m_MAPLock){
+									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
+								}
 							} 
-							else 
-								m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
+							else {
+								synchronized(m_MAPLock){
+									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
+								}
+							}
 						}
 					} catch(Exception ex) {
 						ex.printStackTrace(); 
 					}
 				}
 		
-				private Thread initialize(int core, int numOfCores) {
+				private Thread initialize(int core) {
 					this.core = core;
-					this.numOfCores = numOfCores;
 					return this;
 				}
-			}).initialize(k, numberOfCores));
+			}).initialize(k));
 	
 			threads.get(k).start();
 		}
 
-		for(int k=0;k<numberOfCores;++k){
+		for(int k=0;k<m_numberOfCores;++k){
 			try {
 				threads.get(k).join();
 			} catch (InterruptedException e) {
@@ -133,7 +140,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			} 
 		}
 		// Calculate the MAP for all the test documents.
-		m_MAPs[groupNo-1] /= m_groupDocs.size();
+		m_MAPs[groupNo-1] /= groupDocs.size();
+		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
 	}
 	
 	public double[] trainL2R(ArrayList<_Doc> trainSet, _Doc testDoc){
@@ -194,7 +202,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			pairSize += q.createRankingPairs();
 		}
 		
-		normalize();
+//		normalize();
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return queries;
 	}
@@ -219,6 +227,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 				AP += count / totalCount;
 			}
 		}
+		System.out.format("AP: %.4f\n", AP/count);
 		return AP / count; // AP for the test query.
 	}
 	
@@ -226,7 +235,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	public double calcSimilarity(_Doc di, _Doc dj, double[] weights) {
 		double similarity = 0;
 		if(m_sType == SimType.ST_L2R)
-			similarity = Utils.dotProduct(weights, normalize(genRankingFV(di, dj)));	
+			similarity = Utils.dotProduct(weights, genRankingFV(di, dj));	
+//			similarity = Utils.dotProduct(weights, normalize(genRankingFV(di, dj)));	
 		else if(m_sType == SimType.ST_BoW)
 			similarity = getBoWSim(di, dj);
 		else if(m_sType == SimType.ST_TP)
