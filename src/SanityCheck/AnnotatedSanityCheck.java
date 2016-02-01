@@ -22,7 +22,7 @@ import structures._RankItem;
 import utils.Utils;
 
 public class AnnotatedSanityCheck extends L2RMetricLearning{
-	
+	double[] m_MAPs;
 	ArrayList<_Doc> m_allDocs;
 	SimType m_sType;
 	
@@ -34,6 +34,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		super(c, classifier, C, topK);
 		m_sType = sType;
 		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
+		m_MAPs = new double[m_groupDocs.size() -1];
 	}
 
 	//Load the file with IDs and human annotations into different groups.
@@ -72,21 +73,20 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	
 	public void diffGroupLOOCV(){
-		double[] MAPs = new double[m_groupDocs.size() - 1];
 		for(int groupNo: m_groupDocs.keySet()){
 			if(groupNo == 0) 
 				continue;
 			else
-				MAPs[groupNo-1] = LOOCV(m_groupDocs.get(groupNo));
+				LOOCV(groupNo, m_groupDocs.get(groupNo));
 		}
 		System.out.println("---------------------------------");
-		for(double map: MAPs)
-			System.out.format("%.4f\t", map);
+		for(double m: m_MAPs)
+			System.out.format("%.4f\t", m);
 		System.out.println();
 	}
+	
 	// Leave-one-out cross validation.
-	public double LOOCV(ArrayList<_Doc> groupDocs){
-		double[] MAP = new double[groupDocs.size()];		
+	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 
@@ -105,10 +105,10 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 							if(m_sType == SimType.ST_L2R){
 								double[] weights = trainL2R(trainSet, testDoc);
 								// Get the permutation of for the test query and calculate corresponding AP.
-								MAP[i+core] = permutate(trainSet, testDoc, weights);
+								m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
 							} 
 							else 
-								MAP[i+core] = permutate(trainSet, testDoc, null);
+								m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
 						}
 					} catch(Exception ex) {
 						ex.printStackTrace(); 
@@ -133,10 +133,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			} 
 		}
 		// Calculate the MAP for all the test documents.
-		double sum = 0;
-		for(double m: MAP)
-			sum += m;
-		return sum / groupDocs.size();
+		m_MAPs[groupNo-1] /= m_groupDocs.size();
 	}
 	
 	public double[] trainL2R(ArrayList<_Doc> trainSet, _Doc testDoc){
