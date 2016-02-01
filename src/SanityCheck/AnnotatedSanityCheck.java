@@ -23,9 +23,7 @@ import utils.Utils;
 
 public class AnnotatedSanityCheck extends L2RMetricLearning{
 	
-	_Doc m_testDoc;
 	ArrayList<_Doc> m_allDocs;
-	ArrayList<_Doc> m_trainSet;
 	SimType m_sType;
 	
 	/*** Key: group index, value: documents arraylist.
@@ -88,47 +86,84 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	// Leave-one-out cross validation.
 	public double LOOCV(ArrayList<_Doc> groupDocs){
-		double MAP = 0;
-		for(int i=0; i < groupDocs.size(); i++){
-			m_testDoc = groupDocs.get(i); // Get the test document.
-			
-			// Leave one out to contruct the training set.
-			m_trainSet = new ArrayList<_Doc>(groupDocs);
-			m_trainSet.remove(i); 
-			
-			// Train L2R model.
-			if(m_sType == SimType.ST_L2R)
-				trainL2R(); 
-			
-			// Get the permutation of for the test query and calculate corresponding AP.
-			MAP += permutate();			
+		double[] MAP = new double[groupDocs.size()];		
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+
+		for(int k=0; k<numberOfCores; k++){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					try{
+						for(int i=0; i+core < groupDocs.size(); i += numOfCores){
+							// Leave one out to contruct the training set.
+							_Doc testDoc = groupDocs.get(i+core); // Get the test document.
+							ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
+							trainSet.remove(i+core);
+							
+							// Train L2R model.
+							if(m_sType == SimType.ST_L2R){
+								double[] weights = trainL2R(trainSet, testDoc);
+								// Get the permutation of for the test query and calculate corresponding AP.
+								MAP[i+core] = permutate(trainSet, testDoc, weights);
+							} 
+							else 
+								MAP[i+core] = permutate(trainSet, testDoc, null);
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+		
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+	
+			threads.get(k).start();
+		}
+
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
 		}
 		// Calculate the MAP for all the test documents.
-		return MAP / groupDocs.size();
+		double sum = 0;
+		for(double m: MAP)
+			sum += m;
+		return sum / groupDocs.size();
 	}
 	
-	public void trainL2R(){
-		createTrainingCorpus();
+	public double[] trainL2R(ArrayList<_Doc> trainSet, _Doc testDoc){
+		ArrayList<_Query> queries = createTrainingCorpus(trainSet, testDoc);
 		
 		ArrayList<Feature[]> fvs = new ArrayList<Feature[]>();
 		ArrayList<Integer> labels = new ArrayList<Integer>();
 		
-		for(_Query q: m_queries)
+		for(_Query q: queries)
 			q.extractPairs4RankSVM(fvs, labels);
 		
 		Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
-		m_weights = rankSVM.getFeatureWeights();
+		double[] weights = rankSVM.getFeatureWeights();
 		System.out.format("RankSVM training performance:\nMAP: %.4f\n", evaluate(OptimizationType.OT_MAP));	
+		return weights;
 	}
 	
 	// Train different learning to rank models for different groups.
+	public ArrayList<_Query> createTrainingCorpus(ArrayList<_Doc> trainSet, _Doc testDoc){
 		_Query q;
-		public int createTrainingCorpus(){
 		_Doc di, dj;
 		int pairSize = 0, posQ = 0, negQ = 0;
 		double relevant = 0, irrelevant = 0;
-		for(int i=0; i<m_trainSet.size(); i++){
-			di = m_trainSet.get(i);
+		ArrayList<_Query> queries = new ArrayList<_Query>();
+
+		for(int i=0; i<trainSet.size(); i++){
+			di = trainSet.get(i);
 			relevant = 0;
 			irrelevant = 0;
 			
@@ -136,7 +171,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			for(int j=0; j<m_allDocs.size(); j++){
 				dj = m_allDocs.get(j);
 				// Filter the test document and current query document.
-				if(dj.getID() != di.getID() && dj.getID() != m_testDoc.getID()){
+				if(dj.getID() != di.getID() && dj.getID() != testDoc.getID()){
 					if(di.getYLabel() == dj.getYLabel())
 						relevant++;
 					else 
@@ -153,10 +188,10 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 				negQ++;
 				
 			q = new _Query();
-			m_queries.add(q);
+			queries.add(q);
 			for(int j=0; j<m_allDocs.size(); j++){
 				dj = m_allDocs.get(j);
-				if(dj.getID() != di.getID() && dj.getID() != m_testDoc.getID())
+				if(dj.getID() != di.getID() && dj.getID() != testDoc.getID())
 					q.addQUPair(new _QUPair(di.getYLabel() == dj.getYLabel()?1:0, genRankingFV(di, dj)));
 			}
 			pairSize += q.createRankingPairs();
@@ -164,25 +199,25 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		
 		normalize();
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
-		return pairSize;
+		return queries;
 	}
 	
 	// For the current test document, get the permutation of all the remaining documents.
-	public double permutate(){
+	public double permutate(ArrayList<_Doc> trainSet, _Doc testDoc, double[] weights){
 		double count = 0, totalCount = 0;
 		double sim = 0, AP = 0;
 		_Doc di;
 		MyPriorityQueue<_RankItem> rankDocs = new MyPriorityQueue<_RankItem>(m_topK);
 		for(int i=0; i<m_allDocs.size(); i++){
 			di = m_allDocs.get(i);
-			if(di.getID() != m_testDoc.getID()){
-				sim = getSimilarity(di, m_testDoc);
+			if(di.getID() != testDoc.getID()){
+				sim = calcSimilarity(di, testDoc, weights);
 				rankDocs.add(new _RankItem(i, sim));
 			}
 		}
 		for(_RankItem r: rankDocs){
 			totalCount++;
-			if(m_allDocs.get(r.m_index).getYLabel() == m_testDoc.getYLabel()){
+			if(m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()){
 				count++;
 				AP += count / totalCount;
 			}
@@ -191,11 +226,10 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	
 	//NOTE: this similarity is no longer symmetric!!
-	@Override
-	public double getSimilarity(_Doc di, _Doc dj) {
+	public double calcSimilarity(_Doc di, _Doc dj, double[] weights) {
 		double similarity = 0;
 		if(m_sType == SimType.ST_L2R)
-			similarity = Utils.dotProduct(m_weights, normalize(genRankingFV(di, dj)));	
+			similarity = Utils.dotProduct(weights, normalize(genRankingFV(di, dj)));	
 		else if(m_sType == SimType.ST_BoW)
 			similarity = getBoWSim(di, dj);
 		else if(m_sType == SimType.ST_TP)
