@@ -4,9 +4,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 import Jama.Matrix;
-import cern.jet.random.Normal;
-import cern.jet.random.engine.DRand;
-import cern.jet.random.engine.RandomEngine;
+import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DRand;
 import utils.Utils;
 
 public class _ChildDocProbitModel extends _ChildDoc{
@@ -18,23 +17,16 @@ public class _ChildDocProbitModel extends _ChildDoc{
 	
 	public _ChildDocProbitModel(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
-		RandomEngine engine = new DRand();
-		m_Normal = new Normal(0, 1, engine);
+		m_Normal = new Normal(0, 1, new DRand());
 		
 		m_fixedMuPartMap = new HashMap<Integer, double[]>();
 		m_fixedSigmaPartMap = new HashMap<Integer, Double>();
 	}
 	
 	public void setProbitFeature(int wIndex, double idfCorpus, double tfChild, double tfParent){
-		int i = 0;
-		
-		m_probitFeature[wIndex][i] = idfCorpus;
-		i ++;
-		
-		m_probitFeature[wIndex][i] = tfChild;
-		i ++;
-		
-		m_probitFeature[wIndex][i] = tfParent;
+		m_probitFeature[wIndex][0] = idfCorpus;
+		m_probitFeature[wIndex][1] = tfChild;
+		m_probitFeature[wIndex][2] = tfParent;
 	}
 	
 	public void setFixedFeatureValueMap(){
