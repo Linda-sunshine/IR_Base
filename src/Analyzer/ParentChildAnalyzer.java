@@ -3,6 +3,7 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import json.JSONArray;
@@ -10,7 +11,11 @@ import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
+import structures._ChildDocProbitModel;
+import structures._Doc;
 import structures._ParentDoc;
+import structures._SparseFeature;
+import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -92,8 +97,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		
+		_ChildDocProbitModel d = new _ChildDocProbitModel(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+
 		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
@@ -103,5 +109,95 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				System.err.format("[Warning]Missing parent document %s!\n", parent);
 			}			
 		}
+	}
+	
+	public void LoadDoc(String fileName){
+		if (fileName == null || fileName.isEmpty())
+			return;
+
+		JSONObject json = LoadJson(fileName);
+		String content = Utils.getJSONValue(json, "content");
+		String name = Utils.getJSONValue(json, "name");
+		String parent = Utils.getJSONValue(json, "parent");
+
+		_Doc d = new _Doc(m_corpus.getSize(), content, 0);
+		d.setName(name);
+		AnalyzeDoc(d);
+		
+	}
+	
+	public void setFeatureValues(String fValue, int norm){
+		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
+		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+		int childDocsNum = 0;
+		
+		HashMap<String, _stat> childFeatureStat = new HashMap<String, _stat>();
+		
+		for(int i=0; i<docs.size(); i++){
+			_Doc temp = docs.get(i);
+			if(temp instanceof _ChildDocProbitModel){
+				_SparseFeature[] sfs = temp.getSparse();
+				for(_SparseFeature sf : sfs){
+					String featureName = m_featureNames.get(sf.getIndex());
+					
+					if(!childFeatureStat.containsKey(featureName)){
+						childFeatureStat.put(featureName, new _stat(m_classNo));		
+					}
+					childFeatureStat.get(featureName).addOneDF(temp.getYLabel());
+				}
+				
+				childDocsNum += 1;
+			}
+		}
+		
+		for(int i=0; i<docs.size(); i++){
+			_Doc temp = docs.get(i);
+			_SparseFeature[] sfs = temp.getSparse();
+			double avgIDF = 0.0;
+			
+			for(_SparseFeature sf: sfs){
+				String featureName = m_featureNames.get(sf.getIndex());
+				_stat stat = m_featureStat.get(featureName);
+				
+				double DFCorpus = Utils.sumOfArray(stat.getDF());
+				double IDFCorpus = Math.log((N+1)/DFCorpus);
+				avgIDF += IDFCorpus;
+				
+				if(temp instanceof _ChildDocProbitModel){
+					double[] values = new double[6];
+					
+					_stat childStat = childFeatureStat.get(featureName);
+					double DFChild = Utils.sumOfArray(childStat.getDF());
+					double IDFChild = Math.log((childDocsNum+1)/DFChild);
+					
+					double DFRatio = DFCorpus/DFChild;
+					
+					values[0] = IDFCorpus;
+					values[1] = IDFChild;
+					values[2] = DFRatio;
+					
+					double TFParent = 0.0;
+					double TFChild = 0.0;
+							
+					_ParentDoc tempParentDoc = ((_ChildDocProbitModel)temp).m_parentDoc;
+					for(_SparseFeature sfParent: tempParentDoc.getSparse()){
+						TFParent = sfParent.getValue();
+					}
+					
+					TFChild = sf.getValue();
+					// TFParent/TFChild
+					double TFRatio = TFParent/TFChild;
+					
+					values[3] = TFParent;
+					values[4] = TFChild;
+					values[5] = TFRatio;
+					
+					sf.setValues(values);
+				}
+					
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
+		}
+		
 	}
 }

@@ -11,9 +11,11 @@ import structures._Doc;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
+import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChild_Gibbs;
+import topicmodels.ParentChild_GibbsProbitModel;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
@@ -30,20 +32,22 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
+		String topicmodel = "ParentChild_GibbsProbitModel"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
 		int number_of_topics = 20;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
-		boolean setRandomFold = false; // false means no shuffling and true means shuffling
+		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
 		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
+		gibbs_iteration = 10;
+		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -127,6 +131,8 @@ public class TopicModelMain {
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
 		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
+//		analyzer.LoadDirectory(TechArticlesFolder, suffix);
+//		analyzer.LoadDirectory(TechCommentsFolder, suffix);
 
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
@@ -186,9 +192,19 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta, c,
+				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
+			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
+				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
+
+			}else if(topicmodel.equals("ParentChild_GibbsProbitModel")){
+				alpha = alpha - 1;
+				double mu = 1.0;
+				double[] gamma = {2, 2};
+				model = new ParentChild_GibbsProbitModel(gibbs_iteration, 0, 
+						beta, c, lambda, number_of_topics, alpha, burnIn, gibbs_lag, gamma, mu);
 			}
 			
 			model.setDisplay(display);

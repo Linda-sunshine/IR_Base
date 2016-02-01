@@ -1,5 +1,6 @@
 package topicmodels;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
@@ -34,7 +35,7 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 	
 	public String toString(){
 		return String.format("Parent Child topic model with probit model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]",
-				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
+				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection){
@@ -197,5 +198,59 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 		return gaussianVal;
 		
 	}
+	
+	public double inference(_Doc pDoc){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc: ((_ParentDoc)pDoc).m_childDocs){
+			cDoc.createXSpace(number_of_topics, m_gamma.length);
+			((_ChildDocProbitModel)cDoc).setTopics4Gibbs(number_of_topics, 0, m_corpus);
+			sampleTestSet.add(cDoc);
+		}
+	
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					if(doc instanceof _ParentDoc){
+						collectParentStats((_ParentDoc) doc);
+					}
+					else if(doc instanceof _ChildDoc){
+						collectChildStats((_ChildDoc) doc);
+					}
+				
+//					System.out.println("logLikelihood\t"+logLikelihood);
+				}
+				count ++;
+			}
+		} while (++iter<this.number_of_iteration);
+		
+		for(_Doc doc:sampleTestSet){
+			estThetaInDoc(doc);
+			logLikelihood += calculate_log_likelihood(doc);
+		}
+
+		return logLikelihood; // this is average joint probability!	
+	}
+	
 	
 }

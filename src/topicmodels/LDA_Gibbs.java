@@ -6,6 +6,7 @@ import java.util.Random;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._SparseFeature;
 import utils.Utils;
 
 /**

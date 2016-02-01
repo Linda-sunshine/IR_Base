@@ -287,7 +287,7 @@ public abstract class TopicModel {
 	public double Evaluation() {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
-		
+		double totalWords = 0.0;
 		if (m_multithread) {
 			multithread_inference();
 			System.out.println("In thread");
@@ -296,15 +296,20 @@ public abstract class TopicModel {
 				perplexity += worker.getPerplexity();
 			}
 		} else {
+			
 			System.out.println("In Normal");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
-				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+				perplexity += loglikelihood;
+				totalWords += d.getTotalDocLength();
+//				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 			}
 			
 		}
-		perplexity /= m_testSet.size();
+//		perplexity /= m_testSet.size();
+		perplexity /= totalWords;
+		perplexity = Math.exp(-perplexity);
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)

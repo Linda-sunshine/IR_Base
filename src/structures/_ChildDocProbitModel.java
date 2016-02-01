@@ -25,17 +25,17 @@ public class _ChildDocProbitModel extends _ChildDoc{
 		m_fixedSigmaPartMap = new HashMap<Integer, Double>();
 	}
 	
-	public void setProbitFeature(int wIndex, double idfCorpus, double tfChild, double tfParent){
-		int i = 0;
-		
-		m_probitFeature[wIndex][i] = idfCorpus;
-		i ++;
-		
-		m_probitFeature[wIndex][i] = tfChild;
-		i ++;
-		
-		m_probitFeature[wIndex][i] = tfParent;
-	}
+//	public void setProbitFeature(int wIndex, double idfCorpus, double tfChild, double tfParent){
+//		int i = 0;
+//		
+//		m_probitFeature[wIndex][i] = idfCorpus;
+//		i ++;
+//		
+//		m_probitFeature[wIndex][i] = tfChild;
+//		i ++;
+//		
+//		m_probitFeature[wIndex][i] = tfParent;
+//	}
 	
 	public void setFixedFeatureValueMap(){
 		double[][] otherFeatures = new double[m_probitFeature.length-1][m_probitFeature[0].length];
@@ -104,25 +104,25 @@ public class _ChildDocProbitModel extends _ChildDoc{
 		double tfParent = 0.0;
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();
-			tfChild = fv.getValue();
+//			tfChild = fv.getValue();
 			
-			//get probit feature values
-			String featureName = c.m_features.get(wid);
-			int[] DFarray = c.m_featureStat.get(featureName).getDF();
-			double DF = Utils.sumOfArray(DFarray);
-			double idfCorpus = Math.log(1+c.getSize()/DF);
-			
-			for(_SparseFeature pFv: m_parentDoc.getSparse()){
-				if(pFv.getIndex() == wid){
-					tfParent = pFv.getValue(); 
-				}
-			}
+//			//get probit feature values
+//			String featureName = c.m_features.get(wid);
+//			int[] DFarray = c.m_featureStat.get(featureName).getDF();
+//			double DF = Utils.sumOfArray(DFarray);
+//			double idfCorpus = Math.log(1+c.getSize()/DF);
+//			
+//			for(_SparseFeature pFv: m_parentDoc.getSparse()){
+//				if(pFv.getIndex() == wid){
+//					tfParent = pFv.getValue(); 
+//				}
+//			}
 			
 			for(int j=0; j<fv.getValue(); j++){
 				int xIndex = 0;
 				m_words[wIndex] = wid;
 				
-				setProbitFeature(wIndex, idfCorpus, tfChild, tfParent);
+				m_probitFeature[wIndex] = fv.getValues();
 				
 				m_topicAssignment[wIndex] = m_rand.nextInt(k);
 				// (0,1) gaussian initialize
