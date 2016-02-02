@@ -170,7 +170,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					double DFChild = Utils.sumOfArray(childStat.getDF());
 					double IDFChild = Math.log((childDocsNum+1)/DFChild);
 					
-					double DFRatio = DFCorpus/DFChild;
+					double DFRatio = IDFCorpus/IDFChild;
 					
 					values[0] = IDFCorpus;
 					values[1] = IDFChild;
@@ -181,7 +181,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 							
 					_ParentDoc tempParentDoc = ((_ChildDocProbitModel)temp).m_parentDoc;
 					for(_SparseFeature sfParent: tempParentDoc.getSparse()){
-						TFParent = sfParent.getValue();
+						if(sfParent.getIndex() == sf.getIndex())
+							TFParent = sfParent.getValue();
 					}
 					
 					TFChild = sf.getValue();
