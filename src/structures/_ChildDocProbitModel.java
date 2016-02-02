@@ -90,26 +90,12 @@ public class _ChildDocProbitModel extends _ChildDoc{
 		double tfParent = 0.0;
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();
-//			tfChild = fv.getValue();
-//			
-//			//get probit feature values
-//			String featureName = c.m_features.get(wid);
-//			int[] DFarray = c.m_featureStat.get(featureName).getDF();
-//			double DF = Utils.sumOfArray(DFarray);
-//			double idfCorpus = Math.log(1+c.getSize()/DF);
-//			
-//			for(_SparseFeature pFv: m_parentDoc.getSparse()){
-//				if(pFv.getIndex() == wid){
-//					tfParent = pFv.getValue(); 
-//				}
-//			}
-//			
+			
 			for(int j=0; j<fv.getValue(); j++){
 				int xIndex = 0;
 				m_words[wIndex] = wid;
 				
 				m_probitFeature[wIndex] = fv.getValues();
-//				setProbitFeature(wIndex, idfCorpus, tfChild, tfParent);
 				
 				m_topicAssignment[wIndex] = m_rand.nextInt(k);
 				// (0,1) gaussian initialize
