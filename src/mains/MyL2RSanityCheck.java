@@ -67,9 +67,28 @@ public class MyL2RSanityCheck {
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
-		
-		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		double[][] MAPs = new double[3][];
+		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		check.diffGroupLOOCV();
+		MAPs[0] = check.getMAPs();
+		
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		check.diffGroupLOOCV();
+		MAPs[1] = check.getMAPs();
+
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		check.diffGroupLOOCV();
+		MAPs[2] = check.getMAPs();
+		
+		String[] methods = new String[]{"BoW", "Topic", "L2R"};
+		for(int i=0; i<3; i++){
+			System.out.print(methods[i]+":\t");
+			for(double m: MAPs[i])
+				System.out.print(m+"\t");
+			System.out.println();
+		}
 	}
 }

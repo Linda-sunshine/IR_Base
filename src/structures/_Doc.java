@@ -547,5 +547,14 @@ public class _Doc implements Comparable<_Doc> {
 	public int getInlink(){
 		return m_inlink;
 	}
+	
+	// Added by Lin for sanity check.
+	int m_groupNo;
+	public void setGroupNo(int n){
+		m_groupNo = n;
+	}
 
+	public int getGroupNo(){
+		return m_groupNo;
+	}
 }

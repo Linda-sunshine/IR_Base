@@ -51,12 +51,20 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 				if(lineCount%2 == 0){
 					strs = line.split(",");//The first is the index, ignore it.
 					ID = Integer.valueOf(strs[1]); // The ID of the document in the whole corpus.
-					group = Integer.valueOf(strs[3]); // The human annotated group information.
-				
+//					if(Integer.valueOf(strs[3]) == 0)
+//						group = 0;
+//					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 6))
+//						group = 1; // One-polarity reviews.
+//					else 
+//						group = 2; // Mix-polarity reviews.
+					group = Integer.valueOf(strs[3]);
+					
 					doc = m_corpus.getCollection().get(ID);
 					if(!m_groupDocs.containsKey(group))
 						m_groupDocs.put(group, new ArrayList<_Doc>());
+					doc.setGroupNo(group);
 					m_groupDocs.get(group).add(doc);
+					
 				}
 				lineCount++;
 			}
@@ -86,7 +94,9 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			System.out.format("%.4f\t", m);
 		System.out.println();
 	}
-	
+	public double[] getMAPs(){
+		return m_MAPs;
+	}
 	// Leave-one-out cross validation.
 	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
 		m_numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -222,7 +232,9 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		}
 		for(_RankItem r: rankDocs){
 			totalCount++;
-			if(m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()){
+//			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel())){
+
+			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()) && (m_allDocs.get(r.m_index).getGroupNo() == testDoc.getGroupNo())){
 				count++;
 				AP += count / totalCount;
 			}
