@@ -614,6 +614,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		
 	} 
 
+	public double calculate_log_likelihood(_Doc d){
+		return docLogLikelihoodByIntegrateTopics(d);
+	}
+	
 	//p(w)= \sum_z p(w|z)p(z)
 	protected double calLogLikelihoodByIntegrateTopics(int iter){
 		double logLikelihood = 0.0;

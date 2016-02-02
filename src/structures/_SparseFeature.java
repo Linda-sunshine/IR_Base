@@ -87,6 +87,15 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 		return this.m_values;
 	}
 
+	//added by Renqin to set the probit feature values
+	public void setValues(double[] values){
+		int valueDim = values.length;
+		m_values = new double[valueDim];
+		for(int i=0; i<valueDim; i++){
+			m_values[i] = values[i];
+		}
+	}
+	
 	@Override
 	public int compareTo(_SparseFeature sfv) {
 		return m_index - sfv.m_index;

@@ -14,6 +14,7 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChild_Gibbs;
+import topicmodels.ParentChild_GibbsProbitModel;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
@@ -30,7 +31,7 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "ParentChild_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
+		String topicmodel = "ParentChild_GibbsProbitModel"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChild_GibbsProbitModel
 	
 		String category = "tablet";
 		int number_of_topics = 20;
@@ -186,9 +187,15 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta, c,
+				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
+			}else if(topicmodel.equals("ParentChild_GibbsProbitModel")){
+				alpha = alpha - 1;
+				double mu = 1.0;
+				double[] gamma = {2, 2};
+				model = new ParentChild_GibbsProbitModel(gibbs_iteration, 0, 
+						beta, c, lambda, number_of_topics, alpha, burnIn, gibbs_lag, gamma, mu);
 			}
 			
 			model.setDisplay(display);
