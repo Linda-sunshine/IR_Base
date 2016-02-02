@@ -46,8 +46,8 @@ public class TopicModelMain {
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 10;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
-		gibbs_iteration = 10;
-		gibbs_lag = 2;
+//		gibbs_iteration = 10;
+//		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
