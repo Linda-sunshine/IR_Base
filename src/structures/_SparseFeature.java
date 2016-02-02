@@ -91,9 +91,7 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 	public void setValues(double[] values){
 		int valueDim = values.length;
 		m_values = new double[valueDim];
-		for(int i=0; i<valueDim; i++){
-			m_values[i] = values[i];
-		}
+		System.arraycopy(values, 0, m_values, 0, valueDim);
 	}
 	
 	@Override
