@@ -125,32 +125,26 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		
 	}
 	
+	@Override
 	public void setFeatureValues(String fValue, int norm){
+		super.setFeatureValues(fValue, norm);//it is safe to call this first
+		
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 		int childDocsNum = 0;
 		
-		HashMap<String, _stat> childFeatureStat = new HashMap<String, _stat>();
+		_stat[] childFeatureStat = new _stat[m_featureNames.size()];
 		
-		for(int i=0; i<docs.size(); i++){
-			_Doc temp = docs.get(i);
-			if(temp instanceof _ChildDocProbitModel){
+		for(_Doc temp:docs) {
+			if(temp instanceof _ChildDoc){
 				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf : sfs){
-					String featureName = m_featureNames.get(sf.getIndex());
-					
-					if(!childFeatureStat.containsKey(featureName)){
-						childFeatureStat.put(featureName, new _stat(m_classNo));		
-					}
-					childFeatureStat.get(featureName).addOneDF(temp.getYLabel());
-				}
-				
+				for(_SparseFeature sf : sfs)
+					childFeatureStat[sf.getIndex()].addOneDF(temp.getYLabel());				
 				childDocsNum += 1;
 			}
 		}
 		
-		for(int i=0; i<docs.size(); i++){
-			_Doc temp = docs.get(i);
+		for(_Doc temp:docs) {
 			_SparseFeature[] sfs = temp.getSparse();
 			double avgIDF = 0.0;
 			
@@ -159,38 +153,35 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				_stat stat = m_featureStat.get(featureName);
 				
 				double DFCorpus = Utils.sumOfArray(stat.getDF());
-				double IDFCorpus = Math.log((N+1)/DFCorpus);
+				double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
 				avgIDF += IDFCorpus;
 				
 				if(temp instanceof _ChildDocProbitModel){
 					double[] values = new double[6];
 					
-					_stat childStat = childFeatureStat.get(featureName);
+					_stat childStat = childFeatureStat[sf.getIndex()];
 					double DFChild = Utils.sumOfArray(childStat.getDF());
-					double IDFChild = Math.log((childDocsNum+1)/DFChild);
-					
-					double DFRatio = IDFCorpus/IDFChild;
+					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
 					
 					values[0] = IDFCorpus;
 					values[1] = IDFChild;
-					values[2] = DFRatio;
+					values[2] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
 					
 					double TFParent = 0.0;
 					double TFChild = 0.0;
 							
 					_ParentDoc tempParentDoc = ((_ChildDocProbitModel)temp).m_parentDoc;
 					for(_SparseFeature sfParent: tempParentDoc.getSparse()){
-						if(sfParent.getIndex() == sf.getIndex())
+						if(sfParent.getIndex() == sf.getIndex()) {
 							TFParent = sfParent.getValue();
+							break;
+						}
 					}
 					
 					TFChild = sf.getValue();
-					// TFParent/TFChild
-					double TFRatio = TFParent/TFChild;
-					
 					values[3] = TFParent;
 					values[4] = TFChild;
-					values[5] = TFRatio;
+					values[5] = TFParent/TFChild;
 					
 					sf.setValues(values);
 				}
