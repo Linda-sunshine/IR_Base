@@ -68,17 +68,17 @@ public class MyL2RSanityCheck {
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
 		double[][] MAPs = new double[3][];
-		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
-		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-		check.diffGroupLOOCV();
-		MAPs[0] = check.getMAPs();
-		
-		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
-		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-		check.diffGroupLOOCV();
-		MAPs[1] = check.getMAPs();
+//		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
+//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		check.diffGroupLOOCV();
+//		MAPs[0] = check.getMAPs();
+//		
+//		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
+//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		check.diffGroupLOOCV();
+//		MAPs[1] = check.getMAPs();
 
-		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		check.diffGroupLOOCV();
 		MAPs[2] = check.getMAPs();

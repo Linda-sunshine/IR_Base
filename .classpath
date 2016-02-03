@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="libs/mallet.jar"/>
 	<classpathentry kind="lib" path="libs/mallet-deps.jar"/>
 	<classpathentry kind="lib" path="libs/commons-math-2.2.jar"/>
+	<classpathentry kind="lib" path="libs/Jama-1.0.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
