@@ -125,32 +125,26 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		
 	}
 	
+	@Override
 	public void setFeatureValues(String fValue, int norm){
+		super.setFeatureValues(fValue, norm);//it is safe to call this first
+		
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 		int childDocsNum = 0;
 		
-		HashMap<String, _stat> childFeatureStat = new HashMap<String, _stat>();
+		_stat[] childFeatureStat = new _stat[m_featureNames.size()];
 		
-		for(int i=0; i<docs.size(); i++){
-			_Doc temp = docs.get(i);
-			if(temp instanceof _ChildDocProbitModel){
+		for(_Doc temp:docs) {
+			if(temp instanceof _ChildDoc){
 				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf : sfs){
-					String featureName = m_featureNames.get(sf.getIndex());
-					
-					if(!childFeatureStat.containsKey(featureName)){
-						childFeatureStat.put(featureName, new _stat(m_classNo));		
-					}
-					childFeatureStat.get(featureName).addOneDF(temp.getYLabel());
-				}
-				
+				for(_SparseFeature sf : sfs)
+					childFeatureStat[sf.getIndex()].addOneDF(temp.getYLabel());				
 				childDocsNum += 1;
 			}
 		}
 		
-		for(int i=0; i<docs.size(); i++){
-			_Doc temp = docs.get(i);
+		for(_Doc temp:docs) {
 			_SparseFeature[] sfs = temp.getSparse();
 			double avgIDF = 0.0;
 			
@@ -166,22 +160,21 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					int j = 0;
 					double[] values = new double[10];
 					
-					_stat childStat = childFeatureStat.get(featureName);
+					_stat childStat = childFeatureStat[sf.getIndex()];
 					double DFChild = Utils.sumOfArray(childStat.getDF());
 					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
-					
-					
+								
 					double DFRatio = IDFCorpus/IDFChild;
 					values[j] = 1;
 					j ++;
 					
 					values[j] = IDFCorpus;
 					j ++;
-					
+								
 					values[j] = IDFChild;
 					j ++;
 					
-					values[j] = DFRatio;
+					values[j] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
 					j ++;
 					
 					double TFParent = 0.0;
@@ -214,7 +207,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					
 					values[j] = IDFChild * TFChild;
 					j ++;
-					
+
 					sf.setValues(values);
 				}
 					
