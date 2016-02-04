@@ -160,38 +160,61 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				_stat stat = m_featureStat.get(featureName);
 				
 				double DFCorpus = Utils.sumOfArray(stat.getDF());
-				double IDFCorpus = Math.log((N+1)/DFCorpus);
+				double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
 				avgIDF += IDFCorpus;
 				
 				if(temp instanceof _ChildDocProbitModel){
-					double[] values = new double[6];
+					int j = 0;
+					double[] values = new double[10];
 					
 					_stat childStat = childFeatureStat.get(featureName);
 					double DFChild = Utils.sumOfArray(childStat.getDF());
-					double IDFChild = Math.log((childDocsNum+1)/DFChild);
+					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
+					
 					
 					double DFRatio = IDFCorpus/IDFChild;
+					values[j] = 1;
+					j ++;
 					
-					values[0] = IDFCorpus;
-					values[1] = IDFChild;
-					values[2] = DFRatio;
+					values[j] = IDFCorpus;
+					j ++;
+					
+					values[j] = IDFChild;
+					j ++;
+					
+					values[j] = DFRatio;
+					j ++;
 					
 					double TFParent = 0.0;
 					double TFChild = 0.0;
 							
 					_ParentDoc tempParentDoc = ((_ChildDocProbitModel)temp).m_parentDoc;
 					for(_SparseFeature sfParent: tempParentDoc.getSparse()){
-						if(sfParent.getIndex() == sf.getIndex())
+						if(sfParent.getIndex() == sf.getIndex()){
 							TFParent = sfParent.getValue();
+							break;
+						}
 					}
 					
+					TFParent = TFParent/(double)tempParentDoc.getTotalDocLength();
+					
 					TFChild = sf.getValue();
+					TFChild = TFChild/(double)temp.getTotalDocLength();
+					
 					// TFParent/TFChild
 					double TFRatio = TFParent/TFChild;
 					
-					values[3] = TFParent;
-					values[4] = TFChild;
-					values[5] = TFRatio;
+					values[j] = TFParent;
+					j ++;
+					
+					values[j] = TFChild;
+					j ++;
+					
+					values[j] = TFRatio;
+					j ++;
+					
+					values[j] = IDFChild * TFChild;
+					j ++;
 					
 					sf.setValues(values);
 				}

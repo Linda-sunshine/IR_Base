@@ -1,5 +1,8 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -14,6 +17,7 @@ import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._Stn;
+import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
 public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
@@ -252,5 +256,75 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs{
 		return logLikelihood; // this is average joint probability!	
 	}
 	
+	protected void printChildXValue(_ChildDocProbitModel d, File childXFolder){
+		String XValueFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childXFolder,
+					XValueFile));
+
+			for (int n = 0; n < d.m_words.length; n++) {
+				int index = d.m_words[n];
+				double xValue = d.m_xIndicator[n];
+//				int topic = d.m_topicAssignment[n];
+				String featureName = m_corpus.getFeature(index);
+					
+				pw.print(featureName + ":" + xValue + "\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 	
+	public void debugOutput(String filePrefix){
+
+		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
+		File childTopicFolder = new File(filePrefix + "childTopicAssignment");
+		if (!parentTopicFolder.exists()) {
+			System.out.println("creating directory" + parentTopicFolder);
+			parentTopicFolder.mkdir();
+		}
+		if (!childTopicFolder.exists()) {
+			System.out.println("creating directory" + childTopicFolder);
+			childTopicFolder.mkdir();
+		}
+		
+		File parentPhiFolder = new File(filePrefix + "parentPhi");
+		File childPhiFolder = new File(filePrefix + "childPhi");
+		if (!parentPhiFolder.exists()) {
+			System.out.println("creating directory" + parentPhiFolder);
+			parentPhiFolder.mkdir();
+		}
+		if (!childPhiFolder.exists()) {
+			System.out.println("creating directory" + childPhiFolder);
+			childPhiFolder.mkdir();
+		}
+		
+		File childXFolder = new File(filePrefix+"xValue");
+		if(!childXFolder.exists()){
+			System.out.println("creating directory" + childXFolder);
+			childXFolder.mkdir();
+		}
+
+		for (_Doc d : m_trainSet) {
+		if (d instanceof _ParentDoc) {
+				printParentTopicAssignment((_ParentDoc) d, parentTopicFolder);
+				printParentPhi((_ParentDoc)d, parentPhiFolder);
+			} else if (d instanceof _ChildDocProbitModel) {
+				printChildTopicAssignment((_ChildDocProbitModel) d, childTopicFolder);
+				printChildXValue((_ChildDocProbitModel)d, childXFolder);
+			}
+
+		}
+
+		String parentParameterFile = filePrefix + "parentParameter.txt";
+		String childParameterFile = filePrefix + "childParameter.txt";
+		printParameter(parentParameterFile, childParameterFile);
+
+		String similarityFile = filePrefix+"topicSimilarity.txt";
+		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
+		
+		printEntropy(filePrefix);
+	}
 }

@@ -468,7 +468,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 				long start = System.currentTimeMillis();
 				EM();
-				finalEst();
+//				finalEst();
 				perf[i] = Evaluation(i);
 				
 				String betaFile = "./data/results/1-31-0923-ParentChild_GibbsProbitModel/topWords.txt";
@@ -690,6 +690,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			System.out.println("creating directory" + childPhiFolder);
 			childPhiFolder.mkdir();
 		}
+		
+		File childXFolder = new File(filePrefix+"xValue");
+		if(!childXFolder.exists()){
+			System.out.println("creating directory" + childXFolder);
+			childXFolder.mkdir();
+		}
 
 		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
@@ -697,7 +703,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printChildTopicAssignment((_ChildDoc) d, childTopicFolder);
-//				printChildPhi((_ChildDoc)d, childPhiFolder);
+				printChildXValue((_ChildDoc)d, childXFolder);
 			}
 
 		}
@@ -873,6 +879,27 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		
 	} 
 
+	protected void printChildXValue(_ChildDoc d, File childXFolder){
+		String XValueFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childXFolder,
+					XValueFile));
+
+			for (int n = 0; n < d.m_words.length; n++) {
+				int index = d.m_words[n];
+				int xValue = d.m_xIndicator[n];
+//				int topic = d.m_topicAssignment[n];
+				String featureName = m_corpus.getFeature(index);
+					
+				pw.print(featureName + ":" + xValue + "\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public double calculate_log_likelihood(_Doc d){
 		return docLogLikelihoodByIntegrateTopics(d);
 	}

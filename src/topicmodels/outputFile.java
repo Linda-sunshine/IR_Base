@@ -34,15 +34,15 @@ public class outputFile {
 			String sctmFormatChildFile = filePrefix + "/cbagf.AT.txt";
 			String sctmWordFile = filePrefix + "/words.AT.txt";
 			
-//			if(c.getFeatureSize() !=0){	
-//				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
-//				for(int i=0; i<c.getFeatureSize(); i++){
-//					String wordName = c.getFeature(i);
-//					wordPW.println(wordName);
-//				}
-//				wordPW.flush();
-//				wordPW.close();
-//			}
+			if(c.getFeatureSize() !=0){	
+				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
+				for(int i=0; i<c.getFeatureSize(); i++){
+					String wordName = c.getFeature(i);
+					wordPW.println(wordName);
+				}
+				wordPW.flush();
+				wordPW.close();
+			}
 			
 			PrintWriter parentPW = new PrintWriter(new File(
 					selectedSentencesinParentFile));
@@ -300,11 +300,11 @@ public class outputFile {
 		/***** Parameters in feature selection. *****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; // Feature selection method.
-		double startProb = 0.5; // Used in feature selection, the starting point
+		double startProb = 0; // Used in feature selection, the starting point
 								// of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point
 								// of the features.
-		int DFthreshold = 30; // Filter the features with DFs smaller than this
+		int DFthreshold = 3; // Filter the features with DFs smaller than this
 								// threshold.
 
 		// System.out.println("Performing feature selection, wait...");
