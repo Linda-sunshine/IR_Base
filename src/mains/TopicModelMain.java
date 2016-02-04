@@ -13,8 +13,8 @@ import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
+import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.ParentChild_Gibbs;
-import topicmodels.ParentChild_GibbsProbitModel;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
@@ -194,7 +194,7 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_GibbsProbitModel(gibbs_iteration, 0, 
+				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
 						beta, c, lambda, number_of_topics, alpha, burnIn, gibbs_lag, gamma, mu);
 			}
 			

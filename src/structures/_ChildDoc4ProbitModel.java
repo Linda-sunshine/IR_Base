@@ -3,29 +3,31 @@ package structures;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
+
+import Analyzer.ParentChildAnalyzer;
 import Jama.Matrix;
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DRand;
 import utils.Utils;
 
-public class _ChildDocProbitModel extends _ChildDoc{
-	public double[] m_xIndicator;
+public class _ChildDoc4ProbitModel extends _ChildDoc{
+	public double[] m_xIndicatorValue;
 	public double[][] m_probitFeature;
 	public HashMap<Integer, double[]> m_fixedMuPartMap;
 	public HashMap<Integer, Double> m_fixedSigmaPartMap;
 	public Normal m_Normal;
 	
-	public _ChildDocProbitModel(int ID, String name, String title, String source, int ylabel){
+	public _ChildDoc4ProbitModel(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
 		m_Normal = new Normal(0, 1, new DRand());
 		
-		m_fixedMuPartMap = new HashMap<Integer, double[]>();
+		m_fixedMuPartMap = new HashMap<Integer, double[]>();//from word index to a vector
 		m_fixedSigmaPartMap = new HashMap<Integer, Double>();
 	}
 	
 	public void setFixedFeatureValueMap(){
-		double[][] otherFeatures = new double[m_probitFeature.length-1][m_probitFeature[0].length];
-		double[] feature = new double[m_probitFeature[0].length];
+		double[][] otherFeatures = new double[m_probitFeature.length-1][ParentChildAnalyzer.ChildDocFeatureSize];
+		double[] feature = new double[ParentChildAnalyzer.ChildDocFeatureSize];
 	
 		for(int n=0; n<m_words.length; n++){
 			int wid = m_words[n];
@@ -56,12 +58,13 @@ public class _ChildDocProbitModel extends _ChildDoc{
 				m_fixedMuPartMap.put(wid, mm.getArray()[0]);
 				
 				double sigma = featureMatrix.transpose().times(aMatrixInverse).times(featureMatrix).get(0, 0)+1;
-				m_fixedSigmaPartMap.put(wid, sigma);
+				m_fixedSigmaPartMap.put(wid, Math.sqrt(sigma));
 			}
 		}
 	}
 	
-	public void setTopics4Gibbs(int k, double alpha, _Corpus c){
+	@Override
+	public void setTopics4Gibbs(int k, double alpha){
 		if(m_topics==null || m_topics.length != k){
 			m_topics = new double[k];
 			m_sstat =  new double[k];
@@ -73,13 +76,11 @@ public class _ChildDocProbitModel extends _ChildDoc{
 		if(m_words == null || m_words.length!=docSize){
 			m_words = new int[docSize];
 			m_topicAssignment = new int[docSize];
-			m_xIndicator = new double[docSize];
+			m_xIndicatorValue = new double[docSize];
 		}
 		
-		//initial probit feature value
-		String[] probitFeatureName = new String[]{"IDF copurs", "TF childDoc", "TF parentDoc"};
-		int probitFeatureNum = probitFeatureName.length;
-		m_probitFeature = new double[m_words.length][probitFeatureNum];
+		//initial probit feature value		
+		m_probitFeature = new double[m_words.length][];
 		
 		int wIndex = 0;
 		if(m_rand == null)
@@ -98,11 +99,10 @@ public class _ChildDocProbitModel extends _ChildDoc{
 				m_probitFeature[wIndex] = fv.getValues();
 				
 				m_topicAssignment[wIndex] = m_rand.nextInt(k);
-				// (0,1) gaussian initialize
-				double gaussianVal = m_Normal.nextDouble();
-				m_xIndicator[wIndex] = gaussianVal;
+				// N(0,1) gaussian initialize
+				m_xIndicatorValue[wIndex] = m_Normal.nextDouble();
 				
-				if (m_xIndicator[wIndex] > 0)
+				if (m_xIndicatorValue[wIndex] > 0)
 					xIndex = 1;
 				else
 					xIndex = 0;
@@ -116,6 +116,7 @@ public class _ChildDocProbitModel extends _ChildDoc{
 		setFixedFeatureValueMap();
 	}
 
+	@Override
 	public void permutation(){
 		int s, t;
 		double x;
@@ -130,10 +131,10 @@ public class _ChildDocProbitModel extends _ChildDoc{
 			m_topicAssignment[s] = m_topicAssignment[i];
 			m_topicAssignment[i] = t;
 			
-			if(m_xIndicator != null){
-				x = m_xIndicator[s];
-				m_xIndicator[s] = m_xIndicator[i];
-				m_xIndicator[i] = x;
+			if(m_xIndicatorValue != null){
+				x = m_xIndicatorValue[s];
+				m_xIndicatorValue[s] = m_xIndicatorValue[i];
+				m_xIndicatorValue[i] = x;
 			}
 		}
 	}

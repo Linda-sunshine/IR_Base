@@ -1,20 +1,14 @@
 package topicmodels;
 
-import java.util.Arrays;
-import java.util.Collection;
-
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DRand;
 import structures._ChildDoc;
-import structures._ChildDocProbitModel;
+import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
-import structures._Doc;
-import structures._ParentDoc;
-import structures._Stn;
 
-public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs {
+public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 	public Normal m_Normal;
-	public ParentChild_GibbsProbitModel(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ParentChildWithProbitModel_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
 		m_Normal = new Normal(0, 1, new DRand());
@@ -25,46 +19,10 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs {
 				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
 	}
 	
-	//will be called before entering EM iterations
 	@Override
-	protected void initialize_probability(Collection<_Doc> collection){
-		for(int i=0; i<number_of_topics; i++)
-			Arrays.fill(word_topic_sstat[i], d_beta);
-		Arrays.fill(m_sstat, d_beta*vocabulary_size); // avoid adding such prior later on
+	void sampleInChildDoc(_ChildDoc doc){
+		_ChildDoc4ProbitModel d = (_ChildDoc4ProbitModel)doc;
 		
-		for(_Doc d:collection){
-			if(d instanceof _ParentDoc){
-				for(_Stn stnObj: d.getSentences()){
-					stnObj.setTopicsVct(number_of_topics);
-				}
-				d.setTopics4Gibbs(number_of_topics, 0);
-			}else if(d instanceof _ChildDocProbitModel){
-				((_ChildDocProbitModel)d).createXSpace(number_of_topics, m_gamma.length);
-				((_ChildDocProbitModel)d).setTopics4Gibbs(number_of_topics, 0, m_corpus);
-			}			
-			
-			for(int i=0; i<d.m_words.length; i++){
-				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]] ++;
-				m_sstat[d.m_topicAssignment[i]] ++;
-			}
-		}
-		
-		imposePrior();
-	}
-
-	@Override
-	public double calculate_E_step(_Doc d){
-		d.permutation();
-		
-		if(d instanceof _ParentDoc)
-			sampleInParentDoc((_ParentDoc)d);
-		else if(d instanceof _ChildDoc)
-			sampleInChildDoc((_ChildDocProbitModel)d);
-		
-		return 0;
-	}
-	
-	void sampleInChildDoc(_ChildDocProbitModel d){
 		int wid, tid, xid;
 		double xVal = 0.0;
 		double normalizedProb;
@@ -148,27 +106,22 @@ public class ParentChild_GibbsProbitModel extends ParentChild_Gibbs {
 		}
 	}
 	
-	public double xPredictiveProb(_ChildDocProbitModel d, int i){
+	public double xPredictiveProb(_ChildDoc4ProbitModel d, int i){
 		double mu = 0.0;
 		double sigma = 0.0;
-		double gaussianVal = 0.0;
 		
 		int wid = d.m_words[i];
+		double[] muVct = d.m_fixedMuPartMap.get(wid);
 		for(int n=0; n<d.m_words.length; n++){
 			if(n==i)
 				continue;
 			if(n<i)
-				mu += d.m_xIndicator[n]*d.m_fixedMuPartMap.get(wid)[n];
+				mu += d.m_xIndicator[n]*muVct[n];
 			else if(n>i)
-				mu += d.m_xIndicator[n]*d.m_fixedMuPartMap.get(wid)[n-1];
+				mu += d.m_xIndicator[n]*muVct[n-1];
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
-		
-		gaussianVal = m_Normal.nextDouble();
-		gaussianVal = gaussianVal*Math.sqrt(sigma) + mu;
-		return gaussianVal;
-		
+		return m_Normal.nextDouble(mu, sigma);//mean and standard deviation		
 	}
-	
 }
