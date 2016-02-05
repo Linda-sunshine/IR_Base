@@ -98,8 +98,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
@@ -135,10 +135,10 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		int childDocsNum = 0;
 		
 		double[] childDF = new double[m_featureNames.size()]; // total number of unique words
-		
+
 		//get DF in child documents
 		for(_Doc temp:docs) {
-			if(temp instanceof _ChildDoc){
+			if(temp instanceof _ChildDoc4ProbitModel){
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs)
 					childDF[sf.getIndex()] ++;	// DF in child documents			
@@ -147,11 +147,14 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		}
 		
 		_SparseFeature[] pSfvs;
-		for(_Doc temp:docs) {			
+		int kk = 0;
+		for(_Doc temp:docs) {	
+			
 			if(temp instanceof _ChildDoc4ProbitModel) {
+
 				_ParentDoc tempParentDoc = ((_ChildDoc4ProbitModel)temp).m_parentDoc;
 				pSfvs = tempParentDoc.getSparse();
-				
+							
 				for(_SparseFeature sf: temp.getSparse()){				
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName); // corpus-level statistics
@@ -172,9 +175,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					double TFParent = 0.0;
 					double TFChild = 0.0;							
 					
-					int wid = Utils.indexOf(pSfvs, sf.getIndex());
-					if (wid!=-1)
-						TFParent = pSfvs[wid].getValue() / tempParentDoc.getTotalDocLength();
+					int wIndex = Utils.indexOf(pSfvs, sf.getIndex());
+					if (wIndex!=-1)
+						TFParent = pSfvs[wIndex].getValue() / tempParentDoc.getTotalDocLength();
 					TFChild = sf.getValue()/temp.getTotalDocLength();
 					
 					values[4] = TFParent;//TF in parent document
@@ -185,7 +188,13 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 					sf.setValues(values);
 				}
+				
+				System.out.println("set feature value for parent child probit model");
+			}else{
+				kk ++;
+				System.out.println("set feature value  probit model"+kk);
 			}
-		}		
+		}
+		System.out.println("set feature value for parent child probit model");
 	}
 }

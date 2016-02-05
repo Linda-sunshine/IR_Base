@@ -76,7 +76,7 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 		}
 	}
 	
-	void calcAMatrix(DenseDoubleMatrix2D AMtx, int wid) {
+	void calcAMatrix(DenseDoubleMatrix2D AMtx, int wIndex) {
 		for(int i=0; i<ParentChildAnalyzer.ChildDocFeatureSize; i++) {
 			for(int j=0; j<ParentChildAnalyzer.ChildDocFeatureSize; j++) {				
 				double sum = 0;
@@ -84,7 +84,7 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 					sum = 1; //the covariance of \lambda's prior is fixed to an identity matrix 
 				
 				for(int l=0; l<m_words.length; l++) {
-					if (l == wid)
+					if (l == wIndex)
 						continue;//skip the corresponding word
 					sum += m_probitFvcts[l][i] * m_probitFvcts[l][j];
 				}
@@ -120,7 +120,7 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 				xid = m_words[wIndex].getX();
 				m_xTopicSstat[xid][tid] ++;
 				m_xSstat[xid] ++;
-				m_probitFvcts[wid] = fv.getValues();
+				m_probitFvcts[wIndex] = fv.getValues();
 				
 				wIndex ++;
 			}

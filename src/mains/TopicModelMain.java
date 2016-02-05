@@ -31,7 +31,7 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "ParentChild_GibbsProbitModel"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChild_GibbsProbitModel
+		String topicmodel = "ParentChildWithProbitModel_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChild_GibbsProbitModel
 	
 		String category = "tablet";
 		int number_of_topics = 20;
@@ -45,6 +45,8 @@ public class TopicModelMain {
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
+//		gibbs_iteration = 10;
+//		gibbs_lag = 2;
 		double burnIn = 0.4;
 		boolean display = true, sentence = false;
 		
@@ -139,8 +141,10 @@ public class TopicModelMain {
 //		analyzer.LoadDirectory(amazonFolder, suffix);				
 		
 		analyzer.setFeatureValues(featureValue, norm);
-		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
+		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 		
+		System.out.println("parentChildWithProbitModel");
+
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
 			
@@ -190,7 +194,8 @@ public class TopicModelMain {
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
-			}else if(topicmodel.equals("ParentChild_GibbsProbitModel")){
+			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
+				System.out.println("parentChildWithProbitModel");
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};

@@ -28,13 +28,15 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		_Word[] words = d.getWords();
 		for(int i=0; i<words.length; i++){
 			_Word w = words[i];
-			xid = w.getIndex();
+//			xid = w.getIndex();
+			xid = w.getX();
 			tid = w.getTopic();	
 			
 			d.m_xSstat[xid] --;
 			d.m_xTopicSstat[xid][tid] --;
 
 			w.setXValue(xPredictiveProb(d, i));
+		
 			xid = w.getX();
 			
 			d.m_xSstat[xid] ++;

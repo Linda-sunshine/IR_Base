@@ -114,8 +114,9 @@ public class Utils {
 	}
 	
 	public static int indexOf(_SparseFeature[] vct, double wid) {
-		int start = 0, end = vct.length-1, mid = (start+end)/2;
+		int start = 0, end = vct.length-1, mid=0;
 		do {
+			mid = (start+end)/2;
 			if (vct[start].getIndex() > wid || vct[end].getIndex() < wid)
 				return -1; //out of range
 			else if (vct[mid].getIndex() > wid)
@@ -124,8 +125,8 @@ public class Utils {
 				start = mid + 1;
 			else
 				return mid;		
-			mid = (start+mid)/2;
-		} while (end>start);
+			
+		} while (end>=start);
 		return -1;
 	}
 	
