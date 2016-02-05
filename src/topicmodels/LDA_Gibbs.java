@@ -6,6 +6,7 @@ import java.util.Random;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Word;
 import utils.Utils;
 
 /**
@@ -50,9 +51,9 @@ public class LDA_Gibbs extends pLSA {
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
 			d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
-			for(int i=0; i<d.m_words.length; i++) {
-				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]] ++;
-				m_sstat[d.m_topicAssignment[i]] ++;
+			for(_Word w:d.getWords()) {
+				word_topic_sstat[w.getTopic()][w.getIndex()] ++;
+				m_sstat[w.getTopic()] ++;
 			}
 		}
 		
@@ -108,9 +109,9 @@ public class LDA_Gibbs extends pLSA {
 		d.permutation();
 		double p;
 		int wid, tid;
-		for(int i=0; i<d.m_words.length; i++) {
-			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];
+		for(_Word w:d.getWords()) {
+			wid = w.getIndex();
+			tid = w.getTopic();
 			
 			//remove the word's topic assignment
 			d.m_sstat[tid] --;
@@ -132,7 +133,7 @@ public class LDA_Gibbs extends pLSA {
 			}
 			
 			//assign the selected topic to word
-			d.m_topicAssignment[i] = tid;
+			w.setTopic(tid);
 			d.m_sstat[tid] ++;
 			if (m_collectCorpusStats) {
 				word_topic_sstat[tid][wid] ++;
@@ -218,9 +219,9 @@ public class LDA_Gibbs extends pLSA {
 		int tid, wid;
 		double logLikelihood = docThetaLikelihood(d), docSum = Utils.sumOfArray(d.m_sstat);
 		
-		for(int i=0; i<d.m_words.length; i++) {
-			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];
+		for(_Word w:d.getWords()) {
+			wid = w.getIndex();
+			tid = w.getTopic();
 			logLikelihood += Math.log(d.m_sstat[tid]/docSum * word_topic_sstat[tid][wid]/m_sstat[tid]);
 		}
 		return logLikelihood;

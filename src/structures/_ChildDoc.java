@@ -1,12 +1,8 @@
 package structures;
 
-import java.util.Arrays;
-import java.util.Random;
-
 import utils.Utils;
 
 public class _ChildDoc extends _Doc {
-	public int[] m_xIndicator;
 	public int[][] m_xTopicSstat;//joint assignment of <x,z>: 0 from general, 1 from specific
 	public int[] m_xSstat; // sufficient statistics for x
 
@@ -35,62 +31,23 @@ public class _ChildDoc extends _Doc {
 	
 	@Override
 	public void setTopics4Gibbs(int k, double alpha){		
-		if(m_topics==null || m_topics.length != k){		
-			m_topics = new double[k];
-			m_sstat = new double[k];
-		}
-	
-		Arrays.fill(m_sstat, alpha);
+		createSpace(k, alpha);
 		
-		int docSize = getTotalDocLength();
-		if(m_words==null || m_words.length!=docSize){
-			m_words = new int[docSize];
-			m_topicAssignment = new int[docSize];	
-			m_xIndicator = new int[docSize];
-		}
-		
-		int wIndex = 0;
-		if(m_rand == null)
-			m_rand =  new Random();
-		
-		int wid, gammaSize = m_xSstat.length;
+		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
-				m_words[wIndex] = wid;
-				m_topicAssignment[wIndex] = m_rand.nextInt(k);
-				m_xIndicator[wIndex] = m_rand.nextInt(gammaSize);
+				tid = m_rand.nextInt(k);
+				xid = m_rand.nextInt(gammaSize);;
+				m_words[wIndex] = new _Word(wid, tid, xid);
 
-				m_xTopicSstat[m_xIndicator[wIndex]][m_topicAssignment[wIndex]] ++;
-				m_xSstat[m_xIndicator[wIndex]] ++;
+				m_xTopicSstat[xid][tid] ++;
+				m_xSstat[xid] ++;
 						
 				wIndex ++;
 			}
 		}
 	}
-
-	//add swapping x_indicator
-	@Override
-	public void permutation(){
-		int s, t;
-		for(int i=m_words.length-1; i>1; i--){
-			s = m_rand.nextInt(i);
-			
-			t = m_words[s];
-			m_words[s] = m_words[i];
-			m_words[i] = t;
-			
-			t = m_topicAssignment[s];
-			m_topicAssignment[s] = m_topicAssignment[i];
-			m_topicAssignment[i] = t;
-			
- 			if (m_xIndicator!=null) {
-				t = m_xIndicator[s];
-				m_xIndicator[s] = m_xIndicator[i];
-				m_xIndicator[i] = t;
- 			}
-		}
-	}	
 	
 	public void estGlobalLocalTheta() {
 		Utils.L1Normalization(m_xProportion);

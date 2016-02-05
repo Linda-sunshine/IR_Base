@@ -1,17 +1,15 @@
 package topicmodels;
 
 import cern.jet.random.tdouble.Normal;
-import cern.jet.random.tdouble.engine.DRand;
 import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
+import structures._Word;
 
 public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
-	public Normal m_Normal;
 	public ParentChildWithProbitModel_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
-		m_Normal = new Normal(0, 1, new DRand());
 	}
 	
 	public String toString(){
@@ -24,64 +22,40 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		_ChildDoc4ProbitModel d = (_ChildDoc4ProbitModel)doc;
 		
 		int wid, tid, xid;
-		double xVal = 0.0;
 		double normalizedProb;
 		
 		//sampling the indicator variable 
-		for(int i=0; i<d.m_words.length; i++){
-			xVal = d.m_xIndicator[i];
-			tid = d.m_topicAssignment[i];
-					
-			if(xVal > 0)
-				xid = 1;	
-			else
-				xid = 0;
+		_Word[] words = d.getWords();
+		for(int i=0; i<words.length; i++){
+			_Word w = words[i];
+			xid = w.getIndex();
+			tid = w.getTopic();	
 			
 			d.m_xSstat[xid] --;
 			d.m_xTopicSstat[xid][tid] --;
-			
-			xVal = xPredictiveProb(d, i);
-			d.m_xIndicator[i] = xVal;
-			
-			if(xVal > 0)
-				xid = 1;			
-			else 
-				xid = 0;
+
+			w.setXValue(xPredictiveProb(d, i));
+			xid = w.getX();
 			
 			d.m_xSstat[xid] ++;
 			d.m_xTopicSstat[xid][tid] ++;			
 		}
 		
-		for(int i=0; i<d.m_words.length; i++){
-			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];
-			xVal = d.m_xIndicator[i];
-			
-			if(xVal > 0)
-				xid = 1;
-			else
-				xid = 0;
+		for(_Word w:words){
+			wid = w.getIndex();
+			tid = w.getTopic();
+			xid = w.getX();
 			
 			d.m_xTopicSstat[xid][tid] --;
-			d.m_xSstat[xid] --;
-			
+			d.m_xSstat[xid] --;			
 			if(m_collectCorpusStats){
 				word_topic_sstat[tid][wid] --;
 				m_sstat[tid] --;
 			}
 			
-			normalizedProb = 0.0;
-			
-			for(tid=0; tid<number_of_topics; tid++){				
-				double pWordTopic = childWordByTopicProb(tid, wid);
-				if(xid == 1){//p(z=tid,x=1) from specific					
-					double pTopicLocal = childTopicInDocProb(tid, 1, d);
-					m_topicProbCache[tid] = pWordTopic*pTopicLocal;					
-				} else {//p(z=tid,x=0) from background					
-					double pTopicGlobal = childTopicInDocProb(tid, 0, d);	
-					m_topicProbCache[tid] = pWordTopic*pTopicGlobal;					
-				}
-				
+			normalizedProb = 0.0;			
+			for(tid=0; tid<number_of_topics; tid++){
+				m_topicProbCache[tid] = childWordByTopicProb(tid, wid) * childTopicInDocProb(tid, xid, d);		
 				normalizedProb += m_topicProbCache[tid];
 			}
 			
@@ -95,7 +69,7 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 			if (tid == number_of_topics)
 				tid--;
 			
-			d.m_topicAssignment[i] = tid;
+			w.setTopic(tid);
 		
 			d.m_xTopicSstat[xid][tid] ++;
 			d.m_xSstat[xid] ++;
@@ -109,19 +83,18 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 	public double xPredictiveProb(_ChildDoc4ProbitModel d, int i){
 		double mu = 0.0;
 		double sigma = 0.0;
+		_Word[] words = d.getWords();
 		
-		int wid = d.m_words[i];
+		int wid = words[i].getIndex();
 		double[] muVct = d.m_fixedMuPartMap.get(wid);
-		for(int n=0; n<d.m_words.length; n++){
+		for(int n=0; n<words.length; n++){
 			if(n==i)
-				continue;
-			if(n<i)
-				mu += d.m_xIndicator[n]*muVct[n];
-			else if(n>i)
-				mu += d.m_xIndicator[n]*muVct[n-1];
+				continue;			
+			
+			mu += words[n].getXValue()*muVct[words[n].getLocalIndex()];			
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
-		return m_Normal.nextDouble(mu, sigma);//mean and standard deviation		
+		return Normal.staticNextDouble(mu, sigma);//mean and standard deviation		
 	}
 }
