@@ -61,6 +61,7 @@ public class _Word {
 	
 	public void setXValue(double xVal) {
 		m_xVal = xVal;
+		m_x = xVal>0?1:0;
 	}
 	
 	public double getXValue() {
