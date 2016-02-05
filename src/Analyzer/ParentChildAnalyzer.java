@@ -11,7 +11,7 @@ import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
-import structures._ChildDocProbitModel;
+import structures._ChildDoc4ProbitModel;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
@@ -20,6 +20,7 @@ import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
+	public static int ChildDocFeatureSize = 8;
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -97,8 +98,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
@@ -130,66 +131,70 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		super.setFeatureValues(fValue, norm);//it is safe to call this first
 		
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+		int N = m_isCVStatLoaded ? m_TotalDF : docs.size(); // total number of documents
 		int childDocsNum = 0;
 		
-		_stat[] childFeatureStat = new _stat[m_featureNames.size()];
-		
+		double[] childDF = new double[m_featureNames.size()]; // total number of unique words
+
+		//get DF in child documents
 		for(_Doc temp:docs) {
-			if(temp instanceof _ChildDoc){
+			if(temp instanceof _ChildDoc4ProbitModel){
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs)
-					childFeatureStat[sf.getIndex()].addOneDF(temp.getYLabel());				
+					childDF[sf.getIndex()] ++;	// DF in child documents			
 				childDocsNum += 1;
 			}
 		}
 		
-		for(_Doc temp:docs) {
-			_SparseFeature[] sfs = temp.getSparse();
-			double avgIDF = 0.0;
+		_SparseFeature[] pSfvs;
+		int kk = 0;
+		for(_Doc temp:docs) {	
 			
-			for(_SparseFeature sf: sfs){
-				String featureName = m_featureNames.get(sf.getIndex());
-				_stat stat = m_featureStat.get(featureName);
-				
-				double DFCorpus = Utils.sumOfArray(stat.getDF());
-				double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
-				avgIDF += IDFCorpus;
-				
-				if(temp instanceof _ChildDocProbitModel){
-					double[] values = new double[6];
+			if(temp instanceof _ChildDoc4ProbitModel) {
+
+				_ParentDoc tempParentDoc = ((_ChildDoc4ProbitModel)temp).m_parentDoc;
+				pSfvs = tempParentDoc.getSparse();
+							
+				for(_SparseFeature sf: temp.getSparse()){				
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName); // corpus-level statistics
 					
-					_stat childStat = childFeatureStat[sf.getIndex()];
-					double DFChild = Utils.sumOfArray(childStat.getDF());
-					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
+					double DFCorpus = Utils.sumOfArray(stat.getDF());
+					double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;				
+				
+					double[] values = new double[ChildDocFeatureSize];
 					
-					values[0] = IDFCorpus;
-					values[1] = IDFChild;
-					values[2] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
+					double DFChild = childDF[sf.getIndex()];
+					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;						
+					
+					values[0] = 1;//bias term
+					values[1] = IDFCorpus;//IDF over whole corpus
+					values[2] = IDFChild;//IDF in child documents					
+					values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;//IDF ratio
 					
 					double TFParent = 0.0;
-					double TFChild = 0.0;
-							
-					_ParentDoc tempParentDoc = ((_ChildDocProbitModel)temp).m_parentDoc;
-					for(_SparseFeature sfParent: tempParentDoc.getSparse()){
-						if(sfParent.getIndex() == sf.getIndex()) {
-							TFParent = sfParent.getValue();
-							break;
-						}
-					}
+					double TFChild = 0.0;							
 					
-					TFChild = sf.getValue();
-					values[3] = TFParent;
-					values[4] = TFChild;
-					values[5] = TFParent/TFChild;
+					int wIndex = Utils.indexOf(pSfvs, sf.getIndex());
+					if (wIndex!=-1)
+						TFParent = pSfvs[wIndex].getValue() / tempParentDoc.getTotalDocLength();
+					TFChild = sf.getValue()/temp.getTotalDocLength();
 					
+					values[4] = TFParent;//TF in parent document
+					values[5] = TFChild;//TF in child document					
+					values[6] = TFParent/TFChild;//TF ratio
+					
+					values[7] = IDFCorpus * TFChild;//TF-IDF
+
 					sf.setValues(values);
 				}
-					
-				temp.setAvgIDF(avgIDF/sfs.length);
+				
+				System.out.println("set feature value for parent child probit model");
+			}else{
+				kk ++;
+				System.out.println("set feature value  probit model"+kk);
 			}
 		}
-		
+		System.out.println("set feature value for parent child probit model");
 	}
-	
 }

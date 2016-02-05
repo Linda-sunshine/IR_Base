@@ -14,6 +14,7 @@ import structures._ParentDoc;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
+import structures._Word;
 import utils.Utils;
 
 public class ParentChild_Gibbs extends LDA_Gibbs {
@@ -55,16 +56,15 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
-				for(_Stn stnObj: d.getSentences()){
-					stnObj.setTopicsVct(number_of_topics);
-				}
+				for(_Stn stnObj: d.getSentences())
+					stnObj.setTopicsVct(number_of_topics);				
 			} else if(d instanceof _ChildDoc)
 				((_ChildDoc) d).createXSpace(number_of_topics, m_gamma.length);
 			
 			d.setTopics4Gibbs(number_of_topics, 0);
-			for (int i = 0; i < d.m_words.length; i++) {
-				word_topic_sstat[d.m_topicAssignment[i]][d.m_words[i]]++;
-				m_sstat[d.m_topicAssignment[i]]++;
+			for (_Word w:d.getWords()) {
+				word_topic_sstat[w.getTopic()][w.getIndex()]++;
+				m_sstat[w.getTopic()]++;
 			}			
 		}
 		
@@ -87,9 +87,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		int wid, tid;
 		double normalizedProb;		
 		
-		for(int i=0; i<d.m_words.length; i++){
-			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];
+		for(_Word w:d.getWords()){
+			wid = w.getIndex();
+			tid = w.getTopic();
 			
 			d.m_sstat[tid] --;
 			if(m_collectCorpusStats){
@@ -117,7 +117,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			if(tid == number_of_topics)
 				tid --;
 			
-			d.m_topicAssignment[i] = tid;
+			w.setTopic(tid);
 			d.m_sstat[tid] ++;
 			if(m_collectCorpusStats){
 				word_topic_sstat[tid][wid] ++;
@@ -177,10 +177,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		int wid, tid, xid;		
 		double normalizedProb;
 		
-		for(int i=0; i<d.m_words.length; i++){			
-			wid = d.m_words[i];
-			tid = d.m_topicAssignment[i];
-			xid = d.m_xIndicator[i];
+		for(_Word w:d.getWords()){			
+			wid = w.getIndex();
+			tid = w.getTopic();
+			xid = w.getX();
 			
 			d.m_xTopicSstat[xid][tid] --;
 			d.m_xSstat[xid] --;
@@ -229,8 +229,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			if (tid == number_of_topics)
 				tid--;
 			
-			d.m_topicAssignment[i] = tid;
-			d.m_xIndicator[i] = xid;
+			w.setTopic(tid);
+			w.setX(xid);
 
 			d.m_xTopicSstat[xid][tid] ++;
 			d.m_xSstat[xid] ++;
@@ -257,7 +257,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			return (d_alpha + m_mu*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
 					/(m_kAlpha + m_mu + d.m_xSstat[0]);
 		} else
-			return -1;//this branch is impossible
+			return Double.NaN;//this branch is impossible
 	}
 
 	protected double childXInDocProb(int xid, _ChildDoc d){
@@ -434,10 +434,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
-				printParentTopicAssignment((_ParentDoc) d, parentTopicFolder);
+				printTopicAssignment(d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
-				printChildTopicAssignment((_ChildDoc) d, childTopicFolder);
+				printTopicAssignment(d, childTopicFolder);
 //				printChildPhi((_ChildDoc)d, childPhiFolder);
 			}
 
@@ -453,7 +453,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		printEntropy(filePrefix);
 	}
 
-	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
+	public void printTopicAssignment(_Doc d, File parentFolder) {
 	//	System.out.println("printing topic assignment parent documents");
 		
 		String topicAssignmentFile = d.getName() + ".txt";
@@ -461,9 +461,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			PrintWriter pw = new PrintWriter(new File(parentFolder,
 					topicAssignmentFile));
 			
-			for(int n=0; n<d.m_words.length; n++){
-				int index = d.m_words[n];
-				int topic = d.m_topicAssignment[n];
+			for(_Word w:d.getWords()){
+				int index = w.getIndex();
+				int topic = w.getTopic();
 				String featureName = m_corpus.getFeature(index);
 				pw.print(featureName + ":" + topic + "\t");
 			}
@@ -471,32 +471,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-	}
-
-	public void printChildTopicAssignment(_ChildDoc d, File childFolder) {
-	//	System.out.println("printing topic assignment child documents");
-		
-		String topicAssignmentfile = d.getName() + ".txt";
-		try {
-			PrintWriter pw = new PrintWriter(new File(childFolder,
-					topicAssignmentfile));
-
-			for (int n = 0; n < d.m_words.length; n++) {
-				int index = d.m_words[n];
-				int topic = d.m_topicAssignment[n];
-				String featureName = m_corpus.getFeature(index);
-					
-				pw.print(featureName + ":" + topic + "\t");
-			}
-			pw.flush();
-			pw.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void printParameter(String parentParameterFile, String childParameterFile){
@@ -609,9 +586,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		}catch(Exception e){
 			e.printStackTrace();
 		}
-		
-		
-		
 	} 
 
 	public double calculate_log_likelihood(_Doc d){

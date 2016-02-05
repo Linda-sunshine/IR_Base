@@ -113,6 +113,23 @@ public class Utils {
 		return sum;
 	}
 	
+	public static int indexOf(_SparseFeature[] vct, double wid) {
+		int start = 0, end = vct.length-1, mid=0;
+		do {
+			mid = (start+end)/2;
+			if (vct[start].getIndex() > wid || vct[end].getIndex() < wid)
+				return -1; //out of range
+			else if (vct[mid].getIndex() > wid)
+				end = mid-1;
+			else if (vct[mid].getIndex() < wid)
+				start = mid + 1;
+			else
+				return mid;		
+			
+		} while (end>=start);
+		return -1;
+	}
+	
 	public static double entropy(double[] prob, boolean logScale) {
 		double ent = 0;
 		for(double p:prob) {
