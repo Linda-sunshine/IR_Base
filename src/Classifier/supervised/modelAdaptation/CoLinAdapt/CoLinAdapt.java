@@ -26,6 +26,7 @@ public class CoLinAdapt extends LinAdapt {
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
 	
+	
 	public CoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
 		m_eta3 = 0.5;
