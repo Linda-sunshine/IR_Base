@@ -1,9 +1,12 @@
 package SanityCheck;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import Ranker.LambdaRank.OptimizationType;
@@ -27,6 +30,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	SimType m_sType;
 	int m_numberOfCores;
 	Object m_MAPLock = new Object();
+	PrintWriter m_writer;
 	
 	/*** Key: group index, value: documents arraylist.
 	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
@@ -37,14 +41,19 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		m_sType = sType;
 		m_groupDocs = new HashMap<Integer, ArrayList<_Doc>>();
 	}
+	
+	// Write out the weights of each learning to rank.
+	public void initWriter(String filename) throws FileNotFoundException{
+		m_writer = new PrintWriter(new File(filename));
+	}
 
-	//Load the file with IDs and human annotations into different groups.
+	// Load the file with IDs and human annotations into different groups.
 	public void loadAnnotatedFile(String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			_Doc doc;
-			//group: sentiment group.
+			// group: sentiment group.
 			int ID = 0, group = 0, lineCount = 0;
 			String[] strs;
 			while((line = reader.readLine()) != null){
@@ -93,6 +102,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		for(double m: m_MAPs)
 			System.out.format("%.4f\t", m);
 		System.out.println();
+		m_writer.close();
 	}
 	public double[] getMAPs(){
 		return m_MAPs;
@@ -101,7 +111,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
 		m_numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-
+		m_writer.format("-----------------------%d------------------------\n", groupNo);
+		
 		for(int k=0; k<m_numberOfCores; k++){
 			threads.add((new Thread() {
 				int core;
@@ -109,7 +120,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 					try{
 						for(int i=0; i+core < groupDocs.size(); i += m_numberOfCores){
 							System.out.println("----Current index is " + (i+core));
-							// Leave one out to contruct the training set.
+							// Leave one out to construct the training set.
 							_Doc testDoc = groupDocs.get(i+core); // Get the test document.
 							ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
 							trainSet.remove(i+core);
@@ -117,6 +128,9 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 							// Train L2R model.
 							if(m_sType == SimType.ST_L2R){
 								double[] weights = trainL2R(trainSet, testDoc);
+								for(double w: weights)
+									m_writer.format("%.4f\t", w);
+								m_writer.write("\n");
 								// Get the permutation of for the test query and calculate corresponding AP.
 								synchronized(m_MAPLock){
 									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
