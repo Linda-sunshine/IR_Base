@@ -10,8 +10,6 @@ import structures._Corpus;
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
-import Analyzer.jsonAnalyzer;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 /****
  * In this main function, I will apply learning to rank models on the human annotated different groups of reviews 
@@ -67,24 +65,30 @@ public class MyL2RSanityCheck {
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
-		double[][] MAPs = new double[3][];
-//		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.diffGroupLOOCV();
-//		MAPs[0] = check.getMAPs();
-//		
-//		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.diffGroupLOOCV();
-//		MAPs[1] = check.getMAPs();
-
-		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		
+		String[] methods = new String[]{"BoW", "Topic", "BT", "L2R"};
+		double[][] MAPs = new double[methods.length][];
+		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		check.diffGroupLOOCV();
+		MAPs[0] = check.getMAPs();
+		
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		check.diffGroupLOOCV();
+		MAPs[1] = check.getMAPs();
+		
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoWTP);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		check.diffGroupLOOCV();
 		MAPs[2] = check.getMAPs();
+
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+		check.diffGroupLOOCV();
+		MAPs[3] = check.getMAPs();
 		
-		String[] methods = new String[]{"BoW", "Topic", "L2R"};
-		for(int i=0; i<3; i++){
+		for(int i=0; i<methods.length; i++){
 			System.out.print(methods[i]+":\t");
 			for(double m: MAPs[i])
 				System.out.print(m+"\t");

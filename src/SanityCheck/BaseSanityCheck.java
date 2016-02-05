@@ -18,6 +18,7 @@ public class BaseSanityCheck {
 	public enum SimType {
 		ST_BoW,  // BoW similarity
 		ST_TP,   // Topic similarity
+		ST_BoWTP, // BoW + Topic similarity
 		ST_STP,	 // Sentiment topic similarity
 		ST_Rand, // Random similarity
 		ST_L2R	 // L2R similarity

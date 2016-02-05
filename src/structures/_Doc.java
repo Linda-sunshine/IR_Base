@@ -205,7 +205,7 @@ public class _Doc implements Comparable<_Doc> {
 		m_topics = null;
 		m_sstat = null;
 		m_words = null;
-		m_topicAssignment = null;
+//		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	

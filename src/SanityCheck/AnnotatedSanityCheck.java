@@ -232,9 +232,9 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		}
 		for(_RankItem r: rankDocs){
 			totalCount++;
-//			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel())){
+			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel())){
 
-			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()) && (m_allDocs.get(r.m_index).getGroupNo() == testDoc.getGroupNo())){
+//			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()) && (m_allDocs.get(r.m_index).getGroupNo() == testDoc.getGroupNo())){
 				count++;
 				AP += count / totalCount;
 			}
@@ -252,7 +252,12 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		else if(m_sType == SimType.ST_BoW)
 			similarity = getBoWSim(di, dj);
 		else if(m_sType == SimType.ST_TP)
-			similarity = getTopicalSim(di, dj);
+			similarity = Math.exp(-getTopicalSim(di, dj));
+		else if(m_sType == SimType.ST_BoWTP){
+//			double a = getBoWSim(di, dj);
+//			double b = getTopicalSim(di, dj);
+			similarity = getBoWSim(di, dj) + Math.exp(-getTopicalSim(di, dj));
+		}
 		else if(m_sType == SimType.ST_Rand)
 			similarity = Math.random();
 		return similarity;
