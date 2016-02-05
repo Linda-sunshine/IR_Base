@@ -8,7 +8,6 @@ import structures._Doc;
 import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.semisupervised.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
