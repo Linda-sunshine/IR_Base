@@ -5,15 +5,20 @@ import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
 import cern.jet.random.tdouble.Normal;
+import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
 import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
 import structures._Word;
 
 public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
+	
+	Normal m_normal;
+	
 	public ParentChildWithProbitModel_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
+		m_normal = new Normal(0, 1, new DoubleMersenneTwister());
 	}
 	
 	public String toString(){
@@ -32,7 +37,6 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		_Word[] words = d.getWords();
 		for(int i=0; i<words.length; i++){
 			_Word w = words[i];
-//			xid = w.getIndex();
 			xid = w.getX();
 			tid = w.getTopic();	
 			
@@ -86,12 +90,12 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		}
 	}
 	
-	public double xPredictiveProb(_ChildDoc4ProbitModel d, int i){
-		double mu = 0.0;
-		double sigma = 0.0;
+	//reject sampling for 
+	double xPredictiveProb(_ChildDoc4ProbitModel d, int i){
+		double mu = 0.0, sigma = 0.0, x;
 		_Word[] words = d.getWords();
 		
-		int wid = words[i].getIndex();
+		int wid = words[i].getIndex(), tid = words[i].getTopic(), xid;
 		double[] muVct = d.m_fixedMuPartMap.get(wid);
 		for(int n=0; n<words.length; n++){
 			if(n==i)
@@ -101,7 +105,12 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
-		return Normal.staticNextDouble(mu, sigma);//mean and standard deviation		
+		
+		do {
+			x = m_normal.nextDouble(mu, sigma);
+			xid = x>0?1:0;
+		} while (Math.random() > childTopicInDocProb(tid, xid, d));
+		return x;
 	}
 	
 	
