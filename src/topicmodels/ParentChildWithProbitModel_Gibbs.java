@@ -1,5 +1,9 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 import cern.jet.random.tdouble.Normal;
 import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
@@ -99,4 +103,6 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		sigma = d.m_fixedSigmaPartMap.get(wid);
 		return Normal.staticNextDouble(mu, sigma);//mean and standard deviation		
 	}
+	
+	
 }

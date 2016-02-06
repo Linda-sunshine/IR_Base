@@ -15,11 +15,12 @@ public class _Word {
 	
 	//structure used for ParentChildTopicModel
 	int m_x;
+	public double m_xProb;
 	
 	//structure used for ParentChildTopicModelwithProbit
 	double m_xVal;
 	int m_localIndex; // index in the sorted sparse vector of its original documents
-	
+
 	public _Word(int index, int topic) {
 		m_index = index;
 		m_topic = topic;

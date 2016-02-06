@@ -146,8 +146,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			}
 		}
 		
+		System.out.println("set feature value for parent child probit model");
 		_SparseFeature[] pSfvs;
-		int kk = 0;
 		for(_Doc temp:docs) {	
 			
 			if(temp instanceof _ChildDoc4ProbitModel) {
@@ -188,13 +188,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 					sf.setValues(values);
 				}
-				
-				System.out.println("set feature value for parent child probit model");
-			}else{
-				kk ++;
-				System.out.println("set feature value  probit model"+kk);
 			}
 		}
-		System.out.println("set feature value for parent child probit model");
+		
 	}
 }

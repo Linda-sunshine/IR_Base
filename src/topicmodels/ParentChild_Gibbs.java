@@ -8,6 +8,7 @@ import java.util.Collection;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
+import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -296,6 +297,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for (int j = 0; j < m_gamma.length; j++)
 			d.m_xProportion[j] += d.m_xSstat[j] + m_gamma[j];
 
+		
 		double parentDocLength = d.m_parentDoc.getTotalDocLength()/m_mu, gTopic, lTopic;
 		// used to output the topK words and parameters
 		for (int k = 0; k < this.number_of_topics; k++) {		
@@ -431,6 +433,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			System.out.println("creating directory" + childPhiFolder);
 			childPhiFolder.mkdir();
 		}
+		
+		File childXFolder = new File(filePrefix+"xValue");
+		if(!childXFolder.exists()){
+			System.out.println("creating x Value directory" + childXFolder);
+			childXFolder.mkdir();
+		}
 
 		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
@@ -438,7 +446,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printTopicAssignment(d, childTopicFolder);
-//				printChildPhi((_ChildDoc)d, childPhiFolder);
+				printChildXValue(d, childXFolder);
 			}
 
 		}
@@ -476,6 +484,25 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	}
 
+	protected void printChildXValue(_Doc d, File childXFolder){
+		String XValueFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childXFolder,
+					XValueFile));
+	
+			for(_Word w:d.getWords()){
+				int index = w.getIndex();
+				int x = w.getX();
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + x + "\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public void printParameter(String parentParameterFile, String childParameterFile){
 		System.out.println("printing parameter");
 		try{
