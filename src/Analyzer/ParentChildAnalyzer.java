@@ -123,8 +123,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		_Doc d = new _Doc(m_corpus.getSize(), content, 0);
 		d.setName(name);
-		AnalyzeDoc(d);
-		
+		AnalyzeDoc(d);		
 	}
 	
 	@Override
@@ -150,7 +149,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		System.out.println("set feature value for parent child probit model");
 		_SparseFeature[] pSfvs;
 		for(_Doc temp:docs) {	
-			
 			if(temp instanceof _ChildDoc4ProbitModel) {
 
 				_ParentDoc tempParentDoc = ((_ChildDoc4ProbitModel)temp).m_parentDoc;
@@ -189,8 +187,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 					sf.setValues(values);
 				}
-			}
+			}	
 		}
-		
+		System.out.println("Set feature value for parent child probit model");
+
 	}
 }

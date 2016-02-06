@@ -3,7 +3,8 @@ package mains;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
@@ -25,7 +26,7 @@ public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 1; //The default value is unigram. 
+		int Ngram = 2; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
@@ -36,7 +37,7 @@ public class TopicModelMain {
 		String topicmodel = "ParentChildWithProbitModel_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
-		int number_of_topics = 20;
+		int number_of_topics = 30;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -50,7 +51,8 @@ public class TopicModelMain {
 //		gibbs_iteration = 10;
 //		gibbs_lag = 2;
 		double burnIn = 0.4;
-		boolean display = true, sentence = false;
+		int displayLap = 20;
+		boolean sentence = false;
 		
 		// most popular items under each category from Amazon
 		// needed for docSummary
@@ -72,16 +74,15 @@ public class TopicModelMain {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		String posModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || 
+				topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM")) {
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 			posModel = "./data/Model/en-pos-maxent.bin"; // POS model.
 			sentence = true;
 		}
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
-		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel_%s.txt", Ngram, articleType);
 	
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
@@ -97,9 +98,8 @@ public class TopicModelMain {
 			rootFolder.mkdir();
 		}
 		
-		Calendar today = Calendar.getInstance();
-		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", 1+today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
-						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");	
+		String filePrefix = String.format("./data/results/%s", dateFormatter.format(new Date()));
 		
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
@@ -107,34 +107,37 @@ public class TopicModelMain {
 			resultFolder.mkdir();
 		}
 		
-		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
 		String topWordPath = filePrefix + "/topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.5; // Used in feature selection, the starting point of the features.
+		double startProb = 0.3; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 
-//		System.out.println("Performing feature selection, wait...");
+		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
-		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 //		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
-		
+
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
+
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		analyzer.LoadStopwords(stopwords);
+		
 		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
 		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
+
 //		analyzer.LoadDirectory(TechArticlesFolder, suffix);
 //		analyzer.LoadDirectory(TechCommentsFolder, suffix);
 
+		
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		
+		System.out.println("Creating feature vectors, wait...");
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
@@ -142,13 +145,11 @@ public class TopicModelMain {
 		}
 		
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
-//		analyzer.LoadDirectory(amazonFolder, suffix);				
+//		analyzer.LoadDirectory(amazonFolder, suffix);			
 		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 		
-		System.out.println("parentChildWithProbitModel");
-
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
 			
@@ -192,23 +193,19 @@ public class TopicModelMain {
 						lambda);
 
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
-				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
-						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
+				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, mu);
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
-				System.out.println("parentChildWithProbitModel");
-				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
-						beta, c, lambda, number_of_topics, alpha, burnIn, gibbs_lag, gamma, mu);
+				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, converge, 
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}
 			
-			model.setDisplay(display);
-			model.setInforWriter(infoFilePath);
+			model.setDisplayLap(displayLap);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){
