@@ -24,7 +24,7 @@ public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 1; //The default value is unigram. 
+		int Ngram = 2; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
@@ -40,7 +40,7 @@ public class TopicModelMain {
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
 		
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = topicmodel.equals("LDA_Gibbs")?200:5.0;//these two parameters must be larger than 1!!!
-		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
+		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
@@ -70,8 +70,8 @@ public class TopicModelMain {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
 		String posModel = null;
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
+		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || 
+				topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM")) {
 			stnModel = "./data/Model/en-sent.bin"; //Sentence model.
 			posModel = "./data/Model/en-pos-maxent.bin"; // POS model.
 			sentence = true;
@@ -114,23 +114,24 @@ public class TopicModelMain {
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 30; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
 
-//		System.out.println("Performing feature selection, wait...");
+		System.out.println("Performing feature selection, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
-		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 //		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
-		
+
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
+
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
 		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
 
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		
+		System.out.println("Creating feature vectors, wait...");
 		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
 		{
 			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
@@ -191,7 +192,7 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta, c,
+				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						gamma, mu);
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
@@ -199,7 +200,7 @@ public class TopicModelMain {
 				alpha = alpha - 1;
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
+				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, converge, 
 						beta, c, lambda, number_of_topics, alpha, burnIn, gibbs_lag, gamma, mu);
 			}
 			

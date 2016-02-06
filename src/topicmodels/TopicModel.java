@@ -259,7 +259,7 @@ public abstract class TopicModel {
 				delta = 1.0;
 			last = current;
 			
-			if (m_display && i%10==0) {
+			if (m_display && i%20==0) {
 				if (m_converge>0){
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
