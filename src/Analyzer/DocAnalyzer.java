@@ -224,7 +224,7 @@ public class DocAnalyzer extends Analyzer {
 						break;//touch the boundary
 					
 					token = tokens[j] + "-" + token;
-					legit |= isLegit(tokens[j]);
+					legit &= isLegit(tokens[j]);
 					if (legit)//at least one of them is legitimate
 						Ngrams.add(token);
 				}

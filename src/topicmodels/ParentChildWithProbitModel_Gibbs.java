@@ -18,8 +18,8 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 	}
 	
 	public String toString(){
-		return String.format("Parent Child topic model with probit model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]",
-				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
+		return String.format("Parent Child topic model with probit model [k:%d, alpha:%.4f, beta:%.4f, Gibbs Sampling]",
+				number_of_topics, d_alpha, d_beta);
 	}
 	
 	@Override
@@ -91,21 +91,25 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		double mu = 0.0, sigma = 0.0, x;
 		_Word[] words = d.getWords();
 		
-		int wid = words[i].getIndex(), tid = words[i].getTopic(), xid;
+		int wid = words[i].getIndex(), tid = words[i].getTopic();
 		double[] muVct = d.m_fixedMuPartMap.get(wid);
 		for(int n=0; n<words.length; n++){
 			if(n==i)
 				continue;			
 			
-			mu += words[n].getXValue()*muVct[words[n].getLocalIndex()];			
+			mu += words[n].getXValue() * muVct[words[n].getLocalIndex()];			
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
 		
+		double x0 = childTopicInDocProb(tid, 0, d), x1 = childTopicInDocProb(tid, 1, d);//no need to repeatedly compute this
 		do {
 			x = m_normal.nextDouble(mu, sigma);
-			xid = x>0?1:0;
-		} while (Math.random() > childTopicInDocProb(tid, xid, d));
+			if (x<=0 && Math.random()<x0)
+				break;
+			else if (x>0 && Math.random()<x1)
+				break;
+		} while (true);
 		return x;
 	}
 }

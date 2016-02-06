@@ -346,7 +346,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 				lambda, number_of_topics, alpha, 10, -1, attributeSize);
 		
 		model.LoadPrior(aspectlist, eta);
-		model.setDisplay(true);
+		model.setDisplayLap(1);
 		model.EMonCorpus();
 		model.printTopWords(topK);
 	}
