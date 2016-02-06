@@ -269,8 +269,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	@Override
 	public void calculate_M_step(int iter){
-//		if (iter % m_lag == 0) 
-//			calLogLikelihood2(iter);
 
 		if(iter>m_burnIn && iter%m_lag==0){
 			for(int i=0; i<this.number_of_topics; i++){
@@ -286,6 +284,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				else if(d instanceof _ChildDoc)
 					collectChildStats((_ChildDoc)d);
 			}
+			double corpusLikelihood = calculate_log_likelihood();
+			System.out.println("corpusLikelihood\t"+corpusLikelihood);
 		}
 	}	
 	
@@ -309,6 +309,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			d.m_xTopics[0][k] += lTopic;
 			d.m_topics[k] += gTopic + lTopic;
 		}
+		
+		int xid = 0;
+		for(_Word w: d.getWords()){
+			xid = w.getX();
+			w.addXStats(xid);
+		}
 	}
 	
 	@Override
@@ -320,6 +326,23 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		} else if (d instanceof _ChildDoc) {
 			((_ChildDoc) d).estGlobalLocalTheta();
 		}
+	}
+	
+	protected double calculate_log_likelihood(){
+		double corpusLogLikelihood = 0.0;
+		
+		for(int i=0; i<this.number_of_topics; i++)
+			Utils.L1Normalization(topic_term_probabilty[i]); 
+		
+		//estimate p(z|d) from all the collected samples
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+		
+		for(_Doc d: m_trainSet){
+			corpusLogLikelihood += calculate_log_likelihood(d);
+		}
+		
+		return corpusLogLikelihood;
 	}
 	
 	void discoverSpecificComments(MatchPair matchType, String similarityFile) {
@@ -745,8 +768,9 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			for(_Word w:d.getWords()){
 				int index = w.getIndex();
 				int x = w.getX();
+				double xProb = w.getXProb();
 				String featureName = m_corpus.getFeature(index);
-				pw.print(featureName + ":" + x + "\t");
+				pw.print(featureName + ":" + x + ":" + xProb + "\t");
 			}
 			pw.flush();
 			pw.close();
@@ -878,18 +902,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for(_Doc d: m_trainSet){
 			logLikelihood += docLogLikelihoodByIntegrateTopics(d);
 		}
+		return logLikelihood;
 	}
-	
-	//p(w)= \sum_z p(w|z)p(z)
-//	protected double calLogLikelihoodByIntegrateTopics(){
-//		double logLikelihood = 0.0;
-//		
-//		for(_Doc d: m_trainSet){
-//			logLikelihood += docLogLikelihoodByIntegrateTopics(d);
-//		}
-//		
-//		return logLikelihood;
-//	}
 	
 	protected double docLogLikelihoodByIntegrateTopics(_Doc d){
 		
@@ -903,20 +917,18 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
 				if(topic_term_probabilty[k][index] == 0){
-					System.out.println("topic_term_probabilty 0\t");
+//					System.out.println("topic_term_probabilty 0\t");
 					topic_term_probabilty[k][index] = 1e-9;
 				}
 				double wordPerTopicLikelihood = topic_term_probabilty[k][index];
-//				System.out.println("first part\t"+wordPerTopicLikelihood);
 				if(d.m_topics[k] == 0){
-					System.out.println("topic proportion 0\t");
+//					System.out.println("topic proportion 0\t");
 					d.m_topics[k] = 1e-9;
 				}
 				wordPerTopicLikelihood *= d.m_topics[k];
 				if (wordPerTopicLikelihood == 0)
 					wordPerTopicLikelihood = 1e-9;
 				wordPerTopicLikelihood = Math.log(wordPerTopicLikelihood);
-//				System.out.println("second part\t"+wordPerTopicLikelihood);
 				if(wordLogLikelihood == 0){
 					wordLogLikelihood = wordPerTopicLikelihood;
 				}else{

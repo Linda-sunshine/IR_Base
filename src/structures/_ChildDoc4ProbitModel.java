@@ -2,12 +2,12 @@ package structures;
 
 import java.util.Arrays;
 import java.util.HashMap;
-
 import Analyzer.ParentChildAnalyzer;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import cern.jet.random.tdouble.Normal;
+import utils.Utils;
 
 public class _ChildDoc4ProbitModel extends _ChildDoc{
 	double[][] m_probitFvcts; // to facilitate computation
@@ -128,5 +128,15 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 		}
 		
 		setFixedFeatureValueMap();
+	}
+	
+	public void estGlobalLocalTheta(){
+		Utils.L1Normalization(m_xProportion);
+		for(int x=0; x<m_xTopics.length; x++)
+			Utils.L1Normalization(m_xTopics[x]);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 }

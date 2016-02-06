@@ -53,5 +53,9 @@ public class _ChildDoc extends _Doc {
 		Utils.L1Normalization(m_xProportion);
 		for(int x=0; x<m_xTopics.length; x++)
 			Utils.L1Normalization(m_xTopics[x]);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 }

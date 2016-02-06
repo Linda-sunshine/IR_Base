@@ -11,12 +11,11 @@ import structures._Doc;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Gibbs_Debug;
+//import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.ParentChild_Gibbs;
-import topicmodels.ParentChild_GibbsProbitModel;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
@@ -34,7 +33,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 
-		String topicmodel = "ParentChildWithProbitModel_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChild_GibbsProbitModel
+		String topicmodel = "ParentChildWithProbitModel_Gibbs"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
 		int number_of_topics = 20;
