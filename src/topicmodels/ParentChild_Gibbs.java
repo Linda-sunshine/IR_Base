@@ -146,8 +146,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			double term1 = gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp);
 			double term2 = gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
-			term *= term1 / term2;
-		
+			term *= term1 / term2;		
 		} 
 
 		return term;
@@ -160,16 +159,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		double result = 1.0;
 		for(int n=1; n<=nc; n++) 
 			result *= 1 + muDp / (alphaMuNp + n);
-		return result;
-	}
-	
-	double logGammaFuncRatio(int nc, double muDp, double alphaMuNp) {
-		if (nc==0)
-			return 0.0;
-		
-		double result = 0;
-		for(int n=1; n<=nc; n++) 
-			result += Math.log(1 + muDp / (alphaMuNp + n));
 		return result;
 	}
 
@@ -266,9 +255,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 	@Override
 	public void calculate_M_step(int iter){
-//		if (iter % m_lag == 0) 
-//			calLogLikelihood2(iter);
-
 		if(iter>m_burnIn && iter%m_lag==0){
 			for(int i=0; i<this.number_of_topics; i++){
 				for(int v=0; v<this.vocabulary_size; v++){
