@@ -122,8 +122,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		_Doc d = new _Doc(m_corpus.getSize(), content, 0);
 		d.setName(name);
-		AnalyzeDoc(d);
-		
+		AnalyzeDoc(d);		
 	}
 	
 	@Override
@@ -188,6 +187,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				}				
 			}
 		}
-		System.out.println("set feature value for parent child probit model");
+		System.out.println("Set feature value for parent child probit model");
 	}
 }

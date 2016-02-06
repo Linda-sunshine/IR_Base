@@ -18,8 +18,8 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 	}
 	
 	public String toString(){
-		return String.format("Parent Child topic model with probit model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]",
-				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
+		return String.format("Parent Child topic model with probit model [k:%d, alpha:%.4f, beta:%.4f, Gibbs Sampling]",
+				number_of_topics, d_alpha, d_beta);
 	}
 	
 	@Override
@@ -97,7 +97,7 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 			if(n==i)
 				continue;			
 			
-			mu += words[n].getXValue()*muVct[words[n].getLocalIndex()];			
+			mu += words[n].getXValue() * muVct[words[n].getLocalIndex()];			
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);

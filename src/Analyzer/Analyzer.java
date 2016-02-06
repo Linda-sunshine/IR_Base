@@ -291,6 +291,7 @@ public abstract class Analyzer {
 				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		} else {
+			System.out.println("No feature value is set, keep the raw count of every feature in setFeatureValues().");
 			//the original feature is raw TF
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
@@ -307,8 +308,6 @@ public abstract class Analyzer {
 				//compute average IDF
 				temp.setAvgIDF(avgIDF/sfs.length);
 			}
-			
-			System.out.println("No feature value is set, keep the raw count of every feature.");
 		}
 		
 		//rank the documents by product and time in all the cases
@@ -320,7 +319,7 @@ public abstract class Analyzer {
 			for(_Doc d:docs)			
 				Utils.L2Normalization(d.getSparse());
 		} else {
-			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
+			System.out.println("No normalizaiton is adopted here or wrong parameters in setFeatureValues()!");
 		}
 		
 		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());

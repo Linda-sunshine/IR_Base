@@ -44,7 +44,6 @@ public class TransductiveMain {
 		String pathToPosWords = "./data/Model/SentiWordsPos.txt";
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
 		String pathToNegationWords = "./data/Model/negation_words.txt";
-		String infoFilePath = "./data/results/Topics_" + number_of_topics + "_Information.txt";
 		
 //		String category = "tablets"; //"electronics"
 //		String dataSize = "86jsons"; //"50K", "100K"
@@ -116,8 +115,7 @@ public class TransductiveMain {
 			return;
 		}
 		
-		tModel.setDisplay(true);
-		tModel.setInforWriter(infoFilePath);
+		tModel.setDisplayLap(0);
 		tModel.setSentiAspectPrior(aspectSentiPrior);
 		tModel.LoadPrior(aspectSentiPrior?aspectSentiList:aspectList, eta);
 		tModel.EMonCorpus();	
