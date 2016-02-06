@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
 
 public class MyLinAdaptMain {
@@ -20,12 +22,12 @@ public class MyLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 1;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 20;
-		int displayLv = 0;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-//		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
-		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.5, eta2 = 0.05, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = false;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -62,38 +64,22 @@ public class MyLinAdaptMain {
 //		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
 		
 //		// Create an instances of zero-order asyncCoLinAdapt model.
-		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
-		//Create an instances of first-order asyncCoLinAdapt model.
+//		//Create an instances of first-order asyncCoLinAdapt model.
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		
-		int[] count = new int[2];
-		int total = 0;
-
-		for(_User u: analyzer.getUsers()){
-			total += u.getReviewSize();
-			for(_Review r: u.getReviews())
-				if(r.getYLabel() == 0)
-					count[0]++;
-				else count[1]++;
-		}
-//		for(_Doc r: analyzer.getCorpus().getCollection()){
-//			if(r.getYLabel() == 0)
-//				count[0]++;
-//			else
-//				count[1]++;
-//		}
-		System.out.format("neg: %d, pos: %d, total: %d", count[0], count[1], total);
+		//Create the instance of MTLinAdapt.
+		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 		
-		
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		// adaptation.setTestMode(TestMode.TM_batch);
-//		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		//adaptation.setTestMode(TestMode.TM_batch);
+		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);
-//
-//		adaptation.train();
-//		adaptation.test();
+
+		adaptation.train();
+		adaptation.test();
 //		adaptation.saveModel("data/results/colinadapt");
 
 		//Create the instance of MT-SVM
@@ -103,5 +89,7 @@ public class MyLinAdaptMain {
 //		mtsvm.train();
 //		mtsvm.test();
 //		mtsvm.saveModel("data/results/MTSVM");
+		
+
 	}
 }

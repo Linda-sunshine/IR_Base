@@ -161,6 +161,11 @@ public class RegLR extends ModelAdaptation {
 		return magG;
 	}
 	
+	@Override
+	protected void setPersonalizedModel() {
+		//personalized model has already been set in each user
+	}
+
 	//this is batch training in each individual user
 	@Override
 	public double train(){
@@ -207,10 +212,5 @@ public class RegLR extends ModelAdaptation {
 		
 		setPersonalizedModel();
 		return totalFvalue;
-	}
-	
-	@Override
-	protected void setPersonalizedModel() {
-		//personalized model has already been set in each user
 	}
 }
