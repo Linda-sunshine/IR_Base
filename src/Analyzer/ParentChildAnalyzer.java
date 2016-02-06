@@ -100,6 +100,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 //		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
+
 		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);

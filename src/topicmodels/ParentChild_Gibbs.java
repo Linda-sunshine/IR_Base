@@ -3,8 +3,10 @@ package topicmodels;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Random;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
@@ -45,7 +47,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	@Override
 	public String toString(){
 		return String.format("Parent Child topic model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]", 
-				number_of_topics, d_alpha, d_beta, m_gamma[1], m_gamma[2]);
+				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
 	//will be called before entering EM iterations
@@ -361,12 +363,263 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return Utils.cosine(topic1, topic2);
 	}
 	
+	public double inference(_Doc pDoc){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc: ((_ParentDoc)pDoc).m_childDocs){
+			((_ChildDoc) cDoc).createXSpace(number_of_topics, m_gamma.length);
+			cDoc.setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+		}
+	
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					if(doc instanceof _ParentDoc){
+						collectParentStats((_ParentDoc) doc);
+					}
+					else if(doc instanceof _ChildDoc){
+						collectChildStats((_ChildDoc) doc);
+					}
+				
+//					System.out.println("logLikelihood\t"+logLikelihood);
+				}
+				count ++;
+			}
+		} while (++iter<this.number_of_iteration);
+		
+		for(_Doc doc:sampleTestSet){
+			estThetaInDoc(doc);
+			logLikelihood += calculate_log_likelihood(doc);
+		}
+
+		return logLikelihood; // this is average joint probability!	
+	}
+	
+	public void crossValidation(int k) {
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		
+		double[] perf = null;
+		
+		_Corpus parentCorpus = new _Corpus();
+		ArrayList<_Doc> docs = m_corpus.getCollection();
+		ArrayList<_ParentDoc> parentDocs = new ArrayList<_ParentDoc>();
+		for(int i=0; i<m_corpus.getSize(); i++){
+			_Doc d = docs.get(i);
+			if(d instanceof _ParentDoc){
+				parentCorpus.addDoc(d);
+				parentDocs.add((_ParentDoc) d);
+			}
+		}
+		
+		System.out.println("size of parent docs\t"+parentDocs.size());
+		
+		parentCorpus.setMasks();
+		if(m_randomFold==true){
+			perf = new double[k];
+			parentCorpus.shuffle(k);
+			int[] masks = parentCorpus.getMasks();
+			
+			Random random = new Random();
+			for(int i=0; i<k; i++){
+				for(int j=0; j<masks.length; j++){
+					if(masks[j] == i){
+						m_testSet.add(parentDocs.get(j));
+					}else {
+						m_trainSet.add(parentDocs.get(j));
+						for(_ChildDoc d: parentDocs.get(j).m_childDocs){
+							m_trainSet.add(d);
+						}
+					}
+					
+				}
+				
+				writeFile(i, m_trainSet, m_testSet);
+				
+				System.out.println("Fold number "+i);
+				System.out.println("Train Set Size "+m_trainSet.size());
+				System.out.println("Test Set Size "+m_testSet.size());
+
+				long start = System.currentTimeMillis();
+				EM();
+//				finalEst();
+				perf[i] = Evaluation(i);
+				
+				String betaFile = "./data/results/1-31-0923-ParentChild_GibbsProbitModel/topWords.txt";
+				printTopWords(20, betaFile);
+				
+				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				m_trainSet.clear();
+				m_testSet.clear();			
+			}
+			
+		}
+		double mean = Utils.sumOfArray(perf)/k, var = 0;
+		for(int i=0; i<perf.length; i++)
+			var += (perf[i]-mean) * (perf[i]-mean);
+		var = Math.sqrt(var/k);
+		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		
+		infoWriter.flush();
+		infoWriter.close();
+		
+	}
+	
+	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
+		String trainFilePrefix = "trainFolder"+k;
+		String testFilePrefix = "testFolder"+k;
+		
+		File trainFolder = new File(trainFilePrefix);
+		File testFolder = new File(testFilePrefix);
+		if(!trainFolder.exists()){
+			System.out.println("creating root directory"+trainFolder);
+			trainFolder.mkdir();
+		}
+		if(!testFolder.exists()){
+			System.out.println("creating root directory"+testFolder);
+			testFolder.mkdir();
+		}
+		
+		_Corpus trainCorpus = new _Corpus();
+		_Corpus testCorpus = new _Corpus();
+
+		for(_Doc d: trainSet)
+			trainCorpus.addDoc(d);
+		for(_Doc d: testSet)
+			testCorpus.addDoc(d);
+		outputFile.outputFiles(trainFilePrefix, trainCorpus);
+		outputFile.outputFiles(testFilePrefix, testCorpus);
+	}
+	
+	public double Evaluation(int i) {
+		m_collectCorpusStats = false;
+		double perplexity = 0, loglikelihood, totalWords=0, sumLikelihood = 0;
+		
+		System.out.println("In Normal");
+		
+		for(_Doc d:m_testSet) {				
+			loglikelihood = inference(d);
+//			System.out.print("logLikelihood\t"+loglikelihood);
+			sumLikelihood += loglikelihood;
+			perplexity += loglikelihood;
+			totalWords += d.getTotalDocLength();
+			for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
+				totalWords += cDoc.getTotalDocLength();
+			}
+		}
+		System.out.println("total Words\t"+totalWords+"perplexity\t"+perplexity);
+		perplexity /= totalWords;
+		perplexity = Math.exp(-perplexity);
+		sumLikelihood /= m_testSet.size();
+
+		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
+		
+		String parentParameterFile = "./data/results/1-31-0923-ParentChild_GibbsProbitModel/parentParameter_"+i+".txt";
+		String childParameterFile = "./data/results/1-31-0923-ParentChild_GibbsProbitModel/childParameter_"+i+".txt";
+		printTestParameter(parentParameterFile, childParameterFile);
+		
+		return perplexity;		
+	}
+	
+	public void printTestParameter(String parentParameterFile, String childParameterFile){
+		System.out.println("printing parameter");
+		try{
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+			
+			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			for(_Doc d: m_testSet){
+				
+				parentParaOut.print(d.getName()+"\t");
+				parentParaOut.print("topicProportion\t");
+				for(int k=0; k<number_of_topics; k++){
+					parentParaOut.print(d.m_topics[k]+"\t");
+				}
+				
+				for(_Stn stnObj:d.getSentences()){							
+					parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
+					for(int k=0; k<number_of_topics;k++){
+						parentParaOut.print(stnObj.m_topics[k]+"\t");
+					}
+				}
+				
+				parentParaOut.println();
+				
+				for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
+					childParaOut.print(cDoc.getName()+"\t");
+
+					childParaOut.print("topicProportion\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						childParaOut.print(cDoc.m_topics[k] + "\t");
+					}
+					
+					childParaOut.print("general\t");
+					for(int k=0; k<number_of_topics; k++){
+						childParaOut.print(cDoc.m_xTopics[0][k]
+								+ "\t");
+					}
+
+					childParaOut.print("specific\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						childParaOut.print(cDoc.m_xTopics[1][k]
+								+ "\t");
+					}
+
+					childParaOut.print("xProportion\t");
+					for(int x=0; x<m_gamma.length; x++){
+						childParaOut.print(cDoc.m_xProportion[x]+"\t");
+					}
+					
+					childParaOut.println();
+					
+				}
+			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+//			e.printStackTrace();
+//			System.err.print("para File Not Found");
+		}
+	}
+	
 	@Override
 	public void printTopWords(int k, String betaFile) {
+		double loglikelihood = 0.0;
 		Arrays.fill(m_sstat, 0);
 
 		System.out.println("print top words");
 		for (_Doc d : m_trainSet) {
+			loglikelihood += calculate_log_likelihood(d);
 			for (int i = 0; i < number_of_topics; i++)
 				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
 						: d.m_topics[i];	
@@ -401,7 +654,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			System.err.print("File Not Found");
 		}
 
-		double loglikelihood = calLogLikelihoodByIntegrateTopics(0);
 		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
 		infoWriter.format("Final Log Likelihood %.3f\t", loglikelihood);
 		
@@ -626,9 +878,18 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		for(_Doc d: m_trainSet){
 			logLikelihood += docLogLikelihoodByIntegrateTopics(d);
 		}
-		
-		return logLikelihood;
 	}
+	
+	//p(w)= \sum_z p(w|z)p(z)
+//	protected double calLogLikelihoodByIntegrateTopics(){
+//		double logLikelihood = 0.0;
+//		
+//		for(_Doc d: m_trainSet){
+//			logLikelihood += docLogLikelihoodByIntegrateTopics(d);
+//		}
+//		
+//		return logLikelihood;
+//	}
 	
 	protected double docLogLikelihoodByIntegrateTopics(_Doc d){
 		
@@ -641,8 +902,21 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]);
-				wordPerTopicLikelihood += Math.log(d.m_topics[k]);
+				if(topic_term_probabilty[k][index] == 0){
+					System.out.println("topic_term_probabilty 0\t");
+					topic_term_probabilty[k][index] = 1e-9;
+				}
+				double wordPerTopicLikelihood = topic_term_probabilty[k][index];
+//				System.out.println("first part\t"+wordPerTopicLikelihood);
+				if(d.m_topics[k] == 0){
+					System.out.println("topic proportion 0\t");
+					d.m_topics[k] = 1e-9;
+				}
+				wordPerTopicLikelihood *= d.m_topics[k];
+				if (wordPerTopicLikelihood == 0)
+					wordPerTopicLikelihood = 1e-9;
+				wordPerTopicLikelihood = Math.log(wordPerTopicLikelihood);
+//				System.out.println("second part\t"+wordPerTopicLikelihood);
 				if(wordLogLikelihood == 0){
 					wordLogLikelihood = wordPerTopicLikelihood;
 				}else{
@@ -650,8 +924,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				}
 			}
 			docLogLikelihood += value*wordLogLikelihood;
+//			System.out.println("docLogLikelihood\t"+docLogLikelihood+"word Index\t"+index);
 		}
 		
+//		System.out.println("docName\t"+d.getName());
+//		System.out.println("docLoglikelihood\t"+docLogLikelihood);
+
 		return docLogLikelihood;
 	}
 	

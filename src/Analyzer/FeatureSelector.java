@@ -42,6 +42,9 @@ public class FeatureSelector {
 		Collections.sort(m_selectedFeatures);//ascending order
 		
 		int totalSize = m_selectedFeatures.size();
+		
+		System.out.println("total\t"+totalSize);
+		
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);
 		for(int i=start; i<end; i++)

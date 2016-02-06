@@ -309,7 +309,8 @@ public abstract class Analyzer {
 			}
 			
 			System.out.println("No feature value is set, keep the raw count of every feature.");
-		}
+		}  
+		
 		
 		//rank the documents by product and time in all the cases
 		//Collections.sort(m_corpus.getCollection());
