@@ -112,7 +112,7 @@ public class MyYelpReviewMain {
 				return;
 			}
 		
-			tModel.setDisplay(true);
+			tModel.setDisplayLap(0);
 //			tModel.LoadPrior(aspectlist, eta);
 			tModel.EMonCorpus();
 //			tModel.printTopWords(10, true);
