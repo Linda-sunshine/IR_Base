@@ -96,6 +96,8 @@ public class CoLinAdapt extends LinAdapt {
 			}
 			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
 		}
+//		if(Double.isNaN(fValue + R2))
+//			System.out.println("NaN!!");
 		return fValue + R2;
 	}
 	

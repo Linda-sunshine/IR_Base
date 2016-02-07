@@ -114,6 +114,8 @@ public class LinAdapt extends RegLR {
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
 		
+//		if(Double.isNaN(R1 - L))
+//			System.out.println("NaN!!");
 		return R1 - L;
 	}
 	
