@@ -28,7 +28,8 @@ public class MyTransductiveMain {
 		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
 		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
 		int number_of_iteration = 100;
-		
+		boolean aspectSentiPrior = true;
+
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small/dedup/RawData";
 		String suffix = ".json";
@@ -55,7 +56,8 @@ public class MyTransductiveMain {
 
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_8055.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
-		String aspectlist = "./data/Model/aspect_sentiment_tablet.txt";
+		String aspectSentiList = "./data/Model/aspect_sentiment_tablet.txt";
+		String aspectList = "./data/Model/aspect_tablet.txt";
 
 		/*****Parameters in learning style.*****/
 		//"SUP", "SEMI"
@@ -87,7 +89,7 @@ public class MyTransductiveMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectlist, true);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectList, true);
 		//Added by Mustafizur----------------
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
@@ -115,10 +117,9 @@ public class MyTransductiveMain {
 			return;
 		}
 		
-		tModel.setDisplay(true);
-		tModel.setInforWriter(infoFilePath);
-		tModel.setSentiAspectPrior(true);
-		tModel.LoadPrior(aspectlist, eta);
+		tModel.setDisplayLap(0);
+		tModel.setSentiAspectPrior(aspectSentiPrior);
+		tModel.LoadPrior(aspectSentiPrior?aspectSentiList:aspectList, eta);
 		tModel.EMonCorpus();	
 		
 		//construct effective feature values for supervised classifiers 

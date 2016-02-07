@@ -91,8 +91,7 @@ public class MyExecution4Clustering  {
 				return;
 			}
 		
-			tModel.setDisplay(true);
-			tModel.setInforWriter(infoFilePath);
+			tModel.setDisplayLap(0);
 			tModel.setSentiAspectPrior(true);
 			tModel.LoadPrior(aspectlist, eta);
 			tModel.EMonCorpus();	
