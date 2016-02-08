@@ -100,7 +100,7 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		double mu = 0.0, sigma = 0.0, x;
 		_Word[] words = d.getWords();
 		
-		int wid = words[i].getIndex(), tid = words[i].getTopic(), xid;
+		int wid = words[i].getIndex(), tid = words[i].getTopic();
 		double[] muVct = d.m_fixedMuPartMap.get(wid);
 		for(int n=0; n<words.length; n++){
 			if(n==i)
@@ -110,11 +110,17 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
+
+		
+		double x0 = childTopicInDocProb(tid, 0, d), x1 = childTopicInDocProb(tid, 1, d);//no need to repeatedly compute this
 		do {
 			x = m_normal.nextDouble(mu, sigma);
-			xid = x>0?1:0;
-		} while (Math.random() > childTopicInDocProb(tid, xid, d));
-//		System.out.println("x\t"+x);
+
+			if (x<=0 && Math.random()<x0)
+				break;
+			else if (x>0 && Math.random()<x1)
+				break;
+		} while (true);
 		return x;
 		
 	}
