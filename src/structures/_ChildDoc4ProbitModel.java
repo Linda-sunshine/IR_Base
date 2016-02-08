@@ -13,12 +13,14 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 	double[][] m_probitFvcts; // to facilitate computation
 	public HashMap<Integer, double[]> m_fixedMuPartMap;
 	public HashMap<Integer, Double> m_fixedSigmaPartMap;
+	public double[] m_lambda; 
 	
 	public _ChildDoc4ProbitModel(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
 		
 		m_fixedMuPartMap = new HashMap<Integer, double[]>();//from word index to a vector
 		m_fixedSigmaPartMap = new HashMap<Integer, Double>();
+		m_lambda = new double[ParentChildAnalyzer.ChildDocFeatureSize];
 	}
 	
 	void setFixedFeatureValueMap(){
@@ -130,13 +132,48 @@ public class _ChildDoc4ProbitModel extends _ChildDoc{
 		setFixedFeatureValueMap();
 	}
 	
-	public void estGlobalLocalTheta(){
-		Utils.L1Normalization(m_xProportion);
-		for(int x=0; x<m_xTopics.length; x++)
-			Utils.L1Normalization(m_xTopics[x]);
+	public void estGlobalLocalTheta() {
+		super.estGlobalLocalTheta();
 		
-		for(_Word w: m_words){
-			Utils.L1Normalization(w.m_xProb);
-		}
+		estLambda();
 	}
+	
+	public void estLambda(){
+		DenseDoubleMatrix2D AMtx = new DenseDoubleMatrix2D(ParentChildAnalyzer.ChildDocFeatureSize, ParentChildAnalyzer.ChildDocFeatureSize);
+		DoubleMatrix2D AMtxInv;
+		DenseDoubleAlgebra mtxOpt = new DenseDoubleAlgebra();
+		
+		double[] tmpVct = new double[ParentChildAnalyzer.ChildDocFeatureSize];		
+		for(int i=0; i<ParentChildAnalyzer.ChildDocFeatureSize; i++){
+			double val = 0.0;
+			for(int n=0; n<m_words.length; n++){
+				val += (m_x_sparse[m_words[n].getLocalIndex()].getValues()[i])*(m_words[n].getXValue());
+			}
+			tmpVct[i] = val;
+		}
+		
+		for(int i=0; i<ParentChildAnalyzer.ChildDocFeatureSize; i++){
+			for(int j=0; j<ParentChildAnalyzer.ChildDocFeatureSize; j++){
+				double val = 0.0;
+				
+				for(int n=0; n<m_words.length; n++){
+					val += (m_x_sparse[m_words[n].getLocalIndex()].getValues()[i])*(m_x_sparse[m_words[n].getLocalIndex()].getValues()[j]);
+				}
+				if(i==j)
+					val += 1e-9;
+				AMtx.setQuick(i, j, val);
+			}
+		}
+		
+		AMtxInv = mtxOpt.inverse(AMtx);
+		for(int i=0; i<ParentChildAnalyzer.ChildDocFeatureSize; i++){
+			double val = 0.0;
+			for(int j=0; j<ParentChildAnalyzer.ChildDocFeatureSize; j++){
+				val += AMtxInv.getQuick(i, j)*tmpVct[j];
+			}
+			m_lambda[i] = val;
+		}
+		
+	}
+	
 }

@@ -10,6 +10,7 @@ import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
 import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
+import structures._Doc;
 import structures._Word;
 import utils.Utils;
 
@@ -118,4 +119,29 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		
 	}
 	
+	@Override
+	protected void printChildXValue(_Doc d, File childXFolder){
+		String XValueFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childXFolder,
+					XValueFile));
+	
+			for(_Word w:d.getWords()){
+				int index = w.getIndex();
+				int x = w.getX();
+				double xProb = w.getXProb();
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + x + ":" + xProb + "\t");
+			}
+			
+			pw.println();
+			for(int i=0; i<((_ChildDoc4ProbitModel)d).m_lambda.length; i++){
+				pw.print(((_ChildDoc4ProbitModel)d).m_lambda[i]+"\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 }
