@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -226,7 +228,24 @@ public abstract class Analyzer {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 
-		if (fValue.equals("TFIDF")) {
+		if (fValue.equals("TF")){
+			//the original feature is raw TF
+			for (int i = 0; i < docs.size(); i++) {
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
+				for (_SparseFeature sf : sfs) {
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
+					double DF = Utils.sumOfArray(stat.getDF());
+					double IDF = Math.log((N + 1) / DF);
+					avgIDF += IDF;
+				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
+		} else if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
@@ -537,6 +556,56 @@ public abstract class Analyzer {
 		}
 	}
 	
+	// Added by Lin for loading the assigned sentiment labels for each sentence in the corpus.
+	public HashMap<String, int[]> loadStnLabels(String filename){
+		if (filename==null || filename.isEmpty())
+			return null;
+		
+		try {
+			HashMap<String, int[]> docStnLabelsMap = new HashMap<String, int[]>();
+			int count = 0;
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line, docName;
+			String[] strs;
+			int[] labels;
+			while ((line = reader.readLine()) != null) {
+				strs = line.split("\t");
+				docName = strs[0];
+				labels = new int[strs.length-1];
+				for(int i=1; i<strs.length; i++){
+					labels[i-1] = Integer.valueOf(strs[i]);
+				}
+				docStnLabelsMap.put(docName, labels);
+				count++;
+			}
+			reader.close();
+			System.out.format("Sentence labels for %d documents are loaded from %s.\n", count, filename);
+			return docStnLabelsMap;
+ 
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return null;
+		}
+	}
+	
+	// We get the overlapping of corpus and documents which have sentence labels.
+	public void documentsMatch(HashMap<String, int[]> map){
+		ArrayList<Integer> lst = new ArrayList<Integer>();
+		String docName;
+		for(_Doc d: m_corpus.getCollection()){
+			docName = d.getName();
+			if(map.containsKey(docName)){
+				d.setStnLabels(map.get(docName));
+				d.setNegRatio();
+			} else{
+				lst.add(d.getID());
+			}
+		}
+		// Sort the missing documents in descending order and remove them.
+		Collections.sort(lst, Collections.reverseOrder());
+		for(int id: lst)
+			m_corpus.removeDoc(id);
+	}
 	//Return features.
 	public ArrayList<String> getFeatures(){
 		return m_featureNames;

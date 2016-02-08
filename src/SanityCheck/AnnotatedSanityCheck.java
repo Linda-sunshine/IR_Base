@@ -91,6 +91,16 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		}
 	}
 	
+	// Compare the human annotation and machine annotation.
+	public void compareAnnotation(String filename) throws FileNotFoundException{
+		PrintWriter writer = new PrintWriter(new File(filename));
+		for(int groupNo: m_groupDocs.keySet()){
+			for(_Doc d: m_groupDocs.get(groupNo)){
+				writer.format("%d\t%.4f\n");
+			}
+		}
+		writer.close();
+	}
 	public void diffGroupLOOCV(){
 		for(int groupNo: m_groupDocs.keySet()){
 			if(groupNo == 0) 

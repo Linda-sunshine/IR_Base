@@ -17,9 +17,9 @@ import utils.Utils;
  * General structure to present a document for DM/ML/IR
  */
 public class _Doc implements Comparable<_Doc> {
-	String m_name;
-	int m_ID; // unique id of the document in the collection
-	String m_itemID; // ID of the product being commented
+	String m_name; // Review ID/post ID.
+	int m_ID; // Unique ID of the document in the collection, index of the document.
+	String m_itemID; // Product ID.
 	String m_title; //The short title of the review.
 	
 	String m_source; //The content of the source file.
@@ -555,5 +555,24 @@ public class _Doc implements Comparable<_Doc> {
 
 	public int getGroupNo(){
 		return m_groupNo;
+	}
+	
+	// Sentence labels of the document.
+	int[] m_stnLabels;
+	double m_negRatio;
+	
+	public void setStnLabels(int[] ls){
+		m_stnLabels = ls;
+	}
+	
+	// Set the negative ratio of the document.
+	public void setNegRatio(){
+		double count = 0;
+		int len = m_stnLabels.length;
+		for(int l: m_stnLabels){
+			if((l/len) == 0)
+				count++;
+		}
+		m_negRatio = count/(double)len;
 	}
 }

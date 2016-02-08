@@ -23,7 +23,16 @@ public class MTLinAdapt extends CoLinAdapt {
 						int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		m_lambda1 = 0.5;
-		m_lambda2 = 1;
+		m_lambda2 = 0.1;
+	}
+	
+	public void setRsTradeOffs(double lmd1, double lmd2){
+		m_lambda1 = lmd1;
+		m_lambda2 = lmd2;
+	}
+	
+	public void printParameters(){
+		System.out.format("[Info]R1-a: %.3f\tR1-b: %.3f\tRs-a: %.3f\tRs-b: %.3f\n", m_eta1, m_eta2, m_lambda1, m_lambda2);
 	}
 	
 	@Override
