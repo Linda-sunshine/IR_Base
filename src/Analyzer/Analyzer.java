@@ -596,7 +596,7 @@ public abstract class Analyzer {
 			docName = d.getName();
 			if(map.containsKey(docName)){
 				d.setStnLabels(map.get(docName));
-				d.setNegRatio();
+				d.setPosRatio();
 			} else{
 				lst.add(d.getID());
 			}

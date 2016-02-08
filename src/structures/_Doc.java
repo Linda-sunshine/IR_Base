@@ -559,20 +559,24 @@ public class _Doc implements Comparable<_Doc> {
 	
 	// Sentence labels of the document.
 	int[] m_stnLabels;
-	double m_negRatio;
+	double m_posRatio;
 	
 	public void setStnLabels(int[] ls){
 		m_stnLabels = ls;
 	}
 	
 	// Set the negative ratio of the document.
-	public void setNegRatio(){
+	public void setPosRatio(){
 		double count = 0;
 		int len = m_stnLabels.length;
 		for(int l: m_stnLabels){
-			if((l/len) == 0)
+			if((l/len) == 1)
 				count++;
 		}
-		m_negRatio = count/(double)len;
+		m_posRatio = count/(double)len;
+	}
+	
+	public double getPosRatio(){
+		return m_posRatio;
 	}
 }

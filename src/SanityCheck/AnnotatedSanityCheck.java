@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import Ranker.LambdaRank.OptimizationType;
 import SanityCheck.BaseSanityCheck.SimType;
@@ -91,12 +93,41 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		}
 	}
 	
+	public void calculatePrecision(double threshold){
+		int trueG = 0, predG = 0;
+		int[][] TPTable = new int[2][2];
+//		// Sort all the docs based on the neg ratio.
+//		Collections.sort(m_allDocs, new Comparator<_Doc>(){
+//			public int compare(_Doc d1, _Doc d2){
+//				if(d1.getNegRatio() < d2.getNegRatio())
+//					return 1;
+//				else return -1;
+//			}
+//		});
+		for(_Doc d: m_allDocs){
+			// Single polarity.
+			if(d.getPosRatio() <= threshold || Math.abs(1-d.getPosRatio()) <= threshold)
+				predG = 0;
+			else
+				predG = 1;
+			if(d.getGroupNo() == 1 || d.getGroupNo() == 4)
+				trueG = 0;
+			else 
+				trueG = 1;
+			TPTable[trueG][predG]++;
+		}
+		for(int i=0; i<TPTable.length; i++){
+			for(int j=0; j<TPTable[i].length; j++)
+				System.out.print(TPTable[i][j] + "\t");
+			System.out.println();
+		}
+	}
 	// Compare the human annotation and machine annotation.
 	public void compareAnnotation(String filename) throws FileNotFoundException{
 		PrintWriter writer = new PrintWriter(new File(filename));
 		for(int groupNo: m_groupDocs.keySet()){
 			for(_Doc d: m_groupDocs.get(groupNo)){
-				writer.format("%d\t%.4f\n");
+				writer.format("%d\t%.4f\n", groupNo, d.getPosRatio());
 			}
 		}
 		writer.close();
