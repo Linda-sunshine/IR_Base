@@ -6,22 +6,15 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.TreeMap;
 
-import com.sun.jmx.snmp.internal.SnmpAccessControlSubSystem;
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils.Collections;
-
+import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
-import sun.security.util.Length;
-import Analyzer.ParentChildAnalyzer;
-import apple.laf.JRSUIUtils.Tree;
 
 public class outputFile {
 	public static void outputFiles(String filePrefix, _Corpus c) {

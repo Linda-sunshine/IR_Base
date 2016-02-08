@@ -2,12 +2,12 @@ package structures;
 
 import java.util.Arrays;
 import java.util.HashMap;
+
 import Analyzer.ParentChildAnalyzer;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.DenseDoubleMatrix2D;
 import cern.jet.random.tdouble.Normal;
-import utils.Utils;
 
 public class _ChildDoc4ProbitModel extends _ChildDoc{
 	double[][] m_probitFvcts; // to facilitate computation

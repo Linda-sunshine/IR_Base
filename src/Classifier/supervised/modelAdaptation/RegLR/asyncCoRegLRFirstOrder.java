@@ -6,7 +6,6 @@ package Classifier.supervised.modelAdaptation.RegLR;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct;
 import structures._RankItem;
 import structures._Review;
 

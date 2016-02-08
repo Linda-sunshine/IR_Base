@@ -376,8 +376,7 @@ public abstract class TopicModel {
 		int amazonRatingCount[] = {0,0,0,0,0};
 		
 		int newEggRatingCount[] = {0,0,0,0,0};
-		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
-		
+		int newEggTrainsetRatingCount[] = {0,0,0,0,0};		
 		
 		if(m_randomFold==true){
 			perf = new double[k];

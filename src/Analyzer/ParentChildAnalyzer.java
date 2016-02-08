@@ -10,7 +10,6 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
 import structures._Doc;
 import structures._ParentDoc;

@@ -15,7 +15,7 @@ public class _Word {
 	
 	//structure used for ParentChildTopicModel
 	int m_x;
-	public double[] m_xProb;
+	double[] m_xProb;
 	
 	//structure used for ParentChildTopicModelwithProbit
 	double m_xVal;
@@ -74,8 +74,8 @@ public class _Word {
 		return m_localIndex;
 	}
 	
-	public void addXStats(int xid){
-		m_xProb[xid] ++;
+	public void collectXStats(){
+		m_xProb[m_x] ++;
 	}
 	
 	public double getXProb(){

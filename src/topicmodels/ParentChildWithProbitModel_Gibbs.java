@@ -3,7 +3,6 @@ package topicmodels;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Random;
 
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
@@ -12,18 +11,15 @@ import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
 import structures._Doc;
 import structures._Word;
-import utils.Utils;
 
 public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 	
 	Normal m_normal;
-	Random m_Random;
 	
 	public ParentChildWithProbitModel_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
 		m_normal = new Normal(0, 1, new DoubleMersenneTwister());
-		m_Random = new Random();
 	}
 	
 	public String toString(){
