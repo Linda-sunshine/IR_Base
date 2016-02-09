@@ -62,7 +62,7 @@ public class MyL2RSanityCheck {
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 
 		String stnLabel = "./data/StnLabels.txt";
-		analyzer.documentsMatch(analyzer.loadStnLabels(stnLabel));
+		analyzer.documentsMatch(analyzer.loadStnLabels(stnLabel), number_of_topics/2);
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
@@ -88,7 +88,7 @@ public class MyL2RSanityCheck {
 		
 		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.calculatePrecision(0.1);
+		check.calculatePrecision(0.2);
 		check.compareAnnotation("./data/HumanAnnotation.txt");
 		
 //		check.initWriter("./data/L2RWeights.txt");

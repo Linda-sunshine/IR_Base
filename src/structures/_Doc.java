@@ -566,14 +566,14 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// Set the negative ratio of the document.
-	public void setPosRatio(){
+	public void setPosRatio(int k){
+		int NoTopics = k;
 		double count = 0;
-		int len = m_stnLabels.length;
 		for(int l: m_stnLabels){
-			if((l/len) == 1)
+			if((l/NoTopics) == 0)
 				count++;
 		}
-		m_posRatio = count/(double)len;
+		m_posRatio = count/m_stnLabels.length;
 	}
 	
 	public double getPosRatio(){

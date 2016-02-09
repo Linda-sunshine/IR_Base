@@ -26,9 +26,9 @@ public class MyLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-//		double eta1 = 0.05, eta2 = 0.5, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
-		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
-		boolean enforceAdapt = false;
+		double eta1 = 0.5, eta2 = 2, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
+		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -81,14 +81,14 @@ public class MyLinAdaptMain {
 
 		//Create the instance of MTLinAdapt.
 		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		double lambda1 = 0.05, lambda2 = 0.5;
+		double lambda1 = 0.5, lambda2 = 2;
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setRsTradeOffs(lambda1, lambda2);
 
-		adaptation.printParameters();
 		adaptation.train();
+		adaptation.printParameters();
 		adaptation.test();
 		//adaptation.saveModel("data/results/mtlinadapt");
 		
@@ -98,8 +98,6 @@ public class MyLinAdaptMain {
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
-//		mtsvm.saveModel("data/results/MTSVM");
-		
-
+//		//mtsvm.saveModel("data/results/MTSVM");
 	}
 }

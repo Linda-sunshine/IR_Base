@@ -589,14 +589,14 @@ public abstract class Analyzer {
 	}
 	
 	// We get the overlapping of corpus and documents which have sentence labels.
-	public void documentsMatch(HashMap<String, int[]> map){
+	public void documentsMatch(HashMap<String, int[]> map, int k){
 		ArrayList<Integer> lst = new ArrayList<Integer>();
 		String docName;
 		for(_Doc d: m_corpus.getCollection()){
 			docName = d.getName();
 			if(map.containsKey(docName)){
 				d.setStnLabels(map.get(docName));
-				d.setPosRatio();
+				d.setPosRatio(k);
 			} else{
 				lst.add(d.getID());
 			}
@@ -605,6 +605,19 @@ public abstract class Analyzer {
 		Collections.sort(lst, Collections.reverseOrder());
 		for(int id: lst)
 			m_corpus.removeDoc(id);
+	}
+	
+	
+	// Assign the documents to different groups based on the pos/neg ratio.
+	public void assignGroup(double threshold){
+		for(_Doc d: m_corpus.getCollection()){
+			if(d.getPosRatio() <= threshold || Math.abs(1-d.getPosRatio()) <= threshold)
+				d.setClusterNo(0);
+//				d.setGroupNo(0);
+			else
+				d.setClusterNo(1);
+//				d.setGroupNo(1);
+		}
 	}
 	//Return features.
 	public ArrayList<String> getFeatures(){

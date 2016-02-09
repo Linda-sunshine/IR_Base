@@ -251,7 +251,7 @@ public class MyDocumentSelectionMain {
 		
 		//construct effective feature values for supervised classifiers 
 		analyzer.setFeatureValues("BM25", 2);
-		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
+//		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
 		//Write the average similarity into file.
 		String SimFile = "./data/BoWTPJcdSimFile.txt";
@@ -261,22 +261,29 @@ public class MyDocumentSelectionMain {
 		//Load the average similarity into corpus.
 //		((AspectAnalyzer) analyzer).loadAvgSimilarity(SimFile);
 		
-		/***kmeans clustering***/
-		int clusterNo = 5;
-		int dim = 8; //Currently, we have 8 features for the query clustering.
-		KMeansAlg4Query kmeans = new KMeansAlg4Query(c, clusterNo, dim);
-		kmeans.train(c.getCollection());
-		kmeans.setDocsClusterNo();
-		
-		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", clusterNo);
-		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", clusterNo);
+//		/***kmeans clustering***/
+//		int clusterNo = 5;
+//		int dim = 8; //Currently, we have 8 features for the query clustering.
+//		KMeansAlg4Query kmeans = new KMeansAlg4Query(c, clusterNo, dim);
+//		kmeans.train(c.getCollection());
+//		kmeans.setDocsClusterNo();
+//		
+//		String kmeansStatFile = String.format("./data/kmeans/kmeans_stat_%d", clusterNo);
+//		String kmeansContentFile = String.format("./data/kmeans/kmeans_content_%d", clusterNo);
 //		kmeans.tranferClusters2Docs();
 //		kmeans.writeStat(kmeansStatFile);
 //		kmeans.writeContent(kmeansContentFile);
+		
+		// We use pre-labeled sentence sentiment to group documents.
+		double threshold = 0.2;
+		String stnLabel = "./data/StnLabels.txt";
+		analyzer.documentsMatch(analyzer.loadStnLabels(stnLabel), number_of_topics/2);
+		analyzer.assignGroup(threshold);
+		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4); // Do kmeans first, then map the labels.
 		
 //		analyzer.LoadLCSFiles("./data/LCS");//Load LCS file from folder.
-		
+	
 		if (style.equals("SEMI")) {
 			//perform transductive learning
 			System.out.println("Start Transductive Learning, wait...");
@@ -313,7 +320,7 @@ public class MyDocumentSelectionMain {
 			
 			mySemi.setKFold(CVFold);
 			mySemi.setDebugOutput(debugOutput);
-			((L2RWithQueryClustering) mySemi).setClusterNo(clusterNo);
+			((L2RWithQueryClustering) mySemi).setClusterNo(2);
 //			((L2RMetricLearning) mySemi).setClusters(clusters);
 //			((L2RMetricLearning) mySemi).setLCSMap(analyzer.returnLCSMap());
 			mySemi.crossValidation(CVFold, c);
