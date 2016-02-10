@@ -73,28 +73,32 @@ public class MyL2RSanityCheck {
 //		double[][] MAPs = new double[methods.length][];
 //		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
 //		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		check.initWriter("./data/BoW_2Groups.txt");
 //		check.diffGroupLOOCV();
 //		MAPs[0] = check.getMAPs();
 //		
 //		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
 //		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		check.initWriter("./data/Topic_2Groups.txt");
 //		check.diffGroupLOOCV();
 //		MAPs[1] = check.getMAPs();
 //		
 //		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoWTP);
 //		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
+//		check.initWriter("./data/BT_2Groups.txt");
 //		check.diffGroupLOOCV();
 //		MAPs[2] = check.getMAPs();
 		
-		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+		AnnotatedSanityCheck 
+		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		check.calculatePrecision(0.2);
-		check.compareAnnotation("./data/HumanAnnotation.txt");
+//		check.compareAnnotation("./data/HumanAnnotation.txt");
 		
-//		check.initWriter("./data/L2RWeights.txt");
+//		check.initWriter("./data/L2RWeights_2Groups.txt");
 //		check.diffGroupLOOCV();
 //		MAPs[3] = check.getMAPs();
-		
+//		
 //		for(int i=0; i<methods.length; i++){
 //			System.out.print(methods[i]+":\t");
 //			for(double m: MAPs[i])

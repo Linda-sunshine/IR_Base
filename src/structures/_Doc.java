@@ -565,6 +565,10 @@ public class _Doc implements Comparable<_Doc> {
 		m_stnLabels = ls;
 	}
 	
+	public int[] getStnLabels(){
+		return m_stnLabels;
+	}
+	
 	// Set the negative ratio of the document.
 	public void setPosRatio(int k){
 		int NoTopics = k;

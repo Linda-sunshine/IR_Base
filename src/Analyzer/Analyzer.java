@@ -587,10 +587,10 @@ public abstract class Analyzer {
 			return null;
 		}
 	}
-	
+	ArrayList<Integer> m_rmLst;
 	// We get the overlapping of corpus and documents which have sentence labels.
 	public void documentsMatch(HashMap<String, int[]> map, int k){
-		ArrayList<Integer> lst = new ArrayList<Integer>();
+		m_rmLst = new ArrayList<Integer>();
 		String docName;
 		for(_Doc d: m_corpus.getCollection()){
 			docName = d.getName();
@@ -598,13 +598,11 @@ public abstract class Analyzer {
 				d.setStnLabels(map.get(docName));
 				d.setPosRatio(k);
 			} else{
-				lst.add(d.getID());
+				m_rmLst.add(d.getID());
 			}
 		}
 		// Sort the missing documents in descending order and remove them.
-		Collections.sort(lst, Collections.reverseOrder());
-		for(int id: lst)
-			m_corpus.removeDoc(id);
+		Collections.sort(m_rmLst, Collections.reverseOrder());
 	}
 	
 	

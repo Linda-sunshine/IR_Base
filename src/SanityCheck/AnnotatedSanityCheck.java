@@ -64,13 +64,15 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 					ID = Integer.valueOf(strs[1]); // The ID of the document in the whole corpus.
 //					if(Integer.valueOf(strs[3]) == 0)
 //						group = 0;
-//					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 6))
+//					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 4))
 //						group = 1; // One-polarity reviews.
 //					else 
 //						group = 2; // Mix-polarity reviews.
 					group = Integer.valueOf(strs[3]);
 					
 					doc = m_corpus.getCollection().get(ID);
+					if(doc.getStnLabels() == null)
+						System.out.println("No stn labels for this document.");
 					if(!m_groupDocs.containsKey(group))
 						m_groupDocs.put(group, new ArrayList<_Doc>());
 					doc.setGroupNo(group);
@@ -105,16 +107,18 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 //			}
 //		});
 		for(_Doc d: m_allDocs){
-			// Single polarity.
-			if(d.getPosRatio() <= threshold || Math.abs(1-d.getPosRatio()) <= threshold)
-				predG = 0;
-			else
-				predG = 1;
-			if(d.getGroupNo() == 1 || d.getGroupNo() == 4)
-				trueG = 0;
-			else 
-				trueG = 1;
-			TPTable[trueG][predG]++;
+			if(d.getStnLabels() != null && d.getGroupNo() != 0){
+				// Single polarity.
+				if(d.getPosRatio() <= threshold || Math.abs(1-d.getPosRatio()) <= threshold)
+					predG = 0;
+				else
+					predG = 1;
+				if(d.getGroupNo() == 1 || d.getGroupNo() == 4)
+					trueG = 0;
+				else 
+					trueG = 1;
+				TPTable[trueG][predG]++;
+			}
 		}
 		for(int i=0; i<TPTable.length; i++){
 			for(int j=0; j<TPTable[i].length; j++)

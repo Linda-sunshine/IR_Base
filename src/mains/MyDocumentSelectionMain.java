@@ -177,7 +177,7 @@ public class MyDocumentSelectionMain {
 //		String debugOutput = String.format("data/debug/%s_topicmodel_diffProd.output", style);
 		String debugOutput = String.format("data/debug/%s_%s_%s_%s_debug.output", style, method, category, dataSize);
 		//k fold-cross validation
-		int CVFold = 10; 
+		int CVFold = 5; 
 		//choice of base learner
 		String multipleLearner = "SVM";
 		//trade-off parameter
