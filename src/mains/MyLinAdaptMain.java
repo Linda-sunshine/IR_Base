@@ -8,6 +8,7 @@ import structures._Doc;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._User;
+import utils.Utils;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
@@ -26,7 +27,7 @@ public class MyLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.5, eta2 = 2, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.5, eta2 = 1, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
@@ -79,17 +80,37 @@ public class MyLinAdaptMain {
 //		adaptation.test();
 //		//adaptation.saveModel("data/results/colinadapt");
 
+		double[][] ws = new double[3][];
+		
 		//Create the instance of MTLinAdapt.
 		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		double lambda1 = 0.5, lambda2 = 2;
+		double lambda1 = 0.01, lambda2 = 0.01;
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setRsTradeOffs(lambda1, lambda2);
 
+//		adaptation.setLNormFlag(false); // without normalization.
 		adaptation.train();
 		adaptation.printParameters();
-		adaptation.test();
+		ws[0] = adaptation.getSupWeights();
+		
+		adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		lambda1 = 0.5; lambda2 = 1;
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setRsTradeOffs(lambda1, lambda2);
+		adaptation.train();
+		ws[1] = adaptation.getSupWeights();
+		ws[2] = adaptation.getGlobalWeights();
+		System.out.println("Setting 1: 0.5, 1, 0.01, 0.01");
+		System.out.println("Setting 2: 0.5, 1, 0.5, 1");
+		System.out.format("S1 vs S2: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[1]), Utils.cosine(ws[0], ws[1]));
+		System.out.format("S1 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[2]), Utils.cosine(ws[0], ws[2]));
+		System.out.format("S2 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[1], ws[2]), Utils.cosine(ws[1], ws[2]));
+
+//		adaptation.test();
 		//adaptation.saveModel("data/results/mtlinadapt");
 		
 		//Create the instance of MT-SVM
