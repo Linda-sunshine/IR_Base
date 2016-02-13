@@ -84,7 +84,7 @@ public class MyLinAdaptMain {
 		
 		//Create the instance of MTLinAdapt.
 		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		double lambda1 = 0.01, lambda2 = 0.01;
+		double lambda1 = 0.5, lambda2 = 1;
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
@@ -93,32 +93,35 @@ public class MyLinAdaptMain {
 //		adaptation.setLNormFlag(false); // without normalization.
 		adaptation.train();
 		adaptation.printParameters();
-		ws[0] = adaptation.getSupWeights();
+//		ws[0] = adaptation.getSupWeights();
 		
-		adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		lambda1 = 0.5; lambda2 = 1;
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setRsTradeOffs(lambda1, lambda2);
-		adaptation.train();
-		ws[1] = adaptation.getSupWeights();
-		ws[2] = adaptation.getGlobalWeights();
-		System.out.println("Setting 1: 0.5, 1, 0.01, 0.01");
-		System.out.println("Setting 2: 0.5, 1, 0.5, 1");
-		System.out.format("S1 vs S2: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[1]), Utils.cosine(ws[0], ws[1]));
-		System.out.format("S1 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[2]), Utils.cosine(ws[0], ws[2]));
-		System.out.format("S2 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[1], ws[2]), Utils.cosine(ws[1], ws[2]));
+//		adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+//		lambda1 = 0.01; lambda2 = 0.01;
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setRsTradeOffs(lambda1, lambda2);
+//		adaptation.train();
+//		ws[1] = adaptation.getSupWeights();
+//		ws[2] = adaptation.getGlobalWeights();
+//		System.out.println("Setting 2: 0.5, 1, 0.5, 1");
+//		System.out.println("Setting 1: 0.5, 1, 0.01, 0.01");
+//		System.out.format("S1 vs S2: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[1]), Utils.cosine(ws[0], ws[1]));
+//		System.out.format("S1 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[2]), Utils.cosine(ws[0], ws[2]));
+//		System.out.format("S2 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[1], ws[2]), Utils.cosine(ws[1], ws[2]));
 
-//		adaptation.test();
+		adaptation.test();
 		//adaptation.saveModel("data/results/mtlinadapt");
 		
 		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
+		
+		for()
+		
 //		//mtsvm.saveModel("data/results/MTSVM");
 	}
 }
