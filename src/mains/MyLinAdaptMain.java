@@ -1,7 +1,11 @@
 package mains;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
@@ -11,6 +15,7 @@ import structures._User;
 import utils.Utils;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
@@ -83,16 +88,16 @@ public class MyLinAdaptMain {
 		double[][] ws = new double[3][];
 		
 		//Create the instance of MTLinAdapt.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		double lambda1 = 0.5, lambda2 = 1;
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setRsTradeOffs(lambda1, lambda2);
-
-//		adaptation.setLNormFlag(false); // without normalization.
-		adaptation.train();
-		adaptation.printParameters();
+//		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+//		double lambda1 = 0.5, lambda2 = 1;
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setRsTradeOffs(lambda1, lambda2);
+//
+////		adaptation.setLNormFlag(false); // without normalization.
+//		adaptation.train();
+//		adaptation.printParameters();
 //		ws[0] = adaptation.getSupWeights();
 		
 //		adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
@@ -110,18 +115,100 @@ public class MyLinAdaptMain {
 //		System.out.format("S1 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[0], ws[2]), Utils.cosine(ws[0], ws[2]));
 //		System.out.format("S2 vs Global: Euc: %.4f, Cosine: %.4f\n", Utils.EuclideanDistance(ws[1], ws[2]), Utils.cosine(ws[1], ws[2]));
 
-		adaptation.test();
-		//adaptation.saveModel("data/results/mtlinadapt");
-		
+//		adaptation.test();
+//		
+//		_AdaptStruct u;
+//		ArrayList<_AdaptStruct> mtlinUsr = adaptation.getUserList();
+//		double[][] mtlinStat = new double[mtlinUsr.size()][2];
+//		for(int i=0; i<mtlinUsr.size(); i++){
+//			u = mtlinUsr.get(i);
+//			mtlinStat[i][0] = u.getUser().getPerfStat().getF1(0) + u.getUser().getPerfStat().getF1(1);
+//			mtlinStat[i][1] = u.getUser().getReviewSize();
+//			u.getUser().getPerfStat().clear();
+//		}
+//		
 		//Create the instance of MT-SVM
 		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 		mtsvm.loadUsers(analyzer.getUsers());
 		mtsvm.setBias(true);
 		mtsvm.train();
 		mtsvm.test();
-		
-		for()
-		
-//		//mtsvm.saveModel("data/results/MTSVM");
+	
+//		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();
+//		double[][] mtsvmStat = new double[mtsvmUsr.size()][2];
+//		for(int i=0; i<mtsvmUsr.size(); i++){
+//			u = mtsvmUsr.get(i);
+//			mtsvmStat[i][0] = u.getUser().getPerfStat().getF1(0) + u.getUser().getPerfStat().getF1(1);
+//			mtsvmStat[i][1] = u.getUser().getReviewSize();
+//		}
+//		PrintWriter writer0 = new PrintWriter(new File("./data/equal.txt"));
+//		PrintWriter writer1 = new PrintWriter(new File("./data/mtlinAdaptBetter.txt"));
+//		PrintWriter writer2 = new PrintWriter(new File("./data/mtsvmBetter.txt"));
+//
+//		// Get stat of the two set of users.
+//		double[] stat = new double[6];
+//		ArrayList<Double> equal = new ArrayList<Double>();
+//		ArrayList<Double> mtlinAdaptBetter = new ArrayList<Double>();
+//		ArrayList<Double> mtsvmBetter = new ArrayList<Double>();
+//
+//		for(int i=0; i<mtlinStat.length; i++){
+//			if(mtlinStat[i][0] == mtsvmStat[i][0]){
+//				stat[0]++;
+//				stat[3] += mtsvmStat[i][1];
+//				equal.add(mtsvmStat[i][1]);
+//				writer0.write(mtsvmStat[i][1]+"\n");
+//			} else if(mtlinStat[i][0] > mtsvmStat[i][0]){
+//				stat[1]++;
+//				stat[4] += mtlinStat[i][1];
+//				mtlinAdaptBetter.add(mtlinStat[i][1]);
+//				writer1.format("mtlinAdapt:%.4f > mtsvm: %.4f\t %.1f\n", mtlinStat[i][0], mtsvmStat[i][0], mtlinStat[i][1]);
+//			} else{
+//				stat[2]++;
+//				stat[5] += mtsvmStat[i][1];
+//				mtsvmBetter.add(mtlinStat[i][1]);
+//				writer2.format("mtlinAdapt:%.4f < mtsvm: %.4f\t %.1f\n", mtlinStat[i][0], mtsvmStat[i][0], mtsvmStat[i][1]);
+//			}
+//		}
+//		writer0.close();
+//		writer1.close();
+//		writer2.close();
+//		
+//		Collections.sort(equal);
+//		Collections.sort(mtlinAdaptBetter);
+//		Collections.sort(mtsvmBetter);
+//		
+//		double[] groupStat = getStat(equal);
+//		System.out.println("Equal group info:");
+//		System.out.format("light: %.4f\tmedium: %.4f\theavy: %.4f\n", groupStat[0], groupStat[1], groupStat[2]);
+//		
+//		groupStat = getStat(mtlinAdaptBetter);
+//		System.out.println("MTLinAdapt better group info:");
+//		System.out.format("light: %.4f\tmedium: %.4f\theavy: %.4f\n", groupStat[0], groupStat[1], groupStat[2]);
+//		
+//		groupStat = getStat(mtsvmBetter);
+//		System.out.println("MTSVM better group info:");
+//		System.out.format("light: %.4f\tmedium: %.4f\theavy: %.4f\n", groupStat[0], groupStat[1], groupStat[2]);
+//		
+//		stat[3] /= stat[0];
+//		stat[4] /= stat[1];
+//		stat[5] /= stat[2];
+//		
+//		System.out.println("mtlin==mtsvm\tmtlin>mtsvm\tmtlin<mtsvm\tavgequal\tavgmtlin\tavgmtsvm");
+//		System.out.format("%.1f\t%.1f\t%.1f\t%.4f\t%.4f\t%.4f\n", stat[0], stat[1], stat[2], stat[3], stat[4], stat[5]);
+	}
+	
+	public static double[] getStat(ArrayList<Double> list){
+		double[] count = new double[3];
+		for(int i=0; i<list.size(); i++){
+			if(list.get(i) <= 10)
+				count[0]++;
+			else if(list.get(i) <=50)
+				count[1]++;
+			else 
+				count[2]++;
+		}
+		for(int i=0; i<count.length; i++)
+			count[i] /= list.size();
+		return count;
 	}
 }

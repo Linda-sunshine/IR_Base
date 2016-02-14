@@ -315,4 +315,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
 	}
+	
+	public ArrayList<_AdaptStruct> getUserList(){
+		return m_userList;
+	}
 }

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import structures._Doc;
+import structures._PerformanceStat;
 import structures._SparseFeature;
 import structures._User;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -331,4 +332,5 @@ public class MTLinAdapt extends CoLinAdapt {
 	public double[] getGlobalWeights(){
 		return m_gWeights;
 	}
+
 }
