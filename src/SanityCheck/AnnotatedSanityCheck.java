@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import Ranker.LambdaRank.OptimizationType;
 import SanityCheck.BaseSanityCheck.SimType;
@@ -33,6 +31,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	int m_numberOfCores;
 	Object m_MAPLock = new Object();
 	PrintWriter m_writer;
+	boolean m_flip = false; //Whether we need to flip the feature vector for the negative groups.
 	
 	/*** Key: group index, value: documents arraylist.
 	1: pos pos pos +; 2: pos pos neg +; 3: pos neg neg +; 4: neg neg neg -; 5: neg neg pos -; 6: neg pos pos -; 0: the others.***/
@@ -62,13 +61,13 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 				if(lineCount%2 == 0){
 					strs = line.split(",");//The first is the index, ignore it.
 					ID = Integer.valueOf(strs[1]); // The ID of the document in the whole corpus.
-//					if(Integer.valueOf(strs[3]) == 0)
-//						group = 0;
-//					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 4))
-//						group = 1; // One-polarity reviews.
-//					else 
-//						group = 2; // Mix-polarity reviews.
-					group = Integer.valueOf(strs[3]);
+					if(Integer.valueOf(strs[3]) == 0)
+						group = 0;
+					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 4))
+						group = 1; // One-polarity reviews.
+					else 
+						group = 2; // Mix-polarity reviews.
+//					group = Integer.valueOf(strs[3]);
 					
 					doc = m_corpus.getCollection().get(ID);
 					if(doc.getStnLabels() == null)
@@ -128,10 +127,17 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	// Compare the human annotation and machine annotation.
 	public void compareAnnotation(String filename) throws FileNotFoundException{
+		int[] stnStmLabels;
 		PrintWriter writer = new PrintWriter(new File(filename));
 		for(int groupNo: m_groupDocs.keySet()){
 			for(_Doc d: m_groupDocs.get(groupNo)){
 				writer.format("%d\t%.4f\n", groupNo, d.getPosRatio());
+				stnStmLabels = d.getStnStmLabels();
+				if(stnStmLabels != null){
+					for(int l: stnStmLabels)
+						writer.write(l+"\t");
+				}
+				writer.format("\n%s\n", d.getSource());
 			}
 		}
 		writer.close();
@@ -149,11 +155,15 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		System.out.println();
 		m_writer.close();
 	}
+	
 	public double[] getMAPs(){
 		return m_MAPs;
 	}
+	
 	// Leave-one-out cross validation.
 	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
+//		if(groupNo > 3)
+//			m_flip = true;
 		m_numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		m_writer.format("-----------------------%d------------------------\n", groupNo);
@@ -213,6 +223,36 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
 	}
 	
+	public double[] reverseWeights(double[] weights){
+		if(weights == null)
+			return null;
+		for(int i=0; i<weights.length; i++)
+			weights[i] = -weights[i];
+		return weights;
+	}
+//	// Leave-one-out cross validation in single-thread.
+//	public void LOOCV(int groupNo, ArrayList<_Doc> groupDocs){
+//			
+//		for(int i=0; i < groupDocs.size(); i++){
+//			// Leave one out to construct the training set.
+//			_Doc testDoc = groupDocs.get(i); // Get the test document.
+//			ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
+//			trainSet.remove(i);
+//								
+//			// Train L2R model.
+//			if(m_sType == SimType.ST_L2R){
+//				double[] weights = trainL2R(trainSet, testDoc);
+//				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
+//			} 
+//			else{
+//				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
+//			}
+//		}
+//		// Calculate the MAP for all the test documents.
+//		m_MAPs[groupNo-1] /= groupDocs.size();
+//		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
+//	}	
+	
 	public double[] trainL2R(ArrayList<_Doc> trainSet, _Doc testDoc){
 		ArrayList<_Query> queries = createTrainingCorpus(trainSet, testDoc);
 		
@@ -220,8 +260,8 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		ArrayList<Integer> labels = new ArrayList<Integer>();
 		
 		for(_Query q: queries)
-			q.extractPairs4RankSVM(fvs, labels);
-		
+			q.extractPairs4RankSVM(fvs, labels, m_flip);
+	
 		Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 		double[] weights = rankSVM.getFeatureWeights();
 		System.out.format("RankSVM training performance:\nMAP: %.4f\n", evaluate(OptimizationType.OT_MAP));	
@@ -270,7 +310,6 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			}
 			pairSize += q.createRankingPairs();
 		}
-		
 //		normalize();
 		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
 		return queries;
@@ -292,13 +331,12 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		for(_RankItem r: rankDocs){
 			totalCount++;
 			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel())){
-
-//			if((m_allDocs.get(r.m_index).getYLabel() == testDoc.getYLabel()) && (m_allDocs.get(r.m_index).getGroupNo() == testDoc.getGroupNo())){
 				count++;
 				AP += count / totalCount;
 			}
+			System.out.print(r.m_value+"\t");
 		}
-		System.out.format("AP: %.4f\n", AP/count);
+		System.out.format("\nAP: %.4f\n", AP/count);
 		return AP / count; // AP for the test query.
 	}
 	
@@ -307,210 +345,16 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		double similarity = 0;
 		if(m_sType == SimType.ST_L2R)
 			similarity = Utils.dotProduct(weights, genRankingFV(di, dj));	
-//			similarity = Utils.dotProduct(weights, normalize(genRankingFV(di, dj)));	
 		else if(m_sType == SimType.ST_BoW)
 			similarity = getBoWSim(di, dj);
 		else if(m_sType == SimType.ST_TP)
 			similarity = Math.exp(-getTopicalSim(di, dj));
 		else if(m_sType == SimType.ST_BoWTP){
-//			double a = getBoWSim(di, dj);
-//			double b = getTopicalSim(di, dj);
+
 			similarity = getBoWSim(di, dj) + Math.exp(-getTopicalSim(di, dj));
 		}
 		else if(m_sType == SimType.ST_Rand)
 			similarity = Math.random();
 		return similarity;
 	}
-	/***
-	//Init: trainSet = corpus.getCollection(); remove the testSet to get the trainSet.
-	public void rmTestDocs(){
-		Collections.sort(m_testIndexes, Collections.reverseOrder());
-		for(int i=0; i<m_testIndexes.size(); i++){
-			int index = m_testIndexes.get(i);//Why???
-			m_trainSet.remove(index);
-		}
-		System.out.format("There are %d reviews in corpus.\n", m_corpus.getCollection().size());
-		System.out.format("There are %d reviews in train set.\n", m_trainSet.size()); 
-	}
-	
-	//Get the size of each group.
-	public int[] getGroupSize(){
-		int[] gSize = new int[m_groupDocs.size()];
-		for(int index: m_groupDocs.keySet()){
-			gSize[index] = m_groupDocs.get(index).size();
-		}
-		return gSize;
-	}
-	
-	// In this function, we will use leave-one-out cross validation to calculate the AP for each query.
-	public void LOOCrossValidation(){
-		
-	}
-	//Train liblinear based on the trainSet.
-	public double[] trainSVM(){
-		double C = 1.0;
-		double[] precision = new double[m_groupDocs.size()];
-		m_svm = new SVM(m_corpus, C);
-		m_svm.train(m_groupDocs);
-		for(int index: m_groupDocs.keySet()){
-			for(_Doc d: m_groupDocs.get(index)){
-				if(m_svm.predict(d) == d.getYLabel())
-					precision[index]++;
-			}
-			precision[index] /= m_groupDocs.get(index).size();
-		}
-		return precision;
-	}
-	//Given an array and a value,return the index of the value.
-	public static int findValue(double[] a, double val){
-		int start = 0, end = a.length -1, middle = 0;
-		while(start <= end){
-			middle = (start + end)/2;
-			if(a[middle] == val)
-				return middle;
-			else if(a[middle] < val)
-				start = middle + 1;
-			else 
-				end = middle - 1;
-		}
-		System.err.print("Index not found!");
-		return -1;
-	}
-	
-	// Use BoW to calculate the purity.
-	public double[] constructPurity(int topK, int flag, String filename) throws FileNotFoundException{
-		
-		double count = 0, val;
-		int in = 0, length;
-		_Doc dj, tmp;
-		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(topK);
-		double[] purity = new double[m_groupDocs.size()];
-		double[] values;
-		
-		for(int index: m_groupDocs.keySet()){
-			// Access each document.
-			PrintWriter writer = new PrintWriter(new File(filename+index+".xls"));
-			for(_Doc d: m_groupDocs.get(index)){
-				
-				//Write out the current document.
-//				writer.write("==================================================\n");
-				writer.format("trueL:%d\n", d.getYLabel());
-				if(flag == 0){
-					for(_SparseFeature sf: d.getSparse())
-						writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
-				} else{
-					length = d.getTopics().length;//Get the length of the topics.
-					values = Arrays.copyOf(d.getTopics(), length);
-					Arrays.sort(values); //Sort the topic vector.
-					
-					//Construct the value-index map.
-					HashMap<Double, Integer> valIndexMap = new HashMap<Double, Integer>();
-					for(int i=0; i<d.getTopics().length; i++)
-						valIndexMap.put(d.getTopics()[i], i);
-					
-					//Print out the value and index.
-					for(int j=0; j<length; j++){
-						val = values[length-1-j];
-						in = valIndexMap.get(val);
-						//I want to print topic in a descending order based on values.
-						writer.format("(%d, %.4f)\t", in, val);
-					}
-				}
-//					for(int i=0; i<length; i++)
-//						writer.format("(%d, %.4f)\t", i, d.getTopics()[i]);
-//				}
-//				writer.format("\n%s\n", d.getSource());
-
-				// Construct neighborhood.
-				for(int i=0; i<m_trainSet.size(); i++){
-					dj = m_trainSet.get(i);
-					//The i is the index in the trainSet, rather than the collection of corpus.
-					if(flag == 0)
-						queue.add(new _RankItem(i, Utils.calculateSimilarity(d, dj)));
-					else
-						queue.add(new _RankItem(i, Math.exp(-Utils.klDivergence(d.getTopics(), dj.getTopics()))));
-				}
-				
-				// Get the purity.
-				for(_RankItem item: queue){
-					tmp = m_trainSet.get(item.m_index);
-					if(d.getYLabel() == tmp.getYLabel())
-						count++;
-					
-//					//Write the neighbors' information.
-//					writer.format("trueL:%d\n", tmp.getYLabel());
-//					if(flag == 0){
-//						for(_SparseFeature sf: tmp.getSparse())
-//							writer.format("(%s, %.4f)\t", m_features.get(sf.getIndex()), sf.getValue());
-//					} else{
-//						for(int j=0; j<tmp.getTopics().length; j++)
-//							writer.format("(%d, %.4f)\t", j, tmp.getTopics()[j]);
-//					}
-//					writer.format("\n%s\n", tmp.getSource());
-				}
-				purity[index] += count/(double) topK;
-				writer.format("Count:%d, Purity:%.4f\n", (int)count, count/(double)topK);
-				count = 0;
-				queue.clear();
-			}
-			purity[index] /= m_groupTrainSets.get(index).size();
-			System.out.format("Finish writing %d group reviews.\n", index);
-			writer.close();
-		}
-		return purity;
-	}
-
-	// Load the file without IDs and human annotations.
-	public void loadCheckFile(String filename) {
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(filename), "UTF-8"));
-			String line, strLabel;
-			int label = 0, lineCount = 0; // Use this count to split different reviews since each review has two lines.
-			while ((line = reader.readLine()) != null) {
-				if (lineCount % 2 == 0) {
-					strLabel = line.split(":")[1].trim();
-					label = Integer.valueOf(strLabel);
-				} else {
-					m_testSet.add(new _Doc(0, line, label));
-					m_sourceIndexMap.put(line, lineCount / 2);
-				}
-				lineCount++;
-			}
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	//Find the test document in the collection and add the ID to the test document.
-	public void setTestFileIDs(){
-		_Doc tmp;
-		int ID = 0;
-		for(int i=0; i<m_documents.size(); i++){
-			tmp = m_documents.get(i);
-			if(m_sourceIndexMap.containsKey(tmp.getSource())){
-				ID = m_documents.get(i).getID();
-				m_testSet.get(m_sourceIndexMap.get(tmp.getSource())).setID(ID);
-			}
-		}
-	}
-	
-	//Print out the 100 files with indexes, IDs.
-	public void printFile(String filename){
-		try{
-			_Doc tmp;
-			PrintWriter writer = new PrintWriter(new File(filename));
-			for(int i=0; i<m_testSet.size(); i++){
-				tmp = m_testSet.get(i);
-				writer.format("%d,%d,%d\n", i, tmp.getID(), tmp.getYLabel());
-				writer.format("%s\n", tmp.getSource());
-			}
-			System.out.format("Write %d files into file %s\n", m_testSet.size(), filename);
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
-***/
 }

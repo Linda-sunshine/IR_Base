@@ -132,8 +132,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-//			m_fvs = fvs.toArray(new Feature[fvs.size()][]);
-//			m_ys = labels.toArray(new Integer[labels.size()]);
 			
 			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
 			m_weights = rankSVM.getFeatureWeights();
@@ -349,11 +347,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		signs[8] = -1;
 		signs[9] = 1;
 		return signs;
-	}
-		
-	// Added by Lin, pass the clustering results back to L2R.
-	public void setClusters(ArrayList<ArrayList<_Doc>> clusters){
-		m_clusters = clusters;
 	}
 	
 	//generate ranking features for a query document pair

@@ -558,8 +558,9 @@ public class _Doc implements Comparable<_Doc> {
 	}
 	
 	// Sentence labels of the document.
-	int[] m_stnLabels;
-	double m_posRatio;
+	int[] m_stnLabels = null;
+	int[] m_stnStmLabels = null;
+	double m_posRatio = 0;
 	
 	public void setStnLabels(int[] ls){
 		m_stnLabels = ls;
@@ -571,13 +572,25 @@ public class _Doc implements Comparable<_Doc> {
 	
 	// Set the negative ratio of the document.
 	public void setPosRatio(int k){
+		if(m_stnStmLabels == null)
+			setStnStmLabels(k);
+		m_posRatio = (double)Utils.sumOfArray(m_stnStmLabels)/m_stnLabels.length;
+	}
+	
+	// Set the sentence sentiment labels.
+	public void setStnStmLabels(int k){
 		int NoTopics = k;
-		double count = 0;
-		for(int l: m_stnLabels){
-			if((l/NoTopics) == 0)
-				count++;
+		m_stnStmLabels = new int[m_stnLabels.length];
+		for(int i=0; i<m_stnLabels.length; i++){
+			if((m_stnLabels[i]/NoTopics)==0)
+				m_stnStmLabels[i] = 1;
+			else
+				m_stnStmLabels[i] = 0;
 		}
-		m_posRatio = count/m_stnLabels.length;
+	}
+	
+	public int[] getStnStmLabels(){
+		return m_stnStmLabels;
 	}
 	
 	public double getPosRatio(){

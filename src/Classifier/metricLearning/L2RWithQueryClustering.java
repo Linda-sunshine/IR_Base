@@ -30,6 +30,11 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 		m_kmeans = k;
 	}
 	
+	// Pass the clustering results back to L2R.
+	public void setClusters(ArrayList<ArrayList<_Doc>> clusters){
+		m_clusters = clusters;
+	}
+	
 	public double train(Collection<_Doc> trainSet){
 		
 		super.init();

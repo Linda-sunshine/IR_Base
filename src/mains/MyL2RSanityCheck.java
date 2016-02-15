@@ -2,6 +2,8 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import SanityCheck.AnnotatedSanityCheck;
 import SanityCheck.BaseSanityCheck;
@@ -29,7 +31,6 @@ public class MyL2RSanityCheck {
 		String pathToNegWords = "./data/Model/SentiWordsNeg.txt";
 		String pathToNegationWords = "./data/Model/negation_words.txt";
 		String pathToSentiWordNet = "./data/Model/SentiWordNet_3.0.0_20130122.txt";
-
 		
 		/*****The parameters used in loading files.*****/
 		String folder = "./data/amazon/small/dedup/RawData";
@@ -37,14 +38,13 @@ public class MyL2RSanityCheck {
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 
 		String stnModel = "./data/Model/en-sent.bin"; //Sentence model. Need it for postagging.
-		String stopword = "./data/Model/stopwords.dat";
 		String tagModel = "./data/Model/en-pos-maxent.bin";
 		
 		String category = "tablets"; //"electronics"
 		String dataSize = "86jsons"; //"50K", "100K"
 		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, category, dataSize);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, category, dataSize);
-		String stopwords = "./data/Model/stopwords.dat";
+//		String stopwords = "./data/Model/stopwords.dat";
 		
 		int numOfAspects = 28; // 12, 14, 24, 28
 		String aspectlist = String.format("./data/Model/%d_aspect_tablet.txt", numOfAspects);
@@ -57,7 +57,6 @@ public class MyL2RSanityCheck {
 		((DocAnalyzer) analyzer).setReleaseContent(false);
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		((DocAnalyzer) analyzer).loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-//		((DocAnalyzer) analyzer).LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.loadTopicVectors(topicFile, number_of_topics);
 
@@ -68,42 +67,17 @@ public class MyL2RSanityCheck {
 		analyzer.setFeatureValues("BM25", 2);
 		c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		c.mapLabels(4);
-		
-//		String[] methods = new String[]{"BoW", "Topic", "BT", "L2R"};
-//		double[][] MAPs = new double[methods.length][];
-//		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoW);
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.initWriter("./data/BoW_2Groups.txt");
-//		check.diffGroupLOOCV();
-//		MAPs[0] = check.getMAPs();
-//		
-//		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_TP);
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.initWriter("./data/Topic_2Groups.txt");
-//		check.diffGroupLOOCV();
-//		MAPs[1] = check.getMAPs();
-//		
-//		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_BoWTP);
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		check.initWriter("./data/BT_2Groups.txt");
-//		check.diffGroupLOOCV();
-//		MAPs[2] = check.getMAPs();
-		
-		AnnotatedSanityCheck 
-		check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
+	
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");	
+		String compareFile = String.format("./data/%s_Compare.output", dateFormatter.format(new Date()));
+
+		AnnotatedSanityCheck check = new AnnotatedSanityCheck(c, "SVM", 1, 100, BaseSanityCheck.SimType.ST_L2R);
 		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
 		check.calculatePrecision(0.2);
-//		check.compareAnnotation("./data/HumanAnnotation.txt");
+		check.compareAnnotation(compareFile);
 		
-//		check.initWriter("./data/L2RWeights_2Groups.txt");
+//		String weightFile = String.format("./data/%s_SanityCheck_weight.output", dateFormatter.format(new Date()));
+//		check.initWriter(weightFile);
 //		check.diffGroupLOOCV();
-//		MAPs[3] = check.getMAPs();
-//		
-//		for(int i=0; i<methods.length; i++){
-//			System.out.print(methods[i]+":\t");
-//			for(double m: MAPs[i])
-//				System.out.print(m+"\t");
-//			System.out.println();
-//		}
 	}
 }

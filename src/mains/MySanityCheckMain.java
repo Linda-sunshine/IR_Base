@@ -54,28 +54,6 @@ public class MySanityCheckMain {
 		check.calculateInlinks(topK);
 		check.calculatePatK4All(topK);
 		check.writePatK(anchorNodeFile);
-
-//		check.loadAnnotatedFile("./data/Selected100Files/100Files_IDs_Annotation.txt");
-//		int[] groupSize = check.getGroupSize();
-//		check.setFeature(analyzer.getFeatures());
-//
-//		//BoW and topic performance check.
-//		String tGroup = String.format("data/SanityCheck/DiffGroupTP_%dAspects_", numOfAspects);
-//		double[] performance = check.constructPurity(topK, 1, tGroup);//0: Bow; else: topic; return purity.
-//		
-////		double[] performance = check.trainSVM(); // Return precision in this case.
-//		
-//		for(int i= 0; i<performance.length; i++)
-//			System.out.format("%d\t", i);
-//		System.out.println();
-//		
-//		for(int i= 0; i<groupSize.length; i++)
-//			System.out.format("%d\t", groupSize[i]);
-//		System.out.println();
-//		
-//		for(int i= 0; i<performance.length; i++)
-//			System.out.format("%.4f\t", performance[i]);
-//		System.out.println();
 		
 	}
 }
