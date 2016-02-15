@@ -20,8 +20,6 @@ import topicmodels.ParentChild_Gibbs.MatchPair;
 public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 
 	public double[] m_lambda;
-	public double[] m_lambdaGradientStats;
-	public double m_lambdaStats;
 	
 	public ParentChildWithLogisticRegression_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu){
