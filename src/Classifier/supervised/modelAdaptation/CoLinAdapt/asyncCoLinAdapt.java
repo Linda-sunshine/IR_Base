@@ -29,6 +29,11 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		m_testmode = TestMode.TM_online;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("asyncCoLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
+	}
+	
 	public void setInitStepSize(double initStepSize) {
 		m_initStepSize = initStepSize;
 	}

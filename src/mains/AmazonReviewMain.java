@@ -63,68 +63,68 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 //		/****Loading json files*****/
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-//		
+		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+		analyzer.LoadStopwords(stopwords);
+		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		
 //		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.SaveCVStat(fvStatFile);	
+		System.out.println("Performing feature selection, wait...");
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		analyzer.SaveCVStat(fvStatFile);	
 		
 		/****create vectors for documents*****/
-		System.out.println("Creating feature vectors, wait...");
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
-		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		analyzer.setFeatureValues(featureValue, norm);
-//		analyzer.setTimeFeatures(window);
-		
-		_Corpus corpus = analyzer.getCorpus();
-		
-		/********Choose different classification methods.*********/
-		//Execute different classifiers.
-		if (style.equals("SUP")) {
-			if(classifier.equals("NB")){
-				//Define a new naive bayes with the parameters.
-				System.out.println("Start naive bayes, wait...");
-				NaiveBayes myNB = new NaiveBayes(corpus);
-				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-				
-			} else if(classifier.equals("LR")){
-				//Define a new logistics regression with the parameters.
-				System.out.println("Start logistic regression, wait...");
-				LogisticRegression myLR = new LogisticRegression(corpus, C);
-				myLR.setDebugOutput(debugOutput);
-				
-				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-				//myLR.saveModel(modelPath + "LR.model");
-			} else if(classifier.equals("SVM")){
-				System.out.println("Start SVM, wait...");
-				SVM mySVM = new SVM(corpus, C);
-				mySVM.crossValidation(CVFold, corpus);
-				
-			} else if (classifier.equals("PR")){
-				System.out.println("Start PageRank, wait...");
-				PageRank myPR = new PageRank(corpus, C, 100, 50, 1e-6);
-				myPR.train(corpus.getCollection());
-				
-			} else System.out.println("Classifier has not developed yet!");
-		} else if (style.equals("SEMI")) {
-			if (model.equals("GF")) {
-				System.out.println("Start Gaussian Field, wait...");
-				GaussianFields mySemi = new GaussianFields(corpus, classifier, C);
-				mySemi.crossValidation(CVFold, corpus); 
-			} else if (model.equals("NB-EM")) {
-				corpus.setUnlabeled();
-				
-				System.out.println("Start Naive Bayes with EM, wait...");
-				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
-				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
-			}
-		} else if (style.equals("FV")) {
-			corpus.save2File(vctFile);
-			System.out.format("Vectors saved to %s...\n", vctFile);
-		} else System.out.println("Learning paradigm has not developed yet!");
+//		System.out.println("Creating feature vectors, wait...");
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		analyzer.setReleaseContent( !(classifier.equals("PR") || debugOutput!=null) );//Just for debugging purpose: all the other classifiers do not need content
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+//		analyzer.setFeatureValues(featureValue, norm);
+////		analyzer.setTimeFeatures(window);
+//		
+//		_Corpus corpus = analyzer.getCorpus();
+//		
+//		/********Choose different classification methods.*********/
+//		//Execute different classifiers.
+//		if (style.equals("SUP")) {
+//			if(classifier.equals("NB")){
+//				//Define a new naive bayes with the parameters.
+//				System.out.println("Start naive bayes, wait...");
+//				NaiveBayes myNB = new NaiveBayes(corpus);
+//				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
+//				
+//			} else if(classifier.equals("LR")){
+//				//Define a new logistics regression with the parameters.
+//				System.out.println("Start logistic regression, wait...");
+//				LogisticRegression myLR = new LogisticRegression(corpus, C);
+//				myLR.setDebugOutput(debugOutput);
+//				
+//				myLR.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
+//				//myLR.saveModel(modelPath + "LR.model");
+//			} else if(classifier.equals("SVM")){
+//				System.out.println("Start SVM, wait...");
+//				SVM mySVM = new SVM(corpus, C);
+//				mySVM.crossValidation(CVFold, corpus);
+//				
+//			} else if (classifier.equals("PR")){
+//				System.out.println("Start PageRank, wait...");
+//				PageRank myPR = new PageRank(corpus, C, 100, 50, 1e-6);
+//				myPR.train(corpus.getCollection());
+//				
+//			} else System.out.println("Classifier has not developed yet!");
+//		} else if (style.equals("SEMI")) {
+//			if (model.equals("GF")) {
+//				System.out.println("Start Gaussian Field, wait...");
+//				GaussianFields mySemi = new GaussianFields(corpus, classifier, C);
+//				mySemi.crossValidation(CVFold, corpus); 
+//			} else if (model.equals("NB-EM")) {
+//				corpus.setUnlabeled();
+//				
+//				System.out.println("Start Naive Bayes with EM, wait...");
+//				NaiveBayesEM myNB = new NaiveBayesEM(corpus);
+//				myNB.crossValidation(CVFold, corpus);//Use the movie reviews for testing the codes.
+//			}
+//		} else if (style.equals("FV")) {
+//			corpus.save2File(vctFile);
+//			System.out.format("Vectors saved to %s...\n", vctFile);
+//		} else System.out.println("Learning paradigm has not developed yet!");
 	}
 }

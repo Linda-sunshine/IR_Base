@@ -258,6 +258,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
+		
+		System.out.println(toString());
 		calcMicroPerfStat();
 		
 		// macro average

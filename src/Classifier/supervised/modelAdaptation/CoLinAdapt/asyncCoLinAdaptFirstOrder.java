@@ -24,6 +24,11 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	
 	@Override
+	public String toString() {
+		return String.format("asyncCoLinAdaptFirstOrder[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
+	}
+	
+	@Override
 	protected void calculateGradients(_AdaptStruct user){		
 		super.calculateGradients(user);
 		if (m_neighborsHistoryWeight>0)

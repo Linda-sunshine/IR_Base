@@ -4,13 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import structures._Doc;
-import structures._PerformanceStat;
-import structures._SparseFeature;
-import structures._User;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import structures._Doc;
+import structures._SparseFeature;
+import structures._User;
 
 public class MTLinAdapt extends CoLinAdapt {
 
@@ -38,8 +37,10 @@ public class MTLinAdapt extends CoLinAdapt {
 		m_lambda2 = lmd2;
 	}
 	
-	public void printParameters(){
-		System.out.format("[Info]R1-a: %.3f\tR1-b: %.3f\tRs-a: %.3f\tRs-b: %.3f\n", m_eta1, m_eta2, m_lambda1, m_lambda2);
+	@Override
+	public String toString() {
+		return String.format("MT-LinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,lambda1:%.3f,lambda2:%.3f,k:%d,NB:%s]", 
+				m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_lambda1, m_lambda2, m_topK, m_sType);
 	}
 	
 	@Override
@@ -102,10 +103,10 @@ public class MTLinAdapt extends CoLinAdapt {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
 		double L = calcLogLikelihood(ui); //log likelihood.
 		if(!m_LNormFlag)
-			L = L * ui.getAdaptationSize();
-		double R1 = 0;
+			L *= ui.getAdaptationSize();
 		
 		//Add regularization parts.
+		double R1 = 0;
 		for(int k=0; k<m_dim; k++){
 			R1 += m_eta1 * (ui.getScaling(k)-1) * (ui.getScaling(k)-1);//(a[i]-1)^2
 			R1 += m_eta2 * ui.getShifting(k) * ui.getShifting(k);//b[i]^2
@@ -170,18 +171,6 @@ public class MTLinAdapt extends CoLinAdapt {
 			
 			m_g[offsetSup + k] -= weight*delta*ui.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
 			m_g[offsetSup + m_dim + k] -= weight*delta*ui.getScaling(k)*fv.getValue(); // a_i*x_di
-		}
-	}
-	
-	//Calculate the gradients for the use in LBFGS.
-	@Override
-	protected void gradientByR1(_AdaptStruct u){
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-		int offset = 2*m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		//R1 regularization part
-		for(int k=0; k<m_dim; k++){
-			m_g[offset + k] += 2 * m_eta1 * (ui.getScaling(k)-1);// add 2*eta1*(a_k-1)
-			m_g[offset + k + m_dim] += 2 * m_eta2 * ui.getShifting(k); // add 2*eta2*b_k
 		}
 	}
 	
@@ -272,26 +261,6 @@ public class MTLinAdapt extends CoLinAdapt {
 			ui.setPersonalizedModel(m_pWeights);
 		}
 	}
-	
-//	public double getScaling(int gid, int uid){
-//		if (gid<0 || gid>m_dim) {
-//			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
-//			return Double.NaN;
-//		}
-//		
-//		int offset = uid * m_dim * 2;
-//		return m_A[offset+gid];
-//	}
-	
-//	public double getShifting(int gid, int uid){
-//		if (gid<0 || gid>m_dim) {
-//			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
-//			return Double.NaN;
-//		}
-//		
-//		int offset = uid * m_dim * 2;
-//		return m_A[offset+gid+m_dim];	
-//	}
 	
 	// w_s = A_s * w_g
 	public double getSupWeights(int index){
