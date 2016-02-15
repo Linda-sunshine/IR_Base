@@ -33,7 +33,7 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		
 		int wid, tid, xid;
 		double normalizedProb;
-		
+		double sampleXProb = 0;
 		//sampling the indicator variable 
 		_Word[] words = d.getWords();
 		for(int i=0; i<words.length; i++){
@@ -44,10 +44,16 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 			d.m_xSstat[xid] --;
 			d.m_xTopicSstat[xid][tid] --;
 
-			w.setXValue(xPredictiveProb(d, i));
+			sampleXProb = xPredictiveProb(d, i);
+			w.setXValue(sampleXProb);
 			
-			xid = w.getX();
+			if(sampleXProb>0)
+				xid = 1;	
+			else
+				xid = 0;
 			
+			w.setX(xid);
+
 			d.m_xSstat[xid] ++;
 			d.m_xTopicSstat[xid][tid] ++;			
 		}

@@ -24,12 +24,22 @@ public class _Word {
 	public _Word(int index, int topic) {
 		m_index = index;
 		m_topic = topic;
+		m_xProb = new double[2];
 	}
 
 	public _Word(int index, int topic, int x) {
 		m_index = index;
 		m_topic = topic;
 		m_x = x;
+		m_xProb = new double[2];
+	}
+	
+	public _Word(int index, int topic, int xid, int localIndex, double[] fVct){
+		m_index = index;
+		m_topic = topic;
+		m_x = xid;
+		m_localIndex = localIndex;
+		m_xProb = new double[2];
 	}
 	
 	public _Word(int index, int topic, double xVal, int localIndex, double[] fVct) {
@@ -63,7 +73,7 @@ public class _Word {
 	
 	public void setXValue(double xVal) {
 		m_xVal = xVal;
-		m_x = xVal>0?1:0;
+//		m_x = xVal>0?1:0;
 	}
 	
 	public double getXValue() {

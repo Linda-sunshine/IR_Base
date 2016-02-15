@@ -222,7 +222,8 @@ public abstract class TopicModel {
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
-		double delta, last = calculate_log_likelihood(), current;
+//		double delta, last = calculate_log_likelihood(), current;
+		double delta=0, last=0, current=0;
 		int i = 0, displayCount = 0;
 		do {
 			init();
@@ -237,7 +238,7 @@ public abstract class TopicModel {
 			
 			calculate_M_step(i);
 			
-			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount==25))//required to display log-likelihood
+			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6))//required to display log-likelihood
 				current += calculate_log_likelihood();//together with corpus-level log-likelihood
 			
 			if (i>0)
@@ -251,9 +252,9 @@ public abstract class TopicModel {
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 				} else {
 					System.out.print(".");
-					if (displayCount == 25){
+					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-						displayCount = 0;
+//						displayCount = 0;
 					}
 					displayCount ++;
 				}

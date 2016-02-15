@@ -489,26 +489,41 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			
 			for(_Doc doc: sampleTestSet)
 				calculate_E_step(doc);
+			
 			if (iter>m_burnIn && iter%m_lag==0){
+				double tempLogLikelihood = 0;
 				for(_Doc doc: sampleTestSet){
 					if(doc instanceof _ParentDoc){
 						collectParentStats((_ParentDoc) doc);
+						tempLogLikelihood += calculate_log_likelihood((_ParentDoc) doc);
 					}
 					else if(doc instanceof _ChildDoc){
 						collectChildStats((_ChildDoc) doc);
+						tempLogLikelihood += calculate_log_likelihood((_ChildDoc) doc);
 					}
-				
+					
 				}
 				count ++;
+				if(logLikelihood == 0)
+					logLikelihood = tempLogLikelihood;
+				else{
+//					double likelihood1 = Math.exp(tempLogLikelihood);
+//					double likelihood2 = Math.exp(logLikelihood);
+//					logLikelihood = Math.log(likelihood1+likelihood2);
+					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
+				}
+//					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
 			}
 		} while (++iter<this.number_of_iteration);
-		
-		for(_Doc doc:sampleTestSet){
-			estThetaInDoc(doc);
-			logLikelihood += calculate_log_likelihood(doc);
-		}
 
-		return logLikelihood; // this is average joint probability!	
+		for(_Doc doc: sampleTestSet){
+			if(doc instanceof _ParentDoc)
+				estThetaInDoc((_ParentDoc)doc);
+			else if(doc instanceof _ChildDoc)
+				estThetaInDoc((_ChildDoc)doc);
+		}
+		
+		return logLikelihood - Math.log(count); 	
 	}
 
 	// used to generate train and test data set 
@@ -869,78 +884,73 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 			return logLikelihoodByIntegrateTopics((_ChildDoc)d);
 	}
 	
-	//In parent document: p(w)= \sum_z p(w|z)p(z)
-	protected double logLikelihoodByIntegrateTopics(_ParentDoc d){		
+	protected double logLikelihoodByIntegrateTopics(_ParentDoc d) {
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
-		
-		//prepare compute the normalizers
-		double[] topicSum = new double[number_of_topics];
-		for(int k=0; k<number_of_topics; k++)
-			topicSum[k] = Math.log(Utils.sumOfArray(topic_term_probabilty[k]));
-		double docTopicSum = Math.log(Utils.sumOfArray(d.m_topics));
-			
-		for(int j=0; j<fv.length; j++){
+
+		for (int j = 0; j < fv.length; j++) {
 			int index = fv[j].getIndex();
 			double value = fv[j].getValue();
-			
+
 			double wordLogLikelihood = 0;
-			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]) - topicSum[k] 
-						+ Math.log(d.m_topics[k]) - docTopicSum;
-					
-				if(k == 0)
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, index))+Math.log(parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha));
+				
+				if(wordLogLikelihood == 0)
 					wordLogLikelihood = wordPerTopicLikelihood;
 				else
 					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
 			}
+			
+			if(Math.abs(wordLogLikelihood) < 1e-10){
+				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
 			docLogLikelihood += value * wordLogLikelihood;
 		}
-	
+
 		return docLogLikelihood;
 	}
 	
-	//In child document: p(w)= \sum_{z,x} p(w|z,x)p(z|x)p(x)
-	protected double logLikelihoodByIntegrateTopics(_ChildDoc d){		
-		double docLogLikelihood = 0.0;
+	protected double getChildTheta(int k, _ChildDoc d){
+		double childTheta = 0;
+		for(int x=0; x<m_gamma.length; x++){
+			childTheta += childTopicInDocProb(k, x, d)*childXInDocProb(x, d);
+		}
+		childTheta /= (d.getTotalDocLength()+Utils.sumOfArray(m_gamma));
 		
-		//prepare compute the normalizers
-		double[] topicSum = new double[number_of_topics];
-		for(int k=0; k<number_of_topics; k++)
-			topicSum[k] = Math.log(Utils.sumOfArray(topic_term_probabilty[k]));
+		return childTheta;
+	}
+	
+	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
+		double docLogLikelihood = 0.0;
 
-		double[] xTopicSum = new double[m_gamma.length];
-		for(int x = 0; x<m_gamma.length; x++) 
-			xTopicSum[x] = Math.log(Utils.sumOfArray(d.m_xTopics[x]));
-		double xPropSum = Math.log(Utils.sumOfArray(d.m_xProportion));
-			
-		for(_SparseFeature fv : d.getSparse()){
-			int wid = fv.getIndex();
-			double value = fv.getValue();
-			
+		// prepare compute the normalizers
+		_SparseFeature[] fv = d.getSparse();
+		
+		for (int i=0; i<fv.length; i++) {
+			int wid = fv[i].getIndex();
+			double value = fv[i].getValue();
+
 			double wordLogLikelihood = 0;
-			for(int k=0; k<number_of_topics; k++){				
-				double wordPerTopicXLikelihood = 0;
-				for(int x = 0; x<m_gamma.length; x++){
-					double temp = Math.log(d.m_xTopics[x][k]) - xTopicSum[x] // p(z|x)
-								+ Math.log(d.m_xProportion[x]) - xPropSum; // p(x)
-					if(x == 0)
-						wordPerTopicXLikelihood = temp;
-					else
-						wordPerTopicXLikelihood = Utils.logSum(wordPerTopicXLikelihood, temp);		
-				}
-				
-				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][wid]) - topicSum[k] // p(w|z,x)
-						+ wordPerTopicXLikelihood;
-					
-				if(k == 0)
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = Math.log(childWordByTopicProb(k, wid))+Math.log(getChildTheta(k, d));
+		
+				if(wordLogLikelihood == 0)
 					wordLogLikelihood = wordPerTopicLikelihood;
 				else
 					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
 			}
+			
+			if(Math.abs(wordLogLikelihood) < 1e-10){
+				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+	
 			docLogLikelihood += value * wordLogLikelihood;
 		}
-	
+		
 		return docLogLikelihood;
 	}
 	
