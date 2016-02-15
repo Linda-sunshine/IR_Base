@@ -30,6 +30,12 @@ public class MultiTaskSVM extends ModelAdaptation {
 		m_testmode = TestMode.TM_batch;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("MT-SVM[mu:%.3f,C:%.3f,bias:%b]", m_u, m_C, m_bias);
+	}
+	
+	@Override
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) 
