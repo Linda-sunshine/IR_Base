@@ -3,19 +3,18 @@ package topicmodels;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Arrays;
-import java.util.Collection;
+
 import Analyzer.ParentChildAnalyzer;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._ChildDoc;
 import structures._ChildDoc4LogisticRegression;
-import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Word;
-import topicmodels.ParentChild_Gibbs.MatchPair;
+import utils.Utils;
 
 public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 
@@ -26,9 +25,9 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
 		
 		m_lambda = new double[ParentChildAnalyzer.ChildDocFeatureSize];
-		Arrays.fill(m_lambda, 0);
 	}
 	
+	@Override
 	void sampleInChildDoc(_ChildDoc doc){
 		int wid, tid, xid;
 		double normalizedProb;
@@ -74,8 +73,7 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 			w.setXValue(xProb[1]/normalizedProb);
 
 			d.m_xSstat[xid] ++;
-			d.m_xTopicSstat[xid][tid] ++;
-			
+			d.m_xTopicSstat[xid][tid] ++;			
 		}
 		
 		
@@ -99,11 +97,8 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 			}
 		
 			normalizedProb *= m_rand.nextDouble();
-			for(tid=0; tid<number_of_topics; tid++){
+			for(tid=0; tid<number_of_topics && normalizedProb<=0; tid++){
 				normalizedProb -= m_topicProbCache[tid];
-				if(normalizedProb<=0){
-						break;
-					}
 			}
 			
 			if (tid == number_of_topics)
@@ -123,20 +118,16 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 	}
 	
 	public double xPredictiveProb(int xid, int tid, double[] wordFeature, _ChildDoc4LogisticRegression d){
-		double xProb = 0;
-		
-		xProb = childTopicInDocProb(tid, xid, d);
-		xProb *= childXInDocProb(xid, wordFeature);
-		return xProb;
+		return childTopicInDocProb(tid, xid, d) * childXInDocProb(xid, wordFeature); // p(z|x,w) p(x|w)
 	}
 	
 	public double childXInDocProb(int xid, double[] wordFeature){
-		double xProb = 0;
-
-		xProb = calLRPredict(m_lambda, wordFeature);
-		xProb = (xid==1 ? xProb: (1-xProb));
-//		System.out.println("xProb\t"+xProb);
-		return xProb;
+		double xProb = calLRPredict(m_lambda, wordFeature);
+		
+		if (xid==1)
+			return xProb;
+		else
+			return 1-xProb;
 	}
 	
 	public void calculate_M_step(int iter){
@@ -166,7 +157,7 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 	}
 	
 	double calLRPredict(double[]a, double[]b){
-		double temp = utils.Utils.dotProduct(a, b);
+		double temp = Utils.dotProduct(a, b);
 		return 1/(1+Math.exp(-temp));	
 	}
 	
@@ -213,6 +204,7 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 		for(_Doc doc: m_trainSet){
 			if(doc instanceof _ParentDoc)
 				continue;
+			
 			fv = doc.getSparse(); 
 			for(_Word w: doc.getWords()){
 				Yi = w.getXValue();
@@ -233,11 +225,13 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 		
 	}
 	
+	@Override
 	public String toString(){
 		return String.format("Parent Child topic model with logistic regression [k:%d, alpha:%.2f, beta:%.2f, Gibbs Sampling]", 
 				number_of_topics, d_alpha, d_beta);
 	}
 	
+	@Override
 	public void debugOutput(String filePrefix){
 
 		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");

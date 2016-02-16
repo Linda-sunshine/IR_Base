@@ -4,9 +4,9 @@ public class _ChildDoc4LogisticRegression extends _ChildDoc{
 
 	public _ChildDoc4LogisticRegression(int ID, String name, String title, String source, int ylabel) {
 		super(ID, name, title, source, ylabel);
-		// TODO Auto-generated constructor stub
 	}
 	
+	@Override
 	public void setTopics4Gibbs(int k, double alpha){
 		createSpace(k, alpha);
 		
@@ -30,5 +30,4 @@ public class _ChildDoc4LogisticRegression extends _ChildDoc{
 			localIndex ++;
 		}
 	}
-	
 }

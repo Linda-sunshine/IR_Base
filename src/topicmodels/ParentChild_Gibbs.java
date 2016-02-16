@@ -411,7 +411,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					
 				}
 				
-				writeFile(i, m_trainSet, m_testSet);
+//				writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number "+i);
 				System.out.println("Train Set Size "+m_trainSet.size());
 				System.out.println("Test Set Size "+m_testSet.size());
@@ -526,32 +526,32 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return logLikelihood - Math.log(count); 	
 	}
 
-	// used to generate train and test data set 
-	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
-		String trainFilePrefix = "trainFolder"+k;
-		String testFilePrefix = "testFolder"+k;
-		
-		File trainFolder = new File(trainFilePrefix);
-		File testFolder = new File(testFilePrefix);
-		if(!trainFolder.exists()){
-			System.out.println("creating root train directory"+trainFolder);
-			trainFolder.mkdir();
-		}
-		if(!testFolder.exists()){
-			System.out.println("creating root test directory"+testFolder);
-			testFolder.mkdir();
-		}
-		
-		_Corpus trainCorpus = new _Corpus();
-		_Corpus testCorpus = new _Corpus();
-
-		for(_Doc d: trainSet)
-			trainCorpus.addDoc(d);
-		for(_Doc d: testSet)
-			testCorpus.addDoc(d);
-		outputFile.outputFiles(trainFilePrefix, trainCorpus);
-		outputFile.outputFiles(testFilePrefix, testCorpus);
-	}
+//	// used to generate train and test data set 
+//	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
+//		String trainFilePrefix = "trainFolder"+k;
+//		String testFilePrefix = "testFolder"+k;
+//		
+//		File trainFolder = new File(trainFilePrefix);
+//		File testFolder = new File(testFilePrefix);
+//		if(!trainFolder.exists()){
+//			System.out.println("creating root train directory"+trainFolder);
+//			trainFolder.mkdir();
+//		}
+//		if(!testFolder.exists()){
+//			System.out.println("creating root test directory"+testFolder);
+//			testFolder.mkdir();
+//		}
+//		
+//		_Corpus trainCorpus = new _Corpus();
+//		_Corpus testCorpus = new _Corpus();
+//
+//		for(_Doc d: trainSet)
+//			trainCorpus.addDoc(d);
+//		for(_Doc d: testSet)
+//			testCorpus.addDoc(d);
+//		outputFile.outputFiles(trainFilePrefix, trainCorpus);
+//		outputFile.outputFiles(testFilePrefix, testCorpus);
+//	}
 
 	//used to print test parameter
 	public void printTestParameter(String parentParameterFile, String childParameterFile){
