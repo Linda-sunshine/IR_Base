@@ -20,11 +20,11 @@ public class MyMTLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.25;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.5, eta2 = 1, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+		double eta1 = 0.5, eta2 = 0, eta3 = 0.6, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
@@ -60,7 +60,7 @@ public class MyMTLinAdaptMain {
 //		//adaptation.saveModel("data/results/colinadapt");
 		
 		//Create the instance of MTLinAdapt.
-		double lambda1 = 0.5, lambda2 = 1;
+		double lambda1 = 0.5, lambda2 = 0;
 //		double[] lambda1s = new double[]{0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2};
 //		double[] lambda2s = new double[]{0.2, 0.4, 0.6, 0.8, 1, 1.2, 1.4, 1.6, 1.8, 2};
 //		for(double lambda1: lambda1s){
@@ -78,11 +78,12 @@ public class MyMTLinAdaptMain {
 
 		_AdaptStruct u;
 		ArrayList<_AdaptStruct> mtlinUsr = adaptation.getUserList();
-		double[][] mtlinStat = new double[mtlinUsr.size()][2];
+		double[][] mtlinStat = new double[mtlinUsr.size()][3]; //[0]: F1; [1]: number of reviews; [2]: polarity:
 		for(int i=0; i<mtlinUsr.size(); i++){
 			u = mtlinUsr.get(i);
 			mtlinStat[i][0] = u.getUser().getPerfStat().getF1(0) + u.getUser().getPerfStat().getF1(1);
 			mtlinStat[i][1] = u.getUser().getReviewSize();
+			mtlinStat[i][2] = u.getUser().calculatePosRatio();
 			u.getUser().getPerfStat().clear();
 		}
 		
@@ -100,9 +101,9 @@ public class MyMTLinAdaptMain {
 			mtsvmStat[i][0] = u.getUser().getPerfStat().getF1(0) + u.getUser().getPerfStat().getF1(1);
 			mtsvmStat[i][1] = u.getUser().getReviewSize();
 		}
-		PrintWriter writer0 = new PrintWriter(new File("./data/MTLinAdapt/equal.txt"));
-		PrintWriter writer1 = new PrintWriter(new File("./data/MTLinAdapt/mtlinAdaptBetter.txt"));
-		PrintWriter writer2 = new PrintWriter(new File("./data/MTLinAdapt/mtsvmBetter.txt"));
+		PrintWriter writer0 = new PrintWriter(new File("./data/MTLinAdapt/Equal.txt"));
+		PrintWriter writer1 = new PrintWriter(new File("./data/MTLinAdapt/MtlinAdaptBetter.txt"));
+		PrintWriter writer2 = new PrintWriter(new File("./data/MTLinAdapt/MtsvmBetter.txt"));
 
 		// Get stat of the two set of users.
 		double[] stat = new double[6];
@@ -110,27 +111,23 @@ public class MyMTLinAdaptMain {
 		ArrayList<Double> mtlinAdaptBetter = new ArrayList<Double>();
 		ArrayList<Double> mtsvmBetter = new ArrayList<Double>();
 		
-		writer0.write("mtlinadapt == mtsvm\n");
-		writer1.write("mtlinadapt>mtsvm\n");
-		writer2.write("mtlinadapt<mtsvm\n");
-		
 		for(int i=0; i<mtlinStat.length; i++){
 			
 			if(mtlinStat[i][0] == mtsvmStat[i][0]){
 				stat[0]++;
-				stat[3] += mtsvmStat[i][1];
-				equal.add(mtsvmStat[i][1]);
-				writer0.write(mtsvmStat[i][1]+"\n");
+				stat[3] += mtlinStat[i][1];
+				equal.add(mtlinStat[i][1]);
+				writer0.write(mtsvmStat[i][1]+"\t" + mtlinStat[i][2] + "\n");
 			} else if(mtlinStat[i][0] > mtsvmStat[i][0]){
 				stat[1]++;
 				stat[4] += mtlinStat[i][1];
 				mtlinAdaptBetter.add(mtlinStat[i][1]);
-				writer1.format("%.4f,%.4f,%.1f\n", mtlinStat[i][0], mtsvmStat[i][0], mtlinStat[i][1]);
+				writer1.format("%.4f,%.4f,%.1f,%.4f\n", mtlinStat[i][0], mtsvmStat[i][0], mtlinStat[i][1], mtlinStat[i][2]);
 			} else{
 				stat[2]++;
 				stat[5] += mtsvmStat[i][1];
 				mtsvmBetter.add(mtlinStat[i][1]);
-				writer2.format("%.4f,%.4f,%.1f\n", mtlinStat[i][0], mtsvmStat[i][0], mtsvmStat[i][1]);
+				writer2.format("%.4f,%.4f,%.1f,%.4f\n", mtlinStat[i][0], mtsvmStat[i][0], mtsvmStat[i][1], mtlinStat[i][2]);
 			}
 		}
 		writer0.close();

@@ -142,4 +142,13 @@ public class _User {
 	public double[] getLowDimProfile(){
 		return m_lowDimProfile;
 	}
+	
+	public double calculatePosRatio(){
+		double count = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				count++;
+		}
+		return count/m_reviews.size();
+	}
  }

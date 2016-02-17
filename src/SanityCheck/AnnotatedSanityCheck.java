@@ -61,13 +61,13 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 				if(lineCount%2 == 0){
 					strs = line.split(",");//The first is the index, ignore it.
 					ID = Integer.valueOf(strs[1]); // The ID of the document in the whole corpus.
-					if(Integer.valueOf(strs[3]) == 0)
-						group = 0;
-					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 4))
-						group = 1; // One-polarity reviews.
-					else 
-						group = 2; // Mix-polarity reviews.
-//					group = Integer.valueOf(strs[3]);
+//					if(Integer.valueOf(strs[3]) == 0)
+//						group = 0;
+//					else if((Integer.valueOf(strs[3]) == 1) || (Integer.valueOf(strs[3]) == 4))
+//						group = 1; // One-polarity reviews.
+//					else 
+//						group = 2; // Mix-polarity reviews.
+					group = Integer.valueOf(strs[3]);
 					
 					doc = m_corpus.getCollection().get(ID);
 					if(doc.getStnLabels() == null)
@@ -144,7 +144,7 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 	}
 	public void diffGroupLOOCV(){
 		for(int groupNo: m_groupDocs.keySet()){
-			if(groupNo == 0) 
+			if(groupNo <4) 
 				continue;
 			else
 				LOOCV(groupNo, m_groupDocs.get(groupNo));
@@ -160,68 +160,68 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 		return m_MAPs;
 	}
 	
-	// Leave-one-out cross validation.
-	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
-//		if(groupNo > 3)
-//			m_flip = true;
-		m_numberOfCores = Runtime.getRuntime().availableProcessors();
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		m_writer.format("-----------------------%d------------------------\n", groupNo);
-		
-		for(int k=0; k<m_numberOfCores; k++){
-			threads.add((new Thread() {
-				int core;
-				public void run() {
-					try{
-						for(int i=0; i+core < groupDocs.size(); i += m_numberOfCores){
-							System.out.println("----Current index is " + (i+core));
-							// Leave one out to construct the training set.
-							_Doc testDoc = groupDocs.get(i+core); // Get the test document.
-							ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
-							trainSet.remove(i+core);
-							
-							// Train L2R model.
-							if(m_sType == SimType.ST_L2R){
-								double[] weights = trainL2R(trainSet, testDoc);
-								for(double w: weights)
-									m_writer.format("%.4f\t", w);
-								m_writer.write("\n");
-								// Get the permutation of for the test query and calculate corresponding AP.
-								synchronized(m_MAPLock){
-									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
-								}
-							} 
-							else {
-								synchronized(m_MAPLock){
-									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
-								}
-							}
-						}
-					} catch(Exception ex) {
-						ex.printStackTrace(); 
-					}
-				}
-		
-				private Thread initialize(int core) {
-					this.core = core;
-					return this;
-				}
-			}).initialize(k));
-	
-			threads.get(k).start();
-		}
-
-		for(int k=0;k<m_numberOfCores;++k){
-			try {
-				threads.get(k).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} 
-		}
-		// Calculate the MAP for all the test documents.
-		m_MAPs[groupNo-1] /= groupDocs.size();
-		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
-	}
+//	// Leave-one-out cross validation.
+//	public void LOOCV(final int groupNo, final ArrayList<_Doc> groupDocs){
+////		if(groupNo > 3)
+////			m_flip = true;
+//		m_numberOfCores = Runtime.getRuntime().availableProcessors();
+//		ArrayList<Thread> threads = new ArrayList<Thread>();
+//		m_writer.format("-----------------------%d------------------------\n", groupNo);
+//		
+//		for(int k=0; k<m_numberOfCores; k++){
+//			threads.add((new Thread() {
+//				int core;
+//				public void run() {
+//					try{
+//						for(int i=0; i+core < groupDocs.size(); i += m_numberOfCores){
+//							System.out.println("----Current index is " + (i+core));
+//							// Leave one out to construct the training set.
+//							_Doc testDoc = groupDocs.get(i+core); // Get the test document.
+//							ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
+//							trainSet.remove(i+core);
+//							
+//							// Train L2R model.
+//							if(m_sType == SimType.ST_L2R){
+//								double[] weights = trainL2R(trainSet, testDoc);
+//								for(double w: weights)
+//									m_writer.format("%.4f\t", w);
+//								m_writer.write("\n");
+//								// Get the permutation of for the test query and calculate corresponding AP.
+//								synchronized(m_MAPLock){
+//									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
+//								}
+//							} 
+//							else {
+//								synchronized(m_MAPLock){
+//									m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
+//								}
+//							}
+//						}
+//					} catch(Exception ex) {
+//						ex.printStackTrace(); 
+//					}
+//				}
+//		
+//				private Thread initialize(int core) {
+//					this.core = core;
+//					return this;
+//				}
+//			}).initialize(k));
+//	
+//			threads.get(k).start();
+//		}
+//
+//		for(int k=0;k<m_numberOfCores;++k){
+//			try {
+//				threads.get(k).join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			} 
+//		}
+//		// Calculate the MAP for all the test documents.
+//		m_MAPs[groupNo-1] /= groupDocs.size();
+//		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
+//	}
 	
 	public double[] reverseWeights(double[] weights){
 		if(weights == null)
@@ -230,28 +230,28 @@ public class AnnotatedSanityCheck extends L2RMetricLearning{
 			weights[i] = -weights[i];
 		return weights;
 	}
-//	// Leave-one-out cross validation in single-thread.
-//	public void LOOCV(int groupNo, ArrayList<_Doc> groupDocs){
-//			
-//		for(int i=0; i < groupDocs.size(); i++){
-//			// Leave one out to construct the training set.
-//			_Doc testDoc = groupDocs.get(i); // Get the test document.
-//			ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
-//			trainSet.remove(i);
-//								
-//			// Train L2R model.
-//			if(m_sType == SimType.ST_L2R){
-//				double[] weights = trainL2R(trainSet, testDoc);
-//				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
-//			} 
-//			else{
-//				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
-//			}
-//		}
-//		// Calculate the MAP for all the test documents.
-//		m_MAPs[groupNo-1] /= groupDocs.size();
-//		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
-//	}	
+	// Leave-one-out cross validation in single-thread.
+	public void LOOCV(int groupNo, ArrayList<_Doc> groupDocs){
+			
+		for(int i=0; i < groupDocs.size(); i++){
+			// Leave one out to construct the training set.
+			_Doc testDoc = groupDocs.get(i); // Get the test document.
+			ArrayList<_Doc> trainSet = new ArrayList<_Doc>(groupDocs);
+			trainSet.remove(i);
+								
+			// Train L2R model.
+			if(m_sType == SimType.ST_L2R){
+				double[] weights = trainL2R(trainSet, testDoc);
+				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, weights);
+			} 
+			else{
+				m_MAPs[groupNo-1] += permutate(trainSet, testDoc, null);
+			}
+		}
+		// Calculate the MAP for all the test documents.
+		m_MAPs[groupNo-1] /= groupDocs.size();
+		System.out.format("G: %d, map: %.4f\t", groupNo, m_MAPs[groupNo-1]);
+	}	
 	
 	public double[] trainL2R(ArrayList<_Doc> trainSet, _Doc testDoc){
 		ArrayList<_Query> queries = createTrainingCorpus(trainSet, testDoc);

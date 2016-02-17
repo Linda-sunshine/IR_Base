@@ -213,9 +213,9 @@ public class MTLinAdapt extends CoLinAdapt {
 				
 				// added by Lin for stopping lbfgs.
 				double curMag = gradientTest();
-//				if (Math.abs(oldMag - curMag) < 0.1)
-//					break;
-//				oldMag = curMag;
+				if (Math.abs(oldMag - curMag) < 0.1)
+					break;
+				oldMag = curMag;
 
 				if (m_displayLv == 2) {
 					System.out.print("Fvalue is " + fValue);
@@ -272,26 +272,6 @@ public class MTLinAdapt extends CoLinAdapt {
 			ui.setPersonalizedModel(m_pWeights);
 		}
 	}
-	
-//	public double getScaling(int gid, int uid){
-//		if (gid<0 || gid>m_dim) {
-//			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
-//			return Double.NaN;
-//		}
-//		
-//		int offset = uid * m_dim * 2;
-//		return m_A[offset+gid];
-//	}
-	
-//	public double getShifting(int gid, int uid){
-//		if (gid<0 || gid>m_dim) {
-//			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
-//			return Double.NaN;
-//		}
-//		
-//		int offset = uid * m_dim * 2;
-//		return m_A[offset+gid+m_dim];	
-//	}
 	
 	// w_s = A_s * w_g
 	public double getSupWeights(int index){
