@@ -15,20 +15,31 @@ public class _Word {
 	
 	//structure used for ParentChildTopicModel
 	int m_x;
+	double[] m_xProb;
 	
 	//structure used for ParentChildTopicModelwithProbit
 	double m_xVal;
 	int m_localIndex; // index in the sorted sparse vector of its original documents
-	
+
 	public _Word(int index, int topic) {
 		m_index = index;
 		m_topic = topic;
+		m_xProb = new double[2];
 	}
 
 	public _Word(int index, int topic, int x) {
 		m_index = index;
 		m_topic = topic;
 		m_x = x;
+		m_xProb = new double[2];
+	}
+	
+	public _Word(int index, int topic, int xid, int localIndex, double[] fVct){
+		m_index = index;
+		m_topic = topic;
+		m_x = xid;
+		m_localIndex = localIndex;
+		m_xProb = new double[2];
 	}
 	
 	public _Word(int index, int topic, double xVal, int localIndex, double[] fVct) {
@@ -37,6 +48,7 @@ public class _Word {
 		m_xVal = xVal;
 		m_localIndex = localIndex;
 		m_x = xVal>0?1:0;
+		m_xProb = new double[2];
 	}
 	
 	public int getIndex() {
@@ -61,7 +73,7 @@ public class _Word {
 	
 	public void setXValue(double xVal) {
 		m_xVal = xVal;
-		m_x = xVal>0?1:0;
+//		m_x = xVal>0?1:0;
 	}
 	
 	public double getXValue() {
@@ -70,5 +82,13 @@ public class _Word {
 	
 	public int getLocalIndex() {
 		return m_localIndex;
+	}
+	
+	public void collectXStats(){
+		m_xProb[m_x] ++;
+	}
+	
+	public double getXProb(){
+		return m_xProb[1];
 	}
 }

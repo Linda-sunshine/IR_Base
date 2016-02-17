@@ -38,7 +38,7 @@ public class _ChildDoc extends _Doc {
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
 				tid = m_rand.nextInt(k);
-				xid = m_rand.nextInt(gammaSize);;
+				xid = m_rand.nextInt(gammaSize);
 				m_words[wIndex] = new _Word(wid, tid, xid);
 
 				m_xTopicSstat[xid][tid] ++;
@@ -53,5 +53,9 @@ public class _ChildDoc extends _Doc {
 		Utils.L1Normalization(m_xProportion);
 		for(int x=0; x<m_xTopics.length; x++)
 			Utils.L1Normalization(m_xTopics[x]);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 }

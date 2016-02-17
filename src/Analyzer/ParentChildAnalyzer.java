@@ -11,6 +11,7 @@ import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
+import structures._ChildDoc4LogisticRegression;
 import structures._ChildDoc4ProbitModel;
 import structures._Doc;
 import structures._ParentDoc;
@@ -99,7 +100,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 
 //		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
+	
 		if (AnalyzeDoc(d)) {//this is a valid child document
 			if (parentHashMap.containsKey(parent)) {
 				_ParentDoc pDoc = parentHashMap.get(parent);
@@ -137,7 +140,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		//get DF in child documents
 		for(_Doc temp:docs) {
-			if(temp instanceof _ChildDoc4ProbitModel){
+			if(temp instanceof _ChildDoc){
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs)
 					childDF[sf.getIndex()] ++;	// DF in child documents			
@@ -145,11 +148,12 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			}
 		}
 		
+		System.out.println("Set feature value for parent child probit model");
 		_SparseFeature[] pSfvs;
 		for(_Doc temp:docs) {	
-			if(temp instanceof _ChildDoc4ProbitModel) {
+			if(temp instanceof _ChildDoc) {
 
-				_ParentDoc tempParentDoc = ((_ChildDoc4ProbitModel)temp).m_parentDoc;
+				_ParentDoc tempParentDoc = ((_ChildDoc)temp).m_parentDoc;
 				pSfvs = tempParentDoc.getSparse();
 							
 				for(_SparseFeature sf: temp.getSparse()){				
@@ -184,9 +188,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					values[7] = IDFCorpus * TFChild;//TF-IDF
 
 					sf.setValues(values);
-				}				
-			}
+				}
+			}	
 		}
-		System.out.println("Set feature value for parent child probit model");
+
 	}
 }

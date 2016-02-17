@@ -26,6 +26,11 @@ public class asyncLinAdapt extends LinAdapt {
 		m_testmode = TestMode.TM_online;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("asyncLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_eta1, m_eta2);
+	}
+	
 	public void setInitStepSize(double initStepSize) {
 		m_initStepSize = initStepSize;
 	}

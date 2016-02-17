@@ -1,10 +1,15 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
 import structures._ChildDoc;
 import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
+import structures._Doc;
 import structures._Word;
 
 public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
@@ -28,7 +33,7 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		
 		int wid, tid, xid;
 		double normalizedProb;
-		
+		double sampleXProb = 0;
 		//sampling the indicator variable 
 		_Word[] words = d.getWords();
 		for(int i=0; i<words.length; i++){
@@ -39,10 +44,16 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 			d.m_xSstat[xid] --;
 			d.m_xTopicSstat[xid][tid] --;
 
-			w.setXValue(xPredictiveProb(d, i));
-		
-			xid = w.getX();
+			sampleXProb = xPredictiveProb(d, i);
+			w.setXValue(sampleXProb);
 			
+			if(sampleXProb>0)
+				xid = 1;	
+			else
+				xid = 0;
+			
+			w.setX(xid);
+
 			d.m_xSstat[xid] ++;
 			d.m_xTopicSstat[xid][tid] ++;			
 		}
@@ -101,15 +112,44 @@ public class ParentChildWithProbitModel_Gibbs extends ParentChild_Gibbs {
 		}
 		
 		sigma = d.m_fixedSigmaPartMap.get(wid);
+
 		
 		double x0 = childTopicInDocProb(tid, 0, d), x1 = childTopicInDocProb(tid, 1, d);//no need to repeatedly compute this
 		do {
 			x = m_normal.nextDouble(mu, sigma);
+
 			if (x<=0 && Math.random()<x0)
 				break;
 			else if (x>0 && Math.random()<x1)
 				break;
 		} while (true);
 		return x;
+		
+	}
+	
+	@Override
+	protected void printChildXValue(_Doc d, File childXFolder){
+		String XValueFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(childXFolder,
+					XValueFile));
+	
+			for(_Word w:d.getWords()){
+				int index = w.getIndex();
+				int x = w.getX();
+				double xProb = w.getXProb();
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + x + ":" + xProb + "\t");
+			}
+			
+			pw.println();
+			for(int i=0; i<((_ChildDoc4ProbitModel)d).m_lambda.length; i++){
+				pw.print(((_ChildDoc4ProbitModel)d).m_lambda[i]+"\t");
+			}
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 }

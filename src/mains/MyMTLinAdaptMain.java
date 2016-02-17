@@ -71,7 +71,7 @@ public class MyMTLinAdaptMain {
 				adaptation.setR1TradeOffs(eta1, eta2);
 				adaptation.setRsTradeOffs(lambda1, lambda2);
 				adaptation.train();
-				adaptation.printParameters();
+				adaptation.toString();
 				adaptation.test();
 //			}
 //		}

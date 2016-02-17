@@ -36,6 +36,11 @@ public class LinAdapt extends RegLR {
 		m_testmode = TestMode.TM_batch;
 	}  
 	
+	@Override
+	public String toString() {
+		return String.format("LinAdapt[dim:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_eta1, m_eta2);
+	}
+	
 	public void setR1TradeOffs(double eta1, double eta2) {
 		m_eta1 = eta1;
 		m_eta2 = eta2;

@@ -35,7 +35,7 @@ public class CoLinAdapt extends LinAdapt {
 		// the only possible test modes for CoLinAdapt is batch mode
 		m_testmode = TestMode.TM_batch;
 	}
-
+	
 	@Override
 	public String toString() {
 		return String.format("CoLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);

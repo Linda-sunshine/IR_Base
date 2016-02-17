@@ -79,6 +79,7 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 		m_value += value;
 	}
 	
+	
 	public void setValue4Dim(double value, int d) {
 		this.m_values[d] = value;//we will not check the index range@
 	}

@@ -359,6 +359,7 @@ public abstract class Analyzer {
 				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		}
+
 		
 		//rank the documents by product and time in all the cases
 		//Collections.sort(m_corpus.getCollection());

@@ -222,7 +222,8 @@ public abstract class TopicModel {
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
-		double delta, last = calculate_log_likelihood(), current;
+//		double delta, last = calculate_log_likelihood(), current;
+		double delta=0, last=0, current=0;
 		int i = 0, displayCount = 0;
 		do {
 			init();
@@ -237,7 +238,7 @@ public abstract class TopicModel {
 			
 			calculate_M_step(i);
 			
-			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount==25))//required to display log-likelihood
+			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6))//required to display log-likelihood
 				current += calculate_log_likelihood();//together with corpus-level log-likelihood
 			
 			if (i>0)
@@ -251,9 +252,9 @@ public abstract class TopicModel {
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 				} else {
 					System.out.print(".");
-					if (displayCount == 25){
+					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-						displayCount = 0;
+//						displayCount = 0;
 					}
 					displayCount ++;
 				}
@@ -272,7 +273,7 @@ public abstract class TopicModel {
 	public double Evaluation() {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
-		
+		double totalWords = 0.0;
 		if (m_multithread) {
 			multithread_inference();
 			System.out.println("In thread");
@@ -281,15 +282,20 @@ public abstract class TopicModel {
 				perplexity += worker.getPerplexity();
 			}
 		} else {
+			
 			System.out.println("In Normal");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
-				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+				perplexity += loglikelihood;
+				totalWords += d.getTotalDocLength();
+//				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 			}
 			
 		}
-		perplexity /= m_testSet.size();
+//		perplexity /= m_testSet.size();
+		perplexity /= totalWords;
+		perplexity = Math.exp(-perplexity);
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
@@ -371,8 +377,7 @@ public abstract class TopicModel {
 		int amazonRatingCount[] = {0,0,0,0,0};
 		
 		int newEggRatingCount[] = {0,0,0,0,0};
-		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
-		
+		int newEggTrainsetRatingCount[] = {0,0,0,0,0};		
 		
 		if(m_randomFold==true){
 			perf = new double[k];
