@@ -24,7 +24,7 @@ public class MTLinAdapt extends CoLinAdapt {
 						int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		m_lambda1 = 0.5;
-		m_lambda2 = 0.1;
+		m_lambda2 = 1;
 		m_LNormFlag = true;
 	}
 	
@@ -202,9 +202,9 @@ public class MTLinAdapt extends CoLinAdapt {
 				
 				// added by Lin for stopping lbfgs.
 				double curMag = gradientTest();
-				if (Math.abs(oldMag - curMag) < 0.1)
-					break;
-				oldMag = curMag;
+//				if (Math.abs(oldMag - curMag) < 0.1)
+//					break;
+//				oldMag = curMag;
 
 				if (m_displayLv == 2) {
 					System.out.print("Fvalue is " + fValue);

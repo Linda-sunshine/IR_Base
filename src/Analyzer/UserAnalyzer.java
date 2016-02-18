@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
@@ -181,6 +183,16 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 	}
 
+	public ArrayList<_Review> shuffleReviews(ArrayList<_Review> reviews){
+		// Generate a set of random numbers first.
+		HashSet<Integer> index = new LinkedHashSet<Integer>();
+		while(index.size() < reviews.size())
+			index.add((int) (reviews.size() * Math.random()));
+		ArrayList<_Review> rdmReviews = new ArrayList<_Review>();
+		for(int i: index)
+			rdmReviews.add(reviews.get(i));
+		return rdmReviews;
+	}
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
 		System.out.format("[Info]Training size: %d, adaptation size: %d, and testing size: %d\n", m_trainSize, m_adaptSize,m_testSize);
