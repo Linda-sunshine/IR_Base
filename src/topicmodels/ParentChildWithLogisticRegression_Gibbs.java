@@ -26,6 +26,11 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
 		
 		m_lambda = new double[ParentChildAnalyzer.ChildDocFeatureSize];
+//		Arrays.fill(m_lambda, 0);
+	}
+	
+	protected void initialize_probability(Collection<_Doc> collection){
+		super.initialize_probability(collection);
 		Arrays.fill(m_lambda, 0);
 	}
 	
@@ -196,12 +201,13 @@ public class ParentChildWithLogisticRegression_Gibbs extends ParentChild_Gibbs{
 	
 	public double calcFuncGradient(double[] g){
 		double fValue = 0;
-		double ero = 0.1;
+		double ero = 0.01;
 		
 		double L2 = 0;
 		double b = 0;
 		for(int i=0; i<m_lambda.length; i++){
 			b = m_lambda[i];
+//			System.out.println("value\t"+i+"\t"+b);
 			g[i] = 2*ero*b;
 			L2 += b*b;
 		}

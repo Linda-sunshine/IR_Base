@@ -11,6 +11,8 @@ public class _ChildDoc extends _Doc {
 
 	public _ParentDoc m_parentDoc;
 	
+	public double m_mu;//similarity between parent and child
+	
 	public _ChildDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
 		m_parentDoc = null;
@@ -47,6 +49,14 @@ public class _ChildDoc extends _Doc {
 				wIndex ++;
 			}
 		}
+	}
+	
+	public void setMu(double mu){
+		m_mu = mu;
+	}
+	
+	public double getMu(){
+		return m_mu;
 	}
 	
 	public void estGlobalLocalTheta() {

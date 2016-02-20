@@ -90,7 +90,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return 0;
 	}
 	
-	void sampleInParentDoc(_ParentDoc d){
+	protected void sampleInParentDoc(_ParentDoc d){
 		int wid, tid;
 		double normalizedProb;		
 		
@@ -298,10 +298,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		double parentDocLength = d.m_parentDoc.getTotalDocLength()/m_mu, gTopic, lTopic;
 		// used to output the topK words and parameters
 		for (int k = 0; k < number_of_topics; k++) {		
-			gTopic = d.m_xTopicSstat[1][k] + d_alpha;
-			lTopic = d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k] / parentDocLength;
-			d.m_xTopics[1][k] += gTopic;
-			d.m_xTopics[0][k] += lTopic;
+			lTopic = d.m_xTopicSstat[1][k] + d_alpha;
+			gTopic = d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k] / parentDocLength;
+			d.m_xTopics[1][k] += lTopic;
+			d.m_xTopics[0][k] += gTopic;
 			d.m_topics[k] += gTopic + lTopic; // this is just an approximation
 		}
 		
@@ -526,6 +526,40 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		return logLikelihood - Math.log(count); 	
 	}
 
+	public void estParentStnTopicProportion(_Doc pDoc){
+		for(_Stn stnObj : pDoc.getSentences() ){
+			
+		}
+	}
+	
+	public void estStn(_Stn stnObj, double[] topicPrior){
+		int i=0;
+		
+		do{
+			calculateStn_E_step(stnObj, topicPrior);
+			if(i>m_burnIn && i%m_lag == 0){
+				collectStnStats(stnObj);
+			}
+			
+		}while(++i<number_of_iteration);
+		
+		Utils.L1Normalization(stnObj.m_topics);
+	}
+	
+	public void calculateStn_E_step(_Stn stnObj, double[] topicPrior){
+		permuteStn();
+		
+		
+	}
+	
+	public void collectStnStats(_Stn stnObj){
+		
+	}
+	
+	public void permuteStn(){
+		
+	}
+	
 	// used to generate train and test data set 
 	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
 		String trainFilePrefix = "trainFolder"+k;
@@ -829,7 +863,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-//			System.err.print("para File Not Found");
 		}
 
 	}
@@ -894,18 +927,22 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, index))+Math.log(parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha));
+				double wordPerTopicLikelihood = parentWordByTopicProb(k, index)*parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha);
+				wordLogLikelihood += wordPerTopicLikelihood;
+//				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, index))+Math.log(parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha));
 				
-				if(wordLogLikelihood == 0)
-					wordLogLikelihood = wordPerTopicLikelihood;
-				else
-					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
+//				if(wordLogLikelihood == 0)
+//					wordLogLikelihood = wordPerTopicLikelihood;
+//				else
+//					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
 			}
 			
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
 				wordLogLikelihood += 1e-10;
 			}
+			
+			wordLogLikelihood = Math.log(wordLogLikelihood);
 
 			docLogLikelihood += value * wordLogLikelihood;
 		}
