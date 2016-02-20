@@ -1,5 +1,9 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -227,7 +231,8 @@ public class MTLinAdapt extends CoLinAdapt {
 		}
 
 		setPersonalizedModel();
-		return oldFValue;
+		return 0;
+//		return oldFValue;
 	}
 	
 	@Override
@@ -302,4 +307,20 @@ public class MTLinAdapt extends CoLinAdapt {
 		return m_gWeights;
 	}
 
+	/***When we do feature selection, we will group features and store them in file. 
+	 * The index is the index of features and the corresponding number is the group index number.***/
+	public void loadFeatureGroupMap(String filename){
+			
+			m_featureGroupMap = new int[5000 + 1]; //One more term for bias, bias->0.
+			m_dim = 0;
+			//Group index starts from 0, so add 1 for it.
+			for(int i=0; i<5000; i++) {
+				m_featureGroupMap[i+1] = i+1;
+				if (m_dim < m_featureGroupMap[i+1])
+					m_dim = m_featureGroupMap[i+1];
+			}
+			m_dim = 5001;
+			
+			System.out.format("[Info]Feature group size %d\n", m_dim);
+	}
 }
