@@ -97,6 +97,14 @@ public class MultiTaskSVM extends ModelAdaptation {
 			libProblem.bias = -1;// no bias term in liblinear.
 		}
 		
+//		if (m_bias) {
+//			libProblem.n = (m_featureSize + 1); // including bias term; global model + user models
+//			libProblem.bias = 1;// bias term in liblinear.
+//		} else {
+//			libProblem.n = m_featureSize * (m_userSize + 1);
+//			libProblem.bias = -1;// no bias term in liblinear.
+//		}
+		
 		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
 		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
 		
@@ -114,18 +122,24 @@ public class MultiTaskSVM extends ModelAdaptation {
 		for(_AdaptStruct user:m_userList) {
 			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
+//					m_pWeights[i+1] = sign*(weight[userOffset+i]);
+//					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
 					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
 				
 				if (m_bias) {
+					m_pWeights[0] = sign*(weight[userOffset+m_featureSize]);
+					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u);
 					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
 					userOffset += m_featureSize+1;
 				} else
 					userOffset += m_featureSize;
 			} else {
 				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
+//					m_pWeights[i+1] = sign*(weight[userOffset+i]);
 					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
 				
 				if (m_bias)
+//					m_pWeights[0] = sign*(weight[userOffset+m_featureSize]);
 					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
 			}
 			
@@ -174,4 +188,22 @@ public class MultiTaskSVM extends ModelAdaptation {
 		}
 		return node;
 	}
+//	public Feature[] createLibLinearFV(_Review r, int userIndex){
+//		int fIndex; double fValue;
+//		_SparseFeature fv;
+//		_SparseFeature[] fvs = r.getSparse();
+//		
+//		Feature[] node = new Feature[fvs.length];//0-th: x//sqrt(u); t-th: x.
+//		
+//		for(int i = 0; i < fvs.length; i++){
+//			fv = fvs[i];
+//			fIndex = fv.getIndex() + 1;//liblinear's feature index starts from one
+//			fValue = fv.getValue();
+//			
+//			//Construct the user part of the training instance.			
+//			node[i] = new FeatureNode(fIndex, fValue);
+//			
+//		}
+//		return node;
+//	}
 }

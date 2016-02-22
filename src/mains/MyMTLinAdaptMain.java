@@ -3,6 +3,7 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedUserAnalyzer;
@@ -28,15 +29,15 @@ public class MyMTLinAdaptMain {
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
-//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 			
-		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups.txt", dataset);
-		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups.txt", dataset);
+//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
@@ -44,7 +45,7 @@ public class MyMTLinAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		
+
 		// Create an instances of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 //				
@@ -67,6 +68,7 @@ public class MyMTLinAdaptMain {
 		mtlinadapt.setRsTradeOffs(lambda1, lambda2);
 		
 		mtlinadapt.train();
+		mtlinadapt.printWeights("./data/MTLinAdapt/weights");
 		mtlinadapt.test();
 		
 		// Create the instance of MTCoLinAdapt.

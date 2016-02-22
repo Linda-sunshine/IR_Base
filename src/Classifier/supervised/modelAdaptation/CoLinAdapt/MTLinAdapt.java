@@ -1,9 +1,12 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -256,12 +259,17 @@ public class MTLinAdapt extends CoLinAdapt {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			//set bias term
-			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
-			
+//			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
+			m_pWeights[0] = m_sWeights[0];
+
+//			//set the other features
+//			for(int n=0; n<m_featureSize; n++) {
+//				gid = m_featureGroupMap[1+n];
+//				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+//			}
 			//set the other features
 			for(int n=0; n<m_featureSize; n++) {
-				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+				m_pWeights[1+n] = m_sWeights[1+n];
 			}
 			ui.setPersonalizedModel(m_pWeights);
 		}
@@ -307,20 +315,51 @@ public class MTLinAdapt extends CoLinAdapt {
 		return m_gWeights;
 	}
 
-	/***When we do feature selection, we will group features and store them in file. 
-	 * The index is the index of features and the corresponding number is the group index number.***/
-	public void loadFeatureGroupMap(String filename){
-			
-			m_featureGroupMap = new int[5000 + 1]; //One more term for bias, bias->0.
-			m_dim = 0;
-			//Group index starts from 0, so add 1 for it.
-			for(int i=0; i<5000; i++) {
-				m_featureGroupMap[i+1] = i+1;
-				if (m_dim < m_featureGroupMap[i+1])
-					m_dim = m_featureGroupMap[i+1];
-			}
-			m_dim = 5001;
-			
-			System.out.format("[Info]Feature group size %d\n", m_dim);
+	public void printWeights(String path) throws FileNotFoundException{
+		String light = String.format("%s_light.txt", path);
+		String medium = String.format("%s_medium.txt", path);
+		String heavy = String.format("%s_heavy.txt", path);
+		PrintWriter writerLight = new PrintWriter(new File(light));
+		PrintWriter writerMedium = new PrintWriter(new File(medium));
+		PrintWriter writerHeavy = new PrintWriter(new File(heavy));
+		PrintWriter writer;
+		_CoLinAdaptStruct ui;
+		int rvwSize = 0;
+		
+		//Update each user's personalized model.
+		for(int i=0; i<m_userList.size(); i++) {
+			ui = (_CoLinAdaptStruct)m_userList.get(i);
+			rvwSize = ui.getUser().getReviewSize();
+
+			if(rvwSize <= 10)
+				writer = writerLight;
+			else if(rvwSize <= 50)
+				writer = writerMedium;
+			else
+				writer = writerHeavy;
+	
+			for(int j=m_dim*2*i; j<m_dim*2*(i+1); j++)
+				writer.write(m_A[j] + "\t");
+			writer.write("\n");
+		}
+		writerLight.close();
+		writerMedium.close();
+		writerHeavy.close();
 	}
+//	/***When we do feature selection, we will group features and store them in file. 
+//	 * The index is the index of features and the corresponding number is the group index number.***/
+//	public void loadFeatureGroupMap(String filename){
+//			
+//			m_featureGroupMap = new int[5000 + 1]; //One more term for bias, bias->0.
+//			m_dim = 0;
+//			//Group index starts from 0, so add 1 for it.
+//			for(int i=0; i<5000; i++) {
+//				m_featureGroupMap[i+1] = i+1;
+//				if (m_dim < m_featureGroupMap[i+1])
+//					m_dim = m_featureGroupMap[i+1];
+//			}
+//			m_dim = 5001;
+//			
+//			System.out.format("[Info]Feature group size %d\n", m_dim);
+//	}
 }
