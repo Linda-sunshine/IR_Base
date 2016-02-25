@@ -181,12 +181,15 @@ public class MTLinAdapt extends CoLinAdapt {
 		}
 	}
 	
+	public int calcVSize(){
+		return 2 * m_dim * (m_userList.size()+1);
+	}
 	//this is batch training in each individual user
 	@Override
 	public double train() {
 		int[] iflag = { 0 }, iprint = { -1, 3 };
 		double fValue, oldFValue = Double.MAX_VALUE;
-		int vSize = 2 * m_dim * (m_userList.size()+1), displayCount = 0;
+		int vSize = calcVSize(), displayCount = 0;
 		double oldMag = 0;
 		_LinAdaptStruct user;
 
@@ -259,18 +262,18 @@ public class MTLinAdapt extends CoLinAdapt {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			//set bias term
-//			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
-			m_pWeights[0] = m_sWeights[0];
-
-//			//set the other features
-//			for(int n=0; n<m_featureSize; n++) {
-//				gid = m_featureGroupMap[1+n];
-//				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
-//			}
+			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
 			//set the other features
 			for(int n=0; n<m_featureSize; n++) {
-				m_pWeights[1+n] = m_sWeights[1+n];
+				gid = m_featureGroupMap[1+n];
+				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
 			}
+			
+//			// Set super user == general user.
+//			m_pWeights[0] = m_sWeights[0];
+//			for(int n=0; n<m_featureSize; n++) {
+//				m_pWeights[1+n] = m_sWeights[1+n];
+//			}
 			ui.setPersonalizedModel(m_pWeights);
 		}
 	}
