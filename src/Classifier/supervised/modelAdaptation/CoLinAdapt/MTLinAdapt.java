@@ -26,6 +26,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
+	boolean m_personalized; // If m_personalized = true, we will use personalized weights;
+							// else user weights = super user's weights.
 	
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 						int topK, String globalModel, String featureGroupMap) {
@@ -33,10 +35,15 @@ public class MTLinAdapt extends CoLinAdapt {
 		m_lambda1 = 0.5;
 		m_lambda2 = 1;
 		m_LNormFlag = true;
+		m_personalized = true;
 	}
 	
 	public void setLNormFlag(boolean b){
 		m_LNormFlag = b;
+	}
+	
+	public void setPersonlized(boolean b){
+		m_personalized = b;
 	}
 	
 	public void setRsTradeOffs(double lmd1, double lmd2){
@@ -46,8 +53,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,lambda1:%.3f,lambda2:%.3f,k:%d,NB:%s]", 
-				m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_lambda1, m_lambda2, m_topK, m_sType);
+		return String.format("MT-LinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
+				m_dim, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
 	}
 	
 	@Override
@@ -261,19 +268,20 @@ public class MTLinAdapt extends CoLinAdapt {
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
-			//set bias term
-			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
-			//set the other features
-			for(int n=0; n<m_featureSize; n++) {
-				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+			if(m_personalized){
+				//set bias term
+				m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
+				//set the other features
+				for(int n=0; n<m_featureSize; n++) {
+					gid = m_featureGroupMap[1+n];
+					m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+				}
+			} else{// Set super user == general user.
+				m_pWeights[0] = m_sWeights[0];
+				for(int n=0; n<m_featureSize; n++) {
+					m_pWeights[1+n] = m_sWeights[1+n];
+				}
 			}
-			
-//			// Set super user == general user.
-//			m_pWeights[0] = m_sWeights[0];
-//			for(int n=0; n<m_featureSize; n++) {
-//				m_pWeights[1+n] = m_sWeights[1+n];
-//			}
 			ui.setPersonalizedModel(m_pWeights);
 		}
 	}

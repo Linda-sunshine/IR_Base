@@ -28,8 +28,8 @@ public class MTLinAdaptWithSupUsr extends MTLinAdapt {
 
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdaptWithSupUsr[dim:%d,eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f,dim:%d,supDim:%d]", 
-				m_dim, m_eta1, m_eta2, m_lambda1, m_lambda2, m_dim, m_dimSup);
+		return String.format("MT-LinAdaptWithSupUsr[dim:%d,supDime:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized: %b]", 
+				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
 	}
 	
 	// Set the dimension of super user.
@@ -203,13 +203,18 @@ public class MTLinAdaptWithSupUsr extends MTLinAdapt {
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
-			//set bias term
-			m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
-
-			//set the other features
-			for(int n=0; n<m_featureSize; n++) {
-				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+			if(m_personalized){
+				//set bias term
+				m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
+				//set the other features
+				for(int n=0; n<m_featureSize; n++) {
+					gid = m_featureGroupMap[1+n];
+					m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+				}
+			} else{ // Set super user == general user.
+				m_pWeights[0] = m_sWeights[0];
+				for(int n=0; n<m_featureSize; n++)
+					m_pWeights[1+n] = m_sWeights[1+n];
 			}
 			ui.setPersonalizedModel(m_pWeights);
 		}

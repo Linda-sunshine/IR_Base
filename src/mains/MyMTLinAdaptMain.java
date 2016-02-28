@@ -10,6 +10,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures.MyPriorityQueue;
 import structures._RankItem;
+import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
@@ -30,6 +31,7 @@ public class MyMTLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
+//		double eta1 = 1, eta2 = 0.5;
 		double eta1 = 0.5, eta2 = 1, eta3 = 0.50, eta4 = 1, neighborsHistoryWeight = 0.5;
 //		double eta1 = 50, eta2 = 100, eta3 = 0.5, eta4 = 1, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -48,6 +50,7 @@ public class MyMTLinAdaptMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 		
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
+		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
@@ -55,7 +58,6 @@ public class MyMTLinAdaptMain {
 
 		// Create an instances of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//				
 //		adaptation.loadUsers(analyzer.getUsers());
 //		adaptation.setDisplayLv(displayLv);
 //		//adaptation.setTestMode(TestMode.TM_batch);
@@ -66,29 +68,29 @@ public class MyMTLinAdaptMain {
 //		//adaptation.saveModel("data/results/colinadapt");
 		
 		//Create the instance of MTLinAdapt.
-//		double lambda1 = 1, lambda2 = 0.5;
-//		MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-//		mtlinadapt.loadUsers(analyzer.getUsers());
-//		mtlinadapt.setDisplayLv(displayLv);
-//		mtlinadapt.setR1TradeOffs(eta1, eta2);
-//		mtlinadapt.setR2TradeOffs(eta3, eta4);
-//		mtlinadapt.setRsTradeOffs(lambda1, lambda2);
+		double lambda1 = 1, lambda2 = 0.5;
+		MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		mtlinadapt.setPersonlized(false);
+		mtlinadapt.loadUsers(analyzer.getUsers());
+		mtlinadapt.setDisplayLv(displayLv);
+		mtlinadapt.setR1TradeOffs(eta1, eta2);
+		mtlinadapt.setRsTradeOffs(lambda1, lambda2);
+		
+		mtlinadapt.train();
+		mtlinadapt.test();
+		
+//		double lambda1 = 0.5, lambda2 = 1;
+//		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+//		mtlinadaptsup.setPersonlized(false);
+//		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
+//		mtlinadaptsup.loadUsers(analyzer.getUsers());
+//
+//		mtlinadaptsup.setDisplayLv(displayLv);
+//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 //		
-//		mtlinadapt.train();
-//		mtlinadapt.printWeights("./data/MTLinAdapt/weights");
-//		mtlinadapt.test()；
-		
-		double lambda1 = 0.5, lambda2 = 1;
-		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
-		mtlinadaptsup.loadUsers(analyzer.getUsers());
-
-		mtlinadaptsup.setDisplayLv(displayLv);
-		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-		
-		mtlinadaptsup.train();
-		mtlinadaptsup.test();
+//		mtlinadaptsup.train();
+//		mtlinadaptsup.test();
 		
 		// Create the instance of MTCoLinAdapt.
 //		MTCoLinAdapt mtcolinadapt = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -101,41 +103,47 @@ public class MyMTLinAdaptMain {
 //		mtcolinadapt.train();
 //		mtcolinadapt.test();
 		
-		_AdaptStruct ul, um;
-		double fl, fm, diff;
-		ArrayList<_AdaptStruct> mtlinUsr = mtlinadaptsup.getUserList();
-//		double[][] mtlinStat = new double[mtlinUsr.size()][3]; //[0]: F1; [1]: number of reviews; [2]: polarity:
+//		_AdaptStruct as;
+//		double f, diff;
+//		ArrayList<_AdaptStruct> mtlinUsr = mtlinadaptsup.getUserList();
+//		double[][] stat = new double[mtlinUsr.size()][2]; //[0]: F1; [1]: number of reviews; [2]: polarity:
 //		for(int i=0; i<mtlinUsr.size(); i++){
-//			u = mtlinUsr.get(i);
-//			mtlinStat[i][0] = u.getUser().getPerfStat().getF1(0) + u.getUser().getPerfStat().getF1(1);
-//			mtlinStat[i][1] = u.getUser().getReviewSize();
-//			mtlinStat[i][2] = u.getUser().calculatePosRatio();
-//			u.getUser().getPerfStat().clear();
+//			as = mtlinUsr.get(i);
+//			stat[i][0] = as.getUser().getPerfStat().getF1(0) + as.getUser().getPerfStat().getF1(1);
+////			mtlinStat[i][2] = u.getUser().calculatePosRatio();
+//			as.getUser().getPerfStat().clear();
 //		}
-		
-		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
-	
-		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(10000);
-		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();
-		for(int i=0; i<mtlinUsr.size(); i++){
-			ul = mtlinUsr.get(i);
-			um = mtsvmUsr.get(i);
-			fl = ul.getUser().getPerfStat().getF1(0) + ul.getUser().getPerfStat().getF1(1);
-			fm = um.getUser().getPerfStat().getF1(0) + um.getUser().getPerfStat().getF1(1);
-			diff = fm - fl;
-			queue.add(new _RankItem(i, diff));
-		}
-		
-		PrintWriter writer = new PrintWriter(new File("./data/PerformDiff.txt"));
-		_User u;
-		for(_RankItem it: queue){
-			writer.write()
-		}
+//		
+//		//Create the instance of MT-SVM
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
+//		 
+//		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(10000);
+//		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();
+//		for(int i=0; i<mtlinUsr.size(); i++){
+//			
+//			as = mtsvmUsr.get(i);
+//			stat[i][1] = as.getUser().getPerfStat().getF1(0) + as.getUser().getPerfStat().getF1(1);
+//			diff = stat[i][1] - stat[i][0];
+//			queue.add(new _RankItem(i, diff));
+//		}
+//		
+//		PrintWriter writer = new PrintWriter(new File("./data/PerformDiff.txt"));
+//		_User u;
+//		int index;
+//		for(_RankItem it: queue){
+//			index = it.m_index;
+//			u = mtlinUsr.get(index).getUser();
+//			writer.format("Review size: %d, Perf_Diff: %.4f, MT-SVM: %.4f, MT-LinAdapt: %.4f\n", u.getReviewSize(), it.m_value, stat[index][1], stat[index][0]);
+//			for(_Review r: u.getReviews()){
+//				writer.write(r.getYLabel() + "\t" + r.getSource());
+//				writer.write("--------------------------------------\n");
+//			}
+//		}
+//		writer.close();
 		
 //		double[][] mtsvmStat = new double[mtsvmUsr.size()][2];
 //		for(int i=0; i<mtsvmUsr.size(); i++){
