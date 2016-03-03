@@ -89,21 +89,21 @@ public class MultiTaskSVM extends ModelAdaptation {
 			libProblem.y[i] = ys.get(i);
 		}
 		
-		if (m_bias) {
-			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
-			libProblem.bias = 1;// bias term in liblinear.
-		} else {
-			libProblem.n = m_featureSize * (m_userSize + 1);
-			libProblem.bias = -1;// no bias term in liblinear.
-		}
-		
 //		if (m_bias) {
-//			libProblem.n = (m_featureSize + 1); // including bias term; global model + user models
+//			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
 //			libProblem.bias = 1;// bias term in liblinear.
 //		} else {
 //			libProblem.n = m_featureSize * (m_userSize + 1);
 //			libProblem.bias = -1;// no bias term in liblinear.
 //		}
+		
+		if (m_bias) {
+			libProblem.n = (m_featureSize + 1); // including bias term; global model + user models
+			libProblem.bias = 1;// bias term in liblinear.
+		} else {
+			libProblem.n = m_featureSize * (m_userSize + 1);
+			libProblem.bias = -1;// no bias term in liblinear.
+		}
 		
 		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
 		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
@@ -118,21 +118,23 @@ public class MultiTaskSVM extends ModelAdaptation {
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term
 		int class0 = m_libModel.getLabels()[0];
 		double sign = class0 > 0 ? 1 : -1;
-		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
+//		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
+		int globalOffset = 0;
 		for(_AdaptStruct user:m_userList) {
 			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
 //					m_pWeights[i+1] = sign*(weight[userOffset+i]);
-//					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
-					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
+//					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
 				
 				if (m_bias) {
-					m_pWeights[0] = sign*(weight[userOffset+m_featureSize]);
+//					m_pWeights[0] = sign*(weight[userOffset+m_featureSize]);
 					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u);
-					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
-					userOffset += m_featureSize+1;
-				} else
-					userOffset += m_featureSize;
+//					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
+//					userOffset += m_featureSize+1;
+				} 
+				//else
+//					userOffset += m_featureSize;
 			} else {
 				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
 //					m_pWeights[i+1] = sign*(weight[userOffset+i]);
@@ -149,51 +151,23 @@ public class MultiTaskSVM extends ModelAdaptation {
 	
 	//create a training instance of svm.
 	//for MT-SVM feature vector construction: we put user models in front of global model
-	public Feature[] createLibLinearFV(_Review r, int userIndex){
-		int fIndex; double fValue;
-		_SparseFeature fv;
-		_SparseFeature[] fvs = r.getSparse();
-		
-		int userOffset, globalOffset;		
-		Feature[] node;//0-th: x//sqrt(u); t-th: x.
-		
-		if (m_bias) {
-			userOffset = (m_featureSize + 1) * userIndex;
-			globalOffset = (m_featureSize + 1) * m_userSize;
-			node = new Feature[(1+fvs.length) * 2];
-		} else {
-			userOffset = m_featureSize * userIndex;
-			globalOffset = m_featureSize * m_userSize;
-			node = new Feature[fvs.length * 2];
-		}
-		
-		for(int i = 0; i < fvs.length; i++){
-			fv = fvs[i];
-			fIndex = fv.getIndex() + 1;//liblinear's feature index starts from one
-			fValue = fv.getValue();
-			
-			//Construct the user part of the training instance.			
-			node[i] = new FeatureNode(userOffset + fIndex, fValue);
-			
-			//Construct the global part of the training instance.
-			if (m_bias)
-				node[i + fvs.length + 1] = new FeatureNode(globalOffset + fIndex, fValue/m_u); // global model's bias term has to be moved to the last
-			else
-				node[i + fvs.length] = new FeatureNode(globalOffset + fIndex, fValue/m_u); // global model's bias term has to be moved to the last
-		}
-		
-		if (m_bias) {//add the bias term		
-			node[fvs.length] = new FeatureNode((m_featureSize + 1) * (userIndex + 1), 1.0);//user model's bias
-			node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
-		}
-		return node;
-	}
 //	public Feature[] createLibLinearFV(_Review r, int userIndex){
 //		int fIndex; double fValue;
 //		_SparseFeature fv;
 //		_SparseFeature[] fvs = r.getSparse();
 //		
-//		Feature[] node = new Feature[fvs.length];//0-th: x//sqrt(u); t-th: x.
+//		int userOffset, globalOffset;		
+//		Feature[] node;//0-th: x//sqrt(u); t-th: x.
+//		
+//		if (m_bias) {
+//			userOffset = (m_featureSize + 1) * userIndex;
+//			globalOffset = (m_featureSize + 1) * m_userSize;
+//			node = new Feature[(1+fvs.length) * 2];
+//		} else {
+//			userOffset = m_featureSize * userIndex;
+//			globalOffset = m_featureSize * m_userSize;
+//			node = new Feature[fvs.length * 2];
+//		}
 //		
 //		for(int i = 0; i < fvs.length; i++){
 //			fv = fvs[i];
@@ -201,9 +175,37 @@ public class MultiTaskSVM extends ModelAdaptation {
 //			fValue = fv.getValue();
 //			
 //			//Construct the user part of the training instance.			
-//			node[i] = new FeatureNode(fIndex, fValue);
+//			node[i] = new FeatureNode(userOffset + fIndex, fValue);
 //			
+//			//Construct the global part of the training instance.
+//			if (m_bias)
+//				node[i + fvs.length + 1] = new FeatureNode(globalOffset + fIndex, fValue/m_u); // global model's bias term has to be moved to the last
+//			else
+//				node[i + fvs.length] = new FeatureNode(globalOffset + fIndex, fValue/m_u); // global model's bias term has to be moved to the last
+//		}
+//		
+//		if (m_bias) {//add the bias term		
+//			node[fvs.length] = new FeatureNode((m_featureSize + 1) * (userIndex + 1), 1.0);//user model's bias
+//			node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
 //		}
 //		return node;
 //	}
+	public Feature[] createLibLinearFV(_Review r, int userIndex){
+		int fIndex; double fValue;
+		_SparseFeature fv;
+		_SparseFeature[] fvs = r.getSparse();
+		
+		Feature[] node = new Feature[fvs.length];//0-th: x//sqrt(u); t-th: x.
+		
+		for(int i = 0; i < fvs.length; i++){
+			fv = fvs[i];
+			fIndex = fv.getIndex() + 1;//liblinear's feature index starts from one
+			fValue = fv.getValue();
+			
+			//Construct the user part of the training instance.			
+			node[i] = new FeatureNode(fIndex, fValue);
+			
+		}
+		return node;
+	}
 }

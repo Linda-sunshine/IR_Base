@@ -68,16 +68,16 @@ public class MyMTLinAdaptMain {
 //		//adaptation.saveModel("data/results/colinadapt");
 		
 		//Create the instance of MTLinAdapt.
-		double lambda1 = 1, lambda2 = 0.5;
-		MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-		mtlinadapt.setPersonlized(false);
-		mtlinadapt.loadUsers(analyzer.getUsers());
-		mtlinadapt.setDisplayLv(displayLv);
-		mtlinadapt.setR1TradeOffs(eta1, eta2);
-		mtlinadapt.setRsTradeOffs(lambda1, lambda2);
-		
-		mtlinadapt.train();
-		mtlinadapt.test();
+//		double lambda1 = 1, lambda2 = 0.5;
+//		MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+//		mtlinadapt.setPersonlized(false);
+//		mtlinadapt.loadUsers(analyzer.getUsers());
+//		mtlinadapt.setDisplayLv(displayLv);
+//		mtlinadapt.setR1TradeOffs(eta1, eta2);
+//		mtlinadapt.setRsTradeOffs(lambda1, lambda2);
+//		
+//		mtlinadapt.train();
+//		mtlinadapt.test();
 		
 //		double lambda1 = 0.5, lambda2 = 1;
 //		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
@@ -114,12 +114,12 @@ public class MyMTLinAdaptMain {
 //			as.getUser().getPerfStat().clear();
 //		}
 //		
-//		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
+		//Create the instance of MT-SVM
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
 //		 
 //		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(10000);
 //		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();

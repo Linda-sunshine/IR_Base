@@ -38,7 +38,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
-
+	protected double[] m_perf = new double[m_classNo * 2]; // Stores overall performance, micro F1 for both classes, macro F1 for both classes.
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
@@ -264,8 +265,10 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		
 		// macro average
 		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++)
+		for(int i=0; i<m_classNo; i++){
 			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
+			m_perf[i+m_classNo] = macroF1[i]/count;
+		}
 		System.out.println();
 		return Utils.sumOfArray(macroF1);
 	}
@@ -320,5 +323,11 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public ArrayList<_AdaptStruct> getUserList(){
 		return m_userList;
+	}
+	
+	public double[] getPerf(){
+		for(int i=0; i<m_classNo; i++)
+			m_perf[i] = m_microStat.getF1(i);
+		return m_perf;
 	}
 }
