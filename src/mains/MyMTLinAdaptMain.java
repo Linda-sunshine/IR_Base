@@ -38,20 +38,21 @@ public class MyMTLinAdaptMain {
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 			
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 		
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+//		analyzer.setRvwLenghRange(start, end);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -79,18 +80,21 @@ public class MyMTLinAdaptMain {
 //		mtlinadapt.train();
 //		mtlinadapt.test();
 		
-//		double lambda1 = 0.5, lambda2 = 1;
-//		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		double lambda1 = 0.5, lambda2 = 1;
+		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 //		mtlinadaptsup.setPersonlized(false);
-//		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
-//		mtlinadaptsup.loadUsers(analyzer.getUsers());
-//
-//		mtlinadaptsup.setDisplayLv(displayLv);
-//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-//		
-//		mtlinadaptsup.train();
-//		mtlinadaptsup.test();
+		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
+		mtlinadaptsup.loadUsers(analyzer.getUsers());
+
+		mtlinadaptsup.setDisplayLv(displayLv);
+		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
+		
+		mtlinadaptsup.train();
+		mtlinadaptsup.test();
+		
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 		
 		// Create the instance of MTCoLinAdapt.
 //		MTCoLinAdapt mtcolinadapt = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -120,7 +124,7 @@ public class MyMTLinAdaptMain {
 		mtsvm.setBias(true);
 		mtsvm.train();
 		mtsvm.test();
-//		 
+
 //		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(10000);
 //		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();
 //		for(int i=0; i<mtlinUsr.size(); i++){

@@ -32,6 +32,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
 	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
+	protected int m_start, m_end; // Added by Lin for filtering reviews.
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
@@ -100,8 +101,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				loadUserDir(f.getAbsolutePath());
 			else
 				count++;
-
-		System.out.format("%d users are loaded from %s...\n", count, folder);
+		System.out.format("[Info]Start: %d, End: %d, (%d/%d) users are loaded from %s...\n", m_start, m_end, m_users.size(), count, folder);
 	}
 	
 	// Load one file as a user here. 
@@ -119,6 +119,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			_Review review;
 			int ylabel;
 			long timestamp;
+			double localSize = 0, localLength = 0;
 			while((line = reader.readLine()) != null){
 				productID = line;
 				source = reader.readLine(); // review content
@@ -130,13 +131,17 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
 					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
-					if(AnalyzeDoc(review,core)) //Create the sparse vector for the review.
+					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
 						reviews.add(review);
+						localLength += review.getDocLength();
+						localSize++;
+					}
 				}
 			}
 			// Added by Lin for debugging.
-			if(reviews.size() > 1){//at least one for adaptation and one for testing
-//			if(reviews.size() > 1){//at least one for adaptation and one for testing
+//			if(reviews.size() > 50){//at least one for adaptation and one for testing
+//			if(reviews.size() > 1 && (localLength / localSize < m_end) && (localLength / localSize > m_start)){//at least one for adaptation and one for testing
+			if(reviews.size() > 1){	
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				
 					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
@@ -244,6 +249,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			return m_stemmer;
 		else
 			return m_stemmerPool[index];
+	}
+	
+	//Added by Lin for fitlering reviews.
+	public void setRvwLenghRange(int start, int end){
+		m_start = start;
+		m_end = end;
 	}
 
 }

@@ -370,9 +370,9 @@ public abstract class Analyzer {
 			for(_Doc d:docs)			
 				Utils.L2Normalization(d.getSparse());
 		} else {
-			System.out.println("No normalizaiton is adopted here or wrong parameters!");
+//			System.out.println("No normalizaiton is adopted here or wrong parameters!");
 		}
-		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
+//		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 	
 	//Select the features and store them in a file.
