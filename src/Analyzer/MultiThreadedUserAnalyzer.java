@@ -101,7 +101,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				loadUserDir(f.getAbsolutePath());
 			else
 				count++;
-		System.out.format("[Info]Start: %d, End: %d, (%d/%d) users are loaded from %s...\n", m_start, m_end, m_users.size(), count, folder);
+		int rvwCount = 0;
+		for(_User u: m_users)
+			rvwCount += u.getReviewSize();
+		System.out.format("[Info]Start: %d, End: %d, (%d/%d) users and %d reviews are loaded from %s...\n", m_start, m_end, m_users.size(), count, rvwCount, folder);
 	}
 	
 	// Load one file as a user here. 

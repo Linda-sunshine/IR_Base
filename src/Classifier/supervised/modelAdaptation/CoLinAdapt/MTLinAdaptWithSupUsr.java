@@ -12,7 +12,13 @@ import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-
+/***
+ * 
+ * @author lin
+ * In this class, we have different feature group for the super user since super user's information is propagated to all others.
+ * In the extreme case, super user has v(feature size)-dimension groups, thus has 2v-dimension for transformation vector,
+ * which is not reasonable. Thus, we come up with another design of representing super user as simply ws, which is MTLinAdaptWithSupUserNoAdpt.
+ */
 // In this class, we assign different dimension to the super user.
 public class MTLinAdaptWithSupUsr extends MTLinAdapt {
 
