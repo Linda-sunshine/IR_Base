@@ -9,6 +9,7 @@ public class _ParentDoc extends _Doc {
 
 	public ArrayList<_ChildDoc> m_childDocs;
 	HashMap<Integer, Integer> m_word2Index;
+	
 
 	public _ParentDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);

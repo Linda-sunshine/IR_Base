@@ -278,7 +278,6 @@ public class ParentChildWith1TopicProportionTwoPhi extends ParentChild_Gibbs{
 		return logLikelihood - Math.log(count); 	
 	}
 
-	
 	public void debugOutput(String filePrefix){
 
 		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
