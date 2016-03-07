@@ -9,28 +9,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
-
-import org.netlib.util.intW;
-
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
-import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
 public class LDA_Gibbs_Debug extends LDA_Gibbs{

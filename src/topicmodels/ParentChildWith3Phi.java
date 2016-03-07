@@ -1,20 +1,18 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
+
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Collections;
+
 import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.List;
+
 import structures._ChildDoc;
-import structures._ChildDoc4OneTopicProportion;
+
 import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
@@ -22,10 +20,10 @@ import structures._ParentDoc;
 import structures._ParentDoc4ThreePhi;
 import structures._SparseFeature;
 import structures._Stn;
-import structures._Stn4ThreePhi;
+
 import structures._Word;
-import topicmodels.ParentChild_Gibbs.MatchPair;
-import util.Array;
+
+
 import utils.Utils;
 
 public class ParentChildWith3Phi extends ParentChild_Gibbs{

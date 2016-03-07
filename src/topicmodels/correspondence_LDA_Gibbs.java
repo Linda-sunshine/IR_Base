@@ -1,25 +1,14 @@
 package topicmodels;
 
-import java.io.File;
-import java.io.PrintWriter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.sun.prism.shader.Mask_TextureRGB_AlphaTest_Loader;
-
 import structures._ChildDoc;
-import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;

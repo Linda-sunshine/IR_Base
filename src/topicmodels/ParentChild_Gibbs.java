@@ -12,7 +12,6 @@ import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
