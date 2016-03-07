@@ -9,10 +9,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Map.Entry;
+
+import org.netlib.util.intW;
 
 import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
 
@@ -438,11 +441,19 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			childTopKStnFolder.mkdir();
 		}
 		
+		File stnTopKChildFolder = new File(filePrefix+"topKChild");
+		if(!stnTopKChildFolder.exists()){
+			System.out.println("creating top K child directory\t"+stnTopKChildFolder);
+			stnTopKChildFolder.mkdir();
+		}
+		
 		int topKStn = 10;
+		int topKChild = 10;
 		for (_Doc d : m_trainSet) {
 			printTopicAssignment(d, topicFolder);
-			if(d instanceof _ChildDoc){
-				printTopKStn4Child(topKStn, (_ChildDoc)d, childTopKStnFolder);
+			if(d instanceof _ParentDoc){
+				printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
+				printTopKStn4Child(topKStn, (_ParentDoc)d, childTopKStnFolder);
 			}
 		}
 
@@ -636,55 +647,49 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	
-	public void rankStn4ChildBySim(_ChildDoc cDoc, _ParentDoc pDoc){
-	
+	//comment is a query, retrieve stn by topical similarity
+	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){
+
+		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
+		
 		for(_Stn stnObj:pDoc.getSentences()){
 			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-			cDoc.m_stnSimMap.put(stnObj.getIndex()+1, stnSim);
-//			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex())){
-//				
-//			}
-//			double stnLogLikelihood = 0;
-//			for(_Word w: stnObj.getWords()){
-//				double wordLikelihood = 0;
-//				int wid = w.getIndex();
-//			
-//				for(int k=0; k<number_of_topics; k++){
-//					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
-//				}
-//				
-//				stnLogLikelihood += Math.log(wordLikelihood);
-//			}
+			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+		}
+		
+		return stnSimMap;
+	}
+	
+	//stn is a query, retrieve comment by likelihood
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
+	
+			HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+
+			for(_ChildDoc cDoc:pDoc.m_childDocs){
+				int cDocLen = cDoc.getTotalDocLength();
+				
+				double stnLogLikelihood = 0;
+				for(_Word w: stnObj.getWords()){
+					double wordLikelihood = 0;
+					int wid = w.getIndex();
+				
+					for(int k=0; k<number_of_topics; k++){
+						wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
+					}
+					
+					stnLogLikelihood += Math.log(wordLikelihood);
+				}
+				childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+			}
 			
+			return childLikelihoodMap;
 //			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
 //				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
 //			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-		}
+//		}	
 	}
 	
-	public void rankChild4StnByLikelihood(_ChildDoc cDoc,  _ParentDoc pDoc){
-		int cDocLen = cDoc.getTotalDocLength();
-		
-		for(_Stn stnObj:pDoc.getSentences()){
-			double stnLogLikelihood = 0;
-			for(_Word w: stnObj.getWords()){
-				double wordLikelihood = 0;
-				int wid = w.getIndex();
-			
-				for(int k=0; k<number_of_topics; k++){
-					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
-				}
-				
-				stnLogLikelihood += Math.log(wordLikelihood);
-			}
-			
-			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
-				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
-			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-		}	
-	}
-	
-	protected List<Map.Entry<Integer, Double>> sortHashMap(HashMap<Integer, Double> stnLikelihoodMap, boolean descendOrder){
+	protected List<Map.Entry<Integer, Double>> sortHashMap4Integer(HashMap<Integer, Double> stnLikelihoodMap, boolean descendOrder){
 		List<Map.Entry<Integer, Double>> sortList = new ArrayList<Map.Entry<Integer, Double>>(stnLikelihoodMap.entrySet());
 		
 		if(descendOrder == true){
@@ -705,29 +710,92 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 	
-	public void printTopKStn4Child(int topK, _ChildDoc cDoc, File topKStnFolder){
-		String topKStn4ChildFile = cDoc.getName()+".txt";
-		HashMap<Integer, Double> stnLikelihoodMap = cDoc.m_stnLikelihoodMap;
-		rankStn4ChildBySim(cDoc, cDoc.m_parentDoc);
-		try{
-			int i=0;
-			
-			PrintWriter pw = new PrintWriter(new File(topKStnFolder, topKStn4ChildFile));
-			
-			for(Map.Entry<Integer, Double> e: sortHashMap(stnLikelihoodMap, true)){
-				if(i==topK)
-					break;
-				pw.print(e.getKey());
-				pw.print("\t"+e.getValue());
-				pw.println();
+	protected List<Map.Entry<String, Double>> sortHashMap4String(HashMap<String, Double> stnLikelihoodMap, boolean descendOrder){
+		List<Map.Entry<String, Double>> sortList = new ArrayList<Map.Entry<String, Double>>(stnLikelihoodMap.entrySet());
+		
+		if(descendOrder == true){
+			Collections.sort(sortList, new Comparator<Map.Entry<String, Double>>() {
+				public int compare(Entry<String, Double> e1, Entry<String, Double> e2){
+					return e2.getValue().compareTo(e1.getValue());
+				}
+			});
+		}else{
+			Collections.sort(sortList, new Comparator<Map.Entry<String, Double>>() {
+				public int compare(Entry<String, Double> e1, Entry<String, Double> e2){
+					return e2.getValue().compareTo(e1.getValue());
+				}
+			});
+		}
+		
+		return sortList;
+
+	}
+
+	protected void printTopKChild4Stn(int topK, _ParentDoc pDoc, File topKChildFolder){
+		File topKChild4PDocFolder = new File(topKChildFolder, pDoc.getName());
+		if(!topKChild4PDocFolder.exists()){
+//			System.out.println("creating top K stn directory\t"+topKChild4PDocFolder);
+			topKChild4PDocFolder.mkdir();
+		}
+		
+		for(_Stn stnObj:pDoc.getSentences()){
+			HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
+			String topChild4StnFile =  (stnObj.getIndex()+1)+".txt";
 				
-				i++;
+			try{
+				int i=0;
+				
+				PrintWriter pw = new PrintWriter(new File(topKChild4PDocFolder, topChild4StnFile));
+				
+				for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
+					if(i==topK)
+						break;
+					pw.print(e.getKey());
+					pw.print("\t"+e.getValue());
+					pw.println();
+					
+					i++;
+				}
+				
+				pw.flush();
+				pw.close();
+			}catch (Exception e) {
+				e.printStackTrace();
 			}
-			
-			pw.flush();
-			pw.close();
-		}catch (Exception e) {
-			e.printStackTrace();
+		}
+	}
+	
+	protected void printTopKStn4Child(int topK, _ParentDoc pDoc, File topKStnFolder){
+		File topKStn4PDocFolder = new File(topKStnFolder, pDoc.getName());
+		if(!topKStn4PDocFolder.exists()){
+//			System.out.println("creating top K stn directory\t"+topKStn4PDocFolder);
+			topKStn4PDocFolder.mkdir();
+		}
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			String topKStn4ChildFile = cDoc.getName()+".txt";
+			HashMap<Integer, Double> stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
+
+			try{
+				int i=0;
+				
+				PrintWriter pw = new PrintWriter(new File(topKStn4PDocFolder, topKStn4ChildFile));
+				
+				for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
+					if(i==topK)
+						break;
+					pw.print(e.getKey());
+					pw.print("\t"+e.getValue());
+					pw.println();
+					
+					i++;
+				}
+				
+				pw.flush();
+				pw.close();
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

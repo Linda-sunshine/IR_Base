@@ -4,6 +4,7 @@
 package structures;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
@@ -45,6 +46,8 @@ public class _Stn {
 	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
 	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
+	
+	HashMap<Integer, Double> m_childSimMap;
 
 	public _Stn(int index, _SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
 		m_index = index;

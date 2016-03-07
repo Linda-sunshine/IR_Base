@@ -159,7 +159,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		return term;
 	}
 	
-	public void sampleInChildDoc(_ChildDoc d){
+	protected void sampleInChildDoc(_ChildDoc d){
 		int wid, tid;
 		double normalizedProb = 0;
 		
@@ -247,7 +247,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			d.m_topics[k] += d.m_sstat[k];
 		
 		_ParentDoc pDoc = d.m_parentDoc;
-		rankStn4Child(d, pDoc);
+//		rankStn4Child(d, pDoc);
 	}
 	
 	protected void estThetaInDoc(_Doc d){
@@ -314,7 +314,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			if(tid==m_topicProbCache.length)
 				tid --;
 			
-
 			w.setTopic(tid);
 			stnObj.m_topicSstat[tid] ++;
 			
@@ -531,6 +530,35 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		}
 		
 		return docLogLikelihood;
+	}
+	
+	//stn is a query, retrieve comment by likelihood
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
+	
+		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			int cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			for(_Word w: stnObj.getWords()){
+				double wordLikelihood = 0;
+				int wid = w.getIndex();
+			
+				for(int k=0; k<number_of_topics; k++){
+					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
+				}
+				
+				stnLogLikelihood += Math.log(wordLikelihood);
+			}
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
+//			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
+//				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
+//			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
+//		}	
 	}
 	
 //	public void rankStn4Child(_ChildDoc cDoc, _ParentDoc pDoc){

@@ -60,15 +60,10 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "ArsTech";
+		articleType = "Yahoo";
 //		articleType = "GadgetsArticles";
-		String yahooNewsFolder = "./data/AT-YahooArticles";
-		String yahooCommentsFolder = "./data/AT-YahooComments";
-		String TechArticlesFolder = "./data/ParentChildTopicModel/ArsTechnicaArticles";
-		String TechCommentsFolder = "./data/ParentChildTopicModel/ArsTechnicaComments";
-//		String GadgetsArticleFolder = "./data/ParentChildTopicModel/AT-GadgetsArticles";
-//		String GadgetsCommentFolder = "./data/ParentChildTopicModel/AT-GadgetsComments";
-		String GadgetsArticleFolder = "./data/ParentChildTopicModel/AT-GadgetsArticles4Samples";
-		String GadgetsCommentFolder = "./data/ParentChildTopicModel/AT-GadgetsComments4Samples";
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -81,7 +76,7 @@ public class featureGeneration {
 			sentence = true;
 		}
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_%s_%s.txt", Ngram, topicmodel, articleType);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 	
@@ -124,8 +119,9 @@ public class featureGeneration {
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		
-		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
-		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
+
 		
 //		analyzer.LoadParentDirectory(GadgetsArticleFolder, suffix);
 //		analyzer.LoadChildDirectory(GadgetsCommentFolder, suffix);

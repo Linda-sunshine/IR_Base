@@ -30,6 +30,12 @@ import topicmodels.multithreads.pLSA_multithread;
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
+		
+		int mb = 1024*1024;
+		
+		Runtime rTime = Runtime.getRuntime();
+		System.out.println("totalMem\t:"+rTime.totalMemory()/mb);
+		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
@@ -39,10 +45,10 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		String topicmodel = "ParentChildWith3Phi"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
-		int number_of_topics = 30;
+		int number_of_topics = 300;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -51,10 +57,10 @@ public class TopicModelMain {
 		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
-		gibbs_iteration = 10;
-		gibbs_lag = 2;
+//		gibbs_iteration = 10;
+//		gibbs_lag = 2;
 		double burnIn = 0.4;
 		int displayLap = 100;
 		boolean sentence = false;
@@ -69,15 +75,12 @@ public class TopicModelMain {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
-		String articleType = "ArsTech";
-//		articleType = "GadgetsArticles";
-		String yahooNewsFolder = "./data/AT-YahooArticles";
-		String yahooCommentsFolder = "./data/AT-YahooComments";
-		String TechArticlesFolder = "./data/ParentChildTopicModel/ArsTechnicaArticles";
-		String TechCommentsFolder = "./data/ParentChildTopicModel/ArsTechnicaComments";
-		String GadgetsArticleFolder = "./data/ParentChildTopicModel/AT-GadgetsArticles4Samples";
-		String GadgetsCommentFolder = "./data/ParentChildTopicModel/AT-GadgetsComments4Samples";
-
+		String articleType = "Tech";
+//		articleType = "Gadgets";
+//		articleType = "Yahoo";
+		
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -90,7 +93,7 @@ public class TopicModelMain {
 			sentence = true;
 		}
 
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s_4716.txt", Ngram, articleType);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel_%s.txt", Ngram, articleType);
 	
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
@@ -137,15 +140,8 @@ public class TopicModelMain {
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 		
-		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
-		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
-
-//		analyzer.LoadParentDirectory(GadgetsArticleFolder, suffix);
-//		analyzer.LoadChildDirectory(GadgetsCommentFolder, suffix);
-
-//		analyzer.LoadDirectory(TechArticlesFolder, suffix);
-//		analyzer.LoadDirectory(TechCommentsFolder, suffix);
-
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		

@@ -34,15 +34,15 @@ public class outputFile {
 			String shortStnFile = filePrefix + "/selected_ShortStn.txt";
 			String longStnFile = filePrefix + "/selected_LongStn.txt";
 			
-//			if(c.getFeatureSize() !=0){	
-//				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
-//				for(int i=0; i<c.getFeatureSize(); i++){
-//					String wordName = c.getFeature(i);
-//					wordPW.println(wordName);
-//				}
-//				wordPW.flush();
-//				wordPW.close();
-//			}
+			if(c.getFeatureSize() !=0){	
+				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
+				for(int i=0; i<c.getFeatureSize(); i++){
+					String wordName = c.getFeature(i);
+					wordPW.println(wordName);
+				}
+				wordPW.flush();
+				wordPW.close();
+			}
 			
 			PrintWriter stnLengthPW = new PrintWriter(new File(stnLengthFile));
 			
@@ -256,11 +256,9 @@ public class outputFile {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
-		String articleType = "ArsTech";
-		String yahooNewsFolder = "./data/AT-YahooArticles";
-		String yahooCommentsFolder = "./data/AT-YahooComments";
-		String TechArticlesFolder = "./data/ParentChildTopicModel/ArsTechnicaArticles";
-		String TechCommentsFolder = "./data/ParentChildTopicModel/ArsTechnicaComments";
+		String articleType = "Tech";
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -273,7 +271,7 @@ public class outputFile {
 			sentence = true;
 		}
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s_3000.txt", Ngram, articleType);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
 	
@@ -315,8 +313,9 @@ public class outputFile {
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
-		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
+		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.

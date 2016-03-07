@@ -78,8 +78,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 		
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0); 
-//		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(), name, title, content, 0);
+//		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0); 
+		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(), name, title, content, 0);
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
 			sentences = new String[sentenceArray.length()];
@@ -89,8 +89,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			
 			if (AnalyzeDocByStn(d, sentences))
 				parentHashMap.put(name, d);
-			else 
-				System.out.println("filtering parent documet\t"+d.getName());
+//			else 
+//				System.out.println("filtering parent documet\t"+d.getName());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -106,9 +106,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		
 //		_ChildDoc4TwoPhi d = new _ChildDoc4TwoPhi(m_corpus.getSize(), name, "", content, 0);
-//	 	_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name, "", content, 0);
+	 	_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
@@ -122,7 +122,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //				System.err.format("filtering comments %s!\n", parent);
 			}			
 		}else {
-			System.err.format("[Warning]Missing parent document %s!\n", parent);
+//			System.err.format("[Warning]Missing parent document %s!\n", parent);
 		}	
 	}
 	
