@@ -15,7 +15,6 @@ public class _ChildDoc4OneTopicProportion extends _ChildDoc{
 	public double[] m_localWordSstat;
 	public double m_localWord;
 	
-	
 	public _ChildDoc4OneTopicProportion(int ID, String name, String title, String source, int ylabel) {
 		super(ID, name, title, source, ylabel);
 		// TODO Auto-generated constructor stub
@@ -50,17 +49,12 @@ public class _ChildDoc4OneTopicProportion extends _ChildDoc{
 		}
 	}
 	
-	public void createXSpace(int k, int gammaSize){
-		m_xTopicSstat = new int[gammaSize][k];
-		m_xTopics = new double[gammaSize][k];
-		m_xSstat = new int[gammaSize];
-		m_xProportion = new double[gammaSize];
-	}
-	
+
 	public void createLocalWordTopicDistribution(int vocalbularySize, double beta){
 		beta *= 0.01;
 		m_localWordSstat = new double[vocalbularySize];
 		m_localWordProb = new double[vocalbularySize];
+		
 		m_localWord = beta*vocalbularySize;
 		Arrays.fill(m_localWordSstat, beta);
 		Arrays.fill(m_localWordProb, 0);

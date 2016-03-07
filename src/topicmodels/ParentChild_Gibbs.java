@@ -12,13 +12,14 @@ import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
+import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ParentChild_Gibbs extends LDA_Gibbs {
+public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 	enum MatchPair {
 		MP_ChildDoc,
 		MP_ChildGlobal,
@@ -315,11 +316,16 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		super.estThetaInDoc(d);
 		if (d instanceof _ParentDoc){
 			// estimate topic proportion of sentences in parent documents
-			((_ParentDoc) d).estStnTheta();
+//			((_ParentDoc) d).estStnTheta();
+			estParentStnTopicProportion((_ParentDoc) d);
 		} else if (d instanceof _ChildDoc) {
 			((_ChildDoc) d).estGlobalLocalTheta();
 		}
 		m_statisticsNormalized = true;
+	}
+	
+	public void estParentStnTopicProportion(_ParentDoc pDoc){
+		return;
 	}
 	
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
@@ -462,17 +468,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-		pDoc.setTopics4Gibbs(number_of_topics, 0);		
-		sampleTestSet.add(pDoc);
-		
-		for(_ChildDoc cDoc: ((_ParentDoc)pDoc).m_childDocs){
-			((_ChildDoc) cDoc).createXSpace(number_of_topics, m_gamma.length);
-			cDoc.setTopics4Gibbs(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-		}
+		initTest(sampleTestSet, pDoc);
 	
 		double logLikelihood = 0.0, count = 0;
 		int  iter = 0;
@@ -507,61 +503,38 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 				if(logLikelihood == 0)
 					logLikelihood = tempLogLikelihood;
 				else{
-//					double likelihood1 = Math.exp(tempLogLikelihood);
-//					double likelihood2 = Math.exp(logLikelihood);
-//					logLikelihood = Math.log(likelihood1+likelihood2);
+
 					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
 				}
-//					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
 			}
 		} while (++iter<this.number_of_iteration);
 
 		for(_Doc doc: sampleTestSet){
-			if(doc instanceof _ParentDoc)
-				estThetaInDoc((_ParentDoc)doc);
-			else if(doc instanceof _ChildDoc)
-				estThetaInDoc((_ChildDoc)doc);
+			estThetaInDoc(doc);
 		}
 		
 		return logLikelihood - Math.log(count); 	
 	}
 
-	public void estParentStnTopicProportion(_Doc pDoc){
-		for(_Stn stnObj : pDoc.getSentences() ){
-			
+	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
+			((_ChildDoc) cDoc).createXSpace(number_of_topics, m_gamma.length);
+			cDoc.setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
 		}
 	}
-	
-	public void estStn(_Stn stnObj, double[] topicPrior){
-		int i=0;
-		
-		do{
-			calculateStn_E_step(stnObj, topicPrior);
-			if(i>m_burnIn && i%m_lag == 0){
-				collectStnStats(stnObj);
-			}
-			
-		}while(++i<number_of_iteration);
-		
-		Utils.L1Normalization(stnObj.m_topics);
-	}
-	
-	public void calculateStn_E_step(_Stn stnObj, double[] topicPrior){
-		permuteStn();
-		
-		
-	}
-	
-	public void collectStnStats(_Stn stnObj){
-		
-	}
-	
-	public void permuteStn(){
-		
-	}
+
 	
 	// used to generate train and test data set 
 	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
+		System.out.println("creating folder train test");
 		String trainFilePrefix = "trainFolder"+k;
 		String testFilePrefix = "testFolder"+k;
 		
@@ -664,7 +637,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 
 		System.out.println("print top words");
 		for (_Doc d : m_trainSet) {
-			loglikelihood += calculate_log_likelihood(d);
+//			loglikelihood += calculate_log_likelihood(d);
 			for (int i = 0; i < number_of_topics; i++)
 				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
 						: d.m_topics[i];	

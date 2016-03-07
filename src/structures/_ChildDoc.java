@@ -1,5 +1,8 @@
 package structures;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 import utils.Utils;
 
 public class _ChildDoc extends _Doc {
@@ -12,6 +15,12 @@ public class _ChildDoc extends _Doc {
 	public _ParentDoc m_parentDoc;
 	
 	public double m_mu;//similarity between parent and child
+	
+	//store the likelihood of sentences 
+//	public HashMap<Integer, Double> m_stnLikelihoodMap;
+	
+	//store the similarity of sentences to this comment
+//	public HashMap<Integer, Double> m_stnSimMap;
 	
 	public _ChildDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
@@ -31,9 +40,18 @@ public class _ChildDoc extends _Doc {
 		m_xProportion = new double[gammaSize];
 	}
 	
+	public void setTopics4Gibbs_LDA(int k, double alpha) {
+//		m_stnLikelihoodMap = new HashMap<Integer, Double>();
+//		m_stnSimMap = new HashMap<Integer, Double>();
+		super.setTopics4Gibbs(k, alpha);
+	}
+	
 	@Override
 	public void setTopics4Gibbs(int k, double alpha){		
 		createSpace(k, alpha);
+		
+//		m_stnLikelihoodMap = new HashMap<Integer, Double>();
+//		m_stnSimMap = new HashMap<Integer, Double>();
 		
 		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		for(_SparseFeature fv: m_x_sparse){
