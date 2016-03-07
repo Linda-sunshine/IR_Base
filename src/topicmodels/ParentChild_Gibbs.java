@@ -411,7 +411,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 					
 				}
 				
-				writeFile(i, m_trainSet, m_testSet);
+//				writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number "+i);
 				System.out.println("Train Set Size "+m_trainSet.size());
 				System.out.println("Test Set Size "+m_testSet.size());
@@ -586,6 +586,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs {
 		outputFile.outputFiles(trainFilePrefix, trainCorpus);
 		outputFile.outputFiles(testFilePrefix, testCorpus);
 	}
+
 
 	//used to print test parameter
 	public void printTestParameter(String parentParameterFile, String childParameterFile){
