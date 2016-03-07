@@ -13,7 +13,6 @@ import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
-//import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChildWith2Phi;

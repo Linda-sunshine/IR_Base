@@ -533,33 +533,33 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 	
 	// used to generate train and test data set 
-	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
-		System.out.println("creating folder train test");
-		String trainFilePrefix = "trainFolder"+k;
-		String testFilePrefix = "testFolder"+k;
-		
-		File trainFolder = new File(trainFilePrefix);
-		File testFolder = new File(testFilePrefix);
-		if(!trainFolder.exists()){
-			System.out.println("creating root train directory"+trainFolder);
-			trainFolder.mkdir();
-		}
-		if(!testFolder.exists()){
-			System.out.println("creating root test directory"+testFolder);
-			testFolder.mkdir();
-		}
-		
-		_Corpus trainCorpus = new _Corpus();
-		_Corpus testCorpus = new _Corpus();
-
-		for(_Doc d: trainSet)
-			trainCorpus.addDoc(d);
-		for(_Doc d: testSet)
-			testCorpus.addDoc(d);
-		outputFile.outputFiles(trainFilePrefix, trainCorpus);
-		outputFile.outputFiles(testFilePrefix, testCorpus);
-	}
-
+//	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
+//		System.out.println("creating folder train test");
+//		String trainFilePrefix = "trainFolder"+k;
+//		String testFilePrefix = "testFolder"+k;
+//		
+//		File trainFolder = new File(trainFilePrefix);
+//		File testFolder = new File(testFilePrefix);
+//		if(!trainFolder.exists()){
+//			System.out.println("creating root train directory"+trainFolder);
+//			trainFolder.mkdir();
+//		}
+//		if(!testFolder.exists()){
+//			System.out.println("creating root test directory"+testFolder);
+//			testFolder.mkdir();
+//		}
+//		
+//		_Corpus trainCorpus = new _Corpus();
+//		_Corpus testCorpus = new _Corpus();
+//
+//		for(_Doc d: trainSet)
+//			trainCorpus.addDoc(d);
+//		for(_Doc d: testSet)
+//			testCorpus.addDoc(d);
+//		outputFile.outputFiles(trainFilePrefix, trainCorpus);
+//		outputFile.outputFiles(testFilePrefix, testCorpus);
+//	}
+//
 
 	//used to print test parameter
 	public void printTestParameter(String parentParameterFile, String childParameterFile){
@@ -785,13 +785,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
+					for(int k=0; k<d.m_topics.length; k++){
 						parentParaOut.print(d.m_topics[k]+"\t");
 					}
 					
 					for(_Stn stnObj:d.getSentences()){							
 						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<number_of_topics;k++){
+						for(int k=0; k<d.m_topics.length;k++){
 							parentParaOut.print(stnObj.m_topics[k]+"\t");
 						}
 					}
