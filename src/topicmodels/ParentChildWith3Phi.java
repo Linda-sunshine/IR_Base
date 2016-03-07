@@ -1,18 +1,12 @@
 package topicmodels;
-
 import java.io.File;
-
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
 import java.util.Map;
-
 import java.util.HashMap;
-
 import structures._ChildDoc;
-
 import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
@@ -20,10 +14,7 @@ import structures._ParentDoc;
 import structures._ParentDoc4ThreePhi;
 import structures._SparseFeature;
 import structures._Stn;
-
 import structures._Word;
-
-
 import utils.Utils;
 
 public class ParentChildWith3Phi extends ParentChild_Gibbs{
@@ -907,32 +898,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			}
 		}
 	}
-	
-	
-//	public void rankStn4Child(_ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){
-//
-//		for(_Stn stnObj:pDoc.getSentences()){
-//			
-//			double stnLogLikelihood = 0;
-//			for(_Word w: stnObj.getWords()){
-//				double wordLikelihood = 0;
-//				int wid = w.getIndex();
-//			
-//				for(int k=0; k<number_of_topics; k++){
-//					wordLikelihood+=childXInDocProb(0, cDoc)*childTopicInDocProb(k, cDoc, pDoc)*childWordByTopicProb(k, wid);
-//				}
-//
-//				wordLikelihood += childXInDocProb(1, cDoc)*childLocalWordByTopicProb(wid, cDoc);
-//			
-//				stnLogLikelihood += Math.log(wordLikelihood);
-//			}
-//			
-//			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
-//				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
-//			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-//		}
-//
-//	}
 
 	
 	
