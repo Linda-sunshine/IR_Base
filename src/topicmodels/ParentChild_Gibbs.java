@@ -783,13 +783,13 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<d.m_topics.length; k++){
+					for(int k=0; k<number_of_topics; k++){
 						parentParaOut.print(d.m_topics[k]+"\t");
 					}
 					
 					for(_Stn stnObj:d.getSentences()){							
 						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<d.m_topics.length;k++){
+						for(int k=0; k<number_of_topics;k++){
 							parentParaOut.print(stnObj.m_topics[k]+"\t");
 						}
 					}

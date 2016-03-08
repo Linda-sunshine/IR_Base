@@ -696,9 +696,9 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		printEntropy(filePrefix);
 		
 		printTopKChild4Stn(filePrefix, topKChild);
+		
+		printTopKStn4Child(filePrefix, topKStn);
 	}
-	
-	
 
 	public void printPairWordTopicDistribution(_ParentDoc4ThreePhi d, File parentPairTopicDistriFolder){
 		String parentLocalTopicDistriFile = d.getName() + ".txt";
@@ -739,8 +739,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		}
 		
 	}
-
-		
+	
 		//comment is a query, retrieve stn by topical similarity
 	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc4ThreePhi pDoc, _ChildDoc4ThreePhi cDoc){
 
@@ -806,7 +805,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 							
 				
 						int i=0;
-						pw.print(stnObj.getIndex()+"\t");
+						pw.print((stnObj.getIndex()+1)+"\t");
 						
 						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
 							if(i==topK)
@@ -898,7 +897,96 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			}
 		}
 	}
-
 	
+	protected void printTopKStn4Child(String filePrefix, int topK){
+		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc4ThreePhi){
+					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
+					
+					for(_ChildDoc cDoc: pDoc.m_childDocs){
+						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
+						int i = 0;
+						
+						pw.print(cDoc.getName()+"\t");
+						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
+							if(i==topK)
+								break;
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+							i++;
+						}
+						pw.println();
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+
+	public void printParameter(String parentParameterFile, String childParameterFile){
+		System.out.println("printing parameter");
+		try{
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+			
+			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					parentParaOut.print(d.getName()+"\t");
+					parentParaOut.print("topicProportion\t");
+					for(int k=0; k<d.m_topics.length; k++){
+						parentParaOut.print(d.m_topics[k]+"\t");
+					}
+					
+					for(_Stn stnObj:d.getSentences()){							
+						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
+						for(int k=0; k<d.m_topics.length;k++){
+							parentParaOut.print(stnObj.m_topics[k]+"\t");
+						}
+					}
+					
+					parentParaOut.println();
+					
+				}else{
+					if(d instanceof _ChildDoc){
+						childParaOut.print(d.getName()+"\t");
+
+						childParaOut.print("topicProportion\t");
+						for (int k = 0; k < d.m_topics.length; k++) {
+							childParaOut.print(d.m_topics[k] + "\t");
+						}
+						
+						childParaOut.println();
+					}
+				}
+			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
 	
 }
