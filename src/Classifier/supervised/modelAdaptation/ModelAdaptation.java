@@ -39,11 +39,18 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
 
+	//if we will set the personalized model to the target user (otherwise use the global model)
+	protected boolean m_personalized;
+
+	// Decide if we will normalize the likelihood.
+	protected boolean m_LNormFlag;
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
 		loadGlobalModel(featureMap, globalModel);
 		m_pWeights = null;
+		m_personalized = true;
 	}
 	
 	public void setDisplayLv(int level) {
@@ -52,6 +59,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public void setTestMode(TestMode mode) {
 		m_testmode = mode;
+	}
+	
+	public void setPersonalization(boolean p) {
+		m_personalized = p;
+	}	
+	
+	public void setLNormFlag(boolean b){
+		m_LNormFlag = b;
 	}
 	
 	//Load global model from file.

@@ -20,7 +20,7 @@ public class LinAdapt extends RegLR {
 	int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
-	double m_eta2; // weight for shifting in R2.
+	double m_eta2; // weight for shifting in R2.	
 	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
@@ -51,14 +51,14 @@ public class LinAdapt extends RegLR {
 	public void loadFeatureGroupMap(String filename){
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] features = reader.readLine().split(",");//Group information of each feature.
+			String[] groups = reader.readLine().split(",");//Group information of each feature.
 			reader.close();
 			
-			m_featureGroupMap = new int[features.length + 1]; //One more term for bias, bias->0.
+			m_featureGroupMap = new int[groups.length + 1]; //One more term for bias, 0->0.
 			m_dim = 0;
 			//Group index starts from 0, so add 1 for it.
-			for(int i=0; i<features.length; i++) {
-				m_featureGroupMap[i+1] = Integer.valueOf(features[i]) + 1;
+			for(int i=0; i<groups.length; i++) {
+				m_featureGroupMap[i+1] = Integer.valueOf(groups[i]) + 1;
 				if (m_dim < m_featureGroupMap[i+1])
 					m_dim = m_featureGroupMap[i+1];
 			}
@@ -80,12 +80,17 @@ public class LinAdapt extends RegLR {
 		m_pWeights = new double[m_gWeights.length];
 	}
 	
+	int getVSize() {
+		return m_dim*2;
+	}
+	
+	//this function will be repeatedly called in LinAdapt
 	@Override
 	protected void initLBFGS(){
 		if(m_g == null)
-			m_g = new double[m_dim*2];
+			m_g = new double[getVSize()];
 		if(m_diag == null)
-			m_diag = new double[m_dim*2];
+			m_diag = new double[getVSize()];
 		
 		Arrays.fill(m_diag, 0);
 		Arrays.fill(m_g, 0);
@@ -128,19 +133,21 @@ public class LinAdapt extends RegLR {
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		
 		int n, k; // feature index and feature group index		
-		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
+		int offset = getVSize()*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
+		if (m_LNormFlag)
+			delta /= getAdaptationSize(user);
 
 		//Bias term.
-		m_g[offset] -= weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
-		m_g[offset + m_dim] -= weight*delta;//b[0]
+		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
+		m_g[offset + m_dim] -= delta;//b[0]
 
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue();
-			m_g[offset + m_dim + k] -= weight * delta * fv.getValue();  
+			m_g[offset + k] -= delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + m_dim + k] -= delta * fv.getValue();  
 		}
 	}
 	
@@ -148,7 +155,7 @@ public class LinAdapt extends RegLR {
 	@Override
 	protected void gradientByR1(_AdaptStruct u){
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = getVSize()*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++){
 			m_g[offset + k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)
@@ -176,15 +183,19 @@ public class LinAdapt extends RegLR {
 		for(int i=0; i<m_userList.size(); i++) {
 			user = (_LinAdaptStruct)m_userList.get(i);
 			
-			//set bias term
-			m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
-			
-			//set the other features
-			for(int n=0; n<m_featureSize; n++) {
-				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
-			}
-			user.setPersonalizedModel(m_pWeights);
+			if (m_personalized) {
+				//set bias term
+				m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
+				
+				//set the other features
+				for(int n=0; n<m_featureSize; n++) {
+					gid = m_featureGroupMap[1+n];
+					m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
+				}			
+				
+				user.setPersonalizedModel(m_pWeights);
+			} else //otherwise, we will directly use the global model
+				user.setPersonalizedModel(m_gWeights);
 		}
 	}
 }
