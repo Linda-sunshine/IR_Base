@@ -32,7 +32,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
 	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
-	protected int m_start, m_end; // Added by Lin for filtering reviews.
+	protected int m_start = 0, m_end = Integer.MAX_VALUE; // Added by Lin for filtering reviews.
+	protected double m_globalLen = 0, m_maxLen = 0;
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
@@ -104,6 +105,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		int rvwCount = 0;
 		for(_User u: m_users)
 			rvwCount += u.getReviewSize();
+		System.out.format("Average review length over all users is %.3f, max average length is %.3f.\n", m_globalLen/rvwCount, m_maxLen);
 		System.out.format("[Info]Start: %d, End: %d, (%d/%d) users and %d reviews are loaded from %s...\n", m_start, m_end, m_users.size(), count, rvwCount, folder);
 	}
 	
@@ -122,7 +124,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			_Review review;
 			int ylabel;
 			long timestamp;
-			double localSize = 0, localLength = 0;
+			double localSize = 0, localLength = 0, localAvg = 0;
 			while((line = reader.readLine()) != null){
 				productID = line;
 				source = reader.readLine(); // review content
@@ -141,10 +143,14 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					}
 				}
 			}
+			localAvg = localLength / localSize;
+			
 			// Added by Lin for debugging.
-//			if(reviews.size() > 50){//at least one for adaptation and one for testing
-//			if(reviews.size() > 1 && (localLength / localSize < m_end) && (localLength / localSize > m_start)){//at least one for adaptation and one for testing
-			if(reviews.size() > 1){	
+			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
+//			if(reviews.size() > 1){	
+				if( localAvg > m_maxLen)
+					m_maxLen = localLength / localSize;
+				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				
 					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.

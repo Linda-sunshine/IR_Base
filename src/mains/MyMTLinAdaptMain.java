@@ -37,7 +37,7 @@ public class MyMTLinAdaptMain {
 //		double eta1 = 50, eta2 = 100, eta3 = 0.5, eta4 = 1, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "Yelp"
+		String dataset = "Yelp"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -51,15 +51,16 @@ public class MyMTLinAdaptMain {
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 		
-//		int start = 0, end = 0;
-//		for(int i=8; i<9; i++){
-//			start = i*10;
-//			end = (i+1)*10;
+		int start = 0, end = 0, range = 10;
+		double[][] perf = new double[2*range][];
+		for(int i=0; i<10; i++){
+			start = i *10;
+			end = (i+1)*10;
 		
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-//		analyzer.setRvwLenghRange(start, end);
+		analyzer.setRvwLenghRange(start, end);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
@@ -87,33 +88,56 @@ public class MyMTLinAdaptMain {
 //		mtlinadapt.train();
 //		mtlinadapt.test();
 		
-		//Create an instance of MTLinAdpatWithSupUserNoAdpt.
-		MTLinAdaptWithSupUserNoAdpt mtlinadaptsupnoadpt = new MTLinAdaptWithSupUserNoAdpt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-		mtlinadaptsupnoadpt.loadUsers(analyzer.getUsers());
-		mtlinadaptsupnoadpt.setDisplayLv(displayLv);
-		mtlinadaptsupnoadpt.setR1TradeOffs(eta1, eta2);
-		double p = 0., q = 0, beta = 0.1;
-		mtlinadaptsupnoadpt.setWsWgCoefficients(p, q);
-		mtlinadaptsupnoadpt.setR14SupCoefficients(beta);
-		mtlinadaptsupnoadpt.train();
-		mtlinadaptsupnoadpt.test();
+//		double[] ps = new double[]{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
+//		double[] qs = new double[]{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
+//		for(double p: ps){
+//			for(double q: qs){
+//		//Create an instance of MTLinAdpatWithSupUserNoAdpt.
+//		MTLinAdaptWithSupUserNoAdpt mtlinadaptsupnoadpt = new MTLinAdaptWithSupUserNoAdpt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		mtlinadaptsupnoadpt.loadUsers(analyzer.getUsers());
+//		mtlinadaptsupnoadpt.setDisplayLv(displayLv);
+//		mtlinadaptsupnoadpt.setR1TradeOffs(eta1, eta2);
+////		double p = 0, q = 0;
+//		double beta = 0.1;
+//		mtlinadaptsupnoadpt.setWsWgCoefficients(p, q);
+//		mtlinadaptsupnoadpt.setR14SupCoefficients(beta);
+//		mtlinadaptsupnoadpt.train();
+//		mtlinadaptsupnoadpt.test();
+//			}
+//		}
+		double lambda1 = 0.2, lambda2 = 0.2;
 		
-//		double lambda1 = 0.5, lambda2 = 1;
-//		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-////		mtlinadaptsup.setPersonlized(false);
-//		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
-//		mtlinadaptsup.loadUsers(analyzer.getUsers());
-//
-//		mtlinadaptsup.setDisplayLv(displayLv);
-//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-//		
-//		mtlinadaptsup.train();
-//		mtlinadaptsup.test();
-//		
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+//		mtlinadaptsup.setPersonlized(false);
+		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
+		mtlinadaptsup.loadUsers(analyzer.getUsers());
+
+		mtlinadaptsup.setDisplayLv(displayLv);
+		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 		
+		mtlinadaptsup.train();
+		mtlinadaptsup.test();
+		perf[i] = mtlinadaptsup.getPerf();
+		
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		//Create the instance of MT-SVM
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
+		perf[i+range] = mtsvm.getPerf();
+		}
+		PrintWriter writer = new PrintWriter(new File("./Yelp_Average_10.txt"));
+		for(int i=0; i<perf.length; i++){
+			for(double f: perf[i])
+				writer.write(f+"\t");
+			writer.write("\n");
+		}
+		writer.close();
 		// Create the instance of MTCoLinAdapt.
 //		MTCoLinAdapt mtcolinadapt = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 //		mtcolinadapt.loadUsers(analyzer.getUsers());
@@ -136,13 +160,7 @@ public class MyMTLinAdaptMain {
 //			as.getUser().getPerfStat().clear();
 //		}
 //		
-		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
-	
+//
 //		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(10000);
 //		ArrayList<_AdaptStruct> mtsvmUsr = mtsvm.getUserList();
 //		for(int i=0; i<mtlinUsr.size(); i++){

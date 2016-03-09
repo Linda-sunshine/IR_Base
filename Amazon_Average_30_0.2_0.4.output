@@ -1,0 +1,307 @@
+Load 5000 2-gram features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+Average review length over all users is 22.245, max average length is 29.949.
+[Info]Start: 0, End: 30, (2934/9760) users and 27603 reviews are loaded from ./data/CoLinAdapt/Amazon/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 6352, and testing size: 21251
+	 mag: 105733763.0635
+Fvalue is 1864.3844071738656	 mag: 93027080.4012
+Fvalue is 1565.654879094269	 mag: 213912735.7043
+Fvalue is 1177.634109687138	 mag: 23186740.4956
+Fvalue is 520.7107382903796	 mag: 7123896.0769
+Fvalue is 353.7433097743398	 mag: 949775.7726
+Fvalue is 237.2539342011928	 mag: 876788.9825
+Fvalue is 201.01029090580997	 mag: 2488805.3342
+Fvalue is 187.70081345229912	 mag: 800156.1328
+Fvalue is 174.79721770379123	 mag: 414664.1262
+Fvalue is 168.76413491523522	 mag: 77533.5034
+Fvalue is 159.81362799343066	 mag: 502295.0629
+Fvalue is 151.97901151520136	 mag: 22639.7440
+Fvalue is 148.60713950050945	 mag: 13688.5443
+Fvalue is 145.19466761106042	 mag: 3213.9338
+Fvalue is 142.4268441385219	 mag: 22813.6224
+Fvalue is 139.75837727437167	 mag: 1612508.4980
+Fvalue is 139.08643436594926	 mag: 292988.3420
+Fvalue is 137.9651996619043	 mag: 13348.5525
+Fvalue is 136.82413436922488	 mag: 24.3711
+Fvalue is 136.00515778431057	 mag: 10438.1513
+Fvalue is 134.91446253963485	 mag: 954.7794
+Fvalue is 134.15338374362997	 mag: 154.9206
+Fvalue is 133.79556600247167	 mag: 8412.7132
+Fvalue is 133.04683554760544	 mag: 625358.6941
+Fvalue is 133.77750455683267	 mag: 20879.3224
+Fvalue is 132.9371627331211	 mag: 4943.6562
+Fvalue is 132.80223288895243	 mag: 20.6141
+Fvalue is 132.62039966274205	 mag: 3182.5260
+Fvalue is 132.4780098634829	 mag: 131.3656
+Fvalue is 132.29433201291377	 mag: 2939.3167
+Fvalue is 132.14230464492618	 mag: 1111.6522
+Fvalue is 132.02535258620748	 mag: 13466.9182
+Fvalue is 131.96890355431083	 mag: 2193.5993
+Fvalue is 131.91052760011434	 mag: 1956.1641
+Fvalue is 131.8900186448219
+MT-LinAdaptWithSupUsr[dim:801,supDime:5001, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.400, personalized: true]
+Micro confusion matrix:
+	0	1
+0	3941	1556
+1	1676	14078
+Micro F1:
+Class 0: 0.7092	Class 1: 0.8970	
+Macro F1:
+Class 0: 0.5457	Class 1: 0.8293	
+[Info]Training size: 0, adaptation size: 6352, and testing size: 21251
+[Info]Training size: 0, adaptation size: 6352, and testing size: 21251
+..*
+optimization finished, #iter = 23
+Objective value = -8.88256
+nSV = 4048
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	3567	1175
+1	2050	14459
+Micro F1:
+Class 0: 0.6887	Class 1: 0.8997	
+Macro F1:
+Class 0: 0.5098	Class 1: 0.8341	
+Load 5000 2-gram features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+Average review length over all users is 44.050, max average length is 59.979.
+[Info]Start: 30, End: 60, (4332/9760) users and 65830 reviews are loaded from ./data/CoLinAdapt/Amazon/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 15361, and testing size: 50469
+	 mag: 177306183.2077
+Fvalue is 128881.09651313786	 mag: 630275885.1433
+Fvalue is 8597.118201695645	 mag: 255544150.9164
+Fvalue is 8231.674579572367	 mag: 136316555.7734
+Fvalue is 6766.655106901277	 mag: 45389884.2324
+Fvalue is 1135.149824377046	 mag: 348079.5192
+Fvalue is 771.6862196672121	 mag: 916112.9554
+Fvalue is 599.8769301316736	 mag: 3988311.9737
+Fvalue is 444.85308720388866	 mag: 416882790.1908
+Fvalue is 665.0328329243238	 mag: 7017209.8570
+Fvalue is 416.71310626559784	 mag: 1634658.0055
+Fvalue is 391.5588475400108	 mag: 3169.9344
+Fvalue is 353.3530350547023	 mag: 1442235.3515
+Fvalue is 318.48012701409755	 mag: 1874.9503
+Fvalue is 290.44352089145616	 mag: 1322936.0166
+Fvalue is 269.23946745097356	 mag: 146443.2716
+Fvalue is 253.74142378549368	 mag: 1082143.6600
+Fvalue is 249.07005766333032	 mag: 47897.2071
+Fvalue is 243.97238278440355	 mag: 601661.7116
+Fvalue is 240.22722945442462	 mag: 1140809.6076
+Fvalue is 232.06491641582755	 mag: 42274.3757
+Fvalue is 225.7713565203952	 mag: 87268.5148
+Fvalue is 222.88874615593585	 mag: 68388.5074
+Fvalue is 218.9471297578296	 mag: 65885.3007
+Fvalue is 216.460908055574	 mag: 177893.1838
+Fvalue is 214.5353732840743	 mag: 13450.4442
+Fvalue is 213.12924146907704	 mag: 527.6091
+Fvalue is 211.55962788319346	 mag: 141725.2282
+Fvalue is 209.96047053360581	 mag: 1455.1999
+Fvalue is 208.6225894322558	 mag: 188.7311
+Fvalue is 207.60564323720524	 mag: 175067.7592
+Fvalue is 206.66739669033538	 mag: 1610.4437
+Fvalue is 206.05268846130133	 mag: 113686.0225
+Fvalue is 205.94979449007047	 mag: 6153.3761
+Fvalue is 205.47795126999853	 mag: 65551.1833
+Fvalue is 204.92494999347318	 mag: 59325.9585
+Fvalue is 204.51259080501907	 mag: 2065.6699
+Fvalue is 203.73552896892807	 mag: 76642.1637
+Fvalue is 203.25676469841355	 mag: 9908.5750
+Fvalue is 202.74729019166355	 mag: 12139.7321
+Fvalue is 202.47273959049704	 mag: 6116.8585
+Fvalue is 201.842660625136	 mag: 225578.7236
+Fvalue is 201.94219970578683	 mag: 32177.7220
+Fvalue is 201.54597124830158	 mag: 3034.5050
+Fvalue is 201.25760113763045	 mag: 405.6407
+Fvalue is 201.07476765271974	 mag: 70420.3295
+Fvalue is 200.95156535030384	 mag: 14883.2240
+Fvalue is 200.8206727054101	 mag: 153.3029
+Fvalue is 200.71877003889193	 mag: 2196.6973
+Fvalue is 200.66516490524236	 mag: 1167.5264
+Fvalue is 200.53920081350822	 mag: 13475.1984
+Fvalue is 200.48399714245238	 mag: 1568.2742
+Fvalue is 200.35870538499537	 mag: 1952.3250
+Fvalue is 200.2923128729349	 mag: 4653.7667
+Fvalue is 200.21517161345275	 mag: 138640.2890
+Fvalue is 200.34247455897417	 mag: 5918.5909
+Fvalue is 200.1750868262884	 mag: 884.8609
+Fvalue is 200.1134999229521	 mag: 6.4265
+Fvalue is 200.0382809254245	 mag: 157.4125
+Fvalue is 199.9604977400736
+MT-LinAdaptWithSupUsr[dim:801,supDime:5001, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.400, personalized: true]
+Micro confusion matrix:
+	0	1
+0	9611	3687
+1	4025	33146
+Micro F1:
+Class 0: 0.7137	Class 1: 0.8958	
+Macro F1:
+Class 0: 0.6118	Class 1: 0.8455	
+[Info]Training size: 0, adaptation size: 15361, and testing size: 50469
+[Info]Training size: 0, adaptation size: 15361, and testing size: 50469
+.................**
+optimization finished, #iter = 175
+Objective value = -11.1304
+nSV = 8432
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	9099	2626
+1	4537	34207
+Micro F1:
+Class 0: 0.7176	Class 1: 0.9052	
+Macro F1:
+Class 0: 0.5993	Class 1: 0.8550	
+Load 5000 2-gram features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+Average review length over all users is 72.526, max average length is 89.954.
+[Info]Start: 60, End: 90, (1652/9760) users and 33031 reviews are loaded from ./data/CoLinAdapt/Amazon/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 7794, and testing size: 25237
+	 mag: 9518056.7847
+Fvalue is 53246.4742391536	 mag: 72925380.0417
+Fvalue is 12483.577895230495	 mag: 78955585.5160
+Fvalue is 1038.2431084886246	 mag: 230933.8492
+Fvalue is 463.34494472417	 mag: 215384.5845
+Fvalue is 351.95094421102283	 mag: 169072.6705
+Fvalue is 220.56348032815396	 mag: 139604.3191
+Fvalue is 167.72054262199364	 mag: 6418264.7227
+Fvalue is 157.4127206920517	 mag: 811414.4114
+Fvalue is 137.65385505651375	 mag: 98929.0922
+Fvalue is 127.65316660398284	 mag: 257854.9663
+Fvalue is 118.05690903576762	 mag: 15112.2482
+Fvalue is 109.14512185130427	 mag: 31514.0458
+Fvalue is 99.13093201137835	 mag: 36969.6914
+Fvalue is 93.80698263696031	 mag: 336982.2200
+Fvalue is 92.27560155309281	 mag: 55315.6661
+Fvalue is 88.24878972307991	 mag: 47875.4741
+Fvalue is 86.7890990781441	 mag: 19627.6282
+Fvalue is 83.83395368467622	 mag: 22547.5006
+Fvalue is 83.10934110434316	 mag: 81792.6962
+Fvalue is 87.00038762426621	 mag: 5569.0344
+Fvalue is 80.42547462967255	 mag: 2110.1887
+Fvalue is 78.61435854585204	 mag: 21147.9987
+Fvalue is 77.60940250414683	 mag: 601756.2807
+Fvalue is 81.07516994283539	 mag: 1353.4862
+Fvalue is 77.2750736640505	 mag: 15083.3499
+Fvalue is 76.91347042404426	 mag: 3744.1159
+Fvalue is 76.38957451655075	 mag: 3699.0786
+Fvalue is 75.80217522986928	 mag: 77.7498
+Fvalue is 75.32514136956365	 mag: 872.9857
+Fvalue is 74.63455520662215	 mag: 28988.4437
+Fvalue is 74.16334464002702	 mag: 221546.9152
+Fvalue is 74.75294104671448	 mag: 1151.9953
+Fvalue is 74.00154397550372	 mag: 2213.8327
+Fvalue is 73.86727147887179	 mag: 87.0862
+Fvalue is 73.56106053090986	 mag: 41.1856
+Fvalue is 73.14321463195664	 mag: 926.8522
+Fvalue is 73.05778196880559	 mag: 412.4373
+Fvalue is 72.96128739258941	 mag: 222.0117
+Fvalue is 72.83267915257488	 mag: 3706.8659
+Fvalue is 72.74647546291892	 mag: 6218.3531
+Fvalue is 72.71843142387247	 mag: 763.4727
+Fvalue is 72.68906939297072	 mag: 83.1948
+Fvalue is 72.66052393307407	 mag: 458.7054
+Fvalue is 72.62526352212554	 mag: 444.4013
+Fvalue is 72.55757708022219	 mag: 961.5760
+Fvalue is 72.56822876341201	 mag: 20.5029
+Fvalue is 72.47227199452286	 mag: 33.4592
+Fvalue is 72.39889898200546	 mag: 12.9966
+Fvalue is 72.36180628078884	 mag: 6530.9483
+Fvalue is 72.30226642343418	 mag: 8074.2234
+Fvalue is 72.30261847448486	 mag: 26.9587
+Fvalue is 72.26952015375237	 mag: 90.2015
+Fvalue is 72.25892016082986	 mag: 201.0208
+Fvalue is 72.22471868983976
+MT-LinAdaptWithSupUsr[dim:801,supDime:5001, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.400, personalized: true]
+Micro confusion matrix:
+	0	1
+0	4271	1905
+1	2120	16941
+Micro F1:
+Class 0: 0.6797	Class 1: 0.8938	
+Macro F1:
+Class 0: 0.5869	Class 1: 0.8408	
+[Info]Training size: 0, adaptation size: 7794, and testing size: 25237
+[Info]Training size: 0, adaptation size: 7794, and testing size: 25237
+...*.*
+optimization finished, #iter = 41
+Objective value = -3.28851
+nSV = 4510
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	3888	1048
+1	2503	17798
+Micro F1:
+Class 0: 0.6865	Class 1: 0.9093	
+Macro F1:
+Class 0: 0.5755	Class 1: 0.8601	
+Load 5000 2-gram features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+Average review length over all users is 103.708, max average length is 119.930.
+[Info]Start: 90, End: 120, (500/9760) users and 10404 reviews are loaded from ./data/CoLinAdapt/Amazon/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 2447, and testing size: 7957
+	 mag: 1821160.4923
+Fvalue is 67283.11210956595	 mag: 7252680.1790
+Fvalue is 446.3515098296577	 mag: 1961316.3766
+Fvalue is 264.6564370034836	 mag: 345624.4612
+Fvalue is 158.61556412620237	 mag: 1507.2181
+Fvalue is 96.59421010670465	 mag: 10703.6968
+Fvalue is 63.25645089298269	 mag: 6838.0354
+Fvalue is 49.862485392855575	 mag: 1266000.7799
+Fvalue is 52.40877616156216	 mag: 110370.6118
+Fvalue is 45.12668277841996	 mag: 54041.5133
+Fvalue is 39.54103080576716	 mag: 5810.7435
+Fvalue is 33.066034706339046	 mag: 89745.6718
+Fvalue is 31.284003912581834	 mag: 554.1404
+Fvalue is 28.692922322874004	 mag: 1540.5900
+Fvalue is 27.716539486229237	 mag: 498024.9168
+Fvalue is 37.74959949437547	 mag: 7740.2305
+Fvalue is 26.580098772740357	 mag: 1863.1940
+Fvalue is 25.84949316610605	 mag: 4676.5923
+Fvalue is 25.290099810820053	 mag: 1588.2538
+Fvalue is 24.859888286794764	 mag: 265.5561
+Fvalue is 24.565618978521933	 mag: 56.3198
+Fvalue is 24.298581855862203	 mag: 95.5197
+Fvalue is 24.245248630917928	 mag: 2974.7699
+Fvalue is 24.056983660185875	 mag: 1091.6737
+Fvalue is 23.80943743406643	 mag: 25.4246
+Fvalue is 23.698769426886464	 mag: 304.4721
+Fvalue is 23.518013724023266	 mag: 937.9667
+Fvalue is 23.333508095920653	 mag: 39.0723
+Fvalue is 23.187091504500405	 mag: 49.2253
+Fvalue is 23.11683836725137	 mag: 106.6380
+Fvalue is 23.06668157338131	 mag: 333.1251
+Fvalue is 23.035769573467384	 mag: 2.7526
+Fvalue is 23.010434293854615	 mag: 82.4512
+Fvalue is 22.992790202685647	 mag: 75.5277
+Fvalue is 22.9725262185731	 mag: 71.3722
+Fvalue is 22.933997393792943	 mag: 1.5395
+Fvalue is 22.903420676149672	 mag: 140.8191
+Fvalue is 22.876530735198827	 mag: 158.4428
+Fvalue is 22.86536390278998	 mag: 0.7601
+Fvalue is 22.85706763972297
+MT-LinAdaptWithSupUsr[dim:801,supDime:5001, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.400, personalized: true]
+Micro confusion matrix:
+	0	1
+0	1412	622
+1	671	5252
+Micro F1:
+Class 0: 0.6859	Class 1: 0.8904	
+Macro F1:
+Class 0: 0.6135	Class 1: 0.8476	
+[Info]Training size: 0, adaptation size: 2447, and testing size: 7957
+[Info]Training size: 0, adaptation size: 2447, and testing size: 7957
+.......*
+optimization finished, #iter = 73
+Objective value = -0.896471
+nSV = 1753
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	1144	365
+1	939	5509
+Micro F1:
+Class 0: 0.6370	Class 1: 0.8942	
+Macro F1:
+Class 0: 0.5378	Class 1: 0.8442	

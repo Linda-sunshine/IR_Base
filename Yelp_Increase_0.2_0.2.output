@@ -1,0 +1,609 @@
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 8.605, max average length is 9.750.
+[Info]Start: 0, End: 10, (136/11733) users and 1403 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 352, and testing size: 1051
+	 mag: 3686663.4291
+Fvalue is 152.3653970090804	 mag: 191543.6253
+Fvalue is 88.57189111097875	 mag: 171288.9220
+Fvalue is 67.25127502775084	 mag: 99908.5538
+Fvalue is 23.18387213319183	 mag: 11182.0379
+Fvalue is 19.52204376460739	 mag: 1888.0047
+Fvalue is 17.958834494609597	 mag: 1383.1847
+Fvalue is 15.23585762268414	 mag: 1019.7292
+Fvalue is 13.661187637804844	 mag: 125.4859
+Fvalue is 12.842571206729847	 mag: 709.2529
+Fvalue is 12.274366280547149	 mag: 21.4352
+Fvalue is 11.805615061730743	 mag: 19201.7620
+Fvalue is 12.565091422691594	 mag: 1798.2779
+Fvalue is 11.590014244542477	 mag: 296.3068
+Fvalue is 11.375283990682256	 mag: 26.1816
+Fvalue is 11.207159996734315	 mag: 19.0346
+Fvalue is 11.112023766045825	 mag: 166.9513
+Fvalue is 11.035723305861918	 mag: 71.7525
+Fvalue is 10.98310059048256	 mag: 18.1467
+Fvalue is 10.966408067881947	 mag: 2.1375
+Fvalue is 10.94855308647481
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	64	78
+1	112	797
+Micro F1:
+Class 0: 0.4025	Class 1: 0.8935	
+Macro F1:
+Class 0: 0.1950	Class 1: 0.7919	
+[Info]Training size: 0, adaptation size: 352, and testing size: 1051
+[Info]Training size: 0, adaptation size: 352, and testing size: 1051
+.....*
+optimization finished, #iter = 54
+Objective value = -1.23122
+nSV = 261
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	37	55
+1	139	820
+Micro F1:
+Class 0: 0.2761	Class 1: 0.8942	
+Macro F1:
+Class 0: 0.0999	Class 1: 0.8524	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 16.072, max average length is 19.925.
+[Info]Start: 10, End: 20, (1126/11733) users and 8182 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 2033, and testing size: 6149
+	 mag: 5120391.9579
+Fvalue is 1066.0756230632765	 mag: 2387427.1460
+Fvalue is 808.9484199181802	 mag: 10743131.2068
+Fvalue is 260.66498982758657	 mag: 2172930.7019
+Fvalue is 129.88685745356597	 mag: 94595.1977
+Fvalue is 102.82830594215235	 mag: 2447.8203
+Fvalue is 90.19577678016128	 mag: 9345.6576
+Fvalue is 78.09446680266561	 mag: 6186.1101
+Fvalue is 67.85148896180762	 mag: 47800.8268
+Fvalue is 60.35202204654472	 mag: 220003.5468
+Fvalue is 58.68400143047738	 mag: 7834.7263
+Fvalue is 56.300529055680876	 mag: 839.7983
+Fvalue is 55.34529513587982	 mag: 20880.4546
+Fvalue is 53.45216744283515	 mag: 6425.4270
+Fvalue is 51.782980626768236	 mag: 17.9143
+Fvalue is 50.50866448096322	 mag: 843.7742
+Fvalue is 49.65370350775112	 mag: 13.3025
+Fvalue is 49.3230597940863	 mag: 476.6207
+Fvalue is 49.00958093619961	 mag: 34762.4240
+Fvalue is 49.204100191296206	 mag: 2792.7781
+Fvalue is 48.92780303977422	 mag: 401.1535
+Fvalue is 48.827899829358515	 mag: 34.7830
+Fvalue is 48.74041394055767	 mag: 421.3445
+Fvalue is 48.66007767561389
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	842	536
+1	728	4043
+Micro F1:
+Class 0: 0.5712	Class 1: 0.8648	
+Macro F1:
+Class 0: 0.3543	Class 1: 0.7798	
+[Info]Training size: 0, adaptation size: 2033, and testing size: 6149
+[Info]Training size: 0, adaptation size: 2033, and testing size: 6149
+...*
+optimization finished, #iter = 32
+Objective value = -3.86799
+nSV = 1466
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	692	276
+1	878	4303
+Micro F1:
+Class 0: 0.5453	Class 1: 0.8818	
+Macro F1:
+Class 0: 0.3216	Class 1: 0.8153	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 25.567, max average length is 29.982.
+[Info]Start: 20, End: 30, (2195/11733) users and 20445 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 4896, and testing size: 15549
+	 mag: 29923936.2690
+Fvalue is 2195.0795138127314	 mag: 18346668.3939
+Fvalue is 1796.8783519139881	 mag: 85098646.3106
+Fvalue is 1081.6309838800728	 mag: 2047780.3524
+Fvalue is 401.29082261402795	 mag: 9625.1429
+Fvalue is 305.9183479010382	 mag: 74455.9759
+Fvalue is 214.48561598750297	 mag: 24493.1790
+Fvalue is 165.18538340363068	 mag: 130632.6667
+Fvalue is 134.42083603321586	 mag: 262993.3909
+Fvalue is 123.0362264572957	 mag: 2162.1062
+Fvalue is 115.58374467380298	 mag: 26800.5252
+Fvalue is 109.43017143328817	 mag: 73.7664
+Fvalue is 102.77206872449304	 mag: 3518.1115
+Fvalue is 98.04358680754561	 mag: 8774.6401
+Fvalue is 94.2102517222416	 mag: 21261.0658
+Fvalue is 91.99984747531539	 mag: 51741.6148
+Fvalue is 90.78504350232205	 mag: 557.4440
+Fvalue is 89.88024314760466	 mag: 3326.8348
+Fvalue is 89.24765346852023	 mag: 5086.2178
+Fvalue is 88.34676563468335	 mag: 5750.6765
+Fvalue is 86.94781616783031	 mag: 144043.2695
+Fvalue is 88.98448726701497	 mag: 1963.8617
+Fvalue is 86.63423058734341	 mag: 93.8534
+Fvalue is 86.28322044757795	 mag: 3984.7818
+Fvalue is 86.05914556405527	 mag: 2145.8926
+Fvalue is 85.81845497583117	 mag: 251.9741
+Fvalue is 85.68348276409114	 mag: 230.0769
+Fvalue is 85.50953933254345	 mag: 798.7244
+Fvalue is 85.357192726911	 mag: 3690.1330
+Fvalue is 85.30885194155222	 mag: 548.1030
+Fvalue is 85.18920214892032	 mag: 3.7903
+Fvalue is 85.16598546042776
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	2805	1310
+1	1328	10106
+Micro F1:
+Class 0: 0.6802	Class 1: 0.8846	
+Macro F1:
+Class 0: 0.4990	Class 1: 0.8078	
+[Info]Training size: 0, adaptation size: 4896, and testing size: 15549
+[Info]Training size: 0, adaptation size: 4896, and testing size: 15549
+.*
+optimization finished, #iter = 15
+Objective value = -6.11042
+nSV = 2933
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	2634	892
+1	1499	10524
+Micro F1:
+Class 0: 0.6878	Class 1: 0.8980	
+Macro F1:
+Class 0: 0.4988	Class 1: 0.8410	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 34.975, max average length is 39.985.
+[Info]Start: 30, End: 40, (2242/11733) users and 24765 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 5922, and testing size: 18843
+	 mag: 4880233.1053
+Fvalue is 2475.7157475046142	 mag: 31668817.4626
+Fvalue is 2004.5564506588073	 mag: 62916083.4816
+Fvalue is 960.9870187785589	 mag: 37547083.2532
+Fvalue is 473.7992242749733	 mag: 5466870.7555
+Fvalue is 361.5930167501378	 mag: 58729.8419
+Fvalue is 302.53232407731423	 mag: 938409.5133
+Fvalue is 255.3652786313348	 mag: 566468.5434
+Fvalue is 208.30069903128387	 mag: 71488.1921
+Fvalue is 160.2927606893457	 mag: 526289.8403
+Fvalue is 135.14313489251296	 mag: 5650010.2667
+Fvalue is 144.81124078214302	 mag: 132925.1078
+Fvalue is 124.46264973390335	 mag: 74943.2604
+Fvalue is 118.83679852997754	 mag: 70728.2824
+Fvalue is 110.51665186934639	 mag: 8808.1675
+Fvalue is 105.72108796249475	 mag: 55.8205
+Fvalue is 102.17229781952356	 mag: 15644.0462
+Fvalue is 97.73146726408098	 mag: 58248.4930
+Fvalue is 96.17106012370607	 mag: 87.0526
+Fvalue is 94.36897159395991	 mag: 23.2002
+Fvalue is 93.10013733289883	 mag: 249114.1727
+Fvalue is 92.31660255544043	 mag: 21200.9224
+Fvalue is 90.27367695890278	 mag: 352689.5079
+Fvalue is 91.80755932048592	 mag: 19591.0117
+Fvalue is 89.10762593592068	 mag: 659.5050
+Fvalue is 88.28765239869847	 mag: 790.6693
+Fvalue is 87.09173832232678	 mag: 3103.8170
+Fvalue is 85.66848125913116	 mag: 1551.3299
+Fvalue is 84.42997614330174	 mag: 7458.5503
+Fvalue is 83.84795782519036	 mag: 2192.8185
+Fvalue is 83.57095007620364	 mag: 984.0851
+Fvalue is 83.40643523388731	 mag: 59.0340
+Fvalue is 83.03767460772548	 mag: 157.9723
+Fvalue is 82.75080035238872	 mag: 50.1847
+Fvalue is 82.5265818776134	 mag: 109.8977
+Fvalue is 82.38447337082874	 mag: 252.6666
+Fvalue is 82.28243714674444	 mag: 8053.1292
+Fvalue is 82.29040458490059	 mag: 1137.0218
+Fvalue is 82.25246974087878	 mag: 71.6939
+Fvalue is 82.22706719338109
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	3252	1562
+1	1572	12457
+Micro F1:
+Class 0: 0.6748	Class 1: 0.8883	
+Macro F1:
+Class 0: 0.5011	Class 1: 0.8042	
+[Info]Training size: 0, adaptation size: 5922, and testing size: 18843
+[Info]Training size: 0, adaptation size: 5922, and testing size: 18843
+.*
+optimization finished, #iter = 17
+Objective value = -5.32886
+nSV = 3463
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	3074	955
+1	1750	13064
+Micro F1:
+Class 0: 0.6945	Class 1: 0.9062	
+Macro F1:
+Class 0: 0.5134	Class 1: 0.8419	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 45.074, max average length is 49.957.
+[Info]Start: 40, End: 50, (1947/11733) users and 28918 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 6952, and testing size: 21966
+	 mag: 4456397.3202
+Fvalue is 2317.008192795991	 mag: 22358327.7793
+Fvalue is 1850.8075038778604	 mag: 30965257.1663
+Fvalue is 856.8406876556389	 mag: 18149598.4560
+Fvalue is 410.38168364462865	 mag: 721828.1839
+Fvalue is 313.9629559441377	 mag: 8868.5601
+Fvalue is 280.3484814160443	 mag: 165473.7789
+Fvalue is 226.22806506022894	 mag: 3529.7621
+Fvalue is 172.0820330033249	 mag: 4729.4841
+Fvalue is 141.3760895032018	 mag: 1733638.7601
+Fvalue is 119.95017550610459	 mag: 570014.8833
+Fvalue is 110.82387431873794	 mag: 10797.9273
+Fvalue is 105.06936570021556	 mag: 682.5670
+Fvalue is 101.69169242430812	 mag: 1016.5668
+Fvalue is 94.4880325482511	 mag: 87628.0131
+Fvalue is 88.77235893568107	 mag: 6109.8236
+Fvalue is 85.3205518127474	 mag: 3951.7691
+Fvalue is 84.04263081083475	 mag: 19860.9877
+Fvalue is 80.38430068074175	 mag: 56366.3048
+Fvalue is 80.71810339334051	 mag: 627.4104
+Fvalue is 79.38884828140247	 mag: 4589.1834
+Fvalue is 77.93262086669297	 mag: 26.2302
+Fvalue is 76.52206133095524	 mag: 51551.9518
+Fvalue is 75.26603279949646	 mag: 4109.2017
+Fvalue is 74.06622904824927	 mag: 1791.6162
+Fvalue is 73.52561614087044	 mag: 1571.4077
+Fvalue is 72.42398819992331	 mag: 88.3730
+Fvalue is 70.99923876403207	 mag: 564.1182
+Fvalue is 70.33414704020112	 mag: 94.4233
+Fvalue is 69.92209898746572	 mag: 7281.0263
+Fvalue is 69.74578224538499	 mag: 2477.4255
+Fvalue is 69.65270424429826	 mag: 1011.9367
+Fvalue is 69.55575281232963	 mag: 233.0987
+Fvalue is 69.48872945731617	 mag: 1161.0283
+Fvalue is 69.41857808251876	 mag: 1238.4529
+Fvalue is 69.308344643177	 mag: 920.2886
+Fvalue is 69.21428917406641	 mag: 293.2534
+Fvalue is 69.11469796811406	 mag: 4.8935
+Fvalue is 69.0849718354347
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	3045	1652
+1	1456	15813
+Micro F1:
+Class 0: 0.6621	Class 1: 0.9105	
+Macro F1:
+Class 0: 0.5142	Class 1: 0.8152	
+[Info]Training size: 0, adaptation size: 6952, and testing size: 21966
+[Info]Training size: 0, adaptation size: 6952, and testing size: 21966
+..*
+optimization finished, #iter = 27
+Objective value = -4.20021
+nSV = 3494
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	2745	975
+1	1756	16490
+Micro F1:
+Class 0: 0.6678	Class 1: 0.9235	
+Macro F1:
+Class 0: 0.5110	Class 1: 0.8492	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 54.636, max average length is 59.917.
+[Info]Start: 50, End: 60, (1371/11733) users and 21156 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 5099, and testing size: 16057
+	 mag: 132058.8167
+Fvalue is 101698.82246525609	 mag: 2709599.5562
+Fvalue is 1282.2237628263138	 mag: 24626296.0337
+Fvalue is 478.68921005433833	 mag: 27408428.4023
+Fvalue is 390.522388557449	 mag: 546665.7825
+Fvalue is 257.08774734233265	 mag: 30490.1314
+Fvalue is 237.86960684564772	 mag: 598830.7258
+Fvalue is 180.24485160998074	 mag: 314076.7499
+Fvalue is 140.12575759445494	 mag: 68936.9293
+Fvalue is 104.88588094967187	 mag: 1834.7184
+Fvalue is 83.43022570076816	 mag: 31231.6011
+Fvalue is 73.88584077581693	 mag: 17794.5606
+Fvalue is 67.89600670901146	 mag: 1081.1566
+Fvalue is 61.99748860372096	 mag: 144709.9350
+Fvalue is 61.28968910557617	 mag: 15705.1875
+Fvalue is 57.92746093209456	 mag: 3985832.9128
+Fvalue is 97.75660911168384	 mag: 4709.5288
+Fvalue is 56.03475043168599	 mag: 1428.5244
+Fvalue is 54.64505259994494	 mag: 4063.3605
+Fvalue is 52.23807956493909	 mag: 84.1597
+Fvalue is 49.88459762399096	 mag: 42.9140
+Fvalue is 48.40638722721775	 mag: 3772.3025
+Fvalue is 48.875628813798365	 mag: 1728.6559
+Fvalue is 47.45157503353994	 mag: 5611.7919
+Fvalue is 46.685671801071784	 mag: 17921.1759
+Fvalue is 46.26646738597673	 mag: 2203.5440
+Fvalue is 45.85758850804878	 mag: 421.0103
+Fvalue is 45.458766655631294	 mag: 1175.4447
+Fvalue is 45.11836759959226	 mag: 873.6564
+Fvalue is 44.384704493200395	 mag: 1072.9113
+Fvalue is 43.94530116220484	 mag: 384.5461
+Fvalue is 43.713032203044165	 mag: 1225.2605
+Fvalue is 43.605889673211735	 mag: 440.8408
+Fvalue is 43.521438503245	 mag: 60.6444
+Fvalue is 43.41716477202576	 mag: 246.5998
+Fvalue is 43.333366335487256	 mag: 93.4609
+Fvalue is 43.28589435446672	 mag: 3.7321
+Fvalue is 43.215042113860775
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	2171	1319
+1	1116	11451
+Micro F1:
+Class 0: 0.6407	Class 1: 0.9039	
+Macro F1:
+Class 0: 0.5036	Class 1: 0.8042	
+[Info]Training size: 0, adaptation size: 5099, and testing size: 16057
+[Info]Training size: 0, adaptation size: 5099, and testing size: 16057
+...................**
+optimization finished, #iter = 198
+Objective value = -2.60264
+nSV = 2755
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	1889	666
+1	1398	12104
+Micro F1:
+Class 0: 0.6467	Class 1: 0.9214	
+Macro F1:
+Class 0: 0.4977	Class 1: 0.8419	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 64.764, max average length is 69.857.
+[Info]Start: 60, End: 70, (909/11733) users and 13531 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 3244, and testing size: 10287
+	 mag: 323854.3013
+Fvalue is 1507.1429673249675	 mag: 9034215.7926
+Fvalue is 1092.6288825718539	 mag: 3610475.4346
+Fvalue is 345.3769488800377	 mag: 3031411.0265
+Fvalue is 183.68516177964923	 mag: 290950.3943
+Fvalue is 135.94728245929818	 mag: 12497.6363
+Fvalue is 111.71077270478747	 mag: 872.5397
+Fvalue is 91.06135453216112	 mag: 1289.0768
+Fvalue is 67.59212541745235	 mag: 1841.8035
+Fvalue is 55.04113581417677	 mag: 143626.0964
+Fvalue is 47.579259773464905	 mag: 42261.0636
+Fvalue is 42.50197700039374	 mag: 2460.7889
+Fvalue is 41.13562528556057	 mag: 3103.7818
+Fvalue is 39.307246259816765	 mag: 109148.2677
+Fvalue is 42.059532418177504	 mag: 1341.0307
+Fvalue is 36.69242394287112	 mag: 83.5362
+Fvalue is 35.23492457925007	 mag: 730.9352
+Fvalue is 33.86839252153116	 mag: 1117.8656
+Fvalue is 33.136462649130394	 mag: 395.0478
+Fvalue is 32.494465086717504	 mag: 2325.4419
+Fvalue is 31.756514196702845	 mag: 2471.5278
+Fvalue is 31.26535382815355	 mag: 1846.2561
+Fvalue is 30.92109945972698	 mag: 54.6039
+Fvalue is 30.07849569117252	 mag: 12.9631
+Fvalue is 29.63816689538699	 mag: 538.2844
+Fvalue is 29.313693249622823	 mag: 78.9524
+Fvalue is 29.110037502874633	 mag: 7099.0435
+Fvalue is 28.9849901048407	 mag: 1495.8986
+Fvalue is 28.73578272857999	 mag: 37.8517
+Fvalue is 28.648122891298293	 mag: 1.8788
+Fvalue is 28.6124128193053	 mag: 29.8312
+Fvalue is 28.507819165553972	 mag: 4.1892
+Fvalue is 28.440528648551727	 mag: 37.3315
+Fvalue is 28.388209851722735	 mag: 490.3547
+Fvalue is 28.35894671900632	 mag: 2.7442
+Fvalue is 28.33713283738126
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	1568	987
+1	798	6934
+Micro F1:
+Class 0: 0.6373	Class 1: 0.8860	
+Macro F1:
+Class 0: 0.4740	Class 1: 0.7777	
+[Info]Training size: 0, adaptation size: 3244, and testing size: 10287
+[Info]Training size: 0, adaptation size: 3244, and testing size: 10287
+.*
+optimization finished, #iter = 16
+Objective value = -1.50432
+nSV = 1960
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	1401	518
+1	965	7403
+Micro F1:
+Class 0: 0.6539	Class 1: 0.9090	
+Macro F1:
+Class 0: 0.4847	Class 1: 0.8343	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 74.011, max average length is 79.950.
+[Info]Start: 70, End: 80, (650/11733) users and 10184 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 2451, and testing size: 7733
+	 mag: 139109.7146
+Fvalue is 1042.8979398847403	 mag: 2160018.6070
+Fvalue is 681.0825557385454	 mag: 1969120.4019
+Fvalue is 183.88564066378203	 mag: 326815.0997
+Fvalue is 103.95259714997479	 mag: 105123.7018
+Fvalue is 82.3985033712482	 mag: 10491.7145
+Fvalue is 66.98098761915062	 mag: 208.8308
+Fvalue is 53.40021055979654	 mag: 115.0572
+Fvalue is 44.079808550337575	 mag: 1480.3582
+Fvalue is 33.641303260208325	 mag: 3066.7256
+Fvalue is 32.66953105480228	 mag: 411.7041
+Fvalue is 30.001511065226993	 mag: 659594.0918
+Fvalue is 70.46248939675823	 mag: 4984.2538
+Fvalue is 26.806279510590997	 mag: 236217.6591
+Fvalue is 44.66642328879011	 mag: 556.3314
+Fvalue is 24.56969465211557	 mag: 4974.6623
+Fvalue is 27.864235607928297	 mag: 143.2828
+Fvalue is 22.960711945342688	 mag: 535.8148
+Fvalue is 22.26934453937622	 mag: 3182.7185
+Fvalue is 21.301128361450026	 mag: 758.6344
+Fvalue is 20.75490431177296	 mag: 1128.3455
+Fvalue is 20.2596024079413	 mag: 755.1126
+Fvalue is 19.367262428776137	 mag: 6.5212
+Fvalue is 19.036936085512462	 mag: 4.9690
+Fvalue is 18.801055290776894	 mag: 329.0813
+Fvalue is 18.48597006296881	 mag: 1431.3265
+Fvalue is 18.302014032950307	 mag: 35.2041
+Fvalue is 18.137151641802042	 mag: 3.1159
+Fvalue is 17.986021686995045	 mag: 925.0136
+Fvalue is 17.786426536225907	 mag: 1.8475
+Fvalue is 17.65695823538028	 mag: 1.0345
+Fvalue is 17.623576224333977	 mag: 346.8330
+Fvalue is 17.564318205402547	 mag: 1.2982
+Fvalue is 17.526564819824078	 mag: 1.0875
+Fvalue is 17.512917351904196	 mag: 1.4707
+Fvalue is 17.47660256606924
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	1025	628
+1	539	5541
+Micro F1:
+Class 0: 0.6372	Class 1: 0.9047	
+Macro F1:
+Class 0: 0.4461	Class 1: 0.7945	
+[Info]Training size: 0, adaptation size: 2451, and testing size: 7733
+[Info]Training size: 0, adaptation size: 2451, and testing size: 7733
+..*.*
+optimization finished, #iter = 33
+Objective value = -0.871408
+nSV = 1462
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	833	282
+1	731	5887
+Micro F1:
+Class 0: 0.6219	Class 1: 0.9208	
+Macro F1:
+Class 0: 0.4295	Class 1: 0.8379	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 85.120, max average length is 89.952.
+[Info]Start: 80, End: 90, (355/11733) users and 4831 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 1167, and testing size: 3664
+	 mag: 1340478.0979
+Fvalue is 596.3631625222779	 mag: 2537632.7751
+Fvalue is 344.0904558369078	 mag: 378100.1132
+Fvalue is 140.71756339003298	 mag: 56458.8431
+Fvalue is 80.37451161063488	 mag: 7852.0487
+Fvalue is 37.26352163671778	 mag: 388.3019
+Fvalue is 25.901442529949616	 mag: 885.9135
+Fvalue is 20.334901733679516	 mag: 1230.0508
+Fvalue is 16.624532810791568	 mag: 139.7119
+Fvalue is 12.886115668572458	 mag: 258824.9572
+Fvalue is 20.71057884332108	 mag: 748.0524
+Fvalue is 11.633817362457398	 mag: 10496.4846
+Fvalue is 15.166765603923361	 mag: 689.3133
+Fvalue is 10.82428484104377	 mag: 151.4615
+Fvalue is 10.023221320767606	 mag: 218.0385
+Fvalue is 9.144210616121512	 mag: 38.8358
+Fvalue is 8.990322210792907	 mag: 109.2269
+Fvalue is 8.742787754440291	 mag: 11654.2069
+Fvalue is 9.818479650864449	 mag: 142.5048
+Fvalue is 8.55736148718794	 mag: 9.0424
+Fvalue is 8.410876172359938	 mag: 130.9733
+Fvalue is 8.191554805865653	 mag: 89.6813
+Fvalue is 7.998249304931115	 mag: 31.2073
+Fvalue is 7.799448973091736	 mag: 61.3968
+Fvalue is 7.716414032826358	 mag: 0.8793
+Fvalue is 7.683522673970612	 mag: 0.9029
+Fvalue is 7.661040577420113	 mag: 3.8700
+Fvalue is 7.623279000039222	 mag: 1.5678
+Fvalue is 7.608069900782292
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	420	271
+1	301	2672
+Micro F1:
+Class 0: 0.5949	Class 1: 0.9033	
+Macro F1:
+Class 0: 0.4032	Class 1: 0.7608	
+[Info]Training size: 0, adaptation size: 1167, and testing size: 3664
+[Info]Training size: 0, adaptation size: 1167, and testing size: 3664
+.*
+optimization finished, #iter = 11
+Objective value = -0.388482
+nSV = 786
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	293	72
+1	428	2871
+Micro F1:
+Class 0: 0.5396	Class 1: 0.9199	
+Macro F1:
+Class 0: 0.3415	Class 1: 0.8299	
+Load 3071 2-gram features from ./data/CoLinAdapt/Yelp/SelectedVocab.csv...
+Average review length over all users is 94.651, max average length is 99.893.
+[Info]Start: 90, End: 100, (226/11733) users and 2395 reviews are loaded from ./data/CoLinAdapt/Yelp/Users...
+[Info]Feature group size 801
+[Info]Training size: 0, adaptation size: 579, and testing size: 1816
+	 mag: 410816.0125
+Fvalue is 276.3545649063694	 mag: 21190.2480
+Fvalue is 100.66772096797874	 mag: 1373.5256
+Fvalue is 23.714269959929904	 mag: 196.0576
+Fvalue is 13.959592913587633	 mag: 242.2623
+Fvalue is 11.558204214688892	 mag: 103.4826
+Fvalue is 6.656758429747477	 mag: 28.6984
+Fvalue is 5.908119680398908	 mag: 59.3486
+Fvalue is 5.185414127083057	 mag: 272614.8511
+Fvalue is 36.6545940835181	 mag: 7.9600
+Fvalue is 4.5186949117974	 mag: 5401.8891
+Fvalue is 8.92060164832729	 mag: 29.0285
+Fvalue is 3.833246466169149	 mag: 331.5969
+Fvalue is 3.704538844139007	 mag: 5.2204
+Fvalue is 3.503596889961153	 mag: 112.0549
+Fvalue is 3.3239500548368692	 mag: 78.4832
+Fvalue is 3.199415020311122	 mag: 9.4653
+Fvalue is 3.1404908751144758	 mag: 42.4961
+Fvalue is 3.104010148683086	 mag: 0.6069
+Fvalue is 3.087802957194805	 mag: 3.5052
+Fvalue is 3.043717469134171	 mag: 0.4675
+Fvalue is 2.9971248757142765	 mag: 0.6254
+Fvalue is 2.963294453323387	 mag: 0.9022
+Fvalue is 2.9384850884468108
+MT-LinAdaptWithSupUsr[dim:801,supDime:3072, eta1:0.500,eta2:1.000,lambda1:0.200,lambda2:0.200, personalized: true]
+Micro confusion matrix:
+	0	1
+0	244	137
+1	173	1262
+Micro F1:
+Class 0: 0.6115	Class 1: 0.8906	
+Macro F1:
+Class 0: 0.4379	Class 1: 0.7632	
+[Info]Training size: 0, adaptation size: 579, and testing size: 1816
+[Info]Training size: 0, adaptation size: 579, and testing size: 1816
+*.
+optimization finished, #iter = 10
+Objective value = -0.176901
+nSV = 442
+MT-SVM[mu:1.000,C:1.000,bias:true]
+Micro confusion matrix:
+	0	1
+0	132	45
+1	285	1354
+Micro F1:
+Class 0: 0.4444	Class 1: 0.8914	
+Macro F1:
+Class 0: 0.2874	Class 1: 0.8138	
