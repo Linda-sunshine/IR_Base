@@ -19,10 +19,11 @@ public class MTLinAdapt extends CoLinAdapt {
 
 	double[] m_A; // [A_0, A_1, A_2,..A_s] Transformation matrix shared by super user and individual users.
 
-	// feature grouping for super user
+	// feature grouping for super user (this could be different from individual users' feature grouping)
 	int m_dimSup;
 	int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	double[] m_sWeights; // Weights for the super user.
+	
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
@@ -52,7 +53,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdapt[dim:%d,supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized: %b]", 
+		return String.format("MT-LinAdapt[dim:%d,supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
 				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
 	}
 	
@@ -97,6 +98,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	void constructUserList(ArrayList<_User> userList) {
 		super.constructUserList(userList);
 		
+		m_A = _CoLinAdaptStruct.sharedA;
+		
 		// Init m_sWeights with global weights;
 		m_sWeights = new double[m_featureSize + 1];
 		m_sWeights = Arrays.copyOfRange(m_gWeights, 0, m_gWeights.length);
@@ -107,7 +110,6 @@ public class MTLinAdapt extends CoLinAdapt {
 		int vSize = 2*m_dim;
 		
 		constructUserList(userList);
-		
 		// initiate A_s with [1,1,1,..,0,0,0,...].
 		for(int i=m_userList.size()*vSize; i<m_userList.size()*vSize+m_dimSup; i++)
 			m_A[i] = 1;
@@ -149,6 +151,13 @@ public class MTLinAdapt extends CoLinAdapt {
 		return R1 - L;
 	}
 	
+	@Override
+	// Since I cannot access the method in LinAdapt or in RegLR, I Have to rewrite.
+	protected void calculateGradients(_AdaptStruct u){
+		gradientByFunc(u);
+		gradientByR1(u);
+	}
+	
 	// Calculate the R1 for the super user, As.
 	protected double calculateRs(){
 		int offset = m_userList.size()*m_dim*2; // Access the As.
@@ -167,13 +176,6 @@ public class MTLinAdapt extends CoLinAdapt {
 			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
 			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
 		}
-	}
-	
-	@Override
-	// Since I cannot access the method in LinAdapt or in RegLR, I Have to rewrite.
-	protected void calculateGradients(_AdaptStruct u){
-		gradientByFunc(u);
-		gradientByR1(u);
 	}
 	
 	// Gradients from loglikelihood, contributes to both individual user's gradients and super user's gradients.
@@ -213,7 +215,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	public double train() {
 		int[] iflag = { 0 }, iprint = { -1, 3 };
 		double fValue, oldFValue = Double.MAX_VALUE;
-		int vSize = 2 * m_dim * (m_userList.size()+1), displayCount = 0;
+		int vSize = getVSize(), displayCount = 0;
 		_LinAdaptStruct user;
 
 		initLBFGS();

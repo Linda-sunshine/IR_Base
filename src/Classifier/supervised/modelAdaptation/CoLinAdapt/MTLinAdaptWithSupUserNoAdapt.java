@@ -24,9 +24,9 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		m_p = 1;
-		m_q = 0;
-		m_beta = 1;
+		m_p = 1.0;
+		m_q = 1.0;
+		m_beta = 1.0;
 	}
 	
 	public void setWsWgCoefficients(double p, double q){
@@ -40,7 +40,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdaptWithSupUserNoAdpt[dim:%d,eta1:%.3f,eta2:%.3f,p:%.3f,q:%.3f,beta: %.3f,personalized:%b]", 
+		return String.format("MT-LinAdaptWithSupUserNoAdpt[dim:%d, eta1:%.3f,eta2:%.3f,p:%.3f,q:%.3f,beta:%.3f, personalized:%b]", 
 				m_dim, m_eta1, m_eta2, m_p, m_q, m_beta, m_personalized);
 	}
 	
@@ -48,6 +48,11 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 	public void loadUsers(ArrayList<_User> userList){
 		constructUserList(userList);
 		System.arraycopy(m_sWeights, 0, m_A, 2*m_dim*m_userList.size(), m_sWeights.length);
+	}
+	
+	@Override
+	int getVSize() {
+		return m_dim*2*m_userList.size() + m_gWeights.length;
 	}
 		
 	@Override

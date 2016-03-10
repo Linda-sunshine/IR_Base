@@ -281,7 +281,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-		System.out.println();
+		System.out.println("\n");
 		return Utils.sumOfArray(macroF1);
 	}
 

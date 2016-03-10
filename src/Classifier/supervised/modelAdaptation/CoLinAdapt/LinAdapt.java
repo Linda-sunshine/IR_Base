@@ -133,7 +133,7 @@ public class LinAdapt extends RegLR {
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		
 		int n, k; // feature index and feature group index		
-		int offset = getVSize()*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
 		if (m_LNormFlag)
 			delta /= getAdaptationSize(user);
@@ -155,7 +155,7 @@ public class LinAdapt extends RegLR {
 	@Override
 	protected void gradientByR1(_AdaptStruct u){
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		int offset = getVSize()*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++){
 			m_g[offset + k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)
