@@ -375,7 +375,7 @@ public class DocAnalyzer extends Analyzer {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
 			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);// construct bag-of-word vector based on normalized tokens	
 
-			if (sentence_vector.size()>0) {//avoid empty sentence	
+			if (sentence_vector.size()>2) {//avoid empty sentence	
 				String[] posTags;
 				if(m_tagger==null)
 					posTags = null;

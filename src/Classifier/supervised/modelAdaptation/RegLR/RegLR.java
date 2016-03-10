@@ -100,7 +100,10 @@ public class RegLR extends ModelAdaptation {
 			}
 		}
 		
-		return L/getAdaptationSize(user);
+		if (m_LNormFlag)
+			return L/getAdaptationSize(user);
+		else
+			return L;
 	}
 	
 	//Calculate the function value of the new added instance.
@@ -127,15 +130,17 @@ public class RegLR extends ModelAdaptation {
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n; // feature index
 		int offset = (m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
+		double delta = weight*(review.getYLabel() - logit(review.getSparse(), user));
+		if (m_LNormFlag)
+			delta /= getAdaptationSize(user);
 
 		//Bias term.
-		m_g[offset] -= weight*delta; //a[0] = w0*x0; x0=1
+		m_g[offset] -= delta; //a[0] = w0*x0; x0=1
 
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
-			m_g[offset + n] -= weight * delta * fv.getValue();
+			m_g[offset + n] -= delta * fv.getValue();
 		}
 	}
 	
