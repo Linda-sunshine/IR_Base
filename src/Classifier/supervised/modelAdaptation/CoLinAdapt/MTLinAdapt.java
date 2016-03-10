@@ -1,16 +1,13 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
@@ -19,8 +16,7 @@ import structures._SparseFeature;
 import structures._User;
 
 public class MTLinAdapt extends CoLinAdapt {
-
-	double[] m_A; // [A_0, A_1, A_2,..A_s] Transformation matrix shared by super user and individual users.
+double[] m_A; // [A_0, A_1, A_2,..A_s] Transformation matrix shared by super user and individual users.
 
 	// feature grouping for super user (this could be different from individual users' feature grouping)
 	int m_dimSup;
@@ -29,10 +25,6 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
-
-	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
-	boolean m_personalized; // If m_personalized = true, we will use personalized weights;
-							// else user weights = super user's weights.
 	
 	//this constructor will load feature group mapping for super user
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
@@ -41,9 +33,7 @@ public class MTLinAdapt extends CoLinAdapt {
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
 		
 		m_lambda1 = 0.5;
-		m_lambda2 = 1;
-		m_LNormFlag = true;
-		m_personalized = true;
+		m_lambda2 = 0.1;
 	}
 	
 	//this constructor will not construct feature group mapping for super user
@@ -53,10 +43,6 @@ public class MTLinAdapt extends CoLinAdapt {
 		
 		m_lambda1 = 0.5;
 		m_lambda2 = 0.1;
-	}
-	
-	public void setPersonlized(boolean b){
-		m_personalized = b;
 	}
 	
 	public void setRsTradeOffs(double lmd1, double lmd2){
@@ -223,9 +209,6 @@ public class MTLinAdapt extends CoLinAdapt {
 		}
 	}
 	
-	public int calcVSize(){
-		return 2 * m_dim * (m_userList.size()+1);
-	}
 	//this is batch training in each individual user
 	@Override
 	public double train() {
@@ -253,7 +236,7 @@ public class MTLinAdapt extends CoLinAdapt {
 				gradientByRs(); // Gradient from R^1(A_s)
 
 				gradientTest();
-
+				
 				if (m_displayLv == 2) {
 					System.out.print("Fvalue is " + fValue);
 				} else if (m_displayLv == 1) {
@@ -275,8 +258,7 @@ public class MTLinAdapt extends CoLinAdapt {
 		}
 
 		setPersonalizedModel();
-		return 0;
-//		return oldFValue;
+		return oldFValue;
 	}
 	
 	@Override
@@ -302,14 +284,9 @@ public class MTLinAdapt extends CoLinAdapt {
 					gid = m_featureGroupMap[1+n];
 					m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
 				}
-			} else{// Set super user == general user.
-				m_pWeights[0] = m_sWeights[0];
-				for(int n=0; n<m_featureSize; n++) {
-					m_pWeights[1+n] = m_sWeights[1+n];
-				}
-			}
-			ui.setPersonalizedModel(m_pWeights);
-
+				ui.setPersonalizedModel(m_pWeights);
+			} else 
+				ui.setPersonalizedModel(m_sWeights);
 		}
 	}
 	
@@ -345,51 +322,4 @@ public class MTLinAdapt extends CoLinAdapt {
 		return m_gWeights;
 	}
 
-	public void printWeights(String path) throws FileNotFoundException{
-		String light = String.format("%s_light.txt", path);
-		String medium = String.format("%s_medium.txt", path);
-		String heavy = String.format("%s_heavy.txt", path);
-		PrintWriter writerLight = new PrintWriter(new File(light));
-		PrintWriter writerMedium = new PrintWriter(new File(medium));
-		PrintWriter writerHeavy = new PrintWriter(new File(heavy));
-		PrintWriter writer;
-		_CoLinAdaptStruct ui;
-		int rvwSize = 0;
-		
-		//Update each user's personalized model.
-		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)m_userList.get(i);
-			rvwSize = ui.getUser().getReviewSize();
-
-			if(rvwSize <= 10)
-				writer = writerLight;
-			else if(rvwSize <= 50)
-				writer = writerMedium;
-			else
-				writer = writerHeavy;
-	
-			for(int j=m_dim*2*i; j<m_dim*2*(i+1); j++)
-				writer.write(m_A[j] + "\t");
-			writer.write("\n");
-		}
-		writerLight.close();
-		writerMedium.close();
-		writerHeavy.close();
-	}
-//	/***When we do feature selection, we will group features and store them in file. 
-//	 * The index is the index of features and the corresponding number is the group index number.***/
-//	public void loadFeatureGroupMap(String filename){
-//			
-//			m_featureGroupMap = new int[5000 + 1]; //One more term for bias, bias->0.
-//			m_dim = 0;
-//			//Group index starts from 0, so add 1 for it.
-//			for(int i=0; i<5000; i++) {
-//				m_featureGroupMap[i+1] = i+1;
-//				if (m_dim < m_featureGroupMap[i+1])
-//					m_dim = m_featureGroupMap[i+1];
-//			}
-//			m_dim = 5001;
-//			
-//			System.out.format("[Info]Feature group size %d\n", m_dim);
-//	}
 }

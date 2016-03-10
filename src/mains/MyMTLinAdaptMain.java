@@ -17,8 +17,7 @@ import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUserNoAdpt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUserNoAdapt;
 
 public class MyMTLinAdaptMain {
 	
@@ -105,9 +104,9 @@ public class MyMTLinAdaptMain {
 //		mtlinadaptsupnoadpt.test();
 //			}
 //		}
-		double lambda1 = 0.5, lambda2 = 1;
+		double lambda1 = 0.1, lambda2 = 0.7;
 		
-		MTLinAdapt mtlinadapt = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 //		mtlinadapt.setPersonlized(false);
 		mtlinadapt.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 		mtlinadapt.loadUsers(analyzer.getUsers());
