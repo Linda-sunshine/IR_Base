@@ -16,7 +16,7 @@ public class LinAdaptMain {
 		int lengthThreshold = 5; //Document length threshold
 		double trainRatio = 0, adaptRatio = 0.50;
 		int topKNeighbors = 20;
-		int displayLv = 0;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -67,7 +67,7 @@ public class LinAdaptMain {
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, null, null);
 
 		// Create an instance of MT-LinAdapt-SupUser
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
