@@ -4,8 +4,6 @@
 package structures;
 
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -16,12 +14,7 @@ public class _Stn {
 
 	//added by Renqin
 	public double[] m_topics;
-	public double[] m_topicSstat;
-	public _Word [] m_words;
-	public double[] m_xSstat;
-	Random m_rand;
 	int m_index; // position in the document
-	public int m_xSize;
 	
 	_SparseFeature[] m_x_sparse; // bag of words for a sentence
 	
@@ -46,8 +39,6 @@ public class _Stn {
 	// use in FastRestritedHMM.java for sentiment to decide sentiment switch 
 	int m_sentimentLabel = -1;
 	int m_predictedSentimentLabel = -1;
-	
-	HashMap<Integer, Double> m_childSimMap;
 
 	public _Stn(int index, _SparseFeature[] x, String[] rawTokens, String[] posTags, String rawSource) {
 		m_index = index;
@@ -73,81 +64,10 @@ public class _Stn {
 
 	// added by Renqin
 	//initial topic proportion
-	public void setTopicsVct4ThreePhi(int k, int xSize) {
-
-		m_topics = new double[k+1];
-		m_topicSstat = new double[k+1];
-		Arrays.fill(m_topics, 0);
-		Arrays.fill(m_topicSstat, 0);
-	
-		int stnSize = (int)getLength();
-		
-		if(m_words==null||m_words.length!=stnSize){
-			m_words = new _Word[stnSize];
-		}
-		
-		if(m_rand==null)
-			m_rand = new Random();
-		
-		m_xSize = xSize;
-		
-		if(m_xSstat==null){
-			m_xSstat = new double[m_xSize];
-		}
-		
-		int wIndex = 0, wid, tid, xid;
-		for(_SparseFeature fv:m_x_sparse){
-			wid = fv.getIndex();
-			for(int j=0; j<fv.getValue(); j++){
-				xid = m_rand.nextInt(m_xSize);
-				tid = 0;
-				if(xid==0){
-					tid = m_rand.nextInt(k);
-					m_topicSstat[tid] ++;
-					m_xSstat[xid] ++;
-				}else if(xid==1){
-					tid = k;
-					m_topicSstat[tid] ++;
-					m_xSstat[xid] ++;
-				}
-				
-				m_words[wIndex] = new _Word(wid, tid, xid);
-			
-				wIndex ++;
-			}
-		}
-		
-	}
-	
 	public void setTopicsVct(int k) {
-
 		m_topics = new double[k];
-		m_topicSstat = new double[k];
+
 		Arrays.fill(m_topics, 0);
-		Arrays.fill(m_topicSstat, 0);
-		
-		int stnSize = (int)getLength();
-		
-		if(m_words==null||m_words.length!=stnSize){
-			m_words = new _Word[stnSize];
-		}
-		
-		if(m_rand==null)
-			m_rand = new Random();
-		
-		int wIndex = 0, wid, tid;
-		for(_SparseFeature fv:m_x_sparse){
-			wid = fv.getIndex();
-			tid = 0;
-			for(int j=0; j<fv.getValue(); j++){
-				tid = m_rand.nextInt(k);
-				m_topicSstat[tid] ++;
-				m_words[wIndex] = new _Word(wid, tid);	
-				wIndex ++;
-			}
-				
-		}
-		
 	}
 	
 	public int getIndex() {
@@ -226,7 +146,6 @@ public class _Stn {
 		m_topic = i;
 	}
 	
-	
 	//annotate by all the words
 	public int AnnotateByKeyword(Set<Integer> keywords){
 		int count = 0;
@@ -236,22 +155,4 @@ public class _Stn {
 		}
 		return count;
 	}
-	
-	public void permuteStn(){
-		_Word t;
-		int s;
-		for(int i=m_words.length-1; i>1; i--) {
-			s = m_rand.nextInt(i);
-			
-			//swap the word
-			t = m_words[s];
-			m_words[s] = m_words[i];
-			m_words[i] = t;
-		}
-	}
-
-	public _Word[] getWords() {
-		return m_words;
-	}
-	
 }

@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
 import opennlp.tools.util.InvalidFormatException;
 
 public class ComparisonWithDiffUsersMain {
@@ -61,16 +61,16 @@ public class ComparisonWithDiffUsersMain {
 				
 				// Create instance of MTLinAdaptWithSupUsr
 				double lambda1 = 0.2, lambda2 = 0.4;
-				MTLinAdapt mtlinadapt = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
-				mtlinadapt.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
-				mtlinadapt.loadUsers(analyzer.getUsers());
-				mtlinadapt.setDisplayLv(displayLv);
-				mtlinadapt.setR1TradeOffs(eta1, eta2);
-				mtlinadapt.setRsTradeOffs(lambda1, lambda2);
+				MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+				mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
+				mtlinadaptsup.loadUsers(analyzer.getUsers());
+				mtlinadaptsup.setDisplayLv(displayLv);
+				mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+				mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 				
-				mtlinadapt.train();
-				mtlinadapt.test();
-				F1[i] = mtlinadapt.getPerf();
+				mtlinadaptsup.train();
+				mtlinadaptsup.test();
+				F1[i] = mtlinadaptsup.getPerf();
 			
 				System.out.format("%d users in testing.\n", size);
 				for(double f: F1[i])

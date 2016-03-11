@@ -14,6 +14,7 @@ import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
+import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
@@ -196,13 +197,12 @@ public class MyTopicModelMain {
 				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, mu);
+			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
+				double mu = 1.0;
+				double[] gamma = {2, 2};
+				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, converge, 
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}
-//				else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
-//				double mu = 1.0;
-//				double[] gamma = {2, 2};
-//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, converge, 
-//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
-//			}
 			
 			model.setDisplayLap(displayLap);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);

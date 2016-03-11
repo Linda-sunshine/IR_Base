@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -17,7 +18,7 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
+public class ParentChild_Gibbs extends LDA_Gibbs {
 	enum MatchPair {
 		MP_ChildDoc,
 		MP_ChildGlobal,
@@ -89,7 +90,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		return 0;
 	}
 	
-	protected void sampleInParentDoc(_ParentDoc d){
+	void sampleInParentDoc(_ParentDoc d){
 		int wid, tid;
 		double normalizedProb;		
 		
@@ -297,10 +298,10 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		double parentDocLength = d.m_parentDoc.getTotalDocLength()/m_mu, gTopic, lTopic;
 		// used to output the topK words and parameters
 		for (int k = 0; k < number_of_topics; k++) {		
-			lTopic = d.m_xTopicSstat[1][k] + d_alpha;
-			gTopic = d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k] / parentDocLength;
-			d.m_xTopics[1][k] += lTopic;
-			d.m_xTopics[0][k] += gTopic;
+			gTopic = d.m_xTopicSstat[1][k] + d_alpha;
+			lTopic = d.m_xTopicSstat[0][k] + d_alpha + d.m_parentDoc.m_sstat[k] / parentDocLength;
+			d.m_xTopics[1][k] += gTopic;
+			d.m_xTopics[0][k] += lTopic;
 			d.m_topics[k] += gTopic + lTopic; // this is just an approximation
 		}
 		
@@ -314,16 +315,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		super.estThetaInDoc(d);
 		if (d instanceof _ParentDoc){
 			// estimate topic proportion of sentences in parent documents
-//			((_ParentDoc) d).estStnTheta();
-			estParentStnTopicProportion((_ParentDoc) d);
+			((_ParentDoc) d).estStnTheta();
 		} else if (d instanceof _ChildDoc) {
 			((_ChildDoc) d).estGlobalLocalTheta();
 		}
 		m_statisticsNormalized = true;
-	}
-	
-	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		return;
 	}
 	
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
@@ -466,7 +462,17 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
-		initTest(sampleTestSet, pDoc);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc: ((_ParentDoc)pDoc).m_childDocs){
+			((_ChildDoc) cDoc).createXSpace(number_of_topics, m_gamma.length);
+			cDoc.setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+		}
 	
 		double logLikelihood = 0.0, count = 0;
 		int  iter = 0;
@@ -501,38 +507,27 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 				if(logLikelihood == 0)
 					logLikelihood = tempLogLikelihood;
 				else{
-
+//					double likelihood1 = Math.exp(tempLogLikelihood);
+//					double likelihood2 = Math.exp(logLikelihood);
+//					logLikelihood = Math.log(likelihood1+likelihood2);
 					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
 				}
+//					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
 			}
 		} while (++iter<this.number_of_iteration);
 
 		for(_Doc doc: sampleTestSet){
-			estThetaInDoc(doc);
+			if(doc instanceof _ParentDoc)
+				estThetaInDoc((_ParentDoc)doc);
+			else if(doc instanceof _ChildDoc)
+				estThetaInDoc((_ChildDoc)doc);
 		}
 		
 		return logLikelihood - Math.log(count); 	
 	}
 
-	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
-		_ParentDoc pDoc = (_ParentDoc)d;
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-		pDoc.setTopics4Gibbs(number_of_topics, 0);		
-		sampleTestSet.add(pDoc);
-		
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			((_ChildDoc) cDoc).createXSpace(number_of_topics, m_gamma.length);
-			cDoc.setTopics4Gibbs(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-		}
-	}
-
-	
-	// used to generate train and test data set 
+//	// used to generate train and test data set 
 //	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
-//		System.out.println("creating folder train test");
 //		String trainFilePrefix = "trainFolder"+k;
 //		String testFilePrefix = "testFolder"+k;
 //		
@@ -557,7 +552,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 //		outputFile.outputFiles(trainFilePrefix, trainCorpus);
 //		outputFile.outputFiles(testFilePrefix, testCorpus);
 //	}
-//
 
 	//used to print test parameter
 	public void printTestParameter(String parentParameterFile, String childParameterFile){
@@ -635,7 +629,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 		System.out.println("print top words");
 		for (_Doc d : m_trainSet) {
-//			loglikelihood += calculate_log_likelihood(d);
+			loglikelihood += calculate_log_likelihood(d);
 			for (int i = 0; i < number_of_topics; i++)
 				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
 						: d.m_topics[i];	
@@ -835,6 +829,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+//			System.err.print("para File Not Found");
 		}
 
 	}
@@ -899,22 +894,18 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = parentWordByTopicProb(k, index)*parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha);
-				wordLogLikelihood += wordPerTopicLikelihood;
-//				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, index))+Math.log(parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha));
+				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, index))+Math.log(parentTopicInDocProb(k, d)/(d.getTotalDocLength()+number_of_topics*d_alpha));
 				
-//				if(wordLogLikelihood == 0)
-//					wordLogLikelihood = wordPerTopicLikelihood;
-//				else
-//					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
+				if(wordLogLikelihood == 0)
+					wordLogLikelihood = wordPerTopicLikelihood;
+				else
+					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
 			}
 			
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
 				wordLogLikelihood += 1e-10;
 			}
-			
-			wordLogLikelihood = Math.log(wordLogLikelihood);
 
 			docLogLikelihood += value * wordLogLikelihood;
 		}

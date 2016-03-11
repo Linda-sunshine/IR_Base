@@ -51,13 +51,9 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	int getVSize() {
-		return 2*m_dim*m_userList.size();
-	}
-	
-	void constructUserList(ArrayList<_User> userList) {
+	public void loadUsers(ArrayList<_User> userList){	
 		int vSize = 2*m_dim;
-		
+	
 		//step 1: create space
 		m_userList = new ArrayList<_AdaptStruct>();		
 		for(int i=0; i<userList.size(); i++) {
@@ -67,7 +63,7 @@ public class CoLinAdapt extends LinAdapt {
 		m_pWeights = new double[m_gWeights.length];			
 		
 		//huge space consumption
-		_CoLinAdaptStruct.sharedA = new double[getVSize()];
+		_CoLinAdaptStruct.sharedA = new double[vSize*m_userList.size()];
 		
 		//step 2: copy each user's A to shared A in _CoLinAdaptStruct		
 		_CoLinAdaptStruct user;
@@ -75,21 +71,15 @@ public class CoLinAdapt extends LinAdapt {
 			user = (_CoLinAdaptStruct)m_userList.get(i);
 			System.arraycopy(user.m_A, 0, _CoLinAdaptStruct.sharedA, vSize*i, vSize);
 		}
-	}
-	
-	@Override
-	public void loadUsers(ArrayList<_User> userList){	
-		//step 1: construct the user list structures
-		constructUserList(userList);
 		
-		//step 2: construct neighborhood graph
+		//step 3: construct neighborhood graph
 		constructNeighborhood(m_sType);
 	}
 	
 	//this will be only called once in CoLinAdapt
 	@Override
 	protected void initLBFGS(){ 
-		int vSize = getVSize();
+		int vSize = 2*m_dim*m_userList.size();
 		
 		m_g = new double[vSize];
 		m_diag = new double[vSize];
@@ -170,6 +160,7 @@ public class CoLinAdapt extends LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
+		double oldMag = 0;
 		_LinAdaptStruct user;
 		
 		initLBFGS();
@@ -185,6 +176,12 @@ public class CoLinAdapt extends LinAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
+				
+				//added by Lin for stopping lbfgs.
+				double curMag = gradientTest();
+				if(Math.abs(oldMag -curMag)<0.1) 
+					break;
+				oldMag = curMag;
 				
 				if (m_displayLv==2) {
 					System.out.println("Fvalue is " + fValue);

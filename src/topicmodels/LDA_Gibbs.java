@@ -142,8 +142,7 @@ public class LDA_Gibbs extends pLSA {
 		}
 		
 		if (m_collectCorpusStats == false || m_converge>0)
-			return 0;
-//			return calculate_log_likelihood(d);
+			return calculate_log_likelihood(d);
 		else
 			return 1;
 	}

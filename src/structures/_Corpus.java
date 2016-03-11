@@ -1,3 +1,6 @@
+/**
+ * 
+ */
 package structures;
 
 import java.io.BufferedWriter;
@@ -20,7 +23,7 @@ public class _Corpus {
 	
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
 	ArrayList<String> m_features; //ArrayList for features
-	public HashMap<String, _stat> m_featureStat; //statistics about the features
+	HashMap<String, _stat> m_featureStat; //statistics about the features
 	boolean m_withContent = false; // by default all documents' content has been released
 	
 	public void setFeatureStat(HashMap<String, _stat> featureStat) {
