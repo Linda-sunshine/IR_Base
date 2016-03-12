@@ -31,7 +31,7 @@ public class ComparisonWithDiffUsersMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_1600.txt", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 		String folder = String.format("/if15/lg5bt/DataSigir/%s/", dataset);
 		
@@ -43,7 +43,7 @@ public class ComparisonWithDiffUsersMain {
 		for(int t=0; t<10; t++){
 			double[][] F1 = new double[24][4];
 			for(int i=0; i<F1.length; i++){
-				size = 400 * (i + 1); // 
+				size = 400 * (i + 1);
 				diffFolder = String.format("%sUsers_%d/Users_%d", folder, t+1, size);
 				analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 				analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -51,8 +51,9 @@ public class ComparisonWithDiffUsersMain {
 				analyzer.setFeatureValues("TFIDF-sublinear", 0);
 				HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 				
-				//Create the instance of MT-SVM
+//				//Create the instance of MT-SVM
 //				MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//				mtsvm.setPersonlized(false);
 //				mtsvm.loadUsers(analyzer.getUsers());
 //				mtsvm.setBias(true);
 //				mtsvm.train();
@@ -60,8 +61,9 @@ public class ComparisonWithDiffUsersMain {
 //				F1[i] = mtsvm.getPerf();
 				
 				// Create instance of MTLinAdaptWithSupUsr
-				double lambda1 = 0.2, lambda2 = 0.4;
+				double lambda1 = 0.1, lambda2 = 0.7;
 				MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+				mtlinadaptsup.setPersonlized(false);
 				mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 				mtlinadaptsup.loadUsers(analyzer.getUsers());
 				mtlinadaptsup.setDisplayLv(displayLv);
@@ -77,8 +79,8 @@ public class ComparisonWithDiffUsersMain {
 					System.out.format("%.4f\t", f);
 				System.out.println();
 			}
-//			filename = String.format("/if15/lg5bt/DataSigir/MTSVM/MTSVM_u_1_0.25_Users_%d.txt", t+1);
-			filename = String.format("/if15/lg5bt/DataSigir/MTLinAdaptSup/MTLinAdaptSup_0.25_Users_%d.txt", t+1);
+//			filename = String.format("/if15/lg5bt/DataSigir/MTSVM_u_1_Sup/MTSVM_sup_u_1_0.25_Users_%d.txt", t+1);
+			filename = String.format("/if15/lg5bt/DataSigir/MTLinAdaptSup/MTLinAdaptSup_800_0.1_0.7_Sup/MTLinAdaptSup_0.25_Users_%d.txt", t+1);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			for(int i=0; i<F1.length; i++)
 				writer.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\n", (i+1)*400, F1[i][0], F1[i][1], F1[i][2], F1[i][3]);

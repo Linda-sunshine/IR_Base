@@ -103,7 +103,7 @@ public class MTLinAdaptWithSupUserNoAdpt extends MTLinAdapt{
 	protected double calculateRs(){
 		double rs = 0;
 		for(int i=0; i < m_sWeights.length; i++)
-			rs += (getSupUserWeights(i) - m_gWeights[i])*(getSupUserWeights(i) - m_gWeights[i]);
+			rs += getSupUserWeights(i)*getSupUserWeights(i);
 		return rs * m_beta;
 	}
 	
@@ -142,7 +142,7 @@ public class MTLinAdaptWithSupUserNoAdpt extends MTLinAdapt{
 	protected void gradientByRs(){
 		int offset = m_userList.size() * m_dim * 2;
 		for(int i=0; i < m_sWeights.length; i++)
-			m_g[offset + i] += 2 * m_beta * (getSupUserWeights(i) - m_gWeights[i]);
+			m_g[offset + i] += 2 * m_beta * getSupUserWeights(i);
 	}
 	
 	@Override

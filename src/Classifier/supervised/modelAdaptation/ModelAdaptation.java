@@ -40,6 +40,13 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
 	protected double[] m_perf = new double[m_classNo * 2]; // Stores overall performance, micro F1 for both classes, macro F1 for both classes.
 	
+	protected boolean m_personalized = true; // If m_personalized = true, we will use personalized weights;
+							// else user weights = super user's weights.
+	
+	public void setPersonlized(boolean b){
+		m_personalized = b;
+	}
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		

@@ -26,8 +26,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
-	boolean m_personalized; // If m_personalized = true, we will use personalized weights;
-							// else user weights = super user's weights.
+	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
 	
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 						int topK, String globalModel, String featureGroupMap) {
@@ -35,15 +34,10 @@ public class MTLinAdapt extends CoLinAdapt {
 		m_lambda1 = 0.5;
 		m_lambda2 = 1;
 		m_LNormFlag = true;
-		m_personalized = true;
 	}
 	
 	public void setLNormFlag(boolean b){
 		m_LNormFlag = b;
-	}
-	
-	public void setPersonlized(boolean b){
-		m_personalized = b;
 	}
 	
 	public void setRsTradeOffs(double lmd1, double lmd2){
@@ -241,7 +235,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			System.out.println();
 		} catch (ExceptionWithIflag e) {
 			e.printStackTrace();
-			System.err.println("LBFGS fails.");
+			m_lbfgs = 0;
 		}
 
 		setPersonalizedModel();
@@ -325,6 +319,10 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	public double[] getGlobalWeights(){
 		return m_gWeights;
+	}
+	
+	public int getLBFGSFlag(){
+		return m_lbfgs;
 	}
 
 	public void printWeights(String path) throws FileNotFoundException{

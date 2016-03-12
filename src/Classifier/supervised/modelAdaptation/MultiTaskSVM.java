@@ -120,7 +120,8 @@ public class MultiTaskSVM extends ModelAdaptation {
 		double sign = class0 > 0 ? 1 : -1;
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
 		for(_AdaptStruct user:m_userList) {
-			if (user.getAdaptationSize()>0) {
+//			if (user.getAdaptationSize()>0) {
+			if(m_personalized){
 				for(int i=0; i<m_featureSize; i++) 
 					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
 				
