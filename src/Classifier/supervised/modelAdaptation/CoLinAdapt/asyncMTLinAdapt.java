@@ -1,41 +1,29 @@
-/**
- * 
- */
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
+import structures._PerformanceStat;
+import structures._Review;
+import structures._PerformanceStat.TestMode;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
-import structures._PerformanceStat;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
 
-/**
- * @author Hongning Wang
- * online learning of LinAdapt
- */
-public class asyncLinAdapt extends LinAdapt {
+public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
+
 	double m_initStepSize = 0.50;
 	
-	public asyncLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
-		
-		// all three test modes for asyncLinAdapt is possible, and default is online
-		m_testmode = TestMode.TM_online;
+	public asyncMTLinAdapt(int classNo, int featureSize,
+			HashMap<String, Integer> featureMap, int topK, String globalModel,
+			String featureGroupMap) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("asyncLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_eta1, m_eta2);
+		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f. lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2);
 	}
-	
-	public void setInitStepSize(double initStepSize) {
-		m_initStepSize = initStepSize;
-	}
-	
-	
+
 	//this is online training in each individual user
 	@Override
 	public double train(){
@@ -95,4 +83,5 @@ public class asyncLinAdapt extends LinAdapt {
 		for(_Review review:user.nextAdaptationIns())
 			gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
 	}
+	
 }

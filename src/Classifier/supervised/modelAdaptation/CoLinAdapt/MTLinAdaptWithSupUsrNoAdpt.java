@@ -15,13 +15,13 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  * in logit function, personalized weights are represented as:
  * A_i(p*w_s+q*w_g)^T*x_d
  */
-public class MTLinAdaptWithSupUserNoAdpt extends MTLinAdapt{
+public class MTLinAdaptWithSupUsrNoAdpt extends MTLinAdapt{
 
 	protected double m_p; // The coefficient in front of w_s.
 	protected double m_q; // The coefficient in front of w_g.
 	protected double m_beta; // The coefficient in front of R1(w_s)
 	
-	public MTLinAdaptWithSupUserNoAdpt(int classNo, int featureSize,
+	public MTLinAdaptWithSupUsrNoAdpt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
