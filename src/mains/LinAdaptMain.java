@@ -4,14 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
-<<<<<<< HEAD
-=======
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
->>>>>>> c8746bd07b3d2a796863897baad13a12d5c49034
 import opennlp.tools.util.InvalidFormatException;
-import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -19,14 +14,10 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-<<<<<<< HEAD
-		double trainRatio = 0, adaptRatio = .50;
-=======
 		//this is for batch mode
 //		double trainRatio = 0, adaptRatio = 0.50;
 		//this is for online mode
 		double trainRatio = 0, adaptRatio = 1.0;
->>>>>>> c8746bd07b3d2a796863897baad13a12d5c49034
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -50,27 +41,17 @@ public class LinAdaptMain {
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 //		//Create an instance of asyncLinAdapt model.
-<<<<<<< HEAD
-//		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-=======
 //		asyncLinAdapt adaptationOnline = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instance of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
->>>>>>> c8746bd07b3d2a796863897baad13a12d5c49034
 		
 //		//Create an instance of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
-<<<<<<< HEAD
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
-=======
 //		asyncCoLinAdaptFirstOrder adaptationOnline = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
 //				featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
->>>>>>> c8746bd07b3d2a796863897baad13a12d5c49034
 
 		//Create an instance of Regularized LogitReg model.
 //		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
@@ -107,16 +88,8 @@ public class LinAdaptMain {
 		String svdFile = "./data/CoLinAdapt/Amazon_SVD_Scaled.mm";
 		analyzer.loadSVDFile(svdFile);
 		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
-		*/
-		
-<<<<<<< HEAD
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-//		adaptation.setTestMode(TestMode.TM_batch);
-//		adaptation.setR1TradeOff(eta1);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-=======
+		*/		
+
 		//batch mode test
 //		adaptation.loadUsers(analyzer.getUsers());
 //		adaptation.setDisplayLv(displayLv);
@@ -128,7 +101,6 @@ public class LinAdaptMain {
 //		
 //		adaptation.train();
 //		adaptation.test();
->>>>>>> c8746bd07b3d2a796863897baad13a12d5c49034
 		
 		//online mode test
 		adaptationOnline.loadUsers(analyzer.getUsers());
