@@ -31,7 +31,7 @@ import utils.Utils;
  */
 public abstract class ModelAdaptation extends BaseClassifier {
 	protected ArrayList<_AdaptStruct> m_userList; // references to the users	
-	int m_userSize; // valid user size
+	protected int m_userSize; // valid user size
 	
 	protected double[] m_gWeights; //global model weight
 	protected double[] m_pWeights; // cache for personalized weight

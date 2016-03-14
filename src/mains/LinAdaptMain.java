@@ -14,9 +14,12 @@ public class LinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
+		//this is for batch mode
 		double trainRatio = 0, adaptRatio = 0.50;
+		//this is for online mode
+//		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
-		int displayLv = 2;
+		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		double eta1 = 0.5, eta2 = 0.5, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -38,7 +41,7 @@ public class LinAdaptMain {
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 //		//Create an instance of asyncLinAdapt model.
-//		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+//		asyncLinAdapt adaptationOnline = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instance of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -47,7 +50,7 @@ public class LinAdaptMain {
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
+//		asyncCoLinAdaptFirstOrder adaptationOnline = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), 
 //				featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 
 		//Create an instance of Regularized LogitReg model.
@@ -67,7 +70,7 @@ public class LinAdaptMain {
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, null, null);
+		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		// Create an instance of MT-LinAdapt-SupUser
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -76,6 +79,9 @@ public class LinAdaptMain {
 //		MultiTaskSVM adaptation = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		adaptation.setBias(true);
 		
+		//Create an instance of asynchronized MT-LinAdapt model.
+//		asyncMTLinAdapt adaptationOnline = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
 		int fDim = 3; // xij contains <bias, bow, svd_sim>
@@ -84,6 +90,7 @@ public class LinAdaptMain {
 		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
 		*/
 		
+		//batch mode test
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(true);
@@ -94,6 +101,17 @@ public class LinAdaptMain {
 		
 		adaptation.train();
 		adaptation.test();
-//		adaptation.saveModel("data/results/colinadapt/models");
+		
+		//online mode test
+//		adaptationOnline.loadUsers(analyzer.getUsers());
+//		adaptationOnline.setDisplayLv(displayLv);
+//		adaptationOnline.setLNormFlag(true);
+////		adaptation.setR1TradeOff(eta1);
+////		adaptation.setTestMode(TestMode.TM_batch);
+//		adaptationOnline.setR1TradeOffs(eta1, eta2);
+//		adaptationOnline.setR2TradeOffs(eta3, eta4);
+//		
+//		adaptationOnline.train();
+//		adaptationOnline.test();
 	}
 }
