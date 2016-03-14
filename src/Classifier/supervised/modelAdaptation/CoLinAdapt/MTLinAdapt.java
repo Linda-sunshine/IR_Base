@@ -46,7 +46,8 @@ public class MTLinAdapt extends CoLinAdapt {
 		m_lambda2 = 0.1;
 	}
 	
-	public void setRsTradeOffs(double lmd1, double lmd2){
+	@Override
+	public void setR2TradeOffs(double lmd1, double lmd2){
 		m_lambda1 = lmd1;
 		m_lambda2 = lmd2;
 	}
