@@ -102,7 +102,7 @@ public class MTLinAdapt extends CoLinAdapt {
 		
 		// Init m_sWeights with global weights;
 		m_sWeights = new double[m_featureSize + 1];
-		m_sWeights = Arrays.copyOfRange(m_gWeights, 0, m_gWeights.length);
+		System.arraycopy(m_gWeights, 0, m_sWeights, 0, m_gWeights.length);;
 	}
 	
 	@Override
@@ -139,8 +139,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	//Calculate the function value of the new added instance.
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u){
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-		double L = calcLogLikelihood(ui); //log likelihood.
+		double L = calcLogLikelihood(u); //log likelihood.
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;	
 		
 		//Add regularization parts.
 		double R1 = 0;
@@ -238,6 +238,7 @@ public class MTLinAdapt extends CoLinAdapt {
 
 				if (m_displayLv == 2) {
 					System.out.print("Fvalue is " + fValue);
+					gradientTest();
 				} else if (m_displayLv == 1) {
 					if (fValue < oldFValue)
 						System.out.print("o");
@@ -249,7 +250,7 @@ public class MTLinAdapt extends CoLinAdapt {
 				}
 				oldFValue = fValue;
 
-				LBFGS.lbfgs(vSize, 5, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
+				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-5, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
 			System.out.println();
 		} catch (ExceptionWithIflag e) {
@@ -275,13 +276,10 @@ public class MTLinAdapt extends CoLinAdapt {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			if (m_personalized) {
-				//set bias term
-				m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
-				
 				//set the other features
-				for(int n=0; n<m_featureSize; n++) {
-					gid = m_featureGroupMap[1+n];
-					m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+				for(int n=0; n<=m_featureSize; n++) {
+					gid = m_featureGroupMap[n];
+					m_pWeights[n] = ui.getScaling(gid) * m_sWeights[n] + ui.getShifting(gid);
 				}
 				ui.setPersonalizedModel(m_pWeights);
 			} else 
@@ -291,25 +289,25 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	protected double gradientTest() {
-		int vSize = 2*m_dim, offset, offsetSup, uid;
+		int vSize = 2*m_dim, offset, offsetSup;
 		double magA = 0, magB = 0;
 		for(int n=0; n<m_userList.size(); n++) {
-			uid = n*vSize;
+			offset = n*vSize;
 			for(int i=0; i<m_dim; i++){
-				offset = uid + i;
-				magA += m_g[offset]*m_g[offset];
-				magB += m_g[offset+m_dim]*m_g[offset+m_dim];
+				magA += m_g[offset+i]*m_g[offset+i];
+				magB += m_g[offset+m_dim+i]*m_g[offset+m_dim+i];
 			}
 		}
 
+		double magASup = 0, magBSup = 0;
 		offsetSup = vSize * m_userList.size();
 		for(int i=0; i<m_dimSup; i++){
-			magA += m_g[offsetSup] * m_g[offsetSup];
-			magB += m_g[offsetSup+m_dimSup] * m_g[offsetSup + m_dimSup];
+			magASup += m_g[offsetSup+i] * m_g[offsetSup+i];
+			magBSup += m_g[offsetSup+m_dimSup+i] * m_g[offsetSup + m_dimSup+i];
 		}
 		
 		if (m_displayLv==2)
-			System.out.format("\t mag: %.4f\n", magA + magB);
+			System.out.format("\tuser(%.4f,%.4f), super user(%.4f,%.4f)\n", magA, magB, magASup, magBSup);
 		return magA + magB;
 	}
 	
