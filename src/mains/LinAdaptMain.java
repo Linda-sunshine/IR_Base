@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LinAdaptMain {
@@ -15,9 +15,9 @@ public class LinAdaptMain {
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		//this is for batch mode
-		double trainRatio = 0, adaptRatio = 0.50;
+//		double trainRatio = 0, adaptRatio = 0.50;
 		//this is for online mode
-//		double trainRatio = 0, adaptRatio = 1.0;
+		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -70,7 +70,7 @@ public class LinAdaptMain {
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+//		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		// Create an instance of MT-LinAdapt-SupUser
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -80,7 +80,7 @@ public class LinAdaptMain {
 //		adaptation.setBias(true);
 		
 		//Create an instance of asynchronized MT-LinAdapt model.
-//		asyncMTLinAdapt adaptationOnline = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+		asyncMTLinAdapt adaptationOnline = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
@@ -91,27 +91,27 @@ public class LinAdaptMain {
 		*/
 		
 		//batch mode test
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(true);
-//		adaptation.setR1TradeOff(eta1);
-//		adaptation.setTestMode(TestMode.TM_batch);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		
-		adaptation.train();
-		adaptation.test();
-		
-		//online mode test
-//		adaptationOnline.loadUsers(analyzer.getUsers());
-//		adaptationOnline.setDisplayLv(displayLv);
-//		adaptationOnline.setLNormFlag(true);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setLNormFlag(true);
 ////		adaptation.setR1TradeOff(eta1);
 ////		adaptation.setTestMode(TestMode.TM_batch);
-//		adaptationOnline.setR1TradeOffs(eta1, eta2);
-//		adaptationOnline.setR2TradeOffs(eta3, eta4);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 //		
-//		adaptationOnline.train();
-//		adaptationOnline.test();
+//		adaptation.train();
+//		adaptation.test();
+		
+		//online mode test
+		adaptationOnline.loadUsers(analyzer.getUsers());
+		adaptationOnline.setDisplayLv(displayLv);
+		adaptationOnline.setLNormFlag(true);
+//		adaptation.setR1TradeOff(eta1);
+//		adaptation.setTestMode(TestMode.TM_batch);
+		adaptationOnline.setR1TradeOffs(eta1, eta2);
+		adaptationOnline.setR2TradeOffs(eta3, eta4);
+		
+		adaptationOnline.train();
+		adaptationOnline.test();
 	}
 }
