@@ -32,6 +32,7 @@ public class _User {
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
 		m_userID = userID;
 		m_reviews = reviews;
+		m_classNo = classNo;
 
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
@@ -60,11 +61,14 @@ public class _User {
 		return false;
 	}
 	
-	public void setModel(double[] weight, int classNo, int featureSize) {
-		m_pWeight = new double[weight.length];
+	public void initModel(int featureSize) {
+		m_pWeight = new double[featureSize];
+	}
+	
+	public void setModel(double[] weight) {
+		initModel(weight.length);
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
-		m_classNo = classNo;
-		m_featureSize = featureSize;
+		m_featureSize = weight.length;
 	}
 	
 	public double[] getPersonalizedModel() {

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package Classifier.semisupervised.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.HashMap;
 
@@ -23,7 +23,9 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	
 	@Override
-	protected void calculateGradients(_LinAdaptStruct user){
+	protected void calculateGradients(_AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
+		
 		super.calculateGradients(user);
 		if (m_neighborsHistoryWeight>0)
 			cachedGradientByNeighorsFunc(user, m_neighborsHistoryWeight);
