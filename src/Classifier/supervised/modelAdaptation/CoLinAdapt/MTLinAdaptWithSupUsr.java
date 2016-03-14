@@ -291,7 +291,7 @@ public class MTLinAdaptWithSupUsr extends MTLinAdapt {
 		}
 		
 		if (m_displayLv==2)
-			System.out.format("\t mag: %.4f\n", magA + magB);
+			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
 		return magA + magB;
 	}
 }

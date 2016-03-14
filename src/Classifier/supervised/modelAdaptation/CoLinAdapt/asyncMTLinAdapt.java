@@ -21,9 +21,24 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 	
 	@Override
 	public String toString() {
-		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f. lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2);
+		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f. lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2);
 	}
 
+	// We use the whole vector to store the gradient, which is shared among all users.
+	@Override
+	protected void initLBFGS(){ 
+		int vSize = 2*m_dim*m_userList.size() + m_dimSup*2;
+		
+		m_g = new double[vSize];
+		m_diag = new double[vSize];
+	}
+	
+	protected void calculateGradients(_AdaptStruct u){
+		gradientByFunc(u);
+		gradientByR1(u);
+		gradientByRs();
+	}
+	
 	//this is online training in each individual user
 	@Override
 	public double train(){
@@ -31,12 +46,12 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
-		_LinAdaptStruct user;
+		_CoLinAdaptStruct user;
 		
 		initLBFGS();
 		init();
 		for(int i=0; i<m_userList.size(); i++) {
-			user = (_LinAdaptStruct)m_userList.get(i);
+			user = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
@@ -58,9 +73,8 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 					else
 						System.out.print("x");
 				}
-				
 				//gradient descent
-				asyncRegLR.gradientDescent(user, m_initStepSize, m_g);
+				gradientDescent(user, m_initStepSize, 1.0);
 				gNormOld = gNorm;
 			}
 			
@@ -84,4 +98,17 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 			gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
 	}
 	
+	// update this current user only
+	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
+		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
+		int offset = 2 * m_dim * user.getId();
+		for (int k = 0; k < m_dim; k++) {
+			a = user.getScaling(k) - stepSize * m_g[offset + k];
+			user.setScaling(k, a);
+
+			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
+			user.setShifting(k, b);
+		}
+		user.incUpdatedCount(inc);
+	}
 }

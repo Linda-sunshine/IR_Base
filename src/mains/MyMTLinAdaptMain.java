@@ -13,6 +13,7 @@ import structures._RankItem;
 import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
+import Classifier.supervised.IndividualSVM;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
@@ -21,7 +22,9 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsrNoAdpt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
 
 public class MyMTLinAdaptMain {
 	
@@ -35,8 +38,9 @@ public class MyMTLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-//		double eta1 = 1, eta2 = 0.9;
-		double eta1 = 0.5, eta2 = 1, eta3 = 0.50, eta4 = 1, neighborsHistoryWeight = 0.5;
+		// Best performance for mt-linadapt.
+		double eta1 = 2, eta2 = 0.7, eta3 = 0.1, eta4 = 0.7, lambda1 = 0.5, lambda2 = 1;
+//		double eta1 = 1, eta2 = 0.5, eta3 = 1, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -56,7 +60,6 @@ public class MyMTLinAdaptMain {
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-//		analyzer.setRvwLenghRange(start, end);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -64,17 +67,25 @@ public class MyMTLinAdaptMain {
 		// Create an instances of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
-		 // Create an instances of LinAdapt model.
-		 LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+		// Create an instances of LinAdapt model.
+//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 
+		// Create an instance of MTCoLinAdapt model.
+//		double lambda1 = 0.5, lambda2 = 1;
+//		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		//adaptation.setTestMode(TestMode.TM_batch);
-		adaptation.setR1TradeOffs(eta1, eta2);
+//		// Create an instance of asyncMTLinAdapt.
+//		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		adaptation.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
+//		
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);
-		adaptation.train();
-		adaptation.test();
+////		adaptation.setRsTradeOffs(lambda1, lambda2);
+//		adaptation.train();
+//		adaptation.test();
 		
 		//Create the instance of MTLinAdapt.
 //		double lambda1 = 0.1, lambda2 = 0.5;
@@ -99,6 +110,7 @@ public class MyMTLinAdaptMain {
 //		mtlinadaptsupnoadpt.train();
 //		mtlinadaptsupnoadpt.test();
 		
+//		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
 //		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 //		//mtlinadaptsup.setPersonlized(false);
 //		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
@@ -120,6 +132,13 @@ public class MyMTLinAdaptMain {
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
+		
+		// Create the instance of individual SVM.
+		IndividualSVM indsvm = new IndividualSVM(classNumber, analyzer.getFeatureSize());
+		indsvm.loadUsers(analyzer.getUsers());
+//		indsvm.setBias(false);
+		indsvm.train();
+		indsvm.test();
 		
 		// Create the instance of MTCoLinAdapt.
 //		MTCoLinAdapt mtcolinadapt = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);

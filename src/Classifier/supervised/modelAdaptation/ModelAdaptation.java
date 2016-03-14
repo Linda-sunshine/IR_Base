@@ -47,6 +47,10 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		m_personalized = b;
 	}
 	
+	public ModelAdaptation(int classNo, int featureSize) {
+		super(classNo, featureSize);
+		m_pWeights = null;
+	}
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
