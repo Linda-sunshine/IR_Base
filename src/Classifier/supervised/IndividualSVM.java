@@ -30,7 +30,7 @@ public class IndividualSVM extends ModelAdaptation {
 	
 	@Override
 	public String toString() {
-		return String.format("MT-SVM[C:%.3f,bias:%b]", m_C, m_bias);
+		return String.format("Individual-SVM[C:%.3f,bias:%b]", m_C, m_bias);
 	}
 
 	@Override
