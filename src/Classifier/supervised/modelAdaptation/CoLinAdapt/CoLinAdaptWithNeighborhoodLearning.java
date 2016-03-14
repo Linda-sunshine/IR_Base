@@ -89,7 +89,7 @@ public class CoLinAdaptWithNeighborhoodLearning extends CoLinAdapt {
 			// Traverse all neighbors.
 			for(_RankItem nit: ui.getNeighbors()){
 				// Construct the training instance.
-				m_xijs[m_topK * i + j] = constructXij(ui.m_user, m_userList.get(nit.m_index).m_user);
+				m_xijs[m_topK * i + j] = constructXij(ui.getUser(), m_userList.get(nit.m_index).getUser());
 				j++;
 			}
 		}

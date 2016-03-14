@@ -10,7 +10,6 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
@@ -31,6 +30,12 @@ public class MultiTaskSVM extends ModelAdaptation {
 		m_testmode = TestMode.TM_batch;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("MT-SVM[mu:%.3f,C:%.3f,bias:%b]", m_u, m_C, m_bias);
+	}
+	
+	@Override
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) 
@@ -104,15 +109,15 @@ public class MultiTaskSVM extends ModelAdaptation {
 	protected void setPersonalizedModel() {
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term
 		int class0 = m_libModel.getLabels()[0];
-		double sign = class0 > 0 ? 1 : -1;
+		double sign = class0 > 0 ? 1 : -1, block=m_personalized?1:0;//disable personalized model when required
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
 		for(_AdaptStruct user:m_userList) {
 			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
-					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + block*weight[userOffset+i]);
 				
 				if (m_bias) {
-					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
+					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + block*weight[userOffset+m_featureSize]);
 					userOffset += m_featureSize+1;
 				} else
 					userOffset += m_featureSize;

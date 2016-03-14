@@ -87,8 +87,7 @@ public class _Doc implements Comparable<_Doc> {
 	public double[] m_sstat;//i.e., \gamma in variational inference p(\theta|\gamma)
 	
 	// structure only used by Gibbs sampling to speed up the sampling process
-	public int[] m_words; 
-	public int[] m_topicAssignment;
+	_Word[] m_words; 
 	
 	// structure only used by variational inference
 	public double[][] m_phi; // p(z|w, \phi)	
@@ -103,7 +102,6 @@ public class _Doc implements Comparable<_Doc> {
 		m_topics = null;
 		m_sstat = null;
 		m_words = null;
-		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -119,7 +117,6 @@ public class _Doc implements Comparable<_Doc> {
 		m_topics = null;
 		m_sstat = null;
 		m_words = null;
-		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -213,6 +210,10 @@ public class _Doc implements Comparable<_Doc> {
 			values[i] = m_x_sparse[i].m_value;
 		
 		return values;
+	}
+	
+	public _Word[] getWords() {
+		return m_words;
 	}
 	
 	//return the unique number of features in the doc
@@ -338,8 +339,7 @@ public class _Doc implements Comparable<_Doc> {
 		}
 	}
 	
-	//create necessary structure to accelerate Gibbs sampling
-	public void setTopics4Gibbs(int k, double alpha) {
+	void createSpace(int k, double alpha) {
 		if (m_topics==null || m_topics.length!=k) {
 			m_topics = new double[k];
 			m_sstat = new double[k];
@@ -350,21 +350,24 @@ public class _Doc implements Comparable<_Doc> {
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
 		int docSize = getTotalDocLength();
 		if (m_words==null || m_words.length != docSize) {
-			m_topicAssignment = new int[docSize];
-			m_words = new int[docSize];
+			m_words = new _Word[docSize];
 		} 
 		
-		int wIndex = 0;
 		if (m_rand==null)
 			m_rand = new Random();
+	}
+	
+	//create necessary structure to accelerate Gibbs sampling
+	public void setTopics4Gibbs(int k, double alpha) {
+		createSpace(k, alpha);
 		
-		int wid;
+		int wIndex = 0, wid, tid;
 		for(_SparseFeature fv:m_x_sparse) {
 			wid = fv.getIndex();
-			for(int j=0; j<fv.getValue(); j++) {				
-				m_words[wIndex] = wid;
-				m_topicAssignment[wIndex] = m_rand.nextInt(k); // randomly initializing the topics inside a document
-				m_sstat[m_topicAssignment[wIndex]] ++; // collect the topic proportion
+			for(int j=0; j<fv.getValue(); j++) {
+				tid = m_rand.nextInt(k);
+				m_words[wIndex] = new _Word(wid, tid);// randomly initializing the topics inside a document
+				m_sstat[tid] ++; // collect the topic proportion
 				
 				wIndex ++;
 			}
@@ -373,7 +376,8 @@ public class _Doc implements Comparable<_Doc> {
 	
 	//permutation the order of words for Gibbs sampling
 	public void permutation() {
-		int s, t;
+		_Word t;
+		int s;
 		for(int i=m_words.length-1; i>1; i--) {
 			s = m_rand.nextInt(i);
 			
@@ -381,11 +385,6 @@ public class _Doc implements Comparable<_Doc> {
 			t = m_words[s];
 			m_words[s] = m_words[i];
 			m_words[i] = t;
-			
-			//swap the topic assignment
-			t = m_topicAssignment[s];
-			m_topicAssignment[s] = m_topicAssignment[i];
-			m_topicAssignment[i] = t;
 		}
 	}
 	

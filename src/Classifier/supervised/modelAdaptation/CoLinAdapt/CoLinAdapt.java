@@ -7,7 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct.SimType;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._PerformanceStat.TestMode;
@@ -34,6 +35,11 @@ public class CoLinAdapt extends LinAdapt {
 		// the only possible test modes for CoLinAdapt is batch mode
 		m_testmode = TestMode.TM_batch;
 	}
+	
+	@Override
+	public String toString() {
+		return String.format("CoLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
+	}
 
 	public void setR2TradeOffs(double eta3, double eta4) {
 		m_eta3 = eta3;
@@ -45,9 +51,13 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	public void loadUsers(ArrayList<_User> userList){	
-		int vSize = 2*m_dim;
+	int getVSize() {
+		return 2*m_dim*m_userList.size();
+	}
 	
+	void constructUserList(ArrayList<_User> userList) {
+		int vSize = 2*m_dim;
+		
 		//step 1: create space
 		m_userList = new ArrayList<_AdaptStruct>();		
 		for(int i=0; i<userList.size(); i++) {
@@ -57,7 +67,7 @@ public class CoLinAdapt extends LinAdapt {
 		m_pWeights = new double[m_gWeights.length];			
 		
 		//huge space consumption
-		_CoLinAdaptStruct.sharedA = new double[vSize*m_userList.size()];
+		_CoLinAdaptStruct.sharedA = new double[getVSize()];
 		
 		//step 2: copy each user's A to shared A in _CoLinAdaptStruct		
 		_CoLinAdaptStruct user;
@@ -65,77 +75,34 @@ public class CoLinAdapt extends LinAdapt {
 			user = (_CoLinAdaptStruct)m_userList.get(i);
 			System.arraycopy(user.m_A, 0, _CoLinAdaptStruct.sharedA, vSize*i, vSize);
 		}
-		
-		//step 3: construct neighborhood graph
-		constructNeighborhood();
 	}
-	
-	void constructNeighborhood() {
-		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		
-		for(int k=0; k<numberOfCores; ++k){
-			threads.add((new Thread() {
-				int core, numOfCores;
-				public void run() {
-					_CoLinAdaptStruct ui, uj;
-					try {
-						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-							ui = (_CoLinAdaptStruct)(m_userList.get(i+core));
-							for(int j=0; j<m_userList.size(); j++) {
-								if (j == i+core)
-									continue;
-								uj = (_CoLinAdaptStruct)(m_userList.get(j));
-								
-								ui.addNeighbor(j, ui.getSimilarity(uj, m_sType));
-//								ui.addNeighbor(j, Math.random());
-							}
-						}
-					} catch(Exception ex) {
-						ex.printStackTrace(); 
-					}
-				}
-				
-				private Thread initialize(int core, int numOfCores) {
-					this.core = core;
-					this.numOfCores = numOfCores;
-					return this;
-				}
-			}).initialize(k, numberOfCores));
-			
-			threads.get(k).start();
-		}
-		
-		for(int k=0;k<numberOfCores;++k){
-			try {
-				threads.get(k).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} 
-		}
 
-		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_userList.size());
+	@Override
+	public void loadUsers(ArrayList<_User> userList){	
+		//step 1: construct the user list structures
+		constructUserList(userList);
+		
+		//step 2: construct neighborhood graph
+		constructNeighborhood(m_sType);
 	}
 	
 	//this will be only called once in CoLinAdapt
 	@Override
 	protected void initLBFGS(){ 
-		int vSize = 2*m_dim*m_userList.size();
+		int vSize = getVSize();
 		
 		m_g = new double[vSize];
 		m_diag = new double[vSize];
 	}
 	
 	@Override
-	protected double calculateFuncValue(_AdaptStruct u) {
-		_LinAdaptStruct ui = (_LinAdaptStruct)u;
-		
-		double fValue = super.calculateFuncValue(ui), R2 = 0, diffA, diffB;
+	protected double calculateFuncValue(_AdaptStruct u) {		
+		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
 		
 		//R2 regularization
-		_LinAdaptStruct uj;
-		for(_RankItem nit:((_CoLinAdaptStruct)ui).getNeighbors()) {
-			uj = (_LinAdaptStruct)m_userList.get(nit.m_index);
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		for(_RankItem nit:ui.getNeighbors()) {
+			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
 			diffB = 0;
 			for(int k=0; k<m_dim; k++) {
@@ -149,21 +116,19 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected void calculateGradients(_AdaptStruct u){
-		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		
-		super.calculateGradients(user);
-		gradientByR2(user);
+		super.calculateGradients(u);
+		gradientByR2(u);
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
-	protected void gradientByR2(_LinAdaptStruct user){		
+	protected void gradientByR2(_AdaptStruct user){		
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)user, uj;
-		int offseti = m_dim*2*ui.m_id, offsetj;
+		int offseti = m_dim*2*ui.getId(), offsetj;
 		double coef, dA, dB;
 		
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			offsetj = m_dim*2*uj.m_id;
+			offsetj = m_dim*2*uj.getId();
 			coef = 2 * nit.m_value;
 			
 			for(int k=0; k<m_dim; k++) {
@@ -205,7 +170,6 @@ public class CoLinAdapt extends LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = 2*m_dim*m_userList.size(), displayCount = 0;
-		double oldMag = 0;
 		_LinAdaptStruct user;
 		
 		initLBFGS();
@@ -221,12 +185,6 @@ public class CoLinAdapt extends LinAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
-				
-				//added by Lin for stopping lbfgs.
-				double curMag = gradientTest();
-				if(Math.abs(oldMag -curMag)<0.1) 
-					break;
-				oldMag = curMag;
 				
 				if (m_displayLv==2) {
 					System.out.println("Fvalue is " + fValue);

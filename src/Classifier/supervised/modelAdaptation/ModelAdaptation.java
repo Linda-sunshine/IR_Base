@@ -11,13 +11,15 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
+import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
@@ -29,7 +31,7 @@ import utils.Utils;
  */
 public abstract class ModelAdaptation extends BaseClassifier {
 	protected ArrayList<_AdaptStruct> m_userList; // references to the users	
-	int m_userSize; // valid user size
+	protected int m_userSize; // valid user size
 	
 	protected double[] m_gWeights; //global model weight
 	protected double[] m_pWeights; // cache for personalized weight
@@ -37,11 +39,18 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
 
+	//if we will set the personalized model to the target user (otherwise use the global model)
+	protected boolean m_personalized;
+
+	// Decide if we will normalize the likelihood.
+	protected boolean m_LNormFlag;
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
 		loadGlobalModel(featureMap, globalModel);
 		m_pWeights = null;
+		m_personalized = true;
 	}
 	
 	public void setDisplayLv(int level) {
@@ -50,6 +59,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public void setTestMode(TestMode mode) {
 		m_testmode = mode;
+	}
+	
+	public void setPersonalization(boolean p) {
+		m_personalized = p;
+	}	
+	
+	public void setLNormFlag(boolean b){
+		m_LNormFlag = b;
 	}
 	
 	//Load global model from file.
@@ -84,6 +101,90 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	}
 	
 	abstract public void loadUsers(ArrayList<_User> userList);
+	
+	protected void constructNeighborhood(final SimType sType) {
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				
+				@Override
+				public void run() {
+					CoAdaptStruct ui, uj;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							ui = (CoAdaptStruct)m_userList.get(i+core);
+							for(int j=0; j<m_userList.size(); j++) {
+								if (j == i+core)
+									continue;
+								uj = (CoAdaptStruct)(m_userList.get(j));
+								
+								ui.addNeighbor(j, ui.getSimilarity(uj, sType));
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+
+		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", sType, m_userList.size());
+	}
+	
+	protected int[] constructReverseNeighborhood() {
+		int adaptSize = 0;//total number of adaptation instances
+		
+		//construct the reverse link
+		CoAdaptStruct ui, uj;
+		for(int i=0; i<m_userList.size(); i++) {
+			ui = (CoAdaptStruct)(m_userList.get(i));
+			for(_RankItem nit:ui.getNeighbors()) {
+				uj = (CoAdaptStruct)(m_userList.get(nit.m_index));//uj is a neighbor of ui
+				
+				uj.addReverseNeighbor(i, nit.m_value);
+			}
+			adaptSize += ui.getAdaptationSize();
+		}
+		
+		//construct the order of online updating
+		ArrayList<_RankItem> userorder = new ArrayList<_RankItem>();
+		for(int i=0; i<m_userList.size(); i++) {
+			ui = (CoAdaptStruct)(m_userList.get(i));
+			
+			for(_Review r:ui.getReviews()) {//reviews in each user is already ordered by time
+				if (r.getType() == rType.ADAPTATION) {
+					userorder.add(new _RankItem(i, r.getTimeStamp()));//to be in ascending order
+				}
+			}
+		}
+		
+		Collections.sort(userorder);
+		
+		int[] userOrder = new int[adaptSize];
+		for(int i=0; i<adaptSize; i++)
+			userOrder[i] = userorder.get(i).m_index;
+		return userOrder;
+	}
+	
 	
 	@Override
 	protected void init(){
@@ -172,13 +273,15 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
+		
+		System.out.println(toString());
 		calcMicroPerfStat();
 		
 		// macro average
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-		System.out.println();
+		System.out.println("\n");
 		return Utils.sumOfArray(macroF1);
 	}
 

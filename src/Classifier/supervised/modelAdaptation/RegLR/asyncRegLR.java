@@ -6,7 +6,7 @@ package Classifier.supervised.modelAdaptation.RegLR;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.CoLinAdapt._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
@@ -27,7 +27,7 @@ public class asyncRegLR extends RegLR {
 	}
 	
 	public static double getStepSize(double initStepSize, _AdaptStruct user) {
-		return (0.1+0.9*Math.random()) * initStepSize/(2.0+user.getUpdateCount());
+		return (0.5+0.5*Math.random()) * initStepSize/(2.0+user.getUpdateCount());
 	}
 	
 	public void setInitStepSize(double initStepSize) {

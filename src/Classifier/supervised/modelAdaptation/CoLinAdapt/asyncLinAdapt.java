@@ -6,6 +6,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
@@ -23,6 +24,11 @@ public class asyncLinAdapt extends LinAdapt {
 		
 		// all three test modes for asyncLinAdapt is possible, and default is online
 		m_testmode = TestMode.TM_online;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("asyncLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_eta1, m_eta2);
 	}
 	
 	public void setInitStepSize(double initStepSize) {

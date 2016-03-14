@@ -5,6 +5,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._RankItem;
 import structures._Review;
 
@@ -23,9 +24,12 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	
 	@Override
-	protected void calculateGradients(_AdaptStruct u){
-		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		
+	public String toString() {
+		return String.format("asyncCoLinAdaptFirstOrder[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
+	}
+	
+	@Override
+	protected void calculateGradients(_AdaptStruct user){		
 		super.calculateGradients(user);
 		if (m_neighborsHistoryWeight>0)
 			cachedGradientByNeighorsFunc(user, m_neighborsHistoryWeight);
@@ -33,7 +37,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	}
 	 
 	//Calculate the reweighted gradients from neighbors' historical observations
-	protected void cachedGradientByNeighorsFunc(_LinAdaptStruct user, double weight){		
+	protected void cachedGradientByNeighorsFunc(_AdaptStruct user, double weight){		
 		_CoLinAdaptStruct uj, ui = (_CoLinAdaptStruct)user;
 
 		for(_RankItem nit:ui.getNeighbors()) {
@@ -52,7 +56,7 @@ public class asyncCoLinAdaptFirstOrder extends asyncCoLinAdapt {
 	@Override
 	void gradientByR2(_CoLinAdaptStruct ui, _CoLinAdaptStruct uj, double sim) {
 		double coef = 2 * sim, dA, dB;
-		int offseti = m_dim*2*ui.m_id, offsetj = m_dim*2*uj.m_id;
+		int offseti = m_dim*2*ui.getId(), offsetj = m_dim*2*uj.getId();
 		
 		for(int k=0; k<m_dim; k++) {
 			dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));

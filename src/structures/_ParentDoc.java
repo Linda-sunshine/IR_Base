@@ -9,6 +9,7 @@ public class _ParentDoc extends _Doc {
 
 	public ArrayList<_ChildDoc> m_childDocs;
 	HashMap<Integer, Integer> m_word2Index;
+	
 
 	public _ParentDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
@@ -34,11 +35,8 @@ public class _ParentDoc extends _Doc {
 	}
 	
 	public void collectTopicWordStat() {
-		int wid, tid;
-		for (int n = 0; n < m_words.length; n++) {
-			wid = m_words[n];
-			tid = m_topicAssignment[n];
-			m_phi[m_word2Index.get(wid)][tid]++;
+		for (_Word w:m_words) {
+			m_phi[m_word2Index.get(w.getIndex())][w.getTopic()]++;
 		}
 	}
 	

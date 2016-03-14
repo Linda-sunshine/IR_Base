@@ -30,14 +30,13 @@ public abstract class TopicModel {
 	//smoothing parameter for p(w|z, \beta)
 	protected double d_beta; 	
 	
-	protected boolean m_display; // output EM iterations
+	protected int m_displayLap; // output EM iterations for every lap iterations (negative and zero means no verbose display)
 	protected boolean m_collectCorpusStats; // if we will collect corpus-level statistics (for efficiency purpose)
 	
 	protected boolean m_multithread = false; // by default we do not use multi-thread mode
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
-	public PrintWriter infoWriter;
 	public PrintWriter summaryWriter;
 	public PrintWriter debugWriter;
 	
@@ -48,7 +47,7 @@ public abstract class TopicModel {
 		this.d_beta = beta;
 		this.m_corpus = c;
 		
-		m_display = true; // by default we will track EM iterations
+		m_displayLap = 0; // by default we will not verbosely track EM iterations
 	}
 	
 	@Override
@@ -56,8 +55,8 @@ public abstract class TopicModel {
 		return "Topic Model";
 	}
 	
-	public void setDisplay(boolean disp) {
-		m_display = disp;
+	public void setDisplayLap(int lap) {
+		m_displayLap = lap;
 	}
 	
 	public void setNewEggLoadInTrain(boolean flag){
@@ -70,15 +69,6 @@ public abstract class TopicModel {
 	
 	public void setRandomFold(boolean flag){
 		m_randomFold = flag;
-	}
-	
-	public void setInforWriter(String path){
-		System.out.println("Info File Path: "+ path);
-		try{
-			infoWriter = new PrintWriter(new File(path));
-		}catch(Exception e){
-			System.err.println(path+" Not found!!");
-		}
 	}
 	
 	public void setSummaryWriter(String path){
@@ -99,12 +89,7 @@ public abstract class TopicModel {
 		}
 	}
 	
-	public void closeWriter(){
-		if(infoWriter!=null){
-			infoWriter.flush();
-			infoWriter.close();
-		}
-		
+	public void closeWriter(){		
 		if(summaryWriter!=null){
 			summaryWriter.flush();
 			summaryWriter.close();
@@ -230,13 +215,16 @@ public abstract class TopicModel {
 	}
 
 	public void EM() {	
+		System.out.format("Starting %s...\n", toString());
+		
 		long starttime = System.currentTimeMillis();
 		
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
-		double delta, last = calculate_log_likelihood(), current;
-		int  i = 0;
+//		double delta, last = calculate_log_likelihood(), current;
+		double delta=0, last=0, current=0;
+		int i = 0, displayCount = 0;
 		do {
 			init();
 			
@@ -250,7 +238,7 @@ public abstract class TopicModel {
 			
 			calculate_M_step(i);
 			
-			if (m_converge>0)
+			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6))//required to display log-likelihood
 				current += calculate_log_likelihood();//together with corpus-level log-likelihood
 			
 			if (i>0)
@@ -259,17 +247,16 @@ public abstract class TopicModel {
 				delta = 1.0;
 			last = current;
 			
-			if (m_display && i%10==0) {
-				if (m_converge>0){
+			if (m_displayLap>0 && i%m_displayLap==0) {
+				if (m_converge>0) {
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-				}else {
+				} else {
 					System.out.print(".");
-					infoWriter.print(".");
-					if (i%200==190){
-						System.out.println();
-						infoWriter.print("\n");
+					if (displayCount > 6){
+						System.out.format("\t%d:%.3f\n", i, current);
+//						displayCount = 0;
 					}
+					displayCount ++;
 				}
 			}
 			
@@ -281,13 +268,12 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
-		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 
 	public double Evaluation() {
 		m_collectCorpusStats = false;
 		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
-		
+		double totalWords = 0.0;
 		if (m_multithread) {
 			multithread_inference();
 			System.out.println("In thread");
@@ -296,22 +282,26 @@ public abstract class TopicModel {
 				perplexity += worker.getPerplexity();
 			}
 		} else {
+			
 			System.out.println("In Normal");
 			for(_Doc d:m_testSet) {				
 				loglikelihood = inference(d);
 				sumLikelihood += loglikelihood;
-				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
+				perplexity += loglikelihood;
+				totalWords += d.getTotalDocLength();
+//				perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 			}
 			
 		}
-		perplexity /= m_testSet.size();
+//		perplexity /= m_testSet.size();
+		perplexity /= totalWords;
+		perplexity = Math.exp(-perplexity);
 		sumLikelihood /= m_testSet.size();
 		
 		if(this instanceof HTSM)
 			calculatePrecisionRecall();
 
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
-		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		
 		return perplexity;
 	}
@@ -350,16 +340,13 @@ public abstract class TopicModel {
 		}
 		
 		System.out.println("Confusion Matrix");
-		infoWriter.println("Confusion Matrix");
 		for(int i=0; i<2; i++)
 		{
 			for(int j=0; j<2; j++)
 			{
 				System.out.print(precision_recall[i][j]+",");
-				infoWriter.print(precision_recall[i][j]+",");
 			}
 			System.out.println();
-			infoWriter.println();
 		}
 		
 		double pros_precision = (double)precision_recall[0][0]/(precision_recall[0][0] + precision_recall[1][0]);
@@ -370,16 +357,13 @@ public abstract class TopicModel {
 		double cons_recall = (double)precision_recall[1][1]/(precision_recall[1][0] + precision_recall[1][1]);
 		
 		System.out.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
-		infoWriter.println("pros_precision:"+pros_precision+" pros_recall:"+pros_recall);
 		System.out.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
-		infoWriter.println("cons_precision:"+cons_precision+" cons_recall:"+cons_recall);
 		
 		
 		double pros_f1 = 2/(1/pros_precision + 1/pros_recall);
 		double cons_f1 = 2/(1/cons_precision + 1/cons_recall);
 		
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
-		infoWriter.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
 		
@@ -393,8 +377,7 @@ public abstract class TopicModel {
 		int amazonRatingCount[] = {0,0,0,0,0};
 		
 		int newEggRatingCount[] = {0,0,0,0,0};
-		int newEggTrainsetRatingCount[] = {0,0,0,0,0};
-		
+		int newEggTrainsetRatingCount[] = {0,0,0,0,0};		
 		
 		if(m_randomFold==true){
 			perf = new double[k];
@@ -437,9 +420,7 @@ public abstract class TopicModel {
 				}
 			}
 			System.out.println("Total New Egg Doc:"+totalNewqEggDoc);
-			infoWriter.println("Total New Egg Doc:"+totalNewqEggDoc);
 			System.out.println("Total Amazon Doc:"+ totalAmazonDoc);
-			infoWriter.println("Total Amazon Doc:"+ totalAmazonDoc);
 			
 			int amazonTrainSize = 0;
 			int amazonTestSize = 0;
@@ -486,27 +467,20 @@ public abstract class TopicModel {
 				}
 			}
 			
-			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
-			infoWriter.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);
-			
+			System.out.println("Neweeg Train Size: "+newEggTrainSize+" test Size: "+newEggTestSize);			
 			System.out.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
-			infoWriter.println("Amazon Train Size: "+amazonTrainSize+" test Size: "+amazonTestSize);
 			
 			for(int i=0; i<amazonTrainsetRatingCount.length; i++){
 				System.out.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
-				infoWriter.println("Rating ["+i+"] and Amazon TrainSize:"+amazonTrainsetRatingCount[i]+" and newEgg TrainSize:"+newEggTrainsetRatingCount[i]);
 			}
 	
 			System.out.println("Combined Train Set Size "+m_trainSet.size());
-			infoWriter.println("Combined Train Set Size "+m_trainSet.size());
 			System.out.println("Combined Test Set Size "+m_testSet.size());
-			infoWriter.println("Combined Test Set Size "+m_testSet.size());
 			
 			long start = System.currentTimeMillis();
 			EM();
 			perf[0] = Evaluation();
 			System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-			infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 			
 		}
 		//output the performance statistics
@@ -515,9 +489,5 @@ public abstract class TopicModel {
 			var += (perf[i]-mean) * (perf[i]-mean);
 		var = Math.sqrt(var/k);
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
-		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
-		
-		infoWriter.flush();
-		infoWriter.close();
 	}	
 }

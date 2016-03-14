@@ -199,24 +199,7 @@ public abstract class Analyzer {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 
-		if (fValue.equals("TF")){
-			//the original feature is raw TF
-			for (int i = 0; i < docs.size(); i++) {
-				_Doc temp = docs.get(i);
-				_SparseFeature[] sfs = temp.getSparse();
-				double avgIDF = 0;
-				for (_SparseFeature sf : sfs) {
-					String featureName = m_featureNames.get(sf.getIndex());
-					_stat stat = m_featureStat.get(featureName);
-					double DF = Utils.sumOfArray(stat.getDF());
-					double IDF = Math.log((N + 1) / DF);
-					avgIDF += IDF;
-				}
-				
-				//compute average IDF
-				temp.setAvgIDF(avgIDF/sfs.length);
-			}
-		} else if (fValue.equals("TFIDF")) {
+		if (fValue.equals("TFIDF")) {
 			for (int i = 0; i < docs.size(); i++) {
 				_Doc temp = docs.get(i);
 				_SparseFeature[] sfs = temp.getSparse();
@@ -308,9 +291,25 @@ public abstract class Analyzer {
 				temp.setAvgIDF(avgIDF/sfs.length);
 			}
 		} else {
-			//The default value is just keeping the raw count of every feature.
-			System.out.println("No feature value is set, keep the raw count of every feature.");
+			System.out.println("No feature value is set, keep the raw count of every feature in setFeatureValues().");
+			//the original feature is raw TF
+			for (int i = 0; i < docs.size(); i++) {
+				_Doc temp = docs.get(i);
+				_SparseFeature[] sfs = temp.getSparse();
+				double avgIDF = 0;
+				for (_SparseFeature sf : sfs) {
+					String featureName = m_featureNames.get(sf.getIndex());
+					_stat stat = m_featureStat.get(featureName);
+					double DF = Utils.sumOfArray(stat.getDF());
+					double IDF = Math.log((N + 1) / DF);
+					avgIDF += IDF;
+				}
+				
+				//compute average IDF
+				temp.setAvgIDF(avgIDF/sfs.length);
+			}
 		}
+
 		
 		//rank the documents by product and time in all the cases
 		//Collections.sort(m_corpus.getCollection());
@@ -321,7 +320,7 @@ public abstract class Analyzer {
 			for(_Doc d:docs)			
 				Utils.L2Normalization(d.getSparse());
 		} else {
-			System.out.println("No normalizaiton is adopted here or wrong parameters!!");
+			System.out.println("No normalizaiton is adopted here or wrong parameters in setFeatureValues()!");
 		}
 		
 		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());

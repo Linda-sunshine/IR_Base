@@ -113,6 +113,23 @@ public class Utils {
 		return sum;
 	}
 	
+	public static int indexOf(_SparseFeature[] vct, double wid) {
+		int start = 0, end = vct.length-1, mid=0;
+		do {
+			mid = (start+end)/2;
+			if (vct[start].getIndex() > wid || vct[end].getIndex() < wid)
+				return -1; //out of range
+			else if (vct[mid].getIndex() > wid)
+				end = mid-1;
+			else if (vct[mid].getIndex() < wid)
+				start = mid + 1;
+			else
+				return mid;		
+			
+		} while (end>=start);
+		return -1;
+	}
+	
 	public static double entropy(double[] prob, boolean logScale) {
 		double ent = 0;
 		for(double p:prob) {
@@ -192,6 +209,15 @@ public class Utils {
 	
 	public static double L2Norm(double[] a) {
 		return Math.sqrt(dotProduct(a,a));
+	}
+	
+	public static double L2Norm(double[] a, double[] b) {
+		if (a.length != b.length)
+			return Double.NaN;
+		double diff=0;
+		for(int i=0; i<a.length; i++)
+			diff += (a[i]-b[i])*(a[i]-b[i]);
+		return diff;
 	}
 	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
@@ -381,6 +407,35 @@ public class Utils {
 			_SparseFeature temp2 = spVct2[pointer2];
 			if (temp1.getIndex() == temp2.getIndex()) {
 				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+	
+	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
+		if (spVct1L2==0 || spVct2L2==0)
+			return 0;
+		else
+			return calculateSimilarity_values(spVct1, spVct2) / spVct1L2 / spVct2L2;
+	}
+	
+	public static double calculateSimilarity_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValues()[0] * temp2.getValues()[0];
 				pointer1++;
 				pointer2++;
 			} else if (temp1.getIndex() > temp2.getIndex())
