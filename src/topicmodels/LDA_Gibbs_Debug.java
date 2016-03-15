@@ -15,9 +15,11 @@ import java.util.Random;
 import java.util.Map.Entry;
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
+import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
+import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
@@ -442,10 +444,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		int topKChild = 10;
 		for (_Doc d : m_trainSet) {
 			printTopicAssignment(d, topicFolder);
-			if(d instanceof _ParentDoc){
-				printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
-				printTopKStn4Child(topKStn, (_ParentDoc)d, childTopKStnFolder);
-			}
+//			if(d instanceof _ParentDoc){
+//				printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
+//				printTopKStn4Child(topKStn, (_ParentDoc)d, childTopKStnFolder);
+//			}
 		}
 
 		String parentParameterFile = filePrefix + "parentParameter.txt";
@@ -456,6 +458,9 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(similarityFile);
 		printEntropy(filePrefix);
+		printTopKChild4Parent(filePrefix, topKChild);
+		printTopKChild4Stn(filePrefix, topKChild);
+		printTopKStn4Child(filePrefix, topKStn);
 	}
 
 	void discoverSpecificComments(String similarityFile) {
@@ -491,11 +496,9 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 	}
 	
-
 	double computeSimilarity(double[] topic1, double[] topic2) {
 		return Utils.cosine(topic1, topic2);
 	}
-	
 	
 	public void printTopicAssignment(_Doc d, File topicFolder) {
 	//	System.out.println("printing topic assignment parent documents");
@@ -521,7 +524,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 
-	
 	public void printParameter(String parentParameterFile, String childParameterFile){
 		System.out.println("printing parameter");
 		try{
@@ -576,7 +578,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 	
-	
 	protected void printEntropy(String filePrefix){
 		String entropyFile = filePrefix+"entropy.txt";
 		boolean logScale = true;
@@ -611,7 +612,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return logLikelihood;
 	}
 	
-	
 	protected double docLogLikelihoodByIntegrateTopics(_Doc d){
 		
 		double docLogLikelihood = 0.0;
@@ -636,8 +636,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		
 		return docLogLikelihood;
 	}
-	
-	
+		
 	//comment is a query, retrieve stn by topical similarity
 	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){
 
@@ -788,6 +787,137 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 				e.printStackTrace();
 			}
 		}
+	}
+
+	protected double rankChild4ParentByLikelihood(_ChildDoc cDoc, _ParentDoc pDoc){
+
+		int cDocLen = cDoc.getTotalDocLength();
+		_SparseFeature[] fv = pDoc.getSparse();
+		
+		double docLogLikelihood = 0;
+		for(_SparseFeature i: fv){
+			int wid = i.getIndex();
+			double value = i.getValue();
+			
+			double wordLogLikelihood = 0;
+			
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+						
+			docLogLikelihood += value*Math.log(wordLogLikelihood);
+		}
+	
+		return docLogLikelihood;	
+	}
+	
+	public void printTopKChild4Parent(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.print(pDoc.getName()+"\t");
+					
+					for(_ChildDoc cDoc:pDoc.m_childDocs){
+						double docLogLikelihood = rankChild4ParentByLikelihood(cDoc, pDoc);
+				
+						pw.print(cDoc.getName()+":"+docLogLikelihood+"\t");
+						
+					}
+					
+					pw.println();
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void printTopKChild4Stn(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
+					
+					for(_Stn stnObj:pDoc.getSentences()){
+						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
+							
+				
+						int i=0;
+						pw.print((stnObj.getIndex()+1)+"\t");
+						
+						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
+//							if(i==topK)
+//								break;
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+							i++;
+						}
+						pw.println();		
+				
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	protected void printTopKStn4Child(String filePrefix, int topK){
+		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
+					
+					for(_ChildDoc cDoc: pDoc.m_childDocs){
+						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
+						int i = 0;
+						
+						pw.print(cDoc.getName()+"\t");
+						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
+//							if(i==topK)
+//								break;
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+							i++;
+						}
+						pw.println();
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 }

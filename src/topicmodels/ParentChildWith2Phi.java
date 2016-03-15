@@ -1,12 +1,12 @@
 package topicmodels;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Map;
 
-import java.util.HashMap;
 import structures._ChildDoc;
 import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
@@ -16,21 +16,21 @@ import structures._ParentDoc4ThreePhi;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
+import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
-public class ParentChildWith3Phi extends ParentChild_Gibbs{
-
+public class ParentChildWith2Phi extends ParentChild_Gibbs{
 	public double[] m_childTopicProbCache;
 	public double[] m_gammaParent; // 2 dimensions in parent
-	public double[] m_gammaChild; // 3 dimensions in child
+	public double[] m_gammaChild; // 2 dimensions in child
 	
-	public ParentChildWith3Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ParentChildWith2Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild, double mu) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu);
 		// TODO Auto-generated constructor stub
 		
 		m_topicProbCache = new double[number_of_topics+1];
-		m_childTopicProbCache = new double[number_of_topics+2];
+		m_childTopicProbCache = new double[number_of_topics+1];
 		
 		m_gammaParent = new double[gammaParent.length];
 		m_gammaChild = new double[gammaChild.length];
@@ -262,7 +262,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			normalizedProb = 0;
 			double pLambdaZero = childXInDocProb(0, doc);
 			double pLambdaOne = childXInDocProb(1, doc);
-			double pLambdaTwo = childXInDocProb(2, doc);
 			
 			double pWordTopic = 0;
 			for(tid=0; tid<number_of_topics; tid++){
@@ -276,11 +275,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			
 			pWordTopic = childParentWordByTopicProb(wid, pDoc);
 			m_childTopicProbCache[tid] = pWordTopic*pLambdaOne;
-			normalizedProb += m_childTopicProbCache[tid];
-			
-			pWordTopic = childLocalWordByTopicProb(wid, doc);
-			tid ++;
-			m_childTopicProbCache[tid] = pWordTopic*pLambdaTwo;
 			normalizedProb += m_childTopicProbCache[tid];
 			
 			normalizedProb *= m_rand.nextDouble();
@@ -313,13 +307,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 				doc.m_parentWord ++;
 				pDoc.m_pairWord ++;
 				pDoc.m_pairWordTopicSstat[wid] ++;
-			}else if(tid==(number_of_topics+1)){
-				xid = 2;
-				w.setX(xid);
-				w.setTopic(tid);
-				doc.m_localWord ++;
-				doc.m_localTopicSstat++;
-				doc.m_localWordTopicSstat[wid] ++;
 			}
 			
 			
@@ -331,16 +318,11 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			return m_gammaChild[xid] + d.m_globalWord;
 		else if(xid==1)
 			return m_gammaChild[xid] + d.m_parentWord;
-		else
-			return m_gammaChild[xid] + d.m_localWord;
+		return 0;
 	}
 	
 	protected double childParentWordByTopicProb(int wid, _ParentDoc4ThreePhi pDoc){
 		return pDoc.m_pairWordTopicSstat[wid]/pDoc.m_pairWord;
-	}
-	
-	protected double childLocalWordByTopicProb(int wid, _ChildDoc4ThreePhi d){
-		return d.m_localWordTopicSstat[wid]/d.m_localTopicSstat;
 	}
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){
@@ -410,6 +392,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			}
 		}
 	}
+
 	
 	protected double calculate_log_likelihood(){
 		double corpusLogLikelihood = 0;//how could we get the corpus-level likelihood?
@@ -424,53 +407,28 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		_ParentDoc4ThreePhi d = (_ParentDoc4ThreePhi)doc;
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
-		double gammaLen = Utils.sumOfArray(m_gammaParent);
-		
+
 		for (int j = 0; j < fv.length; j++) {
-			int wid = fv[j].getIndex();
+			int index = fv[j].getIndex();
 			double value = fv[j].getValue();
 
 			double wordLogLikelihood = 0;
-			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = Math.log(parentWordByTopicProb(k, wid))+Math.log(parentTopicInDocProb(k, d))
-						-Math.log(d.m_globalWord+number_of_topics*d_alpha)+Math.log(parentXInDocProb(0, d))-Math.log(d.getTotalDocLength()+gammaLen);
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = parentWordByTopicProb(k, index)*parentTopicInDocProb(k, d)/(d.m_globalWord+number_of_topics*d_alpha)*parentXInDocProb(0, d)/(d.getTotalDocLength()+m_gammaParent[0]+m_gammaParent[1]);
+				wordLogLikelihood += wordPerTopicLikelihood;
 				
-				if(wordLogLikelihood==0)
-					wordLogLikelihood = wordPerTopicLikelihood;
-				else
-					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
 			}
 			
-			double wordPerTopicLikelihood = Math.log(localParentWordByTopicProb(wid, d))+Math.log(parentXInDocProb(1, d))
-								-Math.log(d.getTotalDocLength()+gammaLen);
+			wordLogLikelihood += localParentWordByTopicProb(index, d)*parentXInDocProb(1, d)/(d.getTotalDocLength()+m_gammaParent[0]+m_gammaParent[1]);
 			
-			wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
-			
-			docLogLikelihood += value*wordLogLikelihood;
+			if(Math.abs(wordLogLikelihood) < 1e-10){
+				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += value * wordLogLikelihood;
 		}
-			
-//			for (int k = 0; k < number_of_topics; k++) {				
-//				double wordPerTopicLikelihood = parentWordByTopicProb(k, wid)*parentTopicInDocProb(k, d)/(d.m_globalWord+number_of_topics*d_alpha)*parentXInDocProb(0, d)/(d.getTotalDocLength()+gammaLen);
-//
-//				wordLogLikelihood += wordPerTopicLikelihood;
-//				if (Double.isInfinite(wordLogLikelihood)){	
-//					System.out.println("wordLogLikelihood\t"+wordLogLikelihood+"\t"+wordPerTopicLikelihood);
-//				}
-//				
-//			}
-//			
-//			double wordPerTopicLikelihood = localParentWordByTopicProb(wid, d)*parentXInDocProb(1, d)/(d.getTotalDocLength()+gammaLen);
-//			wordLogLikelihood += wordPerTopicLikelihood;
-////			wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
-//			
-////			if(Math.abs(wordLogLikelihood) < 1e-10){
-////				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
-////				wordLogLikelihood += 1e-10;
-////			}
-//
-//			wordLogLikelihood = Math.log(wordLogLikelihood);
-//			docLogLikelihood += value * wordLogLikelihood;
-//		}
 
 		return docLogLikelihood;
 	}
@@ -478,10 +436,11 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc doc) {
 		_ChildDoc4ThreePhi d = (_ChildDoc4ThreePhi) doc;
 		double docLogLikelihood = 0.0;
-
+		
+		double totalGamma = Utils.sumOfArray(m_gammaChild);
+		
 		// prepare compute the normalizers
 		_SparseFeature[] fv = d.getSparse();
-		double gammaLen = Utils.sumOfArray(m_gammaChild);
 		
 		for (int i=0; i<fv.length; i++) {
 			int wid = fv[i].getIndex();
@@ -490,14 +449,12 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			double wordLogLikelihood = 0;
 			
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(0, d)/(d.getTotalDocLength()+gammaLen);
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(0, d)/(d.getTotalDocLength()+totalGamma);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
-			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(1, d)/(d.getTotalDocLength()+gammaLen);
-			
-			wordLogLikelihood += childLocalWordByTopicProb(wid, d)*childXInDocProb(2, d)/(d.getTotalDocLength()+gammaLen);
-			
+			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(1, d)/(d.getTotalDocLength()+totalGamma);
+						
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
 				wordLogLikelihood += 1e-10;
@@ -510,6 +467,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 		return docLogLikelihood;
 	}
+	
 	
 	public void collectParentStats(_ParentDoc d){
 		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
@@ -530,9 +488,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		cDoc.m_topics[number_of_topics] += cDoc.m_sstat[number_of_topics];
 		
 		cDoc.collectLocalWordSstat();
-		
-		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)cDoc.m_parentDoc;
-//		rankStn4Child(cDoc, pDoc);
 	}
 
 	public void estParentStnTopicProportion(_ParentDoc pDoc){
@@ -623,6 +578,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 	}
 	
+	
 	public double parentXInStnProb(int xid, _Stn stnObj){
 		return m_gammaParent[xid]+stnObj.m_xSstat[xid];
 	}
@@ -637,6 +593,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		}
 		stnObj.m_topics[number_of_topics] += stnObj.m_topicSstat[number_of_topics];
 	}
+	
 	
 	public void debugOutput(String filePrefix){
 
@@ -679,34 +636,16 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			System.out.println("creating x Value directory" + childXFolder);
 			childXFolder.mkdir();
 		}
-		
-		File childTopKStnFolder = new File(filePrefix+"topKStn");
-		if(!childTopKStnFolder.exists()){
-			System.out.println("creating top K stn directory\t"+childTopKStnFolder);
-			childTopKStnFolder.mkdir();
-		}
-		
-		File stnTopKChildFolder = new File(filePrefix+"topKChild");
-		if(!stnTopKChildFolder.exists()){
-			System.out.println("creating top K child directory\t"+stnTopKChildFolder);
-			stnTopKChildFolder.mkdir();
-		}
-		
-		int topKStn = 10;
-		int topKChild = 10;
+
 		for (_Doc d : m_corpus.getCollection()) {
-			if (d instanceof _ParentDoc) {
-				printTopicAssignment(d, parentTopicFolder);
-				printParentPhi((_ParentDoc) d, parentPhiFolder);
-				printPairWordTopicDistribution((_ParentDoc4ThreePhi) d, parentPairTopicDistriFolder);
-			
-//				printTopKChild4Stn(topKChild, (_ParentDoc4ThreePhi)d, stnTopKChildFolder);
-//				printTopKStn4Child(topKStn, (_ParentDoc4ThreePhi)d, childTopKStnFolder);	
+		if (d instanceof _ParentDoc) {
+				printParentTopicAssignment(d, parentTopicFolder);
+				printParentPhi((_ParentDoc)d, parentPhiFolder);
+				printPairWordTopicDistribution((_ParentDoc4ThreePhi)d, parentPairTopicDistriFolder);
 			} else if (d instanceof _ChildDoc) {
 				printTopicAssignment(d, childTopicFolder);
 				printChildXValue(d, childXFolder);
-				printChildLocalWordTopicDistribution((_ChildDoc4ThreePhi) d, childLocalWordTopicFolder);
-//				printTopKStn(topKStn, (_ChildDoc4ThreePhi) d, childTopKStnFolder);
+				printChildLocalWordTopicDistribution((_ChildDoc4ThreePhi)d, childLocalWordTopicFolder);
 			}
 
 		}
@@ -719,309 +658,30 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
 		
 		printEntropy(filePrefix);
-		
-		printTopKChild4Stn(filePrefix, topKChild);
-		
-		printTopKStn4Child(filePrefix, topKStn);
-		
-		printTopKChild4Parent(filePrefix, topKChild);
-	}
-
-	public void printPairWordTopicDistribution(_ParentDoc4ThreePhi d, File parentPairTopicDistriFolder){
-		String parentLocalTopicDistriFile = d.getName() + ".txt";
-		try{			
-			PrintWriter parentOut = new PrintWriter(new File(parentPairTopicDistriFolder, parentLocalTopicDistriFile));
-			
-			for(int wid=0; wid<this.vocabulary_size; wid++){
-				String featureName = m_corpus.getFeature(wid);
-				double wordTopicProb = d.m_pairWordTopicProb[wid];
-				if(wordTopicProb > 0.001)
-					parentOut.format("%s:%.3f\t", featureName, wordTopicProb);
-			}
-			parentOut.flush();
-			parentOut.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 	
-	public void printChildLocalWordTopicDistribution(_ChildDoc4ThreePhi d, File childLocalTopicDistriFolder){
+	public void printParentPhi(_ParentDoc d, File phiFolder){
+		String parentPhiFileName = d.getName()+".txt";
+		_SparseFeature[] fv = d.getSparse();
 		
-		String childLocalTopicDistriFile = d.getName() + ".txt";
-		try{			
-			PrintWriter childOut = new PrintWriter(new File(childLocalTopicDistriFolder, childLocalTopicDistriFile));
-			
-			for(int wid=0; wid<this.vocabulary_size; wid++){
-				String featureName = m_corpus.getFeature(wid);
-				double wordTopicProb = d.m_localWordTopicProb[wid];
-				if(wordTopicProb > 0.001)
-					childOut.format("%s:%.3f\t", featureName, wordTopicProb);
-			}
-			childOut.flush();
-			childOut.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
-		//comment is a query, retrieve stn by topical similarity
-	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc4ThreePhi pDoc, _ChildDoc4ThreePhi cDoc){
-
-		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
-		
-		for(_Stn stnObj:pDoc.getSentences()){
-			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-			stnSimMap.put(stnObj.getIndex()+1, stnSim);
-		}
-		
-		return stnSimMap;
-	}
-	
-		//stn is a query, retrieve comment by likelihood
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc4ThreePhi pDoc){
-	
-		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		double gammaLen = Utils.sumOfArray(m_gammaChild);
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			int cDocLen = cDoc.getTotalDocLength();
-			
-			double stnLogLikelihood = 0;
-			for(_Word w: stnObj.getWords()){
-				int wid = w.getIndex();
-			
-				double wordLogLikelihood = 0;
-				
-				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, (_ChildDoc4ThreePhi)cDoc, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(0, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-					wordLogLikelihood += wordPerTopicLikelihood;
-				}
-				
-				wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(1, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-				
-				wordLogLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4ThreePhi)cDoc)*childXInDocProb(2, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-				
-				stnLogLikelihood += Math.log(wordLogLikelihood);
-			}
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-//				if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
-//					stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
-//				cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-//			}	
-	}
-	
-	protected void printTopKChild4Stn(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
 		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-							
-				
-						int i=0;
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-//							if(i==topK)
-//								break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();		
-				
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	protected void printTopKChild4Stn(int topK, _ParentDoc4ThreePhi pDoc, File topKChildFolder){
-		File topKChild4PDocFolder = new File(topKChildFolder, pDoc.getName());
-		if(!topKChild4PDocFolder.exists()){
-//			System.out.println("creating top K stn directory\t"+topKChild4PDocFolder);
-			topKChild4PDocFolder.mkdir();
-		}
+			PrintWriter parentPW = new PrintWriter(new File(phiFolder, parentPhiFileName));
 		
-		for(_Stn stnObj:pDoc.getSentences()){
-			HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-			String topChild4StnFile =  (stnObj.getIndex()+1)+".txt";
-				
-			try{
-				int i=0;
-				
-				PrintWriter pw = new PrintWriter(new File(topKChild4PDocFolder, topChild4StnFile));
-				
-				for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-					if(i==topK)
-						break;
-					pw.print(e.getKey());
-					pw.print("\t"+e.getValue());
-					pw.println();
-					
-					i++;
-				}
-				
-				pw.flush();
-				pw.close();
-			}catch (Exception e) {
-				e.printStackTrace();
+			for(int n=0; n<fv.length; n++){
+				int index = fv[n].getIndex();
+				String featureName = m_corpus.getFeature(index);
+				parentPW.print(featureName + ":\t");
+				for(int k=0; k<d.m_topics.length; k++)
+					parentPW.print(d.m_phi[n][k]+"\t");
+				parentPW.println();
 			}
+			parentPW.flush();
+			parentPW.close();
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
 	}
 	
-	protected void printTopKStn4Child(int topK, _ParentDoc4ThreePhi pDoc, File topKStnFolder){
-		File topKStn4PDocFolder = new File(topKStnFolder, pDoc.getName());
-		if(!topKStn4PDocFolder.exists()){
-//			System.out.println("creating top K stn directory\t"+topKStn4PDocFolder);
-			topKStn4PDocFolder.mkdir();
-		}
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			String topKStn4ChildFile = cDoc.getName()+".txt";
-			HashMap<Integer, Double> stnSimMap = rankStn4ChildBySim(pDoc, (_ChildDoc4ThreePhi)cDoc);
-
-			try{
-				int i=0;
-				
-				PrintWriter pw = new PrintWriter(new File(topKStn4PDocFolder, topKStn4ChildFile));
-				
-				for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
-					if(i==topK)
-						break;
-					pw.print(e.getKey());
-					pw.print("\t"+e.getValue());
-					pw.println();
-					
-					i++;
-				}
-				
-				pw.flush();
-				pw.close();
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	protected void printTopKStn4Child(String filePrefix, int topK){
-		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
-					
-					for(_ChildDoc childDoc: pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)childDoc;
-						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
-						int i = 0;
-						
-						pw.print(cDoc.getName()+"\t");
-						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
-//							if(i==topK)
-//								break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	public void printTopKChild4Parent(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.print(pDoc.getName()+"\t");
-					
-					for(_ChildDoc childDoc:pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) childDoc;
-						double docLogLikelihood = rankChild4ParentByLikelihood(cDoc, pDoc);
-				
-						pw.print(cDoc.getName()+":"+docLogLikelihood+"\t");
-						
-					}
-					
-					pw.println();
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	protected double rankChild4ParentByLikelihood(_ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){
-
-		int cDocLen = cDoc.getTotalDocLength();
-		_SparseFeature[] fv = pDoc.getSparse();
-		double gammaLen = Utils.sumOfArray(m_gammaChild);
-		
-		double docLogLikelihood = 0;
-		for(_SparseFeature i: fv){
-			int wid = i.getIndex();
-			double value = i.getValue();
-			
-			double wordLogLikelihood = 0;
-			
-			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, (_ChildDoc4ThreePhi)cDoc, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(0, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-				wordLogLikelihood += wordPerTopicLikelihood;
-			}
-			
-			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(1, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-			
-			wordLogLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4ThreePhi)cDoc)*childXInDocProb(2, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
-			
-			docLogLikelihood += value*Math.log(wordLogLikelihood);
-		}
-	
-		return docLogLikelihood;	
-	}
-
 	public void printParameter(String parentParameterFile, String childParameterFile){
 		System.out.println("printing parameter");
 		try{
@@ -1073,5 +733,105 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 
 	}
 
+	public void printPairWordTopicDistribution(_ParentDoc4ThreePhi d, File parentPairTopicDistriFolder){
+		String parentLocalTopicDistriFile = d.getName() + ".txt";
+		try{			
+			PrintWriter parentOut = new PrintWriter(new File(parentPairTopicDistriFolder, parentLocalTopicDistriFile));
+			
+			for(int wid=0; wid<this.vocabulary_size; wid++){
+				String featureName = m_corpus.getFeature(wid);
+				double wordTopicProb = d.m_pairWordTopicProb[wid];
+				if(wordTopicProb > 0.001)
+					parentOut.format("%s:%.3f\t", featureName, wordTopicProb);
+			}
+			parentOut.flush();
+			parentOut.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void printChildLocalWordTopicDistribution(_ChildDoc4ThreePhi d, File childLocalTopicDistriFolder){
+		
+		String childLocalTopicDistriFile = d.getName() + ".txt";
+		try{			
+			PrintWriter childOut = new PrintWriter(new File(childLocalTopicDistriFolder, childLocalTopicDistriFile));
+			
+			for(int wid=0; wid<this.vocabulary_size; wid++){
+				String featureName = m_corpus.getFeature(wid);
+				double wordTopicProb = d.m_localWordTopicProb[wid];
+				if(wordTopicProb > 0.001)
+					childOut.format("%s:%.3f\t", featureName, wordTopicProb);
+			}
+			childOut.flush();
+			childOut.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	void discoverSpecificComments(MatchPair matchType, String similarityFile) {
+		System.out.println("topic similarity");
+	
+		try {
+			PrintWriter pw = new PrintWriter(new File(similarityFile));
+
+			for (_Doc doc : m_trainSet) {
+				if (doc instanceof _ParentDoc) {
+					pw.print(doc.getName() + "\t");
+					double stnTopicSimilarity = 0.0;
+					double docTopicSimilarity = 0.0;
+					for (_ChildDoc cDoc : ((_ParentDoc) doc).m_childDocs) {
+						pw.print(cDoc.getName() + ":");
+
+						docTopicSimilarity = computeSimilarity(((_ParentDoc) doc).m_topics, cDoc.m_topics);
+						pw.print(docTopicSimilarity);
+						for (_Stn stnObj:doc.getSentences()) {
+							if (matchType == MatchPair.MP_ChildDoc)
+								stnTopicSimilarity = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
+							else if (matchType == MatchPair.MP_ChildGlobal)
+								stnTopicSimilarity = computeSimilarity(stnObj.m_topics, cDoc.m_xTopics[0]);
+							else if (matchType == MatchPair.MP_ChildLocal)
+								stnTopicSimilarity = computeSimilarity(stnObj.m_topics, cDoc.m_xTopics[1]);
+							
+							pw.print(":"+(stnObj.getIndex()+1) + ":" + stnTopicSimilarity);
+						}
+						pw.print("\t");
+					}
+					pw.println();
+				}
+			}
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void printParentTopicAssignment(_Doc d, File parentFolder){
+		String topicAssignmentFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(parentFolder,
+					topicAssignmentFile));
+			
+			for(int i=0; i<d.getSenetenceSize(); i++){
+				_Stn stnObj = d.getSentence(i);
+				for(_Word w: stnObj.getWords()){
+					int index = w.getIndex();
+					int topic = w.getTopic();
+					String featureName = m_corpus.getFeature(index);
+					pw.print(featureName + ":" + topic + "\t");
+				}
+				pw.println();
+			}
+			
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 	
 }

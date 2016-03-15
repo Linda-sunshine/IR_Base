@@ -709,7 +709,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 		for (_Doc d : m_corpus.getCollection()) {
 		if (d instanceof _ParentDoc) {
-				printTopicAssignment(d, parentTopicFolder);
+				printTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printTopicAssignment(d, childTopicFolder);
@@ -728,7 +728,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		printEntropy(filePrefix);
 	}
 
-	public void printTopicAssignment(_Doc d, File parentFolder) {
+	public void printTopicAssignment(_ParentDoc d, File parentFolder) {
 	//	System.out.println("printing topic assignment parent documents");
 		
 		String topicAssignmentFile = d.getName() + ".txt";
@@ -736,13 +736,16 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 			PrintWriter pw = new PrintWriter(new File(parentFolder,
 					topicAssignmentFile));
 			
-			for(_Word w:d.getWords()){
-				int index = w.getIndex();
-				int topic = w.getTopic();
-				String featureName = m_corpus.getFeature(index);
-				pw.print(featureName + ":" + topic + "\t");
+			for(_Stn stnObj: d.getSentences()){
+				for(_Word w: stnObj.getWords()){
+					int index = w.getIndex();
+					int topic = w.getTopic();
+					String featureName = m_corpus.getFeature(index);
+					pw.print(featureName + ":" + topic + "\t");
+				}
+				pw.println();
 			}
-			
+				
 			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
