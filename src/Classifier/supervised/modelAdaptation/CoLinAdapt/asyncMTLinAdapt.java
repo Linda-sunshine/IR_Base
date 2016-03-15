@@ -1,38 +1,66 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 import structures._PerformanceStat;
 import structures._Review;
 import structures._PerformanceStat.TestMode;
+import structures._User;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 
 public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
+	class UsrRvwPair implements Comparable<UsrRvwPair>{
+		_User m_usr;
+		_Review m_rvw;
+		long m_timeStamp;
+		
+		public UsrRvwPair(_User u, _Review r){
+			m_usr = u;
+			m_rvw = r;
+			m_timeStamp = r.getTimeStamp();
+		}
+		
+		public int compare(UsrRvwPair p1, UsrRvwPair p2){
+			if(p1.m_rvw.getTimeStamp() < p2.m_rvw.getTimeStamp())
+				return -1;
+			else return 1;
+		}
 
-	double m_initStepSize = 0.50;
+		@Override
+		public int compareTo(UsrRvwPair p) {
+			if(m_timeStamp == p.m_rvw.getTimeStamp())
+				return 0;
+			return m_timeStamp < p.m_rvw.getTimeStamp() ? -1 : 1;
+		}
+	}
+
+	double m_initStepSize = 0.25;
+	ArrayList<UsrRvwPair> m_rvwList;
 	
 	public asyncMTLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
-			String featureGroupMap) {
+			String featureGroupMap, String featureGroupMap4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+		loadFeatureGroupMap4SupUsr(featureGroupMap4Sup);
+		m_testmode = TestMode.TM_online;
 	}
 	
 	@Override
 	public String toString() {
 		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f. lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2);
 	}
-
-	// We use the whole vector to store the gradient, which is shared among all users.
-	@Override
-	protected void initLBFGS(){ 
-		int vSize = 2*m_dim*m_userList.size() + m_dimSup*2;
-		
-		m_g = new double[vSize];
-		m_diag = new double[vSize];
-	}
 	
+	@Override
+	protected void init(){
+		super.init();
+	 		
+	 	// this is also incorrect, since we should normalized it by total number of adaptation reviews
+	 	m_lambda1 /= m_userSize;
+	 	m_lambda2 /= m_userSize;
+	}
 	protected void calculateGradients(_AdaptStruct u){
 		gradientByFunc(u);
 		gradientByR1(u);
@@ -102,6 +130,8 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
 		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
 		int offset = 2 * m_dim * user.getId();
+		int supOffset = 2 * m_dim * m_userList.size();
+		
 		for (int k = 0; k < m_dim; k++) {
 			a = user.getScaling(k) - stepSize * m_g[offset + k];
 			user.setScaling(k, a);
@@ -109,6 +139,14 @@ public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
 			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
 			user.setShifting(k, b);
 		}
+		
+		//update the super user
+		for(int k=0; k<m_dimSup; k++) {
+			m_A[supOffset+k] -= stepSize * m_g[supOffset + k];
+			m_A[supOffset+k+m_dimSup] -= stepSize * m_g[supOffset + k + m_dimSup];
+		}
+		
+		//update the record of updating history
 		user.incUpdatedCount(inc);
 	}
 }

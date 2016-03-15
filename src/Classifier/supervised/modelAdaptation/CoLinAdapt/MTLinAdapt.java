@@ -119,7 +119,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			R1 += m_eta1 * (ui.getScaling(k)-1) * (ui.getScaling(k)-1);//(a[i]-1)^2
 			R1 += m_eta2 * ui.getShifting(k) * ui.getShifting(k);//b[i]^2
 		}
-		return R1 - L;
+		return (R1 - L);
 	}
 	
 	// Calculate the R1 for the super user, As.
