@@ -16,19 +16,19 @@ public class LinAdaptMain {
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		//this is for batch mode
-		double trainRatio = 0, adaptRatio = 0.350;
+		double trainRatio = 0, adaptRatio = 0.50;
 		//this is for online mode
 //		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
-		int displayLv = 0;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1.5, eta2 = 1.5, eta3 = 1.2, eta4 = 1.1, neighborsHistoryWeight = 0.5;
+		double eta1 = 1.25, eta2 = 1.25, eta3 = 1.5, eta4 = 1.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users_6000";
-		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
+		String userFolder = "./data/CoLinAdapt/Users_4000";
+		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
