@@ -22,7 +22,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1.25, eta2 = 1.25, eta3 = 1.5, eta4 = 1.5, neighborsHistoryWeight = 0.5;
+		double eta1 = 12.5, eta2 = 12.5, eta3 = 15, eta4 = 15, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -93,7 +93,7 @@ public class LinAdaptMain {
 
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
+		adaptation.setLNormFlag(true);
 		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
