@@ -1,17 +1,21 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 
-import structures._PerformanceStat;
-import structures._Review;
-import structures._PerformanceStat.TestMode;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
+import structures._UserReviewPair;
 
 public class asyncMTLinAdapt extends MTLinAdapt {
 
 	double m_initStepSize = 0.25;
+	boolean m_trainByUser = false; // by default we will perform online training by user; otherwise we will do it by review timestamp 
 	
 	public asyncMTLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
@@ -49,50 +53,102 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	//this is online training in each individual user
 	@Override
 	public double train(){
-		double gNorm, gNormOld = Double.MAX_VALUE;;
-		int predL, trueL;
-		_Review doc;
-		_PerformanceStat perfStat;
-		_CoLinAdaptStruct user;
-		
 		initLBFGS();
 		init();
+		
+		if (m_trainByUser)
+			trainByUser();
+		else
+			trainByReview();
+		
+		setPersonalizedModel();
+		return 0;//we do not evaluate function value
+	}	
+	
+	void trainByReview() {
+		LinkedList<_UserReviewPair> reviewlist = new LinkedList<_UserReviewPair>();
+		
+		double gNorm, gNormOld = Double.MAX_VALUE;
+		int predL, trueL, counter = 0;
+		_Review doc;
+		_CoLinAdaptStruct user;
+		
+		//collect the training/adaptation data
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_CoLinAdaptStruct)m_userList.get(i);
+			for(_Review r:user.getReviews()) {
+				if (r.getType() == rType.ADAPTATION || r.getType() == rType.TRAIN)
+					reviewlist.add(new _UserReviewPair(user, r));//we will only collect the training or adaptation reviews
+			}
+		}
+		
+		//sort them by timestamp
+		Collections.sort(reviewlist);
+		
+		for(_UserReviewPair pair:reviewlist) {
+			user = (_CoLinAdaptStruct)pair.getUser();
+			// test the latest model before model adaptation
+			if (m_testmode != TestMode.TM_batch) {
+				doc = pair.getReview();
+				predL = predict(doc, user);
+				trueL = doc.getYLabel();
+				user.getPerfStat().addOnePredResult(predL, trueL);
+			}// in batch mode we will not accumulate the performance during adaptation	
+			
+			gradientDescent(user, m_initStepSize, 1.0);
+			
+			//test the gradient only when we want to debug
+			if (m_displayLv>0) {
+				gNorm = gradientTest();				
+				if (m_displayLv==1) {
+					if (gNorm<gNormOld)
+						System.out.print("o");
+					else
+						System.out.print("x");
+				}				
+				gNormOld = gNorm;
+				if (++counter%120==0)
+					System.out.println();
+			}
+		}
+	}
+	
+	void trainByUser() {
+		double gNorm, gNormOld = Double.MAX_VALUE;
+		int predL, trueL;
+		_Review doc;
+		_CoLinAdaptStruct user;
+		
 		for(int i=0; i<m_userList.size(); i++) {
 			user = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
-					perfStat = user.getPerfStat();
 					predL = predict(doc, user);
 					trueL = doc.getYLabel();
-					perfStat.addOnePredResult(predL, trueL);
+					user.getPerfStat().addOnePredResult(predL, trueL);
 				} // in batch mode we will not accumulate the performance during adaptation				
 				
-				// prepare to adapt: initialize gradient	
-				Arrays.fill(m_g, 0);
-				calculateGradients(user);
-				gNorm = gradientTest();
-				
-				if (m_displayLv==1) {
-					if (gNorm<gNormOld)
-						System.out.print("o");
-					else
-						System.out.print("x");
-				}
-				
-				//gradient descent
 				gradientDescent(user, m_initStepSize, 1.0);
-				gNormOld = gNorm;
+				
+				//test the gradient only when we want to debug
+				if (m_displayLv>0) {
+					gNorm = gradientTest();				
+					if (m_displayLv==1) {
+						if (gNorm<gNormOld)
+							System.out.print("o");
+						else
+							System.out.print("x");
+					}				
+					gNormOld = gNorm;
+				}
 			}
 			
-			if (m_displayLv>0)
+			if (m_displayLv==1)
 				System.out.println();
 		}
-		
-		setPersonalizedModel();
-		return 0;//we do not evaluate function value
-	}	
+	}
 	
 	@Override
 	protected int getAdaptationSize(_AdaptStruct user) {
@@ -110,6 +166,10 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
 		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
 		int offset = 2 * m_dim * user.getId(), supOffset = 2 * m_dim * m_userList.size();
+		
+		//get gradient
+		Arrays.fill(m_g, 0);
+		calculateGradients(user);
 		
 		//update the individual user
 		for (int k = 0; k < m_dim; k++) {

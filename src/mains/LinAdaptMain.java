@@ -27,7 +27,7 @@ public class LinAdaptMain {
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users";
+		String userFolder = "./data/CoLinAdapt/Users_4000";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
