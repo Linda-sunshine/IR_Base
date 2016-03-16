@@ -4,10 +4,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
+import Analyzer.MultiThreadedUserAnalyzer;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
-import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
@@ -16,13 +16,13 @@ public class LinAdaptMain {
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		//this is for batch mode
-		double trainRatio = 0, adaptRatio = 0.50;
+//		double trainRatio = 0, adaptRatio = 0.50;
 		//this is for online mode
-//		double trainRatio = 0, adaptRatio = 1.0;
+		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
-		int displayLv = 2;
+		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 12.5, eta2 = 12.5, eta3 = 15, eta4 = 15, neighborsHistoryWeight = 0.5;
+		double eta1 = 1.25, eta2 = 1.25, eta3 = 1.5, eta4 = 1.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -71,7 +71,7 @@ public class LinAdaptMain {
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+//		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		// Create an instance of MT-LinAdapt-SupUser
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -81,7 +81,7 @@ public class LinAdaptMain {
 //		adaptation.setBias(true);
 		
 		//Create an instance of asynchronized MT-LinAdapt model.
-//		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
@@ -94,7 +94,7 @@ public class LinAdaptMain {
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(true);
-		adaptation.setTestMode(TestMode.TM_batch);
+		adaptation.setTestMode(TestMode.TM_online);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		

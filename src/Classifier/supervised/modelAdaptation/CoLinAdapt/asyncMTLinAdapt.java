@@ -121,7 +121,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		}
 		
 		//update the super user
-		stepSize /= 2;
+		stepSize /= 3;
 		for(int k=0; k<m_dimSup; k++) {
 			m_A[supOffset+k] -= stepSize * m_g[supOffset + k];
 			m_A[supOffset+k+m_dimSup] -= stepSize * m_g[supOffset + k + m_dimSup];
