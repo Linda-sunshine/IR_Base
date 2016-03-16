@@ -11,7 +11,7 @@ import structures._PerformanceStat.TestMode;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
+	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
@@ -22,12 +22,12 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1.25, eta2 = 1.25, eta3 = 1.5, eta4 = 1.5, neighborsHistoryWeight = 0.5;
+		double eta1 = .5, eta2 = .5, eta3 = .5, eta4 = .5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users_4000";
+		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
