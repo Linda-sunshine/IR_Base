@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
@@ -29,11 +28,7 @@ import topicmodels.multithreads.pLSA_multithread;
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
-		
-		int mb = 1024*1024;
-		
-		Runtime rTime = Runtime.getRuntime();
-		System.out.println("totalMem\t:"+rTime.totalMemory()/mb);
+	
 		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
@@ -44,10 +39,10 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildWith3Phi"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		String topicmodel = "ParentChildWith2Phi"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
-		int number_of_topics = 300;
+		int number_of_topics = 30;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 

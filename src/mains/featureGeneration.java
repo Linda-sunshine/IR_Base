@@ -59,9 +59,9 @@ public class featureGeneration {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
-		String articleType = "ArsTech";
-		articleType = "Yahoo";
-//		articleType = "GadgetsArticles";
+		String articleType = "Tech";
+//		articleType = "Yahoo";
+//		articleType = "Gadgets";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
@@ -113,7 +113,7 @@ public class featureGeneration {
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.00; // Used in feature selection, the starting point of the features.
 		double endProb = 0.95; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 3; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 1; // Filter the features with DFs smaller than this threshold.
 
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
@@ -123,8 +123,6 @@ public class featureGeneration {
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 
 		
-//		analyzer.LoadParentDirectory(GadgetsArticleFolder, suffix);
-//		analyzer.LoadChildDirectory(GadgetsCommentFolder, suffix);
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
@@ -134,12 +132,6 @@ public class featureGeneration {
 //		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);
 		
 		/***** parent child topic model *****/
-//		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
-//		analyzer.LoadParentDirectory(TechArticlesFolder, suffix);
-//		analyzer.LoadChildDirectory(TechCommentsFolder, suffix);
-//		analyzer.LoadDirectory(TechArticlesFolder, suffix);
-//		analyzer.LoadDirectory(TechCommentsFolder, suffix);
-
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		

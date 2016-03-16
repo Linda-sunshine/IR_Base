@@ -6,6 +6,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.tartarus.snowball.ext.germanStemmer;
 
 import structures._ChildDoc;
 import structures._ChildDoc4ThreePhi;
@@ -253,10 +257,6 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 				doc.m_parentWord --;
 				pDoc.m_pairWord --;
 				pDoc.m_pairWordTopicSstat[wid] --;
-			}else if(xid==2){
-				doc.m_localWord --;
-				doc.m_localTopicSstat --;
-				doc.m_localWordTopicSstat[wid] --;
 			}
 			
 			normalizedProb = 0;
@@ -407,19 +407,20 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 		_ParentDoc4ThreePhi d = (_ParentDoc4ThreePhi)doc;
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
-
+		double gammaLen = Utils.sumOfArray(m_gammaParent);
+		
 		for (int j = 0; j < fv.length; j++) {
 			int index = fv[j].getIndex();
 			double value = fv[j].getValue();
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = parentWordByTopicProb(k, index)*parentTopicInDocProb(k, d)/(d.m_globalWord+number_of_topics*d_alpha)*parentXInDocProb(0, d)/(d.getTotalDocLength()+m_gammaParent[0]+m_gammaParent[1]);
+				double wordPerTopicLikelihood = parentWordByTopicProb(k, index)*parentTopicInDocProb(k, d)/(d.m_globalWord+number_of_topics*d_alpha)*parentXInDocProb(0, d)/(d.getTotalDocLength()+gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 				
 			}
 			
-			wordLogLikelihood += localParentWordByTopicProb(index, d)*parentXInDocProb(1, d)/(d.getTotalDocLength()+m_gammaParent[0]+m_gammaParent[1]);
+			wordLogLikelihood += localParentWordByTopicProb(index, d)*parentXInDocProb(1, d)/(d.getTotalDocLength()+gammaLen);
 			
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
@@ -437,7 +438,7 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 		_ChildDoc4ThreePhi d = (_ChildDoc4ThreePhi) doc;
 		double docLogLikelihood = 0.0;
 		
-		double totalGamma = Utils.sumOfArray(m_gammaChild);
+		double gammaLen = Utils.sumOfArray(m_gammaChild);
 		
 		// prepare compute the normalizers
 		_SparseFeature[] fv = d.getSparse();
@@ -449,11 +450,11 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 			double wordLogLikelihood = 0;
 			
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(0, d)/(d.getTotalDocLength()+totalGamma);
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(0, d)/(d.getTotalDocLength()+gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
-			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(1, d)/(d.getTotalDocLength()+totalGamma);
+			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)d.m_parentDoc)*childXInDocProb(1, d)/(d.getTotalDocLength()+gammaLen);
 						
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
@@ -528,14 +529,14 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 				stnObj.m_xSstat[xid] --;
 				stnObj.m_topicSstat[tid] --;
 			}else if(xid ==1){
-				stnObj.m_topicSstat[tid] --;
 				stnObj.m_xSstat[xid] --;
+				stnObj.m_topicSstat[tid] --;
 			}
 			
 			normalizedProb = 0;
 			
-			double pLambdaZero = parentXInStnProb(0, stnObj) ;
-			double pLambdaOne = parentXInStnProb(1, stnObj);
+			double pLambdaZero = parentXInStnProb(0, stnObj, d) ;
+			double pLambdaOne = parentXInStnProb(1, stnObj, d);
 			
 			double pWordTopic = 0;
 			
@@ -579,8 +580,14 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 	}
 	
 	
-	public double parentXInStnProb(int xid, _Stn stnObj){
-		return m_gammaParent[xid]+stnObj.m_xSstat[xid];
+	public double parentXInStnProb(int xid, _Stn stnObj, _ParentDoc4ThreePhi pDoc){
+		double gammaLen = Utils.sumOfArray(m_gammaParent);
+		if(xid==0){
+			return (m_gammaParent[xid]+pDoc.m_globalWord)/(gammaLen+pDoc.getTotalDocLength())+stnObj.m_xSstat[xid];
+		}else if(xid==1){
+			return (m_gammaParent[xid]+pDoc.m_parentWord)/(gammaLen+pDoc.getTotalDocLength())+stnObj.m_xSstat[xid];
+		}
+		return 0;
 	}
 
 	public double parentTopicInStnProb(int tid, _Stn stnObj, _ParentDoc4ThreePhi d){
@@ -658,6 +665,15 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
 		
 		printEntropy(filePrefix);
+		
+		int topKStn = 10;
+		int topKChild = 10;
+		
+		printTopKChild4Stn(filePrefix, topKChild);
+		
+		printTopKStn4Child(filePrefix, topKStn);
+		
+		printTopKChild4Parent(filePrefix, topKChild);
 	}
 	
 	public void printParentPhi(_ParentDoc d, File phiFolder){
@@ -771,6 +787,82 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs{
 			e.printStackTrace();
 		}
 		
+	}
+	
+	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pd, _ChildDoc cd){
+
+		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)pd;
+		_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)cd;
+		
+		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
+		
+		for(_Stn stnObj:pDoc.getSentences()){
+			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
+			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+		}
+		
+		return stnSimMap;
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc d){
+		
+		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi) d;
+		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+		double gammaLen = Utils.sumOfArray(m_gammaChild);
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			int cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			for(_Word w: stnObj.getWords()){
+				int wid = w.getIndex();
+			
+				double wordLogLikelihood = 0;
+				
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, (_ChildDoc4ThreePhi)cDoc, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(0, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+				
+				wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(1, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
+								
+				stnLogLikelihood += Math.log(wordLogLikelihood);
+			}
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
+//				if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
+//					stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
+//				cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
+//			}	
+	}
+	
+	protected double rankChild4ParentByLikelihood(_ParentDoc4ThreePhi pd, _ChildDoc cd){
+		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)pd;
+		_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) cd;
+		int cDocLen = cDoc.getTotalDocLength();
+		_SparseFeature[] fv = pDoc.getSparse();
+		double gammaLen = Utils.sumOfArray(m_gammaChild);
+		
+		double docLogLikelihood = 0;
+		for(_SparseFeature i: fv){
+			int wid = i.getIndex();
+			double value = i.getValue();
+			
+			double wordLogLikelihood = 0;
+			
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, (_ChildDoc4ThreePhi)cDoc, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(0, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			
+			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi)cDoc.m_parentDoc)*childXInDocProb(1, (_ChildDoc4ThreePhi)cDoc)/(cDoc.getTotalDocLength()+gammaLen);
+						
+			docLogLikelihood += value*Math.log(wordLogLikelihood);
+		}
+	
+		return docLogLikelihood;	
 	}
 	
 	void discoverSpecificComments(MatchPair matchType, String similarityFile) {
