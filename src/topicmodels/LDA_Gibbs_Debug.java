@@ -91,6 +91,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	protected void finalEst(){
 		super.finalEst();
 	}
+
 	
 	protected void estThetaInDoc(_Doc d) {
 		super.estThetaInDoc(d);
@@ -101,9 +102,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		for(_Stn stnObj : pDoc.getSentences() ){
-			estStn(stnObj, pDoc);
-		}
+		pDoc.estStnTheta();
+//		for(_Stn stnObj : pDoc.getSentences() ){
+//			estStn(stnObj, pDoc);
+//		}
 	}
 	
 	public void estStn(_Stn stnObj,  _ParentDoc d){
@@ -648,9 +650,9 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 //			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
 //			stnSimMap.put(stnObj.getIndex()+1, stnSim);
 //			
-//			double stnKL = Utils.klDivergence(cDoc.m_topics, stnObj.m_topics);
+			double stnKL = Utils.klDivergence(cDoc.m_topics, stnObj.m_topics);
 //			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
-			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
+//			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
 			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
 		}
 		

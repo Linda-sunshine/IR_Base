@@ -517,7 +517,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			pDoc.m_topics[k] += pDoc.m_sstat[k] + d_alpha;
 		}
 		pDoc.m_topics[number_of_topics] += pDoc.m_sstat[number_of_topics]; 
-				
+		
 		pDoc.collectTopicWordStat();
 		pDoc.collectLocalWordSstat();
 	}
@@ -536,10 +536,12 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	}
 
 	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		for(_Stn stnObj : pDoc.getSentences() ){
-			estStn(stnObj, (_ParentDoc4ThreePhi)pDoc);
-		}
+		pDoc.estStnTheta();
+//		for(_Stn stnObj : pDoc.getSentences() ){
+////			estStn(stnObj, (_ParentDoc4ThreePhi)pDoc);
+//		}
 	}
+	
 	
 	public void estStn(_Stn stnObj,  _ParentDoc4ThreePhi d){
 		int i=0;

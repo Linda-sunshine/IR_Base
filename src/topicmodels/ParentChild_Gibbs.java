@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._ChildDoc4ThreePhi;
@@ -329,6 +331,27 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 	
 	public void estParentStnTopicProportion(_ParentDoc pDoc){
 		return;
+	}
+	
+	public void estStnByPhi(_Stn stnObj, _ParentDoc pDoc){
+		int stnTopicNum = pDoc.m_topics.length;
+		System.out.println("stnTopicNum\t"+stnTopicNum);
+		stnObj.setTopicsVct(stnTopicNum);
+		_SparseFeature[] fv = stnObj.getFv();
+		
+		for(int i=0; i<fv.length; i++){
+			int wid = fv[i].getIndex();
+			double val = fv[i].getValue();
+			
+			for(int k=0; k<stnTopicNum;k++){
+				System.out.println("k\t"+k);
+				System.out.println("wordIndex\t"+wid);
+				System.out.println("m_phi\t"+pDoc.m_phi[wid][k]);
+				stnObj.m_topics[k] += val*pDoc.m_phi[wid][k];
+			}
+		}
+		
+		Utils.L1Normalization(stnObj.m_topics);
 	}
 	
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function

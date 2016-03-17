@@ -17,7 +17,6 @@ import topicmodels.LRHTSM;
 import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
 import topicmodels.ParentChildWithChildPhi;
-import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.correspondence_LDA_Gibbs;
 import topicmodels.pLSA;
@@ -39,7 +38,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildWithChildPhi"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -203,8 +202,8 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
+//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
+//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
 				double[] gammaParent = {2, 2};

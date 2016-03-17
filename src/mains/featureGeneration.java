@@ -14,7 +14,6 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChild_Gibbs;
-import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;

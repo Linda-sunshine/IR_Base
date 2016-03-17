@@ -11,7 +11,6 @@ import cern.jet.random.Normal;
 import cern.jet.random.engine.DRand;
 import cern.jet.random.engine.RandomEngine;
 import structures._ChildDoc;
-import structures._ChildDoc4ProbitModel;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
