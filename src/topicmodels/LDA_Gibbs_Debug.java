@@ -166,11 +166,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	public double parentTopicInStnProb(int tid, _Stn stnObj, _ParentDoc d){
+//		return (d_alpha+stnObj.m_topicSstat[tid])/(number_of_topics*d_alpha+stnObj.getLength());
 		return (d_alpha + d.m_topics[tid]+stnObj.m_topicSstat[tid])/(number_of_topics*d_alpha+1+stnObj.getLength());
 	}
 	
 	public void collectStnStats(_Stn stnObj, _ParentDoc d){
 		for(int k=0; k<number_of_topics; k++){
+//			stnObj.m_topics[k] += stnObj.m_topicSstat[k]+d_alpha;
 			stnObj.m_topics[k] += stnObj.m_topicSstat[k]+d_alpha+d.m_topics[k];
 		}
 	}
@@ -643,8 +645,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
 		
 		for(_Stn stnObj:pDoc.getSentences()){
-			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
+//			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+//			
+//			double stnKL = Utils.klDivergence(cDoc.m_topics, stnObj.m_topics);
+//			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
+			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
+			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
 		}
 		
 		return stnSimMap;

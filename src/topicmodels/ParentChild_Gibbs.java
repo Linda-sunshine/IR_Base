@@ -949,11 +949,11 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
 					
 					for(_ChildDoc childDoc: pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)childDoc;
-						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
+//						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)childDoc;
+						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, childDoc);
 						int i = 0;
 						
-						pw.print(cDoc.getName()+"\t");
+						pw.print(childDoc.getName()+"\t");
 						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
 //							if(i==topK)
 //								break;
@@ -982,17 +982,16 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 			
 			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
 					
 					pw.print(pDoc.getName()+"\t");
 					
 					for(_ChildDoc childDoc:pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) childDoc;
-						double docLogLikelihood = rankChild4ParentByLikelihood(cDoc, pDoc);
+//						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) childDoc;
+						double docLogLikelihood = rankChild4ParentByLikelihood(childDoc, pDoc);
 				
-						pw.print(cDoc.getName()+":"+docLogLikelihood+"\t");
-						
+						pw.print(childDoc.getName()+":"+docLogLikelihood+"\t");	
 					}
 					
 					pw.println();

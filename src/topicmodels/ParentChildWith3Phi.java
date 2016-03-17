@@ -579,8 +579,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			
 			normalizedProb = 0;
 			
-			double pLambdaZero = parentXInStnProb(0, stnObj) ;
-			double pLambdaOne = parentXInStnProb(1, stnObj);
+			double pLambdaZero = parentXInStnProb(0, stnObj, d) ;
+			double pLambdaOne = parentXInStnProb(1, stnObj, d);
 			
 			double pWordTopic = 0;
 			
@@ -623,10 +623,30 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 	}
 	
-	public double parentXInStnProb(int xid, _Stn stnObj){
-		return m_gammaParent[xid]+stnObj.m_xSstat[xid];
-	}
+//	public double parentXInStnProb(int xid, _Stn stnObj){
+//		return m_gammaParent[xid]+stnObj.m_xSstat[xid];
+//	}
+//
+//	public double parentTopicInStnProb(int tid, _Stn stnObj, _ParentDoc4ThreePhi d){
+//		return (d_alpha+stnObj.m_topicSstat[tid])/(m_kAlpha+stnObj.m_xSstat[0]);
+//	}
+//	
+//	public void collectStnStats(_Stn stnObj, _ParentDoc4ThreePhi d){
+//		for(int k=0; k<number_of_topics; k++){
+//			stnObj.m_topics[k] += stnObj.m_topicSstat[k]+d_alpha;
+//		}
+//		stnObj.m_topics[number_of_topics] += stnObj.m_topicSstat[number_of_topics];
+//	}
 
+	public double parentXInStnProb(int xid, _Stn stnObj, _ParentDoc4ThreePhi d){
+		double gammaLen = Utils.sumOfArray(m_gammaParent);
+		if(xid==0)
+			return (m_gammaParent[xid]+d.m_globalWord)/(gammaLen+d.getTotalDocLength())+stnObj.m_xSstat[xid];
+		else {
+			return (m_gammaParent[xid]+d.m_pairWord)/(gammaLen+d.getTotalDocLength())+stnObj.m_xSstat[xid]; 
+		}
+	}
+	
 	public double parentTopicInStnProb(int tid, _Stn stnObj, _ParentDoc4ThreePhi d){
 		return (d_alpha + d.m_topics[tid]+stnObj.m_topicSstat[tid])/(m_kAlpha+1-d.m_topics[number_of_topics]+stnObj.m_xSstat[0]);
 	}
@@ -773,8 +793,15 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
 		
 		for(_Stn stnObj:pDoc.getSentences()){
-			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
+//			stnSimMap.put(stnObj.getIndex()+1, stnSim);
+
+			double stnKL = Utils.klDivergence(cDoc.m_topics, stnObj.m_topics);
+//			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
+//			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
+
+			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
+
 		}
 		
 		return stnSimMap;
