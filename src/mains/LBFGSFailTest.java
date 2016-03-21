@@ -21,9 +21,9 @@ public class LBFGSFailTest {
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 20;
-		int displayLv = 2;
+		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 10, eta2 = 10, lambda1 = 10, lambda2 = 10;
+		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -44,9 +44,10 @@ public class LBFGSFailTest {
 		//Access users of different size.
 		int size = 0;
 		String diffFolder;
-		
-		for(int t=0; t<10; t++){
-			size = 4000;
+		int[] ts = new int[]{4, 6};
+		for(int t: ts){
+//		for(int t=0; t<10; t++){
+			size = 4400;
 			diffFolder = String.format("%sUsers_%d/Users_%d", folder, t+1,size);
 			analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 			analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -63,7 +64,7 @@ public class LBFGSFailTest {
 			mtlinadaptsup.setR1TradeOffs(eta1, eta2);
 			mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 			mtlinadaptsup.train();
-			mtlinadaptsup.test();
+//			mtlinadaptsup.test();
 		}
 //		// We need ten sets of experiments to do the average.
 //		double[] ps = new double[]{0.6, 0.7, 0.8, 0.9, 1};

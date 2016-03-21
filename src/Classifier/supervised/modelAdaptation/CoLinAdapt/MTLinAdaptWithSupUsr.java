@@ -1,9 +1,11 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -293,5 +295,18 @@ public class MTLinAdaptWithSupUsr extends MTLinAdapt {
 		if (m_displayLv==2)
 			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
 		return magA + magB;
+	}
+	
+	public void saveSupModel(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			writer.write(m_sWeights[0]+"\n");
+			for(int i=1; i<m_sWeights.length; i++){
+				writer.write(m_sWeights[i]+"\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

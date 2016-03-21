@@ -234,6 +234,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			} while (iflag[0] != 0);
 			System.out.println();
 		} catch (ExceptionWithIflag e) {
+			System.err.println("********lbfgs fails here!******");
 			e.printStackTrace();
 			m_lbfgs = 0;
 		}

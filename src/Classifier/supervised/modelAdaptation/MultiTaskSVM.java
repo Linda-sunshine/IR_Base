@@ -1,5 +1,11 @@
 package Classifier.supervised.modelAdaptation;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import Classifier.supervised.SVM;
@@ -203,7 +209,7 @@ public class MultiTaskSVM extends ModelAdaptation {
 //		}
 //		return node;
 //	}
-//	
+	
 //	@Override
 //	protected void setPersonalizedModel() {
 //		double[] weight = m_libModel.getWeights();//our model always assume the bias term
@@ -215,7 +221,7 @@ public class MultiTaskSVM extends ModelAdaptation {
 //				for(int i=0; i<m_featureSize; i++) 
 //					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
 //				
-//				if (m_bias) 
+//				if (m_bias)
 //					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u);
 //				else
 //					userOffset += m_featureSize;
@@ -228,4 +234,26 @@ public class MultiTaskSVM extends ModelAdaptation {
 //			user.setPersonalizedModel(m_pWeights);//our model always assume the bias term
 //		}
 //	}
+	
+	public void saveSupModel(String filename){
+		double[] weights = m_libModel.getWeights();
+		int globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
+		int class0 = m_libModel.getLabels()[0];
+		double sign = class0 > 0 ? 1 : -1;
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			
+			if(m_bias)
+				writer.write(sign*weights[globalOffset + m_featureSize]+"\n");
+			else
+				writer.write(0+"\n");
+				
+			for(int i=0; i<m_featureSize; i++)
+					writer.write(weights[globalOffset+i]+"\n");
+			
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }

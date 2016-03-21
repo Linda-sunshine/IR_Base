@@ -5,6 +5,7 @@ package Classifier.supervised.modelAdaptation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -285,7 +286,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	}
 
 	@Override
-	public void saveModel(String modelLocation) {	
+	public void saveModel(String modelLocation) {
 		for(_AdaptStruct user:m_userList) {
 			try {
 	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));

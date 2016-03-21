@@ -14,7 +14,7 @@ public class _LinAdaptStruct extends _AdaptStruct {
 		m_dim = dim;
 		m_A = new double[dim*2];		
 		for(int i=0; i < m_dim; i++)
-			m_A[i] = 1 + Math.random()/1000;//Scaling in the first dim dimensions. Initialize scaling to be 1 and shifting be 0.
+			m_A[i] = 1;//Scaling in the first dim dimensions. Initialize scaling to be 1 and shifting be 0.
 	}	
 
 	@Override

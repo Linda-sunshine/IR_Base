@@ -96,7 +96,15 @@ public class IndividualSVM extends ModelAdaptation {
 	}
 	
 	protected void setPersonalizedModel(_AdaptStruct u){
-		u.setPersonalizedModel(m_libModel.getWeights());
+		double[] weight = m_libModel.getWeights();//our model always assume the bias term
+		int class0 = m_libModel.getLabels()[0];
+		double sign = class0 > 0 ? 1 : -1;
+		
+		for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
+			m_pWeights[i+1] = sign*weight[i];
+		if (m_bias)
+			m_pWeights[0] = sign*weight[m_featureSize];
+		u.setPersonalizedModel(m_pWeights);//our model always assume the bias term
 	}	
 	
 	public Feature[] createLibLinearFV(_Review r, int userIndex){
@@ -106,7 +114,7 @@ public class IndividualSVM extends ModelAdaptation {
 	
 		Feature[] node;
 		if(m_bias)
-			node = new Feature[fvs.length + 1];//0-th: x//sqrt(u); t-th: x.
+			node = new Feature[fvs.length + 1];
 		else 
 			node = new Feature[fvs.length];
 		
@@ -123,8 +131,10 @@ public class IndividualSVM extends ModelAdaptation {
 		
 		return node;
 	}
-	
+
 	@Override
 	protected void setPersonalizedModel() {
+		// TODO Auto-generated method stub
+		
 	}
 }

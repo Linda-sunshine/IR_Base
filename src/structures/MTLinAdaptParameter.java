@@ -2,14 +2,14 @@ package structures;
 
 public class MTLinAdaptParameter {
 	public String m_data = "Amazon";
-	public double m_eta1 = 0.5;
-	public double m_eta2 = 1;
+	public double m_eta1 = 1;
+	public double m_eta2 = 0.5;
 	public double m_lambda1 = 0.1;
-	public double m_lambda2 = 0.1;
+	public double m_lambda2 = 0.3;
 	public int m_size = 400; // The size of users we want to use.
 	public int m_userSet = 1; // The set of users we want to use.
 	public int m_ttlSizeSet = 24; // The total number of sizes.
-	public int m_ttlSserSetNo = 10; // The total number of user sets.
+	public int m_ttlUserSetNo = 10; // The total number of user sets.
 	public String m_model = "mtlinadapt"; // Which model to use.
 	
 	public MTLinAdaptParameter(String argv[])
@@ -38,7 +38,7 @@ public class MTLinAdaptParameter {
 			else if (argv[i-1].equals("-set"))
 				m_userSet = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-userSetNo"))
-				m_ttlSizeSet = Integer.valueOf(argv[i]);
+				m_ttlUserSetNo = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-sizeSetNo"))
 				m_ttlSizeSet = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-model"))
