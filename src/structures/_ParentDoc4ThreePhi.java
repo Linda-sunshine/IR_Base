@@ -1,82 +1,62 @@
 package structures;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import utils.Utils;
 
 public class _ParentDoc4ThreePhi extends _ParentDoc{
 	
-	//used to record all word assigned x=1 including parent and child
-	public double m_pairWord;
-	public double[] m_pairWordTopicSstat;
-	public double[] m_pairWordTopicProb;
-
-	//x=0
-	public double m_globalWord;
-	//x=1 
-	public double m_parentWord;
+	public int[] m_pairWordSstat;
+	public double[] m_pairWordDistribution;
+	public int m_pairWord;
 	
+	public int[][] m_xTopicSstat;
+	public int[] m_xSstat;
 	
-	public double m_parentProb;
-	
-	public int m_xSize;
+	public double[] m_xProportion;
 	
 	public _ParentDoc4ThreePhi(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
-
-
 	}
 	
-	public void createXSpace(int k, int gammaSize){
-		m_xSize = gammaSize;
-	}
-	
-	public void createLocalWordTopicDistribution(int vocalbularySize, double beta){
-		beta *= 0.01;
-		m_pairWordTopicSstat = new double[vocalbularySize];
-		m_pairWordTopicProb = new double[vocalbularySize];
+	public void createXSpace(int k, int gammaSize, int vocalSize) {
+		m_xTopicSstat = new int[gammaSize][];
 		
-		m_globalWord = 0;
-		m_pairWord = beta*vocalbularySize;
-		m_parentWord = 0;
-		m_parentProb = 0;
+		m_xTopicSstat[0] = new int[k];
 		
-		Arrays.fill(m_pairWordTopicSstat, beta);
-		Arrays.fill(m_pairWordTopicProb, 0);
-		
+		m_xTopicSstat[1] = new int[1];
+  
+		m_xSstat = new int[gammaSize];
+		m_xProportion = new double[gammaSize];
+
+		m_pairWordSstat = new int[vocalSize];
+		m_pairWordDistribution = new double[vocalSize];
 	}
 	
 	public void setTopics4Gibbs(int k, double alpha) {
-		createSpace(k, alpha);
+		createSpace(k + 1, alpha);
 		
-		m_topics = new double[k+1];
-		m_sstat = new double[k+1];
-		
-		//m_sstat[k]==m_parentWord;
-		for(int i=0; i<k; i++)
-			m_sstat[i] = alpha;
-		
-		int wIndex = 0, wid, tid, xid;
+		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
-				xid = m_rand.nextInt(m_xSize);
+				xid = m_rand.nextInt(gammaSize);
 				tid = 0;
 				if(xid==0){
 					tid = m_rand.nextInt(k);
-					m_globalWord ++;
-					m_sstat[tid] ++;
+					m_xTopicSstat[xid][tid]++;
+					m_xSstat[xid]++;
 				}else if(xid==1){
 					tid = k;
-					m_parentWord ++;
-					m_sstat[tid] ++;
+					m_xTopicSstat[xid][0]++;
+					m_xSstat[xid]++;
+					
+					m_pairWordSstat[wid]++;
+					m_pairWord++;
 				}
 				
 				m_words[wIndex] = new _Word(wid, tid, xid);
-				
 				
 				wIndex ++;
 			}
@@ -90,16 +70,19 @@ public class _ParentDoc4ThreePhi extends _ParentDoc{
 	}
 	
 	public void estGlobalLocalTheta(){
+
 		Utils.L1Normalization(m_topics);
-		Utils.L1Normalization(m_pairWordTopicProb);
+
+		for (int i = 0; i < m_topics.length; i++) {
+			if (Double.isNaN(m_topics[i]))
+				System.out.println("topic proportion \t" + m_topics[i]);
+		}
+
+
+		Utils.L1Normalization(m_xProportion);
+
+		Utils.L1Normalization(m_pairWordDistribution);
 	}
 	
-	public void collectLocalWordSstat(){
-		for(int i=0; i<m_pairWordTopicSstat.length; i++){
-			m_pairWordTopicProb[i] += m_pairWordTopicSstat[i];
-		}
-		
-		m_parentProb += m_parentWord;
-	} 
 	
-}
+ }

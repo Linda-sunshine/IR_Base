@@ -1,8 +1,5 @@
 package structures;
 
-import java.util.HashMap;
-import java.util.HashSet;
-
 import utils.Utils;
 
 public class _ChildDoc extends _Doc {
@@ -32,7 +29,7 @@ public class _ChildDoc extends _Doc {
 	public void setParentDoc(_ParentDoc pDoc){
 		m_parentDoc = pDoc;
 	}
-	
+
 	public void createXSpace(int k, int gammaSize) {
 		m_xTopicSstat = new int[gammaSize][k];
 		m_xTopics = new double[gammaSize][k];

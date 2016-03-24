@@ -9,15 +9,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
@@ -329,30 +325,31 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		m_statisticsNormalized = true;
 	}
 	
-	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		return;
-	}
+	// protected void estParentStnTopicProportion(_ParentDoc pDoc) {
+	// // pDoc.estStnTheta();
+	// return;
+	// }
 	
-	public void estStnByPhi(_Stn stnObj, _ParentDoc pDoc){
-		int stnTopicNum = pDoc.m_topics.length;
-		System.out.println("stnTopicNum\t"+stnTopicNum);
-		stnObj.setTopicsVct(stnTopicNum);
-		_SparseFeature[] fv = stnObj.getFv();
-		
-		for(int i=0; i<fv.length; i++){
-			int wid = fv[i].getIndex();
-			double val = fv[i].getValue();
-			
-			for(int k=0; k<stnTopicNum;k++){
-				System.out.println("k\t"+k);
-				System.out.println("wordIndex\t"+wid);
-				System.out.println("m_phi\t"+pDoc.m_phi[wid][k]);
-				stnObj.m_topics[k] += val*pDoc.m_phi[wid][k];
-			}
-		}
-		
-		Utils.L1Normalization(stnObj.m_topics);
-	}
+	// public void estStnByPhi(_Stn stnObj, _ParentDoc pDoc){
+	// int stnTopicNum = pDoc.m_topics.length;
+	// System.out.println("stnTopicNum\t"+stnTopicNum);
+	// stnObj.setTopicsVct(stnTopicNum);
+	// _SparseFeature[] fv = stnObj.getFv();
+	//
+	// for(int i=0; i<fv.length; i++){
+	// int wid = fv[i].getIndex();
+	// double val = fv[i].getValue();
+	//
+	// for(int k=0; k<stnTopicNum;k++){
+	// System.out.println("k\t"+k);
+	// System.out.println("wordIndex\t"+wid);
+	// System.out.println("m_phi\t"+pDoc.m_phi[wid][k]);
+	// stnObj.m_topics[k] += val*pDoc.m_phi[wid][k];
+	// }
+	// }
+	//
+	// Utils.L1Normalization(stnObj.m_topics);
+	// }
 	
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
 	@Override
@@ -443,7 +440,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 					
 				}
 				
-//				writeFile(i, m_trainSet, m_testSet);
+				// writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number "+i);
 				System.out.println("Train Set Size "+m_trainSet.size());
 				System.out.println("Test Set Size "+m_testSet.size());
@@ -557,36 +554,35 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		}
 	}
 
-	
 	// used to generate train and test data set 
-//	public void writeFile(int k, ArrayList<_Doc>trainSet, ArrayList<_Doc>testSet){
-//		System.out.println("creating folder train test");
-//		String trainFilePrefix = "trainFolder"+k;
-//		String testFilePrefix = "testFolder"+k;
-//		
-//		File trainFolder = new File(trainFilePrefix);
-//		File testFolder = new File(testFilePrefix);
-//		if(!trainFolder.exists()){
-//			System.out.println("creating root train directory"+trainFolder);
-//			trainFolder.mkdir();
-//		}
-//		if(!testFolder.exists()){
-//			System.out.println("creating root test directory"+testFolder);
-//			testFolder.mkdir();
-//		}
-//		
-//		_Corpus trainCorpus = new _Corpus();
-//		_Corpus testCorpus = new _Corpus();
-//
-//		for(_Doc d: trainSet)
-//			trainCorpus.addDoc(d);
-//		for(_Doc d: testSet)
-//			testCorpus.addDoc(d);
-//		outputFile.outputFiles(trainFilePrefix, trainCorpus);
-//		outputFile.outputFiles(testFilePrefix, testCorpus);
-//	}
-//
+	public void writeFile(int k, ArrayList<_Doc> trainSet,
+			ArrayList<_Doc> testSet) {
+		System.out.println("creating folder train test");
+		String trainFilePrefix = "YahooTrainFolder" + k;
+		String testFilePrefix = "YahooTestFolder" + k;
 
+		File trainFolder = new File(trainFilePrefix);
+		File testFolder = new File(testFilePrefix);
+		if (!trainFolder.exists()) {
+			System.out.println("creating root train directory" + trainFolder);
+			trainFolder.mkdir();
+		}
+		if (!testFolder.exists()) {
+			System.out.println("creating root test directory" + testFolder);
+			testFolder.mkdir();
+		}
+
+		_Corpus trainCorpus = new _Corpus();
+		_Corpus testCorpus = new _Corpus();
+
+		for (_Doc d : trainSet)
+			trainCorpus.addDoc(d);
+		for (_Doc d : testSet)
+			testCorpus.addDoc(d);
+		outputFile.outputFiles(trainFilePrefix, trainCorpus);
+		outputFile.outputFiles(testFilePrefix, testCorpus);
+	}
+//
 	//used to print test parameter
 	public void printTestParameter(String parentParameterFile, String childParameterFile){
 		System.out.println("printing parameter");
@@ -664,11 +660,14 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		System.out.println("print top words");
 		for (_Doc d : m_trainSet) {
 //			loglikelihood += calculate_log_likelihood(d);
-			for (int i = 0; i < number_of_topics; i++)
+			for (int i = 0; i < m_sstat.length; i++) {
 				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
 						: d.m_topics[i];	
+				if (Double.isNaN(d.m_topics[i]))
+					System.out.println("nan name\t" + d.getName());
+			}
 		}
-
+		
 		Utils.L1Normalization(m_sstat);
 
 		try {
@@ -999,7 +998,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 	}
 	
-	public void printTopKChild4Parent(String filePrefix, int topK){
+	protected void printTopKChild4Parent(String filePrefix, int topK) {
 		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));

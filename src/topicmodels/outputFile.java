@@ -4,19 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TreeMap;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
+import Analyzer.ParentChildAnalyzer;
 
 public class outputFile {
 	public static void outputFiles(String filePrefix, _Corpus c) {
@@ -34,9 +32,9 @@ public class outputFile {
 			String shortStnFile = filePrefix + "/selected_ShortStn.txt";
 			String longStnFile = filePrefix + "/selected_LongStn.txt";
 			
-			if(c.getFeatureSize() !=0){	
+			if (c.getFeatureSize() != 0) {
 				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
-				for(int i=0; i<c.getFeatureSize(); i++){
+				for (int i = 0; i < c.getFeatureSize(); i++) {
 					String wordName = c.getFeature(i);
 					wordPW.println(wordName);
 				}
@@ -227,7 +225,9 @@ public class outputFile {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
+		String topicmodel = "wsdm"; // 2topic, pLSA, HTMM, LRHTMM, Tensor,
+									// LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
+									// ParentChild_Gibbs
 	
 		String category = "tablet";
 		int number_of_topics = 20;
@@ -257,10 +257,16 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-//		articleType = "Yahoo";
+		// articleType = "Yahoo";
 //		articleType = "Gadgets";
-		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
-		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		String articleFolder = String
+.format(
+				"./data/ParentChildTopicModel/%sArticles",
+						articleType);
+		String commentFolder = String
+.format(
+				"./data/ParentChildTopicModel/%sComments",
+						articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -292,8 +298,11 @@ public class outputFile {
 		}
 		
 		Calendar today = Calendar.getInstance();
-		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", 1+today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
-						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
+		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s-%s",
+				1 + today.get(Calendar.MONTH),
+				today.get(Calendar.DAY_OF_MONTH),
+				today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE),
+				topicmodel, articleType);
 		
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {

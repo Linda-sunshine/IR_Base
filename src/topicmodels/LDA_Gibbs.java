@@ -230,10 +230,12 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	protected double calculate_log_likelihood() {		
-		//prior from Dirichlet distributions
-		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));
-		for(int tid=0; tid<this.number_of_topics; tid++) {
-			for(int wid=0; wid<this.vocabulary_size; wid++)
+		// prior from Dirichlet distributions
+		double logLikelihood = number_of_topics
+				* (Utils.lgamma(vocabulary_size * d_beta) - vocabulary_size
+						* Utils.lgamma(d_beta));
+		for (int tid = 0; tid < this.number_of_topics; tid++) {
+			for (int wid = 0; wid < this.vocabulary_size; wid++)
 				logLikelihood += Utils.lgamma(word_topic_sstat[tid][wid]);
 			logLikelihood -= Utils.lgamma(m_sstat[tid]);
 		}

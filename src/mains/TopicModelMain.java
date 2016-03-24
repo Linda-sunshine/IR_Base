@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import Analyzer.ParentChildAnalyzer;
+
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.HTMM;
@@ -14,15 +14,14 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
-import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
-import topicmodels.ParentChildWithChildPhi;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.correspondence_LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 
@@ -38,7 +37,12 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		String topicmodel = "ParentChildWith3Phi"; // 2topic, pLSA, HTMM,
+														// LRHTMM,
+												// Tensor, LDA_Gibbs,
+												// LDA_Variational, HTSM,
+												// LRHTSM, ParentChild_Gibbs,
+												// ParentChildWithProbitModel_Gibbs
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -52,10 +56,12 @@ public class TopicModelMain {
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
-//		gibbs_iteration = 10;
-//		gibbs_lag = 2;
-		double burnIn = 0.4;
 		int displayLap = 100;
+		// gibbs_iteration = 200;
+		// gibbs_lag = 2;
+		displayLap = 5;
+		double burnIn = 0.4;
+
 		boolean sentence = false;
 		
 		// most popular items under each category from Amazon
@@ -70,10 +76,14 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		articleType = "Yahoo";
+		// articleType = "Yahoo";
 		
-		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
-		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		String articleFolder = String.format(
+				"./data/ParentChildTopicModel/%sArticles",
+						articleType);
+		String commentFolder = String.format(
+				"./data/ParentChildTopicModel/%sComments",
+						articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -105,7 +115,7 @@ public class TopicModelMain {
 		
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");	
 		String filePrefix = String.format("./data/results/%s", dateFormatter.format(new Date()));
-		filePrefix = filePrefix + "-"+topicmodel;
+		filePrefix = filePrefix + "-" + topicmodel + "-" + articleType;
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
 			System.out.println("creating directory" + resultFolder);
@@ -206,8 +216,8 @@ public class TopicModelMain {
 //						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
-				double[] gammaParent = {2, 2};
-				double[] gammaChild = {2, 2, 2};
+				double[] gammaParent = { 0.5, 0.5 };
+				double[] gammaChild = { 0.3, 0.3, 0.3 };
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
@@ -216,17 +226,21 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
 				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
-			}else if(topicmodel.equals("ParentChildWith2Phi")){
-				double mu = 1.0;
-				double[] gammaParent = {2, 2};
-				double[] gammaChild = {2, 2};
-				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
-			}else if(topicmodel.equals("ParentChildWithChildPhi")){
-				double mu = 1.0;
-				double[] gammaChild = {2, 2};
-				model = new ParentChildWithChildPhi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaChild, mu);
+				// }else if(topicmodel.equals("ParentChildWith2Phi")){
+				// double mu = 1.0;
+				// double[] gammaParent = {2, 2};
+				// double[] gammaChild = {2, 2};
+				// model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1,
+				// c,
+				// lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+				// gammaParent, gammaChild, mu);
+				// }else if(topicmodel.equals("ParentChildWithChildPhi")){
+				// double mu = 1.0;
+				// double[] gammaChild = {2, 2};
+				// model = new ParentChildWithChildPhi(gibbs_iteration, 0,
+				// beta-1, c,
+				// lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+				// gammaChild, mu);
 			}
 			
 			model.setDisplayLap(displayLap);

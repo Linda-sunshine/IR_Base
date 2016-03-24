@@ -11,15 +11,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
+import java.util.Random;
+
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
@@ -74,7 +73,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 	protected void collectStats(_Doc d) {
 		for(int k=0; k<this.number_of_topics; k++)
-			d.m_topics[k] += d.m_sstat[k] + d_alpha;
+			d.m_topics[k] += d.m_sstat[k];
 		if(d instanceof _ParentDoc){
 			((_ParentDoc) d).collectTopicWordStat();
 		}
@@ -85,7 +84,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	protected double topicInDocProb(int tid, _Doc d){
-		return (d_alpha+d.m_sstat[tid]);
+		return (d.m_sstat[tid]);
 	}
 	
 	protected void finalEst(){
@@ -101,11 +100,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 	}
 	
-	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		pDoc.estStnTheta();
-//		for(_Stn stnObj : pDoc.getSentences() ){
-//			estStn(stnObj, pDoc);
-//		}
+	protected void estParentStnTopicProportion(_ParentDoc pDoc) {
+		// pDoc.estStnTheta();
+		for (_Stn stnObj : pDoc.getSentences()) {
+			estStn(stnObj, pDoc);
+		}
 	}
 	
 	public void estStn(_Stn stnObj,  _ParentDoc d){
@@ -288,18 +287,16 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			if (iter>m_burnIn && iter%m_lag==0){
 				double tempLogLikelihood = 0;
 				for(_Doc doc: sampleTestSet){
-					
 					collectStats( doc);
-						// tempLogLikelihood += calculate_log_likelihood((_ParentDoc) doc);
-				
-					
+					// tempLogLikelihood += calculate_log_likelihood(doc);
 				}
 				count ++;
-				// if(logLikelihood == 0)
-				// 	logLikelihood = tempLogLikelihood;
-				// else{
-
-				// 	logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
+				// if (logLikelihood == 0)
+				// logLikelihood = tempLogLikelihood;
+				// else {
+				//
+				// logLikelihood = Utils.logSum(logLikelihood,
+				// tempLogLikelihood);
 				// }
 			}
 		} while (++iter<this.number_of_iteration);
@@ -308,9 +305,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			estThetaInDoc(doc);
 			logLikelihood += calculate_log_likelihood(doc);
 		}
+		
+		return logLikelihood;
 	
-
-		return logLikelihood; 	
+		// return logLikelihood - Math.log(count);
 	}
 
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
@@ -337,23 +335,12 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
-//				if(topic_term_probabilty[k][index] == 0){
-//					topic_term_probabilty[k][index] = 1e-9;
-//				}
-				double wordPerTopicLikelihood = (word_topic_sstat[k][wid]/m_sstat[k])*d.m_topics[k]; 
+
+				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+						* topicInDocProb(k, d)
+						/ (d.getTotalDocLength() + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
-				// double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]);
-//				System.out.println("first part\t"+wordPerTopicLikelihood);
-//				if(d.m_topics[k] == 0){
-//					d.m_topics[k] = 1e-9;
-//				}
-				// wordPerTopicLikelihood += Math.log(d.m_topics[k]);
-//				System.out.println("second part\t"+wordPerTopicLikelihood);
-				// if(wordLogLikelihood == 0){
-				// 	wordLogLikelihood = wordPerTopicLikelihood;
-				// }else{
-				// 	wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
-				// }
+
 			}
 			if(wordLogLikelihood < 1e-10){
 				wordLogLikelihood += 1e-10;
@@ -368,6 +355,16 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return docLogLikelihood;
 	}
 
+	protected double calculate_log_likelihood() {
+		double logLikelihood = 0;
+		for (_Doc d : m_trainSet) {
+			double docLogLikelihood = 0.0;
+			docLogLikelihood = calculate_log_likelihood(d);
+			logLikelihood += docLogLikelihood;
+		}
+		return logLikelihood;
+	}
+	
 	public double calculate_log_likelihood(_Doc d){
 		if (d instanceof _ParentDoc)
 			return logLikelihoodByIntegrateTopics((_ParentDoc)d);
@@ -509,16 +506,30 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		
 		String topicAssignmentFile = d.getName() + ".txt";
 		try {
+
 			PrintWriter pw = new PrintWriter(new File(topicFolder,
 					topicAssignmentFile));
-			
-			for(_Word w:d.getWords()){
-				int index = w.getIndex();
-				int topic = w.getTopic();
-				String featureName = m_corpus.getFeature(index);
-				pw.print(featureName + ":" + topic + "\t");
+
+			if (d instanceof _ParentDoc) {
+				for (_Stn stnObj : d.getSentences()) {
+					pw.print(stnObj.getIndex() + "\t");
+					for (_Word w : stnObj.getWords()) {
+						int index = w.getIndex();
+						int topic = w.getTopic();
+						String featureName = m_corpus.getFeature(index);
+						pw.print(featureName + ":" + topic + "\t");
+					}
+					pw.println();
+				}
+			} else {
+				for (_Word w : d.getWords()) {
+					int index = w.getIndex();
+					int topic = w.getTopic();
+					String featureName = m_corpus.getFeature(index);
+					pw.print(featureName + ":" + topic + "\t");
+				}
 			}
-			
+
 			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
@@ -821,7 +832,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return docLogLikelihood;	
 	}
 	
-	public void printTopKChild4Parent(String filePrefix, int topK){
+	protected double rankChild4ParentBySim(_ChildDoc cDoc, _ParentDoc pDoc) {
+		double childSim = computeSimilarity(cDoc.m_topics, pDoc.m_topics);
+
+		return childSim;
+	}
+
+	protected void printTopKChild4Parent(String filePrefix, int topK) {
 		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
@@ -833,9 +850,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					pw.print(pDoc.getName()+"\t");
 					
 					for(_ChildDoc cDoc:pDoc.m_childDocs){
-						double docLogLikelihood = rankChild4ParentByLikelihood(cDoc, pDoc);
+						double docScore = rankChild4ParentBySim(cDoc,
+								pDoc);
 				
-						pw.print(cDoc.getName()+":"+docLogLikelihood+"\t");
+						pw.print(cDoc.getName() + ":" + docScore + "\t");
 						
 					}
 					

@@ -5,19 +5,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
-import structures._Doc;
-import topicmodels.HTMM;
-import topicmodels.HTSM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
-import topicmodels.ParentChild_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.twoTopic;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalyzer;
 
 public class featureGeneration {
 	public static void main(String[] args) throws IOException, ParseException {	
@@ -59,10 +48,16 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-//		articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "Gadgets";
-		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
-		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		String articleFolder = String
+.format(
+				"./data/ParentChildTopicModel/%sArticles",
+						articleType);
+		String commentFolder = String
+.format(
+				"./data/ParentChildTopicModel/%sComments",
+						articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -111,7 +106,8 @@ public class featureGeneration {
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.00; // Used in feature selection, the starting point of the features.
-		double endProb = 0.95; // Used in feature selection, the ending point of the features.
+		double endProb = 0.90; // Used in feature selection, the ending point of
+								// the features.
 		int DFthreshold = 1; // Filter the features with DFs smaller than this threshold.
 
 		System.out.println("Performing feature selection, wait...");

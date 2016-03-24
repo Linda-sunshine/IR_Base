@@ -8,12 +8,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
@@ -419,6 +419,10 @@ public class Utils {
 	
 	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
+		if (spVct1L2 == 0)
+			System.out.println("spVct1L2");
+		else if (spVct2L2 == 0)
+			System.out.println("spVct2L2");
 		if (spVct1L2==0 || spVct2L2==0)
 			return 0;
 		else
