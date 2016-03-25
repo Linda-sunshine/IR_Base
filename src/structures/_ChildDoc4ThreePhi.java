@@ -1,5 +1,7 @@
 package structures;
 
+import java.util.Arrays;
+
 import utils.Utils;
 
 public class _ChildDoc4ThreePhi extends _ChildDoc{
@@ -25,7 +27,15 @@ public class _ChildDoc4ThreePhi extends _ChildDoc{
 
 		m_xSstat = new int[gammaSize];
 		m_xProportion = new double[gammaSize];
-	
+
+		for (int i = 0; i < gammaSize; i++) {
+			Arrays.fill(m_xTopicSstat[i], 0);
+			Arrays.fill(m_xTopics[i], 0);
+		}
+
+		Arrays.fill(m_xSstat, 0);
+		Arrays.fill(m_xProportion, 0);
+
 	}
 	
 	public void setTopics4Gibbs(int k, double alpha){

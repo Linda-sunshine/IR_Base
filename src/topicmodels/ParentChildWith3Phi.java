@@ -48,7 +48,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
-				((_ParentDoc4ThreePhi)d).createXSpace(number_of_topics, m_gammaParent.length, vocabulary_size);
+				((_ParentDoc4ThreePhi) d).createXSpace(number_of_topics,
+						m_gammaParent.length, vocabulary_size);
 				((_ParentDoc4ThreePhi) d).setTopics4Gibbs(number_of_topics, 0);
 				for(_Stn stnObj: d.getSentences())
 					stnObj.setTopicsVct4ThreePhi(number_of_topics, m_gammaParent.length);				
@@ -111,7 +112,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		double normalizedProb;
 		double supplementProb;
 		
-		for(_Word w: d.getWords()){
+		for (_Word w : doc.getWords()) {
 			wid = w.getIndex();
 			tid = w.getTopic();
 			xid = w.getX();
@@ -151,6 +152,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			for(tid=0; tid<number_of_topics; tid++){
 				m_topicProbCache[tid] /= supplementProb;
 				normalizedProb += m_topicProbCache[tid];
+				// System.out.println("x=0 in parent doc probability\t"
+				// + m_topicProbCache[tid]);
 			}
 			
 			pWordTopic = localParentWordByTopicProb(wid, doc);
@@ -214,7 +217,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			return term;
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
-			double muDp = cDoc.getMu() / d.m_xSstat[0];
+			double muDp = cDoc.getMu() / (d.m_xSstat[0] + 1);
 			term *= gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp,
 					d_alpha
 					+ d.m_xTopicSstat[0][tid] * muDp)
@@ -341,10 +344,12 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	protected double childTopicInDocProb(int tid, _ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){
 		double docLength = pDoc.m_xSstat[0];
 		
-		if(docLength==0)
+		if (docLength == 0) {
+			System.out
+					.println("pDoc no words assigned to zero in childTopicInDocProb");
 			return (d_alpha + cDoc.m_xTopicSstat[0][tid])
 					/ (m_kAlpha + cDoc.m_xSstat[0]);
-		else
+		} else
 			return (d_alpha + cDoc.getMu() * pDoc.m_xTopicSstat[0][tid]
 					/ docLength + cDoc.m_xTopicSstat[0][tid])
 				/ (m_kAlpha + cDoc.getMu() + cDoc.m_xSstat[0]);
@@ -520,6 +525,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 
 		for(int k=0; k<this.number_of_topics; k++){
 			if (parentDocLength == 0) {
+				System.out
+						.println("no words in parent doc assigned to zero in collect child stats");
 				temp = cDoc.m_xTopicSstat[0][k] + d_alpha;
 				cDoc.m_topics[k] += temp;
 				cDoc.m_xTopics[0][k] += temp;

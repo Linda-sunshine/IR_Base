@@ -345,6 +345,7 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 
+		Arrays.fill(m_topics, 0);
 		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!

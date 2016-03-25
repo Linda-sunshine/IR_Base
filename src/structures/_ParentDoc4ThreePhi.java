@@ -1,5 +1,6 @@
 package structures;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import utils.Utils;
@@ -31,6 +32,15 @@ public class _ParentDoc4ThreePhi extends _ParentDoc{
 
 		m_pairWordSstat = new int[vocalSize];
 		m_pairWordDistribution = new double[vocalSize];
+
+		Arrays.fill(m_xTopicSstat[0], 0);
+		Arrays.fill(m_xTopicSstat[1], 0);
+
+		Arrays.fill(m_xSstat, 0);
+		Arrays.fill(m_xProportion, 0);
+
+		Arrays.fill(m_pairWordSstat, 0);
+		Arrays.fill(m_pairWordDistribution, 0);
 	}
 	
 	public void setTopics4Gibbs(int k, double alpha) {
@@ -72,12 +82,6 @@ public class _ParentDoc4ThreePhi extends _ParentDoc{
 	public void estGlobalLocalTheta(){
 
 		Utils.L1Normalization(m_topics);
-
-		for (int i = 0; i < m_topics.length; i++) {
-			if (Double.isNaN(m_topics[i]))
-				System.out.println("topic proportion \t" + m_topics[i]);
-		}
-
 
 		Utils.L1Normalization(m_xProportion);
 
