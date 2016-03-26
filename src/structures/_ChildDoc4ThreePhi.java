@@ -6,36 +6,46 @@ import utils.Utils;
 
 public class _ChildDoc4ThreePhi extends _ChildDoc{
 
+	public double m_childWordSstat;
+	double m_beta; 
+	
 	public _ChildDoc4ThreePhi(int ID, String name, String title, String source, int ylabel) {
 		super(ID, name, title, source, ylabel);
 		
 		// TODO Auto-generated constructor stub
 	}
 
-	public void createXSpace(int k, int gammaSize, int vocalSize) {
-		m_xTopicSstat = new int[gammaSize][];
+	public void createXSpace(int k, int gammaSize, int vocalSize, double beta) {
+		m_beta = beta*0.0001; 
+		
+		m_xTopicSstat = new double[gammaSize][];
 		m_xTopics = new double[gammaSize][];
 
-		m_xTopicSstat[0] = new int[k];
+		m_xTopicSstat[0] = new double[k];
 		m_xTopics[0] = new double[k];
 
-		m_xTopicSstat[1] = new int[1];
+		m_xTopicSstat[1] = new double[1];
 		m_xTopics[1] = new double[1];
 
-		m_xTopicSstat[2] = new int[vocalSize];
+		m_xTopicSstat[2] = new double[vocalSize];
 		m_xTopics[2] = new double[vocalSize];
 
-		m_xSstat = new int[gammaSize];
+		m_xSstat = new double[gammaSize];
 		m_xProportion = new double[gammaSize];
 
-		for (int i = 0; i < gammaSize; i++) {
-			Arrays.fill(m_xTopicSstat[i], 0);
-			Arrays.fill(m_xTopics[i], 0);
-		}
-
+		Arrays.fill(m_xTopicSstat[0], 0);
+		Arrays.fill(m_xTopics[0], 0);
+		
+		Arrays.fill(m_xTopicSstat[1], 0);
+		Arrays.fill(m_xTopics[1], 0);
+		
+		Arrays.fill(m_xTopicSstat[2], m_beta);
+		Arrays.fill(m_xTopics[2], 0);
+		
 		Arrays.fill(m_xSstat, 0);
 		Arrays.fill(m_xProportion, 0);
-
+		
+		m_childWordSstat = m_beta*vocalSize;
 	}
 	
 	public void setTopics4Gibbs(int k, double alpha){
@@ -59,6 +69,7 @@ public class _ChildDoc4ThreePhi extends _ChildDoc{
 					tid = k + 1;
 					m_xTopicSstat[xid][wid]++;
 					m_xSstat[xid]++;
+					m_childWordSstat ++;
 				}
 				
 				m_words[wIndex] = new _Word(wid, tid, xid);

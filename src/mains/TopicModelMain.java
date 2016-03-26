@@ -216,8 +216,12 @@ public class TopicModelMain {
 //						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
-				double[] gammaParent = { 0.5, 0.5 };
-				double[] gammaChild = { 0.3, 0.3, 0.3 };
+				alpha = 1.01;
+				beta = 1.001;
+//				double[] gammaParent = {0.5, 0.5 };
+//				double[] gammaChild = { 0.3, 0.3, 0.3 };
+				double[] gammaParent = {0.5, 0.5};
+				double[] gammaChild = { 0.5, 0.5, 0.5};
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){

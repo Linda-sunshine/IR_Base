@@ -153,8 +153,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		
 		double muDp = m_mu / pDoc.getTotalDocLength();
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
-			term *= gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp) 
-					/ gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);		
+			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp) 
+					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);		
 		} 
 
 		return term;

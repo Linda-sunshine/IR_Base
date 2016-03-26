@@ -49,13 +49,13 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
 				((_ParentDoc4ThreePhi) d).createXSpace(number_of_topics,
-						m_gammaParent.length, vocabulary_size);
+						m_gammaParent.length, vocabulary_size, d_beta);
 				((_ParentDoc4ThreePhi) d).setTopics4Gibbs(number_of_topics, 0);
 				for(_Stn stnObj: d.getSentences())
 					stnObj.setTopicsVct4ThreePhi(number_of_topics, m_gammaParent.length);				
 			} else if(d instanceof _ChildDoc){
 				((_ChildDoc4ThreePhi) d).createXSpace(number_of_topics,
-						m_gammaChild.length, vocabulary_size);
+						m_gammaChild.length, vocabulary_size, d_beta);
 				((_ChildDoc4ThreePhi) d).setTopics4Gibbs(number_of_topics, 0);
 				computeMu4Doc((_ChildDoc) d);
 			}
@@ -189,6 +189,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 				w.setTopic(tid);
 				doc.m_xTopicSstat[xid][0]++;
 				doc.m_xSstat[xid]++;
+				
 
 				doc.m_pairWordSstat[wid]++;
 				doc.m_pairWord++;
@@ -202,8 +203,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 
 	//localword initialized vocabulary*beta;
 	protected double localParentWordByTopicProb(int wid, _ParentDoc4ThreePhi d){
-		return (d.m_pairWordSstat[wid] + d_beta)
-				/ (d.m_pairWord + vocabulary_size * d_beta);
+		return (d.m_pairWordSstat[wid])
+				/ (d.m_pairWord);
 	}
 	
 	protected double parentXInDocProb(int xid, _ParentDoc4ThreePhi d){
@@ -218,10 +219,10 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
 			double muDp = cDoc.getMu() / (d.m_xSstat[0] + 1);
-			term *= gammaFuncRatio(cDoc.m_xTopicSstat[0][tid], muDp,
+			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp,
 					d_alpha
 					+ d.m_xTopicSstat[0][tid] * muDp)
-					/ gammaFuncRatio(cDoc.m_xTopicSstat[0][0], muDp,
+					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp,
 							d_alpha
 							+ d.m_xTopicSstat[0][0] * muDp);
 		} 
@@ -257,6 +258,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			}else if(xid==2){
 				doc.m_xTopicSstat[xid][wid]--;
 				doc.m_xSstat[xid]--;
+				doc.m_childWordSstat --;
 			}
 			
 			normalizedProb = 0;
@@ -311,7 +313,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 				w.setTopic(tid);
 				doc.m_xTopicSstat[xid][0]++;
 				doc.m_xSstat[xid]++;
-
+			
 				pDoc.m_pairWordSstat[wid]++;
 				pDoc.m_pairWord ++;
 			}else if(tid==(number_of_topics+1)){
@@ -320,6 +322,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 				w.setTopic(tid);
 				doc.m_xTopicSstat[xid][wid]++;
 				doc.m_xSstat[xid]++;
+				doc.m_childWordSstat ++;
+				
 			}
 			
 			
@@ -332,24 +336,24 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	
 	protected double childParentWordByTopicProb(int wid,
 			_ParentDoc4ThreePhi pDoc) {
-		return (pDoc.m_pairWordSstat[wid] + d_beta)
-		/ (pDoc.m_pairWord + vocabulary_size * d_beta);
+		return (pDoc.m_pairWordSstat[wid])
+		/ (pDoc.m_pairWord);
 	}
 	
 	protected double childLocalWordByTopicProb(int wid, _ChildDoc4ThreePhi d){
-		return (d.m_xTopicSstat[2][wid] + d_beta)
-				/ (d.m_xSstat[2] + vocabulary_size * d_beta);
+		return (d.m_xTopicSstat[2][wid])
+				/ (d.m_childWordSstat);
 	}
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){
 		double docLength = pDoc.m_xSstat[0];
 		
-		if (docLength == 0) {
-			System.out
-					.println("pDoc no words assigned to zero in childTopicInDocProb");
-			return (d_alpha + cDoc.m_xTopicSstat[0][tid])
-					/ (m_kAlpha + cDoc.m_xSstat[0]);
-		} else
+//		if (docLength == 0) {
+//			System.out
+//					.println("pDoc no words assigned to zero in childTopicInDocProb");
+//			return (d_alpha + cDoc.m_xTopicSstat[0][tid])
+//					/ (m_kAlpha + cDoc.m_xSstat[0]);
+//		} else
 			return (d_alpha + cDoc.getMu() * pDoc.m_xTopicSstat[0][tid]
 					/ docLength + cDoc.m_xTopicSstat[0][tid])
 				/ (m_kAlpha + cDoc.getMu() + cDoc.m_xSstat[0]);
@@ -372,7 +376,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
 
 		pDoc.createXSpace(number_of_topics, m_gammaParent.length,
-				vocabulary_size);
+				vocabulary_size, d_beta);
 		pDoc.setTopics4Gibbs(number_of_topics, 0);
 		for (_Stn stnObj : pDoc.getSentences())
 			stnObj.setTopicsVct4ThreePhi(number_of_topics, m_gammaParent.length);
@@ -381,7 +385,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			_ChildDoc4ThreePhi childDoc = (_ChildDoc4ThreePhi)cDoc; 
 			childDoc.createXSpace(number_of_topics, m_gammaChild.length,
-					vocabulary_size);
+					vocabulary_size, d_beta);
 			computeMu4Doc(childDoc);
 			
 			childDoc.setTopics4Gibbs(number_of_topics, 0);
@@ -511,7 +515,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			pDoc.m_xProportion[x] += m_gammaParent[x] + pDoc.m_xSstat[x];
 		
 		for(int w=0; w<vocabulary_size; w++)
-			pDoc.m_pairWordDistribution[w] += pDoc.m_pairWordSstat[w] + d_beta;
+			pDoc.m_pairWordDistribution[w] += pDoc.m_pairWordSstat[w];
 		
 		pDoc.collectTopicWordStat();
 	}
@@ -524,19 +528,19 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		double temp = 0;
 
 		for(int k=0; k<this.number_of_topics; k++){
-			if (parentDocLength == 0) {
-				System.out
-						.println("no words in parent doc assigned to zero in collect child stats");
-				temp = cDoc.m_xTopicSstat[0][k] + d_alpha;
-				cDoc.m_topics[k] += temp;
-				cDoc.m_xTopics[0][k] += temp;
-			} else {
+//			if (parentDocLength == 0) {
+//				System.out
+//						.println("no words in parent doc assigned to zero in collect child stats");
+//				temp = cDoc.m_xTopicSstat[0][k] + d_alpha;
+//				cDoc.m_topics[k] += temp;
+//				cDoc.m_xTopics[0][k] += temp;
+//			} else {
 				temp = cDoc.m_xTopicSstat[0][k] + d_alpha
 						+ cDoc.getMu()*pDoc.m_xTopicSstat[0][k] / parentDocLength;
 
 				cDoc.m_topics[k] += temp;
 				cDoc.m_xTopics[0][k] += temp;
-			}
+//			}
 
 		}
 
@@ -548,7 +552,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			cDoc.m_xProportion[x] += m_gammaChild[x] + cDoc.m_xSstat[x];
 		
 		for (int w = 0; w < vocabulary_size; w++) {
-			cDoc.m_xTopics[2][w] += cDoc.m_xTopicSstat[2][w] + d_beta;
+			cDoc.m_xTopics[2][w] += cDoc.m_xTopicSstat[2][w];
 		}
 
 	}

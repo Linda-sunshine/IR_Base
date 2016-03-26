@@ -7,20 +7,23 @@ import utils.Utils;
 
 public class _ParentDoc4ThreePhi extends _ParentDoc{
 	
-	public int[] m_pairWordSstat;
+	public double[] m_pairWordSstat;
 	public double[] m_pairWordDistribution;
-	public int m_pairWord;
+	public double m_pairWord;
 	
 	public int[][] m_xTopicSstat;
 	public int[] m_xSstat;
 	
 	public double[] m_xProportion;
+	double m_beta;
 	
 	public _ParentDoc4ThreePhi(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
 	}
 	
-	public void createXSpace(int k, int gammaSize, int vocalSize) {
+	public void createXSpace(int k, int gammaSize, int vocalSize, double beta) {
+		m_beta = beta*0.01;
+		
 		m_xTopicSstat = new int[gammaSize][];
 		
 		m_xTopicSstat[0] = new int[k];
@@ -30,16 +33,17 @@ public class _ParentDoc4ThreePhi extends _ParentDoc{
 		m_xSstat = new int[gammaSize];
 		m_xProportion = new double[gammaSize];
 
-		m_pairWordSstat = new int[vocalSize];
+		m_pairWordSstat = new double[vocalSize];
 		m_pairWordDistribution = new double[vocalSize];
-
+		m_pairWord = m_beta*vocalSize;
+		
 		Arrays.fill(m_xTopicSstat[0], 0);
 		Arrays.fill(m_xTopicSstat[1], 0);
 
 		Arrays.fill(m_xSstat, 0);
 		Arrays.fill(m_xProportion, 0);
 
-		Arrays.fill(m_pairWordSstat, 0);
+		Arrays.fill(m_pairWordSstat, m_beta);
 		Arrays.fill(m_pairWordDistribution, 0);
 	}
 	
