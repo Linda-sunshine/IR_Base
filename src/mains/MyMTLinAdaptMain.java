@@ -21,8 +21,6 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsrNoAdpt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
@@ -69,7 +67,7 @@ public class MyMTLinAdaptMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-		MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 //		mtlinadaptsup.setLNormFlag(false);
 		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 		mtlinadaptsup.loadUsers(analyzer.getUsers());

@@ -80,12 +80,16 @@ public class LinAdapt extends RegLR {
 		m_pWeights = new double[m_gWeights.length];
 	}
 	
+	int getVSize() {
+		return m_dim*2;
+	}
+	
 	@Override
 	protected void initLBFGS(){
 		if(m_g == null)
-			m_g = new double[m_dim*2];
+			m_g = new double[getVSize()];
 		if(m_diag == null)
-			m_diag = new double[m_dim*2];
+			m_diag = new double[getVSize()];
 		
 		Arrays.fill(m_diag, 0);
 		Arrays.fill(m_g, 0);

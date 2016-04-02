@@ -23,7 +23,7 @@ import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 
-public class asyncMTLinAdapt extends MTLinAdaptWithSupUsr{
+public class asyncMTLinAdapt extends MTLinAdapt{
 
 	double m_initStepSize = 0.25;
 	boolean m_trainByUser = true; 

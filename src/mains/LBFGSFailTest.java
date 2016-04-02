@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import opennlp.tools.util.InvalidFormatException;
 
 public class LBFGSFailTest {
@@ -56,7 +56,7 @@ public class LBFGSFailTest {
 			HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 				
 			// Create instance of MTLinAdaptWithSupUsr
-			MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+			MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 			mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 			mtlinadaptsup.loadUsers(analyzer.getUsers());
 			mtlinadaptsup.setLNormFlag(false);

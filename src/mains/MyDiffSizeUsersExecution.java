@@ -7,7 +7,7 @@ import java.util.HashMap;
 import structures.MTLinAdaptParameter;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 
 public class MyDiffSizeUsersExecution {
 	
@@ -63,7 +63,7 @@ public class MyDiffSizeUsersExecution {
 			}
 			else if(param.m_model.equals("mtlinadapt")){
 				// Create instance of MTLinAdaptWithSupUsr
-				MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+				MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 				mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 				mtlinadaptsup.loadUsers(analyzer.getUsers());
 				mtlinadaptsup.setDisplayLv(displayLv);

@@ -1,27 +1,12 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
-import structures.MyPriorityQueue;
-import structures._RankItem;
-import structures._Review;
-import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.IndividualSVM;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsrNoAdpt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncGeneral;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncLinAdapt;

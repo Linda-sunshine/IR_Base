@@ -9,7 +9,7 @@ import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdaptWithSupUsr;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncGeneral;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
@@ -62,7 +62,7 @@ public class MySplitMain {
 
 			if(model.equals("mtlinadapt")){
 				//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-				MTLinAdaptWithSupUsr mtlinadaptsup = new MTLinAdaptWithSupUsr(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+				MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
 				mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 				mtlinadaptsup.loadUsers(analyzer.getUsers());
 				mtlinadaptsup.setDisplayLv(displayLv);
