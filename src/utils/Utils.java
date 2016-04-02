@@ -391,6 +391,35 @@ public class Utils {
 			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
+	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
+		if (spVct1L2==0 || spVct2L2==0)
+			return 0;
+		else
+			return calculateSimilarity_values(spVct1, spVct2) / spVct1L2 / spVct2L2;
+	}
+	
+	public static double calculateSimilarity_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValues()[0] * temp2.getValues()[0];
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+	
 	public static double cosine(double[] a, double[] b) {
 		if(L2Norm(a) == 0 || L2Norm(b) == 0)
 			return 0;
