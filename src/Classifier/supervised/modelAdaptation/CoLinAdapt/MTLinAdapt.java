@@ -165,9 +165,9 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected double calculateRs(){
 		int offset = m_userList.size()*m_dim*2; // Access the As.
 		double rs = 0;
-		for(int i=0; i < m_dim; i++){
+		for(int i=0; i < m_dimSup; i++){
 			rs += m_lambda1 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
-			rs += m_lambda2 * m_A[offset + i + m_dim] * m_A[offset + i + m_dim]; // Get shifting of super user.
+			rs += m_lambda2 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
 		}
 		return rs;
 	}
@@ -175,9 +175,9 @@ public class MTLinAdapt extends CoLinAdapt {
 	// Gradients for the gs.
 	protected void gradientByRs(){
 		int offset = m_userList.size() * m_dim * 2;
-		for(int i=0; i < m_dim; i++){
+		for(int i=0; i < m_dimSup; i++){
 			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
-			m_g[offset + i + m_dim] += 2 * m_lambda2 * m_A[offset + i + m_dim];
+			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
 		}
 	}
 	
@@ -185,7 +185,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
 		
-		int n, k; // feature index and feature group index		
+		int n, k, s; // feature index and feature group index		
 		int offset = 2*m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		int offsetSup = 2*m_dim*m_userList.size();
 		double delta = weight*(review.getYLabel() - logit(review.getSparse(), ui));
@@ -198,7 +198,7 @@ public class MTLinAdapt extends CoLinAdapt {
 
 		// Bias term for super user.
 		m_g[offsetSup] -= delta*ui.getScaling(0)*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
-		m_g[offsetSup + m_dim] -= delta*ui.getScaling(0); //b_s[0] = a_i0*x_d0
+		m_g[offsetSup + m_dimSup] -= delta*ui.getScaling(0); //b_s[0] = a_i0*x_d0
 		
 		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
 		for(_SparseFeature fv: review.getSparse()){
@@ -207,8 +207,9 @@ public class MTLinAdapt extends CoLinAdapt {
 			m_g[offset + k] -= delta*getSupWeights(n)*fv.getValue(); // w_si*x_di
 			m_g[offset + m_dim + k] -= delta*fv.getValue(); // x_di
 			
-			m_g[offsetSup + k] -= delta*ui.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
-			m_g[offsetSup + m_dim + k] -= delta*ui.getScaling(k)*fv.getValue(); // a_i*x_di
+			s = m_featureGroupMap4SupUsr[n];
+			m_g[offsetSup + s] -= delta*ui.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
+			m_g[offsetSup + m_dimSup + s] -= delta*ui.getScaling(k)*fv.getValue(); // a_i*x_di
 		}
 	}
 	
