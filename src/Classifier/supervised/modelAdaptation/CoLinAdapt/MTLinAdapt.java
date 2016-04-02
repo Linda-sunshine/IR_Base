@@ -1,9 +1,11 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,17 +19,19 @@ import structures._User;
 
 public class MTLinAdapt extends CoLinAdapt {
 
-	double[] m_A; // [A_0, A_1, A_2,..A_s] Transformation matrix shared by super user and individual users.
+	double[] m_A; // [A_0, A_1, A_2,..A_s]Transformation matrix shared by super user and individual users.
 
 	// feature grouping for super user (this could be different from individual users' feature grouping)
 	int m_dimSup;
 	int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	double[] m_sWeights; // Weights for the super user.
-	
+
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
-	//this constructor will load feature group mapping for super user
+	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
+	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
+	
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
@@ -35,26 +39,30 @@ public class MTLinAdapt extends CoLinAdapt {
 		
 		m_lambda1 = 0.5;
 		m_lambda2 = 0.1;
+		m_LNormFlag = true;
 	}
 	
 	//this constructor will not construct feature group mapping for super user
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		
 		m_lambda1 = 0.5;
 		m_lambda2 = 0.1;
+		m_LNormFlag = true;
 	}
 	
-	@Override
-	public void setR2TradeOffs(double lmd1, double lmd2){
+	public void setLNormFlag(boolean b){
+		m_LNormFlag = b;
+	}
+	
+	public void setRsTradeOffs(double lmd1, double lmd2){
 		m_lambda1 = lmd1;
 		m_lambda2 = lmd2;
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdapt[dim:%d,supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
+		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
 				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
 	}
 	
@@ -64,7 +72,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	}
 	
 	// Feature group map for the super user.
-	public void loadFeatureGroupMap4SupUsr(String filename) {		
+	public void loadFeatureGroupMap4SupUsr(String filename){
 		// If there is no feature group for the super user.
 		if(filename == null){
 			m_dimSup = m_featureSize + 1;
@@ -72,7 +80,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			for(int i=0; i<=m_featureSize; i++)
 				m_featureGroupMap4SupUsr[i] = i;
 			return;
-		} else {// If there is feature grouping for the super user, load it.	
+		} else{// If there is feature grouping for the super user, load it.
 			try{
 				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 				String[] features = reader.readLine().split(",");//Group information of each feature.
@@ -91,7 +99,6 @@ public class MTLinAdapt extends CoLinAdapt {
 				System.err.format("[Error]Fail to open super user group file %s.\n", filename);
 			}
 		}
-		
 		System.out.format("[Info]Feature group size for super user %d\n", m_dimSup);
 	}
 	
@@ -109,12 +116,11 @@ public class MTLinAdapt extends CoLinAdapt {
 	@Override
 	public void loadUsers(ArrayList<_User> userList){
 		int vSize = 2*m_dim;
-		
 		constructUserList(userList);
-		// initiate A_s with [1,1,1,..,0,0,0,...].
+		// Init A_s with [1,1,1,..,0,0,0,...].
 		for(int i=m_userList.size()*vSize; i<m_userList.size()*vSize+m_dimSup; i++)
 			m_A[i] = 1;
-	}	
+	}
 	
 	// We can do A_i*A_s*w_g*x at the same time to reduce computation.
 	@Override
@@ -128,28 +134,24 @@ public class MTLinAdapt extends CoLinAdapt {
 			value += (ui.getScaling(k)*getSupWeights(n) + ui.getShifting(k)) * fv.getValue();
 		}
 		return 1/(1+Math.exp(-value));
-	}	
-	
-	// w_s = A_s * w_g
-	// index starts from 0 for bias term
-	double getSupWeights(int index){
-		int gid = m_featureGroupMap4SupUsr[index], offsetSup = m_userList.size() * 2 * m_dim;
-		return m_A[offsetSup + gid] * m_gWeights[index] + m_A[offsetSup + gid + m_dimSup];
 	}
 	
 	//Calculate the function value of the new added instance.
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u){
 		double L = calcLogLikelihood(u); //log likelihood.
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;	
-		
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
+
+		if(!m_LNormFlag)
+			L *= ui.getAdaptationSize();
+
 		//Add regularization parts.
 		double R1 = 0;
 		for(int k=0; k<m_dim; k++){
 			R1 += m_eta1 * (ui.getScaling(k)-1) * (ui.getScaling(k)-1);//(a[i]-1)^2
 			R1 += m_eta2 * ui.getShifting(k) * ui.getShifting(k);//b[i]^2
 		}
-		return R1 - L;
+		return (R1 - L);
 	}
 	
 	@Override
@@ -163,9 +165,9 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected double calculateRs(){
 		int offset = m_userList.size()*m_dim*2; // Access the As.
 		double rs = 0;
-		for(int i=0; i < m_dimSup; i++){
+		for(int i=0; i < m_dim; i++){
 			rs += m_lambda1 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
-			rs += m_lambda2 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
+			rs += m_lambda2 * m_A[offset + i + m_dim] * m_A[offset + i + m_dim]; // Get shifting of super user.
 		}
 		return rs;
 	}
@@ -173,9 +175,9 @@ public class MTLinAdapt extends CoLinAdapt {
 	// Gradients for the gs.
 	protected void gradientByRs(){
 		int offset = m_userList.size() * m_dim * 2;
-		for(int i=0; i < m_dimSup; i++){
+		for(int i=0; i < m_dim; i++){
 			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
-			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
+			m_g[offset + i + m_dim] += 2 * m_lambda2 * m_A[offset + i + m_dim];
 		}
 	}
 	
@@ -183,12 +185,12 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
 		
-		int n, k, s; // feature index and feature group index		
+		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		int offsetSup = 2*m_dim*m_userList.size();
 		double delta = weight*(review.getYLabel() - logit(review.getSparse(), ui));
 		if(m_LNormFlag)
-			delta /= getAdaptationSize(ui);		
+			delta /= getAdaptationSize(ui);
 
 		// Bias term for individual user.
 		m_g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
@@ -196,7 +198,7 @@ public class MTLinAdapt extends CoLinAdapt {
 
 		// Bias term for super user.
 		m_g[offsetSup] -= delta*ui.getScaling(0)*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
-		m_g[offsetSup + m_dimSup] -= delta*ui.getScaling(0); //b_s[0] = a_i0*x_d0
+		m_g[offsetSup + m_dim] -= delta*ui.getScaling(0); //b_s[0] = a_i0*x_d0
 		
 		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
 		for(_SparseFeature fv: review.getSparse()){
@@ -205,9 +207,8 @@ public class MTLinAdapt extends CoLinAdapt {
 			m_g[offset + k] -= delta*getSupWeights(n)*fv.getValue(); // w_si*x_di
 			m_g[offset + m_dim + k] -= delta*fv.getValue(); // x_di
 			
-			s = m_featureGroupMap4SupUsr[n];
-			m_g[offsetSup + s] -= delta*ui.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
-			m_g[offsetSup + m_dimSup + s] -= delta*ui.getScaling(k)*fv.getValue(); // a_i*x_di
+			m_g[offsetSup + k] -= delta*ui.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
+			m_g[offsetSup + m_dim + k] -= delta*ui.getScaling(k)*fv.getValue(); // a_i*x_di
 		}
 	}
 	
@@ -232,13 +233,13 @@ public class MTLinAdapt extends CoLinAdapt {
 					fValue += calculateFuncValue(user); // L + R^1(A_i)
 					calculateGradients(user);
 				}
-				
 				// The contribution from R^1(A_s) to both function value and gradients.
 				fValue += calculateRs(); // + R^1(A_s)
 				gradientByRs(); // Gradient from R^1(A_s)
 
 				if (m_displayLv == 2) {
 					System.out.format("Fvalue is %.3f", fValue);
+
 					gradientTest();
 				} else if (m_displayLv == 1) {
 					if (fValue < oldFValue)
@@ -250,12 +251,15 @@ public class MTLinAdapt extends CoLinAdapt {
 						System.out.println();
 				}
 				oldFValue = fValue;
+//				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 
 				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
 			System.out.println();
 		} catch (ExceptionWithIflag e) {
+			System.err.println("********lbfgs fails here!******");
 			e.printStackTrace();
+			m_lbfgs = 0;
 		}
 
 		setPersonalizedModel();
@@ -267,7 +271,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected void setPersonalizedModel() {
 		int gid;
 		_CoLinAdaptStruct ui;
-
+		
 		//get the model weight for super user
 		for(int n=0; n<=m_featureSize; n++)
 			m_sWeights[n] = getSupWeights(n);
@@ -276,16 +280,22 @@ public class MTLinAdapt extends CoLinAdapt {
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
-			if (m_personalized) {
+			if(m_personalized){
 				//set the other features
 				for(int n=0; n<=m_featureSize; n++) {
 					gid = m_featureGroupMap[n];
 					m_pWeights[n] = ui.getScaling(gid) * m_sWeights[n] + ui.getShifting(gid);
 				}
 				ui.setPersonalizedModel(m_pWeights);
-			} else 
+			} else// Set super user == general user.
 				ui.setPersonalizedModel(m_sWeights);
 		}
+	}
+	
+	// w_s = A_s * w_g
+	public double getSupWeights(int index){
+		int gid = m_featureGroupMap[index], offsetSup = m_userList.size() * 2 * m_dim;
+		return m_A[offsetSup + gid] * m_gWeights[index] + m_A[offsetSup + gid + m_dim];
 	}
 	
 	@Override
@@ -319,5 +329,22 @@ public class MTLinAdapt extends CoLinAdapt {
 	public double[] getGlobalWeights(){
 		return m_gWeights;
 	}
-
+	
+	public int getLBFGSFlag(){
+		return m_lbfgs;
+	}
+	
+	// Print out super user's weights.
+	public void saveSupModel(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			writer.write(m_sWeights[0]+"\n");
+			for(int i=1; i<m_sWeights.length; i++){
+				writer.write(m_sWeights[i]+"\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }
