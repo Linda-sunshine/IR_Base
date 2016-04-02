@@ -56,7 +56,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 	}
 		
 	@Override
-	double getSupWeights(int index){
+	public double getSupWeights(int index){
 		return m_p*m_A[m_dim*2*m_userList.size() + index] + m_q*m_gWeights[index];
 	}
 	
