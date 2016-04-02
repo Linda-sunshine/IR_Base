@@ -252,7 +252,6 @@ public class MTLinAdapt extends CoLinAdapt {
 						System.out.println();
 				}
 				oldFValue = fValue;
-//				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 
 				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
@@ -295,8 +294,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	// w_s = A_s * w_g
 	public double getSupWeights(int index){
-		int gid = m_featureGroupMap[index], offsetSup = m_userList.size() * 2 * m_dim;
-		return m_A[offsetSup + gid] * m_gWeights[index] + m_A[offsetSup + gid + m_dim];
+		int gid = m_featureGroupMap4SupUsr[index], offsetSup = m_userList.size() * 2 * m_dim;
+		return m_A[offsetSup + gid] * m_gWeights[index] + m_A[offsetSup + gid + m_dimSup];
 	}
 	
 	@Override

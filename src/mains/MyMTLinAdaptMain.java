@@ -40,6 +40,7 @@ public class MyMTLinAdaptMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		// Best performance for mt-linadapt in amazon.
 		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+//		double eta1 = 0.1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		// Best performance for mt-linadapt in yelp.
 //		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
@@ -67,9 +68,8 @@ public class MyMTLinAdaptMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile); 
+		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
 //		mtlinadaptsup.setLNormFlag(false);
-		mtlinadaptsup.loadFeatureGroupMap4SupUsr(null);//featureGroupFileSup
 		mtlinadaptsup.loadUsers(analyzer.getUsers());
 		mtlinadaptsup.setDisplayLv(displayLv);
 		mtlinadaptsup.setR1TradeOffs(eta1, eta2);

@@ -1,6 +1,7 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,7 +22,8 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 
 	double m_initStepSize = 0.25;
 	boolean m_trainByUser = false; // by default we will perform online training by user; otherwise we will do it by review timestamp 
-		
+	int m_rptTime = 3, m_count = 0; // How many times the reviews will be used to update gradients.
+	
 	public asyncMTLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap, String featureGroup4Sup) {
@@ -34,6 +36,9 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 //		m_testmode = TestMode.TM_batch;
 	}
 	
+	public void setRPTTime(int t){
+		m_rptTime = t;
+	}
 	public void setTrainByUser(boolean b){
 		m_trainByUser = b;
 	}
@@ -164,11 +169,20 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		return user.getAdaptationCacheSize();
 	}
 	
+	// 
+	public void resetRPTTime(){
+		m_count = m_rptTime;
+	}
 	@Override
 	protected void gradientByFunc(_AdaptStruct user) {		
 		//Update gradients one review by one review.
-		for(_Review review:user.nextAdaptationIns())
-			gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
+		Collection<_Review> reviews = user.nextAdaptationIns();
+		resetRPTTime();
+		// Reuse the reviews several times to udpate gradients.
+		while(m_count-- > 0){
+			for(_Review review: reviews)
+				gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
+		}
 	}
 	
 	// update this current user only
