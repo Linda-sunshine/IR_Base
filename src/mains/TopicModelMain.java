@@ -201,8 +201,32 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, converge, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
+
+//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
+//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
+			}else if(topicmodel.equals("ParentChildWith3Phi")){
+				double mu = 1.0;
+				double[] gammaParent = {2, 2};
+				double[] gammaChild = {2, 2, 2};
+				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
+				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
+				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+			}else if(topicmodel.equals("ParentChildWith2Phi")){
+				double mu = 1.0;
+				double[] gammaParent = {2, 2};
+				double[] gammaChild = {2, 2};
+//				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1, c, 
+//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+			}else if(topicmodel.equals("ParentChildWithChildPhi")){
+				double mu = 1.0;
+				double[] gammaChild = {2, 2};
+//				model = new ParentChildWithChildPhi(gibbs_iteration, 0, beta-1, c, 
+//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaChild, mu);
 			}
 			
 			model.setDisplayLap(displayLap);

@@ -76,7 +76,7 @@ public class CoLinAdapt extends LinAdapt {
 			System.arraycopy(user.m_A, 0, _CoLinAdaptStruct.sharedA, vSize*i, vSize);
 		}
 	}
-	
+
 	@Override
 	public void loadUsers(ArrayList<_User> userList){		
 		//step 1: create space

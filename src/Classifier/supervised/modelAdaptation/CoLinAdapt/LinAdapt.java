@@ -49,24 +49,32 @@ public class LinAdapt extends RegLR {
 	/***When we do feature selection, we will group features and store them in file. 
 	 * The index is the index of features and the corresponding number is the group index number.***/
 	public void loadFeatureGroupMap(String filename){
-		try{
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String[] features = reader.readLine().split(",");//Group information of each feature.
-			reader.close();
-			
-			m_featureGroupMap = new int[features.length + 1]; //One more term for bias, bias->0.
-			m_dim = 0;
-			//Group index starts from 0, so add 1 for it.
-			for(int i=0; i<features.length; i++) {
-				m_featureGroupMap[i+1] = Integer.valueOf(features[i]) + 1;
-				if (m_dim < m_featureGroupMap[i+1])
-					m_dim = m_featureGroupMap[i+1];
+		if(filename == null){
+			m_dim = m_featureSize + 1;
+			m_featureGroupMap = new int[m_featureSize + 1]; //One more term for bias, bias->0.
+			for(int i=0; i<=m_featureSize; i++)
+				m_featureGroupMap[i] = i;
+			return;
+		} else {		
+			try{
+				BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+				String[] groups = reader.readLine().split(",");//Group information of each feature.
+				reader.close();
+				
+				m_featureGroupMap = new int[groups.length + 1]; //One more term for bias, 0->0.
+				m_dim = 0;
+				//Group index starts from 0, so add 1 for it.
+				for(int i=0; i<groups.length; i++) {
+					m_featureGroupMap[i+1] = Integer.valueOf(groups[i]) + 1;
+					if (m_dim < m_featureGroupMap[i+1])
+						m_dim = m_featureGroupMap[i+1];
+				}
+				m_dim ++;
+				
+				System.out.format("[Info]Feature group size %d\n", m_dim);
+			} catch(IOException e){
+				System.err.format("[Error]Fail to open file %s.\n", filename);
 			}
-			m_dim ++;
-			
-			System.out.format("[Info]Feature group size %d\n", m_dim);
-		} catch(IOException e){
-			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
 	}
 	

@@ -3,7 +3,6 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -153,7 +152,7 @@ public class MTLinAdapt extends CoLinAdapt {
 
 		if(!m_LNormFlag)
 			L *= ui.getAdaptationSize();
-		
+
 		//Add regularization parts.
 		double R1 = 0;
 		for(int k=0; k<m_dim; k++){
@@ -248,7 +247,8 @@ public class MTLinAdapt extends CoLinAdapt {
 
 				if (m_displayLv == 2) {
 					System.out.format("Fvalue is %.3f", fValue);
-					gradientTest();				
+
+					gradientTest();
 				} else if (m_displayLv == 1) {
 					if (fValue < oldFValue)
 						System.out.print("o");
@@ -261,7 +261,7 @@ public class MTLinAdapt extends CoLinAdapt {
 				oldFValue = fValue;
 //				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 
-				LBFGS.lbfgs(vSize, 5, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
+				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
 			System.out.println();
 		} catch (ExceptionWithIflag e) {
@@ -283,25 +283,20 @@ public class MTLinAdapt extends CoLinAdapt {
 		//get the model weight for super user
 		for(int n=0; n<=m_featureSize; n++)
 			m_sWeights[n] = getSupWeights(n);
+		
 		//Update each user's personalized model.
 		for(int i=0; i<m_userList.size(); i++) {
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
 			
 			if(m_personalized){
-				//set bias term
-				m_pWeights[0] = ui.getScaling(0) * m_sWeights[0] + ui.getShifting(0);
 				//set the other features
-				for(int n=0; n<m_featureSize; n++) {
-					gid = m_featureGroupMap[1+n];
-					m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
+				for(int n=0; n<=m_featureSize; n++) {
+					gid = m_featureGroupMap[n];
+					m_pWeights[n] = ui.getScaling(gid) * m_sWeights[n] + ui.getShifting(gid);
 				}
-			} else{// Set super user == general user.
-				m_pWeights[0] = m_sWeights[0];
-				for(int n=0; n<m_featureSize; n++) {
-					m_pWeights[1+n] = m_sWeights[1+n];
-				}
-			}
-			ui.setPersonalizedModel(m_pWeights);
+				ui.setPersonalizedModel(m_pWeights);
+			} else// Set super user == general user.
+				ui.setPersonalizedModel(m_sWeights);
 		}
 	}
 	

@@ -23,7 +23,8 @@ import structures._SparseFeature;
 import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
-	double m_u = 1; // trade-off parameter between global model and individual model.
+
+	double m_u = 1.0; // trade-off parameter between global model and individual model.
 	double m_C = 1.0; // trade-off parameter for SVM training 
 	
 	Model m_libModel; // Libmodel trained by liblinear.

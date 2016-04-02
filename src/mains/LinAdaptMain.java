@@ -4,28 +4,31 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
 import opennlp.tools.util.InvalidFormatException;
+import structures._PerformanceStat.TestMode;
 
 public class LinAdaptMain {
 	//In the main function, we want to input the data and do adaptation 
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
+	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
 		int classNumber = 2;
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
-		double trainRatio = 0, adaptRatio = 0.50;
+		//this is for batch mode
+//		double trainRatio = 0, adaptRatio = 0.50;
+		//this is for online mode
+		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
 		int displayLv = 0;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.1, eta2 = 0.05, eta3 = 0.02, eta4 = 0.01, neighborsHistoryWeight = 0.5;
+
+		double eta1 = .5, eta2 = .5, eta3 = .5, eta4 = .5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
 		String userFolder = "./data/CoLinAdapt/Users";
-		String featureGroupFile = "./data/CoLinAdapt/CrossGroups.txt";
+		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
@@ -41,8 +44,8 @@ public class LinAdaptMain {
 //		//Create an instance of asyncLinAdapt model.
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
-		//Create an instance of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		//Create an instance of CoLinAdapt model.
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instance of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -66,40 +69,28 @@ public class LinAdaptMain {
 		//Create an instance of first-order Collaboratively Regularized LogitReg model.
 //		asyncCoRegLRFirstOrder adaptation = new asyncCoRegLRFirstOrder(classNumber, analyzer.getFeatureSize(), 
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
+
 		
+		//Create an instance of asynchronized MT-LinAdapt model.
+		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
 		int fDim = 3; // xij contains <bias, bow, svd_sim>
 		String svdFile = "./data/CoLinAdapt/Amazon_SVD_Scaled.mm";
 		analyzer.loadSVDFile(svdFile);
 		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
-		*/
-		
+		*/		
+
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-//		adaptation.setTestMode(TestMode.TM_batch);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setR2TradeOffs(eta3, eta4);
 
-//		adaptation.setR1TradeOff(eta1);
-//		adaptation.setTradeOffs(1.0, 0.1);
+		adaptation.setLNormFlag(true);
+		adaptation.setTestMode(TestMode.TM_online);
+		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();
 		adaptation.test();
-//		adaptation.saveModel("data/results/colinadapt/models");
-
-		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation_MTL = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-		adaptation_MTL.loadUsers(analyzer.getUsers());
-		adaptation_MTL.setDisplayLv(displayLv);
-		adaptation_MTL.train();
-		adaptation_MTL.test();
-		
-		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
 	}
 }
