@@ -294,7 +294,6 @@ public class MTLinAdapt extends CoLinAdapt {
 	}
 	
 	// w_s = A_s * w_g
-	@Override
 	public double getSupWeights(int index){
 		int gid = m_featureGroupMap[index], offsetSup = m_userList.size() * 2 * m_dim;
 		return m_A[offsetSup + gid] * m_gWeights[index] + m_A[offsetSup + gid + m_dim];
