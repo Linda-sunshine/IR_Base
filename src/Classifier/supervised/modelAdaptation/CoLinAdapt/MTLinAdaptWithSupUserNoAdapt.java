@@ -56,15 +56,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 	}
 	@Override
 	public double getSupWeights(int index){
-		return m_A[m_dim*2*m_userList.size() + index] + m_q*m_gWeights[index];
-	}
-	
-	@Override
-	protected void initLBFGS(){
-		// General users and super user have different dimensions.
-		int vSize = 2*m_dim*m_userList.size() + m_featureSize + 1;
-		m_g = new double[vSize];
-		m_diag = new double[vSize];
+		return m_p*m_A[m_dim*2*m_userList.size() + index] + m_q*m_gWeights[index];
 	}
 	
 	// Calculate the R1 for the super user, As.
