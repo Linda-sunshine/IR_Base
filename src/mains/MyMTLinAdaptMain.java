@@ -39,12 +39,12 @@ public class MyMTLinAdaptMain {
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		// Best performance for mt-linadapt in amazon.
-//		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		// Best performance for mt-linadapt in yelp.
-		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
+//		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
 		double[] perf;
-		String dataset = "Yelp"; // "Amazon", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 				
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -76,9 +76,9 @@ public class MyMTLinAdaptMain {
 		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 		mtlinadaptsup.train();
 		mtlinadaptsup.test();
-		perf = mtlinadaptsup.getPerf();
-		mtlinadaptsup.saveSupModel("mtlinadapt_supModel_yelp.txt");
-		mtlinadaptsup.saveModel(String.format("./%s_mtlinadapt", dataset));
+//		perf = mtlinadaptsup.getPerf();
+//		mtlinadaptsup.saveSupModel("mtlinadapt_supModel_yelp.txt");
+//		mtlinadaptsup.saveModel(String.format("./%s_mtlinadapt", dataset));
 	
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();

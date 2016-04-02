@@ -101,7 +101,7 @@ public class MySplitMain {
 			asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 			adaptation.loadGlobal(String.format("./SuperModel/mtlinadapt_%s_super.txt", trainSize));
 			adaptation.loadUsers(analyzer.getUsers());
-			adaptation.setDataset(dataset);
+//			adaptation.setDataset(dataset);
 			adaptation.setTrainByUser(false);
 			adaptation.setDisplayLv(displayLv);
 			adaptation.train();

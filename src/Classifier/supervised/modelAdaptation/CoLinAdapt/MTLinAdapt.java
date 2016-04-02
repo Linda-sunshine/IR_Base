@@ -122,14 +122,6 @@ public class MTLinAdapt extends CoLinAdapt {
 			m_A[i] = 1;
 	}
 	
-	@Override
-	protected void initLBFGS(){
-		int vSize = 2*m_dim*(m_userList.size()+1);
-		
-		m_g = new double[vSize];
-		m_diag = new double[vSize];
-	}
-	
 	// We can do A_i*A_s*w_g*x at the same time to reduce computation.
 	@Override
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){

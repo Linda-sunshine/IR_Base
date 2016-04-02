@@ -21,9 +21,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 
 	double m_initStepSize = 0.25;
 	boolean m_trainByUser = false; // by default we will perform online training by user; otherwise we will do it by review timestamp 
-	
-	String m_dataset;
-	
+		
 	public asyncMTLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap, String featureGroup4Sup) {
@@ -38,10 +36,6 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	
 	public void setTrainByUser(boolean b){
 		m_trainByUser = b;
-	}
-	
-	public void setDataset(String data){
-		m_dataset = data;
 	}
 	
 	@Override
