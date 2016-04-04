@@ -14,6 +14,9 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
+import topicmodels.ParentChildBaseWithPhi_Gibbs;
+import topicmodels.ParentChildBase_Gibbs;
+import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.correspondence_LDA_Gibbs;
@@ -36,8 +39,8 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildWith3Phi"; // 2topic, pLSA, HTMM,
+		//ParentChild_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
+		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -57,9 +60,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
 		int displayLap = 100;
-		// gibbs_iteration = 200;
-		// gibbs_lag = 2;
-		displayLap = 5;
+//		gibbs_iteration = 2;
+//		gibbs_lag = 2;
+//		displayLap = 5;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -97,8 +100,8 @@ public class TopicModelMain {
 		}
 
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel_%s.txt", Ngram, articleType);
-	
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
+		
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
@@ -142,7 +145,7 @@ public class TopicModelMain {
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-		
+//		analyzer.LoadDirectory(commentFolder, suffix);
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
@@ -160,6 +163,7 @@ public class TopicModelMain {
 		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
+//		_Corpus c = analyzer.getCorpus();
 		
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
@@ -217,11 +221,13 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
 				alpha = 1.01;
-				beta = 1.001;
+				beta = 1.01;
 //				double[] gammaParent = {0.5, 0.5 };
 //				double[] gammaChild = { 0.3, 0.3, 0.3 };
+//				double[] gammaParent = {2, 2};
+//				double[] gammaChild = { 2, 2, 2};
 				double[] gammaParent = {0.5, 0.5};
-				double[] gammaChild = { 0.5, 0.5, 0.5};
+				double[] gammaChild = { 0.3, 0.3, 0.3};
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
@@ -230,14 +236,26 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
 				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
-				// }else if(topicmodel.equals("ParentChildWith2Phi")){
-				// double mu = 1.0;
-				// double[] gammaParent = {2, 2};
-				// double[] gammaChild = {2, 2};
-				// model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1,
-				// c,
-				// lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-				// gammaParent, gammaChild, mu);
+			}else if(topicmodel.equals("ParentChildBase_Gibbs")){
+				double mu = 1.0;
+				double[] gamma = {2, 2};
+				model = new ParentChildBase_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, mu);
+			}else if(topicmodel.equals("ParentChildBaseWithPhi_Gibbs")){
+				double mu = 1.0;
+				double[] gamma = {0.01, 0.99};
+				beta = 1.001;
+				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, mu);
+			} else if (topicmodel.equals("ParentChildWith2Phi")) {
+				double mu = 1.0;
+				beta = 1.001;
+				double[] gammaParent = { 0.5, 0.5};
+				double[] gammaChild = {0.5, 0.5};
+				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
+						burnIn, gibbs_lag, gammaParent, gammaChild, mu);
 				// }else if(topicmodel.equals("ParentChildWithChildPhi")){
 				// double mu = 1.0;
 				// double[] gammaChild = {2, 2};

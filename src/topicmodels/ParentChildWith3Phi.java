@@ -24,6 +24,9 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	public double[] m_gammaParent; // 2 dimensions in parent
 	public double[] m_gammaChild; // 3 dimensions in child
 	
+	public double m_largeLastDimension;
+	public double m_totalSampleTimes;
+	
 	public ParentChildWith3Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild, double mu) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu);
@@ -37,7 +40,9 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		
 		System.arraycopy(gammaParent, 0, m_gammaParent, 0, m_gammaParent.length);
 		System.arraycopy(gammaChild, 0, m_gammaChild, 0, m_gammaChild.length);
-
+		
+		m_largeLastDimension = 0;
+		m_totalSampleTimes = 0;
 	}
 	
 	@Override
@@ -152,14 +157,20 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			for(tid=0; tid<number_of_topics; tid++){
 				m_topicProbCache[tid] /= supplementProb;
 				normalizedProb += m_topicProbCache[tid];
-				// System.out.println("x=0 in parent doc probability\t"
-				// + m_topicProbCache[tid]);
+				
 			}
 			
 			pWordTopic = localParentWordByTopicProb(wid, doc);
 			//extra one dimension
 			m_topicProbCache[tid] = pWordTopic*pLambdaOne; 
 			normalizedProb += m_topicProbCache[tid];
+			
+			if(m_topicProbCache[tid]/normalizedProb>0.99){
+				m_largeLastDimension += 1;
+			}
+			m_totalSampleTimes += 1;
+			
+//			System.out.println("last dimension proportion\t"+m_topicProbCache[tid]/normalizedProb);
 			
 			normalizedProb *= m_rand.nextDouble();
 			for(tid=0; tid<m_topicProbCache.length; tid++){
@@ -411,6 +422,12 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		_SparseFeature[] fv = doc.getSparse();
 		double gammaLen = Utils.sumOfArray(m_gammaParent);
 		
+		for(int i=0; i<m_gammaParent.length; i++){
+			if(doc.m_xSstat[i]==0){
+				System.out.println("000 pDoc\t"+d.getName()+"\t"+i);
+			}
+		}
+		
 		for (int j = 0; j < fv.length; j++) {
 			int wid = fv[j].getIndex();
 			double value = fv[j].getValue();
@@ -423,21 +440,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 						/ (doc.getTotalDocLength() + gammaLen);
 				
 				wordLogLikelihood += wordPerTopicLikelihood;
-				
-				// double wordPerTopicLikelihood =
-				// Math.log(parentWordByTopicProb(
-				// k, wid))
-				// + Math.log(parentTopicInDocProb(k, doc))
-				// - Math.log(doc.m_xSstat[0] + number_of_topics
-				// * d_alpha)
-				// + Math.log(parentXInDocProb(0, doc))
-				// - Math.log(doc.getTotalDocLength() + gammaLen);
-				//
-				// if(wordLogLikelihood==0)
-				// wordLogLikelihood = wordPerTopicLikelihood;
-				// else
-				// wordLogLikelihood = Utils.logSum(wordLogLikelihood,
-				// wordPerTopicLikelihood);
 			}
 			
 			wordLogLikelihood += localParentWordByTopicProb(wid, doc)
@@ -467,6 +469,12 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		_SparseFeature[] fv = d.getSparse();
 		double gammaLen = Utils.sumOfArray(m_gammaChild);
 		
+//		for(int i=0; i<m_gammaChild.length; i++){
+//			if(doc.m_xSstat[i]==0){
+//				System.out.println("zero assignments in cDoc\t"+i);
+//			}
+//		}
+		
 		for (int i=0; i<fv.length; i++) {
 			int wid = fv[i].getIndex();
 			double value = fv[i].getValue();
@@ -480,6 +488,10 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 						/ (doc.getTotalDocLength() + gammaLen);
 
 				wordLogLikelihood += wordPerTopicLikelihood;
+				
+				if(Double.isNaN(wordPerTopicLikelihood)){
+					System.out.println("nan word likelihood in child Doc");
+				}
 			}
 
 			wordLogLikelihood += childParentWordByTopicProb(wid, pDoc)
@@ -587,8 +599,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 			xid = w.getX();
 			
 			if(xid==0){
+				stnObj.m_xSstat[xid]--;
 				stnObj.m_topicSstat[tid]--;
-				stnObj.m_xSstat[xid] --;
 			}else if(xid ==1){
 				stnObj.m_topicSstat[tid] --;
 				stnObj.m_xSstat[xid] --;
@@ -661,6 +673,9 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	
 	public void debugOutput(String filePrefix){
 
+		System.out.println("large times\t"+m_largeLastDimension);
+		System.out.println("total times\t"+m_totalSampleTimes);
+		
 		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
 		File parentPairTopicDistriFolder = new File(filePrefix+"pairTopic");
 		File childTopicFolder = new File(filePrefix + "childTopicAssignment");

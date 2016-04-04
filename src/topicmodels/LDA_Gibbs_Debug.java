@@ -517,6 +517,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 						int index = w.getIndex();
 						int topic = w.getTopic();
 						String featureName = m_corpus.getFeature(index);
+//						System.out.println("test\t"+featureName+"\tdocName\t"+d.getName());			
 						pw.print(featureName + ":" + topic + "\t");
 					}
 					pw.println();
@@ -527,6 +528,12 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					int topic = w.getTopic();
 					String featureName = m_corpus.getFeature(index);
 					pw.print(featureName + ":" + topic + "\t");
+					if(featureName=="brain")
+						System.out.println("hole\t"+d.getName());
+					if(featureName=="moon")
+						System.out.println("moon\t"+d.getName());
+					if(featureName=="batteri")
+						System.out.println("batteri\t"+d.getName());
 				}
 			}
 

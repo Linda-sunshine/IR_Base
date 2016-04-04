@@ -54,6 +54,12 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
+	protected void computeMu4Doc(_ChildDoc d){
+		_ParentDoc tempParent = d.m_parentDoc;
+		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
+		d.setMu(mu);
+	}
+	
 	//will be called before entering EM iterations
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
@@ -170,7 +176,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		return result;
 	}
 
-	void sampleInChildDoc(_ChildDoc d){
+	protected void sampleInChildDoc(_ChildDoc d){
 		int wid, tid, xid;		
 		double normalizedProb;
 		
@@ -740,7 +746,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printTopicAssignment(d, childTopicFolder);
-				printChildXValue(d, childXFolder);
+				printXValue(d, childXFolder);
 			}
 
 		}
@@ -789,7 +795,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 
 	}
 
-	protected void printChildXValue(_Doc d, File childXFolder){
+	protected void printXValue(_Doc d, File childXFolder){
 		String XValueFile = d.getName() + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(childXFolder,

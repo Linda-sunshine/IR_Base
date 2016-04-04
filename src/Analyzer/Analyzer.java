@@ -374,19 +374,32 @@ public abstract class Analyzer {
 		if (fvStatFile==null || fvStatFile.isEmpty())
 			return;
 		
+		double maxDF = 0;
+		double minDF = 100;
+		
 		try {
 			PrintWriter writer = new PrintWriter(new File(fvStatFile));
 		
 			for(int i = 0; i < m_featureNames.size(); i++){
 				writer.print(m_featureNames.get(i));
 				_stat temp = m_featureStat.get(m_featureNames.get(i));
-				for(int j = 0; j < temp.getDF().length; j++)
+				for(int j = 0; j < temp.getDF().length; j++){
+					if(maxDF<temp.getDF()[j])
+						maxDF = temp.getDF()[j];
+					else{
+						if((temp.getDF()[j]>0)&&(minDF>temp.getDF()[j])){
+							minDF = temp.getDF()[j];
+						}
+					}
 					writer.print("\t" + temp.getDF()[j]);
-				for(int j = 0; j < temp.getTTF().length; j++)
+				}
+				for(int j = 0; j < temp.getTTF().length; j++){
 					writer.print("\t" + temp.getTTF()[j]);
+				}
 				writer.println();
 			}
 			writer.close();
+			System.out.println("maxDF\t"+maxDF+"minDF\t"+minDF);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

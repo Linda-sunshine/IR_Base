@@ -331,6 +331,18 @@ public class Utils {
 		return Math.sqrt(sum);
 	}
 	
+	static public double sumOfFeaturesL2_values(_SparseFeature[] fs) {
+		if(fs == null) 
+			return 0;
+		
+		double sum = 0;
+		for (_SparseFeature feature: fs){
+			double value = feature.getValues()[0];
+			sum += value * value;
+		}
+		return Math.sqrt(sum);
+	}
+	
 	static public void L2Normalization(_SparseFeature[] fs) {
 		double sum = sumOfFeaturesL2(fs);
 		if (sum>0) {			
@@ -418,7 +430,7 @@ public class Utils {
 	}
 	
 	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
+		double spVct1L2 = sumOfFeaturesL2_values(spVct1), spVct2L2 = sumOfFeaturesL2_values(spVct2);
 		if (spVct1L2 == 0)
 			System.out.println("spVct1L2");
 		else if (spVct2L2 == 0)

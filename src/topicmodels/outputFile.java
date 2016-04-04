@@ -14,6 +14,7 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
+import sun.security.util.Length;
 import Analyzer.ParentChildAnalyzer;
 
 public class outputFile {
@@ -77,8 +78,26 @@ public class outputFile {
 					parentNameList.add(Integer.parseInt(parentName));
 				}
 			}
+			
+			ArrayList<Double> parentDocLenList = new ArrayList<Double>();
+			ArrayList<Double> childDocLenList = new ArrayList<Double>();
+			
+			double parentDocLenSum = 0;
+			double childDocLenSum = 0;
+
 			for (int parentID : parentMap.keySet()) {
 				_ParentDoc parentObj = parentMap.get(parentID);
+				
+				double parentDocLen = parentObj.getTotalDocLength();
+				parentDocLenSum += parentDocLen;
+				parentDocLenList.add(parentDocLen);
+				
+				for(_ChildDoc cDoc: parentObj.m_childDocs){
+					double childDocLen = cDoc.getTotalDocLength();
+					childDocLenList.add(childDocLen);
+					childDocLenSum += childDocLen;
+				}
+				
 				_Stn[] sentenceArray = parentObj.getSentences();
 				int selectedStn = 0;
 				for (int i = 0; i < sentenceArray.length; i++) {
@@ -115,7 +134,10 @@ public class outputFile {
 
 				
 			}
-
+			
+			System.out.println("parent doc len\t"+parentDocLenSum/parentDocLenList.size());
+			System.out.println("child doc len\t"+childDocLenSum/childDocLenList.size());
+			
 			parentPW.flush();
 			parentPW.close();
 				
