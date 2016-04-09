@@ -176,13 +176,8 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	@Override
 	protected void gradientByFunc(_AdaptStruct user) {		
 		//Update gradients one review by one review.
-		Collection<_Review> reviews = user.nextAdaptationIns();
-		resetRPTTime();
-		// Reuse the reviews several times to udpate gradients.
-		while(m_count-- > 0){
-			for(_Review review: reviews)
-				gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
-		}
+		for(_Review review: user.nextAdaptationIns())
+			gradientByFunc(user, review, 1.0);//equal weight for the user's own adaptation data
 	}
 	
 	// update this current user only
@@ -194,24 +189,28 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		Arrays.fill(m_g, 0);
 		calculateGradients(user);
 		
-		//update the individual user
-		for (int k = 0; k < m_dim; k++) {
-			a = user.getScaling(k) - stepSize * m_g[offset + k];
-			user.setScaling(k, a);
+		resetRPTTime();
+		while(m_count-- > 0){
+			//update the individual user
+			for (int k = 0; k < m_dim; k++) {
+				a = user.getScaling(k) - stepSize * m_g[offset + k];
+				user.setScaling(k, a);
 
-			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
-			user.setShifting(k, b);
-		}
+				b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
+				user.setShifting(k, b);
+			}
 		
-		//update the super user
-		stepSize /= 3;
-		for(int k=0; k<m_dimSup; k++) {
-			m_A[supOffset+k] -= stepSize * m_g[supOffset + k];
-			m_A[supOffset+k+m_dimSup] -= stepSize * m_g[supOffset + k + m_dimSup];
-		}
+			//update the super user
+			stepSize /= 3;
+			for(int k=0; k<m_dimSup; k++) {
+				m_A[supOffset+k] -= stepSize * m_g[supOffset + k];
+				m_A[supOffset+k+m_dimSup] -= stepSize * m_g[supOffset + k + m_dimSup];
+			}
 		
-		//update the record of updating history
-		user.incUpdatedCount(inc);
+			//update the record of updating history
+			if(m_count == 0)
+				user.incUpdatedCount(inc);
+		}
 	}
 	
 	public void loadGlobal(String filename){

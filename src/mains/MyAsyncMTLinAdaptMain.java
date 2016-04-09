@@ -59,7 +59,7 @@ public class MyAsyncMTLinAdaptMain {
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setRsTradeOffs(lambda1, lambda2);
-		adaptation.setRPTTime(5);
+		adaptation.setRPTTime(3);
 		adaptation.train();
 		adaptation.test();
 		
