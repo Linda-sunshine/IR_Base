@@ -740,7 +740,7 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 //				printTopKStn4Child(topKStn, (_ParentDoc4ThreePhi)d, childTopKStnFolder);	
 			} else if (d instanceof _ChildDoc) {
 				printTopicAssignment(d, childTopicFolder);
-				printChildXValue(d, childXFolder);
+				printXValue(d, childXFolder);
 				printChildLocalWordTopicDistribution((_ChildDoc4ThreePhi) d, childLocalWordTopicFolder);
 //				printTopKStn(topKStn, (_ChildDoc4ThreePhi) d, childTopKStnFolder);
 			}

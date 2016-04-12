@@ -40,7 +40,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA, HTMM,
+		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -85,7 +85,7 @@ public class TopicModelMain {
 				"./data/ParentChildTopicModel/%sArticles",
 						articleType);
 		String commentFolder = String.format(
-				"./data/ParentChildTopicModel/%sComments",
+				"./data/ParentChildTopicModel/merged%sComments",
 						articleType);
 		
 		String suffix = ".json";
@@ -145,9 +145,9 @@ public class TopicModelMain {
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadDirectory(commentFolder, suffix);
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadDirectory(commentFolder, suffix);
+//		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		

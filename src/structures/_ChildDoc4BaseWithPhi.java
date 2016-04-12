@@ -78,6 +78,10 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 
 		Utils.L1Normalization(m_xProportion);
 		Utils.L1Normalization(m_xTopics[1]);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 	
 	

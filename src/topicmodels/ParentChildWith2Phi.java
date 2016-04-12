@@ -645,13 +645,13 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 			childPhiFolder.mkdir();
 		}
 
-		File childXFolder = new File(filePrefix + "xValue");
+		File childXFolder = new File(filePrefix + "ChildXValue");
 		if (!childXFolder.exists()) {
 			System.out.println("creating x child Value directory" + childXFolder);
 			childXFolder.mkdir();
 		}
 		
-		File parentXFolder = new File(filePrefix + "xValue");
+		File parentXFolder = new File(filePrefix + "ParentXValue");
 		if (!parentXFolder.exists()) {
 			System.out.println("creating x parent Value directory" + parentXFolder);
 			parentXFolder.mkdir();

@@ -78,9 +78,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-//		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(),
-//				name, title, content, 0);
+//		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
+		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(),
+				name, title, content, 0);
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
 			sentences = new String[sentenceArray.length()];
@@ -106,11 +106,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 		
-		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
 		// "", content, 0);
-//		_ChildDoc4TwoPhi d = new _ChildDoc4TwoPhi(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4TwoPhi d = new _ChildDoc4TwoPhi(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);

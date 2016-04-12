@@ -90,6 +90,10 @@ public class _ParentDoc4ThreePhi extends _ParentDoc{
 		Utils.L1Normalization(m_xProportion);
 
 		Utils.L1Normalization(m_pairWordDistribution);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 	
 	

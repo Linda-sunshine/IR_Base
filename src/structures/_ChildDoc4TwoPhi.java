@@ -73,6 +73,10 @@ public class _ChildDoc4TwoPhi extends _ChildDoc{
 
 		Utils.L1Normalization(m_xProportion);
 		Utils.L1Normalization(m_xTopics[0]);
+		
+		for(_Word w: m_words){
+			Utils.L1Normalization(w.m_xProb);
+		}
 	}
 	
 }
