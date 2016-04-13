@@ -189,8 +189,8 @@ public class CoLinAdapt extends LinAdapt {
 				
 				//added by Lin for stopping lbfgs.
 				double curMag = gradientTest();
-				if(Math.abs(oldMag -curMag)<0.1) 
-					break;
+//				if(Math.abs(oldMag -curMag)<0.1) 
+//					break;
 				oldMag = curMag;
 				
 				if (m_displayLv==2) {

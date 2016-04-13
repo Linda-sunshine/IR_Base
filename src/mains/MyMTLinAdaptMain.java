@@ -38,8 +38,11 @@ public class MyMTLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		// Best performance for CoLinAdapt.
+		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859;
+
 		// Best performance for mt-linadapt in amazon.
-		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+//		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 //		double eta1 = 0.1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		// Best performance for mt-linadapt in yelp.
 //		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
@@ -68,14 +71,14 @@ public class MyMTLinAdaptMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
-//		mtlinadaptsup.setLNormFlag(false);
-		mtlinadaptsup.loadUsers(analyzer.getUsers());
-		mtlinadaptsup.setDisplayLv(displayLv);
-		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-		mtlinadaptsup.train();
-		mtlinadaptsup.test();
+//		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
+////		mtlinadaptsup.setLNormFlag(false);
+//		mtlinadaptsup.loadUsers(analyzer.getUsers());
+//		mtlinadaptsup.setDisplayLv(displayLv);
+//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
+//		mtlinadaptsup.train();
+//		mtlinadaptsup.test();
 //		perf = mtlinadaptsup.getPerf();
 //		mtlinadaptsup.saveSupModel("mtlinadapt_supModel_yelp.txt");
 //		mtlinadaptsup.saveModel(String.format("./%s_mtlinadapt", dataset));
@@ -122,14 +125,14 @@ public class MyMTLinAdaptMain {
 //		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
 		// Create an instances of LinAdapt model.
-//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
-//		
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		//adaptation.setRsTradeOffs(lambda1, lambda2);
-//		adaptation.train();
-//		adaptation.test();
+		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, numberOfCores, globalModel,featureGroupFile);
+		
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.train();
+		adaptation.test();
 
 //		adaptation.saveModel(String.format("./ACLModels/%s_reglr", dataset));
 //		adaptation.saveModel(String.format("./ACLModels/%s_linadapt", dataset));

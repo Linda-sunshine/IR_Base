@@ -20,7 +20,7 @@ import utils.Utils;
 
 public class asyncMTLinAdapt extends MTLinAdapt {
 
-	double m_initStepSize = 0.1;
+	double m_initStepSize = 0.05;
 	boolean m_trainByUser = false; // by default we will perform online training by user; otherwise we will do it by review timestamp 
 	int m_rptTime = 3, m_count = 0; // How many times the reviews will be used to update gradients.
 	
