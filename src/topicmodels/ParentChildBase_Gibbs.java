@@ -49,7 +49,6 @@ public class ParentChildBase_Gibbs extends ParentChild_Gibbs{
 				computeMu4Doc((_ChildDoc) d);
 			}
 			
-			
 			for (_Word w:d.getWords()) {
 				word_topic_sstat[w.getTopic()][w.getIndex()]++;
 				m_sstat[w.getTopic()]++;
@@ -288,6 +287,52 @@ public class ParentChildBase_Gibbs extends ParentChild_Gibbs{
 		}
 		
 		return stnSimMap;
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			_SparseFeature[] fv = cDoc.getSparse();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord:sv){
+				double featureLikelihood = 0;
+				
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
+				
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				for(int k=0; k<number_of_topics; k++){
+					TMLikelihood += (wordByTopicProb(k, wid))*(childTopicInDocProb(k, cDoc));
+				}
+				
+				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+//				featureLikelihood = TMLikelihood;
+				featureLikelihood = Math.log(featureLikelihood);
+				stnLogLikelihood += stnVal*featureLikelihood;
+				
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
 	}
 	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){

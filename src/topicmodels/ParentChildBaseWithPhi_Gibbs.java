@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 import bsh.util.Util;
 import structures._ChildDoc;
@@ -292,7 +293,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		int topKStn = 10;
 		int topKChild = 10;
 		printTopKChild4Stn(filePrefix, topKChild);
-		
+		printTopKChild4StnWithHybrid(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 		
 		printTopKChild4Parent(filePrefix, topKChild);
@@ -317,6 +318,55 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		return stnSimMap;
 	}
 	
+	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		double gammaLen = Utils.sumOfArray(m_gamma);
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			
+			_SparseFeature[] fv = cDoc.getSparse();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord:sv){
+				double featureLikelihood = 0;
+				
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
+				
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+				
+				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+				
+				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				featureLikelihood = Math.log(featureLikelihood);
+				stnLogLikelihood += stnVal*featureLikelihood;
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
+	}
+	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
@@ -332,17 +382,58 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				
 				for (int k = 0; k < number_of_topics; k++) {
 					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+//					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
+//					System.out.println("wordPerTopicLikelihood\t"+wordPerTopicLikelihood);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
 				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
-				
+			
 				stnLogLikelihood += Math.log(wordLogLikelihood);
 			}
 			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}
 		
 		return childLikelihoodMap;
+	}
+	
+	protected void printTopKChild4StnWithHybrid(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Stn_hybrid.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			m_LM.generateReferenceModel();
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
+					
+					for(_Stn stnObj:pDoc.getSentences()){
+						HashMap<String, Double> likelihoodMap = rankChild4StnByHybrid(stnObj, pDoc);
+						
+						pw.print((stnObj.getIndex()+1)+"\t");
+						
+						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
+
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+						}
+						pw.println();		
+				
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {

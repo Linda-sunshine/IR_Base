@@ -660,22 +660,7 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 	
 	@Override
 	public void printTopWords(int k, String betaFile) {
-		double loglikelihood = 0.0;
-		Arrays.fill(m_sstat, 0);
-
-		System.out.println("print top words");
-		for (_Doc d : m_trainSet) {
-//			loglikelihood += calculate_log_likelihood(d);
-			for (int i = 0; i < m_sstat.length; i++) {
-				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-						: d.m_topics[i];	
-				if (Double.isNaN(d.m_topics[i]))
-					System.out.println("nan name\t" + d.getName());
-			}
-		}
 		
-		Utils.L1Normalization(m_sstat);
-
 		try {
 			System.out.println("beta file");
 			PrintWriter betaOut = new PrintWriter(new File(betaFile));
@@ -702,12 +687,28 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
 		}
-
-		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
 		
 		String filePrefix = betaFile.replace("topWords.txt", "");
 		debugOutput(filePrefix);
 		
+		double loglikelihood = 0.0;
+		Arrays.fill(m_sstat, 0);
+
+		System.out.println("print top words");
+		for (_Doc d : m_trainSet) {
+//			loglikelihood += calculate_log_likelihood(d);
+			for (int i = 0; i < m_sstat.length; i++) {
+				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
+						: d.m_topics[i];	
+				if (Double.isNaN(d.m_topics[i]))
+					System.out.println("nan name\t" + d.getName());
+			}
+		}
+		
+		Utils.L1Normalization(m_sstat);
+
+		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
+	
 	}
 	
 	public void debugOutput(String filePrefix){
@@ -924,7 +925,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 			e.printStackTrace();
 		}
 	}	
-	
 	
 	protected void printTopKStn4Child(String filePrefix, int topK){
 		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";

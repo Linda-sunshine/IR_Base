@@ -41,7 +41,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM,
+		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -241,7 +241,7 @@ public class TopicModelMain {
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
 				double ksi = 800;
-				double tau = 0.5;
+				double tau = 0.9;
 				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
@@ -286,7 +286,7 @@ public class TopicModelMain {
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
 				double ksi = 800;
-				double tau = 0.5;
+				double tau = 0.9;
 				beta = 1.001;
 				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
