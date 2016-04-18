@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.TreeMap;
 
 import structures._ChildDoc;
@@ -131,9 +133,11 @@ public class outputFile {
 				parentPW.println();
 				longParentPW.println();
 				shortParentPW.println();
-
-				
+			
 			}
+			
+			System.out.println("longest child\t"+Collections.max(childDocLenList));
+			System.out.println("shortest child\t"+Collections.min(childDocLenList));
 			
 			System.out.println("parent doc len\t"+parentDocLenSum/parentDocLenList.size());
 			System.out.println("child doc len\t"+childDocLenSum/childDocLenList.size());
@@ -237,6 +241,27 @@ public class outputFile {
 			e.printStackTrace();
 		}
 	}
+	
+	public static void statisticDocLen(_Corpus c){
+		
+		ArrayList<Double> childDocLenList = new ArrayList<Double>();
+		double childDocLenSum = 0;
+		
+		ArrayList<_Doc> m_trainSet = c.getCollection();
+		for (_Doc d : m_trainSet) {
+			double childDocLen = d.getTotalDocLength();
+			childDocLenList.add(childDocLen);
+			childDocLenSum += childDocLen;
+		}
+				
+			
+		System.out.println("longest child\t"+Collections.max(childDocLenList));
+		System.out.println("shortest child\t"+Collections.min(childDocLenList));
+		
+//		System.out.println("parent doc len\t"+parentDocLenSum/parentDocLenList.size());
+		System.out.println("child doc len\t"+childDocLenSum/childDocLenList.size());
+	
+	} 
 
 	public static void main(String[] args) throws IOException, ParseException {	
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
@@ -279,16 +304,14 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		// articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "Gadgets";
-		String articleFolder = String
-.format(
-				"./data/ParentChildTopicModel/%sArticles",
-						articleType);
-		String commentFolder = String
-.format(
-				"./data/ParentChildTopicModel/%sComments",
-						articleType);
+//		articleType = "APP";
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		
+		articleFolder = String.format("../../Code/Data/TextMiningProject/APPDescriptions");
+		commentFolder = String.format("../../Code/Data/TextMiningProject/APPReviews");
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -345,9 +368,10 @@ public class outputFile {
 
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+//		analyzer.LoadStopwords(stopwords);
+//		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadDirectory(commentFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
@@ -366,8 +390,8 @@ public class outputFile {
 
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		
-		outputFiles(filePrefix, c);
+		statisticDocLen(c);
+//		outputFiles(filePrefix, c);
 
 	}
 }

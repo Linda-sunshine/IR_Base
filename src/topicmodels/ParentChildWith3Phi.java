@@ -28,8 +28,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	public double m_totalSampleTimes;
 	
 	public ParentChildWith3Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild, double mu) {
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild, double mu, double ksi, double tau) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu, ksi, tau);
 		// TODO Auto-generated constructor stub
 		
 		m_topicProbCache = new double[number_of_topics+1];

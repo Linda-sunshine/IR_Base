@@ -9,9 +9,11 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import cc.mallet.grmm.learning.ACRF.Template;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
@@ -374,8 +376,11 @@ public abstract class Analyzer {
 		if (fvStatFile==null || fvStatFile.isEmpty())
 			return;
 		
-		double maxDF = 0;
-		double minDF = 100;
+		ArrayList<Double> DFList = new ArrayList<Double>();
+		double totalDF = 0;
+		
+		ArrayList<Double> TTFList = new ArrayList<Double>();
+		double totalTTF = 0;
 		
 		try {
 			PrintWriter writer = new PrintWriter(new File(fvStatFile));
@@ -384,22 +389,31 @@ public abstract class Analyzer {
 				writer.print(m_featureNames.get(i));
 				_stat temp = m_featureStat.get(m_featureNames.get(i));
 				for(int j = 0; j < temp.getDF().length; j++){
-					if(maxDF<temp.getDF()[j])
-						maxDF = temp.getDF()[j];
-					else{
-						if((temp.getDF()[j]>0)&&(minDF>temp.getDF()[j])){
-							minDF = temp.getDF()[j];
-						}
+					if(temp.getDF()[j]>0){
+						DFList.add((double)temp.getDF()[j]);
+						totalDF += temp.getDF()[j];
+						
 					}
+					
 					writer.print("\t" + temp.getDF()[j]);
 				}
 				for(int j = 0; j < temp.getTTF().length; j++){
+					if(temp.getTTF()[j]>0){
+						TTFList.add((double)temp.getTTF()[j]);
+						totalTTF += temp.getTTF()[j];
+					}
+						
 					writer.print("\t" + temp.getTTF()[j]);
 				}
 				writer.println();
 			}
 			writer.close();
-			System.out.println("maxDF\t"+maxDF+"minDF\t"+minDF);
+			double maxDF = Collections.max(DFList);
+			double avgDF = totalDF/m_featureNames.size();
+			System.out.println("maxDF\t"+maxDF+"\t avgDF \t"+avgDF+"\t totalDF\t"+totalDF);
+			double maxTTF = Collections.max(TTFList);
+			double avgTTF = totalTTF/m_featureNames.size();
+			System.out.println("maxTTF\t"+maxTTF+"avgTTF\t"+avgTTF+"\t totalTTF \t"+totalTTF);
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

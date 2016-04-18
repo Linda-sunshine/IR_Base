@@ -20,9 +20,9 @@ import utils.Utils;
 
 public class ParentChildBase_Gibbs extends ParentChild_Gibbs{
 	public ParentChildBase_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu) {
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu, double ksi, double tau) {
 		// TODO Auto-generated constructor stub
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu, ksi, tau);
 		
 		m_topicProbCache = new double[number_of_topics];
 	

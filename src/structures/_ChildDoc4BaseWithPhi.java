@@ -2,15 +2,16 @@ package structures;
 
 import java.util.Arrays;
 
+import bsh.util.Util;
 import utils.Utils;
 
 public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 	public double m_childWordSstat;
 	public double m_beta;
 	
+	
 	public _ChildDoc4BaseWithPhi(int ID, String name, String title, String source, int ylabel) {
 		super(ID, name, title, source, ylabel);
-		
 		// TODO Auto-generated constructor stub
 	}
 	
@@ -69,7 +70,8 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 	}
 	
 	public void estGlobalLocalTheta(){
-		Utils.L1Normalization(m_topics);
+//		Utils.L1Normalization(m_topics);
+		Utils.L1Normalization(m_xTopics[0]);
 
 		for (int i = 0; i < m_topics.length; i++) {
 			if (Double.isNaN(m_topics[i]))
@@ -83,6 +85,5 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 			Utils.L1Normalization(w.m_xProb);
 		}
 	}
-	
 	
 }

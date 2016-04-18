@@ -9,6 +9,8 @@ public class _ChildDoc extends _Doc {
 	public double[][] m_xTopics; // proportion of topics (0 from general, 1 from specific)
 	public double[] m_xProportion; // proportion of x
 
+	protected double m_docLenWithXVal;
+	
 	public _ParentDoc m_parentDoc;
 	
 	public double m_mu;//similarity between parent and child
@@ -24,6 +26,7 @@ public class _ChildDoc extends _Doc {
 		m_parentDoc = null;
 		m_name = name;
 		m_title = title;
+		m_docLenWithXVal = 0;
 	}
 	
 	public void setParentDoc(_ParentDoc pDoc){
@@ -83,4 +86,21 @@ public class _ChildDoc extends _Doc {
 			Utils.L1Normalization(w.m_xProb);
 		}
 	}
+	
+	public void setChildDocLenWithXVal(double docLenWithXVal){
+		m_docLenWithXVal = docLenWithXVal;
+	}
+	
+	public void calChildDocLenWithXVal(){
+		double docLenWithXVal = 0;
+		for(_Word word:m_words){
+			docLenWithXVal += 1-word.getXProb();
+		}
+		m_docLenWithXVal = docLenWithXVal;
+	}
+	
+	public double getChildDocLenWithXVal(){
+		return m_docLenWithXVal;
+	}
+	
 }

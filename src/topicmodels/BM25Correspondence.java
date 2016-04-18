@@ -307,7 +307,7 @@ public class BM25Correspondence {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-//		articleType = "GadgetsArticles";
+//		articleType = "Gadgets";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
@@ -396,10 +396,10 @@ public class BM25Correspondence {
 		String TopStn4ChildFile = filePrefix + "/topStn4Child.txt";
 		String TopChild4ParentFile = filePrefix + "/topChild4Parent.txt";
 		
-//		String copiedStnFile = filePrefix+"/copiedStn.txt";
-//		bm25Corr.identifyCopiedStnCmnt(c, copiedStnFile);
+		String copiedStnFile = filePrefix+"/copiedStn.txt";
+		bm25Corr.identifyCopiedStnCmnt(c, copiedStnFile);
 		
-		bm25Corr.rankChild4Stn(c, TopChild4StnFile);
+//		bm25Corr.rankChild4Stn(c, TopChild4StnFile);
 //		bm25Corr.rankStn4Child(c, TopStn4ChildFile);
 //		bm25Corr.rankChild4Parent(c, TopChild4ParentFile);
 //		bm25Corr.discoverSpecificComments(c, similarityFile);

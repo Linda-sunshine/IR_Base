@@ -19,8 +19,8 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	double[] m_topicProbCache;
 	
 	public correspondence_LDA_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
+			int number_of_topics, double alpha, double burnIn, int lag, double ksi, double tau){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
 	
 		m_topicProbCache = new double[number_of_topics];
 	}

@@ -34,8 +34,8 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 	boolean m_statisticsNormalized = false;//a warning sign of normalizing statistics before collecting new ones
 	
 	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu) {
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu, double ksi, double tau) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
 
 		m_mu = mu;
 		m_kAlpha = d_alpha * number_of_topics;
@@ -925,45 +925,6 @@ public class ParentChild_Gibbs extends LDA_Gibbs_Debug {
 		}
 	}	
 	
-	protected void printTopKChild4Stn(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc){
-					_ParentDoc pDoc = (_ParentDoc)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-						
-						int i=0;
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-//							if(i==topK)
-//								break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();		
-				
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
 	
 	protected void printTopKStn4Child(String filePrefix, int topK){
 		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";

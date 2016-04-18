@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.hamcrest.core.Is;
+
 import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -20,6 +22,7 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
+import structures._Word;
 import utils.Utils;
 
 public class languageModelBaseLine{
@@ -62,6 +65,57 @@ public class languageModelBaseLine{
 		}
 	}
 
+	protected void generateReferenceModelWithXVal(){
+		m_allWordFrequency = 0;
+		for(_Doc d: m_corpus.getCollection()){
+			if(d instanceof _ParentDoc){
+				for(_Word word:d.getWords()){
+					int wid = word.getIndex();
+					
+					double val = 1;
+					m_allWordFrequency += val;
+					if(m_wordSstat.containsKey(wid)){
+						double oldVal = m_wordSstat.get(wid);
+						m_wordSstat.put(wid, oldVal+val);
+					}else{
+						m_wordSstat.put(wid, val);
+					}
+				}
+			}else{
+				double docLenWithXVal = 0;
+				
+				for(_Word word:d.getWords()){
+					double xProportion = word.getXProb();
+					
+					int wid = word.getIndex();
+					
+					double val = 1-xProportion;
+					docLenWithXVal += val;
+					
+					m_allWordFrequency += val;
+					if(m_wordSstat.containsKey(wid)){
+						double oldVal = m_wordSstat.get(wid);
+						m_wordSstat.put(wid, oldVal+val);
+					}else{
+						m_wordSstat.put(wid, val);
+					}
+				}
+				
+				((_ChildDoc) d).setChildDocLenWithXVal(docLenWithXVal);
+			}
+				
+		}
+		
+		for(int wid:m_wordSstat.keySet()){
+			double val = m_wordSstat.get(wid);
+			double prob = val/m_allWordFrequency;
+			m_wordSstat.put(wid, prob);
+		}
+	}
+	
+	protected double getReferenceProb(int wid){
+		return m_wordSstat.get(wid);
+	}
 	
 	protected void printTopChild4Stn(String filePrefix){
 		String topChild4StnFile = filePrefix + "/topChild4Stn.txt";
@@ -75,10 +129,12 @@ public class languageModelBaseLine{
 					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
 					
 					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-							
+
+//						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
+						HashMap<String, Double> likelihoodMap = rankChild4StnByLanguageModel(stnObj, pDoc);
+
 				
-						int i=0;
+//						int i=0;
 						pw.print((stnObj.getIndex()+1)+"\t");
 						
 						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
@@ -88,7 +144,7 @@ public class languageModelBaseLine{
 							pw.print(":"+e.getValue());
 							pw.print("\t");
 							
-							i++;
+//							i++;
 						}
 						pw.println();		
 				
@@ -100,6 +156,43 @@ public class languageModelBaseLine{
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByLanguageModel(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = 1000;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			int cDocLen = cDoc.getTotalDocLength();
+			_SparseFeature[] fv = cDoc.getSparse();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord:sv){
+				double featureLikelihood = 0;
+				
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double smoothingProb = (1-alphaDoc)*docVal/(cDocLen);
+				
+				smoothingProb += alphaDoc*getReferenceProb(wid);
+				featureLikelihood = Math.log(smoothingProb);
+				stnLogLikelihood += stnVal*featureLikelihood;
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
 	}
 	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){

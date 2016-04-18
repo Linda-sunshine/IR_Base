@@ -1,16 +1,16 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
-import bsh.util.Util;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
+import structures._ChildDoc4BaseWithPhi_Hard;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -20,11 +20,11 @@ import structures._Word;
 import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
-public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
+public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gibbs{
 	
 	public double[] m_childTopicProbCache;
 	
-	public ParentChildBaseWithPhi_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ParentChildBaseWithPhi_Hard_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu, ksi, tau);
 	
@@ -34,7 +34,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 	}
 	
 	public String toString(){
-		return String.format("Parent Child Base Phi^c topic model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]", 
+		return String.format("Parent Child Base Phi^c topic model with hard differentiate[k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]", 
 				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
@@ -50,8 +50,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				for(_Stn stnObj: d.getSentences())
 					stnObj.setTopic(number_of_topics);
 			}else if(d instanceof _ChildDoc4BaseWithPhi){
-				((_ChildDoc4BaseWithPhi) d).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-				((_ChildDoc4BaseWithPhi) d).setTopics4Gibbs(number_of_topics, 0);
+				((_ChildDoc4BaseWithPhi_Hard) d).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+				((_ChildDoc4BaseWithPhi_Hard) d).setTopics4Gibbs(number_of_topics, 0);
 				computeMu4Doc((_ChildDoc) d);
 			}
 			
@@ -77,28 +77,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		imposePrior();	
 		m_statisticsNormalized = false;
 	}
-	
-	protected void computeMu4Doc(_ChildDoc d){
-		_ParentDoc tempParent = d.m_parentDoc;
-		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
-		d.setMu(mu);
-	}
-	
-	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
-		double term = 1.0;
-		
-		if(tid==0)
-			return term;
-		
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			double muDp = cDoc.getMu()/pDoc.getTotalDocLength();
-			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
-					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
-		}
-		
-		return term;
-	}
-	
+
 	protected void sampleInChildDoc(_ChildDoc d){
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
 		int wid, tid, xid;
@@ -122,84 +101,96 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				cDoc.m_childWordSstat --;
 			}
 			
-			normalizedProb = 0;
-			double pLambdaZero = childXInDocProb(0, cDoc);
-			double pLambdaOne = childXInDocProb(1, cDoc);
-			
-			for(tid=0; tid<number_of_topics; tid++){
-				double pWordTopic = childWordByTopicProb(tid, wid);
-				double pTopic = childTopicInDocProb(tid, cDoc);
+			_ParentDoc pDocObj = cDoc.m_parentDoc;
+			if(Utils.indexOf(pDocObj.getSparse(), wid) != -1){
+				normalizedProb = 0;
+				for(tid=0; tid<number_of_topics; tid++){
+					double pWordTopic = childWordByTopicProb(tid, wid);
+					double pTopic = childTopicInDocProb(tid, cDoc);
+					
+					m_topicProbCache[tid] = pWordTopic*pTopic;
+					normalizedProb += m_topicProbCache[tid];
+				}
 				
-				m_childTopicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
+				normalizedProb *= m_rand.nextDouble();
+				for(tid=0; tid<m_topicProbCache.length; tid++){
+					normalizedProb -= m_topicProbCache[tid];
+					if(normalizedProb<=0)
+						break;
+				}
+				
+				if(tid==m_topicProbCache.length)
+					tid --;
+				
+				if(tid<number_of_topics){
+					xid = 0;
+					w.setX(xid);
+					w.setTopic(tid);
+					cDoc.m_xTopicSstat[xid][tid]++;
+					cDoc.m_xSstat[xid]++;
+					
+					if(m_collectCorpusStats){
+						word_topic_sstat[tid][wid] ++;
+						m_sstat[tid] ++;
+	 				}
+					
+				}else if(tid==(number_of_topics)){
+					System.out.println("error on hard differentiate");
+					
+				}
+				
+				
+			}else{
+				normalizedProb = 0;
+				double pLambdaZero = childXInDocProb(0, cDoc);
+				double pLambdaOne = childXInDocProb(1, cDoc);
+				
+				for(tid=0; tid<number_of_topics; tid++){
+					double pWordTopic = childWordByTopicProb(tid, wid);
+					double pTopic = childTopicInDocProb(tid, cDoc);
+					
+					m_childTopicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
+					normalizedProb += m_childTopicProbCache[tid];
+				}
+					
+				double pWordTopic = childLocalWordByTopicProb(wid, cDoc);
+				m_childTopicProbCache[tid] = pWordTopic*pLambdaOne;
 				normalizedProb += m_childTopicProbCache[tid];
-			}
-			
-			double pWordTopic = childLocalWordByTopicProb(wid, cDoc);
-			m_childTopicProbCache[tid] = pWordTopic*pLambdaOne;
-			normalizedProb += m_childTopicProbCache[tid];
-			
-			normalizedProb *= m_rand.nextDouble();
-			for(tid=0; tid<m_childTopicProbCache.length; tid++){
-				normalizedProb -= m_childTopicProbCache[tid];
-				if(normalizedProb<=0)
-					break;
-			}
-			
-			if(tid==m_childTopicProbCache.length)
-				tid --;
-			
-			if(tid<number_of_topics){
-				xid = 0;
-				w.setX(xid);
-				w.setTopic(tid);
-				cDoc.m_xTopicSstat[xid][tid]++;
-				cDoc.m_xSstat[xid]++;
 				
-				if(m_collectCorpusStats){
-					word_topic_sstat[tid][wid] ++;
-					m_sstat[tid] ++;
- 				}
+				normalizedProb *= m_rand.nextDouble();
+				for(tid=0; tid<m_childTopicProbCache.length; tid++){
+					normalizedProb -= m_childTopicProbCache[tid];
+					if(normalizedProb<=0)
+						break;
+				}
 				
-			}else if(tid==(number_of_topics)){
-				xid = 1;
-				w.setX(xid);
-				w.setTopic(tid);
-				cDoc.m_xTopicSstat[xid][wid]++;
-				cDoc.m_xSstat[xid]++;
-				cDoc.m_childWordSstat ++;
+				if(tid==m_childTopicProbCache.length)
+					tid --;
 				
-			}
-		}
-	}
-	
-	protected double childTopicInDocProb(int tid, _ChildDoc d){
-		double docLength = d.m_parentDoc.getTotalDocLength();
-		
-		return (d_alpha + d.getMu()*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
-					/(m_kAlpha + d.getMu() + d.m_xSstat[0]);
-	}
-	
-	protected double childLocalWordByTopicProb(int wid, _ChildDoc4BaseWithPhi d){
-		return (d.m_xTopicSstat[1][wid])
-				/ (d.m_childWordSstat);
-	}
-	
-	protected void collectChildStats(_ChildDoc d) {
-		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
-		_ParentDoc pDoc = cDoc.m_parentDoc;
-		double parentDocLength = pDoc.getTotalDocLength();
-		
-		for (int k = 0; k < this.number_of_topics; k++) 
-			cDoc.m_xTopics[0][k] += cDoc.m_xTopicSstat[0][k] + d_alpha+cDoc.getMu()*pDoc.m_sstat[k] / parentDocLength;
-		
-		for(int x=0; x<m_gamma.length; x++)
-			cDoc.m_xProportion[x] += m_gamma[x] + cDoc.m_xSstat[x];
-		
-		for(int w=0; w<vocabulary_size; w++)
-			cDoc.m_xTopics[1][w] += cDoc.m_xTopicSstat[1][w];
-	
-		for(_Word w:d.getWords()){
-			w.collectXStats();
+				if(tid<number_of_topics){
+					xid = 0;
+					w.setX(xid);
+					w.setTopic(tid);
+					cDoc.m_xTopicSstat[xid][tid]++;
+					cDoc.m_xSstat[xid]++;
+					
+					if(m_collectCorpusStats){
+						word_topic_sstat[tid][wid] ++;
+						m_sstat[tid] ++;
+	 				}
+					
+				}else if(tid==(number_of_topics)){
+					xid = 1;
+					w.setX(xid);
+					w.setTopic(tid);
+					cDoc.m_xTopicSstat[xid][wid]++;
+					cDoc.m_xSstat[xid]++;
+					cDoc.m_childWordSstat ++;
+					
+				}
+				
+			}		
+			
 		}
 	}
 	
@@ -225,8 +216,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		sampleTestSet.add(pDoc);
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length);
-			((_ChildDoc4BaseWithPhi)cDoc).setTopics(number_of_topics, 0);
+			((_ChildDoc4BaseWithPhi_Hard)cDoc).createXSpace(number_of_topics, m_gamma.length);
+			((_ChildDoc4BaseWithPhi_Hard)cDoc).setTopics(number_of_topics, 0);
 			sampleTestSet.add(cDoc);
 		}
 	}
@@ -303,23 +294,52 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
 		
 		for(_Stn stnObj:pDoc.getSentences()){
-//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-//			stnSimMap.put(stnObj.getIndex()+1, stnSim);
-
 			double stnKL = Utils.klDivergence(cDoc.m_xTopics[0], stnObj.m_topics);
-//			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
-//			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
 
 			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
-
 		}
 		
 		return stnSimMap;
 	}
 	
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-		double gammaLen = Utils.sumOfArray(m_gamma);
+	protected HashMap<String , Double> rankChild4StnByLM(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
 
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getChildDocLenWithXVal();
+			_SparseFeature[] fv = cDoc.getSparse();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord:sv){
+				double featureLikelihood = 0;
+				
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double smoothingProb = (1-alphaDoc)*docVal/(cDocLen);
+				
+				smoothingProb += alphaDoc*m_LM.getReferenceProb(wid);
+				featureLikelihood = Math.log(smoothingProb);
+				stnLogLikelihood += stnVal*featureLikelihood;
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
 		
 		for(_ChildDoc d:pDoc.m_childDocs){
@@ -331,11 +351,9 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				double wordLogLikelihood = 0;
 				
 				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
-				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-				wordLogLikelihood += wordPerTopicLikelihood;
 				
 				stnLogLikelihood += Math.log(wordLogLikelihood);
 			}
@@ -343,6 +361,46 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		}
 		
 		return childLikelihoodMap;
+	}
+	
+	protected void printTopKChild4Stn(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			m_LM.generateReferenceModelWithXVal();
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
+					
+					for(_Stn stnObj:pDoc.getSentences()){
+//						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
+						HashMap<String, Double> likelihoodMap = rankChild4StnByHybrid(stnObj, pDoc);
+						
+						pw.print((stnObj.getIndex()+1)+"\t");
+						
+						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
+
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+						}
+						pw.println();		
+				
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
@@ -357,15 +415,23 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		for (int i=0; i<fv.length; i++) {
 			int wid = fv[i].getIndex();
 			double value = fv[i].getValue();
-
+			
 			double wordLogLikelihood = 0;
-			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+
+			if(Utils.indexOf(d.m_parentDoc.getSparse(),wid)!=-1){
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+			}else{
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
-			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-			wordLogLikelihood += wordPerTopicLikelihood;
-
+			
 			if(Math.abs(wordLogLikelihood) < 1e-10){
 				System.out.println("wordLoglikelihood\t"+wordLogLikelihood);
 				wordLogLikelihood += 1e-10;
@@ -454,5 +520,4 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		}
 
 	}
-
 }

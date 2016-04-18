@@ -15,6 +15,7 @@ import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChildBaseWithPhi_Gibbs;
+import topicmodels.ParentChildBaseWithPhi_Hard_Gibbs;
 import topicmodels.ParentChildBase_Gibbs;
 import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
@@ -39,8 +40,8 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		//ParentChild_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "LDA_Gibbs"; // 2topic, pLSA, HTMM,
+		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
+		String topicmodel = "LDA_Gibbs_Debug"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -80,13 +81,16 @@ public class TopicModelMain {
 		String articleType = "Tech";
 //		articleType = "Gadgets";
 		// articleType = "Yahoo";
+//		articleType = "APP";
 		
 		String articleFolder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
 						articleType);
 		String commentFolder = String.format(
-				"./data/ParentChildTopicModel/merged%sComments",
+				"./data/ParentChildTopicModel/%sComments",
 						articleType);
+//		commentFolder = String.format("../../Code/Data/TextMiningProject/APPReviews");
+
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -125,6 +129,7 @@ public class TopicModelMain {
 			resultFolder.mkdir();
 		}
 		
+		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
 		String topWordPath = filePrefix + "/topWords.txt";
 		
@@ -145,9 +150,9 @@ public class TopicModelMain {
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(commentFolder, suffix);
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-//		analyzer.LoadChildDirectory(commentFolder, suffix);
+//		analyzer.LoadDirectory(commentFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
@@ -210,9 +215,11 @@ public class TopicModelMain {
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
 				double mu = 1.0;
 				double[] gamma = {2, 2};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu);
+						gamma, mu, ksi, tau);
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
@@ -228,34 +235,46 @@ public class TopicModelMain {
 //				double[] gammaChild = { 2, 2, 2};
 				double[] gammaParent = {0.5, 0.5};
 				double[] gammaChild = { 0.3, 0.3, 0.3};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
+				double ksi = 800;
+				double tau = 0.5;
 				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
+				double ksi = 800;
+				double tau = 0.5;
 				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBase_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChildBase_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu);
+						gamma, mu, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {0.01, 0.99};
 				beta = 1.001;
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu);
+						gamma, mu, ksi, tau);
 			} else if (topicmodel.equals("ParentChildWith2Phi")) {
 				double mu = 1.0;
 				beta = 1.001;
 				double[] gammaParent = { 0.5, 0.5};
 				double[] gammaChild = {0.5, 0.5};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
-						burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+						burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
 				// }else if(topicmodel.equals("ParentChildWithChildPhi")){
 				// double mu = 1.0;
 				// double[] gammaChild = {2, 2};
@@ -263,9 +282,19 @@ public class TopicModelMain {
 				// beta-1, c,
 				// lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 				// gammaChild, mu);
+			}else if(topicmodel.equals("ParentChildBaseWithPhi_Hard_Gibbs")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				double ksi = 800;
+				double tau = 0.5;
+				beta = 1.001;
+				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, mu, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);
+			model.setInforWriter(infoFilePath);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){

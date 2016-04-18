@@ -48,16 +48,13 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-//		articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "Gadgets";
-		String articleFolder = String
-.format(
-				"./data/ParentChildTopicModel/%sArticles",
-						articleType);
-		String commentFolder = String
-.format(
-				"./data/ParentChildTopicModel/%sComments",
-						articleType);
+//		articleType = "APP";
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		
+//		commentFolder = String.format("../../Code/Data/TextMiningProject/APPReviews");
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -116,7 +113,8 @@ public class featureGeneration {
 		
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
-
+//		analyzer.LoadDirectory(commentFolder, suffix);
+		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
