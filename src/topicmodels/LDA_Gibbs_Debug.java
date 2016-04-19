@@ -471,6 +471,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		printEntropy(filePrefix);
 		printTopKChild4Parent(filePrefix, topKChild);
 		printTopKChild4Stn(filePrefix, topKChild);
+		printTopKChild4StnWithHybrid(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 	}
 

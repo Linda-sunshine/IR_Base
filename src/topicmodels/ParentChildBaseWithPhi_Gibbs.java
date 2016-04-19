@@ -207,8 +207,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 	protected void estThetaInDoc(_Doc d) {
 		
 		if (d instanceof _ParentDoc) {
-			// estimate topic proportion of sentences in parent documents
-			// ((_ParentDoc4ThreePhi) d).estStnTheta();
 			estParentStnTopicProportion((_ParentDoc) d);
 			Utils.L1Normalization(d.m_topics);
 		} else if (d instanceof _ChildDoc4BaseWithPhi) {
@@ -304,15 +302,9 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
 		
 		for(_Stn stnObj:pDoc.getSentences()){
-//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-//			stnSimMap.put(stnObj.getIndex()+1, stnSim);
-
 			double stnKL = Utils.klDivergence(cDoc.m_xTopics[0], stnObj.m_topics);
-//			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
-//			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
 
 			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
-
 		}
 		
 		return stnSimMap;
@@ -382,8 +374,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				
 				for (int k = 0; k < number_of_topics; k++) {
 					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-//					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
-//					System.out.println("wordPerTopicLikelihood\t"+wordPerTopicLikelihood);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
 				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);

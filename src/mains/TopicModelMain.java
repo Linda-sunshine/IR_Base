@@ -205,9 +205,7 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-////				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
-////						number_of_topics, alpha,
-////						lambda);
+
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
@@ -223,16 +221,10 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
-//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
 				alpha = 1.01;
-				beta = 1.01;
-//				double[] gammaParent = {0.5, 0.5 };
-//				double[] gammaChild = { 0.3, 0.3, 0.3 };
-//				double[] gammaParent = {2, 2};
-//				double[] gammaChild = { 2, 2, 2};
+				beta = 1.001;
 				double[] gammaParent = {0.5, 0.5};
 				double[] gammaChild = { 0.3, 0.3, 0.3};
 				double ksi = 800;
@@ -262,7 +254,7 @@ public class TopicModelMain {
 				double[] gamma = {0.01, 0.99};
 				beta = 1.001;
 				double ksi = 800;
-				double tau = 0.5;
+				double tau = 0.9;
 				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, mu, ksi, tau);
@@ -275,18 +267,11 @@ public class TopicModelMain {
 				double tau = 0.5;
 				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
 						burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
-				// }else if(topicmodel.equals("ParentChildWithChildPhi")){
-				// double mu = 1.0;
-				// double[] gammaChild = {2, 2};
-				// model = new ParentChildWithChildPhi(gibbs_iteration, 0,
-				// beta-1, c,
-				// lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-				// gammaChild, mu);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Hard_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
 				double ksi = 800;
-				double tau = 0.9;
+				double tau = 0.7;
 				beta = 1.001;
 				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
