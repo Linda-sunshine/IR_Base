@@ -28,8 +28,8 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	public double m_totalSampleTimes;
 	
 	public ParentChildWith3Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild, double mu, double ksi, double tau) {
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild,  double ksi, double tau) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, ksi, tau);
 		// TODO Auto-generated constructor stub
 		
 		m_topicProbCache = new double[number_of_topics+1];
@@ -103,12 +103,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		imposePrior();
 		
 		m_statisticsNormalized = false;
-	}
-	
-	protected void computeMu4Doc(_ChildDoc d) {
-		_ParentDoc tempParent =  d.m_parentDoc;
-		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
-		d.setMu(mu);
 	}
 	
 	public void sampleInParentDoc(_ParentDoc d) {
@@ -373,8 +367,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 	
 	protected void estThetaInDoc(_Doc d) {
 		if (d instanceof _ParentDoc4ThreePhi) {
-			// estimate topic proportion of sentences in parent documents
-			// ((_ParentDoc4ThreePhi) d).estStnTheta();
 			estParentStnTopicProportion((_ParentDoc) d);
 			((_ParentDoc4ThreePhi) d).estGlobalLocalTheta();
 		} else if (d instanceof _ChildDoc4ThreePhi) {
@@ -859,185 +851,6 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 //			}	
 	}
 	
-	protected void printTopKChild4Stn(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-							
-				
-						int i=0;
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-//							if(i==topK)
-//								break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();		
-				
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	protected void printTopKChild4Stn(int topK, _ParentDoc4ThreePhi pDoc, File topKChildFolder){
-		File topKChild4PDocFolder = new File(topKChildFolder, pDoc.getName());
-		if(!topKChild4PDocFolder.exists()){
-//			System.out.println("creating top K stn directory\t"+topKChild4PDocFolder);
-			topKChild4PDocFolder.mkdir();
-		}
-		
-		for(_Stn stnObj:pDoc.getSentences()){
-			HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-			String topChild4StnFile =  (stnObj.getIndex()+1)+".txt";
-				
-			try{
-				int i=0;
-				
-				PrintWriter pw = new PrintWriter(new File(topKChild4PDocFolder, topChild4StnFile));
-				
-				for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-					if(i==topK)
-						break;
-					pw.print(e.getKey());
-					pw.print("\t"+e.getValue());
-					pw.println();
-					
-					i++;
-				}
-				
-				pw.flush();
-				pw.close();
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	protected void printTopKStn4Child(int topK, _ParentDoc4ThreePhi pDoc, File topKStnFolder){
-		File topKStn4PDocFolder = new File(topKStnFolder, pDoc.getName());
-		if(!topKStn4PDocFolder.exists()){
-//			System.out.println("creating top K stn directory\t"+topKStn4PDocFolder);
-			topKStn4PDocFolder.mkdir();
-		}
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			String topKStn4ChildFile = cDoc.getName()+".txt";
-			HashMap<Integer, Double> stnSimMap = rankStn4ChildBySim(pDoc, (_ChildDoc4ThreePhi)cDoc);
-
-			try{
-				int i=0;
-				
-				PrintWriter pw = new PrintWriter(new File(topKStn4PDocFolder, topKStn4ChildFile));
-				
-				for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
-					if(i==topK)
-						break;
-					pw.print(e.getKey());
-					pw.print("\t"+e.getValue());
-					pw.println();
-					
-					i++;
-				}
-				
-				pw.flush();
-				pw.close();
-			}catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
-	protected void printTopKStn4Child(String filePrefix, int topK){
-		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
-					
-					for(_ChildDoc childDoc: pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)childDoc;
-						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, cDoc);
-						int i = 0;
-						
-						pw.print(cDoc.getName()+"\t");
-						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
-//							if(i==topK)
-//								break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	protected void printTopKChild4Parent(String filePrefix, int topK) {
-		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc4ThreePhi){
-					_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi)d;
-					
-					pw.print(pDoc.getName()+"\t");
-					
-					for(_ChildDoc childDoc:pDoc.m_childDocs){
-						_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) childDoc;
-						double docScore = rankChild4ParentBySim(cDoc,
-								pDoc);
-				
-						pw.print(cDoc.getName() + ":" + docScore + "\t");
-						
-					}
-					
-					pw.println();
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	protected double rankChild4ParentBySim(_ChildDoc4ThreePhi cDoc, _ParentDoc4ThreePhi pDoc){	
 		double childSim = computeSimilarity(cDoc.m_topics, pDoc.m_topics);
 			
@@ -1133,6 +946,4 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		}
 
 	}
-
-	
 }

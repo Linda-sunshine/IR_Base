@@ -375,7 +375,7 @@ public class languageModelBaseLine{
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-		double mu = 3000;
+		double mu = 800;
 		languageModelBaseLine lm = new languageModelBaseLine(c, mu);
 		lm.generateReferenceModel();
 		lm.printTopChild4Stn(filePrefix);

@@ -41,7 +41,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA, HTMM,
+		String topicmodel = "ParentChildBase_Gibbs"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -217,7 +217,7 @@ public class TopicModelMain {
 				double tau = 0.5;
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu, ksi, tau);
+						gamma, ksi, tau);
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
@@ -230,10 +230,10 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.5;
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, ksi, tau);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
 				double ksi = 800;
-				double tau = 0.9;
+				double tau = 0.7;
 				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
@@ -245,10 +245,9 @@ public class TopicModelMain {
 				double mu = 1.0;
 				double[] gamma = {2, 2};
 				double ksi = 800;
-				double tau = 0.5;
+				double tau = 0.7;
 				model = new ParentChildBase_Gibbs(gibbs_iteration, 0, beta-1, c,
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu, ksi, tau);
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {0.01, 0.99};
@@ -257,7 +256,7 @@ public class TopicModelMain {
 				double tau = 0.9;
 				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu, ksi, tau);
+						gamma, ksi, tau);
 			} else if (topicmodel.equals("ParentChildWith2Phi")) {
 				double mu = 1.0;
 				beta = 1.001;
@@ -266,7 +265,7 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.5;
 				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
-						burnIn, gibbs_lag, gammaParent, gammaChild, mu, ksi, tau);
+						burnIn, gibbs_lag, gammaParent, gammaChild, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Hard_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -275,7 +274,7 @@ public class TopicModelMain {
 				beta = 1.001;
 				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu, ksi, tau);
+						gamma, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);

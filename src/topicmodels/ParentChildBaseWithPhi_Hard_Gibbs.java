@@ -22,14 +22,11 @@ import utils.Utils;
 
 public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gibbs{
 	
-	public double[] m_childTopicProbCache;
-	
 	public ParentChildBaseWithPhi_Hard_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu, double ksi, double tau){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	
-		m_topicProbCache = new double[number_of_topics];
-		m_childTopicProbCache = new double[number_of_topics+1];
+		m_topicProbCache = new double[number_of_topics+1];
 		
 	}
 	
@@ -149,22 +146,22 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 					double pWordTopic = childWordByTopicProb(tid, wid);
 					double pTopic = childTopicInDocProb(tid, cDoc);
 					
-					m_childTopicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
-					normalizedProb += m_childTopicProbCache[tid];
+					m_topicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
+					normalizedProb += m_topicProbCache[tid];
 				}
 					
 				double pWordTopic = childLocalWordByTopicProb(wid, cDoc);
-				m_childTopicProbCache[tid] = pWordTopic*pLambdaOne;
-				normalizedProb += m_childTopicProbCache[tid];
+				m_topicProbCache[tid] = pWordTopic*pLambdaOne;
+				normalizedProb += m_topicProbCache[tid];
 				
 				normalizedProb *= m_rand.nextDouble();
-				for(tid=0; tid<m_childTopicProbCache.length; tid++){
-					normalizedProb -= m_childTopicProbCache[tid];
+				for(tid=0; tid<m_topicProbCache.length; tid++){
+					normalizedProb -= m_topicProbCache[tid];
 					if(normalizedProb<=0)
 						break;
 				}
 				
-				if(tid==m_childTopicProbCache.length)
+				if(tid==m_topicProbCache.length)
 					tid --;
 				
 				if(tid<number_of_topics){
@@ -349,8 +346,7 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 		
 		return childLikelihoodMap;
 	}
-	
-	
+		
 	protected HashMap<String , Double> rankChild4StnByLM(_Stn stnObj, _ParentDoc pDoc){
 		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
 
@@ -452,44 +448,6 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 
 	}
 	
-	protected void printTopKChild4Stn(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-						
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc){
-					_ParentDoc pDoc = (_ParentDoc)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-//						HashMap<String, Double> likelihoodMap = rankChild4StnByHybrid(stnObj, pDoc);
-						
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-						}
-						pw.println();		
-				
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
 //		System.out.println("likelihood in child doc in base with phi");
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
@@ -529,82 +487,5 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 		}
 		
 		return docLogLikelihood;
-	}
-	
-	public void printChildLocalWordTopicDistribution(_ChildDoc4BaseWithPhi d, File childLocalTopicDistriFolder){
-		
-		String childLocalTopicDistriFile = d.getName() + ".txt";
-		try{			
-			PrintWriter childOut = new PrintWriter(new File(childLocalTopicDistriFolder, childLocalTopicDistriFile));
-			
-			for(int wid=0; wid<this.vocabulary_size; wid++){
-				String featureName = m_corpus.getFeature(wid);
-				double wordTopicProb = d.m_xTopics[1][wid];
-				if(wordTopicProb > 0.001)
-					childOut.format("%s:%.3f\t", featureName, wordTopicProb);
-			}
-			childOut.flush();
-			childOut.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
-		
-	public void printParameter(String parentParameterFile, String childParameterFile){
-		System.out.println("printing parameter");
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_corpus.getCollection()){
-				if(d instanceof _ParentDoc){
-					parentParaOut.print(d.getName()+"\t");
-					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
-						parentParaOut.print(d.m_topics[k]+"\t");
-					}
-					
-					for(_Stn stnObj:d.getSentences()){							
-						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<number_of_topics;k++){
-							parentParaOut.print(stnObj.m_topics[k]+"\t");
-						}
-					}
-					
-					parentParaOut.println();
-					
-				}else{
-					if(d instanceof _ChildDoc){
-						childParaOut.print(d.getName()+"\t");
-
-						childParaOut.print("topicProportion\t");
-						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print((( _ChildDoc)d).m_xTopics[0][k] + "\t");
-						}
-						
-						childParaOut.print("xProportion\t");
-						for(int x=0; x<m_gamma.length; x++){
-							childParaOut.print(((_ChildDoc)d).m_xProportion[x]+"\t");
-						}
-						
-						childParaOut.println();
-					}
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-			childParaOut.flush();
-			childParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
 	}
 }

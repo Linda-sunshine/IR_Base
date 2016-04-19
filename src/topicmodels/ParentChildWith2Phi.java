@@ -28,8 +28,8 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 
 	public ParentChildWith2Phi(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gammaParent, double[] gammaChild,
-			double mu, double ksi, double tau) {
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, mu, ksi, tau);
+			double ksi, double tau) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gammaParent, ksi, tau);
 		// TODO Auto-generated constructor stub
 
 		m_topicProbCache = new double[number_of_topics + 1];
@@ -659,7 +659,6 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 
 		for (_Doc d : m_corpus.getCollection()) {
 			if (d instanceof _ParentDoc) {
-				printParentTopicAssignment(d, parentTopicFolder);
 				printParentPhi((_ParentDoc) d, parentPhiFolder);
 				printPairWordTopicDistribution((_ParentDoc4ThreePhi) d, parentPairTopicDistriFolder);
 				printXValue(d, parentXFolder);
@@ -780,21 +779,6 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 		}
 	}
 
-//	protected HashMap<Integer, Double> rankStn4ChildBySim(_ParentDoc pd, _ChildDoc cd) {
-//
-//		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi) pd;
-//		_ChildDoc4TwoPhi cDoc = (_ChildDoc4TwoPhi) cd;
-//
-//		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
-//
-//		for (_Stn stnObj : pDoc.getSentences()) {
-//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-//			stnSimMap.put(stnObj.getIndex() + 1, stnSim);
-//		}
-//
-//		return stnSimMap;
-//	}
-
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc d) {
 
 		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi) d;
@@ -829,36 +813,6 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 
 	}
 
-//	protected double rankChild4ParentByLikelihood(_ParentDoc4ThreePhi pd, _ChildDoc cd) {
-//		_ParentDoc4ThreePhi pDoc = (_ParentDoc4ThreePhi) pd;
-//		_ChildDoc4TwoPhi cDoc = (_ChildDoc4TwoPhi) cd;
-//		int cDocLen = cDoc.getTotalDocLength();
-//		_SparseFeature[] fv = pDoc.getSparse();
-//		double gammaLen = Utils.sumOfArray(m_gammaChild);
-//
-//		double docLogLikelihood = 0;
-//		for (_SparseFeature i : fv) {
-//			int wid = i.getIndex();
-//			double value = i.getValue();
-//
-//			double wordLogLikelihood = 0;
-//
-//			for (int k = 0; k < number_of_topics; k++) {
-//				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
-//						* childTopicInDocProb(k, (_ChildDoc4TwoPhi) cDoc, (_ParentDoc4ThreePhi) cDoc.m_parentDoc)
-//						* childXInDocProb(0, (_ChildDoc4TwoPhi) cDoc) / (cDoc.getTotalDocLength() + gammaLen);
-//				wordLogLikelihood += wordPerTopicLikelihood;
-//			}
-//
-//			wordLogLikelihood += childParentWordByTopicProb(wid, (_ParentDoc4ThreePhi) cDoc.m_parentDoc)
-//					* childXInDocProb(1, (_ChildDoc4TwoPhi) cDoc) / (cDoc.getTotalDocLength() + gammaLen);
-//
-//			docLogLikelihood += value * Math.log(wordLogLikelihood);
-//		}
-//
-//		return docLogLikelihood;
-//	}
-
 	void discoverSpecificComments(MatchPair matchType, String similarityFile) {
 		System.out.println("topic similarity");
 
@@ -890,29 +844,6 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 					pw.println();
 				}
 			}
-			pw.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void printParentTopicAssignment(_Doc d, File parentFolder) {
-		String topicAssignmentFile = d.getName() + ".txt";
-		try {
-			PrintWriter pw = new PrintWriter(new File(parentFolder, topicAssignmentFile));
-
-			for (int i = 0; i < d.getSenetenceSize(); i++) {
-				_Stn stnObj = d.getSentence(i);
-				for (_Word w : stnObj.getWords()) {
-					int index = w.getIndex();
-					int topic = w.getTopic();
-					String featureName = m_corpus.getFeature(index);
-					pw.print(featureName + ":" + topic + "\t");
-				}
-				pw.println();
-			}
-
-			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();

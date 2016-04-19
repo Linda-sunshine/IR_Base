@@ -21,16 +21,13 @@ import structures._Word;
 import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
-public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
-	
-	public double[] m_childTopicProbCache;
+public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	
 	public ParentChildBaseWithPhi_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double mu, double ksi, double tau){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, mu, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	
-		m_topicProbCache = new double[number_of_topics];
-		m_childTopicProbCache = new double[number_of_topics+1];
+		m_topicProbCache = new double[number_of_topics+1];
 		
 	}
 	
@@ -76,13 +73,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 		}
 		
 		imposePrior();	
-		m_statisticsNormalized = false;
-	}
-	
-	protected void computeMu4Doc(_ChildDoc d){
-		_ParentDoc tempParent = d.m_parentDoc;
-		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
-		d.setMu(mu);
 	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
@@ -131,22 +121,22 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChildBase_Gibbs{
 				double pWordTopic = childWordByTopicProb(tid, wid);
 				double pTopic = childTopicInDocProb(tid, cDoc);
 				
-				m_childTopicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
-				normalizedProb += m_childTopicProbCache[tid];
+				m_topicProbCache[tid] = pWordTopic*pTopic*pLambdaZero;
+				normalizedProb += m_topicProbCache[tid];
 			}
 			
 			double pWordTopic = childLocalWordByTopicProb(wid, cDoc);
-			m_childTopicProbCache[tid] = pWordTopic*pLambdaOne;
-			normalizedProb += m_childTopicProbCache[tid];
+			m_topicProbCache[tid] = pWordTopic*pLambdaOne;
+			normalizedProb += m_topicProbCache[tid];
 			
 			normalizedProb *= m_rand.nextDouble();
-			for(tid=0; tid<m_childTopicProbCache.length; tid++){
-				normalizedProb -= m_childTopicProbCache[tid];
+			for(tid=0; tid<m_topicProbCache.length; tid++){
+				normalizedProb -= m_topicProbCache[tid];
 				if(normalizedProb<=0)
 					break;
 			}
 			
-			if(tid==m_childTopicProbCache.length)
+			if(tid==m_topicProbCache.length)
 				tid --;
 			
 			if(tid<number_of_topics){
