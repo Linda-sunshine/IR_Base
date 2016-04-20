@@ -1,8 +1,14 @@
 package structures;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
+import javax.transaction.xa.Xid;
+
+import Analyzer.newEggAnalyzer;
 import bsh.util.Util;
+import cc.mallet.types.tests.TestLabelAlphabet;
+import jdk.nashorn.internal.ir.WhileNode;
 import utils.Utils;
 
 public class _ChildDoc4BaseWithPhi extends _ChildDoc{
@@ -69,8 +75,53 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 		}
 	}
 	
+	public void setTopics4GibbsTest(int k, double alpha, int testLength){
+		int trainLength = m_totalLength - testLength;
+		createSpace4GibbsTest(k, alpha, trainLength);
+		m_testLength = testLength;
+		m_testWords = new _Word[testLength];
+		
+		ArrayList<Integer> wordIndexs = new ArrayList<Integer>();
+		while(wordIndexs.size()<testLength){
+			int testIndex = m_rand.nextInt(m_totalLength);
+			if(!wordIndexs.contains(testIndex)){
+				wordIndexs.add(testIndex);
+			}
+		}
+		
+		int wIndex = 0, wTrainIndex = 0, wTestIndex = 0, xid=0, tid=0, wid=0, gammaSize=m_xSstat.length;
+		for(_SparseFeature fv:m_x_sparse){
+			wid = fv.getIndex();
+			for(int j=0; j<fv.getValue(); j++){
+				xid = m_rand.nextInt(gammaSize);
+				if(wordIndexs.contains(wIndex)){
+					tid = m_rand.nextInt(k);
+					m_testWords[wTestIndex] = new _Word(wid, tid, xid);
+					wTestIndex ++;
+				}else{
+					if(xid==0){
+						tid = m_rand.nextInt(k);
+						m_xTopicSstat[xid][tid] ++;
+						m_xSstat[xid] ++;
+					}else if(xid==1){
+						tid = k;
+						m_xTopicSstat[xid][wid] ++;
+						m_xSstat[xid] ++;
+						m_childWordSstat ++;
+					}
+					
+					m_words[wTrainIndex] = new _Word(wid, tid, xid);
+					
+					wTrainIndex ++;
+					
+				}
+				wIndex ++;
+			}
+		}
+	}
+	
 	public void estGlobalLocalTheta(){
-//		Utils.L1Normalization(m_topics);
+		Utils.L1Normalization(m_topics);
 		Utils.L1Normalization(m_xTopics[0]);
 
 		for (int i = 0; i < m_topics.length; i++) {

@@ -282,6 +282,23 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		return Utils.cosine(topic1, topic2);
 	}
 	
+	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		
+		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+			sampleTestSet.add(cDoc);
+		}
+	}
+	
 	
 //	
 //	@Override

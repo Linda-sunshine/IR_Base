@@ -488,4 +488,43 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 		
 		return docLogLikelihood;
 	}
+	
+	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
+		_ChildDoc4BaseWithPhi_Hard cDoc = (_ChildDoc4BaseWithPhi_Hard) d;
+		double docLogLikelihood = 0.0;
+		double gammaLen = Utils.sumOfArray(m_gamma);
+
+		// prepare compute the normalizers
+		_SparseFeature[] fv = cDoc.getSparse();
+
+		for (_Word w : cDoc.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			
+			if(Utils.indexOf(d.m_parentDoc.getSparse(),wid)!=-1){
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+			}else{
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+
+			if (Math.abs(wordLogLikelihood) < 1e-10) {
+				System.out.println("wordLoglikelihood\t" + wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}
 }
