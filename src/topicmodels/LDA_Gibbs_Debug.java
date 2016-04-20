@@ -56,6 +56,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection) {
+		createSpace();
 		for(int i=0; i< number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
@@ -226,14 +227,20 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 				
 //				writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number "+i);
+				infoWriter.println("Fold number "+i);
+				
 				System.out.println("Train Set Size "+m_trainSet.size());
+				infoWriter.println("Train Set Size "+m_trainSet.size());
+				
 				System.out.println("Test Set Size "+m_testSet.size());
+				infoWriter.println("Test Set Size "+m_testSet.size());
 
 				long start = System.currentTimeMillis();
 				EM();
 				perf[i] = Evaluation(i);
 				
 				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
+				infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 				m_trainSet.clear();
 				m_testSet.clear();			
 			}
@@ -244,6 +251,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			var += (perf[i]-mean) * (perf[i]-mean);
 		var = Math.sqrt(var/k);
 		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
+		infoWriter.format("Perplexity %.3f+/-%.3f\n", mean, var);
 	}
 	
 	public double Evaluation(int i) {
@@ -256,18 +264,19 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			loglikelihood = inference(d);
 			sumLikelihood += loglikelihood;
 			perplexity += loglikelihood;
-			totalWords += d.getTotalDocLength();
+			totalWords += d.getDocTestLength();
 			for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
-				totalWords += cDoc.getTotalDocLength();
+				totalWords += cDoc.getDocTestLength();
 			}
 		}
 		System.out.println("total Words\t"+totalWords+"perplexity\t"+perplexity);
+		infoWriter.println("total Words\t"+totalWords+"perplexity\t"+perplexity);
 		perplexity /= totalWords;
 		perplexity = Math.exp(-perplexity);
 		sumLikelihood /= m_testSet.size();
 
 		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
-		
+		infoWriter.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
 		return perplexity;		
 	}
 	
@@ -312,7 +321,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 		for(_Doc doc: sampleTestSet){
 			estThetaInDoc(doc);
-			logLikelihood += calculate_log_likelihood(doc);
+			logLikelihood += calculate_test_log_likelihood(doc);
 		}
 		
 		return logLikelihood;
@@ -320,21 +329,61 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		// return logLikelihood - Math.log(count);
 	}
 
+	protected double calculate_test_log_likelihood(_Doc d){
+		if(d instanceof _ParentDoc)
+			return testLogLikelihoodByIntegrateTopics((_ParentDoc)d);
+		else
+			return testLogLikelihoodByIntegrateTopics((_ChildDoc)d);
+	}
+	
+	protected double testLogLikelihoodByIntegrateTopics(_Doc d){
+		double docLogLikelihood = 0.0;
+		_SparseFeature[] fv = d.getSparse();
+		
+		for(_Word w:d.getTestWords()){
+			int wid = w.getIndex();
+	
+			double wordLogLikelihood = 0;
+			for(int k=0; k<number_of_topics; k++){
+				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+						* topicInDocProb(k, d)
+						/ (d.getTotalDocLength() + number_of_topics * d_alpha);
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+		
+		return docLogLikelihood;
+	}
+
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc)d;
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
-		pDoc.setTopics4Gibbs(number_of_topics, d_alpha);		
+		
+		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			cDoc.setTopics4Gibbs_LDA(number_of_topics, d_alpha);
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			sampleTestSet.add(cDoc);
 		}
 	}
 	
-	public double logLikelihoodByIntegrateTopics(_Doc d){
+	protected double calculate_log_likelihood(){
+		double logLikelihood = 0.0;
+		
+		for(_Doc d: m_trainSet){
+			logLikelihood += calculate_log_likelihood(d);
+		}
+		
+		return logLikelihood;
+	}
+	
+	public double calculate_log_likelihood(_Doc d){
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
 		
@@ -363,27 +412,26 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 		return docLogLikelihood;
 	}
-
-	protected double calculate_log_likelihood() {
-		double logLikelihood = 0;
-		for (_Doc d : m_trainSet) {
-			double docLogLikelihood = 0.0;
-			docLogLikelihood = calculate_log_likelihood(d);
-			logLikelihood += docLogLikelihood;
-		}
-		return logLikelihood;
-	}
-	
-	public double calculate_log_likelihood(_Doc d){
-		if (d instanceof _ParentDoc)
-			return logLikelihoodByIntegrateTopics((_ParentDoc)d);
-		else
-			return logLikelihoodByIntegrateTopics((_ChildDoc)d);
-	}
+//
+//	protected double calculate_log_likelihood() {
+//		double logLikelihood = 0;
+//		for (_Doc d : m_trainSet) {
+//			double docLogLikelihood = 0.0;
+//			docLogLikelihood = calculate_log_likelihood(d);
+//			logLikelihood += docLogLikelihood;
+//		}
+//		return logLikelihood;
+//	}
+//	
+//	public double calculate_log_likelihood(_Doc d){
+//		if (d instanceof _ParentDoc)
+//			return finalLogLikelihoodByIntegrateTopics((_ParentDoc)d);
+//		else
+//			return finalLogLikelihoodByIntegrateTopics((_ChildDoc)d);
+//	}
 	
 	@Override
  	public void printTopWords(int k, String betaFile) {
-		
 
 		try {
 			System.out.println("beta file");
@@ -412,7 +460,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			System.err.print("File Not Found");
 		}
 
-		double loglikelihood = calLogLikelihoodByIntegrateTopics(0);
+		double loglikelihood = calculate_log_likelihood();
 		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
 		
 		String filePrefix = betaFile.replace("topWords.txt", "");
@@ -633,40 +681,31 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	} 
 
 	//p(w)= \sum_z p(w|z)p(z)
-	protected double calLogLikelihoodByIntegrateTopics(int iter){
-		double logLikelihood = 0.0;
-		
-		for(_Doc d: m_trainSet){
-			logLikelihood += docLogLikelihoodByIntegrateTopics(d);
-		}
-		
-		return logLikelihood;
-	}
 	
-	protected double docLogLikelihoodByIntegrateTopics(_Doc d){
-		
-		double docLogLikelihood = 0.0;
-		_SparseFeature[] fv = d.getSparse();
-		
-		for(int j=0; j<fv.length; j++){
-			int index = fv[j].getIndex();
-			double value = fv[j].getValue();
-			
-			double wordLogLikelihood = 0;
-			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]);
-				wordPerTopicLikelihood += Math.log(d.m_topics[k]);
-				if(wordLogLikelihood == 0){
-					wordLogLikelihood = wordPerTopicLikelihood;
-				}else{
-					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
-				}
-			}
-			docLogLikelihood += value*wordLogLikelihood;
-		}
-		
-		return docLogLikelihood;
-	}
+//	protected double finalLogLikelihoodByIntegrateTopics(_Doc d){
+//		
+//		double docLogLikelihood = 0.0;
+//		_SparseFeature[] fv = d.getSparse();
+//		
+//		for(int j=0; j<fv.length; j++){
+//			int index = fv[j].getIndex();
+//			double value = fv[j].getValue();
+//			
+//			double wordLogLikelihood = 0;
+//			for(int k=0; k<number_of_topics; k++){
+//				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]);
+//				wordPerTopicLikelihood += Math.log(d.m_topics[k]);
+//				if(wordLogLikelihood == 0){
+//					wordLogLikelihood = wordPerTopicLikelihood;
+//				}else{
+//					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
+//				}
+//			}
+//			docLogLikelihood += value*wordLogLikelihood;
+//		}
+//		
+//		return docLogLikelihood;
+//	}
 		
 	//comment is a query, retrieve stn by topical similarity
 	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){

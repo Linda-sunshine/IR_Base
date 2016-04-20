@@ -37,6 +37,8 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
+	protected double m_testWord4PerplexityProportion;
+	
 	public PrintWriter infoWriter;
 	public PrintWriter summaryWriter;
 	public PrintWriter debugWriter;
@@ -385,7 +387,10 @@ public abstract class TopicModel {
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
-		
+	public void setPerplexityProportion(double proportion){
+		m_testWord4PerplexityProportion = proportion;
+	}
+	
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
 		m_trainSet = new ArrayList<_Doc>();
