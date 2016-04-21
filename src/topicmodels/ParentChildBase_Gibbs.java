@@ -256,6 +256,14 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		}
 	}	
 	
+	protected void collectStats(_Doc d){
+		if(d instanceof _ParentDoc){
+			collectParentStats((_ParentDoc)d);
+		}else if(d instanceof _ChildDoc){
+			collectChildStats((_ChildDoc)d);
+		}
+	}
+	
 	//such statistic collection mechanism makes us unable to normalize the corresponding structure for efficient likelihood computation
 	protected void collectParentStats(_ParentDoc d) {
 		for (int k = 0; k < this.number_of_topics; k++) 
@@ -267,8 +275,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		double parentDocLength = pDoc.getTotalDocLength();
 		for (int k = 0; k < this.number_of_topics; k++) 
-			d.m_topics[k] += d.m_sstat[k] + d_alpha;
-//		+d.getMu()*pDoc.m_sstat[k] / parentDocLength;
+			d.m_topics[k] += d.m_sstat[k] + d_alpha
+		+d.getMu()*pDoc.m_sstat[k] / parentDocLength;
 
 //			d.m_topics[k] += d.m_sstat[k] + d_alpha+d.getMu()*pDoc.m_sstat[k] / parentDocLength;
 	}

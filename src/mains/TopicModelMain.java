@@ -59,8 +59,8 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 10;
-		int gibbs_iteration = 2000, gibbs_lag = 50;
-		int displayLap = 100;
+		int gibbs_iteration = 200, gibbs_lag = 10;
+		int displayLap = 10;
 //		gibbs_iteration = 20;
 //		gibbs_lag = 2;
 //		displayLap = 5;

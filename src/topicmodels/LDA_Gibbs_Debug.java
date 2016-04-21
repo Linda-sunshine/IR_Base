@@ -339,7 +339,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			return testLogLikelihoodByIntegrateTopics((_ChildDoc)d);
 	}
 	
-	protected double testLogLikelihoodByIntegrateTopics(_Doc d){
+	protected double testLogLikelihoodByIntegrateTopics(_ParentDoc d){
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
 		
@@ -359,6 +359,26 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return docLogLikelihood;
 	}
 
+	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
+		double docLogLikelihood = 0.0;
+		_SparseFeature[] fv = d.getSparse();
+		
+		for(_Word w:d.getTestWords()){
+			int wid = w.getIndex();
+	
+			double wordLogLikelihood = 0;
+			for(int k=0; k<number_of_topics; k++){
+				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+						* topicInDocProb(k, d)
+						/ (d.getTotalDocLength() + number_of_topics * d_alpha);
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+		
+		return docLogLikelihood;
+	}
+	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc)d;
 		for(_Stn stnObj: pDoc.getSentences()){
