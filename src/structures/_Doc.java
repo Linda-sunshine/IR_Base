@@ -238,6 +238,10 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_totalLength;
 	}
 	
+	public int getDocInferLength(){
+		return this.m_words.length;
+	}
+	
 	void calcTotalLength() {
 		m_totalLength = 0;
 		for(_SparseFeature fv:m_x_sparse)

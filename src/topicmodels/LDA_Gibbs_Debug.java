@@ -341,7 +341,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 	protected double testLogLikelihoodByIntegrateTopics(_ParentDoc d){
 		double docLogLikelihood = 0.0;
-		_SparseFeature[] fv = d.getSparse();
+		
+		double docInferLen = d.getDocInferLength();
 		
 		for(_Word w:d.getTestWords()){
 			int wid = w.getIndex();
@@ -350,7 +351,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			for(int k=0; k<number_of_topics; k++){
 				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
 						* topicInDocProb(k, d)
-						/ (d.getTotalDocLength() + number_of_topics * d_alpha);
+						/ (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);
@@ -361,8 +362,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
 		double docLogLikelihood = 0.0;
-		_SparseFeature[] fv = d.getSparse();
 		
+		double docInferLen = d.getDocInferLength();
 		for(_Word w:d.getTestWords()){
 			int wid = w.getIndex();
 	
@@ -370,7 +371,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			for(int k=0; k<number_of_topics; k++){
 				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
 						* topicInDocProb(k, d)
-						/ (d.getTotalDocLength() + number_of_topics * d_alpha);
+						/ (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);

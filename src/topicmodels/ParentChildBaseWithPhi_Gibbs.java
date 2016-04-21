@@ -81,7 +81,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			return term;
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			double muDp = cDoc.getMu()/pDoc.getTotalDocLength();
+			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
 		}
@@ -163,7 +163,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	}
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
-		double docLength = d.m_parentDoc.getTotalDocLength();
+		double docLength = d.m_parentDoc.getDocInferLength();
 		
 		return (d_alpha + d.getMu()*d.m_parentDoc.m_sstat[tid]/docLength + d.m_xTopicSstat[0][tid])
 					/(m_kAlpha + d.getMu() + d.m_xSstat[0]);
@@ -177,7 +177,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	protected void collectChildStats(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		_ParentDoc pDoc = cDoc.m_parentDoc;
-		double parentDocLength = pDoc.getTotalDocLength();
+		double parentDocLength = pDoc.getDocInferLength();
 		
 		for (int k = 0; k < this.number_of_topics; k++) 
 			cDoc.m_xTopics[0][k] += cDoc.m_xTopicSstat[0][k] + d_alpha+cDoc.getMu()*pDoc.m_sstat[k] / parentDocLength;
@@ -546,12 +546,12 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
 						* childTopicInDocProb(k, cDoc)
 						* childXInDocProb(0, cDoc)
-						/ (cDoc.getTotalDocLength() + gammaLen);
+						/ (cDoc.getDocInferLength() + gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)
 					* childXInDocProb(1, cDoc)
-					/ (cDoc.getTotalDocLength() + gammaLen);
+					/ (cDoc.getDocInferLength() + gammaLen);
 			wordLogLikelihood += wordPerTopicLikelihood;
 
 			if (Math.abs(wordLogLikelihood) < 1e-10) {
