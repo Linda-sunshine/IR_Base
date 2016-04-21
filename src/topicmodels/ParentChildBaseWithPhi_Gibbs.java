@@ -72,6 +72,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		}
 		
 		imposePrior();	
+		m_statisticsNormalized = false;
+
 	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){

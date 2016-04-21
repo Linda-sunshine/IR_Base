@@ -211,13 +211,16 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
-		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);		
 		sampleTestSet.add(pDoc);
 		pDoc.createSparseVct4Infer();
 
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			((_ChildDoc4BaseWithPhi_Hard)cDoc).createXSpace(number_of_topics, m_gamma.length);
-			((_ChildDoc4BaseWithPhi_Hard)cDoc).setTopics(number_of_topics, 0);
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+
+			((_ChildDoc4BaseWithPhi_Hard) cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			((_ChildDoc4BaseWithPhi_Hard)cDoc).setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
 			cDoc.createSparseVct4Infer();
 
