@@ -381,6 +381,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
+			
 		_ParentDoc pDoc = (_ParentDoc)d;
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
@@ -390,10 +391,14 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 		
+		pDoc.createSparseVct4Infer();
+	
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			sampleTestSet.add(cDoc);
+			cDoc.createSparseVct4Infer();
+			
 		}
 	}
 	

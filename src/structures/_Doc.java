@@ -264,7 +264,26 @@ public class _Doc implements Comparable<_Doc> {
 		m_x_sparse = x;
 		calcTotalLength();
 	}
+	
+	public _SparseFeature[] m_x_sparse_infer;
+	public void createSparseVct4Infer(){
+		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
 		
+		for(_Word w:m_testWords){
+			int wIndex = w.getIndex();
+			int featureIndex = Utils.indexOf(m_x_sparse, wIndex);
+			double featureVal = m_x_sparse[featureIndex].getValue();
+			inferVct.put(featureIndex,  featureVal--);
+		}
+		
+		m_x_sparse_infer = Utils.createSpVct(inferVct);
+	
+	}
+	
+	public _SparseFeature[] getSparseVct4Infer(){
+		return m_x_sparse_infer;
+	}
+	
 	//Create the sparse postagging vector for the document. 
 	public void createPOSVct(HashMap<Integer, Double> posVct){
 		m_x_posVct = Utils.createSpVct(posVct);

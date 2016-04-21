@@ -77,13 +77,17 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 	
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
-		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
+//		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
+		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
 //		mu = 0.001;
 		d.setMu(mu);
 	}
 	
 	protected void computeTestMu4Doc(_ChildDoc d){
+		_ParentDoc pDoc = d.m_parentDoc;
 		
+		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
+		d.setMu(mu);
 	}
 	
 	@Override
@@ -304,13 +308,16 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 		sampleTestSet.add(pDoc);
+		pDoc.createSparseVct4Infer();
+
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
+			cDoc.createSparseVct4Infer();
 
-			computeMu4Doc(cDoc);
+			computeTestMu4Doc(cDoc);
 		}
 	}
 	

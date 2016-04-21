@@ -213,11 +213,15 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 		}
 		pDoc.setTopics4Gibbs(number_of_topics, 0);		
 		sampleTestSet.add(pDoc);
-		
+		pDoc.createSparseVct4Infer();
+
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			((_ChildDoc4BaseWithPhi_Hard)cDoc).createXSpace(number_of_topics, m_gamma.length);
 			((_ChildDoc4BaseWithPhi_Hard)cDoc).setTopics(number_of_topics, 0);
 			sampleTestSet.add(cDoc);
+			cDoc.createSparseVct4Infer();
+
+			computeTestMu4Doc(cDoc);
 		}
 	}
 	

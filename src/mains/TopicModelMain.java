@@ -41,7 +41,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA,
+		String topicmodel = "ParentChildBase_Gibbs"; // 2topic, pLSA,
 															// HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
@@ -60,8 +60,8 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 10;
-		int gibbs_iteration = 200, gibbs_lag = 10;
-		int displayLap = 10;
+		int gibbs_iteration = 2000, gibbs_lag = 50;
+		int displayLap = 100;
 //		gibbs_iteration = 20;
 //		gibbs_lag = 2;
 //		displayLap = 5;
