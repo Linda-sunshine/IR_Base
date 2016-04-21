@@ -241,8 +241,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 				
 				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
 				infoWriter.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-				m_trainSet.clear();
-				m_testSet.clear();			
+				
+				if(i<k-1){
+					m_trainSet.clear();
+					m_testSet.clear();	
+				}
 			}
 			
 		}

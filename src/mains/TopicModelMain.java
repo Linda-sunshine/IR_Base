@@ -304,7 +304,9 @@ public class TopicModelMain {
 				double proportion = 0.2;
 				model.setPerplexityProportion(proportion);
 				model.crossValidation(crossV);
-				model.printTopWords(topK);
+				model.printTopWords(topK, topWordPath);
+
+//				model.printTopWords(topK);
 			}
 			
 			model.closeWriter();

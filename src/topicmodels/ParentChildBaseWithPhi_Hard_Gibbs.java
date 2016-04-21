@@ -36,6 +36,8 @@ public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gi
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection){
+		createSpace();
+		
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
 		
