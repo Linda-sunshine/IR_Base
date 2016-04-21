@@ -216,11 +216,11 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength =  (int) (m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			((_ChildDoc4BaseWithPhi) d).createXSpace(number_of_topics,
+			((_ChildDoc4BaseWithPhi) cDoc).createXSpace(number_of_topics,
 					m_gamma.length, vocabulary_size, d_beta);
 			((_ChildDoc4BaseWithPhi)cDoc).setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
-			computeMu4Doc((_ChildDoc4BaseWithPhi) d);
+			computeMu4Doc((_ChildDoc4BaseWithPhi) cDoc);
 		}
 	}
 	
