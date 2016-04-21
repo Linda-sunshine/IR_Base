@@ -11,8 +11,6 @@ import java.util.Map;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
-import structures._ChildDoc4ThreePhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -306,6 +304,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
+
+			computeMu4Doc(cDoc);
 		}
 	}
 	

@@ -10,17 +10,11 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
-import structures._ChildDoc4BaseWithPhi_Hard;
-import structures._ChildDoc4ThreePhi;
-import structures._ChildDoc4TwoPhi;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
 import structures._SparseFeature;
 import structures._stat;
-import topicmodels.ParentChildBaseWithPhi_Hard_Gibbs;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -108,7 +102,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 //		
-//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -117,7 +112,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		// _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
+		// 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	

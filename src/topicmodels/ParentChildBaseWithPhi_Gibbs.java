@@ -1,7 +1,6 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import bsh.util.Util;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -18,7 +16,6 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
-import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
 public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
@@ -219,9 +216,11 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength =  (int) (m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length);
+			((_ChildDoc4BaseWithPhi) d).createXSpace(number_of_topics,
+					m_gamma.length, vocabulary_size, d_beta);
 			((_ChildDoc4BaseWithPhi)cDoc).setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
+			computeMu4Doc((_ChildDoc4BaseWithPhi) d);
 		}
 	}
 	

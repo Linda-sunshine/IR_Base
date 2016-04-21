@@ -41,7 +41,8 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildBase_Gibbs"; // 2topic, pLSA, HTMM,
+		String topicmodel = "ParentChildBaseWithPhi_Gibbs"; // 2topic, pLSA,
+															// HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
