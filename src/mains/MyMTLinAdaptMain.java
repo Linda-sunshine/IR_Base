@@ -39,10 +39,11 @@ public class MyMTLinAdaptMain {
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		// Best performance for CoLinAdapt.
-		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859;
+//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859;
 
 		// Best performance for mt-linadapt in amazon.
-//		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+		double eta3 = 0.1, eta4 = 0.3;
 //		double eta1 = 0.1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		// Best performance for mt-linadapt in yelp.
 //		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;

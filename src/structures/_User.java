@@ -23,6 +23,7 @@ public class _User {
 	
 	//personalized prediction model
 	protected double[] m_pWeight;
+	protected double[] m_pWeightB;
 	protected int m_classNo;
 	protected int m_featureSize;
 	
@@ -70,7 +71,11 @@ public class _User {
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
 		m_featureSize = weight.length;
 	}
-	
+	// added by Lin.
+	public void setModelB(double[] weight){
+		m_pWeightB = new double[m_featureSize];
+		System.arraycopy(weight, 0, m_pWeightB, 0, weight.length);
+	}
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}

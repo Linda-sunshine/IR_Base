@@ -3,6 +3,9 @@
  */
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -19,8 +22,9 @@ import structures._Review;
  * asynchronized CoLinAdapt with zero order gradient update, i.e., we will only touch the current user's gradient
  */
 public class asyncCoLinAdapt extends CoLinAdapt {
-	double m_initStepSize = 1.50;
+	double m_initStepSize = 0.1;
 	int[] m_userOrder; // visiting order of different users during online learning
+	PrintWriter m_writer;
 	
 	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
@@ -90,6 +94,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 			magA += m_g[offset]*m_g[offset];
 			magB += m_g[offset+m_dim]*m_g[offset+m_dim];
 		}
+		if(Double.isNaN(magA) || Double.isNaN(magB))
+			System.out.println("NaN detected here!!");
 		
 		if (m_displayLv==2)
 			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
@@ -110,9 +116,12 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		int predL, trueL;
 		_Review doc;
 		_PerformanceStat perfStat;
-		
+		double val = 0;
 		initLBFGS();
 		init();
+		try{
+		m_writer = new PrintWriter(new File("CoLinAdapt_online.txt"));
+
 		for(int t=0; t<m_userOrder.length; t++) {
 			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
 
@@ -120,9 +129,12 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				// test the latest model
 				if (m_testmode!=TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
 					perfStat = user.getPerfStat();
+					val = logit(doc.getSparse(), user);
 					predL = predict(doc, user);
 					trueL = doc.getYLabel();
 					perfStat.addOnePredResult(predL, trueL);
+					m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
+
 				} // in batch mode we will not accumulate the performance during adaptation			
 				
 				// prepare to adapt: initialize gradient	
@@ -151,6 +163,10 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 			System.out.println();
 		
 		setPersonalizedModel();		
+		m_writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 		return 0; // we do not evaluate function value
 	}
 		

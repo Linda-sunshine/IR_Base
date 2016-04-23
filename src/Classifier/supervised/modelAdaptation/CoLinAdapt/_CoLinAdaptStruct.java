@@ -18,6 +18,7 @@ import structures._User;
 public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct {
 	
 	static double[] sharedA;//this stores shared transformation operation across all uesrs	
+	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
 	

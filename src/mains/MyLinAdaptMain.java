@@ -26,7 +26,7 @@ public class MyLinAdaptMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-
+		
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -34,8 +34,10 @@ public class MyLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1.5, eta2 = 0.05, eta3 = 1, eta4 = 0.03, neighborsHistoryWeight = 0.5;
-//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
+//		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.03;
+
+//		double eta1 = 1, eta2 = 0.5, eta3 = 1, eta4 = 0.03, neighborsHistoryWeight = 0.5;
+		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -63,7 +65,7 @@ public class MyLinAdaptMain {
 //		analyzer.loadSVDFile(svdFile);
 		
 //		 // Create an instances of LinAdapt model.
-		 LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+//		 LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 
 //		 // Create an instances of asyncLinAdapt model.
 //		 asyncLinAdapt adaptation = new asyncLinAdapt(classNumber,
@@ -81,7 +83,7 @@ public class MyLinAdaptMain {
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		
 		// Create an instance of CoLinAdapt model.
-//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 		// Create an instance of MTCoLinAdapt model.
 //		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -90,7 +92,7 @@ public class MyLinAdaptMain {
 		adaptation.setDisplayLv(displayLv);
 		//adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.setR2TradeOffs(eta3, eta4);
 
 		adaptation.train();
 		adaptation.test();
