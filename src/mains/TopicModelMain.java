@@ -12,6 +12,7 @@ import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
+import topicmodels.LDAonArticles;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ParentChildBaseWithPhi_Gibbs;
@@ -40,8 +41,8 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		//ParentChild_Gibbs, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildBaseWithPhi_Hard_Gibbs"; // 2topic, pLSA,
+		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
+		String topicmodel = "LDAonArticles"; // 2topic, pLSA,
 															// HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
@@ -62,9 +63,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 10;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
 		int displayLap = 100;
-//		gibbs_iteration = 20;
-//		gibbs_lag = 2;
-//		displayLap = 5;
+//		gibbs_iteration = 200;
+//		gibbs_lag = 5;
+//		displayLap = 10;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -244,17 +245,17 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBase_Gibbs")){
 				double mu = 1.0;
-				double[] gamma = {2, 2};
+				double[] gamma = {0.5, 0.5};
 				double ksi = 800;
 				double tau = 0.7;
 				model = new ParentChildBase_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Gibbs")){
 				double mu = 1.0;
-				double[] gamma = {0.01, 0.99};
+				double[] gamma = {0.5, 0.5};
 				beta = 1.001;
 				double ksi = 800;
-				double tau = 0.9;
+				double tau = 0.7;
 				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, ksi, tau);
@@ -276,6 +277,12 @@ public class TopicModelMain {
 				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, ksi, tau);
+			}else if(topicmodel.equals("LDAonArticles")){
+				double ksi = 800;
+				double tau = 0.7;
+				
+				model = new LDAonArticles(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);
@@ -302,8 +309,9 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double proportion = 0.2;
-				model.setPerplexityProportion(proportion);
+				double trainProportion = 0.3;
+				double testProportion = 1-trainProportion;
+				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
 				model.printTopWords(topK, topWordPath);
 

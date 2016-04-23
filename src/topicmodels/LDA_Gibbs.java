@@ -39,7 +39,7 @@ public class LDA_Gibbs extends pLSA {
 
 	@Override
 	public String toString() {
-		return String.format("LDA[k:%d, alpha:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+		return String.format("LDA[k:%d, alpha:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta, 1-m_testWord4PerplexityProportion);
 	}
 	
 	@Override

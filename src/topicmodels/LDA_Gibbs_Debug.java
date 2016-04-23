@@ -441,27 +441,27 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 		return docLogLikelihood;
 	}
-//
-//	protected double calculate_log_likelihood() {
-//		double logLikelihood = 0;
-//		for (_Doc d : m_trainSet) {
-//			double docLogLikelihood = 0.0;
-//			docLogLikelihood = calculate_log_likelihood(d);
-//			logLikelihood += docLogLikelihood;
-//		}
-//		return logLikelihood;
-//	}
-//	
-//	public double calculate_log_likelihood(_Doc d){
-//		if (d instanceof _ParentDoc)
-//			return finalLogLikelihoodByIntegrateTopics((_ParentDoc)d);
-//		else
-//			return finalLogLikelihoodByIntegrateTopics((_ChildDoc)d);
-//	}
 	
 	@Override
  	public void printTopWords(int k, String betaFile) {
 
+		double loglikelihood = calculate_log_likelihood();
+		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
+		
+		String filePrefix = betaFile.replace("topWords.txt", "");
+		debugOutput(filePrefix);
+		
+		Arrays.fill(m_sstat, 0);
+
+		System.out.println("print top words");
+		for (_Doc d : m_trainSet) {
+			for (int i = 0; i < number_of_topics; i++)
+				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
+						: d.m_topics[i];	
+		}
+
+		Utils.L1Normalization(m_sstat);
+		
 		try {
 			System.out.println("beta file");
 			PrintWriter betaOut = new PrintWriter(new File(betaFile));
@@ -488,23 +488,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
 		}
-
-		double loglikelihood = calculate_log_likelihood();
-		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
-		
-		String filePrefix = betaFile.replace("topWords.txt", "");
-		debugOutput(filePrefix);
-		
-		Arrays.fill(m_sstat, 0);
-
-		System.out.println("print top words");
-		for (_Doc d : m_trainSet) {
-			for (int i = 0; i < number_of_topics; i++)
-				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-						: d.m_topics[i];	
-		}
-
-		Utils.L1Normalization(m_sstat);
 	}
 	
 	public void debugOutput(String filePrefix){
@@ -552,7 +535,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		printTopKStn4Child(filePrefix, topKStn);
 	}
 
-	void discoverSpecificComments(String similarityFile) {
+	protected void discoverSpecificComments(String similarityFile) {
 		System.out.println("topic similarity");
 	
 		try {
@@ -708,33 +691,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 		
 	} 
-
-	//p(w)= \sum_z p(w|z)p(z)
-	
-//	protected double finalLogLikelihoodByIntegrateTopics(_Doc d){
-//		
-//		double docLogLikelihood = 0.0;
-//		_SparseFeature[] fv = d.getSparse();
-//		
-//		for(int j=0; j<fv.length; j++){
-//			int index = fv[j].getIndex();
-//			double value = fv[j].getValue();
-//			
-//			double wordLogLikelihood = 0;
-//			for(int k=0; k<number_of_topics; k++){
-//				double wordPerTopicLikelihood = Math.log(topic_term_probabilty[k][index]);
-//				wordPerTopicLikelihood += Math.log(d.m_topics[k]);
-//				if(wordLogLikelihood == 0){
-//					wordLogLikelihood = wordPerTopicLikelihood;
-//				}else{
-//					wordLogLikelihood = Utils.logSum(wordLogLikelihood, wordPerTopicLikelihood);
-//				}
-//			}
-//			docLogLikelihood += value*wordLogLikelihood;
-//		}
-//		
-//		return docLogLikelihood;
-//	}
 		
 	//comment is a query, retrieve stn by topical similarity
 	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){
