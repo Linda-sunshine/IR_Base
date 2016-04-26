@@ -100,7 +100,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		int offset = m_id * m_dim * 2;
 		return sharedA[offset+gid];
 	}
-	
+
 	public void setScaling(int gid, double value) {
 		if (gid<0 || gid>m_dim) {
 			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);

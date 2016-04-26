@@ -8,6 +8,7 @@ import structures._User;
 public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 
 	static double[] sharedB;//this stores shared transformation operation for another class
+//	static double[] sharedAB;
 	protected double[] m_B; // transformation matrix for another class.
 	protected int m_dimB; // number of feature groups for another class.
 	double[] m_pWeightsB; // Weights for the other class.
@@ -33,7 +34,7 @@ public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 	}
 	
 	public double getScalingB(int gid){
-		if (gid < 0 || gid > m_dim) {
+		if (gid < 0 || gid > m_dimB) {
 			System.err.format("[Error]%d is beyond the range of feature grouping!\n",gid);
 			return Double.NaN;
 		}
@@ -43,13 +44,13 @@ public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 	
 	// Get the shifting parameter for class B.
 	public double getShiftingB(int gid){
-		if (gid < 0 || gid > m_dim) {
+		if (gid < 0 || gid > m_dimB) {
 			System.err.format("[Error]%d is beyond the range of feature grouping!\n",gid);
 			return Double.NaN;
 		}
 
-		int offset = m_id * m_dim * 2;
-		return sharedA[offset + gid + m_dimB];
+		int offset = m_id * m_dimB * 2;
+		return sharedB[offset + gid + m_dimB];
 	}
 	
 	public void setPersonalizedModelB(double[] weightsB){

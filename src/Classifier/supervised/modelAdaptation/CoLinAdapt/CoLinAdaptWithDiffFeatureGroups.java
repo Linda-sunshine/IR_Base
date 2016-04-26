@@ -24,8 +24,9 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	int m_dimA;
 	int m_dimB;
 	int[] m_featureGroupMapB; // bias term is at position 0
-	double[] m_cache;
-	double[] m_pWeightsB = new double[m_featureSize + 1];
+	double[] m_cache; // Used to store posterior, p(y|x)
+	double[] m_pWeightsB;
+	double[] m_sharedAB; // Merge A B together to pass into lbfgs.
 	
 	public CoLinAdaptWithDiffFeatureGroups(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
@@ -35,13 +36,17 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		loadFeatureGroupMapB(featureGroupMapB); // Load the feature group map for the other class.
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("CoLinAdaptWithDiffFvGroups[dimA:%d,dimB:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_dimB, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
+	}
+	
 	int getASize(){
 		return m_dimA*2*m_userList.size();
 	}
 	
 	int getBSize(){
 		return m_dimB*2*m_userList.size();
-		
 	}
 	
 	@Override
@@ -109,18 +114,26 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
 		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
-		
-		//R2 regularization
 		_CoLinAdaptDiffFvGroupsStruct ui = (_CoLinAdaptDiffFvGroupsStruct)u, uj;
+		
+		double R1 = 0;
+		//Add R1 for another class.
+		for(int i=0; i<m_dimB; i++){
+			R1 += m_eta1 * (ui.getScalingB(i)-1) * (ui.getScalingB(i)-1);//(a[i]-1)^2
+			R1 += m_eta2 * ui.getShiftingB(i) * ui.getShiftingB(i);//b[i]^2
+		}
+		fValue += R1;
+				
+		//R2 regularization
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptDiffFvGroupsStruct)m_userList.get(nit.m_index);
 			diffA = 0;
 			diffB = 0;
-			for(int k=0; k<m_dim; k++) {
-				diffA += (ui.getScaling(k) - uj.getScaling(k)) * (ui.getScaling(k) - uj.getScaling(k));
-				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
-			}
-			// We also need to sum over the another set of parameters.
+//			for(int k=0; k<m_dim; k++) {
+//				diffA += (ui.getScaling(k) - uj.getScaling(k)) * (ui.getScaling(k) - uj.getScaling(k));
+//				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
+//			}
+			// We also need to sum over the other set of parameters.
 			for(int k=0; k<m_dimB; k++){
 				diffA += (ui.getScalingB(k) - uj.getScalingB(k)) * (ui.getScalingB(k) - uj.getScalingB(k));
 				diffB += (ui.getShiftingB(k) - uj.getShiftingB(k)) * (ui.getShiftingB(k) - uj.getShiftingB(k));
@@ -143,18 +156,19 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			else
 				Pi = m_cache[0];
 			
-			// Why do we need to judge inside?
-			if(review.getYLabel() == 1) {
-				if (Pi>0.0)
-					L += Math.log(Pi);					
-				else
-					L -= Utils.MAX_VALUE;
-			} else {
-				if (Pi<1.0)
-					L += Math.log(1 - Pi);					
-				else
-					L -= Utils.MAX_VALUE;
-			}
+			if (Pi>0.0)
+				L += Math.log(Pi);					
+			else
+				L -= Utils.MAX_VALUE;
+//			// Why do we need to judge inside?
+//			if(review.getYLabel() == 1) {
+//				
+//			} else {
+//				if (Pi<1.0)
+//					L += Math.log(1 - Pi);					
+//				else
+//					L -= Utils.MAX_VALUE;
+//			}
 		}
 		return L/getAdaptationSize(user);
 	}
@@ -255,17 +269,17 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			offsetj = m_userList.size()*m_dim*2 + m_dimB*2*uj.getId();
 			coef = 2 * nit.m_value;
 			
-			for(int k=0; k<m_dim; k++) {
+			for(int k=0; k<m_dimB; k++) {
 				dA = coef * m_eta3 * (ui.getScalingB(k) - uj.getScalingB(k));
 				dB = coef * m_eta4 * (ui.getShiftingB(k) - uj.getShiftingB(k));
 				
 				// update ui's gradient
 				m_g[offseti + k] += dA;
-				m_g[offseti + k + m_dim] += dB;
+				m_g[offseti + k + m_dimB] += dB;
 				
 				// update uj's gradient
 				m_g[offsetj + k] -= dA;
-				m_g[offsetj + k + m_dim] -= dB;
+				m_g[offsetj + k + m_dimB] -= dB;
 			}			
 		}
 	}
@@ -274,7 +288,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	public double train(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
-		int vSize = getVSize(), displayCount = 0;
+		int vSize = getVSize(), displayCount = 0, lengthA = _CoLinAdaptDiffFvGroupsStruct.sharedA.length;
 //		double oldMag = 0;
 		_CoLinAdaptDiffFvGroupsStruct user;
 			
@@ -310,8 +324,13 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 						System.out.println();
 				} 
 				oldFValue = fValue;
-					
-				LBFGS.lbfgs(vSize, 5, _CoLinAdaptDiffFvGroupsStruct.getSharedAB(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+				if(Double.isNaN(fValue))
+					System.out.println("Bug here!!");
+				m_sharedAB = _CoLinAdaptDiffFvGroupsStruct.getSharedAB();
+				LBFGS.lbfgs(vSize, 5, m_sharedAB, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+				// We need to update the learned A and B.
+				System.arraycopy(m_sharedAB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedA, 0, lengthA);
+				System.arraycopy(m_sharedAB, lengthA, _CoLinAdaptDiffFvGroupsStruct.sharedB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedB.length);
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {
@@ -351,5 +370,33 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			calcPosterior(fvs, user);
 			return Utils.maxOfArrayIndex(m_cache);
 		}
+	}
+	
+	@Override
+	protected double gradientTest() {
+		int vSize = 2*m_dim, offset, uid, base;
+		double magA = 0, magB = 0, magC = 0, magD = 0;
+		for(int n=0; n<m_userList.size(); n++) {
+			uid = n*vSize;
+			for(int i=0; i<m_dim; i++){
+				offset = uid + i;
+				magA += m_g[offset]*m_g[offset];
+				magB += m_g[offset+m_dim]*m_g[offset+m_dim];
+			}
+		}
+		vSize = 2*m_dimB;
+		base = m_userList.size()*2*m_dim;
+		for(int n=0; n<m_userList.size(); n++) {
+			uid = n*vSize;
+			for(int i=0; i<m_dimB; i++){
+				offset = base + uid + i;
+				magC += m_g[offset]*m_g[offset];
+				magD += m_g[offset+m_dimB]*m_g[offset+m_dimB];
+			}
+		}
+		
+		if (m_displayLv==2)
+			System.out.format("Gradients a:%.5f,b:%.5f,c:%.5f,d:%.5f\n", magA, magB, magC, magD);
+		return magA + magB;
 	}
 }
