@@ -13,12 +13,12 @@ public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 	protected int m_dimB; // number of feature groups for another class.
 	double[] m_pWeightsB; // Weights for the other class.
 	
+	
 	public _CoLinAdaptDiffFvGroupsStruct(_User user, int dim, int id, int topK, int dimB) {
 		super(user, dim, id, topK);
 		m_id = id;
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
-		
 		m_dimB = dimB;
 		m_B = new double[m_dimB*2];		
 		for(int i=0; i < m_dimB; i++)

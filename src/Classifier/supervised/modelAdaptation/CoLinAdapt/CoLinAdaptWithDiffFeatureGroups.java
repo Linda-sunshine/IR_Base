@@ -27,7 +27,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	double[] m_cache; // Used to store posterior, p(y|x)
 	double[] m_pWeightsB;
 	double[] m_sharedAB; // Merge A B together to pass into lbfgs.
-	
+	double m_g0 = 1, m_g1 = 1;
 	public CoLinAdaptWithDiffFeatureGroups(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap, String featureGroupMapB) {
@@ -36,6 +36,10 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		loadFeatureGroupMapB(featureGroupMapB); // Load the feature group map for the other class.
 	}
 	
+	public void setGCoefficients(double a, double b){
+		m_g0 = a;
+		m_g1 = b;
+	}
 	@Override
 	public String toString() {
 		return String.format("CoLinAdaptWithDiffFvGroups[dimA:%d,dimB:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_dimB, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
@@ -54,6 +58,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		return getASize() + getBSize();
 	} 
 	
+	@Override
 	void constructUserList(ArrayList<_User> userList) {
 		int ASize = 2*m_dimA;
 		int BSize = 2*m_dimB;
@@ -113,10 +118,9 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	// There is still issue in calculating R2 since we don't know which set to use for a user.
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
-		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
+		double fValue = super.calculateFuncValue(u), R1 = 0, R2 = 0, diffA, diffB, degreeSum = 0;
 		_CoLinAdaptDiffFvGroupsStruct ui = (_CoLinAdaptDiffFvGroupsStruct)u, uj;
 		
-		double R1 = 0;
 		//Add R1 for another class.
 		for(int i=0; i<m_dimB; i++){
 			R1 += m_eta1 * (ui.getScalingB(i)-1) * (ui.getScalingB(i)-1);//(a[i]-1)^2
@@ -138,9 +142,10 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 				diffA += (ui.getScalingB(k) - uj.getScalingB(k)) * (ui.getScalingB(k) - uj.getScalingB(k));
 				diffB += (ui.getShiftingB(k) - uj.getShiftingB(k)) * (ui.getShiftingB(k) - uj.getShiftingB(k));
 			}
-			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
+//			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
+			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB)*uj.m_indegree;
 		}
-		return fValue + R2;
+		return fValue + R2/ui.getTotalNeighborIndegree();
 	}
 	
 	//Calculate the function value of the new added instance.
@@ -180,18 +185,18 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		double exp0 = 0, exp1 = 0;
 		int n = 0, k = 0; // feature index and feature group index
 		// w0*x
-		exp0 = user.getScaling(0)*m_gWeights[0] + user.getShifting(0);// Bias term: w0*a0+b0.
+		exp0 = user.getScaling(0)*m_gWeights[0]*m_g0 + user.getShifting(0);// Bias term: w0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			exp0 += (user.getScaling(k)*m_gWeights[n] + user.getShifting(k)) * fv.getValue();
+			exp0 += (user.getScaling(k)*m_gWeights[n]*m_g0 + user.getShifting(k)) * fv.getValue();
 		}
 		// w1*x
-		exp1 = user.getScalingB(0)*m_gWeights[0] + user.getShiftingB(0); // Bias term.
+		exp1 = user.getScalingB(0)*m_gWeights[0]*m_g1 + user.getShiftingB(0); // Bias term.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMapB[n];
-			exp1 += (user.getScalingB(k)*m_gWeights[n] + user.getShiftingB(k)) * fv.getValue();
+			exp1 += (user.getScalingB(k)*m_gWeights[n]*m_g1 + user.getShiftingB(k)) * fv.getValue();
 		}
 		// Return corresponding values accordingly.
 		m_cache[0] = Math.exp(exp0)/(Math.exp(exp0)+Math.exp(exp1));
@@ -215,13 +220,13 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			delta = - Pij;
 		delta /= getAdaptationSize(user);
 		//Bias term.
-		m_g[offset] -= weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
+		m_g[offset] -= weight*delta*m_gWeights[0]*m_g0; //a[0] = w0*x0; x0=1
 		m_g[offset + m_dim] -= weight*delta;//b[0]
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue()*m_g0;
 			m_g[offset + m_dim + k] -= weight * delta * fv.getValue();  
 		}
 	
@@ -233,12 +238,12 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			delta = -Pij;
 		delta /= getAdaptationSize(user);
 		offset = 2*m_dim*m_userList.size() + 2*m_dimB*user.getId(); // Offset starts for another class.
-		m_g[offset] -= weight*delta*m_gWeights[0]; // a[0]
+		m_g[offset] -= weight*delta*m_gWeights[0]*m_g1; // a[0]
 		m_g[offset + m_dimB] -= weight*delta; // b[0]
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMapB[n];
-			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue()*m_g1;
 			m_g[offset + m_dimB + k] -= weight * delta * fv.getValue();  
 		}	
 	}
@@ -267,7 +272,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptDiffFvGroupsStruct)m_userList.get(nit.m_index);
 			offsetj = m_userList.size()*m_dim*2 + m_dimB*2*uj.getId();
-			coef = 2 * nit.m_value;
+			coef = 2 * nit.m_value * uj.m_indegree/ui.getTotalNeighborIndegree();
 			
 			for(int k=0; k<m_dimB; k++) {
 				dA = coef * m_eta3 * (ui.getScalingB(k) - uj.getScalingB(k));
@@ -292,71 +297,80 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 //		double oldMag = 0;
 		_CoLinAdaptDiffFvGroupsStruct user;
 			
-		initLBFGS();
-		init();
-		try{
-			do{
-				fValue = 0;
-				Arrays.fill(m_g, 0); // initialize gradient				
-					
-				// accumulate function values and gradients from each user
-				for(int i=0; i<m_userList.size(); i++) {
-					user = (_CoLinAdaptDiffFvGroupsStruct)m_userList.get(i);
-					fValue += calculateFuncValue(user);
-					calculateGradients(user);
-				}
-					
-				//added by Lin for stopping lbfgs.
-				double curMag = gradientTest();
-//				if(Math.abs(oldMag -curMag)<0.1) 
-//					break;
-//				oldMag = curMag;
-					
-				if (m_displayLv==2) {
-					System.out.println("Fvalue is " + fValue);
-				} else if (m_displayLv==1) {
-					if (fValue<oldFValue)
-						System.out.print("o");
-					else
-						System.out.print("x");
-						
-					if (++displayCount%100==0)
-						System.out.println();
-				} 
-				oldFValue = fValue;
-				if(Double.isNaN(fValue))
-					System.out.println("Bug here!!");
-				m_sharedAB = _CoLinAdaptDiffFvGroupsStruct.getSharedAB();
-				LBFGS.lbfgs(vSize, 5, m_sharedAB, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
-				// We need to update the learned A and B.
-				System.arraycopy(m_sharedAB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedA, 0, lengthA);
-				System.arraycopy(m_sharedAB, lengthA, _CoLinAdaptDiffFvGroupsStruct.sharedB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedB.length);
-			} while(iflag[0] != 0);
-			System.out.println();
-		} catch(ExceptionWithIflag e) {
-			e.printStackTrace();
-		}		
-		
+//		initLBFGS();
+//		init();
+//		try{
+//			do{
+//				fValue = 0;
+//				Arrays.fill(m_g, 0); // initialize gradient				
+//					
+//				// accumulate function values and gradients from each user
+//				for(int i=0; i<m_userList.size(); i++) {
+//					user = (_CoLinAdaptDiffFvGroupsStruct)m_userList.get(i);
+//					fValue += calculateFuncValue(user);
+//					calculateGradients(user);
+//				}
+//					
+//				//added by Lin for stopping lbfgs.
+//				double curMag = gradientTest();
+////				if(Math.abs(oldMag -curMag)<0.1) 
+////					break;
+////				oldMag = curMag;
+//					
+//				if (m_displayLv==2) {
+//					System.out.println("Fvalue is " + fValue);
+//				} else if (m_displayLv==1) {
+//					if (fValue<oldFValue)
+//						System.out.print("o");
+//					else
+//						System.out.print("x");
+//						
+//					if (++displayCount%100==0)
+//						System.out.println();
+//				} 
+//				oldFValue = fValue;
+//				if(Double.isNaN(fValue))
+//					System.out.println("Bug here!!");
+//				m_sharedAB = _CoLinAdaptDiffFvGroupsStruct.getSharedAB();
+////				LBFGS.lbfgs(vSize, 5, m_sharedAB, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+//				// We need to update the learned A and B.
+//				System.arraycopy(m_sharedAB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedA, 0, lengthA);
+//				System.arraycopy(m_sharedAB, lengthA, _CoLinAdaptDiffFvGroupsStruct.sharedB, 0, _CoLinAdaptDiffFvGroupsStruct.sharedB.length);
+//			} while(iflag[0] != 0);
+//			System.out.println();
+//		} catch(ExceptionWithIflag e) {
+//			e.printStackTrace();
+//		}		
+//		
 		setPersonalizedModel();
 		return oldFValue;
 	}
 	
 	@Override
 	public void setPersonalizedModel(){
-		super.setPersonalizedModel();
-		m_pWeightsB = new double[m_featureSize + 1];
 		int gid;
 		_CoLinAdaptDiffFvGroupsStruct user;
 		for(int i=0; i<m_userList.size(); i++) {
 			user = (_CoLinAdaptDiffFvGroupsStruct)m_userList.get(i);
 			
+			// class 0.
 			//set bias term
-			m_pWeightsB[0] = user.getScalingB(0) * m_gWeights[0] + user.getShiftingB(0);
-			
+			m_pWeights[0] = user.getScaling(0) * m_gWeights[0]*m_g0 + user.getShifting(0);
+			//set the other features
+			for(int n=0; n<m_featureSize; n++) {
+				gid = m_featureGroupMap[1+n];
+				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n]*m_g0 + user.getShifting(gid);
+			}
+			user.setPersonalizedModel(m_pWeights);
+	
+			// class 1.
+			m_pWeightsB = new double[m_featureSize + 1];
+			//set bias term
+			m_pWeightsB[0] = user.getScalingB(0) * m_gWeights[0]*m_g1 + user.getShiftingB(0);
 			//set the other features
 			for(int n=0; n<m_featureSize; n++) {
 				gid = m_featureGroupMapB[1+n];
-				m_pWeightsB[1+n] = user.getScalingB(gid) * m_gWeights[1+n] + user.getShiftingB(gid);
+				m_pWeightsB[1+n] = user.getScalingB(gid) * m_gWeights[1+n]*m_g1 + user.getShiftingB(gid);
 			}
 			user.setPersonalizedModelB(m_pWeightsB);
 		}

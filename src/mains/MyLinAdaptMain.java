@@ -37,7 +37,7 @@ public class MyLinAdaptMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.03;
 
-		double eta1 = 0.05, eta2 = 0.01, eta3 = 0, eta4 = 0, neighborsHistoryWeight = 0.5;
+		double eta1 = 1, eta2 = 0.5, eta3 = 1, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
@@ -87,7 +87,7 @@ public class MyLinAdaptMain {
 		
 		// Create an instance of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-
+//		adaptation.setIndegreeFlag(true);
 		// Create an instance of CoLinAdapt with different feature groups for different classes.
 		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
 		// Create an instance of MTCoLinAdapt model.
@@ -98,13 +98,13 @@ public class MyLinAdaptMain {
 		//adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
-
+		adaptation.setGCoefficients(0.5, 0.5);
 		adaptation.train();
 		adaptation.test();
 
 		//adaptation.saveModel("data/results/colinadapt");
 
-		//Create the instance of MT-SVM
+//		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.loadUsers(analyzer.getUsers());
 //		mtsvm.setBias(true);

@@ -21,12 +21,15 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
+	double m_indegree;
+	double m_ttlNeighborIndegree = 0;
 	
 	public _CoLinAdaptStruct(_User user, int dim, int id, int topK) {
 		super(user, dim);
 		m_id = id;
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
+		m_indegree = 0;
 	}
 	
 	@Override
@@ -109,5 +112,21 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		
 		int offset = m_id * m_dim * 2;
 		sharedA[offset+gid] = value;
+	}
+	
+	public void setIndegreeOne(){
+		m_indegree = 1;
+	}
+	
+	public void addOneIndegree(){
+		m_indegree++;
+	}
+	
+	public void setTotalNeighborIndegree(double sum){
+		m_ttlNeighborIndegree = sum;
+	}
+	
+	public double getTotalNeighborIndegree(){
+		return m_ttlNeighborIndegree;
 	}
 }
