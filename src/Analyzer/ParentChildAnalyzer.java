@@ -1,8 +1,11 @@
 package Analyzer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,18 +13,23 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
+import structures.TokenizeResult;
+import structures._APPQuery;
 import structures._ChildDoc;
+import structures._ChildDoc4APP;
 import structures._ChildDoc4BaseWithPhi;
 import structures._ChildDoc4BaseWithPhi_Hard;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
+import structures._Word;
 import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 	public static int ChildDocFeatureSize = 2;
+	public ArrayList<_APPQuery> m_Queries;
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -103,6 +111,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
+		String title = Utils.getJSONValue(json, "title");
+		
+		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
 //		
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
 //				name, "", content, 0);
@@ -114,7 +125,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
@@ -146,6 +157,54 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		AnalyzeDoc(d);		
 	}
 	
+	public void loadQuery(String queryFile){
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(queryFile), "UTF-8"));
+			
+			String line;
+			while((line=reader.readLine())!=null){
+				
+				String querySource = line;
+				
+				_APPQuery appQuery = new _APPQuery();
+				if(AnalyzeQuery(appQuery, querySource)){
+					m_Queries.add(appQuery);
+				}else{
+					System.out.println("query\t"+querySource+"\t removed");
+				}
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	protected boolean AnalyzeQuery(_APPQuery appQuery, String source){
+		TokenizeResult result = TokenizerNormalizeStemmer(source);
+		String[] tokens = result.getTokens();
+		int wid = 0;
+		
+		ArrayList<_Word> wordList = new ArrayList<_Word>();
+		
+		for(String token:tokens){
+			if(!m_featureNameIndex.containsKey(token)){
+				continue;
+			}
+			
+			wid = m_featureNameIndex.get(token);
+			_Word word = new _Word(wid);
+			
+			wordList.add(word);
+		}
+		
+		if(wordList.isEmpty())
+			return false;
+		else{
+			appQuery.initWords(wordList);
+			return true;
+		}
+	}
 	
 	@Override
 //	public void setFeatureValues(String fValue, int norm){

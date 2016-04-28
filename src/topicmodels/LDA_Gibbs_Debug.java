@@ -524,7 +524,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 	
-		printParameter(parentParameterFile, childParameterFile);
+		printParentParameter(parentParameterFile);
+		printChildParameter(childParameterFile);
 		
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(similarityFile);
@@ -617,14 +618,12 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 
-	public void printParameter(String parentParameterFile, String childParameterFile){
+	protected void printParentParameter(String parentParameterFile){
 		System.out.println("printing parameter");
 		try{
 			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
 			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
@@ -642,33 +641,44 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					
 					parentParaOut.println();
 					
-				}else{
-//					if(d instanceof _ChildDoc){
-						childParaOut.print(d.getName()+"\t");
-
-						childParaOut.print("topicProportion\t");
-						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(d.m_topics[k] + "\t");
-						}
-						
-						
-						childParaOut.println();
-//					}
 				}
 			}
 			
 			parentParaOut.flush();
 			parentParaOut.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	protected void printChildParameter(String childParameterFile){
+		System.out.println("printing child parameter");
+		try{
+			System.out.println(childParameterFile);
+			
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			for(_Doc d: m_trainSet){
+				
+				if(d instanceof _ChildDoc){
+					childParaOut.print(d.getName()+"\t");
+	
+					childParaOut.print("topicProportion\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						childParaOut.print(d.m_topics[k] + "\t");
+					}	
+		
+					childParaOut.println();
+				}
+			}
 			
 			childParaOut.flush();
 			childParaOut.close();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-//			e.printStackTrace();
-//			System.err.print("para File Not Found");
 		}
-
 	}
 	
 	protected void printEntropy(String filePrefix){
@@ -764,24 +774,32 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return childLikelihoodMap;
 	}
 	
-	protected HashMap<String, Double> hybridRankChild4Stn(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMapByTM = new HashMap<String, Double>();
-		childLikelihoodMapByTM = rankChild4StnByLikelihood(stnObj, pDoc);
+	//stn is a query, retrieve comment by likelihood
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		
-		HashMap<String, Double> childLikelihoodMapByLM = new HashMap<String, Double>();
-		childLikelihoodMapByLM = rankChild4StnByLanguageModel(stnObj, pDoc);
-		
-		for(String cDocName:childLikelihoodMapByTM.keySet()){
-			double TMVal = childLikelihoodMapByTM.get(cDocName);
-			double LMVal = childLikelihoodMapByLM.get(cDocName);
-			double retrievalScore = m_tau*TMVal+(1-m_tau)*LMVal;
+		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			int cDocLen = cDoc.getTotalDocLength();
 			
-			childLikelihoodMapByTM.put(cDocName, retrievalScore);
+			double stnLogLikelihood = 0;
+			for(_Word w: stnObj.getWords()){
+				double wordLikelihood = 0;
+				int wid = w.getIndex();
+			
+				for(int k=0; k<number_of_topics; k++){
+					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*(topicInDocProb(k, cDoc)/(d_alpha*number_of_topics+cDocLen));
+//					wordLikelihood += topic_term_probabilty[k][wid]*cDoc.m_topics[k];
+				}
+				
+				stnLogLikelihood += Math.log(wordLikelihood);
+			}
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}
 		
-		return childLikelihoodMapByTM;
-	}
-	
+		return childLikelihoodMap;
+}
+
 	protected HashMap<String, Double> rankChild4StnByLanguageModel(_Stn stnObj, _ParentDoc pDoc){
 		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
 		
@@ -819,30 +837,22 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return childLikelihoodMap;
 	}
 	
-	//stn is a query, retrieve comment by likelihood
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-	
-			HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-
-			for(_ChildDoc cDoc:pDoc.m_childDocs){
-				int cDocLen = cDoc.getTotalDocLength();
-				
-				double stnLogLikelihood = 0;
-				for(_Word w: stnObj.getWords()){
-					double wordLikelihood = 0;
-					int wid = w.getIndex();
-				
-					for(int k=0; k<number_of_topics; k++){
-						wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*(topicInDocProb(k, cDoc)/(d_alpha*number_of_topics+cDocLen));
-//						wordLikelihood += topic_term_probabilty[k][wid]*cDoc.m_topics[k];
-					}
-					
-					stnLogLikelihood += Math.log(wordLikelihood);
-				}
-				childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-			}
+	protected HashMap<String, Double> hybridRankChild4Stn(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMapByTM = new HashMap<String, Double>();
+		childLikelihoodMapByTM = rankChild4StnByLikelihood(stnObj, pDoc);
+		
+		HashMap<String, Double> childLikelihoodMapByLM = new HashMap<String, Double>();
+		childLikelihoodMapByLM = rankChild4StnByLanguageModel(stnObj, pDoc);
+		
+		for(String cDocName:childLikelihoodMapByTM.keySet()){
+			double TMVal = childLikelihoodMapByTM.get(cDocName);
+			double LMVal = childLikelihoodMapByLM.get(cDocName);
+			double retrievalScore = m_tau*TMVal+(1-m_tau)*LMVal;
 			
-			return childLikelihoodMap;
+			childLikelihoodMapByTM.put(cDocName, retrievalScore);
+		}
+		
+		return childLikelihoodMapByTM;
 	}
 	
 	protected List<Map.Entry<Integer, Double>> sortHashMap4Integer(HashMap<Integer, Double> stnLikelihoodMap, boolean descendOrder){
@@ -1064,7 +1074,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 			
-			m_LM.generateReferenceModel();
+//			m_LM.generateReferenceModel();
 			
 			for(_Doc d: m_corpus.getCollection()){
 				if(d instanceof _ParentDoc){

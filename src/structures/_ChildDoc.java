@@ -1,5 +1,7 @@
 package structures;
 
+import java.util.HashMap;
+
 import utils.Utils;
 
 public class _ChildDoc extends _Doc {
@@ -15,6 +17,8 @@ public class _ChildDoc extends _Doc {
 	
 	public double m_mu;//similarity between parent and child
 	
+	public HashMap<Integer, Integer> m_wordXStat;
+
 	//store the likelihood of sentences 
 //	public HashMap<Integer, Double> m_stnLikelihoodMap;
 	

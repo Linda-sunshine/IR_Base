@@ -30,12 +30,14 @@ public class languageModelBaseLine{
 	double m_allWordFrequency; //total TTF
 	protected _Corpus m_corpus;
 	double m_smoothingMu;
+	double m_allWordFrequencyWithXVal;
 	
 	public languageModelBaseLine(_Corpus c, double mu){
 		m_corpus = c;
 		m_wordSstat = new HashMap<Integer, Double>();
 		m_allWordFrequency = 0;
 		m_smoothingMu = mu;
+		m_allWordFrequencyWithXVal = 0;
 	}
 	
 	protected void generateReferenceModel(){
@@ -66,14 +68,15 @@ public class languageModelBaseLine{
 	}
 
 	protected void generateReferenceModelWithXVal(){
-		m_allWordFrequency = 0;
+		m_allWordFrequencyWithXVal = 0;
 		for(_Doc d: m_corpus.getCollection()){
 			if(d instanceof _ParentDoc){
-				for(_Word word:d.getWords()){
-					int wid = word.getIndex();
+			
+				for(_SparseFeature fv:d.getSparse()){
+					int wid = fv.getIndex();
+					double val = fv.getValue();
 					
-					double val = 1;
-					m_allWordFrequency += val;
+					m_allWordFrequencyWithXVal += val;
 					if(m_wordSstat.containsKey(wid)){
 						double oldVal = m_wordSstat.get(wid);
 						m_wordSstat.put(wid, oldVal+val);
@@ -84,20 +87,20 @@ public class languageModelBaseLine{
 			}else{
 				double docLenWithXVal = 0;
 				
-				for(_Word word:d.getWords()){
-					double xProportion = word.getXProb();
+				for(_SparseFeature fv:d.getSparse()){
+//					double xProportion = word.getXProb();
+					int wid = fv.getIndex();
 					
-					int wid = word.getIndex();
+					double valWithX = ((_ChildDoc)d).m_wordXStat.get(wid);
+//					double val = 1-xProportion;
+					docLenWithXVal += valWithX;
 					
-					double val = 1-xProportion;
-					docLenWithXVal += val;
-					
-					m_allWordFrequency += val;
+					m_allWordFrequencyWithXVal += fv.getValue();
 					if(m_wordSstat.containsKey(wid)){
 						double oldVal = m_wordSstat.get(wid);
-						m_wordSstat.put(wid, oldVal+val);
+						m_wordSstat.put(wid, oldVal+valWithX);
 					}else{
-						m_wordSstat.put(wid, val);
+						m_wordSstat.put(wid, valWithX);
 					}
 				}
 				
@@ -108,7 +111,7 @@ public class languageModelBaseLine{
 		
 		for(int wid:m_wordSstat.keySet()){
 			double val = m_wordSstat.get(wid);
-			double prob = val/m_allWordFrequency;
+			double prob = val/m_allWordFrequencyWithXVal;
 			m_wordSstat.put(wid, prob);
 		}
 	}

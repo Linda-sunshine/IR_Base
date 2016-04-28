@@ -404,7 +404,7 @@ public class _Doc implements Comparable<_Doc> {
 				tid = m_rand.nextInt(k);
 				m_words[wIndex] = new _Word(wid, tid);// randomly initializing the topics inside a document
 				m_sstat[tid] ++; // collect the topic proportion
-				
+			
 				wIndex ++;
 			}
 		}

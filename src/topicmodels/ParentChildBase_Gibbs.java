@@ -42,8 +42,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 	
 	@Override
 	public String toString(){
-		return String.format("Parent Child Base topic model [k:%d, alpha:%.2f, beta:%.2f, Gibbs Sampling]", 
-				number_of_topics, d_alpha, d_beta);
+		return String.format("Parent Child Base topic model [k:%d, alpha:%.2f, beta:%.2f, training proportion:%.2f, Gibbs Sampling]", 
+				number_of_topics, d_alpha, d_beta, m_testWord4PerplexityProportion);
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection){
@@ -79,7 +79,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-//		mu = 0.001;
+		mu = 100;
 		d.setMu(mu);
 	}
 	
@@ -87,6 +87,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
+		mu = 100;
 		d.setMu(mu);
 	}
 	
@@ -320,86 +321,9 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			computeTestMu4Doc(cDoc);
 		}
 	}
-	
-	
-//	
-//	@Override
-//	public double inference(_Doc pDoc){
-//		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-//		
-//		initTest(sampleTestSet, pDoc);
-//	
-//		double logLikelihood = 0.0, count = 0;
-//		int  iter = 0;
-//		do {
-//			int t;
-//			_Doc tmpDoc;
-//			for(int i=sampleTestSet.size()-1; i>1; i--) {
-//				t = m_rand.nextInt(i);
-//				
-//				tmpDoc = sampleTestSet.get(i);
-//				sampleTestSet.set(i, sampleTestSet.get(t));
-//				sampleTestSet.set(t, tmpDoc);			
-//			}
-//			
-//			for(_Doc doc: sampleTestSet)
-//				calculate_E_step(doc);
-//			
-//			if (iter>m_burnIn && iter%m_lag==0){
-//				double tempLogLikelihood = 0;
-//				for(_Doc doc: sampleTestSet){
-//					if(doc instanceof _ParentDoc){
-//						collectParentStats((_ParentDoc) doc);
-//						tempLogLikelihood += calculate_log_likelihood((_ParentDoc) doc);
-//					}
-//					else if(doc instanceof _ChildDoc){
-//						collectChildStats((_ChildDoc) doc);
-//						tempLogLikelihood += calculate_log_likelihood((_ChildDoc) doc);
-//					}
-//					
-//				}
-//				count ++;
-//				if(logLikelihood == 0)
-//					logLikelihood = tempLogLikelihood;
-//				else{
-//
-//					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
-//				}
-//			}
-//		} while (++iter<this.number_of_iteration);
-//
-//		for(_Doc doc: sampleTestSet){
-//			estThetaInDoc(doc);
-//		}
-//		
-//		return logLikelihood - Math.log(count); 	
-//	}
 
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
 	@Override
-	protected double calculate_log_likelihood(){
-		double corpusLogLikelihood = 0;//how could we get the corpus-level likelihood?
-		
-		for(_Doc d: m_trainSet)
-			corpusLogLikelihood += calculate_log_likelihood(d);
-		
-		return corpusLogLikelihood;
-	}
-	
-//	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
-//		_ParentDoc pDoc = (_ParentDoc)d;
-//		for(_Stn stnObj: pDoc.getSentences()){
-//			stnObj.setTopicsVct(number_of_topics);
-//		}
-//		pDoc.setTopics4Gibbs(number_of_topics, 0);		
-//		sampleTestSet.add(pDoc);
-//		
-//		for(_ChildDoc cDoc: pDoc.m_childDocs){
-//			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
-//			sampleTestSet.add(cDoc);
-//		}
-//	}
-	
 	public void debugOutput(String filePrefix){
 
 		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
@@ -442,8 +366,9 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
-		printParameter(parentParameterFile, childParameterFile);
-
+		printParentParameter(parentParameterFile);
+		printChildParameter(childParameterFile);
+		
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		
 		printEntropy(filePrefix);
@@ -702,6 +627,15 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		}
 	}
 	
+	protected double calculate_log_likelihood(){
+		double corpusLogLikelihood = 0;//how could we get the corpus-level likelihood?
+		
+		for(_Doc d: m_trainSet)
+			corpusLogLikelihood += calculate_log_likelihood(d);
+		
+		return corpusLogLikelihood;
+	}
+	
 	@Override
 	public double calculate_log_likelihood(_Doc d){
 		if (d instanceof _ParentDoc)
@@ -894,7 +828,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		return childLikelihoodMap;
 	}
 
-	public void printMu(String childMuFile){
+	protected void printMu(String childMuFile){
 		System.out.println("print mu");
 		try{
 			PrintWriter muPW = new PrintWriter(new File(childMuFile));
@@ -912,14 +846,12 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		}
 	}
 	
-	public void printParameter(String parentParameterFile, String childParameterFile){
-		System.out.println("printing parameter");
+	protected void printParentParameter(String parentParameterFile){
+		System.out.println("printing parent parameter");
 		try{
 			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
 			for(_Doc d: m_corpus.getCollection()){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
@@ -937,22 +869,39 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 					
 					parentParaOut.println();
 					
-				}else{
-					if(d instanceof _ChildDoc){
-						childParaOut.print(d.getName()+"\t");
-
-						childParaOut.print("topicProportion\t");
-						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(d.m_topics[k] + "\t");
-						}
-						
-						childParaOut.println();
-					}
 				}
 			}
 			
 			parentParaOut.flush();
 			parentParaOut.close();
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	protected void printChildParameter(String childParameterFile){
+		System.out.println("printing child parameter");
+		try{
+			System.out.println(childParameterFile);
+			
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			for(_Doc d: m_corpus.getCollection()){
+	
+				if(d instanceof _ChildDoc){
+					childParaOut.print(d.getName()+"\t");
+	
+					childParaOut.print("topicProportion\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						childParaOut.print(d.m_topics[k] + "\t");
+					}
+					
+					childParaOut.println();
+				}
+			
+			}
 			
 			childParaOut.flush();
 			childParaOut.close();
@@ -960,7 +909,6 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 	
 }

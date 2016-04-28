@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
+import structures._APPQuery;
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
@@ -42,8 +45,7 @@ public class TopicModelMain {
 		
 		/*****parameters for the two-topic topic model*****/
 		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "LDAonArticles"; // 2topic, pLSA,
-															// HTMM,
+		String topicmodel = "APPLDA"; // 2topic, pLSA, HTMM,
 														// LRHTMM,
 												// Tensor, LDA_Gibbs,
 												// LDA_Variational, HTSM,
@@ -60,7 +62,7 @@ public class TopicModelMain {
 		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
 		int displayLap = 100;
 //		gibbs_iteration = 200;
@@ -283,6 +285,24 @@ public class TopicModelMain {
 				
 				model = new LDAonArticles(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("APPLDA")){
+				double ksi=800;
+				double tau=0.7;
+				beta = 1.001;
+				int number_of_topics_description=300;
+				int number_of_topics_review = 30;
+				double alphaPrior = 0.01;
+				double alphaReview = 0.005;
+				double alphaOff = 0.005;
+				double[] gamma = {0.5, 0.5};
+				double betaReview = 0.001;
+				
+				String queryFile = "";
+				analyzer.loadQuery(queryFile);
+				
+				model = new APPLDA(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics_description,
+						number_of_topics_review, alpha, burnIn, gibbs_lag, ksi, tau, 
+						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
 			}
 			
 			model.setDisplayLap(displayLap);
@@ -309,7 +329,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.3;
+				double trainProportion = 0.4;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
