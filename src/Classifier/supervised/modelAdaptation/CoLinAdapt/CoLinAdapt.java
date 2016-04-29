@@ -25,7 +25,6 @@ public class CoLinAdapt extends LinAdapt {
 	double m_eta4; // weight for shifting in R2.
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
-	boolean m_indegreeFlag = false;
 	
 	public CoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
@@ -85,24 +84,8 @@ public class CoLinAdapt extends LinAdapt {
 		
 		//step 2: construct neighborhood graph
 		constructNeighborhood(m_sType);
-		
-		//step 3: set the indegree of the user.
-		_CoLinAdaptStruct ui, uj;
-		for(_AdaptStruct u: m_userList){
-			ui = (_CoLinAdaptStruct) u;
-			if(m_indegreeFlag){
-				for(_RankItem nei: ui.getNeighbors()){
-					uj = (_CoLinAdaptStruct) m_userList.get(nei.m_index);
-					uj.addOneIndegree();
-				}
-			} else
-				ui.setIndegreeOne();
-		}
 	}
 	
-	public void setIndegreeFlag(boolean f){
-		m_indegreeFlag = f;
-	}
 	//this will be only called once in CoLinAdapt
 	@Override
 	protected void initLBFGS(){ 
@@ -114,7 +97,7 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
-		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB, degreeSum = 0;
+		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
 		
 		//R2 regularization
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
@@ -126,11 +109,9 @@ public class CoLinAdapt extends LinAdapt {
 				diffA += (ui.getScaling(k) - uj.getScaling(k)) * (ui.getScaling(k) - uj.getScaling(k));
 				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
 			}
-			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB)*uj.m_indegree;
-			degreeSum += uj.m_indegree;
+			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
 		}
-		ui.setTotalNeighborIndegree(degreeSum);
-		return fValue + R2/degreeSum;
+		return fValue + R2;
 	}
 	
 	@Override
@@ -148,7 +129,7 @@ public class CoLinAdapt extends LinAdapt {
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			offsetj = m_dim*2*uj.getId();
-			coef = 2 * nit.m_value * uj.m_indegree/ui.getTotalNeighborIndegree();
+			coef = 2 * nit.m_value;
 			
 			for(int k=0; k<m_dim; k++) {
 				dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));

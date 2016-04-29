@@ -2,6 +2,8 @@ package structures;
 
 import java.util.ArrayList;
 
+import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptDiffFvGroupsStruct;
+
 import structures._Review.rType;
 import utils.Utils;
 
@@ -110,25 +112,43 @@ public class _User {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
 	
-	public int predict(_Doc doc) {
-		_SparseFeature[] fv = doc.getSparse();
-		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
-		
-		if (m_classNo==2) {
-			return maxScore>0?1:0;
-		} else {//we will have k classes for multi-class classification
-			double score;
-			int pred = 0; 
-			
-			for(int i = 1; i < m_classNo; i++) {
-				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
-				if (score>maxScore) {
-					maxScore = score;
-					pred = i;
-				}
-			}
-			return pred;
+//	public int predict(_Doc doc) {
+//		_SparseFeature[] fv = doc.getSparse();
+//		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
+//		if (m_classNo==2) {
+//			return maxScore>0?1:0;
+//		} else {//we will have k classes for multi-class classification
+//			double score;
+//			int pred = 0; 
+//			
+//			for(int i = 1; i < m_classNo; i++) {
+//				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
+//				if (score>maxScore) {
+//					maxScore = score;
+//					pred = i;
+//				}
+//			}
+//			return pred;
+//		}
+//	}
+	
+	// We need to consider the bias term.
+	public double dotProduct(double[] vct, _SparseFeature[] fvs){
+		double sum = vct[0]; // bias term
+		for(_SparseFeature fv: fvs){
+			sum += vct[fv.getIndex()+1]*fv.getValue();
 		}
+		return sum;
+	}
+	// if we have weights for each class.
+	public int predict(_Doc doc){
+		_SparseFeature[] fv = doc.getSparse();
+		double[] score = new double[2];
+		
+		score[0] = dotProduct(m_pWeight, fv);
+		score[1] = dotProduct(m_pWeightB, fv);
+		return Utils.maxOfArrayIndex(score);
+
 	}
 	
 	public void addOnePredResult(int predL, int trueL){

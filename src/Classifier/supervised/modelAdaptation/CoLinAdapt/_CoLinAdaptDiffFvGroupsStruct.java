@@ -8,7 +8,6 @@ import structures._User;
 public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 
 	static double[] sharedB;//this stores shared transformation operation for another class
-//	static double[] sharedAB;
 	protected double[] m_B; // transformation matrix for another class.
 	protected int m_dimB; // number of feature groups for another class.
 	double[] m_pWeightsB; // Weights for the other class.
