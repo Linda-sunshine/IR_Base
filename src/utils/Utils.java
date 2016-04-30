@@ -929,13 +929,6 @@ public class Utils {
 	}
 	
 	// added by Lin for computing LCS.
-	public static int LCS2Doc(_Doc d1, _Doc d2) {
-		String[] x = d1.getTokens();
-		String[] y = d2.getTokens();
-		return LCSLength(x, y);
-	}
-	
-	// added by Lin for computing LCS.
 	public static int LCSLength(String[] x, String[] y) {
 		int m = x.length;
 		int n = y.length;
