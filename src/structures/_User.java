@@ -2,6 +2,8 @@ package structures;
 
 import java.util.ArrayList;
 
+import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptDiffFvGroupsStruct;
+
 import structures._Review.rType;
 import utils.Utils;
 
@@ -23,6 +25,7 @@ public class _User {
 	
 	//personalized prediction model
 	protected double[] m_pWeight;
+	protected double[] m_pWeightB;
 	protected int m_classNo;
 	protected int m_featureSize;
 	
@@ -70,7 +73,11 @@ public class _User {
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
 		m_featureSize = weight.length;
 	}
-	
+	// added by Lin.
+	public void setModelB(double[] weight){
+		m_pWeightB = new double[m_featureSize];
+		System.arraycopy(weight, 0, m_pWeightB, 0, weight.length);
+	}
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}
@@ -107,23 +114,40 @@ public class _User {
 	
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
+		// Original prediction.
+		if(m_pWeightB == null){
 		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
-		
-		if (m_classNo==2) {
-			return maxScore>0?1:0;
-		} else {//we will have k classes for multi-class classification
-			double score;
-			int pred = 0; 
+			if (m_classNo==2) {
+				return maxScore>0?1:0;
+			} else {//we will have k classes for multi-class classification
+				double score;
+				int pred = 0; 
 			
-			for(int i = 1; i < m_classNo; i++) {
-				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
-				if (score>maxScore) {
-					maxScore = score;
-					pred = i;
+				for(int i = 1; i < m_classNo; i++) {
+					score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
+					if (score>maxScore) {
+						maxScore = score;
+						pred = i;
+					}
 				}
+				return pred;
 			}
-			return pred;
+			// Added by Lin. If we have weights for each class, currently we only have two classes.
+		} else{
+			double[] score = new double[2];
+			score[0] = dotProduct(m_pWeight, fv);
+			score[1] = dotProduct(m_pWeightB, fv);
+			return Utils.maxOfArrayIndex(score);
 		}
+	}
+	
+	// We need to consider the bias term.
+	public double dotProduct(double[] vct, _SparseFeature[] fvs){
+		double sum = vct[0]; // bias term
+		for(_SparseFeature fv: fvs){
+			sum += vct[fv.getIndex()+1]*fv.getValue();
+		}
+		return sum;
 	}
 	
 	public void addOnePredResult(int predL, int trueL){
@@ -141,5 +165,14 @@ public class _User {
 	// Added by Lin to access the low dim profile.
 	public double[] getLowDimProfile(){
 		return m_lowDimProfile;
+	}
+	
+	public double calculatePosRatio(){
+		double count = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				count++;
+		}
+		return count/m_reviews.size();
 	}
  }
