@@ -187,6 +187,7 @@ public class CoLinAdapt extends LinAdapt {
 				}
 				
 				if (m_displayLv==2) {
+					gradientTest();
 					System.out.println("Fvalue is " + fValue);
 				} else if (m_displayLv==1) {
 					if (fValue<oldFValue)

@@ -51,8 +51,4 @@ public class _CoLinAdaptDiffFvGroupsStruct extends _CoLinAdaptStruct {
 		int offset = m_id * m_dimB * 2;
 		return sharedB[offset + gid + m_dimB];
 	}
-	
-	public void setPersonalizedModelB(double[] weightsB){
-		m_user.setModelB(weightsB);
-	}
 }
