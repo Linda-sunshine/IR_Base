@@ -5,7 +5,7 @@ import java.util.HashMap;
 import utils.Utils;
 
 public class _ChildDoc4APP extends _ChildDoc{
-	public HashMap<Integer, Integer> m_wordXStat;
+//	public HashMap<Integer, Integer> m_wordXStat;
 	
 	public _ChildDoc4APP(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);

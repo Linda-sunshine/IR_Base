@@ -189,6 +189,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				if(AnalyzeQuery(appQuery, querySource)){
 					m_Queries.add(appQuery);
 					appQuery.setQueryID(queryID);
+					System.out.println("query\t"+querySource+"\t accepted");
 				}else{
 					System.out.println("query\t"+querySource+"\t removed");
 				}

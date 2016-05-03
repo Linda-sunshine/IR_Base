@@ -31,6 +31,8 @@ public class _ChildDoc extends _Doc {
 		m_name = name;
 		m_title = title;
 		m_docLenWithXVal = 0;
+		
+		m_wordXStat = new HashMap<Integer, Integer>();
 	}
 	
 	public void setParentDoc(_ParentDoc pDoc){
