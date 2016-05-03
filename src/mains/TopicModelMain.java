@@ -34,7 +34,11 @@ import Analyzer.ParentChildAnalyzer;
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
-	
+		
+		int mb = 1024*1024;
+		
+		Runtime rTime = Runtime.getRuntime();
+		System.out.println("totalMem\t:"+rTime.totalMemory()/mb);
 		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
@@ -44,13 +48,10 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs, ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "APPLDA"; // 2topic, pLSA, HTMM,
-														// LRHTMM,
-												// Tensor, LDA_Gibbs,
-												// LDA_Variational, HTSM,
-												// LRHTSM, ParentChild_Gibbs,
-												// ParentChildWithProbitModel_Gibbs
+		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs,
+		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
+		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		String topicmodel = "APPLDA"; 
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -65,9 +66,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
 		int displayLap = 100;
-//		gibbs_iteration = 200;
-//		gibbs_lag = 5;
-//		displayLap = 10;
+		gibbs_iteration = 20;
+		gibbs_lag = 5;
+		displayLap = 5;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -85,7 +86,7 @@ public class TopicModelMain {
 		String articleType = "Tech";
 //		articleType = "Gadgets";
 		// articleType = "Yahoo";
-//		articleType = "APP";
+		articleType = "APP";
 		
 		String articleFolder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
@@ -93,8 +94,9 @@ public class TopicModelMain {
 		String commentFolder = String.format(
 				"./data/ParentChildTopicModel/%sComments",
 						articleType);
-//		commentFolder = String.format("../../Code/Data/TextMiningProject/APPReviews");
-
+		
+		articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
+		commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -140,7 +142,7 @@ public class TopicModelMain {
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+		double startProb = 0.; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 
@@ -297,11 +299,11 @@ public class TopicModelMain {
 				double[] gamma = {0.5, 0.5};
 				double betaReview = 0.001;
 				
-				String queryFile = "";
+				String queryFile = "./data/APP/queryID.txt";
 				analyzer.loadQuery(queryFile);
 				
 				model = new APPLDA(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics_description,
-						number_of_topics_review, alpha, burnIn, gibbs_lag, ksi, tau, 
+						number_of_topics_review, alpha-1, burnIn, gibbs_lag, ksi, tau, 
 						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
 			}
 			

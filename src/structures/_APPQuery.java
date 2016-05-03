@@ -30,8 +30,13 @@ public class _APPQuery {
 		int i=0;
 		for(_Word w: wordList){
 			m_Words[i] = new _Word(w.getIndex());
+			i++;
 		}
 		
+	}
+	
+	public void setQueryID(int queryID){
+		m_queryID = queryID;
 	}
 	
 	public int getQueryID(){

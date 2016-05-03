@@ -663,7 +663,7 @@ public class ParentChildWith2Phi extends ParentChild_Gibbs {
 				printPairWordTopicDistribution((_ParentDoc4ThreePhi) d, parentPairTopicDistriFolder);
 				printXValue(d, parentXFolder);
 			} else if (d instanceof _ChildDoc) {
-				printTopicAssignment(d, childTopicFolder);
+				printChildTopicAssignment(d, childTopicFolder);
 				printXValue(d, childXFolder);
 			}
 

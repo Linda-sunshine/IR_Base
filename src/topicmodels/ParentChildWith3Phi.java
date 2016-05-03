@@ -724,14 +724,14 @@ public class ParentChildWith3Phi extends ParentChild_Gibbs{
 		int topKChild = 10;
 		for (_Doc d : m_corpus.getCollection()) {
 			if (d instanceof _ParentDoc) {
-				printTopicAssignment(d, parentTopicFolder);
+				printParentTopicAssignment(d, parentTopicFolder);
 				printParentPhi((_ParentDoc) d, parentPhiFolder);
 				printPairWordTopicDistribution((_ParentDoc4ThreePhi) d, parentPairTopicDistriFolder);
 			
 //				printTopKChild4Stn(topKChild, (_ParentDoc4ThreePhi)d, stnTopKChildFolder);
 //				printTopKStn4Child(topKStn, (_ParentDoc4ThreePhi)d, childTopKStnFolder);	
 			} else if (d instanceof _ChildDoc) {
-				printTopicAssignment(d, childTopicFolder);
+				printChildTopicAssignment(d, childTopicFolder);
 				printXValue(d, childXFolder);
 				printChildLocalWordTopicDistribution((_ChildDoc4ThreePhi) d, childLocalWordTopicFolder);
 //				printTopKStn(topKStn, (_ChildDoc4ThreePhi) d, childTopKStnFolder);

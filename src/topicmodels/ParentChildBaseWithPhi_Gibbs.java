@@ -269,10 +269,10 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 
 		for (_Doc d : m_corpus.getCollection()) {
 		if (d instanceof _ParentDoc) {
-				printTopicAssignment((_ParentDoc)d, parentTopicFolder);
+				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
-				printTopicAssignment(d, childTopicFolder);
+				printChildTopicAssignment(d, childTopicFolder);
 				printChildLocalWordTopicDistribution((_ChildDoc4BaseWithPhi)d, childLocalWordTopicFolder);
 				printXValue(d, childXFolder);
 			}

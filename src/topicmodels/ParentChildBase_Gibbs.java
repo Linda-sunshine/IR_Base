@@ -356,10 +356,10 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 
 		for (_Doc d : m_corpus.getCollection()) {
 		if (d instanceof _ParentDoc) {
-				printTopicAssignment((_ParentDoc)d, parentTopicFolder);
+				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
-				printTopicAssignment(d, childTopicFolder);
+				printChildTopicAssignment(d, childTopicFolder);
 			}
 
 		}
@@ -489,32 +489,6 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			System.err.print("File Not Found");
 		}
 	
-	}
-	
-	public void printTopicAssignment(_ParentDoc d, File parentFolder) {
-	//	System.out.println("printing topic assignment parent documents");
-		
-		String topicAssignmentFile = d.getName() + ".txt";
-		try {
-			PrintWriter pw = new PrintWriter(new File(parentFolder,
-					topicAssignmentFile));
-			
-			for(_Stn stnObj: d.getSentences()){
-				for(_Word w: stnObj.getWords()){
-					int index = w.getIndex();
-					int topic = w.getTopic();
-					String featureName = m_corpus.getFeature(index);
-					pw.print(featureName + ":" + topic + "\t");
-				}
-				pw.println();
-			}
-				
-			pw.flush();
-			pw.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-
 	}
 
 	public void printParentPhi(_ParentDoc d, File phiFolder){
@@ -879,7 +853,6 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
 
 	protected void printChildParameter(String childParameterFile){

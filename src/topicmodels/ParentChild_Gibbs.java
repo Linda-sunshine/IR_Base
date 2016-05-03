@@ -481,10 +481,10 @@ public class ParentChild_Gibbs extends ParentChildBase_Gibbs {
 
 		for (_Doc d : m_corpus.getCollection()) {
 		if (d instanceof _ParentDoc) {
-				printTopicAssignment((_ParentDoc)d, parentTopicFolder);
+				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
-				printTopicAssignment(d, childTopicFolder);
+				printChildTopicAssignment(d, childTopicFolder);
 				printXValue(d, childXFolder);
 			}
 

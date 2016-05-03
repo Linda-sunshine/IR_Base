@@ -312,7 +312,6 @@ public abstract class Analyzer {
 			}
 		}
 
-		
 		//rank the documents by product and time in all the cases
 		//Collections.sort(m_corpus.getCollection());
 		if (norm == 1){
@@ -344,6 +343,22 @@ public abstract class Analyzer {
 		
 		m_featureNames = selector.getSelectedFeatures();
 		SaveCV(location, featureSelection, startProb, endProb, threshold); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
+		
+		//clear memory for next step feature construction
+//		reset();
+//		LoadCV(location);//load the selected features
+	}
+	
+	public void featureSelectionWithBound(String location, String featureSelection, double startProb, double endProb, int lowerThreshold, double upThresholdProb) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(startProb, endProb, lowerThreshold, upThresholdProb);
+
+		System.out.println("*******************************************************************");
+		if (featureSelection.equals("DF"))
+			selector.DFWithLowerUpperBound(m_featureStat, m_corpus.getSize());
+		
+		m_featureNames = selector.getSelectedFeatures();
+		SaveCV(location, featureSelection, startProb, endProb, lowerThreshold); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
 		//clear memory for next step feature construction

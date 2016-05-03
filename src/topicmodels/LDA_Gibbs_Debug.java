@@ -514,7 +514,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		int topKStn = 10;
 		int topKChild = 10;
 		for (_Doc d : m_trainSet) {
-			printTopicAssignment(d, topicFolder);
+			if(d instanceof _ParentDoc){
+				printParentTopicAssignment(d, topicFolder);
+			}else if(d instanceof _ChildDoc){
+				printChildTopicAssignment(d, topicFolder);
+			}
 //			if(d instanceof _ParentDoc){
 //				printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
 //				printTopKStn4Child(topKStn, (_ParentDoc)d, childTopKStnFolder);
@@ -573,42 +577,27 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return Utils.cosine(topic1, topic2);
 	}
 	
-	public void printTopicAssignment(_Doc d, File topicFolder) {
-	//	System.out.println("printing topic assignment parent documents");
-		
+	public void printParentTopicAssignment(_Doc d, File topicFolder) {
+		//	System.out.println("printing topic assignment parent documents");
+			
 		String topicAssignmentFile = d.getName() + ".txt";
 		try {
 
 			PrintWriter pw = new PrintWriter(new File(topicFolder,
 					topicAssignmentFile));
 
-			if (d instanceof _ParentDoc) {
-				for (_Stn stnObj : d.getSentences()) {
-					pw.print(stnObj.getIndex() + "\t");
-					for (_Word w : stnObj.getWords()) {
-						int index = w.getIndex();
-						int topic = w.getTopic();
-						String featureName = m_corpus.getFeature(index);
-//						System.out.println("test\t"+featureName+"\tdocName\t"+d.getName());			
-						pw.print(featureName + ":" + topic + "\t");
-					}
-					pw.println();
-				}
-			} else {
-				for (_Word w : d.getWords()) {
+			for (_Stn stnObj : d.getSentences()) {
+				pw.print(stnObj.getIndex() + "\t");
+				for (_Word w : stnObj.getWords()) {
 					int index = w.getIndex();
 					int topic = w.getTopic();
 					String featureName = m_corpus.getFeature(index);
+//							System.out.println("test\t"+featureName+"\tdocName\t"+d.getName());			
 					pw.print(featureName + ":" + topic + "\t");
-					if(featureName=="brain")
-						System.out.println("hole\t"+d.getName());
-					if(featureName=="moon")
-						System.out.println("moon\t"+d.getName());
-					if(featureName=="batteri")
-						System.out.println("batteri\t"+d.getName());
 				}
+				pw.println();
 			}
-
+		
 			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
@@ -618,6 +607,37 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 
+	public void printChildTopicAssignment(_Doc d, File topicFolder) {
+		//	System.out.println("printing topic assignment parent documents");
+			
+		String topicAssignmentFile = d.getName() + ".txt";
+		try {
+
+			PrintWriter pw = new PrintWriter(new File(topicFolder,
+					topicAssignmentFile));
+
+			for (_Word w : d.getWords()) {
+				int index = w.getIndex();
+				int topic = w.getTopic();
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + topic + "\t");
+				if(featureName=="brain")
+					System.out.println("hole\t"+d.getName());
+				if(featureName=="moon")
+					System.out.println("moon\t"+d.getName());
+				if(featureName=="batteri")
+					System.out.println("batteri\t"+d.getName());
+			}
+		
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
 	protected void printParentParameter(String parentParameterFile){
 		System.out.println("printing parameter");
 		try{

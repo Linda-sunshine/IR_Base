@@ -21,6 +21,7 @@ import structures._ChildDoc4BaseWithPhi;
 import structures._ChildDoc4BaseWithPhi_Hard;
 import structures._Doc;
 import structures._ParentDoc;
+import structures._ParentDoc4APP;
 import structures._SparseFeature;
 import structures._Word;
 import structures._stat;
@@ -47,8 +48,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
-				// LoadDoc(f.getAbsolutePath());
-				loadParentDoc(f.getAbsolutePath());
+//				loadParentDoc(f.getAbsolutePath());
+				loadAPPParentDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadParentDirectory(folder, suffix);
 			}
@@ -85,10 +86,10 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String[] sentences = null;
 
 		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-//		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(),
-//				name, title, content, 0);
+
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
+				
 			sentences = new String[sentenceArray.length()];
 			//shall we add title into this sentence array
 			for (int i = 0; i < sentenceArray.length(); i++)
@@ -96,13 +97,29 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			
 			if (AnalyzeDocByStn(d, sentences))
 				parentHashMap.put(name, d);
-//			else 
-//				System.out.println("filtering parent documet\t"+d.getName());
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
+	public void loadAPPParentDoc(String fileName){
+		if (fileName == null || fileName.isEmpty())
+			return;
+
+		JSONObject json = LoadJson(fileName);
+		String title = Utils.getJSONValue(json, "title");
+		String content = Utils.getJSONValue(json, "content");
+		String name = Utils.getJSONValue(json, "name");
+
+		_ParentDoc4APP d = new _ParentDoc4APP(m_corpus.getSize(), name, title, content, 0);
+		
+		if (AnalyzeDoc(d)){
+			parentHashMap.put(name, d);
+//			System.out.println("parent name\t"+name);
+		}
+	}
+	
 	public void loadChildDoc(String fileName) {
 		if (fileName == null || fileName.isEmpty())
 			return;
@@ -159,16 +176,19 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 	
 	public void loadQuery(String queryFile){
 		try{
+			m_Queries = new ArrayList<_APPQuery>();
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(queryFile), "UTF-8"));
 			
 			String line;
 			while((line=reader.readLine())!=null){
-				
-				String querySource = line;
+				String[] lineUnit = line.split("\t");
+				String querySource = lineUnit[1];
+				int queryID = Integer.parseInt(lineUnit[0]);
 				
 				_APPQuery appQuery = new _APPQuery();
 				if(AnalyzeQuery(appQuery, querySource)){
 					m_Queries.add(appQuery);
+					appQuery.setQueryID(queryID);
 				}else{
 					System.out.println("query\t"+querySource+"\t removed");
 				}

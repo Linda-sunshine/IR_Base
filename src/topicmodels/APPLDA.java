@@ -11,14 +11,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-
-import javax.swing.text.html.MinimalHTMLWriter;
-
 import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4APP;
 import structures._Corpus;
 import structures._ParentDoc;
+import structures._ParentDoc4APP;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
@@ -93,9 +91,9 @@ public class APPLDA extends ParentChildBase_Gibbs{
 		
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc){
-				d.setTopics4Gibbs(number_of_topics, 0);
-				for(_Stn stnObj:d.getSentences())
-					stnObj.setTopic(number_of_topics);
+				((_ParentDoc4APP)d).setTopics4Gibbs(number_of_topics, 0);
+//				for(_Stn stnObj:d.getSentences())
+//					stnObj.setTopic(number_of_topics);
 			}else if(d instanceof _ChildDoc){
 				((_ChildDoc4APP)d).createXSpace(number_of_topics, m_number_of_topics_review, m_gamma.length);
 				((_ChildDoc4APP)d).setTopics4Gibbs(number_of_topics, m_number_of_topics_review, 0);
@@ -304,9 +302,10 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	
 	protected void estThetaInDoc(_Doc d){
 		Utils.L1Normalization(d.m_topics);
-		if(d instanceof _ParentDoc){
-			estParentStnTopicProportion((_ParentDoc) d);
-		}else if(d instanceof _ChildDoc){
+//		if(d instanceof _ParentDoc){
+//			estParentStnTopicProportion((_ParentDoc) d);
+//		}else
+		if(d instanceof _ChildDoc){
 			((_ChildDoc)d).estGlobalLocalTheta();
 		}
 		
@@ -407,8 +406,8 @@ public class APPLDA extends ParentChildBase_Gibbs{
 
 		for (_Doc d : m_corpus.getCollection()) {
 		if (d instanceof _ParentDoc) {
-				printTopicAssignment((_ParentDoc)d, parentTopicFolder);
-				printParentPhi((_ParentDoc)d, parentPhiFolder);
+				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
+//				printParentPhi((_ParentDoc)d, parentPhiFolder);
 			} else if (d instanceof _ChildDoc) {
 				printChildTopicAssignment((_ChildDoc4APP)d, childTopicFolder);
 				printXValue(d, childXFolder);
@@ -425,6 +424,34 @@ public class APPLDA extends ParentChildBase_Gibbs{
 		printAPP4QueryByLanguageModel(filePrefix);
 		printAPP4QueryByHybrid(filePrefix);
 
+	}
+	
+	protected void printParentParameter(String parentParameterFile){
+		System.out.println("printing parent parameter");
+		try{
+			System.out.println(parentParameterFile);
+			
+			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					parentParaOut.print(d.getName()+"\t");
+					parentParaOut.print("topicProportion\t");
+					for(int k=0; k<number_of_topics; k++){
+						parentParaOut.print(d.m_topics[k]+"\t");
+					}
+					
+					parentParaOut.println();
+					
+				}
+			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	protected void printChildParameter(String childParameterFile){
@@ -492,17 +519,36 @@ public class APPLDA extends ParentChildBase_Gibbs{
 				int xid = w.getX();
 				String featureName = m_corpus.getFeature(wid);
 				pw.print(featureName + ":" + topic + ":"+ xid +"\t");
-				if(featureName=="brain")
-					System.out.println("hole\t"+d.getName());
-				if(featureName=="moon")
-					System.out.println("moon\t"+d.getName());
-				if(featureName=="batteri")
-					System.out.println("batteri\t"+d.getName());
+			
 			}
 			pw.flush();
 			pw.close();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void printParentTopicAssignment(_ParentDoc d, File parentFolder) {
+		//	System.out.println("printing topic assignment parent documents");
+			
+		String topicAssignmentFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(parentFolder,
+					topicAssignmentFile));
+				
+			for(_Word w: d.getWords()){
+				int index = w.getIndex();
+				int topic = w.getTopic();
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + topic + "\t");
+			}
+			pw.println();
+				
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 
