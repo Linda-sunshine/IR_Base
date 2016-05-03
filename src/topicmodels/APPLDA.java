@@ -125,6 +125,16 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
+		
+		if(tid==0)
+			return term;
+		
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
+			double muDp = number_of_topics*d_alpha_prior/(pDoc.getDocInferLength()+number_of_topics*d_alpha);
+			term*= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha_child+(pDoc.m_sstat[tid]+d_alpha)*muDp)
+					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha_child+(pDoc.m_sstat[0]+d_alpha)*muDp);
+		}
+		
 		return term;
 	}
 	
