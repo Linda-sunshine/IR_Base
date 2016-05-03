@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
-import structures._APPQuery;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.APPLDA;
@@ -94,10 +92,7 @@ public class TopicModelMain {
 		String commentFolder = String.format(
 				"./data/ParentChildTopicModel/%sComments",
 						articleType);
-		
-		articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
-		commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
-		
+
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;

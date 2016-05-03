@@ -54,8 +54,8 @@ public class featureGeneration {
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
 		
-		articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
-		commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
+		// articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
+		// commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -106,9 +106,10 @@ public class featureGeneration {
 		double startProb = 0.00; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of
 								// the features.
-		int DFthreshold = 3; // Filter the features with DFs smaller than this threshold.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this
+								// threshold.
 
-		double DFUpperThreshold = 0.3;
+		double DFUpperThreshold = 0.10;
 		
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
