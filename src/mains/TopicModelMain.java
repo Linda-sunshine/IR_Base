@@ -66,9 +66,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 2000, gibbs_lag = 50;
 		int displayLap = 100;
-		gibbs_iteration = 20;
-		gibbs_lag = 5;
-		displayLap = 5;
+//		gibbs_iteration = 20;
+//		gibbs_lag = 5;
+//		displayLap = 5;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -154,9 +154,13 @@ public class TopicModelMain {
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(commentFolder, suffix);
+		if(topicmodel=="LDA_APPMerged")
+			articleFolder = String.format(
+					"./data/ParentChildTopicModel/%sDescriptionsReviews",
+					articleType);
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		
-		if(topicmodel!="LDA_APP")
+		if((topicmodel!="LDA_APP")||(topicmodel!="LDA_APPMerged"))
 			analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.

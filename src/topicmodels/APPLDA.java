@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import structures.MyPriorityQueue;
 import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4APP;
@@ -14,6 +15,7 @@ import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
+import structures._RankItem;
 import structures._SparseFeature;
 import structures._Word;
 import utils.Utils;
@@ -385,6 +387,17 @@ public class APPLDA extends ParentChildBase_Gibbs{
 		return docLogLikelihood;
 	}
 	
+	protected void finalEst(){
+		for(int i=0; i<this.number_of_topics; i++)
+			Utils.L1Normalization(topic_term_probabilty[i]); 
+		
+		for(int i=0; i<m_number_of_topics_review; i++)
+			Utils.L1Normalization(m_childTopicWordProb[i]);
+		//estimate p(z|d) from all the collected samples
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+	}
+	
 	public void debugOutput(String filePrefix){
 
 		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
@@ -434,7 +447,39 @@ public class APPLDA extends ParentChildBase_Gibbs{
 		printAPP4QueryByTopicModel(filePrefix);
 		printAPP4QueryByLanguageModel(filePrefix);
 		printAPP4QueryByHybrid(filePrefix);
+		
+		printReviewOnlyTopicWords(filePrefix);
+	}
+	
+	protected void printReviewOnlyTopicWords(String filePrefix){
+		int k = 20;
+		String betaFile = filePrefix+"topWord4ReviewOnly.txt";
+		try {
+			System.out.println("beta file");
+			PrintWriter betaOut = new PrintWriter(new File(betaFile));
+			for (int i = 0; i < m_childTopicWordProb.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
+						k);
+				for (int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j),
+							m_childTopicWordProb[i][j]));
 
+//				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
+				for (_RankItem it : fVector) {
+					betaOut.format("%s(%.3f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+					System.out.format("%s(%.3f)\t", it.m_name,
+						m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				}
+				betaOut.println();
+				System.out.println();
+			}
+	
+			betaOut.flush();
+			betaOut.close();
+		} catch (Exception ex) {
+			System.err.print("File Not Found");
+		}
 	}
 	
 	protected void printParentParameter(String parentParameterFile){
