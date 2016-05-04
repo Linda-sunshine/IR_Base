@@ -91,7 +91,11 @@ public class languageModelBaseLine{
 //					double xProportion = word.getXProb();
 					int wid = fv.getIndex();
 					
-					double valWithX = ((_ChildDoc)d).m_wordXStat.get(wid);
+					double valWithX = 0;
+					if(((_ChildDoc)d).m_wordXStat.containsKey(wid)){
+						valWithX = ((_ChildDoc)d).m_wordXStat.get(wid);
+					}
+	
 //					double val = 1-xProportion;
 					docLenWithXVal += valWithX;
 					

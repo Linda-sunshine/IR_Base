@@ -48,14 +48,11 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		articleType = "Yahoo";
+//		articleType = "Yahoo";
 //		articleType = "Gadgets";
-		articleType = "APP";
+//		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
-		
-		articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
-		commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.

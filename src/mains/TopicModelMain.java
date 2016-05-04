@@ -13,6 +13,7 @@ import structures._Doc;
 import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
+import topicmodels.LDA_APP;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LDAonArticles;
@@ -51,7 +52,8 @@ public class TopicModelMain {
 		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs,
 		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
-		String topicmodel = "APPLDA"; 
+		//LDA_APP
+		String topicmodel = "LDA_APP"; 
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -85,7 +87,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		// articleType = "Yahoo";
+//		 articleType = "Yahoo";
 		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -94,9 +96,6 @@ public class TopicModelMain {
 		String commentFolder = String.format(
 				"./data/ParentChildTopicModel/%sComments",
 						articleType);
-		
-		articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
-		commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -158,7 +157,9 @@ public class TopicModelMain {
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(commentFolder, suffix);
 		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+		
+		if(topicmodel!="LDA_APP")
+			analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
@@ -305,6 +306,19 @@ public class TopicModelMain {
 				model = new APPLDA(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics_description,
 						number_of_topics_review, alpha-1, burnIn, gibbs_lag, ksi, tau, 
 						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
+			}else if(topicmodel.equals("LDA_APP")){
+				double ksi=800;
+				double tau=0.7;
+				beta = 1.001;
+				alpha = 1.01;
+				number_of_topics = 330;
+				
+				String queryFile = "./data/APP/queryID.txt";
+				analyzer.loadQuery(queryFile);
+				
+				
+				model = new LDA_APP(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics,
+						 alpha-1, burnIn, gibbs_lag, ksi, tau, analyzer.m_Queries);
 			}
 			
 			model.setDisplayLap(displayLap);
@@ -331,7 +345,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.4;
+				double trainProportion = 0.9;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);

@@ -120,10 +120,10 @@ public class LDAonArticles extends LDA_Gibbs_Debug{
 		System.out.println("In Normal");
 		
 		for(_Doc d:m_testSet) {		
-			if(d instanceof _ChildDoc){
-				inference(d);
-				continue;
-			}
+//			if(d instanceof _ChildDoc){
+//				inference(d);
+//				continue;
+//			}
 			loglikelihood = inference(d);
 			sumLikelihood += loglikelihood;
 			perplexity += loglikelihood;

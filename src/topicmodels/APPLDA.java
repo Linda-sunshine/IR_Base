@@ -217,9 +217,14 @@ public class APPLDA extends ParentChildBase_Gibbs{
 			
 			cDoc.m_xTopicSstat[xid][tid] ++;
 			cDoc.m_xSstat[xid] ++;
-			cDoc.m_wordXStat.put(wid, cDoc.m_wordXStat.get(wid)+1);
 
 			if(xid==0){
+				if (cDoc.m_wordXStat.containsKey(wid)) {
+					cDoc.m_wordXStat.put(wid, cDoc.m_wordXStat.get(wid) + 1);
+				} else {
+					cDoc.m_wordXStat.put(wid, 1);
+				}
+
 				if(m_collectCorpusStats){
 					word_topic_sstat[tid][wid] ++;
 					m_sstat[tid] ++;

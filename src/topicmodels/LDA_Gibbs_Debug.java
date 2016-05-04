@@ -79,7 +79,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 		
 		imposePrior();
-	};
+	}
 	
 	protected void collectStats(_Doc d) {
 		for(int k=0; k<this.number_of_topics; k++)
@@ -101,7 +101,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		super.finalEst();
 	}
 
-	
 	protected void estThetaInDoc(_Doc d) {
 		super.estThetaInDoc(d);
 		if(d instanceof _ParentDoc){
@@ -1171,5 +1170,5 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 
 	}
-	
+
 }

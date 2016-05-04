@@ -130,7 +130,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 		
-		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
+//		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
 //		
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
 //				name, "", content, 0);
@@ -142,7 +142,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-//		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
