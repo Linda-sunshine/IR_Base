@@ -1,27 +1,22 @@
 package topicmodels;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
+
 import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4APP;
 import structures._Corpus;
+import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
 import structures._SparseFeature;
-import structures._Stn;
 import structures._Word;
 import utils.Utils;
-import structures._Doc;
 
 public class APPLDA extends ParentChildBase_Gibbs{
 //	double d_alpha_parent; alpha
@@ -124,6 +119,7 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
+		// System.out.println("appLDA influence");
 		double term = 1.0;
 		
 		if(tid==0)
@@ -626,7 +622,9 @@ public class APPLDA extends ParentChildBase_Gibbs{
 			
 			for(_ChildDoc cDoc:pDoc.m_childDocs){
 				_ChildDoc4APP cDoc4APP = (_ChildDoc4APP)cDoc;
-				featureHybridVal += cDoc4APP.m_wordXStat.get(wid);
+				if (cDoc4APP.m_wordXStat.containsKey(wid)) {
+					featureHybridVal += cDoc4APP.m_wordXStat.get(wid);
+				}
 			}
 		
 			double wordLMLikelihood = (1-alphaDoc)*(featureHybridVal/docLenHybridVal);
@@ -708,7 +706,9 @@ public class APPLDA extends ParentChildBase_Gibbs{
 			
 			for(_ChildDoc cDoc:pDoc.m_childDocs){
 				_ChildDoc4APP cDoc4APP = (_ChildDoc4APP)cDoc;
-				featureHybridVal += cDoc4APP.m_wordXStat.get(wid);
+				if (cDoc4APP.m_wordXStat.containsKey(wid)) {
+					featureHybridVal += cDoc4APP.m_wordXStat.get(wid);
+				}
 			}
 		
 			double smoothingProb = (1-alphaDoc)*(featureHybridVal/docLenHybridVal);

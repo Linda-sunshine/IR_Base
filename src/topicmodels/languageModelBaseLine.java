@@ -13,17 +13,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.hamcrest.core.Is;
-
-import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
-import structures._Word;
 import utils.Utils;
+import Analyzer.ParentChildAnalyzer;
 
 public class languageModelBaseLine{
 	HashMap<Integer, Double> m_wordSstat; //TTF
@@ -92,10 +89,10 @@ public class languageModelBaseLine{
 					int wid = fv.getIndex();
 					
 					double valWithX = 0;
-					if(((_ChildDoc)d).m_wordXStat.containsKey(wid)){
-						valWithX = ((_ChildDoc)d).m_wordXStat.get(wid);
+					if (((_ChildDoc) d).m_wordXStat.containsKey(wid)) {
+						valWithX = ((_ChildDoc) d).m_wordXStat.get(wid);
 					}
-	
+					
 //					double val = 1-xProportion;
 					docLenWithXVal += valWithX;
 					

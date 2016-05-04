@@ -18,12 +18,6 @@ public class _ChildDoc extends _Doc {
 	public double m_mu;//similarity between parent and child
 	
 	public HashMap<Integer, Integer> m_wordXStat;
-
-	//store the likelihood of sentences 
-//	public HashMap<Integer, Double> m_stnLikelihoodMap;
-	
-	//store the similarity of sentences to this comment
-//	public HashMap<Integer, Double> m_stnSimMap;
 	
 	public _ChildDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);

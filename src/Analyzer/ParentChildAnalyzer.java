@@ -13,12 +13,12 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.jsoup.Jsoup;
+
 import structures.TokenizeResult;
 import structures._APPQuery;
-import structures._ChildDoc;
 import structures._ChildDoc4APP;
-import structures._ChildDoc4BaseWithPhi;
-import structures._ChildDoc4BaseWithPhi_Hard;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
@@ -112,6 +112,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 
+		content = Jsoup.parse(content).text();
 		_ParentDoc4APP d = new _ParentDoc4APP(m_corpus.getSize(), name, title, content, 0);
 		
 		if (AnalyzeDoc(d)){
@@ -130,7 +131,10 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 		
-//		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
+
+		content = Jsoup.parse(content).text();
+
+		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
 //		
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
 //				name, "", content, 0);

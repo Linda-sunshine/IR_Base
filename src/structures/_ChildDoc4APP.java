@@ -1,15 +1,11 @@
 package structures;
 
-import java.util.HashMap;
-
-import utils.Utils;
 
 public class _ChildDoc4APP extends _ChildDoc{
 //	public HashMap<Integer, Integer> m_wordXStat;
 	
 	public _ChildDoc4APP(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
-		
 	}
 	
 	public void createXSpace(int k_description, int k_review, int gammaSize){
@@ -40,7 +36,10 @@ public class _ChildDoc4APP extends _ChildDoc{
 					m_words[wIndex] = new _Word(wid, tid, xid);
 					m_xTopicSstat[xid][tid] ++;
 					m_xSstat[xid] ++;
-					m_wordXStat.put(wid, m_wordXStat.get(wid)+1);
+					if (m_wordXStat.containsKey(wid))
+						m_wordXStat.put(wid, m_wordXStat.get(wid)+1);
+					else
+						m_wordXStat.put(wid, 1);
 				}else{
 					tid = m_rand.nextInt(k_review); 
 					m_words[wIndex] = new _Word(wid, tid, xid);
