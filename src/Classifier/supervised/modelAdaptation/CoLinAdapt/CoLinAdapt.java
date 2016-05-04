@@ -111,6 +111,8 @@ public class CoLinAdapt extends LinAdapt {
 			}
 			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
 		}
+		if(getAdaptationSize(ui) > 15)
+			R2 /= 10;
 		return fValue + R2;
 	}
 	
@@ -130,6 +132,9 @@ public class CoLinAdapt extends LinAdapt {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			offsetj = m_dim*2*uj.getId();
 			coef = 2 * nit.m_value;
+
+			if(getAdaptationSize(ui) > 15)
+				coef /=5;
 			
 			for(int k=0; k<m_dim; k++) {
 				dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));

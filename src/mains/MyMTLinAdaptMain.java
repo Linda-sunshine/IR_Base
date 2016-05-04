@@ -42,11 +42,11 @@ public class MyMTLinAdaptMain {
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859;
 
 		// Best performance for mt-linadapt in amazon.
-		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+//		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		double eta3 = 0.1, eta4 = 0.3;
-//		double eta1 = 0.1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
+//		double eta1 = 1, eta2 = 0.4, lambda1 = 0.1, lambda2 = 0.7;
 		// Best performance for mt-linadapt in yelp.
-//		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
+		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
 		double[] perf;
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -57,7 +57,6 @@ public class MyMTLinAdaptMain {
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, 800);
 		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, 800);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
@@ -70,30 +69,26 @@ public class MyMTLinAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-
+			
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
 //		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
-////		mtlinadaptsup.setLNormFlag(false);
 //		mtlinadaptsup.loadUsers(analyzer.getUsers());
 //		mtlinadaptsup.setDisplayLv(displayLv);
 //		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
 //		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 //		mtlinadaptsup.train();
 //		mtlinadaptsup.test();
-//		perf = mtlinadaptsup.getPerf();
-//		mtlinadaptsup.saveSupModel("mtlinadapt_supModel_yelp.txt");
-//		mtlinadaptsup.saveModel(String.format("./%s_mtlinadapt", dataset));
-	
+//		writePerformance("MTLinAdapt_perf.txt", mtlinadaptsup.getUserList());
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-		
-		// Create the instance of global SVM.
+//		
+//		// Create the instance of global SVM.
 //		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.setBias(false);
 //		gsvm.train();
 //		gsvm.test();
-//		
+//		writePerformance("GlobalSVM_perf_falsebias.txt", gsvm.getUserList());
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -102,59 +97,61 @@ public class MyMTLinAdaptMain {
 //		gsvm.setBias(true);
 //		gsvm.train();
 //		gsvm.test();
-//		
+//		writePerformance("GlobalSVM_perf_truebias.txt", gsvm.getUserList());
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-		
-		// Create the instance of individual SVM.
+//		
+//		// Create the instance of individual SVM.
 //		IndividualSVM indsvm = new IndividualSVM(classNumber, analyzer.getFeatureSize());
 //		indsvm.loadUsers(analyzer.getUsers());
 //		indsvm.setBias(false);
 //		indsvm.train();
 //		indsvm.test();
-		
+//		writePerformance("IndividualSVM_perf.txt", indsvm.getUserList());
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
-//		indsvm = new IndividualSVM(classNumber, analyzer.getFeatureSize());
-//		indsvm.loadUsers(analyzer.getUsers());
-//		indsvm.setBias(true);
-//		indsvm.train();
-//		indsvm.test();
-		
-		// Create an intance of RegLR.
-//		RegLR adaptation = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-		
-		// Create an instances of LinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, numberOfCores, globalModel,featureGroupFile);
-		
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		adaptation.train();
-		adaptation.test();
-
-//		adaptation.saveModel(String.format("./ACLModels/%s_reglr", dataset));
-//		adaptation.saveModel(String.format("./ACLModels/%s_linadapt", dataset));
+//		// Create an intance of RegLR.
+//		RegLR reglr = new RegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+//		reglr.loadUsers(analyzer.getUsers());
+//		reglr.setDisplayLv(displayLv);
+//		reglr.train();
+//		reglr.test();
+//		writePerformance("RegLR_perf.txt", reglr.getUserList());
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		// Create an instances of LinAdapt model.
+//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.train();
+//		adaptation.test();
+//		writePerformance("Base_perf.txt", adaptation.getUserList());
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 		
 //		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		//mtsvm.setPersonlized(false);
 //		mtsvm.loadUsers(analyzer.getUsers());
 ////		mtsvm.setBias(false);
 //		mtsvm.train();
 //		mtsvm.test();
-//		mtsvm.saveModel(String.format("./ACLModels/%s_mtsvm", dataset));
-		
-		// Create the instance of MTCoLinAdapt.
-//		MTCoLinAdapt mtcolinadapt = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//		mtcolinadapt.loadUsers(analyzer.getUsers());
-//		mtcolinadapt.setDisplayLv(displayLv);
-//		mtcolinadapt.setR1TradeOffs(eta1, eta2);
-//		mtcolinadapt.setR2TradeOffs(eta3, eta4);
-//		mtcolinadapt.setRsTradeOffs(lambda1, lambda2);
-//		mtcolinadapt.train();
-//		mtcolinadapt.test();
+//		writePerformance("MTSVM_perf.txt", mtsvm.getUserList());
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+	}
+	
+	// Print out the performance of users.
+	public static void writePerformance(String filename, ArrayList<_AdaptStruct> users){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_AdaptStruct u: users)
+				writer.write(String.format("%s,%d,%.4f,%.4f\n", u.getUserID(), u.getReviews().size(), u.getPerfStat().getF1(0), u.getPerfStat().getF1(1)));
+			writer.close();	
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

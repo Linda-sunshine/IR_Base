@@ -8,6 +8,7 @@ import structures.MTLinAdaptParameter;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
+import Classifier.supervised.modelAdaptation.RegLR.RegLR4Sup;
 
 public class MyDiffSizeUsersExecution {
 	
@@ -27,15 +28,15 @@ public class MyDiffSizeUsersExecution {
 
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", param.m_data);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
-//		String folder = String.format("/if15/lg5bt/DataSigir/%s/", param.m_data);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", param.m_data);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
+		String folder = String.format("/if15/lg5bt/DataSigir/%s/", param.m_data);
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", param.m_data); // CV.
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", param.m_data);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", param.m_data);
-		String folder = String.format("/home/lin/DiffSetsUsers/");
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", param.m_data); // CV.
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", param.m_data);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", param.m_data);
+//		String folder = String.format("/home/lin/DiffSetsUsers/");
 		
 		MultiThreadedUserAnalyzer analyzer;
 		String diffFolder, filename;
@@ -74,8 +75,17 @@ public class MyDiffSizeUsersExecution {
 				mtlinadaptsup.test();
 				F1[i] = mtlinadaptsup.getPerf();
 			}
+			else if(param.m_model.equals("reglr")){
+				RegLR4Sup adaptation = new RegLR4Sup(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+				adaptation.loadUsers(analyzer.getUsers());
+				adaptation.setDisplayLv(displayLv);
+				adaptation.setR1TradeOff(param.m_eta1);
+				adaptation.train();
+				adaptation.test();
+				F1[i] = adaptation.getPerf();
+			}
 		}
-		filename = String.format("/if15/lg5bt/DataSigir/%s_%s_%.1f_Users_%d.txt", param.m_data, param.m_model, param.m_userSet, adaptRatio, param.m_userSet);
+		filename = String.format("/if15/lg5bt/DataSigir/%s_%s_%.1f_Users_%d.txt", param.m_data, param.m_model, adaptRatio, param.m_userSet);
 		PrintWriter writer = new PrintWriter(new File(filename));
 		for(int i=0; i<F1.length; i++)
 			writer.format("%d\t%.4f\t%.4f\t%.4f\t%.4f\n", (i+1)*400, F1[i][0], F1[i][1], F1[i][2], F1[i][3]);

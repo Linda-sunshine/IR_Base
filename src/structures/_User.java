@@ -28,6 +28,7 @@ public class _User {
 	protected double[] m_pWeightB;
 	protected int m_classNo;
 	protected int m_featureSize;
+	protected int[] m_category;
 	
 	// performance statistics
 	_PerformanceStat m_perfStat;
@@ -43,6 +44,20 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		
+		constructSparseVector();
+	}
+	
+	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
+		m_userID = userID;
+		m_reviews = reviews;
+		m_classNo = classNo;
+
+		m_lowDimProfile = null;
+		m_BoWProfile = null;
+		m_pWeight = null;
+
+		m_perfStat = new _PerformanceStat(classNo);
+		m_category = category;
 		constructSparseVector();
 	}
 	
@@ -174,5 +189,9 @@ public class _User {
 				count++;
 		}
 		return count/m_reviews.size();
+	}
+	
+	public int[] getCategory(){
+		return m_category;
 	}
  }

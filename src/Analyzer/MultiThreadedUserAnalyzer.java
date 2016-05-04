@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.tartarus.snowball.SnowballStemmer;
@@ -27,7 +28,7 @@ import structures._User;
  * Multi-threaded extension of UserAnalyzer
  */
 public class MultiThreadedUserAnalyzer extends UserAnalyzer {
-
+	protected ArrayList<String> m_categories;
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
@@ -120,6 +121,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
+			int[] categories = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -129,6 +131,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
+				if(m_categories.contains(category))
+					categories[m_categories.indexOf(category)] = 1;
+				else
+					System.out.println("Bug");
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
 
@@ -136,8 +142,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
 					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
-//					if(m_corpus.getCollection().size() == 0)
-//						System.out.println("Size 1 here!");
+					//m_categories.add(category);
 					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
 						reviews.add(review);
 						localLength += review.getDocLength();
@@ -155,7 +160,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				
-					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
 				}
 			}
 			reader.close();
@@ -267,5 +272,26 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_start = start;
 		m_end = end;
 	}
-
+	
+	public ArrayList<String> getCategory(){
+		return m_categories;
+	}
+	
+	public void loadCategory(String filename){
+		m_categories = new ArrayList<String>();
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				m_categories.add(line);
+			}
+			reader.close();
+			System.out.println(m_categories.size() + " categories are loaded.");
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }
