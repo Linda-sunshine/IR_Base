@@ -15,10 +15,12 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 
 import org.jsoup.Jsoup;
+import org.netlib.util.intW;
 
 import structures.TokenizeResult;
 import structures._APPQuery;
 import structures._ChildDoc4APP;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
@@ -71,8 +73,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				LoadChildDirectory(folder, suffix);
 			}
 		}
-		
-		System.out.format("loading %d comments from %s\n", m_corpus.getSize()-current, folder);
+//		System.out.format("loading %d comments from %s\n", m_corpus.getSize()-current, folder);
+
+		filterParentAndChildDoc();
 	}
 
 	public void loadParentDoc(String fileName) {
@@ -134,10 +137,10 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		content = Jsoup.parse(content).text();
 
-		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
+//		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title, content, 0);
 //		
-//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-//				name, "", content, 0);
+		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -331,5 +334,25 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 				avgIDF += IDF;
 			}
 		}
+	}
+	
+	public void filterParentAndChildDoc(){
+		System.out.println("before filtering\t"+m_corpus.getSize());
+		int corpusSize = m_corpus.getCollection().size();
+		ArrayList<Integer> removeIndexList = new ArrayList<Integer>();
+		for(int i=0;i<corpusSize; i++){
+			_Doc d = m_corpus.getCollection().get(i);
+			if(d instanceof _ParentDoc){
+				_ParentDoc pDoc = (_ParentDoc)d;
+				if(pDoc.m_childDocs.size()==0)
+					removeIndexList.add(i);
+			}
+		}
+		
+		for(int i:removeIndexList)
+			m_corpus.getCollection().remove(i);
+
+		System.out.println("after filtering\t"+m_corpus.getSize());
+
 	}
 }

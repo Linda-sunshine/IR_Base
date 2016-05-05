@@ -29,6 +29,13 @@ public class LDA_APP extends LDA_Gibbs_Debug{
 		m_APPQueries = queryList;
 	}
 	
+	public String toString(){
+		infoWriter.format("LDA APP [ total topic size:%d, alpha:%.2f,  beta:%.2f, training proportion:%.2f, Gibbs Sampling]", 
+				number_of_topics, d_alpha, d_beta, m_testWord4PerplexityProportion);
+		return String.format("LDA APP [ total topic size:%d, alpha:%.2f,  beta:%.2f, training proportion:%.2f, Gibbs Sampling]", 
+				number_of_topics, d_alpha, d_beta, m_testWord4PerplexityProportion);
+	}
+	
 	protected void initialize_probability(Collection<_Doc> collection) {
 		createSpace();
 		for(int i=0; i< number_of_topics; i++)

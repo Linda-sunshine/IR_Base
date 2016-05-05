@@ -61,6 +61,12 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 					tid = m_rand.nextInt(k);
 					m_xTopicSstat[xid][tid]++;
 					m_xSstat[xid]++;
+					
+					if (m_wordXStat.containsKey(wid))
+						m_wordXStat.put(wid, m_wordXStat.get(wid)+1);
+					else
+						m_wordXStat.put(wid, 1);
+					
 				}else if(xid==1){
 					tid = k ;
 					m_xTopicSstat[xid][wid]++;

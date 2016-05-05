@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
+import structures._APPQuery;
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.APPACCTM_C;
 import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
@@ -64,8 +67,8 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 2000, gibbs_lag = 50;
-		int displayLap = 100;
+		int gibbs_iteration = 400, gibbs_lag = 20;
+		int displayLap = 20;
 //		gibbs_iteration = 20;
 //		gibbs_lag = 5;
 //		displayLap = 5;
@@ -160,7 +163,7 @@ public class TopicModelMain {
 					articleType);
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		
-		if((topicmodel!="LDA_APP")||(topicmodel!="LDA_APPMerged"))
+		if((topicmodel!="LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 			analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
@@ -308,19 +311,33 @@ public class TopicModelMain {
 				model = new APPLDA(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics_description,
 						number_of_topics_review, alpha-1, burnIn, gibbs_lag, ksi, tau, 
 						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
-			}else if(topicmodel.equals("LDA_APP")){
-				double ksi=800;
-				double tau=0.7;
-				beta = 1.001;
-				alpha = 1.01;
-				number_of_topics = 330;
+			}else if(topicmodel.equals("LDA_APP")||topicmodel.equals("LDA_APPMerged")){
+				double ksi=1000;
+				double tau=0.5;
+				beta = 1.01;
+			
+				number_of_topics = 300;
+				alpha = 50/number_of_topics;
 				
 				String queryFile = "./data/APP/queryID.txt";
 				analyzer.loadQuery(queryFile);
 				
-				
 				model = new LDA_APP(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics,
-						 alpha-1, burnIn, gibbs_lag, ksi, tau, analyzer.m_Queries);
+						 alpha, burnIn, gibbs_lag, ksi, tau, analyzer.m_Queries);
+			}else if(topicmodel.equals("APPACCTM_C")){
+				double ksi=800;
+				double tau=0.5;
+				number_of_topics = 300;
+				alpha = 50/number_of_topics;
+				beta = 0.01;
+				
+				double[] gamma = {0.5, 0.5};
+				
+				String queryFile = "./data/APP/queryID.txt";
+				analyzer.loadQuery(queryFile);
+				
+				model = new APPACCTM_C( number_of_iteration,  converge,  beta,  c,  lambda,
+						 number_of_topics,  alpha,  burnIn,  gibbs_lag, gamma,  ksi,  tau, analyzer.m_Queries);
 			}
 			
 			model.setDisplayLap(displayLap);

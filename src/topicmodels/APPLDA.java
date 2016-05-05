@@ -69,6 +69,8 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	}
 	
 	public String toString(){
+		infoWriter.format("APP LDA [description topic size:%d, review topic size:%d, total topic size:%d, alpha^d:%.2f, alpha^r:%.2f, alpha^p:%.2f, alpha^off, beta:%.2f, beta_child:%.2f, gamma1:%.2f, gamma2:%.2f, training proportion:%.2f, Gibbs Sampling]", 
+				number_of_topics, m_number_of_topics_review, m_totalTopics, d_alpha, d_alpha_child, d_alpha_prior, d_alpha_child_off, d_beta, m_gamma[0], m_gamma[1], m_testWord4PerplexityProportion);
 		return String.format("APP LDA [description topic size:%d, review topic size:%d, total topic size:%d, alpha^d:%.2f, alpha^r:%.2f, alpha^p:%.2f, alpha^off, beta:%.2f, beta_child:%.2f, gamma1:%.2f, gamma2:%.2f, training proportion:%.2f, Gibbs Sampling]", 
 				number_of_topics, m_number_of_topics_review, m_totalTopics, d_alpha, d_alpha_child, d_alpha_prior, d_alpha_child_off, d_beta, m_gamma[0], m_gamma[1], m_testWord4PerplexityProportion);
 	}
