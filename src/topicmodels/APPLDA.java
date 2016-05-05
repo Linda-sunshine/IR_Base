@@ -611,7 +611,7 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	}
 
 	protected void printAPP4QueryByHybrid(String filePrefix){
-		String topKChild4QueryFile = filePrefix + "topAPP4Query.txt";
+		String topKChild4QueryFile = filePrefix + "topAPP4QueryByHybrid.txt";
 		System.out.println("hybrid model rank");
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4QueryFile));
@@ -691,7 +691,7 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	}
 	
 	protected void printAPP4QueryByLanguageModel(String filePrefix){
-		String topKChild4QueryFile = filePrefix + "topAPP4Query.txt";
+		String topKChild4QueryFile = filePrefix + "topAPP4QueryByLM.txt";
 		System.out.println("language model rank");
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4QueryFile));
@@ -767,7 +767,7 @@ public class APPLDA extends ParentChildBase_Gibbs{
 	}
 	
 	protected void printAPP4QueryByTopicModel(String filePrefix){
-		String topKChild4QueryFile = filePrefix + "topChild4Query.txt";
+		String topKChild4QueryFile = filePrefix + "topAPP4QueryByTM.txt";
 		System.out.println("topic model rank");
 
 		try{

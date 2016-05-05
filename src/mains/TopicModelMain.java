@@ -51,7 +51,7 @@ public class TopicModelMain {
 		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP
-		String topicmodel = "LDA_APP"; 
+		String topicmodel = "APPLDA";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -64,8 +64,8 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 2000, gibbs_lag = 50;
-		int displayLap = 100;
+		int gibbs_iteration = 400, gibbs_lag = 20;
+		int displayLap = 20;
 //		gibbs_iteration = 20;
 //		gibbs_lag = 5;
 //		displayLap = 5;
@@ -292,21 +292,23 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("APPLDA")){
 				double ksi=800;
-				double tau=0.7;
-				beta = 1.001;
+				double tau = 0.5;
+				beta = 1.01;
 				int number_of_topics_description=300;
 				int number_of_topics_review = 30;
-				double alphaPrior = 0.01;
-				double alphaReview = 0.005;
-				double alphaOff = 0.005;
+				double alphaPrior = 1;
+				alpha = 50 / number_of_topics_description;
+				double alphaReview = alpha;
+				double alphaOff = 50 / number_of_topics_review;
 				double[] gamma = {0.5, 0.5};
-				double betaReview = 0.001;
+				double betaReview = 0.01;
 				
 				String queryFile = "./data/APP/queryID.txt";
 				analyzer.loadQuery(queryFile);
 				
-				model = new APPLDA(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics_description,
-						number_of_topics_review, alpha-1, burnIn, gibbs_lag, ksi, tau, 
+				model = new APPLDA(gibbs_iteration, 0, beta - 1, c, lambda,
+						number_of_topics_description, number_of_topics_review,
+						alpha, burnIn, gibbs_lag, ksi, tau,
 						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
 			}else if(topicmodel.equals("LDA_APP")){
 				double ksi=800;
