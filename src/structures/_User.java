@@ -194,4 +194,5 @@ public class _User {
 	public int[] getCategory(){
 		return m_category;
 	}
+
  }
