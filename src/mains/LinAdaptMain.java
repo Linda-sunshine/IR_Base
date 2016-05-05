@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncMTLinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithDiffFeatureGroups;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -15,11 +15,11 @@ public class LinAdaptMain {
 		int Ngram = 2; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		//this is for batch mode
-//		double trainRatio = 0, adaptRatio = 0.50;
+		double trainRatio = 0, adaptRatio = 0.50;
 		//this is for online mode
-		double trainRatio = 0, adaptRatio = 1.0;
+//		double trainRatio = 0, adaptRatio = 1.0;
 		int topKNeighbors = 20;
-		int displayLv = 0;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = .5, eta2 = .5, eta3 = .5, eta4 = .5, neighborsHistoryWeight = 0.5;
@@ -29,6 +29,7 @@ public class LinAdaptMain {
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
 		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
+		String featureGroupFileB = "./data/CoLinAdapt/CrossGroups_1600.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
@@ -72,7 +73,7 @@ public class LinAdaptMain {
 
 		
 		//Create an instance of asynchronized MT-LinAdapt model.
-		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+//		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		/** Added by lin for calling neighborhood learning.
 		//The entrance for calling the CoLinAdaptWithNeighborhoodLearning.
@@ -82,13 +83,19 @@ public class LinAdaptMain {
 		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
 		*/		
 
+		// Create an instance of CoLinAdapt with different feature groups for different classes.
+		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
+		adaptation.setGCoefficients(-0.5, 0.5);
+		adaptation.setR1TradeOffs(eta1/2, eta2/2);
+		adaptation.setR2TradeOffs(eta3/2, eta4/2);
+		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 
 		adaptation.setLNormFlag(true);
-		adaptation.setTestMode(TestMode.TM_online);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.setTestMode(TestMode.TM_batch);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();
 		adaptation.test();
