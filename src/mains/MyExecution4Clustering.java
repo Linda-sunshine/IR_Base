@@ -22,7 +22,6 @@ import Analyzer.jsonAnalyzer;
 import Classifier.metricLearning.L2RMetricLearning;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
-import Classifier.semisupervised.LCSReader;
 import Classifier.supervised.SVM;
 /**
  * @author Lin
