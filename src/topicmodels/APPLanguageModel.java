@@ -1,16 +1,16 @@
 package topicmodels;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 
-import com.sun.xml.internal.fastinfoset.algorithm.BuiltInEncodingAlgorithm.WordListener;
-
-import Analyzer.ParentChildAnalyzer;
 import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4APP;
@@ -20,6 +20,7 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Word;
 import utils.Utils;
+import Analyzer.ParentChildAnalyzer;
 
 public class APPLanguageModel extends languageModelBaseLine{
 	
@@ -150,7 +151,7 @@ public class APPLanguageModel extends languageModelBaseLine{
 		_SparseFeature[] pFv = pDoc.getSparse();
 		double descriptionLen = pDoc.getTotalDocLength();
 		
-		System.out.println("child num\t"+pDoc.m_childDocs.size());
+		System.out.println("child num\t" + pDoc.m_childDocs.size());
 		_ChildDoc4APP cDoc4app = null;
 		for(_ChildDoc cDoc:pDoc.m_childDocs)
 			cDoc4app = (_ChildDoc4APP)cDoc;
@@ -274,16 +275,21 @@ public class APPLanguageModel extends languageModelBaseLine{
 			rootFolder.mkdir();
 		}
 		
-		Calendar today = Calendar.getInstance();
-		String filePrefix = String.format("./data/results/%s-%s-%s%s-%s", today.get(Calendar.MONTH), today.get(Calendar.DAY_OF_MONTH), 
-						today.get(Calendar.HOUR_OF_DAY), today.get(Calendar.MINUTE), topicmodel);
-		
+		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");
+		String filePrefix = String.format("./data/results/%s",
+				dateFormatter.format(new Date()));
+		filePrefix = filePrefix + "-" + topicmodel + "-" + articleType;
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
 			System.out.println("creating directory" + resultFolder);
 			resultFolder.mkdir();
 		}
-		
+
+		String outputFile = filePrefix + "/consoleOutput.txt";
+		PrintStream printStream = new PrintStream(new FileOutputStream(
+				outputFile));
+		System.setOut(printStream);
+
 		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
 		String topWordPath = filePrefix + "/topWords.txt";
