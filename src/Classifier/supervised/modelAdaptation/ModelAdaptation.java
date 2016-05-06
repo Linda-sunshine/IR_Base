@@ -131,7 +131,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								if (j == i+core)
 									continue;
 								uj = (CoAdaptStruct)(m_userList.get(j));
-								if(Utils.dotProduct(ui.getUser().getCategory(), uj.getUser().getCategory())>0)
+//								if(Utils.dotProduct(ui.getUser().getCategory(), uj.getUser().getCategory())>0)
 									ui.addNeighbor(j, ui.getSimilarity(uj, sType));
 							}
 						}

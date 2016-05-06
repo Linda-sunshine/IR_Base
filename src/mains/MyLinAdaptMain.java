@@ -18,6 +18,7 @@ import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithDiffFeatureGroups;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithR2OverWeights;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
@@ -32,12 +33,12 @@ public class MyLinAdaptMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
-		int topKNeighbors = 200;
+		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.03;
 
-		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.05, neighborsHistoryWeight = 0.5;
+		double eta1 = 1, eta2 = 0.5, eta3 = 1, eta4 = 0.05, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
@@ -86,14 +87,17 @@ public class MyLinAdaptMain {
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		
 		// Create an instance of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
 		// Create an instance of CoLinAdapt with different feature groups for different classes.
 //		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
+		
+		// Create an instance of CoLinAdaptWithR2OverWeights.
+		CoLinAdaptWithR2OverWeights adaptation = new CoLinAdaptWithR2OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
 		// Create an instance of MTCoLinAdapt model.
 //		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
-		// Create an instance of CoLinAdapt with different feature groups for different classes.
-//		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);

@@ -184,7 +184,6 @@ public class CoLinAdapt extends LinAdapt {
 			do{
 				fValue = 0;
 				Arrays.fill(m_g, 0); // initialize gradient				
-				
 				// accumulate function values and gradients from each user
 				for(int i=0; i<m_userList.size(); i++) {
 					user = (_LinAdaptStruct)m_userList.get(i);

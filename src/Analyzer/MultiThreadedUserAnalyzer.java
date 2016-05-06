@@ -133,8 +133,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				category = reader.readLine(); // review category
 				if(m_categories.contains(category))
 					categories[m_categories.indexOf(category)] = 1;
-				else
-					System.out.println("Bug");
+				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
 

@@ -96,7 +96,7 @@ public class LBFGS {
 	  * <code>gtol</code> should be greater than 1e-4.
 	  */
 
-	public static double gtol = 0.5;
+	public static double gtol = 0.9;
 
 	/** Specify lower bound for the step in the line search.
 	  * The default value is 1e-20. This value need not be modified unless
