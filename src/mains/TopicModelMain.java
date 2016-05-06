@@ -1,13 +1,13 @@
 package mains;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
-import structures._APPQuery;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.APPACCTM_C;
@@ -54,7 +54,8 @@ public class TopicModelMain {
 		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP
-		String topicmodel = "LDA_APPMerged";
+
+		String topicmodel = "APPLDA";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -134,6 +135,11 @@ public class TopicModelMain {
 			System.out.println("creating directory" + resultFolder);
 			resultFolder.mkdir();
 		}
+		
+		String outputFile = filePrefix + "/consoleOutput.txt";
+		PrintStream printStream = new PrintStream(new FileOutputStream(
+				outputFile));
+		System.setOut(printStream);
 		
 		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
