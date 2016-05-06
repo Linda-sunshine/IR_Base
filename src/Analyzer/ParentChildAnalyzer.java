@@ -121,6 +121,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		if (AnalyzeDoc(d)){
 			parentHashMap.put(name, d);
 //			System.out.println("parent name\t"+name);
+		}else{
+			System.out.println("parent name\t"+name+"\t remove");
 		}
 	}
 	
@@ -354,5 +356,13 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		System.out.println("after filtering\t"+m_corpus.getSize());
 
+	}
+	
+	public void searchAPP(String query){
+		for(_Doc d:m_corpus.getCollection()){
+			if(d.getTitle().equals(query)){
+				System.out.println(query+"\t"+d.getName());
+			}
+		}
 	}
 }

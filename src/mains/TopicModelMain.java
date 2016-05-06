@@ -54,7 +54,7 @@ public class TopicModelMain {
 		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP
-		String topicmodel = "APPLDA";
+		String topicmodel = "LDA_APPMerged";
 
 		String category = "tablet";
 		int number_of_topics = 30;

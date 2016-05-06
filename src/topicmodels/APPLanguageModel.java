@@ -53,6 +53,7 @@ public class APPLanguageModel extends languageModelBaseLine{
 	
 	protected void generateReferenceModel(){
 		m_allWordFrequencyInDescription = 0;
+		m_allWordFrequencyInReview = 0;
 		
 		for(_Doc d:m_corpus.getCollection()){
 			if(d instanceof _ParentDoc){
@@ -326,13 +327,17 @@ public class APPLanguageModel extends languageModelBaseLine{
 		String queryFile = "./data/APP/queryID.txt";
 		analyzer.loadQuery(queryFile);
 		
+		String queryAPP = "inrix.android.ui";
+	
+		analyzer.searchAPP(queryAPP);
 		double muDscription = 1000;
 		double muReview = 300;
 		double eta = 0.4;
-		APPLanguageModel lm = new APPLanguageModel(c, muDscription, muReview, eta, analyzer.m_Queries);
-		lm.generateReferenceModel();
-		lm.printTopAPP4Query(filePrefix);
+//		APPLanguageModel lm = new APPLanguageModel(c, muDscription, muReview, eta, analyzer.m_Queries);
+//		lm.generateReferenceModel();
+//		lm.printTopAPP4Query(filePrefix);
 
 	}
+	
 	
 }
