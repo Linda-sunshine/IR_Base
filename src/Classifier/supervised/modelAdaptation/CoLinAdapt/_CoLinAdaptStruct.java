@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import Classifier.supervised.modelAdaptation.CoAdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;
@@ -109,5 +110,12 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		
 		int offset = m_id * m_dim * 2;
 		sharedA[offset+gid] = value;
+	}
+	@Override
+	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+		if (sType == SimType.ST_BoW)
+			return user.getUser().getBoWSimBaseSVMWeights(m_user);
+		else
+			return 0;
 	}
 }

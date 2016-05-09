@@ -1,6 +1,7 @@
 package structures;
 
 public class CoLinAdaptParameter {
+	public String m_data = "Amazon";
 	public double m_eta1 = 0.5; // Coefficient for scale, a4r1.
 	public double m_eta2 = 0.5; // Coefficient for shift, b4r1.
 	public double m_eta3 = 0.5; // Coefficient for scale, a4r2.
@@ -27,6 +28,8 @@ public class CoLinAdaptParameter {
 				m_eta4 = Double.valueOf(argv[i]);
 			else if(argv[i-1].equals("-topK"))
 				m_topK = Integer.valueOf(argv[i]);
+			else if(argv[i-1].equals("-data"))
+				m_data = argv[i];
 			else
 				exit_with_help();
 		}

@@ -3,10 +3,15 @@
  */
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.CoAdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import LBFGS.LBFGS;
@@ -14,6 +19,7 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._User;
+import utils.Utils;
 
 /**
  * @author Hongning Wang
@@ -84,6 +90,23 @@ public class CoLinAdapt extends LinAdapt {
 		
 		//step 2: construct neighborhood graph
 		constructNeighborhood(m_sType);
+
+//		// Print out similarity.
+//		PrintWriter writer;
+//		try {
+//			writer = new PrintWriter(new File("constrain_sim.txt"));
+//			for(_AdaptStruct u: m_userList){
+//				_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
+//				if(ui.getNeighbors().size() < 200)
+//					System.out.println("Smaller than 200!!"+ui.getUserID());
+//				for(_RankItem nit: ui.getNeighbors())
+//					writer.write(nit.m_value+",");
+//				writer.write("\n");
+//			}
+//			writer.close();
+//		} catch (FileNotFoundException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
 	//this will be only called once in CoLinAdapt
@@ -98,9 +121,12 @@ public class CoLinAdapt extends LinAdapt {
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
 		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
-		
+		double simSum = 0;
+			
 		//R2 regularization
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		for(_RankItem nit: ui.getNeighbors())
+			simSum += nit.m_value;
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
@@ -110,9 +136,9 @@ public class CoLinAdapt extends LinAdapt {
 				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
 			}
 			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
+//			R2 += 0.1 * (m_eta3*diffA + m_eta4*diffB);
+//			R2 += (nit.m_value / simSum) * (m_eta3*diffA + m_eta4*diffB);
 		}
-		if(getAdaptationSize(ui) > 15)
-			R2 /= 10;
 		return fValue + R2;
 	}
 	
@@ -126,16 +152,17 @@ public class CoLinAdapt extends LinAdapt {
 	protected void gradientByR2(_AdaptStruct user){		
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)user, uj;
 		int offseti = m_dim*2*ui.getId(), offsetj;
-		double coef, dA, dB;
+		double coef, dA, dB, simSum = 0;
 		
+		for(_RankItem nit: ui.getNeighbors())
+			simSum += nit.m_value;
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			offsetj = m_dim*2*uj.getId();
 			coef = 2 * nit.m_value;
+//			coef = 2 * 0.1;
+//			coef = 2 * nit.m_value/simSum;
 
-			if(getAdaptationSize(ui) > 15)
-				coef /=5;
-			
 			for(int k=0; k<m_dim; k++) {
 				dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
 				dB = coef * m_eta4 * (ui.getShifting(k) - uj.getShifting(k));
@@ -190,13 +217,6 @@ public class CoLinAdapt extends LinAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
-				
-				//added by Lin for stopping lbfgs.
-				double curMag = gradientTest();
-//				if(Math.abs(oldMag -curMag)<0.1) 
-//					break;
-				oldMag = curMag;
-				
 				if (m_displayLv==2) {
 					gradientTest();
 					System.out.println("Fvalue is " + fValue);

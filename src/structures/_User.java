@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -26,7 +27,16 @@ public class _User {
 	protected int m_classNo;
 	protected int m_featureSize;
 	protected int[] m_category;
+	protected double[] m_svmWeights;
 	
+	public void setSVMWeights(double[] weights){
+		m_svmWeights = new double[weights.length];
+		m_svmWeights = Arrays.copyOf(weights, weights.length);
+	}
+	
+	public double[] getSVMWeights(){
+		return m_svmWeights;
+	}
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
@@ -114,6 +124,10 @@ public class _User {
 	
 	public double getBoWSim(_User u) {
 		return Utils.cosine(m_BoWProfile, u.getBoWProfile());
+	}
+	
+	public double getBoWSimBaseSVMWeights(_User u){
+		return Utils.cosine(m_svmWeights, u.getSVMWeights());
 	}
 	
 	public double getSVDSim(_User u) {

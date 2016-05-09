@@ -116,11 +116,10 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void constructNeighborhood(final SimType sType) {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
-				
+
 				@Override
 				public void run() {
 					CoAdaptStruct ui, uj;
