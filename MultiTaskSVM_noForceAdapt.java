@@ -60,6 +60,11 @@ public class MultiTaskSVM extends ModelAdaptation {
 	}
 	
 	@Override
+	protected void init(){
+		m_userSize = m_userList.size();
+	}
+	
+	@Override
 	public double train() {
 		init();
 		
@@ -68,23 +73,39 @@ public class MultiTaskSVM extends ModelAdaptation {
 		ArrayList<Feature []> fvs = new ArrayList<Feature []>();
 		ArrayList<Double> ys = new ArrayList<Double>();		
 		
+//		//Two for loop to access the reviews, indexed by users.
+//		ArrayList<_Review> reviews;
+//		for(_AdaptStruct user:m_userList){
+//			reviews = user.getReviews();		
+//			boolean validUser = false;
+//			for(_Review r:reviews) {				
+//				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
+//					fvs.add(createLibLinearFV(r, validUserIndex));
+//					ys.add(new Double(r.getYLabel()));
+//					trainSize ++;
+//					validUser = true;
+//				}
+//			}
+//			
+//			if (validUser)
+//				validUserIndex ++;
+//		}
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
 		for(_AdaptStruct user:m_userList){
-			reviews = user.getReviews();		
-			boolean validUser = false;
-			for(_Review r:reviews) {				
+			reviews = user.getReviews();	
+			for(_Review r:reviews) {
 				if (r.getType() == rType.ADAPTATION) {//we will only use the adaptation data for this purpose
 					fvs.add(createLibLinearFV(r, validUserIndex));
 					ys.add(new Double(r.getYLabel()));
 					trainSize ++;
-					validUser = true;
+					if(trainSize == 27578)
+						System.out.println("Bug here!");
 				}
 			}
-			
-			if (validUser)
-				validUserIndex ++;
+			validUserIndex ++;
 		}
+		System.out.println(validUserIndex);
 		// Train a liblinear model based on all reviews.
 		Problem libProblem = new Problem();
 		libProblem.l = trainSize;		

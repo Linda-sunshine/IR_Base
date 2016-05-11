@@ -25,7 +25,8 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	double m_initStepSize = 0.1;
 	int[] m_userOrder; // visiting order of different users during online learning
 	PrintWriter m_writer;
-	
+	int m_rptTime = 3, m_count = 0; // How many times the reviews will be used to update gradients.
+
 	public asyncCoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		
@@ -40,6 +41,10 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	
 	public void setInitStepSize(double initStepSize) {
 		m_initStepSize = initStepSize;
+	}
+	// Set the repeat time for the training.
+	public void setRPTTime(int t){
+		m_rptTime = t;
 	}
 	
 	@Override
@@ -105,6 +110,11 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	@Override
 	protected int getAdaptationSize(_AdaptStruct user) {
 		return user.getAdaptationCacheSize();
+	}
+	
+	// Repeat using the reviews k times. added by Lin.
+	public void resetRPTTime(){
+		m_count = m_rptTime;
 	}
 	
 	//this is online training in each individual user
@@ -174,13 +184,22 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	void gradientDescent(_CoLinAdaptStruct user, double initStepSize, double inc) {
 		double a, b, stepSize = asyncRegLR.getStepSize(initStepSize, user);
 		int offset = 2*m_dim*user.getId();
-		for(int k=0; k<m_dim; k++) {
-			a = user.getScaling(k) - stepSize * m_g[offset + k];
-			user.setScaling(k, a);
+		
+		//Added by Lin for reusing the reviews.
+		resetRPTTime();
+		while(m_count-- > 0){
+			for(int k=0; k<m_dim; k++) {
+				a = user.getScaling(k) - stepSize * m_g[offset + k];
+				user.setScaling(k, a);
 			
-			b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
-			user.setShifting(k, b);
+				b = user.getShifting(k) - stepSize * m_g[offset + k + m_dim];
+				user.setShifting(k, b);
+			}
+//			user.incUpdatedCount(inc);
+			
+			//update the record of updating history
+			if(m_count == 0)
+				user.incUpdatedCount(inc);
 		}
-		user.incUpdatedCount(inc);
 	}	
 }

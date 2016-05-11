@@ -102,8 +102,8 @@ public class RegLR extends ModelAdaptation {
 					L -= Utils.MAX_VALUE;
 			}
 		}
-		
 		return L/getAdaptationSize(user);
+//		return L/getAdaptationSize(user);
 	}
 	
 	//Calculate the function value of the new added instance.
@@ -130,7 +130,8 @@ public class RegLR extends ModelAdaptation {
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n; // feature index
 		int offset = (m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
+//		double delta = (review.getYLabel() - logit(review.getSparse(), user))/getAdaptationSize(user);
+		double delta = (review.getYLabel() - logit(review.getSparse(), user))/getAdaptationSize(user);
 
 		//Bias term.
 		m_g[offset] -= weight*delta; //a[0] = w0*x0; x0=1

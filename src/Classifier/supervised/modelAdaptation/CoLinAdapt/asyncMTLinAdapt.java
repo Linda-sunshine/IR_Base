@@ -169,7 +169,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		return user.getAdaptationCacheSize();
 	}
 	
-	// 
+	// Repeat using the reviews k times.
 	public void resetRPTTime(){
 		m_count = m_rptTime;
 	}
