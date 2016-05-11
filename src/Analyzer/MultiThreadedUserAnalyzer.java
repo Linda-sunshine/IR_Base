@@ -123,7 +123,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-			int[] categories = new int[m_categories.size()];
+//			int[] categories = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -133,8 +133,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-				if(m_categories.contains(category))
-					categories[m_categories.indexOf(category)] = 1;
+//				if(m_categories.contains(category))
+//					categories[m_categories.indexOf(category)] = 1;
 				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -160,8 +160,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
-					allocateReviews(reviews);				
-					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
+					allocateReviews(reviews);			
+					m_users.add(new _User(userID, m_classNo, reviews));
+//					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
 				}
 			}
 			reader.close();

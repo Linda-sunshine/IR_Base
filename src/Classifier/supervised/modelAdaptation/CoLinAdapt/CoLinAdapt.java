@@ -57,7 +57,7 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return 2*m_dim*m_userList.size();
 	}
 	
@@ -207,7 +207,6 @@ public class CoLinAdapt extends LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = getVSize(), displayCount = 0;
-		double oldMag = 0;
 		_LinAdaptStruct user;
 		
 		initLBFGS();
@@ -216,7 +215,6 @@ public class CoLinAdapt extends LinAdapt {
 			do{
 				fValue = 0;
 				Arrays.fill(m_g, 0); // initialize gradient				
-//				setPersonalizedModel();
 				// accumulate function values and gradients from each user
 				for(int i=0; i<m_userList.size(); i++) {
 					user = (_LinAdaptStruct)m_userList.get(i);
@@ -235,10 +233,8 @@ public class CoLinAdapt extends LinAdapt {
 					if (++displayCount%100==0)
 						System.out.println();
 				} 
-				oldFValue = fValue;
 				
 				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
-//				setPersonalizedModel();
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {

@@ -61,7 +61,7 @@ public class MyLinAdaptMain {
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadCategory("category.txt");
+//		analyzer.loadCategory("category.txt");
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -110,7 +110,7 @@ public class MyLinAdaptMain {
 //		adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
-//		adaptation.saveModel("data/results/colinadapt");
+//		//adaptation.saveModel("data/results/colinadapt");
 
 		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
@@ -118,7 +118,6 @@ public class MyLinAdaptMain {
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
-//		mtsvm.saveModel("./data/models/mtsvm_0.5/");
-	
+//		//mtsvm.saveModel("./data/models/mtsvm_0.5/");
 	}
 }

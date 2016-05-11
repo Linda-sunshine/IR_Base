@@ -56,7 +56,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return getASize() + getBSize();
 	} 
 	
