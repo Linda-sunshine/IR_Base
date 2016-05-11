@@ -16,8 +16,8 @@ import structures._SparseFeature;
 import structures._User;
 
 public class LinAdapt extends RegLR {
-	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
-	int[] m_featureGroupMap; // bias term is at position 0
+	protected int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
+	protected int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
 	double m_eta2; // weight for shifting in R2.
@@ -140,8 +140,10 @@ public class LinAdapt extends RegLR {
 		
 		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user)) / getAdaptationSize(user);
-
+		double delta = (review.getYLabel() - logit(review.getSparse(), user));
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
+		
 		//Bias term.
 		m_g[offset] -= weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
 		m_g[offset + m_dim] -= weight*delta;//b[0]

@@ -14,6 +14,7 @@ import structures._Review;
 import structures._User;
 import utils.Utils;
 import Analyzer.MultiThreadedUserAnalyzer;
+import Classifier.supervised.modelAdaptation.CoLinAdaptWithR1OverWeights;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
@@ -88,14 +89,17 @@ public class MyLinAdaptMain {
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		
 		// Create an instance of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
+		// Create an instance of CoLinAdaptWithR1OverWeights.
+		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+	
+		// Create an instance of CoLinAdaptWithR2OverWeights.
+//		CoLinAdaptWithR2OverWeights adaptation = new CoLinAdaptWithR2OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+	
 		// Create an instance of CoLinAdapt with different feature groups for different classes.
 //		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
 		
-		// Create an instance of CoLinAdaptWithR2OverWeights.
-//		CoLinAdaptWithR2OverWeights adaptation = new CoLinAdaptWithR2OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//		
 		// Create an instance of MTCoLinAdapt model.
 //		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 

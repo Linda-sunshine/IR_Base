@@ -29,7 +29,6 @@ public class MTLinAdapt extends CoLinAdapt {
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
-	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
 	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
 	
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 

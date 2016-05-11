@@ -27,8 +27,8 @@ import utils.Utils;
  */
 public class CoLinAdapt extends LinAdapt {
 
-	double m_eta3; // weight for scaling in R2.
-	double m_eta4; // weight for shifting in R2.
+	protected double m_eta3; // weight for scaling in R2.
+	protected double m_eta4; // weight for shifting in R2.
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
 	
@@ -91,22 +91,27 @@ public class CoLinAdapt extends LinAdapt {
 		//step 2: construct neighborhood graph
 		constructNeighborhood(m_sType);
 
-//		// Print out similarity.
-//		PrintWriter writer;
-//		try {
-//			writer = new PrintWriter(new File("constrain_sim.txt"));
-//			for(_AdaptStruct u: m_userList){
-//				_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-//				if(ui.getNeighbors().size() < 200)
-//					System.out.println("Smaller than 200!!"+ui.getUserID());
-//				for(_RankItem nit: ui.getNeighbors())
-//					writer.write(nit.m_value+",");
-//				writer.write("\n");
-//			}
-//			writer.close();
-//		} catch (FileNotFoundException e) {
-//			e.printStackTrace();
-//		}
+		// Print out similarity.
+//		printSimilarity();
+	}
+	
+	public void printSimilarity(){
+		// Print out similarity.
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(new File("constrain_sim.txt"));
+			for(_AdaptStruct u: m_userList){
+				_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
+				if(ui.getNeighbors().size() < 200)
+					System.out.println("Smaller than 200!!"+ui.getUserID());
+				for(_RankItem nit: ui.getNeighbors())
+					writer.write(nit.m_value+",");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	//this will be only called once in CoLinAdapt
@@ -120,10 +125,15 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
-		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
-			
+		double fValue = super.calculateFuncValue(u);
+		double R2 = calculateR2(u);
+		return fValue + R2;
+	}
+	
+	public double calculateR2(_AdaptStruct u){
 		//R2 regularization
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		double R2 = 0, diffA, diffB;
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
@@ -136,59 +146,14 @@ public class CoLinAdapt extends LinAdapt {
 //			R2 += 0.1 * (m_eta3*diffA + m_eta4*diffB);
 //			R2 += (nit.m_value / simSum) * (m_eta3*diffA + m_eta4*diffB);
 		}
-		return fValue + R2;
+		return R2;
 	}
-	
-//	@Override
-//	protected double calculateFuncValue(_AdaptStruct u){
-//		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
-//		
-//		double L = calcLogLikelihood(ui); //log likelihood.
-//		double R1 = 0, R2 = 0, diffA, diffB;
-//		
-//		//R1 regularization.
-//		for(int i=0; i<ui.getPWeights().length; i++){
-//			R1 += m_eta1 * Utils.EuclideanDistance(ui.getPWeights(), m_gWeights);
-//		}
-//		
-//		//R2 regularization
-//		for(_RankItem nit:ui.getNeighbors()) {
-//			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-//			diffA = 0;
-//			diffB = 0;
-//			for(int k=0; k<m_dim; k++) {
-//				diffA += (ui.getScaling(k) - uj.getScaling(k)) * (ui.getScaling(k) - uj.getScaling(k));
-//				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
-//			}
-//			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
-////			R2 += 0.1 * (m_eta3*diffA + m_eta4*diffB);
-////			R2 += (nit.m_value / simSum) * (m_eta3*diffA + m_eta4*diffB);
-//		}
-//		return R1 + R2 - L;
-//	}
-	
+
 	@Override
 	protected void calculateGradients(_AdaptStruct u){
 		super.calculateGradients(u);
 		gradientByR2(u);
 	}
-	
-//	//Calculate the gradients for the use in LBFGS.
-//	@Override
-//	protected void gradientByR1(_AdaptStruct u){
-//		_CoLinAdaptStruct user = (_CoLinAdaptStruct)u;
-//		double dA, dB;
-//		int k, offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-//		//R1 regularization part
-//		for(int n=0; n<m_featureSize+1; n++){
-//			k = m_featureGroupMap[n];
-//			dA = m_eta1 * (user.getPWeights()[n] - m_gWeights[n]) * m_gWeights[n];
-//			dB = m_eta1 * (user.getPWeights()[n] - m_gWeights[n]);
-//			
-//			m_g[offset + k] += dA;
-//			m_g[offset + k] += dB;
-//		}
-//	}
 	
 	//Calculate the gradients for the use in LBFGS.
 	protected void gradientByR2(_AdaptStruct user){		
