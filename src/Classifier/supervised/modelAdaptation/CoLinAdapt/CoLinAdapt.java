@@ -31,7 +31,7 @@ public class CoLinAdapt extends LinAdapt {
 	protected double m_eta4; // weight for shifting in R2.
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
-	
+	ArrayList<Double> m_diffs; // record the difference between colinadapt and mtsvm.
 	public CoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
 		m_eta3 = 0.5;
@@ -208,7 +208,7 @@ public class CoLinAdapt extends LinAdapt {
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int vSize = getVSize(), displayCount = 0;
 		_LinAdaptStruct user;
-		
+		m_diffs = new ArrayList<Double>();
 		initLBFGS();
 		init();
 		try{
@@ -235,6 +235,7 @@ public class CoLinAdapt extends LinAdapt {
 				} 
 				
 				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+				m_diffs.add(calculateDifference());
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {
@@ -244,5 +245,44 @@ public class CoLinAdapt extends LinAdapt {
 		
 		setPersonalizedModel();
 		return oldFValue;
+	}
+	
+	// added by Lin for accumulating R2.
+	public double accumulateR2(){
+		double sum = 0;
+		for(_AdaptStruct u: m_userList){
+			sum += calcuateR2OverSVMWeights(u);
+		}
+		return sum;
+	}
+	
+	public double calcuateR2OverSVMWeights(_AdaptStruct u){
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) u, uj;
+		double R2 = 0, diff = 0;
+//		double sum = 0; 
+//		for(_RankItem nit: ui.getNeighbors()){
+//			sum += nit.m_value;
+//		}
+		// R2 regularization over the weights of users.
+		for(_RankItem nit: ui.getNeighbors()){
+			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
+			diff = Utils.EuclideanDistance(ui.getUser().getSVMWeights(), uj.getUser().getSVMWeights());
+//			R2 += nit.m_value * m_eta3 * diff/sum;
+			R2 += diff;
+		}
+		return R2;
+	}
+	
+	public double calculateDifference(){
+		setPersonalizedModel();
+		double diff = 0;
+		for(_AdaptStruct u: m_userList){
+			diff += Utils.EuclideanDistance(u.getPWeights(), u.getUser().getSVMWeights());
+		}
+		return diff;
+	}
+	
+	public ArrayList<Double> getDiffs(){
+		return m_diffs;
 	}
 }

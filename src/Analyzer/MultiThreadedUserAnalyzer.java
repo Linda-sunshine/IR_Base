@@ -155,7 +155,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			
 			// Added by Lin for debugging.
 			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
-//			if(reviews.size() > 1){	
+				//&& (reviews.size() <= 10
 				if( localAvg > m_maxLen)
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;

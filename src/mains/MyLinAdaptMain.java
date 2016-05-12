@@ -34,13 +34,13 @@ public class MyLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.25;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 200;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
 
-		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1, neighborsHistoryWeight = 0.5;
+		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
@@ -50,15 +50,17 @@ public class MyLinAdaptMain {
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String model = String.format("./data/model/mtsvm_0.5/");
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-			
+//		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
+
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -66,7 +68,9 @@ public class MyLinAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//		analyzer.loadUserWeights("./data/models/mtsvm_0.5/", "classifer");
+		
+		analyzer.loadUserWeights(model, "classifer");
+		
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
 //		analyzer.loadSVDFile(svdFile);
@@ -90,7 +94,7 @@ public class MyLinAdaptMain {
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
 		
 		// Create an instance of CoLinAdapt model.
-//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 		// Create an instance of CoLinAdaptWithR1OverWeights.
 //		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -105,22 +109,32 @@ public class MyLinAdaptMain {
 //		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 		// Create an instance of LinAdaptOverall.
-		LinAdaptOverall adaptation = new LinAdaptOverall(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+//		LinAdaptOverall adaptation = new LinAdaptOverall(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.setR2TradeOffs(eta3, eta4);
 //		adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
-//		//adaptation.saveModel("data/results/colinadapt");
+
+		PrintWriter writer = new PrintWriter(new File("diff.txt"));
+		for(double d: adaptation.getDiffs())
+			writer.write(d+"\n");
+		writer.close();
+		
+//		adaptation.saveModel("data/results/colinadapt");
+//		
+//		// Clear the performance.
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 
 		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
-//		//mtsvm.saveModel("./data/models/mtsvm_0.5/");
+//		mtsvm.saveModel("./data/models/mtsvm_0.5/");
 	}
 }

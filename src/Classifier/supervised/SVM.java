@@ -165,7 +165,7 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public double train(Collection<_Doc> trainSet) {
-		m_libModel = libSVMTrain(trainSet, 1+m_featureSize, m_type, m_C, 1);
+		m_libModel = libSVMTrain(trainSet, m_featureSize, m_type, m_C, 0);
 		return 0;
 	}
 	
@@ -235,5 +235,10 @@ public class SVM extends BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	// Aded by Lin for access the learned weights.
+	public double[] getWeights(){
+		return m_libModel.getWeights();
 	}
 }
