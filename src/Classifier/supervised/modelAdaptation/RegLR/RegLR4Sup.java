@@ -83,7 +83,9 @@ public class RegLR4Sup extends RegLR {
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n; // feature index
 		double delta = (review.getYLabel() - logit(review.getSparse(), user))/getAdaptationSize(user);
-
+		if(!m_LNormFlag)
+			delta *= getAdaptationSize(user);
+		
 		//Bias term.
 		m_g[0] -= weight*delta; //a[0] = w0*x0; x0=1
 

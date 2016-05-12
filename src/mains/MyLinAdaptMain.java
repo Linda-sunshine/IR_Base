@@ -21,6 +21,7 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithDiffFeatureGroups;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithR2OverWeights;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdaptOverall;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
@@ -92,7 +93,7 @@ public class MyLinAdaptMain {
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 		// Create an instance of CoLinAdaptWithR1OverWeights.
-		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 	
 		// Create an instance of CoLinAdaptWithR2OverWeights.
 //		CoLinAdaptWithR2OverWeights adaptation = new CoLinAdaptWithR2OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -103,10 +104,12 @@ public class MyLinAdaptMain {
 		// Create an instance of MTCoLinAdapt model.
 //		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
+		// Create an instance of LinAdaptOverall.
+		LinAdaptOverall adaptation = new LinAdaptOverall(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 //		adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
