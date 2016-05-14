@@ -1,12 +1,9 @@
 package clustering;
 
 import java.util.ArrayList;
-import cc.mallet.cluster.Clustering;
-import cc.mallet.cluster.KMeans;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
-import cc.mallet.types.InstanceList;
 import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
 
@@ -68,7 +65,7 @@ public class KMeansAlg4Vct {
 		for(int i=0; i<m_weights[0].length; i++)
 			m_instances.add(new Instance(createInstance(m_fvInstances[i]), null, null, m_fvInstances[i]));
 		
-		KMeans alg = new KMeans(m_instances.getPipe(), m_k, m_distance);
+		KMeans alg = new KMeans(m_instances.getPipe(), m_k, m_distance, KMeans.EMPTY_DROP);
 		Clustering result = alg.cluster(m_instances);	
 		m_centroids = alg.getClusterMeans();
 		m_clusters = result.getClusters();
@@ -87,12 +84,16 @@ public class KMeansAlg4Vct {
 	public int[] getClusters(){
 		int[] clusterNos = new int[m_instances.size()];
 		fvInstance tmp;
-		for(int i=0; i<m_k; i++){
+		for(int i=0; i<m_clusters.length; i++){
 			for(Instance ins: m_clusters[i]){
 				tmp = (fvInstance)ins.getSource();
 				clusterNos[tmp.m_index] = i;
 			}
 		}
 		return clusterNos;
+	}
+	
+	public int getClusterSize(){
+		return m_clusters.length;
 	}
 }

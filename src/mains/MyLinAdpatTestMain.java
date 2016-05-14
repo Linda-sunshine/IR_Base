@@ -48,12 +48,16 @@ public class MyLinAdpatTestMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 //		analyzer.loadUserWeights("./data/models/mtsvm_0.5/", "classifer");
+		int[] kFolds = new int[]{100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+		int[] kMeans = new int[]{200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1300, 1400, 1500, 1600};
+		for(int kFold: kFolds){
+			for(int kMean: kMeans){
+				CrossFeatureSelection fs = new CrossFeatureSelection(analyzer.getCorpus(), classNumber, analyzer.getFeatureSize(), kFold, kMean);
+				fs.train();
+				fs.kMeans();
+			}
+		}
 		
-		int kFold = 100, kMeans = 400;
-		CrossFeatureSelection fs = new CrossFeatureSelection(analyzer.getCorpus(), classNumber, analyzer.getFeatureSize(), kFold, kMeans);
-		fs.train();
-		fs.kMeans();
-		fs.writeResults();
 		
 		// Create an instance of CoLinAdapt model.
 //		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);

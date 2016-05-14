@@ -119,11 +119,11 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 //			return 0;
 //	}
 	
-//	@Override
-//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
-//		if (sType == SimType.ST_BoW)
-//			return Math.random();
-//		else
-//			return 0;
-//	}
+	@Override
+	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+		if (sType == SimType.ST_BoW)
+			return Math.random();
+		else
+			return 0;
+	}
 }

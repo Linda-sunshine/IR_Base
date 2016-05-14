@@ -13,6 +13,7 @@ import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._User;
 import utils.Utils;
+import Analyzer.CrossFeatureSelection;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.CoLinAdaptWithR1OverWeights;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
@@ -34,31 +35,32 @@ public class MyLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.25;
 		int topKNeighbors = 200;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-//		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
+		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
 
-		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
+//		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 //		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		String model = String.format("./data/model/mtsvm_0.5/");
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+////		String featureGroupFile = "./CrossFeatures.txt";
+////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String model = String.format("./data/model/mtsvm_0.5/");
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
 
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
@@ -69,7 +71,7 @@ public class MyLinAdaptMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-		analyzer.loadUserWeights(model, "classifer");
+//		analyzer.loadUserWeights(model, "classifer");
 		
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
@@ -92,7 +94,16 @@ public class MyLinAdaptMain {
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
-		
+//		int[] kFolds = new int[]{100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
+//		int[] kMeans = new int[]{200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1300, 1400, 1500, 1600};
+//		for(int kFold: kFolds){
+//			for(int kMean: kMeans){
+//		
+//		CrossFeatureSelection fs = new CrossFeatureSelection(analyzer.getCorpus(), classNumber, analyzer.getFeatureSize(), kFold, kMean);
+//		fs.train();
+//		fs.kMeans();
+//		
+//		String featureGroupFile = fs.getFilename();
 		// Create an instance of CoLinAdapt model.
 		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
@@ -118,11 +129,14 @@ public class MyLinAdaptMain {
 //		adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		}}
 
-		PrintWriter writer = new PrintWriter(new File("diff.txt"));
-		for(double d: adaptation.getDiffs())
-			writer.write(d+"\n");
-		writer.close();
+//		PrintWriter writer = new PrintWriter(new File("diff.txt"));
+//		for(double d: adaptation.getDiffs())
+//			writer.write(d+"\n");
+//		writer.close();
 		
 //		adaptation.saveModel("data/results/colinadapt");
 //		

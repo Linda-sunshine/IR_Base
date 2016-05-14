@@ -7,22 +7,28 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
+import structures._Review.rType;
 import structures._RankItem;
 import structures._Review;
+import structures._UserReviewPair;
 
 /**
  * @author Hongning Wang
  * asynchronized CoLinAdapt with zero order gradient update, i.e., we will only touch the current user's gradient
  */
 public class asyncCoLinAdapt extends CoLinAdapt {
-	double m_initStepSize = 0.1;
+	double m_initStepSize = 0.01;
+	boolean m_trainByUser = false; // by default we will perform online training by review timestamp; otherwise we will do it by user. 
+
 	int[] m_userOrder; // visiting order of different users during online learning
 	PrintWriter m_writer;
 	int m_rptTime = 3, m_count = 0; // How many times the reviews will be used to update gradients.
@@ -45,6 +51,13 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	// Set the repeat time for the training.
 	public void setRPTTime(int t){
 		m_rptTime = t;
+	}
+	
+	public void resetRPTTime(){
+		m_count = m_rptTime;
+	}
+	public void setTrainByUser(boolean b){
+		m_trainByUser = b;
 	}
 	
 	@Override
@@ -111,17 +124,90 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 	protected int getAdaptationSize(_AdaptStruct user) {
 		return user.getAdaptationCacheSize();
 	}
-	
-	// Repeat using the reviews k times. added by Lin.
-	public void resetRPTTime(){
-		m_count = m_rptTime;
-	}
-	
+
 	//this is online training in each individual user
 	@Override
 	public double train(){
+		initLBFGS();
+		init();
+		
+		if (m_trainByUser)
+			trainByUser();
+		else
+			trainByReview();
+		
+		setPersonalizedModel();
+		return 0;//we do not evaluate function value
+	}
+	
+	
+	public void trainByReview(){
+		LinkedList<_UserReviewPair> reviewlist = new LinkedList<_UserReviewPair>();
+		
 		double gNorm, gNormOld = Double.MAX_VALUE;
-		int updateCount = 0;
+		int predL, trueL, counter = 0;
+		_Review doc;
+		double val = 0;
+		_CoLinAdaptStruct user;
+		_PerformanceStat perfStat;
+		
+		try{
+		m_writer = new PrintWriter(new File(String.format("CoLinAdapt_OnlineByReview_%d.txt", m_rptTime)));
+		//collect the training/adaptation data
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_CoLinAdaptStruct)m_userList.get(i);
+			for(_Review r:user.getReviews()) {
+				if (r.getType() == rType.ADAPTATION || r.getType() == rType.TRAIN)
+					reviewlist.add(new _UserReviewPair(user, r));//we will only collect the training or adaptation reviews
+			}
+		}
+		
+		//sort them by timestamp
+		Collections.sort(reviewlist);
+		
+		for(_UserReviewPair pair:reviewlist) {
+			user = (_CoLinAdaptStruct)pair.getUser();
+			// test the latest model before model adaptation
+			if (m_testmode != TestMode.TM_batch) {
+				doc = pair.getReview();
+				perfStat = user.getPerfStat();
+				val = logit(doc.getSparse(), user);
+				predL = predict(doc, user);
+				trueL = doc.getYLabel();
+				perfStat.addOnePredResult(predL, trueL);
+				m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
+			}// in batch mode we will not accumulate the performance during adaptation	
+			
+			// prepare to adapt: initialize gradient	
+			Arrays.fill(m_g, 0); 
+			calculateGradients(user);
+			gNorm = gradientTest(user);
+			
+			if (m_displayLv==1) {
+				if (gNorm<gNormOld)
+					System.out.print("o");
+				else
+					System.out.print("x");
+			}
+			
+			//gradient descent
+			gradientDescent(user, m_initStepSize, 1.0);
+			//gradientDescent(user, asyncLinAdapt.getStepSize(initStepSize, user));
+			gNormOld = gNorm;
+			
+			if (m_displayLv>0 && ++counter%100==0)
+				System.out.println();
+		}
+		m_writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	//this is online training in each individual user
+	public void trainByUser(){
+		double gNorm, gNormOld = Double.MAX_VALUE;
+		int counter = 0;
 		_CoLinAdaptStruct user;
 		int predL, trueL;
 		_Review doc;
@@ -130,7 +216,7 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 		initLBFGS();
 		init();
 		try{
-		m_writer = new PrintWriter(new File("CoLinAdapt_online.txt"));
+		m_writer = new PrintWriter(new File(String.format("CoLinAdapt_OnlineByUser_%d.txt", m_rptTime)));
 
 		for(int t=0; t<m_userOrder.length; t++) {
 			user = (_CoLinAdaptStruct)m_userList.get(m_userOrder[t]);
@@ -144,7 +230,6 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 					trueL = doc.getYLabel();
 					perfStat.addOnePredResult(predL, trueL);
 					m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
-
 				} // in batch mode we will not accumulate the performance during adaptation			
 				
 				// prepare to adapt: initialize gradient	
@@ -164,20 +249,14 @@ public class asyncCoLinAdapt extends CoLinAdapt {
 				//gradientDescent(user, asyncLinAdapt.getStepSize(initStepSize, user));
 				gNormOld = gNorm;
 				
-				if (m_displayLv>0 && ++updateCount%100==0)
+				if (m_displayLv>0 && ++counter%100==0)
 					System.out.println();
 			}			
 		}
-		
-		if (m_displayLv>0)
-			System.out.println();
-		
-		setPersonalizedModel();		
 		m_writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
 		}
-		return 0; // we do not evaluate function value
 	}
 		
 	// update this current user only

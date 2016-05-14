@@ -235,7 +235,7 @@ public class CoLinAdapt extends LinAdapt {
 				} 
 				
 				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
-				m_diffs.add(calculateDifference());
+//				m_diffs.add(calculateDifference());
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {

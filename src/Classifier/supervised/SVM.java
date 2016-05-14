@@ -165,7 +165,7 @@ public class SVM extends BaseClassifier {
 	
 	@Override
 	public double train(Collection<_Doc> trainSet) {
-		m_libModel = libSVMTrain(trainSet, m_featureSize, m_type, m_C, 0);
+		m_libModel = libSVMTrain(trainSet, m_featureSize, m_type, m_C, -1);
 		return 0;
 	}
 	

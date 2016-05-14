@@ -45,7 +45,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_personalized;
 
 	// Decide if we will normalize the likelihood.
-	protected boolean m_LNormFlag;
+	protected boolean m_LNormFlag = true;
 	
 	public void setPersonlized(boolean b){
 		m_personalized = b;

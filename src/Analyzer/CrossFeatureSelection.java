@@ -1,8 +1,11 @@
 package Analyzer;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import clustering.KMeansAlg4Vct;
@@ -55,24 +58,37 @@ public class CrossFeatureSelection {
 	// Train classifiers based on the splited training documents.
 	public void train(){
 		splitCorpus();
-		m_weights = new double[m_kFold][];
-		m_classifier = new SVM(m_classNo, m_featureSize, m_C);
+		m_weights = new double[m_kFold][];		
 		for(int i=0; i < m_trainSets.size(); i++){
+			m_classifier = new SVM(m_classNo, m_featureSize, m_C);
 			m_classifier.train(m_trainSets.get(i));
 			m_weights[i] = ((SVM) m_classifier).getWeights();
 		}
 		System.out.println(String.format("[Info]Finish training %d folds data!", m_kFold));
 	}
-	
+	String m_filename;
 	// Perform k-means on the features based on learned weights.
 	public void kMeans(){
 		KMeansAlg4Vct kmeans = new KMeansAlg4Vct(m_weights, m_kMeans);
 		kmeans.init();
 		kmeans.train();
-		kmeans.getClusters();
+		m_filename = String.format("CrossFeatures_%dfold_%dmeans_%dfvGroups.txt", m_kFold, m_kMeans, kmeans.getClusterSize());
+		writeResults(kmeans.getClusters(), kmeans.getClusterSize());
+
 	}
-	
-	public void writeResults(){
-		
+
+	public void writeResults(int[] clusterNos, int size){
+		try{
+			PrintWriter writer = new PrintWriter(new File(m_filename));
+			for(int i=0; i<clusterNos.length-1; i++)
+				writer.write(clusterNos[i] + ",");
+			writer.write(clusterNos[clusterNos.length-1]+"\n");
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	public String getFilename(){
+		return m_filename;
 	}
 }
