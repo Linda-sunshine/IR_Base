@@ -20,7 +20,7 @@ import utils.Utils;
  * online learning of RegLR
  */
 public class asyncRegLR extends RegLR {
-	double m_initStepSize = 0.50;
+	double m_initStepSize = 0.05;
 	String m_dataset;
 	public asyncRegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
@@ -31,6 +31,11 @@ public class asyncRegLR extends RegLR {
 
 	public void setDataset(String data){
 		m_dataset = data;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("asyncRegLR[initStepSize: %.3f, eta1:%.3f]", m_initStepSize, m_eta1);
 	}
 	
 	public static double getStepSize(double initStepSize, _AdaptStruct user) {
