@@ -32,8 +32,6 @@ public class RegLR extends ModelAdaptation {
 	protected double[] m_diag; //parameter used in lbfgs.
 	protected double[] m_g;//optimized gradients. 
 		
-//	protected boolean m_LNormFlag; // Decide if we will normalize the likelihood.
-
 	protected PrintWriter m_writer;
 
 	public RegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
