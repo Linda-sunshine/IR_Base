@@ -43,8 +43,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_personalized;
 
 	// Decide if we will normalize the likelihood.
-	protected boolean m_LNormFlag;
-	
+	protected boolean m_LNormFlag=true;
+	protected String m_dataset = "Amazon"; // Default dataset.
+
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
