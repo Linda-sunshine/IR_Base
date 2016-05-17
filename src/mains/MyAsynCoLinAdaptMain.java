@@ -24,7 +24,9 @@ public class MyAsynCoLinAdaptMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		// Best performance for mt-linadapt in amazon.
 //		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
-		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
+//		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
+		double eta1 = 0.0001, eta2 = 0.0005, eta3 = 0.0001, eta4 = 0.0001;
+
 		// Best performance for mt-linadapt in yelp.
 		// double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
@@ -50,25 +52,25 @@ public class MyAsynCoLinAdaptMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 				
 		// Create an instance of asyncMTLinAdapt.
-//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setTrainByUser(false);// train by review-driven mode.
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setR2TradeOffs(eta3, eta4);
-//		adaptation.setRPTTime(5);
-//		adaptation.train();
-//		adaptation.test();
+		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setTrainByUser(false);// train by review-driven mode.
+		adaptation.setDisplayLv(displayLv);
+		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.setRPTTime(3);
+		adaptation.train();
+		adaptation.test();
 //		adaptation.saveModel("./data/models/colin_online/");
 			
-		asyncMTRegLR asyncmtreglr = new asyncMTRegLR(classNumber,analyzer.getFeatureSize(), featureMap, globalModel);
-		asyncmtreglr.loadUsers(analyzer.getUsers());
-		asyncmtreglr.setDataset(dataset);
-		asyncmtreglr.setDisplayLv(displayLv);
-		asyncmtreglr.setR1TradeOff(eta1);
-		asyncmtreglr.setInitStepSize(0.05);
-		asyncmtreglr.train();
-		asyncmtreglr.test();
+//		asyncMTRegLR asyncmtreglr = new asyncMTRegLR(classNumber,analyzer.getFeatureSize(), featureMap, globalModel);
+//		asyncmtreglr.loadUsers(analyzer.getUsers());
+//		asyncmtreglr.setDataset(dataset);
+//		asyncmtreglr.setDisplayLv(displayLv);
+//		asyncmtreglr.setR1TradeOff(eta1);
+//		asyncmtreglr.setInitStepSize(0.05);
+//		asyncmtreglr.train();
+//		asyncmtreglr.test();
 		
 		// Create an instances of asyncLinAdapt model.
 //		asyncLinAdapt asynclinadapt = new asyncLinAdapt(classNumber,analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);

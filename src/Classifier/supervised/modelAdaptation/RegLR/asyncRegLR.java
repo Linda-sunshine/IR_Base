@@ -20,17 +20,12 @@ import utils.Utils;
  * online learning of RegLR
  */
 public class asyncRegLR extends RegLR {
-	double m_initStepSize = 0.05;
-	String m_dataset;
+	double m_initStepSize = 0.1;
 	public asyncRegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		
 		// all three test modes for asyncRegLR is possible, and default is online
 		m_testmode = TestMode.TM_online;
-	}
-
-	public void setDataset(String data){
-		m_dataset = data;
 	}
 	
 	@Override

@@ -26,6 +26,7 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdaptOverall;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
+import Classifier.supervised.modelAdaptation.RegLR.MTRegLR;
 
 public class MyLinAdaptMain {
 	
@@ -48,20 +49,20 @@ public class MyLinAdaptMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-////		String featureGroupFile = "./CrossFeatures.txt";
-////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-//		String model = String.format("./data/model/mtsvm_0.5/");
+		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFile = "./CrossFeatures.txt";
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String model = String.format("./data/model/mtsvm_0.5/");
 		
-		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
+//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+////		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+////		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
 
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
@@ -122,10 +123,12 @@ public class MyLinAdaptMain {
 		// Create an instance of LinAdaptOverall.
 //		LinAdaptOverall adaptation = new LinAdaptOverall(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
+//		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+		adaptation.setR1TradeOffs(eta1/10000, eta2/10000);
+		adaptation.setR2TradeOffs(eta3/10000, eta4/10000);
 //		adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
