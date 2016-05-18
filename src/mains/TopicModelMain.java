@@ -55,7 +55,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP
 
-		String topicmodel = "APPLDA";
+		String topicmodel = "ParentChildBaseWithPhi_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -89,8 +89,8 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		 articleType = "Yahoo";
-		articleType = "APP";
+		 articleType = "Yahoo";
+//		articleType = "APP";
 		
 		String articleFolder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
@@ -163,14 +163,14 @@ public class TopicModelMain {
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(commentFolder, suffix);
-		if(topicmodel=="LDA_APPMerged")
+		if(topicmodel.equals("LDA_APPMerged"))
 			articleFolder = String.format(
 					"./data/ParentChildTopicModel/%sDescriptionsReviews",
 					articleType);
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		
-		if((topicmodel!="LDA_APP")&&(topicmodel!="LDA_APPMerged"))
-			analyzer.LoadChildDirectory(commentFolder, suffix);
+//		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
@@ -344,7 +344,7 @@ public class TopicModelMain {
 				String queryFile = "./data/APP/queryID.txt";
 				analyzer.loadQuery(queryFile);
 				
-				model = new APPACCTM_C( number_of_iteration,  converge,  beta,  c,  lambda,
+				model = new APPACCTM_C( gibbs_iteration,  0,  beta,  c,  lambda,
 						 number_of_topics,  alpha,  burnIn,  gibbs_lag, gamma,  ksi,  tau, analyzer.m_Queries);
 			}
 			

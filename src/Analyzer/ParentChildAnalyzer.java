@@ -19,6 +19,7 @@ import org.jsoup.Jsoup;
 import structures.TokenizeResult;
 import structures._APPQuery;
 import structures._ChildDoc4APP;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
@@ -48,8 +49,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
-//				loadParentDoc(f.getAbsolutePath());
-				loadAPPParentDoc(f.getAbsolutePath());
+				loadParentDoc(f.getAbsolutePath());
+//				loadAPPParentDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadParentDirectory(folder, suffix);
 			}
@@ -138,12 +139,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 		content = Jsoup.parse(content).text();
 
-		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title,
-				content, 0);
+//		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title,
+//				content, 0);
 //		
-		// _ChildDoc4BaseWithPhi d = new
-		// _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-		// name, "", content, 0);
+		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+		 name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,

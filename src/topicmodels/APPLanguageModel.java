@@ -244,8 +244,8 @@ public class APPLanguageModel extends languageModelBaseLine{
 		String articleType = "Tech";
 		articleType = "APP";
 //		articleType = "GadgetsArticles";
-		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
-		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
+		String articleFolder = String.format("./data/ParentChildTopicModel/%sMinusArticles", articleType);
+		String commentFolder = String.format("./data/ParentChildTopicModel/%sMinusComments", articleType);
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -339,9 +339,9 @@ public class APPLanguageModel extends languageModelBaseLine{
 		double muDscription = 1000;
 		double muReview = 300;
 		double eta = 0.4;
-//		APPLanguageModel lm = new APPLanguageModel(c, muDscription, muReview, eta, analyzer.m_Queries);
-//		lm.generateReferenceModel();
-//		lm.printTopAPP4Query(filePrefix);
+		APPLanguageModel lm = new APPLanguageModel(c, muDscription, muReview, eta, analyzer.m_Queries);
+		lm.generateReferenceModel();
+		lm.printTopAPP4Query(filePrefix);
 
 	}
 	

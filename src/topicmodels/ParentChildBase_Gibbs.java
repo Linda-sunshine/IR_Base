@@ -79,7 +79,9 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 100;
+//		mu = 100;
+		mu = Double.MAX_VALUE;
+		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
 	}
 	
