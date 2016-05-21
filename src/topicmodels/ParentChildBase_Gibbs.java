@@ -11,6 +11,7 @@ import java.util.Map;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -302,27 +303,47 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		return Utils.cosine(topic1, topic2);
 	}
 	
+//	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
+//		_ParentDoc pDoc = (_ParentDoc)d;
+//		for(_Stn stnObj: pDoc.getSentences()){
+//			stnObj.setTopicsVct(number_of_topics);
+//		}
+//		
+//		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+//		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+//		sampleTestSet.add(pDoc);
+//		pDoc.createSparseVct4Infer();
+//
+//		for(_ChildDoc cDoc: pDoc.m_childDocs){
+//			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+//			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+//			sampleTestSet.add(cDoc);
+//			cDoc.createSparseVct4Infer();
+//
+//			computeTestMu4Doc(cDoc);
+//		}
+//	}
+
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
-		_ParentDoc pDoc = (_ParentDoc)d;
+		_ParentDoc pDoc = (_ParentDoc) d;
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
 		
-		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		int testLength = (int)pDoc.getTotalDocLength();
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+	
 		sampleTestSet.add(pDoc);
-		pDoc.createSparseVct4Infer();
-
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+		
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
-			cDoc.createSparseVct4Infer();
-
-			computeTestMu4Doc(cDoc);
+			
 		}
 	}
-
+	
 	public double inference(_Doc pDoc) {
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
