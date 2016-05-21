@@ -8,6 +8,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.netlib.util.doubleW;
+
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -549,10 +551,11 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
-						* childTopicInDocProb(k, cDoc)
-						* childXInDocProb(0, cDoc)
-						/ (cDoc.getDocInferLength() + gammaLen);
+				double term1 = childWordByTopicProb(k, wid);
+				double term2 = childTopicInDocProb(k, cDoc);
+				double term3 = childXInDocProb(0, cDoc)/ (cDoc.getDocInferLength() + gammaLen);
+				
+				double wordPerTopicLikelihood = term1*term2*term3;
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)

@@ -10,6 +10,7 @@ import java.util.Date;
 
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.ACCTM_CZ;
 import topicmodels.APPACCTM_C;
 import topicmodels.APPLDA;
 import topicmodels.HTMM;
@@ -55,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP
 
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs";
+		String topicmodel = "ACCTM_CZ";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -70,9 +71,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 400, gibbs_lag = 20;
 		int displayLap = 20;
-//		gibbs_iteration = 20;
-//		gibbs_lag = 5;
-//		displayLap = 5;
+		gibbs_iteration = 20;
+		gibbs_lag = 5;
+		displayLap = 5;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -89,7 +90,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		 articleType = "Yahoo";
+//		 articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -346,6 +347,18 @@ public class TopicModelMain {
 				
 				model = new APPACCTM_C( gibbs_iteration,  0,  beta,  c,  lambda,
 						 number_of_topics,  alpha,  burnIn,  gibbs_lag, gamma,  ksi,  tau, analyzer.m_Queries);
+			}else if(topicmodel.equals("ACCTM_CZ")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				alpha = 1.01;
+				double ksi = 800;
+				double tau = 0.7;
+				number_of_topics = 30;
+				crossV = 10;
+				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);
