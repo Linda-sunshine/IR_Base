@@ -307,7 +307,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			if (iter>m_burnIn && iter%m_lag==0){
 				double tempLogLikelihood = 0;
 				for(_Doc doc: sampleTestSet){
-					collectStats( doc);
+					collectStats(doc);
 					// tempLogLikelihood += calculate_log_likelihood(doc);
 				}
 				count ++;

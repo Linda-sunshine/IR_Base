@@ -80,8 +80,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
 //		mu = 100;
-		mu = Double.MAX_VALUE;
-		System.out.println("maximum value double\t"+mu);
+//		mu = Double.MAX_VALUE;
+//		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
 	}
 	
@@ -89,7 +89,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 100;
+//		mu = 100;
 		d.setMu(mu);
 	}
 	
@@ -313,7 +313,6 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		sampleTestSet.add(pDoc);
 		pDoc.createSparseVct4Infer();
 
-		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
@@ -324,6 +323,68 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		}
 	}
 
+	public double inference(_Doc pDoc) {
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		
+		initTest(sampleTestSet, pDoc);
+		
+		double logLikelihood = 0.0, count = 0;
+		inferenceParentDoc((_ParentDoc)pDoc);
+		logLikelihood = inferenceChildDoc((_ParentDoc)pDoc);
+		
+		return logLikelihood;
+	}
+	
+	protected double inferenceParentDoc(_ParentDoc pDoc){
+		double likelihood = 0;
+		int iter = 0;
+		do{
+			
+			calculate_E_step(pDoc);
+			
+			if(iter>m_burnIn && iter%m_lag==0){
+				collectParentStats(pDoc);
+			}
+			
+		}while(++iter<number_of_iteration);
+		
+		return likelihood;
+	}
+	
+	protected double inferenceChildDoc(_ParentDoc pDoc){
+		double likelihood = 0;
+		int iter = 0;
+		
+		do{
+			int t;
+			_ChildDoc tmpDoc;
+			for(int i=pDoc.m_childDocs.size()-1; i>1; i--){
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = pDoc.m_childDocs.get(i);
+				pDoc.m_childDocs.set(i, pDoc.m_childDocs.get(t));
+				pDoc.m_childDocs.set(t, tmpDoc);
+			}
+			
+			for(_Doc doc:pDoc.m_childDocs){
+				calculate_E_step(doc);
+			}
+			
+			if(iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc:pDoc.m_childDocs){
+					collectChildStats((_ChildDoc)doc);
+				}
+			}
+			
+		}while(++iter<number_of_iteration);
+		
+		for(_Doc doc:pDoc.m_childDocs){
+			likelihood += calculate_test_log_likelihood(doc);
+		}
+		
+		return likelihood;
+	}
+	
 	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
 	@Override
 	public void debugOutput(String filePrefix){
