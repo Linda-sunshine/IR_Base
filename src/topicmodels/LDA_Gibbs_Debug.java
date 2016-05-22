@@ -386,7 +386,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			stnObj.setTopicsVct(number_of_topics);
 		}
 		
-		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		int testLength = 0;
+//		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 		

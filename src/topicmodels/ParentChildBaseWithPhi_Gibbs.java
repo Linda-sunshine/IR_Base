@@ -81,6 +81,10 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
+		if(m_collectCorpusStats){
+			return term;
+		}
+		
 		if(tid==0)
 			return term;
 		
@@ -214,7 +218,9 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			stnObj.setTopicsVct(number_of_topics);
 		}
 		
-		int testLength = (int) (m_testWord4PerplexityProportion*pDoc.getTotalDocLength());
+		////for conditional perplexity
+		int testLength = 0; 
+//		int testLength = (int) (m_testWord4PerplexityProportion*pDoc.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);		
 		sampleTestSet.add(pDoc);
 		
