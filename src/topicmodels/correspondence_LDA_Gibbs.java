@@ -27,6 +27,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
+		createSpace();
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
@@ -38,8 +39,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				}
 				d.setTopics4Gibbs(number_of_topics, 0);
 
-			}
-			else if(d instanceof _ChildDoc){
+			}else if(d instanceof _ChildDoc){
 				((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
 			}
 			
@@ -199,8 +199,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	}
 	
 	protected double childTopicInDoc(int tid, _ChildDoc d){
-		// _ParentDoc tempParentDoc = d.m_parentDoc;
-		// double term = tempParentDoc.m_sstat[tid];
 		double term = d.m_sstat[tid] + 1e-10;
 
 		return term;
@@ -238,64 +236,67 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	public void collectChildStats(_ChildDoc d){
 		for(int k=0; k<number_of_topics; k++)
 			d.m_topics[k] += d.m_sstat[k];
-		
-		_ParentDoc pDoc = d.m_parentDoc;
 	}
 	
 	@Override
-	public double inference(_Doc pDoc){
-		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-		
-		initTest(sampleTestSet, pDoc);
-	
-		double logLikelihood = 0.0, count = 0;
-		int  iter = 0;
-		do {
-			int t;
-			_Doc tmpDoc;
-			for(int i=sampleTestSet.size()-1; i>1; i--) {
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = sampleTestSet.get(i);
-				sampleTestSet.set(i, sampleTestSet.get(t));
-				sampleTestSet.set(t, tmpDoc);			
-			}
-			
-			for(_Doc doc: sampleTestSet)
-				calculate_E_step(doc);
-			
-			if (iter>m_burnIn && iter%m_lag==0){
-				double tempLogLikelihood = 0;
-				for(_Doc doc: sampleTestSet){
-					if(doc instanceof _ParentDoc){
-						collectParentStats((_ParentDoc) doc);
-					}
-					else if(doc instanceof _ChildDoc){
-						collectChildStats((_ChildDoc) doc);
-					}
-					
-				}
-
-			}
-		} while (++iter<this.number_of_iteration);
-
-		for(_Doc doc: sampleTestSet){
-			estThetaInDoc(doc);
-		}
-		
-		return logLikelihood;
-	}
+//	public double inference(_Doc pDoc){
+//		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+//		
+//		initTest(sampleTestSet, pDoc);
+//	
+//		double logLikelihood = 0.0, count = 0;
+//		int  iter = 0;
+//		do {
+//			int t;
+//			_Doc tmpDoc;
+//			for(int i=sampleTestSet.size()-1; i>1; i--) {
+//				t = m_rand.nextInt(i);
+//				
+//				tmpDoc = sampleTestSet.get(i);
+//				sampleTestSet.set(i, sampleTestSet.get(t));
+//				sampleTestSet.set(t, tmpDoc);			
+//			}
+//			
+//			for(_Doc doc: sampleTestSet)
+//				calculate_E_step(doc);
+//			
+//			if (iter>m_burnIn && iter%m_lag==0){
+//				double tempLogLikelihood = 0;
+//				for(_Doc doc: sampleTestSet){
+//					if(doc instanceof _ParentDoc){
+//						collectParentStats((_ParentDoc) doc);
+//					}
+//					else if(doc instanceof _ChildDoc){
+//						collectChildStats((_ChildDoc) doc);
+//					}
+//					
+//				}
+//
+//			}
+//		} while (++iter<this.number_of_iteration);
+//
+//		for(_Doc doc: sampleTestSet){
+//			estThetaInDoc(doc);
+//		}
+//		
+//		return logLikelihood;
+//	}
+//	
 
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc)d;
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
-		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		
+		int testLength = 0;
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);		
 		sampleTestSet.add(pDoc);
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
 		}
 	}
@@ -338,7 +339,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
 				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
-						* (d.m_sstat[k] + 1e-10)
+						* childTopicInDoc(k,d)
 						/ (number_of_topics * 1e-10 + d.getTotalDocLength());
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
