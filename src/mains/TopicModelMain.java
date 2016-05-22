@@ -54,9 +54,9 @@ public class TopicModelMain {
 		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs,
 		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
-		//LDA_APP
+		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZ";
+		String topicmodel = "ACCTM_C";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -68,12 +68,12 @@ public class TopicModelMain {
 		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 400, gibbs_lag = 20;
-		int displayLap = 20;
-		gibbs_iteration = 20;
-		gibbs_lag = 5;
-		displayLap = 5;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int gibbs_iteration = 1000, gibbs_lag = 50;
+		int displayLap = 50;
+//		gibbs_iteration = 20;
+//		gibbs_lag = 5;
+//		displayLap = 5;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -385,7 +385,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.9;
+				double trainProportion = 0.2;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);

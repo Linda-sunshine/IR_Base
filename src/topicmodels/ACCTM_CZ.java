@@ -24,20 +24,20 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
-		double result = 1.0;
+		double term = 1.0;
 		
 		if(m_collectCorpusStats){
-			return result;
+			return term;
 		}
 		
 		if(tid==0)
-			return result;
+			return term;
 		
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			result *= influenceRatio(pDoc.m_sstat[tid], pDoc.m_sstat[0]);
+			term *= influenceRatio(pDoc.m_sstat[tid], pDoc.m_sstat[0]);
 		}
 		
-		return result;
+		return term;
 	}
 	
 	protected double influenceRatio(double njc, double n1c){

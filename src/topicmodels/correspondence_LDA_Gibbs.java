@@ -7,12 +7,14 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import structures._ChildDoc;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
+import utils.Utils;
 
 public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	boolean m_statisticsNormalized = false;//a warning sign of normalizing statistics before collecting new ones
@@ -134,22 +136,24 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			return term;
 		
 		for(_ChildDoc cDoc: d.m_childDocs){
-			for(_Word w:cDoc.getWords()){
-				int tempTid = w.getTopic();
-				if(tempTid == tid)
-					term *= (d.m_sstat[tempTid]+1)/(d.m_sstat[tempTid]+1e-10);
-				else 
-					if(tempTid == 0)
-						term *= (d.m_sstat[tempTid]+1e-10)/(d.m_sstat[tempTid]+1);
-				
-			}
-		}
-		
-		if(term==0){
-			term += 1e-10;
+			term *= influenceRatio(d.m_sstat[tid], d.m_sstat[0]);
 		}
 		
 		return term;
+	}
+	
+	protected double influenceRatio(double njc, double n1c){
+		double ratio = 1.0;
+		
+		for(int n=1; n<=n1c; n++){
+			ratio *= n1c*1.0/(n1c+1);
+		}
+		
+		for(int n=1; n<=njc; n++){
+			ratio *= (njc+1)*1.0/njc;
+		}
+		
+		return ratio;
 	}
 	
 	protected void sampleInChildDoc(_ChildDoc d){
@@ -199,7 +203,8 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	}
 	
 	protected double childTopicInDoc(int tid, _ChildDoc d){
-		double term = d.m_sstat[tid] + 1e-10;
+		_ParentDoc pDoc = (_ParentDoc)(d.m_parentDoc);
+		double term = pDoc.m_sstat[tid]/pDoc.getDocInferLength();
 
 		return term;
 	}
@@ -339,8 +344,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
 				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
-						* childTopicInDoc(k,d)
-						/ (number_of_topics * 1e-10 + d.getTotalDocLength());
+						* childTopicInDoc(k,d);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
@@ -382,7 +386,36 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		return childLikelihoodMap;
 	}
 	
-	
+	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
+		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
+		double docLogLikelihood = 0.0;
+
+		// prepare compute the normalizers
+		_SparseFeature[] fv = cDoc.getSparse();
+
+		for (_Word w : cDoc.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double term1 = childWordByTopicProb(k, wid);
+				double term2 = childTopicInDoc(k, cDoc);
+				
+				double wordPerTopicLikelihood = term1*term2;
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			
+			if (Math.abs(wordLogLikelihood) < 1e-10) {
+				System.out.println("wordLoglikelihood\t" + wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}
 }
 
 
