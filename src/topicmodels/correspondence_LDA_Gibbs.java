@@ -126,6 +126,10 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
 		double term = 1;
 		
+		if(m_collectCorpusStats){
+			return term;
+		}
+		
 		if(tid==0)
 			return term;
 		
@@ -236,7 +240,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			d.m_topics[k] += d.m_sstat[k];
 		
 		_ParentDoc pDoc = d.m_parentDoc;
-//		rankStn4Child(d, pDoc);
 	}
 	
 	@Override

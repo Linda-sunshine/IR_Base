@@ -283,54 +283,114 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	@Override
+//	public double inference(_Doc pDoc){
+//		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+//		
+//		initTest(sampleTestSet, pDoc);
+//	
+//		double logLikelihood = 0.0, count = 0;
+//		int  iter = 0;
+//		do {
+//			int t;
+//			_Doc tmpDoc;
+//			for(int i=sampleTestSet.size()-1; i>1; i--) {
+//				t = m_rand.nextInt(i);
+//				
+//				tmpDoc = sampleTestSet.get(i);
+//				sampleTestSet.set(i, sampleTestSet.get(t));
+//				sampleTestSet.set(t, tmpDoc);			
+//			}
+//			
+//			for(_Doc doc: sampleTestSet)
+//				calculate_E_step(doc);
+//			
+//			if (iter>m_burnIn && iter%m_lag==0){
+//				double tempLogLikelihood = 0;
+//				for(_Doc doc: sampleTestSet){
+//					collectStats(doc);
+//					// tempLogLikelihood += calculate_log_likelihood(doc);
+//				}
+//				count ++;
+//				// if (logLikelihood == 0)
+//				// logLikelihood = tempLogLikelihood;
+//				// else {
+//				//
+//				// logLikelihood = Utils.logSum(logLikelihood,
+//				// tempLogLikelihood);
+//				// }
+//			}
+//		} while (++iter<this.number_of_iteration);
+//
+//		for(_Doc doc: sampleTestSet){
+//			estThetaInDoc(doc);
+//			logLikelihood += calculate_test_log_likelihood(doc);
+//		}
+//		
+//		return logLikelihood;
+//	}
+
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
 		initTest(sampleTestSet, pDoc);
 	
 		double logLikelihood = 0.0, count = 0;
-		int  iter = 0;
-		do {
-			int t;
-			_Doc tmpDoc;
-			for(int i=sampleTestSet.size()-1; i>1; i--) {
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = sampleTestSet.get(i);
-				sampleTestSet.set(i, sampleTestSet.get(t));
-				sampleTestSet.set(t, tmpDoc);			
-			}
-			
-			for(_Doc doc: sampleTestSet)
-				calculate_E_step(doc);
-			
-			if (iter>m_burnIn && iter%m_lag==0){
-				double tempLogLikelihood = 0;
-				for(_Doc doc: sampleTestSet){
-					collectStats(doc);
-					// tempLogLikelihood += calculate_log_likelihood(doc);
-				}
-				count ++;
-				// if (logLikelihood == 0)
-				// logLikelihood = tempLogLikelihood;
-				// else {
-				//
-				// logLikelihood = Utils.logSum(logLikelihood,
-				// tempLogLikelihood);
-				// }
-			}
-		} while (++iter<this.number_of_iteration);
-
-		for(_Doc doc: sampleTestSet){
-			estThetaInDoc(doc);
-			logLikelihood += calculate_test_log_likelihood(doc);
-		}
+		inferenceParentDoc((_ParentDoc)pDoc);
+		logLikelihood = inferenceChildDoc((_ParentDoc)pDoc);
 		
 		return logLikelihood;
-	
-		// return logLikelihood - Math.log(count);
 	}
 
+	protected double inferenceParentDoc(_ParentDoc pDoc){
+		double likelihood = 0;
+		int iter = 0;
+		do{
+			
+			calculate_E_step(pDoc);
+			
+			if(iter>m_burnIn && iter%m_lag==0){
+				collectStats(pDoc);
+			}
+			
+		}while(++iter<number_of_iteration);
+		
+		return likelihood;
+	}
+	
+	protected double inferenceChildDoc(_ParentDoc pDoc){
+		double likelihood = 0;
+		int iter = 0;
+		
+		do{
+			int t;
+			_ChildDoc tmpDoc;
+			for(int i=pDoc.m_childDocs.size()-1; i>1; i--){
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = pDoc.m_childDocs.get(i);
+				pDoc.m_childDocs.set(i, pDoc.m_childDocs.get(t));
+				pDoc.m_childDocs.set(t, tmpDoc);
+			}
+			
+			for(_Doc doc:pDoc.m_childDocs){
+				calculate_E_step(doc);
+			}
+			
+			if(iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc:pDoc.m_childDocs){
+					collectStats(doc);
+				}
+			}
+			
+		}while(++iter<number_of_iteration);
+		
+		for(_Doc doc:pDoc.m_childDocs){
+			likelihood += calculate_test_log_likelihood(doc);
+		}
+		
+		return likelihood;
+	}
+	
 	protected double calculate_test_log_likelihood(_Doc d){
 		if(d instanceof _ParentDoc)
 			return testLogLikelihoodByIntegrateTopics((_ParentDoc)d);
