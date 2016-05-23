@@ -26,7 +26,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
-		if(m_collectCorpusStats){
+		if(!m_collectCorpusStats){
 			return term;
 		}
 		

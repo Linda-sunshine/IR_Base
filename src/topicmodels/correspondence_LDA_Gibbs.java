@@ -128,7 +128,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
 		double term = 1;
 		
-		if(m_collectCorpusStats){
+		if(!m_collectCorpusStats){
 			return term;
 		}
 		
