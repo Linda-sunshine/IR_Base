@@ -387,19 +387,19 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	}
 	
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
-		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
+//		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
 		double docLogLikelihood = 0.0;
 
 		// prepare compute the normalizers
-		_SparseFeature[] fv = cDoc.getSparse();
+		_SparseFeature[] fv = d.getSparse();
 
-		for (_Word w : cDoc.getTestWords()) {
+		for (_Word w : d.getTestWords()) {
 			int wid = w.getIndex();
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
 				double term1 = childWordByTopicProb(k, wid);
-				double term2 = childTopicInDoc(k, cDoc);
+				double term2 = childTopicInDoc(k, d);
 				
 				double wordPerTopicLikelihood = term1*term2;
 				wordLogLikelihood += wordPerTopicLikelihood;
