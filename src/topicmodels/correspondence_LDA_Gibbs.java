@@ -173,7 +173,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
 				double pWordTopic = childWordByTopicProb(tid, wid);
-				double pTopicDoc = childTopicInDoc(tid, d);
+				double pTopicDoc = childTopicInDocProb(tid, d);
 				
 				m_topicProbCache[tid] = pWordTopic*pTopicDoc;
 				normalizedProb += m_topicProbCache[tid];
@@ -202,7 +202,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		return word_topic_sstat[tid][wid]/m_sstat[tid];
 	}
 	
-	protected double childTopicInDoc(int tid, _ChildDoc d){
+	protected double childTopicInDocProb(int tid, _ChildDoc d){
 		_ParentDoc pDoc = (_ParentDoc)(d.m_parentDoc);
 		double term = pDoc.m_sstat[tid]/pDoc.getDocInferLength();
 
@@ -375,7 +375,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				int wid = w.getIndex();
 			
 				for(int k=0; k<number_of_topics; k++){
-					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((pDoc.m_sstat[k])/(pDoc.getTotalDocLength()));
+					wordLikelihood += childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
 				}
 				
 				stnLogLikelihood += Math.log(wordLikelihood);
@@ -415,6 +415,10 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		}
 
 		return docLogLikelihood;
+	}
+	
+	public double childTopicInDoc(int tid, _ChildDoc cDoc){
+		return cDoc.m_sstat[tid]/cDoc.getDocInferLength();
 	}
 }
 

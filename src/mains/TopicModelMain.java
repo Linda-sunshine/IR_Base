@@ -56,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs";
+		String topicmodel = "correspondence_LDA_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -68,7 +68,7 @@ public class TopicModelMain {
 		double converge = -1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
 //		gibbs_iteration = 4;

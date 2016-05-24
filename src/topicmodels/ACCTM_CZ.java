@@ -1,6 +1,7 @@
 package topicmodels;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
@@ -103,5 +104,69 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
+	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
+		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
+		double docLogLikelihood = 0.0;
+		double gammaLen = Utils.sumOfArray(m_gamma);
+
+		// prepare compute the normalizers
+		_SparseFeature[] fv = cDoc.getSparse();
+
+		for (_Word w : cDoc.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double term1 = childWordByTopicProb(k, wid);
+				double term2 = childTopicInDoc(k, cDoc);
+				double term3 = childXInDocProb(0, cDoc)/ (cDoc.getDocInferLength() + gammaLen);
+				
+				double wordPerTopicLikelihood = term1*term2*term3;
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)
+					* childXInDocProb(1, cDoc)
+					/ (cDoc.getDocInferLength() + gammaLen);
+			wordLogLikelihood += wordPerTopicLikelihood;
+
+			if (Math.abs(wordLogLikelihood) < 1e-10) {
+				System.out.println("wordLoglikelihood\t" + wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}
+
+	public double childTopicInDoc(int tid, _ChildDoc cDoc){
+		return cDoc.m_sstat[tid]/cDoc.m_xSstat[0];
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+		
+		for(_ChildDoc d:pDoc.m_childDocs){
+			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
+			double stnLogLikelihood = 0;
+			for(_Word w: stnObj.getWords()){
+				int wid = w.getIndex();
+			
+				double wordLogLikelihood = 0;
+				
+				for (int k = 0; k < number_of_topics; k++) {
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
+					wordLogLikelihood += wordPerTopicLikelihood;
+				}
+				
+				stnLogLikelihood += Math.log(wordLogLikelihood);
+			}
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
+	}
 	
 }

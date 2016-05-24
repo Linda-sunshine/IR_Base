@@ -366,6 +366,34 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		return childLikelihoodMap;
 	}
 	
+//	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
+//		double gammaLen = Utils.sumOfArray(m_gamma);
+//
+//		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
+//		
+//		for(_ChildDoc d:pDoc.m_childDocs){
+//			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
+//			double stnLogLikelihood = 0;
+//			for(_Word w: stnObj.getWords()){
+//				int wid = w.getIndex();
+//			
+//				double wordLogLikelihood = 0;
+//				
+//				for (int k = 0; k < number_of_topics; k++) {
+//					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+//					wordLogLikelihood += wordPerTopicLikelihood;
+//				}
+//				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+//				wordLogLikelihood += wordPerTopicLikelihood;
+//			
+//				stnLogLikelihood += Math.log(wordLogLikelihood);
+//			}
+//			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+//		}
+//		
+//		return childLikelihoodMap;
+//	}
+	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
@@ -380,12 +408,10 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				double wordLogLikelihood = 0;
 				
 				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
-				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-				wordLogLikelihood += wordPerTopicLikelihood;
-			
+				
 				stnLogLikelihood += Math.log(wordLogLikelihood);
 			}
 			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
