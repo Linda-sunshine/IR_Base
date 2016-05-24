@@ -82,16 +82,6 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
-	protected void estThetaInDoc(_Doc d){
-		if(d instanceof _ParentDoc){
-			Utils.L1Normalization(d.m_topics);
-		}else if(d instanceof _ChildDoc4BaseWithPhi){
-			((_ChildDoc4BaseWithPhi)d).estGlobalLocalTheta();
-		}
-		
-		m_statisticsNormalized = true;
-	}
-	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc) d;
 		for(_Stn stnObj: pDoc.getSentences()){
@@ -113,40 +103,5 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
-//	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
-//		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
-//		double docLogLikelihood = 0.0;
-//		double gammaLen = Utils.sumOfArray(m_gamma);
-//
-//		// prepare compute the normalizers
-//		_SparseFeature[] fv = cDoc.getSparse();
-//
-//		for (_Word w : cDoc.getTestWords()) {
-//			int wid = w.getIndex();
-//
-//			double wordLogLikelihood = 0;
-//			for (int k = 0; k < number_of_topics; k++) {
-//				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
-//						* childTopicInDocProb(k, cDoc)
-//						* childXInDocProb(0, cDoc)
-//						/ (cDoc.getDocInferLength() + gammaLen);
-//				wordLogLikelihood += wordPerTopicLikelihood;
-//			}
-//			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)
-//					* childXInDocProb(1, cDoc)
-//					/ (cDoc.getDocInferLength() + gammaLen);
-//			wordLogLikelihood += wordPerTopicLikelihood;
-//
-//			if (Math.abs(wordLogLikelihood) < 1e-10) {
-//				System.out.println("wordLoglikelihood\t" + wordLogLikelihood);
-//				wordLogLikelihood += 1e-10;
-//			}
-//
-//			wordLogLikelihood = Math.log(wordLogLikelihood);
-//			docLogLikelihood += wordLogLikelihood;
-//		}
-//
-//		return docLogLikelihood;
-//	}
 	
 }

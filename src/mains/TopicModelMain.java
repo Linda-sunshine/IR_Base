@@ -56,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "correspondence_LDA_Gibbs";
+		String topicmodel = "ParentChildBaseWithPhi_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -355,7 +355,6 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.7;
 				number_of_topics = 30;
-				crossV = 10;
 				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, ksi, tau);
@@ -390,8 +389,6 @@ public class TopicModelMain {
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
 				model.printTopWords(topK, topWordPath);
-
-//				model.printTopWords(topK);
 			}
 			
 			model.closeWriter();

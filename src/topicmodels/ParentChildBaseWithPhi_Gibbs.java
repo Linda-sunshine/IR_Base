@@ -1,14 +1,13 @@
 package topicmodels;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.netlib.util.doubleW;
 
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;

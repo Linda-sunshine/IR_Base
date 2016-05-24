@@ -375,7 +375,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				int wid = w.getIndex();
 			
 				for(int k=0; k<number_of_topics; k++){
-					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
+					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((pDoc.m_sstat[k])/(pDoc.getTotalDocLength()));
 				}
 				
 				stnLogLikelihood += Math.log(wordLikelihood);
