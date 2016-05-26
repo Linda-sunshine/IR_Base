@@ -22,12 +22,17 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
+	double m_sim = 1; // The similarity of the user, i.e., w_{ii}. added by Lin.
 	
 	public _CoLinAdaptStruct(_User user, int dim, int id, int topK) {
 		super(user, dim);
 		m_id = id;
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
+	}
+	// added by Lin
+	public double getSelfSim(){
+		return m_sim;
 	}
 	
 	@Override
@@ -118,12 +123,22 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 //		else
 //			return 0;
 //	}
-	
-	@Override
 	public double getSimilarity(CoAdaptStruct user, SimType sType) {
-		if (sType == SimType.ST_BoW)
-			return Math.random();
-		else
+		if (sType == SimType.ST_BoW){
+			if(user.getUser().getBoWSim(m_user) == 0)
+				return 0;
+			else
+				return 1/user.getUser().getBoWSim(m_user);
+		}
+		else 
 			return 0;
 	}
+	
+//	@Override
+//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+//		if (sType == SimType.ST_BoW)
+//			return Math.random();
+//		else
+//			return 0;
+//	}
 }

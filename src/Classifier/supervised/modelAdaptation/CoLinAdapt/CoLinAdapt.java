@@ -18,6 +18,7 @@ import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
+import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 
@@ -90,23 +91,28 @@ public class CoLinAdapt extends LinAdapt {
 		
 		//step 2: construct neighborhood graph
 		constructNeighborhood(m_sType);
-
-		// Print out similarity.
-//		printSimilarity();
 	}
 	
-	public void printSimilarity(){
+	public void printNeighbors(ArrayList<String> features){
 		// Print out similarity.
 		PrintWriter writer;
+		_AdaptStruct neighbor;
 		try {
-			writer = new PrintWriter(new File("constrain_sim.txt"));
+			writer = new PrintWriter(new File("neighbors_1divBow.txt"));
 			for(_AdaptStruct u: m_userList){
+				// User's own sparse features.
+				writer.format("=================%s===============\n", u.getUserID());
+				for(_SparseFeature sf: u.getUser().getBoWProfile())
+					writer.format("(%s, %.3f)\t", features.get(sf.getIndex()), sf.getValue());
+				writer.write("\n---------------------------------\n");
 				_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-				if(ui.getNeighbors().size() < 200)
-					System.out.println("Smaller than 200!!"+ui.getUserID());
-				for(_RankItem nit: ui.getNeighbors())
-					writer.write(nit.m_value+",");
-				writer.write("\n");
+				// Print out neighbors sparse features.
+				for(_RankItem nit: ui.getNeighbors()){
+					neighbor = m_userList.get(nit.m_index);
+					for(_SparseFeature sf: neighbor.getUser().getBoWProfile())
+						writer.format("(%s, %.3f)\t", features.get(sf.getIndex()), sf.getValue());
+					writer.write("\n---------------------------------\n");
+				}
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
@@ -259,15 +265,10 @@ public class CoLinAdapt extends LinAdapt {
 	public double calcuateR2OverSVMWeights(_AdaptStruct u){
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) u, uj;
 		double R2 = 0, diff = 0;
-//		double sum = 0; 
-//		for(_RankItem nit: ui.getNeighbors()){
-//			sum += nit.m_value;
-//		}
 		// R2 regularization over the weights of users.
 		for(_RankItem nit: ui.getNeighbors()){
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diff = Utils.EuclideanDistance(ui.getUser().getSVMWeights(), uj.getUser().getSVMWeights());
-//			R2 += nit.m_value * m_eta3 * diff/sum;
 			R2 += diff;
 		}
 		return R2;

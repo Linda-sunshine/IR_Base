@@ -194,4 +194,9 @@ public class _User {
 		return m_category;
 	}
 
+	double m_avgIDF = 0;
+	// Set average IDF value.
+	public void setAvgIDF(double v){
+		m_avgIDF = v;
+	}
  }

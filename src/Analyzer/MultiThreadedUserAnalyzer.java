@@ -1,9 +1,11 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.LinkedList;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
@@ -21,7 +25,10 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
+import structures._SparseFeature;
 import structures._User;
+import structures._stat;
+import utils.Utils;
 
 /**
  * @author Mohammad Al Boni
@@ -362,5 +369,48 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				count++;
 		}
 		return count;
+	}
+	
+	public void saveSFVct(String folder){
+		for(_User u:m_users) {
+			try {
+				BufferedWriter writer = new BufferedWriter(new FileWriter(folder+"/"+u.getUserID()+".txt"));
+		        StringBuilder buffer = new StringBuilder(512);
+		        _SparseFeature[] sfs = u.getBoWProfile();
+		        for(int i=0; i<sfs.length; i++) {
+		        	buffer.append(sfs[i].getIndex()+","+sfs[i].getValue());
+		        	if (i<sfs.length-1)
+		            	buffer.append(',');
+		        }
+		        writer.write(buffer.toString());
+		        writer.close();
+		    } catch (Exception e) {
+		        e.printStackTrace(); 
+		    } 
+		}
+		System.out.format("[Info]Save sparse features of users to %s.", folder);
+	}
+	
+	public void setProfileTFIDF(){
+		int N = m_TotalDF;
+
+		for (int i = 0; i < m_users.size(); i++) {
+			_User temp = m_users.get(i);
+			_SparseFeature[] sfs = temp.getBoWProfile();
+			double avgIDF = 0;
+			for (_SparseFeature sf : sfs) {
+				String featureName = m_featureNames.get(sf.getIndex());
+				_stat stat = m_featureStat.get(featureName);
+				double TF = 1 + Math.log10(sf.getValue());// sublinear TF
+				double DF = Utils.sumOfArray(stat.getDF());
+				double IDF = 1 + Math.log10(N / DF);
+				double TFIDF = TF * IDF;
+				sf.setValue(TFIDF);
+				avgIDF += IDF;
+			}
+			
+			//compute average IDF
+			temp.setAvgIDF(avgIDF/sfs.length);
+		}
 	}
 }
