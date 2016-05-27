@@ -30,11 +30,15 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
 	}
+
 	// added by Lin
 	public double getSelfSim(){
 		return m_sim;
 	}
-	
+	// added by Lin for avg adaptation.
+	public void setSelfSim(double v){
+		m_sim = v;
+	}
 	@Override
 	public void addNeighbor(int id, double similarity) {
 		m_neighbors.add(new _RankItem(id, similarity));
@@ -123,17 +127,16 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 //		else
 //			return 0;
 //	}
-	public double getSimilarity(CoAdaptStruct user, SimType sType) {
-		if (sType == SimType.ST_BoW){
-			if(user.getUser().getBoWSim(m_user) == 0)
-				return 0;
-			else
-				return 1/user.getUser().getBoWSim(m_user);
-		}
-		else 
-			return 0;
-	}
-	
+//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+//		if (sType == SimType.ST_BoW){
+//			if(user.getUser().getBoWSim(m_user) == 0)
+//				return 0;
+//			else
+//				return 1/user.getUser().getBoWSim(m_user);
+//		}
+//		else 
+//			return 0;
+//	}
 //	@Override
 //	public double getSimilarity(CoAdaptStruct user, SimType sType) {
 //		if (sType == SimType.ST_BoW)

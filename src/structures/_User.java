@@ -3,6 +3,8 @@ package structures;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import Classifier.supervised.modelAdaptation.CoLinAdapt.WeightedAvgAdapt.Neighbor;
+
 import structures._Review.rType;
 import utils.Utils;
 
@@ -28,6 +30,9 @@ public class _User {
 	protected int m_featureSize;
 	protected int[] m_category;
 	protected double[] m_svmWeights;
+	
+	protected Neighbor[] m_neighbors;
+	protected double m_sim; // Similarity of itself.
 	
 	public void setSVMWeights(double[] weights){
 		m_svmWeights = new double[weights.length];
@@ -134,27 +139,47 @@ public class _User {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
 	
+//	public int predict(_Doc doc) {
+//		_SparseFeature[] fv = doc.getSparse();
+//
+//		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
+//		if (m_classNo==2) {
+//			return maxScore>0?1:0;
+//		} else {//we will have k classes for multi-class classification
+//			double score;
+//			int pred = 0; 
+//		
+//			for(int i = 1; i < m_classNo; i++) {
+//				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
+//				if (score>maxScore) {
+//					maxScore = score;
+//					pred = i;
+//				}
+//			}
+//			return pred;
+//		}
+//	}
+	
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
-
-		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
-		if (m_classNo==2) {
-			return maxScore>0?1:0;
-		} else {//we will have k classes for multi-class classification
-			double score;
-			int pred = 0; 
-		
-			for(int i = 1; i < m_classNo; i++) {
-				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
-				if (score>maxScore) {
-					maxScore = score;
-					pred = i;
-				}
-			}
-			return pred;
-		}
+		double maxScore = mixedDotProduct(fv);
+		return maxScore>0?1:0;
 	}
 	
+	public double mixedDotProduct(_SparseFeature[] fvs){
+		double score = dotProduct(fvs, m_pWeight, m_sim);
+		for(Neighbor n: m_neighbors){
+			score += dotProduct(fvs, n.getWeights(), n.getSimilarity());
+		}
+		return score;
+	}
+	
+	public double dotProduct(_SparseFeature[] fvs, double[] weights, double sim){
+		double sum = 0;
+		for(_SparseFeature f:fvs) 
+			sum += weights[f.getIndex()+1] * f.getValue();		
+		return sum * sim;
+	}
 	// We need to consider the bias term.
 	public double dotProduct(double[] vct, _SparseFeature[] fvs){
 		double sum = vct[0]; // bias term
@@ -198,5 +223,13 @@ public class _User {
 	// Set average IDF value.
 	public void setAvgIDF(double v){
 		m_avgIDF = v;
+	}
+	
+	public void setNeighbors(Neighbor[] ns){
+		m_neighbors = ns;
+	}
+	
+	public void setSimilarity(double sim){
+		m_sim = sim;
 	}
  }
