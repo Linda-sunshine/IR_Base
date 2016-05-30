@@ -397,9 +397,9 @@ public class BM25Correspondence {
 		String TopChild4ParentFile = filePrefix + "/topChild4Parent.txt";
 		
 		String copiedStnFile = filePrefix+"/copiedStn.txt";
-		bm25Corr.identifyCopiedStnCmnt(c, copiedStnFile);
+//		bm25Corr.identifyCopiedStnCmnt(c, copiedStnFile);
 		
-//		bm25Corr.rankChild4Stn(c, TopChild4StnFile);
+		bm25Corr.rankChild4Stn(c, TopChild4StnFile);
 //		bm25Corr.rankStn4Child(c, TopStn4ChildFile);
 //		bm25Corr.rankChild4Parent(c, TopChild4ParentFile);
 //		bm25Corr.discoverSpecificComments(c, similarityFile);

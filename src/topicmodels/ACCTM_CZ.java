@@ -26,10 +26,10 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
-		
-		if(!m_collectCorpusStats){
-			return term;
-		}
+//		
+//		if(!m_collectCorpusStats){
+//			return term;
+//		}
 		
 		if(tid==0)
 			return term;
@@ -83,6 +83,43 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
+	public double inference(_Doc pDoc){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		
+		initTest(sampleTestSet, pDoc);
+	
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					collectStats(doc);
+				}
+				count ++;
+			}
+		} while (++iter<this.number_of_iteration);
+	
+		for(_Doc doc: sampleTestSet){
+			estThetaInDoc(doc);
+			logLikelihood += calculate_test_log_likelihood(doc);
+		}
+		
+		return logLikelihood;
+	}
+	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc) d;
 		for(_Stn stnObj: pDoc.getSentences()){
@@ -90,7 +127,8 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 		
 		int testLength = (int)pDoc.getTotalDocLength();
-		pDoc.setTopics4GibbsTest(number_of_topics, 0, 0);
+//		testLength = 0;
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 	
 		sampleTestSet.add(pDoc);
 		
@@ -108,9 +146,6 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);
-
-		// prepare compute the normalizers
-		_SparseFeature[] fv = cDoc.getSparse();
 
 		for (_Word w : cDoc.getTestWords()) {
 			int wid = w.getIndex();
@@ -142,12 +177,53 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	}
 
 	public double childTopicInDoc(int tid, _ChildDoc cDoc){
-		return cDoc.m_sstat[tid]/cDoc.m_xSstat[0];
+//		System.out.println("number of words in tid\t"+cDoc.m_sstat[tid]+"\t x=0 words \t"+cDoc.m_xSstat[0]);
+		return (cDoc.m_xTopicSstat[0][tid]+1e-10)/(cDoc.m_xSstat[0]+1e-10*number_of_topics);
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getChildDocLenWithXVal();
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			for(_Word w:stnObj.getWords()){
+				double featureLikelihood = 0;
+				
+				int wid = w.getIndex();
+				double docVal = 0;
+				if(cDoc.m_wordXStat.containsKey(wid)){
+					docVal = cDoc.m_wordXStat.get(wid);
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
+				
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+							
+				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				featureLikelihood = Math.log(featureLikelihood);
+				stnLogLikelihood += featureLikelihood;
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		return childLikelihoodMap;
 	}
 	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		
+		double gammaLen = Utils.sumOfArray(m_gamma);
+
 		for(_ChildDoc d:pDoc.m_childDocs){
 			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
 			double stnLogLikelihood = 0;

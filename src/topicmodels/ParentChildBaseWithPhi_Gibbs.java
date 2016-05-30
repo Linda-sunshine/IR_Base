@@ -109,6 +109,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			if(xid==0){
 				cDoc.m_xTopicSstat[xid][tid] --;
 				cDoc.m_xSstat[xid] --;
+				cDoc.m_wordXStat.put(wid, cDoc.m_wordXStat.get(wid)-1);
 				if(m_collectCorpusStats){
 					word_topic_sstat[tid][wid] --;
 					m_sstat[tid] --;
@@ -151,6 +152,12 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				w.setTopic(tid);
 				cDoc.m_xTopicSstat[xid][tid]++;
 				cDoc.m_xSstat[xid]++;
+				
+				if(cDoc.m_wordXStat.containsKey(wid)){
+					cDoc.m_wordXStat.put(wid, cDoc.m_wordXStat.get(wid)+1);
+				}else{
+					cDoc.m_wordXStat.put(wid, 1);
+				}
 				
 				if(m_collectCorpusStats){
 					word_topic_sstat[tid][wid] ++;
@@ -203,7 +210,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	protected void estThetaInDoc(_Doc d) {
 		
 		if (d instanceof _ParentDoc) {
-			estParentStnTopicProportion((_ParentDoc) d);
+			((_ParentDoc)d).estStnTheta();
+//			estParentStnTopicProportion((_ParentDoc) d);
 			Utils.L1Normalization(d.m_topics);
 		} else if (d instanceof _ChildDoc4BaseWithPhi) {
 			((_ChildDoc4BaseWithPhi) d).estGlobalLocalTheta();
@@ -323,24 +331,19 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		double smoothingMu = m_LM.m_smoothingMu;
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getTotalDocLength();
-			
-			_SparseFeature[] fv = cDoc.getSparse();
-			
+			double cDocLen = cDoc.getChildDocLenWithXVal();
+						
 			double stnLogLikelihood = 0;
 			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
 			
-			_SparseFeature[] sv = stnObj.getFv();
-			for(_SparseFeature svWord:sv){
+			for(_Word w:stnObj.getWords()){
 				double featureLikelihood = 0;
 				
-				int wid = svWord.getIndex();
-				double stnVal = svWord.getValue();
+				int wid = w.getIndex();
 				
-				int featureIndex = Utils.indexOf(fv, wid);
 				double docVal = 0;
-				if(featureIndex!=-1){
-					docVal = fv[featureIndex].getValue();
+				if(cDoc.m_wordXStat.containsKey(wid)){
+					docVal = cDoc.m_wordXStat.get(wid);
 				}
 				
 				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
@@ -349,15 +352,15 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				
 				double TMLikelihood = 0;
 				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					TMLikelihood += wordPerTopicLikelihood;
 				}
 				
-				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+//				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
 				
 				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
 				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += stnVal*featureLikelihood;
+				stnLogLikelihood += featureLikelihood;
 			}
 			
 			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
@@ -408,7 +411,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				double wordLogLikelihood = 0;
 				
 				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/(gammaLen+cDoc.getDocInferLength());
+					wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
 				
@@ -425,7 +429,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 			
-			m_LM.generateReferenceModel();
+			m_LM.generateReferenceModelWithXVal();
 			
 			for(_Doc d: m_corpus.getCollection()){
 				if(d instanceof _ParentDoc){

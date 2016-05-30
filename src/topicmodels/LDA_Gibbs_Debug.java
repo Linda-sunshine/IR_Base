@@ -104,13 +104,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	protected void estThetaInDoc(_Doc d) {
 		super.estThetaInDoc(d);
 		if(d instanceof _ParentDoc){
-			estParentStnTopicProportion((_ParentDoc)d);
-//			((_ParentDoc)d).estStnTheta();
+//			estParentStnTopicProportion((_ParentDoc)d);
+			((_ParentDoc)d).estStnTheta();
 		}
 	}
 	
 	protected void estParentStnTopicProportion(_ParentDoc pDoc) {
-		// pDoc.estStnTheta();
+//		 pDoc.estStnTheta();
 		for (_Stn stnObj : pDoc.getSentences()) {
 			estStn(stnObj, pDoc);
 		}
@@ -853,7 +853,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		
 		return childLikelihoodMap;
 	}
-	
+		
 	//stn is a query, retrieve comment by likelihood
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		

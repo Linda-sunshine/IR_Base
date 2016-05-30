@@ -19,6 +19,7 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
+import structures._Word;
 import utils.Utils;
 import Analyzer.ParentChildAnalyzer;
 
@@ -84,24 +85,25 @@ public class languageModelBaseLine{
 			}else{
 				double docLenWithXVal = 0;
 				
-				for(_SparseFeature fv:d.getSparse()){
-//					double xProportion = word.getXProb();
-					int wid = fv.getIndex();
+				for(_Word w:d.getWords()){
+//					double xProportion = w.getXProb();
+					int wid = w.getIndex();
+					double val = 0;
+//					double val = 1-xProportion;
+
 					
-					double valWithX = 0;
 					if (((_ChildDoc) d).m_wordXStat.containsKey(wid)) {
-						valWithX = ((_ChildDoc) d).m_wordXStat.get(wid);
+						val = ((_ChildDoc) d).m_wordXStat.get(wid);
 					}
 					
-//					double val = 1-xProportion;
-					docLenWithXVal += valWithX;
+					docLenWithXVal += val;
 					
-					m_allWordFrequencyWithXVal += fv.getValue();
+					m_allWordFrequencyWithXVal += val;
 					if(m_wordSstat.containsKey(wid)){
 						double oldVal = m_wordSstat.get(wid);
-						m_wordSstat.put(wid, oldVal+valWithX);
+						m_wordSstat.put(wid, oldVal+val);
 					}else{
-						m_wordSstat.put(wid, valWithX);
+						m_wordSstat.put(wid, val);
 					}
 				}
 				
