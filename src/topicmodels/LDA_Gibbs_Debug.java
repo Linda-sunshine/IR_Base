@@ -597,6 +597,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		printTopKChild4Parent(filePrefix, topKChild);
 		printTopKChild4Stn(filePrefix, topKChild);
 		printTopKChild4StnWithHybrid(filePrefix, topKChild);
+		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 	}
 
@@ -854,6 +855,52 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return childLikelihoodMap;
 	}
 		
+	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] fv = cDoc.getSparse();
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord: sv){
+				double wordLikelihood = 0;
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/cDocLen;
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = (word_topic_sstat[k][wid]/m_sstat[k])*(topicInDocProb(k, cDoc)/(d_alpha*number_of_topics+cDocLen));
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+				
+				wordLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				wordLikelihood = Math.log(wordLikelihood);
+				stnLogLikelihood += stnVal*wordLikelihood;
+			}
+			
+			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
+			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
+
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		return childLikelihoodMap;
+	}
+	
 	//stn is a query, retrieve comment by likelihood
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		
@@ -1102,6 +1149,44 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	protected void printTopKChild4StnWithHybridPro(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Stn_hybridPro.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			m_LM.generateReferenceModel();
+			
+			for(_Doc d: m_corpus.getCollection()){
+				if(d instanceof _ParentDoc){
+					_ParentDoc pDoc = (_ParentDoc)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
+					
+					for(_Stn stnObj:pDoc.getSentences()){
+						HashMap<String, Double> likelihoodMap = rankChild4StnByHybridPro(stnObj, pDoc);
+						
+						pw.print((stnObj.getIndex()+1)+"\t");
+						
+						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
+							pw.print(e.getKey());
+							pw.print(":"+e.getValue());
+							pw.print("\t");
+							
+						}
+						pw.println();		
+				
+					}
+				}
+			}
+			pw.flush();
+			pw.close();
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	protected void printTopKChild4StnWithHybrid(String filePrefix, int topK){

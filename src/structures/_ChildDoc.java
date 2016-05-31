@@ -50,9 +50,6 @@ public class _ChildDoc extends _Doc {
 	public void setTopics4Gibbs(int k, double alpha){		
 		createSpace(k, alpha);
 		
-//		m_stnLikelihoodMap = new HashMap<Integer, Double>();
-//		m_stnSimMap = new HashMap<Integer, Double>();
-		
 		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();
@@ -63,7 +60,13 @@ public class _ChildDoc extends _Doc {
 
 				m_xTopicSstat[xid][tid] ++;
 				m_xSstat[xid] ++;
-						
+				
+				if(m_wordXStat.containsKey(wid)){
+					m_wordXStat.put(wid, m_wordXStat.get(wid)+1);	
+				}else{
+					m_wordXStat.put(wid, 1);
+				}
+				
 				wIndex ++;
 			}
 		}

@@ -58,7 +58,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			if(d instanceof _ParentDoc){
 				d.setTopics4Gibbs(number_of_topics, 0);
 				for(_Stn stnObj: d.getSentences())
-					stnObj.setTopic(number_of_topics);				
+					stnObj.setTopicsVct(number_of_topics);				
 			} else if(d instanceof _ChildDoc){
 				((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
 				computeMu4Doc((_ChildDoc) d);
@@ -447,7 +447,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		int topKChild = 10;
 		printTopKChild4StnWithHybrid(filePrefix, topKChild);
 		printTopKChild4Stn(filePrefix, topKChild);
-		
+		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 		
 		printTopKChild4Parent(filePrefix, topKChild);
@@ -844,6 +844,53 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}
 		
+		return childLikelihoodMap;
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] fv = cDoc.getSparse();
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord: sv){
+				double wordLikelihood = 0;
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/cDocLen;
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = (wordByTopicProb(k, wid))*(childTopicInDocProb(k, cDoc));
+
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+				
+				wordLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				wordLikelihood = Math.log(wordLikelihood);
+				stnLogLikelihood += stnVal*wordLikelihood;
+			}
+			
+			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
+			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
+
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
 		return childLikelihoodMap;
 	}
 	

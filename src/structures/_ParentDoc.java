@@ -65,8 +65,12 @@ public class _ParentDoc extends _Doc {
 		for(_Stn s:m_sentences) {
 			theta = s.m_topics;
 			for(_SparseFeature f:s.m_x_sparse) {
-				for(int tid=0; tid<m_topics.length; tid++)
-					theta[tid] += m_phi[m_word2Index.get(f.m_index)][tid]; 
+				for(int tid=0; tid<m_topics.length; tid++){
+					int index = f.m_index;
+					int term1 = m_word2Index.get(index);
+					double temp = m_phi[term1][tid];
+					theta[tid] += temp; 
+				}
 			}
 			Utils.L1Normalization(theta);
 		}

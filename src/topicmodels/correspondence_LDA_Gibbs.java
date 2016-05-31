@@ -424,6 +424,53 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		return childLikelihoodMap;
 	}
 	
+	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] fv = cDoc.getSparse();
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord: sv){
+				double wordLikelihood = 0;
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/cDocLen;
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = wordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
+
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+				
+				wordLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				wordLikelihood = Math.log(wordLikelihood);
+				stnLogLikelihood += stnVal*wordLikelihood;
+			}
+			
+			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
+			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
+
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		return childLikelihoodMap;
+	}
+	
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
 //		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
 		double docLogLikelihood = 0.0;
