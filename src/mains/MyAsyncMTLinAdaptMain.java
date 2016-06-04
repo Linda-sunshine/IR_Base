@@ -55,11 +55,11 @@ public class MyAsyncMTLinAdaptMain {
 		// Create an instance of asyncMTLinAdapt.
 		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setTrainByUser(true);//train by review-driven mode.
+		adaptation.setTrainByUser(false);//train by review-driven mode.
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setRsTradeOffs(lambda1, lambda2);
-		adaptation.setRPTTime(3);
+		adaptation.setRPTTime(1);
 		adaptation.train();
 		adaptation.test();
 		

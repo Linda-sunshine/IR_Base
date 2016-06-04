@@ -139,32 +139,32 @@ public class _User {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
 	
-//	public int predict(_Doc doc) {
-//		_SparseFeature[] fv = doc.getSparse();
-//
-//		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
-//		if (m_classNo==2) {
-//			return maxScore>0?1:0;
-//		} else {//we will have k classes for multi-class classification
-//			double score;
-//			int pred = 0; 
-//		
-//			for(int i = 1; i < m_classNo; i++) {
-//				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
-//				if (score>maxScore) {
-//					maxScore = score;
-//					pred = i;
-//				}
-//			}
-//			return pred;
-//		}
-//	}
-	
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
-		double maxScore = mixedDotProduct(fv);
-		return maxScore>0?1:0;
+
+		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
+		if (m_classNo==2) {
+			return maxScore>0?1:0;
+		} else {//we will have k classes for multi-class classification
+			double score;
+			int pred = 0; 
+		
+			for(int i = 1; i < m_classNo; i++) {
+				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
+				if (score>maxScore) {
+					maxScore = score;
+					pred = i;
+				}
+			}
+			return pred;
+		}
 	}
+	
+//	public int predict(_Doc doc) {
+//		_SparseFeature[] fv = doc.getSparse();
+//		double maxScore = mixedDotProduct(fv);
+//		return maxScore>0?1:0;
+//	}
 	
 	public double mixedDotProduct(_SparseFeature[] fvs){
 		double score = dotProduct(fvs, m_pWeight, m_sim);
@@ -231,5 +231,10 @@ public class _User {
 	
 	public void setSimilarity(double sim){
 		m_sim = sim;
+	}
+	
+	public void appendRvws(ArrayList<_Review> rs){
+		for(_Review r: rs)
+			m_reviews.add(r);
 	}
  }
