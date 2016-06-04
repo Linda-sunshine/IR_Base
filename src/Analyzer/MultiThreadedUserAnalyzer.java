@@ -8,7 +8,9 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -411,6 +413,20 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			
 			//compute average IDF
 			temp.setAvgIDF(avgIDF/sfs.length);
+		}
+	}
+	public void printPosRatio(){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File("posRatio.txt"));
+			int count = 0;
+			for(_User u: m_users){
+				writer.write(count + "," + u.getPosRatio() + "\n");
+				count++;
+			}
+			writer.close();
+		} catch(FileNotFoundException e){
+			e.printStackTrace();
 		}
 	}
 }

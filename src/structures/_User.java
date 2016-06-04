@@ -57,6 +57,7 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		
 		constructSparseVector();
+		calcPosRatio();
 	}
 	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
@@ -236,5 +237,19 @@ public class _User {
 	public void appendRvws(ArrayList<_Review> rs){
 		for(_Review r: rs)
 			m_reviews.add(r);
+	}
+	
+	double m_posRatio = 0;
+	public void calcPosRatio(){
+		double pos = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				pos++;
+		}
+		m_posRatio = pos / m_reviews.size();
+	}
+	
+	public double getPosRatio(){
+		return m_posRatio;
 	}
  }

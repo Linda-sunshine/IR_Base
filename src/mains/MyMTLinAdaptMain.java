@@ -68,14 +68,15 @@ public class MyMTLinAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		analyzer.printPosRatio();
 		
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 
-		mtlinadaptsup.loadUsers(analyzer.getUsers());
-		mtlinadaptsup.setDisplayLv(displayLv);
-		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-		mtlinadaptsup.train();
-		mtlinadaptsup.test();
+//		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 
+//		mtlinadaptsup.loadUsers(analyzer.getUsers());
+//		mtlinadaptsup.setDisplayLv(displayLv);
+//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
+//		mtlinadaptsup.train();
+//		mtlinadaptsup.test();
 	}
 }
