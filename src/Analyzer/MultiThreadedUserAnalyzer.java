@@ -46,7 +46,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected double m_globalLen = 0, m_maxLen = 0;
 	protected double[][] m_userWeights;
 	protected HashMap<String, Integer> m_userIDIndex;
-	
+	protected int[] m_ctgCounts;
+	protected int m_ctgThreshold; // added by Lin, the category threshold for selecting users.
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
 					throws InvalidFormatException, FileNotFoundException, IOException {
@@ -132,7 +133,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-//			int[] categories = new int[m_categories.size()];
+			int[] categories = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -142,8 +143,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-//				if(m_categories.contains(category))
-//					categories[m_categories.indexOf(category)] = 1;
+				if(m_categories.contains(category))
+					categories[m_categories.indexOf(category)] = 1;
 				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -163,15 +164,16 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			localAvg = localLength / localSize;
 			
 			// Added by Lin for debugging.
-			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
+			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
 				//&& (reviews.size() <= 10
 				if( localAvg > m_maxLen)
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);			
-					m_users.add(new _User(userID, m_classNo, reviews));
-//					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
+//					m_users.add(new _User(userID, m_classNo, reviews));
+					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
+					m_ctgCounts[Utils.sumOfArray(categories)]++;
 				}
 			}
 			reader.close();
@@ -301,6 +303,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			}
 			reader.close();
 			System.out.println(m_categories.size() + " categories are loaded.");
+			m_ctgCounts = new int[m_categories.size()];
 		} catch(IOException e){
 			e.printStackTrace();
 		}
@@ -428,5 +431,31 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		} catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
+	}
+	
+	// added by Lin, calculate the overall pos/neg ratio of reviews.
+	public double calcRatio(){
+		double neg = 0, pos = 0;
+		for(_User u: m_users){
+			for(_Review r: u.getReviews()){
+				if(r.getYLabel() == 0)
+					neg++;
+				else 
+					pos++;
+			}
+		}
+		return pos / neg;
+	}
+	
+	// added by Lin, print the counts of users with different categories.
+	public void printCategoryStat(){
+		for(int i: m_ctgCounts)
+			System.out.print(i + "\t");
+		System.out.println();
+	}
+	
+	// added by Lin, set the threshold for category counts.
+	public void setCtgThreshold(int k){
+		m_ctgThreshold = k;
 	}
 }

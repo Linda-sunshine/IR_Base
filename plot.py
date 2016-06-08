@@ -27,12 +27,18 @@ def getCounts(ratio, interval):
 
 
 filename = 'posRatio.txt'
-interval = 10
+interval = 5
 ratio = loadData(filename)
 count = getCounts(ratio, interval)
 
 x = []
 for i in range(len(count)):
 	x.append(i*interval/100.0)
-plt.plot(x, count, 'p-')
+counts = []
+val = 0
+for i in count:
+	val += i
+	counts.append(val)
+plt.plot(x, counts, 'p-')
+print counts
 plt.show()

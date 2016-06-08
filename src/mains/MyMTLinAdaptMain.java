@@ -34,7 +34,7 @@ public class MyMTLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.25;
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -50,7 +50,8 @@ public class MyMTLinAdaptMain {
 //		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
 		String dataset = "Amazon"; // "Amazon", "Yelp"
-		String tokenModel = "./data/Model/en-token.bin"; // Token model.				
+		String tokenModel = "./data/Model/en-token.bin"; // Token model.
+		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, 800);
@@ -65,10 +66,11 @@ public class MyMTLinAdaptMain {
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		analyzer.printPosRatio();
+//		System.out.println(analyzer.calcRatio());
 		
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
 //		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 

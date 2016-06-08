@@ -41,6 +41,11 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	}
 
 	@Override
+	public String toString() {
+		return String.format("WeightedAvgAdapt[dim:%d,eta1:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_topK, m_sType);
+	}
+	
+	@Override
 	protected int getVSize() {
 		return m_dim*m_userList.size();
 	}
