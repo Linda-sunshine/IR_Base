@@ -91,7 +91,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			subSum = uj.getPWeight(0);
 			for(_SparseFeature f: fvs) 
 				subSum += uj.getPWeight(f.getIndex()+1) * f.getValue();		
-			sum += (m_cosSim ? nit.m_value : 1.0/m_topK) * subSum;
+			sum += (m_cosSim ? nit.m_value : 1.0/(m_topK+1)) * subSum;
 		}
 		return Utils.logistic(sum);
 	}
