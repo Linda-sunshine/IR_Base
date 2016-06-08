@@ -33,6 +33,9 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		}
 	}
 	
+	// By default, we use the cosine similarity between documents, we can also use 1/(topK+1).
+	boolean m_cosSim = true;
+	
 	public WeightedAvgAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap) {
@@ -71,28 +74,6 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			System.arraycopy(m_gWeights, 0, _CoLinAdaptStruct.sharedA, vSize*i, vSize);
 	}
 	@Override
-//	// In this logit function, we need to sum over all the neighbors of the current user.
-//	protected double logit(_SparseFeature[] fvs, _AdaptStruct user){
-//		
-//		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) user;
-//		// The user itself.
-//		double sum = 0;
-//		double subSum = ui.getPWeight(0); // bias term
-//		for(_SparseFeature f:fvs) 
-//			subSum += ui.getPWeight(f.getIndex()+1) * f.getValue();		
-//		sum += ui.getSelfSim() * subSum;
-//		
-//		// Traverse all neighbors of the current user.
-//		for(_RankItem nit: ui.getNeighbors()){
-//			_CoLinAdaptStruct uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);
-//			subSum = uj.getPWeight(0);
-//			for(_SparseFeature f: fvs) 
-//				subSum += uj.getPWeight(f.getIndex()+1) * f.getValue();		
-//			sum += nit.m_value * subSum;
-//		}
-//		return Utils.logistic(sum);
-//	}
-	
 	// In this logit function, we need to sum over all the neighbors of the current user.
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct user){
 		
@@ -102,7 +83,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		double subSum = ui.getPWeight(0); // bias term
 		for(_SparseFeature f:fvs) 
 			subSum += ui.getPWeight(f.getIndex()+1) * f.getValue();		
-		sum += 1.0/m_topK * subSum;
+		sum += (m_cosSim ? 1.0/(m_topK+1) : ui.getSelfSim()) * subSum;
 		
 		// Traverse all neighbors of the current user.
 		for(_RankItem nit: ui.getNeighbors()){
@@ -110,11 +91,10 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			subSum = uj.getPWeight(0);
 			for(_SparseFeature f: fvs) 
 				subSum += uj.getPWeight(f.getIndex()+1) * f.getValue();		
-			sum += 1.0/m_topK * subSum;
+			sum += (m_cosSim ? nit.m_value : 1.0/m_topK) * subSum;
 		}
 		return Utils.logistic(sum);
 	}
-	
 	
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
@@ -128,33 +108,6 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	
 	//shared gradient calculation by batch and online updating
 	@Override
-//	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
-//		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
-//		
-//		int n, offsetj;
-//		int offset = m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-//		double delta = (review.getYLabel() - logit(review.getSparse(), ui));
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(ui);
-//		
-//		// Current user's info: Bias term + other features.
-//		m_g[offset] -= weight*delta*ui.getSelfSim(); // \theta_{ii}*x_0 and x_0=1
-//		for(_SparseFeature fv: review.getSparse()){
-//			n = fv.getIndex() + 1;
-//			m_g[offset + n] -= weight * delta * ui.getSelfSim() * fv.getValue();//\theta_{ii}*x_d
-//		}
-//		
-//		// Neighbors' info.
-//		for(_RankItem nit: ui.getNeighbors()) {
-//			offsetj = m_dim*nit.m_index;
-//			m_g[offsetj] -= weight * delta*nit.m_value; // neighbors' bias term.
-//			for(_SparseFeature fv: review.getSparse()){
-//				n = fv.getIndex() + 1;
-//				m_g[offsetj + n] -= weight * delta * nit.m_value * fv.getValue(); // neighbors' other features.
-//			}
-//		}
-//	}
-	
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
 		
@@ -165,22 +118,23 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			delta /= getAdaptationSize(ui);
 		
 		// Current user's info: Bias term + other features.
-		m_g[offset] -= weight*delta*1.0/m_topK; // \theta_{ii}*x_0 and x_0=1
+		m_g[offset] -= weight*delta*(m_cosSim ? ui.getSelfSim() : 1.0/(m_topK+1)); // \theta_{ii}*x_0 and x_0=1
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
-			m_g[offset + n] -= weight * delta * 1.0/m_topK * fv.getValue();//\theta_{ii}*x_d
+			m_g[offset + n] -= weight * delta * ui.getSelfSim() * fv.getValue();//\theta_{ii}*x_d
 		}
 		
 		// Neighbors' info.
 		for(_RankItem nit: ui.getNeighbors()) {
 			offsetj = m_dim*nit.m_index;
-			m_g[offsetj] -= weight * delta*1.0/m_topK; // neighbors' bias term.
+			m_g[offsetj] -= weight * delta*(m_cosSim ? nit.m_value : 1.0/(m_topK+1)); // neighbors' bias term.
 			for(_SparseFeature fv: review.getSparse()){
 				n = fv.getIndex() + 1;
-				m_g[offsetj + n] -= weight * delta * 1.0/m_topK * fv.getValue(); // neighbors' other features.
+				m_g[offsetj + n] -= weight * delta * (m_cosSim ? nit.m_value : 1.0/(m_topK+1)) * fv.getValue(); // neighbors' other features.
 			}
 		}
 	}
+
 	//Calculate the gradients for the use in LBFGS.
 	@Override
 	protected void gradientByR1(_AdaptStruct u){
