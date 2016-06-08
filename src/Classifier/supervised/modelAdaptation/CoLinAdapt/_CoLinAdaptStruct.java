@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import Classifier.supervised.modelAdaptation.CoAdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;
@@ -18,8 +19,10 @@ import structures._User;
 public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct {
 	
 	static double[] sharedA;//this stores shared transformation operation across all uesrs	
+	
 	MyPriorityQueue<_RankItem> m_neighbors; //top-K neighborhood, we only store an asymmetric graph structure
 	LinkedList<_RankItem> m_reverseNeighbors; // this user contributes to the other users' neighborhood
+	double m_sim = 1; // The similarity of the user, i.e., w_{ii}. added by Lin.
 	
 	public _CoLinAdaptStruct(_User user, int dim, int id, int topK) {
 		super(user, dim);
@@ -27,7 +30,15 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		m_neighbors = new MyPriorityQueue<_RankItem>(topK);
 		m_reverseNeighbors = new LinkedList<_RankItem>();
 	}
-	
+
+	// added by Lin
+	public double getSelfSim(){
+		return m_sim;
+	}
+	// added by Lin for avg adaptation.
+	public void setSelfSim(double v){
+		m_sim = v;
+	}
 	@Override
 	public void addNeighbor(int id, double similarity) {
 		m_neighbors.add(new _RankItem(id, similarity));
@@ -99,7 +110,7 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		int offset = m_id * m_dim * 2;
 		return sharedA[offset+gid];
 	}
-	
+
 	public void setScaling(int gid, double value) {
 		if (gid<0 || gid>m_dim) {
 			System.err.format("[Error]%d is beyond the range of feature grouping!\n", gid);
@@ -109,4 +120,28 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		int offset = m_id * m_dim * 2;
 		sharedA[offset+gid] = value;
 	}
+//	@Override
+//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+//		if (sType == SimType.ST_BoW)
+//			return user.getUser().getBoWSimBaseSVMWeights(m_user);
+//		else
+//			return 0;
+//	}
+//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+//		if (sType == SimType.ST_BoW){
+//			if(user.getUser().getBoWSim(m_user) == 0)
+//				return 0;
+//			else
+//				return 1/user.getUser().getBoWSim(m_user);
+//		}
+//		else 
+//			return 0;
+//	}
+//	@Override
+//	public double getSimilarity(CoAdaptStruct user, SimType sType) {
+//		if (sType == SimType.ST_BoW)
+//			return Math.random();
+//		else
+//			return 0;
+//	}
 }
