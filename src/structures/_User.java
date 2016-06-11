@@ -1,6 +1,9 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+
+import Classifier.supervised.modelAdaptation.CoLinAdapt.WeightedAvgAdapt.Neighbor;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -25,7 +28,20 @@ public class _User {
 	protected double[] m_pWeight;
 	protected int m_classNo;
 	protected int m_featureSize;
+	protected int[] m_category;
+	protected double[] m_svmWeights;
 	
+	protected Neighbor[] m_neighbors;
+	protected double m_sim; // Similarity of itself.
+	
+	public void setSVMWeights(double[] weights){
+		m_svmWeights = new double[weights.length];
+		m_svmWeights = Arrays.copyOf(weights, weights.length);
+	}
+	
+	public double[] getSVMWeights(){
+		return m_svmWeights;
+	}
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
@@ -40,6 +56,21 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		
+		constructSparseVector();
+		calcPosRatio();
+	}
+	
+	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
+		m_userID = userID;
+		m_reviews = reviews;
+		m_classNo = classNo;
+
+		m_lowDimProfile = null;
+		m_BoWProfile = null;
+		m_pWeight = null;
+
+		m_perfStat = new _PerformanceStat(classNo);
+		m_category = category;
 		constructSparseVector();
 	}
 	
@@ -101,6 +132,10 @@ public class _User {
 		return Utils.cosine(m_BoWProfile, u.getBoWProfile());
 	}
 	
+	public double getBoWSimBaseSVMWeights(_User u){
+		return Utils.cosine(m_svmWeights, u.getSVMWeights());
+	}
+	
 	public double getSVDSim(_User u) {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
@@ -126,6 +161,26 @@ public class _User {
 		}
 	}
 	
+//	public int predict(_Doc doc) {
+//		_SparseFeature[] fv = doc.getSparse();
+//		double maxScore = mixedDotProduct(fv);
+//		return maxScore>0?1:0;
+//	}
+	
+	public double mixedDotProduct(_SparseFeature[] fvs){
+		double score = dotProduct(fvs, m_pWeight, m_sim);
+		for(Neighbor n: m_neighbors){
+			score += dotProduct(fvs, n.getWeights(), n.getSimilarity());
+		}
+		return score;
+	}
+	
+	public double dotProduct(_SparseFeature[] fvs, double[] weights, double sim){
+		double sum = 0;
+		for(_SparseFeature f:fvs) 
+			sum += weights[f.getIndex()+1] * f.getValue();		
+		return sum * sim;
+	}
 	// We need to consider the bias term.
 	public double dotProduct(double[] vct, _SparseFeature[] fvs){
 		double sum = vct[0]; // bias term
@@ -159,5 +214,42 @@ public class _User {
 				count++;
 		}
 		return count/m_reviews.size();
+	}
+	
+	public int[] getCategory(){
+		return m_category;
+	}
+
+	double m_avgIDF = 0;
+	// Set average IDF value.
+	public void setAvgIDF(double v){
+		m_avgIDF = v;
+	}
+	
+	public void setNeighbors(Neighbor[] ns){
+		m_neighbors = ns;
+	}
+	
+	public void setSimilarity(double sim){
+		m_sim = sim;
+	}
+	
+	public void appendRvws(ArrayList<_Review> rs){
+		for(_Review r: rs)
+			m_reviews.add(r);
+	}
+	
+	double m_posRatio = 0;
+	public void calcPosRatio(){
+		double pos = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				pos++;
+		}
+		m_posRatio = pos / m_reviews.size();
+	}
+	
+	public double getPosRatio(){
+		return m_posRatio;
 	}
  }

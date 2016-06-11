@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.RegLR;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -14,21 +17,17 @@ import utils.Utils;
  * The modified version of MT-SVM since it cannot be performed in online mode.
  * @author Lin
  */
-public class asyncMTRegLR extends asyncRegLR {
+public class asyncMTRegLR extends asyncRegLR {//asyncRegLR
 	double m_u; //parameter of the global part.
 	double[] m_glbWeights; // shared global weights.
+	double m_initStepSize = 0.05;
 	
 	public asyncMTRegLR(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_u = 1;
-		
 		m_glbWeights = new double[m_featureSize+1];
 		System.arraycopy(m_gWeights, 0, m_glbWeights, 0, m_gWeights.length);//start from the old global model
-	}
-	
-	public void setTradeOffParam(double u){
-		m_u = Math.sqrt(u);
 	}
 	
 	@Override
@@ -36,13 +35,17 @@ public class asyncMTRegLR extends asyncRegLR {
 		return String.format("asyncMTRegLR[u:%.2f,initStepSize: %.3f, eta1:%.3f]", m_u, m_initStepSize, m_eta1);
 	}
 	
+	public void setInitStepSize(double initStepSize) {
+		m_initStepSize = initStepSize;
+	}
+	
 	@Override
 	protected void initLBFGS(){
+		m_eta1 = 1.0/m_userList.size();
 		// This is asynchronized model update, at any time we will only touch one user together with the global model 
 		if(m_g == null)
 			m_g = new double[(m_featureSize+1)*2];
 		Arrays.fill(m_g, 0);
-		
 		//no need to initialize m_diag, since this is asynconized model update
 	}
 
@@ -59,7 +62,7 @@ public class asyncMTRegLR extends asyncRegLR {
 		}
 		return Utils.logistic(sum);
 	}
-	
+		
 	@Override
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n, offset = m_featureSize+1; // feature index
@@ -87,6 +90,7 @@ public class asyncMTRegLR extends asyncRegLR {
 		//R1 regularization part
 		for(int k=0; k<m_featureSize+1; k++){
 			v = 2 * m_eta1 * (user.getPWeight(k) + m_u * m_glbWeights[k] - m_gWeights[k]);
+//			v = 2 * m_eta1 * (user.getPWeight(k) + m_u * m_glbWeights[k]);
 			m_g[k] += v;
 			m_g[offset + k] += v * m_u;
 		}
@@ -99,19 +103,25 @@ public class asyncMTRegLR extends asyncRegLR {
 		_Review doc;
 		_AdaptStruct user;
 		_PerformanceStat perfStat;
+		double val;
 
 		initLBFGS();
 		init();
+		try{
+			
+		m_writer = new PrintWriter(new File(String.format("%s_online_MTRegLR.txt", m_dataset)));
 		for(int i=0; i<m_userList.size(); i++) {
 			user = m_userList.get(i);
 		
 			while(user.hasNextAdaptationIns()) {
 				// test the latest model before model adaptation
 				if (m_testmode != TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
-					perfStat = user.getPerfStat();						
+					perfStat = user.getPerfStat();	
+					val = logit(doc.getSparse(), user);
 					predL = predict(doc, user);
 					trueL = doc.getYLabel();
 					perfStat.addOnePredResult(predL, trueL);
+					m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
 				} // in batch mode we will not accumulate the performance during adaptation				
 			
 				gradientDescent(user, m_initStepSize, 1.0);
@@ -128,8 +138,12 @@ public class asyncMTRegLR extends asyncRegLR {
 					gNormOld = gNorm;
 				}
 			}
+			m_writer.flush();
 			if (m_displayLv==1)
 				System.out.println();
+		} 
+		}catch(IOException e){
+			e.printStackTrace();
 		}
 		setPersonalizedModel();
 		return 0;//we do not evaluate function value

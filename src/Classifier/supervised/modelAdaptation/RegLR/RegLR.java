@@ -3,6 +3,7 @@
  */
 package Classifier.supervised.modelAdaptation.RegLR;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,6 +32,8 @@ public class RegLR extends ModelAdaptation {
 	protected double[] m_diag; //parameter used in lbfgs.
 	protected double[] m_g;//optimized gradients. 
 		
+	protected PrintWriter m_writer;
+
 	public RegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		// default value of trade-off parameters
