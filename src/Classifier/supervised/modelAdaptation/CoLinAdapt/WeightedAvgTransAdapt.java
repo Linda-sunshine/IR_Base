@@ -1,37 +1,56 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
-import structures._User;
 import utils.Utils;
 
+/**
+ * Linear transformation based average model adaptation
+ * @author Lin Gong
+ *
+ */
 public class WeightedAvgTransAdapt extends CoLinAdapt {
 
+	// By default, we use the cosine similarity between documents, we can also use 1/(topK+1).
+	boolean m_cosSim = true;
+		
 	public WeightedAvgTransAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
 			String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 	}
 	
+	public void setNeighborWeight(boolean cosine) {
+		m_cosSim = cosine;
+	}
+	
 	@Override
-	public void loadUsers(ArrayList<_User> userList){		
-		super.loadUsers(userList);
-		_CoLinAdaptStruct ui;
+	public String toString() {
+		return String.format("WeightedAvgTransAdapt[dim:%d,eta1:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_topK, m_sType);
+	}
+	
+	@Override
+	public void constructNeighborhood(final SimType sType){		
+		super.constructNeighborhood(sType);
 		
+		_CoLinAdaptStruct ui;		
 		double sum; // the user's own similarity.
 		// Normalize the similarity of neighbors.
-		for(int i=0; i<userList.size(); i++){
+		for(int i=0; i<m_userList.size(); i++){
 			ui = (_CoLinAdaptStruct) m_userList.get(i);
 			sum = 1;
 			// Collect the sum of similarity.
-			for(_RankItem nit: ui.getNeighbors())
-				sum += nit.m_value;
+			for(_RankItem nit: ui.getNeighbors()) {
+				if (m_cosSim)
+					sum += nit.m_value;
+				else
+					sum ++;
+			}
 			
 			// Update the user's similarity.
 			ui.setSelfSim(1/sum);
@@ -44,27 +63,13 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 	@Override
 	// In this logit function, we need to sum over all the neighbors of the current user.
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct user){
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) user;
-		
-		int n, k; // group index		
-		double sum = 0, subSum = ui.getScaling(0) * m_gWeights[0] + ui.getShifting(0); // bias term
-		for(_SparseFeature fv: fvs){
-			n = fv.getIndex() + 1;
-			k = m_featureGroupMap[n];
-			subSum += (ui.getScaling(k)*m_gWeights[n] + ui.getShifting(k)) * fv.getValue();
-		}
-		sum += ui.getSelfSim() * subSum;
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) user;		
+		double sum = ui.getSelfSim() * linearFunc(fvs, ui);
 		
 		// Traverse all neighbors of the current user.
 		for(_RankItem nit: ui.getNeighbors()){
-			_CoLinAdaptStruct uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);
-			subSum = uj.getScaling(0) * m_gWeights[0] + uj.getShifting(0);// bias term for the neighbor.
-			for(_SparseFeature fv: fvs){
-				n = fv.getIndex() + 1;
-				k = m_featureGroupMap[n];
-				subSum += (uj.getScaling(k)*m_gWeights[n] + uj.getShifting(k)) * fv.getValue();		
-			}
-			sum += nit.m_value * subSum;
+			_CoLinAdaptStruct uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);			
+			sum += nit.m_value * linearFunc(fvs, uj);
 		}
 		return Utils.logistic(sum);
 	}
@@ -129,4 +134,28 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 		}
 	}
 
+	@Override
+	public void setPersonalizedModel(){
+		_CoLinAdaptStruct ui, uj;
+		int k;
+		
+		for(int i=0; i<m_userList.size(); i++){
+			ui = (_CoLinAdaptStruct)m_userList.get(i);			
+			
+			for(int n=0; n<m_dim; n++) {
+				k = m_featureGroupMap[n];
+				m_pWeights[n] = ui.getSelfSim() * (m_gWeights[n] * ui.getScaling(k) + ui.getShifting(k));
+			}
+			
+			//traverse all the neighbors
+			for(_RankItem nit: ui.getNeighbors()) {
+				uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);	
+				for(int n=0; n<m_dim; n++) {
+					k = m_featureGroupMap[n];
+					m_pWeights[n] += nit.m_value * (m_gWeights[n] * uj.getScaling(k) + uj.getShifting(k));
+				}
+			}
+			ui.setPersonalizedModel(m_pWeights);
+		}
+	}
 }

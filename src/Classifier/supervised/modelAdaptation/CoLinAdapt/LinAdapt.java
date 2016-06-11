@@ -14,6 +14,7 @@ import structures._Doc;
 import structures._PerformanceStat.TestMode;
 import structures._SparseFeature;
 import structures._User;
+import utils.Utils;
 
 public class LinAdapt extends RegLR {
 	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
@@ -103,10 +104,8 @@ public class LinAdapt extends RegLR {
 		Arrays.fill(m_diag, 0);
 		Arrays.fill(m_g, 0);
 	}
-
-	// We can do A*w*x at the same time to reduce computation.
-	@Override
-	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
+	
+	protected double linearFunc(_SparseFeature[] fvs, _AdaptStruct u) {
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
 		double value = user.getScaling(0)*m_gWeights[0] + user.getShifting(0);//Bias term: w0*a0+b0.
 		int n = 0, k = 0; // feature index and feature group index
@@ -115,7 +114,13 @@ public class LinAdapt extends RegLR {
 			k = m_featureGroupMap[n];
 			value += (user.getScaling(k)*m_gWeights[n] + user.getShifting(k)) * fv.getValue();
 		}
-		return 1/(1+Math.exp(-value));
+		return value;
+	}
+
+	// We can do A*w*x at the same time to reduce computation.
+	@Override
+	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){		
+		return Utils.logistic(linearFunc(fvs, u));
 	}
 	
 	//Calculate the function value of the new added instance.

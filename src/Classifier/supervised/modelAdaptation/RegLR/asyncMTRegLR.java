@@ -17,8 +17,7 @@ import utils.Utils;
  * The modified version of MT-SVM since it cannot be performed in online mode.
  * @author Lin
  */
-public class asyncMTRegLR extends asyncRegLR {//asyncRegLR
-	double m_u; //parameter of the global part.
+public class asyncMTRegLR extends MTRegLR {//asyncRegLR
 	double[] m_glbWeights; // shared global weights.
 	double m_initStepSize = 0.05;
 	
@@ -107,41 +106,40 @@ public class asyncMTRegLR extends asyncRegLR {//asyncRegLR
 
 		initLBFGS();
 		init();
-		try{
+		try{			
+			m_writer = new PrintWriter(new File(String.format("%s_online_MTRegLR.txt", m_dataset)));
+			for(int i=0; i<m_userList.size(); i++) {
+				user = m_userList.get(i);
 			
-		m_writer = new PrintWriter(new File(String.format("%s_online_MTRegLR.txt", m_dataset)));
-		for(int i=0; i<m_userList.size(); i++) {
-			user = m_userList.get(i);
-		
-			while(user.hasNextAdaptationIns()) {
-				// test the latest model before model adaptation
-				if (m_testmode != TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
-					perfStat = user.getPerfStat();	
-					val = logit(doc.getSparse(), user);
-					predL = predict(doc, user);
-					trueL = doc.getYLabel();
-					perfStat.addOnePredResult(predL, trueL);
-					m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
-				} // in batch mode we will not accumulate the performance during adaptation				
-			
-				gradientDescent(user, m_initStepSize, 1.0);
-			
-				//test the gradient only when we want to debug
-				if (m_displayLv>0) {
-					gNorm = gradientTest();				
-					if (m_displayLv==1) {
-						if (gNorm<gNormOld)
-							System.out.print("o");
-						else
-							System.out.print("x");
-					}				
-					gNormOld = gNorm;
+				while(user.hasNextAdaptationIns()) {
+					// test the latest model before model adaptation
+					if (m_testmode != TestMode.TM_batch && (doc = user.getLatestTestIns()) != null) {
+						perfStat = user.getPerfStat();	
+						val = logit(doc.getSparse(), user);
+						predL = predict(doc, user);
+						trueL = doc.getYLabel();
+						perfStat.addOnePredResult(predL, trueL);
+						m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
+					} // in batch mode we will not accumulate the performance during adaptation				
+				
+					gradientDescent(user, m_initStepSize, 1.0);
+				
+					//test the gradient only when we want to debug
+					if (m_displayLv>0) {
+						gNorm = gradientTest();				
+						if (m_displayLv==1) {
+							if (gNorm<gNormOld)
+								System.out.print("o");
+							else
+								System.out.print("x");
+						}				
+						gNormOld = gNorm;
+					}
 				}
-			}
-			m_writer.flush();
-			if (m_displayLv==1)
-				System.out.println();
-		} 
+				m_writer.flush();
+				if (m_displayLv==1)
+					System.out.println();
+			} 
 		}catch(IOException e){
 			e.printStackTrace();
 		}
