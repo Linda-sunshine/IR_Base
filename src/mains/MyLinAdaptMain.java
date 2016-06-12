@@ -43,7 +43,6 @@ public class MyLinAdaptMain {
 		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
 
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
-//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
@@ -62,24 +61,14 @@ public class MyLinAdaptMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
 
-		int[] counts = new int[]{1, 2, 3, 4, 5};
-		for(int ctgCount: counts){
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadCategory("./data/category.txt");
-		analyzer.setCtgThreshold(ctgCount);
+//		analyzer.setCtgThreshold(ctgCount);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//		analyzer.setProfileTFIDF();
-//		Sanity check.
-//		PrintWriter writer = new PrintWriter(new File("features.txt"));
-//		for(String s: analyzer.getFeatures()){
-//			writer.write(s+",");
-//		}
-//		writer.close();
-//		analyzer.saveSFVct("./data/models/sfvct");
-//		analyzer.loadUserWeights(model, "classifer");
+		analyzer.setProfileTFIDF();
 		
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
@@ -156,6 +145,5 @@ public class MyLinAdaptMain {
 		mtsvm.train();
 		mtsvm.test();
 //		mtsvm.saveModel("./data/models/mtsvm_0.5_1/");
-		}
 	}
 }

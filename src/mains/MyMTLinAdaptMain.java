@@ -38,14 +38,10 @@ public class MyMTLinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		// Best performance for CoLinAdapt.
-//		double eta1 = 1.3087, eta2 = 0.0251, eta3 = 1.7739, eta4 = 0.4859;
 
 		// Best performance for mt-linadapt in amazon.
-//		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
 		double eta1 = 1, eta2 = 0.5, lambda1 = 0.1, lambda2 = 0.3;
-		double eta3 = 0.1, eta4 = 0.3;
-//		double eta1 = 1, eta2 = 0.4, lambda1 = 0.1, lambda2 = 0.7;
+
 		// Best performance for mt-linadapt in yelp.
 //		double eta1 = 0.9, eta2 =1 , lambda1 = 0.1, lambda2 = 0.1;
 		boolean enforceAdapt = true;
@@ -70,15 +66,15 @@ public class MyMTLinAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//		System.out.println(analyzer.calcRatio());
-		
+//		analyzer.printPosRatio();
+				
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-//		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 
-//		mtlinadaptsup.loadUsers(analyzer.getUsers());
-//		mtlinadaptsup.setDisplayLv(displayLv);
-//		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-//		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
-//		mtlinadaptsup.train();
-//		mtlinadaptsup.test();
+		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 
+		mtlinadaptsup.loadUsers(analyzer.getUsers());
+		mtlinadaptsup.setDisplayLv(displayLv);
+		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
+		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
+		mtlinadaptsup.train();
+		mtlinadaptsup.test();
 	}
 }

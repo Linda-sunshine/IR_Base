@@ -72,6 +72,8 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_category = category;
 		constructSparseVector();
+		calcPosRatio();
+
 	}
 	
 	// Get the user ID.
