@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import Classifier.supervised.modelAdaptation.CoAdaptStruct;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;
@@ -35,10 +34,12 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 	public double getSelfSim(){
 		return m_sim;
 	}
+	
 	// added by Lin for avg adaptation.
 	public void setSelfSim(double v){
 		m_sim = v;
 	}
+	
 	@Override
 	public void addNeighbor(int id, double similarity) {
 		m_neighbors.add(new _RankItem(id, similarity));

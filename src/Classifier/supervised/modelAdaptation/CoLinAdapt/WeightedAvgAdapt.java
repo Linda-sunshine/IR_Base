@@ -13,28 +13,12 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 
+/**
+ * Full feature based average model adaptation
+ * @author Lin Gong
+ *
+ */
 public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
-	
-	public class Neighbor {
-		double m_sim;
-		double[] m_weights;
-	
-		public Neighbor(double s, double[] ws){
-			m_sim = s;
-			m_weights = ws;
-		}
-		
-		public double getSimilarity(){
-			return m_sim;
-		}
-		
-		public double[] getWeights(){
-			return m_weights;
-		}
-	}
-	
-	// By default, we use the cosine similarity between documents, we can also use 1/(topK+1).
-	boolean m_cosSim = true;
 	
 	public WeightedAvgAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
@@ -61,8 +45,8 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		m_userList = new ArrayList<_AdaptStruct>();		
 		for(int i=0; i<userList.size(); i++) {
 			_User user = userList.get(i);
-			m_userList.add(new _CoLinAdaptStruct(user, m_dim, i, m_topK));
-			user.setModel(m_gWeights); // Init user weights with global weights.
+			m_userList.add(new _CoLinAdaptStruct(user, -1, i, m_topK));//we will not create transformation matrix for this user
+			user.setModel(m_gWeights); // Initiate user weights with global weights.
 		}
 		m_pWeights = new double[m_gWeights.length];			
 		
@@ -73,25 +57,18 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		for(int i=0; i<m_userList.size(); i++)
 			System.arraycopy(m_gWeights, 0, _CoLinAdaptStruct.sharedA, vSize*i, vSize);
 	}
+	
 	@Override
 	// In this logit function, we need to sum over all the neighbors of the current user.
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct user){
 		
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) user;
 		// The user itself.
-		double sum = 0;
-		double subSum = ui.getPWeight(0); // bias term
-		for(_SparseFeature f:fvs) 
-			subSum += ui.getPWeight(f.getIndex()+1) * f.getValue();		
-		sum += (m_cosSim ? 1.0/(m_topK+1) : ui.getSelfSim()) * subSum;
-		
+		double sum = ui.getSelfSim() * ui.linearFunc(fvs, 0);		
 		// Traverse all neighbors of the current user.
 		for(_RankItem nit: ui.getNeighbors()){
 			_CoLinAdaptStruct uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);
-			subSum = uj.getPWeight(0);
-			for(_SparseFeature f: fvs) 
-				subSum += uj.getPWeight(f.getIndex()+1) * f.getValue();		
-			sum += (m_cosSim ? nit.m_value : 1.0/(m_topK+1)) * subSum;
+			sum += nit.m_value * uj.linearFunc(fvs, 0);
 		}
 		return Utils.logistic(sum);
 	}
@@ -109,7 +86,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	//shared gradient calculation by batch and online updating
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
 		
 		int n, offsetj;
 		int offset = m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
@@ -118,7 +95,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			delta /= getAdaptationSize(ui);
 		
 		// Current user's info: Bias term + other features.
-		m_g[offset] -= weight*delta*(m_cosSim ? ui.getSelfSim() : 1.0/(m_topK+1)); // \theta_{ii}*x_0 and x_0=1
+		m_g[offset] -= weight*delta*ui.getSelfSim(); // \theta_{ii}*x_0 and x_0=1
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			m_g[offset + n] -= weight * delta * ui.getSelfSim() * fv.getValue();//\theta_{ii}*x_d
@@ -127,10 +104,10 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		// Neighbors' info.
 		for(_RankItem nit: ui.getNeighbors()) {
 			offsetj = m_dim*nit.m_index;
-			m_g[offsetj] -= weight * delta*(m_cosSim ? nit.m_value : 1.0/(m_topK+1)); // neighbors' bias term.
+			m_g[offsetj] -= weight * delta * nit.m_value; // neighbors' bias term.
 			for(_SparseFeature fv: review.getSparse()){
 				n = fv.getIndex() + 1;
-				m_g[offsetj + n] -= weight * delta * (m_cosSim ? nit.m_value : 1.0/(m_topK+1)) * fv.getValue(); // neighbors' other features.
+				m_g[offsetj + n] -= weight * delta * nit.m_value * fv.getValue(); // neighbors' other features.
 			}
 		}
 	}
@@ -139,10 +116,11 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	@Override
 	protected void gradientByR1(_AdaptStruct u){
 		_CoLinAdaptStruct user = (_CoLinAdaptStruct)u;
+		double[] pWeights = user.getPWeights();
 		int offset = m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
 		//R1 regularization part
 		for(int k=0; k<m_dim; k++)
-			m_g[offset + k] += 2 * m_eta1 * (user.getPWeight(k)-m_gWeights[k]);// (w_i-w_g)
+			m_g[offset + k] += 2 * m_eta1 * (pWeights[k]-m_gWeights[k]);// (w_i-w_g)
 	}
 	
 	//this is batch training in each individual user
@@ -154,6 +132,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		_CoLinAdaptStruct user;
 		initLBFGS();
 		init();
+		
 		try{
 			do{
 				fValue = 0;
@@ -164,6 +143,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
+				
 				if (m_displayLv==2) {
 					gradientTest();
 					System.out.println("Fvalue is " + fValue);
@@ -178,6 +158,8 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 				} 
 					
 				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+				oldFValue = fValue;
+				
 				setPersonalizedModel();
 			} while(iflag[0] != 0);
 			System.out.println();
@@ -185,45 +167,46 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			System.out.println("LBFGS fails!!!!");
 			e.printStackTrace();
 		}		
-			
-		setPersonalizedModel();
-		setNeighbors();
+
+		finalizePersonalizedModels();
 		return oldFValue;
 	}	
 	
-	// Collect all users' weight for lbfgs optimization.
-	public double[] getAllUserWeights(){
-		double[] weights = new double[m_userList.size()*m_dim];
-		for(int i=0; i<m_userList.size(); i++){
-			_CoLinAdaptStruct u = (_CoLinAdaptStruct) m_userList.get(i);
-			System.arraycopy(u.getPWeights(), 0, weights, i*m_dim, m_dim);
-		}
-		return weights;
-	}
-	
+	@Override
 	public void setPersonalizedModel(){
 		_CoLinAdaptStruct user;
+		double[] pWeights;
+		int offset;
+		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_CoLinAdaptStruct)m_userList.get(i);
-			System.arraycopy(_CoLinAdaptStruct.sharedA, i*m_dim, m_pWeights, 0, m_dim);
-			user.setPersonalizedModel(m_pWeights);
+			pWeights = user.getPWeights();
+			offset = i*m_dim;
+			
+			for(int n=0; n<m_dim; n++)
+				pWeights[n] = _CoLinAdaptStruct.sharedA[offset+n];
 		}
 	}
 	
-	public void setNeighbors(){
-		_CoLinAdaptStruct ui, uj;
-		Neighbor[] neighbors = new Neighbor[m_topK];
-		Neighbor nj;
-		int count = 0;
+	public void finalizePersonalizedModels(){
+		_CoLinAdaptStruct ui;
+		double[] pWeights;
+		int offset;
+		
 		for(int i=0; i<m_userList.size(); i++){
-			count = 0;
 			ui = (_CoLinAdaptStruct)m_userList.get(i);
-			for(_RankItem nit: ui.getNeighbors()){
-				uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);
-				nj = new Neighbor(nit.m_value, uj.getPWeights());
-				neighbors[count++] = nj;
+			pWeights = ui.getPWeights();
+			offset = i * m_dim;
+			
+			for(int n=0; n<m_dim; n++)
+				pWeights[n] = ui.getSelfSim() * _CoLinAdaptStruct.sharedA[offset+n];
+			
+			//traverse all the neighbors
+			for(_RankItem nit: ui.getNeighbors()) {
+				offset = nit.m_index * m_dim;//get neighbor's index				
+				for(int n=0; n<m_dim; n++) 
+					pWeights[n] += nit.m_value * _CoLinAdaptStruct.sharedA[offset+n];
 			}
-			ui.getUser().setNeighbors(neighbors);
 		}
 	}
 	

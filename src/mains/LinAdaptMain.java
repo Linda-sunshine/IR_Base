@@ -4,7 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithDiffFeatureGroups;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.WeightedAvgAdapt;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -84,17 +84,23 @@ public class LinAdaptMain {
 		*/		
 
 		// Create an instance of CoLinAdapt with different feature groups for different classes.
-		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
-		adaptation.setGCoefficients(-0.5, 0.5);
-		adaptation.setR1TradeOffs(eta1/2, eta2/2);
-		adaptation.setR2TradeOffs(eta3/2, eta4/2);
+//		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
+//		adaptation.setGCoefficients(-0.5, 0.5);
+//		adaptation.setR1TradeOffs(eta1/2, eta2/2);
+//		adaptation.setR2TradeOffs(eta3/2, eta4/2);
 		
+		// Create an instance of AvgAdapt on all features
+		WeightedAvgAdapt adaptation = new WeightedAvgAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
+		// Create an instance of AvgAdapt on transformation operations
+//		WeightedAvgTransAdapt adaptation = new WeightedAvgTransAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 
 		adaptation.setLNormFlag(true);
 		adaptation.setTestMode(TestMode.TM_batch);
-//		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();
