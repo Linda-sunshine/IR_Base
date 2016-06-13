@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.WeightedAvgAdapt;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -46,7 +46,7 @@ public class LinAdaptMain {
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instance of CoLinAdapt model.
-//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instance of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -99,7 +99,7 @@ public class LinAdaptMain {
 //		adaptation.setR2TradeOffs(eta3/2, eta4/2);
 		
 		// Create an instance of AvgAdapt on all features
-		WeightedAvgAdapt adaptation = new WeightedAvgAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		WeightedAvgAdapt adaptation = new WeightedAvgAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 		// Create an instance of AvgAdapt on transformation operations
 //		WeightedAvgTransAdapt adaptation = new WeightedAvgTransAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
