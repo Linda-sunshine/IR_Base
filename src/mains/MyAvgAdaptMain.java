@@ -19,19 +19,19 @@ public class MyAvgAdaptMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.25;
-		int topKNeighbors = 400;
+		int[] topKNeighbors = new int[]{50, 100, 200, 400, 800, 1600, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000};
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		// Best performance for mt-linadapt in amazon.
-		double eta1 = 0.01, eta2 = 0.5;
+		double eta1 = 0.1, eta2 = 0.5;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
@@ -45,8 +45,8 @@ public class MyAvgAdaptMain {
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		
-		WeightedAvgAdapt adaptation = new WeightedAvgAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		for(int i: topKNeighbors){
+		WeightedAvgTransAdapt adaptation = new WeightedAvgTransAdapt(classNumber, analyzer.getFeatureSize(), featureMap, i, globalModel, featureGroupFile);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
@@ -56,10 +56,10 @@ public class MyAvgAdaptMain {
 		// Clear the performance.
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
-		
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.train();
-		mtsvm.test();
+		}
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }
