@@ -18,6 +18,8 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 
 	// By default, we use the cosine similarity between documents, we can also use 1/(topK+1).
 	boolean m_cosSim = true;
+	// default self similarity
+	double m_selfSim = 1.0;
 		
 	public WeightedAvgTransAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
@@ -43,7 +45,8 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 		// Normalize the similarity of neighbors.
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_CoLinAdaptStruct) m_userList.get(i);
-			sum = 1;
+			sum = m_selfSim;
+			
 			// Collect the sum of similarity.
 			for(_RankItem nit: ui.getNeighbors()) {
 				if (m_cosSim)
@@ -53,8 +56,7 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 			}
 			
 			// Update the user's similarity.
-			ui.setSelfSim(1/sum);
-			ui.getUser().setSimilarity(1/sum);
+			ui.setSelfSim(m_selfSim/sum);
 			for(_RankItem nit: ui.getNeighbors())
 				nit.m_value /= sum;
 		}
@@ -103,33 +105,33 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 			
 		int n, k, offsetj;
 		int offset = m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), ui));
+		double delta = weight*(review.getYLabel() - logit(review.getSparse(), ui));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(ui);
 			
 		// Current user's info: Bias term + other features.
-		m_g[offset] -= weight*delta*ui.getSelfSim()*m_gWeights[0]; // \theta_{ii}*w_g[0]*x_0 and x_0=1
-		m_g[offset + m_dim] -= weight*delta*ui.getSelfSim(); // \theta_{ii}*x_0
+		m_g[offset] -= delta*ui.getSelfSim()*m_gWeights[0]; // \theta_{ii}*w_g[0]*x_0 and x_0=1
+		m_g[offset + m_dim] -= delta*ui.getSelfSim(); // \theta_{ii}*x_0
 		
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			m_g[offset + k] -= weight * delta * ui.getSelfSim() * m_gWeights[n] * fv.getValue();//\theta_{ii}*x_d
-			m_g[offset + k + m_dim] -= weight * delta * ui.getSelfSim() * fv.getValue();
+			m_g[offset + k] -= delta * ui.getSelfSim() * m_gWeights[n] * fv.getValue();//\theta_{ii}*x_d
+			m_g[offset + k + m_dim] -= delta * ui.getSelfSim() * fv.getValue();
 		}
 			
 		// Neighbors' info: Bias term + other features.
 		for(_RankItem nit: ui.getNeighbors()) {
 			offsetj = 2*m_dim*nit.m_index;
 			// Bias term.
-			m_g[offsetj] -= weight * delta * nit.m_value * m_gWeights[0]; // neighbors' bias term.
-			m_g[offsetj + m_dim] -= weight * delta * nit.m_value;
+			m_g[offsetj] -= delta * nit.m_value * m_gWeights[0]; // neighbors' bias term.
+			m_g[offsetj + m_dim] -= delta * nit.m_value;
 			
 			for(_SparseFeature fv: review.getSparse()){
 				n = fv.getIndex() + 1;
 				k = m_featureGroupMap[n];
-				m_g[offsetj + k] -= weight * delta * nit.m_value * m_gWeights[n] * fv.getValue(); // neighbors' other features.
-				m_g[offsetj + m_dim + k] -= weight * delta * nit.m_value * fv.getValue();
+				m_g[offsetj + k] -= delta * nit.m_value * m_gWeights[n] * fv.getValue(); // neighbors' other features.
+				m_g[offsetj + m_dim + k] -= delta * nit.m_value * fv.getValue();
 			}
 		}
 	}

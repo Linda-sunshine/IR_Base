@@ -1,17 +1,14 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 
 /**
  * Full feature based average model adaptation
@@ -88,26 +85,25 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
 		
-		int n, offsetj;
-		int offset = m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), ui));
+		int n, offset = m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), ui));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(ui);
 		
 		// Current user's info: Bias term + other features.
-		m_g[offset] -= weight*delta*ui.getSelfSim(); // \theta_{ii}*x_0 and x_0=1
+		m_g[offset] -= delta*ui.getSelfSim(); // \theta_{ii}*x_0 and x_0=1
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
-			m_g[offset + n] -= weight * delta * ui.getSelfSim() * fv.getValue();//\theta_{ii}*x_d
+			m_g[offset + n] -= delta * ui.getSelfSim() * fv.getValue();//\theta_{ii}*x_d
 		}
 		
 		// Neighbors' info.
 		for(_RankItem nit: ui.getNeighbors()) {
-			offsetj = m_dim*nit.m_index;
-			m_g[offsetj] -= weight * delta * nit.m_value; // neighbors' bias term.
+			offset = m_dim*nit.m_index;
+			m_g[offset] -= delta * nit.m_value; // neighbors' bias term.
 			for(_SparseFeature fv: review.getSparse()){
 				n = fv.getIndex() + 1;
-				m_g[offsetj + n] -= weight * delta * nit.m_value * fv.getValue(); // neighbors' other features.
+				m_g[offset + n] -= delta * nit.m_value * fv.getValue(); // neighbors' other features.
 			}
 		}
 	}
@@ -123,72 +119,26 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 			m_g[offset + k] += 2 * m_eta1 * (pWeights[k]-m_gWeights[k]);// (w_i-w_g)
 	}
 	
-	//this is batch training in each individual user
 	@Override
-	public double train(){
-		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue, oldFValue = Double.MAX_VALUE;;
-		int vSize = getVSize(), displayCount = 0;
-		_CoLinAdaptStruct user;
-		initLBFGS();
-		init();
-		
-		try{
-			do{
-				fValue = 0;
-				Arrays.fill(m_g, 0); // initialize gradient				
-				// accumulate function values and gradients from each user
-				for(int i=0; i<m_userList.size(); i++) {
-					user = (_CoLinAdaptStruct)m_userList.get(i);
-					fValue += calculateFuncValue(user);
-					calculateGradients(user);
-				}
-				
-				if (m_displayLv==2) {
-					gradientTest();
-					System.out.println("Fvalue is " + fValue);
-				} else if (m_displayLv==1) {
-					if (fValue<oldFValue)
-						System.out.print("o");
-					else
-						System.out.print("x");
-						
-					if (++displayCount%100==0)
-						System.out.println();
-				} 
-					
-				LBFGS.lbfgs(vSize, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
-				oldFValue = fValue;
-				
-				setPersonalizedModel();
-			} while(iflag[0] != 0);
-			System.out.println();
-		} catch(ExceptionWithIflag e) {
-			System.out.println("LBFGS fails!!!!");
-			e.printStackTrace();
-		}		
+	protected void initPerIter() {
+		super.initPerIter();
+		preparePersonalizedModels();
+	}
 
-		finalizePersonalizedModels();
-		return oldFValue;
-	}	
-	
-	@Override
-	public void setPersonalizedModel(){
+	void preparePersonalizedModels(){
 		_CoLinAdaptStruct user;
 		double[] pWeights;
-		int offset;
 		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_CoLinAdaptStruct)m_userList.get(i);
 			pWeights = user.getPWeights();
-			offset = i*m_dim;
 			
-			for(int n=0; n<m_dim; n++)
-				pWeights[n] = _CoLinAdaptStruct.sharedA[offset+n];
+			System.arraycopy(_CoLinAdaptStruct.sharedA, i*m_dim, pWeights, 0, m_dim);
 		}
 	}
 	
-	public void finalizePersonalizedModels(){
+	@Override
+	public void setPersonalizedModel(){	
 		_CoLinAdaptStruct ui;
 		double[] pWeights;
 		int offset;
