@@ -137,14 +137,13 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 		
-
 		content = Jsoup.parse(content).text();
 
 //		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title,
 //				content, 0);
 //		
-//		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-//		 name, "", content, 0);
+		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+		 name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -153,7 +152,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
@@ -344,15 +343,23 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		System.out.println("before filtering\t"+m_corpus.getSize());
 		int corpusSize = m_corpus.getCollection().size();
 		ArrayList<Integer> removeIndexList = new ArrayList<Integer>();
+		
+		int numberOfComments = 0;
+		
 		for (int i = corpusSize - 1; i > -1; i--) {
 			// for (int i = 0; i < corpusSize; i++) {
 			_Doc d = m_corpus.getCollection().get(i);
 			if(d instanceof _ParentDoc){
 				_ParentDoc pDoc = (_ParentDoc)d;
+				if(pDoc.m_childDocs.size()>8){
+					numberOfComments += 1;
+				}
 				if(pDoc.m_childDocs.size()==0)
 					removeIndexList.add(i);
 			}
 		}
+		
+		System.out.println("number of comments > 8 \t"+numberOfComments);
 		
 		for (int i : removeIndexList) {
 			_Doc d = m_corpus.getCollection().get(i);

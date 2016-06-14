@@ -1,5 +1,7 @@
 package topicmodels;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -34,7 +36,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
 			term *= influenceRatio(pDoc.m_sstat[tid], pDoc.m_sstat[0]);
 		}
 		
@@ -80,6 +82,137 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		
 		for(_Word w:d.getWords()){
 			w.collectXStats();
+		}
+	}
+	
+	public void EMonCorpus(){
+		separateTrainTest();
+		EM();
+		int maxCommentNum = 10;
+		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
+			inferenceTest(commentNum);
+			printTopicProportion4Test(commentNum);
+		}
+	}
+	
+	public void separateTrainTest(){
+		int cvFold = 10;
+		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
+		double avgCommentNum = 0;
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ParentDoc){
+				if(m_rand.nextInt(cvFold)!=5){
+					parentTrainSet.add(d);
+				}else{
+					m_testSet.add(d);
+					avgCommentNum += ((_ParentDoc)d).m_childDocs.size();
+				}
+			}
+		}
+		
+		System.out.println("avg comments for parent doc in testSet\t"+avgCommentNum*1.0/m_testSet.size());
+		
+		for(_Doc d:parentTrainSet){
+			_ParentDoc pDoc = (_ParentDoc) d;
+			m_trainSet.add(d);
+			pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+			for(_ChildDoc cDoc:pDoc.m_childDocs){
+				m_trainSet.add(cDoc);
+				pDoc.addChildDoc4Dynamics(cDoc);
+			}
+		}
+		System.out.println("m_testSet size\t"+m_testSet.size());
+		System.out.println("m_trainSet size\t"+m_trainSet.size());
+	}
+	
+	public void inferenceTest(int commentNum){
+		m_collectCorpusStats = false;
+
+		for(_Doc d:m_testSet){
+			inference4Dynamical(d, commentNum);
+		}
+	}
+	
+	public void printTopicProportion4Test(int commentNum){
+		String dynamicTopicFile = "./data/results/dynamic/dynamicProportion4Parent_"+commentNum+"_.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(dynamicTopicFile));
+
+			for(_Doc d:m_testSet){
+				pw.print(d.getName()+"\t");
+				pw.print("topicProportion\t");
+				for(int k=0; k<number_of_topics; k++){
+					pw.print(d.m_topics[k]+"\t");
+				}
+				pw.println();		
+			}
+			pw.flush();
+			pw.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void inference4Dynamical(_Doc d, int commentNum){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		initTest4Dynamical(sampleTestSet, d, commentNum);
+		
+		int iter = 0;
+		do{
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--){
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);
+			}
+			
+			for(_Doc doc:sampleTestSet)
+				calculate_E_step(doc);
+			
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					collectStats(doc);
+				}
+			}
+		}while (++iter<this.number_of_iteration);
+		
+		for(_Doc doc:sampleTestSet){
+			estThetaInDoc(doc);
+		}
+		
+	}
+	
+	//dynamical add comments to sampleTest
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+//		int testLength = (int)pDoc.getTotalDocLength();
+//		testLength = 0;
+//		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+		
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+//			testLength = cDoc.getTotalDocLength();
+			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			
+//			testLength = 0;
+			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
 		}
 	}
 	

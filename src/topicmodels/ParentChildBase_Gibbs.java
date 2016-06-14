@@ -80,7 +80,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-//		mu = 0.1;
+		mu = 10000000;
 //		mu = Double.MAX_VALUE;
 //		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
@@ -590,7 +590,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		try{
 			PrintWriter entropyPW = new PrintWriter(new File(entropyFile));
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				double entropyValue = 0.0;
 				entropyValue = Utils.entropy(d.m_topics, logScale);
 				entropyPW.print(d.getName()+"\t"+entropyValue);
@@ -608,7 +608,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -647,7 +647,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -924,7 +924,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		try{
 			PrintWriter muPW = new PrintWriter(new File(childMuFile));
 			
-			for(_Doc d:m_corpus.getCollection()){
+			for(_Doc d:m_trainSet){
 				if(d instanceof _ChildDoc){
 					muPW.println(d.getName()+"\t"+((_ChildDoc)d).getMu());
 				}
@@ -943,7 +943,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			System.out.println(parentParameterFile);
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");

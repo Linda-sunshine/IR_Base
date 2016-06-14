@@ -1,7 +1,6 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -79,15 +78,16 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
-		
-		if(!m_collectCorpusStats){
-			return term;
-		}
+//		
+//		if(!m_collectCorpusStats){
+//			return term;
+//		}
 		
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
+		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
+//		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -233,7 +233,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		pDoc.createSparseVct4Infer();
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
+		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
+//		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			testLength =  (int) (m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			((_ChildDoc4BaseWithPhi) cDoc).createXSpace(number_of_topics,
 					m_gamma.length, vocabulary_size, d_beta);
@@ -282,7 +283,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			childXFolder.mkdir();
 		}
 
-		for (_Doc d : m_corpus.getCollection()) {
+		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
 				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
@@ -306,8 +307,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		int topKStn = 10;
 		int topKChild = 10;
 		printTopKChild4Stn(filePrefix, topKChild);
-		printTopKChild4StnWithHybrid(filePrefix, topKChild);
-		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
+//		printTopKChild4StnWithHybrid(filePrefix, topKChild);
+//		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 		
 		printTopKChild4Parent(filePrefix, topKChild);
@@ -331,7 +332,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 		
 		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
+//		for(_ChildDoc cDoc:pDoc.m_childDocs4){
 			double cDocLen = cDoc.getChildDocLenWithXVal();
 						
 			double stnLogLikelihood = 0;
@@ -375,7 +377,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 		
 		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
+//		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			double cDocLen = cDoc.getChildDocLenWithXVal();
 						
 			double stnLogLikelihood = 0;
@@ -449,8 +452,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
 		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		
-		for(_ChildDoc d:pDoc.m_childDocs){
+		for(_ChildDoc d:pDoc.m_childDocs4Dynamic){
+//		for(_ChildDoc d:pDoc.m_childDocs){
 			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
 			double stnLogLikelihood = 0;
 			for(_Word w: stnObj.getWords()){
@@ -479,7 +482,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			
 			m_LM.generateReferenceModelWithXVal();
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -573,7 +576,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
 			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");

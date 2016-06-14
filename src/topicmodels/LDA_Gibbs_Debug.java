@@ -1126,7 +1126,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -1158,7 +1158,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			
 			m_LM.generateReferenceModel();
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -1196,7 +1196,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			
 			m_LM.generateReferenceModel();
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -1241,7 +1241,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			
 //			m_LM.generateReferenceModel();
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					
@@ -1284,7 +1284,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		try{
 			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
 			
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 				if(d instanceof _ParentDoc){
 					_ParentDoc pDoc = (_ParentDoc)d;
 					

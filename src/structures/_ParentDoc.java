@@ -6,7 +6,7 @@ import java.util.HashMap;
 import utils.Utils;
 
 public class _ParentDoc extends _Doc {
-
+	public ArrayList<_ChildDoc> m_childDocs4Dynamic;
 	public ArrayList<_ChildDoc> m_childDocs;
 	HashMap<Integer, Integer> m_word2Index;
 
@@ -14,13 +14,17 @@ public class _ParentDoc extends _Doc {
 		super(ID, source, ylabel);
 
 		m_childDocs = new ArrayList<_ChildDoc>();
-
+		
 		setName(name);
 		setTitle(title);
 	}
 	
 	public void addChildDoc(_ChildDoc cDoc){
 		m_childDocs.add(cDoc);
+	}
+	
+	public void addChildDoc4Dynamics(_ChildDoc cDoc){
+		m_childDocs4Dynamic.add(cDoc);
 	}
 	
 	@Override

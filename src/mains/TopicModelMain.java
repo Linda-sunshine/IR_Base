@@ -56,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ParentChildBase_Gibbs";
+		String topicmodel = "ACCTM_CZ";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -167,7 +167,15 @@ public class TopicModelMain {
 		if(topicmodel.equals("LDA_APPMerged"))
 			articleFolder = String.format(
 					"./data/ParentChildTopicModel/%sDescriptionsReviews",
-					articleType);
+					articleType);	
+//		articleFolder = String.format(
+//				"./data/ParentChildTopicModel/%sArticles4Merged",
+//				articleType);
+//		
+//		commentFolder = String.format(
+//				"./data/ParentChildTopicModel/%sComments4Merged",
+//				articleType);
+//		
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
