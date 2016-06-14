@@ -18,14 +18,18 @@ import java.util.LinkedList;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
+import Classifier.supervised.modelAdaptation.CoAdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+import structures.MyPriorityQueue;
 import structures.TokenizeResult;
 import structures._Doc;
+import structures._RankItem;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
@@ -134,7 +138,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-//			int[] categories = new int[m_categories.size()];
+			int[] categories = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -144,8 +148,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-//				if(m_categories.contains(category))
-//					categories[m_categories.indexOf(category)] = 1;
+				if(m_categories.contains(category))
+					categories[m_categories.indexOf(category)] = 1;
 				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -154,7 +158,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
 					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
-					//m_categories.add(category);
 					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
 						reviews.add(review);
 						localLength += review.getDocLength();
@@ -165,8 +168,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			localAvg = localLength / localSize;
 			
 			// Added by Lin for debugging.
-			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
-//				if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
+//			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
+			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
 				if( localAvg > m_maxLen)
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;
@@ -335,6 +338,50 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			}
 		}
 		System.out.format("%d users weights are loaded!\n", count);
+	}
+	
+	public void findSVMNeighbors(final int topK){
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+
+				@Override
+				public void run() {
+					_User ui;
+					try {
+						for(int i=0; i + core<m_users.size(); i += numOfCores){
+							ui = m_users.get(i+core);
+							ui.initSVMNeighbors(topK);
+							for(int j=0; j<m_users.size(); j++){
+								if(j != i+core)
+									ui.addSVMNeighbors(j, Utils.cosine(ui.getSVMWeights(), m_users.get(j).getSVMWeights()));
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+			
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+		
+			threads.get(k).start();
+		}
+	
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+		System.out.format("[Info]SVM neighbors are constructed for %d users...\n", m_users.size());
 	}
 	
 	// Load one user's weights.

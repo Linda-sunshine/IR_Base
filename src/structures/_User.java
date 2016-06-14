@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -29,12 +30,26 @@ public class _User {
 	protected int[] m_category;
 	protected double[] m_svmWeights;
 	
+	protected MyPriorityQueue<_RankItem> m_svmNeighbors;
 	protected double m_sim; // Similarity of itself.
 	
 	public void setSVMWeights(double[] weights){
 		m_svmWeights = new double[weights.length];
 		m_svmWeights = Arrays.copyOf(weights, weights.length);
 	}
+	
+	// Added by Lin.
+	public void initSVMNeighbors(int topK){
+		m_svmNeighbors = new MyPriorityQueue<_RankItem>(topK);
+	}
+	
+	public void addSVMNeighbors(int index, double sim){
+		m_svmNeighbors.add(new _RankItem(index, sim));
+	}
+	
+	public Collection<_RankItem> getSVMNeighbors() {
+		return m_svmNeighbors;
+	}	
 	
 	public double[] getSVMWeights(){
 		return m_svmWeights;

@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation.CoAdaptStruct;
@@ -288,5 +290,50 @@ public class CoLinAdapt extends LinAdapt {
 	
 	public ArrayList<Double> getDiffs(){
 		return m_diffs;
+	}
+	
+	// Calcualate the percentage of the overlapped neighbors.
+	public void calcOverlappedNeighbors(){
+		double[] percentage = new double[m_userList.size()];
+		int count = 0;
+		double avg = 0, var = 0, one = 0;
+		for(_AdaptStruct u: m_userList){
+			_CoLinAdaptStruct user = (_CoLinAdaptStruct) u;
+			one = calcPercentage(user);
+			avg += one;
+			percentage[count++] = one;
+		}
+		avg /= m_userList.size();
+		for(double i: percentage)
+			var += (i - avg) * (i - avg);
+		var /= m_userList.size();
+		var = Math.sqrt(var);
+		System.out.print(String.format("Avg: %.4f, var: %.4f\n", avg, var));
+	}
+	
+	
+	public double calcPercentage(_CoLinAdaptStruct u){
+		ArrayList<Integer> l1 = new ArrayList<Integer>();
+		ArrayList<Integer> l2 = new ArrayList<Integer>();
+		for(_RankItem i: u.getNeighbors())
+			l1.add(i.m_index);
+		for(_RankItem i: u.getUser().getSVMNeighbors())
+			l2.add(i.m_index);
+		Collections.sort(l1);
+		Collections.sort(l2);
+		int p1=0, p2=0;
+		double common = 0;
+		while(p1 < l1.size() && p2 < l2.size()){
+			if(l1.get(p1) < l2.get(p2))
+				p1++;
+			else if(l1.get(p1) > l2.get(p2))
+				p2++;
+			else{
+				common++;
+				p1++;
+				p2++;
+			}
+		}
+		return common;
 	}
 }
