@@ -103,11 +103,18 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		m_testSet = new ArrayList<_Doc>();
 		for(_Doc d:m_corpus.getCollection()){
 			if(d instanceof _ParentDoc){
-				if(m_rand.nextInt(cvFold)!=5){
+//				if(m_rand.nextInt(cvFold)!=5){
+//					parentTrainSet.add(d);
+//				}else{
+//					m_testSet.add(d);
+//					avgCommentNum += ((_ParentDoc)d).m_childDocs.size();
+//				}
+				int childSize = ((_ParentDoc)d).m_childDocs.size();
+				if(childSize<10){
 					parentTrainSet.add(d);
 				}else{
 					m_testSet.add(d);
-					avgCommentNum += ((_ParentDoc)d).m_childDocs.size();
+					avgCommentNum += childSize;
 				}
 			}
 		}
