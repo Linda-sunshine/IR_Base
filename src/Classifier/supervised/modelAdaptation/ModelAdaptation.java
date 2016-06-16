@@ -235,7 +235,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
 								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
 								continue;
-								
 							userPerfStat = user.getPerfStat();								
 							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
 								//record prediction results

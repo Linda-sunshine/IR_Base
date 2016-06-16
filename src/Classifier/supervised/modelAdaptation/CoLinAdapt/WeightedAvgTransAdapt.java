@@ -57,8 +57,12 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 			
 			// Update the user's similarity.
 			ui.setSelfSim(m_selfSim/sum);
-			for(_RankItem nit: ui.getNeighbors())
-				nit.m_value /= sum;
+			for(_RankItem nit: ui.getNeighbors()){
+				if(m_cosSim)
+					nit.m_value /= sum;
+				else 
+					nit.m_value = 1/sum;
+			}
 		}
 	}
 	
@@ -144,7 +148,7 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_CoLinAdaptStruct)m_userList.get(i);			
 			
-			for(int n=0; n<m_dim; n++) {
+			for(int n=0; n<m_featureSize+1; n++) {
 				k = m_featureGroupMap[n];
 				m_pWeights[n] = ui.getSelfSim() * (m_gWeights[n] * ui.getScaling(k) + ui.getShifting(k));
 			}
@@ -152,7 +156,7 @@ public class WeightedAvgTransAdapt extends CoLinAdapt {
 			//traverse all the neighbors
 			for(_RankItem nit: ui.getNeighbors()) {
 				uj = (_CoLinAdaptStruct) m_userList.get(nit.m_index);	
-				for(int n=0; n<m_dim; n++) {
+				for(int n=0; n<m_featureSize+1; n++) {
 					k = m_featureGroupMap[n];
 					m_pWeights[n] += nit.m_value * (m_gWeights[n] * uj.getScaling(k) + uj.getShifting(k));
 				}

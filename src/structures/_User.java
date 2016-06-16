@@ -67,8 +67,7 @@ public class _User {
 		m_pWeight = null;
 
 		m_perfStat = new _PerformanceStat(classNo);
-		
-		constructSparseVector();
+	
 		calcPosRatio();
 	}
 	
@@ -83,7 +82,7 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		m_category = category;
-		constructSparseVector();
+		
 		calcPosRatio();
 
 	}

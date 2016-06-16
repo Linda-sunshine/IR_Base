@@ -26,7 +26,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
 	int m_trainSize = 0, m_adaptSize = 0, m_testSize = 0;
 	boolean m_enforceAdapt = false;
-	
+
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
@@ -149,7 +149,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
-				allocateReviews(reviews);				
+				allocateReviews(reviews);
 				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 			}
 			reader.close();

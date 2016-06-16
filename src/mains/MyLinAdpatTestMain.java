@@ -66,7 +66,7 @@ public class MyLinAdpatTestMain {
 		// Create an instance of CoLinAdapt model.
 		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.calcOverlappedNeighbors();
+//		adaptation.calcOverlappedNeighbors();
 //		double sumR2 = adaptation.accumulateR2();
 //		System.out.println("Sum R2: " + sumR2);
 		

@@ -37,7 +37,7 @@ public class MyLinAdaptMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.25;
-		int topKNeighbors = 200;
+		int topKNeighbors = 100;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
@@ -51,7 +51,7 @@ public class MyLinAdaptMain {
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
@@ -63,12 +63,14 @@ public class MyLinAdaptMain {
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadCategory("./data/category.txt");
+//		analyzer.loadCategory("./data/category.txt");
 //		analyzer.setCtgThreshold(ctgCount);
-		analyzer.loadUserDir(userFolder); // load user and reviews
+		analyzer.loadUserDir(userFolder);
+		// The second parameter stands for DF scheme, "G"-global, "D"-adaptation, "G+D"-both
+		analyzer.setDFScheme("G");
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		analyzer.setProfileTFIDF();
 		
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
@@ -122,13 +124,12 @@ public class MyLinAdaptMain {
 //		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
 		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.printNeighbors(analyzer.getFeatures());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
-		//adaptation.setGCoefficients(1, 2);
 		adaptation.train();
 		adaptation.test();
+		
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
 //		}}
@@ -140,10 +141,10 @@ public class MyLinAdaptMain {
 //			u.getPerfStat().clear();
 
 		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.train();
+//		mtsvm.test();
 //		mtsvm.saveModel("./data/models/mtsvm_0.5_1/");
 	}
 }

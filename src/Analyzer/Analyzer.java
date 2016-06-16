@@ -46,6 +46,12 @@ public abstract class Analyzer {
 	//if we have store content of documents
 	protected boolean m_releaseContent;
 	
+	// Added by Lin for using different df.
+	protected String m_df; // represents the source of DF.
+	public void setDFScheme(String s){
+		m_df = s;
+	}
+	
 	/** for time-series features **/
 	//The length of the window which means how many labels will be taken into consideration.
 	private LinkedList<_Doc> m_preDocs;	
@@ -227,6 +233,12 @@ public abstract class Analyzer {
 	public void setFeatureValues(String fValue, int norm) {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+		
+		// For different DF schemes.
+		if(m_df.equals("D"))
+			N = docs.size();
+		else if(m_df.equals("G+D"))
+			N += docs.size();
 
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
@@ -253,18 +265,13 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-//					double TF =  Math.log10(sf.getValue())+ 1 ;// normalized TF
-//					double DF = Utils.sumOfArray(stat.getDF());
-//					double IDF = Math.log10((25265)/DF)+ 1;
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
 					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
 					avgIDF += IDF;
-//					(1+Math.log10(r.m_VSM.get(key)))*(1+Math.log10(Config.NumberOfReviewsInTraining/m_Vocabs.get(key).getValue())));
 				}
-				
 				//compute average IDF
 				temp.setAvgIDF(avgIDF/sfs.length);
 			}
@@ -277,7 +284,15 @@ public abstract class Analyzer {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
 					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
-					double DF = Utils.sumOfArray(stat.getDF());
+					double DF = 0;
+					// Different options of DF.
+					if(m_df.equals("G"))
+						DF = Utils.sumOfArray(stat.getDF());
+					else if(m_df.equals("D"))
+						DF = Utils.sumOfArray(stat.getADPDF());
+					else if(m_df.equals("G+D"))
+						DF = Utils.sumOfArray(stat.getDF()) + Utils.sumOfArray(stat.getADPDF());
+					
 					double IDF = 1 + Math.log10(N / DF);
 					double TFIDF = TF * IDF;
 					sf.setValue(TFIDF);
@@ -369,10 +384,7 @@ public abstract class Analyzer {
 		} else if(norm == 2){
 			for(_Doc d:docs)			
 				Utils.L2Normalization(d.getSparse());
-		} else {
-//			System.out.println("No normalizaiton is adopted here or wrong parameters!");
 		}
-//		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
 	
 	//Select the features and store them in a file.

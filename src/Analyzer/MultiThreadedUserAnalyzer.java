@@ -42,6 +42,7 @@ import utils.Utils;
  */
 public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected ArrayList<String> m_categories;
+	protected boolean m_ctgFlag = false; // Whether category is loaded or not.
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
@@ -71,6 +72,54 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_allocReviewLock = new Object();// lock when collecting review statistics
 		m_corpusLock = new Object(); // lock when collecting class statistics 
 		m_rollbackLock = new Object(); // lock when revising corpus statistics
+	}
+	
+	/*Analyze a document and add the analyzed document back to corpus.*/
+	protected boolean AnalyzeDoc(_Doc doc, int core) {
+		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource(),core);// Three-step analysis.
+		String[] tokens = result.getTokens();
+		int y = doc.getYLabel();
+
+		// Construct the sparse vector.
+		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
+			doc.createSpVct(spVct);
+			doc.setStopwordProportion(result.getStopwordProportion());
+			synchronized (m_corpusLock) {
+				m_corpus.addDoc(doc);
+				m_classMemberNo[y]++;
+			}
+			if (m_releaseContent)
+				doc.clearSource();
+			
+			return true;
+		} else {
+			/****Roll back here!!******/
+			synchronized (m_rollbackLock) {
+				rollBack(spVct, y);
+			}
+			return false;
+		}
+	}
+	
+	public ArrayList<String> getCategory(){
+		return m_categories;
+	}
+
+	// return a stemmer using the core number
+	protected SnowballStemmer getStemmer(int index) {
+		if (index == m_numberOfCores - 1)
+			return m_stemmer;
+		else
+			return m_stemmerPool[index];
+	}
+	
+	// return a tokenizer using the core number
+	protected Tokenizer getTokenizer(int index) {
+		if (index == m_numberOfCores - 1)
+			return m_tokenizer;
+		else
+			return m_tokenizerPool[index];
 	}
 	
 	//Load all the users.
@@ -138,7 +187,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-			int[] categories = new int[m_categories.size()];
+//			if(m_ctgFlag)
+//				int[] categories = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -148,8 +198,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-				if(m_categories.contains(category))
-					categories[m_categories.indexOf(category)] = 1;
+//				if(m_categories.contains(category))
+//					categories[m_categories.indexOf(category)] = 1;
 				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -168,8 +218,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			localAvg = localLength / localSize;
 			
 			// Added by Lin for debugging.
-//			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
-			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
+			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
+//			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
 				if( localAvg > m_maxLen)
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;
@@ -186,12 +236,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 	}
 	
-	//Tokenizing input text string
-	protected String[] Tokenizer(String source, int core){
-		String[] tokens = getTokenizer(core).tokenize(source);
-		return tokens;
-	}
-	
 	//Snowball Stemmer.
 	protected String SnowballStemming(String token, int core){
 		SnowballStemmer stemmer = getStemmer(core);
@@ -200,6 +244,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			return stemmer.getCurrent();
 		else
 			return token;
+	}
+	
+	//Tokenizing input text string
+	protected String[] Tokenizer(String source, int core){
+		String[] tokens = getTokenizer(core).tokenize(source);
+		return tokens;
 	}
 	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
@@ -240,60 +290,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		return result;
 	}
 	
-	/*Analyze a document and add the analyzed document back to corpus.*/
-	protected boolean AnalyzeDoc(_Doc doc, int core) {
-		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource(),core);// Three-step analysis.
-		String[] tokens = result.getTokens();
-		int y = doc.getYLabel();
-
-		// Construct the sparse vector.
-		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
-			doc.createSpVct(spVct);
-			doc.setStopwordProportion(result.getStopwordProportion());
-			synchronized (m_corpusLock) {
-				m_corpus.addDoc(doc);
-				m_classMemberNo[y]++;
-			}
-			if (m_releaseContent)
-				doc.clearSource();
-			
-			return true;
-		} else {
-			/****Roll back here!!******/
-			synchronized (m_rollbackLock) {
-				rollBack(spVct, y);
-			}
-			return false;
-		}
-	}
-	
-	// return a tokenizer using the core number
-	protected Tokenizer getTokenizer(int index){
-		if(index==m_numberOfCores-1)
-			return m_tokenizer;
-		else
-			return m_tokenizerPool[index];
-	}
-	
-	// return a stemmer using the core number
-	protected SnowballStemmer getStemmer(int index){
-		if(index==m_numberOfCores-1)
-			return m_stemmer;
-		else
-			return m_stemmerPool[index];
-	}
-	
-	//Added by Lin for fitlering reviews.
+	// Added by Lin for fitlering reviews.
 	public void setRvwLenghRange(int start, int end){
 		m_start = start;
 		m_end = end;
 	}
 	
-	public ArrayList<String> getCategory(){
-		return m_categories;
-	}
-	
+	// Added by Lin.
 	public void loadCategory(String filename){
 		m_categories = new ArrayList<String>();
 		if (filename==null || filename.isEmpty())
@@ -308,12 +311,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.close();
 			System.out.println(m_categories.size() + " categories are loaded.");
 			m_ctgCounts = new int[m_categories.size()];
+			m_ctgFlag = true;
 		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}
 	
-	// Load user weights from learned models to construct neighborhood.
+	// Added by Lin. Load user weights from learned models to construct neighborhood.
 	public void loadUserWeights(String folder, String suffix){
 		String userID;
 		int userIndex, count = 0;
@@ -340,6 +344,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("%d users weights are loaded!\n", count);
 	}
 	
+	// Added by Lin for neighborhood based on SVM weights.
 	public void findSVMNeighbors(final int topK){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -384,7 +389,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("[Info]SVM neighbors are constructed for %d users...\n", m_users.size());
 	}
 	
-	// Load one user's weights.
+	// Added by Lin. Load one user's weights.
 	public double[] loadOneUserWeight(String fileName){
 		double[] weights = new double[getFeatureSize()];
 		try{
@@ -415,15 +420,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			m_userIDIndex.put(m_users.get(i).getUserID(), i);
 	}
 	
-	public int getStat(){
-		int count = 0;
-		for(_User u: m_users){
-			if(u.getCategory()[6] > 0)
-				count++;
-		}
-		return count;
-	}
-	
 	public void saveSFVct(String folder){
 		for(_User u:m_users) {
 			try {
@@ -444,28 +440,30 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("[Info]Save sparse features of users to %s.", folder);
 	}
 	
-	public void setProfileTFIDF(){
-		int N = m_TotalDF;
-
-		for (int i = 0; i < m_users.size(); i++) {
-			_User temp = m_users.get(i);
-			_SparseFeature[] sfs = temp.getBoWProfile();
-			double avgIDF = 0;
-			for (_SparseFeature sf : sfs) {
-				String featureName = m_featureNames.get(sf.getIndex());
-				_stat stat = m_featureStat.get(featureName);
-				double TF = 1 + Math.log10(sf.getValue());// sublinear TF
-				double DF = Utils.sumOfArray(stat.getDF());
-				double IDF = 1 + Math.log10(N / DF);
-				double TFIDF = TF * IDF;
-				sf.setValue(TFIDF);
-				avgIDF += IDF;
-			}
-			
-			//compute average IDF
-			temp.setAvgIDF(avgIDF/sfs.length);
-		}
-	}
+//	public void setProfileTFIDF(){
+//		int N = m_TotalDF;
+//
+//		for (int i = 0; i < m_users.size(); i++) {
+//			_User temp = m_users.get(i);
+//			_SparseFeature[] sfs = temp.getBoWProfile();
+//			double avgIDF = 0;
+//			for (_SparseFeature sf : sfs) {
+//				String featureName = m_featureNames.get(sf.getIndex());
+//				_stat stat = m_featureStat.get(featureName);
+//				double TF = 1 + Math.log10(sf.getValue());// sublinear TF
+//				double DF = Utils.sumOfArray(stat.getDF());
+//				double IDF = 1 + Math.log10(N / DF);
+//				double TFIDF = TF * IDF;
+//				sf.setValue(TFIDF);
+//				avgIDF += IDF;
+//			}
+//			
+//			//compute average IDF
+//			temp.setAvgIDF(avgIDF/sfs.length);
+//		}
+//	}
+	
+	// Added by Lin.
 	public void printPosRatio(){
 		PrintWriter writer;
 		try{
@@ -481,7 +479,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 	}
 	
-	// added by Lin, calculate the overall pos/neg ratio of reviews.
+	// Added by Lin, calculate the overall pos/neg ratio of reviews.
 	public double calcRatio(){
 		double neg = 0, pos = 0;
 		for(_User u: m_users){
@@ -495,15 +493,21 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		return pos / neg;
 	}
 	
-	// added by Lin, print the counts of users with different categories.
+	// Added by Lin, print the counts of users with different categories.
 	public void printCategoryStat(){
 		for(int i: m_ctgCounts)
 			System.out.print(i + "\t");
 		System.out.println();
 	}
 	
-	// added by Lin, set the threshold for category counts.
+	// Added by Lin, set the threshold for category counts.
 	public void setCtgThreshold(int k){
 		m_ctgThreshold = k;
+	}
+	
+	// Added by Lin for constructing the 
+	public void constructSparseVector4Users(){
+		for(_User u: m_users)
+			u.constructSparseVector();
 	}
 }

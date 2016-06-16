@@ -59,12 +59,10 @@ public class MultiTaskSVM extends ModelAdaptation {
 	@Override
 	public double train() {
 		init();
-		
-		//Transfer all user reviews to instances recognized by SVM, indexed by users.
 		int trainSize = 0, validUserIndex = 0;
 		ArrayList<Feature []> fvs = new ArrayList<Feature []>();
 		ArrayList<Double> ys = new ArrayList<Double>();		
-		
+
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
 		for(_AdaptStruct user:m_userList){
@@ -77,11 +75,10 @@ public class MultiTaskSVM extends ModelAdaptation {
 					trainSize ++;
 					validUser = true;
 				}
-			}
-			
+			}	
 			if (validUser)
 				validUserIndex ++;
-		}
+		}		
 		// Train a liblinear model based on all reviews.
 		Problem libProblem = new Problem();
 		libProblem.l = trainSize;		
@@ -92,6 +89,22 @@ public class MultiTaskSVM extends ModelAdaptation {
 			libProblem.y[i] = ys.get(i);
 		}
 		
+		setLibProblemDimension(libProblem);
+//		if (m_bias) {
+//			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
+//			libProblem.bias = 1;// bias term in liblinear.
+//		} else {
+//			libProblem.n = m_featureSize * (m_userSize + 1);
+//			libProblem.bias = -1;// no bias term in liblinear.
+//		}
+		
+		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
+		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
+		setPersonalizedModel();
+		return 0;
+	}
+	
+	public void setLibProblemDimension(Problem libProblem){
 		if (m_bias) {
 			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
 			libProblem.bias = 1;// bias term in liblinear.
@@ -99,15 +112,8 @@ public class MultiTaskSVM extends ModelAdaptation {
 			libProblem.n = m_featureSize * (m_userSize + 1);
 			libProblem.bias = -1;// no bias term in liblinear.
 		}
-		
-		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
-		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
-		
-		setPersonalizedModel();
-		
-		return 0;
 	}
-	
+
 	@Override
 	protected void setPersonalizedModel() {
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term

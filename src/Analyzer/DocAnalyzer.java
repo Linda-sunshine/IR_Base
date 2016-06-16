@@ -299,7 +299,9 @@ public class DocAnalyzer extends Analyzer {
 					spVct.put(index, value);
 				} else {
 					spVct.put(index, 1.0);
-					if (!m_isCVStatLoaded && (docWordMap==null || !docWordMap.containsKey(index)))
+					if(m_isCVStatLoaded && (docWordMap==null || !docWordMap.containsKey(index)))
+						m_featureStat.get(token).addOneADPDF(y);
+					if(!m_isCVStatLoaded && (docWordMap==null || !docWordMap.containsKey(index)))
 						m_featureStat.get(token).addOneDF(y);
 				}
 				

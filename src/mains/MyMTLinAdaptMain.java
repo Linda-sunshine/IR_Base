@@ -35,7 +35,7 @@ public class MyMTLinAdaptMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.25;
-		int topKNeighbors = 20;
+		int topKNeighbors = 100;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
@@ -58,23 +58,27 @@ public class MyMTLinAdaptMain {
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-
+		String[] opts = new String[]{"G", "D", "G+D"};
+		for(String i: opts){
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadCategory("./data/category.txt");
+//		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder); // load user and reviews
+		analyzer.setDFScheme(i);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//		analyzer.printPosRatio();
 				
 		//Create an instance of MTLinAdapt with Super user sharing different dimensions.
-		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileSup); 
+		MTLinAdapt mtlinadaptsup = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
 		mtlinadaptsup.loadUsers(analyzer.getUsers());
 		mtlinadaptsup.setDisplayLv(displayLv);
 		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
 		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 		mtlinadaptsup.train();
 		mtlinadaptsup.test();
+		}
+	
 	}
 }
