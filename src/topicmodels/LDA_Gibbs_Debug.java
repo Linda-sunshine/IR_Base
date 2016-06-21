@@ -1311,10 +1311,33 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void EMonCorpus(){
 		separateTrainTest();
 		EM();
-		int maxCommentNum = 10;
-		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
-			inferenceTest4Dynamical(commentNum);
-			printTestParameter4Dynamic(commentNum);
+		mixTest4Spam();
+		inferenceTest4Spam();
+	}
+	
+	public void mixTest4Spam(){
+		int t = 0, j1=0, j2=0;
+		_ChildDoc tmpDoc1;
+		_ChildDoc tmpDoc2;
+		for(int i=m_testSet.size()-1; i>1; i--){
+			t = m_rand.nextInt(i);
+			
+			_ParentDoc pDoc1 = (_ParentDoc) m_testSet.get(i);
+			int pDocCDocSize1 = pDoc1.m_childDocs.size();
+
+			j1 = m_rand.nextInt(pDocCDocSize1);
+			tmpDoc1 = (_ChildDoc)pDoc1.m_childDocs.get(j1);
+			
+			_ParentDoc pDoc2 = (_ParentDoc)m_testSet.get(t);
+			int pDocCDocSize2 = pDoc2.m_childDocs.size();
+			
+			j2 = m_rand.nextInt(pDocCDocSize2);
+			tmpDoc2 = (_ChildDoc)pDoc2.m_childDocs.get(j2);
+			
+			pDoc1.m_childDocs.set(j1, tmpDoc2);
+			tmpDoc2.setParentDoc(pDoc1);
+			pDoc2.m_childDocs.set(j2, tmpDoc1);
+			tmpDoc1.setParentDoc(pDoc2);
 		}
 	}
 
@@ -1428,4 +1451,32 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return logLikelihood;
 	}
 	
+	public void inferenceTest4Spam(){
+		m_collectCorpusStats = false;
+		
+		for(_Doc d:m_testSet){
+			inferenceDoc4Spam(d);
+		}
+	}
+	
+	public void inferenceDoc4Spam(_Doc d){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		initTest4Spam(sampleTestSet, d);
+		double tempLikelihood = inference4Doc(sampleTestSet);
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, d_alpha);
+			sampleTestSet.add(cDoc);
+		}
+	}
+
 }

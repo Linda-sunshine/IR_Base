@@ -163,14 +163,10 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
-//		if(!m_collectCorpusStats){
-//			return term;
-//		}
-		
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_sstat[tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_sstat[0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
