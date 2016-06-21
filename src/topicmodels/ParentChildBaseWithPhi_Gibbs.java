@@ -86,8 +86,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
-//		for(_ChildDoc cDoc: pDoc.m_childDocs){
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -335,8 +334,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 		
 		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
-//		for(_ChildDoc cDoc:pDoc.m_childDocs4){
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			double cDocLen = cDoc.getChildDocLenWithXVal();
 						
 			double stnLogLikelihood = 0;
@@ -380,8 +378,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 		
 		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
-//		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			double cDocLen = cDoc.getChildDocLenWithXVal();
 						
 			double stnLogLikelihood = 0;
@@ -427,8 +424,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
 		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		for(_ChildDoc d:pDoc.m_childDocs4Dynamic){
-//		for(_ChildDoc d:pDoc.m_childDocs){
+		for(_ChildDoc d:pDoc.m_childDocs){
 			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
 			double stnLogLikelihood = 0;
 			for(_Word w: stnObj.getWords()){
@@ -568,7 +564,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 					
 					parentParaOut.println();
 					
-					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
+					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
 						childParaOut.print(cDoc.getName()+"\t");
 	
 						childParaOut.print("topicProportion\t");
@@ -681,7 +677,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			PrintWriter pw = new PrintWriter(new File(xProportionFile));
 			for(_Doc d:docList){
 				if(d instanceof _ParentDoc){
-					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs4Dynamic){
+					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs){
 						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
 						pw.print(cDoc.getName()+"\t");
 						pw.print(cDoc.m_xProportion[0]+"\t");
