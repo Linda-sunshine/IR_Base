@@ -26,7 +26,6 @@ public class _ChildDoc extends _Doc {
 		m_title = title;
 		m_docLenWithXVal = 0;
 		
-		m_wordXStat = new HashMap<Integer, Integer>();
 	}
 	
 	public void setParentDoc(_ParentDoc pDoc){
@@ -49,7 +48,7 @@ public class _ChildDoc extends _Doc {
 	@Override
 	public void setTopics4Gibbs(int k, double alpha){		
 		createSpace(k, alpha);
-		
+		m_wordXStat = new HashMap<Integer, Integer>();
 		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		for(_SparseFeature fv: m_x_sparse){
 			wid = fv.getIndex();

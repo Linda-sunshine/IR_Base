@@ -13,10 +13,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 import java.util.Random;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -588,8 +592,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 	
-		printParentParameter(parentParameterFile);
-		printChildParameter(childParameterFile);
+		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 		
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(similarityFile);
@@ -699,13 +702,16 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 	
-	protected void printParentParameter(String parentParameterFile){
+	protected void printParameter(String parentParameterFile, String childParameterFile, ArrayList<_Doc> docList){
 		System.out.println("printing parameter");
 		try{
 			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			for(_Doc d: m_trainSet){
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			
+			for(_Doc d: docList){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");
@@ -722,37 +728,21 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					
 					parentParaOut.println();
 					
+					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
+						childParaOut.print(cDoc.getName()+"\t");
+	
+						childParaOut.print("topicProportion\t");
+						for (int k = 0; k < number_of_topics; k++) {
+							childParaOut.print(d.m_topics[k] + "\t");
+						}
+						
+						childParaOut.println();		
+					}
 				}
 			}
 			
 			parentParaOut.flush();
 			parentParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	protected void printChildParameter(String childParameterFile){
-		System.out.println("printing child parameter");
-		try{
-			System.out.println(childParameterFile);
-			
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_trainSet){
-				
-				if(d instanceof _ChildDoc){
-					childParaOut.print(d.getName()+"\t");
-	
-					childParaOut.print("topicProportion\t");
-					for (int k = 0; k < number_of_topics; k++) {
-						childParaOut.print(d.m_topics[k] + "\t");
-					}	
-		
-					childParaOut.println();
-				}
-			}
 			
 			childParaOut.flush();
 			childParaOut.close();
@@ -760,6 +750,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		catch (Exception e) {
 			e.printStackTrace();
 		}
+
 	}
 	
 	protected void printEntropy(String filePrefix){
@@ -1316,5 +1307,125 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 
 	}
+	
+	public void EMonCorpus(){
+		separateTrainTest();
+		EM();
+		int maxCommentNum = 10;
+		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
+			inferenceTest4Dynamical(commentNum);
+			printTestParameter4Dynamic(commentNum);
+		}
+	}
 
+	public void separateTrainTest(){
+		int cvFold = 10;
+		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
+		double avgCommentNum = 0;
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ParentDoc){
+				int childSize = ((_ParentDoc)d).m_childDocs.size();
+				if(childSize<10){
+					parentTrainSet.add(d);
+				}else{
+					m_testSet.add(d);
+					avgCommentNum += childSize;
+				}
+			}
+		}
+		
+		System.out.println("avg comments for parent doc in testSet\t"+avgCommentNum*1.0/m_testSet.size());
+		
+		for(_Doc d:parentTrainSet){
+			_ParentDoc pDoc = (_ParentDoc) d;
+			m_trainSet.add(d);
+			pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+			for(_ChildDoc cDoc:pDoc.m_childDocs){
+				m_trainSet.add(cDoc);
+				pDoc.addChildDoc4Dynamics(cDoc);
+			}
+		}
+		System.out.println("m_testSet size\t"+m_testSet.size());
+		System.out.println("m_trainSet size\t"+m_trainSet.size());
+	}
+	
+	public void inferenceTest4Dynamical(int commentNum){
+		m_collectCorpusStats = false;
+
+		for(_Doc d:m_testSet){
+			inferenceDoc4Dynamical(d, commentNum);
+		}
+	}
+	
+	public void printTestParameter4Dynamic(int commentNum){
+		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
+		
+		String parentParameterFile = "./data/results/dynamic/testParentParameter_"+commentNum+".txt";
+		String childParameterFile = "./data/results/dynamic/testChildParameter_"+commentNum+".txt";
+	
+		printParameter(parentParameterFile, childParameterFile, m_testSet);
+	}
+	
+	public void inferenceDoc4Dynamical(_Doc d, int commentNum){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		initTest4Dynamical(sampleTestSet, d, commentNum);
+		
+		double tempLikelihood = inference4Doc(sampleTestSet);
+	}
+	
+	//dynamical add comments to sampleTest
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, d_alpha);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, d_alpha);
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
+		}
+	}
+	
+	public double inference4Doc(ArrayList<_Doc> sampleTestSet){
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					collectStats(doc);
+				}
+			}
+		} while (++iter<this.number_of_iteration);
+
+		for(_Doc doc: sampleTestSet){
+			estThetaInDoc(doc);
+		}
+		
+		return logLikelihood;
+	}
+	
 }

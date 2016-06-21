@@ -297,8 +297,11 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
-		printParameter(parentParameterFile, childParameterFile);
+		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 
+		String xProportionFile = filePrefix + "childXProportion.txt";
+		printXProportion(xProportionFile, m_trainSet);
+		
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
 		
@@ -420,34 +423,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		return childLikelihoodMap;
 	}
 	
-//	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-//		double gammaLen = Utils.sumOfArray(m_gamma);
-//
-//		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-//		
-//		for(_ChildDoc d:pDoc.m_childDocs){
-//			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
-//			double stnLogLikelihood = 0;
-//			for(_Word w: stnObj.getWords()){
-//				int wid = w.getIndex();
-//			
-//				double wordLogLikelihood = 0;
-//				
-//				for (int k = 0; k < number_of_topics; k++) {
-//					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-//					wordLogLikelihood += wordPerTopicLikelihood;
-//				}
-//				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-//				wordLogLikelihood += wordPerTopicLikelihood;
-//			
-//				stnLogLikelihood += Math.log(wordLogLikelihood);
-//			}
-//			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-//		}
-//		
-//		return childLikelihoodMap;
-//	}
-	
 	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
@@ -568,7 +543,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 	}
 		
-	public void printParameter(String parentParameterFile, String childParameterFile){
+	public void printParameter(String parentParameterFile, String childParameterFile, ArrayList<_Doc> docList){
 		System.out.println("printing parameter");
 		try{
 			System.out.println(parentParameterFile);
@@ -576,7 +551,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			
 			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
 			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_trainSet){
+			for(_Doc d: docList){
 				if(d instanceof _ParentDoc){
 					parentParaOut.print(d.getName()+"\t");
 					parentParaOut.print("topicProportion\t");
@@ -593,21 +568,20 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 					
 					parentParaOut.println();
 					
-				}else{
-					if(d instanceof _ChildDoc){
-						childParaOut.print(d.getName()+"\t");
-
+					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
+						childParaOut.print(cDoc.getName()+"\t");
+	
 						childParaOut.print("topicProportion\t");
 						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print((( _ChildDoc)d).m_xTopics[0][k] + "\t");
+							childParaOut.print(cDoc.m_xTopics[0][k] + "\t");
 						}
 						
 						childParaOut.print("xProportion\t");
 						for(int x=0; x<m_gamma.length; x++){
-							childParaOut.print(((_ChildDoc)d).m_xProportion[x]+"\t");
+							childParaOut.print(cDoc.m_xProportion[x]+"\t");
 						}
 						
-						childParaOut.println();
+						childParaOut.println();		
 					}
 				}
 			}
@@ -660,5 +634,63 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 
 		return docLogLikelihood;
 	}
+	
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
 
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
+			computeMu4Doc(cDoc);
+
+		}
+	}
+	
+	public void printXProportion(String xProportionFile, ArrayList<_Doc> docList){
+		System.out.println("x proportion for parent doc");
+		try{
+			PrintWriter pw = new PrintWriter(new File(xProportionFile));
+			for(_Doc d:docList){
+				if(d instanceof _ParentDoc){
+					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs4Dynamic){
+						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
+						pw.print(cDoc.getName()+"\t");
+						pw.print(cDoc.m_xProportion[0]+"\t");
+						pw.print(cDoc.m_xProportion[1]);
+						pw.println();
+					}
+				}
+			}
+			
+			pw.flush();
+			pw.close();
+		}
+		catch (Exception e) {
+		e.printStackTrace();
+	}
+
+	}
+
+	public void printTestParameter4Dynamic(int commentNum){
+		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
+		printXProportion(xProportionFile, m_testSet);
+		
+		String parentParameterFile = "./data/results/dynamic/testParentParameter_"+commentNum+".txt";
+		String childParameterFile = "./data/results/dynamic/testChildParameter_"+commentNum+".txt";
+		printParameter(parentParameterFile, childParameterFile, m_testSet);
+	}
+	
 }

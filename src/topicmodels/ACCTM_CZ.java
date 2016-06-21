@@ -5,6 +5,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.netlib.util.doubleW;
+
+import cc.mallet.grmm.learning.ACRF.Template;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -37,21 +40,21 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 			return term;
 		
 		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
-			term *= influenceRatio(pDoc.m_sstat[tid], pDoc.m_sstat[0]);
+			term *= influenceRatio(cDoc.m_xTopicSstat[0][tid], pDoc.m_sstat[tid], cDoc.m_xTopicSstat[0][0], pDoc.m_sstat[0]);
 		}
 		
 		return term;
 	}
 	
-	protected double influenceRatio(double njc, double n1c){
+	protected double influenceRatio(double njc, double njp, double n1c, double n1p){
 		double ratio = 1.0;
 		
 		for(int n=1; n<=n1c; n++){
-			ratio *= n1c*1.0/(n1c+1);
+			ratio *= n1p*1.0/(n1p+1);
 		}
 		
 		for(int n=1; n<=njc; n++){
-			ratio *= (njc+1)*1.0/njc;
+			ratio *= (njp+1)*1.0/njp;
 		}
 		
 		return ratio;
@@ -85,75 +88,122 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
-	public void EMonCorpus(){
-		separateTrainTest();
-		EM();
-		int maxCommentNum = 10;
-		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
-			inferenceTest(commentNum);
-			printTopicProportion4Test(commentNum);
-		}
-	}
+//	public void EMonCorpus(){
+//		separateTrainTest();
+//		EM();
+//		int maxCommentNum = 10;
+//		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
+//			inferenceTest4Dynamical(commentNum);
+//			printTopicProportion4Test(commentNum);
+//		}
+//	}
 	
-	public void separateTrainTest(){
-		int cvFold = 10;
-		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
-		double avgCommentNum = 0;
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc){
+//	public void EMonCorpus(){
+//		separateTrainTest();
+//		EM();
+//		mixTest4Spam();
+//		inferenceTest4Spam();
+//	}
+	
+//	public void separateTrainTest(){
+//		int cvFold = 10;
+//		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
+//		double avgCommentNum = 0;
+//		m_trainSet = new ArrayList<_Doc>();
+//		m_testSet = new ArrayList<_Doc>();
+//		for(_Doc d:m_corpus.getCollection()){
+//			if(d instanceof _ParentDoc){
 //				if(m_rand.nextInt(cvFold)!=5){
 //					parentTrainSet.add(d);
 //				}else{
 //					m_testSet.add(d);
 //					avgCommentNum += ((_ParentDoc)d).m_childDocs.size();
 //				}
-				int childSize = ((_ParentDoc)d).m_childDocs.size();
-				if(childSize<10){
-					parentTrainSet.add(d);
-				}else{
-					m_testSet.add(d);
-					avgCommentNum += childSize;
-				}
-			}
+//			}
+//		}
+//		
+//		System.out.println("avg comments for parent doc in testSet\t"+avgCommentNum*1.0/m_testSet.size());
+//		
+//		for(_Doc d:parentTrainSet){
+//			_ParentDoc pDoc = (_ParentDoc) d;
+//			m_trainSet.add(d);
+//			pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+//			for(_ChildDoc cDoc:pDoc.m_childDocs){
+//				m_trainSet.add(cDoc);
+//				pDoc.addChildDoc4Dynamics(cDoc);
+//			}
+//		}
+//		System.out.println("m_testSet size\t"+m_testSet.size());
+//		System.out.println("m_trainSet size\t"+m_trainSet.size());
+//	}
+	
+	public void mixTest4Spam(){
+		int t = 0, j1=0, j2=0;
+		_ChildDoc tmpDoc1;
+		_ChildDoc tmpDoc2;
+		for(int i=m_testSet.size()-1; i>1; i--){
+			t = m_rand.nextInt(i);
+			
+			_ParentDoc pDoc1 = (_ParentDoc) m_testSet.get(i);
+			int pDocCDocSize1 = pDoc1.m_childDocs.size();
+
+			j1 = m_rand.nextInt(pDocCDocSize1);
+			tmpDoc1 = (_ChildDoc)pDoc1.m_childDocs.get(j1);
+			
+			_ParentDoc pDoc2 = (_ParentDoc)m_testSet.get(t);
+			int pDocCDocSize2 = pDoc2.m_childDocs.size();
+			
+			j2 = m_rand.nextInt(pDocCDocSize2);
+			tmpDoc2 = (_ChildDoc)pDoc2.m_childDocs.get(j2);
+			
+			pDoc1.m_childDocs.set(j1, tmpDoc2);
+			tmpDoc2.setParentDoc(pDoc1);
+			pDoc2.m_childDocs.set(j2, tmpDoc1);
+			tmpDoc1.setParentDoc(pDoc2);
 		}
-		
-		System.out.println("avg comments for parent doc in testSet\t"+avgCommentNum*1.0/m_testSet.size());
-		
-		for(_Doc d:parentTrainSet){
-			_ParentDoc pDoc = (_ParentDoc) d;
-			m_trainSet.add(d);
-			pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
-			for(_ChildDoc cDoc:pDoc.m_childDocs){
-				m_trainSet.add(cDoc);
-				pDoc.addChildDoc4Dynamics(cDoc);
-			}
-		}
-		System.out.println("m_testSet size\t"+m_testSet.size());
-		System.out.println("m_trainSet size\t"+m_trainSet.size());
 	}
 	
-	public void inferenceTest(int commentNum){
+	public void inferenceTest4Spam(){
 		m_collectCorpusStats = false;
-
+		
 		for(_Doc d:m_testSet){
-			inference4Dynamical(d, commentNum);
+			inferenceDoc4Spam(d);
 		}
 	}
 	
-	public void printTopicProportion4Test(int commentNum){
-		String dynamicTopicFile = "./data/results/dynamic/dynamicProportion4Parent_"+commentNum+"_.txt";
+	public void inferenceDoc4Spam(_Doc d){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		initTest4Spam(sampleTestSet, d);
+		double tempLikelihood = inference4Doc(sampleTestSet);
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+		}
+	}
+	
+	public void printChildLikelihood4ParentSpam(){
+		String childLikelihood4ParentSpamFile = "./data/results/dynamic/childLikelihood4ParentSample.txt";
 		try{
-			PrintWriter pw = new PrintWriter(new File(dynamicTopicFile));
-
-			for(_Doc d:m_testSet){
-				pw.print(d.getName()+"\t");
-				pw.print("topicProportion\t");
-				for(int k=0; k<number_of_topics; k++){
-					pw.print(d.m_topics[k]+"\t");
+			PrintWriter pw = new PrintWriter(new File(childLikelihood4ParentSpamFile));
+			for(_Doc doc:m_testSet){
+				_ParentDoc pDoc = (_ParentDoc)doc;
+				pw.print(pDoc.getName()+"\t");
+				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					double likelihood = computeChildLikelihood4ParentSpam(cDoc, pDoc);
+					pw.print(cDoc.getName()+":"+likelihood+"\t");
 				}
-				pw.println();		
+				pw.println();
 			}
 			pw.flush();
 			pw.close();
@@ -162,72 +212,51 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		}
 	}
 	
-	public void inference4Dynamical(_Doc d, int commentNum){
-		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-		initTest4Dynamical(sampleTestSet, d, commentNum);
+	public double computeChildLikelihood4ParentSpam(_ChildDoc cDoc, _ParentDoc pDoc){
+		double likelihood = 0;
 		
-		int iter = 0;
-		do{
-			int t;
-			_Doc tmpDoc;
-			for(int i=sampleTestSet.size()-1; i>1; i--){
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = sampleTestSet.get(i);
-				sampleTestSet.set(i, sampleTestSet.get(t));
-				sampleTestSet.set(t, tmpDoc);
-			}
+		for(_Word w:cDoc.getWords()){
 			
-			for(_Doc doc:sampleTestSet)
-				calculate_E_step(doc);
-			
-			if (iter>m_burnIn && iter%m_lag==0){
-				for(_Doc doc: sampleTestSet){
-					collectStats(doc);
-				}
-			}
-		}while (++iter<this.number_of_iteration);
-		
-		for(_Doc doc:sampleTestSet){
-			estThetaInDoc(doc);
 		}
 		
+		return likelihood;
 	}
-	
+		
 	//dynamical add comments to sampleTest
-	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
-		_ParentDoc pDoc = (_ParentDoc)d;
-		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
-		pDoc.setTopics4Gibbs(number_of_topics, 0);
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-//		int testLength = (int)pDoc.getTotalDocLength();
-//		testLength = 0;
-//		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
-		
-		sampleTestSet.add(pDoc);
-		int count = 0;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			if(count>=commentNum){
-				break;
-			}
-			count ++;
-//			testLength = cDoc.getTotalDocLength();
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-			
-//			testLength = 0;
-			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-			pDoc.addChildDoc4Dynamics(cDoc);
-		}
-	}
+//	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+//		_ParentDoc pDoc = (_ParentDoc)d;
+//		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+//		pDoc.setTopics4Gibbs(number_of_topics, 0);
+//		for(_Stn stnObj: pDoc.getSentences()){
+//			stnObj.setTopicsVct(number_of_topics);
+//		}
+////		int testLength = (int)pDoc.getTotalDocLength();
+////		testLength = 0;
+////		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+//		
+//		sampleTestSet.add(pDoc);
+//		int count = 0;
+//		for(_ChildDoc cDoc:pDoc.m_childDocs){
+//			if(count>=commentNum){
+//				break;
+//			}
+//			count ++;
+//			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+//			
+//			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+//			sampleTestSet.add(cDoc);
+//			pDoc.addChildDoc4Dynamics(cDoc);
+//		}
+//	}
 	
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
 		initTest(sampleTestSet, pDoc);
+		return inference4Doc(sampleTestSet);	
+	}
 	
+	public double inference4Doc(ArrayList<_Doc> sampleTestSet){
 		double logLikelihood = 0.0, count = 0;
 		int  iter = 0;
 		do {
@@ -254,7 +283,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	
 		for(_Doc doc: sampleTestSet){
 			estThetaInDoc(doc);
-			logLikelihood += calculate_test_log_likelihood(doc);
+//			logLikelihood += calculate_test_log_likelihood(doc);
 		}
 		
 		return logLikelihood;

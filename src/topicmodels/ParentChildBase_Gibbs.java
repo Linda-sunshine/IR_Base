@@ -80,7 +80,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 10000000;
+//		mu = 1e32;
 //		mu = Double.MAX_VALUE;
 //		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
@@ -90,7 +90,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-//		mu = 0.1;
+//		mu = 1e30;
 		d.setMu(mu);
 	}
 	
@@ -163,14 +163,14 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
-		if(!m_collectCorpusStats){
-			return term;
-		}
+//		if(!m_collectCorpusStats){
+//			return term;
+//		}
 		
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs){
+		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_sstat[tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_sstat[0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -424,7 +424,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			childXFolder.mkdir();
 		}
 
-		for (_Doc d : m_corpus.getCollection()) {
+		for (_Doc d : m_trainSet) {
 		if (d instanceof _ParentDoc) {
 				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
 				printParentPhi((_ParentDoc)d, parentPhiFolder);
@@ -978,7 +978,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			System.out.println(childParameterFile);
 			
 			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_corpus.getCollection()){
+			for(_Doc d: m_trainSet){
 	
 				if(d instanceof _ChildDoc){
 					childParaOut.print(d.getName()+"\t");
@@ -998,6 +998,31 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		}
 		catch (Exception e) {
 			e.printStackTrace();
+		}
+			
+	}
+	
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
+			computeMu4Doc(cDoc);
+
 		}
 	}
 	

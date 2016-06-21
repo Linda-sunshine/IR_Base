@@ -136,7 +136,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: d.m_childDocs){
+		for(_ChildDoc cDoc: d.m_childDocs4Dynamic){
 			term *= influenceRatio(d.m_sstat[tid], d.m_sstat[0]);
 		}
 		
@@ -504,6 +504,27 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	
 	public double childTopicInDoc(int tid, _ChildDoc cDoc){
 		return cDoc.m_sstat[tid]/cDoc.getDocInferLength();
+	}
+	
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
+		}
 	}
 }
 

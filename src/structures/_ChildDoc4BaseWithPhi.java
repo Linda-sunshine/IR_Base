@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import javax.transaction.xa.Xid;
 
@@ -50,7 +51,7 @@ public class _ChildDoc4BaseWithPhi extends _ChildDoc{
 	
 	public void setTopics4Gibbs(int k, double alpha){
 		createSpace(k, alpha);
-		
+		m_wordXStat = new HashMap<Integer, Integer>();
 		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
 		tid = 0;
 		for(_SparseFeature fv:m_x_sparse){
