@@ -4,10 +4,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import org.netlib.util.doubleW;
-
-import cc.mallet.grmm.learning.ACRF.Template;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;

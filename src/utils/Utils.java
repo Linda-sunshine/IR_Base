@@ -432,13 +432,8 @@ public class Utils {
 		return similarity;
 	}
 	
-	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		double spVct1L2 = sumOfFeaturesL2_values(spVct1), spVct2L2 = sumOfFeaturesL2_values(spVct2);
-		if (spVct1L2 == 0)
-			System.out.println("spVct1L2");
-		else if (spVct2L2 == 0)
-			System.out.println("spVct2L2");
-		if (spVct1L2==0 || spVct2L2==0)
+	public static double cosine(double[] a, double[] b) {
+		if(L2Norm(a)==0||L2Norm(b)==0)
 			return 0;
 		else
 			return dotProduct(a, b) / L2Norm(a) / L2Norm(b);

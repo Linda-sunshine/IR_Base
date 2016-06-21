@@ -28,7 +28,6 @@ import utils.Utils;
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 	public static int ChildDocFeatureSize = 2;
-	public ArrayList<_APPQuery> m_Queries;
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -113,9 +112,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
-		
-		content = Jsoup.parse(content).text();
-
 
 //		
 //		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
