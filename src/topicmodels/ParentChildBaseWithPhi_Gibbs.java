@@ -659,6 +659,22 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		}
 	}
 	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			computeMu4Doc(cDoc);
+		}
+	}
+	
 	public void printXProportion(String xProportionFile, ArrayList<_Doc> docList){
 		System.out.println("x proportion for parent doc");
 		try{
@@ -690,6 +706,15 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		String parentParameterFile = "./data/results/dynamic/testParentParameter_"+commentNum+".txt";
 		String childParameterFile = "./data/results/dynamic/testChildParameter_"+commentNum+".txt";
+		printParameter(parentParameterFile, childParameterFile, m_testSet);
+	}
+	
+	public void printTestParameter4Spam(String filePrefix){
+		String xProportionFile = filePrefix+"testChildXProportion.txt";
+		printXProportion(xProportionFile, m_testSet);
+		
+		String parentParameterFile = filePrefix+"testParentParameter.txt";
+		String childParameterFile = filePrefix+"testChildParameter.txt";
 		printParameter(parentParameterFile, childParameterFile, m_testSet);
 	}
 	
