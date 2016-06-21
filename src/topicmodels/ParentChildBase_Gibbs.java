@@ -1,7 +1,6 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -1019,6 +1017,22 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			pDoc.addChildDoc4Dynamics(cDoc);
 			computeMu4Doc(cDoc);
 
+		}
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d) {
+		_ParentDoc pDoc = (_ParentDoc) d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+
+		for (_Stn stnObj : pDoc.getSentences()) {
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		sampleTestSet.add(pDoc);
+
+		for (_ChildDoc cDoc : pDoc.m_childDocs) {
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			computeMu4Doc(cDoc);
 		}
 	}
 	
