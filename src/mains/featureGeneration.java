@@ -7,18 +7,6 @@ import java.util.Calendar;
 
 import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
-import structures._Doc;
-import topicmodels.HTMM;
-import topicmodels.HTSM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
-import topicmodels.ParentChild_Gibbs;
-import topicmodels.ParentChildWithProbitModel_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.twoTopic;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
 
 public class featureGeneration {
 	public static void main(String[] args) throws IOException, ParseException {	

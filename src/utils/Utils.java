@@ -391,32 +391,6 @@ public class Utils {
 			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
-	public static double cosine(double[] a, double[] b) {
-		return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
-	}
-	
-	//Calculate the similarity between two sparse vectors.
-	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		if (spVct1==null || spVct2==null)
-			return 0; // What is the minimal value of similarity?
-		
-		double similarity = 0;
-		int pointer1 = 0, pointer2 = 0;
-		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
-			_SparseFeature temp1 = spVct1[pointer1];
-			_SparseFeature temp2 = spVct2[pointer2];
-			if (temp1.getIndex() == temp2.getIndex()) {
-				similarity += temp1.getValue() * temp2.getValue();
-				pointer1++;
-				pointer2++;
-			} else if (temp1.getIndex() > temp2.getIndex())
-				pointer2++;
-			else
-				pointer1++;
-		}
-		return similarity;
-	}
-	
 	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
 		if (spVct1L2==0 || spVct2L2==0)
@@ -436,6 +410,35 @@ public class Utils {
 			_SparseFeature temp2 = spVct2[pointer2];
 			if (temp1.getIndex() == temp2.getIndex()) {
 				similarity += temp1.getValues()[0] * temp2.getValues()[0];
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+	
+	public static double cosine(double[] a, double[] b) {
+		if(L2Norm(a) == 0 || L2Norm(b) == 0)
+			return 0;
+		else
+			return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
+	}
+	
+	//Calculate the similarity between two sparse vectors.
+	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
 				pointer1++;
 				pointer2++;
 			} else if (temp1.getIndex() > temp2.getIndex())
@@ -724,7 +727,7 @@ public class Utils {
 			value += vct[fv.getIndex()] * fv.getValue();
 		return value;
 	}
-	
+
 	//Sgn function: >= 0 1; < 0; 0.
 	public static int sgn(double a){
 		if (a >= 0) return 1;
@@ -840,5 +843,118 @@ public class Utils {
 			klDiv += p1[i] * Math.log( p1[i] / p2[i] );
 		}
 		return klDiv / log2; 
-	 }
+	}
+	
+	/****Added by Lin.***/
+	public static int maxOfArrayIndex(int[] probs){
+		int maxIndex = 0;
+		int maxValue = probs[0];
+		for(int i = 1; i < probs.length; i++){
+			if(probs[i] > maxValue){
+				maxValue = probs[i];
+				maxIndex = i;
+			}
+		}
+		return maxIndex;
+	}
+	
+	public static int maxOfArrayValue(int[] count){
+		int maxValue = count[0];
+		if(count.length <=1 && count.length >0)
+			return maxValue;
+		for(int i=1; i < count.length; i++){
+			if(count[i] < maxValue)
+				maxValue = count[i];
+		}
+		return maxValue;
+	}
+	
+	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
+		if (spVct1.length==0 || spVct2.length==0)
+			return 0;
+		else{
+			double similarity = 0;
+			int pointer1 = 0, pointer2 = 0;
+			while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+				_SparseFeature temp1 = spVct1[pointer1];
+				_SparseFeature temp2 = spVct2[pointer2];
+				if (temp1.getIndex() == temp2.getIndex()) {
+					similarity += (temp1.getValue() - temp2.getValue()) * (temp1.getValue() - temp2.getValue());
+					pointer1++;
+					pointer2++;
+				} else if (temp1.getIndex() > temp2.getIndex())
+					pointer2++;
+				else
+					pointer1++;
+			}
+			return Math.exp(-similarity);
+		}
+	}
+	
+	//Dot product of two binary arrays.
+	public static int dotProduct(int[] a, int[] b){
+		int sum = 0;
+		if(a.length == b.length){
+			for(int i = 0; i < a.length; i++)
+				sum += a[i] & b[i];
+		}
+		return sum;
+	}
+	
+	public static double calculateMDistance(_Doc d1, _Doc d2, double[][] A){
+		double distance = 0, tmp = 0;
+		double[] t1 = d1.getTopics(), t2 = d2.getTopics();
+		double[] tmpArray = new double[A.length]; 
+		for(int i = 0; i < tmpArray.length; i++){
+			for(int j = 0; j < t1.length; j++)
+				tmp += (t1[j] - t2[j]) * A[j][i];
+			tmpArray[i] = tmp;
+			tmp = 0;
+		}//(x_i - x_j)^T * A
+		for(int i = 0; i < tmpArray.length; i++){
+			distance += tmpArray[i] * (t1[i] - t2[i]);
+		} //(x_i - x_j)^T * A * (x_i - x_j)
+		return distance;
+	}
+	
+	//The Euclidean distance for two arrays of the same length.
+	public static double EuclideanDistance(double[] t1, double[] t2){
+		double sum = 0;
+		if(t1.length == t2.length){
+			for(int i=0; i < t1.length; i++){
+				sum += (t1[i] - t2[i]) * (t1[i] - t2[i]);
+			}	
+		}
+		return sum;
+	}
+	
+	// added by Lin for computing LCS.
+	public static int LCSLength(String[] x, String[] y) {
+		int m = x.length;
+		int n = y.length;
+		int[][] c = new int[m + 1][n + 1];
+		for (int i = 1; i <= m; i++) {
+			for (int j = 1; j <= n; j++) {
+				if (x[i - 1].equals(y[j - 1]))
+					c[i][j] = c[i - 1][j - 1] + 1;
+				else if (c[i - 1][j] >= c[i][j - 1]) {
+					c[i][j] = c[i - 1][j];
+				} else
+					c[i][j] = c[i][j - 1];
+			}
+		}
+		return c[m][n];// Every cell contains the current longest common
+						// sequence of xi, yj.
+	}
+	
+	// The way we used to calcuate the index in a mXm symmetric matrix.
+	public static int getIndex(int i, int j){
+		//Swap i and j.
+		if(i < j){
+			int t = j;
+			j = i;
+			i = t;
+		}
+		return i*(i-1)/2+j;
+	}
 }

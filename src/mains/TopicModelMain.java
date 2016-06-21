@@ -14,10 +14,7 @@ import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
-import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
-import topicmodels.ParentChildWithChildPhi;
-import topicmodels.ParentChildWithProbitModel_Gibbs;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.correspondence_LDA_Gibbs;
 import topicmodels.pLSA;
@@ -203,8 +200,8 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
+//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
+//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
 				double[] gammaParent = {2, 2};
@@ -221,13 +218,13 @@ public class TopicModelMain {
 				double mu = 1.0;
 				double[] gammaParent = {2, 2};
 				double[] gammaChild = {2, 2};
-				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+//				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1, c, 
+//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
 			}else if(topicmodel.equals("ParentChildWithChildPhi")){
 				double mu = 1.0;
 				double[] gammaChild = {2, 2};
-				model = new ParentChildWithChildPhi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaChild, mu);
+//				model = new ParentChildWithChildPhi(gibbs_iteration, 0, beta-1, c, 
+//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaChild, mu);
 			}
 			
 			model.setDisplayLap(displayLap);

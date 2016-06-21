@@ -31,7 +31,7 @@ import utils.Utils;
  */
 public abstract class ModelAdaptation extends BaseClassifier {
 	protected ArrayList<_AdaptStruct> m_userList; // references to the users	
-	int m_userSize; // valid user size
+	protected int m_userSize; // valid user size
 	
 	protected double[] m_gWeights; //global model weight
 	protected double[] m_pWeights; // cache for personalized weight
@@ -39,11 +39,19 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
 
+	//if we will set the personalized model to the target user (otherwise use the global model)
+	protected boolean m_personalized;
+
+	// Decide if we will normalize the likelihood.
+	protected boolean m_LNormFlag=true;
+	protected String m_dataset = "Amazon"; // Default dataset.
+
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
 		loadGlobalModel(featureMap, globalModel);
 		m_pWeights = null;
+		m_personalized = true;
 	}
 	
 	public void setDisplayLv(int level) {
@@ -52,6 +60,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public void setTestMode(TestMode mode) {
 		m_testmode = mode;
+	}
+	
+	public void setPersonalization(boolean p) {
+		m_personalized = p;
+	}	
+	
+	public void setLNormFlag(boolean b){
+		m_LNormFlag = b;
 	}
 	
 	//Load global model from file.
@@ -266,7 +282,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++)
 			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-		System.out.println();
+		System.out.println("\n");
 		return Utils.sumOfArray(macroF1);
 	}
 

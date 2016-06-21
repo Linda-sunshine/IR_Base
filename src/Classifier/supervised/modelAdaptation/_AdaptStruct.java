@@ -11,6 +11,7 @@ import structures._Doc;
 import structures._PerformanceStat;
 import structures._Review;
 import structures._Review.rType;
+import structures._SparseFeature;
 import structures._User;
 
 /**
@@ -169,6 +170,10 @@ public class _AdaptStruct {
 	
 	public int predict(_Doc doc) {
 		return m_user.predict(doc);
+	}
+	
+	public double linearFunc(_SparseFeature[] fvs, int classid) {
+		return m_user.linearFunc(fvs, classid);
 	}
 	
 	public _PerformanceStat getPerfStat() {
