@@ -297,7 +297,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-
+		printTestParameter4Spam(filePrefix);
 		String xProportionFile = filePrefix + "childXProportion.txt";
 		printXProportion(xProportionFile, m_trainSet);
 		
@@ -655,7 +655,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		}
 	}
 	
-	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d) {
 		_ParentDoc pDoc = (_ParentDoc)d;
 		pDoc.setTopics4Gibbs(number_of_topics, 0);
 		for(_Stn stnObj: pDoc.getSentences()){

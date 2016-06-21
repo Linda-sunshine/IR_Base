@@ -178,8 +178,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			return 1.0;
 		
 		double result = 1.0;
-		for(int n=1; n<=nc; n++) 
-			result *= 1 + muDp / (alphaMuNp + n);
+		for (int n = 1; n <= nc; n++)
+			result *= 1 + muDp / (alphaMuNp + n - 1);
 		return result;
 	}
 	
