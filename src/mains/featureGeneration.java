@@ -1,12 +1,12 @@
 package mains;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
+
+import Analyzer.ParentChildAnalyzer;
 
 public class featureGeneration {
 	public static void main(String[] args) throws IOException, ParseException {	
@@ -18,7 +18,7 @@ public class featureGeneration {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		String topicmodel = "correspondence"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
+		String topicmodel = "featureGeneration"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs
 	
 		String category = "tablet";
 		int number_of_topics = 20;
@@ -50,9 +50,13 @@ public class featureGeneration {
 		String articleType = "Tech";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
+//		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
-		
+
+		// articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
+		// commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
+
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -66,7 +70,7 @@ public class featureGeneration {
 		
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
 	
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
@@ -100,20 +104,25 @@ public class featureGeneration {
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.00; // Used in feature selection, the starting point of the features.
-		double endProb = 0.95; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 1; // Filter the features with DFs smaller than this threshold.
+		double endProb = 1; // Used in feature selection, the ending point of
+								// the features.
+		int DFthreshold = 10; // Filter the features with DFs smaller than this
+								// threshold.
 
+		double DFUpperThreshold = 0.10;
+		
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
-
+//		analyzer.LoadDirectory(commentFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		analyzer.featureSelectionWithBound(fvFile, featureSelection, startProb, endProb, DFthreshold, DFUpperThreshold);
 		
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);

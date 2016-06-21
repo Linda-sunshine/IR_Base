@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import Classifier.supervised.liblinear.Feature;
 import structures._RankItem;
 import structures._stat;
 import utils.Utils;
@@ -13,6 +14,9 @@ public class FeatureSelector {
 	double m_startProb;
 	double m_endProb;
 	int m_DFThreshold;
+	
+	double m_upThresholdProb;
+	
 	ArrayList<_RankItem> m_selectedFeatures;
 
 	//Default setting of feature selection
@@ -33,6 +37,23 @@ public class FeatureSelector {
 		m_startProb = Math.max(0, startProb);
 		m_endProb = Math.min(1.0, endProb);
 		m_DFThreshold = DFThreshold;
+		m_selectedFeatures = new ArrayList<_RankItem>();
+	}
+	
+	//added by Renqin
+	public FeatureSelector(double startProb, double endProb, int lowerThreshold, double upThresholdProb){
+		if (startProb>endProb) {
+			double t = startProb;
+			startProb = endProb;
+			endProb = t;
+		}
+		
+		m_startProb = Math.max(0, startProb);
+		m_endProb = Math.min(1.0, endProb);
+		
+		m_DFThreshold = lowerThreshold;
+		m_upThresholdProb = upThresholdProb;
+		
 		m_selectedFeatures = new ArrayList<_RankItem>();
 	}
 	
@@ -59,6 +80,23 @@ public class FeatureSelector {
 			//Filter the features which have smaller DFs.
 			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
 			if(sumDF > m_DFThreshold){
+				m_selectedFeatures.add(new _RankItem(f, sumDF));
+			}
+		}
+	}
+	
+	public void DFWithLowerUpperBound(HashMap<String, _stat> featureStat, int corpusSize){
+//		double DFLowerThreshold = corpusSize*m_startProb;
+		double DFUpperThreshold = corpusSize*m_upThresholdProb;
+		
+		for(String f: featureStat.keySet()){
+			//Filter the features which have smaller DFs.
+			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
+			if(sumDF < m_DFThreshold){
+				continue;
+			}else if(sumDF > DFUpperThreshold){
+				continue;
+			}else{
 				m_selectedFeatures.add(new _RankItem(f, sumDF));
 			}
 		}

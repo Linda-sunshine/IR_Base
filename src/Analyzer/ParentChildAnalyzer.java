@@ -1,8 +1,11 @@
 package Analyzer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -10,17 +13,22 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures._ChildDoc4ThreePhi;
+import structures.TokenizeResult;
+import structures._ChildDoc;
+import structures._ChildDoc4APP;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4ThreePhi;
+import structures._ParentDoc4APP;
 import structures._SparseFeature;
+import structures._Word;
 import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
-	public static int ChildDocFeatureSize = 1;
+	public static int ChildDocFeatureSize = 2;
+	public ArrayList<_APPQuery> m_Queries;
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -39,6 +47,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
 				loadParentDoc(f.getAbsolutePath());
+//				loadAPPParentDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadParentDirectory(folder, suffix);
 			}
@@ -54,13 +63,16 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
+				// LoadDoc(f.getAbsolutePath());
 				loadChildDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadChildDirectory(folder, suffix);
 			}
 		}
-		
-		System.out.format("loading %d comments from %s\n", m_corpus.getSize()-current, folder);
+		System.out.format("loading %d comments from %s\n", m_corpus.getSize()
+				- current, folder);
+
+		filterParentAndChildDoc();
 	}
 
 	public void loadParentDoc(String fileName) {
@@ -72,11 +84,12 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
-		
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0); 
-//		_ParentDoc4ThreePhi d = new _ParentDoc4ThreePhi(m_corpus.getSize(), name, title, content, 0);
+
+		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
+
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
+				
 			sentences = new String[sentenceArray.length()];
 			//shall we add title into this sentence array
 			for (int i = 0; i < sentenceArray.length(); i++)
@@ -84,13 +97,13 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			
 			if (AnalyzeDocByStn(d, sentences))
 				parentHashMap.put(name, d);
-//			else 
-//				System.out.println("filtering parent documet\t"+d.getName());
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
 
+	
 	public void loadChildDoc(String fileName) {
 		if (fileName == null || fileName.isEmpty())
 			return;
@@ -99,11 +112,23 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
+		String title = Utils.getJSONValue(json, "title");
 		
-		_ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(), name, "", content, 0);
-//	 	_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name, "", content, 0);
+		content = Jsoup.parse(content).text();
+
+
+//		
+//		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+//		 name, "", content, 0);
+//		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
+		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
+		// name,
+		// "", content, 0);
+//		_ChildDoc4TwoPhi d = new _ChildDoc4TwoPhi(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
+//				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
@@ -134,76 +159,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		d.setName(name);
 		AnalyzeDoc(d);		
 	}
-	
-	
-	@Override
-//	public void setFeatureValues(String fValue, int norm){
-//		super.setFeatureValues(fValue, norm);//it is safe to call this first
-//		
-//		
-//		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-//		int N = m_isCVStatLoaded ? m_TotalDF : docs.size(); // total number of documents
-//		int childDocsNum = 0;
-//		
-//		double[] childDF = new double[m_featureNames.size()]; // total number of unique words
-//
-//		//get DF in child documents
-//		for(_Doc temp:docs) {
-//			if(temp instanceof _ChildDoc){
-//				_SparseFeature[] sfs = temp.getSparse();
-//				for(_SparseFeature sf : sfs)
-//					childDF[sf.getIndex()] ++;	// DF in child documents			
-//				childDocsNum += 1;
-//			}
-//		}
-//		
-//		System.out.println("Set feature value for parent child probit model");
-//		_SparseFeature[] pSfvs;
-//		for(_Doc temp:docs) {	
-//			if(temp instanceof _ChildDoc) {
-//
-//				_ParentDoc tempParentDoc = ((_ChildDoc)temp).m_parentDoc;
-//				pSfvs = tempParentDoc.getSparse();
-//							
-//				for(_SparseFeature sf: temp.getSparse()){				
-//					String featureName = m_featureNames.get(sf.getIndex());
-//					_stat stat = m_featureStat.get(featureName); // corpus-level statistics
-//					
-//					double DFCorpus = Utils.sumOfArray(stat.getDF());
-//					double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;				
-//				
-//					double[] values = new double[ChildDocFeatureSize];
-//					
-//					double DFChild = childDF[sf.getIndex()];
-//					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;						
-//					
-//					values[0] = 1;//bias term
-//					values[1] = IDFCorpus;//IDF over whole corpus
-//					values[2] = IDFChild;//IDF in child documents					
-//					values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;//IDF ratio
-//					
-//					double TFParent = 0.0;
-//					double TFChild = 0.0;							
-//					
-//					int wIndex = Utils.indexOf(pSfvs, sf.getIndex());
-//					if (wIndex!=-1)
-////						TFParent = pSfvs[wIndex].getValue();
-////					TFChild = sf.getValue();
-//						TFParent = pSfvs[wIndex].getValue() / tempParentDoc.getTotalDocLength();
-//					TFChild = sf.getValue()/temp.getTotalDocLength();
-//									
-//					values[4] = TFParent;//TF in parent document
-//					values[5] = TFChild;//TF in child document					
-//					values[6] = TFParent/TFChild;//TF ratio
-////					values[6] = TFChild/(TFParent); //to enlarge the influence whether it exists or not 
-//
-//					values[7] = IDFCorpus * TFParent;//TF-IDF
-//					sf.setValues(values);
-//				}
-//			}	
-//		}
-//
-//	}
 	
 	public void setFeatureValues(String fValue, int norm){
 		super.setFeatureValues(fValue, norm);
@@ -237,4 +192,40 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			}
 		}
 	}
+	
+	public void filterParentAndChildDoc(){
+		System.out.println("before filtering\t"+m_corpus.getSize());
+		int corpusSize = m_corpus.getCollection().size();
+		ArrayList<Integer> removeIndexList = new ArrayList<Integer>();
+		
+		int numberOfComments = 0;
+		
+		for (int i = corpusSize - 1; i > -1; i--) {
+			// for (int i = 0; i < corpusSize; i++) {
+			_Doc d = m_corpus.getCollection().get(i);
+			if(d instanceof _ParentDoc){
+				_ParentDoc pDoc = (_ParentDoc)d;
+				if(pDoc.m_childDocs.size()>8){
+					numberOfComments += 1;
+				}
+				if(pDoc.m_childDocs.size()==0)
+					removeIndexList.add(i);
+			}
+		}
+		
+		System.out.println("number of comments > 8 \t"+numberOfComments);
+		
+		for (int i : removeIndexList) {
+			_Doc d = m_corpus.getCollection().get(i);
+			System.out
+					.println("removing parent without child \t" + d.getName());
+			m_corpus.getCollection().remove(i);
+
+		}
+
+		System.out.println("after filtering\t"+m_corpus.getSize());
+
+	}
+	
+	
 }

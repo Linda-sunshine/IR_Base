@@ -302,9 +302,9 @@ public class pLSA extends twoTopic {
 				for(int j = 0; j < vocabulary_size; j++)
 					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 				
-				topWordWriter.format("Topic %d(%.3f):\t", i, m_sstat[i]);
+				topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
 				for(_RankItem it:fVector)
-					topWordWriter.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
+					topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
 				topWordWriter.write("\n");
 			}
 			topWordWriter.close();
@@ -327,9 +327,9 @@ public class pLSA extends twoTopic {
 			MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
 			for(int j = 0; j < vocabulary_size; j++)
 				fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
-			System.out.format("Topic %d(%.3f):\t", i, m_sstat[i]);
+			System.out.format("Topic %d(%.5f):\t", i, m_sstat[i]);
 			for(_RankItem it:fVector)
-				System.out.format("%s(%.3f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
+				System.out.format("%s(%.5f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
 			System.out.println();
 		}
 	}

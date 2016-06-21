@@ -89,6 +89,10 @@ public class _Doc implements Comparable<_Doc> {
 	// structure only used by Gibbs sampling to speed up the sampling process
 	_Word[] m_words; 
 	
+	_Word[] m_testWords;
+	
+	int m_testLength;
+	
 	// structure only used by variational inference
 	public double[][] m_phi; // p(z|w, \phi)	
 	Random m_rand;
@@ -216,14 +220,26 @@ public class _Doc implements Comparable<_Doc> {
 		return m_words;
 	}
 	
+	public _Word[] getTestWords(){
+		return m_testWords;
+	}
+	
 	//return the unique number of features in the doc
 	public int getDocLength() {
 		return this.m_x_sparse.length;
 	}	
 	
+	public int getDocTestLength(){
+		return m_testLength;
+	}
+	
 	//Get the total number of tokens in a document.
 	public int getTotalDocLength(){
 		return this.m_totalLength;
+	}
+	
+	public int getDocInferLength(){
+		return this.m_words.length;
 	}
 	
 	void calcTotalLength() {
@@ -248,7 +264,26 @@ public class _Doc implements Comparable<_Doc> {
 		m_x_sparse = x;
 		calcTotalLength();
 	}
+	
+	public _SparseFeature[] m_x_sparse_infer;
+	public void createSparseVct4Infer(){
+		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
 		
+		for(_Word w:m_testWords){
+			int wIndex = w.getIndex();
+			int featureIndex = Utils.indexOf(m_x_sparse, wIndex);
+			double featureVal = m_x_sparse[featureIndex].getValue();
+			inferVct.put(featureIndex,  featureVal--);
+		}
+		
+		m_x_sparse_infer = Utils.createSpVct(inferVct);
+	
+	}
+	
+	public _SparseFeature[] getSparseVct4Infer(){
+		return m_x_sparse_infer;
+	}
+	
 	//Create the sparse postagging vector for the document. 
 	public void createPOSVct(HashMap<Integer, Double> posVct){
 		m_x_posVct = Utils.createSpVct(posVct);
@@ -345,6 +380,7 @@ public class _Doc implements Comparable<_Doc> {
 			m_sstat = new double[k];
 		}
 
+		Arrays.fill(m_topics, 0);
 		Arrays.fill(m_sstat, alpha);
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
@@ -368,10 +404,63 @@ public class _Doc implements Comparable<_Doc> {
 				tid = m_rand.nextInt(k);
 				m_words[wIndex] = new _Word(wid, tid);// randomly initializing the topics inside a document
 				m_sstat[tid] ++; // collect the topic proportion
-				
+			
 				wIndex ++;
 			}
 		}
+	}
+	
+	public void createSpace4GibbsTest(int k, double alpha, int trainLength){
+		if(m_topics==null||m_topics.length!=k){
+			m_topics = new double[k];
+			m_sstat = new double[k];
+		}
+		
+		Arrays.fill(m_topics, 0);
+		Arrays.fill(m_sstat, alpha);
+		
+		if(m_words==null||m_words.length!=trainLength){
+			m_words = new _Word[trainLength];
+		}
+		
+		if(m_rand==null)
+			m_rand = new Random();
+	}
+	
+	public void setTopics4GibbsTest(int k, double alpha, int testLength){
+		int trainLength = m_totalLength-testLength;
+		createSpace4GibbsTest(k, alpha, trainLength);
+		m_testLength = testLength;
+		m_testWords = new _Word[testLength];
+		
+		ArrayList<Integer> wordIndexs = new ArrayList<Integer>();
+		while(wordIndexs.size()<testLength){
+			int testIndex = m_rand.nextInt(m_totalLength);
+			if(!wordIndexs.contains(testIndex)){
+				wordIndexs.add(testIndex);
+			}
+		}
+		
+		int wIndex = 0, wTrainIndex=0, wTestIndex=0, tid, wid;
+		for(_SparseFeature fv:m_x_sparse){
+			wid = fv.getIndex();
+			for(int j=0; j<fv.getValue(); j++){
+				tid = m_rand.nextInt(k);
+				if(wordIndexs.contains(wIndex)){
+					m_testWords[wTestIndex] = new _Word(wid, tid);
+					wTestIndex ++;
+				}else{
+					m_words[wTrainIndex] = new _Word(wid, tid);
+					wTrainIndex ++;
+					m_sstat[tid] ++; // collect the topic proportion
+
+				}
+				
+				wIndex ++;
+			}
+			
+		}
+		
 	}
 	
 	//permutation the order of words for Gibbs sampling

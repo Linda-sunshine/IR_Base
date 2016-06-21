@@ -1,19 +1,30 @@
 package mains;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import Analyzer.ParentChildAnalyzer;
+
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.ACCTM_CZ;
+import topicmodels.APPACCTM_C;
+import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
+import topicmodels.LDA_APP;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
+import topicmodels.LDAonArticles;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
+import topicmodels.ParentChildBaseWithPhi_Gibbs;
+import topicmodels.ParentChildBaseWithPhi_Hard_Gibbs;
+import topicmodels.ParentChildBase_Gibbs;
+import topicmodels.ParentChildWith2Phi;
 import topicmodels.ParentChildWith3Phi;
 import topicmodels.ParentChild_Gibbs;
 import topicmodels.correspondence_LDA_Gibbs;
@@ -21,11 +32,16 @@ import topicmodels.pLSA;
 import topicmodels.twoTopic;
 import topicmodels.multithreads.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA_multithread;
+import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
-	
+		
+		int mb = 1024*1024;
+		
+		Runtime rTime = Runtime.getRuntime();
+		System.out.println("totalMem\t:"+rTime.totalMemory()/mb);
 		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
@@ -35,8 +51,12 @@ public class TopicModelMain {
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
-		//ParentChild_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
-		String topicmodel = "ParentChildWithChildPhi"; // 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		//ParentChild_Gibbs, LDAonArticles, ParentChildBaseWithPhi_Hard_Gibbs, ParentChildWith2Phi, ParentChildBaseWithPhi_Gibbs,
+		//ParentChildBase_Gibbs, ParentChildWith3Phi, correspondence_LDA_Gibbs, LDA_Gibbs_Debug, ParentChildWith2Phi, ParentChildWithChildPhi
+		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
+		//LDA_APP,ACCTM_CZ
+
+		String topicmodel = "ParentChildBase_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -49,11 +69,13 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 2000, gibbs_lag = 50;
-//		gibbs_iteration = 10;
+		int gibbs_iteration = 1000, gibbs_lag = 50;
+		int displayLap = 50;
+//		gibbs_iteration = 4;
 //		gibbs_lag = 2;
+//		displayLap = 2;
 		double burnIn = 0.4;
-		int displayLap = 100;
+
 		boolean sentence = false;
 		
 		// most popular items under each category from Amazon
@@ -68,11 +90,16 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		articleType = "Yahoo";
+//		 articleType = "Yahoo";
+//		articleType = "APP";
 		
-		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
-		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
-		
+		String articleFolder = String.format(
+				"./data/ParentChildTopicModel/%sArticles",
+						articleType);
+		String commentFolder = String.format(
+				"./data/ParentChildTopicModel/%sComments",
+						articleType);
+
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String stnModel = null;
@@ -85,8 +112,8 @@ public class TopicModelMain {
 		}
 
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
-		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel_%s.txt", Ngram, articleType);
-	
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
+		
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
@@ -103,20 +130,26 @@ public class TopicModelMain {
 		
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");	
 		String filePrefix = String.format("./data/results/%s", dateFormatter.format(new Date()));
-		filePrefix = filePrefix + "-"+topicmodel;
+		filePrefix = filePrefix + "-" + topicmodel + "-" + articleType;
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
 			System.out.println("creating directory" + resultFolder);
 			resultFolder.mkdir();
 		}
 		
+		String outputFile = filePrefix + "/consoleOutput.txt";
+		PrintStream printStream = new PrintStream(new FileOutputStream(
+				outputFile));
+		System.setOut(printStream);
+		
+		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
 		String topWordPath = filePrefix + "/topWords.txt";
 		
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+		double startProb = 0.; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
 		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 
@@ -130,8 +163,22 @@ public class TopicModelMain {
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-		
+//		analyzer.LoadDirectory(commentFolder, suffix);
+		if(topicmodel.equals("LDA_APPMerged"))
+			articleFolder = String.format(
+					"./data/ParentChildTopicModel/%sDescriptionsReviews",
+					articleType);	
+//		articleFolder = String.format(
+//				"./data/ParentChildTopicModel/%sArticles4Merged",
+//				articleType);
+//		
+//		commentFolder = String.format(
+//				"./data/ParentChildTopicModel/%sComments4Merged",
+//				articleType);
+//		
 		analyzer.LoadParentDirectory(articleFolder, suffix);
+		
+//		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
@@ -148,6 +195,7 @@ public class TopicModelMain {
 		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
+//		_Corpus c = analyzer.getCorpus();
 		
 		if (topicmodel.equals("2topic")) {
 			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
@@ -184,9 +232,7 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-////				model = new LRHTSM_multithread(number_of_iteration, converge, beta, c, 
-////						number_of_topics, alpha,
-////						lambda);
+
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
@@ -194,40 +240,137 @@ public class TopicModelMain {
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
 				double mu = 1.0;
 				double[] gamma = {2, 2};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChild_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu);
+						gamma, ksi, tau);
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-//				model = new ParentChildWithProbitModel_Gibbs(gibbs_iteration, 0, 
-//						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, mu);
+
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
-				double[] gammaParent = {2, 2};
-				double[] gammaChild = {2, 2, 2};
+				alpha = 1.01;
+				beta = 1.001;
+				double[] gammaParent = {0.5, 0.5};
+				double[] gammaChild = { 0.3, 0.3, 0.3};
+				double ksi = 800;
+				double tau = 0.5;
 				model = new ParentChildWith3Phi(gibbs_iteration, 0, 
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, ksi, tau);
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
+				double ksi = 800;
+				double tau = 0.7;
 				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
+				double ksi = 800;
+				double tau = 0.7;
 				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
-			}else if(topicmodel.equals("ParentChildWith2Phi")){
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("ParentChildBase_Gibbs")){
 				double mu = 1.0;
-				double[] gammaParent = {2, 2};
-				double[] gammaChild = {2, 2};
-//				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta-1, c, 
-//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaParent, gammaChild, mu);
-			}else if(topicmodel.equals("ParentChildWithChildPhi")){
+				double[] gamma = {0.5, 0.5};
+				double ksi = 800;
+				double tau = 0.7;
+				model = new ParentChildBase_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("ParentChildBaseWithPhi_Gibbs")){
 				double mu = 1.0;
-				double[] gammaChild = {2, 2};
-//				model = new ParentChildWithChildPhi(gibbs_iteration, 0, beta-1, c, 
-//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gammaChild, mu);
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				double ksi = 800;
+				double tau = 0.7;
+				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, ksi, tau);
+			} else if (topicmodel.equals("ParentChildWith2Phi")) {
+				double mu = 1.0;
+				beta = 1.001;
+				double[] gammaParent = { 0.5, 0.5};
+				double[] gammaChild = {0.5, 0.5};
+				double ksi = 800;
+				double tau = 0.5;
+				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
+						burnIn, gibbs_lag, gammaParent, gammaChild, ksi, tau);
+			}else if(topicmodel.equals("ParentChildBaseWithPhi_Hard_Gibbs")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				double ksi = 800;
+				double tau = 0.7;
+				beta = 1.001;
+				model = new ParentChildBaseWithPhi_Hard_Gibbs(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, ksi, tau);
+			}else if(topicmodel.equals("LDAonArticles")){
+				double ksi = 800;
+				double tau = 0.7;
+				
+				model = new LDAonArticles(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("APPLDA")){
+				double ksi=800;
+				double tau = 0.5;
+				beta = 1.01;
+				int number_of_topics_description=300;
+				int number_of_topics_review = 30;
+				double alphaPrior = 1;
+				alpha = 50 / number_of_topics_description;
+				double alphaReview = alpha;
+				double alphaOff = 50 / number_of_topics_review;
+				double[] gamma = {0.5, 0.5};
+				double betaReview = 0.01;
+				
+				String queryFile = "./data/APP/queryID.txt";
+				analyzer.loadQuery(queryFile);
+				
+				model = new APPLDA(gibbs_iteration, 0, beta - 1, c, lambda,
+						number_of_topics_description, number_of_topics_review,
+						alpha, burnIn, gibbs_lag, ksi, tau,
+						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
+			}else if(topicmodel.equals("LDA_APP")||topicmodel.equals("LDA_APPMerged")){
+				double ksi=1000;
+				double tau=0.5;
+				beta = 1.01;
+			
+				number_of_topics = 300;
+				alpha = 50/number_of_topics;
+				
+				String queryFile = "./data/APP/queryID.txt";
+				analyzer.loadQuery(queryFile);
+				
+				model = new LDA_APP(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics,
+						 alpha, burnIn, gibbs_lag, ksi, tau, analyzer.m_Queries);
+			}else if(topicmodel.equals("APPACCTM_C")){
+				double ksi=800;
+				double tau=0.5;
+				number_of_topics = 300;
+				alpha = 50/number_of_topics;
+				beta = 0.01;
+				
+				double[] gamma = {0.5, 0.5};
+				
+				String queryFile = "./data/APP/queryID.txt";
+				analyzer.loadQuery(queryFile);
+				
+				model = new APPACCTM_C( gibbs_iteration,  0,  beta,  c,  lambda,
+						 number_of_topics,  alpha,  burnIn,  gibbs_lag, gamma,  ksi,  tau, analyzer.m_Queries);
+			}else if(topicmodel.equals("ACCTM_CZ")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				alpha = 1.01;
+				double ksi = 800;
+				double tau = 0.7;
+				number_of_topics = 30;
+				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						gamma, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);
+			model.setInforWriter(infoFilePath);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);
 			
 			if(loadAspectSentiPrior==1){
@@ -250,8 +393,11 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
+				double trainProportion = 0.9;
+				double testProportion = 1-trainProportion;
+				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
-				model.printTopWords(topK);
+				model.printTopWords(topK, topWordPath);
 			}
 			
 			model.closeWriter();
