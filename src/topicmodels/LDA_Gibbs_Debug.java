@@ -1421,28 +1421,22 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	public void mixTest4Spam() {
-		int t = 0, j1 = 0, j2 = 0;
+		int t = 0, j2 = 0;
 		_ChildDoc tmpDoc1;
-		_ChildDoc tmpDoc2;
-		for (int i = m_testSet.size() - 1; i > 1; i--) {
+		for(int i=0; i<m_testSet.size(); i++){
 			t = m_rand.nextInt(i);
 
 			_ParentDoc pDoc1 = (_ParentDoc) m_testSet.get(i);
-			int pDocCDocSize1 = pDoc1.m_childDocs.size();
-
-			j1 = m_rand.nextInt(pDocCDocSize1);
-			tmpDoc1 = (_ChildDoc) pDoc1.m_childDocs.get(j1);
-
+			
 			_ParentDoc pDoc2 = (_ParentDoc) m_testSet.get(t);
 			int pDocCDocSize2 = pDoc2.m_childDocs.size();
 
 			j2 = m_rand.nextInt(pDocCDocSize2);
-			tmpDoc2 = (_ChildDoc) pDoc2.m_childDocs.get(j2);
+			tmpDoc1 = (_ChildDoc) pDoc2.m_childDocs.get(j2);
 
-			pDoc1.m_childDocs.set(j1, tmpDoc2);
-			tmpDoc2.setParentDoc(pDoc1);
-			pDoc2.m_childDocs.set(j2, tmpDoc1);
-			tmpDoc1.setParentDoc(pDoc2);
+			tmpDoc1.setParentDoc(pDoc1);
+			pDoc1.addChildDoc(tmpDoc1);
+		
 		}
 	}
 

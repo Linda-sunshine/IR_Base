@@ -565,6 +565,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 					parentParaOut.println();
 					
 					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
+						
 						childParaOut.print(d.getName() + "\t");
 						
 						childParaOut.print(cDoc.getName()+"\t");
