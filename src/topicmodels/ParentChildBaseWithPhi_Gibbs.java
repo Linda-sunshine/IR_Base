@@ -681,7 +681,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 				if(d instanceof _ParentDoc){
 					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs){
 						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
-						pw.print(cDoc.getName()+"\t");
+						pw.print(d.getName() + "\t");
+						pw.print(cDoc.getName() + "\t");
 						pw.print(cDoc.m_xProportion[0]+"\t");
 						pw.print(cDoc.m_xProportion[1]);
 						pw.println();
