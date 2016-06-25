@@ -56,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZ";
+		String topicmodel = "correspondence_LDA_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -71,9 +71,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-//		gibbs_iteration = 4;
-//		gibbs_lag = 2;
-//		displayLap = 2;
+		// gibbs_iteration = 4;
+		// gibbs_lag = 2;
+		// displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;

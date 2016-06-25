@@ -728,7 +728,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 						childParaOut.print("topicProportion\t");
 						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(d.m_topics[k] + "\t");
+							childParaOut.print(cDoc.m_topics[k] + "\t");
 						}
 						
 						childParaOut.println();		
@@ -1438,7 +1438,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			j1 = m_rand.nextInt(pDocCDocSize2);
 			tmpDoc1 = (_ChildDoc) pDoc2.m_childDocs.get(j1);
 
-			tmpDoc1.setParentDoc(pDoc1);
 			pDoc1.addChildDoc(tmpDoc1);
 		
 		}
@@ -1500,6 +1499,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			cDoc.setTopics4Gibbs_LDA(number_of_topics, d_alpha);
 			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
 		}
 	}
 

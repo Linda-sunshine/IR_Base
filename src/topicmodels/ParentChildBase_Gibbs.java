@@ -78,7 +78,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-//		mu = 1e32;
+		mu = 1e32;
 //		mu = Double.MAX_VALUE;
 //		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
@@ -88,7 +88,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-//		mu = 1e30;
+		mu = 1e32;
 		d.setMu(mu);
 	}
 	
@@ -1032,6 +1032,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
 			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
 			computeMu4Doc(cDoc);
 		}
 	}

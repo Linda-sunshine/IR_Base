@@ -670,6 +670,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
 			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
 			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
 			computeMu4Doc(cDoc);
 		}
 	}
@@ -695,8 +696,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			pw.close();
 		}
 		catch (Exception e) {
-		e.printStackTrace();
-	}
+			e.printStackTrace();
+		}
 
 	}
 

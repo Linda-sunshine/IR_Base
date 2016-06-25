@@ -6,10 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-import com.sun.org.apache.xml.internal.security.c14n.helper.C14nHelper;
-
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -136,22 +133,24 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: d.m_childDocs4Dynamic){
-			term *= influenceRatio(d.m_sstat[tid], d.m_sstat[0]);
+		for (_ChildDoc cDoc : d.m_childDocs) {
+			term *= influenceRatio(cDoc.m_sstat[tid], d.m_sstat[tid],
+					cDoc.m_sstat[0], d.m_sstat[0]);
 		}
 		
 		return term;
 	}
 	
-	protected double influenceRatio(double njc, double n1c){
+	protected double influenceRatio(double njc, double njp, double n1c,
+			double n1p) {
 		double ratio = 1.0;
 		
 		for(int n=1; n<=n1c; n++){
-			ratio *= n1c*1.0/(n1c+1);
+			ratio *= n1p * 1.0 / (n1p + 1);
 		}
 		
 		for(int n=1; n<=njc; n++){
-			ratio *= (njc+1)*1.0/njc;
+			ratio *= (njp + 1) * 1.0 / njp;
 		}
 		
 		return ratio;
