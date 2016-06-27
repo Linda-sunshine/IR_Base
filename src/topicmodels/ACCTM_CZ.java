@@ -31,7 +31,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
 			term *= influenceRatio(cDoc.m_xTopicSstat[0][tid], pDoc.m_sstat[tid], cDoc.m_xTopicSstat[0][0], pDoc.m_sstat[0]);
 		}
 		
@@ -167,7 +167,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	
 		sampleTestSet.add(pDoc);
 		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
+		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
 		
