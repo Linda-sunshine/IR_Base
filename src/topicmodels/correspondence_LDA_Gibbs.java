@@ -113,6 +113,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			}
 			
 		}
+		System.out.println("the name of this parent doc\t" + d.getName());
 	}
 	
 	protected double parentWordByTopicProb(int tid, int wid){
@@ -126,10 +127,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
 		double term = 1;
 		
-//		if(!m_collectCorpusStats){
-//			return term;
-//		}
-		
 		if(tid==0)
 			return term;
 		
@@ -137,20 +134,23 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			term *= influenceRatio(cDoc.m_sstat[tid], d.m_sstat[tid],
 					cDoc.m_sstat[0], d.m_sstat[0]);
 		}
-		
+
 		return term;
 	}
 	
 	protected double influenceRatio(double njc, double njp, double n1c,
 			double n1p) {
+		double smoothingParameter = 1e-20;
 		double ratio = 1.0;
 		
 		for(int n=1; n<=n1c; n++){
-			ratio *= n1p * 1.0 / (n1p + 1);
+			ratio *= (n1p + smoothingParameter) * 1.0
+					/ (n1p + 1 + smoothingParameter);
 		}
 		
 		for(int n=1; n<=njc; n++){
-			ratio *= (njp + 1) * 1.0 / njp;
+			ratio *= (njp + 1 + smoothingParameter) * 1.0
+					/ (njp + smoothingParameter);
 		}
 		
 		return ratio;
@@ -204,7 +204,9 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
 		_ParentDoc pDoc = (_ParentDoc)(d.m_parentDoc);
-		double term = pDoc.m_sstat[tid]/pDoc.getDocInferLength();
+		double smoothingPara = 1e-20;
+		double term = pDoc.m_sstat[tid] + smoothingPara
+				/ pDoc.getDocInferLength();
 
 		return term;
 	}
