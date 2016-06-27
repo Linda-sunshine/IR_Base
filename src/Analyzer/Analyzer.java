@@ -10,10 +10,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 
+import cc.mallet.grmm.learning.ACRF.Template;
 import structures._Corpus;
 import structures._Doc;
 import structures._Pair;
@@ -375,7 +375,6 @@ public abstract class Analyzer {
 			}
 		}
 
-		
 		//rank the documents by product and time in all the cases
 		//Collections.sort(m_corpus.getCollection());
 		if (norm == 1){
@@ -410,6 +409,22 @@ public abstract class Analyzer {
 //		LoadCV(location);//load the selected features
 	}
 	
+	public void featureSelectionWithBound(String location, String featureSelection, double startProb, double endProb, int lowerThreshold, double upThresholdProb) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(startProb, endProb, lowerThreshold, upThresholdProb);
+
+		System.out.println("*******************************************************************");
+		if (featureSelection.equals("DF"))
+			selector.DFWithLowerUpperBound(m_featureStat, m_corpus.getSize());
+		
+		m_featureNames = selector.getSelectedFeatures();
+		SaveCV(location, featureSelection, startProb, endProb, lowerThreshold); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
+		
+		//clear memory for next step feature construction
+//		reset();
+//		LoadCV(location);//load the selected features
+	}
+	
 	//Save all the features and feature stat into a file.
 	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int threshold) throws FileNotFoundException {
 		if (featureLocation==null || featureLocation.isEmpty())
@@ -435,19 +450,44 @@ public abstract class Analyzer {
 		if (fvStatFile==null || fvStatFile.isEmpty())
 			return;
 		
+		ArrayList<Double> DFList = new ArrayList<Double>();
+		double totalDF = 0;
+		
+		ArrayList<Double> TTFList = new ArrayList<Double>();
+		double totalTTF = 0;
+		
 		try {
 			PrintWriter writer = new PrintWriter(new File(fvStatFile));
 		
 			for(int i = 0; i < m_featureNames.size(); i++){
 				writer.print(m_featureNames.get(i));
 				_stat temp = m_featureStat.get(m_featureNames.get(i));
-				for(int j = 0; j < temp.getDF().length; j++)
+				for(int j = 0; j < temp.getDF().length; j++){
+					if(temp.getDF()[j]>0){
+						DFList.add((double)temp.getDF()[j]);
+						totalDF += temp.getDF()[j];
+						
+					}
+					
 					writer.print("\t" + temp.getDF()[j]);
-				for(int j = 0; j < temp.getTTF().length; j++)
+				}
+				for(int j = 0; j < temp.getTTF().length; j++){
+					if(temp.getTTF()[j]>0){
+						TTFList.add((double)temp.getTTF()[j]);
+						totalTTF += temp.getTTF()[j];
+					}
+						
 					writer.print("\t" + temp.getTTF()[j]);
+				}
 				writer.println();
 			}
 			writer.close();
+			double maxDF = Collections.max(DFList);
+			double avgDF = totalDF/m_featureNames.size();
+			System.out.println("maxDF\t"+maxDF+"\t avgDF \t"+avgDF+"\t totalDF\t"+totalDF);
+			double maxTTF = Collections.max(TTFList);
+			double avgTTF = totalTTF/m_featureNames.size();
+			System.out.println("maxTTF\t"+maxTTF+"avgTTF\t"+avgTTF+"\t totalTTF \t"+totalTTF);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

@@ -5,7 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+
+import com.sun.org.apache.xml.internal.security.c14n.helper.C14nHelper;
+
 import structures._ChildDoc;
+import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -19,14 +23,15 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	double[] m_topicProbCache;
 	
 	public correspondence_LDA_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
+			int number_of_topics, double alpha, double burnIn, int lag, double ksi, double tau){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
 	
 		m_topicProbCache = new double[number_of_topics];
 	}
 	
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
+		createSpace();
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
@@ -38,8 +43,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				}
 				d.setTopics4Gibbs(number_of_topics, 0);
 
-			}
-			else if(d instanceof _ChildDoc){
+			}else if(d instanceof _ChildDoc){
 				((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
 			}
 			
@@ -47,7 +51,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				word_topic_sstat[w.getTopic()][w.getIndex()] ++;
 				m_sstat[w.getTopic()] ++;
 			}
-		
 		}
 		
 		imposePrior();
@@ -126,26 +129,32 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
 		double term = 1;
 		
+//		if(!m_collectCorpusStats){
+//			return term;
+//		}
+		
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: d.m_childDocs){
-			for(_Word w:cDoc.getWords()){
-				int tempTid = w.getTopic();
-				if(tempTid == tid)
-					term *= (d.m_sstat[tempTid]+1)/(d.m_sstat[tempTid]+1e-10);
-				else 
-					if(tempTid == 0)
-						term *= (d.m_sstat[tempTid]+1e-10)/(d.m_sstat[tempTid]+1);
-				
-			}
-		}
-		
-		if(term==0){
-			term += 1e-10;
+		for(_ChildDoc cDoc: d.m_childDocs4Dynamic){
+			term *= influenceRatio(d.m_sstat[tid], d.m_sstat[0]);
 		}
 		
 		return term;
+	}
+	
+	protected double influenceRatio(double njc, double n1c){
+		double ratio = 1.0;
+		
+		for(int n=1; n<=n1c; n++){
+			ratio *= n1c*1.0/(n1c+1);
+		}
+		
+		for(int n=1; n<=njc; n++){
+			ratio *= (njc+1)*1.0/njc;
+		}
+		
+		return ratio;
 	}
 	
 	protected void sampleInChildDoc(_ChildDoc d){
@@ -165,7 +174,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
 				double pWordTopic = childWordByTopicProb(tid, wid);
-				double pTopicDoc = childTopicInDoc(tid, d);
+				double pTopicDoc = childTopicInDocProb(tid, d);
 				
 				m_topicProbCache[tid] = pWordTopic*pTopicDoc;
 				normalizedProb += m_topicProbCache[tid];
@@ -194,12 +203,48 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		return word_topic_sstat[tid][wid]/m_sstat[tid];
 	}
 	
-	protected double childTopicInDoc(int tid, _ChildDoc d){
-		_ParentDoc tempParentDoc = d.m_parentDoc;
-		double term = tempParentDoc.m_sstat[tid];
-		if (term==0)
-			term += 1e-10;
+	protected double childTopicInDocProb(int tid, _ChildDoc d){
+		_ParentDoc pDoc = (_ParentDoc)(d.m_parentDoc);
+		double term = pDoc.m_sstat[tid]/pDoc.getDocInferLength();
+
 		return term;
+	}
+	
+	public double inference(_Doc pDoc){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		
+		initTest(sampleTestSet, pDoc);
+	
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					collectStats(doc);
+				}
+				count ++;
+			}
+		} while (++iter<this.number_of_iteration);
+	
+		for(_Doc doc: sampleTestSet){
+			estThetaInDoc(doc);
+			logLikelihood += calculate_test_log_likelihood(doc);
+		}
+		
+		return logLikelihood;
 	}
 	
 	public void calculate_M_step(int iter){
@@ -234,216 +279,6 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	public void collectChildStats(_ChildDoc d){
 		for(int k=0; k<number_of_topics; k++)
 			d.m_topics[k] += d.m_sstat[k];
-		
-		_ParentDoc pDoc = d.m_parentDoc;
-//		rankStn4Child(d, pDoc);
-	}
-	
-	protected void estThetaInDoc(_Doc d){
-		super.estThetaInDoc(d);
-		
-		if(d instanceof _ParentDoc)
-			estParentStnTopicProportion((_ParentDoc)d);
-	}
-	
-	public void estParentStnTopicProportion(_ParentDoc pDoc){
-		for(_Stn stnObj : pDoc.getSentences() ){
-			estStn(stnObj, pDoc);
-		}
-	}
-	
-	public void estStn(_Stn stnObj,  _ParentDoc d){
-		int i=0;
-		initStn(stnObj);
-		do{
-			calculateStn_E_step(stnObj, d);
-			if(i>m_burnIn && i%m_lag == 0){
-				collectStnStats(stnObj, d);
-			}
-			
-		}while(++i<number_of_iteration);
-		
-		Utils.L1Normalization(stnObj.m_topics);
-	}
-	
-	public void initStn(_Stn stnObj){
-		stnObj.setTopicsVct(number_of_topics);
-	}
-	
-	public void calculateStn_E_step( _Stn stnObj, _ParentDoc d){
-		stnObj.permuteStn();
-		
-		double normalizedProb = 0;
-		int wid, tid;
-		for(_Word w: stnObj.getWords()){
-			wid = w.getIndex();
-			tid = w.getTopic();
-	
-			stnObj.m_topicSstat[tid] --;
-		
-			normalizedProb = 0;
-			
-			double pWordTopic = 0;
-			
-			for(tid=0; tid<number_of_topics; tid++){
-				pWordTopic = wordByTopicProb(tid, wid);
-				double pTopic = parentTopicInStnProb(tid, stnObj, d);
-				
-				m_topicProbCache[tid] = pWordTopic*pTopic;
-				normalizedProb += m_topicProbCache[tid];
-			}
-			
-			normalizedProb *= m_rand.nextDouble();
-			for(tid=0; tid<m_topicProbCache.length; tid++){
-				normalizedProb -= m_topicProbCache[tid];
-				if(normalizedProb <= 0)
-					break;
-			}
-			
-			if(tid==m_topicProbCache.length)
-				tid --;
-			
-			w.setTopic(tid);
-			stnObj.m_topicSstat[tid] ++;
-			
-		}
-		
-	}
-	
-	public void crossValidation(int k) {
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
-		
-		double[] perf = null;
-		
-		_Corpus parentCorpus = new _Corpus();
-		ArrayList<_Doc> docs = m_corpus.getCollection();
-		ArrayList<_ParentDoc> parentDocs = new ArrayList<_ParentDoc>();
-		for(_Doc d: docs){
-			if(d instanceof _ParentDoc){
-				parentCorpus.addDoc(d);
-				parentDocs.add((_ParentDoc) d);
-			}
-		}
-		
-		System.out.println("size of parent docs\t"+parentDocs.size());
-		
-		parentCorpus.setMasks();
-		if(m_randomFold==true){
-			perf = new double[k];
-			parentCorpus.shuffle(k);
-			int[] masks = parentCorpus.getMasks();
-			
-			for(int i=0; i<k; i++){
-				for(int j=0; j<masks.length; j++){
-					if(masks[j] == i){
-						m_testSet.add(parentDocs.get(j));
-					}else {
-						m_trainSet.add(parentDocs.get(j));
-						for(_ChildDoc d: parentDocs.get(j).m_childDocs){
-							m_trainSet.add(d);
-						}
-					}
-					
-				}
-				
-//				writeFile(i, m_trainSet, m_testSet);
-				System.out.println("Fold number "+i);
-				System.out.println("Train Set Size "+m_trainSet.size());
-				System.out.println("Test Set Size "+m_testSet.size());
-
-				long start = System.currentTimeMillis();
-				EM();
-				perf[i] = Evaluation(i);
-				
-				System.out.format("%s Train/Test finished in %.2f seconds...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0);
-				m_trainSet.clear();
-				m_testSet.clear();			
-			}
-			
-		}
-		double mean = Utils.sumOfArray(perf)/k, var = 0;
-		for(int i=0; i<perf.length; i++)
-			var += (perf[i]-mean) * (perf[i]-mean);
-		var = Math.sqrt(var/k);
-		System.out.format("Perplexity %.3f+/-%.3f\n", mean, var);
-	}
-	
-	public double Evaluation(int i) {
-		m_collectCorpusStats = false;
-		double perplexity = 0, loglikelihood, totalWords=0, sumLikelihood = 0;
-		
-		System.out.println("In Normal");
-		
-		for(_Doc d:m_testSet) {				
-			loglikelihood = inference(d);
-			sumLikelihood += loglikelihood;
-			perplexity += loglikelihood;
-			totalWords += d.getTotalDocLength();
-			for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
-				totalWords += cDoc.getTotalDocLength();
-			}
-		}
-		System.out.println("total Words\t"+totalWords+"perplexity\t"+perplexity);
-		perplexity /= totalWords;
-		perplexity = Math.exp(-perplexity);
-		sumLikelihood /= m_testSet.size();
-
-		System.out.format("Test set perplexity is %.3f and log-likelihood is %.3f\n", perplexity, sumLikelihood);
-		
-		return perplexity;		
-	}
-	
-	@Override
-	public double inference(_Doc pDoc){
-		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-		
-		initTest(sampleTestSet, pDoc);
-	
-		double logLikelihood = 0.0, count = 0;
-		int  iter = 0;
-		do {
-			int t;
-			_Doc tmpDoc;
-			for(int i=sampleTestSet.size()-1; i>1; i--) {
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = sampleTestSet.get(i);
-				sampleTestSet.set(i, sampleTestSet.get(t));
-				sampleTestSet.set(t, tmpDoc);			
-			}
-			
-			for(_Doc doc: sampleTestSet)
-				calculate_E_step(doc);
-			
-			if (iter>m_burnIn && iter%m_lag==0){
-				double tempLogLikelihood = 0;
-				for(_Doc doc: sampleTestSet){
-					if(doc instanceof _ParentDoc){
-						collectParentStats((_ParentDoc) doc);
-						tempLogLikelihood += calculate_log_likelihood((_ParentDoc) doc);
-					}
-					else if(doc instanceof _ChildDoc){
-						collectChildStats((_ChildDoc) doc);
-						tempLogLikelihood += calculate_log_likelihood((_ChildDoc) doc);
-					}
-					
-				}
-				count ++;
-				if(logLikelihood == 0)
-					logLikelihood = tempLogLikelihood;
-				else{
-
-					logLikelihood = Utils.logSum(logLikelihood, tempLogLikelihood);
-				}
-			}
-		} while (++iter<this.number_of_iteration);
-
-		for(_Doc doc: sampleTestSet){
-			estThetaInDoc(doc);
-		}
-		
-		return logLikelihood - Math.log(count); 	
 	}
 
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
@@ -451,22 +286,20 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		for(_Stn stnObj: pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
-		pDoc.setTopics4Gibbs(number_of_topics, 0);		
+		
+		int testLength = (int)(m_testWord4PerplexityProportion*pDoc.getTotalDocLength());
+//		testLength = 0;
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);		
 		sampleTestSet.add(pDoc);
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
 		}
 	}
 
-	public double calculate_log_likelihood(_Doc d){
-		if (d instanceof _ParentDoc)
-			return logLikelihoodByIntegrateTopics((_ParentDoc)d);
-		else
-			return logLikelihoodByIntegrateTopics((_ChildDoc)d);
-	}
-	
 	public double logLikelihoodByIntegrateTopics(_ParentDoc d){
 		double docLogLikelihood = 0;
 		
@@ -504,7 +337,8 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 			double value = fv[i].getValue();
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*d.m_sstat[k]/d.getTotalDocLength();
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
+						* childTopicInDoc(k,d);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
@@ -535,7 +369,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 				int wid = w.getIndex();
 			
 				for(int k=0; k<number_of_topics; k++){
-					wordLikelihood += (word_topic_sstat[k][wid]/m_sstat[k])*((cDoc.m_sstat[k]+d_alpha)/(d_alpha*number_of_topics+cDocLen));
+					wordLikelihood += childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
 				}
 				
 				stnLogLikelihood += Math.log(wordLikelihood);
@@ -544,36 +378,154 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		}
 		
 		return childLikelihoodMap;
-//			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
-//				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
-//			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-//		}	
 	}
 	
-//	public void rankStn4Child(_ChildDoc cDoc, _ParentDoc pDoc){
-//		int pDocLen = pDoc.getTotalDocLength();
-//		for(_Stn stnObj:pDoc.getSentences()){
-//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-//			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnSim);
-//			
-//			double stnLogLikelihood = 0;
-//			for(_Word w: stnObj.getWords()){
-//				double wordLikelihood = 0;
-//				int wid = w.getIndex();
-//			
-//				for(int k=0; k<number_of_topics; k++){
-//					wordLikelihood += childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc)/(d_alpha*number_of_topics+pDocLen);
-//				}
-//				
-//				stnLogLikelihood += Math.log(wordLikelihood);
-//			}
-//			
-//			if(cDoc.m_stnLikelihoodMap.containsKey(stnObj.getIndex()))
-//				stnLogLikelihood += cDoc.m_stnLikelihoodMap.get(stnObj.getIndex());
-//			cDoc.m_stnLikelihoodMap.put(stnObj.getIndex(), stnLogLikelihood);
-//		}
-//	}
+	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			_SparseFeature[] fv = cDoc.getSparse();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord:sv){
+				double featureLikelihood = 0;
+				
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
+				
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				for(int k=0; k<number_of_topics; k++){
+					TMLikelihood += childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
+				}
+				
+				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				featureLikelihood = Math.log(featureLikelihood);
+				stnLogLikelihood += stnVal*featureLikelihood;
+				
+			}
+			
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		return childLikelihoodMap;
+	}
 	
+	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
+		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
+		
+		double smoothingMu = m_LM.m_smoothingMu;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			double cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
+			
+			_SparseFeature[] fv = cDoc.getSparse();
+			_SparseFeature[] sv = stnObj.getFv();
+			for(_SparseFeature svWord: sv){
+				double wordLikelihood = 0;
+				int wid = svWord.getIndex();
+				double stnVal = svWord.getValue();
+				
+				int featureIndex = Utils.indexOf(fv, wid);
+				double docVal = 0;
+				if(featureIndex!=-1){
+					docVal = fv[featureIndex].getValue();
+				}
+				
+				double LMLikelihood = (1-alphaDoc)*docVal/cDocLen;
+				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
+				
+				double TMLikelihood = 0;
+				
+				for(int k=0; k<number_of_topics; k++){
+					double wordPerTopicLikelihood = wordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
+
+					TMLikelihood += wordPerTopicLikelihood;
+				}
+				
+				wordLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
+				wordLikelihood = Math.log(wordLikelihood);
+				stnLogLikelihood += stnVal*wordLikelihood;
+			}
+			
+			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
+			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
+
+			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		return childLikelihoodMap;
+	}
+	
+	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d){
+//		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
+		double docLogLikelihood = 0.0;
+
+		// prepare compute the normalizers
+		_SparseFeature[] fv = d.getSparse();
+
+		for (_Word w : d.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double term1 = childWordByTopicProb(k, wid);
+				double term2 = childTopicInDoc(k, d);
+				
+				double wordPerTopicLikelihood = term1*term2;
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			
+			if (Math.abs(wordLogLikelihood) < 1e-10) {
+				System.out.println("wordLoglikelihood\t" + wordLogLikelihood);
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}
+	
+	public double childTopicInDoc(int tid, _ChildDoc cDoc){
+		return cDoc.m_sstat[tid]/cDoc.getDocInferLength();
+	}
+	
+	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		int count = 0;
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			if(count>=commentNum){
+				break;
+			}
+			count ++;
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			pDoc.addChildDoc4Dynamics(cDoc);
+		}
+	}
 }
 
 

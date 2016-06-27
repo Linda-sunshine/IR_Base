@@ -37,6 +37,9 @@ public abstract class TopicModel {
 	protected Thread[] m_threadpool = null;
 	protected TopicModelWorker[] m_workers = null;
 	
+	protected double m_testWord4PerplexityProportion;
+	
+	public PrintWriter infoWriter;
 	public PrintWriter summaryWriter;
 	public PrintWriter debugWriter;
 	
@@ -80,6 +83,15 @@ public abstract class TopicModel {
 		}
 	}
 	
+	public void setInforWriter(String path){
+		System.out.println("Info File Path: "+ path);
+		try{
+			infoWriter = new PrintWriter(new File(path));
+		}catch(Exception e){
+			System.err.println(path+" Not found!!");
+		}
+	}
+	
 	public void setDebugWriter(String path){
 		System.out.println("Debug File Path: "+ path);
 		try{
@@ -98,6 +110,11 @@ public abstract class TopicModel {
 		if(debugWriter!=null){
 			debugWriter.flush();
 			debugWriter.close();
+		}
+		
+		if(infoWriter!=null){
+			infoWriter.flush();
+			infoWriter.close();
 		}
 	}
 	
@@ -250,11 +267,13 @@ public abstract class TopicModel {
 			if (m_displayLap>0 && i%m_displayLap==0) {
 				if (m_converge>0) {
 					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+
 				} else {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
-//						displayCount = 0;
+						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
 				}
@@ -268,6 +287,8 @@ public abstract class TopicModel {
 		
 		long endtime = System.currentTimeMillis() - starttime;
 		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+
 	}
 
 	public double Evaluation() {
@@ -366,7 +387,10 @@ public abstract class TopicModel {
 		System.out.println("F1 measure:pros:"+pros_f1+", cons:"+cons_f1);
 	}
 	
-		
+	public void setPerplexityProportion(double proportion){
+		m_testWord4PerplexityProportion = proportion;
+	}
+	
 	//k-fold Cross Validation.
 	public void crossValidation(int k) {
 		m_trainSet = new ArrayList<_Doc>();

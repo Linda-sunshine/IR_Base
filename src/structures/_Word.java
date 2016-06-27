@@ -21,6 +21,11 @@ public class _Word {
 	double m_xVal;
 	int m_localIndex; // index in the sorted sparse vector of its original documents
 
+	public _Word(int index){
+		m_index = index;
+		m_xProb = new double[2];
+	}
+	
 	public _Word(int index, int topic) {
 		m_index = index;
 		m_topic = topic;

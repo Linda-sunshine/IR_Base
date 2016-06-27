@@ -193,9 +193,9 @@ public class MyTopicModelMain {
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
 				double mu = 1.0;
 				double[] gamma = {2, 2};
-				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta-1, c,
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, mu);
+//				model = new ParentChild_Gibbs(gibbs_iteration, converge, beta-1, c,
+//						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+//						gamma, mu);
 			}
 			
 			model.setDisplayLap(displayLap);

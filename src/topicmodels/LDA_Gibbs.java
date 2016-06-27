@@ -39,7 +39,7 @@ public class LDA_Gibbs extends pLSA {
 
 	@Override
 	public String toString() {
-		return String.format("LDA[k:%d, alpha:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+		return String.format("LDA[k:%d, alpha:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta, 1-m_testWord4PerplexityProportion);
 	}
 	
 	@Override
@@ -141,11 +141,12 @@ public class LDA_Gibbs extends pLSA {
 			}
 		}
 		
-		if (m_collectCorpusStats == false || m_converge>0)
-			return 0;
-//			return calculate_log_likelihood(d);
-		else
-			return 1;
+		return 0;
+//		if (m_collectCorpusStats == false || m_converge>0)
+//			return 0;
+////			return calculate_log_likelihood(d);
+//		else
+//			return 0;
 	}
 	
 	@Override
@@ -230,10 +231,12 @@ public class LDA_Gibbs extends pLSA {
 	
 	@Override
 	protected double calculate_log_likelihood() {		
-		//prior from Dirichlet distributions
-		double logLikelihood = number_of_topics * (Utils.lgamma(vocabulary_size*d_beta) - vocabulary_size*Utils.lgamma(d_beta));
-		for(int tid=0; tid<this.number_of_topics; tid++) {
-			for(int wid=0; wid<this.vocabulary_size; wid++)
+		// prior from Dirichlet distributions
+		double logLikelihood = number_of_topics
+				* (Utils.lgamma(vocabulary_size * d_beta) - vocabulary_size
+						* Utils.lgamma(d_beta));
+		for (int tid = 0; tid < this.number_of_topics; tid++) {
+			for (int wid = 0; wid < this.vocabulary_size; wid++)
 				logLikelihood += Utils.lgamma(word_topic_sstat[tid][wid]);
 			logLikelihood -= Utils.lgamma(m_sstat[tid]);
 		}
