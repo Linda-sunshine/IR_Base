@@ -539,6 +539,58 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 	}
 		
+	public void printXProportion(String xProportionFile, ArrayList<_Doc> docList){
+		System.out.println("x proportion for parent doc");
+		try{
+			PrintWriter pw = new PrintWriter(new File(xProportionFile));
+			for(_Doc d:docList){
+				if(d instanceof _ParentDoc){
+					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs){
+						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
+						pw.print(d.getName() + "\t");
+						pw.print(cDoc.getName() + "\t");
+						pw.print(cDoc.m_xProportion[0]+"\t");
+						pw.print(cDoc.m_xProportion[1]);
+						pw.println();
+					}
+				}
+			}
+			
+			pw.flush();
+			pw.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void printXProportion4Dynamical(String xProportionFile, ArrayList<_Doc> docList){
+		System.out.println("x proportion for parent doc");
+		try{
+			PrintWriter pw = new PrintWriter(new File(xProportionFile));
+			for(_Doc d:docList){
+				if(d instanceof _ParentDoc){
+					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs4Dynamic){
+						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
+						pw.print(d.getName() + "\t");
+						pw.print(cDoc.getName() + "\t");
+						pw.print(cDoc.m_xProportion[0]+"\t");
+						pw.print(cDoc.m_xProportion[1]);
+						pw.println();
+					}
+				}
+			}
+			
+			pw.flush();
+			pw.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
 	public void printParameter(String parentParameterFile, String childParameterFile, ArrayList<_Doc> docList){
 		System.out.println("printing parameter");
 		try{
@@ -565,6 +617,64 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 					parentParaOut.println();
 					
 					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
+						
+						childParaOut.print(d.getName() + "\t");
+						
+						childParaOut.print(cDoc.getName()+"\t");
+	
+						childParaOut.print("topicProportion\t");
+						for (int k = 0; k < number_of_topics; k++) {
+							childParaOut.print(cDoc.m_xTopics[0][k] + "\t");
+						}
+						
+						childParaOut.print("xProportion\t");
+						for(int x=0; x<m_gamma.length; x++){
+							childParaOut.print(cDoc.m_xProportion[x]+"\t");
+						}
+						
+						childParaOut.println();		
+					}
+				}
+			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	public void printParameter4Dynamical(String parentParameterFile, String childParameterFile, ArrayList<_Doc>docList){
+		System.out.println("printing parameter");
+		try{
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+			
+			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			for(_Doc d: docList){
+				if(d instanceof _ParentDoc){
+					parentParaOut.print(d.getName()+"\t");
+					parentParaOut.print("topicProportion\t");
+					for(int k=0; k<number_of_topics; k++){
+						parentParaOut.print(d.m_topics[k]+"\t");
+					}
+					
+					for(_Stn stnObj:d.getSentences()){							
+						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
+						for(int k=0; k<number_of_topics;k++){
+							parentParaOut.print(stnObj.m_topics[k]+"\t");
+						}
+					}
+					
+					parentParaOut.println();
+					
+					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
 						
 						childParaOut.print(d.getName() + "\t");
 						
@@ -673,40 +783,13 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			computeMu4Doc(cDoc);
 		}
 	}
-	
-	public void printXProportion(String xProportionFile, ArrayList<_Doc> docList){
-		System.out.println("x proportion for parent doc");
-		try{
-			PrintWriter pw = new PrintWriter(new File(xProportionFile));
-			for(_Doc d:docList){
-				if(d instanceof _ParentDoc){
-					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs){
-						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
-						pw.print(d.getName() + "\t");
-						pw.print(cDoc.getName() + "\t");
-						pw.print(cDoc.m_xProportion[0]+"\t");
-						pw.print(cDoc.m_xProportion[1]);
-						pw.println();
-					}
-				}
-			}
-			
-			pw.flush();
-			pw.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
 	public void printTestParameter4Dynamic(int commentNum){
 		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
-		printXProportion(xProportionFile, m_testSet);
+		printXProportion4Dynamical(xProportionFile, m_testSet);
 		
 		String parentParameterFile = "./data/results/dynamic/testParentParameter_"+commentNum+".txt";
 		String childParameterFile = "./data/results/dynamic/testChildParameter_"+commentNum+".txt";
-		printParameter(parentParameterFile, childParameterFile, m_testSet);
+		printParameter4Dynamical(parentParameterFile, childParameterFile, m_testSet);
 	}
 	
 	public void printTestParameter4Spam(String filePrefix){
