@@ -1,6 +1,8 @@
 package clustering;
 
 import java.util.ArrayList;
+
+import structures._User;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
@@ -28,10 +30,39 @@ public class KMeansAlg4Vct {
 		}
 	}
 	
+	// Constructor for given weights vectors.
 	public KMeansAlg4Vct(double[][] weights, int k){
 		m_weights = weights;
 		m_featureSize = m_weights.length;
 		m_k = k;
+	}
+	
+	// Cluster user weights.
+	public KMeansAlg4Vct(ArrayList<_User> users, int k, int featureSize){
+		m_featureSize = featureSize + 1; // 5k.
+		m_k = k;
+		getUserWeights(users);
+	}
+	
+	// Transfer user's svm weights to training instances.
+	// Each column is one user weight.
+	public void getUserWeights(ArrayList<_User> users){
+		m_weights = new double[m_featureSize][users.size()];
+		for(int i=0; i < users.size(); i++){
+			setOneColumnOfWeights(i, users.get(i).getSVMWeights());
+			if(i == 5000)
+				System.out.println();
+		}
+	}
+	
+	// Set the ith column of the m_weights with the given weights.
+	public void setOneColumnOfWeights(int col, double[] ws){
+		if(ws.length != m_weights.length){
+			System.err.println("Wrong dimension!");
+			return;
+		}
+		for(int i=0; i<m_weights.length; i++)
+			m_weights[i][col] = ws[i];
 	}
 	
 	public void init() {
@@ -59,8 +90,10 @@ public class KMeansAlg4Vct {
 		m_weights = ws;
 	}
 	
-	// The given weight is kFold*v matrix with each column being one x for kmeans training.
+	// The given weights is kFold*v matrix with each column being one x for kmeans training.
+	// In kmeans for user weights, the weights matrix is (each weight dim)*(total user size), i.e., 5k*10k.
 	public double train() {
+		init();
 		initInstances();
 		for(int i=0; i<m_weights[0].length; i++)
 			m_instances.add(new Instance(createInstance(m_fvInstances[i]), null, null, m_fvInstances[i]));

@@ -1,21 +1,20 @@
 package Analyzer;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-
 import clustering.KMeansAlg4Vct;
-
 import Classifier.BaseClassifier;
 import Classifier.supervised.SVM;
-
 import structures._Corpus;
 import structures._Doc;
 
+/***
+ * The class performs feature selection-cross.
+ * @author lin
+ *
+ */
 public class CrossFeatureSelection {
 	int m_kFold;
 	int m_kMeans;

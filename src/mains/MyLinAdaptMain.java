@@ -61,13 +61,15 @@ public class MyLinAdaptMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
 
+		String[] opts = new String[]{"G", "D", "G+D"};
+		for(String i: opts){
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 //		analyzer.loadCategory("./data/category.txt");
 //		analyzer.setCtgThreshold(ctgCount);
 		analyzer.loadUserDir(userFolder);
 		// The second parameter stands for DF scheme, "G"-global, "D"-adaptation, "G+D"-both
-		analyzer.setDFScheme("G");
+		analyzer.setDFScheme(i);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -132,7 +134,7 @@ public class MyLinAdaptMain {
 		
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
-//		}}
+		}
 		
 //		adaptation.saveModel("data/results/colinadapt");
 //		

@@ -319,7 +319,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	            e.printStackTrace(); 
 	        } 
 		}
-		System.out.format("[Info]Save personalized models to %s.", modelLocation);
+		System.out.format("[Info]Save personalized models to %s.\n", modelLocation);
 	}
 	
 	@Override

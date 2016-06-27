@@ -10,10 +10,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.TreeMap;
 
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
@@ -319,6 +321,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	// Added by Lin. Load user weights from learned models to construct neighborhood.
 	public void loadUserWeights(String folder, String suffix){
+		if(folder == null || folder.isEmpty())
+			return;
 		String userID;
 		int userIndex, count = 0;
 		double[] weights;
@@ -343,6 +347,61 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 		System.out.format("%d users weights are loaded!\n", count);
 	}
+	
+//	public void loadUserWeightsMultiThreads(String folder, String sfx){
+//		if(folder == null || folder.isEmpty())
+//			return;
+//		File dir = new File(folder);
+//		final File[] files=dir.listFiles();
+//		final String userID, suffix = sfx;
+//		final int userIndex, endIndex;
+//		final double[] weights;
+//		constructUserIDIndex();
+//		
+//		if(!dir.exists()){
+//			System.err.print("[Info]Directory doesn't exist!");
+//		} else{
+//			ArrayList<Thread> threads = new ArrayList<Thread>();
+//			for(int i=0;i<m_numberOfCores;++i){
+//				threads.add(  (new Thread() {
+//					int core;
+//					public void run() {
+//						try {
+//							for (int j = 0; j + core <files.length; j += m_numberOfCores) {
+//								File f = files[j+core];
+//								if(f.isFile() && f.getName().endsWith(suffix)){
+//									endIndex = f.getName().lastIndexOf(".");
+//									userID = f.getName().substring(0, endIndex);
+//									if(m_userIDIndex.containsKey(userID)){
+//										userIndex = m_userIDIndex.get(userID);
+//										if(f.isFile()){//load the user								
+//											weights = loadOneUserWeight(f.getAbsolutePath());
+//											m_users.get(userIndex).setSVMWeights(weights);
+//										}
+//									}
+//								}
+//							}
+//						} catch(Exception ex) {
+//							ex.printStackTrace(); 
+//						}
+//					}
+//				
+//					private Thread initialize(int core ) {
+//						this.core = core;
+//						return this;
+//					}
+//				}).initialize(i));
+//				threads.get(i).start();
+//			}
+//			for(int i=0;i<m_numberOfCores;++i){
+//				try {
+//					threads.get(i).join();
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				} 
+//			}
+//		}
+//	}
 	
 	// Added by Lin for neighborhood based on SVM weights.
 	public void findSVMNeighbors(final int topK){
@@ -440,29 +499,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("[Info]Save sparse features of users to %s.", folder);
 	}
 	
-//	public void setProfileTFIDF(){
-//		int N = m_TotalDF;
-//
-//		for (int i = 0; i < m_users.size(); i++) {
-//			_User temp = m_users.get(i);
-//			_SparseFeature[] sfs = temp.getBoWProfile();
-//			double avgIDF = 0;
-//			for (_SparseFeature sf : sfs) {
-//				String featureName = m_featureNames.get(sf.getIndex());
-//				_stat stat = m_featureStat.get(featureName);
-//				double TF = 1 + Math.log10(sf.getValue());// sublinear TF
-//				double DF = Utils.sumOfArray(stat.getDF());
-//				double IDF = 1 + Math.log10(N / DF);
-//				double TFIDF = TF * IDF;
-//				sf.setValue(TFIDF);
-//				avgIDF += IDF;
-//			}
-//			
-//			//compute average IDF
-//			temp.setAvgIDF(avgIDF/sfs.length);
-//		}
-//	}
-	
 	// Added by Lin.
 	public void printPosRatio(){
 		PrintWriter writer;
@@ -509,5 +545,29 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	public void constructSparseVector4Users(){
 		for(_User u: m_users)
 			u.constructSparseVector();
+	}
+	 
+	// added by Lin for accessing users in the same cluster.
+	HashMap<Integer, ArrayList<Integer>> m_cIndexUIndex = new HashMap<Integer, ArrayList<Integer>>();
+
+	// Group users based on clusters.
+	public TreeMap<Integer, _User> groupUsers(int [] clusters){
+		TreeMap<Integer, _User> groupedUsers = new TreeMap<Integer, _User>();
+		int clusterNo;
+		// i accesses all users.
+		for(int i=0; i<clusters.length; i++){
+			clusterNo = clusters[i];
+			if(!groupedUsers.containsKey(clusterNo)){
+				groupedUsers.put(clusterNo, new _User(clusterNo, m_classNo));
+				m_cIndexUIndex.put(clusterNo, new ArrayList<Integer>());
+			}
+			groupedUsers.get(clusterNo).mergeReviews(m_users.get(i).getReviews());
+			m_cIndexUIndex.get(clusterNo).add(i);
+		}
+		return groupedUsers;
+	}
+	
+	public HashMap<Integer, ArrayList<Integer>> getCIndexUIndex(){
+		return m_cIndexUIndex;
 	}
 }

@@ -1,6 +1,8 @@
 package Classifier.supervised;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
@@ -18,10 +20,11 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class IndividualSVM extends ModelAdaptation {
 	double m_C = 1.0; 
-	boolean m_bias = true;
+	boolean m_bias = false;
 	Model m_libModel; // Libmodel trained by liblinear.
 	
 	SolverType m_solverType = SolverType.L2R_L1LOSS_SVC_DUAL;
+	ArrayList<_AdaptStruct> m_supUserList = new ArrayList<_AdaptStruct>();
 	
 	public IndividualSVM(int classNo, int featureSize){
 		super(classNo, featureSize);
@@ -40,11 +43,17 @@ public class IndividualSVM extends ModelAdaptation {
 			m_userList.add(new _AdaptStruct(user));
 		m_pWeights = new double[m_featureSize+1];		
 	}
-	
-	public void setBias(boolean b){
-		m_bias = b;
+	// Added by Lin for using super users for training.
+	boolean m_supFlag = false;
+	public void setSupFlag(boolean b){
+		m_supFlag = b;
 	}
-	
+	public void loadSuperUsers(ArrayList<_User> userList) {
+		m_supUserList = new ArrayList<_AdaptStruct>();
+		for(_User user:userList) 
+			m_supUserList.add(new _AdaptStruct(user));
+		m_pWeights = new double[m_featureSize+1];		
+	}
 	@Override
 	public double train() {
 		init();
@@ -56,7 +65,7 @@ public class IndividualSVM extends ModelAdaptation {
 		
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
-		for(_AdaptStruct user:m_userList){
+		for(_AdaptStruct user:m_supFlag?m_supUserList:m_userList){
 			trainSize = 0;
 			reviews = user.getReviews();		
 			boolean validUser = false;
@@ -88,14 +97,23 @@ public class IndividualSVM extends ModelAdaptation {
 				libProblem.n = m_featureSize;
 				libProblem.bias = -1;// no bias term in liblinear.
 			}
-	
 			m_libModel = Linear.train(libProblem, new Parameter(m_solverType, m_C, SVM.EPS));
-			setPersonalizedModel(user);
+			
+			// Set users in the same cluster.
+			if(m_supFlag)
+				setPersonalizedModelInCluster(user.getUser().getIndex());
+			else
+				setPersonalizedModel(user);
 		}
 		return 0;
 	}
 	
-	protected void setPersonalizedModel(_AdaptStruct u){
+	HashMap<Integer, ArrayList<Integer>> m_cIndexUIndex;
+	public void setCIndexUIndex(HashMap<Integer, ArrayList<Integer>> cIndexUIndex){
+		m_cIndexUIndex = cIndexUIndex;
+	}
+	
+	public void calcPersonalizedWeights(){
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term
 		int class0 = m_libModel.getLabels()[0];
 		double sign = class0 > 0 ? 1 : -1;
@@ -104,8 +122,18 @@ public class IndividualSVM extends ModelAdaptation {
 			m_pWeights[i+1] = sign*weight[i];
 		if (m_bias)
 			m_pWeights[0] = sign*weight[m_featureSize];
-		u.setPersonalizedModel(m_pWeights);//our model always assume the bias term
+	}
+	
+	protected void setPersonalizedModelInCluster(int c){
+		calcPersonalizedWeights();
+		for(int uIndex: m_cIndexUIndex.get(c))
+			m_userList.get(uIndex).setPersonalizedModel(m_pWeights);//our model always assume the bias term
 	}	
+
+	protected void setPersonalizedModel(_AdaptStruct user){
+		calcPersonalizedWeights();
+		user.setPersonalizedModel(m_pWeights);
+	}
 	
 	public Feature[] createLibLinearFV(_Review r, int userIndex){
 		int fIndex; double fValue;
@@ -134,7 +162,5 @@ public class IndividualSVM extends ModelAdaptation {
 
 	@Override
 	protected void setPersonalizedModel() {
-		// TODO Auto-generated method stub
-		
 	}
 }

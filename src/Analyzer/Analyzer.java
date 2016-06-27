@@ -47,7 +47,7 @@ public abstract class Analyzer {
 	protected boolean m_releaseContent;
 	
 	// Added by Lin for using different df.
-	protected String m_df; // represents the source of DF.
+	protected String m_df = "G"; // represents the source of DF.
 	public void setDFScheme(String s){
 		m_df = s;
 	}
