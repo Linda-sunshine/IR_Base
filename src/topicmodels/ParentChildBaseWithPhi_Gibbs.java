@@ -654,7 +654,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			sampleTestSet.add(cDoc);
 			pDoc.addChildDoc4Dynamics(cDoc);
 			computeMu4Doc(cDoc);
-
 		}
 	}
 	
