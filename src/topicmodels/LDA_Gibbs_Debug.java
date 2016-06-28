@@ -1446,8 +1446,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void separateTrainTest4Spam() {
 		int cvFold = 10;
 		ArrayList<String> parentFakeList = new ArrayList<String>();
-		String parentFakeString = "29 1 387 181 445 113 207 49 214 95 192 114 47 399 480 346 292 144 419 356 380 75 134 131 204 58 22 120 31 112 281 119 116 138 329 157 441 188 316 257 365 55 143 117 137 39 379 242 320 386";
-		String[] parentFakeStringArray= parentFakeString.split("\t");
+		String parentFakeString = "203 54 395 310 45 469 98 158 423 166 35 483 429 28 476 138 72 208 179 390 39 417 414 234 386 491 401 438 385 61 3 467 327 245 373 328 489 354 22 487 387 374 311 102 15 472 11 109 372 116";
+		String[] parentFakeStringArray= parentFakeString.split(" ");
 		
 		for(String parentName:parentFakeStringArray){
 			parentFakeList.add(parentName);

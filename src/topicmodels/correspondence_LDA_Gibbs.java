@@ -126,14 +126,10 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc d){
 		double term = 1;
 		
-//		if(!m_collectCorpusStats){
-//			return term;
-//		}
-		
 		if(tid==0)
 			return term;
 		
-		for (_ChildDoc cDoc : d.m_childDocs4Dynamic) {
+		for (_ChildDoc cDoc : d.m_childDocs) {
 			term *= influenceRatio(cDoc.m_sstat[tid], d.m_sstat[tid],
 					cDoc.m_sstat[0], d.m_sstat[0]);
 		}
@@ -144,13 +140,16 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	protected double influenceRatio(double njc, double njp, double n1c,
 			double n1p) {
 		double ratio = 1.0;
+		double smoothingParameter = 1e-20;
 		
 		for(int n=1; n<=n1c; n++){
-			ratio *= n1p * 1.0 / (n1p + 1);
+			ratio *= (n1p + smoothingParameter) * 1.0
+					/ (n1p + 1 + smoothingParameter);
 		}
 		
 		for(int n=1; n<=njc; n++){
-			ratio *= (njp + 1) * 1.0 / njp;
+			ratio *= (njp + 1 + smoothingParameter) * 1.0
+					/ (njp + smoothingParameter);
 		}
 		
 		return ratio;
@@ -203,8 +202,9 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 	}
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
+		double smoothingParameter = 1e-20;
 		_ParentDoc pDoc = (_ParentDoc)(d.m_parentDoc);
-		double term = pDoc.m_sstat[tid]/pDoc.getDocInferLength();
+		double term = (pDoc.m_sstat[tid]+smoothingParameter)/(pDoc.getDocInferLength()+smoothingParameter*number_of_topics);
 
 		return term;
 	}
