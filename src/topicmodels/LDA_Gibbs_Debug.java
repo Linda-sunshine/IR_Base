@@ -723,7 +723,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					
 					parentParaOut.println();
 					
-					for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+					for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs4Dynamic) {
 						childParaOut.print(cDoc.getName()+"\t");
 	
 						childParaOut.print("topicProportion\t");

@@ -78,10 +78,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
-//		
-//		if(!m_collectCorpusStats){
-//			return term;
-//		}
 		
 		if(tid==0)
 			return term;

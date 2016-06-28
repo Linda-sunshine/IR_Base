@@ -130,7 +130,7 @@ public class correspondence_LDA_Gibbs extends LDA_Gibbs_Debug{
 		if(tid==0)
 			return term;
 		
-		for (_ChildDoc cDoc : d.m_childDocs) {
+		for (_ChildDoc cDoc : d.m_childDocs4Dynamic) {
 			term *= influenceRatio(cDoc.m_sstat[tid], d.m_sstat[tid],
 					cDoc.m_sstat[0], d.m_sstat[0]);
 		}

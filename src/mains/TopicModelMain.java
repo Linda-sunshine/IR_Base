@@ -56,7 +56,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZ";
+		String topicmodel = "correspondence_LDA_Gibbs";
 
 		String category = "tablet";
 		int number_of_topics = 30;
