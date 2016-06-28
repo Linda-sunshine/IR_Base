@@ -1448,13 +1448,23 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	public void separateTrainTest4Spam() {
 		int cvFold = 10;
+		ArrayList<String> parentFakeList = new ArrayList<String>();
+		String parentFakeString = "29 1 387 181 445 113 207 49 214 95 192 114 47 399 480 346 292 144 419 356 380 75 134 131 204 58 22 120 31 112 281 119 116 138 329 157 441 188 316 257 365 55 143 117 137 39 379 242 320 386";
+		String[] parentFakeStringArray= parentFakeString.split("\t");
+		
+		for(String parentName:parentFakeStringArray){
+			parentFakeList.add(parentName);
+			System.out.println("parent Name\t"+parentName);
+		}
+		
 		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
 		double avgCommentNum = 0;
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
 		for (_Doc d : m_corpus.getCollection()) {
 			if (d instanceof _ParentDoc) {
-				if (m_rand.nextInt(cvFold) != 5) {
+				String parentName = d.getName();
+				if (parentFakeList.contains(parentName)) {
 					parentTrainSet.add(d);
 				} else {
 					m_testSet.add(d);
