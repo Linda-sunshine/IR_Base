@@ -20,6 +20,7 @@ import structures.TokenizeResult;
 import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
+
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
@@ -143,6 +144,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
 //				name, "", content, 0);
+		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -153,21 +156,19 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
 		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
 		 0);
+
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
 		if(parentHashMap.containsKey(parent)){
-			_ParentDoc pDoc = parentHashMap.get(parent);
-			// if (pDoc.m_childDocs.size() == 0) {
-				if (AnalyzeDoc(d)) {// this is a valid child document
-					// if (parentHashMap.containsKey(parent)) {
-
-					d.setParentDoc(pDoc);
-					pDoc.addChildDoc(d);
-				} else {
-					// System.err.format("filtering comments %s!\n", parent);
-				}
-			// }
+			if (AnalyzeDoc(d)) {//this is a valid child document
+//			if (parentHashMap.containsKey(parent)) {
+				_ParentDoc pDoc = parentHashMap.get(parent);
+				d.setParentDoc(pDoc);
+				pDoc.addChildDoc(d);
+			} else {
+//				System.err.format("filtering comments %s!\n", parent);
+			}			
 		}else {
 //			System.err.format("[Warning]Missing parent document %s!\n", parent);
 		}	

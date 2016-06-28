@@ -10,6 +10,7 @@ import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
+import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
 import utils.Utils;
@@ -40,16 +41,13 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	
 	protected double influenceRatio(double njc, double njp, double n1c, double n1p){
 		double ratio = 1.0;
-		double smoothingParameter = 1e-20;
 		
 		for(int n=1; n<=n1c; n++){
-			ratio *= (n1p + smoothingParameter) * 1.0
-					/ (n1p + 1 + smoothingParameter);
+			ratio *= n1p*1.0/(n1p+1);
 		}
 		
 		for(int n=1; n<=njc; n++){
-			ratio *= (njp + 1 + smoothingParameter) * 1.0
-					/ (njp + smoothingParameter);
+			ratio *= (njp+1)*1.0/njp;
 		}
 		
 		return ratio;
@@ -57,9 +55,8 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
 		double docLength = d.m_parentDoc.getDocInferLength();
-		double smoothingParameter = 1e-20;
-
-		return (d.m_parentDoc.m_sstat[tid] + smoothingParameter) / docLength;
+		
+		return (d.m_parentDoc.m_sstat[tid]/docLength);
 	}
 	
 	protected void collectChildStats(_ChildDoc d){
@@ -114,6 +111,33 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		
 		return likelihood;
 	}
+		
+	//dynamical add comments to sampleTest
+//	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
+//		_ParentDoc pDoc = (_ParentDoc)d;
+//		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
+//		pDoc.setTopics4Gibbs(number_of_topics, 0);
+//		for(_Stn stnObj: pDoc.getSentences()){
+//			stnObj.setTopicsVct(number_of_topics);
+//		}
+////		int testLength = (int)pDoc.getTotalDocLength();
+////		testLength = 0;
+////		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
+//		
+//		sampleTestSet.add(pDoc);
+//		int count = 0;
+//		for(_ChildDoc cDoc:pDoc.m_childDocs){
+//			if(count>=commentNum){
+//				break;
+//			}
+//			count ++;
+//			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+//			
+//			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+//			sampleTestSet.add(cDoc);
+//			pDoc.addChildDoc4Dynamics(cDoc);
+//		}
+//	}
 	
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
