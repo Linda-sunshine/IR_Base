@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import cern.jet.random.Normal;
-import cern.jet.random.engine.DRand;
-import cern.jet.random.engine.RandomEngine;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
