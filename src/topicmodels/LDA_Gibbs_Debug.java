@@ -723,7 +723,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					
 					parentParaOut.println();
 					
-					for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs4Dynamic) {
+					for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
 						childParaOut.print(cDoc.getName()+"\t");
 	
 						childParaOut.print("topicProportion\t");
@@ -1464,11 +1464,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		for (_Doc d : m_corpus.getCollection()) {
 			if (d instanceof _ParentDoc) {
 				String parentName = d.getName();
-				if (parentFakeList.contains(parentName)) {
-					parentTrainSet.add(d);
-				} else {
+				if (parentFakeList.contains(parentName)) {		
 					m_testSet.add(d);
 					avgCommentNum += ((_ParentDoc) d).m_childDocs.size();
+				}else{
+					parentTrainSet.add(d);				
 				}
 			}
 		}
