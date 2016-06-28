@@ -1304,13 +1304,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	public void EMonCorpus(){
-		separateTrainTest4Dynamic();
+		separateTrainTest4Spam();
 		EM();
-		int maxCommentNum = 10;
-		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
-			inferenceTest4Dynamical(commentNum);
-			printTestParameter4Dynamic(commentNum);
-		}
+		mixTest4Spam();
+		inferenceTest4Spam();
 	}
 	
 	public void separateTrainTest4Dynamic() {
