@@ -1306,7 +1306,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void EMonCorpus(){
 		separateTrainTest4Spam();
 		EM();
-		mixTest4Spam();
+		// mixTest4Spam();
 		inferenceTest4Spam();
 	}
 	
@@ -1446,7 +1446,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void separateTrainTest4Spam() {
 		int cvFold = 10;
 		ArrayList<String> parentFakeList = new ArrayList<String>();
-		String parentFakeString = "203 54 395 310 45 469 98 158 423 166 35 483 429 28 476 138 72 208 179 390 39 417 414 234 386 491 401 438 385 61 3 467 327 245 373 328 489 354 22 487 387 374 311 102 15 472 11 109 372 116";
+		String parentFakeString = "405 359 268 365 98 4 454 452 501 406 49 424 257 57 455 308 30 42 287 280 277 285 470 410 296 12 138 78 265 211 396 462 252 240 461 342 179 217 276 218 119 319 310 127 50 125 200 28 352 320";
 		String[] parentFakeStringArray= parentFakeString.split(" ");
 		
 		for(String parentName:parentFakeStringArray){

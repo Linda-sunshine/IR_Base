@@ -18,9 +18,7 @@ import org.jsoup.Jsoup;
 
 import structures.TokenizeResult;
 import structures._APPQuery;
-import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
-
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4APP;
@@ -132,6 +130,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			return;
 
 		JSONObject json = LoadJson(fileName);
+		System.out.println("fileName\t" + fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
@@ -142,8 +141,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title,
 //				content, 0);
 //		
-//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-//				name, "", content, 0);
+
 		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
 				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
