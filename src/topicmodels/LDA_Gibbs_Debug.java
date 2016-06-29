@@ -1304,26 +1304,39 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	public void EMonCorpus(){
-		separateTrainTest4Spam();
+		separateTrainTest4Dynamic();
 		EM();
-		// mixTest4Spam();
-		inferenceTest4Spam();
+		int maxCommentNum = 10;
+		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
+			inferenceTest4Dynamical(commentNum);
+			printTestParameter4Dynamic(commentNum);
+		}
 	}
 	
 	public void separateTrainTest4Dynamic() {
+		
 		int cvFold = 10;
+		ArrayList<String> parentFakeList = new ArrayList<String>();
+		String parentFakeString = "37 198 90 84 358 468 381 361 452 164 323 386 276 285 277 206 402 293 354 62 451 161 287 232 337 471 143 93 217 263 260 175 79 237 95 387 391 193 470 196 190 43 135 458 244 464 266 25 303 211";
+		String[] parentFakeStringArray= parentFakeString.split(" ");
+		
+		for(String parentName:parentFakeStringArray){
+			parentFakeList.add(parentName);
+			System.out.println("parent Name\t"+parentName);
+		}
+		
 		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
 		double avgCommentNum = 0;
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc){
-				int childSize = ((_ParentDoc)d).m_childDocs.size();
-				if(childSize<10){
-					parentTrainSet.add(d);
-				}else{
+		for (_Doc d : m_corpus.getCollection()) {
+			if (d instanceof _ParentDoc) {
+				String parentName = d.getName();
+				if (parentFakeList.contains(parentName)) {		
 					m_testSet.add(d);
-					avgCommentNum += childSize;
+					avgCommentNum += ((_ParentDoc) d).m_childDocs.size();
+				}else{
+					parentTrainSet.add(d);				
 				}
 			}
 		}
