@@ -61,15 +61,12 @@ public class MyLinAdaptMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
 
-		String[] opts = new String[]{"G", "D", "G+D"};
-		for(String i: opts){
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 //		analyzer.loadCategory("./data/category.txt");
 //		analyzer.setCtgThreshold(ctgCount);
 		analyzer.loadUserDir(userFolder);
 		// The second parameter stands for DF scheme, "G"-global, "D"-adaptation, "G+D"-both
-		analyzer.setDFScheme(i);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -106,7 +103,7 @@ public class MyLinAdaptMain {
 //		
 //		String featureGroupFile = fs.getFilename();
 		// Create an instance of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 		// Create an instance of CoLinAdaptWithR1OverWeights.
 //		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -125,16 +122,16 @@ public class MyLinAdaptMain {
 		
 //		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		adaptation.train();
-		adaptation.test();
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.train();
+//		adaptation.test();
 		
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
-		}
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		}
 		
 //		adaptation.saveModel("data/results/colinadapt");
 //		
@@ -143,10 +140,20 @@ public class MyLinAdaptMain {
 //			u.getPerfStat().clear();
 
 		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.train();
-//		mtsvm.test();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.train();
+		mtsvm.test();
 //		mtsvm.saveModel("./data/models/mtsvm_0.5_1/");
+		
+		for(_User u: analyzer.getUsers())
+		u.getPerfStat().clear();
+	
+		//MultiTaskSVM
+		mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.setBias(true);
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.train();
+		mtsvm.test();
 	}
 }
