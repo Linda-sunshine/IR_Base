@@ -2,7 +2,6 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
@@ -74,17 +73,16 @@ public class MyMTSVMClusterProfMain {
 //		svm.train();
 //		svm.test();
 //		System.out.print(String.format("------------------Individual SVM finishes here.----------------\n"));
+		
 		double[] cs = new double[]{0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.1,1.2,1.3,1.4,1.5,1.6,1.7,1.8,1.9,2.0};
 		for(double c: cs){
+		
 		// Create an instance of mtsvm with clusters.
 		MultiTaskSVMWithClusters mtsvmcluster = new MultiTaskSVMWithClusters(classNumber, analyzer.getFeatureSize(), kmean, clusters);
 		mtsvmcluster.loadUsers(analyzer.getUsers());
 		mtsvmcluster.setAllParams(1, c, 1);
 		mtsvmcluster.train();
 		mtsvmcluster.test();
-		
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
 		}
 //		
 //		//MultiTaskSVMWithClusters
