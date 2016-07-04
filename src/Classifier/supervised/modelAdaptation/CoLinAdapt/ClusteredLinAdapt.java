@@ -38,6 +38,11 @@ public class ClusteredLinAdapt extends LinAdapt{
 		m_i = i;
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("ClusteredLinAdapt[dim:%d,kmeans:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_clusterSize, m_eta1, m_eta2);
+	}
+	
 	//Initialize the weights of the transformation matrix.
 	@Override
 	public void loadUsers(ArrayList<_User> userList){
@@ -168,7 +173,6 @@ public class ClusteredLinAdapt extends LinAdapt{
 				if (m_displayLv==2) {
 					gradientTest();
 					System.out.println("Fvalue is " + fValue);
-					gradientTest();
 				} else if (m_displayLv==1) {
 					if (fValue<oldFValue)
 						System.out.print("o");
@@ -190,19 +194,27 @@ public class ClusteredLinAdapt extends LinAdapt{
 	
 	@Override
 	protected double gradientTest() {
-		int vSize = 2*m_dim, offset, uid;
-		double magA = 0, magB = 0;
+		int vSize = 2*m_dim, iOffset, cOffset;
+		double magA = 0, magB = 0, magC = 0, magD = 0;
+		// gradients for the individual parts.
 		for(int n=0; n<m_userList.size(); n++) {
-			uid = n*vSize;
 			for(int i=0; i<m_dim; i++){
-				offset = uid + i;
-				magA += m_g[offset]*m_g[offset];
-				magB += m_g[offset+m_dim]*m_g[offset+m_dim];
+				iOffset = n*vSize + i;
+				magA += m_g[iOffset]*m_g[iOffset];
+				magB += m_g[iOffset+m_dim]*m_g[iOffset+m_dim];
+			}
+		}
+		// gradients for the cluster part.
+		for(int c=0; c<m_clusterSize; c++){
+			for(int i=0; i<m_dim; i++){
+				cOffset = (c + m_userList.size())*vSize + i;
+				magC += m_g[cOffset]*m_g[cOffset];
+				magD += m_g[cOffset+m_dim]*m_g[cOffset+m_dim];
 			}
 		}
 		
 		if (m_displayLv==2)
-			System.out.format("Gradient magnitude for a: %.5f, b: %.5f\n", magA, magB);
+			System.out.format("Gradient magnitude for a:%.5f,b:%.5f,c:%.5f,d:%.5f\n", magA, magB, magC, magD);
 		return magA + magB;
 	}
 	
@@ -219,25 +231,14 @@ public class ClusteredLinAdapt extends LinAdapt{
 			scaling = m_u*user.getGlobalScaling(0) + m_c*user.getClusterScaling(clusterIndex, 0) + m_i*user.getScaling(0);
 			shifting = m_u*user.getGlobalShifting(0) + m_c*user.getClusterShifting(clusterIndex, 0) + m_i*user.getShifting(0);
 			m_pWeights[0] = scaling*m_gWeights[0] + shifting;//Bias term: w0*a0+b0.
-			int n = 0, k = 0; // feature index and feature group index
-			for(_SparseFeature fv: fvs){
-				n = fv.getIndex() + 1;
-				k = m_featureGroupMap[n];
-				scaling = m_u*user.getGlobalScaling(k) + m_c*user.getClusterScaling(clusterIndex, k) + m_i*user.getScaling(k);
-				shifting = m_u*user.getGlobalShifting(k) + m_c*user.getClusterShifting(clusterIndex, k) + m_i*user.getShifting(k);
-				value += (scaling*m_gWeights[n] + shifting) * fv.getValue();
-			}
-			//set bias term
-			m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
 			
-			//set the other features
-			for(int n=0; n<m_featureSize; n++) {
+			for(int n=0; n<m_featureSize; n++){
 				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
+				scaling = m_u*user.getGlobalScaling(gid) + m_c*user.getClusterScaling(clusterIndex, gid) + m_i*user.getScaling(gid);
+				shifting = m_u*user.getGlobalShifting(gid) + m_c*user.getClusterShifting(clusterIndex, gid) + m_i*user.getShifting(gid);
+				m_pWeights[1+n] = scaling* m_gWeights[1+n] + shifting;
 			}
 			user.setPersonalizedModel(m_pWeights);
 		}
 	}
-	
-	
 }

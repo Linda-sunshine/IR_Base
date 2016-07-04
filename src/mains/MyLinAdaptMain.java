@@ -1,12 +1,13 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
+import clustering.KMeansAlg4Profile;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
@@ -18,6 +19,7 @@ import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.CoLinAdaptWithR1OverWeights;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.ClusteredLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithDiffFeatureGroups;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdaptWithR2OverWeights;
@@ -40,7 +42,7 @@ public class MyLinAdaptMain {
 		int topKNeighbors = 100;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1, eta2 = 0.5, eta3 = 0.1, eta4 = 0.1;
+		double eta1 = 1, eta2 = 1, eta3 = 0.1, eta4 = 0.1;
 
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -122,35 +124,35 @@ public class MyLinAdaptMain {
 		
 //		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
+		int kmeans = 10;
+		int[] clusters;
+		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
+		alg.train(analyzer.getUsers());
+		clusters = alg.getClusters();
+		
+		// Create an instance of ClusterLinAdapt.
+		ClusteredLinAdapt adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);
-//		adaptation.train();
-//		adaptation.test();
-		
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		}
-		
-//		adaptation.saveModel("data/results/colinadapt");
-//		
-//		// Clear the performance.
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-
-		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.train();
-		mtsvm.test();
-//		mtsvm.saveModel("./data/models/mtsvm_0.5_1/");
+		adaptation.train();
+		adaptation.test();
 		
 		for(_User u: analyzer.getUsers())
-		u.getPerfStat().clear();
+			u.getPerfStat().clear();
+
+//		//Create the instance of MT-SVM
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.train();
+//		mtsvm.test();
+//		
+//		for(_User u: analyzer.getUsers())
+//		u.getPerfStat().clear();
 	
 		//MultiTaskSVM
-		mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 		mtsvm.setBias(true);
 		mtsvm.loadUsers(analyzer.getUsers());
 		mtsvm.train();
