@@ -1306,7 +1306,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void EMonCorpus(){
 		separateTrainTest4Dynamic();
 		EM();
-		int maxCommentNum = 10;
+		int maxCommentNum = 30;
 		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
 			inferenceTest4Dynamical(commentNum);
 			printTestParameter4Dynamic(commentNum);

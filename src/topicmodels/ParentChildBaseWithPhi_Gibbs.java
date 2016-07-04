@@ -293,7 +293,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-		printTestParameter4Spam(filePrefix);
+//		printTestParameter4Spam(filePrefix);
 		String xProportionFile = filePrefix + "childXProportion.txt";
 		printXProportion(xProportionFile, m_trainSet);
 		
