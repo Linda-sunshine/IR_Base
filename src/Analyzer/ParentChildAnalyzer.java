@@ -18,6 +18,7 @@ import org.jsoup.Jsoup;
 
 import structures.TokenizeResult;
 import structures._APPQuery;
+import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
@@ -29,7 +30,6 @@ import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
-	public static int ChildDocFeatureSize = 2;
 	public ArrayList<_APPQuery> m_Queries;
 
 	public ParentChildAnalyzer(String tokenModel, int classNo,
@@ -239,107 +239,39 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		}
 	}
 	
-	@Override
+	
+	
 //	public void setFeatureValues(String fValue, int norm){
-//		super.setFeatureValues(fValue, norm);//it is safe to call this first
-//		
+//		super.setFeatureValues(fValue, norm);
 //		
 //		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-//		int N = m_isCVStatLoaded ? m_TotalDF : docs.size(); // total number of documents
-//		int childDocsNum = 0;
+//		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 //		
-//		double[] childDF = new double[m_featureNames.size()]; // total number of unique words
+//		double k1 = 1.5; // [1.2, 2]
+//		double b = 0.75; // (0, 1000]
+//		double navg = 0;
+//		for (int k = 0; k < N; k++)
+//			navg += docs.get(k).getTotalDocLength();
+//		navg /= N;
 //
-//		//get DF in child documents
-//		for(_Doc temp:docs) {
-//			if(temp instanceof _ChildDoc){
-//				_SparseFeature[] sfs = temp.getSparse();
-//				for(_SparseFeature sf : sfs)
-//					childDF[sf.getIndex()] ++;	// DF in child documents			
-//				childDocsNum += 1;
+//		for (int i = 0; i < docs.size(); i++) {
+//			_Doc temp = docs.get(i);
+//			_SparseFeature[] sfs = temp.getSparse();
+//			double n = temp.getTotalDocLength() / navg, avgIDF = 0;
+//			for (_SparseFeature sf : sfs) {
+//				String featureName = m_featureNames.get(sf.getIndex());
+//				_stat stat = m_featureStat.get(featureName);
+//				double TF = sf.getValue();
+//				double DF = Utils.sumOfArray(stat.getDF());
+//				double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
+//				double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
+//				double[] values = new double[ChildDocFeatureSize];
+//				values[0] = BM25;
+//				sf.setValues(values);
+//				avgIDF += IDF;
 //			}
 //		}
-//		
-//		System.out.println("Set feature value for parent child probit model");
-//		_SparseFeature[] pSfvs;
-//		for(_Doc temp:docs) {	
-//			if(temp instanceof _ChildDoc) {
-//
-//				_ParentDoc tempParentDoc = ((_ChildDoc)temp).m_parentDoc;
-//				pSfvs = tempParentDoc.getSparse();
-//							
-//				for(_SparseFeature sf: temp.getSparse()){				
-//					String featureName = m_featureNames.get(sf.getIndex());
-//					_stat stat = m_featureStat.get(featureName); // corpus-level statistics
-//					
-//					double DFCorpus = Utils.sumOfArray(stat.getDF());
-//					double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;				
-//				
-//					double[] values = new double[ChildDocFeatureSize];
-//					
-//					double DFChild = childDF[sf.getIndex()];
-//					double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;						
-//					
-//					values[0] = 1;//bias term
-//					values[1] = IDFCorpus;//IDF over whole corpus
-//					values[2] = IDFChild;//IDF in child documents					
-//					values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;//IDF ratio
-//					
-//					double TFParent = 0.0;
-//					double TFChild = 0.0;							
-//					
-//					int wIndex = Utils.indexOf(pSfvs, sf.getIndex());
-//					if (wIndex!=-1)
-////						TFParent = pSfvs[wIndex].getValue();
-////					TFChild = sf.getValue();
-//						TFParent = pSfvs[wIndex].getValue() / tempParentDoc.getTotalDocLength();
-//					TFChild = sf.getValue()/temp.getTotalDocLength();
-//									
-//					values[4] = TFParent;//TF in parent document
-//					values[5] = TFChild;//TF in child document					
-//					values[6] = TFParent/TFChild;//TF ratio
-////					values[6] = TFChild/(TFParent); //to enlarge the influence whether it exists or not 
-//
-//					values[7] = IDFCorpus * TFParent;//TF-IDF
-//					sf.setValues(values);
-//				}
-//			}	
-//		}
-//
 //	}
-	
-	public void setFeatureValues(String fValue, int norm){
-		super.setFeatureValues(fValue, norm);
-		
-		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
-		
-		double k1 = 1.5; // [1.2, 2]
-		double b = 0.75; // (0, 1000]
-		// Iterate all the documents to get the average document length.
-		double navg = 0;
-		for (int k = 0; k < N; k++)
-			navg += docs.get(k).getTotalDocLength();
-		navg /= N;
-
-		for (int i = 0; i < docs.size(); i++) {
-			_Doc temp = docs.get(i);
-			_SparseFeature[] sfs = temp.getSparse();
-			double n = temp.getTotalDocLength() / navg, avgIDF = 0;
-			for (_SparseFeature sf : sfs) {
-				String featureName = m_featureNames.get(sf.getIndex());
-				_stat stat = m_featureStat.get(featureName);
-				double TF = sf.getValue();
-				double DF = Utils.sumOfArray(stat.getDF());
-				double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
-				double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
-				double[] values = new double[ChildDocFeatureSize];
-				values[0] = BM25;
-				sf.setValues(values);
-				avgIDF += IDF;
-			}
-		}
-	}
 	
 	public void filterParentAndChildDoc(){
 		System.out.println("before filtering\t"+m_corpus.getSize());

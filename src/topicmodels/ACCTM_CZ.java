@@ -32,7 +32,7 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			term *= influenceRatio(cDoc.m_xTopicSstat[0][tid], pDoc.m_sstat[tid], cDoc.m_xTopicSstat[0][0], pDoc.m_sstat[0]);
 		}
 		
