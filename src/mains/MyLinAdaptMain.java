@@ -42,7 +42,7 @@ public class MyLinAdaptMain {
 		int topKNeighbors = 100;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 1, eta2 = 1, eta3 = 0.1, eta4 = 0.1;
+		double eta1 = 0.05, eta2 = 0.1, eta3 = 0.1, eta4 = 0.1;
 
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -50,18 +50,17 @@ public class MyLinAdaptMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String model = String.format("/if15/lg5bt/DataSigir/%s/models/mtsvm_0.5/", dataset);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -77,9 +76,17 @@ public class MyLinAdaptMain {
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
 //		analyzer.loadSVDFile(svdFile);
 		
-//		 // Create an instances of LinAdapt model.
-//		 LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
-
+		// Create an instances of LinAdapt model.
+//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.train();
+//		adaptation.test();
+//		 
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+		 
 //		 // Create an instances of asyncLinAdapt model.
 //		 asyncLinAdapt adaptation = new asyncLinAdapt(classNumber,
 //		 analyzer.getFeatureSize(), featureMap, globalModel,
@@ -130,8 +137,11 @@ public class MyLinAdaptMain {
 		alg.train(analyzer.getUsers());
 		clusters = alg.getClusters();
 		
+		double[] cs = new double[]{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
+		for(double c: cs){
 		// Create an instance of ClusterLinAdapt.
 		ClusteredLinAdapt adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
+		adaptation.setParameters(1, c, 0);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
@@ -141,21 +151,22 @@ public class MyLinAdaptMain {
 		
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
-
+		}
+//
 //		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.loadUsers(analyzer.getUsers());
 //		mtsvm.train();
 //		mtsvm.test();
-//		
+		
 //		for(_User u: analyzer.getUsers())
 //		u.getPerfStat().clear();
 	
-		//MultiTaskSVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.setBias(true);
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.train();
-		mtsvm.test();
+//		//MultiTaskSVM
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.setBias(true);
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }

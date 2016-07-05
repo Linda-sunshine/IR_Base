@@ -32,10 +32,10 @@ public class ClusteredLinAdapt extends LinAdapt{
 		m_userClusterIndex = userClusterIndex;
 	}
 	
-	public void setParameters(double u, double c, double i){
-		m_u = u;
-		m_c = c;
+	public void setParameters(double i, double c, double g){
 		m_i = i;
+		m_c = c;
+		m_u = g;
 	}
 	
 	@Override
@@ -70,8 +70,8 @@ public class ClusteredLinAdapt extends LinAdapt{
 		return m_dim*2*(m_userList.size() + m_clusterSize + 1);
 	}
 	
+	@Override
 	protected double linearFunc(_SparseFeature[] fvs, _AdaptStruct u) {
-		
 		_ClusterLinAdaptStruct user = (_ClusterLinAdaptStruct)u;
 		int clusterIndex = m_userClusterIndex[user.getId()];
 		double scaling, shifting;
@@ -182,7 +182,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 					if (++displayCount%100==0)
 					System.out.println();
 				}
-				LBFGS.lbfgs(m_g.length, 6, _ClusterLinAdaptStruct.sharedA, fValue, m_g, false, m_diag, iprint, 1e-4, 1e-32, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 5, _ClusterLinAdaptStruct.sharedA, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
 			System.out.println("LBFGS fails!!!!");
@@ -214,7 +214,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 		}
 		
 		if (m_displayLv==2)
-			System.out.format("Gradient magnitude for a:%.5f,b:%.5f,c:%.5f,d:%.5f\n", magA, magB, magC, magD);
+			System.out.format("Gradient magnitude for total:%.5f,a:%.5f,b:%.5f,c:%.5f,d:%.5f\n", magA+magB+magC+magD, magA, magB, magC, magD);
 		return magA + magB;
 	}
 	
