@@ -58,7 +58,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ParentChildBaseWithPhi_Gibbs";
+		String topicmodel = "ACCTM_CZLR";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -284,7 +284,7 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.7;
 				converge = 1e-5;
-				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, converge, beta-1, c,
+				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, ksi, tau);
 			} else if (topicmodel.equals("ParentChildWith2Phi")) {

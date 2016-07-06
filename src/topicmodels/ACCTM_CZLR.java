@@ -181,6 +181,9 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 	
+	public void calculate_M_step(int iter){
+		update_M_step(iter);
+	}
 	
 	public void update_E_step(){
 		super.EM();
