@@ -125,15 +125,62 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 
 	}
 	
+	public void EM() {
+		System.out.format("Starting %s...\n", toString());
+		
+		long starttime = System.currentTimeMillis();
+		
+		m_collectCorpusStats = true;
+		initialize_probability(m_trainSet);
+		
+		double delta=0, last=0, current=0;
+		int i = 0, displayCount = 0;
+		do {
+			init();
+			
+			for(int j=0; j<number_of_iteration; j++){
+				for(_Doc d:m_trainSet)
+					calculate_E_step(d);
+			}
+			
+			calculate_M_step(i);
+			
+			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
+				current = calculate_log_likelihood();//together with corpus-level log-likelihood
+			
+				if (i>0)
+					delta = (last-current)/last;
+				else
+					delta = 1.0;
+				last = current;
+			}
+			
+			if (m_displayLap>0 && i%m_displayLap==0) {
+				if (m_converge>0) {
+					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
 	
-	public void EMonCorpus(){
-		m_trainSet = m_corpus.getCollection();
-		int EM_iteration = 200;
-		for(int i=0; i<EM_iteration; i++){
-			update_E_step();
-			update_M_step(i);
-		}
+				} else {
+					System.out.print(".");
+					if (displayCount > 6){
+						System.out.format("\t%d:%.3f\n", i, current);
+						infoWriter.format("\t%d:%.3f\n", i, current);
+					}
+					displayCount ++;
+				}
+			}
+			
+			if (m_converge>0 && Math.abs(delta)<m_converge)
+				break;//to speed-up, we don't need to compute likelihood in many cases
+		} while (++i<this.number_of_iteration);
+		
+		finalEst();
+		
+		long endtime = System.currentTimeMillis() - starttime;
+		System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
+		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
+	
 	
 	public void update_E_step(){
 		super.EM();
@@ -294,4 +341,31 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			result = 1/(1+Math.exp(result));
 		return result;
 	}
+
+	protected double logLikelihoodByIntegrateTopics(_ChildDoc d){
+		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
+		double docLogLikelihood = 0;
+
+		for(_Word w:d.getWords()){
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for(int k=0; k<number_of_topics; k++){
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*xProb4Word(0, w, cDoc);
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+
+			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*xProb4Word(1, w, cDoc);
+			wordLogLikelihood += wordPerTopicLikelihood;
+
+			if(Math.abs(wordLogLikelihood)<1e-10){
+				wordLogLikelihood += 1e-10;
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+			docLogLikelihood += wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}	
 }

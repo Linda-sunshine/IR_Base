@@ -82,8 +82,8 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		double totalWord = 0;
 		
 		for(_Doc d:m_corpus.getCollection()){
-//			if(d instanceof _ParentDoc)
-//				continue;
+			if(d instanceof _ParentDoc)
+				continue;
 			_SparseFeature[] fv = d.getSparse();
 			for(int i=0; i<fv.length; i++){
 				int wid = fv[i].getIndex();
@@ -112,7 +112,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_xTopicSstat[0][tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_xTopicSstat[0][0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -512,7 +512,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 	}
 	
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
-//		System.out.println("likelihood in child doc in base with phi");
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);

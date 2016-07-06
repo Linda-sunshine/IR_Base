@@ -281,52 +281,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	@Override
-//	public double inference(_Doc pDoc){
-//		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-//		
-//		initTest(sampleTestSet, pDoc);
-//	
-//		double logLikelihood = 0.0, count = 0;
-//		int  iter = 0;
-//		do {
-//			int t;
-//			_Doc tmpDoc;
-//			for(int i=sampleTestSet.size()-1; i>1; i--) {
-//				t = m_rand.nextInt(i);
-//				
-//				tmpDoc = sampleTestSet.get(i);
-//				sampleTestSet.set(i, sampleTestSet.get(t));
-//				sampleTestSet.set(t, tmpDoc);			
-//			}
-//			
-//			for(_Doc doc: sampleTestSet)
-//				calculate_E_step(doc);
-//			
-//			if (iter>m_burnIn && iter%m_lag==0){
-//				double tempLogLikelihood = 0;
-//				for(_Doc doc: sampleTestSet){
-//					collectStats(doc);
-//					// tempLogLikelihood += calculate_log_likelihood(doc);
-//				}
-//				count ++;
-//				// if (logLikelihood == 0)
-//				// logLikelihood = tempLogLikelihood;
-//				// else {
-//				//
-//				// logLikelihood = Utils.logSum(logLikelihood,
-//				// tempLogLikelihood);
-//				// }
-//			}
-//		} while (++iter<this.number_of_iteration);
-//
-//		for(_Doc doc: sampleTestSet){
-//			estThetaInDoc(doc);
-//			logLikelihood += calculate_test_log_likelihood(doc);
-//		}
-//		
-//		return logLikelihood;
-//	}
-
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
@@ -445,7 +399,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 		
 		int testLength = 0;
-//		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 		
@@ -1313,6 +1266,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 //		}
 //	}
 	
+//	public void EMonCorpus(){
+//		separateTrainTest4Spam();
+//		EM();
+//		mixTest4Spam();
+//		inferenceTest4Spam();
+//	}
+	
 	public void separateTrainTest4Dynamic() {
 		
 		int cvFold = 10;
@@ -1459,7 +1419,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void separateTrainTest4Spam() {
 		int cvFold = 10;
 		ArrayList<String> parentFakeList = new ArrayList<String>();
-		String parentFakeString = "405 359 268 365 98 4 454 452 501 406 49 424 257 57 455 308 30 42 287 280 277 285 470 410 296 12 138 78 265 211 396 462 252 240 461 342 179 217 276 218 119 319 310 127 50 125 200 28 352 320";
+		String parentFakeString = "136 26 282 367 257 49 82 292 130 303 60 416 249 437 349 125 173 181 30 355 150 369 123 144 330 231 468 283 241 221 488 341 116 74 203 2 36 390 381 22 85 427 100 412 63 88 366 337 169 41";
 		String[] parentFakeStringArray= parentFakeString.split(" ");
 		
 		for(String parentName:parentFakeStringArray){
