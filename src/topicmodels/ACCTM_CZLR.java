@@ -56,7 +56,6 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 
 		double totalWords = 0;
 		for(_Doc temp:m_trainSet) {
-			totalWords += temp.getTotalDocLength();
 			if(temp instanceof _ChildDoc){
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs){
@@ -64,6 +63,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 					corpusDF[sf.getIndex()] ++;
 				}
 				childDocsNum += 1;
+				totalWords += temp.getTotalDocLength();
 				
 			}else{
 				_SparseFeature[] sfs = temp.getSparse();
@@ -139,9 +139,9 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		double delta=0, last=0, current=0;
 		int i = 0, displayCount = 0;
 		do {
-			init();
 			
 			for(int j=0; j<number_of_iteration; j++){
+				init();
 				for(_Doc d:m_trainSet)
 					calculate_E_step(d);
 			}
@@ -193,14 +193,32 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	public void update_M_step(int iter){
-		if(iter%20 !=0)
-			return;
-		super.calculate_M_step(iter);
+
+		
+		if (m_statisticsNormalized) {
+			System.err.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
+			System.exit(-1);
+		}
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			for(int v=0; v<this.vocabulary_size; v++){
+				topic_term_probabilty[i][v] += word_topic_sstat[i][v];//collect the current sample
+			}
+		}
+		
+		// used to estimate final theta for each document
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc)
+				collectParentStats((_ParentDoc)d);
+			else if(d instanceof _ChildDoc)
+				collectChildStats((_ChildDoc)d);
+		}
+	
 		for(_Doc d:m_trainSet){
 			if(d instanceof _ParentDoc)
 				updateFeatureWeight((_ParentDoc)d, iter);
 		}
-	}
+	}	
 	
 	public void updateFeatureWeight(_ParentDoc pDoc, int iter){
 		int totalChildWordNum = 0;
