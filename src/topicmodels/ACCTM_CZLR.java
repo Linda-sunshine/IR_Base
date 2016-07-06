@@ -115,7 +115,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 						values[5] = TFChild;//TF in child document					
 						values[6] = TFParent/TFChild;//TF ratio
 						
-						values[7] = IDFCorpus * TFParent;//TF-IDF
+						values[7] = IDFCorpus * TFChild;//TF-IDF
 						w.setFeatures(values);
 					}
 				}
@@ -128,8 +128,8 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	
 	public void EMonCorpus(){
 		m_trainSet = m_corpus.getCollection();
-		
-		for(int i=0; i<number_of_iteration; i++){
+		int EM_iteration = 200;
+		for(int i=0; i<EM_iteration; i++){
 			update_E_step();
 			update_M_step(i);
 		}
@@ -140,6 +140,8 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	public void update_M_step(int iter){
+		if(iter%20 !=0)
+			return;
 		for(_Doc d:m_trainSet){
 			if(d instanceof _ParentDoc)
 				updateFeatureWeight((_ParentDoc)d, iter);
@@ -286,7 +288,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		double result = 0;
 		_ParentDoc pDoc = cDoc.m_parentDoc;
 		result = Utils.dotProduct(pDoc.m_featureWeight, w.getFeatures());
-		if(xid==0)
+		if(xid==1)
 			result = 1/(1+Math.exp(-result));
 		else
 			result = 1/(1+Math.exp(result));

@@ -115,33 +115,6 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		return likelihood;
 	}
 		
-	//dynamical add comments to sampleTest
-//	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
-//		_ParentDoc pDoc = (_ParentDoc)d;
-//		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
-//		pDoc.setTopics4Gibbs(number_of_topics, 0);
-//		for(_Stn stnObj: pDoc.getSentences()){
-//			stnObj.setTopicsVct(number_of_topics);
-//		}
-////		int testLength = (int)pDoc.getTotalDocLength();
-////		testLength = 0;
-////		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
-//		
-//		sampleTestSet.add(pDoc);
-//		int count = 0;
-//		for(_ChildDoc cDoc:pDoc.m_childDocs){
-//			if(count>=commentNum){
-//				break;
-//			}
-//			count ++;
-//			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-//			
-//			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
-//			sampleTestSet.add(cDoc);
-//			pDoc.addChildDoc4Dynamics(cDoc);
-//		}
-//	}
-	
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		

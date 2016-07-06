@@ -19,13 +19,15 @@ import structures._Word;
 import utils.Utils;
 
 public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
-	
+	HashMap<Integer, Double> m_wordSstat;
+
 	public ParentChildBaseWithPhi_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	
 		m_topicProbCache = new double[number_of_topics+1];
 		
+		m_wordSstat = new HashMap<Integer, Double>();
 	}
 	
 	public String toString(){
@@ -73,7 +75,35 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		
 		imposePrior();	
 		m_statisticsNormalized = false;
-
+		generateLanguageModel();
+	}
+	
+	protected void generateLanguageModel(){
+		double totalWord = 0;
+		
+		for(_Doc d:m_corpus.getCollection()){
+//			if(d instanceof _ParentDoc)
+//				continue;
+			_SparseFeature[] fv = d.getSparse();
+			for(int i=0; i<fv.length; i++){
+				int wid = fv[i].getIndex();
+				double val = fv[i].getValue();
+				
+				totalWord += val;
+				if(m_wordSstat.containsKey(wid)){
+					double oldVal = m_wordSstat.get(wid);
+					m_wordSstat.put(wid, oldVal+val);
+				}else{
+					m_wordSstat.put(wid, val);
+				}
+			}
+		}
+		
+		for(int wid:m_wordSstat.keySet()){
+			double val = m_wordSstat.get(wid);
+			double prob = val/totalWord;
+			m_wordSstat.put(wid, prob);
+		}
 	}
 	
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){

@@ -10,7 +10,9 @@ import java.util.Date;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.ACCTM_CZ;
+import topicmodels.ACCTM_CZGlobalPhi;
 import topicmodels.ACCTM_CZLR;
+import topicmodels.ACCTM_CZSmoothingPhi;
 import topicmodels.APPACCTM_C;
 import topicmodels.APPLDA;
 import topicmodels.HTMM;
@@ -56,7 +58,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZLR";
+		String topicmodel = "ACCTM_CZSmoothingPhi";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -375,6 +377,26 @@ public class TopicModelMain {
 				double tau = 0.7;
 				number_of_topics = 30;
 				model = new ACCTM_CZLR(gibbs_iteration, 0, beta-1, c, 
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("ACCTM_CZGlobalPhi")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				alpha = 1.01;
+				double ksi = 800;
+				double tau = 0.7;
+				number_of_topics = 30;
+				model = new ACCTM_CZGlobalPhi(gibbs_iteration, 0, beta-1, c, 
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("ACCTM_CZSmoothingPhi")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				alpha = 1.01;
+				double ksi = 800;
+				double tau = 0.7;
+				number_of_topics = 30;
+				model = new ACCTM_CZSmoothingPhi(gibbs_iteration, 0, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
 			}
 			
