@@ -53,8 +53,10 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		double[] childDF = new double[vocabulary_size]; // total number of unique words
 		double[] corpusDF = new double[vocabulary_size];
 		double[] parentDF = new double[vocabulary_size];
-		//get DF in child documents
+
+		double totalWords = 0;
 		for(_Doc temp:m_trainSet) {
+			totalWords += temp.getTotalDocLength();
 			if(temp instanceof _ChildDoc){
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs){
@@ -62,6 +64,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 					corpusDF[sf.getIndex()] ++;
 				}
 				childDocsNum += 1;
+				
 			}else{
 				_SparseFeature[] sfs = temp.getSparse();
 				for(_SparseFeature sf : sfs){
@@ -71,7 +74,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 				parentDocsNum += 1;
 			}
 		}
-		
+		System.out.println("totalWords\t"+totalWords);
 		System.out.println("Set feature value for parent child probit model");
 		_SparseFeature[] parentFvs;
 		for(_Doc tempDoc:m_trainSet) {	
@@ -192,6 +195,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	public void update_M_step(int iter){
 		if(iter%20 !=0)
 			return;
+		super.calculate_M_step(iter);
 		for(_Doc d:m_trainSet){
 			if(d instanceof _ParentDoc)
 				updateFeatureWeight((_ParentDoc)d, iter);
