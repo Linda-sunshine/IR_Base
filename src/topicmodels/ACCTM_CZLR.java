@@ -136,6 +136,13 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
 		
+		String filePrefix = "./data/results/ACCTM_CZLR";
+		File weightFolder = new File(filePrefix+"");
+		if(!weightFolder.exists()){
+//			System.out.println("creating directory for weight"+weightFolder);
+			weightFolder.mkdir();
+		}
+		
 		double delta=0, last=0, current=0;
 		int i = 0, displayCount = 0;
 		do {
@@ -146,7 +153,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 					calculate_E_step(d);
 			}
 			
-			calculate_M_step(i);
+			calculate_M_step(i, weightFolder);
 			
 			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
 				current = calculate_log_likelihood();//together with corpus-level log-likelihood
@@ -184,17 +191,16 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 	
-	public void calculate_M_step(int iter){
-		update_M_step(iter);
+	public void calculate_M_step(int iter, File weightFolder){
+		update_M_step(iter, weightFolder);
 	}
 	
 	public void update_E_step(){
 		super.EM();
 	}
 	
-	public void update_M_step(int iter){
+	public void update_M_step(int iter, File weightFolder){
 
-		
 		if (m_statisticsNormalized) {
 			System.err.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
 			System.exit(-1);
@@ -213,18 +219,24 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			else if(d instanceof _ChildDoc)
 				collectChildStats((_ChildDoc)d);
 		}
-	
+		
+		File weightIterFolder = new File(weightFolder, "_"+iter);
+		if(!weightIterFolder.exists()){
+			weightIterFolder.mkdir();
+		}
+		
 		for(_Doc d:m_trainSet){
 			if(d instanceof _ParentDoc)
-				updateFeatureWeight((_ParentDoc)d, iter);
+				updateFeatureWeight((_ParentDoc)d, iter, weightIterFolder);
 		}
 	}	
 	
-	public void updateFeatureWeight(_ParentDoc pDoc, int iter){
+	public void updateFeatureWeight(_ParentDoc pDoc, int iter, File weightIterFolder){
 		int totalChildWordNum = 0;
 		int featureLen = 0;
 		ArrayList<Double> targetValList = new ArrayList<Double>();
 		ArrayList<Feature[]> featureList = new ArrayList<Feature[]>();
+		
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			for(_Word w:cDoc.getWords()){
 				double[] wordFeatures = w.getFeatures();
@@ -262,13 +274,15 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		double eps = 0.01;
 		Parameter param = new Parameter(solver, C, eps);
 		Model model = Linear.train(problem, param);
-		File modelFile = new File("model_"+iter);
 		
 		int featureNum = model.getNrFeature();
 		for(int i=0; i<featureNum; i++)
 			pDoc.m_featureWeight[i] = model.getDecfunCoef(i, 0);
+		
+		String weightFile = pDoc.getName()+".txt";
+		File modelFile = new File(weightFile);
 		try{
-			if((iter>200)&&(iter%100==0))
+//			if((iter>200)&&(iter%100==0))
 				model.save(modelFile);
 		}catch(Exception e){
 			System.out.println(e.getMessage());
