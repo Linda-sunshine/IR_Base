@@ -1,11 +1,8 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -26,7 +23,6 @@ import utils.Utils;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
 //	protected double[] m_weight;
-	public static int ChildDocFeatureSize = 6;
 	
 	public ACCTM_CZLR(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] weight, double ksi, double tau){
@@ -41,95 +37,24 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	
 	protected void initialize_probability(Collection<_Doc> collection){
 		super.initialize_probability(collection);
-		setFeatureValues();
+		setFeatures4Word(m_trainSet);
 	}
 	
-	public void setFeatureValues(){
-		
-		int N = m_trainSet.size(); // total number of documents
-		int childDocsNum = 0;
-		int parentDocsNum = 0;
-		
-		double[] childDF = new double[vocabulary_size]; // total number of unique words
-		double[] corpusDF = new double[vocabulary_size];
-		double[] parentDF = new double[vocabulary_size];
-
-		double totalWords = 0;
-		for(_Doc temp:m_trainSet) {
-			if(temp instanceof _ParentDoc){
-				double pChildWordNum = 0;
-				_SparseFeature[] pfs = temp.getSparse();
-				for(_SparseFeature sf : pfs){
-					parentDF[sf.getIndex()] ++;	// DF in child documents
-					corpusDF[sf.getIndex()] ++;
-				}
-				parentDocsNum += 1;
+	protected void setFeatures4Word(ArrayList<_Doc> docList){
+		for(_Doc d:docList){
+			if(d instanceof _ParentDoc)
+				continue;
+			_SparseFeature[] sfs = d.getSparse();
+			for(_Word w:d.getWords()){
+				int wid = w.getIndex();
+				int wIndex = Utils.indexOf(sfs, wid);
 				
-				for(_ChildDoc cDoc:((_ParentDoc) temp).m_childDocs){
-					_SparseFeature[] cfs = cDoc.getSparse();
-					for(_SparseFeature sf : cfs){
-						childDF[sf.getIndex()] ++;	// DF in child documents
-						corpusDF[sf.getIndex()] ++;
-					}
-					childDocsNum += 1;
-					totalWords += temp.getTotalDocLength();
-				}
+				_SparseFeature sf = sfs[wIndex];
+				w.setFeatures(sf.getValues());
 			}
 		}
-		
-		System.out.println("totalWords\t"+totalWords);
-		System.out.println("Set feature value for parent child probit model");
-		_SparseFeature[] parentFvs;
-		for(_Doc tempDoc:m_trainSet) {	
-			if(tempDoc instanceof _ParentDoc) {
-				parentFvs = tempDoc.getSparse();
-				_ParentDoc tempParentDoc = (_ParentDoc)tempDoc;
-				tempParentDoc.initFeatureWeight(ChildDocFeatureSize);
-				
-				for(_ChildDoc tempChildDoc:((_ParentDoc) tempDoc).m_childDocs){
-					_SparseFeature[] childFvs = tempChildDoc.getSparse();
-					for(_Word w: tempChildDoc.getWords()){
-						int wid = w.getIndex();
-						
-						double DFCorpus = corpusDF[wid];
-						double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
-						
-						double[] values = new double[ChildDocFeatureSize];
-						
-						double DFChild = childDF[wid];
-						double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
-						
-						values[0] = 1;
-						values[1] = IDFCorpus;
-//						values[2] = IDFChild;
-//						values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
-						
-						double TFParent = 0;
-						double TFChild = 0;
-						
-						int wIndex = Utils.indexOf(parentFvs, wid);
-						if(wIndex != -1){
-							TFParent = parentFvs[wIndex].getValue();	
-						}
-						
-						wIndex = Utils.indexOf(childFvs, wid);
-						if(wIndex != -1){
-							TFChild = childFvs[wIndex].getValue();	
-						}
-						
-						values[2] = TFParent;//TF in parent document
-						values[3] = TFChild;//TF in child document					
-						values[4] = TFParent/TFChild;//TF ratio
-						
-						values[5] = IDFCorpus * TFChild;//TF-IDF
-						w.setFeatures(values);
-					}
-				}
-			
-			}	
-		}
-
 	}
+	
 	
 	public void EM() {
 		System.out.format("Starting %s...\n", toString());
@@ -376,6 +301,8 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	public double xProb4Word(int xid, _Word w, _ChildDoc cDoc){
 		double result = 0;
 		_ParentDoc pDoc = cDoc.m_parentDoc;
+		double temp1 = pDoc.m_featureWeight.length;
+		double temp2 = w.getFeatures().length;
 		result = Utils.dotProduct(pDoc.m_featureWeight, w.getFeatures());
 		if(xid==1)
 			result = 1/(1+Math.exp(-result));
@@ -409,5 +336,26 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		}
 
 		return docLogLikelihood;
-	}	
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		sampleTestSet.add(pDoc);
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
+			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
+			computeMu4Doc(cDoc);
+		}
+		
+		setFeatures4Word(sampleTestSet);
+
+	}
+	
 }

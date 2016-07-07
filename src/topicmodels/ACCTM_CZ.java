@@ -122,61 +122,6 @@ public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
 		return inference4Doc(sampleTestSet);	
 	}
 	
-	public double inference4Doc(ArrayList<_Doc> sampleTestSet){
-		double logLikelihood = 0.0, count = 0;
-		int  iter = 0;
-		do {
-			int t;
-			_Doc tmpDoc;
-			for(int i=sampleTestSet.size()-1; i>1; i--) {
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = sampleTestSet.get(i);
-				sampleTestSet.set(i, sampleTestSet.get(t));
-				sampleTestSet.set(t, tmpDoc);			
-			}
-			
-			for(_Doc doc: sampleTestSet)
-				calculate_E_step(doc);
-			
-			if (iter>m_burnIn && iter%m_lag==0){
-				for(_Doc doc: sampleTestSet){
-					collectStats(doc);
-				}
-				count ++;
-			}
-		} while (++iter<this.number_of_iteration);
-	
-		for(_Doc doc: sampleTestSet){
-			estThetaInDoc(doc);
-//			logLikelihood += calculate_test_log_likelihood(doc);
-		}
-		
-		return logLikelihood;
-	}
-	
-	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
-		_ParentDoc pDoc = (_ParentDoc) d;
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-		
-		int testLength = (int)pDoc.getTotalDocLength();
-//		testLength = 0;
-		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
-	
-		sampleTestSet.add(pDoc);
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs4Dynamic){
-			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-		
-			((_ChildDoc4BaseWithPhi)cDoc).setTopics4GibbsTest(number_of_topics, 0, testLength);
-			sampleTestSet.add(cDoc);
-			
-		}
-	}
-	
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;

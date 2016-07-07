@@ -73,9 +73,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 100, gibbs_lag = 20;
 		int displayLap = 20;
-//		gibbs_iteration = 4;
-//		gibbs_lag = 2;
-//		displayLap = 2;
+		gibbs_iteration = 4;
+		gibbs_lag = 2;
+		displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;

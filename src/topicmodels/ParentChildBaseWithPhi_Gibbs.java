@@ -26,7 +26,6 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	
 		m_topicProbCache = new double[number_of_topics+1];
-		
 		m_wordSstat = new HashMap<Integer, Double>();
 	}
 	
@@ -323,7 +322,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-//		printTestParameter4Spam(filePrefix);
+		printTestParameter4Spam(filePrefix);
 		String xProportionFile = filePrefix + "childXProportion.txt";
 		printXProportion(xProportionFile, m_trainSet);
 		
