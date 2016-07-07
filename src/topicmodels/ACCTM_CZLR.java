@@ -2,6 +2,7 @@ package topicmodels;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
@@ -22,12 +23,15 @@ import structures._stat;
 import utils.Utils;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
-//	protected double[] m_weight;
+	protected double[] m_featureWeight;
 	
 	public ACCTM_CZLR(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] weight, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, weight, ksi, tau);
-//		System.arraycopy(weight, 0, m_weight, 0, weight.length);
+		
+		if(m_featureWeight==null)
+			m_featureWeight = new double[6];
+		Arrays.fill(m_featureWeight, 1.0/6);
 	}
 	
 	public String toString(){
@@ -153,30 +157,33 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			weightIterFolder.mkdir();
 		}
 		
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc)
-				updateFeatureWeight((_ParentDoc)d, iter, weightIterFolder);
-		}
+		updateFeatureWeight(m_trainSet, iter, weightIterFolder);
 	}	
 	
-	public void updateFeatureWeight(_ParentDoc pDoc, int iter, File weightIterFolder){
+	public void updateFeatureWeight(ArrayList<_Doc> docList, int iter, File weightIterFolder){
 		int totalChildWordNum = 0;
 		int featureLen = 0;
 		ArrayList<Double> targetValList = new ArrayList<Double>();
 		ArrayList<Feature[]> featureList = new ArrayList<Feature[]>();
 		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			for(_Word w:cDoc.getWords()){
-				double[] wordFeatures = w.getFeatures();
-				double x = w.getX();
-				featureLen = wordFeatures.length;
-				Feature[] featureVec = new Feature[featureLen];
-				for(int i=0; i<featureLen; i++){
-					featureVec[i] = new FeatureNode(i+1,wordFeatures[i]);
-					
+		for(_Doc tempDoc:docList){
+			if(tempDoc instanceof _ChildDoc)
+				continue;
+			
+			_ParentDoc pDoc = (_ParentDoc)tempDoc;
+			for(_ChildDoc cDoc:pDoc.m_childDocs){
+				for(_Word w:cDoc.getWords()){
+					double[] wordFeatures = w.getFeatures();
+					double x = w.getX();
+					featureLen = wordFeatures.length;
+					Feature[] featureVec = new Feature[featureLen];
+					for(int i=0; i<featureLen; i++){
+						featureVec[i] = new FeatureNode(i+1,wordFeatures[i]);
+						
+					}
+					featureList.add(featureVec);
+					targetValList.add(x);
 				}
-				featureList.add(featureVec);
-				targetValList.add(x);
 			}
 		}
 		
@@ -190,7 +197,10 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		for(int i=0; i<totalChildWordNum; i++){
 			targetVal[i] = targetValList.get(i);
 		}
-		
+		setLR4Weight(totalChildWordNum, featureLen, featureMatrix, targetVal, weightIterFolder);
+	}
+	
+	protected void setLR4Weight(int totalChildWordNum, int featureLen, Feature[][] featureMatrix, double[] targetVal, File weightIterFolder){
 		Problem problem = new Problem();
 		problem.l = totalChildWordNum;
 		problem.n = featureLen+1;//featureNum
@@ -205,9 +215,10 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		
 		int featureNum = model.getNrFeature();
 		for(int i=0; i<featureNum; i++)
-			pDoc.m_featureWeight[i] = model.getDecfunCoef(i, 0);
+			m_featureWeight[i] = model.getDecfunCoef(i, 0);
 		
-		String weightFile = pDoc.getName()+".txt";
+//		String weightFile = pDoc.getName()+".txt";
+		String weightFile = "weight.txt";
 		File modelFile = new File(weightIterFolder, weightFile);
 		try{
 //			if((iter>200)&&(iter%100==0))
@@ -300,10 +311,9 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 
 	public double xProb4Word(int xid, _Word w, _ChildDoc cDoc){
 		double result = 0;
-		_ParentDoc pDoc = cDoc.m_parentDoc;
-		double temp1 = pDoc.m_featureWeight.length;
-		double temp2 = w.getFeatures().length;
-		result = Utils.dotProduct(pDoc.m_featureWeight, w.getFeatures());
+//		_ParentDoc pDoc = cDoc.m_parentDoc;
+	
+		result = Utils.dotProduct(m_featureWeight, w.getFeatures());
 		if(xid==1)
 			result = 1/(1+Math.exp(-result));
 		else
