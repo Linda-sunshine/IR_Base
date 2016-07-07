@@ -26,7 +26,7 @@ import utils.Utils;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
 //	protected double[] m_weight;
-	public static int ChildDocFeatureSize = 8;
+	public static int ChildDocFeatureSize = 6;
 	
 	public ACCTM_CZLR(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] weight, double ksi, double tau){
@@ -101,8 +101,8 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 						
 						values[0] = 1;
 						values[1] = IDFCorpus;
-						values[2] = IDFChild;
-						values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
+//						values[2] = IDFChild;
+//						values[3] = IDFChild==0 ? 0:IDFCorpus/IDFChild;
 						
 						double TFParent = 0;
 						double TFChild = 0;
@@ -117,11 +117,11 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 							TFChild = childFvs[wIndex].getValue();	
 						}
 						
-						values[4] = TFParent;//TF in parent document
-						values[5] = TFChild;//TF in child document					
-						values[6] = TFParent/TFChild;//TF ratio
+						values[2] = TFParent;//TF in parent document
+						values[3] = TFChild;//TF in child document					
+						values[4] = TFParent/TFChild;//TF ratio
 						
-						values[7] = IDFCorpus * TFChild;//TF-IDF
+						values[5] = IDFCorpus * TFChild;//TF-IDF
 						w.setFeatures(values);
 					}
 				}
