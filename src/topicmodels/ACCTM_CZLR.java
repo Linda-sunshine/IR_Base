@@ -56,24 +56,27 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 
 		double totalWords = 0;
 		for(_Doc temp:m_trainSet) {
-			if(temp instanceof _ChildDoc){
-				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf : sfs){
-					childDF[sf.getIndex()] ++;	// DF in child documents
-					corpusDF[sf.getIndex()] ++;
-				}
-				childDocsNum += 1;
-				totalWords += temp.getTotalDocLength();
-				
-			}else{
-				_SparseFeature[] sfs = temp.getSparse();
-				for(_SparseFeature sf : sfs){
+			if(temp instanceof _ParentDoc){
+				double pChildWordNum = 0;
+				_SparseFeature[] pfs = temp.getSparse();
+				for(_SparseFeature sf : pfs){
 					parentDF[sf.getIndex()] ++;	// DF in child documents
 					corpusDF[sf.getIndex()] ++;
 				}
 				parentDocsNum += 1;
+				
+				for(_ChildDoc cDoc:((_ParentDoc) temp).m_childDocs){
+					_SparseFeature[] cfs = cDoc.getSparse();
+					for(_SparseFeature sf : cfs){
+						childDF[sf.getIndex()] ++;	// DF in child documents
+						corpusDF[sf.getIndex()] ++;
+					}
+					childDocsNum += 1;
+					totalWords += temp.getTotalDocLength();
+				}
 			}
 		}
+		
 		System.out.println("totalWords\t"+totalWords);
 		System.out.println("Set feature value for parent child probit model");
 		_SparseFeature[] parentFvs;
@@ -280,7 +283,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			pDoc.m_featureWeight[i] = model.getDecfunCoef(i, 0);
 		
 		String weightFile = pDoc.getName()+".txt";
-		File modelFile = new File(weightFile);
+		File modelFile = new File(weightIterFolder, weightFile);
 		try{
 //			if((iter>200)&&(iter%100==0))
 				model.save(modelFile);
