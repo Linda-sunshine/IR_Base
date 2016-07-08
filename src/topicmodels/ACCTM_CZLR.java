@@ -3,13 +3,7 @@ package topicmodels;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Model;
-import Classifier.supervised.liblinear.Parameter;
-import Classifier.supervised.liblinear.Problem;
-import Classifier.supervised.liblinear.SolverType;
+
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -18,8 +12,14 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
-import structures._stat;
 import utils.Utils;
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import Classifier.supervised.liblinear.Linear;
+import Classifier.supervised.liblinear.Model;
+import Classifier.supervised.liblinear.Parameter;
+import Classifier.supervised.liblinear.Problem;
+import Classifier.supervised.liblinear.SolverType;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
 //	protected double[] m_weight;
@@ -75,15 +75,15 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		int i = 0, displayCount = 0;
 		do {
 			
-			for(int j=0; j<number_of_iteration; j++){
+			// for(int j=0; j<number_of_iteration; j++){
 				init();
 				for(_Doc d:m_trainSet)
 					calculate_E_step(d);
-			}
+			// }
 			
 			calculate_M_step(i, weightFolder);
-			
-			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
+
+			if ((i==0)||(m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
 				current = calculate_log_likelihood();//together with corpus-level log-likelihood
 			
 				if (i>0)
@@ -94,18 +94,20 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			}
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
-				if (m_converge>0) {
-					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-	
-				} else {
+				// if (m_converge>0) {
+				// System.out.format("Likelihood %.3f at step %s converge to %f...\n",
+				// current, i, delta);
+				// infoWriter.format("Likelihood %.3f at step %s converge to %f...\n",
+				// current, i, delta);
+				//
+				// } else {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
 						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
-				}
+				// }
 			}
 			
 			if (m_converge>0 && Math.abs(delta)<m_converge)
@@ -128,34 +130,39 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	public void update_M_step(int iter, File weightFolder){
-
-		if (m_statisticsNormalized) {
-			System.err.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
-			System.exit(-1);
-		}
-		
-		for(int i=0; i<this.number_of_topics; i++){
-			for(int v=0; v<this.vocabulary_size; v++){
-				topic_term_probabilty[i][v] += word_topic_sstat[i][v];//collect the current sample
+		if (iter > m_burnIn && iter % m_lag == 0) {
+			if (m_statisticsNormalized) {
+				System.err
+						.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
+				System.exit(-1);
 			}
-		}
-		
-		// used to estimate final theta for each document
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc)
-				collectParentStats((_ParentDoc)d);
-			else if(d instanceof _ChildDoc)
-				collectChildStats((_ChildDoc)d);
-		}
-		
-		File weightIterFolder = new File(weightFolder, "_"+iter);
-		if(!weightIterFolder.exists()){
-			weightIterFolder.mkdir();
-		}
-		
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc)
-				updateFeatureWeight((_ParentDoc)d, iter, weightIterFolder);
+
+			for (int i = 0; i < this.number_of_topics; i++) {
+				for (int v = 0; v < this.vocabulary_size; v++) {
+					topic_term_probabilty[i][v] += word_topic_sstat[i][v];// collect
+																			// the
+																			// current
+																			// sample
+				}
+			}
+
+			// used to estimate final theta for each document
+			for (_Doc d : m_trainSet) {
+				if (d instanceof _ParentDoc)
+					collectParentStats((_ParentDoc) d);
+				else if (d instanceof _ChildDoc)
+					collectChildStats((_ChildDoc) d);
+			}
+
+			File weightIterFolder = new File(weightFolder, "_" + iter);
+			if (!weightIterFolder.exists()) {
+				weightIterFolder.mkdir();
+			}
+
+			for (_Doc d : m_trainSet) {
+				if (d instanceof _ParentDoc)
+					updateFeatureWeight((_ParentDoc) d, iter, weightIterFolder);
+			}
 		}
 	}	
 	
