@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import utils.Utils;
@@ -9,6 +10,7 @@ public class _ParentDoc extends _Doc {
 	public ArrayList<_ChildDoc> m_childDocs4Dynamic;
 	public ArrayList<_ChildDoc> m_childDocs;
 	HashMap<Integer, Integer> m_word2Index;
+	public double[] m_featureWeight;
 
 	public _ParentDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
@@ -17,6 +19,11 @@ public class _ParentDoc extends _Doc {
 		
 		setName(name);
 		setTitle(title);
+	}
+	
+	public void initFeatureWeight(int featureLen){
+		m_featureWeight = new double[featureLen];
+		Arrays.fill(m_featureWeight, 0);
 	}
 	
 	public void addChildDoc(_ChildDoc cDoc){
