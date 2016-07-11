@@ -7,6 +7,7 @@ import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.ACCTM_CZ;
@@ -72,11 +73,12 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
+
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-//		 gibbs_iteration = 4;
-//		 gibbs_lag = 2;
-//		 displayLap = 2;
+		// gibbs_iteration = 4;
+		// gibbs_lag = 2;
+		// displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -235,11 +237,9 @@ public class TopicModelMain {
 						number_of_topics, alpha,
 						lambda);
 			} else if (topicmodel.equals("LRHTSM")) {
-
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-
 			} else if (topicmodel.equals("ParentChild_Gibbs")) {
 				double mu = 1.0;
 				double[] gamma = {2, 2};
@@ -323,7 +323,7 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.7;
 				number_of_topics = 30;
-				converge = 1e-3;
+				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
 			}else if(topicmodel.equals("ACCTM_CZGlobalPhi")){
