@@ -1269,7 +1269,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void EMonCorpus(){
 		separateTrainTest4Spam();
 		EM();
-		mixTest4Spam();
+//		mixTest4Spam();
 		inferenceTest4Spam();
 	}
 	

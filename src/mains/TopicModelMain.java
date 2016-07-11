@@ -18,6 +18,7 @@ import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_APP;
+import topicmodels.LDA_GMM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LDAonArticles;
@@ -58,7 +59,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZLR";
+		String topicmodel = "LDA_GMM";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -73,9 +74,9 @@ public class TopicModelMain {
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -345,6 +346,11 @@ public class TopicModelMain {
 				number_of_topics = 30;
 				model = new ACCTM_CZSmoothingPhi(gibbs_iteration, 0, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("LDA_GMM")){
+				double ksi = 800;
+				double tau = 0.7;
+				model = new LDA_GMM(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);
