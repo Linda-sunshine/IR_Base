@@ -9,18 +9,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import java.util.Random;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -28,7 +23,6 @@ import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
-import structures._stat;
 import utils.Utils;
 
 public class LDA_Gibbs_Debug extends LDA_Gibbs{
@@ -287,52 +281,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	}
 	
 	@Override
-//	public double inference(_Doc pDoc){
-//		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-//		
-//		initTest(sampleTestSet, pDoc);
-//	
-//		double logLikelihood = 0.0, count = 0;
-//		int  iter = 0;
-//		do {
-//			int t;
-//			_Doc tmpDoc;
-//			for(int i=sampleTestSet.size()-1; i>1; i--) {
-//				t = m_rand.nextInt(i);
-//				
-//				tmpDoc = sampleTestSet.get(i);
-//				sampleTestSet.set(i, sampleTestSet.get(t));
-//				sampleTestSet.set(t, tmpDoc);			
-//			}
-//			
-//			for(_Doc doc: sampleTestSet)
-//				calculate_E_step(doc);
-//			
-//			if (iter>m_burnIn && iter%m_lag==0){
-//				double tempLogLikelihood = 0;
-//				for(_Doc doc: sampleTestSet){
-//					collectStats(doc);
-//					// tempLogLikelihood += calculate_log_likelihood(doc);
-//				}
-//				count ++;
-//				// if (logLikelihood == 0)
-//				// logLikelihood = tempLogLikelihood;
-//				// else {
-//				//
-//				// logLikelihood = Utils.logSum(logLikelihood,
-//				// tempLogLikelihood);
-//				// }
-//			}
-//		} while (++iter<this.number_of_iteration);
-//
-//		for(_Doc doc: sampleTestSet){
-//			estThetaInDoc(doc);
-//			logLikelihood += calculate_test_log_likelihood(doc);
-//		}
-//		
-//		return logLikelihood;
-//	}
-
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
@@ -451,7 +399,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		}
 		
 		int testLength = 0;
-//		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 		
@@ -593,7 +540,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		String childParameterFile = filePrefix + "childParameter.txt";
 	
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-		
+		printTestParameter4Spam(filePrefix);
+
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(similarityFile);
 		printEntropy(filePrefix);
@@ -728,12 +676,12 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 					
 					parentParaOut.println();
 					
-					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
+					for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
 						childParaOut.print(cDoc.getName()+"\t");
 	
 						childParaOut.print("topicProportion\t");
 						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(d.m_topics[k] + "\t");
+							childParaOut.print(cDoc.m_topics[k] + "\t");
 						}
 						
 						childParaOut.println();		
@@ -1308,30 +1256,47 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 	
+//	public void EMonCorpus(){
+//		separateTrainTest4Dynamic();
+//		EM();
+//		int maxCommentNum = 30;
+//		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
+//			inferenceTest4Dynamical(commentNum);
+//			printTestParameter4Dynamic(commentNum);
+//		}
+//	}
+	
 	public void EMonCorpus(){
-		separateTrainTest();
+		separateTrainTest4Spam();
 		EM();
-		int maxCommentNum = 10;
-		for(int commentNum=0; commentNum<maxCommentNum; commentNum++){
-			inferenceTest4Dynamical(commentNum);
-			printTestParameter4Dynamic(commentNum);
-		}
+		mixTest4Spam();
+		inferenceTest4Spam();
 	}
-
-	public void separateTrainTest(){
+	
+	public void separateTrainTest4Dynamic() {
+		
 		int cvFold = 10;
+		ArrayList<String> parentFakeList = new ArrayList<String>();
+		String parentFakeString = "37 198 90 84 358 468 381 361 452 164 323 386 276 285 277 206 402 293 354 62 451 161 287 232 337 471 143 93 217 263 260 175 79 237 95 387 391 193 470 196 190 43 135 458 244 464 266 25 303 211";
+		String[] parentFakeStringArray= parentFakeString.split(" ");
+		
+		for(String parentName:parentFakeStringArray){
+			parentFakeList.add(parentName);
+			System.out.println("parent Name\t"+parentName);
+		}
+		
 		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
 		double avgCommentNum = 0;
 		m_trainSet = new ArrayList<_Doc>();
 		m_testSet = new ArrayList<_Doc>();
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc){
-				int childSize = ((_ParentDoc)d).m_childDocs.size();
-				if(childSize<10){
-					parentTrainSet.add(d);
-				}else{
+		for (_Doc d : m_corpus.getCollection()) {
+			if (d instanceof _ParentDoc) {
+				String parentName = d.getName();
+				if (parentFakeList.contains(parentName)) {		
 					m_testSet.add(d);
-					avgCommentNum += childSize;
+					avgCommentNum += ((_ParentDoc) d).m_childDocs.size();
+				}else{
+					parentTrainSet.add(d);				
 				}
 			}
 		}
@@ -1428,4 +1393,103 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return logLikelihood;
 	}
 	
+	public void mixTest4Spam() {
+		int t = 0, j1 = 0;
+		_ChildDoc tmpDoc1;
+		int testSize = m_testSet.size();
+		for (int i = 0; i < testSize; i++) {
+			t = m_rand.nextInt(testSize);
+
+			while (t == i)
+				t = m_rand.nextInt(testSize);
+
+			_ParentDoc pDoc1 = (_ParentDoc) m_testSet.get(i);
+			
+			_ParentDoc pDoc2 = (_ParentDoc) m_testSet.get(t);
+			int pDocCDocSize2 = pDoc2.m_childDocs.size();
+
+			j1 = m_rand.nextInt(pDocCDocSize2);
+			tmpDoc1 = (_ChildDoc) pDoc2.m_childDocs.get(j1);
+
+			pDoc1.addChildDoc(tmpDoc1);
+		
+		}
+	}
+
+	public void separateTrainTest4Spam() {
+		int cvFold = 10;
+		ArrayList<String> parentFakeList = new ArrayList<String>();
+		String parentFakeString = "136 26 282 367 257 49 82 292 130 303 60 416 249 437 349 125 173 181 30 355 150 369 123 144 330 231 468 283 241 221 488 341 116 74 203 2 36 390 381 22 85 427 100 412 63 88 366 337 169 41";
+		String[] parentFakeStringArray= parentFakeString.split(" ");
+		
+		for(String parentName:parentFakeStringArray){
+			parentFakeList.add(parentName);
+			System.out.println("parent Name\t"+parentName);
+		}
+		
+		ArrayList<_Doc> parentTrainSet = new ArrayList<_Doc>();
+		double avgCommentNum = 0;
+		m_trainSet = new ArrayList<_Doc>();
+		m_testSet = new ArrayList<_Doc>();
+		for (_Doc d : m_corpus.getCollection()) {
+			if (d instanceof _ParentDoc) {
+				String parentName = d.getName();
+				if (parentFakeList.contains(parentName)) {		
+					m_testSet.add(d);
+					avgCommentNum += ((_ParentDoc) d).m_childDocs.size();
+				}else{
+					parentTrainSet.add(d);				
+				}
+			}
+		}
+
+		System.out.println("avg comments for parent doc in testSet\t"
+				+ avgCommentNum * 1.0 / m_testSet.size());
+
+		for (_Doc d : parentTrainSet) {
+			_ParentDoc pDoc = (_ParentDoc) d;
+			m_trainSet.add(d);
+			for (_ChildDoc cDoc : pDoc.m_childDocs) {
+				m_trainSet.add(cDoc);
+			}
+		}
+		System.out.println("m_testSet size\t" + m_testSet.size());
+		System.out.println("m_trainSet size\t" + m_trainSet.size());
+	}
+
+	public void inferenceTest4Spam(){
+		m_collectCorpusStats = false;
+		
+		for(_Doc d:m_testSet){
+			inferenceDoc4Spam(d);
+		}
+	}
+	
+	public void inferenceDoc4Spam(_Doc d){
+		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
+		initTest4Spam(sampleTestSet, d);
+		double tempLikelihood = inference4Doc(sampleTestSet);
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d){
+		_ParentDoc pDoc = (_ParentDoc)d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+		for(_Stn stnObj: pDoc.getSentences()){
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		sampleTestSet.add(pDoc);
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, d_alpha);
+			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
+		}
+	}
+
+	public void printTestParameter4Spam(String filePrefix){		
+		String parentParameterFile = filePrefix+"testParentParameter.txt";
+		String childParameterFile =  filePrefix+"testChildParameter.txt";
+	
+		printParameter(parentParameterFile, childParameterFile, m_testSet);
+	}
 }

@@ -17,6 +17,8 @@ public class _Word {
 	int m_x;
 	double[] m_xProb;
 	
+	double[] m_features;
+	
 	//structure used for ParentChildTopicModelwithProbit
 	double m_xVal;
 	int m_localIndex; // index in the sorted sparse vector of its original documents
@@ -95,5 +97,17 @@ public class _Word {
 	
 	public double getXProb(){
 		return m_xProb[1];
+	}
+	
+	public void setFeatures(double[] features){
+		int featureLen = features.length;
+		m_features = new double[featureLen];
+		for(int i=0; i<featureLen; i++){
+			m_features[i] = features[i];
+		}
+	}
+	
+	public double[] getFeatures(){
+		return m_features;
 	}
 }

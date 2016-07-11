@@ -15,3 +15,5 @@ compile
 >>>>>>> master
 run
 /bin/
+Jar/*
+output/*

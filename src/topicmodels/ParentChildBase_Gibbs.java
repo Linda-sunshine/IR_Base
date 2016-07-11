@@ -1,7 +1,6 @@
 package topicmodels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -80,7 +78,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-//		mu = 1e32;
+		mu = 1e32;
 //		mu = Double.MAX_VALUE;
 //		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
@@ -90,7 +88,7 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-//		mu = 1e30;
+		mu = 1e32;
 		d.setMu(mu);
 	}
 	
@@ -163,14 +161,10 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
-//		if(!m_collectCorpusStats){
-//			return term;
-//		}
-		
 		if(tid==0)
 			return term;
 		
-		for(_ChildDoc cDoc: pDoc.m_childDocs4Dynamic){
+		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
 			term *= gammaFuncRatio((int)cDoc.m_sstat[tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_sstat[0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
@@ -184,8 +178,8 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			return 1.0;
 		
 		double result = 1.0;
-		for(int n=1; n<=nc; n++) 
-			result *= 1 + muDp / (alphaMuNp + n);
+		for (int n = 1; n <= nc; n++)
+			result *= 1 + muDp / (alphaMuNp + n - 1);
 		return result;
 	}
 	
@@ -1023,6 +1017,23 @@ public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
 			pDoc.addChildDoc4Dynamics(cDoc);
 			computeMu4Doc(cDoc);
 
+		}
+	}
+	
+	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d) {
+		_ParentDoc pDoc = (_ParentDoc) d;
+		pDoc.setTopics4Gibbs(number_of_topics, 0);
+
+		for (_Stn stnObj : pDoc.getSentences()) {
+			stnObj.setTopicsVct(number_of_topics);
+		}
+		sampleTestSet.add(pDoc);
+
+		for (_ChildDoc cDoc : pDoc.m_childDocs) {
+			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+			sampleTestSet.add(cDoc);
+			cDoc.setParentDoc(pDoc);
+			computeMu4Doc(cDoc);
 		}
 	}
 	

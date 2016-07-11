@@ -7,15 +7,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
+import org.jsoup.Jsoup;
 import structures.TokenizeResult;
 import structures._ChildDoc;
-import structures._ChildDoc4APP;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
@@ -27,8 +28,9 @@ import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
-	public static int ChildDocFeatureSize = 2;
 
+	public ArrayList<_APPQuery> m_Queries;
+	public static int ChildDocFeatureSize = 6;
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
 		//added by Renqin
@@ -108,14 +110,16 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			return;
 
 		JSONObject json = LoadJson(fileName);
+		System.out.println("fileName\t" + fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 
 //		
-//		 _ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-//		 name, "", content, 0);
+
+		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -124,7 +128,9 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
+//		 0);
+
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
@@ -155,38 +161,146 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		d.setName(name);
 		AnalyzeDoc(d);		
 	}
+
+	public void loadQuery(String queryFile){
+		try{
+			m_Queries = new ArrayList<_APPQuery>();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(queryFile), "UTF-8"));
+			
+			String line;
+			while((line=reader.readLine())!=null){
+				String[] lineUnit = line.split("\t");
+				String querySource = lineUnit[1];
+				int queryID = Integer.parseInt(lineUnit[0]);
+				
+				_APPQuery appQuery = new _APPQuery();
+				if(AnalyzeQuery(appQuery, querySource)){
+					m_Queries.add(appQuery);
+					appQuery.setQueryID(queryID);
+					System.out.println("query\t"+querySource+"\t accepted");
+				}else{
+					System.out.println("query\t"+querySource+"\t removed");
+				}
+			}
+			
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	protected boolean AnalyzeQuery(_APPQuery appQuery, String source){
+		TokenizeResult result = TokenizerNormalizeStemmer(source);
+		String[] tokens = result.getTokens();
+		int wid = 0;
+		
+		ArrayList<_Word> wordList = new ArrayList<_Word>();
+		
+		for(String token:tokens){
+			if(!m_featureNameIndex.containsKey(token)){
+				continue;
+			}
+			
+			wid = m_featureNameIndex.get(token);
+			_Word word = new _Word(wid);
+			
+			wordList.add(word);
+		}
+		
+		if(wordList.isEmpty())
+			return false;
+		else{
+			appQuery.initWords(wordList);
+			return true;
+		}
+	}
 	
 	public void setFeatureValues(String fValue, int norm){
 		super.setFeatureValues(fValue, norm);
 		
-		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
+		ArrayList<_Doc> corpusDocList = new ArrayList<_Doc>();
+		corpusDocList = m_corpus.getCollection();
 		
-		double k1 = 1.5; // [1.2, 2]
-		double b = 0.75; // (0, 1000]
-		// Iterate all the documents to get the average document length.
-		double navg = 0;
-		for (int k = 0; k < N; k++)
-			navg += docs.get(k).getTotalDocLength();
-		navg /= N;
+		int N = corpusDocList.size(); // total number of documents
+		int childDocsNum = 0;
+		int parentDocsNum = 0;
+		
+		int vocabulary_size = m_featureNames.size();
+		
+		double[] childDF = new double[vocabulary_size]; // total number of unique words
+		double[] corpusDF = new double[vocabulary_size];
+		double[] parentDF = new double[vocabulary_size];
 
-		for (int i = 0; i < docs.size(); i++) {
-			_Doc temp = docs.get(i);
-			_SparseFeature[] sfs = temp.getSparse();
-			double n = temp.getTotalDocLength() / navg, avgIDF = 0;
-			for (_SparseFeature sf : sfs) {
-				String featureName = m_featureNames.get(sf.getIndex());
-				_stat stat = m_featureStat.get(featureName);
-				double TF = sf.getValue();
-				double DF = Utils.sumOfArray(stat.getDF());
-				double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
-				double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
-				double[] values = new double[ChildDocFeatureSize];
-				values[0] = BM25;
-				sf.setValues(values);
-				avgIDF += IDF;
+		double totalWords = 0;
+		for(_Doc temp:corpusDocList) {
+			if(temp instanceof _ParentDoc){
+				double pChildWordNum = 0;
+				_SparseFeature[] pfs = temp.getSparse();
+				for(_SparseFeature sf : pfs){
+					parentDF[sf.getIndex()] ++;	// DF in child documents
+					corpusDF[sf.getIndex()] ++;
+				}
+				parentDocsNum += 1;
+				
+				for(_ChildDoc cDoc:((_ParentDoc) temp).m_childDocs){
+					_SparseFeature[] cfs = cDoc.getSparse();
+					for(_SparseFeature sf : cfs){
+						childDF[sf.getIndex()] ++;	// DF in child documents
+						corpusDF[sf.getIndex()] ++;
+					}
+					childDocsNum += 1;
+					totalWords += temp.getTotalDocLength();
+				}
 			}
 		}
+		
+		System.out.println("totalWords\t"+totalWords);
+		System.out.println("Set feature value for parent child probit model");
+		_SparseFeature[] parentFvs;
+		for(_Doc tempDoc:corpusDocList) {	
+			if(tempDoc instanceof _ParentDoc) {
+				parentFvs = tempDoc.getSparse();
+				_ParentDoc tempParentDoc = (_ParentDoc)tempDoc;
+				tempParentDoc.initFeatureWeight(ChildDocFeatureSize);
+				
+				for(_ChildDoc tempChildDoc:((_ParentDoc) tempDoc).m_childDocs){
+					_SparseFeature[] childFvs = tempChildDoc.getSparse();
+					for(_SparseFeature sf: childFvs){
+						int wid = sf.getIndex();
+						
+						double DFCorpus = corpusDF[wid];
+						double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
+						
+						double[] values = new double[ChildDocFeatureSize];
+						
+						double DFChild = childDF[wid];
+						double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
+						
+						values[0] = 1;
+						values[1] = IDFCorpus;
+						
+						double TFParent = 0;
+						double TFChild = 0;
+						
+						int wIndex = Utils.indexOf(parentFvs, wid);
+						if(wIndex != -1){
+							TFParent = parentFvs[wIndex].getValue();	
+						}
+						
+						TFChild = sf.getValue();
+
+						values[2] = TFParent;//TF in parent document
+						values[3] = TFChild;//TF in child document					
+						values[4] = TFParent/TFChild;//TF ratio
+						
+						values[5] = IDFCorpus * TFChild;//TF-IDF
+						sf.setValues(values);
+					}
+				}
+			
+			}	
+		}
+
 	}
 	
 	public void filterParentAndChildDoc(){
