@@ -16,6 +16,7 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import org.jsoup.Jsoup;
 import structures.TokenizeResult;
+import structures._APPQuery;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;

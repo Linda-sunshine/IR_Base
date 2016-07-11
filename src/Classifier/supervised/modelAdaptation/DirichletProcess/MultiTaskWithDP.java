@@ -1,9 +1,14 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 
 import structures._User;
+import structures._thetaStar;
+import utils.Utils;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
@@ -16,13 +21,14 @@ public class MultiTaskWithDP extends ModelAdaptation{
 	Normal m_normal; // Normal distribution.
 	int m_leapFrog = 200; // Number of steps for the Hamiltonian dynamics.
 	int m_M, m_kBar; // The number of auxiliary components.
+	int m_numberOfIterations;
 	
 	double m_eps = 0.2; // This is the constant multiplier for the step size.
 	double m_a0 =-3, m_b0 = 2; // alpha~Gamma(a0, b0)
 	double m_alpha = 0.001; // Scale parameter of DP.
 	
 	int[] m_J; // cluster identifier.
-	ArrayList<Integer> m_nj = new ArrayList<Integer>(); // frequency of each cluster.
+	int[] m_nj; // frequency of each cluster.
 	
 	double[] m_mu0, m_Sigma0, m_mu00, m_Sigma00;
 	double[] m_muMu, m_SigMu;
@@ -32,58 +38,6 @@ public class MultiTaskWithDP extends ModelAdaptation{
 	double[] m_abNuA = new double[]{0, 1};
 	double[] m_abNuB = new double[]{0, 1};
 	
-	class _thetaStar{
-		double[] m_mu;
-		double[] m_sd;
-		double m_nuA;
-		double m_nuB;
-		double[][] m_sigBeta;
-		double[][] m_sigComp;
-		double[][] m_beta;
-		
-		public _thetaStar(int dim, int classNo){
-			m_mu = new double[dim];
-			m_sd = new double[dim];
-			m_nuA = 1;
-			m_nuB = 1;
-			m_sigBeta = new double[dim+1][classNo];
-			m_sigComp = new double[dim+1][classNo];
-			m_beta = new double[dim+1][classNo];
-		}
-		
-		public void init(){
-			Arrays.fill(m_sd, 2);
-			fill2DimArray(m_sigBeta, 1);
-			fill2DimArray(m_sigComp, 1);
-			scaleSigComp();
-		}
-		public void scaleSigComp(){
-			// Init sigComp row by row.
-			m_sigComp[0] = scaling(m_nuA, m_sigBeta[0]);
-			for(int i=1; i<m_sigComp.length; i++){
-				m_sigComp[i] = scaling(m_nuB, m_sigBeta[i]);
-			}
-		}
-		public void setBeta(){
-			m_beta = normrnd(0, m_sigComp);
-		}
-		// Scale the array by a, arr = a*arr.
-		public double[] scaling(double a, double[] arr){
-			if(arr.length == 0)
-				return null;
-			double[] res = new double[arr.length];
-			for(int i=0; i<arr.length; i++){
-				res[i] = a * arr[i];
-			}
-			return res;
-		}
-		// Fill the two dimension array with val.
-		public void fill2DimArray(double[][] arr, double val){
-			for(int i=0; i<arr.length; i++)
-				Arrays.fill(arr[i], val);
-		}
-	}
-	
 	_thetaStar[] m_thetaStars = new _thetaStar[m_kBar + m_M];
 	public MultiTaskWithDP(int classNo, int featureSize) {
 		super(classNo, featureSize);
@@ -92,13 +46,69 @@ public class MultiTaskWithDP extends ModelAdaptation{
 		m_M = 5; m_kBar = 1;
 		m_normal = new Normal(0, 1, new DoubleMersenneTwister());
 	}
-
+	// Append the arrayNj with the specific value.
+	public void appendNj(int v){
+		int[] cp = Arrays.copyOf(m_nj, m_nj.length);
+		m_nj = new int[cp.length + 1];
+		for(int i=0; i<cp.length; i++){
+			m_nj[i] = cp[i];
+		} 
+		m_nj[cp.length] = v;
+	}
+	//
+	public double calcLogLikelihood(_AdaptStruct u, int k){
+		return 0;
+	}
+	// Accumulate the sum the elements of the array.
+	public void cumsum(double[] arr){
+		double sum = 0;
+		for(int i=0; i<arr.length; i++){
+			sum += arr[i];
+			arr[i] = sum;
+		}
+	}
+	// Delete the element in thetaStar form 'start'.
+	public void dltThetaStars(int start) {
+		_thetaStar[] tmp = Arrays.copyOf(m_thetaStars, m_thetaStars.length);
+		m_thetaStars = new _thetaStar[start];
+		for (int i = 0; i < start; i++) {
+			m_thetaStars[i] = tmp[i];
+		}
+	}
 	public void dpMnl(){
+		for(int i=0; i<m_numberOfIterations; i++){
+			MCMC();
+			remix();
+			pickAlpha();
+			
+			if(rem(i, 5) == 0)
+				m_eps = 0.4;
+			else 
+				m_eps = 0.5;
+			
+			if(i > m_burnIn)
+		}
+	}
+	// Return the indexes of the elements in arr which are larger than val.
+	public ArrayList<Integer> find(double[] arr, double val){
+		ArrayList<Integer> res = new ArrayList<Integer>();
+		for(int i=0; i<arr.length; i++){
+			if(arr[i] > val)
+				res.add(i);
+		}
+		return res;
+	}
+	public double getMu0(){
 		
 	}
-	
+	public double getSigBeta(){
+		
+	}
 	// The main mcmc algorithm.
 	public void MCMC(){
+		double[] prob;
+		double denomiator, maxP, u;
+		int picked;
 		for(int i=0; i<m_userList.size(); i++){
 			_LinAdaptStruct user = (_LinAdaptStruct) m_userList.get(i);
 			for(int m=0; m<m_M; m++){
@@ -107,30 +117,90 @@ public class MultiTaskWithDP extends ModelAdaptation{
 				m_thetaStars[m+m_kBar].m_nuA = sqrtExpNormrndOne(m_abNuA[0], m_abNuA[1]);
 				m_thetaStars[m+m_kBar].m_nuB = sqrtExpNormrndOne(m_abNuB[0], m_abNuB[1]);
 				m_thetaStars[m+m_kBar].scaleSigComp();
-				m_thetaStars[m+m_kBar].setBeta();
+				m_thetaStars[m+m_kBar].setBeta(m_normal);
 			}
-			double[] prob = new double[m_kBar+m_M];
-			double denomiator =  Math.log(m_userList.size() - 1 + m_alpha);
+			prob = new double[m_kBar+m_M];
+			denomiator =  Math.log(m_userList.size() - 1 + m_alpha);
 			for(int k=0; k<m_kBar; k++){
 				prob[k] = calcLogLikelihood(user, k);
-				prob[k] += Math.log(m_nj.get(k)) - denomiator;
+				prob[k] += Math.log(m_nj[k]) - denomiator;
 			}
 			for(int m=0; m<m_M; m++){
 				prob[m+m_kBar] = calcLogLikelihood(user, m_kBar+m);
 				prob[m+m_kBar] += Math.log(m_alpha) - Math.log(m_M) - denomiator;
 			}
+			maxP = Utils.maxOfArrayValue(prob);
+			for(int j=0; j<prob.length; j++){
+				prob[j] = Math.exp(prob[j]-maxP);
+			}
+			Utils.L1Normalization(prob);
+			cumsum(prob);
+			
+			u = Math.random();
+			ArrayList<Integer> k0 = find(prob, u);
+			picked = k0.get(0);
+			
+			if(picked <= m_kBar){
+				m_J[i] = picked;
+				m_nj[picked]++;
+				dltThetaStars(m_kBar+1); // delete the auxillary parameters.
+			} else{
+				m_J[i] = m_kBar+1;
+				appendNj(1);
+				_thetaStar phi = m_thetaStars[picked];
+				dltThetaStars(m_kBar+2);
+				m_thetaStars[m_kBar+1] = phi;
+			}
+			
 		}
-	}
-
-	public double calcLogLikelihood(){
-		
 	}
 	@Override
 	public void loadUsers(ArrayList<_User> userList) {
 		// TODO Auto-generated method stub
 		
 	}
-
+	// Generate a random vector.
+	public double[] normrnd(double[] us, double[] sigmas){
+		if(us.length == 0 || sigmas.length == 0 || us.length != sigmas.length)
+			return null;
+		double[] rnds = new double[us.length];
+		for(int i=0; i<us.length; i++){
+			rnds[i] = m_normal.nextDouble(us[i], sigmas[i]);
+		}
+		return rnds;
+	}
+	
+	public void pickAlpha(){
+		
+	}
+	
+	public void remix(){
+		double e;
+		double[] relatedBeta;
+		_thetaStar tmp;
+		int[] unique = unique(m_J);
+		for(int i=0; i<unique.length; i++){
+			tmp = m_thetaStars[i];
+//			X
+//			Y 
+//			nY
+			for(int j=0; j<m_featureSize; j++){
+				tmp.m_mu[j] = getMu0(X, tmp.m_mu[j], m_mu0[j], m_Sigma0[j], tmp.m_sd[j]);
+				tmp.m_sd[j] = Math.sqrt(getSig0(X, tmp.m_sd[j]*tmp.m_sd[j], m_mu00[j], tmp.m_mu[j]));
+			}
+			relatedBeta = tmp.m_beta[0];
+			tmp.m_nuA = sqrt(getSigBeta(relatedBeta, tmp.m_nuA*tmp.m_nuA, m_abNuA[0], m_abNuA[1]));
+			relatedBeta = tmp.getBeta(1);
+			for(int j=0;j<50;j++)
+				tmp.m_nuB = Math.sqrt(getSigBeta(relatedBeta, tmp.m_nuB*tmp.m_nuB, m_abNuB[0], m_abNuB[1]));
+			
+			tmp.scaleSigComp();
+			e = m_eps*(1/Math.sqrt(tmp.m_sigComp^2 + nY/4));
+			getBeta();
+			m_thetaStars[i] = tmp;	
+		}
+	}
+	
 	@Override
 	protected void setPersonalizedModel() {
 		// TODO Auto-generated method stub
@@ -152,24 +222,18 @@ public class MultiTaskWithDP extends ModelAdaptation{
 		return Math.sqrt(Math.exp(m_normal.nextDouble(u, sigma)));
 	}
 	
-	// Generate a random vector.
-	public double[] normrnd(double[] us, double[] sigmas){
-		if(us.length == 0 || sigmas.length == 0 || us.length != sigmas.length)
-			return null;
-		double[] rnds = new double[us.length];
-		for(int i=0; i<us.length; i++){
-			rnds[i] = m_normal.nextDouble(us[i], sigmas[i]);
-		}
-		return rnds;
-	}
-	public double[][] normrnd(double u, double[][] sigmas){
-		double[][] rnds = new double[sigmas.length][sigmas[0].length];
-		for(int i=0; i<sigmas.length; i++){
-			for(int j=0; j<sigmas[0].length; j++){
-				rnds[i][j] = m_normal.nextDouble(u, sigmas[i][j]);
-			}
-		}
-		return rnds;
-	}
+	public int[] unique(int[] arr){
+		HashSet<Integer> set = new HashSet<Integer>();
+		for(int i: arr)
+			set.add(i);
+		ArrayList<Integer> list = new ArrayList<Integer>(set);
+		Collections.sort(list);
+		int[] res = new int[list.size()];
+		for(int i=0; i<list.size(); i++)
+			res[i] = list.get(i);
+		return res;
+	} 
+	
+
 
 }

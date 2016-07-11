@@ -22,6 +22,8 @@ public class ClusteredLinAdapt extends LinAdapt{
 	double m_u = 1; // global parts.
 	double m_c = 1; // cluster parts.
 	double m_i = 1; // individual parts.
+	
+	double m_eta3 = 0.1, m_eta4 = 0.1;// coefficients for cluster and global parts.
 	int[] m_userClusterIndex; // The index is user index, the value is corresponding cluster no.
 
 	public ClusteredLinAdapt(int classNo, int featureSize,
@@ -38,9 +40,14 @@ public class ClusteredLinAdapt extends LinAdapt{
 		m_u = g;
 	}
 	
+	public void setRcRgTradeOffs(double eta3, double eta4) {
+		m_eta3 = eta3;
+		m_eta4 = eta4;
+	}
+	
 	@Override
 	public String toString() {
-		return String.format("ClusteredLinAdapt[dim:%d,kmeans:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_clusterSize, m_eta1, m_eta2);
+		return String.format("ClusteredLinAdapt[dim:%d,i:%.2f,c:%.2f,g:%.2f,kmeans:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.4f]",m_dim,m_i,m_c,m_u,m_clusterSize, m_eta1, m_eta2,m_eta3,m_eta4);
 	}
 	
 	//Initialize the weights of the transformation matrix.
@@ -58,7 +65,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 		
 		// step1: init the shared A: individual + cluster + global
 		_ClusterLinAdaptStruct.sharedA = new double[getVSize()];
-		for(int i=0; i<m_userList.size()+m_clusterSize+1; i++){
+		for(int i=0; i<m_userList.size()+m_clusterSize; i++){
 			for(int j=0; j<m_dim; j++){
 				_ClusterLinAdaptStruct.sharedA[i*m_dim*2+j] = 1;
 			}
@@ -88,16 +95,29 @@ public class ClusteredLinAdapt extends LinAdapt{
 		}
 		return value;
 	}	
-	@Override
-	protected double calculateFuncValue(_AdaptStruct u){
-		double fValue = super.calculateFuncValue(u);
-		double Rs = calculateRs();
-		return fValue + Rs;
-	}
+//	@Override
+//	protected double calculateFuncValue(_AdaptStruct u){
+//		return  super.calculateFuncValue(u);
+//	}
 	
-	// Shall we regularize the Rc or Rs?
-	protected double calculateRs(){
-		return 0;
+	protected double calculateRcRg(){
+		double RcRg = 0;
+		int offset = 0;
+		// Add regularization parts for clusters.
+		for(int c=0; c<m_clusterSize; c++){
+			offset = m_dim*2*(m_userList.size()+c);
+			for(int k=0; k<m_dim; k++){
+				RcRg += m_eta3*(_ClusterLinAdaptStruct.sharedA[offset+k]-1)*(_ClusterLinAdaptStruct.sharedA[offset+k]-1);//(a[i]-1)^2
+				RcRg += m_eta4 *_ClusterLinAdaptStruct.sharedA[offset+k+m_dim]*_ClusterLinAdaptStruct.sharedA[offset+k+m_dim];//b[i]^2
+			}
+		}
+		// Add regularization for global parts.
+		offset = m_dim*2*(m_userList.size()+m_clusterSize);
+		for(int k=0; k<m_dim; k++){
+			RcRg += m_eta3*(_ClusterLinAdaptStruct.sharedA[offset+k]-1)*(_ClusterLinAdaptStruct.sharedA[offset+k]-1);//(a[i]-1)^2
+			RcRg += m_eta4 *_ClusterLinAdaptStruct.sharedA[offset+k+m_dim]*_ClusterLinAdaptStruct.sharedA[offset+k+m_dim];//b[i]^2
+		}		
+		return RcRg;
 	}
 	
 	@Override
@@ -122,7 +142,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 		m_g[cOffset + m_dim] -= weight*delta*m_c;//b[0]
 		
 		//Bias term for global part.
-		m_g[gOffset] -= weight*delta*m_gWeights[0]*m_u; //a[0] = w0*x0; x0=1
+		m_g[gOffset] -= weight*delta*m_u*m_gWeights[0]; //a[0] = w0*x0; x0=1
 		m_g[gOffset + m_dim] -= weight*delta*m_u;//b[0]
 				
 		//Traverse all the feature dimension to calculate the gradient.
@@ -141,6 +161,35 @@ public class ClusteredLinAdapt extends LinAdapt{
 			//Global part.
 			m_g[gOffset + k] -= weight*delta*m_u*m_gWeights[n]*fv.getValue();
 			m_g[gOffset + m_dim + k] -= weight*delta*m_u*fv.getValue(); 
+		}
+	}
+	
+	//Calculate the gradients for the use in LBFGS.
+	@Override
+	protected void gradientByR1(_AdaptStruct u){
+		_LinAdaptStruct user = (_LinAdaptStruct)u;
+		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		//R1 regularization part
+		for(int k=0; k<m_dim; k++){
+			m_g[offset + k] += 2 * m_eta1 * (user.getScaling(k)-1);// add 2*eta1*(a_k-1)
+			m_g[offset + k + m_dim] += 2 * m_eta2 * user.getShifting(k); // add 2*eta2*b_k
+		}
+	}
+	
+	// Gradients brought by regularization of clusters.
+	public void gradientByRcRg(){
+		int offset = 0;
+		for(int c=0; c<m_clusterSize; c++){
+			offset = m_dim*2*(m_userList.size()+c);
+			for(int k=0; k<m_dim; k++){
+				m_g[offset+k] += 2*m_eta3*(_ClusterLinAdaptStruct.sharedA[offset+k]-1);//2*(a[i]-1)
+				m_g[offset+k+m_dim] += 2*m_eta4 *_ClusterLinAdaptStruct.sharedA[offset+k+m_dim];//2*b[i]
+			}
+		}
+		offset = m_dim*2*(m_userList.size()+m_clusterSize);
+		for(int k=0; k<m_dim; k++){
+			m_g[offset+k] += 2*m_eta3*(_ClusterLinAdaptStruct.sharedA[offset+k]-1);//2*(a[i]-1)
+			m_g[offset+k+m_dim] += 2*m_eta4 *_ClusterLinAdaptStruct.sharedA[offset+k+m_dim];//2*b[i]
 		}
 	}
 	
@@ -169,6 +218,8 @@ public class ClusteredLinAdapt extends LinAdapt{
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
+				fValue += calculateRcRg();
+				gradientByRcRg();
 					
 				if (m_displayLv==2) {
 					gradientTest();
@@ -182,7 +233,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 					if (++displayCount%100==0)
 					System.out.println();
 				}
-				LBFGS.lbfgs(m_g.length, 5, _ClusterLinAdaptStruct.sharedA, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 6, _ClusterLinAdaptStruct.sharedA, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 		} catch(ExceptionWithIflag e) {
 			System.out.println("LBFGS fails!!!!");
