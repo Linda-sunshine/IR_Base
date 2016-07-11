@@ -14,7 +14,6 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-
 import org.jsoup.Jsoup;
 import structures.TokenizeResult;
 import structures._APPQuery;
@@ -30,6 +29,7 @@ import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
+
 	public ArrayList<_APPQuery> m_Queries;
 	public static int ChildDocFeatureSize = 6;
 	public ParentChildAnalyzer(String tokenModel, int classNo,
@@ -105,25 +105,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		}
 	}
 
-	public void loadAPPParentDoc(String fileName){
-		if (fileName == null || fileName.isEmpty())
-			return;
-
-		JSONObject json = LoadJson(fileName);
-		String title = Utils.getJSONValue(json, "title");
-		String content = Utils.getJSONValue(json, "content");
-		String name = Utils.getJSONValue(json, "name");
-
-		content = Jsoup.parse(content).text();
-		_ParentDoc4APP d = new _ParentDoc4APP(m_corpus.getSize(), name, title, content, 0);
-		
-		if (AnalyzeDoc(d)){
-			parentHashMap.put(name, d);
-//			System.out.println("parent name\t"+name);
-		}else{
-			System.out.println("parent name\t"+name+"\t remove");
-		}
-	}
 	
 	public void loadChildDoc(String fileName) {
 		if (fileName == null || fileName.isEmpty())
@@ -135,15 +116,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
-		
-		content = Jsoup.parse(content).text();
 
-//		_ChildDoc4APP d = new _ChildDoc4APP(m_corpus.getSize(), name, title,
-//				content, 0);
 //		
 
-		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
-				name, "", content, 0);
+//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
+//				name, "", content, 0);
 //		_ChildDoc4BaseWithPhi_Hard d = new _ChildDoc4BaseWithPhi_Hard(m_corpus.getSize(), name, "", content, 0) ;
 		// _ChildDoc4ChildPhi d = new _ChildDoc4ChildPhi(m_corpus.getSize(),
 		// name,
@@ -152,8 +129,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-//		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
-//		 0);
+		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
+		 0);
 
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
@@ -185,7 +162,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		d.setName(name);
 		AnalyzeDoc(d);		
 	}
-	
+
 	public void loadQuery(String queryFile){
 		try{
 			m_Queries = new ArrayList<_APPQuery>();
@@ -238,40 +215,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			return true;
 		}
 	}
-	
-	
-	
-//	public void setFeatureValues(String fValue, int norm){
-//		super.setFeatureValues(fValue, norm);
-//		
-//		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
-//		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
-//		
-//		double k1 = 1.5; // [1.2, 2]
-//		double b = 0.75; // (0, 1000]
-//		double navg = 0;
-//		for (int k = 0; k < N; k++)
-//			navg += docs.get(k).getTotalDocLength();
-//		navg /= N;
-//
-//		for (int i = 0; i < docs.size(); i++) {
-//			_Doc temp = docs.get(i);
-//			_SparseFeature[] sfs = temp.getSparse();
-//			double n = temp.getTotalDocLength() / navg, avgIDF = 0;
-//			for (_SparseFeature sf : sfs) {
-//				String featureName = m_featureNames.get(sf.getIndex());
-//				_stat stat = m_featureStat.get(featureName);
-//				double TF = sf.getValue();
-//				double DF = Utils.sumOfArray(stat.getDF());
-//				double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
-//				double BM25 = IDF * TF * (k1 + 1) / (k1 * (1 - b + b * n) + TF);
-//				double[] values = new double[ChildDocFeatureSize];
-//				values[0] = BM25;
-//				sf.setValues(values);
-//				avgIDF += IDF;
-//			}
-//		}
-//	}
 	
 	public void setFeatureValues(String fValue, int norm){
 		super.setFeatureValues(fValue, norm);
@@ -395,11 +338,5 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 	}
 	
-	public void searchAPP(String query){
-		for(_Doc d:m_corpus.getCollection()){
-			if(d.getTitle().equals(query)){
-				System.out.println(query+"\t"+d.getName());
-			}
-		}
-	}
+	
 }

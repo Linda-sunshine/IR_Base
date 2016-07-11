@@ -17,7 +17,7 @@ import structures._SparseFeature;
 import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
-	double m_u = 0.1; // trade-off parameter between global model and individual model.
+	double m_u = 1.0; // trade-off parameter between global model and individual model.
 	double m_C = 1.0; // trade-off parameter for SVM training 
 	
 	Model m_libModel; // Libmodel trained by liblinear.
@@ -109,15 +109,15 @@ public class MultiTaskSVM extends ModelAdaptation {
 	protected void setPersonalizedModel() {
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term
 		int class0 = m_libModel.getLabels()[0];
-		double sign = class0 > 0 ? 1 : -1;
+		double sign = class0 > 0 ? 1 : -1, block=m_personalized?1:0;//disable personalized model when required
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
 		for(_AdaptStruct user:m_userList) {
 			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
-					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
+					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + block*weight[userOffset+i]);
 				
 				if (m_bias) {
-					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
+					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + block*weight[userOffset+m_featureSize]);
 					userOffset += m_featureSize+1;
 				} else
 					userOffset += m_featureSize;

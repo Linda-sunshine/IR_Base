@@ -18,6 +18,7 @@ import topicmodels.APPLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_APP;
+import topicmodels.LDA_GMM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LDAonArticles;
@@ -58,7 +59,7 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM, ParentChild_Gibbs, ParentChildWithProbitModel_Gibbs
 		//LDA_APP,ACCTM_CZ
 
-		String topicmodel = "ACCTM_CZLR";
+		String topicmodel = "LDA_GMM";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -71,11 +72,11 @@ public class TopicModelMain {
 		int varIter = 10;
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
-		int gibbs_iteration = 100, gibbs_lag = 20;
-		int displayLap = 20;
-		gibbs_iteration = 4;
-		gibbs_lag = 2;
-		displayLap = 2;
+		int gibbs_iteration = 1000, gibbs_lag = 50;
+		int displayLap = 50;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -250,6 +251,7 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("ParentChildWithProbitModel_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {2, 2};
+
 			}else if(topicmodel.equals("ParentChildWith3Phi")){
 				double mu = 1.0;
 				alpha = 1.01;
@@ -287,15 +289,6 @@ public class TopicModelMain {
 				model = new ParentChildBaseWithPhi_Gibbs(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma, ksi, tau);
-			} else if (topicmodel.equals("ParentChildWith2Phi")) {
-				double mu = 1.0;
-				beta = 1.001;
-				double[] gammaParent = { 0.5, 0.5};
-				double[] gammaChild = {0.5, 0.5};
-				double ksi = 800;
-				double tau = 0.5;
-				model = new ParentChildWith2Phi(gibbs_iteration, 0, beta - 1, c, lambda, number_of_topics, alpha - 1,
-						burnIn, gibbs_lag, gammaParent, gammaChild, ksi, tau);
 			}else if(topicmodel.equals("ParentChildBaseWithPhi_Hard_Gibbs")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -311,53 +304,6 @@ public class TopicModelMain {
 				
 				model = new LDAonArticles(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
-			}else if(topicmodel.equals("APPLDA")){
-				double ksi=800;
-				double tau = 0.5;
-				beta = 1.01;
-				int number_of_topics_description=300;
-				int number_of_topics_review = 30;
-				double alphaPrior = 1;
-				alpha = 50 / number_of_topics_description;
-				double alphaReview = alpha;
-				double alphaOff = 50 / number_of_topics_review;
-				double[] gamma = {0.5, 0.5};
-				double betaReview = 0.01;
-				
-				String queryFile = "./data/APP/queryID.txt";
-				analyzer.loadQuery(queryFile);
-				
-				model = new APPLDA(gibbs_iteration, 0, beta - 1, c, lambda,
-						number_of_topics_description, number_of_topics_review,
-						alpha, burnIn, gibbs_lag, ksi, tau,
-						alphaPrior, alphaReview, alphaOff, gamma, betaReview, analyzer.m_Queries);
-			}else if(topicmodel.equals("LDA_APP")||topicmodel.equals("LDA_APPMerged")){
-				double ksi=1000;
-				double tau=0.5;
-				beta = 1.01;
-			
-				number_of_topics = 300;
-				alpha = 50/number_of_topics;
-				
-				String queryFile = "./data/APP/queryID.txt";
-				analyzer.loadQuery(queryFile);
-				
-				model = new LDA_APP(gibbs_iteration, 0, beta-1, c, lambda, number_of_topics,
-						 alpha, burnIn, gibbs_lag, ksi, tau, analyzer.m_Queries);
-			}else if(topicmodel.equals("APPACCTM_C")){
-				double ksi=800;
-				double tau=0.5;
-				number_of_topics = 300;
-				alpha = 50/number_of_topics;
-				beta = 0.01;
-				
-				double[] gamma = {0.5, 0.5};
-				
-				String queryFile = "./data/APP/queryID.txt";
-				analyzer.loadQuery(queryFile);
-				
-				model = new APPACCTM_C( gibbs_iteration,  0,  beta,  c,  lambda,
-						 number_of_topics,  alpha,  burnIn,  gibbs_lag, gamma,  ksi,  tau, analyzer.m_Queries);
 			}else if(topicmodel.equals("ACCTM_CZ")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -400,6 +346,11 @@ public class TopicModelMain {
 				number_of_topics = 30;
 				model = new ACCTM_CZSmoothingPhi(gibbs_iteration, 0, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("LDA_GMM")){
+				double ksi = 800;
+				double tau = 0.7;
+				model = new LDA_GMM(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}
 			
 			model.setDisplayLap(displayLap);

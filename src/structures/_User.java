@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -25,7 +26,19 @@ public class _User {
 	protected double[] m_pWeight;
 	protected int m_classNo;
 	protected int m_featureSize;
+	protected int[] m_category;
+	protected double[] m_svmWeights;
 	
+	protected double m_sim; // Similarity of itself.
+	
+	public void setSVMWeights(double[] weights){
+		m_svmWeights = new double[weights.length];
+		m_svmWeights = Arrays.copyOf(weights, weights.length);
+	}
+	
+	public double[] getSVMWeights(){
+		return m_svmWeights;
+	}
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
@@ -40,6 +53,21 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		
+		constructSparseVector();
+		calcPosRatio();
+	}
+	
+	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
+		m_userID = userID;
+		m_reviews = reviews;
+		m_classNo = classNo;
+
+		m_lowDimProfile = null;
+		m_BoWProfile = null;
+		m_pWeight = null;
+
+		m_perfStat = new _PerformanceStat(classNo);
+		m_category = category;
 		constructSparseVector();
 	}
 	
@@ -70,7 +98,7 @@ public class _User {
 		System.arraycopy(weight, 0, m_pWeight, 0, weight.length);
 		m_featureSize = weight.length;
 	}
-	
+
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}
@@ -101,20 +129,28 @@ public class _User {
 		return Utils.cosine(m_BoWProfile, u.getBoWProfile());
 	}
 	
+	public double getBoWSimBaseSVMWeights(_User u){
+		return Utils.cosine(m_svmWeights, u.getSVMWeights());
+	}
+	
 	public double getSVDSim(_User u) {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
 	}
 	
+	public double linearFunc(_SparseFeature[] fvs, int classid) {
+		return Utils.dotProduct(m_pWeight, fvs, classid*m_featureSize);
+	}
+	
 	public int predict(_Doc doc) {
 		_SparseFeature[] fv = doc.getSparse();
+
 		double maxScore = Utils.dotProduct(m_pWeight, fv, 0);
-		
 		if (m_classNo==2) {
 			return maxScore>0?1:0;
 		} else {//we will have k classes for multi-class classification
 			double score;
 			int pred = 0; 
-			
+		
 			for(int i = 1; i < m_classNo; i++) {
 				score = Utils.dotProduct(m_pWeight, fv, i * (m_featureSize + 1));
 				if (score>maxScore) {
@@ -138,8 +174,51 @@ public class _User {
 	public void setLowDimProfile(double[] ld){
 		m_lowDimProfile = ld;
 	}
+	
 	// Added by Lin to access the low dim profile.
 	public double[] getLowDimProfile(){
 		return m_lowDimProfile;
+	}
+	
+	public double calculatePosRatio(){
+		double count = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				count++;
+		}
+		return count/m_reviews.size();
+	}
+	
+	public int[] getCategory(){
+		return m_category;
+	}
+
+	double m_avgIDF = 0;
+	// Set average IDF value.
+	public void setAvgIDF(double v){
+		m_avgIDF = v;
+	}
+	
+	public void setSimilarity(double sim){
+		m_sim = sim;
+	}
+	
+	public void appendRvws(ArrayList<_Review> rs){
+		for(_Review r: rs)
+			m_reviews.add(r);
+	}
+	
+	double m_posRatio = 0;
+	public void calcPosRatio(){
+		double pos = 0;
+		for(_Review r: m_reviews){
+			if(r.getYLabel() == 1)
+				pos++;
+		}
+		m_posRatio = pos / m_reviews.size();
+	}
+	
+	public double getPosRatio(){
+		return m_posRatio;
 	}
  }
