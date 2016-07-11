@@ -14,7 +14,7 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ACCTM_CZ extends ParentChildBaseWithPhi_Gibbs{
+public class ACCTM_CZ extends ACCTM_C{
 	public ACCTM_CZ(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);

@@ -1,13 +1,9 @@
 package Analyzer;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 
 import json.JSONArray;
@@ -15,21 +11,16 @@ import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import org.jsoup.Jsoup;
-import structures.TokenizeResult;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._ParentDoc4APP;
 import structures._SparseFeature;
-import structures._Word;
-import structures._stat;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 
-	public ArrayList<_APPQuery> m_Queries;
 	public static int ChildDocFeatureSize = 6;
 	public ParentChildAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
@@ -160,59 +151,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		_Doc d = new _Doc(m_corpus.getSize(), content, 0);
 		d.setName(name);
 		AnalyzeDoc(d);		
-	}
-
-	public void loadQuery(String queryFile){
-		try{
-			m_Queries = new ArrayList<_APPQuery>();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(queryFile), "UTF-8"));
-			
-			String line;
-			while((line=reader.readLine())!=null){
-				String[] lineUnit = line.split("\t");
-				String querySource = lineUnit[1];
-				int queryID = Integer.parseInt(lineUnit[0]);
-				
-				_APPQuery appQuery = new _APPQuery();
-				if(AnalyzeQuery(appQuery, querySource)){
-					m_Queries.add(appQuery);
-					appQuery.setQueryID(queryID);
-					System.out.println("query\t"+querySource+"\t accepted");
-				}else{
-					System.out.println("query\t"+querySource+"\t removed");
-				}
-			}
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	
-	protected boolean AnalyzeQuery(_APPQuery appQuery, String source){
-		TokenizeResult result = TokenizerNormalizeStemmer(source);
-		String[] tokens = result.getTokens();
-		int wid = 0;
-		
-		ArrayList<_Word> wordList = new ArrayList<_Word>();
-		
-		for(String token:tokens){
-			if(!m_featureNameIndex.containsKey(token)){
-				continue;
-			}
-			
-			wid = m_featureNameIndex.get(token);
-			_Word word = new _Word(wid);
-			
-			wordList.add(word);
-		}
-		
-		if(wordList.isEmpty())
-			return false;
-		else{
-			appQuery.initWords(wordList);
-			return true;
-		}
 	}
 	
 	public void setFeatureValues(String fValue, int norm){
