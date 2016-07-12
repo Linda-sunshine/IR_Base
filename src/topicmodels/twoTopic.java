@@ -17,7 +17,7 @@ import utils.Utils;
 
 public class twoTopic extends TopicModel {
 	private double[] m_theta;//p(w|\theta) - the only topic for each document
-	double[] m_sstat;//c(w,d)p(z|w) - sufficient statistics for each word under topic
+	protected double[] m_sstat;//c(w,d)p(z|w) - sufficient statistics for each word under topic
 	
 	/*p (w|theta_b) */
 	protected double[] background_probability;
