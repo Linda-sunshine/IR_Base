@@ -1,22 +1,5 @@
 package topicmodels;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-
-import cern.jet.random.Normal;
-import cern.jet.random.engine.DRand;
-import cern.jet.random.engine.RandomEngine;
-import structures._ChildDoc;
-import structures._Corpus;
-import structures._Doc;
-import structures._ParentDoc;
-import structures._Stn;
-import topicmodels.ParentChild_Gibbs.MatchPair;
-
 //public class computePerplexity extends ParentChild_Gibbs{
 //	public Normal m_Normal;
 //	public computePerplexity(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,

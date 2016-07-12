@@ -6,18 +6,16 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.TreeMap;
 
+import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
-import sun.security.util.Length;
-import Analyzer.ParentChildAnalyzer;
 
 public class outputFile {
 	public static void outputFiles(String filePrefix, _Corpus c) {
