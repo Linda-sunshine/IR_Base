@@ -2,13 +2,16 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeMap;
 
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import cern.jet.random.tdouble.Normal;
 import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
@@ -17,9 +20,8 @@ import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
  * "Nonlinear models using dirichlet process mixtures"
  * @author lin
  */
-public class MultiTaskWithDP extends ModelAdaptation{
+public class MultiTaskWithDP extends LinAdapt{
 	Normal m_normal; // Normal distribution.
-	int m_leapFrog = 200; // Number of steps for the Hamiltonian dynamics.
 	int m_M, m_kBar; // The number of auxiliary components.
 	int m_numberOfIterations;
 	
@@ -27,38 +29,31 @@ public class MultiTaskWithDP extends ModelAdaptation{
 	double m_a0 =-3, m_b0 = 2; // alpha~Gamma(a0, b0)
 	double m_alpha = 0.001; // Scale parameter of DP.
 	
-	int[] m_J; // cluster identifier.
-	int[] m_nj; // frequency of each cluster.
+	int[] m_J; // cluster assignment of users.
+	TreeMap<Integer, Integer> m_nj; // frequency of each cluster.
 	
-	double[] m_mu0, m_Sigma0, m_mu00, m_Sigma00;
-	double[] m_muMu, m_SigMu;
-	double m_aSigma00 = 0, m_bSigma00 = 1, m_muSig = 0, m_sigSig = 1;
+//	double[] m_mu0, m_Sigma0, m_mu00, m_Sigma00;
+//	double[] m_muMu, m_SigMu;
+//	double m_aSigma00 = 0, m_bSigma00 = 1, m_muSig = 0, m_sigSig = 1;
 	
 	// Parameters of the prior for the intercept and coefficients.
 	double[] m_abNuA = new double[]{0, 1};
 	double[] m_abNuB = new double[]{0, 1};
 	
 	_thetaStar[] m_thetaStars = new _thetaStar[m_kBar + m_M];
-	public MultiTaskWithDP(int classNo, int featureSize) {
-		super(classNo, featureSize);
-		m_J = new int[m_userList.size()];
-		Arrays.fill(m_J, 1);
+	
+	public MultiTaskWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
+		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
 		m_M = 5; m_kBar = 1;
+		m_nj = new TreeMap<Integer, Integer>();
 		m_normal = new Normal(0, 1, new DoubleMersenneTwister());
 	}
-	// Append the arrayNj with the specific value.
-	public void appendNj(int v){
-		int[] cp = Arrays.copyOf(m_nj, m_nj.length);
-		m_nj = new int[cp.length + 1];
-		for(int i=0; i<cp.length; i++){
-			m_nj[i] = cp[i];
-		} 
-		m_nj[cp.length] = v;
-	}
+
 	//
 	public double calcLogLikelihood(_AdaptStruct u, int k){
 		return 0;
 	}
+	
 	// Accumulate the sum the elements of the array.
 	public void cumsum(double[] arr){
 		double sum = 0;
@@ -98,22 +93,35 @@ public class MultiTaskWithDP extends ModelAdaptation{
 		}
 		return res;
 	}
-	public double getMu0(){
-		
-	}
-	public double getSigBeta(){
-		
-	}
+
 	// The main mcmc algorithm.
 	public void MCMC(){
 		double[] prob;
 		double denomiator, maxP, u;
-		int picked;
+		int cIndex, picked;
+		_thetaStar phi;
 		for(int i=0; i<m_userList.size(); i++){
 			_LinAdaptStruct user = (_LinAdaptStruct) m_userList.get(i);
+			cIndex = m_J[user.getId()];
+			m_nj.put(cIndex, m_nj.get(cIndex) -1);
+			if(m_nj.get(cIndex) == 0){// No data associated with the cluster.
+				phi = m_thetaStars[cIndex];
+				m_nj.remove(cIndex);
+				// Shift m_thetastars.
+				for(int j=cIndex; j<m_thetaStars.length-1; j++)
+					m_thetaStars[j] = m_thetaStars[j+1];
+				// Shift user cluster assignment.
+				for(int k=0; k<m_J.length; k++){
+					if(m_J[k] > cIndex)
+						m_J[k]--;
+				}
+				m_kBar = m_nj.size();
+				m_thetaStars[m_kBar+1] = phi;
+				
+				
+			}
+			
 			for(int m=0; m<m_M; m++){
-				m_thetaStars[m+m_kBar].m_sd = sqrtExpNormrnd(m_mu00, m_Sigma00);
-				m_thetaStars[m+m_kBar].m_mu = normrnd(m_mu0, m_Sigma0);
 				m_thetaStars[m+m_kBar].m_nuA = sqrtExpNormrndOne(m_abNuA[0], m_abNuA[1]);
 				m_thetaStars[m+m_kBar].m_nuB = sqrtExpNormrndOne(m_abNuB[0], m_abNuB[1]);
 				m_thetaStars[m+m_kBar].scaleSigComp();
@@ -146,7 +154,7 @@ public class MultiTaskWithDP extends ModelAdaptation{
 				dltThetaStars(m_kBar+1); // delete the auxillary parameters.
 			} else{
 				m_J[i] = m_kBar+1;
-				appendNj(1);
+				m_nj.add(1);
 				_thetaStar phi = m_thetaStars[picked];
 				dltThetaStars(m_kBar+2);
 				m_thetaStars[m_kBar+1] = phi;
@@ -156,8 +164,8 @@ public class MultiTaskWithDP extends ModelAdaptation{
 	}
 	@Override
 	public void loadUsers(ArrayList<_User> userList) {
-		// TODO Auto-generated method stub
-		
+		super.loadUsers(userList);
+		m_J = new int[userList.size()];// Cluster assignment.
 	}
 	// Generate a random vector.
 	public double[] normrnd(double[] us, double[] sigmas){

@@ -57,10 +57,10 @@ public class _User {
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
-	int m_index; // added by Lin, cluster number.
+	int m_cIndex = 0; // added by Lin, cluster number.
 	
-	public _User(int index, int classNo){
-		m_index = index;
+	public _User(int cindex, int classNo){
+		m_cIndex = cindex;
 		m_classNo = classNo;
 		m_reviews = new ArrayList<_Review>();		
 
@@ -102,13 +102,13 @@ public class _User {
 
 	}
 	
-	// added by Lin for accessing the index of users.
-	public void setIndex(int i){
-		m_index = i;
+	// added by Lin for accessing the index of user cluster.
+	public void setClusterIndex(int i){
+		m_cIndex = i;
 	}
 	
-	public int getIndex(){
-		return m_index;
+	public int getClusterIndex(){
+		return m_cIndex;
 	}
 	
 	// Get the user ID.

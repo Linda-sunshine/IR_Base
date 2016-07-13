@@ -29,7 +29,7 @@ public class KMeansAlg4Profile extends KMeansAlg {
 		
 		for(int i=0; i< users.size(); i++){			
 			u = users.get(i);
-			u.setIndex(i);
+			u.setClusterIndex(i);
 			m_instances.add(new Instance(createInstance(u), null, null, u));
 		}
 		
@@ -47,7 +47,7 @@ public class KMeansAlg4Profile extends KMeansAlg {
 		for(int i=0; i<m_clusters.length; i++){
 			for(Instance ins: m_clusters[i]){
 				user = (_User)ins.getSource();
-				clusterNos[user.getIndex()] = i;
+				clusterNos[user.getClusterIndex()] = i;
 			}
 		}
 		return clusterNos;

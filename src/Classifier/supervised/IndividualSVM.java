@@ -101,7 +101,7 @@ public class IndividualSVM extends ModelAdaptation {
 			
 			// Set users in the same cluster.
 			if(m_supFlag)
-				setPersonalizedModelInCluster(user.getUser().getIndex());
+				setPersonalizedModelInCluster(user.getUser().getClusterIndex());
 			else
 				setPersonalizedModel(user);
 		}
