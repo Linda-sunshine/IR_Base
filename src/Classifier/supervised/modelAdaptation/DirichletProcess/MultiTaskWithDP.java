@@ -266,7 +266,7 @@ public class MultiTaskWithDP extends LinAdapt{
 	public double sampleSigBeta(double[] beta, double sigma2, double[] param){
 		double x = Math.log(sigma2);
 		double z = calcLogPostSigma(beta, x, param);
-		return Math.exp(a);
+		return Math.exp(z);
 	}
 	// Sample the cluster weights with fixed cluster assignment.
 	public double[][] sampleBeta(int uIndex, double[][] beta, double[][] sigma){
