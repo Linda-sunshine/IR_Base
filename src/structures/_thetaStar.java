@@ -68,4 +68,14 @@ public class _thetaStar{
 	public double[] getBias(){
 		return m_beta[0];
 	}
+	public double[] getWeights(){
+		int dim = m_beta.length-1;
+		int classNo = m_beta[0].length;
+		double[] weights = new double[dim*classNo];
+		for(int i=0; i<dim; i++){
+			for(int j=0; j<classNo; j++)
+				weights[i*classNo+j] = m_beta[i+1][j];
+		}
+		return weights;
+	}
 }

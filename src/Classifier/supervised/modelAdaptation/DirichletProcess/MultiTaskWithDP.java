@@ -1,6 +1,5 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -151,7 +150,7 @@ public class MultiTaskWithDP extends LinAdapt{
 			members = m_nj.get(cIndex);
 			for(int m: members){
 				m_thetaStars[cIndex].m_nuA = Math.sqrt(sampleSigBeta(curThetaStar.getBias(), curThetaStar.m_nuA*curThetaStar.m_nuA, m_abNuA));
-				m_thetaStars[cIndex].m_nuB = Math.sqrt(sampleSigBeta());
+				m_thetaStars[cIndex].m_nuB = Math.sqrt(sampleSigBeta(curThetaStar.getWeights(), curThetaStar.m_nuB*curThetaStar.m_nuB, m_abNuB));
 				m_thetaStars[cIndex].scaleSigComp();
 				m_thetaStars[cIndex].m_beta = sampleBeta(m, curThetaStar.m_beta, curThetaStar.m_sigComp);	
 			}
