@@ -14,8 +14,6 @@ import topicmodels.ACCTM_CZ;
 import topicmodels.ACCTM_CZLR;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
-import topicmodels.LDA_APP;
-import topicmodels.LDA_GMM;
 import topicmodels.LDA_Gibbs;
 import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LDAonArticles;
@@ -23,6 +21,7 @@ import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
 import topicmodels.ACCTM_C;
 import topicmodels.ACCTM_CHard;
+import topicmodels.ACCTM_CLR;
 import topicmodels.ACCTM;
 import topicmodels.ACCTM_TwoTheta;
 import topicmodels.correspondence_LDA_Gibbs;
@@ -53,7 +52,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, 
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "ACCTM_CZLR";
+		String topicmodel = "ACCTM_CLR";
 
 
 		String category = "tablet";
@@ -70,9 +69,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+		 gibbs_iteration = 4;
+		 gibbs_lag = 2;
+		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -234,15 +233,8 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-<<<<<<< HEAD
-			} else if (topicmodel.equals("ParentChild_Gibbs")) {
-||||||| merged common ancestors
-
-			} else if (topicmodel.equals("ParentChild_Gibbs")) {
-=======
-
 			} else if (topicmodel.equals("ACCTM_TwoTheta")) {
->>>>>>> master
+
 				double mu = 1.0;
 				double[] gamma = {2, 2};
 				double ksi = 800;
@@ -314,8 +306,7 @@ public class TopicModelMain {
 				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-<<<<<<< HEAD
-			}else if(topicmodel.equals("ACCTM_CZGlobalPhi")){
+			}else if(topicmodel.equals("ACCTM_CLR")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
 				beta = 1.001;
@@ -323,46 +314,9 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.7;
 				number_of_topics = 30;
-				model = new ACCTM_CZGlobalPhi(gibbs_iteration, 0, beta-1, c, 
+				converge = 1e-9;
+				model = new ACCTM_CLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("ACCTM_CZSmoothingPhi")){
-				double mu = 1.0;
-				double[] gamma = {0.5, 0.5};
-				beta = 1.001;
-				alpha = 1.01;
-				double ksi = 800;
-				double tau = 0.7;
-				number_of_topics = 30;
-				model = new ACCTM_CZSmoothingPhi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("LDA_GMM")){
-				double ksi = 800;
-				double tau = 0.7;
-				model = new LDA_GMM(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
-||||||| merged common ancestors
-			}else if(topicmodel.equals("ACCTM_CZGlobalPhi")){
-				double mu = 1.0;
-				double[] gamma = {0.5, 0.5};
-				beta = 1.001;
-				alpha = 1.01;
-				double ksi = 800;
-				double tau = 0.7;
-				number_of_topics = 30;
-				model = new ACCTM_CZGlobalPhi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("ACCTM_CZSmoothingPhi")){
-				double mu = 1.0;
-				double[] gamma = {0.5, 0.5};
-				beta = 1.001;
-				alpha = 1.01;
-				double ksi = 800;
-				double tau = 0.7;
-				number_of_topics = 30;
-				model = new ACCTM_CZSmoothingPhi(gibbs_iteration, 0, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-=======
->>>>>>> master
 			}
 			
 			model.setDisplayLap(displayLap);

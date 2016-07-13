@@ -23,15 +23,11 @@ import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
-	protected double[] m_featureWeight;
-	
+
 	public ACCTM_CZLR(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] weight, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, weight, ksi, tau);
-		
-		if(m_featureWeight==null)
-			m_featureWeight = new double[6];
-		Arrays.fill(m_featureWeight, 1.0/6);
+//		System.arraycopy(weight, 0, m_weight, 0, weight.length);
 	}
 	
 	public String toString(){
@@ -79,15 +75,15 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		int i = 0, displayCount = 0;
 		do {
 			
-			// for(int j=0; j<number_of_iteration; j++){
+			for(int j=0; j<number_of_iteration; j++){
 				init();
 				for(_Doc d:m_trainSet)
 					calculate_E_step(d);
-			// }
+			}
 			
 			calculate_M_step(i, weightFolder);
-
-			if ((i==0)||(m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
+			
+			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
 				current = calculate_log_likelihood();//together with corpus-level log-likelihood
 			
 				if (i>0)
@@ -98,20 +94,18 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 			}
 			
 			if (m_displayLap>0 && i%m_displayLap==0) {
-				// if (m_converge>0) {
-				// System.out.format("Likelihood %.3f at step %s converge to %f...\n",
-				// current, i, delta);
-				// infoWriter.format("Likelihood %.3f at step %s converge to %f...\n",
-				// current, i, delta);
-				//
-				// } else {
+				if (m_converge>0) {
+					System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+					infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+	
+				} else {
 					System.out.print(".");
 					if (displayCount > 6){
 						System.out.format("\t%d:%.3f\n", i, current);
 						infoWriter.format("\t%d:%.3f\n", i, current);
 					}
 					displayCount ++;
-				// }
+				}
 			}
 			
 			if (m_converge>0 && Math.abs(delta)<m_converge)
@@ -134,67 +128,55 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	public void update_M_step(int iter, File weightFolder){
-		if (iter > m_burnIn && iter % m_lag == 0) {
-			if (m_statisticsNormalized) {
-				System.err
-						.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
-				System.exit(-1);
-			}
 
-			for (int i = 0; i < this.number_of_topics; i++) {
-				for (int v = 0; v < this.vocabulary_size; v++) {
-					topic_term_probabilty[i][v] += word_topic_sstat[i][v];// collect
-																			// the
-																			// current
-																			// sample
-				}
-			}
-
-			// used to estimate final theta for each document
-			for (_Doc d : m_trainSet) {
-				if (d instanceof _ParentDoc)
-					collectParentStats((_ParentDoc) d);
-				else if (d instanceof _ChildDoc)
-					collectChildStats((_ChildDoc) d);
-			}
-
-			File weightIterFolder = new File(weightFolder, "_" + iter);
-			if (!weightIterFolder.exists()) {
-				weightIterFolder.mkdir();
-			}
-
-			for (_Doc d : m_trainSet) {
-				if (d instanceof _ParentDoc)
-					updateFeatureWeight((_ParentDoc) d, iter, weightIterFolder);
+		if (m_statisticsNormalized) {
+			System.err.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
+			System.exit(-1);
+		}
+		
+		for(int i=0; i<this.number_of_topics; i++){
+			for(int v=0; v<this.vocabulary_size; v++){
+				topic_term_probabilty[i][v] += word_topic_sstat[i][v];//collect the current sample
 			}
 		}
-	}
-
+		
+		// used to estimate final theta for each document
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc)
+				collectParentStats((_ParentDoc)d);
+			else if(d instanceof _ChildDoc)
+				collectChildStats((_ChildDoc)d);
+		}
+		
+		File weightIterFolder = new File(weightFolder, "_"+iter);
+		if(!weightIterFolder.exists()){
+			weightIterFolder.mkdir();
+		}
+		
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc)
+				updateFeatureWeight((_ParentDoc)d, iter, weightIterFolder);
+		}
+	}	
 	
-	public void updateFeatureWeight(ArrayList<_Doc> docList, int iter, File weightIterFolder){
+	public void updateFeatureWeight(_ParentDoc pDoc, int iter, File weightIterFolder){
 		int totalChildWordNum = 0;
 		int featureLen = 0;
 		ArrayList<Double> targetValList = new ArrayList<Double>();
 		ArrayList<Feature[]> featureList = new ArrayList<Feature[]>();
 		
-		for(_Doc tempDoc:docList){
-			if(tempDoc instanceof _ChildDoc)
-				continue;
-			
-			_ParentDoc pDoc = (_ParentDoc)tempDoc;
-			for(_ChildDoc cDoc:pDoc.m_childDocs){
-				for(_Word w:cDoc.getWords()){
-					double[] wordFeatures = w.getFeatures();
-					double x = w.getX();
-					featureLen = wordFeatures.length;
-					Feature[] featureVec = new Feature[featureLen];
-					for(int i=0; i<featureLen; i++){
-						featureVec[i] = new FeatureNode(i+1,wordFeatures[i]);
-						
-					}
-					featureList.add(featureVec);
-					targetValList.add(x);
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			for(_Word w:cDoc.getWords()){
+				double[] wordFeatures = w.getFeatures();
+				double x = w.getX();
+				featureLen = wordFeatures.length;
+				Feature[] featureVec = new Feature[featureLen];
+				for(int i=0; i<featureLen; i++){
+					featureVec[i] = new FeatureNode(i+1,wordFeatures[i]);
+					
 				}
+				featureList.add(featureVec);
+				targetValList.add(x);
 			}
 		}
 		
@@ -208,10 +190,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		for(int i=0; i<totalChildWordNum; i++){
 			targetVal[i] = targetValList.get(i);
 		}
-		setLR4Weight(totalChildWordNum, featureLen, featureMatrix, targetVal, weightIterFolder);
-	}
-	
-	protected void setLR4Weight(int totalChildWordNum, int featureLen, Feature[][] featureMatrix, double[] targetVal, File weightIterFolder){
+		
 		Problem problem = new Problem();
 		problem.l = totalChildWordNum;
 		problem.n = featureLen+1;//featureNum
@@ -226,10 +205,9 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		
 		int featureNum = model.getNrFeature();
 		for(int i=0; i<featureNum; i++)
-			m_featureWeight[i] = model.getDecfunCoef(i, 0);
+			pDoc.m_featureWeight[i] = model.getDecfunCoef(i, 0);
 		
-//		String weightFile = pDoc.getName()+".txt";
-		String weightFile = "weight.txt";
+		String weightFile = pDoc.getName()+".txt";
 		File modelFile = new File(weightIterFolder, weightFile);
 		try{
 //			if((iter>200)&&(iter%100==0))
@@ -322,9 +300,10 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 
 	public double xProb4Word(int xid, _Word w, _ChildDoc cDoc){
 		double result = 0;
-//		_ParentDoc pDoc = cDoc.m_parentDoc;
-	
-		result = Utils.dotProduct(m_featureWeight, w.getFeatures());
+		_ParentDoc pDoc = cDoc.m_parentDoc;
+		double temp1 = pDoc.m_featureWeight.length;
+		double temp2 = w.getFeatures().length;
+		result = Utils.dotProduct(pDoc.m_featureWeight, w.getFeatures());
 		if(xid==1)
 			result = 1/(1+Math.exp(-result));
 		else
@@ -378,8 +357,4 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		setFeatures4Word(sampleTestSet);
 
 	}
-	
-	
-	
-	
 }
