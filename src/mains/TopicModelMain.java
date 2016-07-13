@@ -10,8 +10,13 @@ import java.util.Date;
 
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.ACCTM;
+import topicmodels.ACCTM_C;
+import topicmodels.ACCTM_CHard;
+import topicmodels.ACCTM_CLR;
 import topicmodels.ACCTM_CZ;
 import topicmodels.ACCTM_CZLR;
+import topicmodels.ACCTM_TwoTheta;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
@@ -19,11 +24,6 @@ import topicmodels.LDA_Gibbs_Debug;
 import topicmodels.LDAonArticles;
 import topicmodels.LRHTMM;
 import topicmodels.LRHTSM;
-import topicmodels.ACCTM_C;
-import topicmodels.ACCTM_CHard;
-import topicmodels.ACCTM_CLR;
-import topicmodels.ACCTM;
-import topicmodels.ACCTM_TwoTheta;
 import topicmodels.correspondence_LDA_Gibbs;
 import topicmodels.pLSA;
 import topicmodels.twoTopic;
@@ -69,9 +69,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-		 gibbs_iteration = 4;
-		 gibbs_lag = 2;
-		 displayLap = 2;
+		// gibbs_iteration = 4;
+		// gibbs_lag = 2;
+		// displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
