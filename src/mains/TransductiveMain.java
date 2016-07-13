@@ -9,10 +9,10 @@ import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFieldsByRandomWalk;
 import Classifier.supervised.SVM;
 import structures._Corpus;
-import topicmodels.LDA_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 
 public class TransductiveMain {
 	

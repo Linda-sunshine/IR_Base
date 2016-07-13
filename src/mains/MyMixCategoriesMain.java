@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.text.ParseException;
 
 import structures._Corpus;
-import topicmodels.LDA_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
 import Analyzer.Analyzer;
 import Analyzer.AspectAnalyzer;
 import Analyzer.DocAnalyzer;
@@ -98,25 +94,25 @@ public class MyMixCategoriesMain {
 			analyzer.setFeatureValues("TF", 0);		
 			c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 
-			pLSA tModel = null;
-			if (topicmodel.equals("pLSA")) {			
-				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
-						lambda, number_of_topics, alpha);
-			} else if (topicmodel.equals("LDA_Gibbs")) {		
-				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
-					lambda, number_of_topics, alpha, 0.4, 50);
-			}  else if (topicmodel.equals("LDA_Variational")) {		
-				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
-						lambda, number_of_topics, alpha, 10, -1);
-			} else {
-				System.out.println("The selected topic model has not developed yet!");
-				return;
-			}
-		
-			tModel.setDisplayLap(0);
-			tModel.setSentiAspectPrior(true);
-			tModel.LoadPrior(aspectlist, eta);
-			tModel.EMonCorpus();	
+//			pLSA tModel = null;
+//			if (topicmodel.equals("pLSA")) {			
+//				tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+//						lambda, number_of_topics, alpha);
+//			} else if (topicmodel.equals("LDA_Gibbs")) {		
+//				tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+//					lambda, number_of_topics, alpha, 0.4, 50);
+//			}  else if (topicmodel.equals("LDA_Variational")) {		
+//				tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+//						lambda, number_of_topics, alpha, 10, -1);
+//			} else {
+//				System.out.println("The selected topic model has not developed yet!");
+//				return;
+//			}
+//		
+//			tModel.setDisplayLap(0);
+//			tModel.setSentiAspectPrior(true);
+//			tModel.LoadPrior(aspectlist, eta);
+//			tModel.EMonCorpus();	
 
 		}
 		//construct effective feature values for supervised classifiers 
