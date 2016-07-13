@@ -20,7 +20,7 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ParentChild_Gibbs extends ParentChildBase_Gibbs {
+public class ACCTM_TwoTheta extends ACCTM {
 	enum MatchPair {
 		MP_ChildDoc,
 		MP_ChildGlobal,
@@ -30,7 +30,7 @@ public class ParentChild_Gibbs extends ParentChildBase_Gibbs {
 	protected double[] m_gamma;
 	protected double[][] m_xTopicProbCache;
 	
-	public ParentChild_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ACCTM_TwoTheta(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
 

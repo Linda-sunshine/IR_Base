@@ -18,10 +18,10 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
+public class ACCTM_C extends ACCTM_TwoTheta{
 	HashMap<Integer, Double> m_wordSstat;
 
-	public ParentChildBaseWithPhi_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ACCTM_C(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	
@@ -808,6 +808,7 @@ public class ParentChildBaseWithPhi_Gibbs extends ParentChild_Gibbs{
 			computeMu4Doc(cDoc);
 		}
 	}
+	
 	public void printTestParameter4Dynamic(int commentNum){
 		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
 		printXProportion4Dynamical(xProportionFile, m_testSet);

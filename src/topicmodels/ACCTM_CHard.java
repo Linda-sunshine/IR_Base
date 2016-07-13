@@ -17,12 +17,11 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
-import topicmodels.ParentChild_Gibbs.MatchPair;
 import utils.Utils;
 
-public class ParentChildBaseWithPhi_Hard_Gibbs extends ParentChildBaseWithPhi_Gibbs{
+public class ACCTM_CHard extends ACCTM_C{
 	
-	public ParentChildBaseWithPhi_Hard_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ACCTM_CHard(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
 	

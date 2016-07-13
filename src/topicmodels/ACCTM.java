@@ -19,14 +19,14 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ParentChildBase_Gibbs extends LDA_Gibbs_Debug{
+public class ACCTM extends LDA_Gibbs_Debug{
 	
 	protected double[] m_topicProbCache;
 	protected double m_kAlpha;
 	
 	protected boolean m_statisticsNormalized = false;//a warning sign of normalizing statistics before collecting new ones
 	
-	public ParentChildBase_Gibbs(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
+	public ACCTM(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double ksi, double tau) {
 		// TODO Auto-generated constructor stub
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
