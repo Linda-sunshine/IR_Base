@@ -10,12 +10,6 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import org.jsoup.Jsoup;
-<<<<<<< HEAD
-import structures.TokenizeResult;
-import structures._APPQuery;
-=======
->>>>>>> master
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;

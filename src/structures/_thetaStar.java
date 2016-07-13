@@ -5,8 +5,8 @@ import java.util.Arrays;
 import cern.jet.random.tdouble.Normal;
 
 public class _thetaStar{
-	public double[] m_mu;
-	public double[] m_sd;
+//	public double[] m_mu;
+//	public double[] m_sd;
 	public double m_nuA;
 	public double m_nuB;
 	double[][] m_sigBeta;
@@ -14,8 +14,8 @@ public class _thetaStar{
 	public double[][] m_beta;
 	
 	public _thetaStar(int dim, int classNo){
-		m_mu = new double[dim];
-		m_sd = new double[dim];
+//		m_mu = new double[dim];
+//		m_sd = new double[dim];
 		m_nuA = 1;
 		m_nuB = 1;
 		m_sigBeta = new double[dim+1][classNo];
@@ -24,7 +24,7 @@ public class _thetaStar{
 	}
 	
 	public void init(){
-		Arrays.fill(m_sd, 2);
+//		Arrays.fill(m_sd, 2);
 		fill2DimArray(m_sigBeta, 1);
 		fill2DimArray(m_sigComp, 1);
 		scaleSigComp();
@@ -63,5 +63,9 @@ public class _thetaStar{
 			}
 		}
 		return rnds;
+	}
+	// The first row of the beta is bias.
+	public double[] getBias(){
+		return m_beta[0];
 	}
 }

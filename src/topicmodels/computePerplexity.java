@@ -12,7 +12,6 @@ import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._Stn;
-import topicmodels.ParentChild_Gibbs.MatchPair;
 
 //public class computePerplexity extends ParentChild_Gibbs{
 //	public Normal m_Normal;

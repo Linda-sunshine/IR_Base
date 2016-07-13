@@ -14,6 +14,7 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
+import topicmodels.outputFile;
 import utils.Utils;
 
 public class ACCTM_TwoTheta extends ACCTM {
