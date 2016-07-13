@@ -808,6 +808,7 @@ public class ACCTM_C extends ACCTM_TwoTheta{
 			computeMu4Doc(cDoc);
 		}
 	}
+	
 	public void printTestParameter4Dynamic(int commentNum){
 		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
 		printXProportion4Dynamical(xProportionFile, m_testSet);
