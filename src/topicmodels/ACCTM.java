@@ -78,7 +78,8 @@ public class ACCTM extends LDA_Gibbs_Debug{
 		_ParentDoc tempParent = d.m_parentDoc;
 //		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 1e32;
+		mu = 0.05;
+//		mu = 1e32;
 //		mu = Double.MAX_VALUE;
 //		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
@@ -88,7 +89,8 @@ public class ACCTM extends LDA_Gibbs_Debug{
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 1e32;
+		mu = 0.05;
+//		mu = 1e32;
 		d.setMu(mu);
 	}
 	
@@ -165,7 +167,7 @@ public class ACCTM extends LDA_Gibbs_Debug{
 			return term;
 		
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
-			double muDp = cDoc.getMu()/pDoc.getDocInferLength();
+			double muDp = cDoc.getMu();
 			term *= gammaFuncRatio((int)cDoc.m_sstat[tid], muDp, d_alpha+pDoc.m_sstat[tid]*muDp)
 					/ gammaFuncRatio((int)cDoc.m_sstat[0], muDp, d_alpha+pDoc.m_sstat[0]*muDp);
 		}
@@ -235,8 +237,8 @@ public class ACCTM extends LDA_Gibbs_Debug{
 		double parentDocLength = d.m_parentDoc.getDocInferLength();
 		double childDocLength = d.getDocInferLength();
 		
-		return (d_alpha + d.getMu()*d.m_parentDoc.m_sstat[tid]/parentDocLength + d.m_sstat[tid])
-					/(m_kAlpha + d.getMu() + childDocLength);
+		return (d_alpha + d.getMu()*d.m_parentDoc.m_sstat[tid] + d.m_sstat[tid])
+					/(m_kAlpha + d.getMu()*parentDocLength + childDocLength);
 	
 	}
 	
@@ -285,7 +287,7 @@ public class ACCTM extends LDA_Gibbs_Debug{
 		double parentDocLength = pDoc.getDocInferLength();
 		for (int k = 0; k < this.number_of_topics; k++) 
 			d.m_topics[k] += d.m_sstat[k] + d_alpha
-		+d.getMu()*pDoc.m_sstat[k] / parentDocLength;
+		+d.getMu()*pDoc.m_sstat[k];
 
 //			d.m_topics[k] += d.m_sstat[k] + d_alpha+d.getMu()*pDoc.m_sstat[k] / parentDocLength;
 	}

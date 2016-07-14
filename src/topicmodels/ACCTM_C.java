@@ -335,7 +335,7 @@ public class ACCTM_C extends ACCTM_TwoTheta{
 		int topKChild = 10;
 		printTopKChild4Stn(filePrefix, topKChild);
 //		printTopKChild4StnWithHybrid(filePrefix, topKChild);
-//		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
+		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
 		
 		printTopKChild4Parent(filePrefix, topKChild);

@@ -11,6 +11,7 @@ public class _ParentDoc extends _Doc {
 	public ArrayList<_ChildDoc> m_childDocs;
 	HashMap<Integer, Integer> m_word2Index;
 	public double[] m_featureWeight;
+	double[] m_wordDistribution;
 
 	public _ParentDoc(int ID, String name, String title, String source, int ylabel) {
 		super(ID, source, ylabel);
@@ -85,5 +86,23 @@ public class _ParentDoc extends _Doc {
 			}
 			Utils.L1Normalization(theta);
 		}
+	}
+	
+	public void initWordDistribution(int vocSize, double smoothingParam) {
+		m_wordDistribution = new double[vocSize];
+		_SparseFeature[] sfs = getSparse();
+		int uniqueWords = sfs.length;
+		for(_SparseFeature sf:getSparse()){
+			int wid = sf.getIndex();
+			double val = sf.getValue();
+			m_wordDistribution[wid] = (val*1.0)/(m_totalLength+smoothingParam*uniqueWords);
+		}
+		
+		for(int wid=0; wid<vocSize; wid++)
+			m_wordDistribution[wid] += smoothingParam/(m_totalLength+smoothingParam*uniqueWords);
+	}
+	
+	public double getWordDistribution(int wid){
+		return m_wordDistribution[wid];
 	}
 }

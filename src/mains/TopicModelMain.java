@@ -16,6 +16,7 @@ import topicmodels.ACCTM_CHard;
 import topicmodels.ACCTM_CLR;
 import topicmodels.ACCTM_CZ;
 import topicmodels.ACCTM_CZLR;
+import topicmodels.ACCTM_P;
 import topicmodels.ACCTM_TwoTheta;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
@@ -52,7 +53,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, 
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "ACCTM_CLR";
+		String topicmodel = "ACCTM_P";
 
 
 		String category = "tablet";
@@ -69,9 +70,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -316,6 +317,17 @@ public class TopicModelMain {
 				number_of_topics = 30;
 				converge = 1e-9;
 				model = new ACCTM_CLR(gibbs_iteration, converge, beta-1, c, 
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("ACCTM_P")){
+				double mu = 1.0;
+				double[] gamma = {0.5, 0.5};
+				beta = 1.001;
+				alpha = 1.01;
+				double ksi = 800;
+				double tau = 0.7;
+				number_of_topics = 30;
+				converge = 1e-9;
+				model = new ACCTM_P(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
 			}
 			

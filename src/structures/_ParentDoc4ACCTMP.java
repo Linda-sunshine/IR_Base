@@ -12,7 +12,5 @@ public class _ParentDoc4ACCTMP extends _ParentDoc {
 
 	}
 	
-	public void initWordDistribution(int vocSize, double smoothingParam) {
-		
-	}
+	
 }

@@ -1279,6 +1279,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		int cvFold = 10;
 		ArrayList<String> parentFakeList = new ArrayList<String>();
 		String parentFakeString = "37 198 90 84 358 468 381 361 452 164 323 386 276 285 277 206 402 293 354 62 451 161 287 232 337 471 143 93 217 263 260 175 79 237 95 387 391 193 470 196 190 43 135 458 244 464 266 25 303 211";
+//		String parentFakeString = "448 348 294 329 317 212 327 127 262 148 307 139 40 325 224 234 233 430 357 78 191 150 424 206 125 484 293 73 456 111 141 68 106 183 215 402 209 159 34 156 280 265 458 65 32 118 352 105 404 66";
 		String[] parentFakeStringArray= parentFakeString.split(" ");
 		
 		for(String parentName:parentFakeStringArray){
@@ -1420,7 +1421,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	public void separateTrainTest4Spam() {
 		int cvFold = 10;
 		ArrayList<String> parentFakeList = new ArrayList<String>();
-		String parentFakeString = "136 26 282 367 257 49 82 292 130 303 60 416 249 437 349 125 173 181 30 355 150 369 123 144 330 231 468 283 241 221 488 341 116 74 203 2 36 390 381 22 85 427 100 412 63 88 366 337 169 41";
+		String parentFakeString = "448 348 294 329 317 212 327 127 262 148 307 139 40 325 224 234 233 430 357 78 191 150 424 206 125 484 293 73 456 111 141 68 106 183 215 402 209 159 34 156 280 265 458 65 32 118 352 105 404 66";
 		String[] parentFakeStringArray= parentFakeString.split(" ");
 		
 		for(String parentName:parentFakeStringArray){
