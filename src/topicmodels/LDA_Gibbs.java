@@ -16,9 +16,10 @@ import utils.Utils;
  * Griffiths, Thomas L., and Mark Steyvers. "Finding scientific topics."
  */
 public class LDA_Gibbs extends pLSA {
-	Random m_rand;
+	protected Random m_rand;
 	int m_burnIn; // discard the samples within burn in period
 	int m_lag; // lag in accumulating the samples
+	protected double[] m_topicProbCache;
 	
 	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,
@@ -26,6 +27,7 @@ public class LDA_Gibbs extends pLSA {
 			int number_of_topics, double alpha, double burnIn, int lag) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha);
 		
+		m_topicProbCache = new double[number_of_topics];
 		m_rand = new Random();
 		m_burnIn = (int) (burnIn * number_of_iteration);
 		m_lag = lag;
@@ -107,38 +109,20 @@ public class LDA_Gibbs extends pLSA {
 	@Override
 	public double calculate_E_step(_Doc d) {	
 		d.permutation();
-		double p;
-		int wid, tid;
+		int tid;
 		for(_Word w:d.getWords()) {
-			wid = w.getIndex();
 			tid = w.getTopic();
 			
 			//remove the word's topic assignment
-			d.m_sstat[tid] --;
-			if (m_collectCorpusStats) {
-				word_topic_sstat[tid][wid] --;
-				m_sstat[tid] --;
-			}
+			updateStats(true, w, d);
 			
 			//perform random sampling
-			p = 0;
-			for(tid=0; tid<number_of_topics; tid++)
-				p += d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]); // p(z|d) * p(w|z)			
-			p *= m_rand.nextDouble();
-			
-			tid = -1;
-			while(p>0 && tid<number_of_topics-1) {
-				tid ++;
-				p -= d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]);
-			}
+			tid = sampleTopic4Word(w, d);
 			
 			//assign the selected topic to word
 			w.setTopic(tid);
-			d.m_sstat[tid] ++;
-			if (m_collectCorpusStats) {
-				word_topic_sstat[tid][wid] ++;
-				m_sstat[tid] ++;
-			}
+			
+			updateStats(false, w, d);
 		}
 		
 		return 0;
@@ -147,6 +131,73 @@ public class LDA_Gibbs extends pLSA {
 ////			return calculate_log_likelihood(d);
 //		else
 //			return 0;
+	}
+	
+	
+	/**
+	 * 
+	 * sample topic for each word via gibbs sampling
+	 * */
+	protected int sampleTopic4Word(_Word w, _Doc d){
+		double p;
+		int tid = 0;
+		int wid = 0;
+
+		p = 0;
+		for(tid=0; tid<number_of_topics; tid++){
+			m_topicProbCache[tid] = topicInDocProb(tid, d) * wordTopicProb(tid, wid); // p(z|d) * p(w|z)			
+			p += m_topicProbCache[tid];
+		}
+		p *= m_rand.nextDouble();
+		
+		tid = -1;
+		while(p>0 && tid<number_of_topics-1) {
+			tid ++;
+			p -= m_topicProbCache[tid];
+		}
+		
+		return tid;
+		
+	}
+	
+	/**
+	 * 
+	 * update the sufficient statistics before or after sampling
+	 * 
+	 * preFlag--- before sampling or after sampling
+	 * 
+	 * */
+	protected void updateStats(boolean preFlag, _Word w, _Doc d){
+		int wid = w.getIndex();
+		int tid = w.getTopic();
+		
+		if(!preFlag){
+			d.m_sstat[tid] ++;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] ++;
+				m_sstat[tid] ++;
+			}
+		}else{
+			d.m_sstat[tid] --;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] --;
+				m_sstat[tid] --;
+			}
+		}
+	}
+	
+	/*
+	 * p(w|z)
+	 * */
+	protected double wordTopicProb(int tid, int wid){
+		return word_topic_sstat[tid][wid]/m_sstat[tid];
+	}
+	
+	/*
+	 * p(z|d)
+	 * */
+	protected double topicInDocProb(int tid, _Doc d){
+		return d.m_sstat[tid];
 	}
 	
 	@Override

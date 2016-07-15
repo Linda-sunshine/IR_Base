@@ -157,90 +157,90 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 	}
 	
 	public void setFeatureValues(String fValue, int norm){
-		super.setFeatureValues(fValue, norm);
-		
-		ArrayList<_Doc> corpusDocList = new ArrayList<_Doc>();
-		corpusDocList = m_corpus.getCollection();
-		
-		int N = corpusDocList.size(); // total number of documents
-		int childDocsNum = 0;
-		int parentDocsNum = 0;
-		
-		int vocabulary_size = m_featureNames.size();
-		
-		double[] childDF = new double[vocabulary_size]; // total number of unique words
-		double[] corpusDF = new double[vocabulary_size];
-		double[] parentDF = new double[vocabulary_size];
-
-		double totalWords = 0;
-		for(_Doc temp:corpusDocList) {
-			if(temp instanceof _ParentDoc){
-				double pChildWordNum = 0;
-				_SparseFeature[] pfs = temp.getSparse();
-				for(_SparseFeature sf : pfs){
-					parentDF[sf.getIndex()] ++;	// DF in child documents
-					corpusDF[sf.getIndex()] ++;
-				}
-				parentDocsNum += 1;
-				
-				for(_ChildDoc cDoc:((_ParentDoc) temp).m_childDocs){
-					_SparseFeature[] cfs = cDoc.getSparse();
-					for(_SparseFeature sf : cfs){
-						childDF[sf.getIndex()] ++;	// DF in child documents
-						corpusDF[sf.getIndex()] ++;
-					}
-					childDocsNum += 1;
-					totalWords += temp.getTotalDocLength();
-				}
-			}
-		}
-		
-		System.out.println("totalWords\t"+totalWords);
-		System.out.println("Set feature value for parent child probit model");
-		_SparseFeature[] parentFvs;
-		for(_Doc tempDoc:corpusDocList) {	
-			if(tempDoc instanceof _ParentDoc) {
-				parentFvs = tempDoc.getSparse();
-				_ParentDoc tempParentDoc = (_ParentDoc)tempDoc;
-				tempParentDoc.initFeatureWeight(ChildDocFeatureSize);
-				
-				for(_ChildDoc tempChildDoc:((_ParentDoc) tempDoc).m_childDocs){
-					_SparseFeature[] childFvs = tempChildDoc.getSparse();
-					for(_SparseFeature sf: childFvs){
-						int wid = sf.getIndex();
-						
-						double DFCorpus = corpusDF[wid];
-						double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
-						
-						double[] values = new double[ChildDocFeatureSize];
-						
-						double DFChild = childDF[wid];
-						double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
-						
-						values[0] = 1;
-						values[1] = IDFCorpus;
-						
-						double TFParent = 0;
-						double TFChild = 0;
-						
-						int wIndex = Utils.indexOf(parentFvs, wid);
-						if(wIndex != -1){
-							TFParent = parentFvs[wIndex].getValue();	
-						}
-						
-						TFChild = sf.getValue();
-
-						values[2] = TFParent;//TF in parent document
-						values[3] = TFChild;//TF in child document					
-						values[4] = TFParent/TFChild;//TF ratio
-						
-						values[5] = IDFCorpus * TFChild;//TF-IDF
-						sf.setValues(values);
-					}
-				}
-			
-			}	
-		}
+//		super.setFeatureValues(fValue, norm);
+//		
+//		ArrayList<_Doc> corpusDocList = new ArrayList<_Doc>();
+//		corpusDocList = m_corpus.getCollection();
+//		
+//		int N = corpusDocList.size(); // total number of documents
+//		int childDocsNum = 0;
+//		int parentDocsNum = 0;
+//		
+//		int vocabulary_size = m_featureNames.size();
+//		
+//		double[] childDF = new double[vocabulary_size]; // total number of unique words
+//		double[] corpusDF = new double[vocabulary_size];
+//		double[] parentDF = new double[vocabulary_size];
+//
+//		double totalWords = 0;
+//		for(_Doc temp:corpusDocList) {
+//			if(temp instanceof _ParentDoc){
+//				double pChildWordNum = 0;
+//				_SparseFeature[] pfs = temp.getSparse();
+//				for(_SparseFeature sf : pfs){
+//					parentDF[sf.getIndex()] ++;	// DF in child documents
+//					corpusDF[sf.getIndex()] ++;
+//				}
+//				parentDocsNum += 1;
+//				
+//				for(_ChildDoc cDoc:((_ParentDoc) temp).m_childDocs){
+//					_SparseFeature[] cfs = cDoc.getSparse();
+//					for(_SparseFeature sf : cfs){
+//						childDF[sf.getIndex()] ++;	// DF in child documents
+//						corpusDF[sf.getIndex()] ++;
+//					}
+//					childDocsNum += 1;
+//					totalWords += temp.getTotalDocLength();
+//				}
+//			}
+//		}
+//		
+//		System.out.println("totalWords\t"+totalWords);
+//		System.out.println("Set feature value for parent child probit model");
+//		_SparseFeature[] parentFvs;
+//		for(_Doc tempDoc:corpusDocList) {	
+//			if(tempDoc instanceof _ParentDoc) {
+//				parentFvs = tempDoc.getSparse();
+//				_ParentDoc tempParentDoc = (_ParentDoc)tempDoc;
+//				tempParentDoc.initFeatureWeight(ChildDocFeatureSize);
+//				
+//				for(_ChildDoc tempChildDoc:((_ParentDoc) tempDoc).m_childDocs){
+//					_SparseFeature[] childFvs = tempChildDoc.getSparse();
+//					for(_SparseFeature sf: childFvs){
+//						int wid = sf.getIndex();
+//						
+//						double DFCorpus = corpusDF[wid];
+//						double IDFCorpus = DFCorpus>0 ? Math.log((N+1)/DFCorpus):0;
+//						
+//						double[] values = new double[ChildDocFeatureSize];
+//						
+//						double DFChild = childDF[wid];
+//						double IDFChild = DFChild>0 ? Math.log((childDocsNum+1)/DFChild):0;
+//						
+//						values[0] = 1;
+//						values[1] = IDFCorpus;
+//						
+//						double TFParent = 0;
+//						double TFChild = 0;
+//						
+//						int wIndex = Utils.indexOf(parentFvs, wid);
+//						if(wIndex != -1){
+//							TFParent = parentFvs[wIndex].getValue();	
+//						}
+//						
+//						TFChild = sf.getValue();
+//
+//						values[2] = TFParent;//TF in parent document
+//						values[3] = TFChild;//TF in child document					
+//						values[4] = TFParent/TFChild;//TF ratio
+//						
+//						values[5] = IDFCorpus * TFChild;//TF-IDF
+//						sf.setValues(values);
+//					}
+//				}
+//			
+//			}	
+//		}
 
 	}
 	

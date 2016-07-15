@@ -18,6 +18,7 @@ import topicmodels.ACCTM_CZ;
 import topicmodels.ACCTM_CZLR;
 import topicmodels.ACCTM_P;
 import topicmodels.ACCTM_TwoTheta;
+import topicmodels.DCMLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
 import topicmodels.LDA_Gibbs;
@@ -53,11 +54,11 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, 
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "ACCTM_P";
+		String topicmodel = "DCMLDA";
 
 
 		String category = "tablet";
-		int number_of_topics = 30;
+		int number_of_topics = 5;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -70,9 +71,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-//		 gibbs_iteration = 4;
-//		 gibbs_lag = 2;
-//		 displayLap = 2;
+		 gibbs_iteration = 4;
+		 gibbs_lag = 2;
+		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -93,10 +94,10 @@ public class TopicModelMain {
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
-				"./data/ParentChildTopicModel/%sArticles",
+				"./data/ParentChildTopicModel/%sArticlesSample100",
 						articleType);
 		String commentFolder = String.format(
-				"./data/ParentChildTopicModel/%sComments",
+				"./data/ParentChildTopicModel/%sCommentsSample100",
 						articleType);
 
 		String suffix = ".json";
@@ -175,10 +176,12 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		
+//		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
+//		analyzer.LoadDirectory(commentFolder, suffix);
+
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+//		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
@@ -329,6 +332,9 @@ public class TopicModelMain {
 				converge = 1e-9;
 				model = new ACCTM_P(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
+			}else if(topicmodel.equals("DCMLDA")){
+				model = new DCMLDA(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
 			}
 			
 			model.setDisplayLap(displayLap);

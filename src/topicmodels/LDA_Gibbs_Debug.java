@@ -26,12 +26,9 @@ import structures._Word;
 import utils.Utils;
 
 public class LDA_Gibbs_Debug extends LDA_Gibbs{
-	Random m_rand;
 	int m_burnIn; // discard the samples within burn in period
 	int m_lag; // lag in accumulating the samples
-	
-	double[] m_topicProbCache;
-	
+		
 	//used to compute loglikelihood
 	languageModelBaseLine m_LM; 
 	
@@ -48,7 +45,6 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		m_burnIn = (int) (burnIn * number_of_iteration);
 		m_lag = lag;
 		
-		m_topicProbCache = new double[number_of_topics];
 		m_LM = new languageModelBaseLine(c, ksi);
 		m_tau = tau;
 	}
@@ -1266,13 +1262,13 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 //		}
 //	}
 	
-	public void EMonCorpus(){
-		separateTrainTest4Spam();
-		EM();
-
-		mixTest4Spam();
-		inferenceTest4Spam();
-	}
+//	public void EMonCorpus(){
+//		separateTrainTest4Spam();
+//		EM();
+//
+//		mixTest4Spam();
+//		inferenceTest4Spam();
+//	}
 	
 	public void separateTrainTest4Dynamic() {
 		
