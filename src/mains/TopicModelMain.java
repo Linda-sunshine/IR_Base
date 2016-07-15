@@ -111,7 +111,7 @@ public class TopicModelMain {
 			sentence = true;
 		}
 
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s_sample.txt", Ngram, articleType);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
 		
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
@@ -333,8 +333,11 @@ public class TopicModelMain {
 				model = new ACCTM_P(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
 			}else if(topicmodel.equals("DCMLDA")){
-				model = new DCMLDA(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
+				converge = 1e-4;
+				int newtonIter = 50;
+				double newtonConverge = 1e-2;
+				model = new DCMLDA(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);
