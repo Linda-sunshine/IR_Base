@@ -1,12 +1,7 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.TreeMap;
-
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
@@ -16,9 +11,7 @@ import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._DPAdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import cern.jet.random.tdouble.Normal;
@@ -31,10 +24,10 @@ import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
 public class MultiTaskWithDP extends LinAdapt{
 	Normal m_normal; // Normal distribution.
 	int m_M, m_kBar, m_count; // The number of auxiliary components.
-	int m_numberOfIterations = 30;
+	int m_numberOfIterations = 10;
 	
 	double m_converge = -1e-9;
-	double m_alpha = 0.001; // Scale parameter of DP.
+	double m_alpha = 0.0001; // Scaling parameter of DP.
 	double m_lambda = 10;
 	
 	// Parameters of the prior for the intercept and coefficients.
@@ -57,6 +50,20 @@ public class MultiTaskWithDP extends LinAdapt{
 		for(int i=0; i<m_kBar; i++){
 			System.arraycopy(m_thetaStars[i].m_beta, 0, m_weights, m_dim*i, m_dim);
 		}
+	}
+	public int[] calculateClusetAssignment(){
+		int index;
+		int[] clusters = new int[m_kBar];
+		_DPAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			index = Arrays.asList(m_thetaStars).indexOf(user.getThetaStar());
+			if(index > m_kBar-1)
+				System.err.println("Cluster not found!");
+			else
+				clusters[index]++;
+		}
+		return clusters;
 	}
 	//Calculate the function value of the new added instance.
 	protected double calcLogLikelihood(_AdaptStruct user, int k){

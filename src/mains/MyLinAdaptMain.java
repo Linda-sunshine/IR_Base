@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -50,17 +51,17 @@ public class MyLinAdaptMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
-		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -75,20 +76,21 @@ public class MyLinAdaptMain {
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
 //		analyzer.loadSVDFile(svdFile);
-		int[] Ms = new int[]{5, 10, 15, 20};
-		for(int m: Ms){
+	
 		MultiTaskWithDP adaptation = new MultiTaskWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 //		adaptation.setLNormFlag(false);
 		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setM(m);
 		adaptation.setDisplayLv(displayLv);
 		adaptation.EM();
 		adaptation.test();
+		int[] clusters = adaptation.calculateClusetAssignment();
+		Arrays.sort(clusters);
+		for(int i: clusters)
+			System.out.print(i + "\t");
+		System.out.println();
 		System.out.print(String.format("[Info]%d Clusters are found in total!\n", adaptation.getKBar()));
 		
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
-		}
+	
 		// Create an instances of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 //		adaptation.loadUsers(analyzer.getUsers());
@@ -104,13 +106,6 @@ public class MyLinAdaptMain {
 //		 asyncLinAdapt adaptation = new asyncLinAdapt(classNumber,
 //		 analyzer.getFeatureSize(), featureMap, globalModel,
 //		 featureGroupFile);
-		
-//		// Create an instance of CoLinAdaptWithNeighborhoodLearning model.
-//		int fDim = 3; // xij contains <bias, bow, svd_sim>
-//		CoLinAdaptWithNeighborhoodLearning adaptation = new CoLinAdaptWithNeighborhoodLearning(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, fDim);
-		
-		// Create an instance of zero-order asyncCoLinAdapt model.
-//		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 //		//Create an instance of first-order asyncCoLinAdapt model.
 //		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
@@ -122,26 +117,7 @@ public class MyLinAdaptMain {
 //		CrossFeatureSelection fs = new CrossFeatureSelection(analyzer.getCorpus(), classNumber, analyzer.getFeatureSize(), kFold, kMean);
 //		fs.train();
 //		fs.kMeans();
-//		
-//		String featureGroupFile = fs.getFilename();
-		// Create an instance of CoLinAdapt model.
-//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-		
-		// Create an instance of CoLinAdaptWithR1OverWeights.
-//		CoLinAdaptWithR1OverWeights adaptation = new CoLinAdaptWithR1OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-	
-		// Create an instance of CoLinAdaptWithR2OverWeights.
-//		CoLinAdaptWithR2OverWeights adaptation = new CoLinAdaptWithR2OverWeights(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
-	
-		// Create an instance of CoLinAdapt with different feature groups for different classes.
-//		CoLinAdaptWithDiffFeatureGroups adaptation = new CoLinAdaptWithDiffFeatureGroups(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, featureGroupFileB);
-		
-		// Create an instance of MTCoLinAdapt model.
-//		MTCoLinAdapt adaptation = new MTCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
-		// Create an instance of LinAdaptOverall.
-//		LinAdaptOverall adaptation = new LinAdaptOverall(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-		
 //		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		
 //		int kmeans = 10;
