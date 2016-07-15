@@ -21,7 +21,7 @@ public class LinAdapt extends RegLR {
 	protected int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
-	double m_eta2; // weight for shifting in R2.
+	protected double m_eta2; // weight for shifting in R2.
 	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
@@ -89,7 +89,7 @@ public class LinAdapt extends RegLR {
 		m_pWeights = new double[m_gWeights.length];
 	}
 	
-	int getVSize() {
+	protected int getVSize() {
 		return m_dim*2;
 	}
 	
@@ -126,16 +126,18 @@ public class LinAdapt extends RegLR {
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u){
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
-		
 		double L = calcLogLikelihood(user); //log likelihood.
-		double R1 = 0;
-		
-		//Add regularization parts.
+		double R1 = calculateR1(user);// R1
+		return R1 - L;
+	}
+	
+	protected double calculateR1(_LinAdaptStruct user){
+		double R1 = 0;	
 		for(int i=0; i<m_dim; i++){
 			R1 += m_eta1 * (user.getScaling(i)-1) * (user.getScaling(i)-1);//(a[i]-1)^2
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
-		return R1 - L;
+		return R1;
 	}
 	
 	//shared gradient calculation by batch and online updating

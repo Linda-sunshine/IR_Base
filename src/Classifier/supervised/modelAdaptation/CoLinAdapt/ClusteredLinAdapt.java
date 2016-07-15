@@ -73,7 +73,7 @@ public class ClusteredLinAdapt extends LinAdapt{
 	}
 
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return m_dim*2*(m_userList.size() + m_clusterSize + 1);
 	}
 	
