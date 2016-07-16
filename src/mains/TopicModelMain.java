@@ -71,9 +71,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 50;
-		 gibbs_iteration = 4;
-		 gibbs_lag = 2;
-		 displayLap = 2;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -336,6 +336,7 @@ public class TopicModelMain {
 				converge = 1e-4;
 				int newtonIter = 50;
 				double newtonConverge = 1e-2;
+				number_of_topics = 5;
 				model = new DCMLDA(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
 			}

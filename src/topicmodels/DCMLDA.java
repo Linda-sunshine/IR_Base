@@ -12,7 +12,6 @@ import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import structures._Word;
-import sun.security.util.PropertyExpander.ExpandException;
 import utils.Utils;
 
 public class DCMLDA extends LDA_Gibbs {
@@ -271,49 +270,30 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void updateAlpha(){
-		int i=0;
-		double alphaSum, diAlphaSum, c;
-		double[] alphaG = new double[number_of_topics];
-		double[] alphaQ = new double[number_of_topics];
 		
-		double deltaAlpha, diff;
-		int docSize = m_trainSet.size();
-		do{
-			deltaAlpha = 0;
-			diff = 0;
-			Arrays.fill(alphaG, 0);
-			Arrays.fill(alphaQ, 0);
-			alphaSum = Utils.sumOfArray(m_alpha);
-			diAlphaSum = Utils.digamma(alphaSum);
-			
-			c = docSize*Utils.trigamma(alphaSum);
-			
+		double smallAlpha = 1e31;
+		double totalAlphaDenominator = 0;
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
+		for(_Doc d:m_trainSet){
+			totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha)-Utils.digamma(m_totalAlpha);
+		}
+		
+		for(int k=0; k<number_of_topics; k++){
+			double totalAlphaNumerator = 0;
 			for(_Doc d:m_trainSet){
-				c -= Utils.trigamma(d.getTotalDocLength()+alphaSum);
-				
-				for(int k=0; k<number_of_topics; k++){
-					alphaG[k] += Utils.digamma(d.m_sstat[k]+m_alpha[k])-Utils.digamma(m_alpha[k]);
-					alphaG[k] += diAlphaSum-Utils.digamma(alphaSum+d.getTotalDocLength());
-					alphaQ[k] += Utils.trigamma(d.m_sstat[k]+m_alpha[k])-Utils.trigamma(m_alpha[k]);
-				}
+				totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
 			}
 			
-			double b1 = 0, b2=0, b=0;
-			for(int k=0; k<number_of_topics; k++){
-				b1 += alphaG[k]/alphaQ[k];
-				b2 += 1.0/alphaQ[k];
+			m_alpha[k] *= totalAlphaNumerator*1.0/totalAlphaDenominator;
+			
+			if((m_alpha[k]<smallAlpha)&&(m_alpha[k]!=0)){
+				smallAlpha = m_alpha[k];
 			}
-			b = b1/((1/c)+b2);
-			
-			for(int k=0; k<number_of_topics; k++){
-				deltaAlpha = (alphaG[k]-b)/alphaQ[k];
-				m_alpha[k] -= deltaAlpha;
-				diff += deltaAlpha*deltaAlpha;
-			}
-			
-			diff /= number_of_topics;	
-			
-		}while(++i<m_newtonIter && diff>m_newtonConverge);
+		}
+		
+		for(int k=0; k<number_of_topics; k++)
+			m_alpha[k] += 0.01*smallAlpha;
+		
 	}
 
 	protected void updateBeta(int tid){
@@ -322,6 +302,7 @@ public class DCMLDA extends LDA_Gibbs {
 		double totalBetaDenominator = 0;
 		double[] totalBetaNumerator = new double[vocabulary_size];
 		Arrays.fill(totalBetaNumerator, 0);
+		Arrays.fill(wordNum4Tid4V, 0);
 		double totalBeta = Utils.sumOfArray(m_beta[tid]);
 		
 		double smoothingBeta = 1e31;
@@ -340,8 +321,11 @@ public class DCMLDA extends LDA_Gibbs {
 		for(int v=0; v<vocabulary_size; v++){
 			if(wordNum4Tid==0)
 				break;
-			if(wordNum4Tid4V[v]==0)
+			if(wordNum4Tid4V[v]==0){
+//				m_beta[tid][v] = 0;
 				continue;
+			}
+				
 			m_beta[tid][v] *= (totalBetaNumerator[v]/totalBetaDenominator);
 			if((m_beta[tid][v]!=0)&&(m_beta[tid][v]<smoothingBeta)){
 				smoothingBeta = m_beta[tid][v];
