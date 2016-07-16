@@ -5,11 +5,14 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import structures._Word;
+import sun.security.util.PropertyExpander.ExpandException;
 import utils.Utils;
 
 public class DCMLDA extends LDA_Gibbs {
@@ -314,51 +317,57 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void updateBeta(int tid){
-		int i=0;
-		double betaSum, diBetaSum, c;
-		double[] betaG = new double[vocabulary_size];
-		double[] betaQ = new double[vocabulary_size];
+		int fSize = m_beta[tid].length;
+		int[] iflag = {0}, iprint={-1, 3};
+		double[] betaDiag = new double[fSize];
+		double[] betaG = new double[fSize];
+		double[] t_beta = new double[fSize];
 		
-		double deltaBeta, diff;
-		int docSize = m_trainSet.size();
-		do{
-			deltaBeta = 0;
-			diff = 0;
-			Arrays.fill(betaG, 0);
-			Arrays.fill(betaQ, 0);
-			betaSum = Utils.sumOfArray(m_beta[tid]);
-			diBetaSum = Utils.digamma(betaSum);
-			
-			c = docSize*Utils.trigamma(betaSum);
-			
-			for(_Doc d:m_trainSet){
-				int docID = d.getID();
-				c -= Utils.trigamma(d.m_sstat[tid]+betaSum);
+		for(int v=0; v<vocabulary_size; v++){
+			t_beta[v] = Math.log(m_beta[tid][v]);
+		}
+		double[] exp_beta = new double[vocabulary_size];
+		
+		try{
+			do{
+				Arrays.fill(betaG, 0);
+				Arrays.fill(betaDiag, 0);
+
+				double fValue = 0;
+				double betaSum = 0;
 				
 				for(int v=0; v<vocabulary_size; v++){
-					betaG[v] += Utils.digamma(m_docWordTopicStats[docID][tid][v]+m_beta[tid][v]);
-					betaG[v] -= Utils.digamma(m_beta[tid][v]);
-					betaG[v] += diBetaSum-Utils.digamma(betaSum+d.m_sstat[tid]);
-					betaQ[v] += Utils.trigamma(m_docWordTopicStats[docID][tid][v]+m_beta[tid][v])-Utils.trigamma(m_beta[tid][v]);
+					exp_beta[v] = Math.exp(t_beta[v]);
+					betaSum += Math.exp(t_beta[v]);
 				}
-			}
-			
-			double b1 = 0, b2=0, b=0;
-			for(int v=0; v<vocabulary_size; v++){
-				b1 += betaG[v]/(betaQ[v]+1e-31);
-				b2 += 1.0/(betaQ[v]+1e-31);
-			}
-			b = b1/((1/c)+b2);
-			
-			for(int v=0; v<vocabulary_size; v++){
-				deltaBeta = (betaG[v]-b)/(betaQ[v]+1e-31);
-				m_beta[tid][v] -= deltaBeta;
-				diff += deltaBeta*deltaBeta;
-			}
-			
-			diff /= vocabulary_size;	
-			
-		}while(++i<m_newtonIter && diff>m_newtonConverge);
+				double diBetaSum = Utils.digamma(betaSum);
+				
+				int docSize = m_trainSet.size();
+				
+				for(_Doc d:m_trainSet){
+					int docID = d.getID();
+					for(int v=0; v<vocabulary_size; v++){
+						fValue -= Utils.lgamma(exp_beta[v]+m_docWordTopicStats[docID][tid][v])-Utils.lgamma(exp_beta[v]);
+						
+						betaG[v] -= Utils.digamma(m_docWordTopicStats[docID][tid][v]+exp_beta[v])*exp_beta[v];
+						betaG[v] += Utils.digamma(exp_beta[v])*exp_beta[v];
+						betaG[v] -= diBetaSum*exp_beta[v]-Utils.digamma(betaSum+d.m_sstat[tid])*exp_beta[v];
+						
+					}
+					fValue += Utils.lgamma(betaSum+d.m_sstat[tid]);
+				}
+				
+				fValue -= docSize*Utils.lgamma(betaSum);
+				
+				LBFGS.lbfgs(fSize, 4, t_beta, fValue, betaG, false, betaDiag, iprint, 1e-2, 1e-32, iflag);
+			}while(iflag[0] != 0);
+			for(int v=0; v<vocabulary_size; v++)
+				m_beta[tid][v] = Math.exp(t_beta[v]);
+		}catch(ExceptionWithIflag e){
+			e.printStackTrace();
+		}
+		
+	
 	}
 
 
