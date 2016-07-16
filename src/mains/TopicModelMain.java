@@ -58,7 +58,7 @@ public class TopicModelMain {
 
 
 		String category = "tablet";
-		int number_of_topics = 5;
+		int number_of_topics = 30;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 

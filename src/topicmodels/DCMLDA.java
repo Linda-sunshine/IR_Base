@@ -317,64 +317,41 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void updateBeta(int tid){
-		int fSize = m_beta[tid].length;
-		int[] iflag = {0}, iprint={-1, 3};
-		double[] betaDiag = new double[fSize];
-		double[] betaG = new double[fSize];
-		double[] t_beta = new double[fSize];
+		double wordNum4Tid = 0;
+		double[] wordNum4Tid4V = new double[vocabulary_size];
+		double totalBetaDenominator = 0;
+		double[] totalBetaNumerator = new double[vocabulary_size];
+		Arrays.fill(totalBetaNumerator, 0);
+		double totalBeta = Utils.sumOfArray(m_beta[tid]);
+		
+		double smoothingBeta = 1e31;
+		
+		for(_Doc d:m_trainSet){
+			int docID = d.getID();
+			totalBetaDenominator += Utils.digamma(totalBeta+d.m_sstat[tid])-Utils.digamma(totalBeta);
+			for(int v=0; v<vocabulary_size; v++){
+				wordNum4Tid += m_docWordTopicStats[docID][tid][v];
+				wordNum4Tid4V[v] += m_docWordTopicStats[docID][tid][v];
+				totalBetaNumerator[v] += Utils.digamma(m_beta[tid][v]+m_docWordTopicStats[docID][tid][v]);
+				totalBetaNumerator[v] -= Utils.digamma(m_beta[tid][v]);
+			}
+		}
 		
 		for(int v=0; v<vocabulary_size; v++){
-			t_beta[v] = Math.log(m_beta[tid][v]);
-		}
-		double[] exp_beta = new double[vocabulary_size];
-		
-		try{
-			do{
-				Arrays.fill(betaG, 0);
-				Arrays.fill(betaDiag, 0);
-
-				double fValue = 0;
-				double betaSum = 0;
-				
-				for(int v=0; v<vocabulary_size; v++){
-					exp_beta[v] = Math.exp(t_beta[v]);
-					betaSum += Math.exp(t_beta[v]);
-				}
-				double diBetaSum = Utils.digamma(betaSum);
-				
-				int docSize = m_trainSet.size();
-				
-				for(_Doc d:m_trainSet){
-					int docID = d.getID();
-					for(int v=0; v<vocabulary_size; v++){
-						fValue -= Utils.lgamma(exp_beta[v]+m_docWordTopicStats[docID][tid][v])-Utils.lgamma(exp_beta[v]);
-						
-						betaG[v] -= Utils.digamma(m_docWordTopicStats[docID][tid][v]+exp_beta[v])*exp_beta[v];
-						betaG[v] += Utils.digamma(exp_beta[v])*exp_beta[v];
-						betaG[v] -= diBetaSum*exp_beta[v]-Utils.digamma(betaSum+d.m_sstat[tid])*exp_beta[v];
-						
-					}
-					fValue += Utils.lgamma(betaSum+d.m_sstat[tid]);
-				}
-				
-				fValue -= docSize*Utils.lgamma(betaSum);
-				
-				LBFGS.lbfgs(fSize, 4, t_beta, fValue, betaG, false, betaDiag, iprint, 1e-2, 1e-32, iflag);
-			}while(iflag[0] != 0);
-			for(int v=0; v<vocabulary_size; v++)
-				m_beta[tid][v] = Math.exp(t_beta[v]);
-		}catch(ExceptionWithIflag e){
-			e.printStackTrace();
+			if(wordNum4Tid==0)
+				break;
+			if(wordNum4Tid4V[v]==0)
+				continue;
+			m_beta[tid][v] *= (totalBetaNumerator[v]/totalBetaDenominator);
+			if((m_beta[tid][v]!=0)&&(m_beta[tid][v]<smoothingBeta)){
+				smoothingBeta = m_beta[tid][v];
+			}
 		}
 		
-	
-	}
-
-
-	protected double psiValue(double inputArg) {
-		double result = 0;
-		result = Utils.digamma(inputArg);
-		return result;
+		for(int v=0; v<vocabulary_size; v++){
+			m_beta[tid][v] += 0.01*smoothingBeta;
+		}
+		System.out.println("m_beta update");
 	}
 
 	protected void saveParameter2File(File fileFolder, String fileName) {
