@@ -22,7 +22,7 @@ import utils.Utils;
 
 /**
  * @author hongning
- * Sample codes for demonstrating OpenNLP package usage 
+ * Load json formatted text documents
  */
 public class jsonAnalyzer extends DocAnalyzer{
 	
@@ -44,8 +44,8 @@ public class jsonAnalyzer extends DocAnalyzer{
 	public jsonAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String stnModel) throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
 		m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project
-//		m_dateFormatter = new SimpleDateFormat("yyyy-MM-dddd");// standard date format for yelp data
 	}
+	
 	//Load a document and analyze it.
 	@Override
 	public void LoadDoc(String filename) {
@@ -57,7 +57,7 @@ public class jsonAnalyzer extends DocAnalyzer{
 			prod = new Product(json.getJSONObject("ProductInfo"));
 			jarray = json.getJSONArray("Reviews");
 		} catch (Exception e) {
-			System.out.print('X');
+			System.out.print('X');//fail to parse a json document
 			return;
 		}	
 		

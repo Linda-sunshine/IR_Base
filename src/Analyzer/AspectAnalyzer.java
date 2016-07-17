@@ -182,7 +182,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			maxChi = 0.0;
 			selID = -1;
 			for(int i=0; i<aspectSize; i++){				
-				chiV = FeatureSelector.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
+				chiV = Utils.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
 				if (chiV > ratio * maxChi){
 					maxChi = chiV;
 					selID = i;

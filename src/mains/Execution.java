@@ -70,14 +70,13 @@ public class Execution  {
 				
 				((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);
 				analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
-				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_DFthreshold); //Select the features.
+				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_maxDF, param.m_minDF); //Select the features.
 			}
 			
 			//Collect vectors for documents.
 			System.out.println("Creating feature vectors, wait...");			
 			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(param.m_featureValue, param.m_norm);
-			analyzer.setTimeFeatures(param.m_window);
 			
 			corpus = analyzer.returnCorpus(param.m_featureStat);
 		}

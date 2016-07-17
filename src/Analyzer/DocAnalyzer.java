@@ -31,20 +31,31 @@ import structures._Doc;
 import structures._Stn;
 import utils.Utils;
 
+/**
+ * 
+ * @author Lin Gong
+ * Specialized analyzer for text documents
+ */
+
 public class DocAnalyzer extends Analyzer {
 	protected Tokenizer m_tokenizer;
 	protected SnowballStemmer m_stemmer;
 	protected SentenceDetectorME m_stnDetector;
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
+
+	protected int m_stnSizeThreshold = 2;//minimal size of sentences
+
+	//shall we have it here???
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
 	
+	//shall we have the following structure here???
 	protected SentiWordNet m_sentiWordNet;
 	protected ArrayList<String> m_posPriorList;//list of positive seed words
 	protected ArrayList<String> m_negPriorList;//list of negative seed words
-	protected ArrayList<String> m_negationList;//list of negation seed words
+	protected ArrayList<String> m_negationList;//list of negation seed words	
 	
-	
-	//Constructor with ngram and fValue.
+	//Constructor with TokenModel, ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(classNo, threshold);
@@ -52,6 +63,7 @@ public class DocAnalyzer extends Analyzer {
 		m_stemmer = new englishStemmer();
 		m_stnDetector = null; // indicating we don't need sentence splitting
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -62,14 +74,16 @@ public class DocAnalyzer extends Analyzer {
 	public DocAnalyzer(String tokenModel, String stnModel, int classNo, 
 			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
+		
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		m_stemmer = new englishStemmer();
+		m_stemmer = new englishStemmer();// we will only handle English text documents
 		
 		if (stnModel!=null)
 			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
 		else
 			m_stnDetector = null;
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -93,6 +107,7 @@ public class DocAnalyzer extends Analyzer {
 		else
 			m_tagger = null;
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -101,6 +116,10 @@ public class DocAnalyzer extends Analyzer {
 
 	public void setReleaseContent(boolean release) {
 		m_releaseContent = release;
+	}
+	
+	public void setMinimumNumberOfSentences(int number){
+		m_stnSizeThreshold = number;
 	}
 	
 	public void LoadStopwords(String filename) {
@@ -237,6 +256,7 @@ public class DocAnalyzer extends Analyzer {
 	//Load a movie review document and analyze it.
 	//this is only specified for this type of review documents
 	//do we still need this function, or shall we normalize it with json format?
+	@Override
 	public void LoadDoc(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
@@ -249,6 +269,7 @@ public class DocAnalyzer extends Analyzer {
 			reader.close();
 			
 			//How to generalize it to several classes???? 
+			//This is only for the movie reviews, right???
 			if(filename.contains("pos")){
 				//Collect the number of documents in one class.
 				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));				
@@ -347,7 +368,7 @@ public class DocAnalyzer extends Analyzer {
 		
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
+		if (spVct.size()>m_lengthThreshold) {
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
 			
@@ -419,7 +440,8 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment
-	public void setStnFvs(_Doc d) {
+	// shall we put it here????
+	protected void setStnFvs(_Doc d) {
 		_Stn[] sentences = d.getSentences();
 		
 		// start from 2nd sentence
@@ -498,12 +520,12 @@ public class DocAnalyzer extends Analyzer {
 	}
 
 	// receive sentence index as parameter
-	public double sentiWordScore(_Stn s) {
+	protected double sentiWordScore(_Stn s) {
 		return sentiWordScore(s.getRawTokens(), s.getSentencePosTag());
 	}
 
 	// added by Lin, the same function with different parameters.
-	public double sentiWordScore(String[] tokens, String[] posTags) {
+	protected double sentiWordScore(String[] tokens, String[] posTags) {
 		double senScore = 0.0;
 		double tmp;
 		String word, tag;
@@ -531,7 +553,7 @@ public class DocAnalyzer extends Analyzer {
 	// PosNeg count is done against the raw sentence
 	// so stopword will also get counter here like not, none 
 	// which is important for PosNeg count
-	public int posNegCount(_Stn s) {
+	protected int posNegCount(_Stn s) {
 		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < wordsInSentence.length; i++)
@@ -559,7 +581,7 @@ public class DocAnalyzer extends Analyzer {
 	// Negation count is done against the raw sentence
 	// so stopword will also get counter here like not, none 
 	// which is important for negation count
-	public int negationCount(_Stn s) {
+	protected int negationCount(_Stn s) {
 		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < wordsInSentence.length; i++)
@@ -576,7 +598,7 @@ public class DocAnalyzer extends Analyzer {
 
 	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
 	// here i the index of the sentence
-	public double[] calculatePOStagVector(_Stn s) {
+	protected double[] calculatePOStagVector(_Stn s) {
 		String[] posTag = s.getSentencePosTag();
 		double tagVector[] = new double[4]; 
 		// index = 0 for noun

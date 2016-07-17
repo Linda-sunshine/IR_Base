@@ -110,6 +110,7 @@ public class _Corpus {
 		
 		return max;
 	}
+	
 	/*
 	 rand.nextInt(k) will always generates a number between 0 ~ (k-1).
 	 Access the documents with the masks can help us split the whole whole 

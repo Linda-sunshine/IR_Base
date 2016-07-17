@@ -187,7 +187,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		return m_users;
 	}
 	
-// Added by Lin: Load the svd file to get the low dim representation of users.
+	// Added by Lin: Load the svd file to get the low dim representation of users.
 	public void loadSVDFile(String filename){
 		try{
 			// Construct the <userID, user> map first.
