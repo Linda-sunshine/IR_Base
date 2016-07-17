@@ -88,14 +88,11 @@ public class DCMLDA extends LDA_Gibbs {
 
 			calculate_M_step(i, weightFolder);
 
-			if (m_converge > 0 || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {// required
-																									// to
-																									// display
-																									// log-likelihood
-				current = calculate_log_likelihood();// together with
-														// corpus-level
-														// log-likelihood
-
+			if (m_converge > 0 || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
+				// required to display log-likelihood
+				current = calculate_log_likelihood();
+				// together with corpus-level log-likelihood
+				
 				if (i > 0)
 					delta = (last - current) / last;
 				else
@@ -149,9 +146,10 @@ public class DCMLDA extends LDA_Gibbs {
 				Arrays.fill(m_beta[k], d_beta);
 				m_totalBeta[k] = vocabulary_size * d_beta;
 			}
-
-			d.setTopics4Gibbs(number_of_topics, 0);// allocate memory and
-													// randomize it
+			
+			// allocate memory and randomize it
+			d.setTopics4Gibbs(number_of_topics, 0);
+			
 			for (_Word w : d.getWords()) {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
@@ -172,12 +170,11 @@ public class DCMLDA extends LDA_Gibbs {
 		int wid = 0;
 
 		p = 0;
+		// p(z|d) * p(w|z)
 		for (tid = 0; tid < number_of_topics; tid++) {
 			double term1 = topicInDocProb(tid, d);
 			term1 = wordTopicProb(tid, wid, d);
-			m_topicProbCache[tid] = topicInDocProb(tid, d) * wordTopicProb(tid, wid, d); // p(z|d)
-																							// *
-																							// p(w|z)
+			m_topicProbCache[tid] = topicInDocProb(tid, d) * wordTopicProb(tid, wid, d); 
 			p += m_topicProbCache[tid];
 		}
 
@@ -203,7 +200,7 @@ public class DCMLDA extends LDA_Gibbs {
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
 		int docID = d.getID();
 		return (m_docWordTopicStats[docID][tid][wid] + m_beta[tid][wid])
-				/ (d.m_sstat[tid] + m_beta[tid][wid] * vocabulary_size);
+				/ (d.m_sstat[tid] + m_totalBeta[tid]);
 	}
 
 	protected void updateStats(boolean preFlag, _Word w, _Doc d) {
@@ -215,18 +212,12 @@ public class DCMLDA extends LDA_Gibbs {
 			d.m_sstat[tid]++;
 			m_docWordTopicStats[docID][tid][wid]++;
 //			m_docTopicStats[docID][tid]++;
-			if (m_collectCorpusStats) {
-				word_topic_sstat[tid][wid]++;
-				m_sstat[tid]++;
-			}
+			
 		} else {
 			d.m_sstat[tid]--;
 			m_docWordTopicStats[docID][tid][wid]--;
 //			m_docTopicStats[docID][tid]--;
-			if (m_collectCorpusStats) {
-				word_topic_sstat[tid][wid]--;
-				m_sstat[tid]--;
-			}
+			
 		}
 
 	}
@@ -270,72 +261,127 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void updateAlpha(){
+		double diff = 0;
+		double smallAlpha = 0.1;
+		int iteration = 0;
+		do{
+			
+			diff = 0;
+			
+			double totalAlphaDenominator = 0;
+			m_totalAlpha = Utils.sumOfArray(m_alpha);
+			double digAlpha = Utils.digamma(m_totalAlpha);
 		
-		double smallAlpha = 1e31;
-		double totalAlphaDenominator = 0;
-		m_totalAlpha = Utils.sumOfArray(m_alpha);
-		for(_Doc d:m_trainSet){
-			totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha)-Utils.digamma(m_totalAlpha);
-		}
-		
-		for(int k=0; k<number_of_topics; k++){
-			double totalAlphaNumerator = 0;
+			double deltaAlpha = 0;
+			
 			for(_Doc d:m_trainSet){
-				totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
+				totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha)-digAlpha;
 			}
 			
-			m_alpha[k] *= totalAlphaNumerator*1.0/totalAlphaDenominator;
+			for(int k=0; k<number_of_topics; k++){
+				double totalAlphaNumerator = 0;
+				for(_Doc d:m_trainSet){
+					totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
+				}
+				
+				deltaAlpha = m_alpha[k]*totalAlphaNumerator*1.0/totalAlphaDenominator;
+				
+				diff += (m_alpha[k]-deltaAlpha)*(m_alpha[k]-deltaAlpha);
+				m_alpha[k] = deltaAlpha;
+				
+				
+			}
 			
+			m_totalAlpha = 0;
+			for(int k=0; k<number_of_topics; k++){
+				m_totalAlpha += m_alpha[k];
+			}
+			
+			diff /= number_of_topics;
+			
+			iteration ++;
+			System.out.println("alpha iteration\t"+iteration);
+		}while(diff>m_newtonConverge);
+		
+		for(int k=0; k<number_of_topics; k++){
 			if((m_alpha[k]<smallAlpha)&&(m_alpha[k]!=0)){
 				smallAlpha = m_alpha[k];
 			}
 		}
 		
-		for(int k=0; k<number_of_topics; k++)
+		System.out.println("iteration\t"+iteration);
+		m_totalAlpha = 0;
+		for(int k=0; k<number_of_topics; k++){
 			m_alpha[k] += 0.01*smallAlpha;
-		
+			m_totalAlpha += m_alpha[k];
+		}
 	}
 
 	protected void updateBeta(int tid){
-		double wordNum4Tid = 0;
-		double[] wordNum4Tid4V = new double[vocabulary_size];
-		double totalBetaDenominator = 0;
-		double[] totalBetaNumerator = new double[vocabulary_size];
-		Arrays.fill(totalBetaNumerator, 0);
-		Arrays.fill(wordNum4Tid4V, 0);
-		double totalBeta = Utils.sumOfArray(m_beta[tid]);
 		
-		double smoothingBeta = 1e31;
-		
-		for(_Doc d:m_trainSet){
-			int docID = d.getID();
-			totalBetaDenominator += Utils.digamma(totalBeta+d.m_sstat[tid])-Utils.digamma(totalBeta);
+		double diff = 0;
+		int iteration = 0;
+		double smoothingBeta = 0.1;
+
+		do{
+			diff = 0;
+			double deltaBeta = 0;
+			double wordNum4Tid = 0;
+			double[] wordNum4Tid4V = new double[vocabulary_size];
+			double totalBetaDenominator = 0;
+			double[] totalBetaNumerator = new double[vocabulary_size];
+			Arrays.fill(totalBetaNumerator, 0);
+			Arrays.fill(wordNum4Tid4V, 0);
+			m_totalBeta[tid] = Utils.sumOfArray(m_beta[tid]);
+			double digBeta4Tid = Utils.digamma(m_totalBeta[tid]);
+			
+			for(_Doc d:m_trainSet){
+				int docID = d.getID();
+				totalBetaDenominator += Utils.digamma(m_totalBeta[tid]+d.m_sstat[tid])-digBeta4Tid;
+				for(int v=0; v<vocabulary_size; v++){
+					wordNum4Tid += m_docWordTopicStats[docID][tid][v];
+					wordNum4Tid4V[v] += m_docWordTopicStats[docID][tid][v];
+					totalBetaNumerator[v] += Utils.digamma(m_beta[tid][v]+m_docWordTopicStats[docID][tid][v]);
+					totalBetaNumerator[v] -= Utils.digamma(m_beta[tid][v]);
+				}
+			}
+			
 			for(int v=0; v<vocabulary_size; v++){
-				wordNum4Tid += m_docWordTopicStats[docID][tid][v];
-				wordNum4Tid4V[v] += m_docWordTopicStats[docID][tid][v];
-				totalBetaNumerator[v] += Utils.digamma(m_beta[tid][v]+m_docWordTopicStats[docID][tid][v]);
-				totalBetaNumerator[v] -= Utils.digamma(m_beta[tid][v]);
-			}
-		}
-		
-		for(int v=0; v<vocabulary_size; v++){
-			if(wordNum4Tid==0)
-				break;
-			if(wordNum4Tid4V[v]==0){
-//				m_beta[tid][v] = 0;
-				continue;
-			}
+				if(wordNum4Tid==0)
+					break;
+				if(wordNum4Tid4V[v]==0){
+	//				m_beta[tid][v] = 0;
+					continue;
+				}
 				
-			m_beta[tid][v] *= (totalBetaNumerator[v]/totalBetaDenominator);
+				deltaBeta = m_beta[tid][v] *(totalBetaNumerator[v]/totalBetaDenominator);
+				
+				diff += (m_beta[tid][v]-deltaBeta)*(m_beta[tid][v]-deltaBeta);
+				m_beta[tid][v] = deltaBeta;
+			
+			}
+			
+			diff /= vocabulary_size;
+			iteration ++;
+			
+			System.out.println("beta iteration\t"+iteration);
+		}while(diff>m_newtonConverge);
+		
+		System.out.println("iteration\t"+iteration);
+
+		for(int v=0; v<vocabulary_size; v++){
 			if((m_beta[tid][v]!=0)&&(m_beta[tid][v]<smoothingBeta)){
 				smoothingBeta = m_beta[tid][v];
 			}
 		}
 		
+		m_totalBeta[tid] = 0;
+		
 		for(int v=0; v<vocabulary_size; v++){
 			m_beta[tid][v] += 0.01*smoothingBeta;
+			m_totalBeta[tid] += m_beta[tid][v];
 		}
-		System.out.println("m_beta update");
+	
 	}
 
 	protected void saveParameter2File(File fileFolder, String fileName) {
@@ -364,7 +410,15 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 	}
 
-	public double calculate_log_likelihood(_Doc d) {
+	protected double calculate_log_likelihood(){
+		double logLikelihood = 0.0;
+		for(_Doc d:m_trainSet){
+			logLikelihood += calculate_log_likelihood(d);
+		}
+		return logLikelihood;
+	}
+	
+	protected double calculate_log_likelihood(_Doc d) {
 		double docLogLikelihood = 0.0;
 
 		int docID = d.getID();

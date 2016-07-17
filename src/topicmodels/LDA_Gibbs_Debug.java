@@ -419,7 +419,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return logLikelihood;
 	}
 	
-	public double calculate_log_likelihood(_Doc d){
+	protected double calculate_log_likelihood(_Doc d){
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
 		

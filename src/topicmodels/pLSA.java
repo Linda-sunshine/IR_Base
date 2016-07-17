@@ -253,7 +253,7 @@ public class pLSA extends twoTopic {
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
 	//NOTE: cannot be used for unseen documents!
 	@Override
-	public double calculate_log_likelihood(_Doc d) {		
+	protected double calculate_log_likelihood(_Doc d) {		
 		double logLikelihood = docThetaLikelihood(d), prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
