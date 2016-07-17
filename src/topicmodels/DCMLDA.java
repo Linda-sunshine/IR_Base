@@ -24,8 +24,8 @@ public class DCMLDA extends LDA_Gibbs {
 	 * in the d.m_sstat
 	 **/
 
-	double[][][] m_docWordTopicProb;
-	double[][][] m_docWordTopicStats;
+	protected double[][][] m_docWordTopicProb;
+	protected double[][][] m_docWordTopicStats;
 //	double[][] m_docTopicStats;
 
 	/**
@@ -33,14 +33,14 @@ public class DCMLDA extends LDA_Gibbs {
 	 * m_alpha K m_beta K*V;
 	 * 
 	 */
-	double[] m_alpha;
-	double[][] m_beta;
+	protected double[] m_alpha;
+	protected double[][] m_beta;
 
 	double m_totalAlpha;
 	double[] m_totalBeta;
 	
-	int m_newtonIter;
-	double m_newtonConverge;
+	protected int m_newtonIter;
+	protected double m_newtonConverge;
 
 	public DCMLDA(int number_of_iteration, double converge, double beta, _Corpus c, double lambda, int number_of_topics,
 			double alpha, double burnIn, int lag, int newtonIter, double newtonConverge) {
@@ -129,6 +129,7 @@ public class DCMLDA extends LDA_Gibbs {
 				endtime / 1000);
 	}
 
+	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
 		// initialize topic-word allocation, p(w|z)
@@ -299,8 +300,13 @@ public class DCMLDA extends LDA_Gibbs {
 			
 			diff /= number_of_topics;
 			
+		
 			iteration ++;
 			System.out.println("alpha iteration\t"+iteration);
+			
+			if(iteration > m_newtonIter)
+				break;
+			
 		}while(diff>m_newtonConverge);
 		
 		for(int k=0; k<number_of_topics; k++){
