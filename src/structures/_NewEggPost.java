@@ -3,7 +3,7 @@ package structures;
 import json.JSONObject;
 import utils.Utils;
 
-public class NewEggPost extends Post {
+public class _NewEggPost extends _Post {
 	String m_prodId;
 	public String getProdId() {
 		return m_prodId;
@@ -46,13 +46,8 @@ public class NewEggPost extends Post {
 		this.m_comments = comments;
 	}
 
-	public NewEggPost(String ID) {
-		super(ID);
-	}
-
-	public NewEggPost(JSONObject json, String prodId) {
-		super("");
-		
+	public _NewEggPost(JSONObject json, String prodId) {	
+		super(json);
 		try {//special treatment for the overall ratings
 			if (json.has("Rating")){				
 				double label = json.getInt("Rating");
@@ -71,11 +66,9 @@ public class NewEggPost extends Post {
 		setProContent(Utils.getJSONValue(json, "Pros"));
 		setConContent(Utils.getJSONValue(json, "Cons"));
 		setComments(Utils.getJSONValue(json, "Comments"));
-		setTitle(Utils.getJSONValue(json, "Title"));
 		setAuthor(Utils.getJSONValue(json, "LoginNickName"));
 		setProdId(prodId);
 		
-		m_ID = prodId + m_author;
-	}
-	
+		m_ID = prodId + "-" + m_author;
+	}	
 }

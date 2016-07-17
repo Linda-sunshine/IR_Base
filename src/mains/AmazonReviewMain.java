@@ -3,14 +3,7 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import Analyzer.jsonAnalyzer;
-import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.NaiveBayesEM;
-import Classifier.supervised.LogisticRegression;
-import Classifier.supervised.NaiveBayes;
-import Classifier.supervised.SVM;
-import influence.PageRank;
-import structures._Corpus;
+import Analyzer.DocAnalyzer;
 
 public class AmazonReviewMain {
 
@@ -63,7 +56,7 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 //		/****Loading json files*****/
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		

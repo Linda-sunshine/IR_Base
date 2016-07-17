@@ -10,7 +10,6 @@ import java.text.ParseException;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
-import Analyzer.jsonAnalyzer;
 import Classifier.BaseClassifier;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -55,10 +54,7 @@ public class Execution  {
 			corpus = analyzer.getCorpus();
 		} else {
 			/***Load the data from text file***/
-			if (param.m_suffix.equals(".json"))
-				analyzer = new jsonAnalyzer(param.m_tokenModel,param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel, posModel);	
-			else
-				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+			analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 			((DocAnalyzer)analyzer).setReleaseContent(!param.m_weightScheme.equals("PR"));
 			if (param.m_featureFile==null) {
 				/****Pre-process the data.*****/

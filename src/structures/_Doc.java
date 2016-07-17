@@ -17,7 +17,7 @@ import utils.Utils;
  * General structure to present a document for DM/ML/IR
  */
 public class _Doc implements Comparable<_Doc> {
-	String m_name;
+	String m_name; // document ID string
 	int m_ID; // unique id of the document in the collection
 	String m_itemID; // ID of the product being commented
 	String m_title; //The short title of the review.
