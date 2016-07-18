@@ -39,9 +39,7 @@ public class MovieReviewMain {
 		//String featureSelection = "MI"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
-		int maxDF = -1, minDF = 5; // Filter the features with DFs smaller than this threshold.
-		
-		
+		int DFthreshold = 5; // Filter the features with DFs smaller than this threshold.
 		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		System.out.println("--------------------------------------------------------------------------------------");
 //		/*****Paramters in time series analysis.*****/
@@ -70,7 +68,7 @@ public class MovieReviewMain {
 			System.out.println("Case 3: no provided CV, feature selection. Start loading files to do feature selection, wait...");
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
+			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
 			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);
@@ -83,7 +81,7 @@ public class MovieReviewMain {
 			DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
 			System.out.println("Case 4: provided CV, feature selection. Start loading files to do feature selection, wait...");
 			analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
+			analyzer.featureSelection(featureLocation, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 			
 			System.out.println("Start loading files, wait...");
 			analyzer = new DocAnalyzer(tokenModel, classNumber, featureLocation, Ngram, lengthThreshold);

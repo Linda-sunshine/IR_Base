@@ -11,57 +11,54 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 
+import cc.mallet.grmm.learning.ACRF.Template;
 import structures._Corpus;
 import structures._Doc;
+import structures._Pair;
 import structures._SparseFeature;
 import structures._stat;
 import utils.Utils;
-
-/**
- * 
- * @author Hongning Wang
- * Basic functionalities for analyzing documents
- * This should only include the most abstractive operations
- */
 
 public abstract class Analyzer {
 	
 	protected _Corpus m_corpus;
 	protected int m_classNo; //This variable is just used to init stat for every feature. How to generalize it?
-	protected int[] m_classMemberNo; //Store the number of members in a class.
+	int[] m_classMemberNo; //Store the number of members in a class.
 	protected int m_Ngram; 
-	protected int m_TotalDF = -1; // why do we need this in Analyzer class???
 	
-	//structures for managing features 
 	protected ArrayList<String> m_featureNames; //ArrayList for features
 	protected HashMap<String, Integer> m_featureNameIndex;//key: content of the feature; value: the index of the feature
 	protected HashMap<String, _stat> m_featureStat; //Key: feature Name; value: the stat of the feature
-	
-	/* Indicate if we will allow new features. After loading the CV file, the flag is set to true, 
-	 * which means no new features will be created when analyzing documents.*/
+	/* Indicate if we can allow new features. After loading the CV file, the flag is set to true, 
+	 * which means no new features will be allowed.*/
 	protected boolean m_isCVLoaded = false;
-	protected boolean m_isCVStatLoaded = false; // indicate if we will collect corpus-level feature statistics
-		
-	//conditions for filtering loaded documents 
-	protected int m_lengthThreshold = 5;//minimal length of indexed document	
+	
+	// indicate if we will collect corpus-level feature statistics
+	protected boolean m_isCVStatLoaded = false;
+	protected int m_TotalDF = -1;
+	
+	//minimal length of indexed document
+	protected int m_lengthThreshold = 5;
+	//minimal size of sentences
+	protected int m_stnSizeThreshold = 2;
+	//if we have store content of documents
+	protected boolean m_releaseContent;
 	
 	// Added by Lin for using different df.
 	protected String m_df = "G"; // represents the source of DF.
 	public void setDFScheme(String s){
 		m_df = s;
 	}
-
-//	/** for time-series features **/
-//	//The length of the window which means how many labels will be taken into consideration.
-//	private LinkedList<_Doc> m_preDocs;	
-//
-//	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
-//	private HashMap<_Pair, Integer> m_LCSMap; //added by Lin for storing LCS pairs.s
- 
-	//if we have to store the original content of documents
-	protected boolean m_releaseContent = true;//by default we will not store it to save memory
 	
+	/** for time-series features **/
+	//The length of the window which means how many labels will be taken into consideration.
+	private LinkedList<_Doc> m_preDocs;	
+
+	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
+	private HashMap<_Pair, Integer> m_LCSMap; //added by Lin for storing LCS pairs.s
+ 
 	public Analyzer(int classNo, int minDocLength) {
 		m_corpus = new _Corpus();
 		
@@ -72,7 +69,11 @@ public abstract class Analyzer {
 		m_featureNameIndex = new HashMap<String, Integer>();//key: content of the feature; value: the index of the feature
 		m_featureStat = new HashMap<String, _stat>();
 		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		
 		m_lengthThreshold = minDocLength;
+		
+		m_preDocs = new LinkedList<_Doc>(); // key: POS tag; value: index in the list		
 	}	
 	
 	public void reset() {
@@ -96,12 +97,13 @@ public abstract class Analyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			while ((line = reader.readLine()) != null) {
-
-				if (line.startsWith("#")){//comments
+				
+				if (line.startsWith("#")){
 					if (line.startsWith("#NGram")) {//has to be decoded
 						int pos = line.indexOf(':');
 						m_Ngram = Integer.valueOf(line.substring(pos+1));
-					}						
+					}
+						
 				} else 
 					expandVocabulary(line);
 			}
@@ -114,6 +116,35 @@ public abstract class Analyzer {
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			return false;
+		}
+	}
+	
+	public void LoadLCSFiles(String folder){
+		if(folder == null || folder.isEmpty())
+			return;
+		
+		m_LCSMap = new HashMap<_Pair, Integer>();
+		File dir = new File(folder);
+		for(File f: dir.listFiles()){
+			long start = System.currentTimeMillis();
+			if(f.isFile()){
+				try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f.getAbsolutePath()), "UTF-8"));
+					String line;
+					while ((line = reader.readLine()) != null) {
+						String[] pair = line.split(",");
+						
+						if(pair.length != 3)
+							System.out.println("Wrong LCS triple!");
+						else
+							m_LCSMap.put(new _Pair(Integer.parseInt(pair[0]), Integer.parseInt(pair[1].trim())), Integer.parseInt(pair[2].trim()));
+					}
+					reader.close();
+					System.out.format("After reading %s in %.4f secs, %d LCS triples loaded totally.\n", f.getAbsolutePath(), (double)(System.currentTimeMillis()-start)/1000.0, m_LCSMap.size());
+				} catch (IOException e) {
+					System.err.format("[Error]Failed to open file %s!!", folder);
+				}		
+			}
 		}
 	}
 	
@@ -133,6 +164,10 @@ public abstract class Analyzer {
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 	}
 	
+	public void setMinimumNumberOfSentences(int number){
+		m_stnSizeThreshold = number;
+	}
+	
 	abstract public void LoadDoc(String filename);
 	
 	//Add one more token to the current vocabulary.
@@ -143,7 +178,6 @@ public abstract class Analyzer {
 	}
 		
 	//Return corpus without parameter and feature selection.
-	//why do we need such a function????
 	public _Corpus returnCorpus(String finalLocation) throws FileNotFoundException {
 		SaveCVStat(finalLocation);
 		
@@ -168,21 +202,17 @@ public abstract class Analyzer {
 	
 	void rollBack(HashMap<Integer, Double> spVct, int y){
 		if (!m_isCVLoaded) {
+			for(int index: spVct.keySet()){
+				String token = m_featureNames.get(index);
+				_stat stat = m_featureStat.get(token);
 
-			for(int index: spVct.keySet()) {
-				String token="";
-				if(m_featureNames.contains(index)) {	
-					token = m_featureNames.get(index);
-					_stat stat = m_featureStat.get(token);
-
-					if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
-						m_featureNameIndex.remove(index);
-						m_featureStat.remove(token);
-						m_featureNames.remove(index);
-					} else {//If the feature is not the first time to show in feature set.
-						stat.minusOneDF(y);
-						stat.minusNTTF(y, spVct.get(index));
-					}
+				if(Utils.sumOfArray(stat.getDF())==1){//If the feature is the first time to show in feature set.
+					m_featureNameIndex.remove(index);
+					m_featureStat.remove(token);
+					m_featureNames.remove(index);
+				} else{//If the feature is not the first time to show in feature set.
+					stat.minusOneDF(y);
+					stat.minusNTTF(y, spVct.get(index));
 				}
 			}
 		} else{//If CV is loaded and CV's statistics are loaded from file, no need to change it
@@ -204,11 +234,11 @@ public abstract class Analyzer {
 		ArrayList<_Doc> docs = m_corpus.getCollection(); // Get the collection of all the documents.
 		int N = m_isCVStatLoaded ? m_TotalDF : docs.size();
 		
-//		// For different DF schemes.
-//		if(m_df.equals("D"))
-//			N = docs.size();
-//		else if(m_df.equals("G+D"))
-//			N += docs.size();
+		// For different DF schemes.
+		if(m_df.equals("D"))
+			N = docs.size();
+		else if(m_df.equals("G+D"))
+			N += docs.size();
 
 		if (fValue.equals("TF")){
 			//the original feature is raw TF
@@ -353,15 +383,12 @@ public abstract class Analyzer {
 		} else if(norm == 2){
 			for(_Doc d:docs)			
 				Utils.L2Normalization(d.getSparse());
-		} else
-			System.out.println("No normalizaiton is adopted here or wrong parameters in setFeatureValues()!");
-		
-		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
+		}
 	}
 	
 	//Select the features and store them in a file.
-	public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
-		FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
+	public void featureSelection(String location, String featureSelection, double startProb, double endProb, int threshold) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(startProb, endProb, threshold);
 
 		System.out.println("*******************************************************************");
 		if (featureSelection.equals("DF"))
@@ -374,17 +401,32 @@ public abstract class Analyzer {
 			selector.CHI(m_featureStat, m_classMemberNo);
 		
 		m_featureNames = selector.getSelectedFeatures();
-		SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
+		SaveCV(location, featureSelection, startProb, endProb, threshold); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
-		// need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
+		//clear memory for next step feature construction
+//		reset();
+//		LoadCV(location);//load the selected features
+	}
+	
+	public void featureSelectionWithBound(String location, String featureSelection, double startProb, double endProb, int lowerThreshold, double upThresholdProb) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(startProb, endProb, lowerThreshold, upThresholdProb);
+
+		System.out.println("*******************************************************************");
+		if (featureSelection.equals("DF"))
+			selector.DFWithLowerUpperBound(m_featureStat, m_corpus.getSize());
+		
+		m_featureNames = selector.getSelectedFeatures();
+		SaveCV(location, featureSelection, startProb, endProb, lowerThreshold); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
+		
 		//clear memory for next step feature construction
 //		reset();
 //		LoadCV(location);//load the selected features
 	}
 	
 	//Save all the features and feature stat into a file.
-	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
+	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int threshold) throws FileNotFoundException {
 		if (featureLocation==null || featureLocation.isEmpty())
 			return;
 		
@@ -395,8 +437,7 @@ public abstract class Analyzer {
 		writer.format("#Selection:%s\n", featureSelection);
 		writer.format("#Start:%f\n", startProb);
 		writer.format("#End:%f\n", endProb);
-		writer.format("#DF_MaxCut:%d\n", maxDF);
-		writer.format("#DF_MinCut:%d\n", minDF);
+		writer.format("#DF_Cut:%d\n", threshold);
 		
 		//print out the features
 		for (int i = 0; i < m_featureNames.size(); i++)
@@ -441,12 +482,9 @@ public abstract class Analyzer {
 				writer.println();
 			}
 			writer.close();
-			
-			//print out some basic statistics of the corpus
 			double maxDF = Collections.max(DFList);
 			double avgDF = totalDF/m_featureNames.size();
 			System.out.println("maxDF\t"+maxDF+"\t avgDF \t"+avgDF+"\t totalDF\t"+totalDF);
-			
 			double maxTTF = Collections.max(TTFList);
 			double avgTTF = totalTTF/m_featureNames.size();
 			System.out.println("maxTTF\t"+maxTTF+"avgTTF\t"+avgTTF+"\t totalTTF \t"+totalTTF);
@@ -460,8 +498,52 @@ public abstract class Analyzer {
 		return m_featureNames.size();
 	}
 	
+	//Sort the documents.
+	public void setTimeFeatures(int window){//must be called before return corpus
+		if (window<1) 
+			return;
+		
+		//Sort the documents according to time stamps.
+		ArrayList<_Doc> docs = m_corpus.getCollection();
+		
+		/************************time series analysis***************************/
+		double norm = 1.0 / m_classMemberNo.length, avg = 0;
+		int count = 0;//for computing the moving average
+		String lastItemID = null;
+		for(int i = 0; i < docs.size(); i++){
+			_Doc doc = docs.get(i);			
+			
+			if (lastItemID == null)
+				lastItemID = doc.getItemID();
+			else if (lastItemID != doc.getItemID()) {
+				m_preDocs.clear(); // reviews for a new category of products
+				lastItemID = doc.getItemID();
+				
+				//clear for moving average
+				avg = 0;
+				count = 0;
+			}
+			
+			avg += doc.getYLabel();
+			count += 1;
+			
+			if(m_preDocs.size() < window){
+				m_preDocs.add(doc);
+				m_corpus.removeDoc(i);
+				m_classMemberNo[doc.getYLabel()]--;
+				i--;
+			} else{
+				doc.createSpVctWithTime(m_preDocs, m_featureNames.size(), avg/count, norm);
+				m_preDocs.remove();
+				m_preDocs.add(doc);
+			}
+		}
+		System.out.format("Time-series feature set for %d documents!\n", m_corpus.getSize());
+	}
+	
 	// added by Md. Mustafizur Rahman for Topic Modelling
-	public double[] getBackgroundProb() {//this should be moved to corpus, rather than in Analyzer!!!!
+	public double[] getBackgroundProb()
+	{
 		double back_ground_probabilty [] = new double [m_featureNameIndex.size()];
 		
 		for(int i = 0; i<m_featureNameIndex.size();i++)
@@ -479,11 +561,13 @@ public abstract class Analyzer {
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
 	}
-//	//added by Lin.
-//	public HashMap<_Pair, Integer> returnLCSMap(){
-//		System.out.format("LCS map has %d pairs.\n", m_LCSMap.size());
-//		return m_LCSMap;
-//	}
+	
+	//added by Lin.
+	public HashMap<_Pair, Integer> returnLCSMap(){
+		System.out.format("LCS map has %d pairs.\n", m_LCSMap.size());
+		return m_LCSMap;
+	}
+	
 	public void saveTopicVectors(String filename) throws FileNotFoundException {
 		if(filename == null || filename.isEmpty())
 			return;

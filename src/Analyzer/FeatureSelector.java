@@ -4,20 +4,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import Classifier.supervised.liblinear.Feature;
 import structures._RankItem;
 import structures._stat;
 import utils.Utils;
 
-/**
- * 
- * @author Lin Gong
- * Implementation of several text feature selection algorithms.
- * Yang, Yiming, and Jan O. Pedersen. "A comparative study on feature selection in text categorization." ICML. Vol. 97. 1997.
- */
 public class FeatureSelector {
 
-	double m_startProb, m_endProb; // selecting features proportionally
-	int m_maxDF, m_minDF; // upper and lower bounds for DF in feature selection (exclusive!)
+	double m_startProb;
+	double m_endProb;
+	int m_DFThreshold;
+	
+	double m_upThresholdProb;
 	
 	ArrayList<_RankItem> m_selectedFeatures;
 
@@ -29,7 +27,7 @@ public class FeatureSelector {
 	}
 		
 	//Given start and end of feature selection.
-	public FeatureSelector(double startProb, double endProb, int maxDF, int minDF){
+	public FeatureSelector(double startProb, double endProb, int DFThreshold){
 		if (startProb>endProb) {
 			double t = startProb;
 			startProb = endProb;
@@ -38,8 +36,24 @@ public class FeatureSelector {
 		
 		m_startProb = Math.max(0, startProb);
 		m_endProb = Math.min(1.0, endProb);
-		m_maxDF = maxDF<=0 ? Integer.MAX_VALUE : maxDF;
-		m_minDF = minDF; 
+		m_DFThreshold = DFThreshold;
+		m_selectedFeatures = new ArrayList<_RankItem>();
+	}
+	
+	//added by Renqin
+	public FeatureSelector(double startProb, double endProb, int lowerThreshold, double upThresholdProb){
+		if (startProb>endProb) {
+			double t = startProb;
+			startProb = endProb;
+			endProb = t;
+		}
+		
+		m_startProb = Math.max(0, startProb);
+		m_endProb = Math.min(1.0, endProb);
+		
+		m_DFThreshold = lowerThreshold;
+		m_upThresholdProb = upThresholdProb;
+		
 		m_selectedFeatures = new ArrayList<_RankItem>();
 	}
 	
@@ -65,8 +79,26 @@ public class FeatureSelector {
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if(sumDF > m_minDF && sumDF < m_maxDF)
+			if(sumDF > m_DFThreshold){
 				m_selectedFeatures.add(new _RankItem(f, sumDF));
+			}
+		}
+	}
+	
+	public void DFWithLowerUpperBound(HashMap<String, _stat> featureStat, int corpusSize){
+//		double DFLowerThreshold = corpusSize*m_startProb;
+		double DFUpperThreshold = corpusSize*m_upThresholdProb;
+		
+		for(String f: featureStat.keySet()){
+			//Filter the features which have smaller DFs.
+			double sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
+			if(sumDF < m_DFThreshold){
+				continue;
+			}else if(sumDF > DFUpperThreshold){
+				continue;
+			}else{
+				m_selectedFeatures.add(new _RankItem(f, sumDF));
+			}
 		}
 	}
 		
@@ -92,7 +124,7 @@ public class FeatureSelector {
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if (sumDF > m_minDF && sumDF < m_maxDF){
+			if (sumDF > m_DFThreshold){
 				_stat temp = featureStat.get(f);
 				Prt = Utils.sumOfArray(temp.getDF()) / classMemberSum;
 				PrtNot = 1 - Prt;
@@ -126,7 +158,7 @@ public class FeatureSelector {
 		for (String f : featureStat.keySet()) {
 			// Filter the features which have smaller DFs.
 			int sumDF = Utils.sumOfArray(featureStat.get(f).getDF());
-			if (sumDF > m_minDF && sumDF < m_maxDF) {
+			if (sumDF > m_DFThreshold) {
 				Iavg = 0;
 				for (int i = 0; i < classMemberNo.length; i++) {
 					_stat temp = featureStat.get(f);
@@ -144,24 +176,41 @@ public class FeatureSelector {
 	//Feature Selection -- CHI.
 	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo){
 		int classNo = classMemberNo.length;
-		int N = Utils.sumOfArray(classMemberNo), sumDF;
+		int N = Utils.sumOfArray(classMemberNo), DF;
 		double[] X2tc = new double [classNo];
 		double X2avg = 0;		
 			
 		for(String f: featureStat.keySet()){
 			//Filter the features which have smaller DFs.
 			_stat temp = featureStat.get(f);
-			sumDF = Utils.sumOfArray(temp.getDF());
+			DF = Utils.sumOfArray(temp.getDF());
 			
-			if (sumDF > m_minDF && sumDF < m_maxDF) {	
+			if (DF > m_DFThreshold){				
 				X2avg = 0;				
 				for(int i = 0; i < classNo; i++){
-					X2tc[i] = Utils.ChiSquare(N, sumDF, temp.getDF()[i], classMemberNo[i]);
+					X2tc[i] = ChiSquare(N, DF, temp.getDF()[i], classMemberNo[i]);
 					X2avg += X2tc[i] * classMemberNo[i] / N;
 				}
 				//X2max = Utils.maxOfArrayValue(X2tc);
 				m_selectedFeatures.add(new _RankItem(f, X2avg));
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param N: total document size
+	 * @param DF: document frequency for term t
+	 * @param tcDF: number of documents where t and c co-occur
+	 * @param cDF: number of documents where t occurs
+	 * @return
+	 */
+	static public double ChiSquare(int N, int DF, int tcDF, int cDF) {
+		double A = tcDF;//t & c
+		double B = DF - A;//t & !c
+		double C = cDF - A;//!t & c
+		double D = N - DF - cDF + A;//!t & !c
+		
+		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
 }

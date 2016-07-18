@@ -8,8 +8,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.Normalizer;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,9 +17,6 @@ import java.util.Set;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import json.JSONArray;
-import json.JSONException;
-import json.JSONObject;
 import opennlp.tools.cmdline.postag.POSModelLoader;
 import opennlp.tools.postag.POSTaggerME;
 import opennlp.tools.sentdetect.SentenceDetectorME;
@@ -30,20 +25,12 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import structures.Product;
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
-import structures._Post;
 import structures._Stn;
 import structures._stat;
 import utils.Utils;
-
-/**
- * 
- * @author Lin Gong
- * Specialized analyzer for text documents
- */
 
 public class DocAnalyzer extends Analyzer {
 	protected Tokenizer m_tokenizer;
@@ -51,20 +38,14 @@ public class DocAnalyzer extends Analyzer {
 	protected SentenceDetectorME m_stnDetector;
 	protected POSTaggerME m_tagger;
 	Set<String> m_stopwords;
-
-	protected SimpleDateFormat m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project;
-	protected int m_stnSizeThreshold = 2;//minimal size of sentences
-
-	//shall we have it here???
-	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
 	
-	//shall we have the following structure here???
 	protected SentiWordNet m_sentiWordNet;
 	protected ArrayList<String> m_posPriorList;//list of positive seed words
 	protected ArrayList<String> m_negPriorList;//list of negative seed words
-	protected ArrayList<String> m_negationList;//list of negation seed words	
+	protected ArrayList<String> m_negationList;//list of negation seed words
 	
-	//Constructor with TokenModel, ngram and fValue.
+	
+	//Constructor with ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(classNo, threshold);
@@ -72,7 +53,6 @@ public class DocAnalyzer extends Analyzer {
 		m_stemmer = new englishStemmer();
 		m_stnDetector = null; // indicating we don't need sentence splitting
 		
-		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -80,19 +60,17 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//TokenModel + stnModel.
-	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold)
-			throws InvalidFormatException, FileNotFoundException, IOException {
+	public DocAnalyzer(String tokenModel, String stnModel, int classNo, 
+			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
-		
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
-		m_stemmer = new englishStemmer();// we will only handle English text documents
+		m_stemmer = new englishStemmer();
 		
 		if (stnModel!=null)
 			m_stnDetector = new SentenceDetectorME(new SentenceModel(new FileInputStream(stnModel)));
 		else
 			m_stnDetector = null;
 		
-		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -100,8 +78,8 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	//TokenModel + stnModel + posModel.
-	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV, int Ngram, int threshold) 
-			throws InvalidFormatException, FileNotFoundException, IOException{
+	public DocAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, 
+			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException{
 		super(classNo, threshold);
 		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
 		m_stemmer = new englishStemmer();
@@ -116,7 +94,6 @@ public class DocAnalyzer extends Analyzer {
 		else
 			m_tagger = null;
 		
-		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
 		m_Ngram = Ngram;
 		m_isCVLoaded = LoadCV(providedCV);
 		m_stopwords = new HashSet<String>();
@@ -125,10 +102,6 @@ public class DocAnalyzer extends Analyzer {
 
 	public void setReleaseContent(boolean release) {
 		m_releaseContent = release;
-	}
-	
-	public void setMinimumNumberOfSentences(int number){
-		m_stnSizeThreshold = number;
 	}
 	
 	public void LoadStopwords(String filename) {
@@ -262,17 +235,10 @@ public class DocAnalyzer extends Analyzer {
 		return result;
 	}
 
-	//Load a full text review document and analyze it.
-	//We will assume the document content is only about the text 
-	@Override
+	//Load a movie review document and analyze it.
+	//this is only specified for this type of review documents
+	//do we still need this function, or shall we normalize it with json format?
 	public void LoadDoc(String filename) {
-		if (filename.toLowerCase().endsWith(".json"))
-			LoadJsonDoc(filename);
-		else
-			LoadTxtDoc(filename);
-	}
-	
-	protected void LoadTxtDoc(String filename) {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			StringBuffer buffer = new StringBuffer(1024);
@@ -283,78 +249,16 @@ public class DocAnalyzer extends Analyzer {
 			}
 			reader.close();
 			
-			int yLabel = filename.contains("pos") ? 1:0;
-			
-			//Collect the number of documents in one class as its document id.
-			_Doc doc = new _Doc(m_corpus.getSize(), buffer.toString(), yLabel);
-
-			if(this.m_stnDetector!=null)
-				AnalyzeDocWithStnSplit(doc);
-			else
-				AnalyzeDoc(doc);			
-			
+			//How to generalize it to several classes???? 
+			if(filename.contains("pos")){
+				//Collect the number of documents in one class.
+				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 0));				
+			}else if(filename.contains("neg")){
+				AnalyzeDoc(new _Doc(m_corpus.getSize(), buffer.toString(), 1));
+			}
 		} catch(IOException e){
 			System.err.format("[Error]Failed to open file %s!!", filename);
 			e.printStackTrace();
-		}
-	}
-	
-	protected JSONObject LoadJSON(String filename) {
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			StringBuffer buffer = new StringBuffer(1024);
-			String line;
-			
-			while((line=reader.readLine())!=null) {
-				buffer.append(line);
-			}
-			reader.close();
-			return new JSONObject(buffer.toString());
-		} catch (Exception e) {
-			System.out.print('X');
-			return null;
-		}
-	}
-	
-	//Load a document and analyze it.
-	protected void LoadJsonDoc(String filename) {
-		Product prod = null;
-		JSONArray jarray = null;
-		
-		try {
-			JSONObject json = LoadJSON(filename);
-			prod = new Product(json.getJSONObject("ProductInfo"));
-			jarray = json.getJSONArray("Reviews");
-		} catch (Exception e) {
-			System.err.print('X');//fail to parse a json document
-			return;
-		}	
-		
-		for(int i=0; i<jarray.length(); i++) {
-			try {
-				_Post post = new _Post(jarray.getJSONObject(i));
-				if (post.isValid(m_dateFormatter)) {
-					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
-					String content;
-					
-					//append document title into document content
-					if (Utils.endWithPunct(post.getTitle()))
-						content = post.getTitle() + " " + post.getContent();
-					else
-						content = post.getTitle() + ". " + post.getContent();
-					
-					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
-					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
-					if(this.m_stnDetector!=null)
-						AnalyzeDocWithStnSplit(review);
-					else
-						AnalyzeDoc(review);
-				}
-			} catch (ParseException e) {
-				System.out.print('T');
-			} catch (JSONException e) {
-				System.out.print('P');
-			}
 		}
 	}
 	
@@ -446,7 +350,7 @@ public class DocAnalyzer extends Analyzer {
 		
 		// Construct the sparse vector.
 		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-		if (spVct.size()>m_lengthThreshold) {
+		if (spVct.size()>m_lengthThreshold) {//temporary code for debugging purpose
 			doc.createSpVct(spVct);
 			doc.setStopwordProportion(result.getStopwordProportion());
 			
@@ -518,8 +422,7 @@ public class DocAnalyzer extends Analyzer {
 	}
 	
 	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment
-	// shall we put it here????
-	protected void setStnFvs(_Doc d) {
+	public void setStnFvs(_Doc d) {
 		_Stn[] sentences = d.getSentences();
 		
 		// start from 2nd sentence
@@ -598,12 +501,12 @@ public class DocAnalyzer extends Analyzer {
 	}
 
 	// receive sentence index as parameter
-	protected double sentiWordScore(_Stn s) {
+	public double sentiWordScore(_Stn s) {
 		return sentiWordScore(s.getRawTokens(), s.getSentencePosTag());
 	}
 
 	// added by Lin, the same function with different parameters.
-	protected double sentiWordScore(String[] tokens, String[] posTags) {
+	public double sentiWordScore(String[] tokens, String[] posTags) {
 		double senScore = 0.0;
 		double tmp;
 		String word, tag;
@@ -631,7 +534,7 @@ public class DocAnalyzer extends Analyzer {
 	// PosNeg count is done against the raw sentence
 	// so stopword will also get counter here like not, none 
 	// which is important for PosNeg count
-	protected int posNegCount(_Stn s) {
+	public int posNegCount(_Stn s) {
 		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < wordsInSentence.length; i++)
@@ -659,7 +562,7 @@ public class DocAnalyzer extends Analyzer {
 	// Negation count is done against the raw sentence
 	// so stopword will also get counter here like not, none 
 	// which is important for negation count
-	protected int negationCount(_Stn s) {
+	public int negationCount(_Stn s) {
 		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
 		//Normalize them and stem them.		
 		for(int i = 0; i < wordsInSentence.length; i++)
@@ -676,7 +579,7 @@ public class DocAnalyzer extends Analyzer {
 
 	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
 	// here i the index of the sentence
-	protected double[] calculatePOStagVector(_Stn s) {
+	public double[] calculatePOStagVector(_Stn s) {
 		String[] posTag = s.getSentencePosTag();
 		double tagVector[] = new double[4]; 
 		// index = 0 for noun

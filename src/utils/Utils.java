@@ -969,21 +969,4 @@ public class Utils {
 		}
 		return i*(i-1)/2+j;
 	}
-	
-	/**
-	 * 
-	 * @param N: total document size
-	 * @param DF: document frequency for term t
-	 * @param tcDF: number of documents where t and c co-occur
-	 * @param cDF: number of documents where t occurs
-	 * @return
-	 */
-	static public double ChiSquare(int N, int DF, int tcDF, int cDF) {
-		double A = tcDF;//t & c
-		double B = DF - A;//t & !c
-		double C = cDF - A;//!t & c
-		double D = N - DF - cDF + A;//!t & !c
-		
-		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
-	}
 }

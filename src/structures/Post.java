@@ -1,7 +1,7 @@
+/**
+ * 
+ */
 package structures;
-
-import java.text.DateFormat;
-import java.text.ParseException;
 
 import json.JSONException;
 import json.JSONObject;
@@ -11,9 +11,9 @@ import utils.Utils;
  * @author hongning
  * @version 0.1
  * @category data structure
- * data structure for a forum discussion post, and it can also be used in different scenarios for document processing
+ * data structure for a forum discussion post 
  */
-public class _Post {
+public class Post {
 	//unique ID from the corresponding website
 	String m_ID;
 	public String getID() {
@@ -96,7 +96,12 @@ public class _Post {
 	}
 	
 	//Constructor.
-	public _Post(JSONObject json) {
+	public Post(String ID) {
+		m_ID = ID;
+	}
+	
+	//Constructor.
+	public Post(JSONObject json) {
 		try {//special treatment for the overall ratings
 			if (json.has("Overall")){
 				if(json.getString("Overall").equals("None")) {
@@ -132,34 +137,5 @@ public class _Post {
 		json.put("title", m_title);//might be missing
 		json.put("content", m_content);//must contain
 		return json;
-	}
-	
-	//check format for each post
-	public boolean isValid(DateFormat dateFormatter) {
-		if (getLabel() <= 0 || getLabel() > 5){
-			//System.err.format("[Error]Missing Lable or wrong label!!");
-			System.err.print('L');
-			return false;
-		}
-		else if (getContent() == null){
-			//System.err.format("[Error]Missing content!!\n");
-			System.err.print('C');
-			return false;
-		}	
-		else if (getDate() == null){
-			//System.err.format("[Error]Missing date!!\n");
-			System.out.print('d');
-			return false;
-		}
-		else {
-			// to check if the date format is correct
-			try {
-				dateFormatter.parse(getDate());
-				return true;
-			} catch (ParseException e) {
-				System.err.print('D');
-			}
-			return true;
-		} 
 	}
 }

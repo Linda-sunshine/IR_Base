@@ -15,21 +15,23 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
+import structures.NewEggPost;
 import structures.TokenizeResult;
 import structures._Doc;
-import structures._NewEggPost;
 import structures._Stn;
 import utils.Utils;
 
 /**
- * @author Md Mustafizur Rahman
+ * @author hongning
  * For specific format of NewEgg reviews
  */
-public class newEggAnalyzer extends DocAnalyzer {
+public class newEggAnalyzer extends jsonAnalyzer {
 	//category of NewEgg reviews
 	String m_category; 
-	int m_prosStnCount = 0;
-	int m_consStnCount = 0;
+	int m_reviewCount = 0;
+	int m_prosSentenceCounter = 0;
+	int m_consSentenceCounter = 0;
+	SimpleDateFormat m_dateFormatter;
 	int m_prosConsLoad = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
 	
 	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
@@ -42,15 +44,15 @@ public class newEggAnalyzer extends DocAnalyzer {
 		m_prosConsLoad = loadProsCons;
 	}
 
-	public newEggAnalyzer(String tokenModel, String stnModel, String posModel, int classNo, String providedCV,
-			int Ngram, int threshold, String category, int loadProsCons)
+	public newEggAnalyzer(String tokenModel, int classNo, String providedCV,
+			int Ngram, int threshold, String stnModel, String posModel, String category, int loadProsCons)
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, stnModel, posModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, posModel);
 		m_dateFormatter = new SimpleDateFormat("M/d/yyyy h:mm:ss a");// standard date format for this project
 		m_category = category;
 		m_prosConsLoad = loadProsCons;
 	}
-
+	
 	//Load all the files in the directory.
 	public void LoadNewEggDirectory(String folder, String suffix) throws IOException {
 		if (folder==null || folder.isEmpty())
@@ -64,22 +66,22 @@ public class newEggAnalyzer extends DocAnalyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
-
+		System.out.format("Number of Total Reviews from newEgg is %d\n", m_reviewCount);
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
-		if(this.m_stnDetector != null)
-			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosStnCount, m_consStnCount);
+		if(this.m_stnDetector!=null)
+			System.out.printf("Number of Positive Sentences %d\nNumber of Negative Sentences %d\n", m_prosSentenceCounter, m_consSentenceCounter);
 	}
 
-		//Load a document and analyze it.
+	//Load a document and analyze it.
 	public void LoadNewEggDoc(String filename) {
-		JSONObject prod = null;
+		JSONObject prods = null;
 		String item;
 		JSONArray itemIds, reviews;
 		
 		try {
-			JSONObject json = LoadJSON(filename);
-			prod = json.getJSONObject(m_category);
-			itemIds = prod.names();
+			JSONObject json = LoadJson(filename);
+			prods = json.getJSONObject(m_category);
+			itemIds = prods.names();
 			System.out.printf("Under %s category, Number of Items: %d\n", m_category, itemIds.length());
 		} catch (Exception e) {
 			System.out.print('X');
@@ -89,12 +91,14 @@ public class newEggAnalyzer extends DocAnalyzer {
 		for(int i=0; i<itemIds.length(); i++) {
 			try {
 				item = itemIds.getString(i);
-				reviews = prod.getJSONArray(item);
-				for(int j=0; j<reviews.length(); j++) {
-					if(this.m_stnDetector != null)
-						AnalyzeNewEggPostWithSentence(new _NewEggPost(reviews.getJSONObject(j), item));
+				reviews = prods.getJSONArray(item);
+				m_reviewCount+=reviews.length();
+				for(int j=0; j<reviews.length(); j++) 
+				{
+					if(this.m_stnDetector!=null)
+						AnalyzeNewEggPostWithSentence(new NewEggPost(reviews.getJSONObject(j), item));
 					else
-						AnalyzeNewEggPost(new _NewEggPost(reviews.getJSONObject(j), item));
+						AnalyzeNewEggPost(new NewEggPost(reviews.getJSONObject(j), item));
 				}
 			} catch (JSONException e) {
 				System.out.print('P');
@@ -105,7 +109,7 @@ public class newEggAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-	protected boolean AnalyzeNewEggPost(_NewEggPost post) throws ParseException {
+	protected boolean AnalyzeNewEggPost(NewEggPost post) throws ParseException {
 		String[] tokens;
 		String content;
 		TokenizeResult result;
@@ -196,7 +200,7 @@ public class newEggAnalyzer extends DocAnalyzer {
 	}
 	
 	
-	protected boolean AnalyzeNewEggPostWithSentence(_NewEggPost post) throws ParseException {
+	protected boolean AnalyzeNewEggPostWithSentence(NewEggPost post) throws ParseException {
 		String content;
 		TokenizeResult result;
 		ArrayList<_Stn> stnList = new ArrayList<_Stn>(); // to avoid empty sentences
@@ -321,8 +325,8 @@ public class newEggAnalyzer extends DocAnalyzer {
 			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y]++;
-			m_prosStnCount += prosSentenceCounter;
-			m_consStnCount += consSentenceCounter;
+			m_prosSentenceCounter+=prosSentenceCounter;
+			m_consSentenceCounter+=consSentenceCounter;
 			return true;
 		} else
 			return false;

@@ -29,12 +29,9 @@ import utils.Utils;
 
 /**
  * @author hongning
- * Keyword based bootstrapping for aspect segmentation and annotation
- * Wang, Hongning, Yue Lu, and Chengxiang Zhai. "Latent aspect rating analysis on review text data: a rating regression approach." 
- * Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2010.
+ * Keyword based bootstrapping for aspect annotation
  */
-
-public class AspectAnalyzer extends DocAnalyzer {
+public class AspectAnalyzer extends jsonAnalyzer {
 	class _Aspect{
 		String m_name;
 		HashSet<Integer> m_keywords; // index corresponding to the controlled vocabulary
@@ -66,18 +63,32 @@ public class AspectAnalyzer extends DocAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	boolean m_aspByCount = false; // select aspect by maximum count or simple matching
-	
+	boolean m_aspFlag = false; // Whether we use the absolute value or binary value.
+		
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
 	}
-
-	public AspectAnalyzer(String tokenModel, String stnModel, String tagModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, boolean aspFlag) 
+	
+	//Added by Lin.
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, stnModel, tagModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
+	}
+	
+	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
 		LoadAspectKeywords(aspectFile);
-		m_aspByCount = aspFlag;
+		m_aspFlag = aspFlag;
+	}
+	
+	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		m_chiSize = chiSize;
+		LoadAspectKeywords(aspectFile);
+		m_aspFlag = aspFlag;
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -87,7 +98,7 @@ public class AspectAnalyzer extends DocAnalyzer {
 			String tmpTxt;
 			String[] container;
 			HashSet<Integer> keywords;
-			while( (tmpTxt=reader.readLine()) != null ) {
+			while( (tmpTxt=reader.readLine()) != null ){
 				container = tmpTxt.split("\\s+");
 				keywords = new HashSet<Integer>(container.length-1);
 
@@ -115,7 +126,8 @@ public class AspectAnalyzer extends DocAnalyzer {
 				if ( (count=s.AnnotateByKeyword(m_aspects.get(index).m_keywords))>maxCount ){
 					maxCount = count;
 					sel = index;
-				} else if (count==maxCount)
+				}
+				else if (count==maxCount)
 					sel = -1;//how should we break the tie?
 			}
 			s.setTopic(sel);
@@ -176,7 +188,7 @@ public class AspectAnalyzer extends DocAnalyzer {
 			maxChi = 0.0;
 			selID = -1;
 			for(int i=0; i<aspectSize; i++){				
-				chiV = Utils.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
+				chiV = FeatureSelector.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
 				if (chiV > ratio * maxChi){
 					maxChi = chiV;
 					selID = i;
@@ -233,7 +245,7 @@ public class AspectAnalyzer extends DocAnalyzer {
 		for(int i = 0; i < m_aspects.size(); i++){
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
 			for(int key: keywords){
-				if(m_aspByCount){//we will accumulate the matching count for this aspect in the sentence
+				if(m_aspFlag){
 					if(spVct.containsKey(key))
 						aspVct[i] += spVct.get(key);
 				} else{
@@ -246,7 +258,6 @@ public class AspectAnalyzer extends DocAnalyzer {
 		return aspVct;
 	}
 	
-	@Override
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
 		double sentiScore = 0;
 		TokenizeResult result;

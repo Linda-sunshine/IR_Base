@@ -10,6 +10,7 @@ import structures._thetaStar;
 import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._DPAdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
