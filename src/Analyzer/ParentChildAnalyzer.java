@@ -17,13 +17,17 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import utils.Utils;
 
+/**
+ * 
+ * @author Renqin Cai
+ * Analyzer to load article comment pairs
+ */
 public class ParentChildAnalyzer extends DocAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 
 	public static int ChildDocFeatureSize = 6;
 	public ParentChildAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		//added by Renqin
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		parentHashMap = new HashMap<String, _ParentDoc>();
 	}

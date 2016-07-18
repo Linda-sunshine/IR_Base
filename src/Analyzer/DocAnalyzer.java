@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.Normalizer;
@@ -30,11 +29,11 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import structures.Product;
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Post;
+import structures._Product;
 import structures._Stn;
 import utils.Utils;
 
@@ -56,12 +55,7 @@ public class DocAnalyzer extends Analyzer {
 
 	//shall we have it here???
 	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
-	
-	//shall we have the following structure here???
 	protected SentiWordNet m_sentiWordNet;
-	protected ArrayList<String> m_posPriorList;//list of positive seed words
-	protected ArrayList<String> m_negPriorList;//list of negative seed words
-	protected ArrayList<String> m_negationList;//list of negation seed words	
 	
 	//Constructor with TokenModel, ngram and fValue.
 	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
@@ -147,43 +141,6 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}	
 	
-	//since the seed words are stemmed, please double check when you use such words in generating the features
-	public void loadPriorPosNegWords(String pathToSentiWordNet, String pathToPosWords, String pathToNegWords, String pathToNegationWords) {
-		m_posPriorList = new ArrayList<String>();
-		m_negPriorList = new ArrayList<String>();
-		m_negationList = new ArrayList<String>();
-		
-		BufferedReader file = null;
-		try {
-			file = new BufferedReader(new FileReader(pathToPosWords));
-			String line;
-			while ((line = file.readLine()) != null) {
-				line = SnowballStemming(line); // only stemming since the list contains only single word per line and there is no number
-				m_posPriorList.add(line);
-			}
-			file.close();
-			
-			file = new BufferedReader(new FileReader(pathToNegWords));
-			while ((line = file.readLine()) != null) {
-				line = SnowballStemming(line);
-				m_negPriorList.add(line);
-			}
-			file.close();
-			
-			file = new BufferedReader(new FileReader(pathToNegationWords));
-			while ((line = file.readLine()) != null) {
-				line = SnowballStemming(line);
-				m_negationList.add(line);
-			}
-			file.close();
-			
-			// loading the sentiWordnet
-			m_sentiWordNet = new SentiWordNet(pathToSentiWordNet);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
 	//Tokenizing input text string
 	protected String[] Tokenizer(String source){
 		String[] tokens = m_tokenizer.tokenize(source);
@@ -223,6 +180,31 @@ public class DocAnalyzer extends Analyzer {
 		return token.isEmpty();//is this a good checking condition?
 	}
 	
+	// added by Lin, the same function with different parameters.
+	protected double sentiWordScore(String[] tokens, String[] posTags) {
+		double senScore = 0.0;
+		double tmp;
+		String word, tag;
+
+		for(int i=0; i<tokens.length;i++){
+			word = SnowballStemming(Normalize(tokens[i]));
+			tag = posTags[i];
+			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
+				tag = "n";
+			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
+				tag = "a";
+			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
+				tag = "v";
+			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
+				tag = "r";
+			
+			tmp = m_sentiWordNet.extract(word, tag);
+			if(tmp!=-2) // word found in SentiWordNet
+				senScore+=tmp;
+		}
+		return senScore/tokens.length;//This is average, we may have different ways of calculation.
+	}
+		
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	protected TokenizeResult TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source); //Original tokens.
@@ -317,12 +299,12 @@ public class DocAnalyzer extends Analyzer {
 	
 	//Load a document and analyze it.
 	protected void LoadJsonDoc(String filename) {
-		Product prod = null;
+		_Product prod = null;
 		JSONArray jarray = null;
 		
 		try {
 			JSONObject json = LoadJSON(filename);
-			prod = new Product(json.getJSONObject("ProductInfo"));
+			prod = new _Product(json.getJSONObject("ProductInfo"));
 			jarray = json.getJSONArray("Reviews");
 		} catch (Exception e) {
 			System.err.print('X');//fail to parse a json document
@@ -492,9 +474,6 @@ public class DocAnalyzer extends Analyzer {
 			doc.setStopwordProportion(stopwordCnt/rawCnt);
 			doc.setSentences(stnList);
 			
-			if(m_tagger!=null)
-				setStnFvs(doc);
-			
 			m_corpus.addDoc(doc);
 			m_classMemberNo[y] ++;
 			
@@ -512,186 +491,6 @@ public class DocAnalyzer extends Analyzer {
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
 		String[] sentences = m_stnDetector.sentDetect(doc.getSource());
 		return AnalyzeDocByStn(doc, sentences);		
-	}
-	
-	// used by LR-HTSM for constructing topic/sentiment transition features for sentiment
-	// shall we put it here????
-	protected void setStnFvs(_Doc d) {
-		_Stn[] sentences = d.getSentences();
-		
-		// start from 2nd sentence
-		double pSim = Utils.cosine(sentences[0].getFv(), sentences[1].getFv()), nSim;
-		double cLength, pLength = Utils.sumOfFeaturesL1(sentences[0].getFv());
-		double pKL = Utils.klDivergence(calculatePOStagVector(sentences[0]), calculatePOStagVector(sentences[1])), nKL;
-		double pSenScore = sentiWordScore(sentences[0]), cSenScore;
-		int pPosNeg= posNegCount(sentences[0]), cPosNeg;
-		int pNegationCount= negationCount(sentences[0]), cNegationCount;
-		int stnSize = d.getSenetenceSize();
-		
-		for(int i=1; i<stnSize; i++){
-			//cosine similarity	for both sentiment and topical transition		
-			sentences[i-1].m_sentiTransitFv[0] = pSim;	
-			sentences[i-1].m_transitFv[0] = pSim;		
-
-			//length_ratio for topical transition
-			cLength = Utils.sumOfFeaturesL1(sentences[i].getFv());			
-			sentences[i-1].m_transitFv[1] = (pLength-cLength)/Math.max(cLength, pLength);
-			pLength = cLength;
-			
-			//position for topical transition
-			sentences[i-1].m_transitFv[2] = (double)i / stnSize;
-			
-			//sentiWordScore for sentiment transition
-			cSenScore = sentiWordScore(sentences[i]);
-			if(cSenScore<=-2 || pSenScore<=-2)
-				sentences[i-1].m_sentiTransitFv[1] = 0;
-			else if (cSenScore*pSenScore<0)
-				sentences[i-1].m_sentiTransitFv[1] = 1; // transition
-			else
-				sentences[i-1].m_sentiTransitFv[1] = -1; // no transition
-			pSenScore = cSenScore;
-
-			//positive/negative count 
-			cPosNeg = posNegCount(sentences[i]);
-			if(pPosNeg==cPosNeg)
-				sentences[i-1].m_sentiTransitFv[2] = -1; // no transition
-			else
-				sentences[i-1].m_sentiTransitFv[2] = 1; // transition
-			pPosNeg = cPosNeg;
-
-			//similar to previous or next for both topical and sentiment transitions
-			if (i<stnSize-1) {
-				nSim = Utils.cosine(sentences[i].getFv(), sentences[i+1].getFv());
-				if (nSim>pSim) {
-					sentences[i-1].m_sentiTransitFv[3] = 1;
-					sentences[i-1].m_transitFv[3] = 1;
-				} else if (nSim<pSim) {
-					sentences[i-1].m_sentiTransitFv[3] = -1;
-					sentences[i-1].m_transitFv[3] = -1;
-				}
-				pSim = nSim;
-			}
-
-			//kl divergency between POS tag vector to previous or next
-			if (i<stnSize-1) {
-				nKL = Utils.klDivergence(calculatePOStagVector(sentences[i]), calculatePOStagVector(sentences[i+1]));
-				if (nKL>pKL)
-					sentences[i-1].m_sentiTransitFv[4] = 1;
-				else if (nKL<pKL)
-					sentences[i-1].m_sentiTransitFv[4] = -1;
-				pKL = nKL;
-			}
-
-			//negation count 
-			cNegationCount = negationCount(sentences[i]);
-			if(pNegationCount==0 && cNegationCount>0)
-				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
-			else if (pNegationCount>0 && cNegationCount==0)
-				sentences[i-1].m_sentiTransitFv[5] = 1; // transition
-			else
-				sentences[i-1].m_sentiTransitFv[5] = -1; // no transition
-			pNegationCount = cNegationCount;
-		}
-	}
-
-	// receive sentence index as parameter
-	protected double sentiWordScore(_Stn s) {
-		return sentiWordScore(s.getRawTokens(), s.getSentencePosTag());
-	}
-
-	// added by Lin, the same function with different parameters.
-	protected double sentiWordScore(String[] tokens, String[] posTags) {
-		double senScore = 0.0;
-		double tmp;
-		String word, tag;
-
-		for(int i=0; i<tokens.length;i++){
-			word = SnowballStemming(Normalize(tokens[i]));
-			tag = posTags[i];
-			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
-				tag = "n";
-			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
-				tag = "a";
-			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
-				tag = "v";
-			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
-				tag = "r";
-			
-			tmp = m_sentiWordNet.extract(word, tag);
-			if(tmp!=-2) // word found in SentiWordNet
-				senScore+=tmp;
-		}
-		return senScore/tokens.length;//This is average, we may have different ways of calculation.
-	}
-	
-	// receive sentence index as parameter
-	// PosNeg count is done against the raw sentence
-	// so stopword will also get counter here like not, none 
-	// which is important for PosNeg count
-	protected int posNegCount(_Stn s) {
-		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
-		//Normalize them and stem them.		
-		for(int i = 0; i < wordsInSentence.length; i++)
-			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
-		
-		int posCount = 0;
-		int negCount = 0;
-
-		for(String word:wordsInSentence){
-			if(m_posPriorList.contains(word))
-				posCount++;
-			else if(m_negPriorList.contains(word))
-				negCount++;
-		}
-
-		if(posCount>negCount)
-			return 1; // 1 means sentence is more positive
-		else if (negCount>posCount)
-			return 2; // 2 means sentence is more negative
-		else
-			return 0; // sentence is neutral or no match
-	}
-
-	// receive sentence index as parameter
-	// Negation count is done against the raw sentence
-	// so stopword will also get counter here like not, none 
-	// which is important for negation count
-	protected int negationCount(_Stn s) {
-		String[] wordsInSentence = Tokenizer(s.getRawSentence()); //Original tokens.
-		//Normalize them and stem them.		
-		for(int i = 0; i < wordsInSentence.length; i++)
-			wordsInSentence[i] = SnowballStemming(Normalize(wordsInSentence[i]));
-		
-		int negationCount = 0;
-
-		for(String word:wordsInSentence){
-			if(m_negationList.contains(word))
-				negationCount++;
-		}
-		return negationCount;
-	}
-
-	// calculate the number of Noun, Adjectives, Verb & AdVerb in a vector for a sentence
-	// here i the index of the sentence
-	protected double[] calculatePOStagVector(_Stn s) {
-		String[] posTag = s.getSentencePosTag();
-		double tagVector[] = new double[4]; 
-		// index = 0 for noun
-		// index = 1 for adjective
-		// index = 2 for verb
-		// index = 3 for adverb
-		for(String tag:posTag){
-			if(tag.equalsIgnoreCase("NN") || tag.equalsIgnoreCase("NNS") || tag.equalsIgnoreCase("NNP") || tag.equalsIgnoreCase("NNPS"))
-				tagVector[0]++;
-			else if(tag.equalsIgnoreCase("JJ") || tag.equalsIgnoreCase("JJR") || tag.equalsIgnoreCase("JJS"))
-				tagVector[1]++;
-			else if(tag.equalsIgnoreCase("VB") || tag.equalsIgnoreCase("VBD") || tag.equalsIgnoreCase("VBG"))
-				tagVector[2]++;
-			else if(tag.equalsIgnoreCase("RB") || tag.equalsIgnoreCase("RBR") || tag.equalsIgnoreCase("RBS"))
-				tagVector[3]++;
-		}
-		Utils.L1Normalization(tagVector);
-		return tagVector;
 	}
 }	
 

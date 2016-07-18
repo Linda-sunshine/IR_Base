@@ -3,7 +3,7 @@ package structures;
 import json.JSONObject;
 import utils.Utils;
 
-public class Product {
+public class _Product {
 	String m_ID;
 	public String getID() {
 		return m_ID;
@@ -41,12 +41,12 @@ public class Product {
 	}
 	
 	//Constructor.
-	public Product(String ID) {
+	public _Product(String ID) {
 		m_ID = ID;
 	}
 	
 	//Constructor.
-	public Product(JSONObject json) throws NumberFormatException {
+	public _Product(JSONObject json) throws NumberFormatException {
 		setPrice(Utils.getJSONValue(json, "Price"));
 		setFeatures(Utils.getJSONValue(json, "Features"));
 		setName(Utils.getJSONValue(json, "Name"));

@@ -179,11 +179,6 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
 		
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);			

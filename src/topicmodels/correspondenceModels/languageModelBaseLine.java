@@ -369,12 +369,6 @@ public class languageModelBaseLine{
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
-		
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);				
 		
