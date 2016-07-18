@@ -132,8 +132,13 @@ public class DCMLDA extends LDA_Gibbs {
 	protected void initialize_probability(Collection<_Doc> collection) {
 
 		Arrays.fill(m_sstat, 0);
-		for (int k = 0; k < number_of_topics; k++)
+		Arrays.fill(m_alpha, d_alpha);
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
+		for (int k = 0; k < number_of_topics; k++){
+			Arrays.fill(m_beta[k], d_beta);
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 			Arrays.fill(topic_term_probabilty[k], 0);
+		}
 
 		// initialize topic-word allocation, p(w|z)
 		for (_Doc d : collection) {
@@ -149,15 +154,22 @@ public class DCMLDA extends LDA_Gibbs {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
 				m_docWordTopicStats[docID][tid][wid]++;
-				topic_term_probabilty[tid][wid]++;
-				m_sstat[tid]++;
+
+			}
+
+			for (int k = 0; k < number_of_topics; k++){
+				m_sstat[k] += topicInDocProb(k, d);
+				for (int v = 0; v < vocabulary_size; v++)
+					topic_term_probabilty[k][v] += wordTopicProb(k, v, d);
 			}
 
 		}
 
-		Utils.L1Normalization(m_sstat);
-		for (int k = 0; k < number_of_topics; k++)
-			Utils.L1Normalization(topic_term_probabilty[k]);
+		for (int k = 0; k < number_of_topics; k++) {
+			m_sstat[k] /= m_trainSet.size() * 1.0;
+			for (int v = 0; v < vocabulary_size; v++)
+				topic_term_probabilty[k][v] /= m_trainSet.size() * 1.0;
+		}
 
 		// Arrays.fill(m_docTopicStats[docID], d_beta*vocabulary_size);
 		for (int k = 0; k < number_of_topics; k++) {
@@ -199,7 +211,8 @@ public class DCMLDA extends LDA_Gibbs {
 	};
 
 	protected double topicInDocProb(int tid, _Doc d) {
-		return d.m_sstat[tid] + m_alpha[tid];
+		return (d.m_sstat[tid] + m_alpha[tid])
+				/ (d.getTotalDocLength() + m_totalAlpha - 1);
 	}
 
 	// p(w|z)
@@ -234,9 +247,11 @@ public class DCMLDA extends LDA_Gibbs {
 		for (_Doc d : m_trainSet)
 			collectStats(d);
 
-		Utils.L1Normalization(m_sstat);
-		for (int k = 0; k < number_of_topics; k++)
-			Utils.L1Normalization(topic_term_probabilty[k]);
+		for (int k = 0; k < number_of_topics; k++) {
+			m_sstat[k] /= m_trainSet.size() * 1.0;
+			for (int v = 0; v < vocabulary_size; v++)
+				topic_term_probabilty[k][v] /= m_trainSet.size() * 1.0;
+		}
 
 		for (int k = 0; k < number_of_topics; k++) {
 			m_alpha[k] = m_sstat[k];
@@ -260,10 +275,10 @@ public class DCMLDA extends LDA_Gibbs {
 
 		for (int k = 0; k < this.number_of_topics; k++) {
 			d.m_topics[k] += d.m_sstat[k] + m_alpha[k];
-			m_sstat[k] += d.m_sstat[k];
+			m_sstat[k] += topicInDocProb(k, d);
 			for (int v = 0; v < vocabulary_size; v++){
 				m_docWordTopicProb[docID][k][v] += m_docWordTopicStats[docID][k][v] + m_beta[k][v];
-				topic_term_probabilty[k][v] += m_docWordTopicStats[docID][k][v];
+				topic_term_probabilty[k][v] += wordTopicProb(k, v, d);
 			}
 		}
 
@@ -308,10 +323,7 @@ public class DCMLDA extends LDA_Gibbs {
 				
 				diff += (m_alpha[k]-deltaAlpha)*(m_alpha[k]-deltaAlpha);
 				m_alpha[k] = deltaAlpha;
-				
-				
 			}
-			
 			
 			diff /= number_of_topics;
 			
