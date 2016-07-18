@@ -1,6 +1,5 @@
 package topicmodels.multithreads;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -165,19 +164,6 @@ public class DCMLDA_multithread extends DCMLDA{
 			workerID ++;		
 		}
 		
-	}
-	
-	protected void updateParameter(int iter, File weightIterFolder) {
-		updateAlpha();
-		
-		updateBeta();
-		
-		for(int k=0; k<number_of_topics; k++)
-			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
-		
-		String fileName = iter + ".txt";
-		saveParameter2File(weightIterFolder, fileName);
-
 	}
 	
 	protected void updateBeta(){
