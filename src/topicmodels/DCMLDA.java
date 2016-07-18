@@ -5,8 +5,6 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
 
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -59,6 +57,7 @@ public class DCMLDA extends LDA_Gibbs {
 
 		m_newtonIter = newtonIter;
 		m_newtonConverge = newtonConverge;
+
 	}
 
 	public void EM() {
@@ -132,6 +131,10 @@ public class DCMLDA extends LDA_Gibbs {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
+		Arrays.fill(m_sstat, 0);
+		for (int k = 0; k < number_of_topics; k++)
+			Arrays.fill(topic_term_probabilty[k], 0);
+
 		// initialize topic-word allocation, p(w|z)
 		for (_Doc d : collection) {
 			int docID = d.getID();
@@ -139,15 +142,6 @@ public class DCMLDA extends LDA_Gibbs {
 				Arrays.fill(m_docWordTopicStats[docID][k], 0);
 			}
 
-			// Arrays.fill(m_docTopicStats[docID], d_beta*vocabulary_size);
-			m_totalAlpha = 0;
-			for (int k = 0; k < number_of_topics; k++) {
-				m_alpha[k] = d_alpha;
-				m_totalAlpha += m_alpha[k];
-				Arrays.fill(m_beta[k], d_beta);
-				m_totalBeta[k] = vocabulary_size * d_beta;
-			}
-			
 			// allocate memory and randomize it
 			d.setTopics4Gibbs(number_of_topics, 0);
 			
@@ -155,11 +149,24 @@ public class DCMLDA extends LDA_Gibbs {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
 				m_docWordTopicStats[docID][tid][wid]++;
-//				m_docTopicStats[docID][tid]++;
-
+				topic_term_probabilty[tid][wid]++;
+				m_sstat[tid]++;
 			}
 
 		}
+
+		Utils.L1Normalization(m_sstat);
+		for (int k = 0; k < number_of_topics; k++)
+			Utils.L1Normalization(topic_term_probabilty[k]);
+
+		// Arrays.fill(m_docTopicStats[docID], d_beta*vocabulary_size);
+		for (int k = 0; k < number_of_topics; k++) {
+			m_alpha[k] = m_sstat[k];
+			for (int v = 0; v < vocabulary_size; v++)
+				m_beta[k][v] = topic_term_probabilty[k][v];
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+		}
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
 
 		imposePrior();
 	}
@@ -195,9 +202,7 @@ public class DCMLDA extends LDA_Gibbs {
 		return d.m_sstat[tid] + m_alpha[tid];
 	}
 
-	/*
-	 * p(w|z)
-	 */
+	// p(w|z)
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
 		int docID = d.getID();
 		return (m_docWordTopicStats[docID][tid][wid] + m_beta[tid][wid])
@@ -212,23 +217,34 @@ public class DCMLDA extends LDA_Gibbs {
 		if (!preFlag) {
 			d.m_sstat[tid]++;
 			m_docWordTopicStats[docID][tid][wid]++;
-//			m_docTopicStats[docID][tid]++;
 			
 		} else {
 			d.m_sstat[tid]--;
 			m_docWordTopicStats[docID][tid][wid]--;
-//			m_docTopicStats[docID][tid]--;
 			
 		}
 
 	}
 
 	public void calculate_M_step(int iter, File weightFolder) {
-		// literally we do not have M-step in Gibbs sampling
+		Arrays.fill(m_sstat, 0);
+		for (int k = 0; k < number_of_topics; k++)
+			Arrays.fill(topic_term_probabilty[k], 0);
 
-		// accumulate p(z|d)
 		for (_Doc d : m_trainSet)
 			collectStats(d);
+
+		Utils.L1Normalization(m_sstat);
+		for (int k = 0; k < number_of_topics; k++)
+			Utils.L1Normalization(topic_term_probabilty[k]);
+
+		for (int k = 0; k < number_of_topics; k++) {
+			m_alpha[k] = m_sstat[k];
+			for (int v = 0; v < vocabulary_size; v++)
+				m_beta[k][v] = topic_term_probabilty[k][v];
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+		}
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
 
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
@@ -244,8 +260,11 @@ public class DCMLDA extends LDA_Gibbs {
 
 		for (int k = 0; k < this.number_of_topics; k++) {
 			d.m_topics[k] += d.m_sstat[k] + m_alpha[k];
-			for (int v = 0; v < vocabulary_size; v++)
+			m_sstat[k] += d.m_sstat[k];
+			for (int v = 0; v < vocabulary_size; v++){
 				m_docWordTopicProb[docID][k][v] += m_docWordTopicStats[docID][k][v] + m_beta[k][v];
+				topic_term_probabilty[k][v] += m_docWordTopicStats[docID][k][v];
+			}
 		}
 
 	}
