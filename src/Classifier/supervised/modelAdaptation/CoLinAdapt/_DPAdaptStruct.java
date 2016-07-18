@@ -19,4 +19,11 @@ public class _DPAdaptStruct extends _LinAdaptStruct{
 	public void setThetaStar(_thetaStar s){
 		m_thetaStar = s;
 	}
+	
+	public double getScaling(int k){
+		return m_thetaStar.m_beta[k];
+	}
+	public double getShifing(int k){
+		return m_thetaStar.m_beta[m_dim+k];
+	}
 }

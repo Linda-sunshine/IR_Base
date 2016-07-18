@@ -16,6 +16,7 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
+import utils.Utils;
 
 public class MTLinAdapt extends CoLinAdapt {
 
@@ -132,7 +133,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			k = m_featureGroupMap[n];
 			value += (ui.getScaling(k)*getSupWeights(n) + ui.getShifting(k)) * fv.getValue();
 		}
-		return 1/(1+Math.exp(-value));
+		return Utils.logistic(value);
 	}
 	
 	//Calculate the function value of the new added instance.

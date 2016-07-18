@@ -52,52 +52,40 @@ public class MyLinAdaptMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
-//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
-		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-//		analyzer.loadCategory("./data/category.txt");
-//		analyzer.setCtgThreshold(ctgCount);
 		analyzer.loadUserDir(userFolder);
-		// The second parameter stands for DF scheme, "G"-global, "D"-adaptation, "G+D"-both
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-		// Load svd of each user.
-//		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
-//		analyzer.loadSVDFile(svdFile);
-		double[] alphas = new double[]{5, 10, 15, 20};
-		double[] lambdas = new double[]{5, 10, 15, 20};
-		for(double alpha: alphas){
-			for(double lambda: lambdas){
+//		double[] alphas = new double[]{5, 10, 15, 20};
+//		double[] lambdas = new double[]{5, 10, 15, 20};
+//		for(double alpha: alphas){
+//			for(double lambda: lambdas){
 
 		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-//		adaptation.setLNormFlag(false);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setAlpha(alpha);
-		adaptation.setLambda(lambda);
+//		adaptation.setAlpha(alpha);
+//		adaptation.setLambda(lambda);
 		adaptation.EM();
 		adaptation.test();
-		int[] clusters = adaptation.calculateClusetAssignment();
-		Arrays.sort(clusters);
-		for(int i: clusters)
-			System.out.print(i + "\t");
-		System.out.println();
-		System.out.print(String.format("[Info]%d Clusters are found in total!\n", adaptation.getKBar()));
-		}}
-	
+		adaptation.printInfo();
+		
+//		}}
 		// Create an instances of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 //		adaptation.loadUsers(analyzer.getUsers());
@@ -108,33 +96,7 @@ public class MyLinAdaptMain {
 //		 
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-		 
-//		 // Create an instances of asyncLinAdapt model.
-//		 asyncLinAdapt adaptation = new asyncLinAdapt(classNumber,
-//		 analyzer.getFeatureSize(), featureMap, globalModel,
-//		 featureGroupFile);
 
-//		//Create an instance of first-order asyncCoLinAdapt model.
-//		asyncCoLinAdaptFirstOrder adaptation = new asyncCoLinAdaptFirstOrder(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, neighborsHistoryWeight);
-//		int[] kFolds = new int[]{100, 200, 300, 400, 500, 600, 700, 800, 900, 1000};
-//		int[] kMeans = new int[]{200, 300, 400, 500, 600, 700, 800, 900, 1000, 1200, 1300, 1400, 1500, 1600};
-//		for(int kFold: kFolds){
-//			for(int kMean: kMeans){
-//		
-//		CrossFeatureSelection fs = new CrossFeatureSelection(analyzer.getCorpus(), classNumber, analyzer.getFeatureSize(), kFold, kMean);
-//		fs.train();
-//		fs.kMeans();
-
-//		MTRegLR adaptation = new MTRegLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-		
-//		int kmeans = 10;
-//		int[] clusters;
-//		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
-//		alg.train(analyzer.getUsers());
-//		clusters = alg.getClusters();
-		
-//		double[] cs = new double[]{0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1};
-//		for(double c: cs){
 		// Create an instance of ClusterLinAdapt.
 //		ClusteredLinAdapt adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
 //		adaptation.setParameters(1, 1, 1);
@@ -147,49 +109,16 @@ public class MyLinAdaptMain {
 //		
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-//		
-//		adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
-//		adaptation.setParameters(1, 1, 0);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setRcRgTradeOffs(eta3, eta4);
-//		adaptation.train();
-//		adaptation.test();
-//	
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		
-//		adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
-//		adaptation.setParameters(1, 0, 1);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setRcRgTradeOffs(eta3, eta4);
-//		adaptation.train();
-//		adaptation.test();
-//
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		
-//		adaptation = new ClusteredLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile, kmeans, clusters);
-//		adaptation.setParameters(0, 1, 1);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setRcRgTradeOffs(eta3, eta4);
-//		adaptation.train();
-//		adaptation.test();
-		
+//			
 //		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.loadUsers(analyzer.getUsers());
 //		mtsvm.train();
 //		mtsvm.test();
-		
+//		
 //		for(_User u: analyzer.getUsers())
 //		u.getPerfStat().clear();
-	
+//	
 //		//MultiTaskSVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.setBias(true);
