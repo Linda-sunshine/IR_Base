@@ -34,8 +34,8 @@ public class DCMLDA extends LDA_Gibbs {
 	protected double[] m_alpha;
 	protected double[][] m_beta;
 
-	double m_totalAlpha;
-	double[] m_totalBeta;
+	protected double m_totalAlpha;
+	protected double[] m_totalBeta;
 	
 	protected int m_newtonIter;
 	protected double m_newtonConverge;
@@ -312,14 +312,9 @@ public class DCMLDA extends LDA_Gibbs {
 				
 			}
 			
-			m_totalAlpha = 0;
-			for(int k=0; k<number_of_topics; k++){
-				m_totalAlpha += m_alpha[k];
-			}
 			
 			diff /= number_of_topics;
 			
-		
 			iteration ++;
 			System.out.println("alpha iteration\t"+iteration);
 			
