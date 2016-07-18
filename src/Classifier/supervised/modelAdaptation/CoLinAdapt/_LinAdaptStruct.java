@@ -7,11 +7,12 @@ public class _LinAdaptStruct extends _AdaptStruct {
 	
 	protected double[] m_A; // transformation matrix which is 2*(k+1) dimension.
 	protected int m_dim; // number of feature groups
-//	protected int m_cIndex; // The cluster index of the user.
 	
+	public _LinAdaptStruct(_User user){
+		super(user);
+	}
 	public _LinAdaptStruct(_User user, int dim) {
 		super(user);
-		
 		m_dim = dim;
 		if (dim>0) {
 			m_A = new double[dim*2];		

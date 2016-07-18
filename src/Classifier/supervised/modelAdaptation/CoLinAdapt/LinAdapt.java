@@ -23,6 +23,16 @@ public class LinAdapt extends RegLR {
 	//Trade-off parameters	
 	protected double m_eta2; // weight for shifting in R2.
 	
+	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
+		super(classNo, featureSize, featureMap, globalModel);
+		m_userList = null;		
+		// default value of trade-off parameters
+		m_eta1 = 0.5;
+		m_eta2 = 0.5;
+		
+		// the only test mode for LinAdapt is batch
+		m_testmode = TestMode.TM_batch;
+	}
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
 		m_userList = null;

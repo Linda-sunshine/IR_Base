@@ -39,7 +39,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
-	protected double[] m_perf = new double[m_classNo * 2]; // Stores overall performance, micro F1 for both classes, macro F1 for both classes.
 	
 	//if we will set the personalized model to the target user (otherwise use the global model)
 	protected boolean m_personalized;
@@ -221,7 +220,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	public double test(){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		
+		m_perf = new double[m_classNo * 2];
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;

@@ -29,7 +29,8 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdaptOverall;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTCoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.asyncCoLinAdapt;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MultiTaskWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLogisticRegressionWithDP;
 import Classifier.supervised.modelAdaptation.RegLR.MTRegLR;
 
 public class MyLinAdaptMain {
@@ -51,17 +52,17 @@ public class MyLinAdaptMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+////		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		//String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -76,11 +77,17 @@ public class MyLinAdaptMain {
 		// Load svd of each user.
 //		String svdFile = "./data/CoLinAdapt/Amazon/Amazon_SVD.mm";
 //		analyzer.loadSVDFile(svdFile);
-	
-		MultiTaskWithDP adaptation = new MultiTaskWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+		double[] alphas = new double[]{5, 10, 15, 20};
+		double[] lambdas = new double[]{5, 10, 15, 20};
+		for(double alpha: alphas){
+			for(double lambda: lambdas){
+
+		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 //		adaptation.setLNormFlag(false);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
+		adaptation.setAlpha(alpha);
+		adaptation.setLambda(lambda);
 		adaptation.EM();
 		adaptation.test();
 		int[] clusters = adaptation.calculateClusetAssignment();
@@ -89,7 +96,7 @@ public class MyLinAdaptMain {
 			System.out.print(i + "\t");
 		System.out.println();
 		System.out.print(String.format("[Info]%d Clusters are found in total!\n", adaptation.getKBar()));
-		
+		}}
 	
 		// Create an instances of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);

@@ -5,7 +5,10 @@ import structures._thetaStar;
 
 public class _DPAdaptStruct extends _LinAdaptStruct{
 
-	_thetaStar m_thetaStar;
+	_thetaStar m_thetaStar = null;
+	public _DPAdaptStruct(_User user) {
+		super(user);
+	}
 	public _DPAdaptStruct(_User user, int dim) {
 		super(user, dim);
 	}

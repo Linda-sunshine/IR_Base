@@ -30,7 +30,8 @@ public abstract class BaseClassifier {
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 	protected _PerformanceStat m_microStat; // this structure can replace the previous two arrays
-	
+	protected double[] m_perf; // Stores overall performance, micro F1 for both classes, macro F1 for both classes.
+
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
 	
@@ -267,8 +268,10 @@ public abstract class BaseClassifier {
 		
 		// micro average
 		System.out.println("Micro F1:");
-		for(int i=0; i<m_classNo; i++)
+		for(int i=0; i<m_classNo; i++){
+			m_perf[i] = m_microStat.getF1(i);
 			System.out.format("Class %d: %.4f\t", i, m_microStat.getF1(i));
+		}
 	}
 	
 	//Calculate the precision and recall for one folder tests.
