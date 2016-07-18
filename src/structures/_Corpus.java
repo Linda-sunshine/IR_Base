@@ -25,7 +25,7 @@ public class _Corpus {
 	ArrayList<String> m_features; //ArrayList for features
 	public HashMap<String, _stat> m_featureStat; //statistics about the features
 	boolean m_withContent = false; // by default all documents' content has been released
-	
+		
 	public void setFeatureStat(HashMap<String, _stat> featureStat) {
 		this.m_featureStat = featureStat;
 	}
@@ -110,6 +110,7 @@ public class _Corpus {
 		
 		return max;
 	}
+	
 	/*
 	 rand.nextInt(k) will always generates a number between 0 ~ (k-1).
 	 Access the documents with the masks can help us split the whole whole 

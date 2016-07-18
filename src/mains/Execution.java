@@ -10,7 +10,6 @@ import java.text.ParseException;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
-import Analyzer.jsonAnalyzer;
 import Classifier.BaseClassifier;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -55,10 +54,7 @@ public class Execution  {
 			corpus = analyzer.getCorpus();
 		} else {
 			/***Load the data from text file***/
-			if (param.m_suffix.equals(".json"))
-				analyzer = new jsonAnalyzer(param.m_tokenModel,param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel, posModel);	
-			else
-				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+			analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 			((DocAnalyzer)analyzer).setReleaseContent(!param.m_weightScheme.equals("PR"));
 			if (param.m_featureFile==null) {
 				/****Pre-process the data.*****/
@@ -70,14 +66,13 @@ public class Execution  {
 				
 				((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);
 				analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
-				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_DFthreshold); //Select the features.
+				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_maxDF, param.m_minDF); //Select the features.
 			}
 			
 			//Collect vectors for documents.
 			System.out.println("Creating feature vectors, wait...");			
 			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(param.m_featureValue, param.m_norm);
-			analyzer.setTimeFeatures(param.m_window);
 			
 			corpus = analyzer.returnCorpus(param.m_featureStat);
 		}

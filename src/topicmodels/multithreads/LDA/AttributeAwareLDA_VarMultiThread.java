@@ -336,7 +336,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		
 		System.out.println("Creating feature vectors, wait...");
 		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, pCategory, loadProsCons);
-		analyzer.LoadNewEggDirectory(newEggFolder, suffix); // load NewEgg reviews
+		analyzer.LoadDirectory(newEggFolder, suffix); // load NewEgg reviews
 		analyzer.LoadDirectory(amazonFolder, suffix); // load amazon reviews
 		
 		_Corpus c = analyzer.returnCorpus(null); // Get the collection of all the documents.

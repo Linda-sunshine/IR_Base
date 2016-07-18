@@ -50,10 +50,8 @@ public class Parameter {
 	public String m_featureSelection = "CHI"; //Feature selection method.
 	public double m_startProb = 0.4; // Used in feature selection, the starting point of the features.
 	public double m_endProb = 0.999; // Used in feature selection, the ending point of the features.
-	public int m_DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-	
-	/*****Parameters in time series analysis.*****/
-	public int m_window = 0; // window size in time series analysis
+	public int m_maxDF = -1; // Filter the features with DFs larger than this threshold.
+	public int m_minDF = 5; // Filter the features with DFs smaller than this threshold.
 	
 	/*****Parameters specified for classifiers.*****/
 	public double m_C = 1.0; // trade-off parameter in LR and SVM
@@ -101,8 +99,10 @@ public class Parameter {
 				m_startProb = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-ep"))
 				m_endProb = Double.valueOf(argv[i]);
-			else if (argv[i-1].equals("-df"))
-				m_DFthreshold = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-df_min"))
+				m_minDF = Integer.valueOf(argv[i]);
+			else if (argv[i-1].equals("-df_max"))
+				m_maxDF = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-cs"))
 				m_classNumber = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-ngram"))
@@ -123,8 +123,6 @@ public class Parameter {
 				m_weightScheme = argv[i];
 			else if (argv[i-1].equals("-s"))
 				m_style = argv[i];
-			else if (argv[i-1].equals("-window"))
-				m_window = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-cf"))
 				m_classifier = argv[i];
 			else if (argv[i-1].equals("-sr"))
@@ -271,7 +269,7 @@ public class Parameter {
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		buffer.append("\nParameters of learning procedure:");
 		buffer.append("\n#Class: " + m_classNumber + "\tNgram: " + m_Ngram + "\tFeature value: " + m_featureValue + "\tNormalization: " + m_norm);
-		buffer.append("\nDoc length cut: " + m_lengthThreshold +"\tWindow length: " + m_window);
+		buffer.append("\nDoc length cut: " + m_lengthThreshold);
 		
 		if (m_style.equals("TM")) {
 			buffer.append("\nTopic Model: " + m_model + "\t#Topics: " + m_numTopics + "\tCross validation: " + m_CVFold);
@@ -317,7 +315,7 @@ public class Parameter {
 		StringBuffer buffer = new StringBuffer(512);
 		buffer.append("--------------------------------------------------------------------------------------");
 		buffer.append("\nParameters of feature selection:");
-		buffer.append("\nSelection method: " + m_featureSelection + "\tDF cut: " + m_DFthreshold + "\tRange: [" + m_startProb + "," + m_endProb + "]");
+		buffer.append("\nSelection method: " + m_featureSelection + "\tDF max cut: " + m_maxDF + "\tDF min cut: " + m_minDF + "\tRange: [" + m_startProb + "," + m_endProb + "]");
 		buffer.append("\nFeature file: " + m_featureFile + "\tStatistics file: " + m_featureStat);
 		buffer.append("\n--------------------------------------------------------------------------------------");
 		return buffer.toString();

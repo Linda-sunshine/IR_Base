@@ -19,10 +19,15 @@ import structures._User;
 import structures._stat;
 import utils.Utils;
 
+/**
+ * 
+ * @author Hongning Wang
+ * Loading text file format for amazon and yelp reviews
+ */
 public class UserAnalyzer extends DocAnalyzer {
 	
 	ArrayList<_User> m_users; // Store all users with their reviews.
-	double m_trainRatio = 0.25; // by default, the first 25% for training global model 
+	double m_trainRatio = 0.25; // by default, the first 25% for training the global model 
 	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
 	int m_trainSize = 0, m_adaptSize = 0, m_testSize = 0;
 	boolean m_enforceAdapt = false;
@@ -51,6 +56,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	@Override
 	protected boolean LoadCV(String filename) {
 		if (filename==null || filename.isEmpty())
 			return false;
@@ -101,7 +107,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile()){
-				loadOneUser(f.getAbsolutePath());
+				loadUser(f.getAbsolutePath());
 				count++;
 			} else if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
@@ -118,7 +124,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	}
 	
 	// Load one file as a user here. 
-	public void loadOneUser(String filename){
+	public void loadUser(String filename){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -199,7 +205,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		return m_users;
 	}
 	
-// Added by Lin: Load the svd file to get the low dim representation of users.
+	// Added by Lin: Load the svd file to get the low dim representation of users.
 	public void loadSVDFile(String filename){
 		try{
 			// Construct the <userID, user> map first.
