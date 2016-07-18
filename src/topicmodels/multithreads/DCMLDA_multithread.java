@@ -66,7 +66,7 @@ public class DCMLDA_multithread extends DCMLDA{
 			System.out.println("topic optimization \t"+tid);
 			double diff = 0;
 			int iteration = 0;
-			double smoothingBeta = 0.0001;
+			double smoothingBeta = 0.01;
 			double totalBeta = 0;
 			do{
 				diff = 0;
@@ -107,6 +107,7 @@ public class DCMLDA_multithread extends DCMLDA{
 					param[v] = deltaBeta;
 				
 				}
+				
 				diff /= vocabulary_size;
 				iteration ++;
 				if(iteration > m_newtonIter)
@@ -170,6 +171,9 @@ public class DCMLDA_multithread extends DCMLDA{
 		updateAlpha();
 		
 		updateBeta();
+		
+		for(int k=0; k<number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 		
 		String fileName = iter + ".txt";
 		saveParameter2File(weightIterFolder, fileName);
