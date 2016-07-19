@@ -79,7 +79,7 @@ public class PageRank extends BaseClassifier {
 			//find k-nearest neighbor
 			for(int j=0; j<collection.size(); j++) {
 				if (i!=j)
-					queue.add(new _RankItem(j, Utils.calculateSimilarity(di, collection.get(j))));
+					queue.add(new _RankItem(j, Utils.dotProduct(di, collection.get(j))));
 			}
 			
 			// transition probability is proportion to similarity
@@ -111,7 +111,7 @@ public class PageRank extends BaseClassifier {
 			double sum = 0;
 			for(int j=0; j<collection.size(); j++) {
 				if (i!=j) {
-					sim = Math.exp(Utils.calculateSimilarity(di, collection.get(j)));
+					sim = Math.exp(Utils.dotProduct(di, collection.get(j)));
 					m_transition.setQuick(i, j, sim);
 					sum += sim;
 				}

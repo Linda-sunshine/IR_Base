@@ -15,8 +15,7 @@ public class _Word {
 	
 	//structure used for ParentChildTopicModel
 	int m_x;
-	double[] m_xProb;
-	
+	double[] m_xProb;	
 	double[] m_features;
 	
 	//structure used for ParentChildTopicModelwithProbit

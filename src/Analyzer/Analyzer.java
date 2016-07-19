@@ -414,24 +414,4 @@ public abstract class Analyzer {
 	public int getFeatureSize(){
 		return m_featureNames.size();
 	}
-	
-	// added by Md. Mustafizur Rahman for Topic Modelling
-	public double[] getBackgroundProb() {//this should be moved to corpus, rather than in Analyzer!!!!
-		double back_ground_probabilty [] = new double [m_featureNameIndex.size()];
-		
-		for(int i = 0; i<m_featureNameIndex.size();i++)
-		{
-			String featureName = m_featureNames.get(i);
-			_stat stat =  m_featureStat.get(featureName);
-			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
-			
-			if (back_ground_probabilty[i] < 0)
-				System.err.println();
-		}
-		
-		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing
-		for(int i = 0; i<m_featureNameIndex.size();i++)
-			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
-		return back_ground_probabilty;
-	}
 }

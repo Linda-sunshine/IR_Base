@@ -10,9 +10,9 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Random;
+
+import utils.Utils;
 
 /**
  * @author lingong
@@ -22,7 +22,7 @@ public class _Corpus {
 	static final int ReviewSizeCut = 3;
 	
 	ArrayList<_Doc> m_collection; //All the documents in the corpus.
-	ArrayList<String> m_features; //ArrayList for features
+	ArrayList<String> m_features; //ArrayList for feature names
 	public HashMap<String, _stat> m_featureStat; //statistics about the features
 	boolean m_withContent = false; // by default all documents' content has been released
 		
@@ -30,7 +30,7 @@ public class _Corpus {
 		this.m_featureStat = featureStat;
 	}
 
-	// m_mask is used to do shuffle and its size is the total number of all the documents in the corpus.
+	// m_mask is used to do shuffling and its size is the total number of all the documents in the corpus.
 	int[] m_mask; 
 			
 	//Constructor.
@@ -84,26 +84,11 @@ public class _Corpus {
 		return m_collection.size();
 	}
 	
-	//just for debugging purpose, should be removed soon!!!
-	public void setUnlabeled() {
-		int unlabeledSize = 0;
-		for(_Doc d:m_collection) {
-			if (d.m_ID % 3==0) {
-				d.m_sourceType = 1;
-				unlabeledSize ++;
-			} else
-				d.m_sourceType = 2;
-		}
-		
-		System.out.format("Created %d unlabeled instances...", unlabeledSize);
-	}
-	
 	public int getLargestSentenceSize()
 	{
 		int max = 0;
-		for(int i=0; i<m_collection.size(); i++)
-		{
-			int length = m_collection.get(i).getSenetenceSize();
+		for(_Doc d:m_collection) {
+			int length = d.getSenetenceSize();
 			if(length > max)
 				max = length;
 		}
@@ -133,33 +118,9 @@ public class _Corpus {
 		m_collection.addAll(docs);
 	}
 	
-	public void removeDoc(int index){
-		m_collection.remove(index);
-	}
-	
 	//Get the mask array of the corpus.
 	public int[] getMasks(){
 		return this.m_mask;
-	}
-		
-	public int getItemSize() {
-		String lastPID = null;
-		int pid = 0, rSize = 0;
-		for(_Doc d:m_collection) {
-			if (lastPID==null)
-				lastPID = d.getItemID();
-			else if (!lastPID.equals(d.getItemID())) {
-				//save co-occurrence of words in the reviews of this particular product
-				if (rSize>ReviewSizeCut)
-					pid ++;
-
-				lastPID = d.getItemID();
-				rSize = 0;
-			}
-			
-			rSize++;
-		}
-		return pid+1;
 	}
 	
 	public void mapLabels(int threshold) {
@@ -173,6 +134,7 @@ public class _Corpus {
 		}
 	}
 	
+	//save documents to file as sparse feature vectors
 	public void save2File(String filename) {
 		if (filename==null || filename.isEmpty()) {
 			System.out.println("Please specify the file name to save the vectors!");
@@ -183,9 +145,8 @@ public class _Corpus {
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename)));
 			for(_Doc doc:m_collection) {
 				writer.write(String.format("%d", doc.getYLabel()));
-				for(_SparseFeature fv:doc.getSparse()){
+				for(_SparseFeature fv:doc.getSparse())
 					writer.write(String.format(" %d:%f", fv.getIndex()+1, fv.getValue()));//index starts from 1
-				}
 				writer.write(String.format(" #%s-%s\n", doc.m_itemID, doc.m_name));//product ID and review ID
 			}
 			writer.close();
@@ -196,67 +157,23 @@ public class _Corpus {
 		} 
 	}
 	
-	public void saveAs3WayTensor(String filename) {
-		System.out.format("Save 3-way tensor to %s...\n", filename);
-		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filename), "ASCII"));
+	// added by Md. Mustafizur Rahman for Topic Modelling
+	public double[] getBackgroundProb() {
+		double back_ground_probabilty [] = new double [m_features.size()];
 		
-			writer.write(String.format("%d\t%d\t%d\n", getItemSize(), getFeatureSize(), getFeatureSize()));
-			ArrayList<_Doc> pReviews = new ArrayList<_Doc>();
-			String lastPID = null;
-			int pid = 0;
-			for(_Doc d:m_collection) {
-				if (lastPID==null)
-					lastPID = d.getItemID();
-				else if (!lastPID.equals(d.getItemID())) {
-					//save co-occurrence of words in the reviews of this particular product
-					if (pReviews.size()>ReviewSizeCut) {
-						saveCoOccurrance2File(pReviews, pid, writer);
-						pid ++;
-					}
-					lastPID = d.getItemID();
-					pReviews.clear();
-				}
-				
-				pReviews.add(d);
-			}
+		for(int i = 0; i<m_features.size();i++)
+		{
+			String featureName = m_features.get(i);
+			_stat stat =  m_featureStat.get(featureName);
+			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());
 			
-			//for the last product
-			if (pReviews.size()>ReviewSizeCut) 
-				saveCoOccurrance2File(pReviews, pid, writer);
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	void saveCoOccurrance2File(ArrayList<_Doc> pReviews, int pid, BufferedWriter writer) throws IOException {
-		HashMap<String, Integer> stats = new HashMap<String, Integer>();
-		
-		for(_Doc d:pReviews) {
-			_SparseFeature[] fvs = d.getSparse();
-			for(int i=0; i<fvs.length; i++) {
-				for(int j=i+1; j<fvs.length; j++) {
-					String key = getCoOccurranceKey(fvs[i].getIndex(), fvs[j].getIndex());
-					if (stats.containsKey(key))
-						stats.put(key, 1+stats.get(key));
-					else
-						stats.put(key, 1);
-				}
-			}
+			if (back_ground_probabilty[i] < 0)
+				System.err.println("Encounter negative count for word" + featureName);
 		}
 		
-		Iterator<Entry<String, Integer>> it = stats.entrySet().iterator();
-		while(it.hasNext()) {
-			Entry<String, Integer> entry = (Entry<String, Integer>)it.next();
-			writer.write(String.format("%d\t%s\t%d\n", pid, entry.getKey(), entry.getValue()));
-		}
-	}
-	
-	String getCoOccurranceKey(int i, int j) {
-		if (i<j)
-			return String.format("%d\t%d", i, j);
-		else
-			return String.format("%d\t%d", j, i);
+		double sum = Utils.sumOfArray(back_ground_probabilty) + back_ground_probabilty.length;//add one smoothing
+		for(int i = 0; i<m_features.size();i++)
+			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
+		return back_ground_probabilty;
 	}
 }

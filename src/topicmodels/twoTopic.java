@@ -24,11 +24,11 @@ public class twoTopic extends TopicModel {
 	protected double m_lambda; //proportion of background topic in each document
 	
 	public twoTopic(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
-			double lambda, double[] back_ground) {//arguments for 2topic topic model
+			double lambda) {//arguments for 2topic topic model
 		super(number_of_iteration, converge, beta, c);
 		
 		m_lambda = lambda;
-		background_probability = back_ground;
+		background_probability = c.getBackgroundProb();
 		
 		m_theta = new double[vocabulary_size];
 		m_sstat = new double[vocabulary_size];

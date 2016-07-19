@@ -188,7 +188,7 @@ public class TopicModelMain {
 //		_Corpus c = analyzer.getCorpus();
 		
 		if (topicmodel.equals("2topic")) {
-			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
+			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda);
 			
 			if (crossV<=1) {
 				for(_Doc d:c.getCollection()) {
@@ -197,8 +197,6 @@ public class TopicModelMain {
 				}
 			} else 
 				model.crossValidation(crossV);
-		} else if (topicmodel.equals("Tensor")) {
-			c.saveAs3WayTensor("./data/vectors/3way_tensor.txt");
 		} else {
 			pLSA model = null;
 			

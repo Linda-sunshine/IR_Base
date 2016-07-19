@@ -139,8 +139,7 @@ public class Execution  {
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
 			if (param.m_model.equals("2topic")) {
-				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-						param.m_lambda, analyzer.getBackgroundProb());
+				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, param.m_lambda);
 			} else if (param.m_model.equals("pLSA")) {
 				if (param.m_multithread == false) {
 					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 

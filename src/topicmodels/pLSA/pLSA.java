@@ -37,7 +37,7 @@ public class pLSA extends twoTopic {
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) { //arguments for pLSA			
-		super(number_of_iteration, converge, beta, c, lambda, null);
+		super(number_of_iteration, converge, beta, c, lambda);
 		
 		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;		

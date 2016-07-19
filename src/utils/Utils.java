@@ -113,6 +113,7 @@ public class Utils {
 		return sum;
 	}
 	
+	//this requires the sparse feature vector has been sorted in ascending order
 	public static int indexOf(_SparseFeature[] vct, double wid) {
 		int start = 0, end = vct.length-1, mid=0;
 		do {
@@ -141,19 +142,13 @@ public class Utils {
 		return -ent;
 	}
 	
-	//Find the max value's index of an array, return Value of the maximum.
-	public static double maxOfArrayValue(double[] probs){
-		return probs[maxOfArrayIndex(probs)];
-	}
-	
 	//This function is used to calculate the log of the sum of several values.
 	public static double logSumOfExponentials(double[] xs){
 		if(xs.length == 1){
 			return xs[0];
 		}
 		
-		double max = maxOfArrayValue(xs);
-		double sum = 0.0;
+		double max = max(xs, 0, xs.length), sum = 0.0;
 		for (int i = 0; i < xs.length; i++) {
 			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
@@ -173,20 +168,7 @@ public class Utils {
 			return log_b+Math.log(1 + Math.exp(log_a-log_b));
 		else
 			return log_a+Math.log(1 + Math.exp(log_b-log_a));
-	}
-	
-	//The function is used to calculate the sum of log of two arrays.
-	public static double sumLog(double[] probs, double[] values){
-		double result = 0;
-		if(probs.length == values.length){
-			for(int i = 0; i < probs.length; i++){
-				result += values[i] * Math.log(probs[i]);
-			}
-		} else{
-			System.out.println("log sum fails due to the lenghts of two arrars are not matched!!");
-		}
-		return result;
-	}
+	}	
 	
 	//The function defines the dot product of beta and sparse Vector of a document.
 	public static double dotProduct(double[] beta, _SparseFeature[] sf, int offset){
@@ -209,15 +191,6 @@ public class Utils {
 	
 	public static double L2Norm(double[] a) {
 		return Math.sqrt(dotProduct(a,a));
-	}
-	
-	public static double L2Norm(double[] a, double[] b) {
-		if (a.length != b.length)
-			return Double.NaN;
-		double diff=0;
-		for(int i=0; i<a.length; i++)
-			diff += (a[i]-b[i])*(a[i]-b[i]);
-		return diff;
 	}
 	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
@@ -248,6 +221,7 @@ public class Utils {
 		return sum;
 	}
 	
+	//sum_i a[i] - b[i]
 	public static double[] diff(double[] a, double[] b) {
 		if (a.length != b.length)
 			return null;
@@ -267,11 +241,13 @@ public class Utils {
 			a[i] *= b;
 	}
 	
+	//scale array a by array b
 	public static void scaleArray(double[] a, double[] b, double scale) {
 		for (int i=0; i<a.length; i++)
 			a[i] += b[i] * scale;
 	}
 	
+	//set array a by array b
 	public static void setArray(double[] a, double[] b, double scale) {
 		for (int i=0; i<a.length; i++)
 			a[i] = b[i] * scale;
@@ -297,14 +273,11 @@ public class Utils {
 		double sum = sumOfFeaturesL1(fs);
 		if (sum>0) {
 			//L1 length normalization
-			for(_SparseFeature f:fs){
-				double normValue = f.getValue()/sum;
-				f.setValue(normValue);
-			}
-		} else{
-			for(_SparseFeature f: fs){
+			for(_SparseFeature f:fs)
+				f.setValue(f.getValue()/sum);
+		} else{//why should we set everything to zero in this case?
+			for(_SparseFeature f: fs)
 				f.setValue(0.0);
-			}
 		}
 	}
 	
@@ -326,18 +299,6 @@ public class Utils {
 		double sum = 0;
 		for (_SparseFeature feature: fs){
 			double value = feature.getValue();
-			sum += value * value;
-		}
-		return Math.sqrt(sum);
-	}
-	
-	static public double sumOfFeaturesL2_values(_SparseFeature[] fs) {
-		if(fs == null) 
-			return 0;
-		
-		double sum = 0;
-		for (_SparseFeature feature: fs){
-			double value = feature.getValues()[0];
 			sum += value * value;
 		}
 		return Math.sqrt(sum);
@@ -370,8 +331,8 @@ public class Utils {
 	}
 	
 	//Calculate the similarity between two documents.
-	public static double calculateSimilarity(_Doc d1, _Doc d2){
-		return calculateSimilarity(d1.getSparse(), d2.getSparse());
+	public static double dotProduct(_Doc d1, _Doc d2){
+		return dotProduct(d1.getSparse(), d2.getSparse());
 	}
 	
 	public static double jaccard(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
@@ -392,7 +353,7 @@ public class Utils {
 			else
 				pointer1++;
 		}
-		return overlap/(spVct1.length + spVct2.length);
+		return overlap/(spVct1.length + spVct2.length - overlap);
 	}
 	
 	public static double cosine(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
@@ -400,36 +361,7 @@ public class Utils {
 		if (spVct1L2==0 || spVct2L2==0)
 			return 0;
 		else
-			return calculateSimilarity(spVct1, spVct2) / spVct1L2 / spVct2L2;
-	}
-	
-	public static double cosine_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		double spVct1L2 = sumOfFeaturesL2(spVct1), spVct2L2 = sumOfFeaturesL2(spVct2);
-		if (spVct1L2==0 || spVct2L2==0)
-			return 0;
-		else
-			return calculateSimilarity_values(spVct1, spVct2) / spVct1L2 / spVct2L2;
-	}
-	
-	public static double calculateSimilarity_values(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
-		if (spVct1==null || spVct2==null)
-			return 0; // What is the minimal value of similarity?
-		
-		double similarity = 0;
-		int pointer1 = 0, pointer2 = 0;
-		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
-			_SparseFeature temp1 = spVct1[pointer1];
-			_SparseFeature temp2 = spVct2[pointer2];
-			if (temp1.getIndex() == temp2.getIndex()) {
-				similarity += temp1.getValues()[0] * temp2.getValues()[0];
-				pointer1++;
-				pointer2++;
-			} else if (temp1.getIndex() > temp2.getIndex())
-				pointer2++;
-			else
-				pointer1++;
-		}
-		return similarity;
+			return dotProduct(spVct1, spVct2) / spVct1L2 / spVct2L2;
 	}
 	
 	public static double cosine(double[] a, double[] b) {
@@ -440,7 +372,7 @@ public class Utils {
 	}
 	
 	//Calculate the similarity between two sparse vectors.
-	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+	public static double dotProduct(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
 		if (spVct1==null || spVct2==null)
 			return 0; // What is the minimal value of similarity?
 		
@@ -490,7 +422,7 @@ public class Utils {
 	static public _SparseFeature[] createSpVct(double[] denseFv) {
 		ArrayList<_SparseFeature> spVct = new ArrayList<_SparseFeature>();
 		for(int i=0; i<denseFv.length; i++) {
-			if (denseFv[i]!=0)
+			if (Math.abs(denseFv[i]) > Double.MIN_VALUE)
 				spVct.add(new _SparseFeature(i, denseFv[i]));
 		}
 		return spVct.toArray(new _SparseFeature[spVct.size()]);
@@ -581,18 +513,6 @@ public class Utils {
 		return cleanVideoReview(buffer.toString());
 	}
 	
-	public static void mergeVectors(HashMap<Integer, Double> src, HashMap<Integer, Double> dst) {
-		Iterator<Entry<Integer, Double>> it = src.entrySet().iterator();
-		while (it.hasNext()) {
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			int index = pairs.getKey();
-			if (dst.containsKey(index)==false) 
-				dst.put(index, pairs.getValue());
-			else
-				dst.put(index, pairs.getValue() + dst.get(index));
-		}
-	}
-	
 	public static String cleanVideoReview(String content) {
 		if (!content.contains("// <![CDATA[") || !content.contains("Length::"))
 			return content;
@@ -607,6 +527,18 @@ public class Utils {
 			return null;
 		else
 			return buffer.toString();
+	}
+	
+	public static void mergeVectors(HashMap<Integer, Double> src, HashMap<Integer, Double> dst) {
+		Iterator<Entry<Integer, Double>> it = src.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			int index = pairs.getKey();
+			if (dst.containsKey(index)==false) 
+				dst.put(index, pairs.getValue());
+			else
+				dst.put(index, pairs.getValue() + dst.get(index));
+		}
 	}
 		
 	public static boolean endWithPunct(String stn) {
@@ -857,30 +789,6 @@ public class Utils {
 		return klDiv / log2; 
 	}
 	
-	/****Added by Lin.***/
-	public static int maxOfArrayIndex(int[] probs){
-		int maxIndex = 0;
-		int maxValue = probs[0];
-		for(int i = 1; i < probs.length; i++){
-			if(probs[i] > maxValue){
-				maxValue = probs[i];
-				maxIndex = i;
-			}
-		}
-		return maxIndex;
-	}
-	
-	public static int maxOfArrayValue(int[] count){
-		int maxValue = count[0];
-		if(count.length <=1 && count.length >0)
-			return maxValue;
-		for(int i=1; i < count.length; i++){
-			if(count[i] < maxValue)
-				maxValue = count[i];
-		}
-		return maxValue;
-	}
-	
 	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
 		if (spVct1.length==0 || spVct2.length==0)
 			return 0;
@@ -901,16 +809,6 @@ public class Utils {
 			}
 			return Math.exp(-similarity);
 		}
-	}
-	
-	//Dot product of two binary arrays.
-	public static int dotProduct(int[] a, int[] b){
-		int sum = 0;
-		if(a.length == b.length){
-			for(int i = 0; i < a.length; i++)
-				sum += a[i] & b[i];
-		}
-		return sum;
 	}
 	
 	public static double calculateMDistance(_Doc d1, _Doc d2, double[][] A){

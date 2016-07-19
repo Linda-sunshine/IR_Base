@@ -138,7 +138,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected double getBoWSim(_Doc di, _Doc dj) {
-		return Utils.calculateSimilarity(di, dj);
+		return Utils.dotProduct(di, dj);
 	}
 	
 	protected double getTopicalSim(_Doc di, _Doc dj) {
