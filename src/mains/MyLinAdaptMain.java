@@ -37,7 +37,7 @@ public class MyLinAdaptMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		
+
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -59,7 +59,7 @@ public class MyLinAdaptMain {
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
@@ -71,21 +71,21 @@ public class MyLinAdaptMain {
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-//		double[] alphas = new double[]{5, 10, 15, 20};
-//		double[] lambdas = new double[]{5, 10, 15, 20};
+//		double[] alphas = new double[]{0.1, 0.5, 1, 2, 3, 4, 5};
 //		for(double alpha: alphas){
-//			for(double lambda: lambdas){
-
-		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		//CLogisticRegressionWithDP
+		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-//		adaptation.setAlpha(alpha);
-//		adaptation.setLambda(lambda);
+		adaptation.setBurnIn(30);
+		adaptation.setM(20);
+		adaptation.setAlpha(1);
+		adaptation.setR1TradeOffs(eta1, eta2);
+		adaptation.setRsTradeOffs(eta3, eta4);
 		adaptation.EM();
 		adaptation.test();
 		adaptation.printInfo();
-		
-//		}}
+//		}
 		// Create an instances of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 //		adaptation.loadUsers(analyzer.getUsers());

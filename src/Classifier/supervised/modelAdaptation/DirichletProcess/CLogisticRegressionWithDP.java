@@ -14,6 +14,7 @@ import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._DPAdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import cern.jet.random.tdouble.Normal;
@@ -25,8 +26,8 @@ public class CLogisticRegressionWithDP extends LinAdapt{
 	protected int m_numberOfIterations = 10;
 	protected int m_burnIn = 10, m_thinning = 3;// burn in time, thinning time.
 	protected double m_converge = -1e-9;
-	protected double m_alpha = 1; // Scaling parameter of DP.
-	protected double m_lambda = 1;
+	protected double m_alpha = 0.001; // Scaling parameter of DP.
+	protected double m_lambda = 0.001;
 	
 	// Parameters of the prior for the intercept and coefficients.
 	protected double[] m_abNuA = new double[]{0, 1};
@@ -97,12 +98,12 @@ public class CLogisticRegressionWithDP extends LinAdapt{
 	// Calcualte loglikelihood after get the weights.
 	protected double calcLoglikelihood(){
 		_DPAdaptStruct user;
-		double fValue = 0;
+		double L = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			fValue += calcLogLikelihood(user, 0);// 0 means we will use user's own thetastar.
+			L += calcLogLikelihood(user, user.getThetaStar().getIndex());
 		}
-		return fValue;
+		return L;
 	}
 	protected double calculateR1(){
 		double R1 = 0;
@@ -144,7 +145,7 @@ public class CLogisticRegressionWithDP extends LinAdapt{
 				for(int i=0; i<m_userList.size(); i++){
 					user = (_DPAdaptStruct) m_userList.get(i);
 					cIndex = user.getThetaStar().getIndex();
-					fValue += calcLogLikelihood(user, cIndex);
+					fValue -= calcLogLikelihood(user, cIndex);
 					gradientByFunc(user); // calculate the gradient by the user.
 				}
 				accumulateClusterModels();
@@ -250,7 +251,7 @@ public class CLogisticRegressionWithDP extends LinAdapt{
 		_DPAdaptStruct user = (_DPAdaptStruct)u;
 		
 		int n; // feature index
-		int cIndex = Arrays.asList(m_thetaStars).indexOf(user.getThetaStar());
+		int cIndex = user.getThetaStar().getIndex();
 		if(cIndex <0 || cIndex >= m_kBar)
 			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*cIndex;
@@ -375,10 +376,13 @@ public class CLogisticRegressionWithDP extends LinAdapt{
 	public void setAlpha(double a){
 		m_alpha = a;
 	}
+	public void setBurnIn(int n){
+		m_burnIn = n;
+	}
 	public void setLambda(double lmd){
 		m_lambda = lmd;
 	}
-	protected void setM(int m){
+	public void setM(int m){
 		m_M = m;
 	}
 	protected void setNumberOfIterations(int num){
