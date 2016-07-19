@@ -2,10 +2,8 @@ package topicmodels;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -146,8 +144,6 @@ public class DCMLDA extends LDA_Gibbs {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
-	
-
 		// initialize topic-word allocation, p(w|z)
 		for (_Doc d : collection) {
 			int docID = d.getID();
@@ -176,8 +172,8 @@ public class DCMLDA extends LDA_Gibbs {
 	@Override
 	protected int sampleTopic4Word(_Word w, _Doc d) {
 		double p;
-		int tid = 0;
-		int wid = 0;
+		int tid = w.getTopic();
+		int wid = w.getIndex();
 
 		p = 0;
 		// p(z|d) * p(w|z)
@@ -202,6 +198,9 @@ public class DCMLDA extends LDA_Gibbs {
 	};
 
 	protected double topicInDocProb(int tid, _Doc d) {
+		double term1 = d.m_sstat[tid];
+		term1 = m_alpha[tid];
+
 		return (d.m_sstat[tid] + m_alpha[tid])
 				/ (d.getTotalDocLength() + m_totalAlpha - 1);
 	}
@@ -209,6 +208,10 @@ public class DCMLDA extends LDA_Gibbs {
 	// p(w|z)
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
 		int docID = d.getID();
+		double term1 = m_docWordTopicStats[docID][tid][wid];
+		term1 = m_beta[tid][wid];
+		term1 = d.m_sstat[tid];
+		term1 = m_totalBeta[tid];
 		return (m_docWordTopicStats[docID][tid][wid] + m_beta[tid][wid])
 				/ (d.m_sstat[tid] + m_totalBeta[tid]);
 	}
@@ -312,39 +315,46 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 		}
 	
-		ArrayList<Double> t_tempList = new ArrayList<Double>();
-		for (int k = 0; k < number_of_topics; k++) {
-			if (m_sstat[k] > 0) {
-				t_tempList.add ((m_sstat[k] - m_alphaAuxilary[k])
-						/ (m_alphaAuxilary[k] - m_sstat[k] * m_sstat[k]));
-			}
-		}
+		// ArrayList<Double> t_tempList = new ArrayList<Double>();
+		// for (int k = 0; k < number_of_topics; k++) {
+		// if (m_sstat[k] > 0) {
+		// t_tempList.add((m_sstat[k] - m_alphaAuxilary[k])
+		// / (m_alphaAuxilary[k] - m_sstat[k] * m_sstat[k]));
+		// }
+		// }
+		//
+		// Collections.sort(t_tempList);
+		//
+		// double temp = t_tempList.get(t_tempList.size() / 2);
+		// for (int k = 0; k < number_of_topics; k++)
+		// m_alpha[k] = m_sstat[k] * temp;
+		//
+		// for (int k = 0; k < number_of_topics; k++) {
+		// t_tempList.clear();
+		// for (int v = 0; v < vocabulary_size; v++) {
+		// if (word_topic_sstat[k][v] > 0)
+		// t_tempList
+		// .add((topic_term_probabilty[k][v] - word_topic_sstat[k][v])
+		// / (word_topic_sstat[k][v] - topic_term_probabilty[k][v]
+		// * topic_term_probabilty[k][v]));
+		// }
+		// Collections.sort(t_tempList);
+		//
+		// int listLen = t_tempList.size();
+		// temp = 1;
+		// if (listLen > 0)
+		// temp = t_tempList.get(listLen / 2);
+		// for (int v = 0; v < vocabulary_size; v++)
+		// m_beta[k][v] = topic_term_probabilty[k][v] * temp;
+		// }
 
-		Collections.sort(t_tempList);
-
-		double temp = t_tempList.get(t_tempList.size() / 2);
-		for (int k = 0; k < number_of_topics; k++)
-			m_alpha[k] = m_sstat[k] * temp;
-
-		for (int k = 0; k < number_of_topics; k++) {
-			t_tempList.clear();
+		 for (int k = 0; k < number_of_topics; k++){
+			m_alpha[k] = m_sstat[k];
 			for (int v = 0; v < vocabulary_size; v++) {
-				if(word_topic_sstat[k][v]>0)
-					t_tempList
-							.add((topic_term_probabilty[k][v] - word_topic_sstat[k][v])
-									/ (word_topic_sstat[k][v] - topic_term_probabilty[k][v]
-											* topic_term_probabilty[k][v]));
+				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
 			}
-			Collections.sort(t_tempList);
-			
-			int listLen = t_tempList.size();
-			temp = 1;
-			if (listLen > 0)
-				temp = t_tempList.get(listLen / 2);
-			for (int v = 0; v < vocabulary_size; v++)
-				m_beta[k][v] = topic_term_probabilty[k][v] * temp;
 		}
-
+		
 		m_totalAlpha = Utils.sumOfArray(m_alpha);
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
@@ -353,87 +363,54 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void updateAlpha() {
-		int i = 0;
-		double alphaSum, diAlphaSum, c;
-		double lambda = 0.1;
-		double[] alphaG = new double[number_of_topics];
-		double[] alphaQ = new double[number_of_topics];
-
-		double deltaAlpha, diff;
-		int docSize = m_trainSet.size();
+		double diff = 0;
+		double smallAlpha = 0.1;
+		int iteration = 0;
 		do {
-			double b = 0;
-			deltaAlpha = 0;
+
 			diff = 0;
-			Arrays.fill(alphaG, 0);
-			Arrays.fill(alphaQ, 0);
-			alphaSum = Utils.sumOfArray(m_alpha);
-			diAlphaSum = Utils.digamma(alphaSum);
 
-			c = docSize * Utils.trigamma(alphaSum);
+			double totalAlphaDenominator = 0;
+			m_totalAlpha = Utils.sumOfArray(m_alpha);
+			double digAlpha = Utils.digamma(m_totalAlpha);
 
-			lambda /= 10;
+			double deltaAlpha = 0;
 
 			for (_Doc d : m_trainSet) {
-				c -= Utils.trigamma(d.getTotalDocLength() + alphaSum);
-
-				for (int k = 0; k < number_of_topics; k++) {
-					alphaG[k] += Utils.digamma(d.m_sstat[k] + m_alpha[k])
-							- Utils.digamma(m_alpha[k]);
-					alphaG[k] += diAlphaSum
-							- Utils.digamma(alphaSum + d.getTotalDocLength());
-					alphaQ[k] += Utils.trigamma(d.m_sstat[k] + m_alpha[k])
-							- Utils.trigamma(m_alpha[k]);
-				}
+				totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()
+						+ m_totalAlpha)
+						- digAlpha;
 			}
-			
-			boolean singularFlag = false;
-			do {
-			
-				for (int k = 0; k < number_of_topics; k++) {
-					alphaQ[k] -= docSize * lambda;
-				}
-
-				double b1 = 0, b2 = 0;
-				for (int k = 0; k < number_of_topics; k++) {
-					b1 += alphaG[k] / alphaQ[k];
-					b2 += 1.0 / alphaQ[k];
-				}
-				b = b1 / ((1 / c) + b2);
-
-				for (int k = 0; k < number_of_topics; k++) {
-					if (m_alpha[k] == 0)
-						continue;
-					deltaAlpha = (alphaG[k] - b) / alphaQ[k];
-					if (deltaAlpha > m_alpha[k]) {
-						singularFlag = true;
-						break;
-					}
-
-					if (k == number_of_topics)
-						singularFlag = false;
-				}
-
-				lambda *= 10;
-
-				if (lambda > 1e6)
-					break;
-			} while (singularFlag);
-			
-			if (lambda > 1e6)
-				break;
 
 			for (int k = 0; k < number_of_topics; k++) {
-				deltaAlpha = (alphaG[k] - b) / alphaQ[k];
-				m_alpha[k] -= deltaAlpha;
-				diff += deltaAlpha * deltaAlpha;
+				double totalAlphaNumerator = 0;
+				for (_Doc d : m_trainSet) {
+					totalAlphaNumerator += Utils.digamma(m_alpha[k]
+							+ d.m_sstat[k])
+							- Utils.digamma(m_alpha[k]);
+				}
+
+				deltaAlpha = totalAlphaNumerator * 1.0
+						/ totalAlphaDenominator;
+
+
+				double newAlpha = m_alpha[k] * deltaAlpha;
+				double t_diff = Math.abs(m_alpha[k] - newAlpha);
+				if (t_diff > diff)
+					diff = t_diff;
+
+				m_alpha[k] = newAlpha;
 			}
 			
-			diff /= number_of_topics;
+			iteration++;
+			System.out.println("alpha iteration\t" + iteration);
+			
+			if (iteration > m_newtonIter)
+				break;
 
-		} while (++i < m_newtonIter && diff > m_newtonConverge);
+		} while (diff > m_newtonConverge);
 
-		System.out.println("iteration\t" + i);
+		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha += m_alpha[k];
@@ -476,15 +453,18 @@ public class DCMLDA extends LDA_Gibbs {
 				if (wordNum4Tid == 0)
 					break;
 				if (wordNum4Tid4V[v] == 0) {
-
-					deltaBeta = totalBetaNumerator[v] / totalBetaDenominator;
-				} else {
 					deltaBeta = 0;
+
+				} else {
+					deltaBeta = totalBetaNumerator[v] / totalBetaDenominator;
+
 				}
 				
-				double newBeta = m_beta[tid][v] * deltaBeta;
-				if ((m_beta[tid][v] - newBeta) > diff)
-					diff = m_beta[tid][v] - newBeta;
+				double newBeta = m_beta[tid][v] * deltaBeta + d_beta;
+
+				double t_diff = Math.abs(m_beta[tid][v] - newBeta);
+				if (t_diff > diff)
+					diff = t_diff;
 
 				m_beta[tid][v] = newBeta;
 
@@ -496,14 +476,6 @@ public class DCMLDA extends LDA_Gibbs {
 		} while (diff > m_newtonConverge);
 
 		System.out.println("iteration\t" + iteration);
-
-		// for (int v = 0; v < vocabulary_size; v++) {
-		// if ((m_beta[tid][v] != 0) && (m_beta[tid][v] < smoothingBeta)) {
-		// smoothingBeta = m_beta[tid][v];
-		// }
-		// }
-
-
 
 	}
 

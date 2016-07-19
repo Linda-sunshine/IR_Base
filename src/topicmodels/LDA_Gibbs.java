@@ -140,8 +140,9 @@ public class LDA_Gibbs extends pLSA {
 	 * */
 	protected int sampleTopic4Word(_Word w, _Doc d){
 		double p;
-		int tid = 0;
-		int wid = 0;
+
+		int wid = w.getIndex();
+		int tid = w.getTopic();
 
 		p = 0;
 		for(tid=0; tid<number_of_topics; tid++){
