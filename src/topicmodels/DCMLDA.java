@@ -317,39 +317,6 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 		}
 	
-		// ArrayList<Double> t_tempList = new ArrayList<Double>();
-		// for (int k = 0; k < number_of_topics; k++) {
-		// if (m_sstat[k] > 0) {
-		// t_tempList.add((m_sstat[k] - m_alphaAuxilary[k])
-		// / (m_alphaAuxilary[k] - m_sstat[k] * m_sstat[k]));
-		// }
-		// }
-		//
-		// Collections.sort(t_tempList);
-		//
-		// double temp = t_tempList.get(t_tempList.size() / 2);
-		// for (int k = 0; k < number_of_topics; k++)
-		// m_alpha[k] = m_sstat[k] * temp;
-		//
-		// for (int k = 0; k < number_of_topics; k++) {
-		// t_tempList.clear();
-		// for (int v = 0; v < vocabulary_size; v++) {
-		// if (word_topic_sstat[k][v] > 0)
-		// t_tempList
-		// .add((topic_term_probabilty[k][v] - word_topic_sstat[k][v])
-		// / (word_topic_sstat[k][v] - topic_term_probabilty[k][v]
-		// * topic_term_probabilty[k][v]));
-		// }
-		// Collections.sort(t_tempList);
-		//
-		// int listLen = t_tempList.size();
-		// temp = 1;
-		// if (listLen > 0)
-		// temp = t_tempList.get(listLen / 2);
-		// for (int v = 0; v < vocabulary_size; v++)
-		// m_beta[k][v] = topic_term_probabilty[k][v] * temp;
-		// }
-
 		 for (int k = 0; k < number_of_topics; k++){
 			m_alpha[k] = m_sstat[k];
 			for (int v = 0; v < vocabulary_size; v++) {
