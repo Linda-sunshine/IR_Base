@@ -342,6 +342,7 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
 			}else if(topicmodel.equals("DCMLDA_multithread")){
 				converge = 1e-4;
+				beta = 1 + 1e-6;
 				int newtonIter = 1000;
 				double newtonConverge = 1e-4;
 				number_of_topics = 15;

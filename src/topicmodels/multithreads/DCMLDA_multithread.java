@@ -97,18 +97,24 @@ public class DCMLDA_multithread extends DCMLDA{
 					if(wordNum==0)
 						break;
 					if(wordNum4V[v]==0){
-		//				m_beta[tid][v] = 0;
-						continue;
+						deltaBeta = 0;
+					} else {
+						deltaBeta = totalBetaNumerator[v]
+								/ totalBetaDenominator;
+
 					}
 					
-					deltaBeta = param[v] *(totalBetaNumerator[v]/totalBetaDenominator);
-					
-					diff += (param[v]-deltaBeta)*(param[v]-deltaBeta);
-					param[v] = deltaBeta;
+					double newBeta = param[v] * deltaBeta + d_beta;
+
+					double t_diff = Math.abs(param[v] - newBeta);
+					if (t_diff > diff)
+						diff = t_diff;
+
+					param[v] = newBeta;
 				
 				}
 				
-				diff /= vocabulary_size;
+
 				iteration ++;
 				if(iteration > m_newtonIter)
 					break;
@@ -117,22 +123,8 @@ public class DCMLDA_multithread extends DCMLDA{
 			
 			System.out.println("iteration\t"+iteration);
 
-			for(int v=0; v<vocabulary_size; v++){
-				if((param[v]!=0)&&(param[v]<smoothingBeta)){
-					smoothingBeta = param[v];
-				}
-			}
-			
-			
-			for(int v=0; v<vocabulary_size; v++){
-				param[v] += 0.01*smoothingBeta;
-			}
-			
 		}
 
-		
-
-		
 	}
 	
 	public DCMLDA_multithread(int number_of_iteration, double converge, 
@@ -167,19 +159,6 @@ public class DCMLDA_multithread extends DCMLDA{
 		
 	}
 	
-	protected void updateParameter(int iter, File weightIterFolder) {
-		updateAlpha();
-		
-		updateBeta();
-		
-		for(int k=0; k<number_of_topics; k++)
-			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
-		
-		String fileName = iter + ".txt";
-		saveParameter2File(weightIterFolder, fileName);
-
-	}
-	
 	protected void updateBeta(){
 		for(int i=0; i<m_updateParamWorkers.length; i++){
 			m_updateParamWorkers[i].setType(RunType.RT_EM);
@@ -195,5 +174,19 @@ public class DCMLDA_multithread extends DCMLDA{
 			}
 		}
 		
+	}
+
+	protected void updateParameter(int iter, File weightIterFolder) {
+		initialAlphaBeta();
+		updateAlpha();
+
+		updateBeta();
+
+		for (int k = 0; k < number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+
+		String fileName = iter + ".txt";
+		saveParameter2File(weightIterFolder, fileName);
+
 	}
 }
