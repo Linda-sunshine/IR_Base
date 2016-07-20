@@ -41,10 +41,9 @@ public class MyLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.25;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = 0.1, eta2 = 0.1, eta3 = 0.1, eta4 = 0.1;
 
 //		double eta1 = 1, eta2 = 0.5, eta3 = 0.5, eta4 = 0.5, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
@@ -53,7 +52,7 @@ public class MyLinAdaptMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -74,18 +73,21 @@ public class MyLinAdaptMain {
 //		double[] alphas = new double[]{0.1, 0.5, 1, 2, 3, 4, 5};
 //		for(double alpha: alphas){
 		//CLogisticRegressionWithDP
-		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		//, featureGroupFile, featureGroupFileB);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setBurnIn(30);
-		adaptation.setM(20);
-		adaptation.setAlpha(1);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setRsTradeOffs(eta3, eta4);
 		adaptation.EM();
 		adaptation.test();
 		adaptation.printInfo();
-//		}
+		
+//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.EM();
+//		adaptation.test();
+//		adaptation.printInfo();
+		
 		// Create an instances of LinAdapt model.
 //		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
 //		adaptation.loadUsers(analyzer.getUsers());
