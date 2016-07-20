@@ -7,14 +7,17 @@ public class _ParentDoc4DCM extends _ParentDoc{
 	
 	public double[][] m_wordTopic_stat;
 	public double[][] m_wordTopic_prob;
+	public double[] m_topic_stat;
 	
 	public _ParentDoc4DCM(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
 		
-		
 	}
 	
 	protected void setWordTopicStat(int k, int vocalSize){
+		m_topic_stat = new double[k];
+		Arrays.fill(m_topic_stat, 0);
+		
 		m_wordTopic_stat = new double[k][vocalSize];
 		for(int i=0; i<k; i++)
 			Arrays.fill(m_wordTopic_stat[i], 0);
