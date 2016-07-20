@@ -10,36 +10,47 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
-import structures._thetaStar;
 import utils.Utils;
 /***
  * Linear transformation matrix with DP.
  * @author lin
  */
-public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
+public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
+	
 	protected int m_dimSup;
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
-	protected double[] m_supModel; // linear transformation.
-	protected double[] m_sWeights; // weights of super user.
-	protected double m_eta3, m_eta4;// coefficients in front of super model.
+	protected double[] m_supModel; // linear transformation for super user
+	public static double[] m_supWeights; // newly learned global model
+	protected double[] m_abNuB = new double[]{1, 1}; // prior for scaling
 	
 	public CLinAdaptWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap, String featureGroup4Sup){
 		super(classNo, featureSize, featureMap, globalModel);
 		loadFeatureGroupMap(featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
 		m_supModel = new double[m_dimSup*2]; // globally shared transformation matrix.
-		m_eta3 = 0.01;
-		m_eta4 = 0.01;
+	}
+	
+	@Override
+	protected int getVSize() {
+		return m_kBar*m_dim*2 + m_dimSup*2;// we have global here.
 	}
 	
 	@Override
 	protected void accumulateClusterModels(){
 		m_models = new double[getVSize()];
-		for(int i=0; i<m_kBar; i++){
-			System.arraycopy(m_thetaStars[i].m_beta, 0, m_models, m_dim*2*i, m_dim*2);
-		}
+		for(int i=0; i<m_kBar; i++)
+			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
+
 		// we put the global part in the end.
-		System.arraycopy(m_supModel, 0, m_models, m_dim*2*m_kBar, m_dim*2);
+		System.arraycopy(m_supModel, 0, m_models, m_dim*2*m_kBar, m_dimSup*2);
+	}
+	
+	@Override
+	protected void initPriorG0() {
+		m_G0 = new DoubleNormalPrior(m_abNuB[0], m_abNuB[1], m_abNuA[0], m_abNuA[1]);
+		
+		//sample the global model adaptation parameters
+		m_G0.sampling(m_supModel);
 	}
 	
 	@Override
@@ -47,31 +58,27 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 	protected double calculateR1(){
 		double R1 = 0;
 		int offset;
+		
 		// Clusters.
 		for(int i=0; i<m_kBar; i++){
 			offset = m_dim*2*i;
 			for(int j=0; j<m_dim; j++){
-				R1 += m_eta1*(m_models[offset+j]-1)*(m_models[offset+j]-1);
-				R1 += m_eta2*m_models[offset+m_dim+j]*m_models[offset+m_dim+j];
+				R1 += (m_models[offset+j]-m_abNuB[0])*(m_models[offset+j]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //shifting
+				R1 += (m_models[offset+m_dim+j]-m_abNuA[0])*(m_models[offset+m_dim+j]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; //scaling
 			}
 		}
+		
 		// Super model.
 		for(int i=0; i<m_dimSup; i++){
-			R1 += m_eta3*(m_supModel[i]-1)*(m_supModel[i]-1);
-			R1 += m_eta4*m_supModel[i+m_dimSup]*m_supModel[i+m_dimSup];
+			R1 += (m_supModel[i]-m_abNuB[0])*(m_supModel[i]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // shifting
+			R1 += (m_supModel[i+m_dimSup]-m_abNuA[0])*(m_supModel[i+m_dimSup]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // scaling
 		}
-		return R1;
+		return R1/2;
 	}
 	
 	protected double getSupWeights(int n){
 		int gid = m_featureGroupMap4SupUsr[n];
-		return m_supModel[gid]*m_gWeights[n] + m_supModel[gid+m_dimSup];
-		
-	}
-	
-	@Override
-	protected int getVSize() {
-		return m_kBar*m_dim*2 + m_dimSup*2;// we have global here.
+		return m_supModel[gid]*m_gWeights[n] + m_supModel[gid+m_dimSup];		
 	}
 	
 	@Override
@@ -83,7 +90,7 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 		if(cIndex <0 || cIndex >= m_kBar)
 			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
-		double delta = (review.getYLabel() - logit(review.getSparse(), user, cIndex));
+		double delta = (review.getYLabel() - logit(review.getSparse(), user));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(user);
 		
@@ -115,15 +122,16 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 		for(int i=0; i<m_kBar; i++){
 			offset = m_dim*2*i;
 			for(int k=0; k<m_dim;k++){
-				m_g[offset+k] += 2*m_eta1*(m_models[offset+k]-1);
-				m_g[offset+k+m_dim] += 2*m_eta2*(m_models[offset+k+m_dim]);
+				m_g[offset+k] += (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
+				m_g[offset+k+m_dim] += (m_models[offset+k+m_dim]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // shifting
 			}
 		}
+		
 		// R1 by super model.
 		offset = m_dim*2*m_kBar;
 		for(int k=0; k<m_dimSup; k++){
-			m_g[offset+k] += 2*m_eta3*(m_supModel[k]-1);
-			m_g[offset+k+m_dimSup] += 2*m_eta4*m_supModel[m_dimSup+k];
+			m_g[offset+k] += (m_supModel[k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // scaling
+			m_g[offset+k+m_dimSup] += (m_supModel[m_dimSup+k]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1];
 		}
 	}
 	
@@ -146,7 +154,8 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 		m_userList = new ArrayList<_AdaptStruct>();
 		// Init each user.
 		for(_User user:userList)
-			m_userList.add(new _DPAdaptStruct(user, m_dim));// Difference
+			m_userList.add(new _DPAdaptStruct(user, m_dim));
+
 		// Init super user model.
 		for(int i=0; i<m_dimSup; i++)
 			m_supModel[i] = 1;
@@ -186,9 +195,10 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 	
 	// Logit function is different from the father class.
 	@Override
-	protected double logit(_SparseFeature[] fvs, _AdaptStruct u, int c){
+	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
 		int k, n;
-		double[] As = m_thetaStars[c].m_beta;
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
+		double[] As = user.getThetaStar().getModel();
 		double value = As[0]*getSupWeights(0) + As[m_dim];//Bias term: w_s0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
@@ -196,15 +206,6 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 			value += (As[k]*getSupWeights(n) + As[m_dim+k]) * fv.getValue();
 		}
 		return Utils.logistic(value);
-	}
-	
-	// Sample thetaStars.
-	@Override
-	protected void sampleThetaStars(int start, int M){
-		for(int m=0; m<M; m++){
-			m_thetaStars[start+m] = new _thetaStar(2*m_dim);// sacling+shifting
-			m_thetaStars[start+m].setBeta(m_normal);
-		}
 	}
 	
 	@Override
@@ -215,20 +216,15 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			As = user.getThetaStar().m_beta;
+			As = user.getThetaStar().getModel();
 			m_pWeights = new double[m_gWeights.length];
 			for(int n=0; n<=m_featureSize; n++){
 				ki = m_featureGroupMap[n];
 				ks = m_featureGroupMap4SupUsr[n];
-				m_pWeights[n] = As[ki]*(m_supModel[ks]*m_gWeights[n]+m_supModel[ks+m_dimSup])+As[ki+m_dim];
+				m_pWeights[n] = As[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+As[ki+m_dim];
 			}
 			user.setPersonalizedModel(m_pWeights);
 		}
-	}
-	
-	public void setRsTradeOffs(double a, double b){
-		m_eta3 = a;
-		m_eta4 = b;
 	}
 	
 	// Assign the optimized models to the clusters.
@@ -236,13 +232,27 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP{
 	protected void setThetaStars(){
 		// Assign models to clusters.
 		for(int i=0; i<m_kBar; i++)
-			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].m_beta, 0, m_dim*2);
+			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].getModel(), 0, m_dim*2);
+		
 		// Assign model to super user.
 		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
 	}
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,lambda:%.2f,nuOfIter:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_M, m_alpha, m_lambda, m_numberOfIterations, m_eta1, m_eta2);
+		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_M, m_alpha, m_numberOfIterations, m_eta1, m_eta2);
+	}
+	
+	@Override
+	public double test(){
+		//pass the user-level feature group to individual users
+		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
+		
+		//construct the new global model for simplicity
+		m_supWeights = new double[m_featureSize+1];
+		for(int i=0; i<m_featureSize+1; i++)
+			m_supWeights[i] = getSupWeights(i);
+		
+		return super.test();	
 	}
 }

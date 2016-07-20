@@ -2,6 +2,7 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 
 import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import structures._Doc;
+import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
@@ -10,6 +11,8 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	_thetaStar m_thetaStar = null;
 	double[] m_cluPosterior;
+	
+	public static int[] m_featureGroupMap;
 	
 	public _DPAdaptStruct(_User user) {
 		super(user, 0); // will not perform adaptation
@@ -45,10 +48,28 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 	@Override
 	public int predict(_Doc doc) {
 		double prob = 0, sum;
-		for(int k=0; k<m_cluPosterior.length; k++) {
-			sum = Utils.dotProduct(CLogisticRegressionWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-			prob += m_cluPosterior[k] * Utils.logistic(sum); 
+		
+		if (m_dim==0) {//not adaptation based
+			for(int k=0; k<m_cluPosterior.length; k++) {
+				sum = Utils.dotProduct(CLogisticRegressionWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+				prob += m_cluPosterior[k] * Utils.logistic(sum); 
+			}			
+		} else {
+			int n, m;
+			double As[];
+			for(int k=0; k<m_cluPosterior.length; k++) {
+				As = m_thetaStar.getModel();
+				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+				for(_SparseFeature fv: doc.getSparse()){
+					n = fv.getIndex() + 1;
+					m = m_featureGroupMap[n];
+					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+				}
+				
+				prob += m_cluPosterior[k] * Utils.logistic(sum); 
+			}
 		}
+		
 		return prob>0 ? 1:0;
 	}
 }

@@ -8,8 +8,6 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
-import cern.jet.random.tdouble.Normal;
-import cern.jet.random.tdouble.engine.DoubleMersenneTwister;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
@@ -19,24 +17,22 @@ import utils.Utils;
 public class CLogisticRegressionWithDP extends LinAdapt {
 	protected boolean m_burnInM = true; // Whether we have M step in burn in period.
 	
-	protected Normal m_normal; // Normal distribution.
 	protected int m_M = 5, m_kBar = 0; // The number of auxiliary components.
 	protected int m_numberOfIterations = 10;
 	protected int m_burnIn = 10, m_thinning = 3;// burn in time, thinning time.
 	protected double m_converge = 1e-9;
 	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // to be assigned before EM starts
+	protected NormalPrior m_G0; // prior distribution
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 1};
+	protected double[] m_abNuA = new double[]{0, 1}; // N(0,1)
 	protected double[] m_models; // model parameters for clusters.
-	protected double[] m_probs;
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
 	public CLogisticRegressionWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
-		m_normal = new Normal(0, 1, new DoubleMersenneTwister());
 	}
 
 	protected void accumulateClusterModels(){
@@ -55,15 +51,16 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected void calculateClusterProbPerUser(){
 		double prob;
 		_DPAdaptStruct user;
+		double[] probs = new double[m_kBar];
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 				prob = calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());
-				m_probs[k] = Math.exp(prob);//this will be in real space!
+				probs[k] = Math.exp(prob);//this will be in real space!
 			}
-			Utils.L1Normalization(m_probs);
-			user.setClusterPosterior(m_probs);
+			Utils.L1Normalization(probs);
+			user.setClusterPosterior(probs);
 		}
 	}
 	
@@ -73,7 +70,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 			v = (m_models[i]-m_abNuA[0]) / m_abNuA[1];
 			R1 += v*v;
 		}
-		return R1;
+		return R1/2;
 	}
 	
 	int findThetaStar(_thetaStar theta) {
@@ -87,8 +84,8 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_thetaStars[m] == null)
-				m_thetaStars[m] = new _thetaStar(m_dim, m_abNuA);
-			m_thetaStars[m].sampleBeta(m_normal);
+				m_thetaStars[m] = new _thetaStar(m_dim);
+			m_G0.sampling(m_thetaStars[m].getModel());
 		}
 	}
 	
@@ -133,9 +130,14 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		}
 	}	
 	
+	void swapBack(int cIndex) {
+		_thetaStar cTheta = m_thetaStars[cIndex];
+		m_thetaStars[cIndex] = m_thetaStars[m_kBar-1];
+		m_thetaStars[m_kBar--] = cTheta;// kBar starts from 0, the size decides how many are valid.
+	}
+	
 	// The main MCMC algorithm, assign each user to clusters.
 	protected void calculate_E_step(){
-		int cIndex;
 		_thetaStar curThetaStar;
 		_DPAdaptStruct user;
 		
@@ -144,11 +146,9 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 			curThetaStar = user.getThetaStar();
 			curThetaStar.updateMemCount(-1);
 			
-			if(curThetaStar.getMemSize() == 0){// No data associated with the cluster.
-				cIndex = findThetaStar(curThetaStar);
-				m_thetaStars[cIndex] = m_thetaStars[m_kBar-1]; // Use the last thetastar to cover this one.
-				m_kBar--;// kBar starts from 0, the size decides how many are valid.
-			}
+			if(curThetaStar.getMemSize() == 0)// No data associated with the cluster.
+				swapBack(findThetaStar(curThetaStar)); // move it back to \theta*
+			
 			sampleOneInstance(user);
 		}
 	}
@@ -189,6 +189,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 					if (++displayCount%100==0)
 						System.out.println();
 				} 
+				
 				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
@@ -210,8 +211,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		int count = 0;
 		
-		initThetaStars();// Init cluster assignment.
-		init(); // clear user performance.
+		init(); // clear user performance and init cluster assignment		
 		
 		// Burn in period.
 		while(count++ < m_burnIn){
@@ -249,6 +249,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		int cIndex = user.getThetaStar().getIndex();
 		if(cIndex <0 || cIndex >= m_kBar)
 			System.err.println("Error,cannot find the theta star!");
+		
 		int offset = m_dim*cIndex;
 		double delta = (review.getYLabel() - logit(review.getSparse(), user));
 		if(m_LNormFlag)
@@ -281,8 +282,13 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		return mag;
 	}
 	
+	protected void initPriorG0() {
+		m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
+	}
+	
 	// Assign cluster assignment to each user.
 	protected void initThetaStars(){
+		initPriorG0();
 		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);
 		
 		_DPAdaptStruct user;
@@ -290,6 +296,12 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 			user = (_DPAdaptStruct) m_userList.get(i);
 			sampleOneInstance(user);
 		}		
+	}
+	
+	@Override
+	protected void init(){
+		super.init();
+		initThetaStars();
 	}
 	
 	@Override
@@ -396,12 +408,9 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	@Override
 	public double test(){
 		// we calculate the user's cluster probability.
-		m_probs = new double[m_kBar];
 		calculateClusterProbPerUser();
-		super.test();	
-		return 0;
+		return super.test();	
 	}
-
 	
 	@Override
 	public String toString() {
