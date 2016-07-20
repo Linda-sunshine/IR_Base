@@ -36,6 +36,11 @@ public class _thetaStar{
 		m_diffFlag = true;
 	}
 
+	public void clear(){
+		m_index = 0;
+		m_memSize = 0;
+		m_prob = 0;
+	}
 	public int getMemSize(){
 		return m_memSize;
 	}
