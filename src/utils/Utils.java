@@ -31,6 +31,10 @@ public class Utils {
 		}
 	}
 	
+	public static double max(double[] w) {
+		return max(w, 0, w.length);
+	}
+	
 	public static double max(double[] w, int start, int size) {
 		double max = Math.abs(w[start]);
 		int index = 0;

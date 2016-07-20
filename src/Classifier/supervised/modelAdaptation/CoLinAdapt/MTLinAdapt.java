@@ -67,7 +67,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return m_userList.size()*m_dim*2 + m_dimSup*2;
 	}
 	

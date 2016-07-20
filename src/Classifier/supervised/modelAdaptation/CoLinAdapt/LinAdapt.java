@@ -17,11 +17,11 @@ import structures._User;
 import utils.Utils;
 
 public class LinAdapt extends RegLR {
-	int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
-	int[] m_featureGroupMap; // bias term is at position 0
+	protected int m_dim;//The number of feature groups k, so the total number of dimensions of weights is 2(k+1).	
+	protected int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
-	double m_eta2; // weight for shifting in R2.	
+	protected double m_eta2; // weight for shifting in R2.	
 	
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
@@ -89,7 +89,7 @@ public class LinAdapt extends RegLR {
 		m_pWeights = new double[m_gWeights.length];
 	}
 	
-	int getVSize() {
+	protected int getVSize() {
 		return m_dim*2;
 	}
 	
