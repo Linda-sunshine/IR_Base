@@ -21,7 +21,7 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	protected double[] m_supModel; // linear transformation for super user
 	public static double[] m_supWeights; // newly learned global model
-	protected double[] m_abNuB = new double[]{1, 1}; // prior for scaling
+	protected double[] m_abNuB = new double[]{1, 0.3}; // prior for scaling
 	
 	public CLinAdaptWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap, String featureGroup4Sup){
 		super(classNo, featureSize, featureMap, globalModel);
@@ -56,23 +56,12 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	@Override
 	// R1 over each cluster, R1 over super cluster.
 	protected double calculateR1(){
-		double R1 = 0;
-		int offset;
+		double R1 = m_G0.likelihood(m_supModel);
 		
 		// Clusters.
-		for(int i=0; i<m_kBar; i++){
-			offset = m_dim*2*i;
-			for(int j=0; j<m_dim; j++){
-				R1 += (m_models[offset+j]-m_abNuB[0])*(m_models[offset+j]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //shifting
-				R1 += (m_models[offset+m_dim+j]-m_abNuA[0])*(m_models[offset+m_dim+j]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; //scaling
-			}
-		}
+		for(int i=0; i<m_kBar; i++)
+			R1 += m_G0.likelihood(m_thetaStars[i].getModel());
 		
-		// Super model.
-		for(int i=0; i<m_dimSup; i++){
-			R1 += (m_supModel[i]-m_abNuB[0])*(m_supModel[i]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // shifting
-			R1 += (m_supModel[i+m_dimSup]-m_abNuA[0])*(m_supModel[i+m_dimSup]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // scaling
-		}
 		return R1/2;
 	}
 	
@@ -156,9 +145,6 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		for(_User user:userList)
 			m_userList.add(new _DPAdaptStruct(user, m_dim));
 
-		// Init super user model.
-		for(int i=0; i<m_dimSup; i++)
-			m_supModel[i] = 1;
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
@@ -198,12 +184,12 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
 		int k, n;
 		_DPAdaptStruct user = (_DPAdaptStruct)u;
-		double[] As = user.getThetaStar().getModel();
-		double value = As[0]*getSupWeights(0) + As[m_dim];//Bias term: w_s0*a0+b0.
+		double[] Au = user.getThetaStar().getModel();
+		double value = Au[0]*getSupWeights(0) + Au[m_dim];//Bias term: w_s0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			value += (As[k]*getSupWeights(n) + As[m_dim+k]) * fv.getValue();
+			value += (Au[k]*getSupWeights(n) + Au[m_dim+k]) * fv.getValue();
 		}
 		return Utils.logistic(value);
 	}
@@ -240,7 +226,7 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_M, m_alpha, m_numberOfIterations, m_eta1, m_eta2);
+		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	@Override

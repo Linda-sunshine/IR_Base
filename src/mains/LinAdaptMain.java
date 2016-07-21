@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
+import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -46,7 +46,7 @@ public class LinAdaptMain {
 //		asyncLinAdapt adaptation = new asyncLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 		
 		//Create an instance of CoLinAdapt model.
-		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+//		CoLinAdapt adaptation = new CoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 //		//Create an instance of zero-order asyncCoLinAdapt model.
 //		asyncCoLinAdapt adaptation = new asyncCoLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -78,7 +78,7 @@ public class LinAdaptMain {
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 		
 		//Create the instance of MT-SVM
-//		MultiTaskSVM adaptation = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		MultiTaskSVM adaptation = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		adaptation.setBias(true);
 		
 		//Create an instance of asynchronized MT-LinAdapt model.
@@ -104,11 +104,17 @@ public class LinAdaptMain {
 		// Create an instance of AvgAdapt on transformation operations
 //		WeightedAvgTransAdapt adaptation = new WeightedAvgTransAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
+		// Create an instance of Multi-task DP over logistic regression 
+//		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+
+		// Create an instance of Multi-task DP over MT-LinAdapt 
+//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(true);
+		adaptation.setLNormFlag(false);
 		adaptation.setTestMode(TestMode.TM_batch);
-		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();

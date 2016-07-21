@@ -70,6 +70,6 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 			}
 		}
 		
-		return prob>0 ? 1:0;
+		return prob>0.5 ? 1:0;
 	}
 }
