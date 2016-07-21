@@ -109,20 +109,38 @@ public class LDA_Gibbs extends pLSA {
 	@Override
 	public double calculate_E_step(_Doc d) {	
 		d.permutation();
-		int tid;
+		double p;
+		int wid, tid;
 		for(_Word w:d.getWords()) {
+			wid = w.getIndex();
 			tid = w.getTopic();
 			
 			//remove the word's topic assignment
-			updateStats(true, w, d);
+			d.m_sstat[tid] --;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] --;
+				m_sstat[tid] --;
+			}
 			
 			//perform random sampling
-			tid = sampleTopic4Word(w, d);
+			p = 0;
+			for(tid=0; tid<number_of_topics; tid++)
+				p += d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]); // p(z|d) * p(w|z)			
+			p *= m_rand.nextDouble();
+			
+			tid = -1;
+			while(p>0 && tid<number_of_topics-1) {
+				tid ++;
+				p -= d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]);
+			}
 			
 			//assign the selected topic to word
 			w.setTopic(tid);
-			
-			updateStats(false, w, d);
+			d.m_sstat[tid] ++;
+			if (m_collectCorpusStats) {
+				word_topic_sstat[tid][wid] ++;
+				m_sstat[tid] ++;
+			}
 		}
 		
 		return 0;

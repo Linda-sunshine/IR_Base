@@ -536,7 +536,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		String childParameterFile = filePrefix + "childParameter.txt";
 	
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-		printTestParameter4Spam(filePrefix);
+//		printTestParameter4Spam(filePrefix);
 
 		String similarityFile = filePrefix+"topicSimilarity.txt";
 		discoverSpecificComments(similarityFile);

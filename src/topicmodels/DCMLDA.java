@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -51,8 +50,8 @@ public class DCMLDA extends LDA_Gibbs {
 				alpha, burnIn, lag);
 
 		int corpusSize = c.getSize();
-		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
-		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
+//		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
+//		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
 		m_alpha = new double[number_of_topics];
@@ -169,6 +168,45 @@ public class DCMLDA extends LDA_Gibbs {
 		imposePrior();
 	}
 
+	public double calculate_E_step(_Doc d) {
+		d.permutation();
+		double p;
+		int wid, tid;
+		int docID = d.getID();
+		for(_Word w:d.getWords()) {
+			wid = w.getIndex();
+			tid = w.getTopic();
+			
+			//remove the word's topic assignment
+			d.m_sstat[tid]--;
+			m_docWordTopicStats[docID][tid][wid]--;
+			
+			//perform random sampling
+			p = 0;
+			for(tid=0; tid<number_of_topics; tid++){
+				double term1 = topicInDocProb(tid, d);
+				term1 = wordTopicProb(tid, wid, d);
+				m_topicProbCache[tid] = topicInDocProb(tid, d)
+						* wordTopicProb(tid, wid, d);
+				p += m_topicProbCache[tid];	
+			}
+			p *= m_rand.nextDouble();
+			
+			tid = -1;
+			while(p>0 && tid<number_of_topics-1) {
+				tid ++;
+				p -= d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]);
+			}
+			
+			//assign the selected topic to word
+			w.setTopic(tid);
+			d.m_sstat[tid]++;
+			m_docWordTopicStats[docID][tid][wid]++;
+		}
+		
+		return 0;
+	}
+	
 	@Override
 	protected int sampleTopic4Word(_Word w, _Doc d) {
 		double p;

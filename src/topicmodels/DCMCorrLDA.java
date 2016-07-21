@@ -1,28 +1,70 @@
 package topicmodels;
 
-import org.netlib.util.doubleW;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 
+import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
+import structures._RankItem;
 import structures._Word;
+import utils.Utils;
 
 public class DCMCorrLDA extends DCMLDA{
 	
-	protected double m_alpha_c;
+	protected double[] m_alpha_c;
+	protected double m_totalAlpha_c;
 	
 	public DCMCorrLDA(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, int number_of_topics, 
 			double alpha_a, double alpha_c, double burnIn, int lag, int newtonIter, double newtonConverge){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha_a, burnIn, lag, newtonIter, newtonConverge);
 		
-		m_alpha_c = alpha_c;
+		m_alpha_c = new double[number_of_topics];
+		m_totalAlpha_c = 0;
 	}
 	
 	public String toString(){
-		return String.format("DCMCorrLDA[k:%d, alpha^a:%.2f, alpha^c:%.2f, beta:%.2f, training proportion:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, m_alpha_c, d_beta, m_testWord4PerplexityProportion);
+		return String.format("DCMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+	}
+	
+	protected void initialize_probability(Collection<_Doc>collection){
+		for(_Doc d:collection){
+			if(d instanceof _ParentDoc4DCM){
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				pDoc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
+				
+				for(_ChildDoc cDoc: pDoc.m_childDocs){
+					cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
+					for(_Word w:cDoc.getWords()){
+						int wid = w.getIndex();
+						int tid = w.getTopic();
+						
+						pDoc.m_wordTopic_stat[tid][wid] ++;
+						pDoc.m_topic_stat[tid]++;
+					}
+					computeMu4Doc(cDoc);
+				}
+			}
+			
+		}
+		
+		initialAlphaBeta();
+		imposePrior();
+	}
+	
+	protected void computeMu4Doc(_ChildDoc d){
+		_ParentDoc tempParent = d.m_parentDoc;
+		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
+		mu = 0.5;
+		d.setMu(mu);
 	}
 	
 	public double calculate_E_step(_Doc d){
@@ -141,7 +183,7 @@ public class DCMCorrLDA extends DCMLDA{
 			return term;
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
-			double muDp = cDoc.getMu();
+			double muDp = cDoc.getMu()/d.getTotalDocLength();
 			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, d_alpha
 					+ d.m_sstat[tid] * muDp)
 					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, d_alpha
@@ -175,13 +217,489 @@ public class DCMCorrLDA extends DCMLDA{
 		double prob = 0;
 		double parentDocLength = d.m_parentDoc.getDocInferLength();
 		double childDocLength = d.getDocInferLength();
-				
-		prob = (m_alpha_c[tid]+d.getMu()*pDoc.m_sstat[tid]+d.m_sstat[tid])/
-				(m_totalAlpha_c+d.getMu()*parentDocLength+childDocLength)
+			
+		double muDp = d.getMu()/parentDocLength;
+		prob = (m_alpha_c[tid]+muDp*pDoc.m_sstat[tid]+d.m_sstat[tid])/
+				(m_totalAlpha_c+muDp*parentDocLength+childDocLength);
 		
 		return prob;
 	}
 	
+	protected void initialAlphaBeta(){
+		
+		double parentDocNum = 0;
+		double childDocNum = 0;
+		
+		Arrays.fill(m_sstat, 0);
+		Arrays.fill(m_alphaAuxilary, 0);
+		for(int k=0; k<number_of_topics; k++){
+			Arrays.fill(topic_term_probabilty[k], 0);
+			Arrays.fill(word_topic_sstat[k], 0);
+		}
+		
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc4DCM){
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				for(int k=0; k<number_of_topics; k++){
+					double tempProb = pDoc.m_sstat[k]/pDoc.getTotalDocLength();
+					m_sstat[k] += tempProb;
+					
+					if(pDoc.m_sstat[k] == 0)
+						continue;
+					for(int v=0; v<vocabulary_size; v++){
+						tempProb = pDoc.m_wordTopic_stat[k][v]/pDoc.m_topic_stat[k];
+						topic_term_probabilty[k][v] += tempProb;
+					}
+				}
+				parentDocNum += 1;
+			
+				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					for(int k=0; k<number_of_topics; k++){
+						double tempProb = cDoc.m_sstat[k]/cDoc.getTotalDocLength();
+						m_alphaAuxilary[k] += tempProb;
+					}
+					childDocNum += 1;
+				}
+			}
+		}
+		
+		for(int k=0; k<number_of_topics; k++){
+			m_sstat[k] /= parentDocNum;
+			m_alphaAuxilary[k] /= childDocNum;
+			for(int v=0; v<vocabulary_size; v++){
+				topic_term_probabilty[k][v] /= (parentDocNum+childDocNum);
+			}
+		}
+		
+		for(int k=0; k<number_of_topics; k++){
+			m_alpha[k] = m_sstat[k];
+			m_alpha_c[k] = m_alphaAuxilary[k];
+			for(int v=0; v<vocabulary_size; v++)
+				m_beta[k][v] = topic_term_probabilty[k][v]+d_beta;
+		}
+		
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
+		m_totalAlpha_c = Utils.sumOfArray(m_alpha_c);
+		for(int k=0; k<number_of_topics; k++){
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+		}
+		
+	}
 	
+	protected void updateAlpha(){
+		double diff = 0;
+		int iteration = 0;
+		
+		do{
+			diff = 0;
+			
+			double totalAlphaDenominator = 0;
+			m_totalAlpha = Utils.sumOfArray(m_alpha);
+			double digAlpha = Utils.digamma(m_totalAlpha);
+			
+			double deltaAlpha = 0;
+			
+			for(_Doc d:m_trainSet){
+				if(d instanceof _ParentDoc){
+					totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha)-digAlpha;
+				}
+			}
+			
+			for(int k=0; k<number_of_topics; k++){
+				double totalAlphaNumerator = 0;
+				
+				for(_Doc d:m_trainSet){
+					if(d instanceof _ParentDoc)
+						totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
+				}
+				
+				deltaAlpha = totalAlphaNumerator*1.0/totalAlphaDenominator;
+				
+				double newAlpha = m_alpha[k]*deltaAlpha;
+				double t_diff = Math.abs(m_alpha[k]-newAlpha);
+				
+				if(t_diff>diff)
+					diff = t_diff;
+				
+				m_alpha[k] = newAlpha;
+			}
+			
+			iteration ++;
+			System.out.println("alpha parentDoc iteration\t" + iteration);
+			
+			if(iteration>m_newtonIter)
+				break;
+			
+		}while(diff>m_newtonConverge);
+		
+		System.out.println("iteration\t"+iteration);
+		m_totalAlpha = 0;
+		for(int k=0; k<number_of_topics; k++){
+			m_totalAlpha += m_alpha[k];
+		}
+	}
+	
+	protected void updateAlphaC(){
+		double diff = 0;
+		int iteration = 0;
+		
+		do{
+			diff = 0;
+			double totalAlphaDenominator = 0;
+			double[] totalAlphaNumerator = new double[number_of_topics];
+			Arrays.fill(totalAlphaNumerator, 0);
+			m_totalAlpha_c = Utils.sumOfArray(m_alpha_c);
+						
+			double deltaAlpha = 0;
+			for(_Doc d:m_trainSet){
+				if(d instanceof _ParentDoc){
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+					
+					double pDocLen = pDoc.getTotalDocLength();
+					for(_ChildDoc cDoc:pDoc.m_childDocs){
+						double muDp = cDoc.getMu()/pDocLen;
+						double t_totalAlpha_c = m_totalAlpha_c+cDoc.getMu();
+						double digAlpha = Utils.digamma(t_totalAlpha_c);
+						totalAlphaDenominator += Utils.digamma(cDoc.getTotalDocLength()+t_totalAlpha_c)-digAlpha;
+						
+						for(int k=0; k<number_of_topics; k++)
+							totalAlphaNumerator[k] += Utils.digamma(m_alpha_c[k]+muDp*pDoc.m_sstat[k]+cDoc.m_sstat[k])-Utils.digamma(m_alpha_c[k]+muDp*pDoc.m_sstat[k]);
+					}
+				}
+			}
+			
+			for(int k=0; k<number_of_topics; k++){
+				deltaAlpha = totalAlphaNumerator[k]*1.0/totalAlphaDenominator;
+				
+				double newAlpha = m_alpha_c[k]*deltaAlpha;
+				double t_diff = Math.abs(m_alpha_c[k]-newAlpha);
+				if(t_diff>diff)
+					diff = t_diff;
+				
+				m_alpha_c[k] = newAlpha;
+			}
+			
+			iteration ++;
+			System.out.println("alpha iteration\t" + iteration);
+			
+			if(iteration > m_newtonIter)
+				break;
+			
+		}while(diff>m_newtonConverge);
+		
+		System.out.println("iteration\t" + iteration);
+		m_totalAlpha_c = 0;
+		for (int k = 0; k < number_of_topics; k++) {
+			m_totalAlpha_c += m_alpha_c[k];
+		}
+	}
+	
+	protected void updateBeta(int tid){
+		double diff = 0;
+		double smoothingBeta = 0.1;
+		
+		int iteration = 0;
+		do{
+			diff = 0;
+			
+			double deltaBeta = 0;
+			double wordNum4Tid = 0;
+			
+			double[] wordNum4Tid4V = new double[vocabulary_size];
+			double totalBetaDenominator = 0;
+			double[] totalBetaNumerator = new double[vocabulary_size];
+			
+			Arrays.fill(totalBetaNumerator, 0);
+			Arrays.fill(wordNum4Tid4V, 0);
+			
+			m_totalBeta[tid] = Utils.sumOfArray(m_beta[tid]);
+			double digBeta4Tid = Utils.digamma(m_totalBeta[tid]);
+			
+			for(_Doc d:m_trainSet){
+				if(d instanceof _ParentDoc){
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+					totalBetaDenominator += Utils.digamma(m_totalBeta[tid]+pDoc.m_topic_stat[tid])-digBeta4Tid;
+					for(int v=0; v<vocabulary_size; v++){
+						wordNum4Tid += pDoc.m_wordTopic_stat[tid][v];
+						wordNum4Tid4V[v] += pDoc.m_wordTopic_stat[tid][v];
+						
+						totalBetaNumerator[v] += Utils.digamma(m_beta[tid][v]+pDoc.m_wordTopic_stat[tid][v]);
+						totalBetaNumerator[v] -= Utils.digamma(m_beta[tid][v]);
+					}
+				}
+				
+			}
+			
+			for(int v=0; v<vocabulary_size; v++){
+				if(wordNum4Tid == 0)
+					break;
+				if(wordNum4Tid4V[v] == 0){
+					deltaBeta = 0;
+				}else{
+					deltaBeta = totalBetaNumerator[v]/totalBetaDenominator;
+				}
+					
+				double newBeta = m_beta[tid][v]*deltaBeta+d_beta;
+				double t_diff = Math.abs(m_beta[tid][v]-newBeta);
+				if(t_diff>diff)
+					diff = t_diff;
+				
+				m_beta[tid][v] = newBeta;
+			}
+			
+			iteration ++;
+			
+			System.out.println("beta iteration\t"+iteration);
+		}while(diff > m_newtonConverge);
+		
+		System.out.println("iteration\t"+iteration);
+	}
+	
+	protected double calculate_log_likelihood(){
+		double logLikelihood = 0.0;
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc)
+				logLikelihood += calculate_log_likelihood((_ParentDoc4DCM)d);
+		}
+		
+		return logLikelihood;
+	}
+	
+	protected void collectStats(_Doc d){
+		if(d instanceof _ParentDoc4DCM){
+			_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+			for(int k=0; k<number_of_topics; k++){
+				pDoc.m_topics[k] += pDoc.m_sstat[k]+m_alpha[k];
+				for(int v=0; v<vocabulary_size; v++){
+					pDoc.m_wordTopic_prob[k][v] += pDoc.m_wordTopic_stat[k][v]+m_beta[k][v];
+				}
+			}
+		}else if(d instanceof _ChildDoc){
+			_ChildDoc cDoc = (_ChildDoc)d;
+			_ParentDoc pDoc = cDoc.m_parentDoc;
+			double muDp = cDoc.getMu()/pDoc.getTotalDocLength();
+			for(int k=0; k<number_of_topics; k++){
+				cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k]+muDp*pDoc.m_sstat[k];
+			}
+		}
+	}
+	
+	protected void saveParameter2File(File fileFolder, String fileName){
+		try{
+			File paramFile = new File(fileFolder, fileName);
+			
+			PrintWriter pw = new PrintWriter(paramFile);
+			pw.println("alpha");
+			
+			for(int k=0; k<number_of_topics; k++){
+				pw.print(m_alpha[k]+"\t");
+			}
+			pw.println();
+			pw.println("alpha c");
+			for(int k=0; k<number_of_topics; k++){
+				pw.print(m_alpha_c[k]+"\t");
+			}
+			pw.println();
+			pw.println("beta");
+			for (int k = 0; k < number_of_topics; k++) {
+				pw.print("topic" + k + "\t");
+				for (int v = 0; v < vocabulary_size; v++) {
+					pw.print(m_beta[k][v] + "\t");
+				}
+				pw.println();
+			}
+			pw.flush();
+			pw.close();
+		}catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
+	
+	protected double calculate_log_likelihood(_ParentDoc4DCM d){
+		double docLogLikelihood = 0;
+		int docID = d.getID();
+		
+		double parentDocLength = d.getTotalDocLength();
+		
+		for(int k=0; k<number_of_topics; k++){
+			double term = Utils.lgamma(d.m_sstat[k]+m_alpha[k]);
+			docLogLikelihood += term;
+			
+			term = Utils.lgamma(m_alpha[k]);
+			docLogLikelihood -= term;
+		}
+		
+		docLogLikelihood += Utils.lgamma(m_totalAlpha);
+		docLogLikelihood -= Utils.lgamma(parentDocLength+m_totalAlpha);
+		
+		for(int k=0; k<number_of_topics; k++){
+			for(int v=0; v<vocabulary_size; v++){
+				double term = Utils.lgamma(d.m_wordTopic_stat[k][v]+m_beta[k][v]);
+				docLogLikelihood += term;
+				
+				term = Utils.lgamma(m_beta[k][v]);
+				docLogLikelihood -= term;
+			}
+			
+			docLogLikelihood += Utils.lgamma(m_totalBeta[k]);
+			docLogLikelihood -= Utils.lgamma(d.m_topic_stat[k]+m_totalBeta[k]);
+		}
+		
+		
+		
+		for(_ChildDoc cDoc:d.m_childDocs){
+			double muDp = cDoc.getMu()/parentDocLength;
+			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu());
+			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu()+cDoc.getTotalDocLength());
+			for(int k=0; k<number_of_topics; k++){
+				double term = Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]+cDoc.m_sstat[k]);
+				term -= Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]);
+				docLogLikelihood += term;
+			}
+		}
+		
+		return docLogLikelihood;
+	}
+	
+	protected void finalEst(){
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc4DCM){
+				for(int i=0; i<number_of_topics; i++)
+					Utils.L1Normalization(((_ParentDoc4DCM) d).m_wordTopic_prob[i]);
+			}
+			estThetaInDoc(d);
+		}
+	}
+	
+	protected void debugOutput(String filePrefix){
+		int topK = 10;
+		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
+		File childTopicFolder = new File(filePrefix+"childTopicAssignment");
+		
+		if(!parentTopicFolder.exists()){
+			System.out.println("creating directory"+parentTopicFolder);
+			parentTopicFolder.mkdir();
+		}
+		
+		if(!childTopicFolder.exists()){
+			System.out.println("creating directory"+childTopicFolder);
+			childTopicFolder.mkdir();
+		}
+		
+		File parentWordTopicDistributionFolder = new File(filePrefix+"wordTopicDistribution");
+		if(!parentWordTopicDistributionFolder.exists()){
+			System.out.println("creating word topic distribution folder\t"+parentWordTopicDistributionFolder);
+			parentWordTopicDistributionFolder.mkdir();
+		}
+		
+		for(_Doc d:m_trainSet){
+			if(d instanceof _ParentDoc){
+				printParentTopicAssignment(d, parentTopicFolder);
+				printWordTopicDistribution(d, parentWordTopicDistributionFolder, topK);
+			}else{
+				printChildTopicAssignment(d, childTopicFolder);
+			}
+		}
+		
+		String parentParameterFile = filePrefix+"parentParameter.txt";
+		String childParameterFile = filePrefix+"childParameter.txt";
+		
+		printParameter(parentParameterFile, childParameterFile, m_trainSet);
+	}
+	
+	protected void printChildTopicAssignment(_Doc d, File topicFolder){
+		String topicAssignmentFile = d.getName()+".txt";
+		
+		try{
+			PrintWriter pw = new PrintWriter(new File(topicFolder, topicAssignmentFile));
+			
+			for(_Word w:d.getWords()){
+				int index = w.getIndex();
+				int topic = w.getTopic();
+				
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName+":"+topic+"\t");
+			}
+			
+			pw.flush();
+			pw.close();
+		}catch(FileNotFoundException e){
+			e.printStackTrace();
+		}
+	}
+	
+	protected void printParameter(String parentParameterFile,
+			String childParameterFile, ArrayList<_Doc> docList) {
+		System.out.println("printing parameter");
+		
+		try{
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+			
+			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
+			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
+			
+			for(_Doc d:docList){
+				if(d instanceof _ParentDoc){
+					parentParaOut.print(d.getName()+"\t");
+					parentParaOut.print("topicProportion\t");
+					for(int k=0; k<number_of_topics; k++){
+						parentParaOut.print(d.m_topics[k]+"\t");
+					}
+					
+					parentParaOut.println();
+					
+					for(_ChildDoc cDoc:((_ParentDoc) d).m_childDocs){
+						childParaOut.print(cDoc.getName()+"\t");
+						childParaOut.print("topicProportion\t");
+						for(int k=0; k<number_of_topics; k++){
+							childParaOut.print(cDoc.m_topics[k]+"\t");
+						}
+						childParaOut.println();
+					}
+				}
+			}
+			
+			parentParaOut.flush();
+			parentParaOut.close();
+			
+			childParaOut.flush();
+			childParaOut.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected void printWordTopicDistribution(_Doc d, File wordTopicDistributionFolder, int k){
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+		
+		String wordTopicDistributionFile = pDoc.getName()+".txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(wordTopicDistributionFolder, wordTopicDistributionFile));
+			
+			for(int i=0; i<number_of_topics; i++){
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+				for(int v=0; v<vocabulary_size; v++){
+					String featureName = m_corpus.getFeature(v);
+					double wordProb = pDoc.m_wordTopic_prob[i][v];
+					
+					_RankItem ri = new _RankItem(featureName, wordProb);
+					fVector.add(ri);
+				}
+				
+				pw.format("Topic %d(%.5f):\t", i, pDoc.m_topics[i]);
+				for(_RankItem it:fVector)
+					pw.format("%s(%.5f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				pw.write("\n");
+						
+			}
+			
+			pw.flush();
+			pw.close();
+		}catch(FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
 }
 

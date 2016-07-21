@@ -18,6 +18,8 @@ import topicmodels.ACCTM_CZ;
 import topicmodels.ACCTM_CZLR;
 import topicmodels.ACCTM_P;
 import topicmodels.ACCTM_TwoTheta;
+import topicmodels.DCMCorrLDA;
+import topicmodels.DCMCorrLDA_multi;
 import topicmodels.DCMLDA;
 import topicmodels.HTMM;
 import topicmodels.HTSM;
@@ -55,7 +57,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMLDA_multithread";
+		String topicmodel = "LDA_Gibbs_Debug";
 
 
 		String category = "tablet";
@@ -75,6 +77,7 @@ public class TopicModelMain {
 //		gibbs_iteration = 4;
 //		gibbs_lag = 2;
 //		displayLap = 2;
+		
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -98,7 +101,7 @@ public class TopicModelMain {
 				"./data/ParentChildTopicModel/%sArticles",
 						articleType);
 		String commentFolder = String.format(
-				"./data/ParentChildTopicModel/%sCommentsSample100",
+				"./data/ParentChildTopicModel/%sComments",
 						articleType);
 
 		String suffix = ".json";
@@ -177,9 +180,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadDirectory(articleFolder, suffix);
 //		analyzer.LoadDirectory(commentFolder, suffix);
+
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
@@ -218,7 +223,8 @@ public class TopicModelMain {
 			if (topicmodel.equals("pLSA")) {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 						lambda, number_of_topics, alpha);
-			} else if (topicmodel.equals("LDA_Gibbs")) {		
+			} else if (topicmodel.equals("LDA_Gibbs")) {
+				number_of_topics = 15;
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("LDA_Variational_multithread")) {		
@@ -250,6 +256,7 @@ public class TopicModelMain {
 			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
 				double ksi = 800;
 				double tau = 0.7;
+				number_of_topics = 15;
 				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
@@ -348,6 +355,24 @@ public class TopicModelMain {
 				number_of_topics = 15;
 				model = new DCMLDA_multithread(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
+			}else if(topicmodel.equals("DCMCorrLDA")){
+				converge = 1e-4;
+				beta = 1 + 1e-6;
+				int newtonIter = 1000;
+				double newtonConverge = 1e-4;
+				number_of_topics = 15;
+				double alphaC = 1+1e-3;
+				model = new DCMCorrLDA(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, alphaC-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
+			}else if(topicmodel.equals("DCMCorrLDA_multi")){
+				converge = 1e-4;
+				beta = 1 + 1e-6;
+				int newtonIter = 1000;
+				double newtonConverge = 1e-4;
+				number_of_topics = 15;
+				double alphaC = 1+1e-3;
+				model = new DCMCorrLDA_multi(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, alphaC-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);

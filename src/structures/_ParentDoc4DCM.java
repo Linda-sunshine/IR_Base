@@ -40,6 +40,7 @@ public class _ParentDoc4DCM extends _ParentDoc{
 				m_sstat[tid] ++; // collect the topic proportion
 				
 				m_wordTopic_stat[tid][wid] ++;
+				m_topic_stat[tid] ++;
 				wIndex ++;
 			}
 		}
