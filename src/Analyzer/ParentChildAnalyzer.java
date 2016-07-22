@@ -10,16 +10,10 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import org.jsoup.Jsoup;
-
-import structures.TokenizeResult;
-
 import structures._ChildDoc;
-import structures._ChildDoc4BaseWithPhi;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
-import structures._SparseFeature;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -81,8 +75,10 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content, 0);
-//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+		// _ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
+		// content, 0);
+		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
+				content, 0);
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
 				

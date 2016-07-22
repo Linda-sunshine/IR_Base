@@ -87,7 +87,7 @@ public class DCMCorrLDA_multi extends DCMCorrLDA{
 				for(_Doc d:m_trainSet){
 					if(d instanceof _ParentDoc){
 						_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-						totalBetaDenominator += Utils.digamma(m_totalBeta[tid]+pDoc.m_topic_stat[tid])-digBeta;
+						totalBetaDenominator += Utils.digamma(totalBeta+pDoc.m_topic_stat[tid])-digBeta;
 						for(int v=0; v<vocabulary_size; v++){
 							wordNum += pDoc.m_wordTopic_stat[tid][v];
 							wordNum4V[v] += pDoc.m_wordTopic_stat[tid][v];

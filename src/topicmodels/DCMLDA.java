@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
@@ -86,13 +87,23 @@ public class DCMLDA extends LDA_Gibbs {
 		int i = 0, displayCount = 0;
 		do {
 
+			long eStartTime = System.currentTimeMillis();
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
 			}
+			long eEndTime = System.currentTimeMillis();
 
+			System.out.println("per iteration e step time\t"
+					+ (eEndTime - eStartTime));
+
+			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
+			long mEndTime = System.currentTimeMillis();
+
+			System.out.println("per iteration m step time\t"
+					+ (mEndTime - mStartTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
