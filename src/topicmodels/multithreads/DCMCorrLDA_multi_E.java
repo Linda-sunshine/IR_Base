@@ -54,13 +54,13 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 					double pTopicPDoc = parentTopicInDocProb(tid, pDoc);
 					double pTopicCDoc = parentChildInfluenceProb(tid, pDoc);
 					
-					m_topicProbCache[tid] = pWordTopic*pTopicPDoc*pTopicCDoc;
-					normalizedProb += m_topicProbCache[tid];
+					alphaStat[tid] = pWordTopic * pTopicPDoc * pTopicCDoc;
+					normalizedProb += alphaStat[tid];
 				}
 				
 				normalizedProb *= m_rand.nextDouble();
 				for(tid=0; tid<number_of_topics; tid++){
-					normalizedProb -= m_topicProbCache[tid];
+					normalizedProb -= alphaStat[tid];
 					if(normalizedProb <= 0)
 						break;
 				}
@@ -94,18 +94,18 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 					double pWordTopic = childWordByTopicProb(tid, wid, pDoc);
 					double pTopic = childTopicInDocProb(tid, d, pDoc);
 					
-					m_topicProbCache[tid] = pWordTopic * pTopic;
-					normalizedProb += m_topicProbCache[tid];
+					alphaStat[tid] = pWordTopic * pTopic;
+					normalizedProb += alphaStat[tid];
 				}
 				
 				normalizedProb *= m_rand.nextDouble();
-				for (tid = 0; tid < m_topicProbCache.length; tid++) {
-					normalizedProb -= m_topicProbCache[tid];
+				for (tid = 0; tid < number_of_topics; tid++) {
+					normalizedProb -= alphaStat[tid];
 					if (normalizedProb <= 0)
 						break;
 				}
 
-				if (tid == m_topicProbCache.length)
+				if (tid == number_of_topics)
 					tid--;
 
 				w.setTopic(tid);
@@ -144,8 +144,14 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 		
 		int workerID = 0;
 		for(_Doc d:collection){
-			m_workers[workerID%cores].addDoc(d);
-			workerID ++;
+			if (d instanceof _ParentDoc) {
+				m_workers[workerID % cores].addDoc(d);
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+				for (_ChildDoc cDoc : pDoc.m_childDocs) {
+					m_workers[workerID % cores].addDoc(cDoc);
+				}
+				workerID++;
+			}
 		}
 		
 		super.initialize_probability(collection);
