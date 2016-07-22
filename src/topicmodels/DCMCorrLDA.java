@@ -225,6 +225,22 @@ public class DCMCorrLDA extends DCMLDA{
 		return prob;
 	}
 	
+	protected void updateParameter(int iter, File weightIterFolder) {
+		initialAlphaBeta();
+		updateAlpha();
+		updateAlphaC();
+
+		for (int k = 0; k < number_of_topics; k++)
+			updateBeta(k);
+
+		for (int k = 0; k < number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+
+		String fileName = iter + ".txt";
+		saveParameter2File(weightIterFolder, fileName);
+
+	}
+
 	protected void initialAlphaBeta(){
 		
 		double parentDocNum = 0;
