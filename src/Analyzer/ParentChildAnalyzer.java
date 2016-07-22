@@ -3,6 +3,7 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -14,6 +15,7 @@ import structures._ChildDoc;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
+import structures._SparseFeature;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -188,5 +190,35 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 
 	}
 	
-	
+	public void analyzeBurstiness(String filePrefix){
+		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
+		
+		String fileName = filePrefix+"/burstiness.txt";
+		
+		for(_Doc d:m_corpus.getCollection()){
+			_SparseFeature[] sfs = d.getSparse();
+			for(_SparseFeature sf:sfs){
+				double featureTimes = sf.getValue();
+				if(!burstinessMap.containsKey(featureTimes))
+					burstinessMap.put(featureTimes, 1.0);
+				else{
+					double value = burstinessMap.get(featureTimes);
+					burstinessMap.put(featureTimes, value+1);
+				}
+					
+			}
+		}
+		
+		try{
+			PrintWriter pw = new PrintWriter(new File(fileName));
+			for(double featureTiems:burstinessMap.keySet()){
+				pw.println(featureTiems+":"+burstinessMap.get(featureTiems));
+			}
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
 }
