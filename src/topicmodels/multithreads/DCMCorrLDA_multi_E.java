@@ -10,7 +10,6 @@ import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._Word;
 import topicmodels.DCMCorrLDA;
-import topicmodels.languageModelBaseLine;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 
 public class DCMCorrLDA_multi_E extends DCMCorrLDA{
@@ -92,9 +91,34 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 				
 				normalizedProb = 0;
 				for(tid=0; tid<number_of_topics; tid++){
-					double
+					double pWordTopic = childWordByTopicProb(tid, wid, pDoc);
+					double pTopic = childTopicInDocProb(tid, d, pDoc);
+					
+					m_topicProbCache[tid] = pWordTopic * pTopic;
+					normalizedProb += m_topicProbCache[tid];
 				}
+				
+				normalizedProb *= m_rand.nextDouble();
+				for (tid = 0; tid < m_topicProbCache.length; tid++) {
+					normalizedProb -= m_topicProbCache[tid];
+					if (normalizedProb <= 0)
+						break;
+				}
+
+				if (tid == m_topicProbCache.length)
+					tid--;
+
+				w.setTopic(tid);
+				d.m_sstat[tid]++;
+				pDoc.m_topic_stat[tid]++;
+				pDoc.m_wordTopic_stat[tid][wid]++;
 			}
+		}
+
+		@Override
+		public double inference(_Doc d) {
+			// TODO Auto-generated method stub
+			return 0;
 		}
 		
 	} 
