@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
