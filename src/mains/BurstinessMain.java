@@ -11,34 +11,9 @@ import java.util.Date;
 import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
-import topicmodels.ACCTM;
-import topicmodels.ACCTM_C;
-import topicmodels.ACCTM_CHard;
-import topicmodels.ACCTM_CLR;
-import topicmodels.ACCTM_CZ;
-import topicmodels.ACCTM_CZLR;
-import topicmodels.ACCTM_P;
-import topicmodels.ACCTM_TwoTheta;
-import topicmodels.DCMCorrLDA;
-import topicmodels.DCMCorrLDA_multi;
-import topicmodels.DCMLDA;
-import topicmodels.HTMM;
-import topicmodels.HTSM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Gibbs_Debug;
-import topicmodels.LDAonArticles;
-import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
-import topicmodels.correspondence_LDA_Gibbs;
-import topicmodels.pLSA;
-import topicmodels.twoTopic;
-import topicmodels.multithreads.DCMCorrLDA_multi_E;
-import topicmodels.multithreads.DCMLDA_multithread;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
 
 public class BurstinessMain {
-public static void main(String[] args) throws IOException, ParseException {	
+	public static void main(String[] args) throws IOException, ParseException {	
 		
 		int mb = 1024*1024;
 		
@@ -57,7 +32,7 @@ public static void main(String[] args) throws IOException, ParseException {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMCorrLDA_multi_E";
+		String topicmodel = "Burstiness";
 
 
 		String category = "tablet";
@@ -204,7 +179,8 @@ public static void main(String[] args) throws IOException, ParseException {
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
-		analyzer.analyzeBurstiness(filePrefix);
+		analyzer.generateFakeCorpus(filePrefix);
+//		analyzer.analyzeBurstiness(filePrefix);
 		
 	}
 }

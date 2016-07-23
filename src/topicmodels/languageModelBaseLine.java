@@ -24,7 +24,7 @@ import utils.Utils;
 import Analyzer.ParentChildAnalyzer;
 
 public class languageModelBaseLine{
-	HashMap<Integer, Double> m_wordSstat; //TTF
+	public HashMap<Integer, Double> m_wordSstat; //TTF
 	double m_allWordFrequency; //total TTF
 	protected _Corpus m_corpus;
 	double m_smoothingMu;
@@ -38,7 +38,7 @@ public class languageModelBaseLine{
 		m_allWordFrequencyWithXVal = 0;
 	}
 	
-	protected void generateReferenceModel(){
+	public void generateReferenceModel(){
 		m_allWordFrequency = 0;
 		for(_Doc d: m_corpus.getCollection()){
 			_SparseFeature[] fv = d.getSparse();

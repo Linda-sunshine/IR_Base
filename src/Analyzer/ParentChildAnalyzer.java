@@ -6,6 +6,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 import json.JSONArray;
 import json.JSONException;
@@ -16,6 +19,7 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._SparseFeature;
+import topicmodels.languageModelBaseLine;
 import utils.Utils;
 
 public class ParentChildAnalyzer extends jsonAnalyzer {
@@ -196,18 +200,54 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String fileName = filePrefix+"/burstiness.txt";
 		
 		for(_Doc d:m_corpus.getCollection()){
-			_SparseFeature[] sfs = d.getSparse();
-			for(_SparseFeature sf:sfs){
-				double featureTimes = sf.getValue();
-				if(!burstinessMap.containsKey(featureTimes))
-					burstinessMap.put(featureTimes, 1.0);
-				else{
-					double value = burstinessMap.get(featureTimes);
-					burstinessMap.put(featureTimes, value+1);
+			if(d instanceof _ParentDoc4DCM){
+				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					_SparseFeature[] sfs = cDoc.getSparse();
+					for(_SparseFeature sf:sfs){
+						int wid = sf.getIndex();
+						double featureTimes = sf.getValue();
+						if(!wordFrequencyMap.containsKey(wid))
+							wordFrequencyMap.put(wid, featureTimes);
+						else{
+							double oldFeatureTimes = wordFrequencyMap.get(wid);
+							oldFeatureTimes += featureTimes;
+							wordFrequencyMap.put(wid, oldFeatureTimes);
+						}
+							
+					}
 				}
-					
+				
+				_SparseFeature[] sfs = pDoc.getSparse();
+				for(_SparseFeature sf:sfs){
+					int wid = sf.getIndex();
+					double featureTimes = sf.getValue();
+					if(!wordFrequencyMap.containsKey(wid))
+						wordFrequencyMap.put(wid, featureTimes);
+					else{
+						double oldFeatureTimes = wordFrequencyMap.get(wid);
+						oldFeatureTimes += featureTimes;
+						wordFrequencyMap.put(wid, oldFeatureTimes);
+					}
+						
+				}
+				
+				for(int wid:wordFrequencyMap.keySet()){
+					double featureTimes = wordFrequencyMap.get(wid);
+					if(!burstinessMap.containsKey(featureTimes))
+						burstinessMap.put(featureTimes, 1.0);
+					else{
+						double value = burstinessMap.get(featureTimes);
+						burstinessMap.put(featureTimes, value+1);
+					}
+						
+				}
+		
 			}
+			
 		}
+		
 		
 		try{
 			PrintWriter pw = new PrintWriter(new File(fileName));
@@ -220,5 +260,69 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 			e.printStackTrace();
 		}
 		
+	}
+
+	public void generateFakeCorpus(String filePrefix){
+		languageModelBaseLine lm = new languageModelBaseLine(m_corpus, 0);
+		lm.generateReferenceModel();
+		int docIndex = 0;
+		
+		File fakeCorpusFolder = new File(filePrefix+"fakeCorpus");
+		if(!fakeCorpusFolder.exists()){
+			System.out.println("creating directory\t"+fakeCorpusFolder);
+			fakeCorpusFolder.mkdir();
+		}	
+		
+		ArrayList<Integer> widList = new ArrayList<Integer>(lm.m_wordSstat.keySet());
+		
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ParentDoc4DCM){
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				int docLength = 0;
+				docLength += pDoc.getTotalDocLength();
+				for(_ChildDoc cDoc:pDoc.m_childDocs)
+					docLength += cDoc.getTotalDocLength();
+				generateFakeDoc(fakeCorpusFolder, docLength, lm, widList, docIndex);
+				docIndex ++;
+			}
+		}
+	}
+	
+	public void generateFakeDoc(File folder, int docLength, languageModelBaseLine lm, ArrayList<Integer>widList, int docIndex){
+		String fakeDocName = docIndex+".txt";
+		
+		try{
+			
+			PrintWriter pw = new PrintWriter(new File(folder, fakeDocName));
+			
+			for(int i=0; i<docLength; i++){
+				int wid = generateFakeWord(lm, widList);
+//				System.out.println(wid+"wordId");
+				pw.print(wid);
+				pw.print("\t");
+			}
+			
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public int generateFakeWord(languageModelBaseLine lm, ArrayList<Integer>widList){
+		int wid = 0;
+		
+		Random t_rand = new Random();
+		double prob = t_rand.nextDouble();
+		for(int t_wid:widList){
+			wid = t_wid;
+			double wordProb = lm.m_wordSstat.get(t_wid);
+			prob -= wordProb;
+			if(prob<=0){
+				break;
+			}
+		}
+		
+		return wid;
 	}
 }
