@@ -21,13 +21,19 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	protected double[] m_supModel; // linear transformation for super user
 	public static double[] m_supWeights; // newly learned global model
-	protected double[] m_abNuB = new double[]{1, 0.3}; // prior for scaling
+	protected double[] m_abNuB = new double[]{1, 0.05}; // prior for scaling
+	protected double m_eta3 = 1.0, m_eta4 = 1.0;
 	
 	public CLinAdaptWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap, String featureGroup4Sup){
 		super(classNo, featureSize, featureMap, globalModel);
 		loadFeatureGroupMap(featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
 		m_supModel = new double[m_dimSup*2]; // globally shared transformation matrix.
+	}
+	
+	public void setR2TradeOffs(double eta3, double eta4) {
+		m_eta3 = eta3;
+		m_eta4 = eta4;
 	}
 	
 	@Override
@@ -56,13 +62,13 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	@Override
 	// R1 over each cluster, R1 over super cluster.
 	protected double calculateR1(){
-		double R1 = m_G0.likelihood(m_supModel);
+		double R1 = m_G0.logLikelihood(m_supModel, m_eta3, m_eta4);
 		
 		// Clusters.
 		for(int i=0; i<m_kBar; i++)
-			R1 += m_G0.likelihood(m_thetaStars[i].getModel());
+			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, m_eta2);
 		
-		return R1/2;
+		return R1;
 	}
 	
 	protected double getSupWeights(int n){
@@ -79,7 +85,8 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		if(cIndex <0 || cIndex >= m_kBar)
 			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
-		double delta = (review.getYLabel() - logit(review.getSparse(), user));
+		
+		double delta = (review.getYLabel() - logit(review.getSparse(), user)) * weight;
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(user);
 		
@@ -111,16 +118,16 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		for(int i=0; i<m_kBar; i++){
 			offset = m_dim*2*i;
 			for(int k=0; k<m_dim;k++){
-				m_g[offset+k] += (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
-				m_g[offset+k+m_dim] += (m_models[offset+k+m_dim]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // shifting
+				m_g[offset+k] += m_eta1 * (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
+				m_g[offset+k+m_dim] += m_eta2 * (m_models[offset+k+m_dim]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // shifting
 			}
 		}
 		
 		// R1 by super model.
 		offset = m_dim*2*m_kBar;
 		for(int k=0; k<m_dimSup; k++){
-			m_g[offset+k] += (m_supModel[k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // scaling
-			m_g[offset+k+m_dimSup] += (m_supModel[m_dimSup+k]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1];
+			m_g[offset+k] += m_eta3 * (m_supModel[k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // scaling
+			m_g[offset+k+m_dimSup] += m_eta4 * (m_supModel[m_dimSup+k]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1];
 		}
 	}
 	
@@ -134,7 +141,7 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 			magS += m_g[i]*m_g[i];
 		
 		if (m_displayLv==2)
-			System.out.format("Gradient magnitude for clusters: %.5f, super model: %.5f\n", magC, magS);
+			System.out.format("Gradient magnitude for clusters: %.5f, super model: %.5f\n", magC/m_kBar, magS);
 		return 0;
 	}
 	

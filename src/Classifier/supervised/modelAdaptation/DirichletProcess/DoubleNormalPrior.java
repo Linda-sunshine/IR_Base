@@ -25,15 +25,14 @@ public class DoubleNormalPrior extends NormalPrior {
 			target[i] = m_2ndNormal.nextDouble();//second half for shifting
 	}
 	
-	@Override
-	public double likelihood(double[] target) {
+	public double logLikelihood(double[] target, double normScaleA, double normScaleB) {
 		double L = 0;
 		int i=0;
 		for(; i<target.length/2; i++)
-			L += (target[i]-m_meanA)*(target[i]-m_meanA)/m_sdA/m_sdA;
+			L += normScaleA * (target[i]-m_meanA)*(target[i]-m_meanA)/m_sdA/m_sdA;
 		
 		for(; i<target.length; i++)
-			L += (target[i]-m_meanB)*(target[i]-m_meanB)/m_sdB/m_sdB;
+			L += normScaleB * (target[i]-m_meanB)*(target[i]-m_meanB)/m_sdB/m_sdB;
 		return L/2;
 	}
 }
