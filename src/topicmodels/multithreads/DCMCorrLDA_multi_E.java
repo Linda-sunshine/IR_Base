@@ -159,7 +159,7 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 	}
 	
 	protected void init(){
-		super.init();
+		// super.init();
 		for(TopicModelWorker worker:m_workers){
 			worker.resetStats();
 		}
