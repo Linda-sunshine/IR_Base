@@ -79,10 +79,11 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title, content,
-				0);
-		// _ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
-		// content, 0);
+
+		 _ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
+		 content, 0);
+//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
+//				content, 0);
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");
 				
