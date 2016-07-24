@@ -595,7 +595,7 @@ public class DCMCorrLDA extends DCMLDA{
 				for(int i=0; i<number_of_topics; i++)
 					Utils.L1Normalization(((_ParentDoc4DCM) d).m_wordTopic_prob[i]);
 			}
-			estThetaInDoc(d);
+			Utils.L1Normalization(d.m_topics);
 		}
 	}
 	
