@@ -288,11 +288,10 @@ public class LDA_Gibbs extends pLSA {
 			int wid = w.getIndex();
 			double wordLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				wordLikelihood += Math.log(d.m_topics[k])
-						+ Math.log(topic_term_probabilty[k][wid]);
+				wordLikelihood += d.m_topics[k]*topic_term_probabilty[k][wid];
 			}
 
-			likelihood += wordLikelihood;
+			likelihood += Math.log(wordLikelihood);
 		}
 		
 		return likelihood;
