@@ -883,18 +883,27 @@ public class DCMCorrLDA extends DCMLDA{
 	}
 	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
-		_ParentDoc pDoc = (_ParentDoc)d;
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 		for(_Stn stnObj:pDoc.getSentences()){
 			stnObj.setTopicsVct(number_of_topics);
 		}
 		
 		int testLength = 0;
-		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
+		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength, vocabulary_size);
 		
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
+			
+			for(_Word w:cDoc.getWords()){
+				int wid = w.getIndex();
+				int tid = w.getTopic();
+				
+				pDoc.m_wordTopic_stat[tid][wid] ++;
+				pDoc.m_topic_stat[tid] ++;
+			}
+			
 			sampleTestSet.add(cDoc);
 			cDoc.createSparseVct4Infer();
 			//cDoc computeMu
