@@ -243,22 +243,59 @@ public class LDA_Gibbs extends pLSA {
 	
 	// perform inference of topic distribution in the document
 	@Override
+	// public double inference(_Doc d) {
+	// initTestDoc(d);// this is not a corpus level estimation
+	//
+	// double likelihood = Double.NEGATIVE_INFINITY, count = 0;
+	// int i = 0;
+	// do {
+	// calculate_E_step(d);
+	// if (i > m_burnIn && i % m_lag == 0) {
+	// collectStats(d);
+	// likelihood = Utils.logSum(likelihood,
+	// calculate_log_likelihood(d));
+	// count++;
+	// }
+	// } while (++i < this.number_of_iteration);
+	//
+	// estThetaInDoc(d);
+	// return likelihood - Math.log(count); // this is average joint
+	// // probability!
+	// }
+
 	public double inference(_Doc d) {
-		initTestDoc(d);//this is not a corpus level estimation
-		
+		initTestDoc(d);// this is not a corpus level estimation
+
 		double likelihood = Double.NEGATIVE_INFINITY, count = 0;
-		int  i = 0;
+		int i = 0;
 		do {
 			calculate_E_step(d);
-			if (i>m_burnIn && i%m_lag==0){
+			if (i > m_burnIn && i % m_lag == 0) {
 				collectStats(d);
-				likelihood = Utils.logSum(likelihood, calculate_log_likelihood(d));				
-				count ++;
 			}
-		} while (++i<this.number_of_iteration);
-		
+		} while (++i < this.number_of_iteration);
+
 		estThetaInDoc(d);
-		return likelihood - Math.log(count); // this is average joint probability!
+		
+		likelihood = calculate_log_likelihood4Perplexity(d);
+		return likelihood;
+	}
+	
+	protected double calculate_log_likelihood4Perplexity(_Doc d) {
+		double likelihood = 0;
+
+		for (_Word w : d.getWords()) {
+			int wid = w.getIndex();
+			double wordLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				wordLikelihood += Math.log(d.m_topics[k])
+						+ Math.log(topic_term_probabilty[k][wid]);
+			}
+
+			likelihood += wordLikelihood;
+		}
+		
+		return likelihood;
 	}
 	
 	@Override

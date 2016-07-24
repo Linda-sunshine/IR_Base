@@ -51,8 +51,8 @@ public class DCMLDA extends LDA_Gibbs {
 				alpha, burnIn, lag);
 
 		int corpusSize = c.getSize();
-//		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
-//		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
 		m_alpha = new double[number_of_topics];
@@ -561,13 +561,12 @@ public class DCMLDA extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
-	protected void finalEst() {
-		for (_Doc d : m_trainSet) {
-			int docID = d.getID();
-			for (int i = 0; i < number_of_topics; i++)
-				Utils.L1Normalization(m_docWordTopicProb[docID][i]);
-			estThetaInDoc(d);
-		}
+	protected void estThetaInDoc(_Doc d) {
+
+		int docID = d.getID();
+		for (int i = 0; i < number_of_topics; i++)
+			Utils.L1Normalization(m_docWordTopicProb[docID][i]);
+		Utils.L1Normalization(d.m_topics);
 
 	}
 
@@ -730,4 +729,57 @@ public class DCMLDA extends LDA_Gibbs {
 			e.printStackTrace();
 		}
 	}
+
+	public double inference(_Doc d) {
+		double likelihood = 0;
+		initTestDoc(d);
+		
+		int i = 0;
+		do{
+			calculate_E_step(d);
+			if (i > m_burnIn && i % m_lag == 0) {
+				collectStats(d);
+			}
+		}while(++i<number_of_iteration);
+		
+		estThetaInDoc(d);
+		
+		likelihood = calculate_log_likelihood4Perplexity(d);
+		
+		return likelihood;
+	}
+	
+	public void initTestDoc(_Doc d) {
+		int docID = d.getID();
+
+		for (int k = 0; k < number_of_topics; k++) {
+			Arrays.fill(m_docWordTopicStats[docID][k], 0);
+		}
+
+		d.setTopics4Gibbs(number_of_topics, 0);
+
+		for (_Word w : d.getWords()) {
+			int wid = w.getIndex();
+			int tid = w.getTopic();
+			m_docWordTopicStats[docID][tid][wid]++;
+
+		}
+	}
+
+	protected double calculate_log_likelihood4Perplexity(_Doc d) {
+		double likelihood = 0;
+		
+		int docID = d.getID();
+		for (_Word w : d.getWords()) {
+			int wid = w.getIndex();
+			double wordLikelihood = 0;
+			for(int k=0; k<number_of_topics; k++)
+				wordLikelihood += Math.log(d.m_topics[k])
+						+ Math.log(m_docWordTopicProb[docID][k][wid]);
+			likelihood += wordLikelihood;
+		}
+		
+		return likelihood;
+	}
+
 }
