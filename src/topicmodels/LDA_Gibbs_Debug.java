@@ -51,8 +51,10 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 	protected void initialize_probability(Collection<_Doc> collection) {
 		createSpace();
-		for(int i=0; i< number_of_topics; i++)
+		for (int i = 0; i < number_of_topics; i++) {
+			Arrays.fill(topic_term_probabilty[i], 0);
 			Arrays.fill(word_topic_sstat[i], d_beta);
+		}
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
 		
 		for(_Doc d: collection){
@@ -302,6 +304,8 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 			
 		}while(++iter<number_of_iteration);
 		
+		estThetaInDoc(pDoc);
+
 		return likelihood;
 	}
 	
@@ -320,19 +324,20 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 				pDoc.m_childDocs.set(t, tmpDoc);
 			}
 			
-			for(_Doc doc:pDoc.m_childDocs){
+			for (_ChildDoc doc : pDoc.m_childDocs) {
 				calculate_E_step(doc);
 			}
 			
 			if(iter>m_burnIn && iter%m_lag==0){
-				for(_Doc doc:pDoc.m_childDocs){
+				for (_ChildDoc doc : pDoc.m_childDocs) {
 					collectStats(doc);
 				}
 			}
 			
 		}while(++iter<number_of_iteration);
 		
-		for(_Doc doc:pDoc.m_childDocs){
+		for (_ChildDoc doc : pDoc.m_childDocs) {
+			estThetaInDoc(doc);
 			likelihood += calculate_test_log_likelihood(doc);
 		}
 		
@@ -356,9 +361,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
-						* topicInDocProb(k, d)
-						/ (docInferLen + number_of_topics * d_alpha);
+				double wordPerTopicLikelihood = d.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				// double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+				// * topicInDocProb(k, d)
+				// / (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);
@@ -376,9 +383,11 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 	
 			double wordLogLikelihood = 0;
 			for(int k=0; k<number_of_topics; k++){
-				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
-						* topicInDocProb(k, d)
-						/ (docInferLen + number_of_topics * d_alpha);
+				double wordPerTopicLikelihood = d.m_topics[k]
+						* topic_term_probabilty[k][wid];
+//				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+//						* topicInDocProb(k, d)
+//						/ (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);

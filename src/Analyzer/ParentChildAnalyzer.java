@@ -6,9 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
-import java.util.Set;
 
 import json.JSONArray;
 import json.JSONException;
@@ -80,6 +78,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
+
 
 		 _ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
 		 content, 0);

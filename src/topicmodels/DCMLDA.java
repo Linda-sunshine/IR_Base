@@ -774,10 +774,11 @@ public class DCMLDA extends LDA_Gibbs {
 		for (_Word w : d.getWords()) {
 			int wid = w.getIndex();
 			double wordLikelihood = 0;
-			for(int k=0; k<number_of_topics; k++)
-				wordLikelihood += Math.log(d.m_topics[k])
-						+ Math.log(m_docWordTopicProb[docID][k][wid]);
-			likelihood += wordLikelihood;
+			for (int k = 0; k < number_of_topics; k++) {
+				wordLikelihood += d.m_topics[k]
+						* m_docWordTopicProb[docID][k][wid];
+			}
+			likelihood += Math.log(wordLikelihood);
 		}
 		
 		return likelihood;
