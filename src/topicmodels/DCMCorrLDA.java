@@ -7,9 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.sun.javafx.geom.Crossings.EvenOdd;
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.Occurs;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -183,7 +180,7 @@ public class DCMCorrLDA extends DCMLDA{
 		double prob = 0;
 		
 		prob = (d.m_sstat[tid] + m_alpha[tid])
-				/ (d.getTotalDocLength() + m_totalAlpha);
+				/ (d.getDocInferLength() + m_totalAlpha);
 
 		return prob;
 	}
@@ -589,14 +586,14 @@ public class DCMCorrLDA extends DCMLDA{
 		return docLogLikelihood;
 	}
 	
-	protected void finalEst(){
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc4DCM){
-				for(int i=0; i<number_of_topics; i++)
-					Utils.L1Normalization(((_ParentDoc4DCM) d).m_wordTopic_prob[i]);
-			}
-			Utils.L1Normalization(d.m_topics);
+	protected void estThetaInDoc(_Doc d) {
+
+		if (d instanceof _ParentDoc4DCM) {
+			for (int i = 0; i < number_of_topics; i++)
+				Utils.L1Normalization(((_ParentDoc4DCM) d).m_wordTopic_prob[i]);
 		}
+		Utils.L1Normalization(d.m_topics);
+
 	}
 	
 	protected void debugOutput(String filePrefix){
@@ -845,6 +842,7 @@ public class DCMCorrLDA extends DCMLDA{
 			}
 		}while(++iter<number_of_iteration);
 			
+		estThetaInDoc(pDoc);
 		return likelihood;
 	}
 	
@@ -876,6 +874,7 @@ public class DCMCorrLDA extends DCMLDA{
 		}while(++iter<number_of_iteration);
 			
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			estThetaInDoc(cDoc);
 			likelihood += calculate_test_logLikelihood(cDoc);
 		}
 	

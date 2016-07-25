@@ -58,7 +58,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "LDA_Gibbs";
+		String topicmodel = "DCMCorrLDA_multi_E";
 
 
 		String category = "tablet";
@@ -75,9 +75,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 500, gibbs_lag = 50;
 		int displayLap = 50;
-//		gibbs_iteration = 4;
-//		gibbs_lag = 2;
-//		displayLap = 2;
+		// gibbs_iteration = 4;
+		// gibbs_lag = 2;
+		// displayLap = 2;
 		
 		double burnIn = 0.4;
 
@@ -181,11 +181,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(commentFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		// analyzer.LoadDirectory(articleFolder, suffix);
+		// analyzer.LoadDirectory(commentFolder, suffix);
 
-//		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
@@ -411,7 +411,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.9;
+				double trainProportion = 0.5;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
