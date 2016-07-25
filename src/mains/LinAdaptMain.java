@@ -29,7 +29,7 @@ public class LinAdaptMain {
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
 		String userFolder = "./data/CoLinAdapt/Users_4000";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
-		String featureGroupFileB = "./data/CoLinAdapt/CrossGroups_1600.txt";
+		String featureGroupFileB = null; //"./data/CoLinAdapt/CrossGroups_1600.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);

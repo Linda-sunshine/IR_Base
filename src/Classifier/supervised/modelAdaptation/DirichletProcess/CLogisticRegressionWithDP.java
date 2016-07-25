@@ -280,7 +280,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 						System.out.println();
 				} 
 				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 5e-3, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 5e-2, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
 				

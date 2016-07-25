@@ -71,7 +71,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		}
 		
 		doc.m_pCount ++;
-		doc.m_prob += prob>0.5?1:0;
+		doc.m_prob += prob; //>0.5?1:0;
 		
 		return prob;
 	}
