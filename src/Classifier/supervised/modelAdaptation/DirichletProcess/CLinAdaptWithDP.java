@@ -21,14 +21,20 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	protected double[] m_supModel; // linear transformation for super user
 	public static double[] m_supWeights; // newly learned global model
-	protected double[] m_abNuB = new double[]{1, 0.05}; // prior for scaling
+	protected double[] m_abNuB = new double[]{1, 0.075}; // prior for scaling
 	protected double m_eta3 = 1.0, m_eta4 = 1.0;
 	
 	public CLinAdaptWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap, String featureGroup4Sup){
 		super(classNo, featureSize, featureMap, globalModel);
 		loadFeatureGroupMap(featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
+		
+		//pass the user-level feature group to individual users
+		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
+		
 		m_supModel = new double[m_dimSup*2]; // globally shared transformation matrix.
+		//construct the new global model for simplicity
+		m_supWeights = new double[m_featureSize+1];
 	}
 	
 	public void setR2TradeOffs(double eta3, double eta4) {
@@ -67,6 +73,22 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		// Clusters.
 		for(int i=0; i<m_kBar; i++)
 			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, m_eta2);
+		
+		int offset;
+		for(int i=0; i<m_kBar; i++){
+			offset = m_dim*2*i;
+			for(int k=0; k<m_dim;k++){
+				m_g[offset+k] += m_eta1 * (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
+				m_g[offset+k+m_dim] += m_eta2 * (m_models[offset+k+m_dim]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // shifting
+			}
+		}
+		
+		// R1 by super model.
+		offset = m_dim*2*m_kBar;
+		for(int k=0; k<m_dimSup; k++){
+			m_g[offset+k] += m_eta3 * (m_supModel[k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // scaling
+			m_g[offset+k+m_dimSup] += m_eta4 * (m_supModel[m_dimSup+k]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1];
+		}
 		
 		return R1;
 	}
@@ -111,23 +133,38 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		}
 	}
 	
-	// Gradient by the regularization.
 	@Override
-	protected void gradientByR1(){
-		int offset;
-		for(int i=0; i<m_kBar; i++){
-			offset = m_dim*2*i;
-			for(int k=0; k<m_dim;k++){
-				m_g[offset+k] += m_eta1 * (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
-				m_g[offset+k+m_dim] += m_eta2 * (m_models[offset+k+m_dim]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1]; // shifting
-			}
-		}
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
 		
-		// R1 by super model.
-		offset = m_dim*2*m_kBar;
-		for(int k=0; k<m_dimSup; k++){
-			m_g[offset+k] += m_eta3 * (m_supModel[k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; // scaling
-			m_g[offset+k+m_dimSup] += m_eta4 * (m_supModel[m_dimSup+k]-m_abNuA[0])/m_abNuA[1]/m_abNuA[1];
+		int n, k, s; // feature index
+		int cIndex = user.getThetaStar().getIndex();
+		if(cIndex <0 || cIndex >= m_kBar)
+			System.err.println("Error,cannot find the theta star!");
+		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
+		
+		double delta = (review.getYLabel() - logit(review.getSparse(), user)) * weight;
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
+		
+		// Bias term for individual user.
+		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
+		g[offset + m_dim] -= delta;//b[0]
+
+		// Bias term for super user.
+		g[offsetSup] -= delta*user.getScaling(0)*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
+		g[offsetSup + m_dimSup] -= delta*user.getScaling(0); //b_s[0] = a_i0*x_d0
+		
+		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
+		for(_SparseFeature fv: review.getSparse()){
+			n = fv.getIndex() + 1;
+			k = m_featureGroupMap[n];
+			g[offset + k] -= delta*getSupWeights(n)*fv.getValue(); // w_si*x_di
+			g[offset + m_dim + k] -= delta*fv.getValue(); // x_di
+			
+			s = m_featureGroupMap4SupUsr[n];
+			g[offsetSup + s] -= delta*user.getScaling(k)*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
+			g[offsetSup + m_dimSup + s] -= delta*user.getScaling(k)*fv.getValue(); // a_i*x_di
 		}
 	}
 	
@@ -183,6 +220,7 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 				System.err.format("[Error]Fail to open super user group file %s.\n", filename);
 			}
 		}
+		
 		System.out.format("[Info]Feature group size for super user %d\n", m_dimSup);
 	}
 	
@@ -236,16 +274,11 @@ public class CLinAdaptWithDP extends CLogisticRegressionWithDP {
 		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
-	@Override
-	public double test(){
-		//pass the user-level feature group to individual users
-		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
-		
-		//construct the new global model for simplicity
-		m_supWeights = new double[m_featureSize+1];
+	//apply current model in the assigned clusters to users
+	protected void evaluateModel() {
 		for(int i=0; i<m_featureSize+1; i++)
 			m_supWeights[i] = getSupWeights(i);
 		
-		return super.test();	
+		super.evaluateModel();	
 	}
 }

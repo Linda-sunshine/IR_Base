@@ -10,24 +10,30 @@ import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import cern.jet.random.tfloat.FloatUniform;
 import structures._Doc;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
 
 public class CLogisticRegressionWithDP extends LinAdapt {
-	protected boolean m_burnInM = false; // Whether we have M step in burn in period.
-	
-	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 20;
+	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
+	protected int m_numberOfIterations = 50;
 	protected int m_burnIn = 10, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
 	protected double m_alpha = .01; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	
+	//structure for multi-threading
+	protected boolean m_multiThread = true; // if we will use multi-threading in M-step
+	protected double[] m_fValues;
+	protected double[][] m_gradients;
+	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.05}; // N(0,1) for shifting
+	protected double[] m_abNuA = new double[]{0, 0.075}; // N(0,1) for shifting
 	protected double[] m_models; // model parameters for clusters.
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
@@ -46,8 +52,12 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		double prob;
 		_DPAdaptStruct user;
 		double[] probs = new double[m_kBar];
+		_thetaStar oldTheta;
+		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
+			
+			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 				prob = calcLogLikelihood(user);
@@ -56,6 +66,8 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 			}
 			Utils.L1Normalization(probs);
 			user.setClusterPosterior(probs);
+			
+			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
 		}
 	}
 	
@@ -63,15 +75,13 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		double R1 = 0;
 		for(int i=0; i<m_kBar; i++)
 			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, 0);//the last is dummy input
-		return R1;
-	}
-	
-	// Gradient by the regularization.
-	protected void gradientByR1(){
+		
+		// Gradient by the regularization.
 		for(int i=0; i<m_g.length; i++) {
 			//m_g[i] += m_normScale * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
 			m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
 		}
+		return R1;
 	}
 	
 	int findThetaStar(_thetaStar theta) {
@@ -164,12 +174,84 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		}
 	}
 	
+	protected double logLikelihood() {
+		_DPAdaptStruct user;
+		double fValue = 0;
+		
+		// Use instances inside one cluster to update the thetastar.
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			fValue -= calcLogLikelihood(user);
+			gradientByFunc(user); // calculate the gradient by the user.
+		}
+		
+		return fValue;
+	}
+	
+	protected double logLikelihood_MultiThread() {
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+		
+		//init the shared structure
+		
+		Arrays.fill(m_fValues, 0);
+		for(int k=0; k<numberOfCores; ++k){
+			Arrays.fill(m_gradients[k], 0);
+			
+			threads.add((new Thread() {
+				int core, numOfCores;
+				double[] m_gradient, m_fValue;
+				
+				public void run() {
+					_DPAdaptStruct user;
+					try {						
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_DPAdaptStruct)m_userList.get(i+core);
+							m_fValue[core] -= calcLogLikelihood(user);
+							
+							for(_Review review:user.getReviews()){
+								if (review.getType() != rType.ADAPTATION)
+									continue;								
+								
+								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
+							}			
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores, double[] gradient, double[] f) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					this.m_gradient = gradient;
+					this.m_fValue = f;
+					
+					return this;
+				}
+			}).initialize(k, numberOfCores, m_gradients[k], m_fValues));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(int k=0;k<numberOfCores;++k)
+			Utils.scaleArray(m_g, m_gradients[k], 1);
+		return Utils.sumOfArray(m_fValues);
+	}
+	
 	// Sample the weights given the cluster assignment.
 	protected double calculate_M_step(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;
-		int displayCount = 0;
-		_DPAdaptStruct user;
+		int displayCount = 0;		
 		
 		initLBFGS();// Init for lbfgs.
 		assignClusterIndex();
@@ -178,15 +260,12 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 			do{
 				Arrays.fill(m_g, 0); // initialize gradient
 				
-				fValue = calculateR1();				
-				// Use instances inside one cluster to update the thetastar.
-				for(int i=0; i<m_userList.size(); i++){
-					user = (_DPAdaptStruct) m_userList.get(i);
-					fValue -= calcLogLikelihood(user);
-					gradientByFunc(user); // calculate the gradient by the user.
-				}				
-				
-				gradientByR1();
+				//regularization part
+				fValue = calculateR1();
+				if (m_multiThread)
+					fValue += logLikelihood_MultiThread();
+				else
+					fValue += logLikelihood();
 				
 				if (m_displayLv==2) {
 					System.out.print("Fvalue is " + fValue + "\t");
@@ -201,7 +280,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 						System.out.println();
 				} 
 				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 5e-3, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
 				
@@ -225,20 +304,21 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		// Burn in period.
 		while(count++ < m_burnIn){
 			calculate_E_step();
-			if(m_burnInM)
-				calculate_M_step();
+			calculate_M_step();
 		}
 		
 		// EM iteration.
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.
-			for(int j=0; j<m_thinning; j++)
-				calculate_E_step();
+			calculate_E_step();
 			
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
 
 			delta = (lastLikelihood - curLikelihood)/curLikelihood;
+			
+			if (i%m_thinning==0)
+				evaluateModel();
 			
 			printInfo();
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
@@ -279,6 +359,29 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		}
 	}
 	
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
+		
+		int n; // feature index
+		int cIndex = user.getThetaStar().getIndex();
+		if(cIndex <0 || cIndex >= m_kBar)
+			System.err.println("Error,cannot find the theta star!");
+		
+		int offset = m_dim*cIndex;
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
+		
+		//Bias term.
+		g[offset] -= delta; //x0=1
+
+		//Traverse all the feature dimension to calculate the gradient.
+		for(_SparseFeature fv: review.getSparse()){
+			n = fv.getIndex() + 1;
+			g[offset + n] -= delta * fv.getValue();
+		}
+	}
+	
 	@Override
 	protected double gradientTest() {
 		double mag = 0 ;
@@ -293,13 +396,13 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected void initPriorG0() {
 		//m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
 		m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//only for shifting
-		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
 	}
 	
 	// Assign cluster assignment to each user.
 	protected void initThetaStars(){
 		initPriorG0();
 		
+		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
 		_DPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
@@ -311,6 +414,13 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected void init(){
 		super.init();
 		initThetaStars();
+		
+		//init the structures for multi-threading
+		if (m_multiThread) {
+			int numberOfCores = Runtime.getRuntime().availableProcessors();
+			m_fValues = new double[numberOfCores];
+			m_gradients = new double[numberOfCores][]; 
+		}
 	}
 	
 	protected void accumulateClusterModels(){
@@ -322,8 +432,16 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	//very inefficient, a per cluster optimization procedure will not have this problem
 	@Override
 	protected void initLBFGS(){
-		m_g = new double[getVSize()];
-		m_diag = new double[getVSize()];
+		if (m_g==null || m_g.length!=getVSize()) {
+			m_g = new double[getVSize()];
+			m_diag = new double[getVSize()];
+			
+			if (m_multiThread) {
+				int numberOfCores = Runtime.getRuntime().availableProcessors();
+				for(int k=0; k<numberOfCores; k++)
+					m_gradients[k] = new double[getVSize()];
+			}
+		}
 		
 		accumulateClusterModels();
 	}
@@ -352,10 +470,6 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		m_burnIn = n;
 	}
 	
-	public void setBurnInM(boolean b){
-		m_burnInM = b;
-	}
-	
 	public void setM(int m){
 		m_M = m;
 	}
@@ -382,43 +496,60 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 		}
 	}
 	
-//	protected int m_test = 10;// We are trying to get the expectation of the performance.
-//	double[][] m_perfs;
-//	
-	// In testing phase, we need to sample several times and get the average.
-//	@Override
-//	public double test(){
-//		m_perfs = new double[m_test][];
-//		m_M = 0;// We don't introduce new clusters.
-//		for(int i=0; i<m_test; i++){
-//			calculate_E_step();
-//			setPersonalizedModel();
-//			super.test();
-//			m_perfs[i] = Arrays.copyOf(m_perf, m_perf.length);
-//			clearPerformance();
-//		}
-//		double[] avgPerf = new double[m_classNo*2];
-//		System.out.print("[Info]Avg Perf:");
-//		for(int i=0; i<m_perfs[0].length; i++){
-//			avgPerf[i] = Utils.sumOfColumn(m_perfs, i)/m_test*1.0;
-//			System.out.print(String.format("%.5f\t", avgPerf[i]));
-//		}
-//		System.out.println();
-//		return 0;
-//	}
-//	
-//	protected void clearPerformance(){
-//		Arrays.fill(m_perf, 0);
-//		m_microStat.clear();
-//		for(_AdaptStruct u: m_userList)
-//			u.getUser().getPerfStat().clear();
-//	}
-	
-	@Override
-	public double test(){
-		// we calculate the user's cluster probability.
+	//apply current model in the assigned clusters to users
+	protected void evaluateModel() {
+		System.out.println("[Info]Accumulating evaluation results during sampling...");
+
+		//calculate cluster posterior p(c|u)
 		calculateClusterProbPerUser();
-		return super.test();	
+		
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_DPAdaptStruct user;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_DPAdaptStruct)m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									user.evaluate(r); // evoke user's own model
+								}
+							}							
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
 	}
 	
 	@Override

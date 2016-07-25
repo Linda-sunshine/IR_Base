@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.MTLinAdapt;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -22,12 +22,12 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		double eta1 = .05, eta2 = .05, eta3 = .05, eta4 = .05, neighborsHistoryWeight = 0.5;
+		double eta1 = .01, eta2 = .01, eta3 = .01, eta4 = .01, neighborsHistoryWeight = 0.5;
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users";
+		String userFolder = "./data/CoLinAdapt/Users_4000";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String featureGroupFileB = "./data/CoLinAdapt/CrossGroups_1600.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
@@ -72,7 +72,7 @@ public class LinAdaptMain {
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
 		//Create an instance of MT-LinAdapt model.
-		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+//		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
 
 		// Create an instance of MT-LinAdapt-SupUser
 //		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
@@ -108,7 +108,7 @@ public class LinAdaptMain {
 //		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 
 		// Create an instance of Multi-task DP over MT-LinAdapt 
-//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);

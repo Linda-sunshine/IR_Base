@@ -371,4 +371,12 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	public double[] getAspVct(){
 		return m_x_aspVct;
 	}
+	
+	
+	/////////////////////////////////////////////////////////
+	//temporal structure for CLogisticRegressionWithDP
+	/////////////////////////////////////////////////////////
+	public int m_pCount = 0;
+	public double m_prob = 0;
+	
 }
