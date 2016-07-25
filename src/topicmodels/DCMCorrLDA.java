@@ -183,7 +183,7 @@ public class DCMCorrLDA extends DCMLDA{
 		double prob = 0;
 		
 		prob = (d.m_sstat[tid] + m_alpha[tid])
-				/ (d.getTotalDocLength() + m_totalAlpha);
+				/ (d.getDocInferLength() + m_totalAlpha);
 
 		return prob;
 	}
