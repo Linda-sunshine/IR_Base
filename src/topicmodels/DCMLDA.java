@@ -52,8 +52,10 @@ public class DCMLDA extends LDA_Gibbs {
 
 		int corpusSize = c.getSize();
 		
-		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
-		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
+		// m_docWordTopicProb = new
+		// double[corpusSize][number_of_topics][vocabulary_size];
+		// m_docWordTopicStats = new
+		// double[corpusSize][number_of_topics][vocabulary_size];
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
 		m_alpha = new double[number_of_topics];
