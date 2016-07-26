@@ -63,7 +63,7 @@ public class DCMLDA_multithread extends DCMLDA{
 		}
 		
 		public void calculate_M_step(double[] param, int tid){
-			System.out.println("topic optimization \t"+tid);
+			// System.out.println("topic optimization \t"+tid);
 			double diff = 0;
 			int iteration = 0;
 			double smoothingBeta = 0.01;
@@ -118,7 +118,7 @@ public class DCMLDA_multithread extends DCMLDA{
 				iteration ++;
 				if(iteration > m_newtonIter)
 					break;
-				System.out.println("beta iteration\t"+iteration);
+				// System.out.println("beta iteration\t"+iteration);
 			}while(diff>m_newtonConverge);
 			
 			System.out.println("iteration\t"+iteration);
@@ -132,7 +132,7 @@ public class DCMLDA_multithread extends DCMLDA{
 			double alpha, double burnIn, int lag, int newtonIter, double newtonConverge){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag,newtonIter, newtonConverge);
 	
-		m_multithread = true;
+		m_multithread = false;
 	}
 	
 	public String toString(){
