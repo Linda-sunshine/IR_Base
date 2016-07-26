@@ -197,9 +197,14 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
 		
 		String fileName = filePrefix+"/burstiness.txt";
+		int vocalSize = m_corpus.getFeatureSize();
+		System.out.println("vocal size\t"+vocalSize);
+		
+		int corpusSize = 0;
 		
 		for(_Doc d:m_corpus.getCollection()){
 			if(d instanceof _ParentDoc4DCM){
+				corpusSize ++;
 				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
@@ -232,6 +237,8 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 						
 				}
 				
+				double zeroWordNum = vocalSize-wordFrequencyMap.size();
+				
 				for(int wid:wordFrequencyMap.keySet()){
 					double featureTimes = wordFrequencyMap.get(wid);
 					if(!burstinessMap.containsKey(featureTimes))
@@ -242,11 +249,23 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 					}
 						
 				}
+				
+				if(!burstinessMap.containsKey((double)0)){
+					burstinessMap.put((double)0, zeroWordNum);
+				}else{
+					zeroWordNum += burstinessMap.get((double)0);
+					burstinessMap.put((double)0, zeroWordNum);
+				}
 		
 			}
 			
 		}
 		
+		double totalFeatureTimes = vocalSize*corpusSize;
+		for(double featureTimes:burstinessMap.keySet()){
+			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
+			burstinessMap.put(featureTimes, featureTimesProb);
+		}
 		
 		try{
 			PrintWriter pw = new PrintWriter(new File(fileName));
