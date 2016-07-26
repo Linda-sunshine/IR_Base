@@ -52,10 +52,9 @@ public class DCMLDA extends LDA_Gibbs {
 
 		int corpusSize = c.getSize();
 		
-		 m_docWordTopicProb = new
-		 double[corpusSize][number_of_topics][vocabulary_size];
-		 m_docWordTopicStats = new
-		 double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
+
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
 		m_alpha = new double[number_of_topics];
@@ -105,8 +104,8 @@ public class DCMLDA extends LDA_Gibbs {
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
-			System.out.println("per iteration m step time\t"
-					+ (mEndTime - mStartTime));
+			// System.out.println("per iteration m step time\t"
+			// + (mEndTime - mStartTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -416,7 +415,6 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 			
 			iteration++;
-//			System.out.println("alpha iteration\t" + iteration);
 	
 			if(iteration > m_newtonIter)
 				break;
@@ -485,7 +483,6 @@ public class DCMLDA extends LDA_Gibbs {
 
 			iteration++;
 
-//			System.out.println("beta iteration\t" + iteration);
 		} while (diff > m_newtonConverge);
 
 //		System.out.println("iteration\t" + iteration);
