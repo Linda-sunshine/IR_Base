@@ -782,4 +782,5 @@ public class DCMLDA extends LDA_Gibbs {
 		return likelihood;
 	}
 
+
 }

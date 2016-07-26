@@ -6,6 +6,10 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+
+import com.sun.javafx.collections.MappingChange.Map;
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.ChildLoader;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
@@ -630,6 +634,7 @@ public class DCMCorrLDA extends DCMLDA{
 		String childParameterFile = filePrefix+"childParameter.txt";
 		
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
+		printTopKChild4Stn(filePrefix, topK);
 	}
 	
 	protected void printChildTopicAssignment(_Doc d, File topicFolder){
@@ -929,6 +934,63 @@ public class DCMCorrLDA extends DCMLDA{
 		}
 		
 		return childLikelihood;
+	}
+	
+	protected void printTopKChild4Stn(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
+		
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+			
+			for(_Doc d:m_trainSet){
+				if(d instanceof _ParentDoc4DCM){
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+					
+					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
+					for(_Stn stnObj:pDoc.getSentences()){
+						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
+						
+						int i=0;
+						pw.print((stnObj.getIndex()+1)+"\t");
+						
+						for(String e:likelihoodMap.keySet()){
+							pw.print(e);
+							pw.print(":"+likelihoodMap.get(e));
+							pw.print("\t");
+							
+							i++;
+						}
+						pw.println();
+					}
+				}
+			}
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc4DCM pDoc){
+		HashMap<String, Double> likelihoodMap = new HashMap<String, Double>();
+		
+		for(_ChildDoc cDoc:pDoc.m_childDocs){
+			int cDocLen = cDoc.getTotalDocLength();
+			
+			double stnLogLikelihood = 0;
+			for(_Word w:stnObj.getWords()){
+				double wordLikelihood = 0;
+				int wid = w.getIndex();
+				
+				for(int k=0; k<number_of_topics; k++){
+					wordLikelihood += childTopicInDocProb(k, cDoc, pDoc)*childWordByTopicProb(k, wid, pDoc);
+				}
+				
+				stnLogLikelihood += wordLikelihood;
+			}
+			likelihoodMap.put(cDoc.getName(), stnLogLikelihood);
+		}
+		
+		
+		return likelihoodMap;
 	}
 	
 }
