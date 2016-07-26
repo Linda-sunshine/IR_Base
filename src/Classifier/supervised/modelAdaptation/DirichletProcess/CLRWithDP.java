@@ -18,7 +18,7 @@ import structures._User;
 import structures._thetaStar;
 import utils.Utils;
 
-public class CLogisticRegressionWithDP extends LinAdapt {
+public class CLRWithDP extends LinAdapt {
 	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
 	protected int m_numberOfIterations = 50;
 	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
@@ -37,7 +37,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected double[] m_models; // model parameters for clusters.
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
-	public CLogisticRegressionWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
+	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
 	}
@@ -95,7 +95,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_thetaStars[m] == null) {
-				if (this instanceof CLinAdaptWithDP)
+				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes
 					m_thetaStars[m] = new _thetaStar(2*m_dim);
 				else
 					m_thetaStars[m] = new _thetaStar(m_dim);

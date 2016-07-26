@@ -54,7 +54,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}			
-		} else {
+		}else{
 			int n, m;
 			double As[];
 			for(int k=0; k<m_cluPosterior.length; k++) {
@@ -72,12 +72,12 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
-		
+		doc.addOneProb(prob);
 		return prob;
 	}
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (doc.m_prob/doc.m_pCount)>=0.5 ? 1:0;
+		return (doc.m_prob/doc.m_pCount)>0.5 ? 1:0;
 	}
 }

@@ -16,13 +16,12 @@ public class CLinAdaptWithDP extends CLRWithDP {
 
 	protected double[] m_abNuB = new double[]{1, 0.2}; // prior for scaling
 	public static double[] m_supWeights; // newly learned global model
-	
+
 	public CLinAdaptWithDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, globalModel);
 		loadFeatureGroupMap(featureGroupMap);
 		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
-		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
 	}
 	
 	@Override
@@ -58,6 +57,33 @@ public class CLinAdaptWithDP extends CLRWithDP {
 			}
 		}
 		return R1;
+	}
+	
+	@Override
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
+		
+		int n, k; // feature index
+		int cIndex = user.getThetaStar().getIndex();
+		if(cIndex <0 || cIndex >= m_kBar)
+			System.err.println("Error,cannot find the theta star!");
+		int offset = m_dim*2*cIndex;
+		
+		double delta = (review.getYLabel() - logit(review.getSparse(), user)) * weight;
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
+		
+		// Bias term for individual user.
+		m_g[offset] -= delta*m_gWeights[0]; //a[0] = ws0*x0; x0=1
+		m_g[offset + m_dim] -= delta;//b[0]
+		
+		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
+		for(_SparseFeature fv: review.getSparse()){
+			n = fv.getIndex() + 1;
+			k = m_featureGroupMap[n];
+			m_g[offset + k] -= delta*m_gWeights[n]*fv.getValue(); // w_si*x_di
+			m_g[offset + m_dim + k] -= delta*fv.getValue(); // x_di
+		}
 	}
 	
 	@Override
@@ -129,7 +155,9 @@ public class CLinAdaptWithDP extends CLRWithDP {
 			user.setPersonalizedModel(m_pWeights);
 		}
 	}
-	
+	public void setsdB(double sd){
+		m_abNuB[1] = sd;
+	}
 	// Assign the optimized models to the clusters.
 	@Override
 	protected void setThetaStars(){
@@ -137,7 +165,11 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		for(int i=0; i<m_kBar; i++)
 			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].getModel(), 0, m_dim*2);
 	}
-	
+	//apply current model in the assigned clusters to users
+	protected void evaluateModel() {
+		m_supWeights = m_gWeights;// this design is for evalute purpose since we don't need to rewrite evaluate.
+		super.evaluateModel();	
+	}
 	@Override
 	public String toString() {
 		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim,m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
