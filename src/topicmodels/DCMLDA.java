@@ -52,10 +52,10 @@ public class DCMLDA extends LDA_Gibbs {
 
 		int corpusSize = c.getSize();
 		
-		// m_docWordTopicProb = new
-		// double[corpusSize][number_of_topics][vocabulary_size];
-		// m_docWordTopicStats = new
-		// double[corpusSize][number_of_topics][vocabulary_size];
+		 m_docWordTopicProb = new
+		 double[corpusSize][number_of_topics][vocabulary_size];
+		 m_docWordTopicStats = new
+		 double[corpusSize][number_of_topics][vocabulary_size];
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
 		m_alpha = new double[number_of_topics];
@@ -209,7 +209,7 @@ public class DCMLDA extends LDA_Gibbs {
 			tid = -1;
 			while(p>0 && tid<number_of_topics-1) {
 				tid ++;
-				p -= d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]);
+				p -= topicInDocProb(tid, d) * wordTopicProb(tid, wid, d);
 			}
 			
 			//assign the selected topic to word
@@ -253,17 +253,13 @@ public class DCMLDA extends LDA_Gibbs {
 		double term1 = d.m_sstat[tid];
 		term1 = m_alpha[tid];
 
-		return (d.m_sstat[tid] + m_alpha[tid])
-				/ (d.getTotalDocLength() + m_totalAlpha - 1);
+		return (d.m_sstat[tid] + m_alpha[tid]);
 	}
 
 	// p(w|z)
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
 		int docID = d.getID();
-		double term1 = m_docWordTopicStats[docID][tid][wid];
-		term1 = m_beta[tid][wid];
-		term1 = d.m_sstat[tid];
-		term1 = m_totalBeta[tid];
+	
 		return (m_docWordTopicStats[docID][tid][wid] + m_beta[tid][wid])
 				/ (d.m_sstat[tid] + m_totalBeta[tid]);
 	}
@@ -420,14 +416,14 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 			
 			iteration++;
-			System.out.println("alpha iteration\t" + iteration);
+//			System.out.println("alpha iteration\t" + iteration);
 	
 			if(iteration > m_newtonIter)
 				break;
 			
 		}while(diff>m_newtonConverge);
 
-		System.out.println("iteration\t" + iteration);
+//		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha += m_alpha[k];
@@ -489,10 +485,10 @@ public class DCMLDA extends LDA_Gibbs {
 
 			iteration++;
 
-			System.out.println("beta iteration\t" + iteration);
+//			System.out.println("beta iteration\t" + iteration);
 		} while (diff > m_newtonConverge);
 
-		System.out.println("iteration\t" + iteration);
+//		System.out.println("iteration\t" + iteration);
 
 	}
 

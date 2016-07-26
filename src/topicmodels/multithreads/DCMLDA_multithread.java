@@ -132,7 +132,7 @@ public class DCMLDA_multithread extends DCMLDA{
 			double alpha, double burnIn, int lag, int newtonIter, double newtonConverge){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag,newtonIter, newtonConverge);
 	
-		m_multithread = true;
+		m_multithread = false;
 	}
 	
 	public String toString(){

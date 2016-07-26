@@ -594,7 +594,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 		return Utils.cosine(topic1, topic2);
 	}
 	
-	public void printParentTopicAssignment(_Doc d, File topicFolder) {
+	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
 		//	System.out.println("printing topic assignment parent documents");
 			
 		String topicAssignmentFile = d.getName() + ".txt";
@@ -624,7 +624,7 @@ public class LDA_Gibbs_Debug extends LDA_Gibbs{
 
 	}
 
-	public void printChildTopicAssignment(_Doc d, File topicFolder) {
+	protected void printChildTopicAssignment(_Doc d, File topicFolder) {
 		//	System.out.println("printing topic assignment parent documents");
 			
 		String topicAssignmentFile = d.getName() + ".txt";
