@@ -6,7 +6,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.PrimitiveIterator.OfDouble;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
