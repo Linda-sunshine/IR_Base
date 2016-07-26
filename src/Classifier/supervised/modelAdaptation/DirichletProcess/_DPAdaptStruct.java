@@ -78,6 +78,6 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (doc.m_prob/doc.m_pCount)>0.5 ? 1:0;
+		return (doc.m_prob/doc.m_pCount)>=0.5 ? 1:0;
 	}
 }

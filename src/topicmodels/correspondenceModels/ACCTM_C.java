@@ -18,12 +18,12 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class ACCTM_C extends ACCTM_TwoTheta{
+public class ACCTM_C extends ACCTM {
 	HashMap<Integer, Double> m_wordSstat;
 
 	public ACCTM_C(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma);
 	
 		m_topicProbCache = new double[number_of_topics+1];
 		m_wordSstat = new HashMap<Integer, Double>();
@@ -268,77 +268,6 @@ public class ACCTM_C extends ACCTM_TwoTheta{
 			computeTestMu4Doc(cDoc);
 
 		}
-	}
-	
-	public void debugOutput(String filePrefix){
-
-		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
-		File childTopicFolder = new File(filePrefix + "childTopicAssignment");
-		
-		File childLocalWordTopicFolder = new File(filePrefix+ "childLocalTopic");
-
-		if (!parentTopicFolder.exists()) {
-			System.out.println("creating directory" + parentTopicFolder);
-			parentTopicFolder.mkdir();
-		}
-		if (!childTopicFolder.exists()) {
-			System.out.println("creating directory" + childTopicFolder);
-			childTopicFolder.mkdir();
-		}
-		if (!childLocalWordTopicFolder.exists()) {
-			System.out.println("creating directory" + childLocalWordTopicFolder);
-			childLocalWordTopicFolder.mkdir();
-		}
-		
-		File parentPhiFolder = new File(filePrefix + "parentPhi");
-		File childPhiFolder = new File(filePrefix + "childPhi");
-		if (!parentPhiFolder.exists()) {
-			System.out.println("creating directory" + parentPhiFolder);
-			parentPhiFolder.mkdir();
-		}
-		if (!childPhiFolder.exists()) {
-			System.out.println("creating directory" + childPhiFolder);
-			childPhiFolder.mkdir();
-		}
-		
-		File childXFolder = new File(filePrefix+"xValue");
-		if(!childXFolder.exists()){
-			System.out.println("creating x Value directory" + childXFolder);
-			childXFolder.mkdir();
-		}
-
-		for (_Doc d : m_trainSet) {
-		if (d instanceof _ParentDoc) {
-				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
-				printParentPhi((_ParentDoc)d, parentPhiFolder);
-			} else if (d instanceof _ChildDoc) {
-				printChildTopicAssignment(d, childTopicFolder);
-				printChildLocalWordTopicDistribution((_ChildDoc4BaseWithPhi)d, childLocalWordTopicFolder);
-				printXValue(d, childXFolder);
-			}
-
-		}
-
-		String parentParameterFile = filePrefix + "parentParameter.txt";
-		String childParameterFile = filePrefix + "childParameter.txt";
-		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-		printTestParameter4Spam(filePrefix);
-		String xProportionFile = filePrefix + "childXProportion.txt";
-		printXProportion(xProportionFile, m_trainSet);
-		
-		String similarityFile = filePrefix+"topicSimilarity.txt";
-		discoverSpecificComments(MatchPair.MP_ChildDoc, similarityFile);
-		
-		printEntropy(filePrefix);
-		
-		int topKStn = 10;
-		int topKChild = 10;
-		printTopKChild4Stn(filePrefix, topKChild);
-//		printTopKChild4StnWithHybrid(filePrefix, topKChild);
-//		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
-		printTopKStn4Child(filePrefix, topKStn);
-		
-		printTopKChild4Parent(filePrefix, topKChild);
 	}
 	
 	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){

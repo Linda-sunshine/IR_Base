@@ -21,9 +21,9 @@ import utils.Utils;
 public class CLogisticRegressionWithDP extends LinAdapt {
 	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
 	protected int m_numberOfIterations = 50;
-	protected int m_burnIn = 10, m_thinning = 5;// burn in time, thinning time.
+	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
-	protected double m_alpha = .01; // Scaling parameter of DP.
+	protected double m_alpha = .1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	
@@ -33,7 +33,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	protected double[][] m_gradients;
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.075}; // N(0,1) for shifting
+	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting
 	protected double[] m_models; // model parameters for clusters.
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
@@ -280,7 +280,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 						System.out.println();
 				} 
 				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 5e-2, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
 				
@@ -326,6 +326,8 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 				break;
 			lastLikelihood = curLikelihood;
 		}
+		
+		evaluateModel(); // we do not want to miss the last sample?!
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
@@ -337,26 +339,7 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
-		_DPAdaptStruct user = (_DPAdaptStruct)u;
-		
-		int n; // feature index
-		int cIndex = user.getThetaStar().getIndex();
-		if(cIndex <0 || cIndex >= m_kBar)
-			System.err.println("Error,cannot find the theta star!");
-		
-		int offset = m_dim*cIndex;
-		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
-		if(m_LNormFlag)
-			delta /= getAdaptationSize(user);
-		
-		//Bias term.
-		m_g[offset] -= delta; //x0=1
-
-		//Traverse all the feature dimension to calculate the gradient.
-		for(_SparseFeature fv: review.getSparse()){
-			n = fv.getIndex() + 1;
-			m_g[offset + n] -= delta * fv.getValue();
-		}
+		gradientByFunc(u, review, weight, m_g);
 	}
 	
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
@@ -558,9 +541,29 @@ public class CLogisticRegressionWithDP extends LinAdapt {
 	}
 	
 	public void printInfo(){
+		//clear the statistics
+		for(int i=0; i<m_kBar; i++) 
+			m_thetaStars[i].resetCount();
+		
+		//collect statistics across users
+		_thetaStar theta = null;
+		for(int i=0; i<m_userList.size(); i++) {
+			_DPAdaptStruct user = (_DPAdaptStruct)m_userList.get(i);
+			theta = user.getThetaStar();
+			
+			for(_Review review:user.getReviews()){
+				if (review.getType() != rType.ADAPTATION)
+					continue; // only touch the adaptation data
+				else if (review.getYLabel()==1)
+					theta.incPosCount();
+				else
+					theta.incNegCount();
+			}
+		}
+		
 		System.out.print("[Info]Clusters:");
 		for(int i=0; i<m_kBar; i++)
-			System.out.format("%d\t", m_thetaStars[i].getMemSize());	
+			System.out.format("%s\t", m_thetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
 	}
 }

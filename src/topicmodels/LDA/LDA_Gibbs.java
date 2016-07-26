@@ -17,9 +17,9 @@ import utils.Utils;
  * Griffiths, Thomas L., and Mark Steyvers. "Finding scientific topics."
  */
 public class LDA_Gibbs extends pLSA {
-	Random m_rand;
-	int m_burnIn; // discard the samples within burn in period
-	int m_lag; // lag in accumulating the samples
+	protected Random m_rand;
+	protected int m_burnIn; // discard the samples within burn in period
+	protected int m_lag; // lag in accumulating the samples
 	
 	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,

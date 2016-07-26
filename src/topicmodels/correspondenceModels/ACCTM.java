@@ -17,26 +17,21 @@ import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
+import topicmodels.LDA.LDA_Gibbs;
 import utils.Utils;
 
-public class ACCTM extends LDA_Gibbs_Debug {
+public class ACCTM extends LDA_Gibbs {
 	
 	protected double[] m_topicProbCache;
-	protected double m_kAlpha;
-	
+	protected double m_kAlpha;	
 	protected boolean m_statisticsNormalized = false;//a warning sign of normalizing statistics before collecting new ones
 	
 	public ACCTM(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double ksi, double tau) {
-		// TODO Auto-generated constructor stub
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
 		
 		m_topicProbCache = new double[number_of_topics];
-		
 		m_kAlpha = d_alpha * number_of_topics;
-		
-		m_topicProbCache = new double[number_of_topics];
-	
 	}
 	
 	@Override
@@ -76,11 +71,7 @@ public class ACCTM extends LDA_Gibbs_Debug {
 	
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
-//		double mu = Utils.cosine_values(tempParent.getSparse(), d.getSparse());
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 1e32;
-//		mu = Double.MAX_VALUE;
-//		System.out.println("maximum value double\t"+mu);
 		d.setMu(mu);
 	}
 	
@@ -145,7 +136,6 @@ public class ACCTM extends LDA_Gibbs_Debug {
 				m_sstat[tid] ++;
 			}
 		}
-		
 	}
 	
 	//probability of word given topic p(w|z, phi^p, beta)
@@ -324,6 +314,7 @@ public class ACCTM extends LDA_Gibbs_Debug {
 		}
 	}
 	
+	@Override
 	public double inference(_Doc pDoc) {
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
@@ -376,7 +367,6 @@ public class ACCTM extends LDA_Gibbs_Debug {
 					collectChildStats((_ChildDoc)doc);
 				}
 			}
-			
 		}while(++iter<number_of_iteration);
 		
 		for(_Doc doc:pDoc.m_childDocs){
@@ -384,70 +374,6 @@ public class ACCTM extends LDA_Gibbs_Debug {
 		}
 		
 		return likelihood;
-	}
-	
-	//to make it consistent, we will not assume the statistic collector has been normalized before calling this function
-	@Override
-	public void debugOutput(String filePrefix){
-
-		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
-		File childTopicFolder = new File(filePrefix + "childTopicAssignment");
-		if (!parentTopicFolder.exists()) {
-			System.out.println("creating directory" + parentTopicFolder);
-			parentTopicFolder.mkdir();
-		}
-		if (!childTopicFolder.exists()) {
-			System.out.println("creating directory" + childTopicFolder);
-			childTopicFolder.mkdir();
-		}
-		
-		File parentPhiFolder = new File(filePrefix + "parentPhi");
-		File childPhiFolder = new File(filePrefix + "childPhi");
-		if (!parentPhiFolder.exists()) {
-			System.out.println("creating directory" + parentPhiFolder);
-			parentPhiFolder.mkdir();
-		}
-		if (!childPhiFolder.exists()) {
-			System.out.println("creating directory" + childPhiFolder);
-			childPhiFolder.mkdir();
-		}
-		
-		File childXFolder = new File(filePrefix+"xValue");
-		if(!childXFolder.exists()){
-			System.out.println("creating x Value directory" + childXFolder);
-			childXFolder.mkdir();
-		}
-
-		for (_Doc d : m_trainSet) {
-		if (d instanceof _ParentDoc) {
-				printParentTopicAssignment((_ParentDoc)d, parentTopicFolder);
-				printParentPhi((_ParentDoc)d, parentPhiFolder);
-			} else if (d instanceof _ChildDoc) {
-				printChildTopicAssignment(d, childTopicFolder);
-			}
-
-		}
-
-		String parentParameterFile = filePrefix + "parentParameter.txt";
-		String childParameterFile = filePrefix + "childParameter.txt";
-		printParentParameter(parentParameterFile);
-		printChildParameter(childParameterFile);
-		
-		String similarityFile = filePrefix+"topicSimilarity.txt";
-		
-		printEntropy(filePrefix);
-		
-		int topKStn = 10;
-		int topKChild = 10;
-		printTopKChild4StnWithHybrid(filePrefix, topKChild);
-		printTopKChild4Stn(filePrefix, topKChild);
-		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
-		printTopKStn4Child(filePrefix, topKStn);
-		
-		printTopKChild4Parent(filePrefix, topKChild);
-		
-		String childMuFile = filePrefix+"childMu.txt";
-		printMu(childMuFile);
 	}
 	
 	//used to print test parameter
@@ -502,13 +428,8 @@ public class ACCTM extends LDA_Gibbs_Debug {
 		}
 	}
 	
-		@Override
+	@Override
 	public void printTopWords(int k, String betaFile) {
-		
-		String filePrefix = betaFile.replace("topWords.txt", "");
-		debugOutput(filePrefix);
-		
-		double loglikelihood = 0.0;
 		Arrays.fill(m_sstat, 0);
 
 		System.out.println("print top words");
@@ -523,18 +444,14 @@ public class ACCTM extends LDA_Gibbs_Debug {
 		}
 		
 		Utils.L1Normalization(m_sstat);
-
-		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
 		
 		try {
 			System.out.println("beta file");
 			PrintWriter betaOut = new PrintWriter(new File(betaFile));
 			for (int i = 0; i < topic_term_probabilty.length; i++) {
-				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
-						k);
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
 				for (int j = 0; j < vocabulary_size; j++)
-					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							topic_term_probabilty[i][j]));
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
 				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 				for (_RankItem it : fVector) {
@@ -546,125 +463,13 @@ public class ACCTM extends LDA_Gibbs_Debug {
 				betaOut.println();
 				System.out.println();
 			}
-	
-			betaOut.flush();
 			betaOut.close();
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
 		}
-	
 	}
 
-	public void printParentPhi(_ParentDoc d, File phiFolder){
-		String parentPhiFileName = d.getName()+".txt";
-		_SparseFeature[] fv = d.getSparse();
-		
-		try{
-			PrintWriter parentPW = new PrintWriter(new File(phiFolder, parentPhiFileName));
-		
-			for(int n=0; n<fv.length; n++){
-				int index = fv[n].getIndex();
-				String featureName = m_corpus.getFeature(index);
-				parentPW.print(featureName + ":\t");
-				for(int k=0; k<number_of_topics; k++)
-					parentPW.print(d.m_phi[n][k]+"\t");
-				parentPW.println();
-			}
-			parentPW.flush();
-			parentPW.close();
-		}catch(Exception ex){
-			ex.printStackTrace();
-		}
-	}
-	
-	protected void printEntropy(String filePrefix){
-		String entropyFile = filePrefix+"entropy.txt";
-		boolean logScale = true;
-		
-		try{
-			PrintWriter entropyPW = new PrintWriter(new File(entropyFile));
-			
-			for(_Doc d: m_trainSet){
-				double entropyValue = 0.0;
-				entropyValue = Utils.entropy(d.m_topics, logScale);
-				entropyPW.print(d.getName()+"\t"+entropyValue);
-				entropyPW.println();
-			}
-			entropyPW.flush();
-			entropyPW.close();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}	
-	
-	protected void printTopKStn4Child(String filePrefix, int topK){
-		String topKStn4ChildFile = filePrefix+"topStn4Child.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKStn4ChildFile));
-			
-			for(_Doc d: m_trainSet){
-				if(d instanceof _ParentDoc){
-					_ParentDoc pDoc = (_ParentDoc)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.m_childDocs.size());
-					
-					for(_ChildDoc childDoc: pDoc.m_childDocs){
-//							_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi)childDoc;
-						HashMap<Integer, Double>stnSimMap = rankStn4ChildBySim(pDoc, childDoc);
-						int i = 0;
-						
-						pw.print(childDoc.getName()+"\t");
-						for(Map.Entry<Integer, Double> e: sortHashMap4Integer(stnSimMap, true)){
-//								if(i==topK)
-//									break;
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	protected void printTopKChild4Parent(String filePrefix, int topK) {
-		String topKChild4StnFile = filePrefix+"topChild4Parent.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d: m_trainSet){
-				if(d instanceof _ParentDoc){
-					_ParentDoc pDoc = (_ParentDoc)d;
-					
-					pw.print(pDoc.getName()+"\t");
-					
-					for(_ChildDoc childDoc:pDoc.m_childDocs){
-//							_ChildDoc4ThreePhi cDoc = (_ChildDoc4ThreePhi) childDoc;
-						double docLogLikelihood = rankChild4ParentByLikelihood(childDoc, pDoc);
-				
-						pw.print(childDoc.getName()+":"+docLogLikelihood+"\t");	
-					}
-					
-					pw.println();
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
+	@Override
 	protected double calculate_log_likelihood(){
 		double corpusLogLikelihood = 0;//how could we get the corpus-level likelihood?
 		
@@ -775,266 +580,4 @@ public class ACCTM extends LDA_Gibbs_Debug {
 		
 		return docLogLikelihood;
 	}
-	
-	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){
-
-		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
-		
-		for(_Stn stnObj:pDoc.getSentences()){
-//			double stnSim = computeSimilarity(cDoc.m_topics, stnObj.m_topics);
-//			stnSimMap.put(stnObj.getIndex()+1, stnSim);
-
-			double stnKL = Utils.klDivergence(cDoc.m_topics, stnObj.m_topics);
-//			double stnKL = Utils.KLsymmetric(cDoc.m_topics, stnObj.m_topics);
-//			double stnKL = Utils.klDivergence(stnObj.m_topics, cDoc.m_topics);
-
-			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
-
-		}
-		
-		return stnSimMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getTotalDocLength();
-			_SparseFeature[] fv = cDoc.getSparse();
-			
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			_SparseFeature[] sv = stnObj.getFv();
-			for(_SparseFeature svWord:sv){
-				double featureLikelihood = 0;
-				
-				int wid = svWord.getIndex();
-				double stnVal = svWord.getValue();
-				
-				int featureIndex = Utils.indexOf(fv, wid);
-				double docVal = 0;
-				if(featureIndex!=-1){
-					docVal = fv[featureIndex].getValue();
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
-				
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				for(int k=0; k<number_of_topics; k++){
-					TMLikelihood += (wordByTopicProb(k, wid))*(childTopicInDocProb(k, cDoc));
-				}
-				
-				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-//				featureLikelihood = TMLikelihood;
-				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += stnVal*featureLikelihood;
-				
-			}
-			
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getTotalDocLength();
-			
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			_SparseFeature[] fv = cDoc.getSparse();
-			_SparseFeature[] sv = stnObj.getFv();
-			for(_SparseFeature svWord: sv){
-				double wordLikelihood = 0;
-				int wid = svWord.getIndex();
-				double stnVal = svWord.getValue();
-				
-				int featureIndex = Utils.indexOf(fv, wid);
-				double docVal = 0;
-				if(featureIndex!=-1){
-					docVal = fv[featureIndex].getValue();
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/cDocLen;
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				
-				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = (wordByTopicProb(k, wid))*(childTopicInDocProb(k, cDoc));
-
-					TMLikelihood += wordPerTopicLikelihood;
-				}
-				
-				wordLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-				wordLikelihood = Math.log(wordLikelihood);
-				stnLogLikelihood += stnVal*wordLikelihood;
-			}
-			
-			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_topics);
-			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
-
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-		
-		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			
-			double stnLogLikelihood = 0;
-			for(_Word w: stnObj.getWords()){
-				int wid = w.getIndex();
-			
-				double wordLogLikelihood = 0;
-				
-				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
-					wordLogLikelihood += wordPerTopicLikelihood;
-				}
-				
-				stnLogLikelihood += Math.log(wordLogLikelihood);
-			}
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-
-	protected void printMu(String childMuFile){
-		System.out.println("print mu");
-		try{
-			PrintWriter muPW = new PrintWriter(new File(childMuFile));
-			
-			for(_Doc d:m_trainSet){
-				if(d instanceof _ChildDoc){
-					muPW.println(d.getName()+"\t"+((_ChildDoc)d).getMu());
-				}
-				
-			}
-			muPW.flush();
-			muPW.close();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	protected void printParentParameter(String parentParameterFile){
-		System.out.println("printing parent parameter");
-		try{
-			System.out.println(parentParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			for(_Doc d: m_trainSet){
-				if(d instanceof _ParentDoc){
-					parentParaOut.print(d.getName()+"\t");
-					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
-						parentParaOut.print(d.m_topics[k]+"\t");
-					}
-					
-					for(_Stn stnObj:d.getSentences()){							
-						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<number_of_topics;k++){
-							parentParaOut.print(stnObj.m_topics[k]+"\t");
-						}
-					}
-					
-					parentParaOut.println();
-					
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	protected void printChildParameter(String childParameterFile){
-		System.out.println("printing child parameter");
-		try{
-			System.out.println(childParameterFile);
-			
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_trainSet){
-	
-				if(d instanceof _ChildDoc){
-					childParaOut.print(d.getName()+"\t");
-	
-					childParaOut.print("topicProportion\t");
-					for (int k = 0; k < number_of_topics; k++) {
-						childParaOut.print(d.m_topics[k] + "\t");
-					}
-					
-					childParaOut.println();
-				}
-			
-			}
-			
-			childParaOut.flush();
-			childParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-			
-	}
-	
-	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
-		_ParentDoc pDoc = (_ParentDoc)d;
-		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
-		pDoc.setTopics4Gibbs(number_of_topics, 0);
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-
-		sampleTestSet.add(pDoc);
-		int count = 0;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			if(count>=commentNum){
-				break;
-			}
-			count ++;
-			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
-
-			sampleTestSet.add(cDoc);
-			pDoc.addChildDoc4Dynamics(cDoc);
-			computeMu4Doc(cDoc);
-
-		}
-	}
-	
-	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d) {
-		_ParentDoc pDoc = (_ParentDoc) d;
-		pDoc.setTopics4Gibbs(number_of_topics, 0);
-
-		for (_Stn stnObj : pDoc.getSentences()) {
-			stnObj.setTopicsVct(number_of_topics);
-		}
-		sampleTestSet.add(pDoc);
-
-		for (_ChildDoc cDoc : pDoc.m_childDocs) {
-			cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-			cDoc.setParentDoc(pDoc);
-			computeMu4Doc(cDoc);
-		}
-	}
-	
 }

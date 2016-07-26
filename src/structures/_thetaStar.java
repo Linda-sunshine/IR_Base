@@ -8,6 +8,8 @@ public class _thetaStar {
 	double[] m_beta;
 	double m_proportion;
 	
+	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
+	
 	public _thetaStar(int dim){
 		m_dim = dim;
 		m_memSize = 0;
@@ -40,5 +42,22 @@ public class _thetaStar {
 	
 	public double[] getModel() {
 		return m_beta;
+	}
+	
+	public void resetCount() {
+		m_pCount = 0;
+		m_nCount = 0;
+	}
+	
+	public void incPosCount() {
+		m_pCount++;
+	}
+	
+	public void incNegCount() {
+		m_nCount++;
+	}
+	
+	public String showStat() {
+		return String.format("%d(%.2f,%.1f)", m_memSize, m_pCount/(m_pCount+m_nCount), (m_pCount+m_nCount)/m_memSize);
 	}
 }
