@@ -50,7 +50,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		m_perplexity = 0;
 		
 		double loglikelihood = 0, log2 = Math.log(2.0);
-		System.out.println("thread corpus size\t" + m_corpus.size());
+		// System.out.println("thread corpus size\t" + m_corpus.size());
 		long eStartTime = System.currentTimeMillis();
 
 		for(_Doc d:m_corpus) {
@@ -64,8 +64,8 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		}
 		long eEndTime = System.currentTimeMillis();
 
-		System.out.println("per thread per iteration e step time\t"
-				+ (eEndTime - eStartTime));
+		// System.out.println("per thread per iteration e step time\t"
+		// + (eEndTime - eStartTime));
 
 	}
 	

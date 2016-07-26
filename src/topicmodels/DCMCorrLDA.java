@@ -8,9 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
-import com.sun.javafx.collections.MappingChange.Map;
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.ChildLoader;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -46,6 +43,10 @@ public class DCMCorrLDA extends DCMLDA{
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				pDoc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
 				
+				for (_Stn stnObj : d.getSentences()) {
+					stnObj.setTopicsVct(number_of_topics);
+				}
+
 				for(_ChildDoc cDoc: pDoc.m_childDocs){
 					cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
 					for(_Word w:cDoc.getWords()){
@@ -354,14 +355,14 @@ public class DCMCorrLDA extends DCMLDA{
 			}
 			
 			iteration ++;
-			System.out.println("alpha parentDoc iteration\t" + iteration);
+			// System.out.println("alpha parentDoc iteration\t" + iteration);
 			
 			if(iteration>m_newtonIter)
 				break;
 			
 		}while(diff>m_newtonConverge);
 		
-		System.out.println("iteration\t"+iteration);
+		// System.out.println("iteration\t"+iteration);
 		m_totalAlpha = 0;
 		for(int k=0; k<number_of_topics; k++){
 			m_totalAlpha += m_alpha[k];
@@ -409,14 +410,14 @@ public class DCMCorrLDA extends DCMLDA{
 			}
 			
 			iteration ++;
-			System.out.println("alpha iteration\t" + iteration);
+			// System.out.println("alpha iteration\t" + iteration);
 			
 			if(iteration > m_newtonIter)
 				break;
 			
 		}while(diff>m_newtonConverge);
 		
-		System.out.println("iteration\t" + iteration);
+		// System.out.println("iteration\t" + iteration);
 		m_totalAlpha_c = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha_c += m_alpha_c[k];
@@ -478,10 +479,10 @@ public class DCMCorrLDA extends DCMLDA{
 			
 			iteration ++;
 			
-			System.out.println("beta iteration\t"+iteration);
+			// System.out.println("beta iteration\t"+iteration);
 		}while(diff > m_newtonConverge);
 		
-		System.out.println("iteration\t"+iteration);
+		// System.out.println("beta iteration\t" + iteration);
 	}
 	
 	protected double calculate_log_likelihood(){

@@ -58,7 +58,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMLDA_multithread";
+		String topicmodel = "DCMCorrLDA_multi_E";
 
 
 		String category = "tablet";
@@ -71,7 +71,7 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 
 		int gibbs_iteration = 500, gibbs_lag = 50;
 		int displayLap = 50;
@@ -181,11 +181,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-		 analyzer.LoadDirectory(articleFolder, suffix);
-		 analyzer.LoadDirectory(commentFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		// analyzer.LoadDirectory(articleFolder, suffix);
+		// analyzer.LoadDirectory(commentFolder, suffix);
 
-//		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
