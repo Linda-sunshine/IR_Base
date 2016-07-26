@@ -179,8 +179,8 @@ public class BurstinessMain {
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
-		analyzer.generateFakeCorpus(filePrefix);
-//		analyzer.analyzeBurstiness(filePrefix);
+//		analyzer.generateFakeCorpus(filePrefix);
+		analyzer.analyzeBurstiness(filePrefix);
 		
 	}
 }

@@ -197,56 +197,37 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
 		
 		String fileName = filePrefix+"/burstiness.txt";
+		int vocalSize = m_corpus.getFeatureSize();
+		System.out.println("vocal size\t"+vocalSize);
 		
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc4DCM){
-				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
-				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					_SparseFeature[] sfs = cDoc.getSparse();
-					for(_SparseFeature sf:sfs){
-						int wid = sf.getIndex();
-						double featureTimes = sf.getValue();
-						if(!wordFrequencyMap.containsKey(wid))
-							wordFrequencyMap.put(wid, featureTimes);
-						else{
-							double oldFeatureTimes = wordFrequencyMap.get(wid);
-							oldFeatureTimes += featureTimes;
-							wordFrequencyMap.put(wid, oldFeatureTimes);
-						}
-							
-					}
-				}
-				
-				_SparseFeature[] sfs = pDoc.getSparse();
-				for(_SparseFeature sf:sfs){
-					int wid = sf.getIndex();
-					double featureTimes = sf.getValue();
-					if(!wordFrequencyMap.containsKey(wid))
-						wordFrequencyMap.put(wid, featureTimes);
-					else{
-						double oldFeatureTimes = wordFrequencyMap.get(wid);
-						oldFeatureTimes += featureTimes;
-						wordFrequencyMap.put(wid, oldFeatureTimes);
-					}
-						
-				}
-				
-				for(int wid:wordFrequencyMap.keySet()){
-					double featureTimes = wordFrequencyMap.get(wid);
-					if(!burstinessMap.containsKey(featureTimes))
-						burstinessMap.put(featureTimes, 1.0);
-					else{
-						double value = burstinessMap.get(featureTimes);
-						burstinessMap.put(featureTimes, value+1);
-					}
-						
-				}
-		
+		for(_Doc d:m_corpus.getCollection()){	
+			_SparseFeature[] sfs = d.getSparse();
+			for(_SparseFeature sf:sfs){
+				int wid = sf.getIndex();
+				double featureTimes = sf.getValue();
+				if(!burstinessMap.containsKey(featureTimes))
+					burstinessMap.put(featureTimes, 1.0);
+				else{
+					double value = burstinessMap.get(featureTimes);
+					burstinessMap.put(featureTimes, value+1);
+				}	
 			}
 			
+			if(!burstinessMap.containsKey((double)0)){
+				double zeroWordNum = vocalSize-sfs.length;
+				burstinessMap.put((double)0, vocalSize-zeroWordNum);
+			}else{
+				double zeroWordNum = vocalSize-sfs.length;
+				zeroWordNum += burstinessMap.get((double)0);
+				burstinessMap.put((double)0, zeroWordNum);
+			}
 		}
 		
+		double totalFeatureTimes = vocalSize*m_corpus.getCollection().size();
+		for(double featureTimes:burstinessMap.keySet()){
+			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
+			burstinessMap.put(featureTimes, featureTimesProb);
+		}
 		
 		try{
 			PrintWriter pw = new PrintWriter(new File(fileName));
