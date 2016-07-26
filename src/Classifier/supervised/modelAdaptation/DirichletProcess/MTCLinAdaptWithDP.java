@@ -208,6 +208,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	}
 	
 	//apply current model in the assigned clusters to users
+	@Override
 	protected void evaluateModel() {
 		for(int i=0; i<m_featureSize+1; i++)
 			m_supWeights[i] = getSupWeights(i);

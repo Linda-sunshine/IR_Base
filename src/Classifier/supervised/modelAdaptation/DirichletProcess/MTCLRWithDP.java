@@ -13,7 +13,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  *
  */
 public class MTCLRWithDP extends CLRWithDP {
-	protected double m_q = 0.001;// the wc + m_q*wg;
+	protected double m_q = .10;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithDP(int classNo, int featureSize,
@@ -24,9 +24,7 @@ public class MTCLRWithDP extends CLRWithDP {
 	
 	@Override
 	protected void accumulateClusterModels(){
-		m_models = new double[getVSize()];
-		for(int i=0; i<m_kBar; i++)
-			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*i, m_dim);
+		super.accumulateClusterModels();
 		System.arraycopy(m_supWeights, 0, m_models, m_dim*m_kBar, m_dim);
 	}
 	
@@ -37,8 +35,8 @@ public class MTCLRWithDP extends CLRWithDP {
 	
 	@Override
 	protected void initPriorG0(){
-		super.initPriorG0();//this initialization is inappropriate
-		m_G0.sampling(m_supWeights);// sample super user's weights.
+		m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for w_u
+		m_G0.sampling(m_gWeights, m_supWeights);// sample super user's weights.
 	}
 
 	@Override	
@@ -49,15 +47,11 @@ public class MTCLRWithDP extends CLRWithDP {
 	
 	@Override
 	protected double calculateR1(){
-		double R1 = super.calculateR1();
-		R1 += m_G0.logLikelihood(m_supWeights, m_eta2, 0);
+		double R1 = super.calculateR1();//w_u should be close to 0		
 		
-		// cluster part.
-		int i = 0;
-		for(; i<m_kBar*m_dim; i++)
-			m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim])/(m_abNuA[1]*m_abNuA[1]);
 		// super model part.
-		for(; i<m_g.length; i++)
+		R1 += m_G0.logLikelihood(m_gWeights, m_supWeights, m_eta2);
+		for(int i=m_kBar*m_dim; i<m_g.length; i++)//w_s should be close to w_0
 			m_g[i] += m_eta2 * (m_models[i]-m_gWeights[i%m_dim])/(m_abNuA[1]*m_abNuA[1]);
 				
 		return R1;

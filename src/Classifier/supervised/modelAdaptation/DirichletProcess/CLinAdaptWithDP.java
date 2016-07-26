@@ -14,8 +14,8 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  */
 public class CLinAdaptWithDP extends CLRWithDP {
 
-	protected double[] m_abNuB = new double[]{1, 0.2}; // prior for scaling
-	public static double[] m_supWeights; // newly learned global model
+	protected double[] m_abNuB = new double[]{1, 0.1}; // prior for scaling
+	public static double[] m_supWeights; // newly learned global model, dummy variable in CLinAdaptWithDP
 	
 	public CLinAdaptWithDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap) {

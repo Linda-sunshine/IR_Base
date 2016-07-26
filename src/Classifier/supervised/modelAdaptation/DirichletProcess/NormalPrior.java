@@ -19,12 +19,22 @@ public class NormalPrior {
 		m_normal = new Normal(0, sd, new DoubleMersenneTwister());//we will set the means later
 	}
 	
+	public boolean hasVctMean() {
+		return m_meansA != null;
+	}
+	
 	public void sampling(double[] target) {
 		for(int i=0; i<target.length; i++) {
 			if (m_meansA==null)
 				target[i] = m_normal.nextDouble();
 			else
 				target[i] = m_normal.nextDouble(m_meansA[i], m_sdA);
+		}
+	}
+	
+	public void sampling(double[] mean, double[] target) {
+		for(int i=0; i<target.length; i++) {
+			target[i] = m_normal.nextDouble(mean[i], m_sdA);
 		}
 	}
 	
@@ -37,5 +47,13 @@ public class NormalPrior {
 				L += (target[i]-m_meansA[i])*(target[i]-m_meansA[i])/m_sdA/m_sdA;
 		}
 		return normScaleA * L / 2;
+	}
+	
+	public double logLikelihood(double[] mean, double[] target, double normScale) {
+		double L = 0;
+		for(int i=0; i<target.length; i++) 
+			L += (target[i]-mean[i])*(target[i]-mean[i])/m_sdA/m_sdA;
+		
+		return normScale * L / 2;
 	}
 }

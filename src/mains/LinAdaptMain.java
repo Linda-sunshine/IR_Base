@@ -105,17 +105,23 @@ public class LinAdaptMain {
 //		WeightedAvgTransAdapt adaptation = new WeightedAvgTransAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
 
 		// Create an instance of Multi-task DP over logistic regression 
-//		CLogisticRegressionWithDP adaptation = new CLogisticRegressionWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+//		CLRWithDP adaptation = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		
+		// Create an instance of Multi-task DP over Multi-task logistic regression 
+//		MTCLRWithDP adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+
+		// Create an instance of Multi-task DP over Multi-task logistic regression 
+		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 		// Create an instance of Multi-task DP over MT-LinAdapt 
-		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
 		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 		
 		adaptation.train();
 		adaptation.test();

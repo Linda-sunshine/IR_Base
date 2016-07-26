@@ -33,8 +33,8 @@ public class CLRWithDP extends LinAdapt {
 	protected double[][] m_gradients;
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting
-	protected double[] m_models; // model parameters for clusters.
+	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting in adaptation based models
+	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
 	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
@@ -77,9 +77,12 @@ public class CLRWithDP extends LinAdapt {
 			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, 0);//the last is dummy input
 		
 		// Gradient by the regularization.
-		for(int i=0; i<m_g.length; i++) {
-			//m_g[i] += m_normScale * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
-			m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
+		if (m_G0.hasVctMean()) {
+			for(int i=0; i<m_kBar*m_dim; i++) 
+				m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
+		} else {
+			for(int i=0; i<m_kBar*m_dim; i++)
+				m_g[i] += m_eta1 * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
 		}
 		return R1;
 	}
@@ -88,6 +91,8 @@ public class CLRWithDP extends LinAdapt {
 		for(int i=0; i<m_kBar; i++)
 			if (theta == m_thetaStars[i])
 				return i;
+		
+		System.err.println("[Error]Hit unknown theta star when searching!");
 		return -1;// impossible to hit here!
 	}
 	
@@ -95,7 +100,7 @@ public class CLRWithDP extends LinAdapt {
 	protected void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_thetaStars[m] == null) {
-				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes
+				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes for adaptation based models
 					m_thetaStars[m] = new _thetaStar(2*m_dim);
 				else
 					m_thetaStars[m] = new _thetaStar(m_dim);
@@ -192,8 +197,7 @@ public class CLRWithDP extends LinAdapt {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();		
 		
-		//init the shared structure
-		
+		//init the shared structure		
 		Arrays.fill(m_fValues, 0);
 		for(int k=0; k<numberOfCores; ++k){
 			Arrays.fill(m_gradients[k], 0);
@@ -378,7 +382,7 @@ public class CLRWithDP extends LinAdapt {
 	
 	protected void initPriorG0() {
 		//m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
-		m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//only for shifting
+		m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
 	}
 	
 	// Assign cluster assignment to each user.
@@ -537,7 +541,7 @@ public class CLRWithDP extends LinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("CLRegWithDP[dim:%d,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
+		return String.format("CLRWithDP[dim:%d,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
 	public void printInfo(){
