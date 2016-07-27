@@ -7,6 +7,7 @@ import java.util.Random;
 import structures._Corpus;
 import structures._Doc;
 import structures._Word;
+import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
 
 /**
@@ -349,4 +350,41 @@ public class LDA_Gibbs extends pLSA {
 		
 		return logLikelihood;
 	}
+
+	public double Evaluation() {
+		m_collectCorpusStats = false;
+		double perplexity = 0, loglikelihood, log2 = Math.log(2.0), sumLikelihood = 0;
+		double totalWords = 0.0;
+		if (m_multithread) {
+			multithread_inference();
+			System.out.println("In thread");
+			for (TopicModelWorker worker : m_workers) {
+				sumLikelihood += worker.getLogLikelihood();
+				perplexity += worker.getPerplexity();
+			}
+		} else {
+
+			System.out.println("In Normal");
+			for (_Doc d : m_testSet) {
+				loglikelihood = inference(d);
+				sumLikelihood += loglikelihood;
+				perplexity += loglikelihood;
+				totalWords += d.getDocTestLength();
+				// perplexity += Math.pow(2.0,
+				// -loglikelihood/d.getTotalDocLength() / log2);
+			}
+
+		}
+		// perplexity /= m_testSet.size();
+		perplexity /= totalWords;
+		perplexity = Math.exp(-perplexity);
+		sumLikelihood /= m_testSet.size();
+
+		System.out.format(
+				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
+				perplexity, sumLikelihood);
+
+		return perplexity;
+	}
+
 }
