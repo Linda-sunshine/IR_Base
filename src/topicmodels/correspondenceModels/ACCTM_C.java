@@ -1,12 +1,9 @@
 package topicmodels.correspondenceModels;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
@@ -202,6 +199,11 @@ public class ACCTM_C extends ACCTM {
 		}
 	}
 	
+	protected double childXInDocProb(int xid, _ChildDoc d){
+		return m_gamma[xid] + d.m_xSstat[xid];
+	}	
+	
+	@Override
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
 		double docLength = d.m_parentDoc.getDocInferLength();
 		
@@ -214,6 +216,7 @@ public class ACCTM_C extends ACCTM {
 				/ (d.m_childWordSstat);
 	}
 	
+	@Override
 	protected void collectChildStats(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		_ParentDoc pDoc = cDoc.m_parentDoc;
@@ -233,6 +236,7 @@ public class ACCTM_C extends ACCTM {
 		}
 	}
 	
+	@Override
 	protected void estThetaInDoc(_Doc d) {
 		
 		if (d instanceof _ParentDoc) {
@@ -245,6 +249,7 @@ public class ACCTM_C extends ACCTM {
 		m_statisticsNormalized = true;
 	}
 	
+	@Override
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc)d;
 		for(_Stn stnObj: pDoc.getSentences()){
@@ -272,175 +277,7 @@ public class ACCTM_C extends ACCTM {
 		}
 	}
 	
-	protected HashMap<Integer, Double> rankStn4ChildBySim( _ParentDoc pDoc, _ChildDoc cDoc){
-
-		HashMap<Integer, Double> stnSimMap = new HashMap<Integer, Double>();
-		
-		for(_Stn stnObj:pDoc.getSentences()){
-			double stnKL = Utils.klDivergence(cDoc.m_xTopics[0], stnObj.m_topics);
-
-			stnSimMap.put(stnObj.getIndex()+1, -stnKL);
-		}
-		
-		return stnSimMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		double gammaLen = Utils.sumOfArray(m_gamma);
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getChildDocLenWithXVal();
-						
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			for(_Word w:stnObj.getWords()){
-				double featureLikelihood = 0;
-				
-				int wid = w.getIndex();
-				
-				double docVal = 0;
-				if(cDoc.m_wordXStat.containsKey(wid)){
-					docVal = cDoc.m_wordXStat.get(wid);
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
-				
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
-					TMLikelihood += wordPerTopicLikelihood;
-				}
-				
-//				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-				
-				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += featureLikelihood;
-			}
-		
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		double gammaLen = Utils.sumOfArray(m_gamma);
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getChildDocLenWithXVal();
-						
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			for(_Word w:stnObj.getWords()){
-				double featureLikelihood = 0;
-				
-				int wid = w.getIndex();
-				
-				double docVal = 0;
-				if(cDoc.m_wordXStat.containsKey(wid)){
-					docVal = cDoc.m_wordXStat.get(wid);
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
-				
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
-					TMLikelihood += wordPerTopicLikelihood;
-				}
-				
-//				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-				
-				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += featureLikelihood;
-			}
-		
-			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_xTopics[0]);
-			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
-			
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-		double gammaLen = Utils.sumOfArray(m_gamma);
-
-		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		for(_ChildDoc d:pDoc.m_childDocs){
-			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
-			double stnLogLikelihood = 0;
-			for(_Word w: stnObj.getWords()){
-				int wid = w.getIndex();
-			
-				double wordLogLikelihood = 0;
-				
-				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/(gammaLen+cDoc.getDocInferLength());
-					wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
-					wordLogLikelihood += wordPerTopicLikelihood;
-				}
-				
-				stnLogLikelihood += Math.log(wordLogLikelihood);
-			}
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected void printTopKChild4StnWithHybrid(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn_hybrid.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			m_LM.generateReferenceModelWithXVal();
-			
-			for(_Doc d: m_trainSet){
-				if(d instanceof _ParentDoc){
-					_ParentDoc pDoc = (_ParentDoc)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByHybrid(stnObj, pDoc);
-						
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(Map.Entry<String, Double> e: sortHashMap4String(likelihoodMap, true)){
-
-							pw.print(e.getKey());
-							pw.print(":"+e.getValue());
-							pw.print("\t");
-							
-						}
-						pw.println();		
-				
-					}
-				}
-			}
-			pw.flush();
-			pw.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
+	@Override
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
@@ -473,202 +310,11 @@ public class ACCTM_C extends ACCTM {
 		return docLogLikelihood;
 	}
 	
-	public void printChildLocalWordTopicDistribution(_ChildDoc4BaseWithPhi d, File childLocalTopicDistriFolder){
-		
-		String childLocalTopicDistriFile = d.getName() + ".txt";
-		try{			
-			PrintWriter childOut = new PrintWriter(new File(childLocalTopicDistriFolder, childLocalTopicDistriFile));
-			
-			for(int wid=0; wid<this.vocabulary_size; wid++){
-				String featureName = m_corpus.getFeature(wid);
-				double wordTopicProb = d.m_xTopics[1][wid];
-				if(wordTopicProb > 0.001)
-					childOut.format("%s:%.3f\t", featureName, wordTopicProb);
-			}
-			childOut.flush();
-			childOut.close();
-			
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-	}
-		
-	public void printXProportion(String xProportionFile, ArrayList<_Doc> docList){
-		System.out.println("x proportion for parent doc");
-		try{
-			PrintWriter pw = new PrintWriter(new File(xProportionFile));
-			for(_Doc d:docList){
-				if(d instanceof _ParentDoc){
-					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs){
-						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
-						pw.print(d.getName() + "\t");
-						pw.print(cDoc.getName() + "\t");
-						pw.print(cDoc.m_xProportion[0]+"\t");
-						pw.print(cDoc.m_xProportion[1]);
-						pw.println();
-					}
-				}
-			}
-			
-			pw.flush();
-			pw.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	public void printXProportion4Dynamical(String xProportionFile, ArrayList<_Doc> docList){
-		System.out.println("x proportion for parent doc");
-		try{
-			PrintWriter pw = new PrintWriter(new File(xProportionFile));
-			for(_Doc d:docList){
-				if(d instanceof _ParentDoc){
-					for(_ChildDoc doc: ((_ParentDoc)d).m_childDocs4Dynamic){
-						_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)doc;
-						pw.print(d.getName() + "\t");
-						pw.print(cDoc.getName() + "\t");
-						pw.print(cDoc.m_xProportion[0]+"\t");
-						pw.print(cDoc.m_xProportion[1]);
-						pw.println();
-					}
-				}
-			}
-			
-			pw.flush();
-			pw.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	public void printParameter(String parentParameterFile, String childParameterFile, ArrayList<_Doc> docList){
-		System.out.println("printing parameter");
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: docList){
-				if(d instanceof _ParentDoc){
-					parentParaOut.print(d.getName()+"\t");
-					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
-						parentParaOut.print(d.m_topics[k]+"\t");
-					}
-					
-					for(_Stn stnObj:d.getSentences()){							
-						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<number_of_topics;k++){
-							parentParaOut.print(stnObj.m_topics[k]+"\t");
-						}
-					}
-					
-					parentParaOut.println();
-					
-					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
-						
-						childParaOut.print(d.getName() + "\t");
-						
-						childParaOut.print(cDoc.getName()+"\t");
-	
-						childParaOut.print("topicProportion\t");
-						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(cDoc.m_xTopics[0][k] + "\t");
-						}
-						
-						childParaOut.print("xProportion\t");
-						for(int x=0; x<m_gamma.length; x++){
-							childParaOut.print(cDoc.m_xProportion[x]+"\t");
-						}
-						
-						childParaOut.println();		
-					}
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-			childParaOut.flush();
-			childParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-	public void printParameter4Dynamical(String parentParameterFile, String childParameterFile, ArrayList<_Doc>docList){
-		System.out.println("printing parameter");
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: docList){
-				if(d instanceof _ParentDoc){
-					parentParaOut.print(d.getName()+"\t");
-					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
-						parentParaOut.print(d.m_topics[k]+"\t");
-					}
-					
-					for(_Stn stnObj:d.getSentences()){							
-						parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-						for(int k=0; k<number_of_topics;k++){
-							parentParaOut.print(stnObj.m_topics[k]+"\t");
-						}
-					}
-					
-					parentParaOut.println();
-					
-					for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs4Dynamic){
-						
-						childParaOut.print(d.getName() + "\t");
-						
-						childParaOut.print(cDoc.getName()+"\t");
-	
-						childParaOut.print("topicProportion\t");
-						for (int k = 0; k < number_of_topics; k++) {
-							childParaOut.print(cDoc.m_xTopics[0][k] + "\t");
-						}
-						
-						childParaOut.print("xProportion\t");
-						for(int x=0; x<m_gamma.length; x++){
-							childParaOut.print(cDoc.m_xProportion[x]+"\t");
-						}
-						
-						childParaOut.println();		
-					}
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-			childParaOut.flush();
-			childParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
+	@Override
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);
-
-		// prepare compute the normalizers
-		_SparseFeature[] fv = cDoc.getSparse();
 
 		for (_Word w : cDoc.getTestWords()) {
 			int wid = w.getIndex();
@@ -698,63 +344,4 @@ public class ACCTM_C extends ACCTM {
 
 		return docLogLikelihood;
 	}
-	
-	public void initTest4Dynamical(ArrayList<_Doc> sampleTestSet, _Doc d, int commentNum){
-		_ParentDoc pDoc = (_ParentDoc)d;
-		pDoc.m_childDocs4Dynamic = new ArrayList<_ChildDoc>();
-		pDoc.setTopics4Gibbs(number_of_topics, 0);
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-
-		sampleTestSet.add(pDoc);
-		int count = 0;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			if(count>=commentNum){
-				break;
-			}
-			count ++;
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-			pDoc.addChildDoc4Dynamics(cDoc);
-			computeMu4Doc(cDoc);
-
-		}
-	}
-	
-	public void initTest4Spam(ArrayList<_Doc> sampleTestSet, _Doc d) {
-		_ParentDoc pDoc = (_ParentDoc)d;
-		pDoc.setTopics4Gibbs(number_of_topics, 0);
-		for(_Stn stnObj: pDoc.getSentences()){
-			stnObj.setTopicsVct(number_of_topics);
-		}
-
-		sampleTestSet.add(pDoc);
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			((_ChildDoc4BaseWithPhi)cDoc).createXSpace(number_of_topics, m_gamma.length, vocabulary_size, d_beta);
-			((_ChildDoc4BaseWithPhi)cDoc).setTopics4Gibbs(number_of_topics, 0);
-			sampleTestSet.add(cDoc);
-			cDoc.setParentDoc(pDoc);
-			computeMu4Doc(cDoc);
-		}
-	}
-	public void printTestParameter4Dynamic(int commentNum){
-		String xProportionFile = "./data/results/dynamic/testChildXProportion_"+commentNum+".txt";
-		printXProportion4Dynamical(xProportionFile, m_testSet);
-		
-		String parentParameterFile = "./data/results/dynamic/testParentParameter_"+commentNum+".txt";
-		String childParameterFile = "./data/results/dynamic/testChildParameter_"+commentNum+".txt";
-		printParameter4Dynamical(parentParameterFile, childParameterFile, m_testSet);
-	}
-	
-	public void printTestParameter4Spam(String filePrefix){
-		String xProportionFile = filePrefix+"testChildXProportion.txt";
-		printXProportion(xProportionFile, m_testSet);
-		
-		String parentParameterFile = filePrefix+"testParentParameter.txt";
-		String childParameterFile = filePrefix+"testChildParameter.txt";
-		printParameter(parentParameterFile, childParameterFile, m_testSet);
-	}
-	
 }

@@ -16,15 +16,17 @@ import utils.Utils;
 
 public class ACCTM_CZ extends ACCTM_C{
 	public ACCTM_CZ(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma, double ksi, double tau){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma);
 	}
 	
+	@Override
 	public String toString(){
 		return String.format("ACCTM_CZ topic model [k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]", 
 				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
+	@Override
 	protected double parentChildInfluenceProb(int tid, _ParentDoc pDoc){
 		double term = 1.0;
 		
@@ -55,6 +57,7 @@ public class ACCTM_CZ extends ACCTM_C{
 		return ratio;
 	}
 	
+	@Override
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
 		double smoothingParameter = 1e-20;
 		double docLength = d.m_parentDoc.getDocInferLength();
@@ -62,6 +65,7 @@ public class ACCTM_CZ extends ACCTM_C{
 		return (d.m_parentDoc.m_sstat[tid]+smoothingParameter)/(docLength+smoothingParameter*number_of_topics);
 	}
 	
+	@Override
 	protected void collectChildStats(_ChildDoc d){
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		_ParentDoc pDoc = cDoc.m_parentDoc;
@@ -83,37 +87,8 @@ public class ACCTM_CZ extends ACCTM_C{
 			w.collectXStats();
 		}
 	}
-	
-	public void printChildLikelihood4ParentSpam(){
-		String childLikelihood4ParentSpamFile = "./data/results/dynamic/childLikelihood4ParentSample.txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(childLikelihood4ParentSpamFile));
-			for(_Doc doc:m_testSet){
-				_ParentDoc pDoc = (_ParentDoc)doc;
-				pw.print(pDoc.getName()+"\t");
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					double likelihood = computeChildLikelihood4ParentSpam(cDoc, pDoc);
-					pw.print(cDoc.getName()+":"+likelihood+"\t");
-				}
-				pw.println();
-			}
-			pw.flush();
-			pw.close();
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public double computeChildLikelihood4ParentSpam(_ChildDoc cDoc, _ParentDoc pDoc){
-		double likelihood = 0;
 		
-		for(_Word w:cDoc.getWords()){
-			
-		}
-		
-		return likelihood;
-	}
-		
+	@Override
 	public double inference(_Doc pDoc){
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 		
@@ -121,6 +96,7 @@ public class ACCTM_CZ extends ACCTM_C{
 		return inference4Doc(sampleTestSet);	
 	}
 	
+	@Override
 	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
@@ -159,116 +135,4 @@ public class ACCTM_CZ extends ACCTM_C{
 //		System.out.println("number of words in tid\t"+cDoc.m_sstat[tid]+"\t x=0 words \t"+cDoc.m_xSstat[0]);
 		return (cDoc.m_xTopicSstat[0][tid]+1e-10)/(cDoc.m_xSstat[0]+1e-10*number_of_topics);
 	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybrid(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getChildDocLenWithXVal();
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			for(_Word w:stnObj.getWords()){
-				double featureLikelihood = 0;
-				
-				int wid = w.getIndex();
-				double docVal = 0;
-				if(cDoc.m_wordXStat.containsKey(wid)){
-					docVal = cDoc.m_wordXStat.get(wid);
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
-				
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
-					TMLikelihood += wordPerTopicLikelihood;
-				}
-							
-				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += featureLikelihood;
-			}
-			
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double>childLikelihoodMap = new HashMap<String, Double>();
-		double gammaLen = Utils.sumOfArray(m_gamma);
-
-		for(_ChildDoc d:pDoc.m_childDocs){
-			_ChildDoc4BaseWithPhi cDoc =(_ChildDoc4BaseWithPhi)d;
-			double stnLogLikelihood = 0;
-			for(_Word w: stnObj.getWords()){
-				int wid = w.getIndex();
-			
-				double wordLogLikelihood = 0;
-				
-				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
-					wordLogLikelihood += wordPerTopicLikelihood;
-				}
-				
-				stnLogLikelihood += Math.log(wordLogLikelihood);
-			}
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
-	protected HashMap<String, Double> rankChild4StnByHybridPro(_Stn stnObj, _ParentDoc pDoc){
-		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
-		double gammaLen = Utils.sumOfArray(m_gamma);
-		
-		double smoothingMu = m_LM.m_smoothingMu;
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			double cDocLen = cDoc.getChildDocLenWithXVal();
-						
-			double stnLogLikelihood = 0;
-			double alphaDoc = smoothingMu/(smoothingMu+cDocLen);
-			
-			for(_Word w:stnObj.getWords()){
-				double featureLikelihood = 0;
-				
-				int wid = w.getIndex();
-				
-				double docVal = 0;
-				if(cDoc.m_wordXStat.containsKey(wid)){
-					docVal = cDoc.m_wordXStat.get(wid);
-				}
-				
-				double LMLikelihood = (1-alphaDoc)*docVal/(cDocLen);
-				
-				LMLikelihood += alphaDoc*m_LM.getReferenceProb(wid);
-				
-				double TMLikelihood = 0;
-				for(int k=0; k<number_of_topics; k++){
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDoc(k, cDoc);
-					TMLikelihood += wordPerTopicLikelihood;
-				}
-				
-//				TMLikelihood += childLocalWordByTopicProb(wid, (_ChildDoc4BaseWithPhi)cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
-				
-				featureLikelihood = m_tau*LMLikelihood+(1-m_tau)*TMLikelihood;
-				featureLikelihood = Math.log(featureLikelihood);
-				stnLogLikelihood += featureLikelihood;
-			}
-		
-			double cosineSim = computeSimilarity(stnObj.m_topics, cDoc.m_xTopics[0]);
-			stnLogLikelihood = m_tau*stnLogLikelihood + (1-m_tau)*cosineSim;
-			
-			childLikelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		return childLikelihoodMap;
-	}
-	
 }

@@ -314,6 +314,37 @@ public class ACCTM extends LDA_Gibbs {
 		}
 	}
 	
+	protected double inference4Doc(ArrayList<_Doc> sampleTestSet){
+		double logLikelihood = 0.0, count = 0;
+		int  iter = 0;
+		do {
+			int t;
+			_Doc tmpDoc;
+			for(int i=sampleTestSet.size()-1; i>1; i--) {
+				t = m_rand.nextInt(i);
+				
+				tmpDoc = sampleTestSet.get(i);
+				sampleTestSet.set(i, sampleTestSet.get(t));
+				sampleTestSet.set(t, tmpDoc);			
+			}
+			
+			for(_Doc doc: sampleTestSet)
+				calculate_E_step(doc);
+			
+			if (iter>m_burnIn && iter%m_lag==0){
+				for(_Doc doc: sampleTestSet){
+					collectStats(doc);
+				}
+			}
+		} while (++iter<this.number_of_iteration);
+
+		for(_Doc doc: sampleTestSet){
+			estThetaInDoc(doc);
+		}
+		
+		return logLikelihood;
+	}
+	
 	@Override
 	public double inference(_Doc pDoc) {
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
@@ -369,64 +400,18 @@ public class ACCTM extends LDA_Gibbs {
 			}
 		}while(++iter<number_of_iteration);
 		
-		for(_Doc doc:pDoc.m_childDocs){
+		for(_Doc doc:pDoc.m_childDocs)
 			likelihood += calculate_test_log_likelihood(doc);
-		}
 		
 		return likelihood;
 	}
-	
-	//used to print test parameter
-	public void printTestParameter(String parentParameterFile, String childParameterFile){
-		System.out.println("printing parameter");
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			for(_Doc d: m_testSet){
-				
-				parentParaOut.print(d.getName()+"\t");
-				parentParaOut.print("topicProportion\t");
-				for(int k=0; k<number_of_topics; k++){
-					parentParaOut.print(d.m_topics[k]+"\t");
-				}
-				
-				for(_Stn stnObj:d.getSentences()){							
-					parentParaOut.print("sentence"+(stnObj.getIndex()+1)+"\t");
-					for(int k=0; k<number_of_topics;k++){
-						parentParaOut.print(stnObj.m_topics[k]+"\t");
-					}
-				}
-				
-				parentParaOut.println();
-				
-				for(_ChildDoc cDoc: ((_ParentDoc)d).m_childDocs){
-					childParaOut.print(cDoc.getName()+"\t");
 
-					childParaOut.print("topicProportion\t");
-					for (int k = 0; k < number_of_topics; k++) {
-						childParaOut.print(cDoc.m_topics[k] + "\t");
-					}
-					
-					childParaOut.println();
-					
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-			childParaOut.flush();
-			childParaOut.close();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-//				e.printStackTrace();
-//				System.err.print("para File Not Found");
-		}
-	}
+	protected double calculate_test_log_likelihood(_Doc d){
+		if(d instanceof _ParentDoc)
+			return testLogLikelihoodByIntegrateTopics((_ParentDoc)d);
+		else
+			return testLogLikelihoodByIntegrateTopics((_ChildDoc)d);
+	}	
 	
 	@Override
 	public void printTopWords(int k, String betaFile) {
@@ -434,7 +419,6 @@ public class ACCTM extends LDA_Gibbs {
 
 		System.out.println("print top words");
 		for (_Doc d : m_trainSet) {
-//				loglikelihood += calculate_log_likelihood(d);
 			for (int i = 0; i < m_sstat.length; i++) {
 				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
 						: d.m_topics[i];	
@@ -526,8 +510,7 @@ public class ACCTM extends LDA_Gibbs {
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d);
-		
+				double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, d);		
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			

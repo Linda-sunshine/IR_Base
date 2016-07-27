@@ -25,16 +25,18 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 //	protected double[] m_weight;
 	
 	public ACCTM_CZLR(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
-			int number_of_topics, double alpha, double burnIn, int lag, double[] weight, double ksi, double tau){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, weight, ksi, tau);
+			int number_of_topics, double alpha, double burnIn, int lag, double[] weight){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, weight);
 //		System.arraycopy(weight, 0, m_weight, 0, weight.length);
 	}
 	
+	@Override
 	public String toString(){
 		return String.format("ACCTM_CZLR topic model [k:%d, alpha:%.2f, beta:%.2f, Logistic regression Gibbs Sampling]", 
 				number_of_topics, d_alpha, d_beta);
 	}
 	
+	@Override
 	protected void initialize_probability(Collection<_Doc> collection){
 		super.initialize_probability(collection);
 		setFeatures4Word(m_trainSet);
@@ -55,7 +57,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		}
 	}
 	
-	
+	@Override
 	public void EM() {
 		System.out.format("Starting %s...\n", toString());
 		
@@ -119,16 +121,11 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);	
 	}
 	
-	public void calculate_M_step(int iter, File weightFolder){
+	protected void calculate_M_step(int iter, File weightFolder){
 		update_M_step(iter, weightFolder);
 	}
 	
-	public void update_E_step(){
-		super.EM();
-	}
-	
-	public void update_M_step(int iter, File weightFolder){
-
+	protected void update_M_step(int iter, File weightFolder){
 		if (m_statisticsNormalized) {
 			System.err.println("The statistics collector has been normlaized before, cannot further accumulate the samples!");
 			System.exit(-1);
@@ -217,6 +214,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		}
 	}
 	
+	@Override
 	public void sampleInChildDoc(_ChildDoc d){
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		int wid, tid, xid;
@@ -311,6 +309,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 		return result;
 	}
 
+	@Override
 	protected double logLikelihoodByIntegrateTopics(_ChildDoc d){
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0;
