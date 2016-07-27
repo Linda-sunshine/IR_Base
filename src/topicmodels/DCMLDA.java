@@ -52,10 +52,8 @@ public class DCMLDA extends LDA_Gibbs {
 
 		int corpusSize = c.getSize();
 		
-		// m_docWordTopicProb = new
-		// double[corpusSize][number_of_topics][vocabulary_size];
-		// m_docWordTopicStats = new
-		// double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
 
 		// m_docTopicStats = new double[corpusSize][number_of_topics];
 
@@ -742,7 +740,9 @@ public class DCMLDA extends LDA_Gibbs {
 		
 		estThetaInDoc(d);
 		
-		likelihood = calculate_log_likelihood4Perplexity(d);
+		//likelihood = calculate_log_likelihood4Perplexity(d);
+		
+		likelihood = calculate_test_log_likelihood(d);
 		
 		return likelihood;
 	}
@@ -754,7 +754,9 @@ public class DCMLDA extends LDA_Gibbs {
 			Arrays.fill(m_docWordTopicStats[docID][k], 0);
 		}
 
-		d.setTopics4Gibbs(number_of_topics, 0);
+		int testLength = (int) (m_testWord4PerplexityProportion * d
+				.getTotalDocLength());
+		d.setTopics4GibbsTest(number_of_topics, 0, testLength);
 
 		for (_Word w : d.getWords()) {
 			int wid = w.getIndex();
@@ -764,6 +766,26 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 	}
 
+	protected double calculate_test_log_likelihood(_Doc d) {
+		double docLogLikelihood = 0;
+		
+		int docID = d.getID();
+		for (_Word w : d.getTestWords()) {
+			int wid = w.getIndex();
+			double wordLogLikelihood = 0;
+
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = d.m_topics[k]
+						* m_docWordTopicProb[docID][k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
 	protected double calculate_log_likelihood4Perplexity(_Doc d) {
 		double likelihood = 0;
 		
