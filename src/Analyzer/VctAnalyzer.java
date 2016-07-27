@@ -89,5 +89,4 @@ public class VctAnalyzer extends Analyzer {
 			m_featureNameIndex.remove(feature);
 		}
 	}
-
 }

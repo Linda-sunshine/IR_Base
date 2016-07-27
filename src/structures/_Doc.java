@@ -6,7 +6,6 @@ package structures;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
@@ -16,26 +15,17 @@ import utils.Utils;
  * @author lingong
  * General structure to present a document for DM/ML/IR
  */
-public class _Doc implements Comparable<_Doc> {
-	String m_name;
-	int m_ID; // unique id of the document in the collection
+public class _Doc extends _DocBase implements Comparable<_Doc> {
+	
 	String m_itemID; // ID of the product being commented
-	String m_title; //The short title of the review.
+	String m_title; //The short title of the document	
 	
-	String m_source; //The content of the source file.
 	int m_sourceType = 1; // source is 1 for Amazon (unlabeled) and 2 for newEgg (labeled)
-	int m_totalLength; //The total length of the document in tokens
-	
-	int m_y_label; // classification target, that is the index of the labels.
-	int m_predict_label; //The predicted result.
-	long m_timeStamp; //The timeStamp for this review.
 	
 	// added by Lin
 	private _SparseFeature[] m_x_posVct; // sparse vector projected by pos tagging 
 	private double[] m_x_aspVct; // aspect vector	
 		
-	//only used in learning to rank for random walk
-	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
@@ -73,7 +63,6 @@ public class _Doc implements Comparable<_Doc> {
 	}
 
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	protected _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
@@ -124,24 +113,6 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
-	public void setWeight(double w) {
-		m_weight = w;
-	}
-	
-	public double getWeight() {
-		return m_weight;
-	}
-	
-	//Get the ID of the document.
-	public int getID(){
-		return this.m_ID;
-	}
-	
-	//Set a new ID for the document.
-	public void setID(int id){
-		this.m_ID = id;
-	}
-	
 	public void setItemID(String itemID) {
 		m_itemID = itemID;
 	}
@@ -149,15 +120,7 @@ public class _Doc implements Comparable<_Doc> {
 	public String getItemID() {
 		return m_itemID;
 	}
-	
-	public void setName(String name) {
-		m_name = name;
-	}
-	
-	public String getName() {
-		return m_name;
-	}
-	
+		
 	public String getTitle(){
 		return m_title;
 	}
@@ -166,54 +129,8 @@ public class _Doc implements Comparable<_Doc> {
 		m_title = title;
 	}
 	
-	//Get the source content of a document.
-	public String getSource(){
-		return this.m_source;
-	}
-	
-	//Get the real label of the doc.
-	public int getYLabel() {
-		return this.m_y_label;
-	}
-	
-	//Set the Y value for the document, Y represents the class.
-	public void setYLabel(int label){
-		this.m_y_label = label;
-	}
-	
-	//Get the time stamp of the document.
-	public long getTimeStamp(){
-		return this.m_timeStamp;
-	}
-	
-	//Set the time stamp for the document.
-	public void setTimeStamp(long t){
-		this.m_timeStamp = t;
-	}
-	
-	//Get the sparse vector of the document.
-	public _SparseFeature[] getSparse(){
-		return this.m_x_sparse;
-	}
-	
 	public _SparseFeature[] getProjectedFv() {
 		return this.m_x_projection;
-	}
-	
-	public int[] getIndices() {
-		int[] indices = new int[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			indices[i] = m_x_sparse[i].m_index;
-		
-		return indices;
-	}
-	
-	public double[] getValues() {
-		double[] values = new double[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			values[i] = m_x_sparse[i].m_value;
-		
-		return values;
 	}
 	
 	public _Word[] getWords() {
@@ -224,47 +141,14 @@ public class _Doc implements Comparable<_Doc> {
 		return m_testWords;
 	}
 	
-	//return the unique number of features in the doc
-	public int getDocLength() {
-		return this.m_x_sparse.length;
-	}	
-	
 	public int getDocTestLength(){
 		return m_testLength;
-	}
-	
-	//Get the total number of tokens in a document.
-	public int getTotalDocLength(){
-		return this.m_totalLength;
 	}
 	
 	public int getDocInferLength(){
 		return this.m_words.length;
 	}
-	
-	void calcTotalLength() {
-		m_totalLength = 0;
-		for(_SparseFeature fv:m_x_sparse)
-			m_totalLength += fv.getValue();
-	}
-	
-	//Create the sparse vector for the document, taking value from different sections
-	public void createSpVct(ArrayList<HashMap<Integer, Double>> spVcts) {
-		m_x_sparse = Utils.createSpVct(spVcts);
-		calcTotalLength();
-	}
-	
-	//Create the sparse vector for the document.
-	public void createSpVct(HashMap<Integer, Double> spVct) {
-		m_x_sparse = Utils.createSpVct(spVct);
-		calcTotalLength();
-	}
-	
-	public void setSpVct(_SparseFeature[] x) {
-		m_x_sparse = x;
-		calcTotalLength();
-	}
-	
+		
 	public _SparseFeature[] m_x_sparse_infer;
 	public void createSparseVct4Infer(){
 		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
@@ -276,8 +160,7 @@ public class _Doc implements Comparable<_Doc> {
 			inferVct.put(featureIndex,  featureVal--);
 		}
 		
-		m_x_sparse_infer = Utils.createSpVct(inferVct);
-	
+		m_x_sparse_infer = Utils.createSpVct(inferVct);	
 	}
 	
 	public _SparseFeature[] getSparseVct4Infer(){
@@ -291,23 +174,6 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public _SparseFeature[] getPOSVct(){
 		return m_x_posVct;
-	}
-	
-	//Create a sparse vector with time features.
-	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double movingAvg, double norm){
-		int featureLength = this.m_x_sparse.length;
-		int timeLength = preDocs.size();
-		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength + 1];//to include the moving average
-		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);		
-		int count = 0;
-		for(_Doc doc:preDocs){
-			double value = norm * doc.getYLabel();
-			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);//time-based features won't be considered since m_x_sparse does not contain time-based features yet
-			tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, value);
-			count++;
-		}	
-		tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, movingAvg*norm);
-		this.m_x_sparse = tempSparse;
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
@@ -327,17 +193,6 @@ public class _Doc implements Comparable<_Doc> {
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
 	public _Stn getSentence(int index) {
 		return this.m_sentences[index];
-	}
-	
-	//Get the predicted result, which is used for comparison.
-	public int getPredictLabel() {
-		return this.m_predict_label;
-	}
-	
-	//Set the predict result back to the doc.
-	public int setPredictLabel(int label){
-		this.m_predict_label = label;
-		return this.m_predict_label;
 	}
 	
 	public boolean hasSegments() {
@@ -476,10 +331,6 @@ public class _Doc implements Comparable<_Doc> {
 			m_words[i] = t;
 		}
 	}
-	
-	public void clearSource() {
-		m_source = null;
-	}
 
 	@Override
 	public int compareTo(_Doc d) {
@@ -520,5 +371,12 @@ public class _Doc implements Comparable<_Doc> {
 	public double[] getAspVct(){
 		return m_x_aspVct;
 	}
-
+	
+	
+	/////////////////////////////////////////////////////////
+	//temporal structure for CLogisticRegressionWithDP
+	/////////////////////////////////////////////////////////
+	public int m_pCount = 0;
+	public double m_prob = 0;
+	
 }

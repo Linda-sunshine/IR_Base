@@ -45,7 +45,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f, lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2);
+		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f, lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4);
 	}
 
 	protected void calculateGradients(_AdaptStruct u){
@@ -59,8 +59,8 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		super.init();
 	 		
 	 	// this is also incorrect, since we should normalized it by total number of adaptation reviews
-	 	m_lambda1 /= m_userSize;
-	 	m_lambda2 /= m_userSize;
+	 	m_eta3 /= m_userSize;
+	 	m_eta4 /= m_userSize;
 	}
 	
 	//this is online training in each individual user

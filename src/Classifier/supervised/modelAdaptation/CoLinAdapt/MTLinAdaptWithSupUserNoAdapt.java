@@ -51,7 +51,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return m_dim*2*m_userList.size() + m_gWeights.length;
 	}
 		

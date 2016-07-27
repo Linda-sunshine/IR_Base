@@ -26,8 +26,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	double[] m_sWeights; // Weights for the super user.
 
-	double m_lambda1; // Scaling coefficient for R^1(A_s)
-	double m_lambda2; // Shifting coefficient for R^1(A_s)
+//	double m_lambda1; // Scaling coefficient for R^1(A_s)
+//	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
 	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
 	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
@@ -36,9 +36,7 @@ public class MTLinAdapt extends CoLinAdapt {
 						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
-		
-		m_lambda1 = 0.5;
-		m_lambda2 = 0.1;
+
 		m_LNormFlag = true;
 	}
 	
@@ -46,28 +44,21 @@ public class MTLinAdapt extends CoLinAdapt {
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		m_lambda1 = 0.5;
-		m_lambda2 = 0.1;
 		m_LNormFlag = true;
 	}
 	
 	public void setLNormFlag(boolean b){
 		m_LNormFlag = b;
-	}
-	
-	public void setRsTradeOffs(double lmd1, double lmd2){
-		m_lambda1 = lmd1;
-		m_lambda2 = lmd2;
-	}
+	}	
 	
 	@Override
 	public String toString() {
 		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
-				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
+				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return m_userList.size()*m_dim*2 + m_dimSup*2;
 	}
 	
@@ -166,8 +157,8 @@ public class MTLinAdapt extends CoLinAdapt {
 		int offset = m_userList.size()*m_dim*2; // Access the As.
 		double rs = 0;
 		for(int i=0; i < m_dimSup; i++){
-			rs += m_lambda1 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
-			rs += m_lambda2 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
+			rs += m_eta3 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
+			rs += m_eta4 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
 		}
 		return rs;
 	}
@@ -176,8 +167,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	protected void gradientByRs(){
 		int offset = m_userList.size() * m_dim * 2;
 		for(int i=0; i < m_dimSup; i++){
-			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
-			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
+			m_g[offset + i] += 2 * m_eta3 * (m_A[offset + i] - 1);
+			m_g[offset + i + m_dimSup] += 2 * m_eta4 * m_A[offset + i + m_dimSup];
 		}
 	}
 	

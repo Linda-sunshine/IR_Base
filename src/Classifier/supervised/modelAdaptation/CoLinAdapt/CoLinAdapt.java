@@ -51,7 +51,7 @@ public class CoLinAdapt extends LinAdapt {
 	}
 	
 	@Override
-	int getVSize() {
+	protected int getVSize() {
 		return 2*m_dim*m_userList.size();
 	}
 	

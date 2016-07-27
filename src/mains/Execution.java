@@ -10,7 +10,6 @@ import java.text.ParseException;
 import Analyzer.Analyzer;
 import Analyzer.DocAnalyzer;
 import Analyzer.VctAnalyzer;
-import Analyzer.jsonAnalyzer;
 import Classifier.BaseClassifier;
 import Classifier.metricLearning.LinearSVMMetricLearning;
 import Classifier.semisupervised.GaussianFields;
@@ -22,15 +21,15 @@ import Classifier.supervised.SVM;
 import influence.PageRank;
 import structures.Parameter;
 import structures._Corpus;
-import topicmodels.HTMM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Variational;
-import topicmodels.LRHTMM;
 import topicmodels.TopicModel;
-import topicmodels.pLSA;
 import topicmodels.twoTopic;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.LDA.LDA_Variational;
+import topicmodels.markovmodel.HTMM;
+import topicmodels.markovmodel.LRHTMM;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 
 /**
  * @author hongning
@@ -55,10 +54,7 @@ public class Execution  {
 			corpus = analyzer.getCorpus();
 		} else {
 			/***Load the data from text file***/
-			if (param.m_suffix.equals(".json"))
-				analyzer = new jsonAnalyzer(param.m_tokenModel,param.m_classNumber, param.m_featureFile, param.m_Ngram, param.m_lengthThreshold, stnModel, posModel);	
-			else
-				analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
+			analyzer = new DocAnalyzer(param.m_tokenModel, stnModel, posModel, param.m_classNumber,param.m_featureFile, param.m_Ngram, param.m_lengthThreshold);
 			((DocAnalyzer)analyzer).setReleaseContent(!param.m_weightScheme.equals("PR"));
 			if (param.m_featureFile==null) {
 				/****Pre-process the data.*****/
@@ -70,14 +66,13 @@ public class Execution  {
 				
 				((DocAnalyzer)analyzer).LoadStopwords(param.m_stopwords);
 				analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
-				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_DFthreshold); //Select the features.
+				analyzer.featureSelection(param.m_featureFile, param.m_featureSelection, param.m_startProb, param.m_endProb, param.m_maxDF, param.m_minDF); //Select the features.
 			}
 			
 			//Collect vectors for documents.
 			System.out.println("Creating feature vectors, wait...");			
 			analyzer.LoadDirectory(param.m_folder, param.m_suffix); //Load all the documents as the data set.
 			analyzer.setFeatureValues(param.m_featureValue, param.m_norm);
-			analyzer.setTimeFeatures(param.m_window);
 			
 			corpus = analyzer.returnCorpus(param.m_featureStat);
 		}
@@ -144,8 +139,7 @@ public class Execution  {
 		} else if (param.m_style.equals("TM")) {
 			TopicModel model = null;
 			if (param.m_model.equals("2topic")) {
-				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 
-						param.m_lambda, analyzer.getBackgroundProb());
+				model = new twoTopic(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, param.m_lambda);
 			} else if (param.m_model.equals("pLSA")) {
 				if (param.m_multithread == false) {
 					model = new pLSA(param.m_maxmIterations, param.m_converge, param.m_beta, corpus, 

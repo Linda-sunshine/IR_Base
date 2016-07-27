@@ -20,15 +20,18 @@ import structures._SparseFeature;
 import topicmodels.languageModelBaseLine;
 import utils.Utils;
 
-public class ParentChildAnalyzer extends jsonAnalyzer {
+/**
+ * 
+ * @author Renqin Cai
+ * Analyzer to load article comment pairs
+ */
+public class ParentChildAnalyzer extends DocAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 
 	public static int ChildDocFeatureSize = 6;
-	public ParentChildAnalyzer(String tokenModel, int classNo,
-			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
-		//added by Renqin
-		//null used to initialize stnModel and posModel
-		super(tokenModel, classNo, providedCV, Ngram, threshold, null, null);
+	public ParentChildAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		parentHashMap = new HashMap<String, _ParentDoc>();
 	}
 
@@ -57,14 +60,12 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
-				// LoadDoc(f.getAbsolutePath());
 				loadChildDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadChildDirectory(folder, suffix);
 			}
 		}
-		System.out.format("loading %d comments from %s\n", m_corpus.getSize()
-				- current, folder);
+		System.out.format("loading %d comments from %s\n", m_corpus.getSize() - current, folder);
 
 		filterParentAndChildDoc();
 	}
@@ -73,7 +74,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
-		JSONObject json = LoadJson(fileName);
+		JSONObject json = LoadJSON(fileName);
 		String title = Utils.getJSONValue(json, "title");
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
@@ -106,7 +107,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
-		JSONObject json = LoadJson(fileName);
+		JSONObject json = LoadJSON(fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
@@ -148,7 +149,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
-		JSONObject json = LoadJson(fileName);
+		JSONObject json = LoadJSON(fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
@@ -160,7 +161,7 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 	
 	
 	public void filterParentAndChildDoc(){
-		System.out.println("before filtering\t"+m_corpus.getSize());
+		System.out.println("Before filtering\t"+m_corpus.getSize());
 		int corpusSize = m_corpus.getCollection().size();
 		ArrayList<Integer> removeIndexList = new ArrayList<Integer>();
 		
@@ -190,157 +191,6 @@ public class ParentChildAnalyzer extends jsonAnalyzer {
 		}
 
 		System.out.println("after filtering\t"+m_corpus.getSize());
-
-	}
-	
-	public void analyzeBurstiness(String filePrefix){
-		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
-		
-		String fileName = filePrefix+"/burstiness.txt";
-		int vocalSize = m_corpus.getFeatureSize();
-		System.out.println("vocal size\t"+vocalSize);
-		
-		int corpusSize = 0;
-		
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc4DCM){
-				corpusSize ++;
-				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
-				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					_SparseFeature[] sfs = cDoc.getSparse();
-					for(_SparseFeature sf:sfs){
-						int wid = sf.getIndex();
-						double featureTimes = sf.getValue();
-						if(!wordFrequencyMap.containsKey(wid))
-							wordFrequencyMap.put(wid, featureTimes);
-						else{
-							double oldFeatureTimes = wordFrequencyMap.get(wid);
-							oldFeatureTimes += featureTimes;
-							wordFrequencyMap.put(wid, oldFeatureTimes);
-						}
-							
-					}
-				}
-				
-				_SparseFeature[] sfs = pDoc.getSparse();
-				for(_SparseFeature sf:sfs){
-					int wid = sf.getIndex();
-					double featureTimes = sf.getValue();
-					if(!wordFrequencyMap.containsKey(wid))
-						wordFrequencyMap.put(wid, featureTimes);
-					else{
-						double oldFeatureTimes = wordFrequencyMap.get(wid);
-						oldFeatureTimes += featureTimes;
-						wordFrequencyMap.put(wid, oldFeatureTimes);
-					}
-						
-				}
-				
-				double zeroWordNum = vocalSize-wordFrequencyMap.size();
-				
-				for(int wid:wordFrequencyMap.keySet()){
-					double featureTimes = wordFrequencyMap.get(wid);
-					if(!burstinessMap.containsKey(featureTimes))
-						burstinessMap.put(featureTimes, 1.0);
-					else{
-						double value = burstinessMap.get(featureTimes);
-						burstinessMap.put(featureTimes, value+1);
-					}
-						
-				}
-				
-				if(!burstinessMap.containsKey((double)0)){
-					burstinessMap.put((double)0, zeroWordNum);
-				}else{
-					zeroWordNum += burstinessMap.get((double)0);
-					burstinessMap.put((double)0, zeroWordNum);
-				}
-		
-			}
-			
-		}
-		
-		double totalFeatureTimes = vocalSize*corpusSize;
-		for(double featureTimes:burstinessMap.keySet()){
-			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
-			burstinessMap.put(featureTimes, featureTimesProb);
-		}
-		
-		try{
-			PrintWriter pw = new PrintWriter(new File(fileName));
-			for(double featureTiems:burstinessMap.keySet()){
-				pw.println(featureTiems+":"+burstinessMap.get(featureTiems));
-			}
-			pw.flush();
-			pw.close();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-		
 	}
 
-	public void generateFakeCorpus(String filePrefix){
-		languageModelBaseLine lm = new languageModelBaseLine(m_corpus, 0);
-		lm.generateReferenceModel();
-		int docIndex = 0;
-		
-		File fakeCorpusFolder = new File(filePrefix+"fakeCorpus");
-		if(!fakeCorpusFolder.exists()){
-			System.out.println("creating directory\t"+fakeCorpusFolder);
-			fakeCorpusFolder.mkdir();
-		}	
-		
-		ArrayList<Integer> widList = new ArrayList<Integer>(lm.m_wordSstat.keySet());
-		
-		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ParentDoc4DCM){
-				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-				int docLength = 0;
-				docLength += pDoc.getTotalDocLength();
-				for(_ChildDoc cDoc:pDoc.m_childDocs)
-					docLength += cDoc.getTotalDocLength();
-				generateFakeDoc(fakeCorpusFolder, docLength, lm, widList, docIndex);
-				docIndex ++;
-			}
-		}
-	}
-	
-	public void generateFakeDoc(File folder, int docLength, languageModelBaseLine lm, ArrayList<Integer>widList, int docIndex){
-		String fakeDocName = docIndex+".txt";
-		
-		try{
-			
-			PrintWriter pw = new PrintWriter(new File(folder, fakeDocName));
-			
-			for(int i=0; i<docLength; i++){
-				int wid = generateFakeWord(lm, widList);
-//				System.out.println(wid+"wordId");
-				pw.print(wid);
-				pw.print("\t");
-			}
-			
-			pw.flush();
-			pw.close();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
-	}
-	
-	public int generateFakeWord(languageModelBaseLine lm, ArrayList<Integer>widList){
-		int wid = 0;
-		
-		Random t_rand = new Random();
-		double prob = t_rand.nextDouble();
-		for(int t_wid:widList){
-			wid = t_wid;
-			double wordProb = lm.m_wordSstat.get(t_wid);
-			prob -= wordProb;
-			if(prob<=0){
-				break;
-			}
-		}
-		
-		return wid;
-	}
 }

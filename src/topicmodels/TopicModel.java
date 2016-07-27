@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
