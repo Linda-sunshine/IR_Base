@@ -1,21 +1,19 @@
 package structures;
 
-import cern.jet.random.tdouble.Normal;
-
 public class _thetaStar {
 	int m_index;
 	int m_dim;
 	int m_memSize;
 
-	double[] m_abNuA;
 	double[] m_beta;
 	double m_proportion;
 	
-	public _thetaStar(int dim, double[] abNuA){
+	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
+	
+	public _thetaStar(int dim){
 		m_dim = dim;
 		m_memSize = 0;
 		m_beta = new double[m_dim];
-		m_abNuA = abNuA;
 	}
 	
 	public int getMemSize(){
@@ -41,13 +39,25 @@ public class _thetaStar {
 	public int getIndex(){
 		return m_index;
 	}
-
-	public void sampleBeta(Normal normal){
-		for(int i=0; i<m_dim; i++)
-			m_beta[i] = normal.nextDouble(m_abNuA[0], m_abNuA[0]);
-	}
 	
 	public double[] getModel() {
 		return m_beta;
+	}
+	
+	public void resetCount() {
+		m_pCount = 0;
+		m_nCount = 0;
+	}
+	
+	public void incPosCount() {
+		m_pCount++;
+	}
+	
+	public void incNegCount() {
+		m_nCount++;
+	}
+	
+	public String showStat() {
+		return String.format("%d(%.2f,%.1f)", m_memSize, m_pCount/(m_pCount+m_nCount), (m_pCount+m_nCount)/m_memSize);
 	}
 }

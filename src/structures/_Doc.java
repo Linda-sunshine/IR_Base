@@ -684,5 +684,13 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public double getPosRatio(){
 		return m_posRatio;
+	}	
+
+	public int m_pCount = 0;
+	public double m_prob = 0;
+	public ArrayList<Double> m_probs = new ArrayList<Double>();
+	
+	public void addOneProb(double p){
+		m_probs.add(p);
 	}
 }

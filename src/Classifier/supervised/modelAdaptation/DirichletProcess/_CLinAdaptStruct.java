@@ -1,12 +1,13 @@
-package Classifier.supervised.modelAdaptation.CoLinAdapt;
+package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import structures._User;
 
-public class _ClusterLinAdaptStruct extends _LinAdaptStruct {
+public class _CLinAdaptStruct extends _LinAdaptStruct {
 
 	static double[] sharedA;//this stores shared transformation operation across all uesrs	
 	int m_ttlUserSize, m_clusterSize; // total user size, for indexing user cluster's transformation matrix.
-	public _ClusterLinAdaptStruct(_User user, int dim, int id, int ttlUserSize, int clusterSize) {
+	public _CLinAdaptStruct(_User user, int dim, int id, int ttlUserSize, int clusterSize) {
 		super(user, dim);
 		m_id = id;
 		m_ttlUserSize = ttlUserSize;

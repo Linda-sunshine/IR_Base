@@ -221,6 +221,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		m_perf = new double[m_classNo * 2];
+		m_microStat = new _PerformanceStat(m_classNo);
+
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
@@ -293,7 +295,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		// macro average
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++){
-			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
+			System.out.format("Class %d\t%.4f\t", i, macroF1[i]/count);
 			m_perf[i+m_classNo] = macroF1[i]/count;
 		}
 		System.out.println();

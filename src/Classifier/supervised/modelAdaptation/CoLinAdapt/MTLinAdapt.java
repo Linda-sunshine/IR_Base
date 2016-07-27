@@ -144,16 +144,19 @@ public class MTLinAdapt extends CoLinAdapt {
 
 		if(!m_LNormFlag)
 			L *= ui.getAdaptationSize();
-
+		double R1 = calculateR1(ui);
+		return R1 - L;
+	}
+	
+	protected double calculateR1(_CoLinAdaptStruct ui){
 		//Add regularization parts.
 		double R1 = 0;
 		for(int k=0; k<m_dim; k++){
 			R1 += m_eta1 * (ui.getScaling(k)-1) * (ui.getScaling(k)-1);//(a[i]-1)^2
 			R1 += m_eta2 * ui.getShifting(k) * ui.getShifting(k);//b[i]^2
 		}
-		return (R1 - L);
+		return R1;
 	}
-	
 	@Override
 	// Since I cannot access the method in LinAdapt or in RegLR, I Have to rewrite.
 	protected void calculateGradients(_AdaptStruct u){
@@ -161,9 +164,16 @@ public class MTLinAdapt extends CoLinAdapt {
 		gradientByR1(u);
 	}
 	
+	public int getIndividualOffset(_CoLinAdaptStruct ui){
+		return ui.getId()*m_dim*2;
+	}
+	public int getSupOffset(){
+		return m_userList.size()*m_dim*2;
+	}
+	
 	// Calculate the R1 for the super user, As.
 	protected double calculateRs(){
-		int offset = m_userList.size()*m_dim*2; // Access the As.
+		int offset = getSupOffset(); // Access the As.
 		double rs = 0;
 		for(int i=0; i < m_dimSup; i++){
 			rs += m_lambda1 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
@@ -174,7 +184,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	// Gradients for the gs.
 	protected void gradientByRs(){
-		int offset = m_userList.size() * m_dim * 2;
+		int offset = getSupOffset();
 		for(int i=0; i < m_dimSup; i++){
 			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
 			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
@@ -184,10 +194,10 @@ public class MTLinAdapt extends CoLinAdapt {
 	// Gradients from loglikelihood, contributes to both individual user's gradients and super user's gradients.
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
+		int offset = getIndividualOffset(ui);//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offsetSup = getSupOffset();
 		
 		int n, k, s; // feature index and feature group index		
-		int offset = 2*m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		int offsetSup = 2*m_dim*m_userList.size();
 		double delta = weight*(review.getYLabel() - logit(review.getSparse(), ui));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(ui);

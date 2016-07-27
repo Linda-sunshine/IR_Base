@@ -270,7 +270,7 @@ public abstract class BaseClassifier {
 		System.out.println("Micro F1:");
 		for(int i=0; i<m_classNo; i++){
 			m_perf[i] = m_microStat.getF1(i);
-			System.out.format("Class %d: %.4f\t", i, m_microStat.getF1(i));
+			System.out.format("Class %d\t%.4f\t", i, m_microStat.getF1(i));
 		}
 	}
 	

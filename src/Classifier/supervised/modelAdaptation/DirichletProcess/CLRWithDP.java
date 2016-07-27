@@ -1,0 +1,575 @@
+package Classifier.supervised.modelAdaptation.DirichletProcess;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tfloat.FloatUniform;
+import structures._Doc;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
+import structures._thetaStar;
+import utils.Utils;
+
+public class CLRWithDP extends LinAdapt {
+	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
+	protected int m_numberOfIterations = 50;
+	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
+	protected double m_converge = 1e-6;
+	protected double m_alpha = .1; // Scaling parameter of DP.
+	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
+	protected NormalPrior m_G0; // prior distribution
+	
+	//structure for multi-threading
+	protected boolean m_multiThread = true; // if we will use multi-threading in M-step
+	protected double[] m_fValues;
+	protected double[][] m_gradients;
+	
+	// Parameters of the prior for the intercept and coefficients.
+	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting in adaptation based models
+	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
+	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
+
+	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
+		super(classNo, featureSize, featureMap, globalModel, null);
+		m_dim = m_featureSize + 1; // to add the bias term
+	}
+	
+	protected void assignClusterIndex(){
+		for(int i=0; i<m_kBar; i++)
+			m_thetaStars[i].setIndex(i);
+	}
+	
+	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
+	protected void calculateClusterProbPerUser(){
+		double prob;
+		_DPAdaptStruct user;
+		double[] probs = new double[m_kBar];
+		_thetaStar oldTheta;
+		
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			
+			oldTheta = user.getThetaStar();
+			for(int k=0; k<m_kBar; k++){
+				user.setThetaStar(m_thetaStars[k]);
+				prob = calcLogLikelihood(user);
+				prob += Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+				probs[k] = Math.exp(prob);//this will be in real space!
+			}
+			Utils.L1Normalization(probs);
+			user.setClusterPosterior(probs);
+			
+			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
+		}
+	}
+	
+	protected double calculateR1(){
+		double R1 = 0;
+		for(int i=0; i<m_kBar; i++)
+			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, 0);//the last is dummy input
+		
+		// Gradient by the regularization.
+		if (m_G0.hasVctMean()) {
+			for(int i=0; i<m_kBar*m_dim; i++) 
+				m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
+		} else {
+			for(int i=0; i<m_kBar*m_dim; i++)
+				m_g[i] += m_eta1 * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
+		}
+		return R1;
+	}
+	
+	int findThetaStar(_thetaStar theta) {
+		for(int i=0; i<m_kBar; i++)
+			if (theta == m_thetaStars[i])
+				return i;
+		
+		System.err.println("[Error]Hit unknown theta star when searching!");
+		return -1;// impossible to hit here!
+	}
+	
+	// Sample thetaStars.
+	protected void sampleThetaStars(){
+		for(int m=m_kBar; m<m_kBar+m_M; m++){
+			if (m_thetaStars[m] == null) {
+				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes for adaptation based models
+					m_thetaStars[m] = new _thetaStar(2*m_dim);
+				else
+					m_thetaStars[m] = new _thetaStar(m_dim);
+			}
+			m_G0.sampling(m_thetaStars[m].getModel());
+		}
+	}
+	
+	// Sample one instance's cluster assignment.
+	protected void sampleOneInstance(_DPAdaptStruct user){
+		double likelihood, logSum = 0;
+		int k;
+		
+		//reset thetaStars
+		sampleThetaStars();
+		for(k=0; k<m_kBar+m_M; k++){
+			user.setThetaStar(m_thetaStars[k]);
+			likelihood = calcLogLikelihood(user);
+			
+			if (k<m_kBar)
+				likelihood += Math.log(m_thetaStars[k].getMemSize());
+			else
+				likelihood += m_pNewCluster;
+			 
+			m_thetaStars[k].setProportion(likelihood);//this is in log space!
+			
+			if (k==0)
+				logSum = likelihood;
+			else
+				logSum = Utils.logSum(logSum, likelihood);
+		}
+		
+		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
+		
+		k = 0;
+		double newLogSum = m_thetaStars[0].getProportion();
+		do {
+			if (newLogSum>=logSum)
+				break;
+			k++;
+			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
+		} while (k<m_kBar+m_M);
+		
+		if (k==m_kBar+m_M)
+			k--; // we might hit the very last
+		
+		m_thetaStars[k].updateMemCount(1);
+		user.setThetaStar(m_thetaStars[k]);
+		if(k >= m_kBar){
+			swapTheta(m_kBar, k);
+			m_kBar++;
+		}
+	}	
+	
+	void swapTheta(int a, int b) {
+		_thetaStar cTheta = m_thetaStars[a];
+		m_thetaStars[a] = m_thetaStars[b];
+		m_thetaStars[b] = cTheta;// kBar starts from 0, the size decides how many are valid.
+	}
+	
+	// The main MCMC algorithm, assign each user to clusters.
+	protected void calculate_E_step(){
+		_thetaStar curThetaStar;
+		_DPAdaptStruct user;
+		
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			curThetaStar = user.getThetaStar();
+			curThetaStar.updateMemCount(-1);
+			
+			if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
+				swapTheta(m_kBar-1, findThetaStar(curThetaStar)); // move it back to \theta*
+				m_kBar --;
+			}
+			sampleOneInstance(user);
+		}
+	}
+	
+	protected double logLikelihood() {
+		_DPAdaptStruct user;
+		double fValue = 0;
+		
+		// Use instances inside one cluster to update the thetastar.
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			fValue -= calcLogLikelihood(user);
+			gradientByFunc(user); // calculate the gradient by the user.
+		}
+		
+		return fValue;
+	}
+	
+	protected double logLikelihood_MultiThread() {
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+		
+		//init the shared structure		
+		Arrays.fill(m_fValues, 0);
+		for(int k=0; k<numberOfCores; ++k){
+			Arrays.fill(m_gradients[k], 0);
+			
+			threads.add((new Thread() {
+				int core, numOfCores;
+				double[] m_gradient, m_fValue;
+				
+				public void run() {
+					_DPAdaptStruct user;
+					try {						
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_DPAdaptStruct)m_userList.get(i+core);
+							m_fValue[core] -= calcLogLikelihood(user);
+							
+							for(_Review review:user.getReviews()){
+								if (review.getType() != rType.ADAPTATION)
+									continue;								
+								
+								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
+							}			
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores, double[] gradient, double[] f) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					this.m_gradient = gradient;
+					this.m_fValue = f;
+					
+					return this;
+				}
+			}).initialize(k, numberOfCores, m_gradients[k], m_fValues));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(int k=0;k<numberOfCores;++k)
+			Utils.scaleArray(m_g, m_gradients[k], 1);
+		return Utils.sumOfArray(m_fValues);
+	}
+	
+	// Sample the weights given the cluster assignment.
+	protected double calculate_M_step(){
+		int[] iflag = {0}, iprint = {-1, 3};
+		double fValue, oldFValue = Double.MAX_VALUE;
+		int displayCount = 0;		
+		
+		initLBFGS();// Init for lbfgs.
+		assignClusterIndex();
+		
+		try{
+			do{
+				Arrays.fill(m_g, 0); // initialize gradient
+				
+				//regularization part
+				fValue = calculateR1();
+				if (m_multiThread)
+					fValue += logLikelihood_MultiThread();
+				else
+					fValue += logLikelihood();
+				
+				if (m_displayLv==2) {
+					System.out.print("Fvalue is " + fValue + "\t");
+					gradientTest();
+				} else if (m_displayLv==1) {
+					if (fValue<oldFValue)
+						System.out.print("o");
+					else
+						System.out.print("x");
+					
+					if (++displayCount%100==0)
+						System.out.println();
+				} 
+				
+				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
+				setThetaStars();
+				oldFValue = fValue;
+				
+			} while(iflag[0] != 0);
+			System.out.println();
+		} catch(ExceptionWithIflag e) {
+			System.out.println("LBFGS fails!!!!");
+			e.printStackTrace();
+		}	
+		return oldFValue;
+	}
+	
+	// The main EM algorithm to optimize cluster assignment and distribution parameters.
+	public double train(){
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+		
+		init(); // clear user performance and init cluster assignment		
+		
+		// Burn in period.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			calculate_M_step();
+		}
+		
+		// EM iteration.
+		for(int i=0; i<m_numberOfIterations; i++){
+			// Cluster assignment, thinning to reduce auto-correlation.
+			calculate_E_step();
+			
+			// Optimize the parameters
+			curLikelihood = calculate_M_step();
+
+			delta = (lastLikelihood - curLikelihood)/curLikelihood;
+			
+			if (i%m_thinning==0)
+				evaluateModel();
+			
+			printInfo();
+			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+			if(Math.abs(delta) < m_converge)
+				break;
+			lastLikelihood = curLikelihood;
+		}
+		
+		evaluateModel(); // we do not want to miss the last sample?!
+//		setPersonalizedModel();
+		return curLikelihood;
+	}
+	
+	@Override
+	protected int getVSize() {
+		return m_kBar*m_dim;
+	}
+	
+	@Override
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
+		gradientByFunc(u, review, weight, m_g);
+	}
+	
+	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
+		
+		int n; // feature index
+		int cIndex = user.getThetaStar().getIndex();
+		if(cIndex <0 || cIndex >= m_kBar)
+			System.err.println("Error,cannot find the theta star!");
+		
+		int offset = m_dim*cIndex;
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
+		
+		//Bias term.
+		g[offset] -= delta; //x0=1
+
+		//Traverse all the feature dimension to calculate the gradient.
+		for(_SparseFeature fv: review.getSparse()){
+			n = fv.getIndex() + 1;
+			g[offset + n] -= delta * fv.getValue();
+		}
+	}
+	
+	@Override
+	protected double gradientTest() {
+		double mag = 0 ;
+		for(int i=0; i<m_g.length; i++)
+			mag += m_g[i]*m_g[i];
+
+		if (m_displayLv==2)
+			System.out.format("Gradient magnitude: %.5f\n", mag/m_kBar);
+		return mag;
+	}
+	
+	protected void initPriorG0() {
+		//m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
+		m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
+	}
+	
+	// Assign cluster assignment to each user.
+	protected void initThetaStars(){
+		initPriorG0();
+		
+		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
+		_DPAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			sampleOneInstance(user);
+		}		
+	}
+	
+	@Override
+	protected void init(){
+		super.init();
+		initThetaStars();
+		
+		//init the structures for multi-threading
+		if (m_multiThread) {
+			int numberOfCores = Runtime.getRuntime().availableProcessors();
+			m_fValues = new double[numberOfCores];
+			m_gradients = new double[numberOfCores][]; 
+		}
+	}
+	
+	protected void accumulateClusterModels(){
+		m_models = new double[getVSize()];
+		for(int i=0; i<m_kBar; i++)
+			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*i, m_dim);
+	}
+	
+	//very inefficient, a per cluster optimization procedure will not have this problem
+	@Override
+	protected void initLBFGS(){
+		if (m_g==null || m_g.length!=getVSize()) {
+			m_g = new double[getVSize()];
+			m_diag = new double[getVSize()];
+			
+			if (m_multiThread) {
+				int numberOfCores = Runtime.getRuntime().availableProcessors();
+				for(int k=0; k<numberOfCores; k++)
+					m_gradients[k] = new double[getVSize()];
+			}
+		}
+		
+		accumulateClusterModels();
+	}
+
+	@Override
+	public void loadUsers(ArrayList<_User> userList) {
+		m_userList = new ArrayList<_AdaptStruct>();
+		
+		for(_User user:userList)
+			m_userList.add(new _DPAdaptStruct(user));
+		m_pWeights = new double[m_gWeights.length];		
+	}
+	
+	@Override	
+	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
+		double sum = Utils.dotProduct(((_DPAdaptStruct)u).getThetaStar().getModel(), fvs, 0);
+		return Utils.logistic(sum);
+	}
+
+	// Set a bunch of parameters.
+	public void setAlpha(double a){
+		m_alpha = a;
+	}
+	
+	public void setBurnIn(int n){
+		m_burnIn = n;
+	}
+	
+	public void setM(int m){
+		m_M = m;
+	}
+	
+	public void setNumberOfIterations(int num){
+		m_numberOfIterations = num;
+	}
+	public void setsdA(double v){
+		m_abNuA[1] = v;
+	}
+	@Override
+	protected void setPersonalizedModel() {
+		_DPAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			user.setPersonalizedModel(user.getThetaStar().getModel());
+		}
+	}
+	
+	// Assign the optimized weights to the cluster.
+	protected void setThetaStars(){
+		double[] beta;
+		for(int i=0; i<m_kBar; i++){
+			beta = m_thetaStars[i].getModel();
+			System.arraycopy(m_models, i*m_dim, beta, 0, m_dim);
+		}
+	}
+	
+	//apply current model in the assigned clusters to users
+	protected void evaluateModel() {
+		System.out.println("[Info]Accumulating evaluation results during sampling...");
+
+		//calculate cluster posterior p(c|u)
+		calculateClusterProbPerUser();
+		
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_DPAdaptStruct user;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_DPAdaptStruct)m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									user.evaluate(r); // evoke user's own model
+								}
+							}							
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("CLRWithDP[dim:%d,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
+	}
+	
+	public void printInfo(){
+		//clear the statistics
+		for(int i=0; i<m_kBar; i++) 
+			m_thetaStars[i].resetCount();
+		
+		//collect statistics across users
+		_thetaStar theta = null;
+		for(int i=0; i<m_userList.size(); i++) {
+			_DPAdaptStruct user = (_DPAdaptStruct)m_userList.get(i);
+			theta = user.getThetaStar();
+			
+			for(_Review review:user.getReviews()){
+				if (review.getType() != rType.ADAPTATION)
+					continue; // only touch the adaptation data
+				else if (review.getYLabel()==1)
+					theta.incPosCount();
+				else
+					theta.incNegCount();
+			}
+		}
+		
+		System.out.print("[Info]Clusters:");
+		for(int i=0; i<m_kBar; i++)
+			System.out.format("%s\t", m_thetaStars[i].showStat());	
+		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+	}
+}

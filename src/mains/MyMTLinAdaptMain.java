@@ -58,15 +58,14 @@ public class MyMTLinAdaptMain {
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-	
-		String[] opts = new String[]{"G", "D", "G+D"};
-		for(String i: opts){
+//	
+//		String[] opts = new String[]{"G", "D", "G+D"};
+//		for(String i: opts){
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.setReleaseContent(true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 //		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder); // load user and reviews
-		analyzer.setDFScheme(i);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -79,7 +78,5 @@ public class MyMTLinAdaptMain {
 		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 		mtlinadaptsup.train();
 		mtlinadaptsup.test();
-		}
-	
 	}
 }
