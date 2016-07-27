@@ -59,17 +59,18 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 			double As[];
 			for(int k=0; k<m_cluPosterior.length; k++) {
 				As = CLRWithDP.m_thetaStars[k].getModel();
-				sum = As[0]*MTCLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
 				for(_SparseFeature fv: doc.getSparse()){
 					n = fv.getIndex() + 1;
 					m = m_featureGroupMap[n];
-					sum += (As[m]*MTCLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 				}
 				
 				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}
 		}
 		
+		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
 		
@@ -78,6 +79,11 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 	
 	@Override
 	public int predict(_Doc doc) {
-		return (doc.m_prob/doc.m_pCount)>=0.5 ? 1:0;
+		double prob = 0;
+		if (doc.m_pCount==0)//this document has not been tested yet??
+			prob = evaluate(doc);
+		else
+			prob = doc.m_prob/doc.m_pCount;
+		return prob>=0.5 ? 1:0;
 	}
 }

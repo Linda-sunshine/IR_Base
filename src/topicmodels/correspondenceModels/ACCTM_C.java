@@ -20,11 +20,13 @@ import utils.Utils;
 
 public class ACCTM_C extends ACCTM {
 	HashMap<Integer, Double> m_wordSstat;
-
+	double[] m_gamma;
+	
 	public ACCTM_C(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma);
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag);
 	
+		m_gamma = gamma;
 		m_topicProbCache = new double[number_of_topics+1];
 		m_wordSstat = new HashMap<Integer, Double>();
 	}
@@ -146,7 +148,7 @@ public class ACCTM_C extends ACCTM {
 			
 			normalizedProb = 0;
 			double pLambdaZero = childXInDocProb(0, cDoc);
-			double pLambdaOne = childXInDocProb(1, cDoc);
+			double pLambdaOne = 1 - pLambdaZero; 
 			
 			for(tid=0; tid<number_of_topics; tid++){
 				double pWordTopic = childWordByTopicProb(tid, wid);

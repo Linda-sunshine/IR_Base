@@ -25,7 +25,7 @@ public class NormalPrior {
 	
 	public void sampling(double[] target) {
 		for(int i=0; i<target.length; i++) {
-			if (m_meansA==null)
+			if (m_meansA==null)//we have not specified the mean vector yet
 				target[i] = m_normal.nextDouble();
 			else
 				target[i] = m_normal.nextDouble(m_meansA[i], m_sdA);

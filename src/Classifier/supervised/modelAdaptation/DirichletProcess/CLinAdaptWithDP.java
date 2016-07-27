@@ -27,7 +27,9 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	
 	@Override
 	protected void accumulateClusterModels(){
-		m_models = new double[getVSize()];
+		if (m_models==null || m_models.length!=getVSize())
+			m_models = new double[getVSize()];
+		
 		for(int i=0; i<m_kBar; i++)
 			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
 	}
@@ -101,8 +103,7 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	@Override
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
 		int k, n;
-		_DPAdaptStruct user = (_DPAdaptStruct)u;
-		double[] Au = user.getThetaStar().getModel();
+		double[] Au = ((_DPAdaptStruct)u).getThetaStar().getModel();
 		double value = Au[0]*m_gWeights[0] + Au[m_dim];//Bias term: w_s0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;

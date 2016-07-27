@@ -26,6 +26,7 @@ public class CLRWithDP extends LinAdapt {
 	protected double m_alpha = .1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
+	protected boolean m_vctMean = true; // flag to determine whether we should use w_0 as prior for w_u
 	
 	//structure for multi-threading
 	protected boolean m_multiThread = true; // if we will use multi-threading in M-step
@@ -60,8 +61,7 @@ public class CLRWithDP extends LinAdapt {
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
-				prob = calcLogLikelihood(user);
-				prob += Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+				prob = calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
@@ -77,10 +77,10 @@ public class CLRWithDP extends LinAdapt {
 			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, 0);//the last is dummy input
 		
 		// Gradient by the regularization.
-		if (m_G0.hasVctMean()) {
+		if (m_G0.hasVctMean()) {//we have specified the whole mean vector
 			for(int i=0; i<m_kBar*m_dim; i++) 
 				m_g[i] += m_eta1 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
-		} else {
+		} else {//we only have a simple prior
 			for(int i=0; i<m_kBar*m_dim; i++)
 				m_g[i] += m_eta1 * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
 		}
@@ -144,8 +144,10 @@ public class CLRWithDP extends LinAdapt {
 			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
 		
-		if (k==m_kBar+m_M)
+		if (k==m_kBar+m_M) {
+			System.err.println("[Warning]Hit the very last element in theatStar!");
 			k--; // we might hit the very last
+		}
 		
 		m_thetaStars[k].updateMemCount(1);
 		user.setThetaStar(m_thetaStars[k]);
@@ -206,6 +208,7 @@ public class CLRWithDP extends LinAdapt {
 				int core, numOfCores;
 				double[] m_gradient, m_fValue;
 				
+				@Override
 				public void run() {
 					_DPAdaptStruct user;
 					try {						
@@ -257,7 +260,7 @@ public class CLRWithDP extends LinAdapt {
 		double fValue, oldFValue = Double.MAX_VALUE;
 		int displayCount = 0;		
 		
-		initLBFGS();// Init for lbfgs.
+		initLBFGS();// init for lbfgs.
 		assignClusterIndex();
 		
 		try{
@@ -308,7 +311,7 @@ public class CLRWithDP extends LinAdapt {
 		// Burn in period.
 		while(count++ < m_burnIn){
 			calculate_E_step();
-			calculate_M_step();
+			lastLikelihood = calculate_M_step();
 		}
 		
 		// EM iteration.
@@ -381,8 +384,10 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	protected void initPriorG0() {
-		//m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
-		m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
+		if (m_vctMean)
+			m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
+		else
+			m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for shifting
 	}
 	
 	// Assign cluster assignment to each user.
@@ -411,7 +416,9 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	protected void accumulateClusterModels(){
-		m_models = new double[getVSize()];
+		if (m_models==null || m_models.length!=getVSize())
+			m_models = new double[getVSize()];
+		
 		for(int i=0; i<m_kBar; i++)
 			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*i, m_dim);
 	}
@@ -484,7 +491,7 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	//apply current model in the assigned clusters to users
-	protected void evaluateModel() {
+	protected void evaluateModel() {//this should be only used in batch testing!
 		System.out.println("[Info]Accumulating evaluation results during sampling...");
 
 		//calculate cluster posterior p(c|u)
@@ -549,7 +556,7 @@ public class CLRWithDP extends LinAdapt {
 		for(int i=0; i<m_kBar; i++) 
 			m_thetaStars[i].resetCount();
 		
-		//collect statistics across users
+		//collect statistics across users in adaptation data
 		_thetaStar theta = null;
 		for(int i=0; i<m_userList.size(); i++) {
 			_DPAdaptStruct user = (_DPAdaptStruct)m_userList.get(i);
