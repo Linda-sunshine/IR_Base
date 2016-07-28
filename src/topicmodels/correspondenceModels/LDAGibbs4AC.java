@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.netlib.util.intW;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -18,8 +16,6 @@ import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
 import topicmodels.LDA.LDA_Gibbs;
-import utils.Utils;
-DA_Gibbs;
 import utils.Utils;
 
 public class LDAGibbs4AC extends LDA_Gibbs {

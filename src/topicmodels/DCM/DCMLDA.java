@@ -42,6 +42,7 @@ public class DCMLDA extends LDA_Gibbs {
 
 	protected int m_newtonIter;
 	protected double m_newtonConverge;
+	protected int m_corpusSize;
 
 	public DCMLDA(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, int number_of_topics, double alpha,
@@ -49,23 +50,9 @@ public class DCMLDA extends LDA_Gibbs {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
 				alpha, burnIn, lag);
 
-		int corpusSize = c.getSize();
-		
-		m_docWordTopicProb = new double[corpusSize][number_of_topics][vocabulary_size];
-		m_docWordTopicStats = new double[corpusSize][number_of_topics][vocabulary_size];
-
-		// m_docTopicStats = new double[corpusSize][number_of_topics];
-
-		m_alpha = new double[number_of_topics];
-		m_beta = new double[number_of_topics][vocabulary_size];
-
-		m_totalAlpha = 0;
-		m_totalBeta = new double[number_of_topics];
-
+		m_corpusSize = c.getSize();
 		m_newtonIter = newtonIter;
 		m_newtonConverge = newtonConverge;
-
-		m_alphaAuxilary = new double[number_of_topics];
 
 	}
 
@@ -157,7 +144,19 @@ public class DCMLDA extends LDA_Gibbs {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
-		// initialize topic-word allocation, p(w|z)
+		m_docWordTopicProb = new double[m_corpusSize][number_of_topics][vocabulary_size];
+		m_docWordTopicStats = new double[m_corpusSize][number_of_topics][vocabulary_size];
+
+		// m_docTopicStats = new double[corpusSize][number_of_topics];
+
+		m_alpha = new double[number_of_topics];
+		m_beta = new double[number_of_topics][vocabulary_size];
+
+		m_totalAlpha = 0;
+		m_totalBeta = new double[number_of_topics];
+
+		m_alphaAuxilary = new double[number_of_topics];
+
 		for (_Doc d : collection) {
 			int docID = d.getID();
 			for (int k = 0; k < number_of_topics; k++) {
@@ -586,10 +585,8 @@ public class DCMLDA extends LDA_Gibbs {
 		}while(++i<number_of_iteration);
 		
 		estThetaInDoc(d);
-		
-		//likelihood = calculate_log_likelihood4Perplexity(d);
-		
-		likelihood = calculate_test_log_likelihood(d);
+
+		likelihood = cal_logLikelihood4Partial(d);
 		
 		return likelihood;
 	}
@@ -613,7 +610,7 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 	}
 
-	protected double calculate_test_log_likelihood(_Doc d) {
+	protected double cal_logLikelihood4Partial(_Doc d) {
 		double docLogLikelihood = 0;
 		
 		int docID = d.getID();

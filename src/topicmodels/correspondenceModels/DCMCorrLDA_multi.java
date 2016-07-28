@@ -1,4 +1,4 @@
-package topicmodels.DCM;
+package topicmodels.correspondenceModels;
 
 import java.io.File;
 import java.util.ArrayList;

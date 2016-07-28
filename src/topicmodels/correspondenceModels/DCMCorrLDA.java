@@ -1,12 +1,10 @@
-package topicmodels.DCM;
+package topicmodels.correspondenceModels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
@@ -19,18 +17,20 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class DCMCorrLDA extends DCMLDA{
+public class DCMCorrLDA extends DCMLDA4AC {
 	
 	protected double[] m_alpha_c;
 	protected double m_totalAlpha_c;
+	protected double[] m_alphaAuxilary;
 	
 	public DCMCorrLDA(int number_of_iteration, double converge, double beta,
-			_Corpus c, double lambda, int number_of_topics, 
-			double alpha_a, double alpha_c, double burnIn, int lag, int newtonIter, double newtonConverge){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha_a, burnIn, lag, newtonIter, newtonConverge);
+			_Corpus c, double lambda, int number_of_topics, double alpha_a,
+			double alpha_c, double burnIn, double ksi, double tau, int lag,
+			int newtonIter, double newtonConverge) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
+				alpha_c, burnIn, lag, ksi, tau, newtonIter, newtonConverge);
 		
-		m_alpha_c = new double[number_of_topics];
-		m_totalAlpha_c = 0;
+
 	}
 	
 	public String toString(){
@@ -38,6 +38,15 @@ public class DCMCorrLDA extends DCMLDA{
 	}
 	
 	protected void initialize_probability(Collection<_Doc>collection){
+		m_alpha_c = new double[number_of_topics];
+
+		m_alpha = new double[number_of_topics];
+		m_beta = new double[number_of_topics][vocabulary_size];
+
+		m_totalAlpha = 0;
+		m_totalAlpha_c = 0;
+		m_totalBeta = new double[number_of_topics];
+
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc4DCM){
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
@@ -575,8 +584,6 @@ public class DCMCorrLDA extends DCMLDA{
 			docLogLikelihood -= Utils.lgamma(d.m_topic_stat[k]+m_totalBeta[k]);
 		}
 		
-		
-		
 		for(_ChildDoc cDoc:d.m_childDocs){
 			double muDp = cDoc.getMu()/parentDocLength;
 			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu());
@@ -599,292 +606,6 @@ public class DCMCorrLDA extends DCMLDA{
 		}
 		Utils.L1Normalization(d.m_topics);
 
-	}
-	
-	protected void debugOutput(String filePrefix){
-		int topK = 10;
-		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
-		File childTopicFolder = new File(filePrefix+"childTopicAssignment");
-		
-		if(!parentTopicFolder.exists()){
-			System.out.println("creating directory"+parentTopicFolder);
-			parentTopicFolder.mkdir();
-		}
-		
-		if(!childTopicFolder.exists()){
-			System.out.println("creating directory"+childTopicFolder);
-			childTopicFolder.mkdir();
-		}
-		
-		File parentWordTopicDistributionFolder = new File(filePrefix+"wordTopicDistribution");
-		if(!parentWordTopicDistributionFolder.exists()){
-			System.out.println("creating word topic distribution folder\t"+parentWordTopicDistributionFolder);
-			parentWordTopicDistributionFolder.mkdir();
-		}
-		
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc){
-				// printParentTopicAssignment(d, parentTopicFolder);
-				printWordTopicDistribution(d, parentWordTopicDistributionFolder, topK);
-			}else{
-				printChildTopicAssignment(d, childTopicFolder);
-			}
-		}
-		
-		String parentParameterFile = filePrefix+"parentParameter.txt";
-		String childParameterFile = filePrefix+"childParameter.txt";
-		
-		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-		printTopKChild4Stn(filePrefix, topK);
-	}
-	
-	protected void printChildTopicAssignment(_Doc d, File topicFolder){
-		String topicAssignmentFile = d.getName()+".txt";
-		
-		try{
-			PrintWriter pw = new PrintWriter(new File(topicFolder, topicAssignmentFile));
-			
-			for(_Word w:d.getWords()){
-				int index = w.getIndex();
-				int topic = w.getTopic();
-				
-				String featureName = m_corpus.getFeature(index);
-				pw.print(featureName+":"+topic+"\t");
-			}
-			
-			pw.flush();
-			pw.close();
-		}catch(FileNotFoundException e){
-			e.printStackTrace();
-		}
-	}
-	
-	protected void printParameter(String parentParameterFile,
-			String childParameterFile, ArrayList<_Doc> docList) {
-		System.out.println("printing parameter");
-		
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			
-			for(_Doc d:docList){
-				if(d instanceof _ParentDoc){
-					parentParaOut.print(d.getName()+"\t");
-					parentParaOut.print("topicProportion\t");
-					for(int k=0; k<number_of_topics; k++){
-						parentParaOut.print(d.m_topics[k]+"\t");
-					}
-					
-					parentParaOut.println();
-					
-					for(_ChildDoc cDoc:((_ParentDoc) d).m_childDocs){
-						childParaOut.print(cDoc.getName()+"\t");
-						childParaOut.print("topicProportion\t");
-						for(int k=0; k<number_of_topics; k++){
-							childParaOut.print(cDoc.m_topics[k]+"\t");
-						}
-						childParaOut.println();
-					}
-				}
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-			
-			childParaOut.flush();
-			childParaOut.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-	
-	protected void printWordTopicDistribution(_Doc d, File wordTopicDistributionFolder, int k){
-		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-		
-		String wordTopicDistributionFile = pDoc.getName()+".txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(wordTopicDistributionFolder, wordTopicDistributionFile));
-			
-			for(int i=0; i<number_of_topics; i++){
-				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
-				for(int v=0; v<vocabulary_size; v++){
-					String featureName = m_corpus.getFeature(v);
-					double wordProb = pDoc.m_wordTopic_prob[i][v];
-					
-					_RankItem ri = new _RankItem(featureName, wordProb);
-					fVector.add(ri);
-				}
-				
-				pw.format("Topic %d(%.5f):\t", i, pDoc.m_topics[i]);
-				for(_RankItem it:fVector)
-					pw.format("%s(%.5f)\t", it.m_name,
-							m_logSpace ? Math.exp(it.m_value) : it.m_value);
-				pw.write("\n");
-						
-			}
-			
-			pw.flush();
-			pw.close();
-		}catch(FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	public void crossValidation(int k){
-		m_trainSet = new ArrayList<_Doc>();
-		m_testSet = new ArrayList<_Doc>();
-		
-		double[] pref = null;
-		
-		_Corpus parentCorpus = new _Corpus();
-		ArrayList<_Doc> docs = m_corpus.getCollection();
-		ArrayList<_ParentDoc> parentDocs = new ArrayList<_ParentDoc>();
-		for(_Doc d:docs){
-			if(d instanceof _ParentDoc){
-				parentCorpus.addDoc(d);
-				parentDocs.add((_ParentDoc)d);
-			}
-		}
-		
-		System.out.println("size of parent docs\t"+parentDocs.size());
-		
-		parentCorpus.setMasks();
-		if(m_randomFold == true){
-			pref = new double[k];
-			parentCorpus.shuffle(k);
-			int[] masks = parentCorpus.getMasks();
-			
-			for(int i=0; i<k; i++){
-				for(int j=0; j<masks.length; j++){
-					if(masks[j] == i){
-						m_testSet.add(parentDocs.get(j));
-					}else{
-						m_trainSet.add(parentDocs.get(j));
-						for(_ChildDoc d:parentDocs.get(j).m_childDocs){
-							m_trainSet.add(d);
-						}
-					}
-				}
-				
-				System.out.println("train set size"+m_trainSet.size());
-				System.out.println("test set size"+m_testSet.size());
-				
-				long startTime = System.currentTimeMillis();
-				EM();
-				pref[i] = Evaluation(i);
-				
-				long endTime = System.currentTimeMillis();
-				System.out.println("train/test finished in"+ (endTime-startTime)/1000.0+"seconds");
-				
-				if(i<k-1){
-					m_trainSet.clear();
-					m_testSet.clear();
-				}
-			}
-			
-		}
-		
-		double mean = Utils.sumOfArray(pref)/k, var=0;
-		for(int i=0; i<pref.length; i++){
-			var += (pref[i]-mean)*(pref[i]-mean);
-		}
-		
-		var = Math.sqrt(var/k);
-		System.out.format("perplexity %.3f+/-%.3f \n", mean, var);
-		
-	}
-	
-	public double Evaluation(int i){
-		m_collectCorpusStats = false;
-		double perplexity = 0, totalWords = 0, logLikelihood = 0, sumLikelihood = 0;
-		
-		
-		for(_Doc d:m_testSet){
-			logLikelihood = inference(d);
-			sumLikelihood += logLikelihood;
-			perplexity += logLikelihood;
-			totalWords += d.getDocTestLength();
-			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
-				totalWords += cDoc.getDocTestLength();
-			}
-		}
-		
-		perplexity /= totalWords;
-		perplexity = Math.exp(-perplexity);
-		sumLikelihood /= m_testSet.size();
-		
-		
-		System.out.format("test set perplexity is %.3f and log likelihood is %.3f\n", perplexity, sumLikelihood);
-		
-		return perplexity;
-	}
-	
-	public double inference(_Doc d){
-		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-		
-		initTest(sampleTestSet, d);
-		
-		double logLikelihood = 0;
-		
-		inferenceParentDoc((_ParentDoc)d);
-		logLikelihood = inferenceChildDoc((_ParentDoc)d);
-		
-		
-		return logLikelihood;
-	}
-
-	protected double inferenceParentDoc(_ParentDoc pDoc){
-		double likelihood = 0;
-		
-		int iter = 0;
-		do{
-			calculate_E_step(pDoc);
-			
-			if(iter>m_burnIn && iter%m_lag == 0){
-				collectStats(pDoc);
-			}
-		}while(++iter<number_of_iteration);
-			
-		estThetaInDoc(pDoc);
-		return likelihood;
-	}
-	
-	protected double inferenceChildDoc(_ParentDoc pDoc){
-		double likelihood = 0;
-		
-		int iter = 0;
-		do{
-			int t;
-			_ChildDoc tmpDoc;
-			for(int i=pDoc.m_childDocs.size()-1; i>1; i--){
-				t = m_rand.nextInt(i);
-				
-				tmpDoc = pDoc.m_childDocs.get(i);
-				pDoc.m_childDocs.set(i, pDoc.m_childDocs.get(t));
-				pDoc.m_childDocs.set(t, tmpDoc);
-			}
-			
-			for(_ChildDoc cDoc: pDoc.m_childDocs){
-				calculate_E_step(cDoc);
-			}
-			
-			if(iter>m_burnIn && iter%m_lag==0){
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					collectStats(cDoc);
-				}
-			}
-			
-		}while(++iter<number_of_iteration);
-			
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			estThetaInDoc(cDoc);
-			likelihood += calculate_test_logLikelihood(cDoc);
-		}
-	
-		return likelihood;
 	}
 	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
@@ -917,7 +638,7 @@ public class DCMCorrLDA extends DCMLDA{
 		
 	}
 	
-	protected double calculate_test_logLikelihood(_ChildDoc cDoc){
+	protected double cal_logLikelihood_partial4Child(_ChildDoc cDoc) {
 		double childLikelihood = 0;
 		
 		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)cDoc.m_parentDoc;
@@ -937,62 +658,27 @@ public class DCMCorrLDA extends DCMLDA{
 		return childLikelihood;
 	}
 	
-	protected void printTopKChild4Stn(String filePrefix, int topK){
-		String topKChild4StnFile = filePrefix+"topChild4Stn.txt";
-		
-		try{
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-			
-			for(_Doc d:m_trainSet){
-				if(d instanceof _ParentDoc4DCM){
-					_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-					
-					pw.println(pDoc.getName()+"\t"+pDoc.getSenetenceSize());
-					for(_Stn stnObj:pDoc.getSentences()){
-						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(stnObj, pDoc);
-						
-						int i=0;
-						pw.print((stnObj.getIndex()+1)+"\t");
-						
-						for(String e:likelihoodMap.keySet()){
-							pw.print(e);
-							pw.print(":"+likelihoodMap.get(e));
-							pw.print("\t");
-							
-							i++;
-						}
-						pw.println();
-					}
-				}
+	public void printTopWords(int k, String betaFile) {
+		try {
+			PrintWriter topWordWriter = new PrintWriter(new File(betaFile));
+
+			for (int i = 0; i < m_beta.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
+						k);
+				for (int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j),
+							m_beta[i][j]));
+
+				topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+				for (_RankItem it : fVector)
+					topWordWriter.format("%s(%.5f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				topWordWriter.write("\n");
 			}
-		}catch(Exception e){
-			e.printStackTrace();
+			topWordWriter.close();
+		} catch (Exception ex) {
+			System.err.print("File Not Found");
 		}
 	}
-	
-	protected HashMap<String, Double> rankChild4StnByLikelihood(_Stn stnObj, _ParentDoc4DCM pDoc){
-		HashMap<String, Double> likelihoodMap = new HashMap<String, Double>();
-		
-		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			int cDocLen = cDoc.getTotalDocLength();
-			
-			double stnLogLikelihood = 0;
-			for(_Word w:stnObj.getWords()){
-				double wordLikelihood = 0;
-				int wid = w.getIndex();
-				
-				for(int k=0; k<number_of_topics; k++){
-					wordLikelihood += childTopicInDocProb(k, cDoc, pDoc)*childWordByTopicProb(k, wid, pDoc);
-				}
-				
-				stnLogLikelihood += wordLikelihood;
-			}
-			likelihoodMap.put(cDoc.getName(), stnLogLikelihood);
-		}
-		
-		
-		return likelihoodMap;
-	}
-	
 }
 

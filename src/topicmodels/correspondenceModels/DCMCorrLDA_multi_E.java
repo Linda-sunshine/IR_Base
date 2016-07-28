@@ -1,4 +1,4 @@
-package topicmodels.multithreads;
+package topicmodels.correspondenceModels;
 
 import java.io.File;
 import java.util.Collection;
@@ -9,7 +9,8 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._Word;
-import topicmodels.DCM.DCMCorrLDA;
+import topicmodels.multithreads.TopicModelWorker;
+import topicmodels.multithreads.TopicModel_worker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 
 public class DCMCorrLDA_multi_E extends DCMCorrLDA{
@@ -125,8 +126,11 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 	
 	public DCMCorrLDA_multi_E(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, int number_of_topics, 
-			double alpha, double alphaC, double burnIn, int lag, int newtonIter, double newtonConverge){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, alphaC, burnIn, lag, newtonIter, newtonConverge);
+			double alpha, double alphaC, double burnIn, double ksi, double tau,
+			int lag, int newtonIter, double newtonConverge) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
+				alpha, alphaC, burnIn, ksi, tau, lag, newtonIter,
+				newtonConverge);
 		m_multithread = true;
 	}
 	

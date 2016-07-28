@@ -1,7 +1,6 @@
-package topicmodels.DCM;
+package topicmodels.correspondenceModels;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import structures._ParentDoc4DCM;
 import structures._RankItem;
 import structures._Stn;
 import structures._Word;
-import topicmodels.LDA_Gibbs_Debug;
 import utils.Utils;
 
 /**
@@ -25,7 +23,7 @@ import utils.Utils;
  * 
  * */
 
-public class DCMLDA4AC extends LDA_Gibbs_Debug{
+public class DCMLDA4AC extends LDAGibbs4AC {
 	protected double[] m_alpha;
 	protected double[][] m_beta;
 	
@@ -35,59 +33,58 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 	protected int m_newtonIter;
 	protected double m_newtonConverge;
 	
-	public DCMLDA4AC(int number_of_iteration, double converge, double beta, _Corpus c, double lambda, int number_of_topics, double alpha, double  burnIn, int lag, double ksi, double tau, int newtonIter, double newtonConverge){
-		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, ksi, tau);
+	protected double[][] m_topic_word_prob;
 	
-		m_alpha = new double[number_of_topics];
-		m_beta = new double[number_of_topics][vocabulary_size];
-		
-		m_totalAlpha = 0;
-		m_totalBeta = new double[number_of_topics];
-		
+	public DCMLDA4AC(int number_of_iteration, double converge, double beta, _Corpus c, double lambda, int number_of_topics, double alpha, double  burnIn, int lag, double ksi, double tau, int newtonIter, double newtonConverge){
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
+				alpha, burnIn, lag, newtonIter, newtonConverge);
+
 		m_newtonIter = newtonIter;
 		m_newtonConverge = newtonConverge;
+
 	}
 	
 	public String toString(){
 		return String.format("DCMLDA4AC[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
 	}
 	
-	public void EM(){
-		System.out.format("Starting %s ... \n", toString());
-		
-		long startTime = System.currentTimeMillis();
-		
+	public void EM() {
+		System.out.format("Starting %s...\n", toString());
+
+		long starttime = System.currentTimeMillis();
+
 		m_collectCorpusStats = true;
 		initialize_probability(m_trainSet);
-		
+
 		String filePrefix = "./data/results/DCM_LDA";
-		File weightFolder = new File(filePrefix+"");
-		if(!weightFolder.exists()){
+		File weightFolder = new File(filePrefix + "");
+		if (!weightFolder.exists()) {
+			// System.out.println("creating directory for weight"+weightFolder);
 			weightFolder.mkdir();
 		}
-		
+
 		double delta = 0, last = 0, current = 0;
-		
-		int i=0, displayCount = 0;
-		do{
+		int i = 0, displayCount = 0;
+		do {
+
 			long eStartTime = System.currentTimeMillis();
-			for(int j=0; j<number_of_iteration; j++){
+			for (int j = 0; j < number_of_iteration; j++) {
 				init();
-				for(_Doc d:m_trainSet){
+				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
-				}
 			}
-			
 			long eEndTime = System.currentTimeMillis();
-			
-			System.out.println("per iteration e step time\t"+(eEndTime-eStartTime));
-			
+
+			System.out.println("per iteration e step time\t"
+					+ (eEndTime - eStartTime));
+
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
-			
-			System.out.println("per iteration m step time\t"+(mEndTime-mStartTime));
-			
+
+			// System.out.println("per iteration m step time\t"
+			// + (mEndTime - mStartTime));
+
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
 				// required to display log-likelihood
@@ -123,22 +120,40 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			if (m_converge > 0 && Math.abs(delta) < m_converge)
 				break;// to speed-up, we don't need to compute likelihood in
 						// many cases
-			
-		}while(++i<number_of_iteration);
-		
+		} while (++i < this.number_of_iteration);
+
 		finalEst();
-		
-		long endTime = System.currentTimeMillis() - startTime;
-		
-		System.out.format("likelihood %.3f after step %s converge to %f after %d seconds ...\n", current, i, delta, endTime/1000);
+
+		long endtime = System.currentTimeMillis() - starttime;
+		System.out
+				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
+						current, i, delta, endtime / 1000);
+		infoWriter
+				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
+						current, i, delta, endtime / 1000);
 	}
-	
+
 	protected void initialize_probability(Collection<_Doc>collection){
+		m_alpha = new double[number_of_topics];
+		m_beta = new double[number_of_topics][vocabulary_size];
+
+		m_totalAlpha = 0;
+		m_totalBeta = new double[number_of_topics];
+
+		m_topic_word_prob = new double[number_of_topics][vocabulary_size];
+
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc4DCM){
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				pDoc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
 				
+				for (_Word w : pDoc.getWords()) {
+					int wid = w.getIndex();
+					int tid = w.getTopic();
+
+					word_topic_sstat[tid][wid]++;
+				}
+
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
 					cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
 					
@@ -148,8 +163,9 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 						
 						pDoc.m_wordTopic_stat[tid][wid] ++;
 						pDoc.m_topic_stat[tid] ++;
+
+						word_topic_sstat[tid][wid]++;
 					}
-					computeMu4Doc(cDoc);
 				}
 			}
 			
@@ -157,21 +173,6 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 		
 		initialAlphaBeta();
 		imposePrior();
-	}
-	
-	protected void computeMu4Doc(_ChildDoc d){
-		_ParentDoc tempParent = d.m_parentDoc;
-		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 0.5;
-		d.setMu(mu);
-	}
-	
-	protected void computeTestMu4Doc(_ChildDoc d){
-		_ParentDoc pDoc = d.m_parentDoc;
-		
-		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 0.05;
-		d.setMu(mu);
 	}
 	
 	public double calculate_E_step(_Doc d){
@@ -198,6 +199,9 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			pDoc.m_topic_stat[tid]--;
 			pDoc.m_wordTopic_stat[tid][wid]--;
 			
+			if (!m_collectCorpusStats)
+				word_topic_sstat[tid][wid]--;
+
 			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
 				double pWordTopic = wordTopicProb(tid, wid, pDoc);
@@ -221,6 +225,10 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			pDoc.m_sstat[tid]++;
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
+
+			if (!m_collectCorpusStats)
+				word_topic_sstat[tid][wid]++;
+
 		}
 		
 	}
@@ -238,6 +246,9 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			pDoc.m_wordTopic_stat[tid][wid]--;
 			pDoc.m_topic_stat[tid] --;
 			d.m_sstat[tid] --;
+
+			if (!m_collectCorpusStats)
+				word_topic_sstat[tid][wid]--;
 
 			normalizedProb = 0;
 			for (tid = 0; tid < number_of_topics; tid++) {
@@ -262,13 +273,17 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			d.m_sstat[tid]++;
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
+
+			if (!m_collectCorpusStats)
+				word_topic_sstat[tid][wid]--;
+
 		}
 	}
 	
 	protected double topicInDocProb(int tid, _Doc d){
 		double term1 = d.m_sstat[tid];
-		
-		return (d.m_sstat[tid]+m_alpha[tid])/(d.getDocInferLength()+m_totalAlpha-1);
+		double docTopicLen = Utils.sumOfArray(d.m_sstat);
+		return (d.m_sstat[tid] + m_alpha[tid]) / (docTopicLen + m_totalAlpha);
 	}
 	
 	protected double wordTopicProb(int tid, int wid, _ParentDoc4DCM d){
@@ -285,6 +300,11 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			else
 				collectChildStats((_ChildDoc)d);
 		}
+		
+		for(int k=0; k<number_of_topics; k++)
+			for(int v=0; v<vocabulary_size; v++)
+				m_topic_word_prob[k][v] += word_topic_sstat[k][v]
+						+ m_beta[k][v];
 			
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
@@ -333,7 +353,6 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 		Arrays.fill(m_sstat, 0);
 		for (int k = 0; k < number_of_topics; k++) {
 			Arrays.fill(topic_term_probabilty[k], 0);
-			Arrays.fill(word_topic_sstat[k], 0);
 		}
 
 		for (_Doc d : m_trainSet) {
@@ -588,6 +607,14 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 		return docLogLikelihood;
 	}
 
+	protected void finalEst() {
+		for(int k=0; k<number_of_topics; k++)
+			Utils.L1Normalization(m_topic_word_prob[k]);
+		
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+	}
+
 	protected void estThetaInDoc(_Doc d) {
 		if(d instanceof _ParentDoc4DCM){
 			_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
@@ -598,72 +625,8 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 	}
 
 	public void printTopWords(int k, String betaFile) {
-		double logLikelihood = calculate_log_likelihood();
-		System.out.format("final log likelihood %.3f\t", logLikelihood);
-		
-		String filePrefix = betaFile.replace("topWords.txt", "");
-		debugOutput(filePrefix);
-
-		Arrays.fill(m_sstat, 0);
-
-		System.out.println("print top words");
-		printTopWords_liteVersion(k, betaFile);
-	}
-	
-	public void debugOutput(String filePrefix) {
-		
-		int topK = 10;
-		File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
-		File childTopicFolder = new File(filePrefix + "childTopicAssignment");
-		
-		if(!parentTopicFolder.exists()){
-			System.out.println("creating directory\t"+parentTopicFolder);
-			parentTopicFolder.mkdir();
-		}
-		
-		if(!childTopicFolder.exists()){
-			System.out.println("creating directory\t"+childTopicFolder);
-			childTopicFolder.mkdir();
-		}
-	
-		File parentWordTopicDistributionFolder = new File(filePrefix
-				+ "wordTopicDistribution");
-		if (!parentWordTopicDistributionFolder.exists()) {
-			System.out.println("creating word topic distribution folder\t"
-					+ parentWordTopicDistributionFolder);
-			parentWordTopicDistributionFolder.mkdir();
-		}
-
-		for (_Doc d : m_trainSet) {
-			if(d instanceof _ParentDoc4DCM){
-				printParentTopicAssignment(d, parentTopicFolder);
-				printWordTopicDistribution(d, parentWordTopicDistributionFolder, topK);
-			}else{
-				printChildTopicAssignment(d, childTopicFolder);
-			}
-		}
-
-		String parentParameterFile = filePrefix + "parentParameter.txt";
-		String childParameterFile = filePrefix + "childParameter.txt";
-
-		printParameter(parentParameterFile, childParameterFile, m_trainSet);
-
-
-	}
-
-	public void printTopWords_liteVersion(int k, String topWordPath) {
-		System.out.println("TopWord FilePath:" + topWordPath);
-
-		Arrays.fill(m_sstat, 0);
-		for (_Doc d : m_trainSet) {
-			for (int i = 0; i < number_of_topics; i++)
-				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-						: d.m_topics[i];
-		}
-		Utils.L1Normalization(m_sstat);
-
 		try {
-			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+			PrintWriter topWordWriter = new PrintWriter(new File(betaFile));
 
 			for (int i = 0; i < m_beta.length; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
@@ -681,89 +644,6 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			topWordWriter.close();
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
-		}
-	}
-
-	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
-		String topicAssignmentFile = d.getName() + ".txt";
-		try{
-			PrintWriter pw = new PrintWriter(new File(topicFolder,
-					topicAssignmentFile));
-			
-			for (_Word w : d.getWords()) {
-				int index = w.getIndex();
-				int topic = w.getTopic();
-
-				String featureName = m_corpus.getFeature(index);
-				pw.print(featureName + ":" + topic + "\t");
-			}
-			
-			pw.flush();
-			pw.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
-
-	protected void printParameter(String parentParameterFile,
-			String childParameterFile, ArrayList<_Doc> docList) {
-		System.out.println("printing parameter");
-		
-		try{
-			System.out.println(parentParameterFile);
-			System.out.println(childParameterFile);
-			
-			PrintWriter parentParaOut = new PrintWriter(new File(parentParameterFile));
-			PrintWriter childParaOut = new PrintWriter(new File(childParameterFile));
-			
-			for(_Doc d:docList){
-				parentParaOut.print(d.getName()+"\t");
-				parentParaOut.print("topicProportion\t");
-				for(int k=0; k<number_of_topics; k++){
-					parentParaOut.print(d.m_topics[k]+"\t");
-				}
-				
-				parentParaOut.println();
-			}
-			
-			parentParaOut.flush();
-			parentParaOut.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	protected void printWordTopicDistribution(_Doc d,
-			File wordTopicDistributionFolder, int k) {
-		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-		
-		String wordTopicDistributionFile = pDoc.getName() + ".txt";
-		try {
-			PrintWriter pw = new PrintWriter(new File(
-					wordTopicDistributionFolder, wordTopicDistributionFile));
-
-			for (int i = 0; i < number_of_topics; i++) {
-				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
-						k);
-				for (int v = 0; v < vocabulary_size; v++) {
-					String featureName = m_corpus.getFeature(v);
-					double wordProb = pDoc.m_wordTopic_prob[i][v];
-					_RankItem ri = new _RankItem(featureName, wordProb);
-					fVector.add(ri);
-				}
-
-				pw.format("Topic %d(%.5f):\t", i, d.m_topics[i]);
-				for (_RankItem it : fVector)
-					pw.format("%s(%.5f)\t", it.m_name,
-							m_logSpace ? Math.exp(it.m_value) : it.m_value);
-				pw.write("\n");
-			}
-
-			pw.flush();
-			pw.close();
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -791,11 +671,10 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 			}
 			sampleTestSet.add(cDoc);
 			cDoc.createSparseVct4Infer();
-			computeTestMu4Doc(cDoc);
 		}
 	}
 
-	protected double calculate_test_log_likelihood(_ParentDoc4DCM d) {
+	protected double cal_logLikelihood_partial4Parent(_ParentDoc4DCM d) {
 		double likelihood = 0;
 		
 		for (_Word w : d.getWords()) {
@@ -811,7 +690,7 @@ public class DCMLDA4AC extends LDA_Gibbs_Debug{
 		return likelihood;
 	}
 	
-	protected double calculate_test_log_likelihood(_ChildDoc d) {
+	protected double cal_logLikelihood_partial4Child(_ChildDoc d) {
 		double likelihood = 0;
 		
 		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d.m_parentDoc;
