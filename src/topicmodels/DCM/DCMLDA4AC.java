@@ -1,4 +1,4 @@
-package topicmodels;
+package topicmodels.DCM;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -16,6 +16,7 @@ import structures._ParentDoc4DCM;
 import structures._RankItem;
 import structures._Stn;
 import structures._Word;
+import topicmodels.LDA_Gibbs_Debug;
 import utils.Utils;
 
 /**

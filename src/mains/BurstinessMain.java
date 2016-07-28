@@ -8,9 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
-import structures._Doc;
+import Analyzer.ParentChildAnalyzer;
 
 public class BurstinessMain {
 	public static void main(String[] args) throws IOException, ParseException {	
@@ -167,19 +166,15 @@ public class BurstinessMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
 		
+
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);			
 		
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
-		analyzer.generateFakeCorpus(filePrefix);
+//		analyzer.generateFakeCorpus(filePrefix);
 //		analyzer.analyzeBurstiness(filePrefix);
 		
 	}

@@ -9,7 +9,7 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._Word;
-import topicmodels.DCMCorrLDA;
+import topicmodels.DCM.DCMCorrLDA;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 
 public class DCMCorrLDA_multi_E extends DCMCorrLDA{

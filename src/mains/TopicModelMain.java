@@ -7,10 +7,11 @@ import java.io.PrintStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import Analyzer.ParentChildAnalyzer;
+
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
+import topicmodels.DCM.DCMLDA_test;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.correspondenceModels.ACCTM;
 import topicmodels.correspondenceModels.ACCTM_C;
@@ -25,6 +26,7 @@ import topicmodels.markovmodel.LRHTSM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
+import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 
@@ -47,7 +49,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMCorrLDA_multi_E";
+		String topicmodel = "DCMLDA_test";
 
 
 		String category = "tablet";
@@ -170,11 +172,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(commentFolder, suffix);
+		// analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(commentFolder, suffix);
 
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+		// analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
@@ -280,6 +282,16 @@ public class TopicModelMain {
 				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma);
+			} else if (topicmodel.equals("DCMLDA_test")) {
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				number_of_topics = 15;
+				// in gibbs sampling, no need to compute
+				// log-likelihood during sampling
+				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
+						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
+						newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);

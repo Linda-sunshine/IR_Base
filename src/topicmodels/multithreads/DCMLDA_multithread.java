@@ -7,7 +7,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import topicmodels.DCMLDA;
+import topicmodels.DCM.DCMLDA;
 import topicmodels.multithreads.updateParam_worker.RunType;
 import utils.Utils;
 

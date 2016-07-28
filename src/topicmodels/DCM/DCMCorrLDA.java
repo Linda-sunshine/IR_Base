@@ -1,4 +1,4 @@
-package topicmodels;
+package topicmodels.DCM;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -624,7 +624,7 @@ public class DCMCorrLDA extends DCMLDA{
 		
 		for(_Doc d:m_trainSet){
 			if(d instanceof _ParentDoc){
-				printParentTopicAssignment(d, parentTopicFolder);
+				// printParentTopicAssignment(d, parentTopicFolder);
 				printWordTopicDistribution(d, parentWordTopicDistributionFolder, topK);
 			}else{
 				printChildTopicAssignment(d, childTopicFolder);
