@@ -1,6 +1,8 @@
 package structures;
 
 public class DPParameter {
+	public String m_data = "Amazon";
+	public String m_model = "mtclindp";
 	public int m_nuOfIterations = 15;
 	public int m_M = 6;
 	public double m_sdA = 0.2;
@@ -10,6 +12,10 @@ public class DPParameter {
 	public double m_eta2 = 0.05;
 	public double m_eta3 = 0.05;
 	public double m_eta4 = 0.05;
+	
+	public int m_userSet = 10; // The set of users we want to use.
+	public int m_ttlSizeSet = 24; // The total number of sizes.
+	public int m_ttlUserSetNo = 10; // The total number of user sets.
 	
 	public DPParameter(String argv[]){
 		
@@ -37,6 +43,8 @@ public class DPParameter {
 				m_eta4 = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-alpha"))
 				m_alpha = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-model"))
+				m_model = argv[i];
 			else if (argv[i-1].equals("-M"))
 				m_M = Integer.valueOf(argv[i]);
 			else

@@ -38,6 +38,17 @@ public class NormalPrior {
 		}
 	}
 	
+	public double logLikelihood(double[] target, double normScaleA) {
+		double L = 0;
+		for(int i=0; i<target.length; i++) {
+			if (m_meansA==null)
+				L += (target[i]-m_meanA)*(target[i]-m_meanA)/m_sdA/m_sdA;
+			else
+				L += (target[i]-m_meansA[i])*(target[i]-m_meansA[i])/m_sdA/m_sdA;
+		}
+		return normScaleA * L / 2;
+	}
+	
 	public double logLikelihood(double[] target, double normScaleA, double normScaleB) {
 		double L = 0;
 		for(int i=0; i<target.length; i++) {

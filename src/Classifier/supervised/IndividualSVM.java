@@ -20,7 +20,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class IndividualSVM extends ModelAdaptation {
 	double m_C = 1.0; 
-	boolean m_bias = false;
+	boolean m_bias = true;
 	Model m_libModel; // Libmodel trained by liblinear.
 	
 	SolverType m_solverType = SolverType.L2R_L1LOSS_SVC_DUAL;

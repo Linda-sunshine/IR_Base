@@ -209,7 +209,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	//apply current model in the assigned clusters to users
@@ -252,5 +252,13 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		mean_sd[1] = sd;
 		return mean_sd;
 	}
-	
+	public void saveClusterInfo(String filename) throws FileNotFoundException{
+		PrintWriter writer = new PrintWriter(new File(filename));
+		_DPAdaptStruct user;
+		for(_AdaptStruct u: m_userList){
+			user = (_DPAdaptStruct) u;
+			writer.write(user.getUserID() + "\t" + user.getThetaStar().getIndex()+"\n");
+		}
+		writer.close();
+	}
 }

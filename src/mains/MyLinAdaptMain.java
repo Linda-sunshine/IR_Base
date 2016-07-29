@@ -1,5 +1,6 @@
 package mains;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -7,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+
+import clustering.KMeansAlg4Profile;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
@@ -16,12 +19,14 @@ import structures._User;
 import utils.Utils;
 import Analyzer.CrossFeatureSelection;
 import Analyzer.MultiThreadedUserAnalyzer;
+import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithKmeans;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 
@@ -36,11 +41,8 @@ public class MyLinAdaptMain {
 		double trainRatio = 0, adaptRatio = 0.5;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		int topKNeighbors = 100;
 
-		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05, neighborsHistoryWeight = 0.5;
-		double lambda1 = 0.1, lambda2 = 0.3;
-
+		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
 		String dataset = "Yelp"; // "Amazon", "Yelp"
@@ -65,72 +67,114 @@ public class MyLinAdaptMain {
 		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
-				
-//		CLRWithDP adaptation = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setLNormFlag(false);
-//		((CLogisticRegressionWithDP) adaptation).setR1TradeOffs(eta1, eta2);
-//		adaptation.train();
-//		adaptation.test();
-//		((CLogisticRegressionWithDP) adaptation).printInfo();
-//		
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-		
-		// Create an instance of CLinAdaptWithDP
-//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-	
-		// Create an instance of MTCLRWithDP
-//		MTCLRWithDP adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
-		
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
-		adaptation.setNumberOfIterations(15);
-		adaptation.setAlpha(1);
-		adaptation.setsdA(0.05);
-//		adaptation.setQ(q);
-		adaptation.setsdB(0.05);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		adaptation.train();
-		adaptation.test();
-		adaptation.printInfo();
-		
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-
-//		eta1 = 1; eta2 = 0.5; lambda1 = 0.1; lambda2 = 0.3;
-//		// Create an instances of LinAdapt model.
-//		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.train();
-//		adaptation.test();
-//		 
+//		/***baseline 1: global***/
+//		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
+//		gsvm.loadUsers(analyzer.getUsers());
+//		gsvm.train();
+//		gsvm.test();
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
+//		String dir = String.format("./data/wsdm/%s_", dataset);
+//		/***baseline 2: mtsvm***/
 //		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 //		mtsvm.loadUsers(analyzer.getUsers());
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
-		
+//		mtsvm.saveModel(dir + "mtsvm_0.5/");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
-//		eta1 = 1; eta2 = 0.5; lambda1 = 0.1; lambda2 = 0.3;
-//		MTLinAdapt adaptation  = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null); 
+//		/***baseline 3: CLRWithDP***/
+//		CLRWithDP clrdp = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+//		clrdp.loadUsers(analyzer.getUsers());
+//		clrdp.setDisplayLv(displayLv);
+//		clrdp.setLNormFlag(false);
+//		clrdp.setR1TradeOffs(eta1, eta2);
+//		clrdp.train();
+//		clrdp.test();
+//		clrdp.printInfo();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		/***baseline 4: MTCLRWithDP***/
+//		// Create an instance of MTCLRWithDP
+//		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
+//		mtclrdp.loadUsers(analyzer.getUsers());
+//		mtclrdp.setDisplayLv(displayLv);
+//		mtclrdp.setLNormFlag(false);
+//		mtclrdp.setQ(0.4);
+//		mtclrdp.setR1TradeOffs(eta1, eta2);
+//		mtclrdp.train();
+//		mtclrdp.test();
+//		mtclrdp.printInfo();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		/***baseline 5: LinAdapt***/
+//		// Create an instances of LinAdapt model.
+//		eta1 = 1; eta2 = 0.5;
+//		LinAdapt linadapt = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel,featureGroupFile);
+//		linadapt.loadUsers(analyzer.getUsers());
+//		linadapt.setDisplayLv(displayLv);
+//		linadapt.setR1TradeOffs(eta1, eta2);
+//		linadapt.train();
+//		linadapt.test();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		/***baseline 6: CLinAdaptWithDP***/
+//		// Create an instance of CLinAdaptWithDP
+//		eta1 = 0.05; eta2 = 0.05; eta3 = 0.05; eta4 = 0.05;
+//		CLinAdaptWithDP clindp = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+//		clindp.loadUsers(analyzer.getUsers());
+//		clindp.setDisplayLv(displayLv);
+//		clindp.setLNormFlag(false);
+//		clindp.setR1TradeOffs(eta1, eta2);
+//		clindp.setsdA(0.2);
+//		clindp.setsdB(0.1);
+//		clindp.train();
+//		clindp.test();
+//		clindp.printInfo();		
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+		
+		/***baseline 7: CLinAdaptWithKmeans***/
+		// We perform kmeans over user weights learned from individual svms.
+		int kmeans = 25;
+		int[] clusters;
+		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
+		alg.train(analyzer.getUsers());
+		clusters = alg.getClusters();// The returned clusters contain the corresponding cluster index of each user.
+		
+		CLinAdaptWithKmeans clinkmeans = new CLinAdaptWithKmeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, kmeans, clusters);
+		clinkmeans.loadUsers(analyzer.getUsers());
+		clinkmeans.setDisplayLv(displayLv);
+		clinkmeans.setLNormFlag(false);
+		clinkmeans.setR1TradeOffs(eta1, eta2);
+		clinkmeans.train();
+		clinkmeans.test();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+//		/***our algorithm: MTCLinAdaptWithDP***/
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //		adaptation.loadUsers(analyzer.getUsers());
 //		adaptation.setDisplayLv(displayLv);
+//		adaptation.setLNormFlag(false);
+//		adaptation.setsdA(0.2);
+//		adaptation.setsdB(0.1);
 //		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setRsTradeOffs(lambda1, lambda2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
 //		adaptation.train();
-//		adaptation.test();	
+//		adaptation.test();
+//		adaptation.printInfo();
+////		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
+////		adaptation.saveModel(dir + "mtclindp_u_0.5");
+////		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 	}
 }

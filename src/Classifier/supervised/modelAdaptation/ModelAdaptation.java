@@ -304,6 +304,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	@Override
 	public void saveModel(String modelLocation) {
+		File file = new File(modelLocation);
+		if(!file.exists())
+			file.mkdirs();
 		for(_AdaptStruct user:m_userList) {
 			try {
 	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
@@ -358,5 +361,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		for(int i=0; i<m_classNo; i++)
 			m_perf[i] = m_microStat.getF1(i);
 		return m_perf;
+	}
+	
+	public void debug(_AdaptStruct user, int c){
+		
 	}
 }

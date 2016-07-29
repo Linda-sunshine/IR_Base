@@ -19,11 +19,11 @@ import structures._thetaStar;
 import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
-	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 50;
+	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
+	protected int m_numberOfIterations = 15;
 	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
-	protected double m_alpha = .1; // Scaling parameter of DP.
+	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	
@@ -33,7 +33,7 @@ public class CLRWithDP extends LinAdapt {
 	protected double[][] m_gradients;
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting in adaptation based models
+	protected double[] m_abNuA = new double[]{0, 0.2}; // N(0,1) for shifting in adaptation based models
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
@@ -74,7 +74,7 @@ public class CLRWithDP extends LinAdapt {
 	protected double calculateR1(){
 		double R1 = 0;
 		for(int i=0; i<m_kBar; i++)
-			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1, 0);//the last is dummy input
+			R1 += m_G0.logLikelihood(m_thetaStars[i].getModel(), m_eta1);//the last is dummy input
 		
 		// Gradient by the regularization.
 		if (m_G0.hasVctMean()) {

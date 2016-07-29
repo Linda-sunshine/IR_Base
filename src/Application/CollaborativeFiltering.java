@@ -1,0 +1,711 @@
+package Application;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
+
+import structures.MyPriorityQueue;
+import structures._RankItem;
+import structures._Review;
+import structures._SparseFeature;
+import structures._User;
+
+/***
+ * @author lin
+ * Collaborative filtering.
+ */
+public class CollaborativeFiltering {
+
+	int m_k; // k is the number of neighbors.
+	int m_featureSize;
+	int m_time; // No of random reviews = m_time*(reviews.size()-1) 
+	int m_noModels;
+	String m_model;
+	
+	ArrayList<_User> m_users;
+	ArrayList<_Review> m_totalReviews; // All the reviews.
+
+	String[] m_userIDs;//Given a user index, access ID of the user.
+	HashMap<String, Integer> m_userIDIndex; //Given a user ID, access the index of the user.
+	HashMap<String, ArrayList<Integer>> m_itemIDUserIndex;
+	HashMap<String, ArrayList<Integer>> m_userIDRdmNeighbors;
+	private Object m_userWeightsLock = null, m_similarityLock = null;// lock when collecting review statistics
+	
+	int[][] m_ranks;
+	Pair[][] m_realRanks; 
+	
+	public void setUserIDRdmNeighbors(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+		m_userIDRdmNeighbors = userIDRdmNeighbors;
+	}
+	
+	double m_avgNDCG;
+	double m_avgMAP;
+
+	double[] m_similarity;//Assume we have a cache containing all the similarities of all pairs of users.
+	double[] m_NDCGs;
+	double[] m_MAPs;
+	double[][] m_userWeights;
+
+	boolean m_equalWeight; // The flag for considering weight or not.
+	boolean m_avgFlag; //The flag is used to decide whether we take all users' average as ranking score or not.
+	
+	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
+
+	// Structure: pair for stroing real rand and ideal rank.
+	public class Pair {
+		double m_label;
+		double m_rankValue;
+		
+		public Pair(){
+			m_label = 0;
+			m_rankValue = 0;
+		}
+		
+		public Pair(double l, double rv){
+			m_label = l;
+			m_rankValue = rv;
+		}
+		
+		public double getLabel(){
+			return m_label;
+		}
+		public double getValue(){
+			return m_rankValue;
+		}
+		//rank by predicted score
+		public int compareTo (Pair p){
+			if (this.m_rankValue > p.m_rankValue)
+				return -1;
+			else if (this.m_rankValue < p.m_rankValue)
+				return 1;
+			else 
+				return 0;
+		}
+	}
+	
+	public CollaborativeFiltering(ArrayList<_User> users, int time){
+		m_users = users;
+		m_featureSize = 0;
+		m_equalWeight = false;
+		m_avgFlag = false;
+		m_time = time;
+		m_totalReviews = new ArrayList<_Review>();
+		m_model = "BoW";
+	}
+	
+	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k, int time, String model){
+		m_users = users;
+		m_featureSize = fs;
+//		m_totalNoUsers = m_users.size();
+		
+		m_k = k;
+		m_time = time;
+		m_equalWeight = false;
+		m_avgFlag = false;
+		m_totalReviews = new ArrayList<_Review>();
+		m_similarityLock = new Object();
+		m_model = model;
+	
+	}
+
+	public void setAvgFlag(boolean b){
+		m_avgFlag = b;
+	}
+	public void setEqualWeightFlag(boolean a){
+		m_equalWeight = a;
+	}
+	
+	public void init(){
+		String userID;
+		m_userIDIndex = new HashMap<String, Integer>();
+
+		for(int i=0; i<m_users.size(); i++){
+			userID = m_users.get(i).getUserID();
+			m_userIDIndex.put(userID, i);
+		}
+		
+		constructItemUserIndex();
+		m_userIDs = new String[m_users.size()];
+		for(int i=0; i<m_users.size(); i++){
+			m_userIDs[i] = m_users.get(i).getUserID();
+		}
+	}
+	
+	public void loadWeights(String weightFile, String suffix){
+		
+		m_NDCGs = new double[m_users.size()];
+		m_MAPs = new double[m_users.size()];
+		m_ranks = new int[m_users.size()][];
+		m_realRanks = new Pair[m_users.size()][];
+		
+		m_avgNDCG = 0;
+		m_avgMAP = 0;
+		loadUserWeights(weightFile, suffix);
+		constructNeighborhood();
+	}
+	
+	//<Item, <UserIndex>>, inside each user, <item, rating>
+	public void constructItemUserIndex(){
+			
+		int userIndex;
+		String itemID;
+		ArrayList<Integer> userIndexes;
+		m_itemIDUserIndex = new HashMap<String, ArrayList<Integer>>();
+			
+		// Traverse all users and set the item-userID map.
+		for (_User u : m_users) {
+			userIndex = m_userIDIndex.get(u.getUserID());
+			for (_Review r : u.getReviews()) {
+				itemID = r.getItemID();
+				u.addOneItemIDRatingPair(itemID, r.getYLabel());
+				// If the product is in the hashmap.
+				if (!m_itemIDUserIndex.containsKey(itemID))
+					m_itemIDUserIndex.put(itemID, new ArrayList<Integer>());
+
+				m_itemIDUserIndex.get(itemID).add(userIndex);
+			}
+		}
+			
+		System.out.format("%d products in tatal before removal.\n", m_itemIDUserIndex.size());
+		ArrayList<String> prodIDs = new ArrayList<String>();
+		ArrayList<Integer> rmUserIndexes = new ArrayList<Integer>();
+		// Remove the items that are only purchased by one user.
+		for (String prodID : m_itemIDUserIndex.keySet()) {
+			userIndexes = m_itemIDUserIndex.get(prodID);
+			if (userIndexes.size() == 1) {
+				for (int index : userIndexes){
+					m_users.get(index).removeOneReview(prodID);
+					if(m_users.get(index).getReviewSize() == 0)
+						rmUserIndexes.add(index);
+				}
+				prodIDs.add(prodID);
+			}
+		}
+		// Remove products with <=1 purchases.
+		for(String prodID: prodIDs)
+			m_itemIDUserIndex.remove(prodID);
+		
+		// Remove users with no reviews.
+		Collections.sort(rmUserIndexes, Collections.reverseOrder());
+		for(int rmUserIndex: rmUserIndexes)
+			m_users.remove(rmUserIndex);
+		
+		// Collect all the reviews of all the users.
+		for (_User u : m_users)
+			m_totalReviews.addAll(u.getReviews());
+		System.out.format("%d products are left after removal.\n", m_itemIDUserIndex.size());
+	}
+	
+	public void constructNeighborhood() {
+		m_similarity = new double[m_users.size() * (m_users.size()-1)/2];
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					double[] ui, uj;
+					try {
+						for (int i = 1; i + core <m_users.size(); i += numOfCores) {
+							ui = m_userWeights[i+core];
+							for(int j=0; j<i+core; j++) {
+								if (j == i+core)
+									continue;
+								if((i+core) == 2 && j==1)
+									System.out.println("BUG!");
+								uj = m_userWeights[j];
+								m_similarity[getIndex(i+core, j)] = Euclidean(ui, uj);
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+
+		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_users.size());
+	}	
+	
+//	public void constructNeighborhood() {
+//		m_similarity = new double[m_users.size() * (m_users.size()-1)/2];
+//		
+//		double[] ui, uj;
+//		for (int i = 1; i <m_users.size(); i++) {
+//			ui = m_userWeights[i];
+//			for(int j=0; j<i; j++) {
+//				if (j == i)
+//					continue;
+//				uj = m_userWeights[j];
+//				m_similarity[getIndex(i, j)] = Euclidean(ui, uj);
+//			}
+//		}
+//
+//		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_users.size());
+//	}	
+	
+	public void loadUserWeights(String folder, String suffix){
+		String userID;
+		int userIndex;
+		double[] weights;
+		m_userWeights = new double[m_users.size()][];
+		File dir = new File(folder);
+		
+		if(!dir.exists()){
+			System.err.print("[Info]BoW is used as user weights.");
+			loadVSMWeights();
+		} else{
+			for(File f: dir.listFiles()){
+				if(f.isFile() && f.getName().endsWith(suffix)){
+					int endIndex = f.getName().lastIndexOf(".");
+					userID = f.getName().substring(0, endIndex);
+					if(m_userIDIndex.containsKey(userID)){
+						userIndex = m_userIDIndex.get(userID);
+						weights = loadOneUser(f.getAbsolutePath());
+						m_userWeights[userIndex] = weights;
+					}
+				}
+			}
+		}
+		System.out.format("%d users weights are loaded!", m_userWeights.length);
+	}
+	
+	//If not weights provided, use BoW weights.
+	public void loadVSMWeights(){
+		
+		_User u;
+		m_userWeights = new double[m_users.size()][];
+		
+		for(int i=0; i<m_users.size(); i++){
+			m_userWeights[i] = new double[m_featureSize];
+			u = m_users.get(i);
+			for(_SparseFeature fv: u.getBoWProfile())
+				m_userWeights[i][fv.getIndex()] = fv.getValue();
+		}
+	}
+	
+	public double[] loadOneUser(String fileName){
+		double[] weights = new double[m_featureSize];
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
+			String line;
+			while((line = reader.readLine()) != null){
+				String[] ws = line.split(",");
+				if(ws.length != m_featureSize)
+					System.out.println("[error]Wrong dimension of the user's weights!");
+				else{
+					weights = new double[ws.length];
+					for(int i=0; i<ws.length; i++){
+						weights[i] = Double.valueOf(ws[i]);
+					}
+				}
+			}
+			reader.close();
+		} catch(IOException e){
+			System.err.format("[Error]Failed to open file %s!!", fileName);
+			e.printStackTrace();
+		}
+		return weights;
+	}
+
+	//Access the index of similarity.
+	int getIndex(int i, int j) {
+		if (i<j) {//swap
+			int t = i;
+			i = j;
+			j = t;
+		} else if(i == j){
+			System.out.println("The pair has the same indexes!");
+			return 0;
+		} 
+		return i*(i-1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
+	}
+	//If the euclidean distance is small, then the pair is similar.
+	public double Euclidean(double[] a, double[] b){
+		double res = 0;
+		if(a.length != b.length)
+			return res;
+		else{
+			for(int i=0; i<a.length; i++){
+				res += (a[i]-b[i])*(a[i]-b[i]);
+			}
+		}
+		if(1/Math.sqrt(res) == 0)
+			System.out.println("Sim 0 in Euclidean!");
+		return 1/Math.sqrt(res);
+	}
+//	//For each user, construct neighbors based on the given number of neighbors.
+//	public void constructNeighborhood(){
+//		MyPriorityQueue<_RankItem> neighborQ = new MyPriorityQueue<_RankItem>(m_k);
+//		int count = 0;
+//		String tmp;
+//		Neighbor[] neighbors;
+//		for(int i=0; i<m_totalUsers; i++){
+//			//init for each user.
+//			count = 0;
+//			neighborQ.clear();
+//			tmp = m_userIDs[i];
+//			neighbors = new Neighbor[m_k];
+//			//Traverse all the users to get the top k nearest neighbors.
+//			for(int j=i+1; j<m_totalUsers; j++)
+//				neighborQ.add(new _RankItem(j, getSimilarity(i, j)));
+//			for(_RankItem n: neighborQ)
+//				neighbors[count++] = new Neighbor(m_userIDs[n.m_index], n.m_index, n.m_value);
+//			//Store the top k neighbors to the user.
+//			m_users.get(tmp).setNeighbors(neighbors);
+//		}
+//	}
+	
+	public double getSimilarity(int i, int j){
+		int index = getIndex(i, j);
+		if(index == 47516626)
+			System.out.println("bug here.");
+		return m_similarity[index];
+	}
+	
+	//The ranking score is based on the set of users. For each item, there is a set of neighbors.
+	public double calculateRankScore(_User u, _Review r){
+		int userIndex = m_userIDIndex.get(u.getUserID());
+		double rankSum = 0;
+		double simSum = 0;
+		String itemID = r.getItemID();
+		
+		//select top k users who have purchased this item.
+		ArrayList<Integer> candidates = m_itemIDUserIndex.get(itemID);
+		if(m_avgFlag){
+			for(int c: candidates){
+				double label = m_users.get(c).getItemIDRating().get(itemID);
+				rankSum += label;
+				simSum++;
+			}
+			return rankSum/ simSum;
+		} else{
+			MyPriorityQueue<_RankItem> neighbors;
+			if(candidates.size() < m_k)
+				neighbors = new MyPriorityQueue<_RankItem>(candidates.size());
+			else
+				neighbors = new MyPriorityQueue<_RankItem>(m_k);
+			//collect k nearest neighbors for each item of the user.
+			for(int c: candidates){
+				if(c != userIndex)
+					neighbors.add(new _RankItem(c, getSimilarity(userIndex, c)));
+			}
+			//Calculate the value given by the neighbors and similarity;
+			for(_RankItem ri: neighbors){
+				int label = m_users.get(ri.m_index).getItemIDRating().get(itemID);
+				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
+				simSum += m_equalWeight ? 1: ri.m_value;
+			}
+		}
+		if( simSum == 0) 
+			return 0;
+		else
+			return rankSum/simSum;
+	}
+	
+	// For each user, construct neighbors.
+	public HashMap<String, ArrayList<Integer>> constructRandomNeighbors(){
+		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = new HashMap<String, ArrayList<Integer>>();
+		for(_User u: m_users)
+			userIDRdmNeighbors.put(u.getUserID(), getRandomNeighbors(u));
+		return userIDRdmNeighbors;
+	}
+	// Get neighbor indexes of the users.
+	public ArrayList<Integer> getRandomNeighbors(_User u){
+		ArrayList<Integer> indexes = new ArrayList<Integer>();
+		_Review review;
+		for(int i=u.getReviewSize(); i<u.getReviewSize()*m_time; i++){
+			int randomIndex = (int) (Math.random() * m_totalReviews.size());
+			review = m_totalReviews.get(randomIndex);
+			while(u.getReviews().contains(review)){
+				randomIndex = (int) (Math.random() * m_totalReviews.size());
+				review = m_totalReviews.get(randomIndex);
+			}
+			indexes.add(randomIndex);
+		}
+		return indexes;
+	}
+	
+	public void calculatenDCGMAP(_User u){
+		
+		int rdmIndex = 0;
+		int reviewSize = u.getReviewSize();
+		int userIndex = m_userIDIndex.get(u.getUserID());
+		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
+		
+		_Review review;
+		int totalReviewSize = reviewSize*m_time;
+		int[] rank = new int[totalReviewSize];
+		Pair[] realRank = new Pair[totalReviewSize];
+		ArrayList<Integer> rdmIndexes = m_userIDRdmNeighbors.get(u.getUserID());
+		
+		//Calculate the ideal rank and real rank.
+		for(int i=0; i<totalReviewSize; i++){
+			if(i < reviewSize){
+				review = u.getReviews().get(i);
+				rank[i] = review.getYLabel() + 1;
+				realRank[i]=new Pair(rank[i], calculateRankScore(u, review));
+			} else{
+				rdmIndex = rdmIndexes.get(i-reviewSize);
+				review = m_totalReviews.get(rdmIndex);
+				rank[i] = 0;
+//				double score = calculateRankScore(u, review);
+//				System.out.println(score);
+				realRank[i] = new Pair(rank[i], calculateRankScore(u, review));
+			}
+		}
+		
+		rank = sortPrimitives(rank);
+		realRank = mergeSort(realRank);
+//		Collections.sort(realRank, new Comparator<Pair>(){
+//			public int compare(Pair p1, Pair p2){
+//				if (p1.getValue() > p2.getValue())
+//					return -1;
+//				else if (p1.getValue() < p2.getValue())
+//					return 1;
+//				else 
+//					return 0;
+//			}
+//		});
+		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
+		for(int i=0; i<rank.length; i++){
+			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
+			DCG += (Math.pow(2, realRank[i].getLabel())-1)/(Math.log(i+2));
+			if(realRank[i].getLabel() >= 1){
+				PatK = (count+1)/((double)i+1);
+				AP += PatK;
+				count++;
+			}
+		}
+	
+//		System.out.format("DCG:%.4f\tiDCG:%.4f\tAP:%.4f\t%.1f\n", DCG, iDCG, AP, count);
+		m_NDCGs[userIndex] = DCG/iDCG;
+		m_MAPs[userIndex] = AP/count;
+		
+		m_ranks[userIndex] = rank;
+		m_realRanks[userIndex] = realRank;
+		u.setNDCG(m_NDCGs[userIndex]);	
+		u.setMAP(m_MAPs[userIndex]);
+	}
+//	public void calculatenDCGMAP(_User u){
+//		
+//		int randomIndex = 0;
+//		int reviewSize = u.getReviewSize();
+//		int userIndex = m_userIDIndex.get(u.getUserID());
+//		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
+//		
+//		_Review review;
+//		_Review[] reviews = new _Review[reviewSize*m_time];
+//		int[] rank = new int[reviewSize];
+//		Pair[] realRank = new Pair[reviewSize];
+//		
+//		// Copy the user's own reviews in to the reviews array.
+//		Arrays.copyOfRange(reviews, 0, reviewSize);
+//		
+//		//Calculate the ideal rank and real rank.
+//		for(int i=0; i<reviews.length; i++){
+//			if(i < reviewSize){
+//				review = u.getReviews().get(i);
+//				rank[i] = review.getYLabel();
+//				realRank[i]=new Pair(rank[i], calculateRankScore(u, review));
+//			} else{
+//				randomIndex = (int) (Math.random() * m_totalReviews.size());
+//				review = m_totalReviews.get(randomIndex);
+//				while(u.getReviews().contains(review)){
+//					randomIndex = (int) (Math.random() * m_totalReviews.size());
+//					review = m_totalReviews.get(randomIndex);
+//				}	
+//				rank[i] = 0;
+//				realRank[i] = new Pair(rank[i], calculateRankScore(u, review));
+//			}
+//		}
+//		
+//		rank = sortPrimitives(rank);
+//		realRank = mergeSort(realRank);
+////		Collections.sort(realRank, new Comparator<Pair>(){
+////			public int compare(Pair p1, Pair p2){
+////				if (p1.getValue() > p2.getValue())
+////					return -1;
+////				else if (p1.getValue() < p2.getValue())
+////					return 1;
+////				else 
+////					return 0;
+////			}
+////		});
+//		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
+//		for(int i=0; i<rank.length; i++){
+//			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
+//			DCG += (Math.pow(2, realRank[i].getLabel())-1)/(Math.log(i+2));
+//			if(realRank[i].getLabel() >= 1){
+//				PatK = (count+1)/((double)i+1);
+//				AP += PatK;
+//				count++;
+//			}
+//		}
+//	
+//		m_NDCGs[userIndex] = DCG/iDCG;
+//		m_MAPs[userIndex] = AP/count;
+//		
+//		u.setNDCG(m_NDCGs[userIndex]);	
+//		u.setMAP(m_MAPs[userIndex]);
+//	}
+	public Pair[] mergeSort(Pair[] rank){
+		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
+		for(int i=0; i<rank.length; i=i+2){
+			//If the list has odd members.
+			if((i+1)>(rank.length-1)){
+				Pair[] tmp = new Pair[]{rank[i]};
+				collection.add(tmp);
+			} else{
+				Pair v1 = rank[i], v2 = rank[i+1];
+				if(v1.getValue() < v2.getValue()){
+					Pair[] tmp = new Pair[]{v2, v1};
+					collection.add(tmp);
+				} else{
+					Pair[] tmp = new Pair[]{v1, v2};
+					collection.add(tmp);
+				}
+			}
+		}
+		while(collection.size()>1){
+			ArrayList<Pair[]> current = new ArrayList<Pair[]>();
+			for(int i=0; i<collection.size();i+=2){
+				if((i+1) <= collection.size()-1){
+					Pair[] merge = merge(collection.get(i), collection.get(i+1));
+					current.add(merge);
+				} else
+					current.add(collection.get(i));
+			}
+			collection.clear();
+			collection.addAll(current);
+		}
+		return collection.get(0);
+	}
+	
+	public Pair[] merge(Pair[] a, Pair[] b){
+		Pair[] res = new Pair[a.length + b.length];
+		int pointer1 = 0, pointer2 = 0, count = 0;
+		while(pointer1 < a.length && pointer2 < b.length){
+			if(a[pointer1].getValue() < b[pointer2].getValue()){
+				res[count++] = b[pointer2++];
+			} else{
+				res[count++] = a[pointer1++];
+			}
+		}
+		while(pointer1 < a.length)
+			res[count++] = a[pointer1++];
+			
+		while(pointer2 < b.length)
+			res[count++] = b[pointer2++];
+		return res;
+	}		
+	public int[] sortPrimitives(int[] rank){
+		int[] res = new int[rank.length];
+		Arrays.sort(rank);
+		for(int i=0; i<rank.length; i++){
+			res[i] = rank[rank.length-1-i];
+		}
+		return res;
+	}
+	
+	// The function for calculating all NDCGs and MAPs.
+	public void calculatAllNDCGMAP(){
+		for(_User u: m_users)
+			calculatenDCGMAP(u);
+	}
+	
+	public void calcuateSaveAvgNDCGMAP(String fileName) throws FileNotFoundException{
+		System.out.println("Start writing NDCG and MAPs.");
+		PrintWriter writer = new PrintWriter(new File(fileName));
+		double sumNDCG = 0, sumMAP = 0;
+		String itemID;
+		_User u;
+		writer.format("UserIndex\tNoReviews\tNDCG\tMAP\n");
+		for(int i=0; i < m_users.size(); i++){
+			u = m_users.get(i);
+			writer.format("%s\t%d\t%.4f\t%.4f\n", u.getUserID(), u.getReviewSize(), m_NDCGs[i], m_MAPs[i]);
+			for(_Review r: u.getReviews())
+				writer.format("%d\t", m_itemIDUserIndex.get(r.getItemID()).size());
+			writer.write("\n");
+			for(int rdmIndex: m_userIDRdmNeighbors.get(u.getUserID())){
+				itemID = m_totalReviews.get(rdmIndex).getItemID();
+				writer.write(m_itemIDUserIndex.get(itemID).size()+"\t");
+			}
+			writer.write("\n---------------------------------\n");
+			for(int r: m_ranks[i])
+				writer.write(r+"\t");
+			writer.write("\n");
+			for(Pair p: m_realRanks[i])
+				writer.write(p.m_label+"\t");
+			writer.write("\n==================================\n");
+			
+			sumNDCG += m_NDCGs[i];
+			if(Double.isNaN(m_NDCGs[i]))
+				System.out.print("*");
+			sumMAP += m_MAPs[i];
+			if(Double.isNaN(m_MAPs[i]))
+				System.out.print("*");
+		}
+		m_avgNDCG = sumNDCG/m_users.size();
+		m_avgMAP = sumMAP/m_users.size();
+		writer.format("avg\t%.4f\t%.4f\n", m_avgNDCG, m_avgMAP);
+		writer.close();
+	}
+	
+	public void calcuateAvgNDCGMAP(){
+		double sumNDCG = 0, sumMAP = 0;
+		for(int i=0; i < m_users.size(); i++){
+			sumNDCG += m_NDCGs[i];
+			if(Double.isNaN(m_NDCGs[i]))
+				System.out.print("*");
+			sumMAP += m_MAPs[i];
+			if(Double.isNaN(m_MAPs[i]))
+				System.out.print("*");
+		}
+		m_avgNDCG = sumNDCG/m_users.size();
+		m_avgMAP = sumMAP/m_users.size();
+	}
+	
+	public double getAvgNDCG(){
+		return m_avgNDCG;
+	}
+	
+	public double getAvgMAP(){
+		return m_avgMAP;
+	}
+	
+	public double getItemStat(){
+		double avg = 0;
+		for(String itemID: m_itemIDUserIndex.keySet()){
+			avg += m_itemIDUserIndex.get(itemID).size();
+		}
+		return avg/ m_itemIDUserIndex.size();
+	}
+}
