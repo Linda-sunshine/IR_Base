@@ -20,7 +20,8 @@ import utils.Utils;
 
 public class LDAGibbs4AC extends LDA_Gibbs {
 	public LDAGibbs4AC(int number_of_iteration, double converge, double beta,
-	_Corpus c, double lambda, int number_of_topics, double alpha, double burnIn, int lag, double ksi, double tau) {
+			_Corpus c, double lambda, int number_of_topics, double alpha,
+			double burnIn, int lag) {
 		super( number_of_iteration,  converge,  beta, c, lambda, number_of_topics,  alpha,  burnIn,  lag);
 	}
 
@@ -52,13 +53,26 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 	}
 
 	protected void collectStats(_Doc d) {
-		for (int k = 0; k < this.number_of_topics; k++)
-			d.m_topics[k] += d.m_sstat[k];
 		if (d instanceof _ParentDoc) {
-			((_ParentDoc) d).collectTopicWordStat();
+			collectParentStats(d);
+		}else{
+			collectChildStats(d);
 		}
 	}
 
+	protected void collectParentStats(_Doc d) {
+		_ParentDoc pDoc = (_ParentDoc) d;
+		for (int k = 0; k < this.number_of_topics; k++)
+			pDoc.m_topics[k] += pDoc.m_sstat[k];
+		pDoc.collectTopicWordStat();
+	}
+	
+	protected void collectChildStats(_Doc d) {
+		_ChildDoc cDoc = (_ChildDoc) d;
+		for (int k = 0; k < this.number_of_topics; k++)
+			cDoc.m_topics[k] += cDoc.m_sstat[k];
+	}
+	
 	protected void estThetaInDoc(_Doc d) {
 		super.estThetaInDoc(d);
 		if (d instanceof _ParentDoc) {
@@ -240,9 +254,6 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			for (int k = 0; k < number_of_topics; k++) {
 				double wordPerTopicLikelihood = d.m_topics[k]
 						* topic_term_probabilty[k][wid];
-				// double wordPerTopicLikelihood = wordByTopicProb(k, wid)
-				// * topicInDocProb(k, d)
-				// / (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);
@@ -261,9 +272,6 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			for (int k = 0; k < number_of_topics; k++) {
 				double wordPerTopicLikelihood = d.m_topics[k]
 						* topic_term_probabilty[k][wid];
-				// double wordPerTopicLikelihood = wordByTopicProb(k, wid)
-				// * topicInDocProb(k, d)
-				// / (docInferLen + number_of_topics * d_alpha);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			docLogLikelihood += Math.log(wordLogLikelihood);
@@ -299,27 +307,63 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		double logLikelihood = 0.0;
 
 		for (_Doc d : m_trainSet) {
-			logLikelihood += calculate_log_likelihood(d);
+			if (d instanceof _ParentDoc)
+				logLikelihood += calculate_log_likelihood4Parent(d);
+			else
+				logLikelihood += calculate_log_likelihood4Child(d);
 		}
 
 		return logLikelihood;
 	}
 
-	protected double calculate_log_likelihood(_Doc d) {
+	protected double calculate_log_likelihood4Parent(_Doc d) {
 		double docLogLikelihood = 0.0;
 		_SparseFeature[] fv = d.getSparse();
+
+		double topicSum = Utils.sumOfArray(d.m_sstat);
+		double alphaSum = number_of_topics * d_alpha;
 
 		for (int j = 0; j < fv.length; j++) {
 			int wid = fv[j].getIndex();
 			double value = fv[j].getValue();
 
 			double wordLogLikelihood = 0;
-			double totalTopicStat = Utils.sumOfArray(d.m_sstat);
 			for (int k = 0; k < number_of_topics; k++) {
 
 				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
-						* topicInDocProb(k, d)
-						/ (totalTopicStat + number_of_topics * d_alpha);
+						* topicInDocProb(k, d) / (topicSum + alphaSum);
+				wordLogLikelihood += wordPerTopicLikelihood;
+
+			}
+			if (wordLogLikelihood < 1e-10) {
+				wordLogLikelihood += 1e-10;
+				System.out.println("small log likelihood per word");
+			}
+
+			wordLogLikelihood = Math.log(wordLogLikelihood);
+
+			docLogLikelihood += value * wordLogLikelihood;
+		}
+
+		return docLogLikelihood;
+	}
+
+	protected double calculate_log_likelihood4Child(_Doc d) {
+		double docLogLikelihood = 0.0;
+		_SparseFeature[] fv = d.getSparse();
+
+		double topicSum = Utils.sumOfArray(d.m_sstat);
+		double alphaSum = number_of_topics * d_alpha;
+
+		for (int j = 0; j < fv.length; j++) {
+			int wid = fv[j].getIndex();
+			double value = fv[j].getValue();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+
+				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
+						* topicInDocProb(k, d) / (topicSum + alphaSum);
 				wordLogLikelihood += wordPerTopicLikelihood;
 
 			}

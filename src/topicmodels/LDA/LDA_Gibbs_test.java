@@ -4,6 +4,7 @@ import structures._Corpus;
 import structures._Doc;
 import structures._Word;
 import topicmodels.multithreads.TopicModelWorker;
+import utils.Utils;
 
 public class LDA_Gibbs_test extends LDA_Gibbs {
 	public LDA_Gibbs_test(int number_of_iteration, double converge,
@@ -110,14 +111,17 @@ public class LDA_Gibbs_test extends LDA_Gibbs {
 		int wid = 0;
 
 		double docLogLikelihood = 0;
-
+		
+		double docTopicSum = Utils.sumOfArray(d.m_sstat);
+		
 		for (_Word w : d.getWords()) {
 			wid = w.getIndex();
 
 			double wordLogLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
 				wordLogLikelihood += wordByTopicProb(k, wid)
-						* topicInDocProb(k, d);
+						* topicInDocProb(k, d)
+						/ (docTopicSum + number_of_topics * d_alpha);
 			}
 			wordLogLikelihood = Math.log(wordLogLikelihood);
 
