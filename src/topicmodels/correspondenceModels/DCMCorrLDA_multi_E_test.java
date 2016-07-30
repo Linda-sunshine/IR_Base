@@ -18,15 +18,15 @@ import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
-public class DCMCorrLDA_test extends DCMCorrLDA {
-	
-	public DCMCorrLDA_test(int number_of_iteration, double converge,
-			double beta, _Corpus c, double lambda, int number_of_topics,
-			double alpha_a, double alpha_c, double burnIn, double ksi,
-			double tau, int lag, int newtonIter, double newtonConverge) {
+public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
+	public DCMCorrLDA_multi_E_test(int number_of_iteration, double converge, double beta,
+			_Corpus c, double lambda, int number_of_topics, 
+			double alpha, double alphaC, double burnIn, double ksi, double tau,
+			int lag, int newtonIter, double newtonConverge) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-				alpha_a, alpha_c, burnIn, ksi, tau, lag, newtonIter,
+				alpha, alphaC, burnIn, ksi, tau, lag, newtonIter,
 				newtonConverge);
+
 	}
 
 	public void printTopWords(int k, String betaFile) {
@@ -228,8 +228,7 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 				int wid = w.getIndex();
 
 				for (int k = 0; k < number_of_topics; k++) {
-					wordLikelihood += childTopicInDocProb(k, cDoc, pDoc)
-							* childWordByTopicProb(k, wid, pDoc);
+					wordLikelihood += cDoc.m_topics[k] *pDoc.m_wordTopic_prob[k][wid];
 				}
 
 				stnLogLikelihood += wordLikelihood;
@@ -279,4 +278,5 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 			System.err.print("File Not Found");
 		}
 	}
+
 }

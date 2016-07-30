@@ -312,7 +312,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		return docLogLikelihood;
 	}
 	
-	protected double cal_logLikelihood_partial4Child(_ChildDoc d) {
+	protected double cal_logLikelihood_partial4Child(_Doc d) {
 //		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
 		double docLogLikelihood = 0.0;
 

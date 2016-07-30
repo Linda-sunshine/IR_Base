@@ -2,8 +2,8 @@ package topicmodels.correspondenceModels;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -214,7 +214,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 	
 	@Override
-	public void sampleInChildDoc(_ChildDoc d){
+	public void sampleInChildDoc(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		int wid, tid, xid;
 		double normalizedProb;
@@ -309,7 +309,7 @@ public class ACCTM_CZLR extends ACCTM_CZ{
 	}
 
 	@Override
-	protected double logLikelihoodByIntegrateTopics(_ChildDoc d){
+	protected double calculate_log_likelihood4Child(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0;
 

@@ -33,7 +33,7 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 			double beta, _Corpus c, double lambda, int number_of_topics,
 			double alpha, double burnIn, int lag, double ksi, double tau) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-				alpha, burnIn, lag, ksi, tau);
+				alpha, burnIn, lag);
 
 		m_LM = new languageModelBaseLine(c, ksi);
 		m_tau = tau;

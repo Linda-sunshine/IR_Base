@@ -239,12 +239,12 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 	protected double cal_logLikelihood_partial(_Doc d) {
 		if (d instanceof _ParentDoc)
-			return cal_logLikelihood_partial4Parent((_ParentDoc) d);
+			return cal_logLikelihood_partial4Parent(d);
 		else
-			return cal_logLikelihood_partial4Child((_ChildDoc) d);
+			return cal_logLikelihood_partial4Child(d);
 	}
 
-	protected double cal_logLikelihood_partial4Parent(_ParentDoc d) {
+	protected double cal_logLikelihood_partial4Parent(_Doc d) {
 		double docLogLikelihood = 0.0;
 
 		for (_Word w : d.getTestWords()) {
@@ -262,7 +262,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
-	protected double cal_logLikelihood_partial4Child(_ChildDoc d) {
+	protected double cal_logLikelihood_partial4Child(_Doc d) {
 		double docLogLikelihood = 0.0;
 
 		for (_Word w : d.getTestWords()) {

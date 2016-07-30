@@ -247,9 +247,9 @@ public class ACCTM extends corrLDA_Gibbs {
 
 	protected double cal_logLikelihood_partial(_Doc d) {
 		if(d instanceof _ParentDoc)
-			return cal_logLikelihood_partial4Parent((_ParentDoc) d);
+			return cal_logLikelihood_partial4Parent(d);
 		else
-			return cal_logLikelihood_partial4Child((_ChildDoc) d);
+			return cal_logLikelihood_partial4Child(d);
 	}	
 	
 	@Override
