@@ -171,6 +171,7 @@ public class DCMLDA extends LDA_Gibbs {
 			for (_Word w : d.getWords()) {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
+				word_topic_sstat[tid][wid] ++;
 				m_docWordTopicStats[docID][tid][wid]++;
 
 			}
@@ -194,6 +195,9 @@ public class DCMLDA extends LDA_Gibbs {
 			d.m_sstat[tid]--;
 			m_docWordTopicStats[docID][tid][wid]--;
 			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid] --;
+			
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
@@ -215,6 +219,9 @@ public class DCMLDA extends LDA_Gibbs {
 			w.setTopic(tid);
 			d.m_sstat[tid]++;
 			m_docWordTopicStats[docID][tid][wid]++;
+			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid]++;
 		}
 		
 		return 0;
@@ -284,6 +291,10 @@ public class DCMLDA extends LDA_Gibbs {
 
 		for (_Doc d : m_trainSet)
 			collectStats(d);
+		
+		for(int k=0; k<number_of_topics; k++)
+			for(int v=0; v<vocabulary_size; v++)
+				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
 
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
@@ -557,6 +568,14 @@ public class DCMLDA extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
+	protected void finalEst(){
+		for(int i=0; i<number_of_topics; i++)
+			Utils.L1Normalization(topic_term_probabilty[i]);
+		
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+	}
+	
 	protected void estThetaInDoc(_Doc d) {
 
 		int docID = d.getID();
@@ -575,8 +594,11 @@ public class DCMLDA extends LDA_Gibbs {
 
 		Arrays.fill(m_sstat, 0);
 
-		System.out.println("print top words");
-		printTopWords_liteVersion(k, betaFile);
+		System.out.println("print top words beta");
+		String topBetaFiel = betaFile.replace("topWords.txt", "topBetaWords.txt");
+		printTopWords_liteVersion(k, topBetaFiel);
+		
+		printTopWords(k, betaFile);
 	}
 	
 	protected void debugOutput(String filePrefix) {
@@ -611,6 +633,40 @@ public class DCMLDA extends LDA_Gibbs {
 
 	}
 
+	public void printTopWords_global(int k, String topWordPath){
+		System.out.println("TopWord FilePath:"+topWordPath);
+		
+		Arrays.fill(m_sstat, 0);
+		
+		for(_Doc d:m_trainSet){
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i]):d.m_topics[i];
+		}
+		
+		Utils.L1Normalization(m_sstat);
+		
+		try{
+			PrintWriter pw = new PrintWriter(new File(topWordPath));
+			
+			for(int i=0; i<m_beta.length; i++){
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+				for(int j=0; j<vocabulary_size; j++){
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+				}
+				
+				pw.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+				for(_RankItem it:fVector)
+					pw.format("%s(%.5f)\t", it.m_name, m_logSpace?Math.exp(it.m_value):it.m_value);
+				pw.write("\n");
+			}
+			
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			
+		}
+	}
+	
 	public void printTopWords_liteVersion(int k, String topWordPath) {
 		System.out.println("TopWord FilePath:" + topWordPath);
 
