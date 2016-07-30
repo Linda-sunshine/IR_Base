@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import topicmodels.markovmodel.HTSM;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
 import utils.Utils;
@@ -194,7 +195,7 @@ public abstract class TopicModel {
 		return likelihood;
 	}
 	
-	void multithread_inference() {
+	protected void multithread_inference() {
 		//clear up for adding new testing documents
 		for(int i=0; i<m_workers.length; i++) {
 			m_workers[i].setType(RunType.RT_inference);

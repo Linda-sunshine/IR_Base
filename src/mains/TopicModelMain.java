@@ -10,31 +10,24 @@ import java.util.Date;
 
 import structures._Corpus;
 import structures._Doc;
-import topicmodels.ACCTM;
-import topicmodels.ACCTM_C;
-import topicmodels.ACCTM_CHard;
-import topicmodels.ACCTM_CLR;
-import topicmodels.ACCTM_CZ;
-import topicmodels.ACCTM_CZLR;
-import topicmodels.ACCTM_P;
-import topicmodels.ACCTM_TwoTheta;
-import topicmodels.DCMCorrLDA;
-import topicmodels.DCMCorrLDA_multi;
-import topicmodels.DCMLDA;
-import topicmodels.HTMM;
-import topicmodels.HTSM;
-import topicmodels.LDA_Gibbs;
-import topicmodels.LDA_Gibbs_Debug;
-import topicmodels.LDAonArticles;
-import topicmodels.LRHTMM;
-import topicmodels.LRHTSM;
-import topicmodels.correspondence_LDA_Gibbs;
-import topicmodels.pLSA;
 import topicmodels.twoTopic;
-import topicmodels.multithreads.DCMCorrLDA_multi_E;
-import topicmodels.multithreads.DCMLDA_multithread;
-import topicmodels.multithreads.LDA_Variational_multithread;
-import topicmodels.multithreads.pLSA_multithread;
+import topicmodels.DCM.DCMLDA_test;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.LDA.LDA_Gibbs_test;
+import topicmodels.correspondenceModels.ACCTM;
+import topicmodels.correspondenceModels.ACCTM_C;
+import topicmodels.correspondenceModels.ACCTM_CHard;
+import topicmodels.correspondenceModels.ACCTM_CZ;
+import topicmodels.correspondenceModels.ACCTM_CZLR;
+import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.corrLDA_Gibbs;
+import topicmodels.markovmodel.HTMM;
+import topicmodels.markovmodel.HTSM;
+import topicmodels.markovmodel.LRHTMM;
+import topicmodels.markovmodel.LRHTSM;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
@@ -58,7 +51,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMCorrLDA_multi_E";
+		String topicmodel = "DCMCorrLDA_multi_E_test";
 
 
 		String category = "tablet";
@@ -73,8 +66,8 @@ public class TopicModelMain {
 		double varConverge = 1e-5;
 		int topK = 20, number_of_iteration = 50, crossV = 1;
 
-		int gibbs_iteration = 500, gibbs_lag = 50;
-		int displayLap = 50;
+		int gibbs_iteration = 1000, gibbs_lag = 50;
+		int displayLap = 20;
 		// gibbs_iteration = 4;
 		// gibbs_lag = 2;
 		// displayLap = 2;
@@ -193,11 +186,6 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
 		
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);			
@@ -207,7 +195,7 @@ public class TopicModelMain {
 //		_Corpus c = analyzer.getCorpus();
 		
 		if (topicmodel.equals("2topic")) {
-			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda, analyzer.getBackgroundProb());
+			twoTopic model = new twoTopic(number_of_iteration, converge, beta, c, lambda);
 			
 			if (crossV<=1) {
 				for(_Doc d:c.getCollection()) {
@@ -216,8 +204,6 @@ public class TopicModelMain {
 				}
 			} else 
 				model.crossValidation(crossV);
-		} else if (topicmodel.equals("Tensor")) {
-			c.saveAs3WayTensor("./data/vectors/3way_tensor.txt");
 		} else {
 			pLSA model = null;
 			
@@ -245,33 +231,18 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-			} else if (topicmodel.equals("ACCTM_TwoTheta")) {
-
-				double mu = 1.0;
-				double[] gamma = {2, 2};
-				double ksi = 800;
-				double tau = 0.5;
-				model = new ACCTM_TwoTheta(gibbs_iteration, 0, beta-1, c,
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, ksi, tau);
-			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
+			} else if(topicmodel.equals("correspondence_LDA_Gibbs")){
 				double ksi = 800;
 				double tau = 0.7;
-				number_of_topics = 15;
-				model = new LDA_Gibbs_Debug(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
-			}else if(topicmodel.equals("correspondence_LDA_Gibbs")){
-				double ksi = 800;
-				double tau = 0.7;
-				model = new correspondence_LDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+				model = new corrLDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
 			}else if(topicmodel.equals("ACCTM")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
 				double ksi = 800;
 				double tau = 0.7;
 				model = new ACCTM(gibbs_iteration, 0, beta-1, c,
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag);
 			}else if(topicmodel.equals("ACCTM_C")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -281,7 +252,7 @@ public class TopicModelMain {
 				converge = 1e-5;
 				model = new ACCTM_C(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, ksi, tau);
+						gamma);
 			}else if(topicmodel.equals("ACCTM_CHard")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -290,13 +261,7 @@ public class TopicModelMain {
 				beta = 1.001;
 				model = new ACCTM_CHard(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, ksi, tau);
-			}else if(topicmodel.equals("LDAonArticles")){
-				double ksi = 800;
-				double tau = 0.7;
-				
-				model = new LDAonArticles(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, ksi, tau);
+						gamma);
 			}else if(topicmodel.equals("ACCTM_CZ")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -307,7 +272,7 @@ public class TopicModelMain {
 				number_of_topics = 30;
 				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, ksi, tau);
+						gamma);
 			}else if(topicmodel.equals("ACCTM_CZLR")){
 				double mu = 1.0;
 				double[] gamma = {0.5, 0.5};
@@ -318,73 +283,35 @@ public class TopicModelMain {
 				number_of_topics = 30;
 				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("ACCTM_CLR")){
-				double mu = 1.0;
-				double[] gamma = {0.5, 0.5};
-				beta = 1.001;
-				alpha = 1.01;
-				double ksi = 800;
-				double tau = 0.7;
-				number_of_topics = 30;
-				converge = 1e-9;
-				model = new ACCTM_CLR(gibbs_iteration, converge, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("ACCTM_P")){
-				double mu = 1.0;
-				double[] gamma = {0.5, 0.5};
-				beta = 1.001;
-				alpha = 1.01;
-				double ksi = 800;
-				double tau = 0.7;
-				number_of_topics = 30;
-				converge = 1e-9;
-				model = new ACCTM_P(gibbs_iteration, converge, beta-1, c, 
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma, ksi, tau);
-			}else if(topicmodel.equals("DCMLDA")){
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma);
+			} else if (topicmodel.equals("DCMLDA_test")) {
 				converge = 1e-3;
 				int newtonIter = 50;
-				double newtonConverge = 1e-2;
-				number_of_topics = 5;
-				model = new DCMLDA(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
-			}else if(topicmodel.equals("DCMLDA_multithread")){
-				converge = 1e-2;
-				beta = 1 + 1e-6;
-				int newtonIter = 1000;
-				double newtonConverge = 1e-2;
-				number_of_topics = 5;
-				model = new DCMLDA_multithread(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
-			}else if(topicmodel.equals("DCMCorrLDA")){
-				converge = 1e-4;
-				beta = 1 + 1e-6;
-				int newtonIter = 1000;
-				double newtonConverge = 1e-4;
-				number_of_topics = 15;
-				double alphaC = 1+1e-3;
-				model = new DCMCorrLDA(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, alphaC-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
-			}else if(topicmodel.equals("DCMCorrLDA_multi")){
-				converge = 1e-4;
-				beta = 1 + 1e-6;
-				int newtonIter = 1000;
-				double newtonConverge = 1e-4;
-				number_of_topics = 15;
-				double alphaC = 1+1e-3;
-				model = new DCMCorrLDA_multi(gibbs_iteration, converge, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling
-						lambda, number_of_topics, alpha-1, alphaC-1, burnIn, gibbs_lag, newtonIter, newtonConverge);
-			} else if (topicmodel.equals("DCMCorrLDA_multi_E")) {
-				converge = 1e-3;
-				beta = 1 + 1e-6;
-				int newtonIter = 1000;
 				double newtonConverge = 1e-3;
 				number_of_topics = 15;
-				double alphaC = 1 + 1e-3;
-				model = new DCMCorrLDA_multi_E(gibbs_iteration, converge,
+				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
+						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
+						newtonIter, newtonConverge);
+			} else if (topicmodel.equals("LDA_Gibbs_test")) {
+				number_of_topics = 15;
+				// in gibbs sampling, no need to compute
+				// log-likelihood during sampling
+				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
+						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
+			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				number_of_topics = 15;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMCorrLDA_multi_E_test(gibbs_iteration, converge,
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
-						alphaC - 1, burnIn, gibbs_lag, newtonIter,
-						newtonConverge);
+						alphaC,
+						burnIn, ksi, tau, gibbs_lag,
+						newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);

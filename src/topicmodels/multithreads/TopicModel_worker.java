@@ -17,9 +17,9 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 	protected double m_likelihood;
 	protected double m_perplexity;
 	
-	double[][] sstat; // p(w|z)
-	int number_of_topics;
-	int vocabulary_size;
+	protected double[][] sstat; // p(w|z)
+	protected int number_of_topics;
+	protected int vocabulary_size;
 	RunType m_type = RunType.RT_EM;//EM is the default type 	
 	
 	public TopicModel_worker(int number_of_topics, int vocabulary_size) {

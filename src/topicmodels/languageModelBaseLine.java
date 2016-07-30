@@ -27,7 +27,7 @@ public class languageModelBaseLine{
 	public HashMap<Integer, Double> m_wordSstat; //TTF
 	double m_allWordFrequency; //total TTF
 	protected _Corpus m_corpus;
-	double m_smoothingMu;
+	public double m_smoothingMu;
 	double m_allWordFrequencyWithXVal;
 	
 	public languageModelBaseLine(_Corpus c, double mu){
@@ -119,7 +119,7 @@ public class languageModelBaseLine{
 		}
 	}
 	
-	protected double getReferenceProb(int wid){
+	public double getReferenceProb(int wid) {
 		return m_wordSstat.get(wid);
 	}
 	
@@ -369,12 +369,7 @@ public class languageModelBaseLine{
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
-		
+
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);				
 		

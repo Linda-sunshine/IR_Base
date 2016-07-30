@@ -29,9 +29,12 @@ import utils.Utils;
 
 /**
  * @author hongning
- * Keyword based bootstrapping for aspect annotation
+ * Keyword based bootstrapping for aspect segmentation and annotation
+ * Wang, Hongning, Yue Lu, and Chengxiang Zhai. "Latent aspect rating analysis on review text data: a rating regression approach." 
+ * Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining. ACM, 2010.
  */
-public class AspectAnalyzer extends jsonAnalyzer {
+
+public class AspectAnalyzer extends DocAnalyzer {
 	class _Aspect{
 		String m_name;
 		HashSet<Integer> m_keywords; // index corresponding to the controlled vocabulary
@@ -63,26 +66,18 @@ public class AspectAnalyzer extends jsonAnalyzer {
 	int m_chiSize; // top words to be added to aspect keyword list 
 	ArrayList<_Aspect> m_aspects; // a list of aspects specified by keywords
 	int[] m_aspectDist; // distribution of aspects (count in DF)
-	boolean m_aspFlag=false;
+	boolean m_aspByCount = false; // select aspect by maximum count or simple matching
 		
 	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel);
+		super(tokenModel, stnModel, classNo, providedCV, Ngram, threshold);
 	}
-	
-	public AspectAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold, String tagModel, String aspectFile, boolean aspFlag) 
+
+	public AspectAnalyzer(String tokenModel, String stnModel, String tagModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, boolean aspFlag) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, stnModel, tagModel);
+		super(tokenModel, stnModel, tagModel, classNo, providedCV, Ngram, threshold);
 		LoadAspectKeywords(aspectFile);
-		m_aspFlag = aspFlag;
-	}
-	
-	public AspectAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String aspectFile, int chiSize, boolean aspFlag)
-			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
-		m_chiSize = chiSize;
-		LoadAspectKeywords(aspectFile);
-		m_aspFlag = aspFlag;
+		m_aspByCount = aspFlag;
 	}
 
 	public void LoadAspectKeywords(String filename){
@@ -92,7 +87,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			String tmpTxt;
 			String[] container;
 			HashSet<Integer> keywords;
-			while( (tmpTxt=reader.readLine()) != null ){
+			while( (tmpTxt=reader.readLine()) != null ) {
 				container = tmpTxt.split("\\s+");
 				keywords = new HashSet<Integer>(container.length-1);
 
@@ -120,8 +115,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 				if ( (count=s.AnnotateByKeyword(m_aspects.get(index).m_keywords))>maxCount ){
 					maxCount = count;
 					sel = index;
-				}
-				else if (count==maxCount)
+				} else if (count==maxCount)
 					sel = -1;//how should we break the tie?
 			}
 			s.setTopic(sel);
@@ -182,7 +176,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			maxChi = 0.0;
 			selID = -1;
 			for(int i=0; i<aspectSize; i++){				
-				chiV = FeatureSelector.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
+				chiV = Utils.ChiSquare(N, DF, DFarray[i], m_aspectDist[i]);				
 				if (chiV > ratio * maxChi){
 					maxChi = chiV;
 					selID = i;
@@ -239,7 +233,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		for(int i = 0; i < m_aspects.size(); i++){
 			HashSet<Integer> keywords = m_aspects.get(i).m_keywords;
 			for(int key: keywords){
-				if(m_aspFlag){
+				if(m_aspByCount){//we will accumulate the matching count for this aspect in the sentence
 					if(spVct.containsKey(key))
 						aspVct[i] += spVct.get(key);
 				} else{
@@ -252,6 +246,7 @@ public class AspectAnalyzer extends jsonAnalyzer {
 		return aspVct;
 	}
 	
+	@Override
 	protected boolean AnalyzeDocWithStnSplit(_Doc doc) {
 		double sentiScore = 0;
 		TokenizeResult result;
@@ -302,45 +297,5 @@ public class AspectAnalyzer extends jsonAnalyzer {
 			rollBack(spVct, y);
 			return false;
 		}
-	}
-	
-	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException {
-		int classNumber = 5; //Define the number of classes
-		int Ngram = 2; //The default value is bigram. 
-		int lengthThreshold = 10; //Document length threshold
-		
-//		/*****Parameters in feature selection.*****/
-		String featureSelection = "DF"; //Feature selection method.
-		int chiSize = 50; // top ChiSquare words for aspect keyword selection
-		String stopwords = "./data/Model/stopwords.dat";
-		double startProb = 0.2; // Used in feature selection, the starting point of the features.
-		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
-		
-		/*****The parameters used in loading files.*****/
-		String folder = "./data/amazon/small";
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model
-		String stnModel = "./data/Model/en-sent.bin"; //Sentence model
-		String posModel = "./data/Model/en-pos-maxent.bin"; // POS model
-		String aspectModel = "./data/Model/aspect_tablet.txt"; // list of keywords in each aspect
-		String aspectOutput = "./data/Model/aspect_output.txt"; // list of keywords in each aspect
-		
-		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
-		String fvFile = String.format("data/Features/fv_%s_small.txt", pattern);
-		String fvStatFile = String.format("data/Features/fv_stat_%s_small.txt", pattern);
-		
-		/****Loading json files*****/
-//		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, null, Ngram, lengthThreshold);		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
-		
-//		/****Feature selection*****/
-//		System.out.println("Performing feature selection, wait...");
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-//		analyzer.SaveCVStat(fvStatFile);
-		
-		/****Aspect annotation*****/
-		analyzer.BootStrapping(aspectModel, aspectOutput, chiSize, 0.9, 10);
 	}
 }

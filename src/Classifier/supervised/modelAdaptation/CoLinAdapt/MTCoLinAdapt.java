@@ -17,7 +17,7 @@ public class MTCoLinAdapt extends MTLinAdapt {
 	@Override
 	public String toString() {
 		return String.format("MT-CoLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,lambda1:%.3f,lambda2:%.3f,k:%d,NB:%s]", 
-				m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_lambda1, m_lambda2, m_topK, m_sType);
+				m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_eta3, m_eta4, m_topK, m_sType);
 	}
 	
 	@Override

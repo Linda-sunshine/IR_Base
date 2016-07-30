@@ -64,12 +64,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		for(int i=0;i<m_numberOfCores;++i){
 			threads.add(  (new Thread() {
 				int core;
+				@Override
 				public void run() {
 					try {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
 							if(f.isFile()){//load the user								
-								loadOneUser(f.getAbsolutePath(),core);
+								loadUser(f.getAbsolutePath(),core);
 							}
 						}
 					} catch(Exception ex) {
@@ -105,7 +106,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	// Load one file as a user here. 
-	public void loadOneUser(String filename, int core){
+	private void loadUser(String filename, int core){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -148,13 +149,13 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	//Tokenizing input text string
-	protected String[] Tokenizer(String source, int core){
+	private String[] Tokenizer(String source, int core){
 		String[] tokens = getTokenizer(core).tokenize(source);
 		return tokens;
 	}
 	
 	//Snowball Stemmer.
-	protected String SnowballStemming(String token, int core){
+	private String SnowballStemming(String token, int core){
 		SnowballStemmer stemmer = getStemmer(core);
 		stemmer.setCurrent(token);
 		if(stemmer.stem())
@@ -164,7 +165,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
-	protected TokenizeResult TokenizerNormalizeStemmer(String source, int core){
+	private TokenizeResult TokenizerNormalizeStemmer(String source, int core){
 		String[] tokens = Tokenizer(source, core); //Original tokens.
 		TokenizeResult result = new TokenizeResult(tokens);
 
@@ -202,7 +203,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.*/
-	protected boolean AnalyzeDoc(_Doc doc, int core) {
+	private boolean AnalyzeDoc(_Doc doc, int core) {
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource(),core);// Three-step analysis.
 		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
@@ -230,7 +231,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	// return a tokenizer using the core number
-	protected Tokenizer getTokenizer(int index){
+	private Tokenizer getTokenizer(int index){
 		if(index==m_numberOfCores-1)
 			return m_tokenizer;
 		else
@@ -238,7 +239,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	// return a stemmer using the core number
-	protected SnowballStemmer getStemmer(int index){
+	private SnowballStemmer getStemmer(int index){
 		if(index==m_numberOfCores-1)
 			return m_stemmer;
 		else

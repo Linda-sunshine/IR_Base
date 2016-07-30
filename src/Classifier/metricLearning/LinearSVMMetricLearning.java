@@ -63,7 +63,7 @@ public class LinearSVMMetricLearning extends GaussianFieldsByRandomWalk {
 			if (xi==null || xj==null)
 				return super.getSimilarity(di, dj);//is this a good back-off?
 			else
-				similarity = Math.exp(Utils.calculateSimilarity(xi, xj));
+				similarity = Math.exp(Utils.dotProduct(xi, xj));
 		} else {
 			Feature[] fv = createLinearFeature(di, dj);
 			if (fv == null)
