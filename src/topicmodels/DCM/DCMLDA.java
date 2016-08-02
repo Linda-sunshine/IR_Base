@@ -169,6 +169,7 @@ public class DCMLDA extends LDA_Gibbs {
 			for (_Word w : d.getWords()) {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
+				word_topic_sstat[tid][wid] ++;
 				m_docWordTopicStats[docID][tid][wid]++;
 
 			}
@@ -192,6 +193,9 @@ public class DCMLDA extends LDA_Gibbs {
 			d.m_sstat[tid]--;
 			m_docWordTopicStats[docID][tid][wid]--;
 			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid] --;
+			
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
@@ -213,6 +217,9 @@ public class DCMLDA extends LDA_Gibbs {
 			w.setTopic(tid);
 			d.m_sstat[tid]++;
 			m_docWordTopicStats[docID][tid][wid]++;
+			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid]++;
 		}
 		
 		return 0;
@@ -233,27 +240,14 @@ public class DCMLDA extends LDA_Gibbs {
 				/ (d.m_sstat[tid] + m_totalBeta[tid]);
 	}
 
-	protected void updateStats(boolean preFlag, _Word w, _Doc d) {
-		int docID = d.getID();
-		int wid = w.getIndex();
-		int tid = w.getTopic();
-
-		if (!preFlag) {
-			d.m_sstat[tid]++;
-			m_docWordTopicStats[docID][tid][wid]++;
-
-		} else {
-			d.m_sstat[tid]--;
-			m_docWordTopicStats[docID][tid][wid]--;
-
-		}
-
-	}
-
 	public void calculate_M_step(int iter, File weightFolder) {
 
 		for (_Doc d : m_trainSet)
 			collectStats(d);
+		
+		for(int k=0; k<number_of_topics; k++)
+			for(int v=0; v<vocabulary_size; v++)
+				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
 
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
@@ -299,7 +293,6 @@ public class DCMLDA extends LDA_Gibbs {
 		Arrays.fill(m_alphaAuxilary, 0);
 		for (int k = 0; k < number_of_topics; k++) {
 			Arrays.fill(topic_term_probabilty[k], 0);
-			Arrays.fill(word_topic_sstat[k], 0);
 		}
 
 		for (_Doc d : m_trainSet) {
@@ -315,7 +308,7 @@ public class DCMLDA extends LDA_Gibbs {
 							/ d.m_sstat[k];
 
 					topic_term_probabilty[k][v] += tempProb;
-					word_topic_sstat[k][v] += tempProb*tempProb;
+				
 				}
 			}
 		}
@@ -326,7 +319,6 @@ public class DCMLDA extends LDA_Gibbs {
 			m_alphaAuxilary[k] /= trainSetSize;
 			for (int v = 0; v < vocabulary_size; v++) {
 				topic_term_probabilty[k][v] /= trainSetSize;
-				word_topic_sstat[k][v] /= trainSetSize;
 			}
 		}
 	
@@ -527,6 +519,14 @@ public class DCMLDA extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
+	protected void finalEst(){
+		for(int i=0; i<number_of_topics; i++)
+			Utils.L1Normalization(topic_term_probabilty[i]);
+		
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+	}
+	
 	protected void estThetaInDoc(_Doc d) {
 
 		int docID = d.getID();
@@ -539,6 +539,7 @@ public class DCMLDA extends LDA_Gibbs {
 	public void printTopWords(int k, String betaFile) {
 		double logLikelihood = calculate_log_likelihood();
 		System.out.format("final log likelihood %.3f\t", logLikelihood);
+
 		System.out.println("TopWord FilePath:" + betaFile);
 
 		Arrays.fill(m_sstat, 0);
