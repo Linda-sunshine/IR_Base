@@ -364,6 +364,8 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 				double wordPerTopicLikelihood = wordByTopicProb(k, wid)
 						* topicInDocProb(k, d) / (topicSum + alphaSum);
+				// double wordPerTopicLikelihood = d.m_topics[k]
+				// * topic_term_probabilty[k][wid];
 				wordLogLikelihood += wordPerTopicLikelihood;
 
 			}

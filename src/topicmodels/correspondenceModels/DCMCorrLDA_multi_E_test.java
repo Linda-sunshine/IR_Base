@@ -39,7 +39,11 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 		Arrays.fill(m_sstat, 0);
 
 		System.out.println("print top words");
-		printTopWordsDistribution(k, betaFile);
+
+		printTopWordsDistribution(k, filePrefix);
+
+		betaFile = betaFile.replace("topWords.txt", "topBetas.txt");
+		printTopBeta(k, betaFile);
 	}
 
 	protected void debugOutput(int topK, String filePrefix) {
@@ -66,7 +70,7 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 
 		for (_Doc d : m_trainSet) {
 			if (d instanceof _ParentDoc) {
-				// printParentTopicAssignment(d, parentTopicFolder);
+				printParentTopicAssignment(d, parentTopicFolder);
 				printWordTopicDistribution(d,
 						parentWordTopicDistributionFolder, topK);
 			} else {
@@ -79,6 +83,29 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 		printTopKChild4Stn(filePrefix, topK);
+	}
+
+	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
+		_ParentDoc4DCM pDoc= (_ParentDoc4DCM)d;
+		String topicAssignmentFile = pDoc.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(topicFolder,
+					topicAssignmentFile));
+			
+			for (_Word w : pDoc.getWords()) {
+				int index = w.getIndex();
+				int topic = w.getTopic();
+
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + topic + "\t");
+			}
+
+			pw.flush();
+			pw.close();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void printChildTopicAssignment(_Doc d, File topicFolder) {
@@ -189,28 +216,31 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
 
 			for (_Doc d : m_trainSet) {
+
 				if (d instanceof _ParentDoc4DCM) {
 					_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
 
 					pw.println(pDoc.getName() + "\t" + pDoc.getSenetenceSize());
+
 					for (_Stn stnObj : pDoc.getSentences()) {
 						HashMap<String, Double> likelihoodMap = rankChild4StnByLikelihood(
 								stnObj, pDoc);
 
-						int i = 0;
 						pw.print((stnObj.getIndex() + 1) + "\t");
-
 						for (String e : likelihoodMap.keySet()) {
 							pw.print(e);
 							pw.print(":" + likelihoodMap.get(e));
 							pw.print("\t");
 
-							i++;
+
 						}
 						pw.println();
 					}
+
 				}
 			}
+			pw.flush();
+			pw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -231,7 +261,7 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 					wordLikelihood += cDoc.m_topics[k] *pDoc.m_wordTopic_prob[k][wid];
 				}
 
-				stnLogLikelihood += wordLikelihood;
+				stnLogLikelihood += Math.log(wordLikelihood);
 			}
 			likelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}
@@ -239,7 +269,9 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 		return likelihoodMap;
 	}
 
-	protected void printTopWordsDistribution(int topK, String topWordFile) {
+	protected void printTopWordsDistribution(int topK, String filePrefix) {
+		String topWordFile = filePrefix + "topWords.txt";
+		
 		Arrays.fill(m_sstat, 0);
 
 		System.out.println("print top words");
@@ -254,12 +286,12 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 		try {
 			System.out.println("top word file");
 			PrintWriter betaOut = new PrintWriter(new File(topWordFile));
-			for (int i = 0; i < topic_term_probabilty.length; i++) {
+			for (int i = 0; i < m_topic_word_prob.length; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						topK);
 				for (int j = 0; j < vocabulary_size; j++)
 					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							topic_term_probabilty[i][j]));
+							m_topic_word_prob[i][j]));
 
 				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 				for (_RankItem it : fVector) {
@@ -279,4 +311,27 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 		}
 	}
 
+	protected void printTopBeta(int topK, String betaFile) {
+		try {
+			PrintWriter topWordWriter = new PrintWriter(new File(betaFile));
+
+			for (int i = 0; i < m_beta.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
+						topK);
+				for (int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j),
+							m_beta[i][j]));
+
+				topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+				for (_RankItem it : fVector)
+					topWordWriter.format("%s(%.5f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch (Exception ex) {
+			System.err.print("File Not Found");
+		}
+	}
+	
 }

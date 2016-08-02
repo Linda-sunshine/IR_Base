@@ -450,7 +450,6 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 		HashMap<String, Double> childLikelihoodMap = new HashMap<String, Double>();
 
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
-			int cDocLen = cDoc.getTotalDocLength();
 
 			double stnLogLikelihood = 0;
 			for (_Word w : stnObj.getWords()) {
@@ -458,11 +457,11 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 				int wid = w.getIndex();
 
 				for (int k = 0; k < number_of_topics; k++) {
-					wordLikelihood += (word_topic_sstat[k][wid] / m_sstat[k])
-							* (topicInDocProb(k, cDoc) / (d_alpha
-									* number_of_topics + cDocLen));
-					// wordLikelihood +=
-					// topic_term_probabilty[k][wid]*cDoc.m_topics[k];
+					// wordLikelihood += (word_topic_sstat[k][wid] / m_sstat[k])
+					// * (topicInDocProb(k, cDoc) / (d_alpha
+					// * number_of_topics + cDocLen));
+					wordLikelihood += topic_term_probabilty[k][wid]
+							* cDoc.m_topics[k];
 				}
 
 				stnLogLikelihood += Math.log(wordLikelihood);
