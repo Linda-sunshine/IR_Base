@@ -13,6 +13,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
+import structures._thetaStar;
 import utils.Utils;
 /***
  * Linear transformation matrix with DP.
@@ -231,7 +232,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 				mean_sds.add(calcMeanSd(r.m_probs));
 			}
 		}
-		for(double[] mean_sd: mean_sds){
+		for(double[] mean_sd: mean_sds){                       
 			for(double v: mean_sd)
 				writer.write(v + "\t");
 			writer.write("\n");
@@ -251,6 +252,37 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		sd = Math.sqrt(sd/vs.size());
 		mean_sd[1] = sd;
 		return mean_sd;
+	}
+	
+	// Save the models of clusters.
+	public void saveClusterModel(String modelLocation) {
+		int ki, ks;
+		double[] Ac;
+		_thetaStar star;
+		for(int k=0; k< m_kBar; k++) {
+			star = m_thetaStars[k];
+			try {
+	            PrintWriter writer = new PrintWriter(new File(modelLocation+"/"+k+".classifier"));
+	            StringBuilder buffer = new StringBuilder(512);
+	            m_pWeights = new double[m_gWeights.length];
+	            Ac = star.getModel();
+				for(int n=0; n<=m_featureSize; n++){
+					ki = m_featureGroupMap[n];
+					ks = m_featureGroupMap4SupUsr[n];
+					m_pWeights[n] = Ac[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+Ac[ki+m_dim];
+				}
+				for(int i=0; i<m_pWeights.length; i++) {
+	            	buffer.append(m_pWeights[i]);
+	            	if (i<m_pWeights.length-1)
+	            		buffer.append(',');
+	            }
+	            writer.write(buffer.toString());
+	            writer.close();
+	        } catch (Exception e) {
+	            e.printStackTrace(); 
+	        } 
+		}
+		System.out.format("[Info]Save cluster models to %s.\n", modelLocation);
 	}
 	public void saveClusterInfo(String filename) throws FileNotFoundException{
 		PrintWriter writer = new PrintWriter(new File(filename));

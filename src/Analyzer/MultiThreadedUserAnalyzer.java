@@ -48,7 +48,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
-	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
+	protected Object m_allocReviewLock=null;
+	private Object m_corpusLock=null;
+	private Object m_rollbackLock;
 	protected int m_start = 0, m_end = Integer.MAX_VALUE; // Added by Lin for filtering reviews.
 	protected double m_globalLen = 0, m_maxLen = 0;
 	protected double[][] m_userWeights;
@@ -221,15 +223,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			
 			// Added by Lin for debugging.
 			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start)){//at least one for adaptation and one for testing
-//			if(reviews.size() > 1 && (localAvg < m_end) && (localAvg > m_start && Utils.sumOfArray(categories) <= m_ctgThreshold)){//at least one for adaptation and one for testing
 				if( localAvg > m_maxLen)
 					m_maxLen = localLength / localSize;
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);			
 					m_users.add(new _User(userID, m_classNo, reviews));
-//					m_users.add(new _User(userID, m_classNo, reviews, categories)); //create new user from the file.
-//					m_ctgCounts[Utils.sumOfArray(categories)]++;
 				}
 			}
 			reader.close();

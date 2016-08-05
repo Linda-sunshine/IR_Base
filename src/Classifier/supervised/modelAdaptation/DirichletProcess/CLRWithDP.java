@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,7 +23,7 @@ import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 15;
+	protected int m_numberOfIterations = 20;
 	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
 	protected double m_alpha = 1; // Scaling parameter of DP.
@@ -53,7 +56,6 @@ public class CLRWithDP extends LinAdapt {
 		_DPAdaptStruct user;
 		double[] probs = new double[m_kBar];
 		_thetaStar oldTheta;
-		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
 			
@@ -61,16 +63,64 @@ public class CLRWithDP extends LinAdapt {
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 				prob = calcLogLikelihood(user);
+//				prob = calcLogLikelihood4Posterior(user);
 				prob += Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
 			user.setClusterPosterior(probs);
-			
 			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
 		}
 	}
 	
+	//Calculate the function value of the new added instance.
+	protected double calcLogLikelihood4Posterior(_AdaptStruct user){
+		double L = 0; //log likelihood.
+		double Pi = 0;
+			
+		for(_Review review:user.getReviews()){
+			if (review.getType() != rType.ADAPTATION  && review.getType() != rType.TEST)
+					continue; // only touch the adaptation data
+				
+			Pi = logit(review.getSparse(), user);
+			if(review.getYLabel() == 1) {
+				if (Pi>0.0)
+					L += Math.log(Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			} else {
+				if (Pi<1.0)
+					L += Math.log(1 - Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			}
+		}
+		if(m_LNormFlag)
+			return L/getAdaptationSize(user);
+		else
+			return L;
+	}
+	public int predict(_AdaptStruct user, _thetaStar theta){
+		double[] As;
+		double sum;
+		int m, n, predL = 0, count = 0;
+		for(_Review r: user.getReviews()){
+			if(r.getType() == rType.TEST){
+				As = theta.getModel();
+				sum = As[0]*MTCLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+				for(_SparseFeature fv: r.getSparse()){
+					n = fv.getIndex() + 1;
+					m = m_featureGroupMap[n];
+					sum += (As[m]*MTCLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+				}
+				if(sum > 0.5) 
+					predL = 1;
+				if(predL == r.getYLabel())
+					count++;
+			}
+		}
+		return count;
+	}
 	protected double calculateR1(){
 		double R1 = 0;
 		for(int i=0; i<m_kBar; i++)
@@ -214,7 +264,7 @@ public class CLRWithDP extends LinAdapt {
 							m_fValue[core] -= calcLogLikelihood(user);
 							
 							for(_Review review:user.getReviews()){
-								if (review.getType() != rType.ADAPTATION)
+								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 									continue;								
 								
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
@@ -296,9 +346,10 @@ public class CLRWithDP extends LinAdapt {
 		}	
 		return oldFValue;
 	}
-	
+
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
 	public double train(){
+		
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		int count = 0;
@@ -318,24 +369,72 @@ public class CLRWithDP extends LinAdapt {
 			
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
-
-			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			
+			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			if (i%m_thinning==0)
 				evaluateModel();
-			
+
 			printInfo();
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
 			lastLikelihood = curLikelihood;
 		}
-		
 		evaluateModel(); // we do not want to miss the last sample?!
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
 	
+	// The main EM algorithm to optimize cluster assignment and distribution parameters.
+	public double trainTrace(String tracefile){
+		m_numberOfIterations = 50;
+		m_burnIn = 2;
+		m_thinning = 1;
+		
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+		
+		init(); // clear user performance and init cluster assignment		
+		
+		// Burn in period.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			calculate_M_step();
+		}
+		try{
+			PrintWriter writer = new PrintWriter(new File(tracefile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+			
+				// Optimize the parameters
+				curLikelihood = calculate_M_step();
+			
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[2], m_perf[3]));
+
+				printInfo();
+				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+		}
+		writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+		setPersonalizedModel();
+		return curLikelihood;
+	}
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim;

@@ -19,6 +19,7 @@ import structures._RankItem;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
+import utils.Utils;
 
 /***
  * @author lin
@@ -101,21 +102,22 @@ public class CollaborativeFiltering {
 		m_time = time;
 		m_totalReviews = new ArrayList<_Review>();
 		m_model = "BoW";
+		m_similarityLock = new Object();
+		m_userWeightsLock = new Object();
 	}
 	
 	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k, int time, String model){
 		m_users = users;
 		m_featureSize = fs;
-//		m_totalNoUsers = m_users.size();
 		
 		m_k = k;
 		m_time = time;
 		m_equalWeight = false;
 		m_avgFlag = false;
 		m_totalReviews = new ArrayList<_Review>();
-		m_similarityLock = new Object();
 		m_model = model;
-	
+		m_similarityLock = new Object();
+		m_userWeightsLock = new Object();
 	}
 
 	public void setAvgFlag(boolean b){
@@ -152,8 +154,25 @@ public class CollaborativeFiltering {
 		m_avgMAP = 0;
 		loadUserWeights(weightFile, suffix);
 		constructNeighborhood();
+		checkSimi();
 	}
 	
+	public void checkSimi(){
+		int[] arr = new int[]{33, 54, 100, 400, 577};
+		double sim1, sim2;
+		for(int i: arr){
+			for(int j: arr){
+				if(i == j)
+					continue;
+				sim1 = m_similarity[getIndex(i,j)];
+				sim2 = Euclidean(m_userWeights[i], m_userWeights[j]);
+				if(sim1 == sim2)
+					System.out.print("=");
+				else
+					System.out.print("x");
+			}
+		}
+	}
 	//<Item, <UserIndex>>, inside each user, <item, rating>
 	public void constructItemUserIndex(){
 			
@@ -217,15 +236,15 @@ public class CollaborativeFiltering {
 				public void run() {
 					double[] ui, uj;
 					try {
-						for (int i = 1; i + core <m_users.size(); i += numOfCores) {
+						for (int i = 0; i + core <m_users.size(); i += numOfCores) {
 							ui = m_userWeights[i+core];
 							for(int j=0; j<i+core; j++) {
 								if (j == i+core)
 									continue;
-								if((i+core) == 2 && j==1)
-									System.out.println("BUG!");
 								uj = m_userWeights[j];
-								m_similarity[getIndex(i+core, j)] = Euclidean(ui, uj);
+								synchronized(m_similarityLock){
+									m_similarity[getIndex(i+core, j)] = Utils.cosine(ui, uj);
+								}
 							}
 						}
 					} catch(Exception ex) {
@@ -254,44 +273,62 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_users.size());
 	}	
 	
-//	public void constructNeighborhood() {
-//		m_similarity = new double[m_users.size() * (m_users.size()-1)/2];
-//		
-//		double[] ui, uj;
-//		for (int i = 1; i <m_users.size(); i++) {
-//			ui = m_userWeights[i];
-//			for(int j=0; j<i; j++) {
-//				if (j == i)
-//					continue;
-//				uj = m_userWeights[j];
-//				m_similarity[getIndex(i, j)] = Euclidean(ui, uj);
-//			}
-//		}
-//
-//		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_users.size());
-//	}	
-	
-	public void loadUserWeights(String folder, String suffix){
-		String userID;
-		int userIndex;
-		double[] weights;
+	public void loadUserWeights(String folder, final String suffix){
 		m_userWeights = new double[m_users.size()][];
-		File dir = new File(folder);
+		final File dir = new File(folder);
+		final File[] files;
+
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
 		
 		if(!dir.exists()){
 			System.err.print("[Info]BoW is used as user weights.");
 			loadVSMWeights();
 		} else{
-			for(File f: dir.listFiles()){
-				if(f.isFile() && f.getName().endsWith(suffix)){
-					int endIndex = f.getName().lastIndexOf(".");
-					userID = f.getName().substring(0, endIndex);
-					if(m_userIDIndex.containsKey(userID)){
-						userIndex = m_userIDIndex.get(userID);
-						weights = loadOneUser(f.getAbsolutePath());
-						m_userWeights[userIndex] = weights;
+			files = dir.listFiles();
+			for(int k=0; k<numberOfCores; ++k){
+				threads.add((new Thread() {
+					int core, numOfCores;
+					public void run() {
+						double[] weights;
+						String userID;
+						int userIndex;
+						try {
+							for (int i = 0; i + core <dir.listFiles().length; i += numOfCores) {
+								File f = files[i+core];
+								if(f.isFile() && f.getName().endsWith(suffix)){
+									int endIndex = f.getName().lastIndexOf(".");
+									userID = f.getName().substring(0, endIndex);
+									if(m_userIDIndex.containsKey(userID)){
+										userIndex = m_userIDIndex.get(userID);
+										weights = loadOneUser(f.getAbsolutePath());
+										synchronized(m_userWeightsLock){
+											m_userWeights[userIndex] = weights;
+										}
+									}
+								}
+							}
+						} catch(Exception ex) {
+							ex.printStackTrace(); 
+						}
 					}
-				}
+					
+					private Thread initialize(int core, int numOfCores) {
+						this.core = core;
+						this.numOfCores = numOfCores;
+						return this;
+					}
+				}).initialize(k, numberOfCores));
+				
+				threads.get(k).start();
+			}
+			
+			for(int k=0;k<numberOfCores;++k){
+				try {
+					threads.get(k).join();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} 
 			}
 		}
 		System.out.format("%d users weights are loaded!", m_userWeights.length);
@@ -361,27 +398,6 @@ public class CollaborativeFiltering {
 			System.out.println("Sim 0 in Euclidean!");
 		return 1/Math.sqrt(res);
 	}
-//	//For each user, construct neighbors based on the given number of neighbors.
-//	public void constructNeighborhood(){
-//		MyPriorityQueue<_RankItem> neighborQ = new MyPriorityQueue<_RankItem>(m_k);
-//		int count = 0;
-//		String tmp;
-//		Neighbor[] neighbors;
-//		for(int i=0; i<m_totalUsers; i++){
-//			//init for each user.
-//			count = 0;
-//			neighborQ.clear();
-//			tmp = m_userIDs[i];
-//			neighbors = new Neighbor[m_k];
-//			//Traverse all the users to get the top k nearest neighbors.
-//			for(int j=i+1; j<m_totalUsers; j++)
-//				neighborQ.add(new _RankItem(j, getSimilarity(i, j)));
-//			for(_RankItem n: neighborQ)
-//				neighbors[count++] = new Neighbor(m_userIDs[n.m_index], n.m_index, n.m_value);
-//			//Store the top k neighbors to the user.
-//			m_users.get(tmp).setNeighbors(neighbors);
-//		}
-//	}
 	
 	public double getSimilarity(int i, int j){
 		int index = getIndex(i, j);
@@ -401,7 +417,7 @@ public class CollaborativeFiltering {
 		ArrayList<Integer> candidates = m_itemIDUserIndex.get(itemID);
 		if(m_avgFlag){
 			for(int c: candidates){
-				double label = m_users.get(c).getItemIDRating().get(itemID);
+				double label = m_users.get(c).getItemIDRating().get(itemID)+1;
 				rankSum += label;
 				simSum++;
 			}
@@ -419,7 +435,7 @@ public class CollaborativeFiltering {
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: neighbors){
-				int label = m_users.get(ri.m_index).getItemIDRating().get(itemID);
+				int label = m_users.get(ri.m_index).getItemIDRating().get(itemID)+1;
 				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
 				simSum += m_equalWeight ? 1: ri.m_value;
 			}
@@ -476,24 +492,13 @@ public class CollaborativeFiltering {
 				rdmIndex = rdmIndexes.get(i-reviewSize);
 				review = m_totalReviews.get(rdmIndex);
 				rank[i] = 0;
-//				double score = calculateRankScore(u, review);
-//				System.out.println(score);
 				realRank[i] = new Pair(rank[i], calculateRankScore(u, review));
 			}
 		}
 		
 		rank = sortPrimitives(rank);
 		realRank = mergeSort(realRank);
-//		Collections.sort(realRank, new Comparator<Pair>(){
-//			public int compare(Pair p1, Pair p2){
-//				if (p1.getValue() > p2.getValue())
-//					return -1;
-//				else if (p1.getValue() < p2.getValue())
-//					return 1;
-//				else 
-//					return 0;
-//			}
-//		});
+		
 		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
 		for(int i=0; i<rank.length; i++){
 			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
@@ -679,7 +684,7 @@ public class CollaborativeFiltering {
 		writer.close();
 	}
 	
-	public void calcuateAvgNDCGMAP(){
+	public void calculateAvgNDCGMAP(){
 		double sumNDCG = 0, sumMAP = 0;
 		for(int i=0; i < m_users.size(); i++){
 			sumNDCG += m_NDCGs[i];

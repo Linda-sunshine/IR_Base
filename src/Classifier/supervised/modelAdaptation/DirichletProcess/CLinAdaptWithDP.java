@@ -2,6 +2,7 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -155,115 +156,9 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim,m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
-	// Save the models of clusters.
-	public void saveClusterModel(String modelLocation) {
-		int ki;
-		double[] As, pWeights;
-		_thetaStar star;
-		for(int k=0; k< m_kBar; k++) {
-			star = m_thetaStars[k];
-			try {
-				File file = new File(modelLocation);
-				if(!file.exists())
-					file.mkdirs();
-	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+k+".classifier"));
-	            StringBuilder buffer = new StringBuilder(512);
-	            pWeights = new double[m_gWeights.length];
-	            As = star.getModel();
-				for(int n=0; n<=m_featureSize; n++){
-					ki = m_featureGroupMap[n];
-					pWeights[n] = As[ki]*m_gWeights[n] + As[ki+m_dim];
-				}	            
-				for(int i=0; i<pWeights.length; i++) {
-	            	buffer.append(pWeights[i]);
-	            	if (i<pWeights.length-1)
-	            		buffer.append(',');
-	            }
-	            writer.write(buffer.toString());
-	            writer.close();
-	        } catch (Exception e) {
-	            e.printStackTrace(); 
-	        } 
-		}
-		System.out.format("[Info]Save cluster models to %s.\n", modelLocation);
-	}
-	
 	public void debug(_AdaptStruct u, int count){
 		_DPAdaptStruct user = (_DPAdaptStruct) u;
 		int index = findThetaStar(user.getThetaStar());
 		System.out.print(String.format("\nError number:%d, ttl rvw size:%d, theta index:%d\n", count, user.getUser().getReviewSize(), index));
 	}
-	
-//	@Override
-//	public double test(){
-//		m_perf = new double[m_classNo * 2];
-//		m_microStat = new _PerformanceStat(m_classNo);
-//
-//		_AdaptStruct user;
-//		_PerformanceStat userPerfStat;
-//		try {
-//			for (int i = 0; i <m_userList.size(); i ++) {
-//				user = m_userList.get(i);
-//				if ((m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//					|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//					|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//					continue;
-//					userPerfStat = user.getPerfStat();								
-//				if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-//					//record prediction results
-//					int count = 0;
-//					for(_Review r:user.getReviews()) {
-//						if (r.getType() != rType.TEST)
-//							continue;
-//						int trueL = r.getYLabel();
-//						int predL = user.predict(r); // evoke user's own model
-////						if(trueL == 1 && predL == 0){
-////							System.out.print("fn"+"\t");
-////							count++;
-////						}
-////						if(trueL == 0 && predL == 1){
-////							System.out.print("fp"+"\t");
-////							count++;
-////						}
-//						userPerfStat.addOnePredResult(predL, trueL);
-//					}
-////					if(count > 0){
-////						debug(user, count);
-////						System.out.println("---------------\n");
-////					}
-//				}							
-//				userPerfStat.calculatePRF();	
-//			}
-//		} catch(Exception ex) {
-//			ex.printStackTrace(); 
-//		}		
-//
-//		int count = 0;
-//		double[] macroF1 = new double[m_classNo];
-//		
-//		for(_AdaptStruct u:m_userList) {
-//			if ( (m_testmode==TestMode.TM_batch && u.getTestSize()<1) // no testing data
-//				|| (m_testmode==TestMode.TM_online && u.getAdaptationSize()<1) // no adaptation data
-//				|| (m_testmode==TestMode.TM_hybrid && u.getAdaptationSize()<1) && u.getTestSize()<1) // no testing and adaptation data 
-//				continue;
-//			
-//			userPerfStat = u.getPerfStat();
-//			for(int i=0; i<m_classNo; i++)
-//				macroF1[i] += userPerfStat.getF1(i);
-//			m_microStat.accumulateConfusionMat(userPerfStat);
-//			count ++;
-//		}
-//		
-//		System.out.println(toString());
-//		calcMicroPerfStat();
-//		
-//		// macro average
-//		System.out.println("\nMacro F1:");
-//		for(int i=0; i<m_classNo; i++){
-//			System.out.format("Class %d\t%.4f\t", i, macroF1[i]/count);
-//			m_perf[i+m_classNo] = macroF1[i]/count;
-//		}
-//		System.out.println();
-//		return Utils.sumOfArray(macroF1);
-//	}
 }

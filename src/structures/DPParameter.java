@@ -3,9 +3,9 @@ package structures;
 public class DPParameter {
 	public String m_data = "Amazon";
 	public String m_model = "mtclindp";
-	public int m_nuOfIterations = 15;
+	public int m_nuOfIterations = 50;
 	public int m_M = 6;
-	public double m_sdA = 0.2;
+	public double m_sdA = 0.45;
 	public double m_sdB = 0.2;
 	public double m_alpha = 1;
 	public double m_eta1 = 0.05;

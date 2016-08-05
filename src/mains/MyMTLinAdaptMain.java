@@ -34,7 +34,7 @@ public class MyMTLinAdaptMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.25;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int topKNeighbors = 100;
 		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -78,5 +78,7 @@ public class MyMTLinAdaptMain {
 		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
 		mtlinadaptsup.train();
 		mtlinadaptsup.test();
+		mtlinadaptsup.saveModel("./data/models/mtlinadapt_1");
+		mtlinadaptsup.saveSupModel("./data/mtlinadapt_supmodel.txt");
 	}
 }

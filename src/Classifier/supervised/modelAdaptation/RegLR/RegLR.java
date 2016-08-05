@@ -86,7 +86,7 @@ public class RegLR extends ModelAdaptation {
 		double Pi = 0;
 		
 		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION)
+			if (review.getType() != rType.ADAPTATION )
 				continue; // only touch the adaptation data
 			
 			Pi = logit(review.getSparse(), user);

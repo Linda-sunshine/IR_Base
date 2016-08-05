@@ -10,6 +10,7 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -304,9 +305,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	@Override
 	public void saveModel(String modelLocation) {
-		File file = new File(modelLocation);
-		if(!file.exists())
-			file.mkdirs();
 		for(_AdaptStruct user:m_userList) {
 			try {
 	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
@@ -365,5 +363,15 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public void debug(_AdaptStruct user, int c){
 		
+	}
+	public void printUserPerf(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_AdaptStruct u: m_userList)
+				writer.write(String.format("%s,%d,%.5f,%.5f\n", u.getUserID(), u.getReviews().size(), u.getPerfStat().getF1(0), u.getPerfStat().getF1(1)));
+		writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

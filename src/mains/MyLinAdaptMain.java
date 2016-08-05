@@ -45,7 +45,7 @@ public class MyLinAdaptMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
-		String dataset = "Yelp"; // "Amazon", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -53,12 +53,14 @@ public class MyLinAdaptMain {
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		
+		String dir = String.format("/home/lin/DataWsdm2017/%s/%s_", dataset, dataset);
+
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+//		String dir = String.format("/if15/lg5bt/DataWsdm2017/%s/%s_", dataset, dataset);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -72,10 +74,10 @@ public class MyLinAdaptMain {
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.train();
 //		gsvm.test();
+//		gsvm.printUserPerf(dir+"gsvm.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-//		
-//		String dir = String.format("./data/wsdm/%s_", dataset);
+//	
 //		/***baseline 2: mtsvm***/
 //		//Create the instance of MT-SVM
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
@@ -83,7 +85,8 @@ public class MyLinAdaptMain {
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
-//		mtsvm.saveModel(dir + "mtsvm_0.5/");
+//		mtsvm.printUserPerf(dir+"mtsvm.txt");
+//		//mtsvm.saveModel(dir + "mtsvm_0.5/");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -96,6 +99,8 @@ public class MyLinAdaptMain {
 //		clrdp.train();
 //		clrdp.test();
 //		clrdp.printInfo();
+//		clrdp.printUserPerf(dir+"clrdp.txt");
+//		//clrdp.saveModel(dir+"clrdp_0.5/");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -110,6 +115,8 @@ public class MyLinAdaptMain {
 //		mtclrdp.train();
 //		mtclrdp.test();
 //		mtclrdp.printInfo();
+//		mtclrdp.printUserPerf(dir+"mtclrdp.txt");
+//		//mtclrdp.saveModel(dir+"mtclrdp_0.5/");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -122,6 +129,8 @@ public class MyLinAdaptMain {
 //		linadapt.setR1TradeOffs(eta1, eta2);
 //		linadapt.train();
 //		linadapt.test();
+//		linadapt.printUserPerf(dir+"linadapt.txt");
+//		//linadapt.saveModel(dir+"linadapt_0.5/");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -133,48 +142,71 @@ public class MyLinAdaptMain {
 //		clindp.setDisplayLv(displayLv);
 //		clindp.setLNormFlag(false);
 //		clindp.setR1TradeOffs(eta1, eta2);
-//		clindp.setsdA(0.2);
-//		clindp.setsdB(0.1);
+//		clindp.setsdA(0.05);
+//		clindp.setsdB(0.01);
 //		clindp.train();
 //		clindp.test();
-//		clindp.printInfo();		
+//		clindp.printInfo();	
+//		clindp.printUserPerf(dir+"clindp.txt");
+//		//clindp.saveModel(dir+"clindp_0.5");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
+//		
+//		/***baseline 7: CLinAdaptWithKmeans***/
+//		// We perform kmeans over user weights learned from individual svms.
+//		int kmeans = 25;
+//		int[] clusters;
+//		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
+//		alg.train(analyzer.getUsers());
+//		clusters = alg.getClusters();// The returned clusters contain the corresponding cluster index of each user.
+//		
+//		CLinAdaptWithKmeans clinkmeans = new CLinAdaptWithKmeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, kmeans, clusters);
+//		clinkmeans.loadUsers(analyzer.getUsers());
+//		clinkmeans.setDisplayLv(displayLv);
+//		clinkmeans.setLNormFlag(false);
+//		clinkmeans.setR1TradeOffs(eta1, eta2);
+//		clinkmeans.train();
+//		clinkmeans.test();
+//		clinkmeans.printUserPerf(dir+"clinkmeans.txt");
+//		//clinkmeans.saveModel(dir+"clinkmeans_0.5");
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		int[] group = new int[]{400, 800, 1600, 5000};
+//		for(int i=0;i<group.length;i++){
+//			for(int j=i; j<group.length; j++){
+//		
+		//Yelp best parameter: 0.23 0.1 0.04 0.01
+//		double sdA = 0.23, sdB = 0.1; eta1 = 0.04; eta3 = 0.01; 
+		double sdA = 0.4, sdB = 0.2; eta1 = 0.005; eta3 = 0.005; 
+//		featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[i], dataset);
+//		featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[j], dataset);
+//		if(group[i] == 5000)
+//			featureGroupFile = null;
+//		if(group[j] == 5000)
+//			featureGroupFileB = null;
 		
-		/***baseline 7: CLinAdaptWithKmeans***/
-		// We perform kmeans over user weights learned from individual svms.
-		int kmeans = 25;
-		int[] clusters;
-		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
-		alg.train(analyzer.getUsers());
-		clusters = alg.getClusters();// The returned clusters contain the corresponding cluster index of each user.
-		
-		CLinAdaptWithKmeans clinkmeans = new CLinAdaptWithKmeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, kmeans, clusters);
-		clinkmeans.loadUsers(analyzer.getUsers());
-		clinkmeans.setDisplayLv(displayLv);
-		clinkmeans.setLNormFlag(false);
-		clinkmeans.setR1TradeOffs(eta1, eta2);
-		clinkmeans.train();
-		clinkmeans.test();
+		/***our algorithm: MTCLinAdaptWithDP***/
+		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.setLNormFlag(false);
+		adaptation.setsdA(sdA);
+		adaptation.setsdB(sdB);
+		adaptation.setAlpha(1);
+		adaptation.setR1TradeOffs(eta1, eta1);
+		adaptation.setR2TradeOffs(eta3, eta3);
+//		String traceFile = dataset + "_iter.csv";
+//		adaptation.trainTrace(traceFile);
+		adaptation.train();
+		adaptation.test();
+		adaptation.printInfo();
+		adaptation.printUserPerf(dir+"mtclindp.txt");
+//		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
+//		adaptation.saveModel(dir + "mtclindp_u_0.5");
+//		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
-		
-//		/***our algorithm: MTCLinAdaptWithDP***/
-//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.setLNormFlag(false);
-//		adaptation.setsdA(0.2);
-//		adaptation.setsdB(0.1);
-//		adaptation.setR1TradeOffs(eta1, eta2);
-//		adaptation.setR2TradeOffs(eta3, eta4);
-//		adaptation.train();
-//		adaptation.test();
-//		adaptation.printInfo();
-////		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
-////		adaptation.saveModel(dir + "mtclindp_u_0.5");
-////		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+//		}}
 	}
 }
