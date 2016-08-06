@@ -17,20 +17,29 @@ public class IsoUserAnalyzer extends MultiThreadedUserAnalyzer {
 
 	int m_count = 0;// controls how many users will be used for training.
 	Object m_countLock = new Object();
-	int m_trainThreshold = 8000;
+	int m_testThreshold = 100;
 	public IsoUserAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, int numberOfCores)
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores);
 	}
-	public void setUserTrainThreshold(int t){
-		m_trainThreshold = t;
+	public void setUserTestThreshold(int t){
+		m_testThreshold = t;
 	}
 	
 	void allocateReviews(ArrayList<_Review> reviews) {
 		Collections.sort(reviews);// sort the reviews by timestamp
-		// We are still collecting training users.
-		if(m_count < m_trainThreshold){
+		// Collect testing users.
+		if(reviews.size() >= 4 && m_count < m_testThreshold){
+			for(int i=0; i<reviews.size(); i++) {
+				reviews.get(i).setType(rType.TEST);
+				m_testSize ++;
+			}
+			synchronized(m_countLock){
+				m_count++;
+			}
+		} else{
+			// Collecting training users.
 			int train = (int)(reviews.size() * m_trainRatio), adapt;
 			if (m_enforceAdapt)
 				adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
@@ -48,15 +57,6 @@ public class IsoUserAnalyzer extends MultiThreadedUserAnalyzer {
 					reviews.get(i).setType(rType.TEST);
 					m_testSize ++;
 				}
-			}
-			synchronized(m_countLock){
-				m_count++;
-			}
-		// Else we consider them as test users.
-		} else{
-			for(int i=0; i<reviews.size(); i++) {
-				reviews.get(i).setType(rType.TEST);
-				m_testSize ++;
 			}
 		}
 	}

@@ -23,7 +23,7 @@ import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 20;
+	protected int m_numberOfIterations = 15;
 	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
 	protected double m_alpha = 1; // Scaling parameter of DP.
@@ -62,8 +62,8 @@ public class CLRWithDP extends LinAdapt {
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
-				prob = calcLogLikelihood(user);
-//				prob = calcLogLikelihood4Posterior(user);
+//				prob = calcLogLikelihood(user);
+				prob = calcLogLikelihood4Posterior(user);
 				prob += Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}

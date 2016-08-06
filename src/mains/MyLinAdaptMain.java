@@ -178,7 +178,7 @@ public class MyLinAdaptMain {
 //		
 		//Yelp best parameter: 0.23 0.1 0.04 0.01
 //		double sdA = 0.23, sdB = 0.1; eta1 = 0.04; eta3 = 0.01; 
-		double sdA = 0.4, sdB = 0.2; eta1 = 0.005; eta3 = 0.005; 
+		double sdA = 0.3, sdB = 0.2; eta1 = 0.005; eta3 = 0.005; 
 //		featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[i], dataset);
 //		featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[j], dataset);
 //		if(group[i] == 5000)
@@ -201,12 +201,12 @@ public class MyLinAdaptMain {
 		adaptation.train();
 		adaptation.test();
 		adaptation.printInfo();
-		adaptation.printUserPerf(dir+"mtclindp.txt");
+//		adaptation.printUserPerf(dir+"mtclindp.txt");
 //		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
 //		adaptation.saveModel(dir + "mtclindp_u_0.5");
 //		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 //		}}
 	}
 }

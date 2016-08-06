@@ -129,6 +129,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	//Load all the users.
 	@Override
 	public void loadUserDir(String folder){
+		int max = 0;
 		if(folder == null || folder.isEmpty())
 			return;
 		File dir = new File(folder);
@@ -174,8 +175,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			else
 				count++;
 		int rvwCount = 0;
-		for(_User u: m_users)
+		for(_User u: m_users){
 			rvwCount += u.getReviewSize();
+			if(u.getReviewSize() > max)
+				max = u.getReviewSize();
+		}
+		System.out.println("Max review size: " + max);
 		System.out.format("Average review length over all users is %.3f, max average length is %.3f.\n", m_globalLen/rvwCount, m_maxLen);
 		System.out.format("[Info]Start: %d, End: %d, (%d/%d) users and %d reviews are loaded from %s...\n", m_start, m_end, m_users.size(), count, rvwCount, folder);
 	}
