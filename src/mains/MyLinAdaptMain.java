@@ -201,7 +201,7 @@ public class MyLinAdaptMain {
 		adaptation.train();
 		adaptation.test();
 		adaptation.printInfo();
-//		adaptation.printUserPerf(dir+"mtclindp.txt");
+		adaptation.printUserPerf(dir+"mtclindp.txt");
 //		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
 //		adaptation.saveModel(dir + "mtclindp_u_0.5");
 //		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
