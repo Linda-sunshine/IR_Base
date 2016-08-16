@@ -15,6 +15,7 @@ import structures._ParentDoc4DCM;
 import structures._RankItem;
 import structures._Stn;
 import structures._Word;
+import sun.print.PageableDoc;
 import utils.Utils;
 
 /**
@@ -199,7 +200,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			pDoc.m_topic_stat[tid]--;
 			pDoc.m_wordTopic_stat[tid][wid]--;
 			
-			if (!m_collectCorpusStats)
+			if (m_collectCorpusStats)
 				word_topic_sstat[tid][wid]--;
 
 			normalizedProb = 0;
@@ -226,7 +227,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
 
-			if (!m_collectCorpusStats)
+			if (m_collectCorpusStats)
 				word_topic_sstat[tid][wid]++;
 
 		}
@@ -247,7 +248,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			pDoc.m_topic_stat[tid] --;
 			d.m_sstat[tid] --;
 
-			if (!m_collectCorpusStats)
+			if (m_collectCorpusStats)
 				word_topic_sstat[tid][wid]--;
 
 			normalizedProb = 0;
@@ -274,7 +275,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
 
-			if (!m_collectCorpusStats)
+			if (m_collectCorpusStats)
 				word_topic_sstat[tid][wid]--;
 
 		}
@@ -289,7 +290,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 	protected double wordTopicProb(int tid, int wid, _ParentDoc4DCM d){
 		double term1 = d.m_wordTopic_stat[tid][wid];
 		
-		return (term1+m_beta[tid][wid])/(d.m_sstat[tid]+m_totalBeta[tid]);
+		return (term1+m_beta[tid][wid])/(d.m_topic_stat[tid]+m_totalBeta[tid]);
 	}
 	
 	public void calculate_M_step(int iter, File weightFolder) {
@@ -354,26 +355,35 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		for (int k = 0; k < number_of_topics; k++) {
 			Arrays.fill(topic_term_probabilty[k], 0);
 		}
-
+		
+		int parentSize = 0;
+		
 		for (_Doc d : m_trainSet) {
 			if(d instanceof _ParentDoc4DCM){
+				parentSize += 1;
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				double pDocTopicSum = Utils.sumOfArray(pDoc.m_sstat);
+				
 				for (int k = 0; k < number_of_topics; k++) {
-					double tempProb = pDoc.m_sstat[k] / pDoc.getTotalDocLength();
+					double tempProb = pDoc.m_sstat[k] / pDocTopicSum;
 					m_sstat[k] += tempProb;
-					if (pDoc.m_sstat[k] == 0)
-						continue;
+				
 					for (int v = 0; v < vocabulary_size; v++) {
-						tempProb = pDoc.m_wordTopic_prob[k][v]
-								/pDoc.m_sstat[k];
+						if(pDoc.m_topic_stat[k]==0){
+//							System.out.println("0000");
+							continue;
+						}
+						tempProb = pDoc.m_wordTopic_stat[k][v]
+								/pDoc.m_topic_stat[k];
 	
 						topic_term_probabilty[k][v] += tempProb;
 					}
 				}
 				
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					double cDocTopicSum = Utils.sumOfArray(cDoc.m_sstat);
 					for(int k=0; k<number_of_topics; k++){
-						double tempProb = cDoc.m_sstat[k]/cDoc.getTotalDocLength();
+						double tempProb = cDoc.m_sstat[k]/cDocTopicSum;
 						m_sstat[k] += tempProb;
 						
 					}
@@ -382,10 +392,11 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		}
 
 		int trainSetSize = m_trainSet.size();
+		
 		for (int k = 0; k < number_of_topics; k++) {
 			m_sstat[k] /= trainSetSize;
 			for (int v = 0; v < vocabulary_size; v++) {
-				topic_term_probabilty[k][v] /= trainSetSize;
+				topic_term_probabilty[k][v] /= parentSize;
 			}
 		}
 	
@@ -405,7 +416,6 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 
 	protected void updateAlpha() {
 		double diff = 0;
-		double smallAlpha = 0.1;
 		int iteration = 0;
 		do {
 
@@ -418,7 +428,8 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			double deltaAlpha = 0;
 
 			for (_Doc d : m_trainSet) {
-				totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()
+				double docTopicSum = Utils.sumOfArray(d.m_sstat);
+				totalAlphaDenominator += Utils.digamma(docTopicSum
 						+ m_totalAlpha)
 						- digAlpha;
 			}
@@ -444,14 +455,14 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			}
 			
 			iteration++;
-			System.out.println("alpha iteration\t" + iteration);
+//			System.out.println("alpha iteration\t" + iteration);
 	
 			if(iteration > m_newtonIter)
 				break;
 			
 		}while(diff>m_newtonConverge);
 
-		System.out.println("iteration\t" + iteration);
+//		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha += m_alpha[k];
@@ -514,11 +525,14 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			}
 
 			iteration++;
+//			System.out.println("beta iteration\t" + iteration);
+			
+			if(iteration>m_newtonIter)
+				break;
 
-			System.out.println("beta iteration\t" + iteration);
 		} while (diff > m_newtonConverge);
 
-		System.out.println("iteration\t" + iteration);
+//		System.out.println("iteration\t" + iteration);
 
 	}
 
@@ -561,7 +575,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 	
 		double docLogLikelihood = 0.0;
 
-		double parentDocLength = d.getTotalDocLength();
+		double pDocTopicSum = Utils.sumOfArray(d.m_sstat);
 		
 		for (int k = 0; k < number_of_topics; k++) {
 			double term = Utils.lgamma(d.m_sstat[k] + m_alpha[k]);
@@ -573,7 +587,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		}
 
 		docLogLikelihood += Utils.lgamma(m_totalAlpha);
-		docLogLikelihood -= Utils.lgamma(parentDocLength + m_totalAlpha);
+		docLogLikelihood -= Utils.lgamma(pDocTopicSum + m_totalAlpha);
 
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int v = 0; v < vocabulary_size; v++) {
@@ -590,7 +604,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		}
 
 		for(_ChildDoc cDoc:d.m_childDocs){
-			int cDocLength = cDoc.getTotalDocLength();
+			double cDocTopicSum = Utils.sumOfArray(cDoc.m_sstat);
 			for(int k=0; k<number_of_topics; k++){
 				double term = Utils.lgamma(cDoc.m_sstat[k]+m_alpha[k]);
 				docLogLikelihood += term;
@@ -599,8 +613,9 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 				docLogLikelihood -= term;
 			}
 			
+			
 			docLogLikelihood += Utils.lgamma(m_totalAlpha);
-			docLogLikelihood -= Utils.lgamma(cDocLength+m_totalAlpha);
+			docLogLikelihood -= Utils.lgamma(cDocTopicSum+m_totalAlpha);
 			
 		}
 		

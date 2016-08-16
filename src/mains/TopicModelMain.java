@@ -20,6 +20,7 @@ import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMLDA4AC_test;
 import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
 import topicmodels.markovmodel.HTMM;
@@ -51,8 +52,8 @@ public class TopicModelMain {
 		//ACCTM, ACCTM_TwoTheta, ACCTM_C, ACCTM_CZ, ACCTM_CZLR, LDAonArticles, ACCTM_C, 
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
-		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test
-		String topicmodel = "DCMCorrLDA_multi_E_test";
+		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test
+		String topicmodel = "DCMLDA4AC_test";
 
 
 		String category = "tablet";
@@ -69,9 +70,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 
 		double burnIn = 0.4;
 
@@ -318,10 +319,20 @@ public class TopicModelMain {
 
 				double ksi = 800;
 				double tau = 0.7;
-				model = new LDAGibbs4AC_test(gibbs_iteration, 0, beta, c,
+				model = new LDAGibbs4AC_test(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag,
 						ksi, tau);
 
+			}else if(topicmodel.equals("DCMLDA4AC_test")){
+				number_of_topics = 15;
+				converge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				int newtonIter = 1000;
+				double newtonConverge = 1e-3;
+				model = new DCMLDA4AC_test(gibbs_iteration, converge, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						ksi, tau, newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);
