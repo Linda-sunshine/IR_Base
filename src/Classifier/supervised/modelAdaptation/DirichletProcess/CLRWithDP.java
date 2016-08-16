@@ -62,8 +62,8 @@ public class CLRWithDP extends LinAdapt {
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
-//				prob = calcLogLikelihood(user);
-				prob = calcLogLikelihood4Posterior(user);
+				prob = calcLogLikelihood(user);
+//				prob = calcLogLikelihood4Posterior(user);
 				prob += Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}

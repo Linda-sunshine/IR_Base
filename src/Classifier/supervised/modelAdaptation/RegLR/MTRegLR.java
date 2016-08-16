@@ -23,7 +23,7 @@ public class MTRegLR extends RegLR {
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_u = 1;
-		m_eta1 = 0.001;
+		m_eta1 = 0;
 	}
 	@Override
 	public String toString() {
@@ -36,10 +36,7 @@ public class MTRegLR extends RegLR {
 		// Merge the weights of all the users and global part.
 		m_ws = new double[(m_userList.size()+1)*(m_featureSize+1)];
 		// Assume the last section is for global parts.
-		System.arraycopy(m_gWeights, 0, m_ws, m_userList.size()*(m_featureSize+1), m_gWeights.length);//start from the old global model
-		// Load users weights into one array for LBFGS.
-//		for(_AdaptStruct u: m_userList)
-//			System.arraycopy(u.getUserModel(), 0, m_ws, u.getId()*(m_featureSize+1), m_gWeights.length);//start from the old global model
+//		System.arraycopy(m_gWeights, 0, m_ws, m_userList.size()*(m_featureSize+1), m_gWeights.length);//start from the old global model
 	}
 
 	@Override
@@ -187,5 +184,9 @@ public class MTRegLR extends RegLR {
 				pWeights[k] = uWeights[k] + m_u*gWeights[k];
 			u.setPersonalizedModel(pWeights);
 		}
+	}
+	
+	public void setGlobalModel(int fvSize){
+		m_gWeights = new double[fvSize+1];
 	}
 }

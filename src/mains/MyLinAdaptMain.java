@@ -53,10 +53,10 @@ public class MyLinAdaptMain {
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		String dir = String.format("/home/lin/DataWsdm2017/%s/%s_", dataset, dataset);
+		String dir = "./data/";
 
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
@@ -178,14 +178,14 @@ public class MyLinAdaptMain {
 //		
 		//Yelp best parameter: 0.23 0.1 0.04 0.01
 //		double sdA = 0.23, sdB = 0.1; eta1 = 0.04; eta3 = 0.01; 
-		double sdA = 0.3, sdB = 0.2; eta1 = 0.005; eta3 = 0.005; 
+		double sdA = 0.4, sdB = 0.2; eta1 = 0.005; eta3 = 0.005; 
 //		featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[i], dataset);
 //		featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", group[j], dataset);
 //		if(group[i] == 5000)
 //			featureGroupFile = null;
 //		if(group[j] == 5000)
 //			featureGroupFileB = null;
-		
+		for(int i=0; i< 200; i++){
 		/***our algorithm: MTCLinAdaptWithDP***/
 		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 		adaptation.loadUsers(analyzer.getUsers());
@@ -201,12 +201,13 @@ public class MyLinAdaptMain {
 		adaptation.train();
 		adaptation.test();
 		adaptation.printInfo();
-//		adaptation.printUserPerf(dir+"mtclindp.txt");
+		adaptation.printUserPerf(String.format("%s/%s_mtclindp_%d.txt", dir, dataset, i));
 //		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
 //		adaptation.saveModel(dir + "mtclindp_u_0.5");
 //		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 //		}}
+		}
 	}
 }

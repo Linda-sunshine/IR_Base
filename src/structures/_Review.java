@@ -11,8 +11,9 @@ public class _Review extends _Doc {
 	String m_userID;
 	String m_category; 
 	rType m_type; // specification of this review
-	
-	//Constructor for test purpose.
+	public _Review(int ID, String source, int ylabel){
+		super(ID, source, ylabel);
+	}
 	
 	public _Review(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp){
 		super(ID, source, ylabel);
