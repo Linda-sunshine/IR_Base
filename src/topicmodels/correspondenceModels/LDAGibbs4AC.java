@@ -226,6 +226,14 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			
 		}while(++iter<number_of_iteration);
 		
+		logLikelihood = calConditionalPerplexity(sampleTestSet);
+		
+		return logLikelihood;
+	}
+
+	protected double calConditionalPerplexity(ArrayList<_Doc> sampleTestSet) {
+		double logLikelihood = 0;
+		
 		for(_Doc d:sampleTestSet){
 			estThetaInDoc(d);
 			if(d instanceof _ChildDoc){
@@ -233,7 +241,6 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			}
 			
 		}
-			
 		return logLikelihood;
 	}
 

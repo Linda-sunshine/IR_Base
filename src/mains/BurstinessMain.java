@@ -23,7 +23,7 @@ public class BurstinessMain {
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
-		int lengthThreshold = 5; //Document length threshold
+		int lengthThreshold = 15; // Document length threshold
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
@@ -68,7 +68,7 @@ public class BurstinessMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		 articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(

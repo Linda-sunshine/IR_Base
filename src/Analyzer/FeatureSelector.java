@@ -52,10 +52,24 @@ public class FeatureSelector {
 		
 		System.out.println("total\t"+totalSize);
 		
-		int start = (int) (totalSize * m_startProb);
-		int end = (int) (totalSize * m_endProb);
-		for(int i=start; i<end; i++)
-			features.add(m_selectedFeatures.get(i).m_name);
+		int totalCorpusSize = 95395;
+		// int start = (int) (totalSize * m_startProb);
+		// int end = (int) (totalSize * m_endProb);
+		//
+		// for(int i=start; i<end; i++)
+		// features.add(m_selectedFeatures.get(i).m_name);
+		
+		int upDF = (int) (totalCorpusSize * 0.1);
+		int bottomDF = (int) (totalCorpusSize * 0.0001);
+
+		System.out.println("up DF\t" + upDF + "\t bottom DF \t" + bottomDF);
+
+		for (int i = 0; i < totalSize; i++) {
+			if ((m_selectedFeatures.get(i).m_value < upDF)
+					&& (m_selectedFeatures.get(i).m_value > bottomDF)) {
+				features.add(m_selectedFeatures.get(i).m_name);
+			}
+		}
 		
 		return features;
 	}
@@ -68,6 +82,9 @@ public class FeatureSelector {
 			if(sumDF > m_minDF && sumDF < m_maxDF)
 				m_selectedFeatures.add(new _RankItem(f, sumDF));
 		}
+		System.out.println("selected features size\t"
+				+ m_selectedFeatures.size());
+		
 	}
 		
 	//Feature Selection -- IG.

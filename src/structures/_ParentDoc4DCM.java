@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class _ParentDoc4DCM extends _ParentDoc{
+public class _ParentDoc4DCM extends _ParentDoc {
 	
 	public double[][] m_wordTopic_stat;
 	public double[][] m_wordTopic_prob;

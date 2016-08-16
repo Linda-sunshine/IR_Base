@@ -188,7 +188,7 @@ public class ACCTM_C extends ACCTM {
 				/ (d.m_childWordSstat);
 	}
 	
-	@Override
+
 	protected void collectChildStats(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		_ParentDoc pDoc = cDoc.m_parentDoc;

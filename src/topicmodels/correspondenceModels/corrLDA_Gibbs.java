@@ -133,7 +133,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		if(tid==0)
 			return term;
 		
-		for (_ChildDoc cDoc : d.m_childDocs4Dynamic) {
+		for (_ChildDoc cDoc : d.m_childDocs) {
 			term *= influenceRatio(cDoc.m_sstat[tid], d.m_sstat[tid],
 					cDoc.m_sstat[0], d.m_sstat[0]);
 		}
@@ -234,6 +234,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		}
 		
 		int testLength = (int)(m_testWord4PerplexityProportion*pDoc.getTotalDocLength());
+		testLength = 0;
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 		sampleTestSet.add(pDoc);
 		
@@ -313,8 +314,11 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 	}
 	
 	protected double cal_logLikelihood_partial4Child(_Doc d) {
-//		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
+		_ChildDoc cDoc = (_ChildDoc) d;
 		double docLogLikelihood = 0.0;
+
+		double docTopicSum = Utils.sumOfArray(cDoc.m_sstat);
+		double smoothingSum = m_smoothingParam * number_of_topics;
 
 		for (_Word w : d.getTestWords()) {
 			int wid = w.getIndex();
@@ -325,7 +329,8 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 				double term2 = topic_term_probabilty[k][wid];
 				
 				// double term1 = childWordByTopicProb(k, wid);
-				// double term2 = childTopicInDoc(k, d);
+				// double term2 = childTopicInDoc(k, cDoc)
+				// / (smoothingSum + docTopicSum);
 				
 				double wordPerTopicLikelihood = term1*term2;
 				wordLogLikelihood += wordPerTopicLikelihood;

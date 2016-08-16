@@ -5,7 +5,6 @@ import java.text.ParseException;
 import java.util.Calendar;
 
 import structures._Corpus;
-
 import Analyzer.ParentChildAnalyzer;
 
 public class featureGeneration {
@@ -48,7 +47,7 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-//		articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
@@ -68,7 +67,9 @@ public class featureGeneration {
 			sentence = true;
 		}
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s_sample.txt", Ngram, articleType);
+		String fvFile = String.format(
+				"./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram,
+				articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
 	
@@ -118,6 +119,7 @@ public class featureGeneration {
 //		analyzer.LoadParentDirectory(articleFolder, suffix);
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
 		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(commentFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		

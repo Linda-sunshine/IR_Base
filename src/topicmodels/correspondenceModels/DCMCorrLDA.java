@@ -28,7 +28,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			double alpha_c, double burnIn, double ksi, double tau, int lag,
 			int newtonIter, double newtonConverge) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-				alpha_c, burnIn, lag, ksi, tau, newtonIter, newtonConverge);
+				alpha_a, burnIn, lag, ksi, tau, newtonIter, newtonConverge);
 		
 
 	}
@@ -89,7 +89,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 0.05;
+		mu = 0.5;
 		d.setMu(mu);
 	}
 	
@@ -209,7 +209,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			return term;
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
-			double muDp = cDoc.getMu()/d.getTotalDocLength();
+			double muDp = cDoc.getMu() / d.getDocInferLength();
 			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, d_alpha
 					+ d.m_sstat[tid] * muDp)
 					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, d_alpha
@@ -608,7 +608,23 @@ public class DCMCorrLDA extends DCMLDA4AC {
 				Utils.L1Normalization(((_ParentDoc4DCM) d).m_wordTopic_prob[i]);
 		}
 		Utils.L1Normalization(d.m_topics);
+		
+	}
+	
+	protected double calConditionalPerplexity(ArrayList<_Doc> sampleTestSet) {
+		double logLikelihood = 0;
+		
+		for (_Doc d : sampleTestSet) {
+			estThetaInDoc(d);
+		}
 
+		for (_Doc d : sampleTestSet) {
+			if (d instanceof _ChildDoc) {
+				logLikelihood += cal_logLikelihood_partial4Child((_ChildDoc) d);
+			}
+		}
+
+		return logLikelihood;
 	}
 	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
@@ -619,11 +635,12 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		int testLength = 0;
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength, vocabulary_size);
-		
+		pDoc.createSparseVct4Infer();
+
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
+			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
 				int wid = w.getIndex();
