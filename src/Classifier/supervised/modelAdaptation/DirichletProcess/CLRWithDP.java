@@ -388,7 +388,7 @@ public class CLRWithDP extends LinAdapt {
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
 	public double trainTrace(String tracefile){
 		m_numberOfIterations = 50;
-		m_burnIn = 2;
+		m_burnIn = 1;
 		m_thinning = 1;
 		
 		System.out.println(toString());
