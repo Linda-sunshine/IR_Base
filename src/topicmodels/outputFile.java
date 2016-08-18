@@ -9,69 +9,31 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.TreeMap;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
+import Analyzer.ParentChildAnalyzer;
 
 public class outputFile {
-	public static void outputFiles(String filePrefix, _Corpus c) {
-		try {
-			String selectedSentencesinParentFile = filePrefix
-					+ "/selected_Stn.txt";
+	
+	static void transformDocuments2SCTMFormat(String filePrefix, _Corpus c) {
+		try{
+			String selectedSentenceFile = filePrefix + "/selected_Stn.txt";
 			String selectedCommentsFile = filePrefix + "/selected_Comments.txt";
+			String sctmInputParentFile = filePrefix + "/abagf.AT.txt";
+			String sctmInputCommentFile = filePrefix + "/cbagf.AT.txt";
+			String featureFile = filePrefix + "/words.AT.txt";
 
-			String sctmFormatParentFile = filePrefix + "/abagf.AT.txt";
-			String sctmFormatChildFile = filePrefix + "/cbagf.AT.txt";
-			String sctmWordFile = filePrefix + "/words.AT.txt";
-			
-			String stnLengthFile = filePrefix + "/selected_StnLength.txt";
-			
-			String shortStnFile = filePrefix + "/selected_ShortStn.txt";
-			String longStnFile = filePrefix + "/selected_LongStn.txt";
-			
-			if (c.getFeatureSize() != 0) {
-				PrintWriter wordPW = new PrintWriter(new File(sctmWordFile));
-				for (int i = 0; i < c.getFeatureSize(); i++) {
-					String wordName = c.getFeature(i);
-					wordPW.println(wordName);
-				}
-				wordPW.flush();
-				wordPW.close();
-			}
-			
-			PrintWriter stnLengthPW = new PrintWriter(new File(stnLengthFile));
-			
-			PrintWriter shortParentPW = new PrintWriter(new File(shortStnFile));
-			PrintWriter longParentPW = new PrintWriter(new File(longStnFile));
-			
-			PrintWriter parentPW = new PrintWriter(new File(
-					selectedSentencesinParentFile));
-			PrintWriter childPW = new PrintWriter(
-					new File(selectedCommentsFile));
-
-			PrintWriter sctmParentPW = new PrintWriter(new File(
-					sctmFormatParentFile));
-			PrintWriter sctmChildPW = new PrintWriter(new File(
-					sctmFormatChildFile));
-
-			int totoalParentNum = 0;
-			TreeMap<Integer, _ParentDoc> parentMap = new TreeMap<Integer, _ParentDoc>();
-
-			int totalStnNum = 0;
-			
 			ArrayList<_Doc> m_trainSet = c.getCollection();
 			ArrayList<Integer> parentNameList = new ArrayList<Integer>();
+			
+			TreeMap<Integer, _ParentDoc> parentMap = new TreeMap<Integer, _ParentDoc>();
+
 			for (_Doc d : m_trainSet) {
 				if (d instanceof _ParentDoc) {
-					
-					// HashMap<Integer, _Stn> stnMap = ((_ParentDoc)
-					// d).m_sentenceMap;
-					totoalParentNum += 1;
-					
 					String parentName = d.getName();
 					parentMap.put(Integer.parseInt(parentName), (_ParentDoc) d);
 
@@ -79,165 +41,193 @@ public class outputFile {
 				}
 			}
 			
-			ArrayList<Double> parentDocLenList = new ArrayList<Double>();
-			ArrayList<Double> childDocLenList = new ArrayList<Double>();
+			outputFeatureFile(featureFile, c);
+			outputSelectedStnFile(selectedSentenceFile, parentMap);
+			outputSelectedCommentFile(selectedCommentsFile, parentMap);
+			outputSctmInputParentFile(sctmInputParentFile, parentMap);
+			outputSctmInputChildFile(sctmInputCommentFile, parentMap);
 			
-			double parentDocLenSum = 0;
-			double childDocLenSum = 0;
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+	static void outputFeatureFile(String featureFile, _Corpus c) {
+		try{
+			if (c.getFeatureSize() != 0) {
+				PrintWriter wordPW = new PrintWriter(new File(featureFile));
+				for (int i = 0; i < c.getFeatureSize(); i++) {
+					String wordName = c.getFeature(i);
+					wordPW.println(wordName);
+				}
+				wordPW.flush();
+				wordPW.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static void outputSelectedStnFile(String stnFile,
+			TreeMap<Integer, _ParentDoc> parentMap) {
+		try {
+
+			PrintWriter pw = new PrintWriter(new File(stnFile));
+
+			int totalStnNum = 0;
+			for (int parentID : parentMap.keySet()) {
+				_ParentDoc parentObj = parentMap.get(parentID);
+
+				_Stn[] sentenceArray = parentObj.getSentences();
+				int selectedStnNum = sentenceArray.length;
+
+				totalStnNum += selectedStnNum;
+
+				pw.print(parentID + "\t" + selectedStnNum + "\t");
+
+				for (int i = 0; i < sentenceArray.length; i++) {
+					_Stn stnObj = sentenceArray[i];
+					if (stnObj == null)
+						continue;
+
+					pw.print((stnObj.getIndex() + 1) + "\t");
+				}
+
+				pw.println();
+				
+			}
+			pw.flush();
+			pw.close();
+
+			System.out.println("total stn num\t" + totalStnNum);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static void outputSelectedCommentFile(String selectedCommentsFile,
+			TreeMap<Integer, _ParentDoc> parentMap) {
+		try {
+
+			PrintWriter pw = new PrintWriter(new File(selectedCommentsFile));
 
 			for (int parentID : parentMap.keySet()) {
 				_ParentDoc parentObj = parentMap.get(parentID);
-				
-				double parentDocLen = parentObj.getTotalDocLength();
-				parentDocLenSum += parentDocLen;
-				parentDocLenList.add(parentDocLen);
-				
-				for(_ChildDoc cDoc: parentObj.m_childDocs){
-					double childDocLen = cDoc.getTotalDocLength();
-					childDocLenList.add(childDocLen);
-					childDocLenSum += childDocLen;
+
+				TreeMap<Integer, _ChildDoc> childMap = new TreeMap<Integer, _ChildDoc>();
+				String parentName = parentObj.getName();
+				for (_ChildDoc cDoc : parentObj.m_childDocs) {
+					String childName = cDoc.getName();
+					int childID = Integer.parseInt(childName.replace(parentName
+							+ "_", ""));
+					childMap.put(childID, cDoc);
 				}
-				
-				_Stn[] sentenceArray = parentObj.getSentences();
-				int selectedStn = 0;
-				for (int i = 0; i < sentenceArray.length; i++) {
-					_Stn stnObj = sentenceArray[i];
-					if(stnObj==null)
-						continue;
-					
-					selectedStn += 1;
-					
-					
-					stnLengthPW.println(stnObj.getLength());
-					// if(stnObj==null)
-					// continue;
-					// selectedStn += 1;
+
+				pw.print(parentName + "\t");
+				for (int t : childMap.keySet()) {
+					_ChildDoc cDoc = childMap.get(t);
+
+					pw.print(cDoc.getName() + "\t");
 				}
-				
-				totalStnNum += selectedStn;
-				parentPW.print(parentID + "\t" + selectedStn + "\t");
-				shortParentPW.print(parentID+"\t");
-				longParentPW.print(parentID+"\t");
-				for (int i = 0; i < sentenceArray.length; i++) {
-					_Stn stnObj = sentenceArray[i];
-					if (stnObj == null)
-						continue;
-					if(stnObj.getLength()<15)
-						shortParentPW.print((stnObj.getIndex() + 1) + "\t");
-					else
-						longParentPW.print((stnObj.getIndex() + 1) + "\t");
-					parentPW.print((stnObj.getIndex() + 1) + "\t");
-				}
-				parentPW.println();
-				longParentPW.println();
-				shortParentPW.println();
-			
+
+				pw.println();
 			}
-			
-			System.out.println("longest child\t"+Collections.max(childDocLenList));
-			System.out.println("shortest child\t"+Collections.min(childDocLenList));
-			
-			System.out.println("parent doc len\t"+parentDocLenSum/parentDocLenList.size());
-			System.out.println("child doc len\t"+childDocLenSum/childDocLenList.size());
-			
-			parentPW.flush();
-			parentPW.close();
-				
-			stnLengthPW.flush();
-			stnLengthPW.close();
-			
-			shortParentPW.flush();
-			shortParentPW.close();
-			
-			longParentPW.flush();
-			longParentPW.close();
-			
-			sctmParentPW.println(totoalParentNum);
-			sctmChildPW.println(totoalParentNum);
-			
-			System.out.println("stnNum"+totalStnNum);
-			
-			for (int parentID: parentMap.keySet()) {
-				_ParentDoc d = parentMap.get(parentID);
-				// HashMap<Integer, _Stn> stnMap = ((_ParentDoc)
-				// d).m_sentenceMap;
-				
-				_Stn[] sentenceArray = (d).getSentences();
-				int selectedStn = 0;
 
-				for (int i = 0; i < sentenceArray.length; i++) {
-					_Stn stnObj = sentenceArray[i];
-					if (stnObj == null)
-						continue;
-					selectedStn += 1;
-				}
+			pw.flush();
+			pw.close();
 
-				sctmParentPW.println(selectedStn);
-				for (int i = 0; i < sentenceArray.length; i++) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	static void outputSctmInputParentFile(String parentFile,
+			TreeMap<Integer, _ParentDoc> parentMap) {
+		try {
+			PrintWriter pw = new PrintWriter(new File(parentFile));
+			
+			int totalParentNum = parentMap.size();
+			pw.println(totalParentNum);
+			for (int parentID : parentMap.keySet()) {
+				_ParentDoc pDoc = parentMap.get(parentID);
+				
+				_Stn[] sentenceArray = pDoc.getSentences();
+				int selectedStnNum = sentenceArray.length;
+				pw.println(selectedStnNum);
+				for (int i = 0; i < selectedStnNum; i++) {
 					_Stn stnObj = sentenceArray[i];
 					if (stnObj == null)
 						continue;
 
 					_SparseFeature[] sv = stnObj.getFv();
-					sctmParentPW.print((int) stnObj.getLength() + "\t");
+					pw.print((int) stnObj.getLength() + "\t");
 					for (int j = 0; j < sv.length; j++) {
 						int index = sv[j].getIndex();
 						double value = sv[j].getValue();
-						
+
 						for (int v = 0; v < value; v++)
-							sctmParentPW.print(index + "\t");
+							pw.print(index + "\t");
 					}
-					sctmParentPW.println();
+					pw.println();
 				}
+			}
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 
-				ArrayList<_ChildDoc> childDocs = ((_ParentDoc) d).m_childDocs;
-				sctmChildPW.println(childDocs.size());
+	static void outputSctmInputChildFile(String childFile,
+			TreeMap<Integer, _ParentDoc> parentMap) {
+		try{
+			PrintWriter pw = new PrintWriter(new File(childFile));
 
-				String parentName = d.getName();
+			int totalParentNum = parentMap.size();
+			pw.println(totalParentNum);
+
+			for (int parentID : parentMap.keySet()) {
+				_ParentDoc pDoc = parentMap.get(parentID);
+
 				TreeMap<Integer, _ChildDoc> childMap = new TreeMap<Integer, _ChildDoc>();
-				for (_ChildDoc cDoc : childDocs) {
+				String parentName = pDoc.getName();
+
+				for (_ChildDoc cDoc : pDoc.m_childDocs) {
 					String childName = cDoc.getName();
 					int childID = Integer.parseInt(childName.replace(parentName
 							+ "_", ""));
 					childMap.put(childID, cDoc);
 				}
 				
-				childPW.print(parentName + "\t");
+				pw.println(pDoc.m_childDocs.size());
+				
 				for (int t : childMap.keySet()) {
 					_ChildDoc cDoc = childMap.get(t);
-					sctmChildPW.print((int) cDoc.getTotalDocLength() + "\t");
+					pw.print((int) cDoc.getTotalDocLength() + "\t");
 
-					childPW.print(cDoc.getName() + "\t");
-//					System.out.println(cDoc.getName() + "\t");
-					
 					_SparseFeature[] fv = cDoc.getSparse();
 					for (int j = 0; j < fv.length; j++) {
 						int index = fv[j].getIndex();
 						double value = fv[j].getValue();
 						for (int v = 0; v < value; v++) {
-							sctmChildPW.print(index + "\t");
+							pw.print(index + "\t");
 						}
 					}
-					sctmChildPW.println();
+					pw.println();
 
-					
 				}
-				childPW.println();
-
 			}
-
-			sctmParentPW.flush();
-			sctmParentPW.close();
-
-			sctmChildPW.flush();
-			sctmChildPW.close();
-			
-			childPW.flush();
-			childPW.close();
-			
+			pw.flush();
+			pw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void outputFiles(String filePrefix, _Corpus c) {
+		
+		transformDocuments2SCTMFormat(filePrefix, c);
 	}
 	
 	public static void statisticDocLen(_Corpus c){
@@ -302,14 +292,11 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		articleType = "Yahoo";
+		// articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
-		
-		articleFolder = String.format("../../Code/Data/TextMiningProject/APPDescriptions");
-		commentFolder = String.format("../../Code/Data/TextMiningProject/APPReviews");
 		
 		String suffix = ".json";
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -367,9 +354,9 @@ public class outputFile {
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-//		analyzer.LoadChildDirectory(commentFolder, suffix);
-		analyzer.LoadDirectory(commentFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
+		// analyzer.LoadDirectory(commentFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
@@ -388,8 +375,9 @@ public class outputFile {
 
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
-		statisticDocLen(c);
-//		outputFiles(filePrefix, c);
+		// statisticDocLen(c);
+		outputFile of = new outputFile();
+		of.outputFiles(filePrefix, c);
 
 	}
 }
