@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -15,6 +17,7 @@ import structures._RankItem;
 import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
+import topicmodels.outputFile;
 import topicmodels.LDA.LDA_Gibbs;
 import utils.Utils;
 
@@ -118,7 +121,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 				}
 
-				// writeFile(i, m_trainSet, m_testSet);
+				writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number " + i);
 				infoWriter.println("Fold number " + i);
 
@@ -188,6 +191,41 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		return perplexity;
 	}
 
+	public void writeFile(int k, ArrayList<_Doc> trainSet, ArrayList<_Doc>testSet){
+		System.out.println("creating cross validation folder");
+		
+		String trainFilePrefix = "trainFolder"+k;
+		String testFilePrefix = "testFolder"+k;
+		
+		File trainFolder = new File(trainFilePrefix);
+		File testFolder = new File(testFilePrefix);
+		
+		if(!trainFolder.exists()){
+			System.out.println("creating root train directory"+trainFolder);
+			trainFolder.mkdir();
+		}
+		
+		if(!testFolder.exists()){
+			System.out.println("creating root test directory"+testFolder);
+			testFolder.mkdir();
+		}
+		
+		_Corpus trainCorpus = new _Corpus();
+		_Corpus testCorpus = new _Corpus();
+		
+		for(_Doc d:trainSet){
+			trainCorpus.addDoc(d);
+		}
+		
+		for(_Doc d:testSet){
+			testCorpus.addDoc(d);
+		}
+		
+		outputFile.outputFiles(trainFilePrefix, trainCorpus);
+		outputFile.outputFiles(testFilePrefix, testCorpus);
+		
+	}
+	
 	public double inference(_Doc pDoc) {
 		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
 
