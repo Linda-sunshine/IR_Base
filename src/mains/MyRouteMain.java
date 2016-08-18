@@ -3,7 +3,10 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import opennlp.tools.util.InvalidFormatException;
+import structures._User;
 import Analyzer.BinaryRouteAnalyzer;
+import Classifier.supervised.GlobalSVM;
+import Classifier.supervised.IndividualSVM;
 import Classifier.supervised.modelAdaptation.RegLR.MTRegLR;
 
 public class MyRouteMain {
@@ -14,7 +17,7 @@ public class MyRouteMain {
 		int lengthThreshold = 5; // Document length threshold
 		int displayLv = 1;
 
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.8;
 		boolean enforceAdapt = true;
 
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
@@ -34,5 +37,22 @@ public class MyRouteMain {
 		adaptation.setDisplayLv(displayLv);
 		adaptation.train();
 		adaptation.test();
+		
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
+		gsvm.loadUsers(analyzer.getUsers());
+		gsvm.train();
+		gsvm.test();
+		
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
+		indsvm.loadUsers(analyzer.getUsers());
+		indsvm.train();
+		indsvm.test();
+		
 	}
 }
