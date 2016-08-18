@@ -226,9 +226,16 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			
 		}while(++iter<number_of_iteration);
 		
-		logLikelihood = calConditionalPerplexity(sampleTestSet);
+		logLikelihood = calPerplexity(sampleTestSet);
+		// logLikelihood = calConditionalPerplexity(sampleTestSet);
 		
 		return logLikelihood;
+	}
+	
+	protected double calPerplexity(ArrayList<_Doc> sampleTestSet) {
+		double likelihood = 0;
+
+		return likelihood;
 	}
 
 	protected double calConditionalPerplexity(ArrayList<_Doc> sampleTestSet) {
