@@ -210,9 +210,9 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
 			double muDp = cDoc.getMu() / d.getDocInferLength();
-			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, d_alpha
+			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, m_alpha_c[tid]
 					+ d.m_sstat[tid] * muDp)
-					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, d_alpha
+					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, m_alpha_c[0]
 							+ d.m_sstat[0] * muDp);
 		}
 

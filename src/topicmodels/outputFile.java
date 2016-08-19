@@ -41,7 +41,7 @@ public class outputFile {
 				}
 			}
 			
-			outputFeatureFile(featureFile, c);
+//			outputFeatureFile(featureFile, c);
 			outputSelectedStnFile(selectedSentenceFile, parentMap);
 			outputSelectedCommentFile(selectedCommentsFile, parentMap);
 			outputSctmInputParentFile(sctmInputParentFile, parentMap);
