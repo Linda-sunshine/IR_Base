@@ -7,6 +7,7 @@ import structures._User;
 import Analyzer.BinaryRouteAnalyzer;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
+import Classifier.supervised.IndividualSVM;
 import Classifier.supervised.modelAdaptation.RegLR.MTRegLR;
 
 public class MyRouteMain {
@@ -53,5 +54,10 @@ public class MyRouteMain {
 		mtsvm.loadUsers(analyzer.getUsers());
 		mtsvm.train();
 		mtsvm.test();
+		
+		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
+		indsvm.loadUsers(analyzer.getUsers());
+		indsvm.train();
+		indsvm.test();
 	}
 }
