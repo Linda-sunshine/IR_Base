@@ -20,6 +20,8 @@ import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMDMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMLDA4AC_test;
 import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
@@ -53,8 +55,9 @@ public class TopicModelMain {
 		//ACCTM, ACCTM_TwoTheta, ACCTM_C, ACCTM_CZ, ACCTM_CZLR, LDAonArticles, ACCTM_C, 
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
-		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test
-		String topicmodel = "LDAGibbs4AC_test";
+		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
+		//DCMDMCorrLDA_test
+		String topicmodel = "DCMDMCorrLDA_multi_E_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -344,6 +347,32 @@ public class TopicModelMain {
 				model = new corrLDA_Gibbs_test(number_of_iteration, converge,
 						beta, c, lambda, number_of_topics, alpha, burnIn,
 						gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("DCMDMCorrLDA_multi_E_test")){
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMDMCorrLDA_multi_E_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC,
+						burnIn, ksi, tau, gibbs_lag,
+						newtonIter, newtonConverge);
+			}else if(topicmodel.equals("DCMDMCorrLDA_test")){
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMDMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC,
+						burnIn, ksi, tau, gibbs_lag,
+						newtonIter, newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);
