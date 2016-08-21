@@ -53,8 +53,9 @@ public class TopicModelMain {
 		//ACCTM, ACCTM_TwoTheta, ACCTM_C, ACCTM_CZ, ACCTM_CZLR, LDAonArticles, ACCTM_C, 
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
-		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test
-		String topicmodel = "corrLDA_Gibbs_test";
+		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test,
+		// corrLDA_Gibbs_test
+		String topicmodel = "LDAGibbs4AC_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -66,13 +67,13 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+		gibbs_iteration = 4;
+		gibbs_lag = 2;
+		displayLap = 2;
 
 		double burnIn = 0.4;
 
