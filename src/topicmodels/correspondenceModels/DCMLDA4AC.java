@@ -15,7 +15,6 @@ import structures._ParentDoc4DCM;
 import structures._RankItem;
 import structures._Stn;
 import structures._Word;
-import sun.print.PageableDoc;
 import utils.Utils;
 
 /**
@@ -77,14 +76,14 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			long eEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
+					+ (eEndTime - eStartTime) / 1000 + "\t s");
 
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
-			// System.out.println("per iteration m step time\t"
-			// + (mEndTime - mStartTime));
+			System.out.println("per iteration m step time\t"
+					+ (mEndTime - mStartTime) / 1000 + "\t s");
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

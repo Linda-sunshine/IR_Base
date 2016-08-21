@@ -22,6 +22,7 @@ import topicmodels.correspondenceModels.ACCTM_CZLR;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
 import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
 import topicmodels.correspondenceModels.DCMDMCorrLDA_test;
+import topicmodels.correspondenceModels.DCMDMMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMLDA4AC_test;
 import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
@@ -55,9 +56,10 @@ public class TopicModelMain {
 		//ACCTM, ACCTM_TwoTheta, ACCTM_C, ACCTM_CZ, ACCTM_CZLR, LDAonArticles, ACCTM_C, 
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
+
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
-		//DCMDMCorrLDA_test
-		String topicmodel = "DCMDMCorrLDA_multi_E_test";
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test
+		String topicmodel = "DCMDMMCorrLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -69,13 +71,13 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-//		 gibbs_iteration = 4;
-//		 gibbs_lag = 2;
-//		 displayLap = 2;
+		// gibbs_iteration = 4;
+		// gibbs_lag = 2;
+		// displayLap = 2;
 
 		double burnIn = 0.4;
 
@@ -373,6 +375,18 @@ public class TopicModelMain {
 						alphaC,
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
+			} else if (topicmodel.equals("DCMDMMCorrLDA_test")) {
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMDMMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
+						newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);
