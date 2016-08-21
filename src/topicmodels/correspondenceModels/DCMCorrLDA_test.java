@@ -66,7 +66,7 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 
 		for (_Doc d : m_trainSet) {
 			if (d instanceof _ParentDoc) {
-				// printParentTopicAssignment(d, parentTopicFolder);
+				printParentTopicAssignment(d, parentTopicFolder);
 				printWordTopicDistribution(d,
 						parentWordTopicDistributionFolder, topK);
 			} else {
@@ -143,6 +143,27 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 			childParaOut.flush();
 			childParaOut.close();
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
+		String topicAssignmentFile = d.getName() + ".txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(topicFolder,
+					topicAssignmentFile));
+
+			for (_Word w : d.getWords()) {
+				int index = w.getIndex();
+				int topic = w.getTopic();
+
+				String featureName = m_corpus.getFeature(index);
+				pw.print(featureName + ":" + topic + "\t");
+			}
+
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
 	}

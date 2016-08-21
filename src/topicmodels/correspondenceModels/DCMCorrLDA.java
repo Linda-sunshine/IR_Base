@@ -314,7 +314,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			m_sstat[k] /= parentDocNum;
 			m_alphaAuxilary[k] /= childDocNum;
 			for(int v=0; v<vocabulary_size; v++){
-				topic_term_probabilty[k][v] /= (parentDocNum+childDocNum);
+				topic_term_probabilty[k][v] /= (parentDocNum);
 			}
 		}
 		

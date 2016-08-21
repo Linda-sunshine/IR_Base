@@ -9,7 +9,6 @@ import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._Word;
-import topicmodels.correspondenceModels.DCMCorrLDA_multi_E.DCMCorrLDA_worker;
 import topicmodels.multithreads.TopicModelWorker;
 import topicmodels.multithreads.TopicModel_worker;
 import topicmodels.multithreads.TopicModel_worker.RunType;
@@ -197,14 +196,14 @@ public class DCMDMCorrLDA_multi_E extends DCMDMCorrLDA{
 			long eEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
+					+ (eEndTime - eStartTime) / 1000);
 
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration m step time\t"
-					+ (mEndTime - mStartTime));
+					+ (mEndTime - mStartTime) / 1000);
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

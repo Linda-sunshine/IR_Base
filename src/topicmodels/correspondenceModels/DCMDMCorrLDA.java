@@ -7,7 +7,6 @@ every word in a comment has a different topic.
 
 import java.util.Arrays;
 
-import jdk.nashorn.internal.ir.Terminal;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
@@ -213,7 +212,7 @@ public class DCMDMCorrLDA extends DCMCorrLDA {
 			m_sstat[k] /= parentDocNum;
 			m_alphaAuxilary[k] /= childDocNum;
 			for(int v=0; v<vocabulary_size; v++){
-				topic_term_probabilty[k][v] /= (parentDocNum+childDocNum);
+				topic_term_probabilty[k][v] /= (parentDocNum);
 			}
 		}
 		
@@ -277,7 +276,7 @@ public class DCMDMCorrLDA extends DCMCorrLDA {
 		double muDp = mu/parentDocLength;
 		docLogLikelihood += Utils.digamma(m_totalAlpha_c+mu);
 
-		docLogLikelihood += Utils.digamma(m_totalAlpha_c+mu+topicSum);
+		docLogLikelihood -= Utils.digamma(m_totalAlpha_c + mu + topicSum);
 
 		for(int k=0; k<number_of_topics; k++){
 			double term = m_alpha_c[k]+muDp*d.m_sstat[k]+tidNum[k];
