@@ -1,5 +1,10 @@
 package topicmodels.correspondenceModels;
 
+/*******
+comments of an article has its own topic proportion,
+**********/
+
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -210,9 +215,9 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		for (_ChildDoc cDoc : d.m_childDocs) {
 			double muDp = cDoc.getMu() / d.getDocInferLength();
-			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, d_alpha
+			term *= gammaFuncRatio((int) cDoc.m_sstat[tid], muDp, m_alpha_c[tid]
 					+ d.m_sstat[tid] * muDp)
-					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, d_alpha
+					/ gammaFuncRatio((int) cDoc.m_sstat[0], muDp, m_alpha_c[0]
 							+ d.m_sstat[0] * muDp);
 		}
 
@@ -438,7 +443,6 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	
 	protected void updateBeta(int tid){
 		double diff = 0;
-		double smoothingBeta = 0.1;
 		
 		int iteration = 0;
 		do{
@@ -590,7 +594,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		for(_ChildDoc cDoc:d.m_childDocs){
 			double muDp = cDoc.getMu()/parentDocLength;
 			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu());
-			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu()+cDoc.getTotalDocLength());
+			docLogLikelihood -= Utils.digamma(m_totalAlpha_c+cDoc.getMu()+cDoc.getTotalDocLength());
 			for(int k=0; k<number_of_topics; k++){
 				double term = Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]+cDoc.m_sstat[k]);
 				term -= Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]);
@@ -627,37 +631,37 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		return logLikelihood;
 	}
 	
-	public double Evaluation(int i) {
-		m_collectCorpusStats = false;
-		double perplexity = 0, loglikelihood, totalWords = 0, sumLikelihood = 0;
-
-		System.out.println("In Normal");
-
-		for (_Doc d : m_testSet) {
-			loglikelihood = inference(d);
-			sumLikelihood += loglikelihood;
-			perplexity += loglikelihood;
-			totalWords += d.getTotalDocLength();
-			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-				totalWords += cDoc.getTotalDocLength();
-			}
-		}
-		System.out.println("total Words\t" + totalWords + "perplexity\t"
-				+ perplexity);
-		infoWriter.println("total Words\t" + totalWords + "perplexity\t"
-				+ perplexity);
-		perplexity /= totalWords;
-		perplexity = Math.exp(-perplexity);
-		sumLikelihood /= m_testSet.size();
-
-		System.out.format(
-				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
-				perplexity, sumLikelihood);
-		infoWriter.format(
-				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
-				perplexity, sumLikelihood);
-		return perplexity;
-	}
+//	public double Evaluation(int i) {
+//		m_collectCorpusStats = false;
+//		double perplexity = 0, loglikelihood, totalWords = 0, sumLikelihood = 0;
+//
+//		System.out.println("In Normal");
+//
+//		for (_Doc d : m_testSet) {
+//			loglikelihood = inference(d);
+//			sumLikelihood += loglikelihood;
+//			perplexity += loglikelihood;
+//			totalWords += d.getTotalDocLength();
+//			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+//				totalWords += cDoc.getTotalDocLength();
+//			}
+//		}
+//		System.out.println("total Words\t" + totalWords + "perplexity\t"
+//				+ perplexity);
+//		infoWriter.println("total Words\t" + totalWords + "perplexity\t"
+//				+ perplexity);
+//		perplexity /= totalWords;
+//		perplexity = Math.exp(-perplexity);
+//		sumLikelihood /= m_testSet.size();
+//
+//		System.out.format(
+//				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
+//				perplexity, sumLikelihood);
+//		infoWriter.format(
+//				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
+//				perplexity, sumLikelihood);
+//		return perplexity;
+//	}
 
 	protected double calPerplexity(ArrayList<_Doc> sampleTestSet) {
 		double logLikelihood = 0;
@@ -731,7 +735,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			testLength = 0;
+//			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
