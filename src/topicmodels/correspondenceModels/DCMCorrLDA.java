@@ -1,5 +1,10 @@
 package topicmodels.correspondenceModels;
 
+/*******
+comments of an article has its own topic proportion,
+**********/
+
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayList;

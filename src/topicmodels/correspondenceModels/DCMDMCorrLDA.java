@@ -1,5 +1,10 @@
 package topicmodels.correspondenceModels;
 
+/*******
+comments of an article share a topic proportion,
+every word in a comment has a different topic.
+*******/
+
 import java.util.Arrays;
 
 import jdk.nashorn.internal.ir.Terminal;
