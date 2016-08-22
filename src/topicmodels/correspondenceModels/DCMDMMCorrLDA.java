@@ -306,12 +306,12 @@ public class DCMDMMCorrLDA extends DCMCorrLDA{
 					double muDp = mu / pDocLen;
 					double t_totalAlpha_c = m_totalAlpha_c + mu;
 					double digAlpha = Utils.digamma(t_totalAlpha_c);
-					totalAlphaDenominator = Utils.digamma(topicSum
+					totalAlphaDenominator += Utils.digamma(topicSum
 							+ t_totalAlpha_c)
 							- digAlpha;
 
 					for (int k = 0; k < number_of_topics; k++)
-						totalAlphaNumerator[k] = Utils.digamma(m_alpha_c[k]
+						totalAlphaNumerator[k] += Utils.digamma(m_alpha_c[k]
 								+ muDp * pDoc.m_sstat[k] + tidNum[k])
 								- Utils.digamma(m_alpha_c[k] + muDp
 										* pDoc.m_sstat[k]);
@@ -329,16 +329,18 @@ public class DCMDMMCorrLDA extends DCMCorrLDA{
 					diff = t_diff;
 
 				m_alpha_c[k] = newAlpha;
+				// System.out.println("alphaC \t" + m_alpha_c[k]);
+
 			}
 
 			iteration++;
-			// System.out.println("alpha iteration\t" + iteration);
+			// System.out.println("alpha c iteration\t" + iteration);
 			
 			if (iteration > m_newtonIter)
 				break;
 		} while (diff > m_newtonConverge);
 
-		// System.out.println("iteration\t" + iteration);
+		System.out.println("alpha c iteration\t" + iteration);
 		m_totalAlpha_c = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha_c += m_alpha_c[k];

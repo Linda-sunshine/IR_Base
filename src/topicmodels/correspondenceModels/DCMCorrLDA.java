@@ -372,14 +372,14 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			}
 			
 			iteration ++;
-			// System.out.println("alpha parentDoc iteration\t" + iteration);
+			// System.out.println("alpha  iteration\t" + iteration);
 			
 			if(iteration>m_newtonIter)
 				break;
 			
 		}while(diff>m_newtonConverge);
 		
-		// System.out.println("iteration\t"+iteration);
+		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
 		for(int k=0; k<number_of_topics; k++){
 			m_totalAlpha += m_alpha[k];
@@ -498,7 +498,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			// System.out.println("beta iteration\t"+iteration);
 		}while(diff > m_newtonConverge);
 		
-		// System.out.println("beta iteration\t" + iteration);
+		System.out.println("beta iteration\t" + iteration);
 	}
 	
 	protected double calculate_log_likelihood(){

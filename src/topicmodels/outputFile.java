@@ -40,7 +40,7 @@ public class outputFile {
 					parentNameList.add(Integer.parseInt(parentName));
 				}
 			}
-			outputFeatureFile(featureFile, c);
+			// outputFeatureFile(featureFile, c);
 
 			outputSelectedStnFile(selectedSentenceFile, parentMap);
 			outputSelectedCommentFile(selectedCommentsFile, parentMap);
