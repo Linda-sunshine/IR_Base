@@ -59,7 +59,7 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test
-		String topicmodel = "DCMDMMCorrLDA_test";
+		String topicmodel = "DCMCorrLDA_multi_E_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
