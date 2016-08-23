@@ -32,7 +32,7 @@ public class _ChildDoc4DCMDMMCorrLDA extends _ChildDoc{
 		}
 	}
 	
-	public void createSparseVct4Infer(){
+	public void createSparseVct() {
 		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
 		
 		for (_Word w : m_words) {
@@ -43,6 +43,10 @@ public class _ChildDoc4DCMDMMCorrLDA extends _ChildDoc{
 		}
 		
 		m_x_sparse_infer = Utils.createSpVct(inferVct);	
+	}
+	
+	public void createSparseVct4Test() {
+		createSparseVct4Infer();
 	}
 	
 	public void setTopics4GibbsTest(int k, double alpha, int testLength) {
