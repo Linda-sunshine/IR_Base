@@ -62,7 +62,7 @@ public class DCMDMMCorrLDA extends DCMCorrLDA{
 
 					((_ChildDoc4DCMDMMCorrLDA) cDoc).setTopics4Gibbs(
 							number_of_topics, 0);
-					((_ChildDoc4DCMDMMCorrLDA) cDoc).createSparseVct4Infer();
+					((_ChildDoc4DCMDMMCorrLDA) cDoc).createSparseVct();
 
 					for (_Word w : cDoc.getWords()) {
 						int wid = w.getIndex();
@@ -437,7 +437,7 @@ public class DCMDMMCorrLDA extends DCMCorrLDA{
 			}
 
 			sampleTestSet.add(cDoc);
-			cDoc.createSparseVct4Infer();
+			((_ChildDoc4DCMDMMCorrLDA) cDoc).createSparseVct4Test();
 			computeTestMu4Doc(cDoc);
 		}
 
