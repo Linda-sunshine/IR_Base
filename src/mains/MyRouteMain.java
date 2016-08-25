@@ -8,6 +8,7 @@ import Analyzer.BinaryRouteAnalyzer;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.IndividualSVM;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.RegLR.MTRegLR;
 
 public class MyRouteMain {
@@ -31,36 +32,45 @@ public class MyRouteMain {
 //		analyzer.setFeatureValues("TF", 2);
 		analyzer.Normalize(2);
 		
+		double eta1 = 0, eta2 = 0;
 		int featureSize = 13;
-		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
-		adaptation.setGlobalModel(14);
-		adaptation.setLNormFlag(false);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.train();
-		adaptation.test();
+		CLRWithDP clrdp = new CLRWithDP(classNumber, featureSize, null, null);
+		clrdp.setGlobalModel(13);
+		clrdp.loadUsers(analyzer.getUsers());
+		clrdp.setDisplayLv(displayLv);
+		clrdp.setLNormFlag(false);
+		clrdp.setR1TradeOffs(eta1, eta2);
+		clrdp.train();
+		clrdp.test();
+		
+//		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
+//		adaptation.setLNormFlag(false);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.train();
+//		adaptation.test();
 //		adaptation.saveModel("./data/RouteModels_mtreglr/");
 //		adaptation.savePerf("./data/");
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
-		
-		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
-		gsvm.loadUsers(analyzer.getUsers());
-		gsvm.train();
-		gsvm.test();
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
-		
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, featureSize);
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.train();
-		mtsvm.test();
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
-		
-		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
-		indsvm.loadUsers(analyzer.getUsers());
-		indsvm.train();
-		indsvm.test();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
+//		gsvm.loadUsers(analyzer.getUsers());
+//		gsvm.train();
+//		gsvm.test();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, featureSize);
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.train();
+//		mtsvm.test();
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+//		
+//		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
+//		indsvm.loadUsers(analyzer.getUsers());
+//		indsvm.train();
+//		indsvm.test();
 	}
 }

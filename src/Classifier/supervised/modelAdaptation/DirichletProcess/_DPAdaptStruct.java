@@ -18,6 +18,13 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		super(user, 0); // will not perform adaptation
 	}
 	
+	public _DPAdaptStruct(_User user, String id){
+		super(user, 0);
+		m_id = Integer.valueOf(id);
+		m_adaptStartPos = 0;
+		m_adaptEndPos = 10;
+		resetAdaptPtr();
+	}
 	public _DPAdaptStruct(_User user, int dim) {
 		super(user, dim);
 	}

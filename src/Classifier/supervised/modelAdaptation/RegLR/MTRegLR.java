@@ -6,8 +6,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import structures._Doc;
+import structures._Review;
 import structures._SparseFeature;
 import structures._User;
+import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
@@ -198,6 +200,9 @@ public class MTRegLR extends RegLR {
 			for(_AdaptStruct user:m_userList) {
 	            StringBuilder buffer = new StringBuilder(512);
 	            buffer.append(user.getUserID()+"\t");
+//	            for(_Review r: user.getReviews()){
+//	            	if(r.getType() == rType.TEST)
+//	            }	
 	            for(int i=0; i<m_classNo; i++){
 	            	for(int j=0; j<m_classNo; j++)
 	            		buffer.append(user.getPerfStat().getEntry(i, j)+"\t");

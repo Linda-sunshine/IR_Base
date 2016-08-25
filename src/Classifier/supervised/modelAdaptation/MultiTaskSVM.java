@@ -21,11 +21,11 @@ import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
 
-	double m_u = 1; // trade-off parameter between global model and individual model.
-	double m_C = 1.0; // trade-off parameter for SVM training 
+	double m_u = 1.0; // trade-off parameter between global model and individual model.
+	double m_C = 100; // trade-off parameter for SVM training 
 	
 	Model m_libModel; // Libmodel trained by liblinear.
-	boolean m_bias = false; // whether use bias term in SVM; by default, we will use it
+	boolean m_bias = true; // whether use bias term in SVM; by default, we will use it
 	
 	public MultiTaskSVM(int classNo, int featureSize){
 		super(classNo, featureSize, null, null);
@@ -43,7 +43,8 @@ public class MultiTaskSVM extends ModelAdaptation {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) 
-			m_userList.add(new _AdaptStruct(user));
+			m_userList.add(new _AdaptStruct(user, Integer.valueOf(user.getUserID())));
+//			m_userList.add(new _AdaptStruct(user));
 		m_pWeights = new double[m_featureSize+1];
 	}
 	

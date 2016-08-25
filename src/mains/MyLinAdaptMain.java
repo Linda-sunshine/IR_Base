@@ -92,19 +92,19 @@ public class MyLinAdaptMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
-//		/***baseline 3: CLRWithDP***/
-//		CLRWithDP clrdp = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-//		clrdp.loadUsers(analyzer.getUsers());
-//		clrdp.setDisplayLv(displayLv);
-//		clrdp.setLNormFlag(false);
-//		clrdp.setR1TradeOffs(eta1, eta2);
-//		clrdp.train();
-//		clrdp.test();
-//		clrdp.printInfo();
-//		clrdp.printUserPerf(dir+"clrdp.txt");
-//		//clrdp.saveModel(dir+"clrdp_0.5/");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		/***baseline 3: CLRWithDP***/
+		CLRWithDP clrdp = new CLRWithDP(classNumber, analyzer.getFeatureSize(), null, null);
+		clrdp.loadUsers(analyzer.getUsers());
+		clrdp.setDisplayLv(displayLv);
+		clrdp.setLNormFlag(false);
+		clrdp.setR1TradeOffs(eta1, eta2);
+		clrdp.train();
+		clrdp.test();
+		clrdp.printInfo();
+		clrdp.printUserPerf(dir+"clrdp.txt");
+		//clrdp.saveModel(dir+"clrdp_0.5/");
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 //		
 //		/***baseline 4: MTCLRWithDP***/
 //		// Create an instance of MTCLRWithDP

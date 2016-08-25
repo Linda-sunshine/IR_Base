@@ -36,7 +36,7 @@ public class CLRWithDP extends LinAdapt {
 	protected double[][] m_gradients;
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.2}; // N(0,1) for shifting in adaptation based models
+	protected double[] m_abNuA = new double[]{0, 1}; // N(0,1) for shifting in adaptation based models
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
@@ -537,7 +537,7 @@ public class CLRWithDP extends LinAdapt {
 		m_userList = new ArrayList<_AdaptStruct>();
 		
 		for(_User user:userList)
-			m_userList.add(new _DPAdaptStruct(user));
+			m_userList.add(new _DPAdaptStruct(user, user.getUserID()));
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
@@ -671,4 +671,9 @@ public class CLRWithDP extends LinAdapt {
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
 	}
+	
+	public void setGlobalModel(int fvSize){
+		m_gWeights = new double[fvSize+1];
+	}
+	
 }
