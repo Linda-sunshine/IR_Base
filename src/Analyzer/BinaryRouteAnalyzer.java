@@ -7,6 +7,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
@@ -15,6 +16,7 @@ import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
+import structures._Review.rType;
 import utils.Utils;
 
 public class BinaryRouteAnalyzer extends UserAnalyzer {
@@ -52,7 +54,10 @@ public class BinaryRouteAnalyzer extends UserAnalyzer {
 					m_classMemberNo[ylabel]++;
 				}
 			}
-			allocateReviews(reviews);			
+			if(userID.equals("24"))
+				allocateReviews(reviews, m_oneIndexes);
+			else
+				allocateReviews(reviews, m_mostIndexes);			
 			m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 			reader.close();
 		} catch(IOException e){
@@ -80,6 +85,44 @@ public class BinaryRouteAnalyzer extends UserAnalyzer {
 		} else if(norm == 2){
 			for(_Doc d: m_corpus.getCollection())			
 				Utils.L2Normalization(d.getSparse());
+		}
+	}
+	
+	// Load the indexes for training.
+	ArrayList<Integer> m_mostIndexes, m_oneIndexes;
+	// Load the instance index for training.
+	public void loadTrainIndexes(String filename){
+		m_mostIndexes = new ArrayList<Integer>();
+		m_oneIndexes = new ArrayList<Integer>();
+		try {
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;	
+			String[] strs;
+			// Skip the first line since it is not instances.
+			while((line = reader.readLine()) != null){
+				strs = line.split("\t");
+				if(strs.length == 2)
+					m_oneIndexes.add(Integer.valueOf(strs[1])-1);
+				m_mostIndexes.add(Integer.valueOf(strs[0])-1);
+			} 
+			reader.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	//[0, train) for training purpose
+	//[train, adapt) for adaptation purpose
+	//[adapt, 1] for testing purpose
+	void allocateReviews(ArrayList<_Review> reviews, ArrayList<Integer> indexes) {
+		for(int i=0; i<reviews.size(); i++){
+			if(indexes.contains(i)){
+				reviews.get(i).setType(rType.ADAPTATION);
+				m_adaptSize ++;
+			} else {
+				reviews.get(i).setType(rType.TEST);
+				m_testSize ++;
+			}
 		}
 	}
 }

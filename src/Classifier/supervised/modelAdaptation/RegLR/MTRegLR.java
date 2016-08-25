@@ -1,5 +1,7 @@
 package Classifier.supervised.modelAdaptation.RegLR;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -22,7 +24,7 @@ public class MTRegLR extends RegLR {
 	public MTRegLR(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
-		m_u = 1;
+		m_u = 1.1;
 		m_eta1 = 0;
 	}
 	@Override
@@ -188,5 +190,24 @@ public class MTRegLR extends RegLR {
 	
 	public void setGlobalModel(int fvSize){
 		m_gWeights = new double[fvSize+1];
+	}
+	
+	public void savePerf(String perfLocation) {
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter(perfLocation+"/allUsers.perf"));
+			for(_AdaptStruct user:m_userList) {
+	            StringBuilder buffer = new StringBuilder(512);
+	            buffer.append(user.getUserID()+"\t");
+	            for(int i=0; i<m_classNo; i++){
+	            	for(int j=0; j<m_classNo; j++)
+	            		buffer.append(user.getPerfStat().getEntry(i, j)+"\t");
+	            }
+	            buffer.append("\n");
+	            writer.write(buffer.toString());
+	        } 
+	        writer.close();
+		}catch (Exception e) {
+			e.printStackTrace();  
+		}
 	}
 }

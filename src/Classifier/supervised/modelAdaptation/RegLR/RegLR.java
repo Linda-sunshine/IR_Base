@@ -51,7 +51,7 @@ public class RegLR extends ModelAdaptation {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) {
-			m_userList.add(new _AdaptStruct(user));
+			m_userList.add(new _AdaptStruct(user));//new _AdaptStruct(user, Integer.valueOf(user.getUserID()))
 			user.initModel(m_featureSize+1);
 		}
 	}

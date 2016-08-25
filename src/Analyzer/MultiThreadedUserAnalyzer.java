@@ -196,8 +196,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-//			if(m_ctgFlag)
-//				int[] categories = new int[m_categories.size()];
+			if(m_ctgFlag)
+				m_ctgCounts = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -207,8 +207,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-//				if(m_categories.contains(category))
-//					categories[m_categories.indexOf(category)] = 1;
+				if(m_categories.contains(category))
+					m_ctgCounts[m_categories.indexOf(category)]++;
 				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -233,7 +233,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);			
-					m_users.add(new _User(userID, m_classNo, reviews));
+					m_users.add(new _User(userID, m_classNo, reviews, m_ctgCounts));
 				}
 			}
 			reader.close();
@@ -535,9 +535,18 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	// Added by Lin, print the counts of users with different categories.
 	public void printCategoryStat(){
-		for(int i: m_ctgCounts)
-			System.out.print(i + "\t");
-		System.out.println();
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File("./data/ctgStat.txt"));
+			for(_User u: m_users){
+				for(int i: u.getCategory())
+					writer.write(i+"\t");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 	
 	// Added by Lin, set the threshold for category counts.

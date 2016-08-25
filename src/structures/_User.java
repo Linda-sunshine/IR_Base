@@ -86,7 +86,6 @@ public class _User {
 	
 		calcPosRatio();
 	}
-	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
 		m_userID = userID;
 		m_reviews = reviews;

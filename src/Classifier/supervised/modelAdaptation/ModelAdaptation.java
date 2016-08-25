@@ -219,6 +219,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	@Override
 	public double test(){
+		final double[] accs = new double[m_userList.size()];
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		m_perf = new double[m_classNo * 2];
@@ -249,6 +250,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								}
 							}							
 							userPerfStat.calculatePRF();	
+							accs[i+core] = userPerfStat.calcualteACC();
 						}
 					} catch(Exception ex) {
 						ex.printStackTrace(); 
@@ -300,6 +302,10 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			m_perf[i+m_classNo] = macroF1[i]/count;
 		}
 		System.out.println();
+		double accSum = 0;
+		for(double acc: accs)
+			accSum += acc;
+		System.out.println("Macro ACC: " + accSum/accs.length);
 		return Utils.sumOfArray(macroF1);
 	}
 

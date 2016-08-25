@@ -52,4 +52,9 @@ public class _Review extends _Doc {
 	public String toString() {
 		return String.format("%s-%s-%s-%s", m_userID, m_itemID, m_category, m_type);
 	}
+	
+	// Get the category of the review.
+	public String getCategory(){
+		return m_category;
+	}
 }

@@ -25,28 +25,29 @@ public class MyRouteMain {
 		String userFolder = "./data/RouteData/";
 		
 		BinaryRouteAnalyzer analyzer = new BinaryRouteAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
-		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadTrainIndexes("./data/Indexes.txt");
+//		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 //		analyzer.setFeatureValues("TF", 2);
 		analyzer.Normalize(2);
 		
 		int featureSize = 14;
-		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
-		adaptation.setGlobalModel(14);
-		adaptation.setLNormFlag(false);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.train();
-		adaptation.test();
-		
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
+//		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
+//		adaptation.setGlobalModel(14);
+//		adaptation.setLNormFlag(false);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.train();
+//		adaptation.test();
+////		adaptation.saveModel("./data/RouteModels_mtreglr/");
+////		adaptation.savePerf("./data/");
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 		
 		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
 		gsvm.loadUsers(analyzer.getUsers());
 		gsvm.train();
 		gsvm.test();
-		
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();
 		
@@ -54,6 +55,8 @@ public class MyRouteMain {
 		mtsvm.loadUsers(analyzer.getUsers());
 		mtsvm.train();
 		mtsvm.test();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 		
 		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
 		indsvm.loadUsers(analyzer.getUsers());

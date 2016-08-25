@@ -19,7 +19,7 @@ import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class IndividualSVM extends ModelAdaptation {
-	double m_C = 1.0; 
+	double m_C = 10; 
 	boolean m_bias = true;
 	Model m_libModel; // Libmodel trained by liblinear.
 	
@@ -40,7 +40,7 @@ public class IndividualSVM extends ModelAdaptation {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) 
-			m_userList.add(new _AdaptStruct(user));
+			m_userList.add(new _AdaptStruct(user));//new _AdaptStruct(user, Integer.valueOf(user.getUserID()))
 		m_pWeights = new double[m_featureSize+1];		
 	}
 	// Added by Lin for using super users for training.

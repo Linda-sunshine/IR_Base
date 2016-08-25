@@ -64,10 +64,12 @@ public class MyLinAdaptMain {
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder);
-		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
-		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		analyzer.printCategoryStat();
+//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+//		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
+//		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 //		/***baseline 1: global***/
 //		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
@@ -185,30 +187,30 @@ public class MyLinAdaptMain {
 //			featureGroupFile = null;
 //		if(group[j] == 5000)
 //			featureGroupFileB = null;
-		for(int i=0; i< 200; i++){
-		/***our algorithm: MTCLinAdaptWithDP***/
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
-		adaptation.setsdA(sdA);
-		adaptation.setsdB(sdB);
-		adaptation.setAlpha(1);
-		adaptation.setR1TradeOffs(eta1, eta1);
-		adaptation.setR2TradeOffs(eta3, eta3);
-//		String traceFile = dataset + "_iter.csv";
-//		adaptation.trainTrace(traceFile);
-		adaptation.train();
-		adaptation.test();
-		adaptation.printInfo();
-
-		adaptation.printUserPerf(dir+"mtclindp.txt");
-//		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
-//		adaptation.saveModel(dir + "mtclindp_u_0.5");
-//		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
-		for(_User u: analyzer.getUsers())
-			u.getPerfStat().clear();
+//		for(int i=0; i< 200; i++){
+//		/***our algorithm: MTCLinAdaptWithDP***/
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setLNormFlag(false);
+//		adaptation.setsdA(sdA);
+//		adaptation.setsdB(sdB);
+//		adaptation.setAlpha(1);
+//		adaptation.setR1TradeOffs(eta1, eta1);
+//		adaptation.setR2TradeOffs(eta3, eta3);
+////		String traceFile = dataset + "_iter.csv";
+////		adaptation.trainTrace(traceFile);
+//		adaptation.train();
+//		adaptation.test();
+//		adaptation.printInfo();
+//
+//		adaptation.printUserPerf(dir+"mtclindp.txt");
+////		adaptation.saveClusterModel(dir + "mtclindp_c_0.5/");
+////		adaptation.saveModel(dir + "mtclindp_u_0.5");
+////		adaptation.saveClusterInfo(dir + "clusterInfo.txt");
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
 //		}}
-		}
+//		}
 	}
 }
