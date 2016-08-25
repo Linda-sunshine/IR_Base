@@ -69,10 +69,10 @@ public class BinaryRouteAnalyzer extends UserAnalyzer {
 	@Override
 	protected boolean AnalyzeDoc(_Doc review) {
 		String[] strs = review.getSource().split("\\s+");
-		_SparseFeature[] fvs = new _SparseFeature[strs.length-1];
+		_SparseFeature[] fvs = new _SparseFeature[strs.length-2];
 
-		for(int i=0; i<strs.length-1; i++)
-			fvs[i] = new _SparseFeature(i, Double.valueOf(strs[i]));
+		for(int i=1; i<strs.length-1; i++)
+			fvs[i-1] = new _SparseFeature(i-1, Double.valueOf(strs[i]));
 		review.setSpVct(fvs);
 		return true;
 	}

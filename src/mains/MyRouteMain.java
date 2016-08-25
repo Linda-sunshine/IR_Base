@@ -31,18 +31,18 @@ public class MyRouteMain {
 //		analyzer.setFeatureValues("TF", 2);
 		analyzer.Normalize(2);
 		
-		int featureSize = 14;
-//		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
-//		adaptation.setGlobalModel(14);
-//		adaptation.setLNormFlag(false);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.train();
-//		adaptation.test();
-////		adaptation.saveModel("./data/RouteModels_mtreglr/");
-////		adaptation.savePerf("./data/");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		int featureSize = 13;
+		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
+		adaptation.setGlobalModel(14);
+		adaptation.setLNormFlag(false);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.train();
+		adaptation.test();
+//		adaptation.saveModel("./data/RouteModels_mtreglr/");
+//		adaptation.savePerf("./data/");
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 		
 		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
 		gsvm.loadUsers(analyzer.getUsers());
