@@ -44,7 +44,7 @@ import utils.Utils;
  */
 public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected ArrayList<String> m_categories;
-	protected boolean m_ctgFlag = false; // Whether category is loaded or not.
+	
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
@@ -55,8 +55,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected double m_globalLen = 0, m_maxLen = 0;
 	protected double[][] m_userWeights;
 	protected HashMap<String, Integer> m_userIDIndex;
-	protected int[] m_ctgCounts;
-	protected int m_ctgThreshold = Integer.MAX_VALUE; // added by Lin, the category threshold for selecting users.
+	
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
@@ -196,8 +195,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			reader.readLine(); 
 
 			String productID, source, category;
-			if(m_ctgFlag)
-				m_ctgCounts = new int[m_categories.size()];
+//			if(m_ctgFlag)
+//				m_ctgCounts = new int[m_categories.size()];
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
 			_Review review;
 			int ylabel;
@@ -207,9 +206,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-				if(m_categories.contains(category))
-					m_ctgCounts[m_categories.indexOf(category)]++;
-				
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
 
@@ -233,7 +229,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_globalLen += localLength;
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);			
-					m_users.add(new _User(userID, m_classNo, reviews, m_ctgCounts));
+					m_users.add(new _User(userID, m_classNo, reviews));
 				}
 			}
 			reader.close();
@@ -301,28 +297,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_start = start;
 		m_end = end;
 	}
-	
-	// Added by Lin.
-	public void loadCategory(String filename){
-		m_categories = new ArrayList<String>();
-		if (filename==null || filename.isEmpty())
-			return;
-		
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
-			String line;
-			while ((line = reader.readLine()) != null) {
-				m_categories.add(line);
-			}
-			reader.close();
-			System.out.println(m_categories.size() + " categories are loaded.");
-			m_ctgCounts = new int[m_categories.size()];
-			m_ctgFlag = true;
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
-	
+
 	// Added by Lin. Load user weights from learned models to construct neighborhood.
 	public void loadUserWeights(String folder, String suffix){
 		if(folder == null || folder.isEmpty())
@@ -547,11 +522,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		} catch(Exception e){
 			e.printStackTrace();
 		}
-	}
-	
-	// Added by Lin, set the threshold for category counts.
-	public void setCtgThreshold(int k){
-		m_ctgThreshold = k;
 	}
 	
 	// Added by Lin for constructing the 

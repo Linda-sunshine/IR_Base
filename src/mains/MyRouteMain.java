@@ -43,34 +43,34 @@ public class MyRouteMain {
 		clrdp.train();
 		clrdp.test();
 		
-//		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
-//		adaptation.setLNormFlag(false);
-//		adaptation.loadUsers(analyzer.getUsers());
-//		adaptation.setDisplayLv(displayLv);
-//		adaptation.train();
-//		adaptation.test();
-//		adaptation.saveModel("./data/RouteModels_mtreglr/");
-//		adaptation.savePerf("./data/");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		
-//		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
-//		gsvm.loadUsers(analyzer.getUsers());
-//		gsvm.train();
-//		gsvm.test();
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, featureSize);
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.train();
-//		mtsvm.test();
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-//		
-//		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
-//		indsvm.loadUsers(analyzer.getUsers());
-//		indsvm.train();
-//		indsvm.test();
+		MTRegLR adaptation = new MTRegLR(classNumber, featureSize, null, null);
+		adaptation.setLNormFlag(false);
+		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.setDisplayLv(displayLv);
+		adaptation.train();
+		adaptation.test();
+		adaptation.saveModel("./data/RouteModels_mtreglr/");
+		adaptation.savePerf("./data/");
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		GlobalSVM gsvm = new GlobalSVM(classNumber, featureSize);
+		gsvm.loadUsers(analyzer.getUsers());
+		gsvm.train();
+		gsvm.test();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, featureSize);
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.train();
+		mtsvm.test();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
+		
+		IndividualSVM indsvm = new IndividualSVM(classNumber, featureSize);
+		indsvm.loadUsers(analyzer.getUsers());
+		indsvm.train();
+		indsvm.test();
 	}
 }
