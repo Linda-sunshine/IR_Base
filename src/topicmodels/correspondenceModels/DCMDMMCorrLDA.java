@@ -33,7 +33,10 @@ public class DCMDMMCorrLDA extends DCMCorrLDA{
 	}
 	
 	public String toString(){
-		return String.format("DCMDMMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+		return String
+				.format("DCMDMMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]",
+						number_of_topics, d_alpha, d_beta,
+						1 - m_testWord4PerplexityProportion);
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection) {

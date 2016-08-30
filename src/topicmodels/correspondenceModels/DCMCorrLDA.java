@@ -39,7 +39,10 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	}
 	
 	public String toString(){
-		return String.format("DCMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+		return String.format(
+"DCMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]",
+				number_of_topics, d_alpha, d_beta,
+				1 - m_testWord4PerplexityProportion);
 	}
 	
 	protected void initialize_probability(Collection<_Doc>collection){
@@ -54,6 +57,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		m_totalBeta = new double[number_of_topics];
 		
 		m_topic_word_prob = new double[number_of_topics][vocabulary_size];
+		for (int k = 0; k < number_of_topics; k++)
+			Arrays.fill(word_topic_sstat[k], 0);
 
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc4DCM){
@@ -86,7 +91,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 0.5;
+		mu = 0.00001;// 0.5, 0.05, 0.005
 		d.setMu(mu);
 	}
 	
@@ -94,7 +99,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 0.5;
+		mu = 0.00001;// 0.5, 0.05, 0.005
 		d.setMu(mu);
 	}
 	
@@ -122,6 +127,9 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			pDoc.m_topic_stat[tid]--;
 			pDoc.m_wordTopic_stat[tid][wid]--;
 			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid]--;
+			
 			normalizedProb = 0;
 			for(tid=0; tid<number_of_topics; tid++){
 				double pWordTopic = parentWordByTopicProb(tid, wid, pDoc);
@@ -146,6 +154,9 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			pDoc.m_sstat[tid]++;
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
+			
+			if(m_collectCorpusStats)
+				word_topic_sstat[tid][wid]++;
 		}
 		
 	}
@@ -163,6 +174,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			pDoc.m_wordTopic_stat[tid][wid]--;
 			pDoc.m_topic_stat[tid] --;
 			d.m_sstat[tid] --;
+			if (m_collectCorpusStats)
+				word_topic_sstat[tid][wid]--;
 
 			normalizedProb = 0;
 			for (tid = 0; tid < number_of_topics; tid++) {
@@ -187,6 +200,9 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			d.m_sstat[tid]++;
 			pDoc.m_topic_stat[tid]++;
 			pDoc.m_wordTopic_stat[tid][wid]++;
+
+			if (m_collectCorpusStats)
+				word_topic_sstat[tid][wid]++;
 		}
 	}
 
@@ -511,6 +527,25 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		return logLikelihood;
 	}
 	
+	@Override
+	public void calculate_M_step(int iter, File weightFolder) {
+		for (_Doc d : m_trainSet) {
+			collectStats(d);
+		}	
+	
+		for(int k=0; k<number_of_topics; k++)
+			for(int v=0; v<vocabulary_size; v++)
+				m_topic_word_prob[k][v] += word_topic_sstat[k][v]
+						+ m_beta[k][v];
+		
+		File weightIterFolder = new File(weightFolder, "_" + iter);
+		if (!weightIterFolder.exists()) {
+			weightIterFolder.mkdir();
+		}
+
+		updateParameter(iter, weightIterFolder);
+	}
+
 	protected void collectStats(_Doc d){
 		if(d instanceof _ParentDoc4DCM){
 			_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
@@ -769,6 +804,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			}
 			
 			childLikelihood += Math.log(wordLogLikelihood);
+			System.out.println("word log likelihood\t" + childLikelihood);
 		}
 		
 		return childLikelihood;

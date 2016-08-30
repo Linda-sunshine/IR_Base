@@ -71,7 +71,7 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
@@ -413,7 +413,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.5;
+				double trainProportion = 0.8;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);

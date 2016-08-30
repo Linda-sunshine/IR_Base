@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -26,6 +24,13 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			_Corpus c, double lambda, int number_of_topics, double alpha,
 			double burnIn, int lag) {
 		super( number_of_iteration,  converge,  beta, c, lambda, number_of_topics,  alpha,  burnIn,  lag);
+	}
+
+	public String toString() {
+		return String
+				.format("LDAGibbs4AC[k:%d, alphaA:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]",
+						number_of_topics, d_alpha, d_beta,
+						1 - m_testWord4PerplexityProportion);
 	}
 
 	protected void initialize_probability(Collection<_Doc> collection) {

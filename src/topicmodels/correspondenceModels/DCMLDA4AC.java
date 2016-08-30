@@ -134,6 +134,10 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 	}
 
 	protected void initialize_probability(Collection<_Doc>collection){
+
+		for (int k = 0; k < number_of_topics; k++)
+			Arrays.fill(word_topic_sstat[k], 0);
+
 		m_alpha = new double[number_of_topics];
 		m_beta = new double[number_of_topics][vocabulary_size];
 
@@ -275,7 +279,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			pDoc.m_wordTopic_stat[tid][wid]++;
 
 			if (m_collectCorpusStats)
-				word_topic_sstat[tid][wid]--;
+				word_topic_sstat[tid][wid]++;
 
 		}
 	}
