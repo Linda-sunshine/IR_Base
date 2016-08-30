@@ -249,11 +249,11 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 				int wid = w.getIndex();
 
 				for (int k = 0; k < number_of_topics; k++) {
-					wordLikelihood += childTopicInDocProb(k, cDoc, pDoc)
-							* childWordByTopicProb(k, wid, pDoc);
+					wordLikelihood += cDoc.m_topics[k]*pDoc.m_wordTopic_prob[k][wid];
 				}
 
-				stnLogLikelihood += wordLikelihood;
+				stnLogLikelihood += Math.log(wordLikelihood);
+				
 			}
 			likelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}

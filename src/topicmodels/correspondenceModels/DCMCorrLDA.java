@@ -364,7 +364,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			
 			for(_Doc d:m_trainSet){
 				if(d instanceof _ParentDoc){
-					totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha)-digAlpha;
+					totalAlphaDenominator += Utils.digamma(d.getTotalDocLength()+m_totalAlpha) - digAlpha;
 				}
 			}
 			

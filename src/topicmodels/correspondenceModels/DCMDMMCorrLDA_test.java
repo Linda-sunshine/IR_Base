@@ -319,7 +319,7 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 					wordLikelihood += cDoc.m_topics[k]*pDoc.m_wordTopic_prob[k][wid];
 				}
 
-				stnLogLikelihood += wordLikelihood;
+				stnLogLikelihood += Math.log(wordLikelihood);
 			}
 			likelihoodMap.put(cDoc.getName(), stnLogLikelihood);
 		}

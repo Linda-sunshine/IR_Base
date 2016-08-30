@@ -3,17 +3,24 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Random;
 
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
+import structures._ChildDoc4DCMDMMCorrLDA;
 import structures._ChildDoc;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
+import structures._SparseFeature;
+import structures._Word;
+import topicmodels.languageModelBaseLine;
 import utils.Utils;
 
 /**
@@ -122,9 +129,12 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		_ChildDoc4ThreePhi d = new _ChildDoc4ThreePhi(m_corpus.getSize(), name,
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		// _ChildDoc4DCMDMMCorrLDA d = new _ChildDoc4DCMDMMCorrLDA(
-		// m_corpus.getSize(), name, "", content, 0);
+
+		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
+		 0);
+//		_ChildDoc4DCMDMMCorrLDA d = new _ChildDoc4DCMDMMCorrLDA(
+//				m_corpus.getSize(), name, "", content, 0);
+
 
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
@@ -189,6 +199,194 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		}
 
 		System.out.println("after filtering\t"+m_corpus.getSize());
+	}
+	
+	public void analyzeBurstiness(String filePrefix){
+		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
+		
+		String fileName = filePrefix+"/burstiness.txt";
+		int vocalSize = m_corpus.getFeatureSize();
+		System.out.println("vocal size\t"+vocalSize);
+		
+		int corpusSize = 0;
+		
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ParentDoc4DCM){
+				corpusSize ++;
+				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					_SparseFeature[] sfs = cDoc.getSparse();
+					for(_SparseFeature sf:sfs){
+						int wid = sf.getIndex();
+						double featureTimes = sf.getValue();
+						if(!wordFrequencyMap.containsKey(wid))
+							wordFrequencyMap.put(wid, featureTimes);
+						else{
+							double oldFeatureTimes = wordFrequencyMap.get(wid);
+							oldFeatureTimes += featureTimes;
+							wordFrequencyMap.put(wid, oldFeatureTimes);
+						}
+							
+					}
+				}
+				
+				_SparseFeature[] sfs = pDoc.getSparse();
+				for(_SparseFeature sf:sfs){
+					int wid = sf.getIndex();
+					double featureTimes = sf.getValue();
+					if(!wordFrequencyMap.containsKey(wid))
+						wordFrequencyMap.put(wid, featureTimes);
+					else{
+						double oldFeatureTimes = wordFrequencyMap.get(wid);
+						oldFeatureTimes += featureTimes;
+						wordFrequencyMap.put(wid, oldFeatureTimes);
+					}
+						
+				}
+				
+				double zeroWordNum = vocalSize-wordFrequencyMap.size();
+				
+				for(int wid:wordFrequencyMap.keySet()){
+					double featureTimes = wordFrequencyMap.get(wid);
+					if(!burstinessMap.containsKey(featureTimes))
+						burstinessMap.put(featureTimes, 1.0);
+					else{
+						double value = burstinessMap.get(featureTimes);
+						burstinessMap.put(featureTimes, value+1);
+					}
+						
+				}
+				
+				if(!burstinessMap.containsKey((double)0)){
+					burstinessMap.put((double)0, zeroWordNum);
+				}else{
+					zeroWordNum += burstinessMap.get((double)0);
+					burstinessMap.put((double)0, zeroWordNum);
+				}
+		
+			}
+			
+		}
+		
+		double totalFeatureTimes = vocalSize*corpusSize;
+		for(double featureTimes:burstinessMap.keySet()){
+			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
+			burstinessMap.put(featureTimes, featureTimesProb);
+		}
+		
+		try{
+			PrintWriter pw = new PrintWriter(new File(fileName));
+			for(double featureTiems:burstinessMap.keySet()){
+				pw.println(featureTiems+":"+burstinessMap.get(featureTiems));
+			}
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		
+	}
+
+	public void generateFakeCorpus(String filePrefix){
+		
+		HashMap<Integer, Double> t_wordSstat = new HashMap<Integer, Double>();
+		double t_allWordFrequency = 0;
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ChildDoc){
+				_SparseFeature[] fv = d.getSparse();
+				
+				for(int i=0; i<fv.length; i++){
+					int wid = fv[i].getIndex();
+					double val = fv[i].getValue();
+					
+					t_allWordFrequency += val;
+					if(t_wordSstat.containsKey(wid)){
+						double oldVal = t_wordSstat.get(wid);
+						t_wordSstat.put(wid, oldVal+val);
+					}else{
+						t_wordSstat.put(wid, val);
+					}
+				}
+			}
+		}
+		
+		for(int wid:t_wordSstat.keySet()){
+			double val = t_wordSstat.get(wid);
+			double prob = val/t_allWordFrequency;
+			t_wordSstat.put(wid, prob);
+		}
+		
+//		languageModelBaseLine lm = new languageModelBaseLine(m_corpus, 0);
+//		lm.generateReferenceModel();
+		int docIndex = 0;
+		
+		File fakeCorpusFolder = new File(filePrefix+"fakeCorpus");
+		if(!fakeCorpusFolder.exists()){
+			System.out.println("creating directory\t"+fakeCorpusFolder);
+			fakeCorpusFolder.mkdir();
+		}	
+		
+		ArrayList<Integer> widList = new ArrayList<Integer>(t_wordSstat.keySet());
+		
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ParentDoc4DCM){
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				int docLength = 0;
+//				docLength += pDoc.getTotalDocLength();
+				for(_ChildDoc cDoc:pDoc.m_childDocs)
+					docLength += cDoc.getTotalDocLength();
+				generateFakeDoc(pDoc, fakeCorpusFolder, docLength, t_wordSstat, widList, docIndex);
+				docIndex ++;
+			}
+		}
+	}
+	
+	public void generateFakeDoc(_ParentDoc pDoc, File folder, int docLength, HashMap<Integer, Double>wordSstat, ArrayList<Integer>widList, int docIndex){
+		String fakeDocName = docIndex+".txt";
+		
+		try{
+			
+			PrintWriter pw = new PrintWriter(new File(folder, fakeDocName));
+			
+			for(_SparseFeature sf:pDoc.getSparse()){
+				int wid = sf.getIndex();
+				double val = sf.getValue();
+				for(int i=0; i<val; i++){
+					pw.print(wid);
+					pw.print("\t");
+				}
+			}
+			
+			for(int i=0; i<docLength; i++){
+				int wid = generateFakeWord(wordSstat, widList);
+//				System.out.println(wid+"wordId");
+				pw.print(wid);
+				pw.print("\t");
+			}
+			
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public int generateFakeWord(HashMap<Integer, Double>wordSstat, ArrayList<Integer>widList){
+		int wid = 0;
+		
+		Random t_rand = new Random();
+		double prob = t_rand.nextDouble();
+		for(int t_wid:widList){
+			wid = t_wid;
+			double wordProb = wordSstat.get(t_wid);
+			prob -= wordProb;
+			if(prob<=0){
+				break;
+			}
+		}
+		
+		return wid;
 	}
 
 }
