@@ -64,7 +64,7 @@ public class MyLinAdaptMain {
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadCategory("./data/category.txt");
+//		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder);
 		analyzer.printCategoryStat();
 //		analyzer.setFeatureValues("TFIDF-sublinear", 0);
