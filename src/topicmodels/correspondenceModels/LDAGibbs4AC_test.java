@@ -138,6 +138,28 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 		printTopKChild4StnWithHybrid(filePrefix, topKChild);
 		printTopKChild4StnWithHybridPro(filePrefix, topKChild);
 		printTopKStn4Child(filePrefix, topKStn);
+		printTopicWordDistribution(filePrefix);
+	}
+	
+	protected void printTopicWordDistribution(String filePrefix) {
+		String topicWordFile = filePrefix + "topicWord.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topicWordFile));
+			
+			for (int k = 0; k < number_of_topics; k++) {
+				pw.print(k + "\t");
+				for (int v = 0; v < vocabulary_size; v++) {
+					pw.print(m_corpus.getFeature(v) + ":"
+							+ topic_term_probabilty[k][v] + "\t");
+				}
+				pw.println();
+			}
+
+			pw.flush();
+			pw.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void discoverSpecificComments(String similarityFile) {

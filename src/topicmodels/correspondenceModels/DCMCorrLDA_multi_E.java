@@ -1,6 +1,7 @@
 package topicmodels.correspondenceModels;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collection;
 
 import structures._ChildDoc;
@@ -116,6 +117,11 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 			}
 		}
 
+		public void resetStats() {
+			for (int i = 0; i < alphaStat.length; i++)
+				Arrays.fill(alphaStat, 0);
+		}
+
 		@Override
 		public double inference(_Doc d) {
 			// TODO Auto-generated method stub
@@ -169,6 +175,8 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 		}
 	}
 	
+	
+
 	public void EM(){
 		System.out.format("Starting %s...\n", toString());
 
@@ -198,12 +206,14 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 			System.out.println("per iteration e step time\t"
 					+ (eEndTime - eStartTime)/1000.0+"\t seconds");
 
+
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration m step time\t"
 					+ (mEndTime - mStartTime)/1000.0+"\t seconds");
+
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

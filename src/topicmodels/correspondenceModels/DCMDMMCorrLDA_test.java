@@ -38,6 +38,31 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 		Arrays.fill(m_sstat, 0);
 		System.out.println("print top words");
 		printTopWordsDistribution(k, betaFile);
+		betaFile = betaFile.replace("topWords.txt", "topBetas.txt");
+		printTopBeta(k, betaFile);
+	}
+	
+	protected void printTopBeta(int topK, String betaFile) {
+		try {
+			PrintWriter topWordWriter = new PrintWriter(new File(betaFile));
+
+			for (int i = 0; i < m_beta.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
+						topK);
+				for (int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j),
+							m_beta[i][j]));
+
+				topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+				for (_RankItem it : fVector)
+					topWordWriter.format("%s(%.5f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				topWordWriter.write("\n");
+			}
+			topWordWriter.close();
+		} catch (Exception ex) {
+			System.err.print("File Not Found");
+		}
 	}
 	
 	protected void debugOutput(int topK, String filePrefix) {
@@ -271,7 +296,7 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 					}
 				}
 			}
-			
+
 			pw.flush();
 			pw.close();
 		} catch (Exception e) {
@@ -301,32 +326,33 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 
 		return likelihoodMap;
 	}
-
+	
 	protected void printTopKChild4Parent(String filePrefix, int topK) {
-		String topKChild4StnFile = filePrefix + "topChild4Parent.txt";
-		try {
-			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
-
+		String topKChild4ParentFile = filePrefix + "topChild4Parent.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topKChild4ParentFile));
+			
 			for (_Doc d : m_trainSet) {
 				if (d instanceof _ParentDoc) {
 					_ParentDoc pDoc = (_ParentDoc) d;
 
 					pw.print(pDoc.getName() + "\t");
-
+					
 					for (_ChildDoc cDoc : pDoc.m_childDocs) {
 						double docScore = rankChild4ParentBySim(cDoc, pDoc);
-
+						
 						pw.print(cDoc.getName() + ":" + docScore + "\t");
-
+						
 					}
 
 					pw.println();
 				}
 			}
+			
 			pw.flush();
 			pw.close();
 
-		} catch (Exception e) {
+		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}

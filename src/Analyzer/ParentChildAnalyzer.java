@@ -6,21 +6,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures._ChildDoc4DCMDMMCorrLDA;
 import structures._ChildDoc;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._SparseFeature;
-import structures._Word;
-import topicmodels.languageModelBaseLine;
 import utils.Utils;
 
 /**
@@ -130,10 +126,9 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
 
-		 _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content,
-		 0);
-//		_ChildDoc4DCMDMMCorrLDA d = new _ChildDoc4DCMDMMCorrLDA(
-//				m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		// _ChildDoc4DCMDMMCorrLDA d = new _ChildDoc4DCMDMMCorrLDA(
+		// m_corpus.getSize(), name, "", content, 0);
 
 
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
