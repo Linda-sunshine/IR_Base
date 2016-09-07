@@ -35,12 +35,13 @@ public class outputFile {
 			for (_Doc d : m_trainSet) {
 				if (d instanceof _ParentDoc) {
 					String parentName = d.getName();
+//					System.out.println("parentName"+parentName);
 					parentMap.put(Integer.parseInt(parentName), (_ParentDoc) d);
 
 					parentNameList.add(Integer.parseInt(parentName));
 				}
 			}
-			// outputFeatureFile(featureFile, c);
+//			outputFeatureFile(featureFile, c);
 
 			outputSelectedStnFile(selectedSentenceFile, parentMap);
 			outputSelectedCommentFile(selectedCommentsFile, parentMap);
@@ -376,8 +377,7 @@ public class outputFile {
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		// statisticDocLen(c);
-		outputFile of = new outputFile();
-		of.outputFiles(filePrefix, c);
+		outputFile.outputFiles(filePrefix, c);
 
 	}
 }

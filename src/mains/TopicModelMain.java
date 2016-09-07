@@ -20,6 +20,7 @@ import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
 import topicmodels.correspondenceModels.DCMDMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMDMMCorrLDA_test;
@@ -58,8 +59,8 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
-		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test
-		String topicmodel = "DCMCorrLDA_multi_E_test";
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test
+		String topicmodel = "DCMCorrLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -71,13 +72,13 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 1;
+		int topK = 20, number_of_iteration = 50, crossV = 10;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+//		 gibbs_iteration = 4;
+//		 gibbs_lag = 2;
+//		 displayLap = 2;
 
 		double burnIn = 0.4;
 
@@ -95,7 +96,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		// articleType = "Yahoo";
+//		 articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -319,7 +320,7 @@ public class TopicModelMain {
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
 			} else if (topicmodel.equals("LDAGibbs4AC_test")) {
-				number_of_topics = 15;
+				number_of_topics = 3;
 				converge = 1e-3;
 
 				double ksi = 800;
@@ -346,8 +347,8 @@ public class TopicModelMain {
 				double tau = 0.7;
 				int newtonIter = 1000;
 				double newtonConverge = 1e-3;
-				model = new corrLDA_Gibbs_test(number_of_iteration, converge,
-						beta, c, lambda, number_of_topics, alpha, burnIn,
+				model = new corrLDA_Gibbs_test(gibbs_iteration, 0,
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn,
 						gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("DCMDMCorrLDA_multi_E_test")){
 				number_of_topics = 15;
@@ -387,6 +388,18 @@ public class TopicModelMain {
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
 						newtonConverge);
+			}else if (topicmodel.equals("DCMCorrLDA_test")) {
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
+						newtonConverge);
 			}
 			
 			model.setDisplayLap(displayLap);
@@ -413,7 +426,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.5;
+				double trainProportion = 0.8;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);

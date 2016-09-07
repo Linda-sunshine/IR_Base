@@ -196,14 +196,14 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 			long eEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
+					+ (eEndTime - eStartTime)/1000.0+"\t seconds");
 
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration m step time\t"
-					+ (mEndTime - mStartTime));
+					+ (mEndTime - mStartTime)/1000.0+"\t seconds");
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

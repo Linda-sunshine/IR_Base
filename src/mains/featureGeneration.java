@@ -47,7 +47,7 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		articleType = "Yahoo";
+//		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
@@ -107,7 +107,7 @@ public class featureGeneration {
 		double startProb = 0.50; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of
 								// the features.
-		int maxDF = -1, minDF = 10; // Filter the features with DFs smaller than this
+		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.
 
 		double DFUpperThreshold = 0.05;

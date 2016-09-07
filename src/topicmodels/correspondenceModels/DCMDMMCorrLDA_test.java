@@ -77,6 +77,7 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 		printTopKChild4Stn(filePrefix, topK);
+		printTopKChild4Parent(filePrefix, topK);
 	}
 
 	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
@@ -270,6 +271,9 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 					}
 				}
 			}
+			
+			pw.flush();
+			pw.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -298,4 +302,39 @@ public class DCMDMMCorrLDA_test extends DCMDMMCorrLDA {
 		return likelihoodMap;
 	}
 
+	protected void printTopKChild4Parent(String filePrefix, int topK) {
+		String topKChild4StnFile = filePrefix + "topChild4Parent.txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+
+			for (_Doc d : m_trainSet) {
+				if (d instanceof _ParentDoc) {
+					_ParentDoc pDoc = (_ParentDoc) d;
+
+					pw.print(pDoc.getName() + "\t");
+
+					for (_ChildDoc cDoc : pDoc.m_childDocs) {
+						double docScore = rankChild4ParentBySim(cDoc, pDoc);
+
+						pw.print(cDoc.getName() + ":" + docScore + "\t");
+
+					}
+
+					pw.println();
+				}
+			}
+			pw.flush();
+			pw.close();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	protected double rankChild4ParentBySim(_ChildDoc cDoc, _ParentDoc pDoc) {
+		double childSim = Utils.cosine(cDoc.m_topics, pDoc.m_topics);
+
+		return childSim;
+	}
+	
 }

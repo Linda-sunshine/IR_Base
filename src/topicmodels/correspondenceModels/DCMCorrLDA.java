@@ -86,7 +86,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 0.5;
+		mu = 0.005;//0.5
 		d.setMu(mu);
 	}
 	
@@ -94,7 +94,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 0.5;
+		mu = 0.005; //0.5
 		d.setMu(mu);
 	}
 	
@@ -379,7 +379,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			
 		}while(diff>m_newtonConverge);
 		
-		System.out.println("iteration\t" + iteration);
+//		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
 		for(int k=0; k<number_of_topics; k++){
 			m_totalAlpha += m_alpha[k];
@@ -498,7 +498,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			// System.out.println("beta iteration\t"+iteration);
 		}while(diff > m_newtonConverge);
 		
-		System.out.println("beta iteration\t" + iteration);
+//		System.out.println("beta iteration\t" + iteration);
 	}
 	
 	protected double calculate_log_likelihood(){
@@ -523,7 +523,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}else if(d instanceof _ChildDoc){
 			_ChildDoc cDoc = (_ChildDoc)d;
 			_ParentDoc pDoc = cDoc.m_parentDoc;
-			double muDp = cDoc.getMu()/pDoc.getTotalDocLength();
+			double topicSum = Utils.sumOfArray(pDoc.m_sstat);
+			double muDp = cDoc.getMu()/topicSum;
 			for(int k=0; k<number_of_topics; k++){
 				cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k]+muDp*pDoc.m_sstat[k];
 			}

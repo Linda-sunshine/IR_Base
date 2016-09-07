@@ -52,15 +52,15 @@ public class FeatureSelector {
 		
 		System.out.println("total\t"+totalSize);
 		
-		int totalCorpusSize = 95395;
+		int totalCorpusSize = 4000;
 		// int start = (int) (totalSize * m_startProb);
 		// int end = (int) (totalSize * m_endProb);
 		//
 		// for(int i=start; i<end; i++)
 		// features.add(m_selectedFeatures.get(i).m_name);
 		
-		int upDF = (int) (totalCorpusSize * 0.1);
-		int bottomDF = (int) (totalCorpusSize * 0.0001);
+		int upDF = (int) (totalCorpusSize * 0.3);
+		int bottomDF = (int) (totalCorpusSize * 0.00001);
 
 		System.out.println("up DF\t" + upDF + "\t bottom DF \t" + bottomDF);
 
@@ -82,8 +82,9 @@ public class FeatureSelector {
 			if(sumDF > m_minDF && sumDF < m_maxDF)
 				m_selectedFeatures.add(new _RankItem(f, sumDF));
 		}
+		
 		System.out.println("selected features size\t"
-				+ m_selectedFeatures.size());
+				+ m_selectedFeatures.size()+"\t maxDF\t"+m_maxDF+"\t minDF\t"+m_minDF);
 		
 	}
 		

@@ -242,19 +242,33 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 		try {
 			System.out.println(parentParameterFile);
 			System.out.println(childParameterFile);
+			
 
 			PrintWriter parentParaOut = new PrintWriter(new File(
 					parentParameterFile));
 			PrintWriter childParaOut = new PrintWriter(new File(
 					childParameterFile));
+			
+			String parentMaxTopicIndexFile = parentParameterFile.replace("parentParameter.txt", "parentMaxTopicIndex.txt");
+			PrintWriter parentMaxTopicPW =  new PrintWriter(new File(parentMaxTopicIndexFile));
 
 			for (_Doc d : docList) {
 				if (d instanceof _ParentDoc) {
 					parentParaOut.print(d.getName() + "\t");
 					parentParaOut.print("topicProportion\t");
+					
+					int maximumTopicIndex = 0;
+					double maximumTopicProportion = 0;
 					for (int k = 0; k < number_of_topics; k++) {
 						parentParaOut.print(d.m_topics[k] + "\t");
+						if(maximumTopicProportion < d.m_topics[k]){
+							maximumTopicProportion = d.m_topics[k];
+							maximumTopicIndex = k;
+						}
 					}
+					
+					parentMaxTopicPW.print(d.getName() + ":" + maximumTopicIndex+"\n");
+	
 
 					for (_Stn stnObj : d.getSentences()) {
 						parentParaOut.print("sentence"
@@ -282,6 +296,9 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 			parentParaOut.flush();
 			parentParaOut.close();
 
+			parentMaxTopicPW.flush();
+			parentMaxTopicPW.close();
+			
 			childParaOut.flush();
 			childParaOut.close();
 		} catch (Exception e) {
