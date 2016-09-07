@@ -75,9 +75,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
+		/*
+		 * gibbs_iteration = 4; gibbs_lag = 2; displayLap = 2;
+		 */
 
 		double burnIn = 0.4;
 
@@ -95,7 +95,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		// articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -306,10 +306,12 @@ public class TopicModelMain {
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-				number_of_topics = 15;
+				number_of_topics = 20;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
+				gibbs_iteration = 300;
+				gibbs_lag = 20;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
@@ -318,8 +320,10 @@ public class TopicModelMain {
 						alphaC,
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
+				// String priorFile = "./data/Features/topicWord.txt";
+				// model.LoadPrior(priorFile, eta);
 			} else if (topicmodel.equals("LDAGibbs4AC_test")) {
-				number_of_topics = 15;
+				number_of_topics = 25;
 				converge = 1e-3;
 
 				double ksi = 800;
@@ -376,13 +380,15 @@ public class TopicModelMain {
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
 			} else if (topicmodel.equals("DCMDMMCorrLDA_test")) {
-				number_of_topics = 15;
+				number_of_topics = 50;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
+				gibbs_iteration = 300;
+				gibbs_lag = 20;
 				model = new DCMDMMCorrLDA_test(gibbs_iteration, converge,
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
@@ -392,7 +398,7 @@ public class TopicModelMain {
 			model.setDisplayLap(displayLap);
 			model.setInforWriter(infoFilePath);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);
-			
+
 			if(loadAspectSentiPrior==1){
 				System.out.println("Loading aspect-senti list from "+aspectSentiList);
 				model.setSentiAspectPrior(true);

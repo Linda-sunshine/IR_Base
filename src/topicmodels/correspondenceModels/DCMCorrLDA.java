@@ -5,11 +5,16 @@ comments of an article has its own topic proportion,
 **********/
 
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
@@ -39,10 +44,76 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	}
 	
 	public String toString(){
-		return String.format(
-"DCMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]",
+		return String
+				.format("DCMCorrLDA[k:%d, alphaA:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]",
 				number_of_topics, d_alpha, d_beta,
 				1 - m_testWord4PerplexityProportion);
+	}
+	
+	public void LoadPrior(String fileName, double eta) {
+		if (fileName == null || fileName.isEmpty()) {
+			return;
+		}
+		
+		try{
+
+			if (word_topic_prior == null) {
+				word_topic_prior = new double[number_of_topics][vocabulary_size];
+			}
+				 
+			for (int k = 0; k < number_of_topics; k++)
+				Arrays.fill(word_topic_prior[k], 0);
+
+			String tmpTxt;
+			String[] lineContainer;
+			String[] featureContainer;
+			int tid = 0;
+			
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++){
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			}
+			
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					new FileInputStream(fileName), "UTF-8"));
+
+			while ((tmpTxt = br.readLine()) != null) {
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+
+				lineContainer = tmpTxt.split("\t");
+				
+				tid = Integer.parseInt(lineContainer[0]);
+				for (int i = 1; i < lineContainer.length; i++) {
+					featureContainer = lineContainer[i].split(":");
+					
+					String featureName = featureContainer[0];
+					double featureProb = Double.parseDouble(featureContainer[1]);
+					
+					int featureIndex = featureNameIndex.get(featureName);
+					
+					word_topic_prior[tid][featureIndex] = featureProb;
+				}
+			}
+
+			System.out.println("prior is added");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void imposePrior() {
+		if (word_topic_prior != null) {
+			Arrays.fill(m_totalBeta, 0);
+			for (int k = 0; k < number_of_topics; k++) {
+				for (int v = 0; v < vocabulary_size; v++) {
+					m_beta[k][v] = word_topic_prior[k][v];
+					m_totalBeta[k] += m_beta[k][v];
+				}
+			}
+		}
 	}
 	
 	protected void initialize_probability(Collection<_Doc>collection){
@@ -85,13 +156,14 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 		initialAlphaBeta();
-		imposePrior();
+		// imposePrior();
+
 	}
 	
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
-		mu = 0.00001;// 0.5, 0.05, 0.005
+		mu = 0.05;// 0.5, 0.05, 0.005, 0.00001
 		d.setMu(mu);
 	}
 	
@@ -99,7 +171,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		_ParentDoc pDoc = d.m_parentDoc;
 		
 		double mu = Utils.cosine(d.getSparseVct4Infer(), pDoc.getSparseVct4Infer());
-		mu = 0.00001;// 0.5, 0.05, 0.005
+		mu = 0.05;// 0.5, 0.05, 0.005, 0.00001
 		d.setMu(mu);
 	}
 	
@@ -288,6 +360,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 
 	}
 
+
 	protected void initialAlphaBeta(){
 		
 		double parentDocNum = 0;
@@ -337,13 +410,13 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		for(int k=0; k<number_of_topics; k++){
 			m_alpha[k] = m_sstat[k];
 			m_alpha_c[k] = m_alphaAuxilary[k];
-			for(int v=0; v<vocabulary_size; v++)
-				m_beta[k][v] = topic_term_probabilty[k][v]+d_beta;
+			for (int v = 0; v < vocabulary_size; v++)
+				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
 		}
 		
 		m_totalAlpha = Utils.sumOfArray(m_alpha);
 		m_totalAlpha_c = Utils.sumOfArray(m_alpha_c);
-		for(int k=0; k<number_of_topics; k++){
+		for (int k = 0; k < number_of_topics; k++) {
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 		}
 		
@@ -550,7 +623,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		if(d instanceof _ParentDoc4DCM){
 			_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 			for(int k=0; k<number_of_topics; k++){
-				pDoc.m_topics[k] += pDoc.m_sstat[k]+m_alpha[k];
+				pDoc.m_topics[k] += pDoc.m_sstat[k];
 				for(int v=0; v<vocabulary_size; v++){
 					pDoc.m_wordTopic_prob[k][v] += pDoc.m_wordTopic_stat[k][v]+m_beta[k][v];
 				}
@@ -560,7 +633,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			_ParentDoc pDoc = cDoc.m_parentDoc;
 			double muDp = cDoc.getMu()/pDoc.getTotalDocLength();
 			for(int k=0; k<number_of_topics; k++){
-				cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k]+muDp*pDoc.m_sstat[k];
+				cDoc.m_topics[k] += cDoc.m_sstat[k];
 			}
 		}
 	}
@@ -804,7 +877,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			}
 			
 			childLikelihood += Math.log(wordLogLikelihood);
-			System.out.println("word log likelihood\t" + childLikelihood);
+			// System.out.println("word log likelihood\t" + childLikelihood);
 		}
 		
 		return childLikelihood;
