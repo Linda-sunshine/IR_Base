@@ -126,7 +126,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 				}
 
-				writeFile(i, m_trainSet, m_testSet);
+//				writeFile(i, m_trainSet, m_testSet);
 				System.out.println("Fold number " + i);
 				infoWriter.println("Fold number " + i);
 

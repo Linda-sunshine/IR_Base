@@ -344,23 +344,6 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		return prob;
 	}
-	
-	protected void updateParameter(int iter, File weightIterFolder) {
-		initialAlphaBeta();
-		updateAlpha();
-		updateAlphaC();
-
-		for (int k = 0; k < number_of_topics; k++)
-			updateBeta(k);
-
-		for (int k = 0; k < number_of_topics; k++)
-			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
-
-		String fileName = iter + ".txt";
-		saveParameter2File(weightIterFolder, fileName);
-
-	}
-
 
 	protected void initialAlphaBeta(){
 		
@@ -601,23 +584,26 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		return logLikelihood;
 	}
 	
-	@Override
-	public void calculate_M_step(int iter, File weightFolder) {
-		for (_Doc d : m_trainSet) {
-			collectStats(d);
-		}	
 	
-		for(int k=0; k<number_of_topics; k++)
-			for(int v=0; v<vocabulary_size; v++)
-				m_topic_word_prob[k][v] += word_topic_sstat[k][v]
-						+ m_beta[k][v];
-		
+	public void updateParameter(int iter, File weightFolder){
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
 			weightIterFolder.mkdir();
 		}
+		
+		initialAlphaBeta();
+		updateAlpha();
+		updateAlphaC();
 
-		updateParameter(iter, weightIterFolder);
+		for (int k = 0; k < number_of_topics; k++)
+			updateBeta(k);
+
+		for (int k = 0; k < number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+
+		String fileName = iter + ".txt";
+		saveParameter2File(weightIterFolder, fileName);
+		
 	}
 
 	protected void collectStats(_Doc d){
@@ -740,38 +726,6 @@ public class DCMCorrLDA extends DCMLDA4AC {
 
 		return logLikelihood;
 	}
-	
-//	public double Evaluation(int i) {
-//		m_collectCorpusStats = false;
-//		double perplexity = 0, loglikelihood, totalWords = 0, sumLikelihood = 0;
-//
-//		System.out.println("In Normal");
-//
-//		for (_Doc d : m_testSet) {
-//			loglikelihood = inference(d);
-//			sumLikelihood += loglikelihood;
-//			perplexity += loglikelihood;
-//			totalWords += d.getTotalDocLength();
-//			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-//				totalWords += cDoc.getTotalDocLength();
-//			}
-//		}
-//		System.out.println("total Words\t" + totalWords + "perplexity\t"
-//				+ perplexity);
-//		infoWriter.println("total Words\t" + totalWords + "perplexity\t"
-//				+ perplexity);
-//		perplexity /= totalWords;
-//		perplexity = Math.exp(-perplexity);
-//		sumLikelihood /= m_testSet.size();
-//
-//		System.out.format(
-//				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
-//				perplexity, sumLikelihood);
-//		infoWriter.format(
-//				"Test set perplexity is %.3f and log-likelihood is %.3f\n",
-//				perplexity, sumLikelihood);
-//		return perplexity;
-//	}
 
 	protected double calPerplexity(ArrayList<_Doc> sampleTestSet) {
 		double logLikelihood = 0;

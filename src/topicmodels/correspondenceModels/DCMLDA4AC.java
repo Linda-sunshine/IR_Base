@@ -72,6 +72,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
+				calculate_M_step(j);
 			}
 			long eEndTime = System.currentTimeMillis();
 
@@ -79,7 +80,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 					+ (eEndTime - eStartTime) / 1000 + "\t s");
 
 			long mStartTime = System.currentTimeMillis();
-			calculate_M_step(i, weightFolder);
+			updateParameter(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration m step time\t"
@@ -296,30 +297,24 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		return (term1+m_beta[tid][wid])/(d.m_topic_stat[tid]+m_totalBeta[tid]);
 	}
 	
-	public void calculate_M_step(int iter, File weightFolder) {
+	public void calculate_M_step(int iter) {
 
 		for (_Doc d : m_trainSet){
-			if(d instanceof _ParentDoc4DCM)
-				collectParentStats((_ParentDoc4DCM)d);
-			else
-				collectChildStats((_ChildDoc)d);
+			collectStats(d);
 		}
 		
 		for(int k=0; k<number_of_topics; k++)
 			for(int v=0; v<vocabulary_size; v++)
 				m_topic_word_prob[k][v] += word_topic_sstat[k][v]
 						+ m_beta[k][v];
-			
+	}
+	
+	public void updateParameter(int iter, File weightFolder){
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
 			weightIterFolder.mkdir();
 		}
 
-		updateParameter(iter, weightIterFolder);
-
-	}
-	
-	protected void updateParameter(int iter, File weightIterFolder) {
 		initialAlphaBeta();
 		updateAlpha();
 
@@ -332,6 +327,13 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		String fileName = iter + ".txt";
 		saveParameter2File(weightIterFolder, fileName);
 
+	}
+	
+	protected void collectStats(_Doc d){
+		if(d instanceof _ParentDoc4DCM)
+			collectParentStats((_ParentDoc4DCM)d);
+		else
+			collectChildStats((_ChildDoc)d);
 	}
 	
 	protected void collectParentStats(_ParentDoc4DCM d) {
