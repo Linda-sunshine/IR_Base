@@ -176,7 +176,7 @@ public class DCMCorrLDA_multi extends DCMCorrLDA{
 		}
 	}
 	
-	protected void updateParameter(int iter, File weightIterFolder) {
+	public void updateParameter(int iter, File weightIterFolder) {
 		initialAlphaBeta();
 		updateAlpha();
 		updateAlphaC();

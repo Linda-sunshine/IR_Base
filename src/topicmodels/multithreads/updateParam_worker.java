@@ -2,6 +2,8 @@ package topicmodels.multithreads;
 
 import java.util.Arrays;
 
+import structures._Doc;
+
 
 public abstract class updateParam_worker implements updateParamWorker{
 	public enum RunType {
@@ -44,6 +46,10 @@ public abstract class updateParam_worker implements updateParamWorker{
 	
 	public void setType(RunType type) {
 		m_type = type;
+	}
+	
+	public void addDoc(_Doc d){
+		
 	}
 	
 	public void run(){

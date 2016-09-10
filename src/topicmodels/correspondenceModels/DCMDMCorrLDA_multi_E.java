@@ -192,6 +192,7 @@ public class DCMDMCorrLDA_multi_E extends DCMDMCorrLDA{
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				multithread_E_step();
+				calculate_M_step(j);
 			}
 			long eEndTime = System.currentTimeMillis();
 
@@ -199,7 +200,7 @@ public class DCMDMCorrLDA_multi_E extends DCMDMCorrLDA{
 					+ (eEndTime - eStartTime) / 1000);
 
 			long mStartTime = System.currentTimeMillis();
-			calculate_M_step(i, weightFolder);
+			updateParameter(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration m step time\t"
