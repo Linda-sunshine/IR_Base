@@ -60,7 +60,7 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test
-		String topicmodel = "LDAGibbs4AC_test";
+		String topicmodel = "DCMCorrLDA_multi_E_test";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -308,11 +308,11 @@ public class TopicModelMain {
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-				number_of_topics = 200;
+				number_of_topics = 100;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
-				gibbs_iteration = 300;
+				gibbs_iteration = 200;
 				gibbs_lag = 20;
 				double ksi = 800;
 				double tau = 0.7;
