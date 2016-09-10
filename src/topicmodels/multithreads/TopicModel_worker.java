@@ -7,7 +7,7 @@ import structures._Doc;
 
 //E-step needs to be implemented by different models
 public abstract class TopicModel_worker implements TopicModelWorker {
-
+	
 	public enum RunType {
 		RT_inference,
 		RT_EM

@@ -177,7 +177,7 @@ public class DCMCorrLDA_multi extends DCMCorrLDA{
 	}
 	
 	public void updateParameter(int iter, File weightIterFolder) {
-		System.out.println("updating parameters");
+
 		initialAlphaBeta();
 		updateAlpha();
 		updateAlphaC();

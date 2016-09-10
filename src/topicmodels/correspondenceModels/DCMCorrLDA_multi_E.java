@@ -195,7 +195,9 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 		double delta = 0, last = 0, current = 0;
 		int i = 0, displayCount = 0;
 		do {
-
+			for (_Doc d : m_trainSet)
+				Arrays.fill(d.m_topics, 0);
+			
 			long eStartTime = System.currentTimeMillis();
 
 			for (_Doc d : m_trainSet)

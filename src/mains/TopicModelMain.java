@@ -72,7 +72,7 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
@@ -308,7 +308,9 @@ public class TopicModelMain {
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-				number_of_topics = 100;
+
+				number_of_topics = 20;
+
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
