@@ -64,7 +64,7 @@ public class TopicModelMain {
 		String topicmodel = "LDAGibbs4AC_test";
 
 		String category = "tablet";
-		int number_of_topics = 50;
+		int number_of_topics = 100;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -310,7 +310,7 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
 
-				number_of_topics = 20;
+				number_of_topics = 50;
 
 				converge = 1e-3;
 				int newtonIter = 50;
@@ -346,7 +346,6 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						ksi, tau, newtonIter, newtonConverge);
 			} else if (topicmodel.equals("corrLDA_Gibbs_test")) {
-				number_of_topics = 15;
 				converge = 1e-3;
 				double ksi = 800;
 				double tau = 0.7;
