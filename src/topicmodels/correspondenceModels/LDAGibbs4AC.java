@@ -174,10 +174,14 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			loglikelihood = inference(d);
 			sumLikelihood += loglikelihood;
 			perplexity += loglikelihood;
-			totalWords += d.getDocTestLength();
-			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-				totalWords += cDoc.getDocTestLength();
+			totalWords += d.getTotalDocLength();
+			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
+				totalWords += cDoc.getTotalDocLength();
 			}
+//			totalWords += d.getDocTestLength();
+//			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+//				totalWords += cDoc.getDocTestLength();
+//			}
 		}
 		System.out.println("total Words\t" + totalWords + "perplexity\t"
 				+ perplexity);
