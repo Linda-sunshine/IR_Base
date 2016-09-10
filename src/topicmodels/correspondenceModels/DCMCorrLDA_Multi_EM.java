@@ -1,28 +1,43 @@
 package topicmodels.correspondenceModels;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
+import structures._ChildDoc;
+import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
-import topicmodels.multithreads.TopicModel_worker;
+import structures._Word;
 import topicmodels.multithreads.multiEM_worker;
-import topicmodels.multithreads.updateParam_worker.RunType;
 import utils.Utils;
 
 public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
-	public class DCMCorrLDA_Multi_worker implements multiEM_worker{
-		protected double[] alphaStat;
-		double[] m_param;
-		protected double m_paramIndex;
+	public enum RunType {
+		RT_inference, RT_EM
+	}
+
+	RunType m_type = RunType.RT_EM;// EM is the default type
+
+	protected DCMCorrLDA_MultiEM_worker[] m_multiEM_worker;
+	
+	public class DCMCorrLDA_MultiEM_worker implements multiEM_worker {
+		protected double[] m_alphaStat;
+		protected ArrayList<double[]> m_param;
+		protected ArrayList<Integer> m_paramIndex;
 		protected double m_likelihood;
 		
-		public DCMCorrLDA_Multi_worker(int number_of_topics, int vocabulary_size){
+		public DCMCorrLDA_MultiEM_worker(int number_of_topics,
+				int vocabulary_size) {
 			
-			alphaStat = new double[number_of_topics];
+			m_alphaStat = new double[number_of_topics];
+			m_param = new ArrayList<double[]>();
+			m_paramIndex = new ArrayList<Integer>();
+			m_likelihood = 0;
 		}
 
-		@Override
 		public void run() {
 			System.out.println("runnig thread");
 			
@@ -37,13 +52,6 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			}
 		}
 
-		@Override
-		public void setType(RunType type) {
-			m_type = type;
-			
-		}
-
-		@Override
 		public void addParameter(double[] t_param, int t_index) {
 			int paramLen = t_param.length;
 			double[] param = new double[paramLen];
@@ -52,14 +60,12 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			m_paramIndex.add(t_index);
 		}
 
-		@Override
 		public void clearParameter() {
 			for(double[] param: m_param)
 				Arrays.fill(param, 0);
 		}
 
-		@Override
-		public void calculate_M_step() {
+		public void calculate_M_step(double[] param, int tid) {
 			System.out.println("topic optimization\t"+tid);
 			double diff = 0;
 			int iteration = 0;
@@ -118,67 +124,367 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				if(iteration > m_newtonIter)
 					break;
 				
-				System.out.println("beta iteration\t"+iteration);
+				// System.out.println("beta iteration\t"+iteration);
 			}while(diff > m_newtonConverge);
 			
 			System.out.println("iteration\t"+iteration);
 		}
 
-		@Override
 		public void returnParameter(double[] param, int index) {
 			if(param.length == m_param.get(index).length){
 				System.arraycopy(param, 0, m_param.get(index), 0, param.length);
 			}
 		}
 
-		@Override
 		public double getLogLikelihood() {
 			return m_likelihood;
 
 		}
 
-		@Override
 		public void addDoc(_Doc d) {
 			// TODO Auto-generated method stub
 			
 		}
 
-		@Override
 		public void clearCorpus() {
 			// TODO Auto-generated method stub
 			
 		}
 
-		@Override
 		public double calculate_E_step(_Doc d) {
-			// TODO Auto-generated method stub
+			d.permutation();
+
+			if (d instanceof _ParentDoc) {
+				sampleInParentDoc((_ParentDoc) d);
+			} else if (d instanceof _ChildDoc) {
+				sampleInChildDoc((_ChildDoc) d);
+			}
+
 			return 0;
 		}
 
-		@Override
+		protected void sampleInParentDoc(_Doc d) {
+			_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+			int wid, tid;
+			double normalizedProb;
+
+			for (_Word w : pDoc.getWords()) {
+				tid = w.getTopic();
+				wid = w.getIndex();
+
+				pDoc.m_sstat[tid]--;
+				pDoc.m_topic_stat[tid]--;
+				pDoc.m_wordTopic_stat[tid][wid]--;
+
+				normalizedProb = 0;
+
+				for (tid = 0; tid < number_of_topics; tid++) {
+					double pWordTopic = parentWordByTopicProb(tid, wid, pDoc);
+					double pTopicPDoc = parentTopicInDocProb(tid, pDoc);
+					double pTopicCDoc = parentChildInfluenceProb(tid, pDoc);
+
+					m_alphaStat[tid] = pWordTopic * pTopicPDoc * pTopicCDoc;
+					normalizedProb += m_alphaStat[tid];
+				}
+
+				normalizedProb *= m_rand.nextDouble();
+				for (tid = 0; tid < number_of_topics; tid++) {
+					normalizedProb -= m_alphaStat[tid];
+					if (normalizedProb <= 0)
+						break;
+				}
+
+				if (tid == number_of_topics)
+					tid--;
+
+				w.setTopic(tid);
+				pDoc.m_sstat[tid]++;
+				pDoc.m_topic_stat[tid]++;
+				pDoc.m_wordTopic_stat[tid][wid]++;
+			}
+		}
+
+		protected void sampleInChildDoc(_ChildDoc d) {
+			int wid, tid;
+			double normalizedProb;
+
+			_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d.m_parentDoc;
+
+			for (_Word w : d.getWords()) {
+				tid = w.getTopic();
+				wid = w.getIndex();
+
+				pDoc.m_wordTopic_stat[tid][wid]--;
+				pDoc.m_topic_stat[tid]--;
+				d.m_sstat[tid]--;
+
+				normalizedProb = 0;
+				for (tid = 0; tid < number_of_topics; tid++) {
+					double pWordTopic = childWordByTopicProb(tid, wid, pDoc);
+					double pTopic = childTopicInDocProb(tid, d, pDoc);
+
+					m_alphaStat[tid] = pWordTopic * pTopic;
+					normalizedProb += m_alphaStat[tid];
+				}
+
+				normalizedProb *= m_rand.nextDouble();
+				for (tid = 0; tid < number_of_topics; tid++) {
+					normalizedProb -= m_alphaStat[tid];
+					if (normalizedProb <= 0)
+						break;
+				}
+
+				if (tid == number_of_topics)
+					tid--;
+
+				w.setTopic(tid);
+				d.m_sstat[tid]++;
+				pDoc.m_topic_stat[tid]++;
+				pDoc.m_wordTopic_stat[tid][wid]++;
+			}
+		}
+
 		public double inference(_Doc d) {
 			// TODO Auto-generated method stub
 			return 0;
 		}
 
-		@Override
+
 		public double accumluateStats(double[][] word_topic_sstat) {
 			// TODO Auto-generated method stub
 			return 0;
 		}
 
-		@Override
 		public void resetStats() {
+			for (int i = 0; i < m_alphaStat.length; i++)
+				Arrays.fill(m_alphaStat, 0);
+		}
+
+
+		public double getPerplexity() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
+		public void setType(RunType type) {
+			// TODO Auto-generated method stub
+			m_type = type;
+		}
+
+		@Override
+		public void calculate_M_step() {
 			// TODO Auto-generated method stub
 			
 		}
 
 		@Override
-		public double getPerplexity() {
+		public void setType(
+				topicmodels.multithreads.updateParam_worker.RunType type) {
 			// TODO Auto-generated method stub
-			return 0;
+
 		}
-		
+
+		// @Override
+		// public void setType(RunType type) {
+		// // TODO Auto-generated method stub
+		//
+		// }
 		
 	}
+
+	public DCMCorrLDA_Multi_EM(int number_of_iteration, double converge,
+			double beta, _Corpus c, double lambda, int number_of_topics,
+			double alpha_a, double alpha_c, double burnIn, int lag, double ksi,
+			double tau, int newtonIter, double newtonConverge) {
+		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
+				alpha_a, alpha_c, burnIn, ksi, tau, lag, newtonIter,
+				newtonConverge);
+		// TODO Auto-generated constructor stub
+		m_multithread = true;
+	}
+
+	public String toString() {
+		return String
+				.format("DCMCorrLDA_Multi_EM[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]",
+						number_of_topics, d_alpha, d_beta);
+	}
+
+	protected void initialize_probability(Collection<_Doc> collection) {
+		super.initialize_probability(collection);
+
+		int cores = Runtime.getRuntime().availableProcessors();
+
+		m_threadpool = new Thread[cores];
+		m_multiEM_worker = new DCMCorrLDA_MultiEM_worker[cores];
+
+		for (int i = 0; i < cores; i++)
+			m_multiEM_worker[i] = new DCMCorrLDA_MultiEM_worker(
+					number_of_topics, vocabulary_size);
+
+		int workerID = 0;
+		for (int k = 0; k < number_of_topics; k++) {
+			m_multiEM_worker[workerID % cores].addParameter(m_beta[k], k);
+			workerID++;
+		}
+		
+		workerID = 0;
+		for (_Doc d : collection) {
+			if (d instanceof _ParentDoc) {
+				m_multiEM_worker[workerID % cores].addDoc(d);
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+				for (_ChildDoc cDoc : pDoc.m_childDocs) {
+					m_multiEM_worker[workerID % cores].addDoc(cDoc);
+				}
+				workerID++;
+			}
+		}
+
+		super.initialize_probability(collection);
+
+	}
+
+	protected void init() {
+		// super.init();
+		for (DCMCorrLDA_MultiEM_worker worker : m_multiEM_worker) {
+			worker.resetStats();
+		}
+	}
+
+	protected void updateBeta() {
+		for (int i = 0; i < m_multiEM_worker.length; i++) {
+			m_multiEM_worker[i].setType(RunType.RT_EM);
+			m_threadpool[i] = new Thread(m_multiEM_worker[i]);
+			m_threadpool[i].start();
+		}
+
+		for (Thread thread : m_threadpool) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public void updateParameter(int iter, File weightIterFolder) {
+
+		initialAlphaBeta();
+		updateAlpha();
+		updateAlphaC();
+
+		updateBeta();
+
+		for (int k = 0; k < number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+
+		String fileName = iter + ".txt";
+		saveParameter2File(weightIterFolder, fileName);
+
+	}
+
+	protected void multithread_E_step() {
+		for (int i = 0; i < m_multiEM_worker.length; i++) {
+			m_multiEM_worker[i].setType(RunType.RT_EM);
+			m_threadpool[i] = new Thread(m_multiEM_worker[i]);
+			m_threadpool[i].start();
+		}
+
+		for (Thread thread : m_threadpool) {
+			try {
+				thread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	public void EM() {
+		System.out.format("Starting %s...\n", toString());
+
+		long starttime = System.currentTimeMillis();
+
+		m_collectCorpusStats = true;
+		initialize_probability(m_trainSet);
+
+		String filePrefix = "./data/results/DCMCorrLDA";
+		File weightFolder = new File(filePrefix + "");
+		if (!weightFolder.exists()) {
+			// System.out.println("creating directory for weight"+weightFolder);
+			weightFolder.mkdir();
+		}
+
+		double delta = 0, last = 0, current = 0;
+		int i = 0, displayCount = 0;
+		do {
+			for (_Doc d : m_trainSet)
+				Arrays.fill(d.m_topics, 0);
+
+			long eStartTime = System.currentTimeMillis();
+
+			for (int j = 0; j < number_of_iteration; j++) {
+				init();
+				multithread_E_step();
+				calculate_M_step(j);
+			}
+			long eEndTime = System.currentTimeMillis();
+
+			System.out.println("per iteration e step time\t"
+					+ (eEndTime - eStartTime) / 1000.0 + "\t seconds");
+
+			long mStartTime = System.currentTimeMillis();
+			updateParameter(i, weightFolder);
+			long mEndTime = System.currentTimeMillis();
+
+			System.out.println("per iteration m step time\t"
+					+ (mEndTime - mStartTime) / 1000.0 + "\t seconds");
+
+			if (m_converge > 0
+					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
+				// required to display log-likelihood
+				current = calculate_log_likelihood();
+				// together with corpus-level log-likelihood
+
+				if (i > 0)
+					delta = (last - current) / last;
+				else
+					delta = 1.0;
+				last = current;
+			}
+
+			if (m_displayLap > 0 && i % m_displayLap == 0) {
+				if (m_converge > 0) {
+					System.out.format(
+							"Likelihood %.3f at step %s converge to %f...\n",
+							current, i, delta);
+					infoWriter.format(
+							"Likelihood %.3f at step %s converge to %f...\n",
+							current, i, delta);
+
+				} else {
+					System.out.print(".");
+					if (displayCount > 6) {
+						System.out.format("\t%d:%.3f\n", i, current);
+						infoWriter.format("\t%d:%.3f\n", i, current);
+					}
+					displayCount++;
+				}
+			}
+
+			if (m_converge > 0 && Math.abs(delta) < m_converge)
+				break;// to speed-up, we don't need to compute likelihood in
+						// many cases
+		} while (++i < this.number_of_iteration);
+
+		finalEst();
+
+		long endtime = System.currentTimeMillis() - starttime;
+		System.out
+				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
+						current, i, delta, endtime / 1000);
+		infoWriter
+				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
+						current, i, delta, endtime / 1000);
+	}
+
 }

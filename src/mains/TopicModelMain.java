@@ -19,6 +19,7 @@ import topicmodels.correspondenceModels.ACCTM_C;
 import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
+import topicmodels.correspondenceModels.DCMCorrLDA_Multi_EM;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
 import topicmodels.correspondenceModels.DCMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
@@ -59,8 +60,9 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
-		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test
-		String topicmodel = "DCMCorrLDA_multi_E_test";
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test,
+		// corrLDA_Gibbs_test,DCMCorrLDA_Multi_EM
+		String topicmodel = "DCMCorrLDA_Multi_EM";
 
 		String category = "tablet";
 		int number_of_topics = 30;
@@ -410,6 +412,20 @@ public class TopicModelMain {
 				model = new DCMCorrLDA_test(gibbs_iteration, converge,
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
+						newtonConverge);
+			} else if (topicmodel.equals("DCMCorrLDA_Multi_EM")) {
+				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				gibbs_iteration = 200;
+				gibbs_lag = 20;
+				model = new DCMCorrLDA_Multi_EM(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, gibbs_lag, ksi, tau, newtonIter,
 						newtonConverge);
 			}
 			
