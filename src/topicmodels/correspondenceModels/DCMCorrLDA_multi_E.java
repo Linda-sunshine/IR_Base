@@ -199,6 +199,10 @@ public class DCMCorrLDA_multi_E extends DCMCorrLDA{
 				Arrays.fill(d.m_topics, 0);
 			
 			long eStartTime = System.currentTimeMillis();
+
+			for (_Doc d : m_trainSet)
+				Arrays.fill(d.m_topics, 0);
+
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				multithread_E_step();

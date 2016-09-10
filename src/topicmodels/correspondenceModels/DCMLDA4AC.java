@@ -68,6 +68,10 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		do {
 
 			long eStartTime = System.currentTimeMillis();
+
+			for (_Doc d : m_trainSet)
+				Arrays.fill(d.m_topics, 0);
+
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				for (_Doc d : m_trainSet)

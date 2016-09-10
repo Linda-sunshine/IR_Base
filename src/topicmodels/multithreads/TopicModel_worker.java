@@ -54,9 +54,11 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 		long eStartTime = System.currentTimeMillis();
 
 		for(_Doc d:m_corpus) {
-			if (m_type == RunType.RT_EM)
+			if (m_type == RunType.RT_EM) {
+				System.out.println("EM");
 				m_likelihood += calculate_E_step(d);
-			else if (m_type == RunType.RT_inference) {
+			} else if (m_type == RunType.RT_inference) {
+				System.out.println("inference");
 				loglikelihood = inference(d);
 				m_perplexity += Math.pow(2.0, -loglikelihood/d.getTotalDocLength() / log2);
 				m_likelihood += loglikelihood;
