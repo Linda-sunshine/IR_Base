@@ -269,16 +269,22 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			
 		}while(++iter<number_of_iteration);
 		
-//		logLikelihood = calPerplexity(sampleTestSet);
-		logLikelihood = calConditionalPerplexity(sampleTestSet);
+		logLikelihood = calPerplexity(sampleTestSet);
+//		logLikelihood = calConditionalPerplexity(sampleTestSet);
 		
 		return logLikelihood;
 	}
 	
 	protected double calPerplexity(ArrayList<_Doc> sampleTestSet) {
-		double likelihood = 0;
-
-		return likelihood;
+		double logLikelihood = 0;
+		for(_Doc d:sampleTestSet){
+			estThetaInDoc(d);
+			if(d instanceof _ParentDoc)
+				logLikelihood += calculate_log_likelihood4ParentPerplexity(d);
+			else
+				logLikelihood += calculate_log_likelihood4ChildPerplexity(d);
+		}
+		return logLikelihood;
 	}
 
 	protected double calConditionalPerplexity(ArrayList<_Doc> sampleTestSet) {
@@ -353,6 +359,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			testLength = (int) (m_testWord4PerplexityProportion * cDoc
 					.getTotalDocLength());
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			sampleTestSet.add(cDoc);
 			cDoc.createSparseVct4Infer();
@@ -401,8 +408,9 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 			docLogLikelihood += value * wordLogLikelihood;
 		}
-
+		
 		return docLogLikelihood;
+		
 	}
 
 	protected double calculate_log_likelihood4Child(_Doc d) {
@@ -439,7 +447,43 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
-	public void printTopWords(int k, String betaFile) {
+	protected double calculate_log_likelihood4ParentPerplexity(_Doc d){
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : d.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = d.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
+	protected double calculate_log_likelihood4ChildPerplexity(_Doc d){
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : d.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = d.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
+ 	public void printTopWords(int k, String betaFile) {
 
 		double loglikelihood = calculate_log_likelihood();
 		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);

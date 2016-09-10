@@ -241,6 +241,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
 		}
@@ -348,7 +349,45 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		return docLogLikelihood;
 	}
 	
-	public double childTopicInDoc(int tid, _ChildDoc cDoc){
+	protected double calculate_log_likelihood4ParentPerplexity(_Doc d){
+		_ParentDoc pDoc = (_ParentDoc) d;
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : pDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	} 
+	
+	protected double calculate_log_likelihood4ChildPerplexity(_Doc d){
+		_ChildDoc cDoc = (_ChildDoc)d;
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : cDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = cDoc.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
+ 	public double childTopicInDoc(int tid, _ChildDoc cDoc){
 		return cDoc.m_sstat[tid]+m_smoothingParam;
 	}
 	

@@ -798,8 +798,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-//			testLength = 0;
+//			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
@@ -837,6 +837,46 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 		return childLikelihood;
+	}
+	
+	protected double calculate_log_likelihood4ParentPerplexity(_Doc d){
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : pDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						* pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	} 
+	
+	protected double calculate_log_likelihood4ChildPerplexity(_Doc d){
+		_ChildDoc cDoc = (_ChildDoc)d;
+		double docLogLikelihood = 0.0;
+
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)cDoc.m_parentDoc;
+
+		for (_Word w : cDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = cDoc.m_topics[k]
+						* pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
 	}
 	
 	public void printTopWords(int k, String betaFile) {
