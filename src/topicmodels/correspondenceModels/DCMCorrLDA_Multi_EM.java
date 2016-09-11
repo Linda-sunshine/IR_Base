@@ -16,7 +16,7 @@ import utils.Utils;
 
 public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 	public enum RunType {
-		RT_inference, RT_EM
+		RT_inference, RT_E, RT_M, RT_EM
 	}
 
 	RunType m_type = RunType.RT_EM;// EM is the default type
@@ -26,6 +26,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 	public class DCMCorrLDA_MultiEM_worker implements multiEM_worker {
 		protected double[] m_alphaStat;
 		protected ArrayList<double[]> m_param;
+		protected ArrayList<_Doc> m_corpus;
 		protected ArrayList<Integer> m_paramIndex;
 		protected double m_likelihood;
 		
@@ -36,19 +37,31 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			m_param = new ArrayList<double[]>();
 			m_paramIndex = new ArrayList<Integer>();
 			m_likelihood = 0;
+			m_corpus = new ArrayList<_Doc>();
 		}
 
 		public void run() {
-			System.out.println("runnig thread");
 			
-			for(int i=0; i<m_paramIndex.size(); i++){
-				calculate_M_step(m_param.get(i), m_paramIndex.get(i));
+			if(m_type == RunType.RT_EM){
+				System.out.println("EM error mode");
 			}
 			
-			for(int i=0; i<m_paramIndex.size(); i++){
-				int paramLength = m_param.get(i).length;
-				int paramIndex = m_paramIndex.get(i);
-				System.arraycopy(m_param.get(i), 0, m_beta[paramIndex], 0, paramLength);
+			if(m_type == RunType.RT_E){
+//				System.out.println("E step");
+				for(_Doc d:m_corpus){
+					calculate_E_step(d);
+				}
+			}else if(m_type == RunType.RT_M){
+			
+				for(int i=0; i<m_paramIndex.size(); i++){
+					calculate_M_step(m_param.get(i), m_paramIndex.get(i));
+				}
+				
+				for(int i=0; i<m_paramIndex.size(); i++){
+					int paramLength = m_param.get(i).length;
+					int paramIndex = m_paramIndex.get(i);
+					System.arraycopy(m_param.get(i), 0, m_beta[paramIndex], 0, paramLength);
+				}
 			}
 		}
 
@@ -66,7 +79,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 		}
 
 		public void calculate_M_step(double[] param, int tid) {
-			System.out.println("topic optimization\t"+tid);
+//			System.out.println("topic optimization\t"+tid);
 			double diff = 0;
 			int iteration = 0;
 			double smoothingBeta = 0.1;
@@ -127,7 +140,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				// System.out.println("beta iteration\t"+iteration);
 			}while(diff > m_newtonConverge);
 			
-			System.out.println("iteration\t"+iteration);
+//			System.out.println("iteration\t"+iteration);
 		}
 
 		public void returnParameter(double[] param, int index) {
@@ -142,13 +155,12 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 		}
 
 		public void addDoc(_Doc d) {
-			// TODO Auto-generated method stub
-			
+			m_corpus.add(d);
 		}
 
 		public void clearCorpus() {
 			// TODO Auto-generated method stub
-			
+			m_corpus.clear();
 		}
 
 		public double calculate_E_step(_Doc d) {
@@ -283,12 +295,6 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			// TODO Auto-generated method stub
 
 		}
-
-		// @Override
-		// public void setType(RunType type) {
-		// // TODO Auto-generated method stub
-		//
-		// }
 		
 	}
 
@@ -352,7 +358,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 
 	protected void updateBeta() {
 		for (int i = 0; i < m_multiEM_worker.length; i++) {
-			m_multiEM_worker[i].setType(RunType.RT_EM);
+			m_multiEM_worker[i].setType(RunType.RT_M);
 			m_threadpool[i] = new Thread(m_multiEM_worker[i]);
 			m_threadpool[i].start();
 		}
@@ -384,7 +390,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 
 	protected void multithread_E_step() {
 		for (int i = 0; i < m_multiEM_worker.length; i++) {
-			m_multiEM_worker[i].setType(RunType.RT_EM);
+			m_multiEM_worker[i].setType(RunType.RT_E);
 			m_threadpool[i] = new Thread(m_multiEM_worker[i]);
 			m_threadpool[i].start();
 		}
