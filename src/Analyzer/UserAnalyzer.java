@@ -9,8 +9,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
@@ -19,14 +17,20 @@ import structures._User;
 import structures._stat;
 import utils.Utils;
 
+/**
+ * 
+ * @author Hongning Wang
+ * Loading text file format for amazon and yelp reviews
+ */
 public class UserAnalyzer extends DocAnalyzer {
 	
 	ArrayList<_User> m_users; // Store all users with their reviews.
-	double m_trainRatio = 0.25; // by default, the first 25% for training global model 
+	double m_trainRatio = 0.25; // by default, the first 25% for training the global model 
 	double m_adaptRatio = 0.5; // by default, the next 50% for adaptation, and rest 25% for testing
 	int m_trainSize = 0, m_adaptSize = 0, m_testSize = 0;
+	double m_pCount[] = new double[3]; // to count the positive ratio in train/adapt/test
 	boolean m_enforceAdapt = false;
-
+	
 	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
@@ -51,6 +55,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	}
 	
 	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	@Override
 	protected boolean LoadCV(String filename) {
 		if (filename==null || filename.isEmpty())
 			return false;
@@ -101,7 +106,7 @@ public class UserAnalyzer extends DocAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile()){
-				loadOneUser(f.getAbsolutePath());
+				loadUser(f.getAbsolutePath());
 				count++;
 			} else if (f.isDirectory())
 				loadUserDir(f.getAbsolutePath());
@@ -118,7 +123,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	}
 	
 	// Load one file as a user here. 
-	public void loadOneUser(String filename){
+	public void loadUser(String filename){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
@@ -149,7 +154,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
-				allocateReviews(reviews);
+				allocateReviews(reviews);				
 				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
 			}
 			reader.close();
@@ -169,37 +174,41 @@ public class UserAnalyzer extends DocAnalyzer {
 		else
 			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
 		
+		_Review r;
 		for(int i=0; i<reviews.size(); i++) {
+			r = reviews.get(i);
 			if (i<train) {
-				reviews.get(i).setType(rType.TRAIN);
+				r.setType(rType.TRAIN);
+				if (r.getYLabel()==1)
+					m_pCount[0] ++;
+				
 				m_trainSize ++;
 			} else if (i<adapt) {
-				reviews.get(i).setType(rType.ADAPTATION);
+				r.setType(rType.ADAPTATION);
+				if (r.getYLabel()==1)
+					m_pCount[1] ++;
+				
 				m_adaptSize ++;
 			} else {
-				reviews.get(i).setType(rType.TEST);
+				r.setType(rType.TEST);
+				if (r.getYLabel()==1)
+					m_pCount[2] ++;
+				
 				m_testSize ++;
 			}
 		}
 	}
 
-	public ArrayList<_Review> shuffleReviews(ArrayList<_Review> reviews){
-		// Generate a set of random numbers first.
-		HashSet<Integer> index = new LinkedHashSet<Integer>();
-		while(index.size() < reviews.size())
-			index.add((int) (reviews.size() * Math.random()));
-		ArrayList<_Review> rdmReviews = new ArrayList<_Review>();
-		for(int i: index)
-			rdmReviews.add(reviews.get(i));
-		return rdmReviews;
-	}
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
-		System.out.format("[Info]Training size: %d, adaptation size: %d, and testing size: %d\n", m_trainSize, m_adaptSize,m_testSize);
+		System.out.format("[Info]Training size: %d(%.2f), adaptation size: %d(%.2f), and testing size: %d(%.2f)\n", 
+				m_trainSize, m_trainSize>0?m_pCount[0]/m_trainSize:0.0,
+				m_adaptSize, m_adaptSize>0?m_pCount[1]/m_adaptSize:0.0,
+				m_testSize, m_testSize>0?m_pCount[2]/m_testSize:0.0);
 		return m_users;
 	}
 	
-// Added by Lin: Load the svd file to get the low dim representation of users.
+	// Added by Lin: Load the svd file to get the low dim representation of users.
 	public void loadSVDFile(String filename){
 		try{
 			// Construct the <userID, user> map first.

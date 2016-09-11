@@ -47,8 +47,6 @@ public class _QUPair implements Comparable<_QUPair>{
 		double value;
 		for(int i=0; i<m_rankFv.length; i++) {
 			value = m_rankFv[i] - dj.m_rankFv[i]; 
-			if(Double.isNaN(value))
-				System.out.println("Nan here.");
 			if (value != 0)
 				fvs.add(new FeatureNode(i+1, value));
 		}
@@ -72,14 +70,4 @@ public class _QUPair implements Comparable<_QUPair>{
 		else 
 			return 0;
 	}
-	
-//	public double score(double[] w){
-//		m_score = Utils.dotProduct(w, m_rankFv);
-//		if(Double.isNaN(m_score)){
-//			System.out.println("Nan in score!");
-//			m_score = Utils.dotProduct(w, m_rankFv);
-//		}
-//			
-//		return m_score;
-//	}
 }

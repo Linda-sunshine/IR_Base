@@ -1,15 +1,11 @@
 package Classifier;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-
-import Classifier.supervised.liblinear.Feature;
 
 import structures._Corpus;
 import structures._Doc;
@@ -30,18 +26,9 @@ public abstract class BaseClassifier {
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.
 	protected _PerformanceStat m_microStat; // this structure can replace the previous two arrays
-	protected double[] m_perf; // Stores overall performance, micro F1 for both classes, macro F1 for both classes.
-
+	
 	protected String m_debugOutput; // set up debug output (default: no debug output)
 	protected BufferedWriter m_debugWriter; // debug output writer
-	
-	protected double[][][] m_purityStat;
-	protected Feature[][] m_fvs; //The data instances for testing svm, we don't need it in real L2R.
-	protected Integer[] m_ys; //The data labels for testing svm.
-	protected int m_kFold; //k-fold cross validation.
-	
-//	public void train() {
-//		train(m_trainSet);
 	
 	public double train() {
 		return train(m_trainSet);
@@ -52,7 +39,7 @@ public abstract class BaseClassifier {
 	public abstract double score(_Doc d, int label);//output the prediction score
 	protected abstract void init(); // to be called before training starts
 	protected abstract void debug(_Doc d);
-
+	
 	public double test() {
 		double acc = 0;
 		for(_Doc doc: m_testSet){
@@ -131,41 +118,40 @@ public abstract class BaseClassifier {
 	
 	//k-fold Cross Validation.
 	public void crossValidation(int k, _Corpus c){
-		m_kFold = k;
-		m_purityStat = new double[m_kFold][4][3];
 		try {
 			if (m_debugOutput!=null){
 				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
 				m_debugWriter.write(this.toString() + "\n");
 			}
-//			c.shuffle(m_kFold);
-			c.mastInOrder(k);
+			c.shuffle(k);
 			int[] masks = c.getMasks();
 			ArrayList<_Doc> docs = c.getCollection();
 			//Use this loop to iterate all the ten folders, set the train set and test set.
-			for (int i = 0; i < m_kFold; i++) {
+			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
-					//two fold for training, eight fold for testing.
+					//more for testing
 					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
 						m_trainSet.add(docs.get(j));
 					else
 						m_testSet.add(docs.get(j));
 					
-					//One fold for training, nine fold for testing.
-//					if( masks[j]==i ) // || masks[j]==(i+3)%k 
-//						m_trainSet.add(docs.get(j));
-//					else
+//					//more for training
+//					if(masks[j]==i) 
 //						m_testSet.add(docs.get(j));
+//					else
+//						m_trainSet.add(docs.get(j));
 				}
+				
 				long start = System.currentTimeMillis();
 				train();
-				double accuracy = test();				
+				double accuracy = test();
+				
 				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
 				m_trainSet.clear();
 				m_testSet.clear();
 			}
-			calculateMeanVariance();	
-			calculateMeanPurity();
+			calculateMeanVariance(m_precisionsRecalls);	
+		
 			if (m_debugOutput!=null)
 				m_debugWriter.close();
 		} catch (IOException e) {
@@ -173,81 +159,6 @@ public abstract class BaseClassifier {
 		}
 	}
 	
-//	public void crossValidation(int k, _Corpus c){
-//		m_purityStat = new double[k][4][3];
-//		try {
-//			if (m_debugOutput!=null){
-//				m_debugWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(m_debugOutput, false), "UTF-8"));
-//				m_debugWriter.write(this.toString() + "\n");
-//			}
-////			c.shuffle(k);
-//			c.mastInOrder(k);
-//			int[] masks = c.getMasks();
-//			ArrayList<_Doc> docs = c.getCollection();
-//			//Use this loop to iterate all the ten folders, set the train set and test set.
-//			for (int i = 0; i < k; i++) {
-//				for (int j = 0; j < masks.length; j++) {
-//					//more for testing
-//					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
-//						m_trainSet.add(docs.get(j));
-//					else
-//						m_testSet.add(docs.get(j));
-//				}
-//				
-////				long start = System.currentTimeMillis();
-//				train();
-//				save2File("./data/RankSVMDataFile1027.csv", 1000);
-////				double accuracy = test();				
-////				System.out.format("%s Train/Test finished in %.2f seconds with accuracy %.4f and F1 (%s)...\n", this.toString(), (System.currentTimeMillis()-start)/1000.0, accuracy, getF1String());
-////				m_trainSet.clear();
-////				m_testSet.clear();
-//			}
-////			calculateMeanVariance();	
-////			calculateMeanPurity();
-////			if (m_debugOutput!=null)
-////				m_debugWriter.close();
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//	}
-	
-	//Print part of the instances for sanity check.
-	public void save2File(String filename, int n) throws FileNotFoundException{
-		PrintWriter printer = new PrintWriter(new File(filename));
-		for(int i=0; i<n; i++){
-			printer.print(m_ys[i]+",");//print the label first.
-			Feature[] tmp = m_fvs[i];
-			for(int j=0; j<tmp.length-1; j++){
-				printer.print(tmp[j].getIndex()+","+tmp[j].getValue()+",");
-			}
-			printer.print(tmp[tmp.length-1].getIndex()+","+tmp[tmp.length-1].getValue()+"\n");
-		}
-		printer.close();
-	}
-	
-	//Calculate the mean of purity. added by Lin.
-	public void calculateMeanPurity(){
-		System.out.println("\nQuery\tDocs\tP@5\tP@10\tP@20");
-		int folder = m_purityStat.length;
-		double[][] puritySum = new double[4][3];
-		for(int i=0; i<4; i++){
-			for(int j=0; j<3; j++){
-				puritySum[i][j] = sumPurity(i, j);
-			}
-		}
-		System.out.format("Pos\tU\t%.3f\t%.3f\t%.3f\n", puritySum[0][0]/folder, puritySum[0][1]/folder, puritySum[0][2]/folder);
-		System.out.format("Pos\tL\t%.3f\t%.3f\t%.3f\n", puritySum[1][0]/folder, puritySum[1][1]/folder, puritySum[1][2]/folder);
-		System.out.format("Neg\tU\t%.3f\t%.3f\t%.3f\n", puritySum[2][0]/folder, puritySum[2][1]/folder, puritySum[2][2]/folder);
-		System.out.format("Neg\tL\t%.3f\t%.3f\t%.3f\n\n", puritySum[3][0]/folder, puritySum[3][1]/folder, puritySum[3][2]/folder);
-	}
-	
-	public double sumPurity(int i, int j){
-		double sum = 0;
-		for(int k=0; k<m_purityStat.length; k++){
-			sum += m_purityStat[k][i][j];
-		}
-		return sum;
-	}
 	abstract public void saveModel(String modelLocation);
 	
 	protected void calcMicroPerfStat() {
@@ -268,10 +179,8 @@ public abstract class BaseClassifier {
 		
 		// micro average
 		System.out.println("Micro F1:");
-		for(int i=0; i<m_classNo; i++){
-			m_perf[i] = m_microStat.getF1(i);
-			System.out.format("Class %d\t%.4f\t", i, m_microStat.getF1(i));
-		}
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.4f\t", i, m_microStat.getF1(i));
 	}
 	
 	//Calculate the precision and recall for one folder tests.
@@ -327,7 +236,7 @@ public abstract class BaseClassifier {
 	}
 	
 	//Calculate the mean and variance of precision and recall.
-	public double[][] calculateMeanVariance(){
+	public double[][] calculateMeanVariance(ArrayList<double[][]> prs){
 		//Use the two-dimension array to represent the final result.
 		double[][] metrix = new double[m_classNo][4]; 
 			
@@ -341,14 +250,14 @@ public abstract class BaseClassifier {
 			precisionSum = 0;
 			recallSum = 0;
 			// Calculate the sum of precisions and recalls.
-			for (int j = 0; j < m_precisionsRecalls.size(); j++) {
-				precisionSum += m_precisionsRecalls.get(j)[i][0];
-				recallSum += m_precisionsRecalls.get(j)[i][1];
+			for (int j = 0; j < prs.size(); j++) {
+				precisionSum += prs.get(j)[i][0];
+				recallSum += prs.get(j)[i][1];
 			}
 			
 			// Calculate the means of precisions and recalls.
-			metrix[i][0] = precisionSum/m_precisionsRecalls.size();
-			metrix[i][1] = recallSum/m_precisionsRecalls.size();
+			metrix[i][0] = precisionSum/prs.size();
+			metrix[i][1] = recallSum/prs.size();
 		}
 
 		// Calculate the sum of variances of precisions and recalls.
@@ -356,14 +265,14 @@ public abstract class BaseClassifier {
 			precisionVarSum = 0.0;
 			recallVarSum = 0.0;
 			// Calculate the sum of precision variance and recall variance.
-			for (int j = 0; j < m_precisionsRecalls.size(); j++) {
-				precisionVarSum += (m_precisionsRecalls.get(j)[i][0] - metrix[i][0])*(m_precisionsRecalls.get(j)[i][0] - metrix[i][0]);
-				recallVarSum += (m_precisionsRecalls.get(j)[i][1] - metrix[i][1])*(m_precisionsRecalls.get(j)[i][1] - metrix[i][1]);
+			for (int j = 0; j < prs.size(); j++) {
+				precisionVarSum += (prs.get(j)[i][0] - metrix[i][0])*(prs.get(j)[i][0] - metrix[i][0]);
+				recallVarSum += (prs.get(j)[i][1] - metrix[i][1])*(prs.get(j)[i][1] - metrix[i][1]);
 			}
 			
 			// Calculate the means of precisions and recalls.
-			metrix[i][2] = Math.sqrt(precisionVarSum/m_precisionsRecalls.size());
-			metrix[i][3] = Math.sqrt(recallVarSum/m_precisionsRecalls.size());
+			metrix[i][2] = Math.sqrt(precisionVarSum/prs.size());
+			metrix[i][3] = Math.sqrt(recallVarSum/prs.size());
 		}
 		
 		// The final output of the computation.

@@ -34,15 +34,6 @@ public class _AdaptStruct {
 	protected int m_adaptPtr, m_adaptStartPos, m_adaptEndPos;		
 	protected double m_updateCount;
 		
-	public _AdaptStruct(_User user, int id) {
-		m_user = user;
-		m_id = id;
-		//trace to the first and last adaptation instance
-		//we assume the instances are ordered and then separate into [train, adapt, test]
-		m_adaptStartPos = 0;
-		m_adaptEndPos = 10;
-		resetAdaptPtr();
-	}
 	public _AdaptStruct(_User user) {
 		m_user = user;
 		

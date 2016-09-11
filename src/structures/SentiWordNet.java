@@ -80,7 +80,8 @@ public class SentiWordNet {
 					}
 
 					// Calculate synset score as score = PosS - NegS
-					Double synsetScore = Double.parseDouble(data[2]) - Double.parseDouble(data[3]);
+					Double synsetScore = Double.parseDouble(data[2])
+							- Double.parseDouble(data[3]);
 
 					// Get all Synset terms
 					String[] synTermsSplit = data[4].split(" ");
@@ -89,8 +90,8 @@ public class SentiWordNet {
 					for (String synTermSplit : synTermsSplit) {
 						// Get synterm and synterm rank
 						String[] synTermAndRank = synTermSplit.split("#");
-						String synTerm = synTermAndRank[0] + "#" 
-										+ wordTypeMarker;
+						String synTerm = synTermAndRank[0] + "#"
+								+ wordTypeMarker;
 
 						int synTermRank = Integer.parseInt(synTermAndRank[1]);
 						// What we get here is a map of the type:
@@ -98,13 +99,13 @@ public class SentiWordNet {
 
 						// Add map to term if it doesn't have one
 						if (!tempDictionary.containsKey(synTerm)) {
-							tempDictionary.put(synTerm, 
-											new HashMap<Integer, Double>());
+							tempDictionary.put(synTerm,
+									new HashMap<Integer, Double>());
 						}
 
 						// Add synset link to synterm
-						tempDictionary.get(synTerm).put(synTermRank, 
-										synsetScore);
+						tempDictionary.get(synTerm).put(synTermRank,
+								synsetScore);
 					}
 				}
 			}
@@ -114,8 +115,7 @@ public class SentiWordNet {
 			for (String synTerm : synTerms) {
 				double score = 0;
 				int count = 0;
-				HashMap<Integer, Double> synSetScoreMap = tempDictionary
-						.get(synTerm);
+				HashMap<Integer, Double> synSetScoreMap = tempDictionary.get(synTerm);
 				Collection<Double> scores = synSetScoreMap.values();
 				for (double s : scores) {
 					if (s != 0) {

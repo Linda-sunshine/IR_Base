@@ -7,7 +7,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 /**
  * @author Hongning Wang
- * 
+ * Used in online updating of adaptation methods
  */
 public class _UserReviewPair implements Comparable<_UserReviewPair> {
 	_AdaptStruct m_user;

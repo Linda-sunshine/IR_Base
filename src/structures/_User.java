@@ -2,8 +2,6 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -31,26 +29,12 @@ public class _User {
 	protected int[] m_category;
 	protected double[] m_svmWeights;
 	
-	protected MyPriorityQueue<_RankItem> m_svmNeighbors;
 	protected double m_sim; // Similarity of itself.
 	
 	public void setSVMWeights(double[] weights){
 		m_svmWeights = new double[weights.length];
 		m_svmWeights = Arrays.copyOf(weights, weights.length);
 	}
-	
-	// Added by Lin.
-	public void initSVMNeighbors(int topK){
-		m_svmNeighbors = new MyPriorityQueue<_RankItem>(topK);
-	}
-	
-	public void addSVMNeighbors(int index, double sim){
-		m_svmNeighbors.add(new _RankItem(index, sim));
-	}
-	
-	public Collection<_RankItem> getSVMNeighbors() {
-		return m_svmNeighbors;
-	}	
 	
 	public double[] getSVMWeights(){
 		return m_svmWeights;
@@ -83,9 +67,11 @@ public class _User {
 		m_pWeight = null;
 
 		m_perfStat = new _PerformanceStat(classNo);
-	
+		
+		constructSparseVector();
 		calcPosRatio();
 	}
+	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
 		m_userID = userID;
 		m_reviews = reviews;
@@ -97,20 +83,16 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		m_category = category;
-		
-		calcPosRatio();
-
+		constructSparseVector();
 	}
-	
-	// added by Lin for accessing the index of user cluster.
-	public void setClusterIndex(int i){
+	// added by Lin for setting the index of user cluster.
+	public void setClusterIndex(int i) {
 		m_cIndex = i;
 	}
-	
-	public int getClusterIndex(){
+	// added by Lin for accessing the index of user cluster.
+	public int getClusterIndex() {
 		return m_cIndex;
 	}
-	
 	// Get the user ID.
 	public String getUserID(){
 		return m_userID;
@@ -260,64 +242,5 @@ public class _User {
 	
 	public double getPosRatio(){
 		return m_posRatio;
-	}
-	// Added by Lin for accumulating super user.
-	public void mergeReviews(ArrayList<_Review> reviews){
-		m_reviews.addAll(reviews);
-	}
-	
-	// Added by Lin for kmeans based on profile.
-	public int[] getProfIndices() {
-		int[] indices = new int[m_BoWProfile.length];
-		for(int i=0; i<m_BoWProfile.length; i++) 
-			indices[i] = m_BoWProfile[i].m_index;
-		
-		return indices;
-	}
-	
-	public double[] getProfValues() {
-		double[] values = new double[m_BoWProfile.length];
-		for(int i=0; i<m_BoWProfile.length; i++) 
-			values[i] = m_BoWProfile[i].m_value;
-		
-		return values;
-	}
-	
-	// added by Lin for CF.
-	
-	/**added by Lin for cf.**/
-	private HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
-	private double m_nDCG;
-	private double m_MAP;
-	
-	/***added by Lin for cf***/
-	public void setNDCG(double d){
-		m_nDCG = d;
-	}
-	public void setMAP(double m){
-		m_MAP = m;
-	}
-	public double getNDCG(){
-		return m_nDCG;
-	}
-	public double getMAP(){
-		return m_MAP;
-	}
-	public void addOneItemIDRatingPair(String item, int r){
-		m_itemIDRating.put(item, r);
-	}
-	public HashMap<String, Integer> getItemIDRating(){
-		return m_itemIDRating;
-	}
-	
-	public void removeOneReview(String prodID){
-		int index = 0;
-		for(_Review r: m_reviews){
-			if(r.getItemID().equals(prodID)){
-				index = m_reviews.indexOf(r);
-				break;
-			}
-		}
-		m_reviews.remove(index);
 	}
  }

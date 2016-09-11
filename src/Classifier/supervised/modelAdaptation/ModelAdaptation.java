@@ -5,12 +5,10 @@ package Classifier.supervised.modelAdaptation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,22 +38,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	protected TestMode m_testmode; // test mode of different algorithms 
 	protected int m_displayLv = 1;//0: display nothing during training; 1: display the change of objective function; 2: display everything
-	
+
 	//if we will set the personalized model to the target user (otherwise use the global model)
 	protected boolean m_personalized;
 
 	// Decide if we will normalize the likelihood.
-	protected boolean m_LNormFlag = true;
+	protected boolean m_LNormFlag=true;
 	protected String m_dataset = "Amazon"; // Default dataset.
-	
-	public void setDataset(String data){
-		m_dataset = data;
-	}
-	
-	public void setPersonlized(boolean b){
-		m_personalized = b;
-	}
-	
+
 	public ModelAdaptation(int classNo, int featureSize) {
 		super(classNo, featureSize);
 		m_pWeights = null;
@@ -64,6 +54,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
+		
 		loadGlobalModel(featureMap, globalModel);
 		m_pWeights = null;
 		m_personalized = true;
@@ -79,7 +70,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	public void setPersonalization(boolean p) {
 		m_personalized = p;
-	}
+	}	
 	
 	public void setLNormFlag(boolean b){
 		m_LNormFlag = b;
@@ -121,10 +112,11 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void constructNeighborhood(final SimType sType) {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
-
+				
 				@Override
 				public void run() {
 					CoAdaptStruct ui, uj;
@@ -135,8 +127,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								if (j == i+core)
 									continue;
 								uj = (CoAdaptStruct)(m_userList.get(j));
-//								if(Utils.dotProduct(ui.getUser().getCategory(), uj.getUser().getCategory())>0)
-									ui.addNeighbor(j, ui.getSimilarity(uj, sType));
+								
+								ui.addNeighbor(j, ui.getSimilarity(uj, sType));
 							}
 						}
 					} catch(Exception ex) {
@@ -219,12 +211,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	@Override
 	public double test(){
-		final double[] accs = new double[m_userList.size()];
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
-		m_perf = new double[m_classNo * 2];
-		m_microStat = new _PerformanceStat(m_classNo);
-
+		
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
@@ -238,6 +227,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
 								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
 								continue;
+								
 							userPerfStat = user.getPerfStat();								
 							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
 								//record prediction results
@@ -250,7 +240,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 								}
 							}							
 							userPerfStat.calculatePRF();	
-							accs[i+core] = userPerfStat.calcualteACC();
 						}
 					} catch(Exception ex) {
 						ex.printStackTrace(); 
@@ -297,20 +286,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		
 		// macro average
 		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++){
-			System.out.format("Class %d\t%.4f\t", i, macroF1[i]/count);
-			m_perf[i+m_classNo] = macroF1[i]/count;
-		}
-		System.out.println();
-		double accSum = 0;
-		for(double acc: accs)
-			accSum += acc;
-		System.out.println("Macro ACC: " + accSum/accs.length);
+		for(int i=0; i<m_classNo; i++)
+			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
+		System.out.println("\n");
 		return Utils.sumOfArray(macroF1);
 	}
 
 	@Override
-	public void saveModel(String modelLocation) {
+	public void saveModel(String modelLocation) {	
 		for(_AdaptStruct user:m_userList) {
 			try {
 	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
@@ -327,7 +310,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	            e.printStackTrace(); 
 	        } 
 		}
-		System.out.format("[Info]Save personalized models to %s.\n", modelLocation);
+		System.out.format("[Info]Save personalized models to %s.", modelLocation);
 	}
 	
 	@Override
@@ -355,29 +338,5 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void debug(_Doc d) {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
-	}
-	
-	public ArrayList<_AdaptStruct> getUserList(){
-		return m_userList;
-	}
-	
-	public double[] getPerf(){
-		for(int i=0; i<m_classNo; i++)
-			m_perf[i] = m_microStat.getF1(i);
-		return m_perf;
-	}
-	
-	public void debug(_AdaptStruct user, int c){
-		
-	}
-	public void printUserPerf(String filename){
-		try{
-			PrintWriter writer = new PrintWriter(new File(filename));
-			for(_AdaptStruct u: m_userList)
-				writer.write(String.format("%s,%d,%.5f,%.5f\n", u.getUserID(), u.getReviews().size(), u.getPerfStat().getF1(0), u.getPerfStat().getF1(1)));
-		writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
 	}
 }

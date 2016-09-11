@@ -105,7 +105,7 @@ public class LBFGS {
 	  * should be increased).
 	  */
 
-	public static double stpmin = 1e-20;
+	public static double stpmin = 1e-32;
 
 	/** Specify upper bound for the step in the line search.
 	  * The default value is 1e20. This value need not be modified unless
@@ -114,7 +114,7 @@ public class LBFGS {
 	  * should be increased).
 	  */
 
-	public static double stpmax = 1e20;
+	public static double stpmax = 1e32;
 
 	/** The solution vector as it was at the end of the most recently
 	  * completed line search. This will usually be different from the

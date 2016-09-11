@@ -16,7 +16,6 @@ import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
-import utils.Utils;
 
 public class MTLinAdapt extends CoLinAdapt {
 
@@ -30,40 +29,32 @@ public class MTLinAdapt extends CoLinAdapt {
 	double m_lambda1; // Scaling coefficient for R^1(A_s)
 	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
+	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
 	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
 	
+	// The constructor only constructs feature group for individual users, not super user.
+	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
+			int topK, String globalModel, String featureGroupMap) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+		m_LNormFlag = true;
+	}
+	
+	// The constructor consists of different groups for individual users and super user.
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
-		
-		m_lambda1 = 0.5;
-		m_lambda2 = 0.1;
-		m_LNormFlag = true;
-	}
-	
-	//this constructor will not construct feature group mapping for super user
-	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
-			int topK, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-		m_lambda1 = 0.5;
-		m_lambda2 = 0.1;
 		m_LNormFlag = true;
 	}
 	
 	public void setLNormFlag(boolean b){
 		m_LNormFlag = b;
-	}
-	
-	public void setRsTradeOffs(double lmd1, double lmd2){
-		m_lambda1 = lmd1;
-		m_lambda2 = lmd2;
-	}
+	}	
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
-				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
+		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f, personalized:%b]", 
+				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	
 	@Override
@@ -133,7 +124,7 @@ public class MTLinAdapt extends CoLinAdapt {
 			k = m_featureGroupMap[n];
 			value += (ui.getScaling(k)*getSupWeights(n) + ui.getShifting(k)) * fv.getValue();
 		}
-		return Utils.logistic(value);
+		return 1/(1+Math.exp(-value));
 	}
 	
 	//Calculate the function value of the new added instance.
@@ -144,19 +135,16 @@ public class MTLinAdapt extends CoLinAdapt {
 
 		if(!m_LNormFlag)
 			L *= ui.getAdaptationSize();
-		double R1 = calculateR1(ui);
-		return R1 - L;
-	}
-	
-	protected double calculateR1(_CoLinAdaptStruct ui){
+
 		//Add regularization parts.
 		double R1 = 0;
 		for(int k=0; k<m_dim; k++){
 			R1 += m_eta1 * (ui.getScaling(k)-1) * (ui.getScaling(k)-1);//(a[i]-1)^2
 			R1 += m_eta2 * ui.getShifting(k) * ui.getShifting(k);//b[i]^2
 		}
-		return R1;
+		return (R1 - L);
 	}
+	
 	@Override
 	// Since I cannot access the method in LinAdapt or in RegLR, I Have to rewrite.
 	protected void calculateGradients(_AdaptStruct u){
@@ -164,40 +152,33 @@ public class MTLinAdapt extends CoLinAdapt {
 		gradientByR1(u);
 	}
 	
-	public int getIndividualOffset(_CoLinAdaptStruct ui){
-		return ui.getId()*m_dim*2;
-	}
-	public int getSupOffset(){
-		return m_userList.size()*m_dim*2;
-	}
-	
 	// Calculate the R1 for the super user, As.
 	protected double calculateRs(){
-		int offset = getSupOffset(); // Access the As.
+		int offset = m_userList.size()*m_dim*2; // Access the As.
 		double rs = 0;
 		for(int i=0; i < m_dimSup; i++){
-			rs += m_lambda1 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
-			rs += m_lambda2 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
+			rs += m_eta3 * (m_A[offset + i] - 1) * (m_A[offset + i] - 1); // Get scaling of super user.
+			rs += m_eta4 * m_A[offset + i + m_dimSup] * m_A[offset + i + m_dimSup]; // Get shifting of super user.
 		}
 		return rs;
 	}
 	
 	// Gradients for the gs.
 	protected void gradientByRs(){
-		int offset = getSupOffset();
+		int offset = m_userList.size() * m_dim * 2;
 		for(int i=0; i < m_dimSup; i++){
-			m_g[offset + i] += 2 * m_lambda1 * (m_A[offset + i] - 1);
-			m_g[offset + i + m_dimSup] += 2 * m_lambda2 * m_A[offset + i + m_dimSup];
+			m_g[offset + i] += 2 * m_eta3 * (m_A[offset + i] - 1);
+			m_g[offset + i + m_dimSup] += 2 * m_eta4 * m_A[offset + i + m_dimSup];
 		}
 	}
 	
 	// Gradients from loglikelihood, contributes to both individual user's gradients and super user's gradients.
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight) {
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-		int offset = getIndividualOffset(ui);//general enough to accommodate both LinAdapt and CoLinAdapt
-		int offsetSup = getSupOffset();
 		
 		int n, k, s; // feature index and feature group index		
+		int offset = 2*m_dim*ui.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
+		int offsetSup = 2*m_dim*m_userList.size();
 		double delta = weight*(review.getYLabel() - logit(review.getSparse(), ui));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(ui);
@@ -262,9 +243,7 @@ public class MTLinAdapt extends CoLinAdapt {
 						System.out.println();
 				}
 				oldFValue = fValue;
-//				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
-
-				LBFGS.lbfgs(vSize, 5, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
+				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
 			System.out.println();
 		} catch (ExceptionWithIflag e) {

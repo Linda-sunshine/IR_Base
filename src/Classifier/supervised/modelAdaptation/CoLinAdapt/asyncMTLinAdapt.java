@@ -1,25 +1,20 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat.TestMode;
-import structures._PerformanceStat;
 import structures._Review;
 import structures._Review.rType;
 import structures._UserReviewPair;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-
 import utils.Utils;
 
 public class asyncMTLinAdapt extends MTLinAdapt {
@@ -49,7 +44,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f, lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2);
+		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f, lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4);
 	}
 
 	protected void calculateGradients(_AdaptStruct u){
@@ -63,8 +58,8 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		super.init();
 	 		
 	 	// this is also incorrect, since we should normalized it by total number of adaptation reviews
-	 	m_lambda1 /= m_userSize;
-	 	m_lambda2 /= m_userSize;
+	 	m_eta3 /= m_userSize;
+	 	m_eta4 /= m_userSize;
 	}
 	
 	//this is online training in each individual user
@@ -84,16 +79,12 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 	
 	void trainByReview() {
 		LinkedList<_UserReviewPair> reviewlist = new LinkedList<_UserReviewPair>();
-
+		
 		double gNorm, gNormOld = Double.MAX_VALUE;
 		int predL, trueL, counter = 0;
 		_Review doc;
-		double val = 0;
 		_CoLinAdaptStruct user;
-		_PerformanceStat perfStat;
 		
-		try{
-		m_writer = new PrintWriter(new File(String.format("./data/MTLinAdapt_Online_byReview_%d.txt", m_rptTime)));
 		//collect the training/adaptation data
 		for(int i=0; i<m_userList.size(); i++) {
 			user = (_CoLinAdaptStruct)m_userList.get(i);
@@ -111,13 +102,9 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 			// test the latest model before model adaptation
 			if (m_testmode != TestMode.TM_batch) {
 				doc = pair.getReview();
-				perfStat = user.getPerfStat();
-				val = logit(doc.getSparse(), user);
 				predL = predict(doc, user);
 				trueL = doc.getYLabel();
-				perfStat.addOnePredResult(predL, trueL);
-				m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
-
+				user.getPerfStat().addOnePredResult(predL, trueL);
 			}// in batch mode we will not accumulate the performance during adaptation	
 			
 			gradientDescent(user, m_initStepSize, 1.0);
@@ -135,10 +122,6 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 				if (++counter%120==0)
 					System.out.println();
 			}
-		}
-		m_writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
 		}
 	}
 	
@@ -185,7 +168,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		return user.getAdaptationCacheSize();
 	}
 	
-	// Repeat using the reviews k times.
+	// 
 	public void resetRPTTime(){
 		m_count = m_rptTime;
 	}

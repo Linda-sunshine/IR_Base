@@ -5,7 +5,7 @@ import java.util.Arrays;
 import utils.Utils;
 
 public class _PerformanceStat {
-
+	
 	public enum TestMode {
 		TM_batch, // separate training and testing
 		TM_online, // all instances are for testing
@@ -77,10 +77,6 @@ public class _PerformanceStat {
 		}
 	}
 	
-	public double calcualteACC(){
-		double diag = m_confusionMat[0][0] + m_confusionMat[1][1];
-		return diag / (diag + m_confusionMat[0][1] + m_confusionMat[1][0]);
-	}
 	public double getF1(int classId) {
 		return m_perfTable[classId][2];
 	}

@@ -51,8 +51,7 @@ public class RegLR extends ModelAdaptation {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) {
-//			m_userList.add(new _AdaptStruct(user));
-			m_userList.add(new _AdaptStruct(user, Integer.valueOf(user.getUserID())));
+			m_userList.add(new _AdaptStruct(user));
 			user.initModel(m_featureSize+1);
 		}
 	}
@@ -87,7 +86,7 @@ public class RegLR extends ModelAdaptation {
 		double Pi = 0;
 		
 		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION )
+			if (review.getType() != rType.ADAPTATION)
 				continue; // only touch the adaptation data
 			
 			Pi = logit(review.getSparse(), user);
@@ -103,7 +102,8 @@ public class RegLR extends ModelAdaptation {
 					L -= Utils.MAX_VALUE;
 			}
 		}
-		if(m_LNormFlag)
+		
+		if (m_LNormFlag)
 			return L/getAdaptationSize(user);
 		else
 			return L;
@@ -133,17 +133,17 @@ public class RegLR extends ModelAdaptation {
 	protected void gradientByFunc(_AdaptStruct user, _Doc review, double weight) {
 		int n; // feature index
 		int offset = (m_featureSize+1)*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user));
-		if(m_LNormFlag)
+		double delta = weight*(review.getYLabel() - logit(review.getSparse(), user));
+		if (m_LNormFlag)
 			delta /= getAdaptationSize(user);
-		
+
 		//Bias term.
-		m_g[offset] -= weight*delta; //a[0] = w0*x0; x0=1
+		m_g[offset] -= delta; //a[0] = w0*x0; x0=1
 
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
-			m_g[offset + n] -= weight * delta * fv.getValue();
+			m_g[offset + n] -= delta * fv.getValue();
 		}
 	}
 	
@@ -216,10 +216,9 @@ public class RegLR extends ModelAdaptation {
 		setPersonalizedModel();
 		return totalFvalue;
 	}
-
+	
 	@Override
 	protected void setPersonalizedModel() {
-		// TODO Auto-generated method stub
-		
+		//personalized model has already been set in each user
 	}
 }

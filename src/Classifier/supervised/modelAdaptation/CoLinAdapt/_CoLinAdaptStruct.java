@@ -7,7 +7,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 
 import Classifier.supervised.modelAdaptation.CoAdaptStruct;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;
@@ -122,13 +121,5 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		
 		int offset = m_id * m_dim * 2;
 		sharedA[offset+gid] = value;
-	}
-	
-	public double getScaling(int k, int gid){
-		return sharedA[k*m_dim*2+gid];
-	}
-	
-	public double getShifting(int k, int gid){
-		return sharedA[k*m_dim*2 + m_dim + gid];
 	}
 }

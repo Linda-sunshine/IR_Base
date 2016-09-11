@@ -21,18 +21,8 @@ public class LinAdapt extends RegLR {
 	protected int[] m_featureGroupMap; // bias term is at position 0
 	
 	//Trade-off parameters	
-	protected double m_eta2; // weight for shifting in R2.
+	protected double m_eta2; // weight for shifting in R2.	
 	
-	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
-		super(classNo, featureSize, featureMap, globalModel);
-		m_userList = null;		
-		// default value of trade-off parameters
-		m_eta1 = 0.5;
-		m_eta2 = 0.5;
-		
-		// the only test mode for LinAdapt is batch
-		m_testmode = TestMode.TM_batch;
-	}
 	public LinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap){
 		super(classNo, featureSize, featureMap, globalModel);
 		m_userList = null;
@@ -103,6 +93,7 @@ public class LinAdapt extends RegLR {
 		return m_dim*2;
 	}
 	
+	//this function will be repeatedly called in LinAdapt
 	@Override
 	protected void initLBFGS(){
 		if(m_g == null)
@@ -136,18 +127,17 @@ public class LinAdapt extends RegLR {
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u){
 		_LinAdaptStruct user = (_LinAdaptStruct)u;
+		
 		double L = calcLogLikelihood(user); //log likelihood.
-		double R1 = calculateR1(user);// R1
-		return R1 - L;
-	}
-	
-	protected double calculateR1(_LinAdaptStruct user){
-		double R1 = 0;	
+		double R1 = 0;
+		
+		//Add regularization parts.
 		for(int i=0; i<m_dim; i++){
 			R1 += m_eta1 * (user.getScaling(i)-1) * (user.getScaling(i)-1);//(a[i]-1)^2
 			R1 += m_eta2 * user.getShifting(i) * user.getShifting(i);//b[i]^2
 		}
-		return R1;
+		
+		return R1 - L;
 	}
 	
 	//shared gradient calculation by batch and online updating
@@ -157,20 +147,20 @@ public class LinAdapt extends RegLR {
 		
 		int n, k; // feature index and feature group index		
 		int offset = 2*m_dim*user.getId();//general enough to accommodate both LinAdapt and CoLinAdapt
-		double delta = (review.getYLabel() - logit(review.getSparse(), user));
-		if(m_LNormFlag)
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), user));
+		if (m_LNormFlag)
 			delta /= getAdaptationSize(user);
-		
+
 		//Bias term.
-		m_g[offset] -= weight*delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
-		m_g[offset + m_dim] -= weight*delta;//b[0]
+		m_g[offset] -= delta*m_gWeights[0]; //a[0] = w0*x0; x0=1
+		m_g[offset + m_dim] -= delta;//b[0]
 
 		//Traverse all the feature dimension to calculate the gradient.
 		for(_SparseFeature fv: review.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
-			m_g[offset + k] -= weight * delta * m_gWeights[n] * fv.getValue();
-			m_g[offset + m_dim + k] -= weight * delta * fv.getValue();  
+			m_g[offset + k] -= delta * m_gWeights[n] * fv.getValue();
+			m_g[offset + m_dim + k] -= delta * fv.getValue();  
 		}
 	}
 	
@@ -206,15 +196,19 @@ public class LinAdapt extends RegLR {
 		for(int i=0; i<m_userList.size(); i++) {
 			user = (_LinAdaptStruct)m_userList.get(i);
 			
-			//set bias term
-			m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
-			
-			//set the other features
-			for(int n=0; n<m_featureSize; n++) {
-				gid = m_featureGroupMap[1+n];
-				m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
-			}
-			user.setPersonalizedModel(m_pWeights);
+			if (m_personalized) {
+				//set bias term
+				m_pWeights[0] = user.getScaling(0) * m_gWeights[0] + user.getShifting(0);
+				
+				//set the other features
+				for(int n=0; n<m_featureSize; n++) {
+					gid = m_featureGroupMap[1+n];
+					m_pWeights[1+n] = user.getScaling(gid) * m_gWeights[1+n] + user.getShifting(gid);
+				}			
+				
+				user.setPersonalizedModel(m_pWeights);
+			} else //otherwise, we will directly use the global model
+				user.setPersonalizedModel(m_gWeights);
 		}
 	}
 }

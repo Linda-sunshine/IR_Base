@@ -1,13 +1,12 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 /***
  * 
  * @author lin
@@ -15,7 +14,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  * in logit function, personalized weights are represented as:
  * A_i(p*w_s+q*w_g)^T*x_d
  */
-public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
+public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 
 	protected double m_p; // The coefficient in front of w_s.
 	protected double m_q; // The coefficient in front of w_g.
@@ -41,9 +40,10 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdaptWithSupUserNoAdpt[dim:%d,eta1:%.3f,eta2:%.3f,p:%.3f,q:%.3f,beta: %.3f,personalized:%b]", 
+		return String.format("MT-LinAdaptWithSupUserNoAdpt[dim:%d, eta1:%.3f,eta2:%.3f,p:%.3f,q:%.3f,beta:%.3f, personalized:%b]", 
 				m_dim, m_eta1, m_eta2, m_p, m_q, m_beta, m_personalized);
 	}
+	
 	@Override
 	public void loadUsers(ArrayList<_User> userList){
 		constructUserList(userList);
@@ -54,6 +54,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 	protected int getVSize() {
 		return m_dim*2*m_userList.size() + m_gWeights.length;
 	}
+		
 	@Override
 	public double getSupWeights(int index){
 		return m_p*m_A[m_dim*2*m_userList.size() + index] + m_q*m_gWeights[index];
@@ -61,7 +62,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 	
 	// Calculate the R1 for the super user, As.
 	protected double calculateRs(){
-		int offset = m_userList.size()*m_dim*2;
+		int offset = m_userList.size() * m_dim * 2;
 		double rs = 0;
 		for(int i=0; i < m_sWeights.length; i++)
 			rs += m_A[offset + i] * m_A[offset + i];
@@ -87,7 +88,7 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 			delta /= getAdaptationSize(ui);
 
 		// Bias term for individual user.
-		m_g[offset] -= delta * getSupWeights(0); //a[0] = (p*w_s0+q*w_g0)*x0; x0=1
+		m_g[offset] -= delta*getSupWeights(0); //a[0] = (p*w_s0+q*w_g0)*x0; x0=1
 		m_g[offset + m_dim] -= delta;//b[0]
 
 		// Bias term for super user.
@@ -104,35 +105,6 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt{
 		}
 	}
 	
-	@Override
-	// In the algorithm, each individual user's model is A_i*A_s*w_g.
-	protected void setPersonalizedModel() {
-		int gid;
-		_CoLinAdaptStruct ui;
-		
-		// Get a copy of super user's weightsa.
-		m_sWeights = Arrays.copyOfRange(m_A, m_userList.size()*m_dim*2, m_A.length);
-		
-		//Update each user's personalized model.
-		for(int i=0; i<m_userList.size(); i++) {
-			ui = (_CoLinAdaptStruct)m_userList.get(i);
-			
-			if(m_personalized){
-				//set bias term
-				m_pWeights[0] = ui.getScaling(0)*(m_p*m_sWeights[0]+m_q*m_gWeights[0]) + ui.getShifting(0);
-				//set the other features
-				for(int n=0; n<m_featureSize; n++) {
-					gid = m_featureGroupMap[1+n];
-					m_pWeights[1+n] = ui.getScaling(gid) * (m_p*m_sWeights[1+n]+m_q*m_gWeights[1+n]) + ui.getShifting(gid);
-				}
-			} else{ // Set super user == general user.
-				m_pWeights[0] = m_sWeights[0];
-				for(int n=0; n<m_featureSize; n++)
-					m_pWeights[1+n] = m_sWeights[1+n];
-			}
-			ui.setPersonalizedModel(m_pWeights);
-		}
-	}
 	@Override
 	protected double gradientTest() {
 		int vSize = 2*m_dim, offset, offsetSup, uid;

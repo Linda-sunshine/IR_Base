@@ -1,15 +1,11 @@
 package Classifier.supervised.modelAdaptation.RegLR;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import structures._Doc;
-import structures._Review;
 import structures._SparseFeature;
 import structures._User;
-import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import LBFGS.LBFGS;
@@ -26,8 +22,8 @@ public class MTRegLR extends RegLR {
 	public MTRegLR(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
-		m_u = 1.1;
-		m_eta1 = 0;
+		m_u = 1;
+		m_eta1 = 0.001;
 	}
 	@Override
 	public String toString() {
@@ -40,7 +36,10 @@ public class MTRegLR extends RegLR {
 		// Merge the weights of all the users and global part.
 		m_ws = new double[(m_userList.size()+1)*(m_featureSize+1)];
 		// Assume the last section is for global parts.
-//		System.arraycopy(m_gWeights, 0, m_ws, m_userList.size()*(m_featureSize+1), m_gWeights.length);//start from the old global model
+		System.arraycopy(m_gWeights, 0, m_ws, m_userList.size()*(m_featureSize+1), m_gWeights.length);//start from the old global model
+		// Load users weights into one array for LBFGS.
+//		for(_AdaptStruct u: m_userList)
+//			System.arraycopy(u.getUserModel(), 0, m_ws, u.getId()*(m_featureSize+1), m_gWeights.length);//start from the old global model
 	}
 
 	@Override
@@ -187,32 +186,6 @@ public class MTRegLR extends RegLR {
 			for(int k=0; k<uWeights.length; k++)
 				pWeights[k] = uWeights[k] + m_u*gWeights[k];
 			u.setPersonalizedModel(pWeights);
-		}
-	}
-	
-	public void setGlobalModel(int fvSize){
-		m_gWeights = new double[fvSize+1];
-	}
-	
-	public void savePerf(String perfLocation) {
-		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter(perfLocation+"/allUsers.perf"));
-			for(_AdaptStruct user:m_userList) {
-	            StringBuilder buffer = new StringBuilder(512);
-	            buffer.append(user.getUserID()+"\t");
-//	            for(_Review r: user.getReviews()){
-//	            	if(r.getType() == rType.TEST)
-//	            }	
-	            for(int i=0; i<m_classNo; i++){
-	            	for(int j=0; j<m_classNo; j++)
-	            		buffer.append(user.getPerfStat().getEntry(i, j)+"\t");
-	            }
-	            buffer.append("\n");
-	            writer.write(buffer.toString());
-	        } 
-	        writer.close();
-		}catch (Exception e) {
-			e.printStackTrace();  
 		}
 	}
 }

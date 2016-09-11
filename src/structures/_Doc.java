@@ -6,7 +6,6 @@ package structures;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Random;
 
@@ -16,113 +15,20 @@ import utils.Utils;
  * @author lingong
  * General structure to present a document for DM/ML/IR
  */
-public class _Doc implements Comparable<_Doc> {
-	String m_name; // Review ID/post ID.
-	int m_ID; // Unique ID of the document in the collection, index of the document.
-	String m_itemID; // Product ID.
-	String m_title; //The short title of the review.
+public class _Doc extends _DocBase implements Comparable<_Doc> {
 	
-	String m_source; //The content of the source file.
+	String m_itemID; // ID of the product being commented
+	String m_title; //The short title of the document	
+	
 	int m_sourceType = 1; // source is 1 for Amazon (unlabeled) and 2 for newEgg (labeled)
-	int m_totalLength; //The total length of the document in tokens
-	
-	int m_y_label; // classification target, that is the index of the labels.
-	int m_predict_label; //The predicted result.
-	long m_timeStamp; //The timeStamp for this review.
 	
 	// added by Lin
 	private _SparseFeature[] m_x_posVct; // sparse vector projected by pos tagging 
 	private double[] m_x_aspVct; // aspect vector	
 		
-	//only used in learning to rank for random walk
-	double m_weight = 1.0; // instance weight for supervised model training (will be reset by PageRank)
 	double m_stopwordProportion = 0;
 	double m_avgIDF = 0;
 	double m_sentiScore = 0; //Sentiment score from sentiwordnet
-	int m_inlink = 0; //How many documents select this document as neighbor, added by Lin
-	
-	//Query features, added by Lin.
-	int m_qDim = 0;
-	double m_avgBoW = 0;
-	double m_avgTP = 0;
-	double m_avgJcd = 0;
-	int[] m_queryIndices;
-	double[] m_x_queryValues;
-	
-	int m_clusterNo = 0;
-	
-	public void setClusterNo(int c){
-		m_clusterNo = c;
-	}
-	
-	public int getCluseterNo(){
-		return m_clusterNo;
-	}
-	
-	public void setQueryDim(int dim){
-		m_qDim = dim;
-	}
-	
-	public int[] getQueryIndices(){
-		m_queryIndices = new int[m_qDim];
-		for(int i=0; i<m_qDim; i++)
-			m_queryIndices[i] = i;
-		return m_queryIndices;
-	}
-	public void setAvgBoW(double b){
-		m_avgBoW = b;
-	}
-	
-	public void setAvgTP(double t){
-		m_avgTP = t;
-	}
-	
-	public void setAvgJcd(double j){
-		m_avgJcd = j;
-	}
-	//Construct the query features.
-	public void setQueryValues(){
-		m_x_queryValues = new double[m_qDim];
-	
-		//feature[0]: avg BoW.
-		m_x_queryValues[0] = m_avgBoW;
-		
-		//feature[1]: avg TP.
-		m_x_queryValues[1] = m_avgTP;
-		
-		//feature[2]: avg Jaccard.
-		m_x_queryValues[2] = m_avgJcd;
-		
-		//feature[3]: avg IDF.		
-		m_x_queryValues[3] = m_avgIDF;
-		
-		//feature[4]: stopwordProportion
-		m_x_queryValues[4] = m_stopwordProportion;
-		
-		//feature[5]: document length.
-		m_x_queryValues[5] = getDocLength();
-		
-		//feature[6]: sentiment score
-		m_x_queryValues[6] = getSentiScore();
-		
-		//feature[7]: inlink.
-		m_x_queryValues[7] = getInlink();
-		
-	}
-	
-	//Access the query features.
-	public double[] getQueryValues(){
-		return m_x_queryValues;
-	}
-	
-	/**Added by Lin for storing tokens after tokenization, normalization, stemming for computing LCS.**/
-	String[] m_tokens;
-	public void addTokens(String[] tokens){
-		m_tokens = tokens;
-	}
-	public String[] getTokens(){
-		return m_tokens;
-	}
 	
 	public void setSourceType(int sourceName) {
 		m_sourceType = sourceName;
@@ -157,7 +63,6 @@ public class _Doc implements Comparable<_Doc> {
 	}
 
 	//We only need one representation between dense vector and sparse vector: V-dimensional vector.
-	protected _SparseFeature[] m_x_sparse; // sparse representation of features: default value will be zero.
 	private _SparseFeature[] m_x_projection; // selected features for similarity computation (NOTE: will use different indexing system!!)	
 	
 	static public final int stn_fv_size = 4; // bias, cosine, length_ratio, position
@@ -181,12 +86,6 @@ public class _Doc implements Comparable<_Doc> {
 	public double[][] m_phi; // p(z|w, \phi)	
 	Random m_rand;
 	
-	public _Doc (int ID, int ylabel, _SparseFeature[] sfs){
-		this.m_ID = ID;
-		this.m_x_sparse = sfs;
-		this.m_y_label = ylabel;
-	}
-	
 	//Constructor.
 	public _Doc (int ID, String source, int ylabel){
 		this.m_ID = ID;
@@ -196,20 +95,6 @@ public class _Doc implements Comparable<_Doc> {
 		m_topics = null;
 		m_sstat = null;
 		m_words = null;
-		m_sentences = null;
-	}
-	
-	//Constructor.
-	public _Doc (int ID, String prodID, String source, int ylabel){
-		this.m_ID = ID;
-		this.m_itemID = prodID;
-		this.m_source = source;
-		this.m_y_label = ylabel;
-		this.m_totalLength = 0;
-		m_topics = null;
-		m_sstat = null;
-		m_words = null;
-//		m_topicAssignment = null;
 		m_sentences = null;
 	}
 	
@@ -228,24 +113,6 @@ public class _Doc implements Comparable<_Doc> {
 		m_sentences = null;
 	}
 	
-	public void setWeight(double w) {
-		m_weight = w;
-	}
-	
-	public double getWeight() {
-		return m_weight;
-	}
-	
-	//Get the ID of the document.
-	public int getID(){
-		return this.m_ID;
-	}
-	
-	//Set a new ID for the document.
-	public void setID(int id){
-		this.m_ID = id;
-	}
-	
 	public void setItemID(String itemID) {
 		m_itemID = itemID;
 	}
@@ -253,15 +120,7 @@ public class _Doc implements Comparable<_Doc> {
 	public String getItemID() {
 		return m_itemID;
 	}
-	
-	public void setName(String name) {
-		m_name = name;
-	}
-	
-	public String getName() {
-		return m_name;
-	}
-	
+		
 	public String getTitle(){
 		return m_title;
 	}
@@ -270,54 +129,8 @@ public class _Doc implements Comparable<_Doc> {
 		m_title = title;
 	}
 	
-	//Get the source content of a document.
-	public String getSource(){
-		return this.m_source;
-	}
-	
-	//Get the real label of the doc.
-	public int getYLabel() {
-		return this.m_y_label;
-	}
-	
-	//Set the Y value for the document, Y represents the class.
-	public void setYLabel(int label){
-		this.m_y_label = label;
-	}
-	
-	//Get the time stamp of the document.
-	public long getTimeStamp(){
-		return this.m_timeStamp;
-	}
-	
-	//Set the time stamp for the document.
-	public void setTimeStamp(long t){
-		this.m_timeStamp = t;
-	}
-	
-	//Get the sparse vector of the document.
-	public _SparseFeature[] getSparse(){
-		return this.m_x_sparse;
-	}
-	
 	public _SparseFeature[] getProjectedFv() {
 		return this.m_x_projection;
-	}
-	
-	public int[] getIndices() {
-		int[] indices = new int[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			indices[i] = m_x_sparse[i].m_index;
-		
-		return indices;
-	}
-	
-	public double[] getValues() {
-		double[] values = new double[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			values[i] = m_x_sparse[i].m_value;
-		
-		return values;
 	}
 	
 	public _Word[] getWords() {
@@ -328,47 +141,14 @@ public class _Doc implements Comparable<_Doc> {
 		return m_testWords;
 	}
 	
-	//return the unique number of features in the doc
-	public int getDocLength() {
-		return this.m_x_sparse.length;
-	}	
-	
 	public int getDocTestLength(){
 		return m_testLength;
-	}
-	
-	//Get the total number of tokens in a document.
-	public int getTotalDocLength(){
-		return this.m_totalLength;
 	}
 	
 	public int getDocInferLength(){
 		return this.m_words.length;
 	}
-	
-	void calcTotalLength() {
-		m_totalLength = 0;
-		for(_SparseFeature fv:m_x_sparse)
-			m_totalLength += fv.getValue();
-	}
-	
-	//Create the sparse vector for the document, taking value from different sections
-	public void createSpVct(ArrayList<HashMap<Integer, Double>> spVcts) {
-		m_x_sparse = Utils.createSpVct(spVcts);
-		calcTotalLength();
-	}
-	
-	//Create the sparse vector for the document.
-	public void createSpVct(HashMap<Integer, Double> spVct) {
-		m_x_sparse = Utils.createSpVct(spVct);
-		calcTotalLength();
-	}
-	
-	public void setSpVct(_SparseFeature[] x) {
-		m_x_sparse = x;
-		calcTotalLength();
-	}
-	
+		
 	public _SparseFeature[] m_x_sparse_infer;
 	public void createSparseVct4Infer(){
 		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
@@ -380,8 +160,7 @@ public class _Doc implements Comparable<_Doc> {
 			inferVct.put(featureIndex,  featureVal--);
 		}
 		
-		m_x_sparse_infer = Utils.createSpVct(inferVct);
-	
+		m_x_sparse_infer = Utils.createSpVct(inferVct);	
 	}
 	
 	public _SparseFeature[] getSparseVct4Infer(){
@@ -395,23 +174,6 @@ public class _Doc implements Comparable<_Doc> {
 	
 	public _SparseFeature[] getPOSVct(){
 		return m_x_posVct;
-	}
-	
-	//Create a sparse vector with time features.
-	public void createSpVctWithTime(LinkedList<_Doc> preDocs, int featureSize, double movingAvg, double norm){
-		int featureLength = this.m_x_sparse.length;
-		int timeLength = preDocs.size();
-		_SparseFeature[] tempSparse = new _SparseFeature[featureLength + timeLength + 1];//to include the moving average
-		System.arraycopy(m_x_sparse, 0, tempSparse, 0, featureLength);		
-		int count = 0;
-		for(_Doc doc:preDocs){
-			double value = norm * doc.getYLabel();
-			value *= Utils.calculateSimilarity(doc.getSparse(), m_x_sparse);//time-based features won't be considered since m_x_sparse does not contain time-based features yet
-			tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, value);
-			count++;
-		}	
-		tempSparse[featureLength + count] = new _SparseFeature(featureSize + count, movingAvg*norm);
-		this.m_x_sparse = tempSparse;
 	}
 	
 	// added by Md. Mustafizur Rahman for HTMM Topic Modelling 
@@ -433,17 +195,6 @@ public class _Doc implements Comparable<_Doc> {
 		return this.m_sentences[index];
 	}
 	
-	//Get the predicted result, which is used for comparison.
-	public int getPredictLabel() {
-		return this.m_predict_label;
-	}
-	
-	//Set the predict result back to the doc.
-	public int setPredictLabel(int label){
-		this.m_predict_label = label;
-		return this.m_predict_label;
-	}
-	
 	public boolean hasSegments() {
 		return m_x_sparse[0].m_values != null;
 	}
@@ -456,10 +207,7 @@ public class _Doc implements Comparable<_Doc> {
 		}
 		Utils.randomize(m_sstat, alpha);
 	}
-	//added by Lin, if we have the generated topics, set it to the document.
-	public void setTopics(double[] t){
-		m_topics = t;
-	}
+	
 	public double[] getTopics(){
 		return m_topics;
 	}
@@ -583,10 +331,6 @@ public class _Doc implements Comparable<_Doc> {
 			m_words[i] = t;
 		}
 	}
-	
-	public void clearSource() {
-		m_source = null;
-	}
 
 	@Override
 	public int compareTo(_Doc d) {
@@ -628,69 +372,11 @@ public class _Doc implements Comparable<_Doc> {
 		return m_x_aspVct;
 	}
 	
-	public void addOneInlink(){
-		m_inlink++;
-	}
 	
-	public int getInlink(){
-		return m_inlink;
-	}
-	
-	// Added by Lin for sanity check.
-	int m_groupNo;
-	public void setGroupNo(int n){
-		m_groupNo = n;
-	}
-
-	public int getGroupNo(){
-		return m_groupNo;
-	}
-	
-	// Sentence labels of the document.
-	int[] m_stnLabels = null;
-	int[] m_stnStmLabels = null;
-	double m_posRatio = 0;
-	
-	public void setStnLabels(int[] ls){
-		m_stnLabels = ls;
-	}
-	
-	public int[] getStnLabels(){
-		return m_stnLabels;
-	}
-	
-	// Set the negative ratio of the document.
-	public void setPosRatio(int k){
-		if(m_stnStmLabels == null)
-			setStnStmLabels(k);
-		m_posRatio = (double)Utils.sumOfArray(m_stnStmLabels)/m_stnLabels.length;
-	}
-	
-	// Set the sentence sentiment labels.
-	public void setStnStmLabels(int k){
-		int NoTopics = k;
-		m_stnStmLabels = new int[m_stnLabels.length];
-		for(int i=0; i<m_stnLabels.length; i++){
-			if((m_stnLabels[i]/NoTopics)==0)
-				m_stnStmLabels[i] = 1;
-			else
-				m_stnStmLabels[i] = 0;
-		}
-	}
-	
-	public int[] getStnStmLabels(){
-		return m_stnStmLabels;
-	}
-	
-	public double getPosRatio(){
-		return m_posRatio;
-	}	
-
+	/////////////////////////////////////////////////////////
+	//temporal structure for CLogisticRegressionWithDP
+	/////////////////////////////////////////////////////////
 	public int m_pCount = 0;
 	public double m_prob = 0;
-	public ArrayList<Double> m_probs = new ArrayList<Double>();
 	
-	public void addOneProb(double p){
-		m_probs.add(p);
-	}
 }

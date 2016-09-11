@@ -10,6 +10,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._Review;
+import structures._User;
 import Analyzer.CategoryAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.CtgSVM;
@@ -35,6 +36,12 @@ public class MyCategoryCheckMain {
 		analyzer.loadCategory("./data/category.txt");
 		analyzer.loadUserDir(userFolder);
 		
+		for(_User u: analyzer.getUsers()){
+			for(_Review r: u.getReviews()){
+				if(r.getSource().contains("Printer is fast and very quiet"))
+					System.out.println("Debug");
+			}
+		}
 		HashMap<Integer, ArrayList<_Review>> ctgRvws = analyzer.getCtgRvws();
 		/**5 -Electronics
 		 * 19-home & kitchen
@@ -47,17 +54,13 @@ public class MyCategoryCheckMain {
 		analyzer.split(electronics, 500);
 		ArrayList<_Doc> eletrainSet = analyzer.getTrainSet();
 		ArrayList<_Doc> eletestSet = analyzer.getTestSet();
-		
+		HashMap<String, Integer> elemap = new HashMap<String, Integer>();		
+			
 		// Samples from home kitchen.
 		ArrayList<_Review> homeKitchen = analyzer.sample(ctgRvws.get(19), 2500);
 		analyzer.split(homeKitchen, 500);
 		ArrayList<_Doc> hmtrainSet = analyzer.getTrainSet();
 		ArrayList<_Doc> hmtestSet = analyzer.getTestSet();
-		
-//		CtgSVM hmSvm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
-//		hmSvm.setTrainTestSets(hmtrainSet, eletestSet);
-//		hmSvm.train();
-//		hmSvm.test();
 		
 		// Samples from other three categories.
 		ArrayList<_Review> books = analyzer.sample(ctgRvws.get(24), 2500);
@@ -72,11 +75,10 @@ public class MyCategoryCheckMain {
 		ArrayList<_Doc> videotestSet = analyzer.getTestSet();
 		
 		ArrayList<_Review> movietv = analyzer.sample(ctgRvws.get(38), 2500);
-		analyzer.split(electronics, 500);
+		analyzer.split(movietv, 500);
 		ArrayList<_Doc> movietrainSet = analyzer.getTrainSet();
 		ArrayList<_Doc> movietestSet = analyzer.getTestSet();
 		
-		// Samples from the five categories.
 		ArrayList<_Review> mixed = analyzer.sample(electronics, 400);
 		mixed.addAll(analyzer.sample(homeKitchen, 400));
 		mixed.addAll(analyzer.sample(books, 400));
@@ -86,64 +88,65 @@ public class MyCategoryCheckMain {
 		// eletrainSet, hmtrainSet, booktrainSet, videotrainSet, movietrainSet 
 		ArrayList<_Doc> testSet = new ArrayList<_Doc>();
 		testSet.addAll(eletestSet);
-//		testSet.addAll(hmtestSet);
-//		testSet.addAll(booktestSet);
-//		testSet.addAll(videotestSet);
-//		testSet.addAll(movietestSet);
+		testSet.addAll(hmtestSet);
+		testSet.addAll(booktestSet);
+		testSet.addAll(videotestSet);
+		testSet.addAll(movietestSet);
 		
-		PrintWriter writer = new PrintWriter(new File("weights.xls"));
-		writer.write("bias\t");
-		for(String s: analyzer.getFeatures())
-			writer.write(s+"\t");
-		writer.write("\n");
+//		PrintWriter writer = new PrintWriter(new File("weights.xls"));
+//		writer.write("bias\t");
+//		for(String s: analyzer.getFeatures())
+//			writer.write(s+"\t");
+//		writer.write("\n");
 		
 		CtgSVM svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(eletrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
 		
 		svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(hmtrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
 		
 		svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(booktrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
 		
+		svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(videotrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
 		
 		svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(movietrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
 		
 		svm = new CtgSVM(classNumber, analyzer.getFeatureSize(), 1);
 		svm.setTrainTestSets(mixedTrainSet, testSet);
 		svm.train();
 		svm.test();
-		for(double w: svm.getWeights())
-			writer.write(w+"\t");
-		writer.write("\n");
-		writer.close();
+//		for(double w: svm.getWeights())
+//			writer.write(w+"\t");
+//		writer.write("\n");
+//		writer.close();
 		
 	}
 }

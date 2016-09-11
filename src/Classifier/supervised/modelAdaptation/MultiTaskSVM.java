@@ -1,8 +1,5 @@
 package Classifier.supervised.modelAdaptation;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import Classifier.supervised.SVM;
@@ -20,9 +17,8 @@ import structures._SparseFeature;
 import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
-
 	double m_u = 1.0; // trade-off parameter between global model and individual model.
-	double m_C = 100; // trade-off parameter for SVM training 
+	double m_C = 1.0; // trade-off parameter for SVM training 
 	
 	Model m_libModel; // Libmodel trained by liblinear.
 	boolean m_bias = true; // whether use bias term in SVM; by default, we will use it
@@ -43,8 +39,7 @@ public class MultiTaskSVM extends ModelAdaptation {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		for(_User user:userList) 
-			m_userList.add(new _AdaptStruct(user, Integer.valueOf(user.getUserID())));
-//			m_userList.add(new _AdaptStruct(user));
+			m_userList.add(new _AdaptStruct(user));
 		m_pWeights = new double[m_featureSize+1];
 	}
 	
@@ -60,10 +55,12 @@ public class MultiTaskSVM extends ModelAdaptation {
 	@Override
 	public double train() {
 		init();
+		
+		//Transfer all user reviews to instances recognized by SVM, indexed by users.
 		int trainSize = 0, validUserIndex = 0;
 		ArrayList<Feature []> fvs = new ArrayList<Feature []>();
 		ArrayList<Double> ys = new ArrayList<Double>();		
-
+		
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
 		for(_AdaptStruct user:m_userList){
@@ -76,10 +73,12 @@ public class MultiTaskSVM extends ModelAdaptation {
 					trainSize ++;
 					validUser = true;
 				}
-			}	
+			}
+			
 			if (validUser)
 				validUserIndex ++;
-		}		
+		}
+		
 		// Train a liblinear model based on all reviews.
 		Problem libProblem = new Problem();
 		libProblem.l = trainSize;		
@@ -90,28 +89,47 @@ public class MultiTaskSVM extends ModelAdaptation {
 			libProblem.y[i] = ys.get(i);
 		}
 		
-		setLibProblemDimension(libProblem);
-//		if (m_bias) {
-//			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
-//			libProblem.bias = 1;// bias term in liblinear.
-//		} else {
-//			libProblem.n = m_featureSize * (m_userSize + 1);
-//			libProblem.bias = -1;// no bias term in liblinear.
-//		}
-		
-		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
-		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
-		setPersonalizedModel();
-		return 0;
-	}
-	
-	public void setLibProblemDimension(Problem libProblem){
 		if (m_bias) {
 			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
 			libProblem.bias = 1;// bias term in liblinear.
 		} else {
 			libProblem.n = m_featureSize * (m_userSize + 1);
 			libProblem.bias = -1;// no bias term in liblinear.
+		}
+		
+		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
+		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
+		
+		setPersonalizedModel();
+		
+		return 0;
+	}
+	
+	@Override
+	protected void setPersonalizedModel() {
+		double[] weight = m_libModel.getWeights();//our model always assume the bias term
+		int class0 = m_libModel.getLabels()[0];
+		double sign = class0 > 0 ? 1 : -1, block=m_personalized?1:0;//disable personalized model when required
+		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
+		for(_AdaptStruct user:m_userList) {
+			if (user.getAdaptationSize()>0) {
+				for(int i=0; i<m_featureSize; i++) 
+					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + block*weight[userOffset+i]);
+				
+				if (m_bias) {
+					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + block*weight[userOffset+m_featureSize]);
+					userOffset += m_featureSize+1;
+				} else
+					userOffset += m_featureSize;
+			} else {
+				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
+					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
+				
+				if (m_bias)
+					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
+			}
+			
+			user.setPersonalizedModel(m_pWeights);//our model always assume the bias term
 		}
 	}
 	
@@ -155,81 +173,5 @@ public class MultiTaskSVM extends ModelAdaptation {
 			node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
 		}
 		return node;
-	}
-
-	@Override
-	protected void setPersonalizedModel() {
-		double[] weight = m_libModel.getWeights();//our model always assume the bias term
-		int class0 = m_libModel.getLabels()[0];
-		double sign = class0 > 0 ? 1 : -1;
-		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
-		for(_AdaptStruct user:m_userList) {
-			if(m_personalized){
-				for(int i=0; i<m_featureSize; i++) 
-					m_pWeights[i+1] = sign*(weight[globalOffset+i]/m_u + weight[userOffset+i]);
-				
-				if (m_bias) {
-					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u + weight[userOffset+m_featureSize]);
-					userOffset += m_featureSize+1;
-				} 
-				else
-					userOffset += m_featureSize;
-			} else {
-				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
-					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
-				
-				if (m_bias)
-					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
-			}
-			
-			user.setPersonalizedModel(m_pWeights);//our model always assume the bias term
-		}
-	}
-	
-//	@Override
-//	protected void setPersonalizedModel() {
-//		double[] weight = m_libModel.getWeights();//our model always assume the bias term
-//		int class0 = m_libModel.getLabels()[0];
-//		double sign = class0 > 0 ? 1 : -1;
-//		int userOffset = 0, globalOffset = 0;
-//		for(_AdaptStruct user:m_userList) {
-//			if (user.getAdaptationSize()>0) {
-//				for(int i=0; i<m_featureSize; i++) 
-//					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
-//				
-//				if (m_bias)
-//					m_pWeights[0] = sign*(weight[globalOffset+m_featureSize]/m_u);
-//				else
-//					userOffset += m_featureSize;
-//			} else {
-//				for(int i=0; i<m_featureSize; i++) // no personal model since no adaptation data
-//					m_pWeights[i+1] = sign*weight[globalOffset+i]/m_u;
-//				if (m_bias)
-//					m_pWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
-//			}
-//			user.setPersonalizedModel(m_pWeights);//our model always assume the bias term
-//		}
-//	}
-	
-	public void saveSupModel(String filename){
-		double[] weights = m_libModel.getWeights();
-		int globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
-		int class0 = m_libModel.getLabels()[0];
-		double sign = class0 > 0 ? 1 : -1;
-		try{
-			PrintWriter writer = new PrintWriter(new File(filename));
-			
-			if(m_bias)
-				writer.write(sign*weights[globalOffset + m_featureSize]+"\n");
-			else
-				writer.write(0+"\n");
-				
-			for(int i=0; i<m_featureSize; i++)
-					writer.write(weights[globalOffset+i]+"\n");
-			
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
 	}
 }

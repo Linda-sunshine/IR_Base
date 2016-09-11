@@ -1,7 +1,6 @@
 package structures;
 
 public class _Review extends _Doc {
-
 	public enum rType {
 		TRAIN, // for training the global model
 		ADAPTATION, // for training the personalized model
@@ -11,9 +10,8 @@ public class _Review extends _Doc {
 	String m_userID;
 	String m_category; 
 	rType m_type; // specification of this review
-	public _Review(int ID, String source, int ylabel){
-		super(ID, source, ylabel);
-	}
+	
+	//Constructor for test purpose.
 	
 	public _Review(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp){
 		super(ID, source, ylabel);
@@ -51,10 +49,5 @@ public class _Review extends _Doc {
 	@Override
 	public String toString() {
 		return String.format("%s-%s-%s-%s", m_userID, m_itemID, m_category, m_type);
-	}
-	
-	// Get the category of the review.
-	public String getCategory(){
-		return m_category;
 	}
 }

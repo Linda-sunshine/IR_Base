@@ -3,9 +3,6 @@
  */
 package Classifier.supervised.modelAdaptation.RegLR;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -20,17 +17,13 @@ import utils.Utils;
  * online learning of RegLR
  */
 public class asyncRegLR extends RegLR {
-	double m_initStepSize = 0.1;
+	double m_initStepSize = 0.50;
+	
 	public asyncRegLR(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		
 		// all three test modes for asyncRegLR is possible, and default is online
 		m_testmode = TestMode.TM_online;
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("asyncRegLR[initStepSize: %.3f, eta1:%.3f]", m_initStepSize, m_eta1);
 	}
 	
 	public static double getStepSize(double initStepSize, _AdaptStruct user) {
@@ -46,51 +39,40 @@ public class asyncRegLR extends RegLR {
 	public double train(){
 		double gNorm, gNormOld = Double.MAX_VALUE;;
 		int predL, trueL;
-		double val = 0;
 		_Review doc;
 		_PerformanceStat perfStat;
 		
 		initLBFGS();
 		init();
-		try{
-			m_writer = new PrintWriter(new File(String.format("%s_online_RegLR.txt", m_dataset)));
-
-			for(_AdaptStruct user:m_userList) {
-				while(user.hasNextAdaptationIns()) {
-					// test the latest model before model adaptation
-					if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
-						perfStat = user.getPerfStat();						
-						val = logit(doc.getSparse(), user);
-						predL = val>0.5?1:0;
-						trueL = doc.getYLabel();
-						perfStat.addOnePredResult(predL, trueL);
-						m_writer.format("%s\t%d\t%.4f\t%d\t%d\n", user.getUserID(), doc.getID(), val, predL, trueL);
-
-					} // in batch mode we will not accumulate the performance during adaptation				
+		for(_AdaptStruct user:m_userList) {
+			while(user.hasNextAdaptationIns()) {
+				// test the latest model before model adaptation
+				if (m_testmode != TestMode.TM_batch &&(doc = user.getLatestTestIns()) != null) {
+					perfStat = user.getPerfStat();
+					predL = predict(doc, user);
+					trueL = doc.getYLabel();
+					perfStat.addOnePredResult(predL, trueL);
+				} // in batch mode we will not accumulate the performance during adaptation				
 				
-					// prepare to adapt: initialize gradient	
-					Arrays.fill(m_g, 0);
-					calculateGradients(user);
-					gNorm = gradientTest();
+				// prepare to adapt: initialize gradient	
+				Arrays.fill(m_g, 0);
+				calculateGradients(user);
+				gNorm = gradientTest();
 				
-					if (m_displayLv==1) {
-						if (gNorm<gNormOld)
-							System.out.print("o");
-						else
-							System.out.print("x");
-					}
-				
-					//gradient descent
-					gradientDescent(user, m_initStepSize, m_g);
-					gNormOld = gNorm;
+				if (m_displayLv==1) {
+					if (gNorm<gNormOld)
+						System.out.print("o");
+					else
+						System.out.print("x");
 				}
-			
-				if (m_displayLv>0)
-					System.out.println();
+				
+				//gradient descent
+				gradientDescent(user, m_initStepSize, m_g);
+				gNormOld = gNorm;
 			}
-			m_writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
+			
+			if (m_displayLv>0)
+				System.out.println();
 		}
 		
 		setPersonalizedModel();

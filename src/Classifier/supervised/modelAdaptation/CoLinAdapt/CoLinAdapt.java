@@ -3,26 +3,17 @@
  */
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.CoAdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
-import structures._SparseFeature;
 import structures._User;
-import utils.Utils;
 
 /**
  * @author Hongning Wang
@@ -30,11 +21,11 @@ import utils.Utils;
  */
 public class CoLinAdapt extends LinAdapt {
 
-	protected double m_eta3; // weight for scaling in R2.
-	protected double m_eta4; // weight for shifting in R2.
+	double m_eta3; // weight for scaling in R2.
+	double m_eta4; // weight for shifting in R2.
 	int m_topK;
 	SimType m_sType = SimType.ST_BoW;// default neighborhood by BoW
-	ArrayList<Double> m_diffs; // record the difference between colinadapt and mtsvm.
+	
 	public CoLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap);
 		m_eta3 = 0.5;
@@ -49,7 +40,7 @@ public class CoLinAdapt extends LinAdapt {
 	public String toString() {
 		return String.format("CoLinAdapt[dim:%d,eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f,k:%d,NB:%s]", m_dim, m_eta1, m_eta2, m_eta3, m_eta4, m_topK, m_sType);
 	}
-	
+
 	public void setR2TradeOffs(double eta3, double eta4) {
 		m_eta3 = eta3;
 		m_eta4 = eta4;
@@ -87,39 +78,12 @@ public class CoLinAdapt extends LinAdapt {
 	}
 
 	@Override
-	public void loadUsers(ArrayList<_User> userList){		
-		//step 1: create space
+	public void loadUsers(ArrayList<_User> userList){	
+		//step 1: construct the user list structures
 		constructUserList(userList);
 		
 		//step 2: construct neighborhood graph
 		constructNeighborhood(m_sType);
-	}
-	
-	public void printNeighbors(ArrayList<String> features){
-		// Print out similarity.
-		PrintWriter writer;
-		_AdaptStruct neighbor;
-		try {
-			writer = new PrintWriter(new File("neighbors_1divBow.txt"));
-			for(_AdaptStruct u: m_userList){
-				// User's own sparse features.
-				writer.format("=================%s===============\n", u.getUserID());
-				for(_SparseFeature sf: u.getUser().getBoWProfile())
-					writer.format("(%s, %.3f)\t", features.get(sf.getIndex()), sf.getValue());
-				writer.write("\n---------------------------------\n");
-				_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u;
-				// Print out neighbors sparse features.
-				for(_RankItem nit: ui.getNeighbors()){
-					neighbor = m_userList.get(nit.m_index);
-					for(_SparseFeature sf: neighbor.getUser().getBoWProfile())
-						writer.format("(%s, %.3f)\t", features.get(sf.getIndex()), sf.getValue());
-					writer.write("\n---------------------------------\n");
-				}
-			}
-			writer.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	//this will be only called once in CoLinAdapt
@@ -133,15 +97,10 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
-		double fValue = super.calculateFuncValue(u);
-		double R2 = calculateR2(u);
-		return fValue + R2;
-	}
-	
-	public double calculateR2(_AdaptStruct u){
+		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
+		
 		//R2 regularization
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
-		double R2 = 0, diffA, diffB;
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
@@ -151,12 +110,10 @@ public class CoLinAdapt extends LinAdapt {
 				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
 			}
 			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
-//			R2 += 0.1 * (m_eta3*diffA + m_eta4*diffB);
-//			R2 += (nit.m_value / simSum) * (m_eta3*diffA + m_eta4*diffB);
 		}
-		return R2;
+		return fValue + R2;
 	}
-
+	
 	@Override
 	protected void calculateGradients(_AdaptStruct u){
 		super.calculateGradients(u);
@@ -173,9 +130,7 @@ public class CoLinAdapt extends LinAdapt {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			offsetj = m_dim*2*uj.getId();
 			coef = 2 * nit.m_value;
-//			coef = 2 * 0.1;
-//			coef = 2 * nit.m_value/simSum;
-
+			
 			for(int k=0; k<m_dim; k++) {
 				dA = coef * m_eta3 * (ui.getScaling(k) - uj.getScaling(k));
 				dB = coef * m_eta4 * (ui.getShifting(k) - uj.getShifting(k));
@@ -220,7 +175,7 @@ public class CoLinAdapt extends LinAdapt {
 		double fValue, oldFValue = Double.MAX_VALUE;;
 		int displayCount = 0;
 		_LinAdaptStruct user;
-		m_diffs = new ArrayList<Double>();
+		
 		initLBFGS();
 		init();
 		try{
@@ -234,6 +189,7 @@ public class CoLinAdapt extends LinAdapt {
 					fValue += calculateFuncValue(user);
 					calculateGradients(user);
 				}
+				
 				if (m_displayLv==2) {
 					gradientTest();
 					System.out.println("Fvalue is " + fValue);
@@ -246,94 +202,16 @@ public class CoLinAdapt extends LinAdapt {
 					if (++displayCount%100==0)
 						System.out.println();
 				} 
+				oldFValue = fValue;
+				
 				LBFGS.lbfgs(m_g.length, 5, _CoLinAdaptStruct.getSharedA(), fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {
-			System.out.println("LBFGS fails!!!!");
 			e.printStackTrace();
 		}		
 		
 		setPersonalizedModel();
 		return oldFValue;
-	}
-	
-	// added by Lin for accumulating R2.
-	public double accumulateR2(){
-		double sum = 0;
-		for(_AdaptStruct u: m_userList){
-			sum += calcuateR2OverSVMWeights(u);
-		}
-		return sum;
-	}
-	
-	public double calcuateR2OverSVMWeights(_AdaptStruct u){
-		_CoLinAdaptStruct ui = (_CoLinAdaptStruct) u, uj;
-		double R2 = 0, diff = 0;
-		// R2 regularization over the weights of users.
-		for(_RankItem nit: ui.getNeighbors()){
-			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
-			diff = Utils.EuclideanDistance(ui.getUser().getSVMWeights(), uj.getUser().getSVMWeights());
-			R2 += diff;
-		}
-		return R2;
-	}
-	
-	public double calculateDifference(){
-		setPersonalizedModel();
-		double diff = 0;
-		for(_AdaptStruct u: m_userList){
-			diff += Utils.EuclideanDistance(u.getPWeights(), u.getUser().getSVMWeights());
-		}
-		return diff;
-	}
-	
-	public ArrayList<Double> getDiffs(){
-		return m_diffs;
-	}
-	
-	// Calcualate the percentage of the overlapped neighbors.
-	public void calcOverlappedNeighbors(){
-		double[] percentage = new double[m_userList.size()];
-		int count = 0;
-		double avg = 0, var = 0, one = 0;
-		for(_AdaptStruct u: m_userList){
-			_CoLinAdaptStruct user = (_CoLinAdaptStruct) u;
-			one = calcPercentage(user);
-			avg += one;
-			percentage[count++] = one;
-		}
-		avg /= m_userList.size();
-		for(double i: percentage)
-			var += (i - avg) * (i - avg);
-		var /= m_userList.size();
-		var = Math.sqrt(var);
-		System.out.print(String.format("Avg: %.4f, var: %.4f\n", avg, var));
-	}
-	
-	
-	public double calcPercentage(_CoLinAdaptStruct u){
-		ArrayList<Integer> l1 = new ArrayList<Integer>();
-		ArrayList<Integer> l2 = new ArrayList<Integer>();
-		for(_RankItem i: u.getNeighbors())
-			l1.add(i.m_index);
-		for(_RankItem i: u.getUser().getSVMNeighbors())
-			l2.add(i.m_index);
-		Collections.sort(l1);
-		Collections.sort(l2);
-		int p1=0, p2=0;
-		double common = 0;
-		while(p1 < l1.size() && p2 < l2.size()){
-			if(l1.get(p1) < l2.get(p2))
-				p1++;
-			else if(l1.get(p1) > l2.get(p2))
-				p2++;
-			else{
-				common++;
-				p1++;
-				p2++;
-			}
-		}
-		return common;
 	}
 }

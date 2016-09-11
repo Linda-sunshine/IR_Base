@@ -56,20 +56,20 @@ public class _Query {
 	}
 	
 	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels) {
-		boolean negSgn = (fvs.size()%2)==0;		
+		boolean negSgn = (fvs.size()%2)==0;
 		Feature[] fvct;
 		for(_QUPair di:m_docList) {
 			if (di.m_betterURLs==null)
 				continue;
-
-			if(negSgn){
+			
+			if (negSgn) {
 				for(_QUPair dj:di.m_betterURLs) {
 					if ((fvct=di.getDiffFv(dj)) != null) {
 						fvs.add(fvct);
 						labels.add(-1);
 					}
 				}
-			} else{
+			} else {
 				for(_QUPair dj:di.m_betterURLs) {
 					if ((fvct=dj.getDiffFv(di)) != null) {
 						fvs.add(fvct);
@@ -78,42 +78,6 @@ public class _Query {
 				}
 			}
 		}
-	}
-	public void extractPairs4RankSVM(ArrayList<Feature[]> fvs, ArrayList<Integer> labels, boolean flip) {
-		boolean negSgn = (fvs.size()%2)==0;		
-		Feature[] fvct;
-		for(_QUPair di:m_docList) {
-			if (di.m_betterURLs==null)
-				continue;
-
-			if(negSgn){
-				for(_QUPair dj:di.m_betterURLs) {
-					if ((fvct=di.getDiffFv(dj)) != null) {
-						if(flip)
-							fvs.add(reverseFvct(fvct));
-						else 
-							fvs.add(fvct);
-						labels.add(-1);
-					}
-				}
-			} else{
-				for(_QUPair dj:di.m_betterURLs) {
-					if ((fvct=dj.getDiffFv(di)) != null) {
-						if(flip)
-							fvs.add(reverseFvct(fvct));
-						else
-							fvs.add(fvct);
-						labels.add(1);
-					}
-				}
-			}
-		}
-	}
-	
-	public Feature[] reverseFvct(Feature[] fvct){
-		for(int i=0; i<fvct.length; i++)
-			fvct[i].setValue(-fvct[i].getValue());
-		return fvct;
 	}
 	
 	public void extractPairs4RankNet(ArrayList<double[]> fvs) {
