@@ -52,7 +52,7 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 		
 		//Split the train set based on different clusters.
 		for(_Doc d: trainSet){
-			clusterNo = d.getCluseterNo();
+			clusterNo = d.getClusterNo();
 			m_clusterNoDocs.get(clusterNo).add(d);
 		}
 		
@@ -77,7 +77,7 @@ public class L2RWithQueryClustering extends L2RMetricLearning {
 	@Override
 	public double getSimilarity(_Doc di, _Doc dj) {
 		
-		int clusterNo = di.getCluseterNo();
+		int clusterNo = di.getClusterNo();
 		double similarity = Utils.dotProduct(m_allWeights[clusterNo], normalize(genRankingFV(di, dj)));
 		
 		if (Double.isNaN(similarity)){
