@@ -372,7 +372,16 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 		return m_x_aspVct;
 	}
 	
+	// adde by Lin for cluster usage.
+	int m_clusterNo = 0;
 	
+	public void setClusterNo(int c){
+		m_clusterNo = c;
+	}
+	
+	public int getClusterNo(){
+		return m_clusterNo;
+	}
 	/////////////////////////////////////////////////////////
 	//temporal structure for CLogisticRegressionWithDP
 	/////////////////////////////////////////////////////////
