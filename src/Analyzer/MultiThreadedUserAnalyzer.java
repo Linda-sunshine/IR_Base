@@ -247,5 +247,71 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		else
 			return m_stemmerPool[index];
 	}
+	// Added by Lin for constructing the 
+	public void constructSparseVector4Users() {
+		for (_User u : m_users)
+			u.constructSparseVector();
+	}
 
+	protected HashMap<String, Integer> m_userIDIndex;
+	// Added by Lin. Load user weights from learned models to construct neighborhood.
+	public void loadUserWeights(String folder, String suffix){
+		if(folder == null || folder.isEmpty())
+			return;
+		String userID;
+		int userIndex, count = 0;
+		double[] weights;
+		constructUserIDIndex();
+		File dir = new File(folder);
+		
+		if(!dir.exists()){
+			System.err.print("[Info]Directory doesn't exist!");
+		} else{
+			for(File f: dir.listFiles()){
+				if(f.isFile() && f.getName().endsWith(suffix)){
+					int endIndex = f.getName().lastIndexOf(".");
+					userID = f.getName().substring(0, endIndex);
+					if(m_userIDIndex.containsKey(userID)){
+						userIndex = m_userIDIndex.get(userID);
+						weights = loadOneUserWeight(f.getAbsolutePath());
+						m_users.get(userIndex).setSVMWeights(weights);
+						count++;
+					}
+				}
+			}
+		}
+		System.out.format("%d users weights are loaded!\n", count);
+	}
+	public void constructUserIDIndex(){
+		m_userIDIndex = new HashMap<String, Integer>();
+		for(int i=0; i<m_users.size(); i++)
+			m_userIDIndex.put(m_users.get(i).getUserID(), i);
+	}
+	
+	// Added by Lin. Load one user's weights.
+	public double[] loadOneUserWeight(String fileName) {
+		double[] weights = new double[getFeatureSize()];
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(
+					new FileInputStream(fileName), "UTF-8"));
+			String line;
+			while ((line = reader.readLine()) != null) {
+				String[] ws = line.split(",");
+				if (ws.length != getFeatureSize() + 1)
+					System.out.println("[error]Wrong dimension of the user's weights!");
+				else {
+					weights = new double[ws.length];
+					for (int i = 0; i < ws.length; i++) {
+						weights[i] = Double.valueOf(ws[i]);
+					}
+				}
+			}
+			reader.close();
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", fileName);
+			e.printStackTrace();
+		}
+		return weights;
+	}
+		
 }
