@@ -45,6 +45,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_tradeoff = 1.0;
 	}
 
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
 			double delta, double eta, boolean weightedAvg,
@@ -57,6 +58,21 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_multithread = multithread;
 	}
 	
+	public L2RMetricLearning(_Corpus c, String classifier, double C,
+			double ratio, int k, int kPrime, double alhpa, double beta,
+			double delta, double eta, boolean weightedAvg,
+			int topK, double noiseRatio, int ranker, boolean multithread) {
+		super(c, classifier, C, ratio, k, kPrime, alhpa, beta, delta, eta,
+				weightedAvg);
+		m_topK = topK;
+		m_noiseRatio = noiseRatio;
+		m_tradeoff = 1.0; // should be specified by the user
+		m_multithread = multithread;
+		
+		m_ranker = ranker;
+		m_queryRatio = 1.0;
+		m_documentRatio = 2;
+	}
 	@Override
 	public String toString() {
 		String ranker;
@@ -364,5 +380,46 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		fv[9] = d.getAvgIDF();//0.05842
 
 		return fv;
+	}
+	/***The following variable definitions and functions are added by Lin.***/
+	double m_shrinkage=0.98;
+	double m_stepSize=1;
+	int m_maxIter = 300;
+	int m_windowSize = 20;
+	double m_queryRatio; // added by Lin, control the ratio of the class sentiment.
+	double m_documentRatio; // added by Lin, controlt the ratio of the document selection for each query.
+	ArrayList<ArrayList<_Doc>> m_clusters;
+	
+	// Get the trained weights from learning to rank.
+	public double[] getWeights(){
+		return m_weights;
+	}
+	// In lambdaRank, the tradeoff = lambda.added by Lin.
+	public void setLambda(double lambda){
+		m_tradeoff = lambda;
+	}
+
+	public void setShrinkage(double sk){
+		m_shrinkage = sk;
+	}
+
+	public void setStepSize(double ss){
+		m_stepSize = ss;
+	}
+		
+	public void setWindowSize(int ws){
+		m_windowSize = ws;
+	}
+		
+	public void setMaxIter(int maxIter){
+		m_maxIter = maxIter;
+	}		
+		
+	public void setQueryRatio(double r){
+		m_queryRatio = r;
+	}
+		
+	public void setDocumentRatio(double r){
+		m_documentRatio = r;
 	}
 }

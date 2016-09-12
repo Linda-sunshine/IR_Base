@@ -10,8 +10,8 @@ public class MTCoLinAdapt extends MTLinAdapt {
 
 	public MTCoLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
-			String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+			String featureGroupMap, String featureGroupMap4Sup) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap, featureGroupMap4Sup);
 	}
 	
 	@Override
