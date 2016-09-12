@@ -394,56 +394,56 @@ public class CLRWithDP extends LinAdapt {
 		return curLikelihood;
 	}
 	
-	// added by Lin for tracking trace. 
-	public double trainTrace(String tracefile){
-		m_numberOfIterations = 50;
-		m_burnIn = 1;
-		m_thinning = 1;
-		
-		System.out.println(toString());
-		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-		int count = 0;
-		
-		init(); // clear user performance and init cluster assignment		
-		
-		// Burn in period.
-		while(count++ < m_burnIn){
-			calculate_E_step();
-			calculate_M_step();
-		}
-		try{
-			PrintWriter writer = new PrintWriter(new File(tracefile));
-			// EM iteration.
-			for(int i=0; i<m_numberOfIterations; i++){
-				// Cluster assignment, thinning to reduce auto-correlation.
-				calculate_E_step();
-			
-				// Optimize the parameters
-				curLikelihood = calculate_M_step();
-			
-				delta = (lastLikelihood - curLikelihood)/curLikelihood;
-				if (i%m_thinning==0){
-					evaluateModel();
-					test();
-					for(_AdaptStruct u: m_userList)
-						u.getPerfStat().clear();
-				}
-				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[2], m_perf[3]));
-
-				printInfo();
-				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-				if(Math.abs(delta) < m_converge)
-					break;
-				lastLikelihood = curLikelihood;
-		}
-		writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		evaluateModel(); // we do not want to miss the last sample?!
-		setPersonalizedModel();
-		return curLikelihood;
-	}
+//	// added by Lin for tracking trace. 
+//	public double trainTrace(String tracefile){
+//		m_numberOfIterations = 50;
+//		m_burnIn = 1;
+//		m_thinning = 1;
+//		
+//		System.out.println(toString());
+//		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+//		int count = 0;
+//		
+//		init(); // clear user performance and init cluster assignment		
+//		
+//		// Burn in period.
+//		while(count++ < m_burnIn){
+//			calculate_E_step();
+//			calculate_M_step();
+//		}
+//		try{
+//			PrintWriter writer = new PrintWriter(new File(tracefile));
+//			// EM iteration.
+//			for(int i=0; i<m_numberOfIterations; i++){
+//				// Cluster assignment, thinning to reduce auto-correlation.
+//				calculate_E_step();
+//			
+//				// Optimize the parameters
+//				curLikelihood = calculate_M_step();
+//			
+//				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+//				if (i%m_thinning==0){
+//					evaluateModel();
+//					test();
+//					for(_AdaptStruct u: m_userList)
+//						u.getPerfStat().clear();
+//				}
+//				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[2], m_perf[3]));
+//
+//				printInfo();
+//				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+//				if(Math.abs(delta) < m_converge)
+//					break;
+//				lastLikelihood = curLikelihood;
+//		}
+//		writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//		evaluateModel(); // we do not want to miss the last sample?!
+//		setPersonalizedModel();
+//		return curLikelihood;
+//	}
 
 	@Override
 	protected int getVSize() {

@@ -5,11 +5,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
-import structures._Corpus;
-import structures._Doc;
-import structures._Edge;
-import structures._Node;
-import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.semisupervised.PairwiseSimCalculator.ActionType;
 import Classifier.supervised.LogisticRegression;
@@ -18,16 +13,22 @@ import Classifier.supervised.SVM;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
+import structures._Corpus;
+import structures._Doc;
+import structures._Edge;
+import structures._Node;
+import utils.Utils;
 
 public class GaussianFields extends BaseClassifier {
 	
-	double m_alpha; //Weight coefficient between unlabeled node and labeled node.
-	double m_beta; //Weight coefficient between unlabeled node and unlabeled node.
+	double m_alpha; //Weight coefficient for labeled neighbors.
+	double m_beta; //Weight coefficient for unlabeled neighbors
 	double m_M; //Influence of labeled node (similar effect of eta)
-	int m_k; // k labeled nodes.
-	int m_kPrime;//k' unlabeled nodes.
+	int m_k; // k labeled neighbors.
+	int m_kPrime;//k' unlabeled neighbors.
 	
-	protected int m_L, m_U;
+	protected int m_U;
+	protected int m_L;
 	protected _Node[] m_nodeList; // list of nodes with its nearest neighbors in the graph
 	SparseDoubleMatrix2D m_graph;
 	
@@ -83,7 +84,7 @@ public class GaussianFields extends BaseClassifier {
 		return String.format("Gaussian Fields with matrix inversion [C:%s, kUL:%d, kUU:%d, r:%.3f, alpha:%.3f, beta:%.3f]", 
 				m_classifier, m_k, m_kPrime, m_labelRatio, m_alpha, m_beta);
 	}
-
+	
 	private void setClassifier(String classifier, double C) {
 		if (classifier.equals("NB"))
 			m_classifier = new NaiveBayes(m_classNo, m_featureSize);
@@ -126,7 +127,7 @@ public class GaussianFields extends BaseClassifier {
 		m_U = m_testSet.size();
 		m_L = m_labeled.size();
 		
-		return 0;
+		return 0; // we can compute the corresponding objective function value
 	}
 	
 	public _Doc getTestDoc(int i) {
@@ -138,7 +139,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	protected double getBoWSim(_Doc di, _Doc dj) {
-		return Utils.calculateSimilarity(di, dj);
+		return Utils.dotProduct(di, dj);
 	}
 	
 	protected double getTopicalSim(_Doc di, _Doc dj) {

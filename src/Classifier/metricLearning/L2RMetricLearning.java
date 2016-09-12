@@ -25,31 +25,27 @@ import utils.Utils;
 
 public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	
-	protected int m_topK;//top K initial ranking results 
+	int m_topK;//top K initial ranking results 
 	double m_noiseRatio; // to what extend random neighbors can be added 
 	double[] m_LabeledCache; // cached pairwise similarity between labeled examples
-	
-	protected double[] m_weights;
-	protected double m_tradeoff;
+
+	double[] m_weights;
+	double m_tradeoff;
 	boolean m_multithread = false; // by default we will use single thread
-
+	
 	int m_ranker = 1; // 0: pairwise rankSVM; 1: LambdaRank; 2: RankNet
-	protected ArrayList<_Query> m_queries = new ArrayList<_Query>();
-	protected final int RankFVSize = 10;// features to be defined in genRankingFV()
+	ArrayList<_Query> m_queries = new ArrayList<_Query>();
+	final int RankFVSize = 10;// features to be defined in genRankingFV()
 	double[] m_mean, m_std; // to normalize the ranking features
-
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C, int topK) {
 		super(c, classifier, C);
 		m_topK = topK;
 		m_noiseRatio = 0.0; // no random neighbor is needed 
 		m_tradeoff = 1.0;
-		
-		// Added by Lin.
-		m_ranker = 0; // default ranker is rankSVM
-		m_queryRatio = 1.0;
-		m_documentRatio = 2;
 	}
 
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
 			double delta, double eta, boolean weightedAvg,
@@ -61,7 +57,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_tradeoff = 1.0; // should be specified by the user
 		m_multithread = multithread;
 	}
-
+	
 	public L2RMetricLearning(_Corpus c, String classifier, double C,
 			double ratio, int k, int kPrime, double alhpa, double beta,
 			double delta, double eta, boolean weightedAvg,
@@ -77,7 +73,6 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		m_queryRatio = 1.0;
 		m_documentRatio = 2;
 	}
-	
 	@Override
 	public String toString() {
 		String ranker;
@@ -114,15 +109,15 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 
 	@Override
-	public double train(Collection<_Doc> trainSet){
+	public double train(Collection<_Doc> trainSet) {
 		super.train(trainSet);
 		
 		L2RModelTraining();
 		
 		return 0;
 	}
-
-	protected void L2RModelTraining(){
+	
+	protected void L2RModelTraining() {
 		//select the training pairs
 		createTrainingCorpus();
 		
@@ -132,11 +127,11 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 			
 			for(_Query q:m_queries)
 				q.extractPairs4RankSVM(fvs, labels);
-			
 			Model rankSVM = SVM.libSVMTrain(fvs, labels, RankFVSize, SolverType.L2R_L1LOSS_SVC_DUAL, m_tradeoff, -1);
-			m_weights = rankSVM.getFeatureWeights();
+			
+			m_weights = rankSVM.getFeatureWeights();	
 			System.out.format("RankSVM training performance:\nMAP: %.4f\n", evaluate(OptimizationType.OT_MAP));
-		
+
 		} else if (m_ranker==1) {//all the rest use LambdaRank with different evaluator
 			LambdaRank lambdaRank;
 			if (m_multithread) {
@@ -168,7 +163,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		System.out.println();
 	}
 	
-	protected double evaluate (OptimizationType otype) {
+	double evaluate (OptimizationType otype) {
 		Evaluator eval;
 		
 		if (otype.equals(OptimizationType.OT_MAP))
@@ -193,7 +188,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		System.out.println("Creating cache for labeled documents...");
 		
 		int L = m_trainSet.size(), size = L*(L-1)/2;//no need to compute diagonal
-//		if (m_LabeledCache==null || m_LabeledCache.length<size)
+		if (m_LabeledCache==null || m_LabeledCache.length<size)
 			m_LabeledCache = new double[size];
 		
 		//using Collection<_Doc> trainSet to pass corpus parameter is really awkward
@@ -227,7 +222,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		_Query q;		
 		_Doc di, dj;
 		int posQ = 0, negQ = 0, pairSize = 0;
-		double relevant = 0, irrelevant = 0;
+		int relevant = 0, irrelevant = 0;
 		
 		for(int i=0; i<m_trainSet.size(); i++) {
 			//candidate query document
@@ -253,23 +248,22 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 					irrelevant ++;
 			}
 			
-			
-//			//inject some random neighbors 
-//			int j = 0;
-//			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
-//				if (i!=j) {
-//					dj = m_trainSet.get(j);
-//					if (Math.random()<0.02 && !neighbors.contains(dj)) {
-//						neighbors.add(dj);
-//						if (di.getYLabel() == dj.getYLabel())
-//							relevant ++;
-//						else
-//							irrelevant ++;
-//					}
-//				}
-//				
-//				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
-//			}
+			//inject some random neighbors 
+			int j = 0;
+			while(neighbors.size()<(1.0+m_noiseRatio)*m_topK) {
+				if (i!=j) {
+					dj = m_trainSet.get(j);
+					if (Math.random()<0.02 && !neighbors.contains(dj)) {
+						neighbors.add(dj);
+						if (di.getYLabel() == dj.getYLabel())
+							relevant ++;
+						else
+							irrelevant ++;
+					}
+				}
+				
+				j = (j+1) % m_trainSet.size();//until we use up all the random budget 
+			}
 			
 			if (relevant==0 || irrelevant==0 
 				|| (di.getYLabel() == 1 && negQ < 1.1*posQ)){
@@ -301,7 +295,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		return pairSize;
 	}
 	
-	protected void normalize() {
+	void normalize() {
 		m_mean = new double[RankFVSize];
 		m_std = new double[RankFVSize];
 		
@@ -328,7 +322,7 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 		}
 	}
 	
-	protected double[] normalize(double[] fv) {
+	double[] normalize(double[] fv) {
 		for(int i=0; i<RankFVSize; i++)
 			fv[i] = (fv[i] - m_mean[i]) / m_std[i];
 		return fv;
@@ -350,44 +344,43 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	}
 	
 	//generate ranking features for a query document pair
-	protected double[] genRankingFV(_Doc q, _Doc d) {
+	double[] genRankingFV(_Doc q, _Doc d) {
 		double[] fv = new double[RankFVSize];
 		
 		//Part I: pairwise features for query document pair
 		//feature 1: cosine similarity
-		fv[0] = getBoWSim(q, d);//0.03900
+		fv[0] = getBoWSim(q, d);//0.04104
 		
 		//feature 2: topical similarity
-		fv[1] = getTopicalSim(q, d);//-0.08513
+		fv[1] = getTopicalSim(q, d);//-0.28595
 		
 		//feature 3: belong to the same product
-		fv[2] = q.sameProduct(d)?1:0;//0.02104
+		fv[2] = q.sameProduct(d)?1:0;//-0.01331
 
 		//feature 4: sparse feature length difference
-		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//-0.01580
+		fv[3] = Math.abs((double)(q.getDocLength() - d.getDocLength())/(double)q.getDocLength());//0.00045
 		
 		//feature 5: jaccard coefficient
-		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.02190
+		fv[4] = Utils.jaccard(q.getSparse(), d.getSparse());//0.05490
  		
 		//feature 6: the sentiwordnet score for a review.
-		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.00103
-		
+		fv[5] = Math.abs(q.getSentiScore() - d.getSentiScore());//-0.09206
+
 		// feature 7: the pos tagging score for a pair of reviews.
-		fv[6] = getPOSScore(q, d);//0.04831
-		
+		fv[6] = getPOSScore(q, d);//0.02567
+
 		// feature 8: the aspect score for a pair of reviews.
-		fv[7] = getAspectScore(q, d);//0.10005
+		fv[7] = getAspectScore(q, d);//-0.03405
 		
 		//Part II: pointwise features for document
 		//feature 9: stop words proportion
-		fv[8] = d.getStopwordProportion();//0.00060
+		fv[8] = d.getStopwordProportion();//-0.05709
 		
 		//feature 10: average IDF
-		fv[9] = d.getAvgIDF();//0.02447
+		fv[9] = d.getAvgIDF();//0.05842
 
 		return fv;
 	}
-	
 	/***The following variable definitions and functions are added by Lin.***/
 	double m_shrinkage=0.98;
 	double m_stepSize=1;
@@ -429,70 +422,4 @@ public class L2RMetricLearning extends GaussianFieldsByRandomWalk {
 	public void setDocumentRatio(double r){
 		m_documentRatio = r;
 	}
-	
-	//In this create training corpus, we use clustering to do document selection.
-//	protected int createTrainingCorpus(){
-//		//pre-compute the similarity between labeled documents
-//		calcLabeledSimilarities();
-//		
-//		MyPriorityQueue<_RankItem> simRanker = new MyPriorityQueue<_RankItem>(m_topK);
-//		ArrayList<_Doc> neighbors = new ArrayList<_Doc>();
-//		
-//		_Query q;		
-//		_Doc di, dj;
-//		int posQ = 0, negQ = 0, pairSize = 0, index = 0;
-//		double relevant = 0, irrelevant = 0;
-//		
-//		for(int i=0; i<m_trainSet.size(); i++) {
-//			//Candidate query.
-//			di = m_trainSet.get(i);
-//			//Filter out unlabeled data + calculate sim(q, d_L);
-//			for(int j=0; j<m_clusters.size(); j++){
-//				simRanker.clear();
-//				//Select the most similar reviews in each cluster as the documents.
-//				for(_Doc d: m_clusters.get(j)){
-//					if(m_trainSet.contains(d)){
-//						index = m_trainSet.indexOf(d);
-//						if(i != index)
-//							simRanker.add(new _RankItem(index, m_LabeledCache[getIndex(i, index)]));
-//					}
-//				}			
-//				//Pick the top k from each cluster;
-//				for(_RankItem it:simRanker) {
-//					dj = m_trainSet.get(it.m_index);
-//					neighbors.add(dj);
-//					if (di.getYLabel() == dj.getYLabel())
-//						relevant ++;
-//					else
-//						irrelevant ++;
-//				}
-//			}
-//			
-//			if (relevant==0 || irrelevant==0 
-//			|| (di.getYLabel() == 1 && negQ < m_queryRatio*posQ)){
-//			//clear the cache for next query
-//				simRanker.clear();
-//				neighbors.clear();
-//				continue;
-//			} else if (di.getYLabel()==1)
-//				posQ ++;
-//			else
-//				negQ ++;
-//				
-//			//accept the query
-//			q = new _Query();
-//			m_queries.add(q);
-//			
-//			//construct features for the most similar documents with respect to the query di
-//			for(_Doc d:neighbors)
-//				q.addQUPair(new _QUPair(d.getYLabel()==di.getYLabel()?1:0, genRankingFV(di, d)));
-//			pairSize += q.createRankingPairs();
-//			
-//			//clear the cache for next query
-//			neighbors.clear();
-//		}
-//		
-//		System.out.format("Generate %d(%d:%d) ranking pairs for L2R model training...\n", pairSize, posQ, negQ);
-//		return pairSize;
-//	}
 }

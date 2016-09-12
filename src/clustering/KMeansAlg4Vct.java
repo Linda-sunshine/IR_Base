@@ -3,9 +3,12 @@ package clustering;
 import java.util.ArrayList;
 
 import structures._User;
+import cc.mallet.cluster.Clustering;
+import cc.mallet.cluster.KMeans;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.FeatureVector;
 import cc.mallet.types.Instance;
+import cc.mallet.types.InstanceList;
 import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
 
