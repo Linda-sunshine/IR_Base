@@ -14,6 +14,7 @@ import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import structures._thetaStar;
+
 import utils.Utils;
 /***
  * Linear transformation matrix with DP.
@@ -25,7 +26,6 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	protected double[] m_supModel; // linear transformation for super user
 	
-//	protected double[] m_abNuB = new double[]{1, 0.1}; // prior for scaling
 	protected double m_eta3 = 1.0, m_eta4 = 1.0; // will be used to scale regularization term
 	
 	public MTCLinAdaptWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, String featureGroupMap, String featureGroup4Sup){
@@ -169,8 +169,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	@Override
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
 		int k, n;
-		_DPAdaptStruct user = (_DPAdaptStruct)u;
-		double[] Au = user.getThetaStar().getModel();
+		double[] Au = ((_DPAdaptStruct)u).getThetaStar().getModel();
 		double value = Au[0]*getSupWeights(0) + Au[m_dim];//Bias term: w_s0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
@@ -222,6 +221,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		super.evaluateModel();	
 	}
 	
+	// added by Lin for stat cacluation.
 	public void printStat() throws FileNotFoundException{
 		_DPAdaptStruct user;
 		PrintWriter writer = new PrintWriter(new File("stat.txt"));

@@ -3,12 +3,9 @@
  */
 package topicmodels.multithreads.LDA;
 
-import java.io.IOException;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Collection;
 
-import Analyzer.newEggAnalyzer;
 import optimization.gradientBasedMethods.ProjectedGradientDescent;
 import optimization.gradientBasedMethods.stats.OptimizerStats;
 import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
@@ -295,60 +292,6 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 		}
 		
 		calculate_M_step(0);
-	}
-
-	public static void main(String[] args) throws IOException, ParseException {	
-		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 2; //The default value is unigram. 
-		int lengthThreshold = 5; //Document length threshold
-		
-		int number_of_topics = 16;
-		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
-		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
-		int topK = 20, number_of_iteration = 100;
-		int attributeSize = 2;//pro and con in NewEgg
-		int loadProsCons = 2; // 0 means only load pros, 1 means load only cons, 2 means load both pros and cons 
-		
-		
-		/*****The parameters used in loading files.*****/
-		String pCategory = "camera"; // camera
-		
-		String newEggFolder = "./data/NewEgg";
-		String amazonFolder = String.format("./data/amazon/%s/topicmodel", pCategory);
-		String suffix = ".json";
-		String tokenModel = "./data/Model/en-token.bin"; //Token model.
-		String aspectlist = String.format("./data/Model/aspect_%s.txt", pCategory);
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, pCategory);
-
-//		/*****Parameters in feature selection.*****/
-//		String stopwords = "./data/Model/stopwords.dat";
-//		String featureSelection = "DF"; //Feature selection method.
-//		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-//		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-//		int DFthreshold = 10; // Filter the features with DFs smaller than this threshold.
-//		
-//		System.out.println("Performing feature selection, wait...");
-//		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, pCategory);
-//		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadNewEggDirectory(newEggFolder, suffix); // load NewEgg reviews
-//		analyzer.LoadDirectory(amazonFolder, suffix); // load amazon reviews
-//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
-		
-		System.out.println("Creating feature vectors, wait...");
-		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, pCategory, loadProsCons);
-		analyzer.LoadNewEggDirectory(newEggFolder, suffix); // load NewEgg reviews
-		analyzer.LoadDirectory(amazonFolder, suffix); // load amazon reviews
-		
-		_Corpus c = analyzer.returnCorpus(null); // Get the collection of all the documents.
-		
-		AttributeAwareLDA_VarMultiThread model 
-			= new AttributeAwareLDA_VarMultiThread(number_of_iteration, converge, beta, c, 
-				lambda, number_of_topics, alpha, 10, -1, attributeSize);
-		
-		model.LoadPrior(aspectlist, eta);
-		model.setDisplayLap(1);
-		model.EMonCorpus();
-		model.printTopWords(topK);
 	}
 }
 

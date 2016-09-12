@@ -13,7 +13,8 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  *
  */
 public class MTCLRWithDP extends CLRWithDP {
-	protected double m_q = 1;// the wc + m_q*wg;
+
+	protected double m_q = .10;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithDP(int classNo, int featureSize,
@@ -104,7 +105,9 @@ public class MTCLRWithDP extends CLRWithDP {
 		return String.format("MTCLRWithDP[dim:%d,q:%.4f,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_q, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}	
 	
+	// added by Lin for parameter setting.
 	public void setQ(double q){
 		m_q = q;
 	}
+
 }

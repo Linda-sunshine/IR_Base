@@ -424,7 +424,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			//pred = getLabel(m_fu[i]);
 			pred = getLabel(m_nodeList[i].m_pred);
 			ans = m_testSet.get(i).getYLabel();
-			clusterNo = m_testSet.get(i).getCluseterNo();
+			clusterNo = m_testSet.get(i).getClusterNo();
 			m_TPTable[pred][ans] += 1;
 			if(pred == ans)
 				accStat[clusterNo*2]++;
@@ -445,7 +445,4 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 		System.out.println();
 		return acc/m_U;
 	}
-//	public void printInfo(){
-//		System.out.format("Similarity selection method: %s, similarity included: %s\n", m_simiMethod, m_simFlag);
-//	}
 }

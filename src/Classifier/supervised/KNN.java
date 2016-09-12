@@ -100,7 +100,7 @@ public class KNN extends BaseClassifier{
 		
 		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_k);
 		for(_Doc d:docs)
-			neighbors.add(new _RankItem(d.getYLabel(), Utils.calculateSimilarity(d, doc)));
+			neighbors.add(new _RankItem(d.getYLabel(), Utils.dotProduct(d, doc)));
 		
 		Arrays.fill(m_cProbs, 0);
 		for(_RankItem rt:neighbors)
@@ -124,7 +124,7 @@ public class KNN extends BaseClassifier{
 		
 		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_k);
 		for(_Doc d:docs)
-			neighbors.add(new _RankItem(d.getYLabel(), Utils.calculateSimilarity(d, doc)));
+			neighbors.add(new _RankItem(d.getYLabel(), Utils.dotProduct(d, doc)));
 		
 		Arrays.fill(m_cProbs, 0);
 		for(_RankItem rt:neighbors)

@@ -25,7 +25,8 @@ public class NormalPrior {
 	
 	public void sampling(double[] target) {
 		for(int i=0; i<target.length; i++) {
-			if (m_meansA==null)
+
+			if (m_meansA==null)//we have not specified the mean vector yet
 				target[i] = m_normal.nextDouble();
 			else
 				target[i] = m_normal.nextDouble(m_meansA[i], m_sdA);
@@ -36,17 +37,6 @@ public class NormalPrior {
 		for(int i=0; i<target.length; i++) {
 			target[i] = m_normal.nextDouble(mean[i], m_sdA);
 		}
-	}
-	
-	public double logLikelihood(double[] target, double normScaleA) {
-		double L = 0;
-		for(int i=0; i<target.length; i++) {
-			if (m_meansA==null)
-				L += (target[i]-m_meanA)*(target[i]-m_meanA)/m_sdA/m_sdA;
-			else
-				L += (target[i]-m_meansA[i])*(target[i]-m_meansA[i])/m_sdA/m_sdA;
-		}
-		return normScaleA * L / 2;
 	}
 	
 	public double logLikelihood(double[] target, double normScaleA, double normScaleB) {

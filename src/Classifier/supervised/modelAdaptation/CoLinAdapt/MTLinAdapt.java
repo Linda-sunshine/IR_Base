@@ -26,8 +26,8 @@ public class MTLinAdapt extends CoLinAdapt {
 	int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	double[] m_sWeights; // Weights for the super user.
 
-	double m_lambda1; // Scaling coefficient for R^1(A_s)
-	double m_lambda2; // Shifting coefficient for R^1(A_s)
+//	double m_lambda1; // Scaling coefficient for R^1(A_s)
+//	double m_lambda2; // Shifting coefficient for R^1(A_s)
 	
 	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
 	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
@@ -36,6 +36,11 @@ public class MTLinAdapt extends CoLinAdapt {
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			int topK, String globalModel, String featureGroupMap) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+<<<<<<< HEAD
+=======
+		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
+
+>>>>>>> master
 		m_LNormFlag = true;
 	}
 	
@@ -43,7 +48,10 @@ public class MTLinAdapt extends CoLinAdapt {
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+<<<<<<< HEAD
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
+=======
+>>>>>>> master
 		m_LNormFlag = true;
 	}
 	
@@ -53,7 +61,11 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	public String toString() {
+<<<<<<< HEAD
 		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f, personalized:%b]", 
+=======
+		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
+>>>>>>> master
 				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	

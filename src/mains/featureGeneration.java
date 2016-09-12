@@ -68,7 +68,7 @@ public class featureGeneration {
 			sentence = true;
 		}
 		
-		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
+		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s_sample.txt", Ngram, articleType);
 		//String fvFile = String.format("./data/Features/fv_%dgram_topicmodel.txt", Ngram);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
 	
@@ -103,21 +103,21 @@ public class featureGeneration {
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.00; // Used in feature selection, the starting point of the features.
+		double startProb = 0.50; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of
 								// the features.
 		int DFthreshold = 10; // Filter the features with DFs smaller than this
 								// threshold.
 
-		double DFUpperThreshold = 0.10;
+		double DFUpperThreshold = 0.05;
 		
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadChildDirectory(commentFolder, suffix);
-//		analyzer.LoadDirectory(commentFolder, suffix);
+//		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		

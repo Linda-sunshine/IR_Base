@@ -1,4 +1,4 @@
-package topicmodels.correspondenceModels;
+package topicmodels;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,10 +24,10 @@ import utils.Utils;
 import Analyzer.ParentChildAnalyzer;
 
 public class languageModelBaseLine{
-	HashMap<Integer, Double> m_wordSstat; //TTF
+	public HashMap<Integer, Double> m_wordSstat; //TTF
 	double m_allWordFrequency; //total TTF
 	protected _Corpus m_corpus;
-	double m_smoothingMu;
+	public double m_smoothingMu;
 	double m_allWordFrequencyWithXVal;
 	
 	public languageModelBaseLine(_Corpus c, double mu){
@@ -38,7 +38,7 @@ public class languageModelBaseLine{
 		m_allWordFrequencyWithXVal = 0;
 	}
 	
-	protected void generateReferenceModel(){
+	public void generateReferenceModel(){
 		m_allWordFrequency = 0;
 		for(_Doc d: m_corpus.getCollection()){
 			_SparseFeature[] fv = d.getSparse();
@@ -119,7 +119,7 @@ public class languageModelBaseLine{
 		}
 	}
 	
-	protected double getReferenceProb(int wid){
+	public double getReferenceProb(int wid) {
 		return m_wordSstat.get(wid);
 	}
 	
@@ -369,12 +369,7 @@ public class languageModelBaseLine{
 		analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadChildDirectory(commentFolder, suffix);
 		
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
-		
+
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);				
 		

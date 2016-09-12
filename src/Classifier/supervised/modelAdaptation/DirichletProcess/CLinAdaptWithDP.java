@@ -5,7 +5,6 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._Review;
@@ -14,6 +13,7 @@ import structures._User;
 import structures._thetaStar;
 import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
+
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 /***
@@ -23,7 +23,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  */
 public class CLinAdaptWithDP extends CLRWithDP {
 
-	protected double[] m_abNuB = new double[]{1, 0.2}; // prior for scaling
+	protected double[] m_abNuB = new double[]{1, 0.1}; // prior for scaling
 	public static double[] m_supWeights; // newly learned global model, dummy variable in CLinAdaptWithDP
 	
 	public CLinAdaptWithDP(int classNo, int featureSize,
@@ -36,7 +36,10 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	
 	@Override
 	protected void accumulateClusterModels(){
-		m_models = new double[getVSize()];
+
+		if (m_models==null || m_models.length!=getVSize())
+			m_models = new double[getVSize()];
+		
 		for(int i=0; i<m_kBar; i++)
 			System.arraycopy(m_thetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
 	}
@@ -110,8 +113,7 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	@Override
 	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
 		int k, n;
-		_DPAdaptStruct user = (_DPAdaptStruct)u;
-		double[] Au = user.getThetaStar().getModel();
+		double[] Au = ((_DPAdaptStruct)u).getThetaStar().getModel();
 		double value = Au[0]*m_gWeights[0] + Au[m_dim];//Bias term: w_s0*a0+b0.
 		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
@@ -138,11 +140,7 @@ public class CLinAdaptWithDP extends CLRWithDP {
 			user.setPersonalizedModel(m_pWeights);
 		}
 	}
-	
-	
-	public void setsdB(double sd){
-		m_abNuB[1] = sd;
-	}
+
 	// Assign the optimized models to the clusters.
 	@Override
 	protected void setThetaStars(){
@@ -156,9 +154,14 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim,m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
+	// The following codes are added by Lin for some use.
 	public void debug(_AdaptStruct u, int count){
 		_DPAdaptStruct user = (_DPAdaptStruct) u;
 		int index = findThetaStar(user.getThetaStar());
 		System.out.print(String.format("\nError number:%d, ttl rvw size:%d, theta index:%d\n", count, user.getUser().getReviewSize(), index));
 	}
+
+	public void setsdB(double sd){
+		m_abNuB[1] = sd;
+}
 }

@@ -17,10 +17,11 @@ import utils.Utils;
  * Griffiths, Thomas L., and Mark Steyvers. "Finding scientific topics."
  */
 public class LDA_Gibbs extends pLSA {
-	Random m_rand;
-	int m_burnIn; // discard the samples within burn in period
-	int m_lag; // lag in accumulating the samples
+	protected Random m_rand;
+	protected int m_burnIn; // discard the samples within burn in period
+	protected int m_lag; // lag in accumulating the samples
 	
+	protected double[] m_topicProbCache;
 	//all computation here is not in log-space!!!
 	public LDA_Gibbs(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, 
@@ -30,6 +31,7 @@ public class LDA_Gibbs extends pLSA {
 		m_rand = new Random();
 		m_burnIn = (int) (burnIn * number_of_iteration);
 		m_lag = lag;
+		m_topicProbCache = new double[number_of_topics];
 	}
 	
 	@Override
@@ -48,6 +50,7 @@ public class LDA_Gibbs extends pLSA {
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
+		Arrays.fill(m_topicProbCache, 0);
 		
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
@@ -120,17 +123,21 @@ public class LDA_Gibbs extends pLSA {
 				word_topic_sstat[tid][wid] --;
 				m_sstat[tid] --;
 			}
-			
+
 			//perform random sampling
 			p = 0;
-			for(tid=0; tid<number_of_topics; tid++)
-				p += d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]); // p(z|d) * p(w|z)			
+			for (tid = 0; tid < number_of_topics; tid++) {
+				m_topicProbCache[tid] = topicInDocProb(tid, d)
+						* wordByTopicProb(tid, wid);
+				p += m_topicProbCache[tid];
+			}
+
 			p *= m_rand.nextDouble();
 			
 			tid = -1;
 			while(p>0 && tid<number_of_topics-1) {
 				tid ++;
-				p -= d.m_sstat[tid] * (word_topic_sstat[tid][wid]/m_sstat[tid]);
+				p -= m_topicProbCache[tid];
 			}
 			
 			//assign the selected topic to word
@@ -150,6 +157,14 @@ public class LDA_Gibbs extends pLSA {
 //			return 0;
 	}
 	
+	protected double wordByTopicProb(int tid, int wid) {
+		return word_topic_sstat[tid][wid] / m_sstat[tid];
+	}
+
+	protected double topicInDocProb(int tid, _Doc d) {
+		return (d.m_sstat[tid]);
+	}
+
 	@Override
 	public void calculate_M_step(int iter) {	
 		//literally we do not have M-step in Gibbs sampling		
@@ -218,14 +233,16 @@ public class LDA_Gibbs extends pLSA {
 	}
 	
 	@Override
-	public double calculate_log_likelihood(_Doc d) {		
+	protected double calculate_log_likelihood(_Doc d) {
 		int tid, wid;
-		double logLikelihood = docThetaLikelihood(d), docSum = Utils.sumOfArray(d.m_sstat);
+		double logLikelihood = docThetaLikelihood(d), docSum = Utils
+				.sumOfArray(d.m_sstat);
 		
-		for(_Word w:d.getWords()) {
+		for (_Word w : d.getWords()) {
 			wid = w.getIndex();
 			tid = w.getTopic();
-			logLikelihood += Math.log(d.m_sstat[tid]/docSum * word_topic_sstat[tid][wid]/m_sstat[tid]);
+			logLikelihood += Math.log(d.m_sstat[tid] / docSum
+					* word_topic_sstat[tid][wid] / m_sstat[tid]);
 		}
 		return logLikelihood;
 	}

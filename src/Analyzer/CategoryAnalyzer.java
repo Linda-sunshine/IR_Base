@@ -22,7 +22,10 @@ public class CategoryAnalyzer extends MultiThreadedUserAnalyzer {
 	protected int[] m_ctgCounts;
 	protected int m_ctgThreshold = Integer.MAX_VALUE; // added by Lin, the category threshold for selecting users.
 	HashMap<Integer, ArrayList<_Review>> m_ctgRvws = new HashMap<Integer, ArrayList<_Review>>();
-
+	protected ArrayList<String> m_categories;
+	protected int m_start = 0, m_end = Integer.MAX_VALUE; // Added by Lin for filtering reviews.
+	protected double m_globalLen = 0, m_maxLen = 0;
+	
 	public CategoryAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
 					throws InvalidFormatException, FileNotFoundException, IOException {
@@ -71,7 +74,7 @@ public class CategoryAnalyzer extends MultiThreadedUserAnalyzer {
 	}
 	
 	// Load one file as a user here. 
-	public void loadOneUser(String filename, int core){
+	public void loadUser(String filename, int core){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));

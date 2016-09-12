@@ -29,7 +29,7 @@ public class BinaryRouteAnalyzer extends UserAnalyzer {
 
 	@Override
 	// Load one file as a user here. 
-	public void loadOneUser(String filename){
+	public void loadUser(String filename){
 		try {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));

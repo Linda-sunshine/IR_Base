@@ -888,4 +888,31 @@ public class Utils {
 		
 		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
+	
+	//Calculate the similarity between two documents.
+	public static double calculateSimilarity(_Doc d1, _Doc d2){
+		return calculateSimilarity(d1.getSparse(), d2.getSparse());
+	}
+	
+	//Calculate the similarity between two sparse vectors.
+	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
 }

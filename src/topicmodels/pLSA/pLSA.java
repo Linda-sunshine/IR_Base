@@ -37,7 +37,7 @@ public class pLSA extends twoTopic {
 	public pLSA(int number_of_iteration, double converge, double beta, _Corpus c, //arguments for general topic model
 			double lambda, //arguments for 2topic topic model
 			int number_of_topics, double alpha) { //arguments for pLSA			
-		super(number_of_iteration, converge, beta, c, lambda, null);
+		super(number_of_iteration, converge, beta, c, lambda);
 		
 		this.d_alpha = alpha;
 		this.number_of_topics = number_of_topics;		
@@ -254,7 +254,7 @@ public class pLSA extends twoTopic {
 	/* p(w,d) = sum_1_M sum_1_N count(d_i, w_j) * log[ lambda*p(w|theta_B) + [lambda * sum_1_k (p(w|z) * p(z|d)) */ 
 	//NOTE: cannot be used for unseen documents!
 	@Override
-	public double calculate_log_likelihood(_Doc d) {		
+	protected double calculate_log_likelihood(_Doc d) {		
 		double logLikelihood = docThetaLikelihood(d), prob;
 		for(_SparseFeature fv:d.getSparse()) {
 			int j = fv.getIndex();	
