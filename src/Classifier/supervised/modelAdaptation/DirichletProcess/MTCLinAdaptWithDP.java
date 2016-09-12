@@ -221,25 +221,6 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		super.evaluateModel();	
 	}
 	
-	// added by Lin for stat cacluation.
-	public void printStat() throws FileNotFoundException{
-		_DPAdaptStruct user;
-		PrintWriter writer = new PrintWriter(new File("stat.txt"));
-		ArrayList<double[]> mean_sds = new ArrayList<double[]>();
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			for(_Review r: user.getReviews()){
-				mean_sds.add(calcMeanSd(r.m_probs));
-			}
-		}
-		for(double[] mean_sd: mean_sds){                       
-			for(double v: mean_sd)
-				writer.write(v + "\t");
-			writer.write("\n");
-		}
-		writer.close();
-	}
-	
 	public double[] calcMeanSd(ArrayList<Double> vs){
 		double[] mean_sd = new double[2];
 		double mean = 0, sd = 0;
