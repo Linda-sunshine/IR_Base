@@ -243,4 +243,25 @@ public class _User {
 	public double getPosRatio(){
 		return m_posRatio;
 	}
+	
+	// Added by Lin for accumulating super user.
+	public void mergeReviews(ArrayList<_Review> reviews) {
+		m_reviews.addAll(reviews);
+	}
+
+	// Added by Lin for kmeans based on profile.
+	public int[] getProfIndices() {
+		int[] indices = new int[m_BoWProfile.length];
+		for (int i = 0; i < m_BoWProfile.length; i++)
+			indices[i] = m_BoWProfile[i].m_index;
+
+		return indices;
+	}
+	public double[] getProfValues() {
+		double[] values = new double[m_BoWProfile.length];
+		for(int i=0; i<m_BoWProfile.length; i++) 
+			values[i] = m_BoWProfile[i].m_value;
+		
+		return values;
+	}
  }
