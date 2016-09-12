@@ -66,11 +66,17 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		double delta = 0, last = 0, current = 0;
 		int i = 0, displayCount = 0;
 		do {
-
+			
 			long eStartTime = System.currentTimeMillis();
 
-			for (_Doc d : m_trainSet)
+			for (_Doc d : m_trainSet){
 				Arrays.fill(d.m_topics, 0);
+				if(d instanceof _ParentDoc4DCM){
+					for(int k=0; k<number_of_topics; k++){
+						Arrays.fill(((_ParentDoc4DCM)d).m_wordTopic_prob[k], 0);
+					}
+				}
+			}
 
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();

@@ -174,14 +174,14 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			loglikelihood = inference(d);
 			sumLikelihood += loglikelihood;
 			perplexity += loglikelihood;
-			totalWords += d.getTotalDocLength();
-			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
-				totalWords += cDoc.getTotalDocLength();
-			}
-//			totalWords += d.getDocTestLength();
-//			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-//				totalWords += cDoc.getDocTestLength();
+//			totalWords += d.getTotalDocLength();
+//			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
+//				totalWords += cDoc.getTotalDocLength();
 //			}
+			totalWords += d.getDocTestLength();
+			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+				totalWords += cDoc.getDocTestLength();
+			}
 		}
 		System.out.println("total Words\t" + totalWords + "perplexity\t"
 				+ perplexity);
@@ -273,8 +273,9 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			
 		}while(++iter<number_of_iteration);
 		
-		logLikelihood = calPerplexity(sampleTestSet);
+//		logLikelihood = calPerplexity(sampleTestSet);
 //		logLikelihood = calConditionalPerplexity(sampleTestSet);
+		logLikelihood = calPerplexity4Child(sampleTestSet);
 		
 		return logLikelihood;
 	}
@@ -284,9 +285,9 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		for(_Doc d:sampleTestSet){
 			estThetaInDoc(d);
 			if(d instanceof _ParentDoc)
-				logLikelihood += calculate_log_likelihood4ParentPerplexity(d);
+				logLikelihood += cal_logLikelihood_Perplexity4Parent(d);
 			else
-				logLikelihood += calculate_log_likelihood4ChildPerplexity(d);
+				logLikelihood += cal_logLikelihood_Perplexity4Child(d);
 		}
 		return logLikelihood;
 	}
@@ -346,8 +347,41 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 		return docLogLikelihood;
 	}
+	
+	protected double calPerplexity4Child(ArrayList<_Doc> sampleTestSet) {
+		double logLikelihood = 0;
+		for(_Doc d:sampleTestSet){
+			estThetaInDoc(d);
+			
+		}
+		
+		for(_Doc d:sampleTestSet){
+			if(d instanceof _ChildDoc)
+				logLikelihood += cal_logLikelihood_4Child(d);
+		}
+		return logLikelihood;
+	}
 
-	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d) {
+	protected double cal_logLikelihood_4Child(_Doc d){
+		double docLogLikelihood = 0.0;
+		_ChildDoc cDoc = (_ChildDoc)d;
+		_ParentDoc pDoc = cDoc.m_parentDoc;
+		for (_Word w : d.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						* topic_term_probabilty[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
+ 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d) {
 
 		_ParentDoc pDoc = (_ParentDoc) d;
 		for (_Stn stnObj : pDoc.getSentences()) {
@@ -363,7 +397,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			testLength = (int) (m_testWord4PerplexityProportion * cDoc
 					.getTotalDocLength());
-			testLength = 0;
+			testLength = cDoc.getTotalDocLength();
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			sampleTestSet.add(cDoc);
 			cDoc.createSparseVct4Infer();
@@ -451,7 +485,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 
-	protected double calculate_log_likelihood4ParentPerplexity(_Doc d){
+	protected double cal_logLikelihood_Perplexity4Parent(_Doc d){
 		double docLogLikelihood = 0.0;
 
 		for (_Word w : d.getWords()) {
@@ -469,7 +503,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		return docLogLikelihood;
 	}
 	
-	protected double calculate_log_likelihood4ChildPerplexity(_Doc d){
+	protected double cal_logLikelihood_Perplexity4Child(_Doc d){
 		double docLogLikelihood = 0.0;
 
 		for (_Word w : d.getWords()) {

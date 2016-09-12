@@ -55,7 +55,7 @@ public abstract class TopicModel_worker implements TopicModelWorker {
 
 		for(_Doc d:m_corpus) {
 			if (m_type == RunType.RT_EM) {
-				System.out.println("EM");
+//				System.out.println("EM");
 				m_likelihood += calculate_E_step(d);
 			} else if (m_type == RunType.RT_inference) {
 				System.out.println("inference");

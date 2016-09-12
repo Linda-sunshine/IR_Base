@@ -423,15 +423,12 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 		double delta = 0, last = 0, current = 0;
 		int i = 0, displayCount = 0;
 		do {
-			for (_Doc d : m_trainSet)
-				Arrays.fill(d.m_topics, 0);
 
 			long eStartTime = System.currentTimeMillis();
 
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				multithread_E_step();
-				calculate_M_step(j);
 			}
 			long eEndTime = System.currentTimeMillis();
 
@@ -481,6 +478,10 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				break;// to speed-up, we don't need to compute likelihood in
 						// many cases
 		} while (++i < this.number_of_iteration);
+		
+		for (int j = 0; j < number_of_iteration; j++) {
+			calculate_M_step(j);
+		}
 
 		finalEst();
 

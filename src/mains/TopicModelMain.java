@@ -60,11 +60,11 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
-		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test
-		String topicmodel = "corrLDA_Gibbs_test";
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test, DCMCorrLDA_Multi_EM
+		String topicmodel = "DCMCorrLDA_Multi_EM";
 
 		String category = "tablet";
-		int number_of_topics = 20;
+		int number_of_topics = 40;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -309,14 +309,11 @@ public class TopicModelMain {
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-
-				number_of_topics = 50;
-
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
-				gibbs_iteration = 200;
-				gibbs_lag = 20;
+				gibbs_iteration = 4;
+				gibbs_lag = 2;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
@@ -351,8 +348,7 @@ public class TopicModelMain {
 				double tau = 0.7;
 				int newtonIter = 1000;
 				double newtonConverge = 1e-3;
-				gibbs_iteration = 10;
-				gibbs_lag = 2;
+			
 				model = new corrLDA_Gibbs_test(gibbs_iteration, 0,
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn,
 						gibbs_lag, ksi, tau);
@@ -409,7 +405,6 @@ public class TopicModelMain {
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
 						newtonConverge);
 			} else if (topicmodel.equals("DCMCorrLDA_Multi_EM")) {
-				number_of_topics = 15;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;

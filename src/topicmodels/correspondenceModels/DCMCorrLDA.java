@@ -786,6 +786,40 @@ public class DCMCorrLDA extends DCMLDA4AC {
 
 	}
 	
+	protected double calPerplexity4Child(ArrayList<_Doc> sampleTestSet) {
+		double logLikelihood = 0;
+		for(_Doc d:sampleTestSet){
+			estThetaInDoc(d);
+			
+		}
+		
+		for(_Doc d:sampleTestSet){
+			if(d instanceof _ChildDoc)
+				logLikelihood += cal_logLikelihood_4Child(d);
+		}
+		return logLikelihood;
+	}
+
+	protected double cal_logLikelihood_4Child(_Doc d){
+		double docLogLikelihood = 0.0;
+		_ChildDoc cDoc = (_ChildDoc)d;
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)cDoc.m_parentDoc;
+		for (_Word w : d.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						* pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+	
+	
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 		for(_Stn stnObj:pDoc.getSentences()){
@@ -799,7 +833,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 //			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			testLength = 0;
+			testLength = cDoc.getTotalDocLength();
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
