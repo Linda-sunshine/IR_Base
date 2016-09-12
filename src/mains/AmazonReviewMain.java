@@ -3,14 +3,7 @@ package mains;
 import java.io.IOException;
 import java.text.ParseException;
 
-import Analyzer.jsonAnalyzer;
-import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.NaiveBayesEM;
-import Classifier.supervised.LogisticRegression;
-import Classifier.supervised.NaiveBayes;
-import Classifier.supervised.SVM;
-import influence.PageRank;
-import structures._Corpus;
+import Analyzer.DocAnalyzer;
 
 public class AmazonReviewMain {
 
@@ -44,7 +37,7 @@ public class AmazonReviewMain {
 		String stopwords = "./data/Model/stopwords.dat";
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
 		double endProb = 0.999; // Used in feature selection, the ending point of the features.
-		int DFthreshold = 20; // Filter the features with DFs smaller than this threshold.
+		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
 //		System.out.println("Feature Seleciton: " + featureSelection + "\tStarting probability: " + startProb + "\tEnding probability:" + endProb);
 		
 		/*****The parameters used in loading files.*****/
@@ -63,13 +56,13 @@ public class AmazonReviewMain {
 		System.out.println("--------------------------------------------------------------------------------------");
 		
 //		/****Loading json files*****/
-		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+		DocAnalyzer analyzer = new DocAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		
 //		/****Feature selection*****/
 		System.out.println("Performing feature selection, wait...");
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
 		analyzer.SaveCVStat(fvStatFile);	
 		
 		/****create vectors for documents*****/

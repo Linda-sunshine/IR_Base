@@ -3,6 +3,7 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import opennlp.tools.util.InvalidFormatException;
@@ -21,12 +22,7 @@ public class LinAdaptMain {
 		int topKNeighbors = 20;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
-<<<<<<< HEAD
-
-		double eta1 = .5, eta2 = .5, eta3 = .5, eta4 = .5, neighborsHistoryWeight = 0.5;
-=======
 		double eta1 = .01, eta2 = .01, eta3 = .01, eta4 = .01, neighborsHistoryWeight = 0.5;
->>>>>>> master
 		boolean enforceAdapt = true;
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
@@ -75,6 +71,15 @@ public class LinAdaptMain {
 //		asyncCoRegLRFirstOrder adaptation = new asyncCoRegLRFirstOrder(classNumber, analyzer.getFeatureSize(), 
 //				featureMap, globalModel, topKNeighbors, neighborsHistoryWeight);
 
+		//Create an instance of MT-LinAdapt model.
+//		MTLinAdapt adaptation = new MTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
+
+		// Create an instance of MT-LinAdapt-SupUser
+//		MTLinAdaptWithSupUserNoAdapt adaptation = new MTLinAdaptWithSupUserNoAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile);
+		
+		//Create the instance of MT-SVM
+//		MultiTaskSVM adaptation = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		adaptation.setBias(true);
 		
 		//Create an instance of asynchronized MT-LinAdapt model.
 //		asyncMTLinAdapt adaptation = new asyncMTLinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, topKNeighbors, globalModel, featureGroupFile, null);
@@ -113,12 +118,7 @@ public class LinAdaptMain {
 		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-<<<<<<< HEAD
-
-		adaptation.setLNormFlag(true);
-=======
 		adaptation.setLNormFlag(false);
->>>>>>> master
 		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);

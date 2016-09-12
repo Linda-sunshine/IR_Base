@@ -342,4 +342,10 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
 	}
+	
+	public double[] getPerf(){
+		for(int i=0; i<m_classNo; i++)
+			m_perf[i] = m_microStat.getF1(i);
+		return m_perf;
+	}
 }

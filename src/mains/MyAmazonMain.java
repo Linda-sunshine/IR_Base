@@ -92,8 +92,8 @@ public class MyAmazonMain {
 		analyzer.LoadStopwords(stopwords);		
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		analyzer.setFeatureValues(featureValue, norm);
-		analyzer.setTimeFeatures(window);
-		//analyzer.SaveCVStat(fvStatFile);
+//		analyzer.setTimeFeatures(window);
+//		analyzer.SaveCVStat(fvStatFile);
 
 		_Corpus corpus = analyzer.getCorpus();
 		featureSize = analyzer.getFeatureSize();

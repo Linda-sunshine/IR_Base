@@ -75,7 +75,7 @@ public class MyMTLinAdaptMain {
 		mtlinadaptsup.loadUsers(analyzer.getUsers());
 		mtlinadaptsup.setDisplayLv(displayLv);
 		mtlinadaptsup.setR1TradeOffs(eta1, eta2);
-		mtlinadaptsup.setRsTradeOffs(lambda1, lambda2);
+		mtlinadaptsup.setR2TradeOffs(lambda1, lambda2);
 		mtlinadaptsup.train();
 		mtlinadaptsup.test();
 		mtlinadaptsup.saveModel("./data/models/mtlinadapt_1");

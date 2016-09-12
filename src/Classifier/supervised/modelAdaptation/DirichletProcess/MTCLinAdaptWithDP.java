@@ -1,20 +1,13 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
-import structures._Review;
 import structures._SparseFeature;
-import structures._thetaStar;
-
 import utils.Utils;
 /***
  * Linear transformation matrix with DP.
@@ -209,7 +202,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+		return String.format("CLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	//apply current model in the assigned clusters to users
@@ -219,59 +212,5 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 			m_supWeights[i] = getSupWeights(i);
 		
 		super.evaluateModel();	
-	}
-	
-	public double[] calcMeanSd(ArrayList<Double> vs){
-		double[] mean_sd = new double[2];
-		double mean = 0, sd = 0;
-		for(double v: vs)
-			mean += v;
-		mean /= vs.size();
-		mean_sd[0] = mean;
-		for(double v: vs)
-			sd += (v-mean)*(v-mean);
-		sd = Math.sqrt(sd/vs.size());
-		mean_sd[1] = sd;
-		return mean_sd;
-	}
-	
-	// Save the models of clusters.
-	public void saveClusterModel(String modelLocation) {
-		int ki, ks;
-		double[] Ac;
-		_thetaStar star;
-		for(int k=0; k< m_kBar; k++) {
-			star = m_thetaStars[k];
-			try {
-	            PrintWriter writer = new PrintWriter(new File(modelLocation+"/"+k+".classifier"));
-	            StringBuilder buffer = new StringBuilder(512);
-	            m_pWeights = new double[m_gWeights.length];
-	            Ac = star.getModel();
-				for(int n=0; n<=m_featureSize; n++){
-					ki = m_featureGroupMap[n];
-					ks = m_featureGroupMap4SupUsr[n];
-					m_pWeights[n] = Ac[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+Ac[ki+m_dim];
-				}
-				for(int i=0; i<m_pWeights.length; i++) {
-	            	buffer.append(m_pWeights[i]);
-	            	if (i<m_pWeights.length-1)
-	            		buffer.append(',');
-	            }
-	            writer.write(buffer.toString());
-	            writer.close();
-	        } catch (Exception e) {
-	            e.printStackTrace(); 
-	        } 
-		}
-		System.out.format("[Info]Save cluster models to %s.\n", modelLocation);
-	}
-	public void saveClusterInfo(String filename) throws FileNotFoundException{
-		PrintWriter writer = new PrintWriter(new File(filename));
-		_DPAdaptStruct user;
-		for(_AdaptStruct u: m_userList){
-			user = (_DPAdaptStruct) u;
-			writer.write(user.getUserID() + "\t" + user.getThetaStar().getIndex()+"\n");
-		}
-		writer.close();
 	}
 }

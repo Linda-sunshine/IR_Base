@@ -85,12 +85,12 @@ public class MyTransductiveMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 
 		System.out.println("Creating feature vectors, wait...");
-		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, classNumber, fvFile, Ngram, lengthThreshold, tagModel, aspectList, true);
+		AspectAnalyzer analyzer = new AspectAnalyzer(tokenModel, stnModel, tagModel, classNumber, fvFile, Ngram, lengthThreshold, aspectList, true);
 		//Added by Mustafizur----------------
 		analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
 		analyzer.LoadStopwords(stopword); // Load the sentiwordnet file.
 //		analyzer.initSentiWordNet(pathToSentiWordNet);
-		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
+//		analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
 		
 		// Added by Mustafizur----------------
 		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.

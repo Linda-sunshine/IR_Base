@@ -47,7 +47,6 @@ public class MyAvgAdaptMain {
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
-		analyzer.setDFScheme("G");
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		analyzer.constructSparseVector4Users(); 
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();

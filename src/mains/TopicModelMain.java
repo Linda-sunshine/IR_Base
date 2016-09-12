@@ -33,8 +33,14 @@ import Analyzer.ParentChildAnalyzer;
 public class TopicModelMain {
 
 	public static void main(String[] args) throws IOException, ParseException {	
+		
+		int mb = 1024*1024;
+		
+		Runtime rTime = Runtime.getRuntime();
+		System.out.println("totalMem\t:"+rTime.totalMemory()/mb);
+		
 		int classNumber = 5; //Define the number of classes in this Naive Bayes.
-		int Ngram = 2; //The default value is unigram. 
+		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
 		int lengthThreshold = 5; //Document length threshold
@@ -67,6 +73,7 @@ public class TopicModelMain {
 		// displayLap = 2;
 		
 		double burnIn = 0.4;
+
 		boolean sentence = false;
 		
 		// most popular items under each category from Amazon
@@ -79,7 +86,6 @@ public class TopicModelMain {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
-
 		String articleType = "Tech";
 //		articleType = "Gadgets";
 //		 articleType = "Yahoo";
@@ -102,7 +108,7 @@ public class TopicModelMain {
 			posModel = "./data/Model/en-pos-maxent.bin"; // POS model.
 			sentence = true;
 		}
-		
+
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
 		
@@ -122,7 +128,6 @@ public class TopicModelMain {
 		
 		SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd-HHmm");	
 		String filePrefix = String.format("./data/results/%s", dateFormatter.format(new Date()));
-
 		filePrefix = filePrefix + "-" + topicmodel + "-" + articleType;
 		File resultFolder = new File(filePrefix);
 		if (!resultFolder.exists()) {
@@ -156,7 +161,6 @@ public class TopicModelMain {
 		/***** parent child topic model *****/
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-
 //		analyzer.LoadDirectory(commentFolder, suffix);
 		if(topicmodel.equals("LDA_APPMerged"))
 			articleFolder = String.format(
@@ -182,11 +186,6 @@ public class TopicModelMain {
 //		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, DFthreshold); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
-		if (topicmodel.equals("HTMM") || topicmodel.equals("LRHTMM") || topicmodel.equals("HTSM") || topicmodel.equals("LRHTSM"))
-		{
-			analyzer.setMinimumNumberOfSentences(minimunNumberofSentence);
-			analyzer.loadPriorPosNegWords(pathToSentiWordNet, pathToPosWords, pathToNegWords, pathToNegationWords);
-		}
 		
 //		analyzer.LoadNewEggDirectory(newEggFolder, suffix); //Load all the documents as the data set.
 //		analyzer.LoadDirectory(amazonFolder, suffix);			
@@ -232,21 +231,7 @@ public class TopicModelMain {
 				model = new LRHTSM(number_of_iteration, converge, beta, c, 
 						number_of_topics, alpha,
 						lambda);
-<<<<<<< HEAD
-
-			} else if (topicmodel.equals("ACCTM_TwoTheta")) {
-				double mu = 1.0;
-				double[] gamma = {2, 2};
-
-				double ksi = 800;
-				double tau = 0.5;
-				model = new ACCTM_TwoTheta(gibbs_iteration, 0, beta-1, c,
-						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
-						gamma, ksi, tau);
-			}else if(topicmodel.equals("LDA_Gibbs_Debug")){
-=======
 			} else if(topicmodel.equals("correspondence_LDA_Gibbs")){
->>>>>>> master
 				double ksi = 800;
 				double tau = 0.7;
 				model = new corrLDA_Gibbs(gibbs_iteration, 0, beta-1, c, //in gibbs sampling, no need to compute log-likelihood during sampling

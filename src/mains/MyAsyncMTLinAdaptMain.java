@@ -58,7 +58,7 @@ public class MyAsyncMTLinAdaptMain {
 		adaptation.setTrainByUser(false);//train by review-driven mode.
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setRsTradeOffs(lambda1, lambda2);
+		adaptation.setR2TradeOffs(lambda1, lambda2);
 		adaptation.setRPTTime(1);
 		adaptation.train();
 		adaptation.test();

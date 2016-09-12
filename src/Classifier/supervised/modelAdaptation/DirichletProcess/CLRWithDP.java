@@ -579,7 +579,7 @@ public class CLRWithDP extends LinAdapt {
 	public void setsdA(double v){
 		m_abNuA[1] = v;
 	}
-	protected void setNumberOfIterations(int num){
+	public void setNumberOfIterations(int num){
 		m_numberOfIterations = num;
 	}
 	
@@ -692,6 +692,5 @@ public class CLRWithDP extends LinAdapt {
 	public void setGlobalModel(int fvSize){
 		m_gWeights = new double[fvSize+1];
 	}
-	
 
 }
