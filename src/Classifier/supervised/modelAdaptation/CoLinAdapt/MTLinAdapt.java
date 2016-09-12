@@ -34,24 +34,10 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	// The constructor only constructs feature group for individual users, not super user.
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
-			int topK, String globalModel, String featureGroupMap) {
+			int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-<<<<<<< HEAD
-=======
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
 
->>>>>>> master
-		m_LNormFlag = true;
-	}
-	
-	// The constructor consists of different groups for individual users and super user.
-	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
-						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
-<<<<<<< HEAD
-		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
-=======
->>>>>>> master
 		m_LNormFlag = true;
 	}
 	
@@ -61,11 +47,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	public String toString() {
-<<<<<<< HEAD
 		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f, personalized:%b]", 
-=======
-		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
->>>>>>> master
 				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	

@@ -202,7 +202,7 @@ public class MTLinAdaptWithClusters extends MTLinAdapt{
 	@Override
 	public String toString() {
 		return String.format("MTLinAdaptWithClusters[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
-				m_dim, m_dimSup, m_eta1, m_eta2, m_lambda1, m_lambda2, m_personalized);
+				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	
 	

@@ -22,8 +22,8 @@ public class MTLinAdaptWithSupUserNoAdapt extends MTLinAdapt {
 	
 	public MTLinAdaptWithSupUserNoAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
-			String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+			String featureGroupMap, String featureGroupMap4Sup) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap, featureGroupMap4Sup);
 		m_p = 1.0;
 		m_q = 1.0;
 		m_beta = 1.0;
