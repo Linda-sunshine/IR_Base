@@ -31,7 +31,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected int m_numberOfCores;
 	protected Tokenizer[] m_tokenizerPool;
 	protected SnowballStemmer[] m_stemmerPool;
-	private Object m_allocReviewLock=null, m_corpusLock=null, m_rollbackLock;
+	protected Object m_allocReviewLock=null;
+	private Object m_corpusLock=null;
+	private Object m_rollbackLock;
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
@@ -203,7 +205,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	/*Analyze a document and add the analyzed document back to corpus.*/
-	private boolean AnalyzeDoc(_Doc doc, int core) {
+	protected boolean AnalyzeDoc(_Doc doc, int core) {
 		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource(),core);// Three-step analysis.
 		String[] tokens = result.getTokens();
 		int y = doc.getYLabel();
