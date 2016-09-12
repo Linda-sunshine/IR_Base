@@ -1,8 +1,9 @@
-package Classifier.supervised.modelAdaptation;
+package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.CoLinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._CoLinAdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;

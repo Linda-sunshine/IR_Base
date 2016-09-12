@@ -105,6 +105,15 @@ public class MultiTaskSVM extends ModelAdaptation {
 		return 0;
 	}
 	
+	public void setLibProblemDimension(Problem libProblem){
+		if (m_bias) {
+			libProblem.n = (m_featureSize + 1) * (m_userSize + 1); // including bias term; global model + user models
+			libProblem.bias = 1;// bias term in liblinear.
+		} else {
+			libProblem.n = m_featureSize * (m_userSize + 1);
+			libProblem.bias = -1;// no bias term in liblinear.
+		}
+	}
 	@Override
 	protected void setPersonalizedModel() {
 		double[] weight = m_libModel.getWeights();//our model always assume the bias term
