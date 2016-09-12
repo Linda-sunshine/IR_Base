@@ -305,9 +305,10 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	} 
 	
 	/******Added by Lin*****/
-	double[][] m_simiStat;
 	int m_foldCount = 0;
-	
+	protected int m_kFold;
+	double[][] m_simiStat;
+
 	public void setKFold(int k){
 		m_kFold = k;
 		m_simiStat = new double[m_kFold][4];
