@@ -46,6 +46,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_LNormFlag=true;
 	protected String m_dataset = "Amazon"; // Default dataset.
 
+	// added by Lin.
+	protected double[] m_perf; // Stores overall performance, micro F1 for both classes, macro F1 for both
+	
 	public ModelAdaptation(int classNo, int featureSize) {
 		super(classNo, featureSize);
 		m_pWeights = null;

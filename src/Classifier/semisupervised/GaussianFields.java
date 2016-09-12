@@ -459,4 +459,3 @@ public class GaussianFields extends BaseClassifier {
 		
 	}
 }
-
