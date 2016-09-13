@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.netlib.util.doubleW;
+
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
 import structures._Corpus;
@@ -32,6 +34,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	protected double[] m_alpha_c;
 	protected double m_totalAlpha_c;
 	protected double[] m_alphaAuxilary;
+	protected double d_alpha_c;
 	
 	public DCMCorrLDA(int number_of_iteration, double converge, double beta,
 			_Corpus c, double lambda, int number_of_topics, double alpha_a,
@@ -40,6 +43,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
 				alpha_a, burnIn, lag, ksi, tau, newtonIter, newtonConverge);
 		
+		d_alpha_c = alpha_c;
 
 	}
 	
@@ -392,8 +396,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 		for(int k=0; k<number_of_topics; k++){
-			m_alpha[k] = m_sstat[k];
-			m_alpha_c[k] = m_alphaAuxilary[k];
+			m_alpha[k] = m_sstat[k]+d_alpha;
+			m_alpha_c[k] = m_alphaAuxilary[k]+d_alpha_c;
 			for (int v = 0; v < vocabulary_size; v++)
 				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
 		}
@@ -413,11 +417,13 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		do{
 			diff = 0;
 			
+			double[] wordNum4Tid = new double[number_of_topics];
 			double totalAlphaDenominator = 0;
 			m_totalAlpha = Utils.sumOfArray(m_alpha);
 			double digAlpha = Utils.digamma(m_totalAlpha);
 			
 			double deltaAlpha = 0;
+			Arrays.fill(wordNum4Tid, 0);
 			
 			for(_Doc d:m_trainSet){
 				if(d instanceof _ParentDoc){
@@ -429,13 +435,19 @@ public class DCMCorrLDA extends DCMLDA4AC {
 				double totalAlphaNumerator = 0;
 				
 				for(_Doc d:m_trainSet){
-					if(d instanceof _ParentDoc)
+					if(d instanceof _ParentDoc){
 						totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
+						wordNum4Tid[k] += d.m_sstat[k];
+					}
 				}
 				
-				deltaAlpha = totalAlphaNumerator*1.0/totalAlphaDenominator;
+				if(wordNum4Tid[k]==0){
+					deltaAlpha = 0;
+				}else{
+					deltaAlpha = totalAlphaNumerator*1.0/totalAlphaDenominator;
+				}
 				
-				double newAlpha = m_alpha[k]*deltaAlpha;
+				double newAlpha = m_alpha[k]*deltaAlpha+d_alpha;
 				double t_diff = Math.abs(m_alpha[k]-newAlpha);
 				
 				if(t_diff>diff)
@@ -466,9 +478,11 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		do{
 			diff = 0;
 			double totalAlphaDenominator = 0;
+			double[] wordNum4Tid = new double[number_of_topics];
 			double[] totalAlphaNumerator = new double[number_of_topics];
 			Arrays.fill(totalAlphaNumerator, 0);
 			m_totalAlpha_c = Utils.sumOfArray(m_alpha_c);
+			Arrays.fill(wordNum4Tid, 0);
 						
 			double deltaAlpha = 0;
 			for(_Doc d:m_trainSet){
@@ -482,16 +496,22 @@ public class DCMCorrLDA extends DCMLDA4AC {
 						double digAlpha = Utils.digamma(t_totalAlpha_c);
 						totalAlphaDenominator += Utils.digamma(cDoc.getTotalDocLength()+t_totalAlpha_c)-digAlpha;
 						
-						for(int k=0; k<number_of_topics; k++)
+						for(int k=0; k<number_of_topics; k++){
+							wordNum4Tid[k] += cDoc.m_sstat[k];
 							totalAlphaNumerator[k] += Utils.digamma(m_alpha_c[k]+muDp*pDoc.m_sstat[k]+cDoc.m_sstat[k])-Utils.digamma(m_alpha_c[k]+muDp*pDoc.m_sstat[k]);
+						}
 					}
 				}
 			}
 			
 			for(int k=0; k<number_of_topics; k++){
-				deltaAlpha = totalAlphaNumerator[k]*1.0/totalAlphaDenominator;
+				if(wordNum4Tid[k]==0){
+					deltaAlpha = 0;
+				}else{
+					deltaAlpha = totalAlphaNumerator[k]*1.0/totalAlphaDenominator;
+				}
 				
-				double newAlpha = m_alpha_c[k]*deltaAlpha;
+				double newAlpha = m_alpha_c[k]*deltaAlpha+d_alpha_c;
 				double t_diff = Math.abs(m_alpha_c[k]-newAlpha);
 				if(t_diff>diff)
 					diff = t_diff;

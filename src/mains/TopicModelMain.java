@@ -64,7 +64,7 @@ public class TopicModelMain {
 		String topicmodel = "DCMCorrLDA_Multi_EM";
 
 		String category = "tablet";
-		int number_of_topics = 40;
+		int number_of_topics = 80;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -411,7 +411,7 @@ public class TopicModelMain {
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
-				gibbs_iteration = 200;
+				gibbs_iteration = 100;
 				gibbs_lag = 20;
 				model = new DCMCorrLDA_Multi_EM(gibbs_iteration, converge,
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
