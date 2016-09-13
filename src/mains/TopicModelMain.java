@@ -61,10 +61,10 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test, DCMCorrLDA_Multi_EM
-		String topicmodel = "DCMCorrLDA_Multi_EM";
+		String topicmodel = "corrLDA_Gibbs_test";
 
 		String category = "tablet";
-		int number_of_topics = 80;
+		int number_of_topics = 40;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -97,7 +97,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		 articleType = "Yahoo";
+		 articleType = "Yahoo";
 
 //		articleType = "APP";
 		

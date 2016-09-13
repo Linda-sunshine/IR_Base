@@ -853,7 +853,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 //			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-			testLength = cDoc.getTotalDocLength();
+//			testLength = cDoc.getTotalDocLength();
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){

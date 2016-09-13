@@ -241,6 +241,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+//			testLength = cDoc.getTotalDocLength();
 			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
@@ -349,7 +350,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		return docLogLikelihood;
 	}
 	
-	protected double calculate_log_likelihood4ParentPerplexity(_Doc d){
+	protected double cal_logLikelihood_Perplexity4Parent(_Doc d){
 		_ParentDoc pDoc = (_ParentDoc) d;
 		double docLogLikelihood = 0.0;
 
@@ -368,7 +369,7 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		return docLogLikelihood;
 	} 
 	
-	protected double calculate_log_likelihood4ChildPerplexity(_Doc d){
+	protected double cal_logLikelihood_Perplexity4Child(_Doc d){
 		_ChildDoc cDoc = (_ChildDoc)d;
 		double docLogLikelihood = 0.0;
 

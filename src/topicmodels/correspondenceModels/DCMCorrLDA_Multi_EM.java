@@ -384,7 +384,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 
 		String fileName = iter + ".txt";
-		saveParameter2File(weightIterFolder, fileName);
+//		saveParameter2File(weightIterFolder, fileName);
 
 	}
 
