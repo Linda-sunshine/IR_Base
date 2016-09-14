@@ -68,7 +68,7 @@ public class BurstinessMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(

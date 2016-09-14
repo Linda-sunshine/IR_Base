@@ -61,10 +61,10 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test, DCMCorrLDA_Multi_EM
-		String topicmodel = "corrLDA_Gibbs_test";
+		String topicmodel = "LDAGibbs4AC_test";
 
 		String category = "tablet";
-		int number_of_topics = 40;
+		int number_of_topics = 60;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -77,9 +77,9 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-//		gibbs_iteration = 4;
-//		gibbs_lag = 2;
-//		displayLap = 2;
+		gibbs_iteration = 500;
+		gibbs_lag = 20;
+		displayLap = 20;
 
 		double burnIn = 0.4;
 
@@ -97,7 +97,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		 articleType = "Yahoo";
+		 articleType = "Yahoo"; 
 
 //		articleType = "APP";
 		
@@ -309,11 +309,11 @@ public class TopicModelMain {
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
-				gibbs_iteration = 4;
-				gibbs_lag = 2;
+				converge = 1e-2;
+				int newtonIter = 30;
+				double newtonConverge = 1e-2;
+				gibbs_iteration = 40;
+				gibbs_lag = 10;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
@@ -322,8 +322,8 @@ public class TopicModelMain {
 						alphaC,
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
-				// String priorFile = "./data/Features/topicWord.txt";
-				// model.LoadPrior(priorFile, eta);
+				 String priorFile = "./data/Features/"+articleType+"TopWords.txt";
+				 model.LoadPrior(priorFile, eta);
 			} else if (topicmodel.equals("LDAGibbs4AC_test")) {
 				
 				double ksi = 800;
@@ -405,13 +405,13 @@ public class TopicModelMain {
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
 						newtonConverge);
 			} else if (topicmodel.equals("DCMCorrLDA_Multi_EM")) {
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
+				converge = 1e-2;
+				int newtonIter = 30;
+				double newtonConverge = 1e-2;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
-				gibbs_iteration = 100;
+				gibbs_iteration = 40;
 				gibbs_lag = 20;
 				model = new DCMCorrLDA_Multi_EM(gibbs_iteration, converge,
 						beta - 1, c, lambda, number_of_topics, alpha - 1,

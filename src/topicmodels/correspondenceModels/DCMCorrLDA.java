@@ -421,9 +421,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			double totalAlphaDenominator = 0;
 			m_totalAlpha = Utils.sumOfArray(m_alpha);
 			double digAlpha = Utils.digamma(m_totalAlpha);
-			
-			double deltaAlpha = 0;
 			Arrays.fill(wordNum4Tid, 0);
+			double deltaAlpha = 0;
 			
 			for(_Doc d:m_trainSet){
 				if(d instanceof _ParentDoc){
@@ -434,6 +433,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			for(int k=0; k<number_of_topics; k++){
 				double totalAlphaNumerator = 0;
 				
+				wordNum4Tid[k] = 0;
 				for(_Doc d:m_trainSet){
 					if(d instanceof _ParentDoc){
 						totalAlphaNumerator += Utils.digamma(m_alpha[k]+d.m_sstat[k])-Utils.digamma(m_alpha[k]);
@@ -587,6 +587,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			}
 			
 			iteration ++;
+			if(iteration > m_newtonIter)
+				break;
 			
 			// System.out.println("beta iteration\t"+iteration);
 		}while(diff > m_newtonConverge);
@@ -622,7 +624,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 
 		String fileName = iter + ".txt";
-		saveParameter2File(weightIterFolder, fileName);
+//		saveParameter2File(weightIterFolder, fileName);
 		
 	}
 
@@ -655,18 +657,24 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			
 			for(int k=0; k<number_of_topics; k++){
 				pw.print(m_alpha[k]+"\t");
+				System.out.print(m_alpha[k]+"\t");
 			}
 			pw.println();
 			pw.println("alpha c");
 			for(int k=0; k<number_of_topics; k++){
 				pw.print(m_alpha_c[k]+"\t");
+				System.out.print(m_alpha_c[k]+"\t");
+
 			}
 			pw.println();
 			pw.println("beta");
 			for (int k = 0; k < number_of_topics; k++) {
 				pw.print("topic" + k + "\t");
+				System.out.print("topic" + k + "\t");
 				for (int v = 0; v < vocabulary_size; v++) {
 					pw.print(m_beta[k][v] + "\t");
+					System.out.print(m_beta[k][v] + "\t");
+
 				}
 				pw.println();
 			}
@@ -709,16 +717,39 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		for(_ChildDoc cDoc:d.m_childDocs){
 			double muDp = cDoc.getMu()/parentDocLength;
-			docLogLikelihood += Utils.digamma(m_totalAlpha_c+cDoc.getMu());
-			docLogLikelihood -= Utils.digamma(m_totalAlpha_c+cDoc.getMu()+cDoc.getTotalDocLength());
+			docLogLikelihood += Utils.lgamma(m_totalAlpha_c+cDoc.getMu());
+			docLogLikelihood -= Utils.lgamma(m_totalAlpha_c+cDoc.getMu()+cDoc.getTotalDocLength());
+			double term = 0;
 			for(int k=0; k<number_of_topics; k++){
-				double term = Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]+cDoc.m_sstat[k]);
-				term -= Utils.digamma(m_alpha_c[k]+muDp*d.m_sstat[k]);
-				docLogLikelihood += term;
+				double term1 = 0;
+				term1 += Utils.lgamma(m_alpha_c[k]+muDp*d.m_sstat[k]+cDoc.m_sstat[k]);
+				term1 -= Utils.lgamma(m_alpha_c[k]+muDp*d.m_sstat[k]);	
+//				if(term1>0)
+//					System.out.println("+\t"+(m_alpha_c[k]+muDp*d.m_sstat[k]+cDoc.m_sstat[k])+"-\t"+(m_alpha_c[k]+muDp*d.m_sstat[k]));
+				term += term1;
 			}
+			docLogLikelihood += term;
 		}
 		
+//		if(docLogLikelihood>0){
+//			for(int k=0; k<number_of_topics; k++){
+//				System.out.print(m_alpha[k]+"\t");
+//			}
+//			System.out.println();
+//			for(int k=0; k<number_of_topics; k++){
+//				System.out.print(m_alpha_c[k]+"\t");
+//			}
+//			System.out.println();
+//			for(int k=0; k<number_of_topics; k++){
+//				for(int v=0; v<vocabulary_size; v++){
+//					System.out.print(m_beta[k][v]+"\t");
+//				}
+//				System.out.println();
+//			}
+//		}
+		
 		return docLogLikelihood;
+		
 	}
 	
 	protected void estThetaInDoc(_Doc d) {
@@ -853,8 +884,8 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 //			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-//			testLength = cDoc.getTotalDocLength();
-			testLength = 0;
+			testLength = cDoc.getTotalDocLength();
+//			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){

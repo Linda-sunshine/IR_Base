@@ -54,7 +54,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 			}else if(m_type == RunType.RT_M){
 			
 				for(int i=0; i<m_paramIndex.size(); i++){
-					calculate_M_step(m_param.get(i), m_paramIndex.get(i));
+					updateParam(m_param.get(i), m_paramIndex.get(i));
 				}
 				
 				for(int i=0; i<m_paramIndex.size(); i++){
@@ -78,7 +78,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				Arrays.fill(param, 0);
 		}
 
-		public void calculate_M_step(double[] param, int tid) {
+		public void updateParam(double[] param, int tid) {
 //			System.out.println("topic optimization\t"+tid);
 			double diff = 0;
 			int iteration = 0;
@@ -306,7 +306,7 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				alpha_a, alpha_c, burnIn, ksi, tau, lag, newtonIter,
 				newtonConverge);
 		// TODO Auto-generated constructor stub
-		m_multithread = true;
+//		 m_multithread = true;
 	}
 
 	public String toString() {
