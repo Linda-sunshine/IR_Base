@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 import org.tartarus.snowball.SnowballStemmer;
@@ -34,6 +35,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected Object m_allocReviewLock=null;
 	private Object m_corpusLock=null;
 	private Object m_rollbackLock;
+	
+	HashSet<String> m_categories = new HashSet<String>(); // added by Lin
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores)
@@ -126,9 +129,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
+				if(category.equals(""))
+					System.out.println();
+				m_categories.add(category);
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
-
+				
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
@@ -313,5 +319,18 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 		return weights;
 	}
-		
+
+	// Added by Lin for experimental purpose.
+	public ArrayList<_Review> mergeRvws(){
+		ArrayList<_Review> rvws = new ArrayList<_Review>();
+		for(_User u: m_users){
+			rvws.addAll(u.getReviews());
+		}
+		return rvws;
+	}
+	
+	public HashSet<String> getCategories(){
+		return m_categories;
+	}
 }
+

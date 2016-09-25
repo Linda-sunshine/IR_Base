@@ -11,6 +11,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import Classifier.BaseClassifier;
 import cc.mallet.cluster.Clustering;
@@ -23,6 +25,7 @@ import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
 import structures._Corpus;
 import structures._Doc;
+import structures._Review;
 
 /**
  * @author hongning
@@ -121,6 +124,57 @@ public class KMeansAlg extends BaseClassifier {
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	// Added by Lin for experimental purpose.
+	public void writeResults(String filename, HashSet<String> ctgs){
+		PrintWriter writer;
+		try{
+			double sum;
+			writer = new PrintWriter(new File(filename));
+			for(String s: ctgs)
+				writer.write(s+"\t");
+			writer.write("\n");
+			for(InstanceList ls: m_clusters){
+				sum = 0;
+				initCtg(ctgs);
+				organizeCtg(ls);
+				for(String s: m_ctgCount.keySet())
+					sum += m_ctgCount.get(s);
+				for(String s: m_ctgCount.keySet())
+					writer.write(m_ctgCount.get(s)/sum+"\t");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public double trainKmeans(Collection<_Review> trainSet) {
+		init();
+		
+		for(_Review d: trainSet)			
+			m_instances.add(new Instance(createInstance(d), null, null, d));
+		
+		KMeans alg = new KMeans(m_instances.getPipe(), m_k, m_distance);
+		Clustering result = alg.cluster(m_instances);	
+		m_centroids = alg.getClusterMeans();
+		m_clusters = result.getClusters();
+		return 0; // we can compute the corresponding loss function
+	}
+	
+	HashMap<String, Integer> m_ctgCount = new HashMap<String, Integer>();
+	public void initCtg(HashSet<String> ctgs){
+		for(String s: ctgs)
+			m_ctgCount.put(s, 0);
+	}
+	public void organizeCtg(InstanceList ls){
+		String key;
+		for(Instance l: ls){
+			key = ((_Review)l.getSource()).getCategory();
+			m_ctgCount.put(key, m_ctgCount.get(key)+1);
 		}
 	}
 }

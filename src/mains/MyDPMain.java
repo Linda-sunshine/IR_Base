@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+
+import clustering.KMeansAlg;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
@@ -22,8 +24,9 @@ import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.ReTrain;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 
-public class MyLinAdaptMain {
+public class MyDPMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -61,15 +64,27 @@ public class MyLinAdaptMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
-		LinAdapt adaptation = new LinAdapt(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.train();
-		adaptation.test();
+		KMeansAlg kmeans = new KMeansAlg(classNumber, analyzer.getFeatureSize(), 40);
+		ArrayList<_Review> mergeDocs = analyzer.mergeRvws();
+		kmeans.trainKmeans(mergeDocs);
+		int k = 40;
+		String filename = String.format("./data/kmeans_%d.xls", k);
+		kmeans.writeResults(filename, analyzer.getCategories());
+//		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
+//		mtclrdp.loadUsers(analyzer.getUsers());
+//		mtclrdp.setDisplayLv(displayLv);
+//		mtclrdp.setLNormFlag(false);
+//		mtclrdp.setQ(0.4);
+//		mtclrdp.setR1TradeOffs(eta1, eta2);
+//		mtclrdp.train();
+//		mtclrdp.test();
+//		mtclrdp.printInfo();
 		
-//		Base base  = new Base(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-//		base.loadUsers(analyzer.getUsers());
-//		base.setPersonalizedModel();
-//		base.test();
+		//mtclrdp.printUserPerf(dir+"mtclrdp.txt");
+		//mtclrdp.saveModel(dir+"mtclrdp_0.5/");
+		
+//		for(_User u: analyzer.getUsers())
+//			u.getPerfStat().clear();
+		
 	}
 }
