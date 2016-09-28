@@ -129,8 +129,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				productID = line;
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
-				if(category.equals(""))
-					System.out.println();
+				if(category.equals("")){
+					System.out.print(category+"*");
+				}
 				m_categories.add(category);
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
@@ -331,6 +332,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	public HashSet<String> getCategories(){
 		return m_categories;
+	}
+	
+	public int getCtgSize(){
+		return m_categories.size();
 	}
 }
 

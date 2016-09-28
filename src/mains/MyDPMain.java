@@ -66,10 +66,18 @@ public class MyDPMain {
 
 		KMeansAlg kmeans = new KMeansAlg(classNumber, analyzer.getFeatureSize(), 40);
 		ArrayList<_Review> mergeDocs = analyzer.mergeRvws();
+		
+		HashMap<String, Integer> ctgIndex = new HashMap<String, Integer>();
+		int index = 0;
+		for(String c: analyzer.getCategories())
+			ctgIndex.put(c, index++);
+		
+		
 		kmeans.trainKmeans(mergeDocs);
 		int k = 40;
 		String filename = String.format("./data/kmeans_%d.xls", k);
-		kmeans.writeResults(filename, analyzer.getCategories());
+		kmeans.writeRatioes(mergeDocs, filename, ctgIndex);
+		
 //		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
 //		mtclrdp.loadUsers(analyzer.getUsers());
 //		mtclrdp.setDisplayLv(displayLv);

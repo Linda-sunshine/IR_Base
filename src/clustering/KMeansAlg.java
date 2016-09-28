@@ -152,6 +152,47 @@ public class KMeansAlg extends BaseClassifier {
 		}
 	}
 	
+	public void writeRatioes(ArrayList<_Review> docs, String filename, HashMap<String, Integer> ctgIndex){
+		PrintWriter writer;
+		try{
+			String ctg;
+			writer = new PrintWriter(new File(filename));
+			writer.write("category"+"\t");
+			for(String c: ctgIndex.keySet()) writer.write(c+"\t");
+			writer.write("\n");
+			double sum = 0;
+			double[] counts = new double[ctgIndex.size()];
+			writer.write(docs.size()+"\t");
+			for(_Review d: docs){
+				ctg = d.getCategory();
+				counts[ctgIndex.get(ctg)]++;
+			}
+			for(double c: counts) sum += c;
+			for(int i=0; i<counts.length; i++){
+				counts[i] /= sum; 
+				writer.write(counts[i]+"\t");
+			}
+			writer.write("\n");
+			for(InstanceList ls: m_clusters){
+				sum = 0;
+				counts = new double[ctgIndex.size()];
+				writer.write(ls.size()+"\t");
+				for(Instance l: ls){
+					ctg = ((_Review)l.getSource()).getCategory();
+					counts[ctgIndex.get(ctg)]++;
+				}
+				for(double c: counts) sum += c;
+				for(int i=0; i<counts.length; i++){
+					counts[i] /= sum;
+					writer.write(counts[i]+"\t");
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
 	public double trainKmeans(Collection<_Review> trainSet) {
 		init();
 		
