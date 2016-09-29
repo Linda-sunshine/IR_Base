@@ -58,4 +58,20 @@ public class _Review extends _Doc {
 	public String getCategory(){
 		return m_category;
 	}
+	
+	// Added for the HDP algorithm.
+	_thetaStar m_thetaStar;
+	public void setThetaStar(_thetaStar s){
+		m_thetaStar = s;
+	}
+	public _thetaStar getThetaStar(){
+		return m_thetaStar;
+	}
+	_Psi m_psi;
+	public void setPsi(_Psi p){
+		m_psi = p;
+	}
+	public _Psi getPsi(){
+		return m_psi;
+	}
 }
