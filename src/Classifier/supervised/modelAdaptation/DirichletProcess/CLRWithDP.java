@@ -141,7 +141,7 @@ public class CLRWithDP extends LinAdapt {
 		return R1;
 	}
 	
-	int findThetaStar(_thetaStar theta) {
+	protected int findThetaStar(_thetaStar theta) {
 		for(int i=0; i<m_kBar; i++)
 			if (theta == m_thetaStars[i])
 				return i;
@@ -212,7 +212,7 @@ public class CLRWithDP extends LinAdapt {
 		}
 	}	
 	
-	void swapTheta(int a, int b) {
+	protected void swapTheta(int a, int b) {
 		_thetaStar cTheta = m_thetaStars[a];
 		m_thetaStars[a] = m_thetaStars[b];
 		m_thetaStars[b] = cTheta;// kBar starts from 0, the size decides how many are valid.
