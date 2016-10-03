@@ -60,7 +60,4 @@ public class _thetaStar {
 	public String showStat() {
 		return String.format("%d(%.2f,%.1f)", m_memSize, m_pCount/(m_pCount+m_nCount), (m_pCount+m_nCount)/m_memSize);
 	}
-	
-	//Added by Lin for HDP purpose.
-	public int m_hSize; //total number of local groups in the component.
 }
