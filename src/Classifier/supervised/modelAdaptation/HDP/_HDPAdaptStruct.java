@@ -8,9 +8,15 @@ import structures._thetaStar;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
 public class _HDPAdaptStruct extends _DPAdaptStruct {
-	//key: global component parameter \phi; val: the number of local groups belonging to the global component.
+	
+	_HDPThetaStar  m_hdpThetaStar = null;
+	
+	/**key: global component parameter \phi; 
+	 * val: the number of local groups belonging to the global component.**/
 	protected HashMap<_HDPThetaStar, Integer> m_hMap;
-	//key: global component parameter \phi; val: member size.
+	
+	/**key: global component parameter \phi; 
+	 * val: member size.**/
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
 	
 	public _HDPAdaptStruct(_User user) {
@@ -38,4 +44,13 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	public HashMap<_HDPThetaStar, Integer> getHMap(){
 		return m_hMap;
 	}
+	
+	public HashMap<_HDPThetaStar, Integer> getHDPThetaMemSizeMap(){
+		return m_hdpThetaMemSizeMap;
+	}
+	
+	public _HDPThetaStar getThetaStar(){
+		return m_hdpThetaStar;
+	}
+	
 }

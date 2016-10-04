@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import cern.jet.random.Uniform;
+
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
@@ -914,5 +916,34 @@ public class Utils {
 				pointer1++;
 		}
 		return similarity;
+	}
+	
+	//Sample with a given log array.
+	public static int sampleInLogArray(double[] logP, int length){
+		double sum = Utils.logSum(logP, length), rnd = Uniform.staticNextDouble();
+		int i = -1;
+		while(rnd>0 && i<length){
+			i++;
+			rnd -= Math.exp(logP[i]-sum);
+		}
+		return i;
+	}
+	
+	public static double logSum(double[] xs, int length) {
+        if (length == 1) return xs[0];
+        double max = maximum(xs, length);
+        double sum = 0.0;
+        for (int i = 0; i < length; ++i)
+            if (xs[i] != Double.NEGATIVE_INFINITY)
+                sum += java.lang.Math.exp(xs[i] - max);
+        return max + java.lang.Math.log(sum);
+    }
+	
+	public static double maximum(double[] xs, int length){
+		double max = xs[0];
+		for(int i=1;i<length; i++)
+			if (max<xs[i])
+				max = xs[i];
+		return max;
 	}
 }
