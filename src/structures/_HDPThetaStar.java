@@ -8,7 +8,7 @@ import java.util.ArrayList;
  *
  */
 public class _HDPThetaStar extends _thetaStar {
-	
+//	protected int m_dimFv; //dim for the language models.
 	// beta in _thetaStar is \phi used in HDP.
 	protected double[] m_psi;// psi used in multinomal distribution.
 	public int m_hSize; //total number of local groups in the component.
@@ -16,6 +16,7 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	public _HDPThetaStar(int dim) {
 		super(dim);
+		m_psi = new double[m_dim];
 		m_reviews = new ArrayList<_Review>();
 	}
 

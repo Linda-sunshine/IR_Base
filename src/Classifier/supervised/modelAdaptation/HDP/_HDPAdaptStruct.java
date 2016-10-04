@@ -32,11 +32,10 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		else 
 			return 0;
 	}
-	//Add a new component to the 
-	public void addHDPThetaStar(_HDPThetaStar s){
-		m_hdpThetaMemSizeMap.put(s, 1);
-	}
+
 	public void incHDPThetaStarMemSize(_HDPThetaStar s){
+		if(!m_hdpThetaMemSizeMap.containsKey(s))
+			m_hdpThetaMemSizeMap.put(s, 0);
 		int val = m_hdpThetaMemSizeMap.get(s)+1;
 		m_hdpThetaMemSizeMap.put(s, val);
 	}

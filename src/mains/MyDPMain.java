@@ -25,12 +25,13 @@ import Classifier.supervised.modelAdaptation.ReTrain;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 
 public class MyDPMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-
+	
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -45,7 +46,7 @@ public class MyDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -64,19 +65,19 @@ public class MyDPMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
-		KMeansAlg kmeans = new KMeansAlg(classNumber, analyzer.getFeatureSize(), 40);
-		ArrayList<_Review> mergeDocs = analyzer.mergeRvws();
-		
-		HashMap<String, Integer> ctgIndex = new HashMap<String, Integer>();
-		int index = 0;
-		for(String c: analyzer.getCategories())
-			ctgIndex.put(c, index++);
-		
-		
-		kmeans.trainKmeans(mergeDocs);
-		int k = 40;
-		String filename = String.format("./data/kmeans_%d.xls", k);
-		kmeans.writeRatioes(mergeDocs, filename, ctgIndex);
+//		KMeansAlg kmeans = new KMeansAlg(classNumber, analyzer.getFeatureSize(), 40);
+//		ArrayList<_Review> mergeDocs = analyzer.mergeRvws();
+//		
+//		HashMap<String, Integer> ctgIndex = new HashMap<String, Integer>();
+//		int index = 0;
+//		for(String c: analyzer.getCategories())
+//			ctgIndex.put(c, index++);
+//		
+//		
+//		kmeans.trainKmeans(mergeDocs);
+//		int k = 40;
+//		String filename = String.format("./data/kmeans_%d.xls", k);
+//		kmeans.writeRatioes(mergeDocs, filename, ctgIndex);
 		
 //		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
 //		mtclrdp.loadUsers(analyzer.getUsers());
@@ -87,12 +88,14 @@ public class MyDPMain {
 //		mtclrdp.train();
 //		mtclrdp.test();
 //		mtclrdp.printInfo();
-		
-		//mtclrdp.printUserPerf(dir+"mtclrdp.txt");
-		//mtclrdp.saveModel(dir+"mtclrdp_0.5/");
-		
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 		
+		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		clrhdp.setMultiTheadFlag(false);
+		clrhdp.loadUsers(analyzer.getUsers());
+		clrhdp.setDisplayLv(displayLv);
+		clrhdp.train();
+		clrhdp.test();
 	}
 }

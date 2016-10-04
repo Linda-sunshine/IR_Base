@@ -52,6 +52,10 @@ public class CLRWithDP extends LinAdapt {
 			m_thetaStars[i].setIndex(i);
 	}
 	
+	// Set the flag of using multi-thread or not.
+	public void setMultiTheadFlag(boolean b){
+		m_multiThread = b;
+	}
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
 	protected void calculateClusterProbPerUser(){
 		double prob;
