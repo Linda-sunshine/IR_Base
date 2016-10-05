@@ -10,7 +10,7 @@ import utils.Utils;
 public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	_thetaStar m_thetaStar = null;
-	double[] m_cluPosterior;
+	protected double[] m_cluPosterior;
 	
 	public static int[] m_featureGroupMap;
 	

@@ -67,4 +67,17 @@ public class _Review extends _Doc {
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
+	
+	// Added by Lin for HDP evaluation.
+	double[] m_cluPosterior;
+	
+	public void setClusterPosterior(double[] posterior) {
+		if (m_cluPosterior==null || m_cluPosterior.length != posterior.length)
+			m_cluPosterior = new double[posterior.length];
+		System.arraycopy(posterior, 0, m_cluPosterior, 0, posterior.length);
+	}
+	
+	public double[] getCluPosterior(){
+		return m_cluPosterior;
+	}
 }

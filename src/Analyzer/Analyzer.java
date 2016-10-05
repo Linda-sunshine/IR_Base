@@ -431,8 +431,8 @@ public abstract class Analyzer {
 			languageModel[index] += TTF;
 			sum += TTF;
 		}
-//		for(int i=0; i<languageModel.length; i++)
-//			languageModel[i] /= sum;
+		for(int i=0; i<languageModel.length; i++)
+			languageModel[i] /= sum;
 		return languageModel;
 	}
 }

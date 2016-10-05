@@ -92,20 +92,21 @@ public class MyDPMain {
 //		mtclrdp.printInfo();
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
+		
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double[] test = new double[analyzer.getFeatureSize()];
-		for(_User u: analyzer.getUsers()){
-			for(_Review r: u.getReviews()){
-				for(_SparseFeature f: r.getSparse()){
-					test[f.getIndex()] += f.getTF();
-				}
-			}
-		}
-		int count = 0;
-		for(int i=0; i<test.length; i++){
-			if(test[i] != globalLM[i])
-				System.out.println(i+"\t"+test[i]+"!="+globalLM[i]+"\t"+count++);
-		}
+//		double[] test = new double[analyzer.getFeatureSize()];
+//		for(_User u: analyzer.getUsers()){
+//			for(_Review r: u.getReviews()){
+//				for(_SparseFeature f: r.getSparse()){
+//					test[f.getIndex()] += f.getTF();
+//				}
+//			}
+//		}
+//		int count = 0;
+//		for(int i=0; i<test.length; i++){
+//			if(test[i] != globalLM[i])
+//				System.out.println(i+"\t"+test[i]+"!="+globalLM[i]+"\t"+count++);
+//		}
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		clrhdp.setGlobalLM(globalLM);
 		clrhdp.setMultiTheadFlag(false);
