@@ -15,6 +15,7 @@ import structures._Doc;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._User;
+import structures._stat;
 import utils.Utils;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.GlobalSVM;
@@ -90,8 +91,9 @@ public class MyDPMain {
 //		mtclrdp.printInfo();
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-		
+		double[] globalLM = analyzer.estimateGlobalLM();
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		clrhdp.setGlobalLM(globalLM);
 		clrhdp.setMultiTheadFlag(false);
 		clrhdp.loadUsers(analyzer.getUsers());
 		clrhdp.setDisplayLv(displayLv);

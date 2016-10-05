@@ -85,7 +85,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			
 			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
 			m_isCVLoaded = true;
-			m_isCVStatLoaded = true;
+//			m_isCVStatLoaded = true;
 			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
@@ -95,7 +95,7 @@ public class UserAnalyzer extends DocAnalyzer {
 	
 	void setVocabStat(String term, int[] DFs) {
 		_stat stat = m_featureStat.get(term);
-		stat.setDF(DFs);
+		stat.setRawDF(DFs);
 	}
 	
 	//Load all the users.

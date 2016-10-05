@@ -12,26 +12,26 @@ public class DirichletPrior {
 	
 	//Sampling from parameters [\alpha_1, \alpha_2,...,\alpha_k].
 	public void sampling(double[] target, double[] alphas){
-//		target = new double[alphas.length];
 		double sum = 0;
-		for(int i=0; i<target.length; i++){
-			target[i]= Gamma.staticNextDouble(alphas[i], 1);
+		for(int i=0; i<alphas.length; i++){
+			while(target[i] == 0)
+				target[i]= Gamma.staticNextDouble(alphas[i], 1);
 			sum += target[i];
 		}
 		for(int i=0; i<target.length; i++) 
 			target[i]/=sum;
 	}
-	
-	//Sampling from parameters [\alpha/k, \alpha/k,..., \alpha/k]
-	public void sampling(double[] target, double alpha, double dim){
-		double[] alphas = new double[(int)dim];
-		Arrays.fill(alphas, alpha/dim);
+	//Sampling each dim of given target vector.
+	public void sampling(double[] target, double alpha){
+		double[] alphas = new double[target.length];
+		Arrays.fill(alphas, alpha/target.length);
 		sampling(target, alphas);
 	}
 	
-//	public static void main(String[] args){
-//		double[] a = new double[]{1, 2};
-//		for(int i=0; i<a.length; i++) a[i]/=10;
-//		for(double aa: a) System.out.println(aa);
-//	}
+	//Sampling given dim of target vector.
+	public void sampling(double[] target, int dim, double alpha){
+		double[] alphas = new double[dim];
+		Arrays.fill(alphas, alpha/dim);
+		sampling(target, alphas);
+	}
 }
