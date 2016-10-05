@@ -64,21 +64,6 @@ public class CLRWithHDP extends CLRWithDP {
 	public void setGlobalLM(double[] lm){
 		m_globalLM = lm;
 	}
-	@Override
-	protected void init(){
-		initPriorD0();
-		initPriorG0();
-		initAssignment();
-
-		super.init();
-
-		//Initialize the structures for multi-threading.
-		if (m_multiThread) {
-			int numberOfCores = Runtime.getRuntime().availableProcessors();
-			m_fValues = new double[numberOfCores];
-			m_gradients = new double[numberOfCores][]; 
-		}
-	}
 	
 	@Override
 	public void loadUsers(ArrayList<_User> userList) {
@@ -96,7 +81,11 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	//Randomly assign user reviews to k user groups.
-	public void initAssignment(){
+	@Override
+	public void initThetaStars(){
+		initPriorD0();
+		initPriorG0();
+		m_pNewCluster = Math.log(m_beta) - Math.log(m_M);//to avoid repeated computation
 		for(int k=0; k<m_kBar; k++){
 			m_hdpThetaStars[k] = new _HDPThetaStar(m_dim);
 			m_G0.sampling(m_hdpThetaStars[k].getModel()); //sample \phi for each group.
@@ -133,22 +122,24 @@ public class CLRWithHDP extends CLRWithDP {
 			index = (int)rnd-1;
 		else
 			index = (int)rnd;
+		if(index <0 || index >= m_kBar)
+			System.err.println("[error]Index out of range!");
 		return index;
 	}
-	@Override
-	//Initialize the phi for each review.
-	protected void initThetaStars(){
-		m_pNewCluster = Math.log(m_beta) - Math.log(m_M);//to avoid repeated computation
-		_HDPAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_HDPAdaptStruct) m_userList.get(i);
-			for(_Review r: user.getReviews()){
-				if (r.getType() != rType.ADAPTATION)
-					continue; // only touch the adaptation data
-				sampleOneInstance(user, r);
-			}
-		}		
-	}
+//	@Override
+//	//Initialize the phi for each review.
+//	protected void initThetaStars(){
+//		m_pNewCluster = Math.log(m_beta) - Math.log(m_M);//to avoid repeated computation
+//		_HDPAdaptStruct user;
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_HDPAdaptStruct) m_userList.get(i);
+//			for(_Review r: user.getReviews()){
+//				if (r.getType() != rType.ADAPTATION)
+//					continue; // only touch the adaptation data
+//				sampleOneInstance(user, r);
+//			}
+//		}		
+//	}
 	
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
 	public void sampleThetaStars(){
@@ -319,6 +310,7 @@ public class CLRWithHDP extends CLRWithDP {
 					swapGamma(m_kBar-1, index); // swap gammas for later use.
 					// swap \gamma_index and \gamma_k(weight for last cluster), add \gamma_e to \gamma_k.
 					m_gamma[m_kBar-1] += m_gamma[m_kBar];//recycle the weight of gamma[index].
+					m_gamma[m_kBar] = 0;
 					m_kBar --;
 				}
 				sampleOneInstance(user, r);
@@ -406,14 +398,14 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//MLE to estimate language models.
 	public void MLELanguageModels(){
-		double[] prob = new double[m_dim];
+		double[] prob = new double[m_dim-1];
 		double sum = 0;
 		for(_HDPThetaStar theta: m_hdpThetaStars){
 			Arrays.fill(prob, 0);
 			for(_Review r: theta.getReviews()){
 				for(_SparseFeature fv: r.getSparse()){
-					prob[fv.getIndex()] += fv.getValue();
-					sum += fv.getValue();
+					prob[fv.getIndex()] += fv.getTF();
+					sum += fv.getTF();
 				}
 			}
 			//Estimate the prob for language model.
