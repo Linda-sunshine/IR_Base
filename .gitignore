@@ -1,18 +1,9 @@
-<<<<<<< HEAD
-bin
-data/*
-data/Features/
-.DS_Store
-.classpath
-compile
-=======
 bin/*
 data/*
 data/Features/
 .DS_Store
 .classpath
 compile
->>>>>>> master
 run
 /bin/
 Jar/*

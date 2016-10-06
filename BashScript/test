@@ -1,7 +1,0 @@
-#!/bin/sh
-for i in 4 6 8 10 12
-	do
-	for j in 4 6 8 10
-		do  print $i$j
-	done
-done 

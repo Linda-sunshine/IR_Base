@@ -122,13 +122,4 @@ public class _CoLinAdaptStruct extends _LinAdaptStruct implements CoAdaptStruct 
 		int offset = m_id * m_dim * 2;
 		sharedA[offset+gid] = value;
 	}
-	
-	// added by Lin.
-	public double getScaling(int k, int gid){
-		return sharedA[k*m_dim*2+gid];
-	}
-	public double getShifting(int k, int gid){
-		return sharedA[k*m_dim*2 + m_dim + gid];
-	}
-	
 }

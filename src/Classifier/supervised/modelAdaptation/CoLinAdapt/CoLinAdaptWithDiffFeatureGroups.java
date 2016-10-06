@@ -184,11 +184,11 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 			exp1 += (user.getScalingB(k)*m_gWeights[n]*m_g1 + user.getShiftingB(k)) * fv.getValue();
 		}
 		
-		double logSum = Utils.logSumOfExponentials(m_cache);
-		m_cache[0] = Math.exp(exp0 - logSum);
-		m_cache[1] = Math.exp(exp1 - logSum);
-		if(Double.isNaN(m_cache[1]))
-			System.out.println("Nan in posterior!");
+		exp0 = Math.exp(exp0);
+		exp1 = Math.exp(exp1);
+		
+		m_cache[0] = exp0/(exp0+exp1);
+		m_cache[1] = exp1/(exp0+exp1);
 	}
 	
 	//shared gradient calculation by batch and online updating

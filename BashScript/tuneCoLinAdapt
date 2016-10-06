@@ -1,5 +1,0 @@
-#!/bin/sh
-#tune parameters for CoLinAdat
-for i in 0.1 0.2 0.3 0.4 0.5 
-	do ./run -eta1 i -eta2 0.5 -eta3 0.5 -topK 20 | tee CoLinAdapt_sft"$i"_scl0.5_r20.5_topK20.output
-done

@@ -71,7 +71,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 	}
 	
 	@Override
-	protected double calculateFuncValue(_AdaptStruct u) {
+	protected double calculateFuncValue(_AdaptStruct u) {		
 		_CoLinAdaptStruct user = (_CoLinAdaptStruct)u;
 		// Likelihood of the user.
 		double L = calcLogLikelihood(user); //log likelihood.

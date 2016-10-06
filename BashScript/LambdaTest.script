@@ -1,5 +1,0 @@
-#!/bin/sh
-#tune window size 
-for k in 0
-	do	./run -vf ./data/Features/fv_2gram_tablets_86jsons.txt -s SEMI -cs 5 -rankW $k ./data/amazon/small/dedup/RawData | tee LambdaRank_WindowSize"$k".output
-done 
