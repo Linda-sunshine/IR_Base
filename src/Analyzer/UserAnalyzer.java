@@ -13,6 +13,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
 import structures._Review.rType;
+import structures._SparseFeature;
 import structures._User;
 import structures._stat;
 import utils.Utils;
@@ -248,4 +249,23 @@ public class UserAnalyzer extends DocAnalyzer {
 			e.printStackTrace();
 		}
 	}
+	
+	//Estimate a global language model.
+	// We traverse all review documents instead of using the global TF 
+	// since we did not roll back when we filter users with 1 review.
+	public double[] estimateGlobalLM(){
+		double[] lm = new double[getFeatureSize()];
+		double sum = 0;
+		for(_User u: m_users){
+			for(_Review r: u.getReviews()){
+				for(_SparseFeature fv: r.getSparse()){
+					lm[fv.getIndex()] += fv.getTF();
+					sum += fv.getTF();
+				}
+			}
+		}
+		for(int i=0; i<lm.length; i++)
+				lm[i] /= sum;
+			return lm;
+		}
 }

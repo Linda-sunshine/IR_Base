@@ -419,20 +419,4 @@ public abstract class Analyzer {
 	public HashMap<String, _stat> getFeatureStat(){
 		return m_featureStat;
 	}
-	
-	//Estimate a global language model.
-	public double[] estimateGlobalLM(){
-		double[] languageModel = new double[getFeatureSize()];
-		int index, TTF;
-		double sum = 0;
-		for(String f: m_featureStat.keySet()){
-			index = m_featureNameIndex.get(f);
-			TTF = Utils.sumOfArray(m_featureStat.get(f).getTTF());
-			languageModel[index] += TTF;
-			sum += TTF;
-		}
-		for(int i=0; i<languageModel.length; i++)
-			languageModel[i] /= sum;
-		return languageModel;
-	}
 }

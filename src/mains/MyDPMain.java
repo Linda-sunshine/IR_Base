@@ -41,14 +41,14 @@ public class MyDPMain {
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
+		double eta1 = 0.5, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -66,7 +66,8 @@ public class MyDPMain {
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-
+		
+		
 //		KMeansAlg kmeans = new KMeansAlg(classNumber, analyzer.getFeatureSize(), 40);
 //		ArrayList<_Review> mergeDocs = analyzer.mergeRvws();
 //		
@@ -74,7 +75,6 @@ public class MyDPMain {
 //		int index = 0;
 //		for(String c: analyzer.getCategories())
 //			ctgIndex.put(c, index++);
-//		
 //		
 //		kmeans.trainKmeans(mergeDocs);
 //		int k = 40;
@@ -94,25 +94,20 @@ public class MyDPMain {
 //			u.getPerfStat().clear();
 		
 		double[] globalLM = analyzer.estimateGlobalLM();
-//		double[] test = new double[analyzer.getFeatureSize()];
-//		for(_User u: analyzer.getUsers()){
-//			for(_Review r: u.getReviews()){
-//				for(_SparseFeature f: r.getSparse()){
-//					test[f.getIndex()] += f.getTF();
-//				}
-//			}
-//		}
-//		int count = 0;
-//		for(int i=0; i<test.length; i++){
-//			if(test[i] != globalLM[i])
-//				System.out.println(i+"\t"+test[i]+"!="+globalLM[i]+"\t"+count++);
-//		}
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		clrhdp.setGlobalLM(globalLM);
 		clrhdp.setMultiTheadFlag(false);
+		clrhdp.setConcentrationParams(100, 1, 1);
 		clrhdp.loadUsers(analyzer.getUsers());
+		clrhdp.setR1TradeOff(eta1);
 		clrhdp.setDisplayLv(displayLv);
 		clrhdp.train();
 		clrhdp.test();
+		
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 	}
 }
