@@ -25,6 +25,9 @@ public class _HDPThetaStar extends _thetaStar {
 		super(dim);
 		m_reviews = new ArrayList<_Review>();
 	}
+	public void initPsiModel(int lmSize){
+		m_psi = new double[lmSize];
+	}
 	
 	public double[] getPsiModel(){
 		return m_psi;

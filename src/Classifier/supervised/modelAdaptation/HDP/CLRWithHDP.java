@@ -49,7 +49,7 @@ public class CLRWithHDP extends CLRWithDP {
 	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 
 	protected boolean m_newCluster = false;
-	protected int m_lmDim = -1; // dimension for langauge model
+	protected int m_lmDim = -1; // dimension for language model
 	
 	public CLRWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
@@ -92,7 +92,7 @@ public class CLRWithHDP extends CLRWithDP {
 			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[k].getModel()); 
 			
-			//sample psi from Dirichlet with the global language model.
+			//sample \psi from Dirichlet with the global language model.
 			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_globalLM, true);
 		}
 		
@@ -105,8 +105,8 @@ public class CLRWithHDP extends CLRWithDP {
 				if (r.getType() == rType.TEST)
 					continue;
 				
-				rndIndex = (int)(Math.random() * m_kBar);
-				
+//				rndIndex = (int)(Math.random() * m_kBar);
+				rndIndex = findIndex(Math.random() * m_kBar);
 				//find the random theta and update the setting.
 				curTheta = m_hdpThetaStars[rndIndex];
 				curTheta.updateMemCount(1);
@@ -116,7 +116,18 @@ public class CLRWithHDP extends CLRWithDP {
 			} 
 		}
 	}
-
+	public int findIndex(double rnd){
+		int index = -1;
+		if(rnd == 0) 
+			index = 0;
+		else if(rnd%1 == 0)//if rnd is marginal.
+			index = (int)rnd-1;
+		else
+			index = (int)rnd;
+		if(index <0 || index >= m_kBar)
+			System.err.println("[error]Index out of range!");
+		return index;
+	}
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
 	@Override
 	public void sampleThetaStars(){
@@ -173,6 +184,9 @@ public class CLRWithHDP extends CLRWithDP {
 		user.updateHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->4
 		
 		if(k >= m_kBar){
+			m_hdpThetaStars[k].initPsiModel(m_lmDim);
+			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_globalLM, true);
+			
 			swapTheta(m_kBar, k);
 			appendOneDim4Gamma();
 			m_kBar++;
@@ -254,7 +268,7 @@ public class CLRWithHDP extends CLRWithDP {
 		} else {		
 			double[] psi = r.getHDPThetaStar().getPsiModel();
 			for(_SparseFeature fv: r.getSparse())
-				L += fv.getTF() + psi[fv.getIndex()];
+				L += fv.getTF()*psi[fv.getIndex()];
 	
 			return L;
 		}
@@ -666,5 +680,9 @@ public class CLRWithHDP extends CLRWithDP {
 		m_alpha = alpha;
 		m_eta = eta;
 		m_beta = beta;
+	}
+	
+	public void setMultiTheadFlag(boolean b){
+		m_multiThread = b;
 	}
 }
