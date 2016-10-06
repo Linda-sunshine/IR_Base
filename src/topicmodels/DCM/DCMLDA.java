@@ -29,7 +29,8 @@ public class DCMLDA extends LDA_Gibbs {
 
 	/**
 	 * 
-	 * m_alpha K m_beta K*V;
+	 * m_alpha K 
+	 * m_beta K*V;
 	 * 
 	 */
 	protected double[] m_alpha;
@@ -56,6 +57,7 @@ public class DCMLDA extends LDA_Gibbs {
 
 	}
 
+	@Override
 	public void EM() {
 		System.out.format("Starting %s...\n", toString());
 
@@ -83,15 +85,13 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 			long eEndTime = System.currentTimeMillis();
 
-			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
+			System.out.println("per iteration e step time\t" + (eEndTime - eStartTime));
 
 			long mStartTime = System.currentTimeMillis();
 			calculate_M_step(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
-			// System.out.println("per iteration m step time\t"
-			// + (mEndTime - mStartTime));
+			System.out.println("per iteration m step time\t" + (mEndTime - mStartTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -195,10 +195,9 @@ public class DCMLDA extends LDA_Gibbs {
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = topicInDocProb(tid, d);
-				term1 = wordTopicProb(tid, wid, d);
-				m_topicProbCache[tid] = topicInDocProb(tid, d)
-						* wordTopicProb(tid, wid, d);
+				double pzd = topicInDocProb(tid, d);
+				double pwz = wordTopicProb(tid, wid, d);
+				m_topicProbCache[tid] = pzd * pwz;
 				p += m_topicProbCache[tid];	
 			}
 			p *= m_rand.nextDouble();
@@ -219,9 +218,6 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected double topicInDocProb(int tid, _Doc d) {
-		double term1 = d.m_sstat[tid];
-		term1 = m_alpha[tid];
-
 		return (d.m_sstat[tid] + m_alpha[tid]);
 	}
 
@@ -245,13 +241,10 @@ public class DCMLDA extends LDA_Gibbs {
 		} else {
 			d.m_sstat[tid]--;
 			m_docWordTopicStats[docID][tid][wid]--;
-
 		}
-
 	}
 
 	public void calculate_M_step(int iter, File weightFolder) {
-
 		for (_Doc d : m_trainSet)
 			collectStats(d);
 
@@ -261,7 +254,6 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 
 		updateParameter(iter, weightIterFolder);
-
 	}
 
 	protected void collectStats(_Doc d) {

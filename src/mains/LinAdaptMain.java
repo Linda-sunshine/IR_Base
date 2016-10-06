@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -111,10 +111,10 @@ public class LinAdaptMain {
 //		MTCLRWithDP adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 
 		// Create an instance of Multi-task DP over Multi-task logistic regression 
-		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 		// Create an instance of Multi-task DP over MT-LinAdapt 
-//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
