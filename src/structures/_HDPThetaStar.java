@@ -9,28 +9,37 @@ import java.util.ArrayList;
  */
 public class _HDPThetaStar extends _thetaStar {
 	// beta in _thetaStar is \phi used in HDP.
-	protected double[] m_psi;// psi used in multinomal distribution.
+	
+	//this will be in log space!
+	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
-	protected ArrayList<_Review> m_reviews;
+	protected ArrayList<_Review> m_reviews; //reviews assigned to this group
+	
+	public _HDPThetaStar(int dim, int lmSize) {
+		super(dim);
+		m_reviews = new ArrayList<_Review>();
+		m_psi = new double[lmSize];
+	}
 	
 	public _HDPThetaStar(int dim) {
 		super(dim);
 		m_reviews = new ArrayList<_Review>();
 	}
-	public void initPsi(int dim){
-		m_psi = new double[dim];
-	}
+	
 	public double[] getPsiModel(){
 		return m_psi;
 	}
+	
 	// Update \psi with the newly estimated prob. 
 	public void updatePsiModel(double[] prob){
 		System.arraycopy(prob, 0, m_psi, 0, prob.length);
 	}
+	
 	public void addOneReview(_Review r){
 		m_reviews.add(r);
 	}
 	
+	//this might be expensive to perform
 	public void rmReview(_Review r){
 		m_reviews.remove(r);
 	}

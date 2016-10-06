@@ -14,16 +14,11 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	_HDPThetaStar  m_hdpThetaStar = null;
 	
 	/**key: global component parameter \phi; 
-	 * val: the number of local groups belonging to the global component.**/
-	protected HashMap<_HDPThetaStar, Integer> m_hMap;
-	
-	/**key: global component parameter \phi; 
 	 * val: member size.**/
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
-		m_hMap = new HashMap<_HDPThetaStar, Integer>(); 
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 	}
 
@@ -42,32 +37,25 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		m_hdpThetaMemSizeMap.put(s, val);
 	}
 	
-	public void setHSize(_HDPThetaStar s, int h){
-		m_hMap.put(s, h);
-	}
 	public void rmThetaFromMemSizeMap(_HDPThetaStar s){
 		if(!m_hdpThetaMemSizeMap.containsKey(s))
 			System.out.println("Does not exist in size map!");
 		else 
 			m_hdpThetaMemSizeMap.remove(s);
 	}
+	
 //	public void rmThetaFromHMap(_HDPThetaStar s){
 //		if(!m_hMap.containsKey(s))
 //			System.out.println("Does not exist in h map!");
 //		else
 //			m_hMap.remove(s);
 //	}
-	public void clearHMap(){
-		m_hMap.clear();
-	}
-	public HashMap<_HDPThetaStar, Integer> getHMap(){
-		return m_hMap;
-	}
 	
 	public HashMap<_HDPThetaStar, Integer> getHDPThetaMemSizeMap(){
 		return m_hdpThetaMemSizeMap;
 	}
 	
+	@Override
 	public _HDPThetaStar getThetaStar(){
 		return m_hdpThetaStar;
 	}

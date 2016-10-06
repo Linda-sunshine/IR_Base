@@ -1,8 +1,5 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -490,7 +487,6 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	protected void initPriorG0() {
-
 		if (m_vctMean)
 			m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
 		else

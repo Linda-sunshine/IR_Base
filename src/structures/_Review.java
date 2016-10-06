@@ -64,6 +64,7 @@ public class _Review extends _Doc {
 	public void setHDPThetaStar(_HDPThetaStar s){
 		m_hdpThetaStar = s;
 	}
+	
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}

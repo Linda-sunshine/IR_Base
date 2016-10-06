@@ -4,17 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import org.apache.commons.math.special.Gamma;
-//import cern.jet.random.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
-import structures._Doc;
-import structures._HDPThetaStar;
-import structures._Review;
-import structures._SparseFeature;
-import structures._User;
-import structures._thetaStar;
-import structures._Review.rType;
-import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
@@ -25,6 +14,16 @@ import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
  */
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
+import structures._Doc;
+import structures._HDPThetaStar;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
+import utils.Utils;
 
 /**
  * Notes on Sep 30:
@@ -41,20 +40,22 @@ public class CLRWithHDP extends CLRWithDP {
 
 	protected int m_initK = 10;//assume we have 10 global groups at the beginning.
 	//\alpha is the concentration parameter for the first layer.
-	protected double m_eta = 1;//concentration parameter for second layer DP.  
-	protected double m_beta = 1; //concentration parameter for \psi.
+	protected double m_eta = 1.0;//concentration parameter for second layer DP.  
+	protected double m_beta = 1.0; //concentration parameter for \psi.
 	protected double[] m_globalLM;//the global language model serving as the prior for psi.
 	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
-	protected DirichletPrior m_D0; //Dirichlet prior.
+	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double[] m_gamma = new double[1000];//global mixture proportion.
 	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 
 	protected boolean m_newCluster = false;
+	protected int m_lmDim = -1; // dimension for langauge model
 	
 	public CLRWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_kBar = m_initK;//init kBar.
+		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
 		m_stirlings = new HashMap<String, Double>();
 	}
 	
@@ -65,6 +66,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	public void setGlobalLM(double[] lm){
 		m_globalLM = lm;
+		m_lmDim = lm.length;
 	}
 	
 	@Override
@@ -76,35 +78,34 @@ public class CLRWithHDP extends CLRWithDP {
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
-	//Init the dirichlet prior.
-	public void initPriorD0(){
-		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_D0.sampling(m_gamma, m_kBar+1, m_alpha);
-	}
-	
 	//Randomly assign user reviews to k user groups.
 	@Override
 	public void initThetaStars(){
-		initPriorD0();
 		initPriorG0();
-		m_pNewCluster = Math.log(m_beta) - Math.log(m_M);//to avoid repeated computation
+		
+		m_D0.sampling(m_gamma, m_kBar+1, m_alpha, false);
+		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
+		
 		for(int k=0; k<m_kBar; k++){
-			m_hdpThetaStars[k] = new _HDPThetaStar(m_dim);
-			m_G0.sampling(m_hdpThetaStars[k].getModel()); //sample \phi for each group.
-			//init psi with the global language model.
-			if(m_hdpThetaStars[k].getPsiModel() == null)
-				m_hdpThetaStars[k].initPsi(m_dim-1);
-			System.arraycopy(m_globalLM, 0, m_hdpThetaStars[k].getPsiModel(), 0, m_globalLM.length);
+			m_hdpThetaStars[k] = new _HDPThetaStar(m_dim, m_lmDim);
+			
+			//sample \phi from Normal distribution.
+			m_G0.sampling(m_hdpThetaStars[k].getModel()); 
+			
+			//sample psi from Dirichlet with the global language model.
+			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_globalLM, true);
 		}
+		
 		int rndIndex = 0;
-		double rnd = 0;
 		_HDPThetaStar curTheta;
 		_HDPAdaptStruct user;
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
-				rnd = Math.random() * m_kBar;
-				rndIndex = findIndex(rnd);
+				if (r.getType() == rType.TEST)
+					continue;
+				
+				rndIndex = (int)(Math.random() * m_kBar);
 				
 				//find the random theta and update the setting.
 				curTheta = m_hdpThetaStars[rndIndex];
@@ -115,31 +116,23 @@ public class CLRWithHDP extends CLRWithDP {
 			} 
 		}
 	}
-	
-	public int findIndex(double rnd){
-		int index = -1;
-		if(rnd == 0) 
-			index = 0;
-		else if(rnd%1 == 0)//if rnd is marginal.
-			index = (int)rnd-1;
-		else
-			index = (int)rnd;
-		if(index <0 || index >= m_kBar)
-			System.err.println("[error]Index out of range!");
-		return index;
-	}
 
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
+	@Override
 	public void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_hdpThetaStars[m] == null)
 				m_hdpThetaStars[m] = new _HDPThetaStar(m_dim);
+			
+			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
+			
+			//we do not need to sample psi since we will integrate it out in likelihood calculation.
 		}
 	}
 	
 	//Assign cluster to each review.
-	public void sampleOneInstance(_HDPAdaptStruct user, _Review r){
+	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
 		double likelihood, logSum = 0, gamma_k;
 		int k;
 		
@@ -151,19 +144,23 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//loglikelihood of y, i.e., p(y|x,\phi)
-			likelihood = calcLogLikelihood(r); 
+			likelihood = calcLogLikelihoodY(r); 
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = (k < m_kBar) ? m_gamma[k]:m_gamma[m_kBar];
 			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k);
 			
 			//loglikelihood of x, i.e., p(x|\psi)	
-			likelihood += calcLogLikelihood_x(r);
+			likelihood += calcLogLikelihoodX(r);
 			
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-			if(k==0) logSum = likelihood;
-			else logSum = Utils.logSum(logSum, likelihood);
+			
+			if(k==0) 
+				logSum = likelihood;
+			else 
+				logSum = Utils.logSum(logSum, likelihood);
 		};
+		
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
 		
@@ -171,12 +168,6 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		m_hdpThetaStars[k].addOneReview(r);//-->2
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->3
-
-		//If we get a new cluster, sample \psi for the new one.
-		if(k >= m_kBar){
-			m_hdpThetaStars[k].initPsi(m_dim-1);
-			System.arraycopy(m_globalLM, 0, m_hdpThetaStars[k].getPsiModel(), 0, m_globalLM.length);
-		}
 		
 		//Update the user info with the newly sampled hdpThetaStar.
 		user.updateHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->4
@@ -190,14 +181,15 @@ public class CLRWithHDP extends CLRWithDP {
 	// Since we have a new group, we will assign a new weight to this dimension.
 	protected void appendOneDim4Gamma(){
 		double re = m_gamma[m_kBar];
-		double rnd = cern.jet.random.Beta.staticNextDouble(1, m_alpha);
+		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_gamma[m_kBar] = rnd*re;
 		m_gamma[m_kBar+1] = (1-rnd)*re;
 	}
 	
 	//Sample hdpThetaStar with likelihood.
-	public int sampleInLogSpace(double logSum){
+	protected int sampleInLogSpace(double logSum){
 		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
+		
 		int k = 0;
 		double newLogSum = m_hdpThetaStars[0].getProportion();
 		do {
@@ -206,12 +198,14 @@ public class CLRWithHDP extends CLRWithDP {
 			k++;
 			newLogSum = Utils.logSum(newLogSum, m_hdpThetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
+		
 		if (k==m_kBar+m_M) {
-			System.err.println("[Warning]Hit the very last element in theatStar!");
+			//System.err.println("[Warning]Hit the very last element in theatStar!");
 			k--; // we might hit the very last
 		}
 		return k;
 	}
+	
 	@Override
 	protected void swapTheta(int a, int b) {
 		_HDPThetaStar cTheta = m_hdpThetaStars[a];
@@ -225,8 +219,9 @@ public class CLRWithHDP extends CLRWithDP {
 		m_gamma[a] = m_gamma[b];
 		m_gamma[b] = val;
 	}
+	
 	//Calculate the function value of the new added instance.
-	protected double calcLogLikelihood(_Review r){
+	protected double calcLogLikelihoodY(_Review r){
 		double L = 0, Pi = 0, sum; //log likelihood.
 		// log likelihood given by the logistic function.
 		sum = Utils.dotProduct(r.getHDPThetaStar().getModel(), r.getSparse(), 0);
@@ -245,29 +240,24 @@ public class CLRWithHDP extends CLRWithDP {
 		return L;
 	}		
 
-	public double calcLogLikelihood_x(_Review r){
-		double L = 0, beta_v = m_beta/(m_dim-1), sum = 0;
+	public double calcLogLikelihoodX(_Review r){
+		double L = 0, beta_v = m_beta/m_lmDim, beta_v_lgamma = Utils.lgamma(beta_v), sum = 0;
+		//we will integrate it out
 		if(r.getHDPThetaStar().getPsiModel() == null){
-			//construct the feature vector.
-			double[] mij = new double[m_dim-1];
-			for(_SparseFeature fv: r.getSparse()){
-				mij[fv.getIndex()] = fv.getTF();
-				sum += fv.getTF();
-			}
-			//Gamma:org.apache.commons.math.special.Gamma
-			L += Gamma.logGamma(m_beta);
-			L -= Gamma.logGamma(m_beta+sum);	
 			//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
+			for(_SparseFeature fv: r.getSparse()) {
+				sum += fv.getTF();
+				L += Utils.lgamma(beta_v+fv.getTF()) - beta_v_lgamma;
+			}
+			
+			return L + Utils.lgamma(m_beta) - Utils.lgamma(m_beta+sum);
+		} else {		
+			double[] psi = r.getHDPThetaStar().getPsiModel();
 			for(_SparseFeature fv: r.getSparse())
-				L += Gamma.logGamma(beta_v+fv.getTF()) - Gamma.logGamma(beta_v);
+				L += fv.getTF() + psi[fv.getIndex()];
+	
 			return L;
 		}
-		double[] psi = r.getHDPThetaStar().getPsiModel();
-		for(_SparseFeature fv: r.getSparse()){
-			L += fv.getTF()*Math.log(psi[fv.getIndex()]);// do we need the coefficients? factorial?
-		}
-		//add the factorial part in front of likelihood???
-		return L;
 	}
 	
 	// The main MCMC algorithm, assign each review to clusters.
@@ -280,6 +270,9 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
+				if (r.getType() == rType.TEST)
+					continue;//do not touch testing reviews!
+				
 				curThetaStar = r.getHDPThetaStar();
 				
 				//Step 1: remove the current review from the thetaStar and user side.
@@ -299,32 +292,32 @@ public class CLRWithHDP extends CLRWithDP {
 					m_gamma[m_kBar] = 0;
 					m_kBar --;
 				}
+				
+				//Step 2: sample new cluster assignment for this review
 				sampleOneInstance(user, r);
 			}
 		}
-		//Update gamma based on the current assignment.
-		updateGamma(); // why for loop BETA_K times?
 	}
 	
 	//Sample how many local groups inside user reviews.
 	protected int sampleH(_HDPAdaptStruct user, _HDPThetaStar s){
 		int n = user.getHDPThetaMemSize(s);
-		if(n==1){
-			user.setHSize(s, 1);
+		if(n==1)
 			return 1;//s(1,1)=1
-		}
+		
 		double[] prob = new double[n];
 		//Find corresponding gamma value.
-		int index = findHDPThetaStar(s);
+		int index = s.getIndex();
+		
 		double etaGammak = Math.log(m_eta) + Math.log(m_gamma[index]);
 		//the number of local groups lies in the range [1, n];
 		for(int h=1; h<=n; h++){
 			double stir = stirling(n, h);
 			prob[h-1] = h*etaGammak + Math.log(stir);
 		}
+		
 		//h starts from 0, we want the number of tables here.	
 		int h = Utils.sampleInLogArray(prob, n)+1;
-		user.setHSize(s, h);
 		return h;
 	}
 	
@@ -345,14 +338,17 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Sample the global mixture proportion, \gamma~Dir(m1, m2,..,\alpha)
 	protected void sampleGamma(){
-		System.out.print("Sample gamma...\n");
-		double alpha = cern.jet.random.Gamma.staticNextDouble(m_alpha, 1);
+		System.out.print("[Info]E step: Sample gamma...\n");
+		double alpha = Gamma.staticNextDouble(m_alpha, 1);
+		
 		double sum = alpha;
 		for(int k=0; k<m_kBar; k++){
-			m_gamma[k] = cern.jet.random.Gamma.staticNextDouble(m_hdpThetaStars[k].m_hSize, 1);
+			m_gamma[k] = Gamma.staticNextDouble(m_hdpThetaStars[k].m_hSize, 1);
 			sum += m_gamma[k];
 		}
-		for(int k=0; k<m_kBar; k++) m_gamma[k]/=sum;
+		for(int k=0; k<m_kBar; k++) 
+			m_gamma[k]/=sum;
+		
 		m_gamma[m_kBar] = alpha/sum;//\gamma_e.
 //		System.out.print(String.format("%d global groups.\n", m_kBar));
 	}
@@ -360,17 +356,19 @@ public class CLRWithHDP extends CLRWithDP {
 	protected void updateGamma(){
 		for(int k=0; k<m_kBar; k++)
 			m_hdpThetaStars[k].m_hSize = 0;
+		
 		int index;
 		_HDPAdaptStruct user;
 		System.out.print("Sample h...");
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
-			user.clearHMap();
+			
 			for(_HDPThetaStar s: user.getHDPThetaMemSizeMap().keySet()){
-				index = findHDPThetaStar(s);
+				index = s.getIndex();
 				m_hdpThetaStars[index].m_hSize += sampleH(user, m_hdpThetaStars[index]);
 			}
 		}
+		
 		sampleGamma();
 	}
 	
@@ -382,35 +380,51 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	// Sample the weights given the cluster assignment.
+	@Override
 	protected double calculate_M_step(){
 		assignClusterIndex();
 		
-		//Optimize language model parameters with MLE.
-		MLELanguageModels();
 		
-		//Optimize logistic regression parameters with lbfgs.
-		return MLELogisticModels();
+		//Step 1: sample gamma based on the current assignment.
+		updateGamma(); // why for loop BETA_K times?
+		
+		//Step 2: Optimize language model parameters with MLE.
+		//Step 3: Optimize logistic regression parameters with lbfgs.
+		return estPsi() + estPhi();
 	}
 	
-	//MLE to estimate language models.
-	public void MLELanguageModels(){
-		double[] prob = new double[m_dim-1];
-		double sum = 0;
+	//We should use maximum a posterior to estimate language models.
+	public double estPsi(){
+		double sum = 0, lmProb[], logLikelihood = 0;
 		_HDPThetaStar theta;
 		for(int k=0; k<m_kBar; k++){ 
 			theta = m_hdpThetaStars[k];
-			Arrays.fill(prob, 0);
+			lmProb = theta.getPsiModel();
+			
+			System.arraycopy(m_globalLM, 0, lmProb, 0, m_lmDim);//set the prior properly
 			for(_Review r: theta.getReviews()){
 				for(_SparseFeature fv: r.getSparse()){
-					prob[fv.getIndex()] += fv.getTF();
-					sum += fv.getTF();
+					lmProb[fv.getIndex()] += fv.getTF();
 				}
 			}
+			sum = Math.log(Utils.sumOfArray(lmProb));
+			
 			//Estimate the prob for language model.
-			for(int i=0; i<prob.length; i++) prob[i]/=sum;
-			theta.updatePsiModel(prob);
+			for(int i=0; i<m_lmDim; i++) 
+				lmProb[i] = Math.log(lmProb[i]) - sum;
+			
+			for(_Review r: theta.getReviews()){
+				for(_SparseFeature fv: r.getSparse()){
+					logLikelihood += fv.getTF() * lmProb[fv.getIndex()];
+				}
+			}
 		}
+		
+		return logLikelihood;
 	}
+	
+	//why do not we scan through the reviews associated with each cluster?
+	@Override
 	protected double logLikelihood() {
 		_HDPAdaptStruct user;
 		double fValue = 0;
@@ -419,13 +433,17 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
-				fValue -= calcLogLikelihood(r);
+				if (r.getType() == rType.TEST)
+					continue;
+				
+				fValue -= calcLogLikelihoodY(r);
 				gradientByFunc(user, r, 1); // calculate the gradient by the review.
 			}
 		}
 		return fValue;
 	}
 	
+	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc r, double weight, double[] g) {
 		_DPAdaptStruct user = (_DPAdaptStruct)u;
 		_Review review = (_Review) r;
@@ -435,7 +453,7 @@ public class CLRWithHDP extends CLRWithDP {
 			System.err.println("Error,cannot find the HDP theta star!");
 		
 		int offset = m_dim*cIndex;
-		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review, user));
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));
 		if(m_LNormFlag)
 			delta /= getAdaptationSize(user);
 		
@@ -449,13 +467,12 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 	}
 	
-	protected double logit(_SparseFeature[] fvs, _Review r, _AdaptStruct u){
+	protected double logit(_SparseFeature[] fvs, _Review r){
 		double sum = Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
 		return Utils.logistic(sum);
 	}
 	
-	//Language model estimates.
-	public double MLELogisticModels(){
+	protected double estPhi(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;
 		int displayCount = 0;		
@@ -468,7 +485,7 @@ public class CLRWithHDP extends CLRWithDP {
 				//regularization part
 				fValue = calculateR1();
 				if (m_multiThread)
-					fValue += logLikelihood_MultiThread();
+					fValue += logLikelihood_MultiThread();//this could be implemented at a per-review basis
 				else
 					fValue += logLikelihood();
 				
@@ -507,6 +524,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
+	@Override
 	public double train(){
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -562,6 +580,7 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int i=0; i<m_kBar; i++)
 			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, m_dim*i, m_dim);
 	}
+	
 	@Override
 	protected double calculateR1(){
 		double R1 = 0;
@@ -578,14 +597,20 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		return R1;
 	}
+	
 	@Override
-	// After we finish estimating the clusters, we calculate the probability of each review belongs to each cluster.
+	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
 	// Indeed, it is for per review, for inheritance we don't change the function name.
 	protected void calculateClusterProbPerUser(){
 		double prob;
 		double[] probs;
+		if(m_newCluster) 
+			probs = new double[m_kBar+1];
+		else 
+			probs = new double[m_kBar];
+		
 		_HDPAdaptStruct user;
-		_HDPThetaStar oldTheta, curTheta;
+		_HDPThetaStar curTheta;
 		
 		//sample a new cluster parameter first.
 		if(m_newCluster)
@@ -594,23 +619,21 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
-				oldTheta = r.getHDPThetaStar();
-				if(m_newCluster) 
-					probs = new double[m_kBar+1];
-				else 
-					probs = new double[m_kBar];
+				if (r.getType() != rType.TEST)
+					continue;				
+				
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
-					prob = calcLogLikelihood_x(r) + Math.log(user.getHDPThetaMemSize(curTheta)+m_eta*m_gamma[k]);//this proportion includes the user's current cluster assignment
+					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta)+m_eta*m_gamma[k]);//this proportion includes the user's current cluster assignment
 					probs[k] = Math.exp(prob);//this will be in real space!					
 				}
 				Utils.L1Normalization(probs);
 				r.setClusterPosterior(probs);
-				r.setHDPThetaStar(oldTheta);//restore the cluster assignment during EM iterations
 			}
 		}
 	}
+	
 	@Override
 	public void printInfo(){
 		//clear the statistics
@@ -637,6 +660,7 @@ public class CLRWithHDP extends CLRWithDP {
 			System.out.format("%s\t", m_hdpThetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
 	}
+	
 	// Set the parameters.
 	public void setConcentrationParams(double alpha, double eta, double beta){
 		m_alpha = alpha;

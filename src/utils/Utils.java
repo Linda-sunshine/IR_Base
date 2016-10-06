@@ -8,14 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import cern.jet.random.Uniform;
-
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
@@ -920,7 +919,7 @@ public class Utils {
 	
 	//Sample with a given log array.
 	public static int sampleInLogArray(double[] logP, int length){
-		double sum = Utils.logSum(logP, length), rnd = Uniform.staticNextDouble();
+		double sum = Utils.logSum(logP, length), rnd = FloatUniform.staticNextFloat();
 		int i = -1;
 		while(rnd>0 && i<length){
 			i++;
