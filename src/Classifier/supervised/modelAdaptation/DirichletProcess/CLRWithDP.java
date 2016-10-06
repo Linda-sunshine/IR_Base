@@ -23,10 +23,10 @@ import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 15;
-	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
+	protected int m_numberOfIterations = 5;
+	protected int m_burnIn = 2, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
-	protected double m_alpha = 1; // Scaling parameter of DP.
+	protected double m_alpha = 10; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	protected boolean m_vctMean = true; // flag to determine whether we should use w_0 as prior for w_u
@@ -52,6 +52,10 @@ public class CLRWithDP extends LinAdapt {
 			m_thetaStars[i].setIndex(i);
 	}
 	
+	// Set the flag of using multi-thread or not.
+	public void setMultiTheadFlag(boolean b){
+		m_multiThread = b;
+	}
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
 	protected void calculateClusterProbPerUser(){
 		double prob;
@@ -141,7 +145,7 @@ public class CLRWithDP extends LinAdapt {
 		return R1;
 	}
 	
-	int findThetaStar(_thetaStar theta) {
+	protected int findThetaStar(_thetaStar theta) {
 		for(int i=0; i<m_kBar; i++)
 			if (theta == m_thetaStars[i])
 				return i;

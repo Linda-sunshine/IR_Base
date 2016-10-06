@@ -194,4 +194,3 @@ class LambdaRankWorker implements Runnable {
 		m_misorder /= 2;
 	}
 }
-

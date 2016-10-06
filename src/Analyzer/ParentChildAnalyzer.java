@@ -16,18 +16,15 @@ import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import utils.Utils;
 
-/**
- * 
- * @author Renqin Cai
- * Analyzer to load article comment pairs
- */
-public class ParentChildAnalyzer extends DocAnalyzer {
+public class ParentChildAnalyzer extends jsonAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 
 	public static int ChildDocFeatureSize = 6;
-	public ParentChildAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
-			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+	public ParentChildAnalyzer(String tokenModel, int classNo,
+			String providedCV, int Ngram, int threshold) throws InvalidFormatException, FileNotFoundException, IOException {
+		//added by Renqin
+		//null used to initialize stnModel and posModel
+		super(tokenModel, classNo, providedCV, Ngram, threshold, null, null);
 		parentHashMap = new HashMap<String, _ParentDoc>();
 	}
 
@@ -56,12 +53,14 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
 			if(f.isFile() && f.getName().endsWith(suffix)){
+				// LoadDoc(f.getAbsolutePath());
 				loadChildDoc(f.getAbsolutePath());
 			}else if(f.isDirectory()){
 				LoadChildDirectory(folder, suffix);
 			}
 		}
-		System.out.format("loading %d comments from %s\n", m_corpus.getSize() - current, folder);
+		System.out.format("loading %d comments from %s\n", m_corpus.getSize()
+				- current, folder);
 
 		filterParentAndChildDoc();
 	}
@@ -70,7 +69,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
-		JSONObject json = LoadJSON(fileName);
+		JSONObject json = LoadJson(fileName);
 		String title = Utils.getJSONValue(json, "title");
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
@@ -103,6 +102,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
+		
 		JSONObject json = LoadJSON(fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
@@ -145,7 +145,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
-		JSONObject json = LoadJSON(fileName);
+		JSONObject json = LoadJson(fileName);
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
@@ -157,7 +157,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 	
 	
 	public void filterParentAndChildDoc(){
-		System.out.println("Before filtering\t"+m_corpus.getSize());
+		System.out.println("before filtering\t"+m_corpus.getSize());
 		int corpusSize = m_corpus.getCollection().size();
 		ArrayList<Integer> removeIndexList = new ArrayList<Integer>();
 		
@@ -187,6 +187,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		}
 
 		System.out.println("after filtering\t"+m_corpus.getSize());
+
 	}
 
 }

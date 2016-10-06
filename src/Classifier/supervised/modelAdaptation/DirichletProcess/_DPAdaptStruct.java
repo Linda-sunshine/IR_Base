@@ -10,14 +10,22 @@ import utils.Utils;
 public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	_thetaStar m_thetaStar = null;
-	double[] m_cluPosterior;
+	protected double[] m_cluPosterior;
 	
 	public static int[] m_featureGroupMap;
 	
 	public _DPAdaptStruct(_User user) {
 		super(user, 0); // will not perform adaptation
 	}
-	
+	// added by Lin.
+	public _DPAdaptStruct(_User user, String id){
+		super(user, 0);
+		m_id = Integer.valueOf(id);
+		m_adaptStartPos = 0;
+		m_adaptEndPos = 10;
+		resetAdaptPtr();
+	}
+
 	public _DPAdaptStruct(_User user, int dim) {
 		super(user, dim);
 	}
@@ -59,6 +67,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 			double As[];
 			for(int k=0; k<m_cluPosterior.length; k++) {
 				As = CLRWithDP.m_thetaStars[k].getModel();
+
 				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
 				for(_SparseFeature fv: doc.getSparse()){
 					n = fv.getIndex() + 1;
@@ -70,6 +79,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 			}
 		}
 		
+
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;

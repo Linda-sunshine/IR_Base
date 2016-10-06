@@ -4,11 +4,15 @@
 package clustering;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import Classifier.BaseClassifier;
 import cc.mallet.cluster.Clustering;
@@ -21,6 +25,7 @@ import cc.mallet.types.Metric;
 import cc.mallet.types.SparseVector;
 import structures._Corpus;
 import structures._Doc;
+import structures._Review;
 
 /**
  * @author hongning
@@ -52,7 +57,7 @@ public class KMeansAlg extends BaseClassifier {
 		}
 		return new FeatureVector(m_dict, indices, d.getValues());
 	}
-
+	
 	@Override
 	public double train(Collection<_Doc> trainSet) {
 		init();
@@ -66,7 +71,7 @@ public class KMeansAlg extends BaseClassifier {
 		m_clusters = result.getClusters();
 		return 0; // we can compute the corresponding loss function
 	}
-
+	
 	//assign to the closest cluster 
 	@Override
 	public int predict(_Doc doc) {
@@ -82,7 +87,7 @@ public class KMeansAlg extends BaseClassifier {
 		}
 		return cid;
 	}
-
+	
 	//distance to the corresponding cluster
 	@Override
 	public double score(_Doc d, int label) {
@@ -101,7 +106,6 @@ public class KMeansAlg extends BaseClassifier {
 	@Override
 	protected void debug(_Doc d) {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -121,6 +125,97 @@ public class KMeansAlg extends BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	// Added by Lin for experimental purpose.
+	public void writeResults(String filename, HashSet<String> ctgs){
+		PrintWriter writer;
+		try{
+			double sum;
+			writer = new PrintWriter(new File(filename));
+			for(String s: ctgs)
+				writer.write(s+"\t");
+			writer.write("\n");
+			for(InstanceList ls: m_clusters){
+				sum = 0;
+				initCtg(ctgs);
+				organizeCtg(ls);
+				for(String s: m_ctgCount.keySet())
+					sum += m_ctgCount.get(s);
+				for(String s: m_ctgCount.keySet())
+					writer.write(m_ctgCount.get(s)/sum+"\t");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeRatioes(ArrayList<_Review> docs, String filename, HashMap<String, Integer> ctgIndex){
+		PrintWriter writer;
+		try{
+			String ctg;
+			writer = new PrintWriter(new File(filename));
+			writer.write("category"+"\t");
+			for(String c: ctgIndex.keySet()) writer.write(c+"\t");
+			writer.write("\n");
+			double sum = 0;
+			double[] counts = new double[ctgIndex.size()];
+			writer.write(docs.size()+"\t");
+			for(_Review d: docs){
+				ctg = d.getCategory();
+				counts[ctgIndex.get(ctg)]++;
+			}
+			for(double c: counts) sum += c;
+			for(int i=0; i<counts.length; i++){
+				counts[i] /= sum; 
+				writer.write(counts[i]+"\t");
+			}
+			writer.write("\n");
+			for(InstanceList ls: m_clusters){
+				sum = 0;
+				counts = new double[ctgIndex.size()];
+				writer.write(ls.size()+"\t");
+				for(Instance l: ls){
+					ctg = ((_Review)l.getSource()).getCategory();
+					counts[ctgIndex.get(ctg)]++;
+				}
+				for(double c: counts) sum += c;
+				for(int i=0; i<counts.length; i++){
+					counts[i] /= sum;
+					writer.write(counts[i]+"\t");
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	public double trainKmeans(Collection<_Review> trainSet) {
+		init();
 		
+		for(_Review d: trainSet)			
+			m_instances.add(new Instance(createInstance(d), null, null, d));
+		
+		KMeans alg = new KMeans(m_instances.getPipe(), m_k, m_distance);
+		Clustering result = alg.cluster(m_instances);	
+		m_centroids = alg.getClusterMeans();
+		m_clusters = result.getClusters();
+		return 0; // we can compute the corresponding loss function
+	}
+	
+	HashMap<String, Integer> m_ctgCount = new HashMap<String, Integer>();
+	public void initCtg(HashSet<String> ctgs){
+		for(String s: ctgs)
+			m_ctgCount.put(s, 0);
+	}
+	public void organizeCtg(InstanceList ls){
+		String key;
+		for(Instance l: ls){
+			key = ((_Review)l.getSource()).getCategory();
+			m_ctgCount.put(key, m_ctgCount.get(key)+1);
+		}
 	}
 }

@@ -47,6 +47,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected String m_dataset = "Amazon"; // Default dataset.
 
 	// added by Lin.
+	protected double[] m_perf; // Stores overall performance, micro F1 for both classes, macro F1 for both
+	
+
 	public ModelAdaptation(int classNo, int featureSize) {
 		super(classNo, featureSize);
 		m_pWeights = null;
@@ -339,5 +342,11 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void debug(_Doc d) {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
+	}
+	
+	public double[] getPerf(){
+		for(int i=0; i<m_classNo; i++)
+			m_perf[i] = m_microStat.getF1(i);
+		return m_perf;
 	}
 }
