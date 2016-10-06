@@ -216,6 +216,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+					sf.setTF(sf.getValue());
 					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = 1 + Math.log10(N / DF);
@@ -413,5 +414,9 @@ public abstract class Analyzer {
 	//Return the number of features.
 	public int getFeatureSize(){
 		return m_featureNames.size();
+	}
+	
+	public HashMap<String, _stat> getFeatureStat(){
+		return m_featureStat;
 	}
 }
