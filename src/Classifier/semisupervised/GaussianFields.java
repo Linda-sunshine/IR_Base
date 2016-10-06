@@ -27,11 +27,12 @@ public class GaussianFields extends BaseClassifier {
 	int m_k; // k labeled neighbors.
 	int m_kPrime;//k' unlabeled neighbors.
 	
-	int m_U, m_L;
+	protected int m_U;
+	protected int m_L;
 	protected _Node[] m_nodeList; // list of nodes with its nearest neighbors in the graph
 	SparseDoubleMatrix2D m_graph;
 	
-	ArrayList<_Doc> m_labeled; // a subset of training set
+	protected ArrayList<_Doc> m_labeled; // a subset of training set
 	protected double m_labelRatio; // percentage of training data for semi-supervised learning
 	
 	protected BaseClassifier m_classifier; //Multiple learner.

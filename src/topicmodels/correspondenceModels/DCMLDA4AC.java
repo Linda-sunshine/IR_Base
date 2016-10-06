@@ -37,7 +37,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 	
 	public DCMLDA4AC(int number_of_iteration, double converge, double beta, _Corpus c, double lambda, int number_of_topics, double alpha, double  burnIn, int lag, double ksi, double tau, int newtonIter, double newtonConverge){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-				alpha, burnIn, lag, newtonIter, newtonConverge);
+				alpha, burnIn, lag);
 
 		m_newtonIter = newtonIter;
 		m_newtonConverge = newtonConverge;

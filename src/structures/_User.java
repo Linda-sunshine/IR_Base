@@ -42,6 +42,21 @@ public class _User {
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
+	int m_cIndex = 0; // added by Lin, cluster number.
+	
+	public _User(int cindex, int classNo){
+		m_cIndex = cindex;
+		m_classNo = classNo;
+		m_reviews = new ArrayList<_Review>();		
+
+		m_userID = null;
+		m_lowDimProfile = null;
+		m_BoWProfile = null;
+		m_pWeight = null;
+		
+		m_perfStat = new _PerformanceStat(classNo);
+	}
+	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
 		m_userID = userID;
 		m_reviews = reviews;
@@ -70,7 +85,14 @@ public class _User {
 		m_category = category;
 		constructSparseVector();
 	}
-	
+	// added by Lin for setting the index of user cluster.
+	public void setClusterIndex(int i) {
+		m_cIndex = i;
+	}
+	// added by Lin for accessing the index of user cluster.
+	public int getClusterIndex() {
+		return m_cIndex;
+	}
 	// Get the user ID.
 	public String getUserID(){
 		return m_userID;
@@ -220,5 +242,26 @@ public class _User {
 	
 	public double getPosRatio(){
 		return m_posRatio;
+	}
+	
+	// Added by Lin for accumulating super user.
+	public void mergeReviews(ArrayList<_Review> reviews) {
+		m_reviews.addAll(reviews);
+	}
+
+	// Added by Lin for kmeans based on profile.
+	public int[] getProfIndices() {
+		int[] indices = new int[m_BoWProfile.length];
+		for (int i = 0; i < m_BoWProfile.length; i++)
+			indices[i] = m_BoWProfile[i].m_index;
+
+		return indices;
+	}
+	public double[] getProfValues() {
+		double[] values = new double[m_BoWProfile.length];
+		for(int i=0; i<m_BoWProfile.length; i++) 
+			values[i] = m_BoWProfile[i].m_value;
+		
+		return values;
 	}
  }

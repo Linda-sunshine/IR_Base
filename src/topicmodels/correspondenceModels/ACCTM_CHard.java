@@ -1,12 +1,8 @@
 package topicmodels.correspondenceModels;
 
-import java.io.File;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
@@ -30,7 +26,8 @@ public class ACCTM_CHard extends ACCTM_C {
 	
 	@Override
 	public String toString(){
-		return String.format("Parent Child Base Phi^c topic model with hard differentiate[k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]", 
+		return String
+				.format("ACCTM_C with hard differentiate[k:%d, alpha:%.2f, beta:%.2f, gamma1:%.2f, gamma2:%.2f, Gibbs Sampling]",
 				number_of_topics, d_alpha, d_beta, m_gamma[0], m_gamma[1]);
 	}
 	
@@ -78,7 +75,7 @@ public class ACCTM_CHard extends ACCTM_C {
 	}
 
 	@Override
-	protected void sampleInChildDoc(_ChildDoc d){
+	protected void sampleInChildDoc(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi)d;
 		int wid, tid, xid;
 		double normalizedProb;
@@ -193,20 +190,7 @@ public class ACCTM_CHard extends ACCTM_C {
 			
 		}
 	}
-	
-	@Override
-	protected void estThetaInDoc(_Doc d) {
-		if (d instanceof _ParentDoc) {
-			// estimate topic proportion of sentences in parent documents
-			// ((_ParentDoc4ThreePhi) d).estStnTheta();
-			// estParentStnTopicProportion((_ParentDoc) d);//ACCTM model should not touch the sentence structure
-			Utils.L1Normalization(d.m_topics);
-		} else if (d instanceof _ChildDoc4BaseWithPhi) {
-			((_ChildDoc4BaseWithPhi) d).estGlobalLocalTheta();
-		}
-		m_statisticsNormalized = true;
-	}
-	
+
 	@Override
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc pDoc = (_ParentDoc)d;
@@ -214,6 +198,7 @@ public class ACCTM_CHard extends ACCTM_C {
 			stnObj.setTopicsVct(number_of_topics);
 		}
 		int testLength = (int)(m_testWord4PerplexityProportion*d.getTotalDocLength());
+		testLength = 0;
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);		
 		sampleTestSet.add(pDoc);
 		pDoc.createSparseVct4Infer();
@@ -231,12 +216,13 @@ public class ACCTM_CHard extends ACCTM_C {
 	}
 	
 	@Override
-	protected double logLikelihoodByIntegrateTopics(_ChildDoc d) {
+	protected double calculate_log_likelihood4Child(_Doc d) {
 //		System.out.println("likelihood in child doc in base with phi");
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);
-
+		double cDocXSum = Utils.sumOfArray(cDoc.m_xSstat);
+		
 		// prepare compute the normalizers
 		_SparseFeature[] fv = cDoc.getSparse();
 		
@@ -246,17 +232,22 @@ public class ACCTM_CHard extends ACCTM_C {
 			
 			double wordLogLikelihood = 0;
 
-			if(Utils.indexOf(d.m_parentDoc.getSparse(),wid)!=-1){
+			if (Utils.indexOf(cDoc.m_parentDoc.getSparse(), wid) != -1) {
 				for (int k = 0; k < number_of_topics; k++) {
 					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
 			}else{
 				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
+							* childTopicInDocProb(k, cDoc)
+							* childXInDocProb(0, cDoc) / (cDocXSum + gammaLen);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
-				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getTotalDocLength() + gammaLen);
+				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid,
+						cDoc)
+						* childXInDocProb(1, cDoc)
+						/ (cDocXSum + gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
@@ -273,27 +264,33 @@ public class ACCTM_CHard extends ACCTM_C {
 	}
 	
 	@Override
-	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
+	protected double cal_logLikelihood_partial4Child(_Doc d) {
 		_ChildDoc4BaseWithPhi_Hard cDoc = (_ChildDoc4BaseWithPhi_Hard) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);
+		double cDocXSum = Utils.sumOfArray(cDoc.m_xSstat);
 
 		for (_Word w : cDoc.getTestWords()) {
 			int wid = w.getIndex();
 
 			double wordLogLikelihood = 0;
 			
-			if(Utils.indexOf(d.m_parentDoc.getSparse(),wid)!=-1){
+			if (Utils.indexOf(cDoc.m_parentDoc.getSparse(), wid) != -1) {
 				for (int k = 0; k < number_of_topics; k++) {
 					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
 			}else{
 				for (int k = 0; k < number_of_topics; k++) {
-					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)*childTopicInDocProb(k, cDoc)*childXInDocProb(0, cDoc)/ (cDoc.getDocInferLength() + gammaLen);
+					double wordPerTopicLikelihood = childWordByTopicProb(k, wid)
+							* childTopicInDocProb(k, cDoc)
+							* childXInDocProb(0, cDoc) / (cDocXSum + gammaLen);
 					wordLogLikelihood += wordPerTopicLikelihood;
 				}
-				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)*childXInDocProb(1, cDoc)/ (cDoc.getDocInferLength() + gammaLen);
+				double wordPerTopicLikelihood = childLocalWordByTopicProb(wid,
+						cDoc)
+						* childXInDocProb(1, cDoc)
+						/ (cDocXSum + gammaLen);
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 

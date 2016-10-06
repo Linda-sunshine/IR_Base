@@ -39,13 +39,16 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	
 	protected void initialize_probability(Collection<_Doc>collection){
 		m_alpha_c = new double[number_of_topics];
-
+		m_alphaAuxilary = new double[number_of_topics];
+		
 		m_alpha = new double[number_of_topics];
 		m_beta = new double[number_of_topics][vocabulary_size];
 
 		m_totalAlpha = 0;
 		m_totalAlpha_c = 0;
 		m_totalBeta = new double[number_of_topics];
+		
+		m_topic_word_prob = new double[number_of_topics][vocabulary_size];
 
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc4DCM){
@@ -238,12 +241,12 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	
 	protected double childTopicInDocProb(int tid, _ChildDoc d, _ParentDoc4DCM pDoc) {
 		double prob = 0;
-		double parentDocLength = d.m_parentDoc.getDocInferLength();
-		double childDocLength = d.getDocInferLength();
+		double childTopicSum = Utils.sumOfArray(d.m_sstat);
+		double parentTopicSum = Utils.sumOfArray(pDoc.m_sstat);
 			
-		double muDp = d.getMu()/parentDocLength;
-		prob = (m_alpha_c[tid]+muDp*pDoc.m_sstat[tid]+d.m_sstat[tid])/
-				(m_totalAlpha_c+muDp*parentDocLength+childDocLength);
+		double muDp = d.getMu() / parentTopicSum;
+		prob = (m_alpha_c[tid] + muDp * pDoc.m_sstat[tid] + d.m_sstat[tid])
+				/ (m_totalAlpha_c + muDp * parentTopicSum + childTopicSum);
 		
 		return prob;
 	}

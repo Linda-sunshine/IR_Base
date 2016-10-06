@@ -11,7 +11,10 @@ public class _Review extends _Doc {
 	String m_category; 
 	rType m_type; // specification of this review
 	
-	//Constructor for test purpose.
+	//Constructor for route project.
+	public _Review(int ID, String source, int ylabel){
+		super(ID, source, ylabel);
+	}
 	
 	public _Review(int ID, String source, int ylabel, String userID, String productID, String category, long timeStamp){
 		super(ID, source, ylabel);
@@ -49,5 +52,32 @@ public class _Review extends _Doc {
 	@Override
 	public String toString() {
 		return String.format("%s-%s-%s-%s", m_userID, m_itemID, m_category, m_type);
+	}
+	
+	// Added by Lin for experimental purpose.
+	public String getCategory(){
+		return m_category;
+	}
+	
+	// Added for the HDP algorithm.
+	_HDPThetaStar m_hdpThetaStar;
+	public void setHDPThetaStar(_HDPThetaStar s){
+		m_hdpThetaStar = s;
+	}
+	public _HDPThetaStar getHDPThetaStar(){
+		return m_hdpThetaStar;
+	}
+	
+	// Added by Lin for HDP evaluation.
+	double[] m_cluPosterior;
+	
+	public void setClusterPosterior(double[] posterior) {
+		if (m_cluPosterior==null || m_cluPosterior.length != posterior.length)
+			m_cluPosterior = new double[posterior.length];
+		System.arraycopy(posterior, 0, m_cluPosterior, 0, posterior.length);
+	}
+	
+	public double[] getCluPosterior(){
+		return m_cluPosterior;
 	}
 }

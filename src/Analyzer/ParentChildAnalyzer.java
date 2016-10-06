@@ -3,10 +3,8 @@ package Analyzer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 
 import json.JSONArray;
 import json.JSONException;
@@ -16,8 +14,6 @@ import structures._ChildDoc;
 import structures._Doc;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
-import structures._SparseFeature;
-import topicmodels.languageModelBaseLine;
 import utils.Utils;
 
 /**
@@ -80,11 +76,11 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		_ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
-		 content, 0);
+		// _ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
+		// content, 0);
 
-		// _ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
-				// content, 0);
+		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
+				content, 0);
 
 		try {
 			JSONArray sentenceArray = json.getJSONArray("sentences");

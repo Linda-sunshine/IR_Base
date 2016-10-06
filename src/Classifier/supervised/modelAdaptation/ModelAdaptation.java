@@ -46,6 +46,13 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_LNormFlag=true;
 	protected String m_dataset = "Amazon"; // Default dataset.
 
+	// added by Lin.
+	public ModelAdaptation(int classNo, int featureSize) {
+		super(classNo, featureSize);
+		m_pWeights = null;
+		m_personalized = true;
+	}
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		

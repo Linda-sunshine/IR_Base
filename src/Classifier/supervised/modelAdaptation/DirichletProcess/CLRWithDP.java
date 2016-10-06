@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,11 +22,11 @@ import structures._thetaStar;
 import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
-	protected int m_M = 8, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 50;
+	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
+	protected int m_numberOfIterations = 15;
 	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
-	protected double m_alpha = .1; // Scaling parameter of DP.
+	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	protected boolean m_vctMean = true; // flag to determine whether we should use w_0 as prior for w_u
@@ -34,7 +37,8 @@ public class CLRWithDP extends LinAdapt {
 	protected double[][] m_gradients;
 	
 	// Parameters of the prior for the intercept and coefficients.
-	protected double[] m_abNuA = new double[]{0, 0.1}; // N(0,1) for shifting in adaptation based models
+	protected double[] m_abNuA = new double[]{0, 1}; // N(0,1) for shifting in adaptation based models
+
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
@@ -54,23 +58,73 @@ public class CLRWithDP extends LinAdapt {
 		_DPAdaptStruct user;
 		double[] probs = new double[m_kBar];
 		_thetaStar oldTheta;
-		
+
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
 			
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
+
 				prob = calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
 			user.setClusterPosterior(probs);
-			
+
 			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
 		}
 	}
 	
+	//added by Lin. Calculate the function value of the new added instance.
+	protected double calcLogLikelihood4Posterior(_AdaptStruct user){
+		double L = 0; //log likelihood.
+		double Pi = 0;
+			
+		for(_Review review:user.getReviews()){
+			if (review.getType() != rType.ADAPTATION  && review.getType() != rType.TEST)
+					continue; // only touch the adaptation data
+				
+			Pi = logit(review.getSparse(), user);
+			if(review.getYLabel() == 1) {
+				if (Pi>0.0)
+					L += Math.log(Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			} else {
+				if (Pi<1.0)
+					L += Math.log(1 - Pi);					
+				else
+					L -= Utils.MAX_VALUE;
+			}
+		}
+		if(m_LNormFlag)
+			return L/getAdaptationSize(user);
+		else
+			return L;
+	}
+	public int predict(_AdaptStruct user, _thetaStar theta){
+		double[] As;
+		double sum;
+		int m, n, predL = 0, count = 0;
+		for(_Review r: user.getReviews()){
+			if(r.getType() == rType.TEST){
+				As = theta.getModel();
+				sum = As[0]*MTCLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+				for(_SparseFeature fv: r.getSparse()){
+					n = fv.getIndex() + 1;
+					m = m_featureGroupMap[n];
+					sum += (As[m]*MTCLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+				}
+				if(sum > 0.5) 
+					predL = 1;
+				if(predL == r.getYLabel())
+					count++;
+			}
+		}
+		return count;
+	}
+
 	protected double calculateR1(){
 		double R1 = 0;
 		for(int i=0; i<m_kBar; i++)
@@ -144,6 +198,7 @@ public class CLRWithDP extends LinAdapt {
 			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
 		
+
 		if (k==m_kBar+m_M) {
 			System.err.println("[Warning]Hit the very last element in theatStar!");
 			k--; // we might hit the very last
@@ -157,7 +212,7 @@ public class CLRWithDP extends LinAdapt {
 		}
 	}	
 	
-	void swapTheta(int a, int b) {
+	protected void swapTheta(int a, int b) {
 		_thetaStar cTheta = m_thetaStars[a];
 		m_thetaStars[a] = m_thetaStars[b];
 		m_thetaStars[b] = cTheta;// kBar starts from 0, the size decides how many are valid.
@@ -207,7 +262,7 @@ public class CLRWithDP extends LinAdapt {
 			threads.add((new Thread() {
 				int core, numOfCores;
 				double[] m_gradient, m_fValue;
-				
+
 				@Override
 				public void run() {
 					_DPAdaptStruct user;
@@ -217,7 +272,7 @@ public class CLRWithDP extends LinAdapt {
 							m_fValue[core] -= calcLogLikelihood(user);
 							
 							for(_Review review:user.getReviews()){
-								if (review.getType() != rType.ADAPTATION)
+								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 									continue;								
 								
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
@@ -259,7 +314,7 @@ public class CLRWithDP extends LinAdapt {
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;
 		int displayCount = 0;		
-		
+
 		initLBFGS();// init for lbfgs.
 		assignClusterIndex();
 		
@@ -333,12 +388,63 @@ public class CLRWithDP extends LinAdapt {
 				break;
 			lastLikelihood = curLikelihood;
 		}
-		
+
 		evaluateModel(); // we do not want to miss the last sample?!
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
 	
+//	// added by Lin for tracking trace. 
+//	public double trainTrace(String tracefile){
+//		m_numberOfIterations = 50;
+//		m_burnIn = 1;
+//		m_thinning = 1;
+//		
+//		System.out.println(toString());
+//		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+//		int count = 0;
+//		
+//		init(); // clear user performance and init cluster assignment		
+//		
+//		// Burn in period.
+//		while(count++ < m_burnIn){
+//			calculate_E_step();
+//			calculate_M_step();
+//		}
+//		try{
+//			PrintWriter writer = new PrintWriter(new File(tracefile));
+//			// EM iteration.
+//			for(int i=0; i<m_numberOfIterations; i++){
+//				// Cluster assignment, thinning to reduce auto-correlation.
+//				calculate_E_step();
+//			
+//				// Optimize the parameters
+//				curLikelihood = calculate_M_step();
+//			
+//				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+//				if (i%m_thinning==0){
+//					evaluateModel();
+//					test();
+//					for(_AdaptStruct u: m_userList)
+//						u.getPerfStat().clear();
+//				}
+//				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[2], m_perf[3]));
+//
+//				printInfo();
+//				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+//				if(Math.abs(delta) < m_converge)
+//					break;
+//				lastLikelihood = curLikelihood;
+//		}
+//		writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//		evaluateModel(); // we do not want to miss the last sample?!
+//		setPersonalizedModel();
+//		return curLikelihood;
+//	}
+
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim;
@@ -384,6 +490,7 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	protected void initPriorG0() {
+
 		if (m_vctMean)
 			m_G0 = new NormalPrior(m_gWeights, m_abNuA[1]);//using the global model as prior
 		else
@@ -445,6 +552,7 @@ public class CLRWithDP extends LinAdapt {
 		m_userList = new ArrayList<_AdaptStruct>();
 		
 		for(_User user:userList)
+//			m_userList.add(new _DPAdaptStruct(user, user.getUserID()));
 			m_userList.add(new _DPAdaptStruct(user));
 		m_pWeights = new double[m_gWeights.length];		
 	}
@@ -468,7 +576,10 @@ public class CLRWithDP extends LinAdapt {
 		m_M = m;
 	}
 	
-	protected void setNumberOfIterations(int num){
+	public void setsdA(double v){
+		m_abNuA[1] = v;
+	}
+	public void setNumberOfIterations(int num){
 		m_numberOfIterations = num;
 	}
 	
@@ -555,7 +666,7 @@ public class CLRWithDP extends LinAdapt {
 		//clear the statistics
 		for(int i=0; i<m_kBar; i++) 
 			m_thetaStars[i].resetCount();
-		
+
 		//collect statistics across users in adaptation data
 		_thetaStar theta = null;
 		for(int i=0; i<m_userList.size(); i++) {
@@ -577,4 +688,9 @@ public class CLRWithDP extends LinAdapt {
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
 	}
+	
+	public void setGlobalModel(int fvSize){
+		m_gWeights = new double[fvSize+1];
+	}
+
 }

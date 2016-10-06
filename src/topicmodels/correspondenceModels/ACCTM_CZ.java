@@ -1,20 +1,15 @@
 package topicmodels.correspondenceModels;
 
-import java.io.File;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
-import structures._SparseFeature;
-import structures._Stn;
 import structures._Word;
 import utils.Utils;
 
 public class ACCTM_CZ extends ACCTM_C{
+
 	public ACCTM_CZ(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
 			int number_of_topics, double alpha, double burnIn, int lag, double[] gamma){
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha, burnIn, lag, gamma);
@@ -59,17 +54,16 @@ public class ACCTM_CZ extends ACCTM_C{
 	
 	@Override
 	protected double childTopicInDocProb(int tid, _ChildDoc d){
-		double smoothingParameter = 1e-20;
-		double docLength = d.m_parentDoc.getDocInferLength();
+		_ParentDoc pDoc = d.m_parentDoc;
+		double pDocTopicSum = Utils.sumOfArray(pDoc.m_sstat);
 		
-		return (d.m_parentDoc.m_sstat[tid]+smoothingParameter)/(docLength+smoothingParameter*number_of_topics);
+		return (d.m_parentDoc.m_sstat[tid] + m_smoothingParam)
+				/ (pDocTopicSum + m_smoothingParam * number_of_topics);
 	}
 	
 	@Override
-	protected void collectChildStats(_ChildDoc d){
+	protected void collectChildStats(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
-		_ParentDoc pDoc = cDoc.m_parentDoc;
-		double parentDocLength = pDoc.getDocInferLength();
 		
 		for(int k=0; k<number_of_topics; k++){
 			cDoc.m_xTopics[0][k] += cDoc.m_xTopicSstat[0][k];
@@ -87,21 +81,17 @@ public class ACCTM_CZ extends ACCTM_C{
 			w.collectXStats();
 		}
 	}
-		
+
+	// change it into proportion rather than the last sample
 	@Override
-	public double inference(_Doc pDoc){
-		ArrayList<_Doc> sampleTestSet = new ArrayList<_Doc>();
-		
-		initTest(sampleTestSet, pDoc);
-		return inference4Doc(sampleTestSet);	
-	}
-	
-	@Override
-	protected double testLogLikelihoodByIntegrateTopics(_ChildDoc d) {
+	protected double cal_logLikelihood_partial4Child(_Doc d) {
 		_ChildDoc4BaseWithPhi cDoc = (_ChildDoc4BaseWithPhi) d;
 		double docLogLikelihood = 0.0;
 		double gammaLen = Utils.sumOfArray(m_gamma);
 
+		double cDocXSum = Utils.sumOfArray(cDoc.m_xSstat);
+		
+		
 		for (_Word w : cDoc.getTestWords()) {
 			int wid = w.getIndex();
 
@@ -109,14 +99,13 @@ public class ACCTM_CZ extends ACCTM_C{
 			for (int k = 0; k < number_of_topics; k++) {
 				double term1 = childWordByTopicProb(k, wid);
 				double term2 = childTopicInDoc(k, cDoc);
-				double term3 = childXInDocProb(0, cDoc)/ (cDoc.getDocInferLength() + gammaLen);
+				double term3 = childXInDocProb(0, cDoc) / (cDocXSum + gammaLen);
 				
 				double wordPerTopicLikelihood = term1*term2*term3;
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			double wordPerTopicLikelihood = childLocalWordByTopicProb(wid, cDoc)
-					* childXInDocProb(1, cDoc)
-					/ (cDoc.getDocInferLength() + gammaLen);
+					* childXInDocProb(1, cDoc) / (cDocXSum + gammaLen);
 			wordLogLikelihood += wordPerTopicLikelihood;
 
 			if (Math.abs(wordLogLikelihood) < 1e-10) {
@@ -132,7 +121,7 @@ public class ACCTM_CZ extends ACCTM_C{
 	}
 
 	public double childTopicInDoc(int tid, _ChildDoc cDoc){
-//		System.out.println("number of words in tid\t"+cDoc.m_sstat[tid]+"\t x=0 words \t"+cDoc.m_xSstat[0]);
-		return (cDoc.m_xTopicSstat[0][tid]+1e-10)/(cDoc.m_xSstat[0]+1e-10*number_of_topics);
+		return (cDoc.m_xTopicSstat[0][tid] + m_smoothingParam)
+				/ (cDoc.m_xSstat[0] + m_smoothingParam * number_of_topics);
 	}
 }

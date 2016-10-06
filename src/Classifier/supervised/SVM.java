@@ -236,4 +236,9 @@ public class SVM extends BaseClassifier {
 			e.printStackTrace();
 		}
 	}
+	
+	// Aded by Lin for access the learned weights.
+	public double[] getWeights(){
+		return m_libModel.getWeights();
+	}
 }

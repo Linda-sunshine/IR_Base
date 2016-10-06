@@ -97,10 +97,15 @@ public class CoLinAdapt extends LinAdapt {
 	
 	@Override
 	protected double calculateFuncValue(_AdaptStruct u) {		
-		double fValue = super.calculateFuncValue(u), R2 = 0, diffA, diffB;
-		
+		double fValue = super.calculateFuncValue(u);
+		double R2 = calculateR2(u);
+		return fValue + R2;
+	}
+	
+	public double calculateR2(_AdaptStruct u){
 		//R2 regularization
 		_CoLinAdaptStruct ui = (_CoLinAdaptStruct)u, uj;
+		double R2 = 0, diffA, diffB;
 		for(_RankItem nit:ui.getNeighbors()) {
 			uj = (_CoLinAdaptStruct)m_userList.get(nit.m_index);
 			diffA = 0;
@@ -110,10 +115,11 @@ public class CoLinAdapt extends LinAdapt {
 				diffB += (ui.getShifting(k) - uj.getShifting(k)) * (ui.getShifting(k) - uj.getShifting(k));
 			}
 			R2 += nit.m_value * (m_eta3*diffA + m_eta4*diffB);
+//			R2 += 0.1 * (m_eta3*diffA + m_eta4*diffB);
+//			R2 += (nit.m_value / simSum) * (m_eta3*diffA + m_eta4*diffB);
 		}
-		return fValue + R2;
+		return R2;
 	}
-	
 	@Override
 	protected void calculateGradients(_AdaptStruct u){
 		super.calculateGradients(u);
