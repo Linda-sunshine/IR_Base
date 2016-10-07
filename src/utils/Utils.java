@@ -945,4 +945,14 @@ public class Utils {
 				max = xs[i];
 		return max;
 	}
+	
+	public static void add2Array(int[] a, int[] b){
+		if(a.length != b.length){
+			System.err.println("Different lengths!");
+			return;
+		}
+		for(int i=0; i<a.length; i++)
+			a[i] += b[i];
+		return;
+	}
 }

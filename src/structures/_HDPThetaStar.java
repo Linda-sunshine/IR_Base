@@ -14,6 +14,7 @@ public class _HDPThetaStar extends _thetaStar {
 	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
 	protected ArrayList<_Review> m_reviews; //reviews assigned to this group
+	protected double m_gamma;
 	
 	public _HDPThetaStar(int dim, int lmSize) {
 		super(dim);
@@ -33,6 +34,17 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_psi;
 	}
 	
+	public void setGamma(double g){
+		m_gamma = g;
+	}
+	
+	public double getGamma(){
+		return m_gamma;
+	}
+	
+	public void resetGamma(){
+		m_gamma = 0;
+	}
 	// Update \psi with the newly estimated prob. 
 	public void updatePsiModel(double[] prob){
 		System.arraycopy(prob, 0, m_psi, 0, prob.length);
