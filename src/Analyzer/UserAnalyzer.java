@@ -264,8 +264,11 @@ public class UserAnalyzer extends DocAnalyzer {
 				}
 			}
 		}
-		for(int i=0; i<lm.length; i++)
+		for(int i=0; i<lm.length; i++){
 				lm[i] /= sum;
+				if(lm[i] == 0)
+					lm[i] = 0.0001;
+		}
 			return lm;
 		}
 }

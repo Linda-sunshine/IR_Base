@@ -19,7 +19,7 @@ public class DirichletPrior {
 			sum += target[i];
 		}
 		
-		for(int i=0; i<target.length; i++) {
+		for(int i=0; i<alphas.length; i++) {
 				target[i]/=sum;
 			if (toLog)
 				target[i] = Math.log(target[i]);
