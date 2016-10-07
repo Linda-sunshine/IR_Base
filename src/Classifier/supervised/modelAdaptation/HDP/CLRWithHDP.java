@@ -415,7 +415,9 @@ public class CLRWithHDP extends CLRWithDP {
 			theta = m_hdpThetaStars[k];
 			lmProb = theta.getPsiModel();
 			
-			System.arraycopy(m_globalLM, 0, lmProb, 0, m_lmDim);//set the prior properly
+//			System.arraycopy(m_globalLM, 0, lmProb, 0, m_lmDim);//set the prior properly
+			
+			Arrays.fill(lmProb, m_beta/m_lmDim);
 			for(_Review r: theta.getReviews()){
 				for(_SparseFeature fv: r.getSparse()){
 					lmProb[fv.getIndex()] += fv.getTF();
