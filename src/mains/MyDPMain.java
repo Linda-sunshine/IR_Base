@@ -48,7 +48,7 @@ public class MyDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -96,7 +96,7 @@ public class MyDPMain {
 		double[] globalLM = analyzer.estimateGlobalLM();
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		clrhdp.setGlobalLM(globalLM);
-		clrhdp.setMultiTheadFlag(false);
+//		clrhdp.setLNormFlag(false);
 		clrhdp.setConcentrationParams(0.01, 0.01, 0.01);
 		clrhdp.loadUsers(analyzer.getUsers());
 		clrhdp.setR1TradeOff(eta1);
@@ -104,10 +104,10 @@ public class MyDPMain {
 		clrhdp.train();
 		clrhdp.test();
 		
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
 	}
 }

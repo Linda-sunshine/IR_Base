@@ -40,12 +40,15 @@ public class CLRWithHDP extends CLRWithDP {
 	protected boolean m_newCluster = false;
 	protected int m_lmDim = -1; // dimension for language model
 	
+	private Object m_thetaLock=null;
+
 	public CLRWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_kBar = m_initK;//init kBar.
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
 		m_stirlings = new HashMap<String, Double>();
+		m_thetaLock = new Object();
 	}
 	
 	@Override
@@ -291,6 +294,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 	}
 	
+	
 	//Sample how many local groups inside user reviews.
 	protected int sampleH(_HDPAdaptStruct user, _HDPThetaStar s){
 		int n = user.getHDPThetaMemSize(s);
@@ -426,14 +430,74 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
-				
-				fValue -= calcLogLikelihoodY(r);
+				if(m_LNormFlag)
+					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
+				else
+					fValue -= calcLogLikelihoodY(r);
 				gradientByFunc(user, r, 1); // calculate the gradient by the review.
 			}
 		}
 		return fValue;
 	}
-	
+	//Calculate loglikelihood in multi-thread.
+	protected double logLikelihood_MultiThread() {
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+		
+		//init the shared structure		
+		Arrays.fill(m_fValues, 0);
+		for(int k=0; k<numberOfCores; ++k){
+			Arrays.fill(m_gradients[k], 0);
+			
+			threads.add((new Thread() {
+				int core, numOfCores;
+				double[] m_gradient, m_fValue;
+
+				@Override
+				public void run() {
+					_HDPAdaptStruct user;
+					try {						
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_HDPAdaptStruct)m_userList.get(i+core);
+							
+							for(_Review review:user.getReviews()){
+								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
+									continue;								
+								m_fValue[core] -= calcLogLikelihoodY(review);
+
+								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
+							}			
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores, double[] gradient, double[] f) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					this.m_gradient = gradient;
+					this.m_fValue = f;
+					
+					return this;
+				}
+			}).initialize(k, numberOfCores, m_gradients[k], m_fValues));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(int k=0;k<numberOfCores;++k)
+			Utils.scaleArray(m_g, m_gradients[k], 1);
+		return Utils.sumOfArray(m_fValues);
+	}
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc r, double weight, double[] g) {
 		_DPAdaptStruct user = (_DPAdaptStruct)u;
