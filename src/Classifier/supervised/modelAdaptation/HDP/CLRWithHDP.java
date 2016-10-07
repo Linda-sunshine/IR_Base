@@ -245,15 +245,16 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	public void preCalcL4NewCluster(){
-		double L = 0, beta_lgamma = Utils.lgamma(m_beta), sum = 0;
+		double L = 0, beta_lgamma = Utils.lgamma(m_beta), betaSum_lgamma = Utils.lgamma(m_beta*m_lmDim), sum = 0;
 		for(_AdaptStruct u: m_userList){
 			for(_Review r: u.getReviews()){
+				L = 0;
 				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
 				for(_SparseFeature fv: r.getSparse()) {
 					sum += fv.getTF();
 					L += Utils.lgamma(m_beta+fv.getTF()) - beta_lgamma;
 				}
-				L += Utils.lgamma(m_beta*m_lmDim) - Utils.lgamma(m_beta*m_lmDim+sum);
+				L += betaSum_lgamma - Utils.lgamma(m_beta*m_lmDim+sum);
 				r.setL4NewCluster(L);
 			}
 		}
