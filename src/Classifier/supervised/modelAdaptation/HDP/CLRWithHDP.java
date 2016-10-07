@@ -105,8 +105,8 @@ public class CLRWithHDP extends CLRWithDP {
 				if (r.getType() == rType.TEST)
 					continue;
 				
-//				rndIndex = (int)(Math.random() * m_kBar);
-				rndIndex = findIndex(Math.random() * m_kBar);
+				rndIndex = (int)(Math.random() * m_kBar);
+
 				//find the random theta and update the setting.
 				curTheta = m_hdpThetaStars[rndIndex];
 				curTheta.updateMemCount(1);
@@ -116,18 +116,7 @@ public class CLRWithHDP extends CLRWithDP {
 			} 
 		}
 	}
-	public int findIndex(double rnd){
-		int index = -1;
-		if(rnd == 0) 
-			index = 0;
-		else if(rnd%1 == 0)//if rnd is marginal.
-			index = (int)rnd-1;
-		else
-			index = (int)rnd;
-		if(index <0 || index >= m_kBar)
-			System.err.println("[error]Index out of range!");
-		return index;
-	}
+
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
 	@Override
 	public void sampleThetaStars(){
@@ -255,16 +244,16 @@ public class CLRWithHDP extends CLRWithDP {
 	}		
 
 	public double calcLogLikelihoodX(_Review r){
-		double L = 0, beta_v = m_beta/m_lmDim, beta_v_lgamma = Utils.lgamma(beta_v), sum = 0;
+		double L = 0, beta_lgamma = Utils.lgamma(m_beta), sum = 0;
 		//we will integrate it out
 		if(r.getHDPThetaStar().getPsiModel() == null){
 			//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
 			for(_SparseFeature fv: r.getSparse()) {
 				sum += fv.getTF();
-				L += Utils.lgamma(beta_v+fv.getTF()) - beta_v_lgamma;
+				L += Utils.lgamma(m_beta+fv.getTF()) - beta_lgamma;
 			}
 			
-			return L + Utils.lgamma(m_beta) - Utils.lgamma(m_beta+sum);
+			return L + Utils.lgamma(m_beta*m_lmDim) - Utils.lgamma(m_beta*m_lmDim+sum);
 		} else {		
 			double[] psi = r.getHDPThetaStar().getPsiModel();
 			for(_SparseFeature fv: r.getSparse())
