@@ -97,7 +97,7 @@ public class MyDPMain {
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		clrhdp.setGlobalLM(globalLM);
 		clrhdp.setMultiTheadFlag(false);
-		clrhdp.setConcentrationParams(1, 1, 1);
+		clrhdp.setConcentrationParams(0.01, 0.01, 0.01);
 		clrhdp.loadUsers(analyzer.getUsers());
 		clrhdp.setR1TradeOff(eta1);
 		clrhdp.setDisplayLv(displayLv);

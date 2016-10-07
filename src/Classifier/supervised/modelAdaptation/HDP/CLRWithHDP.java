@@ -25,17 +25,6 @@ import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 
-/**
- * Notes on Sep 30:
- * 1. We can randomly assign cluster to each review at the initial stage.
- * 2. In sampling z_ij, the k is fixed, thus \phi_k and \psi_k can be used directly
- * in the calculation of likelihood.
- * 3. In sampling \gamma, multiple sampling is to introduce more randomness.
- * 4. In M step, we need to optimize both \psi and \phi.
- * 5. Also, we would better construct different features for multinomial distribution.
- * 6. We don't consider the super user for the \psi.
- * 7. We can design a data structure which extends from thetastar to contain both \psi and \phi.
- */
 public class CLRWithHDP extends CLRWithDP {
 
 	protected int m_initK = 10;//assume we have 10 global groups at the beginning.
@@ -147,7 +136,7 @@ public class CLRWithHDP extends CLRWithDP {
 			likelihood = calcLogLikelihoodY(r); 
 			
 			//p(z=k|\gamma,\eta)
-			gamma_k = (k < m_kBar) ? m_gamma[k]:m_gamma[m_kBar];
+			gamma_k = (k < m_kBar) ? m_gamma[k]:m_gamma[m_kBar]/m_M;
 			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k);
 			
 			//loglikelihood of x, i.e., p(x|\psi)	
@@ -403,10 +392,8 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int k=0; k<m_kBar; k++){ 
 			theta = m_hdpThetaStars[k];
 			lmProb = theta.getPsiModel();
-			
-//			System.arraycopy(m_globalLM, 0, lmProb, 0, m_lmDim);//set the prior properly
-			
-			Arrays.fill(lmProb, m_beta/m_lmDim);
+					
+			Arrays.fill(lmProb, m_beta);
 			for(_Review r: theta.getReviews()){
 				for(_SparseFeature fv: r.getSparse()){
 					lmProb[fv.getIndex()] += fv.getTF();
@@ -424,7 +411,6 @@ public class CLRWithHDP extends CLRWithDP {
 				}
 			}
 		}
-		
 		return logLikelihood;
 	}
 	
