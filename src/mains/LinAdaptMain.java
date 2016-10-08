@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -114,11 +114,13 @@ public class LinAdaptMain {
 //		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 		// Create an instance of Multi-task DP over MT-LinAdapt 
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		
+
+		CLRWithHDP adaptation = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, analyzer.getCorpus().getBackgroundProb());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
+		adaptation.setLNormFlag(true);
 		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);

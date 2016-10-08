@@ -48,7 +48,7 @@ public class MyDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -94,7 +94,7 @@ public class MyDPMain {
 //			u.getPerfStat().clear();
 		
 		double[] globalLM = analyzer.estimateGlobalLM();
-		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
+		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 		clrhdp.setGlobalLM(globalLM);
 //		clrhdp.setLNormFlag(false);
 		clrhdp.setsdA(0.001);

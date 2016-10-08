@@ -161,8 +161,7 @@ public class _Corpus {
 	public double[] getBackgroundProb() {
 		double back_ground_probabilty [] = new double [m_features.size()];
 		
-		for(int i = 0; i<m_features.size();i++)
-		{
+		for(int i = 0; i<m_features.size();i++) {
 			String featureName = m_features.get(i);
 			_stat stat =  m_featureStat.get(featureName);
 			back_ground_probabilty[i] = Utils.sumOfArray(stat.getTTF());

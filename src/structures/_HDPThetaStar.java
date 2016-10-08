@@ -1,7 +1,5 @@
 package structures;
 
-import java.util.ArrayList;
-
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
  * @author lin
@@ -13,19 +11,20 @@ public class _HDPThetaStar extends _thetaStar {
 	//this will be in log space!
 	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
-	protected ArrayList<_Review> m_reviews; //reviews assigned to this group
+
 	protected double m_gamma;
 	
-	public _HDPThetaStar(int dim, int lmSize) {
+	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
-		m_reviews = new ArrayList<_Review>();
 		m_psi = new double[lmSize];
+		m_gamma = gamma;
 	}
 	
-	public _HDPThetaStar(int dim) {
+	public _HDPThetaStar(int dim, double gamma) {
 		super(dim);
-		m_reviews = new ArrayList<_Review>();
+		m_gamma = gamma;
 	}
+	
 	public void initPsiModel(int lmSize){
 		m_psi = new double[lmSize];
 	}
@@ -45,21 +44,8 @@ public class _HDPThetaStar extends _thetaStar {
 	public void resetGamma(){
 		m_gamma = 0;
 	}
-	// Update \psi with the newly estimated prob. 
-	public void updatePsiModel(double[] prob){
-		System.arraycopy(prob, 0, m_psi, 0, prob.length);
-	}
 	
-	public void addOneReview(_Review r){
-		m_reviews.add(r);
-	}
-	
-	//this might be expensive to perform
-	public void rmReview(_Review r){
-		m_reviews.remove(r);
-	}
-	
-	public ArrayList<_Review> getReviews(){
-		return m_reviews;
+	public String showStat() {
+		return String.format("%d(%.2f)", m_memSize, m_pCount/(m_pCount+m_nCount));
 	}
 }

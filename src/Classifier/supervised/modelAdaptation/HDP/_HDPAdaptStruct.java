@@ -1,13 +1,14 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
+import java.util.Collection;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
 public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
@@ -30,29 +31,22 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			return 0;
 	}
 
-	public void updateHDPThetaStarMemSize(_HDPThetaStar s, int v){
-		if(!m_hdpThetaMemSizeMap.containsKey(s))
-			m_hdpThetaMemSizeMap.put(s, 0);
-		int val = m_hdpThetaMemSizeMap.get(s)+v;
-		m_hdpThetaMemSizeMap.put(s, val);
-	}
-	
-	public void rmThetaFromMemSizeMap(_HDPThetaStar s){
-		if(!m_hdpThetaMemSizeMap.containsKey(s))
-			System.out.println("Does not exist in size map!");
-		else 
+	//will remove the key if the updated value is zero
+	public void incHDPThetaStarMemSize(_HDPThetaStar s, int v){
+		if (v==0)
+			return;
+		
+		if(m_hdpThetaMemSizeMap.containsKey(s))
+			v += m_hdpThetaMemSizeMap.get(s);
+		
+		if (v>0)
+			m_hdpThetaMemSizeMap.put(s, v);
+		else
 			m_hdpThetaMemSizeMap.remove(s);
 	}
 	
-//	public void rmThetaFromHMap(_HDPThetaStar s){
-//		if(!m_hMap.containsKey(s))
-//			System.out.println("Does not exist in h map!");
-//		else
-//			m_hMap.remove(s);
-//	}
-	
-	public HashMap<_HDPThetaStar, Integer> getHDPThetaMemSizeMap(){
-		return m_hdpThetaMemSizeMap;
+	public Collection<_HDPThetaStar> getHDPTheta(){
+		return m_hdpThetaMemSizeMap.keySet();
 	}
 	
 	@Override

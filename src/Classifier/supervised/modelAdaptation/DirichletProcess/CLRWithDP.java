@@ -42,6 +42,10 @@ public class CLRWithDP extends LinAdapt {
 	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
+	}	
+	
+	public void setMultiTheadFlag(boolean b){
+		m_multiThread = b;
 	}
 	
 	protected void assignClusterIndex(){
@@ -306,14 +310,12 @@ public class CLRWithDP extends LinAdapt {
 		return Utils.sumOfArray(m_fValues);
 	}
 	
-	// Sample the weights given the cluster assignment.
-	protected double calculate_M_step(){
+	protected double estPhi(){
 		int[] iflag = {0}, iprint = {-1, 3};
 		double fValue, oldFValue = Double.MAX_VALUE;
 		int displayCount = 0;		
 
 		initLBFGS();// init for lbfgs.
-		assignClusterIndex();
 		
 		try{
 			do{
@@ -350,6 +352,12 @@ public class CLRWithDP extends LinAdapt {
 			e.printStackTrace();
 		}	
 		return oldFValue;
+	}
+	
+	// Sample the weights given the cluster assignment.
+	protected double calculate_M_step(){
+		assignClusterIndex();
+		return estPhi();		
 	}
 	
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
