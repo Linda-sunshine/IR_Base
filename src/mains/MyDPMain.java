@@ -1,23 +1,9 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-
-import clustering.KMeansAlg;
 import opennlp.tools.util.InvalidFormatException;
-import structures._Doc;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._SparseFeature;
-import structures._User;
-import structures._stat;
-import utils.Utils;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.modelAdaptation.Base;
@@ -28,6 +14,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
+import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 
 public class MyDPMain {
 	
@@ -38,7 +25,7 @@ public class MyDPMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
-		int displayLv = 1;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.5, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
@@ -95,15 +82,23 @@ public class MyDPMain {
 		
 		double[] globalLM = analyzer.estimateGlobalLM();
 		CLRWithHDP clrhdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-		clrhdp.setGlobalLM(globalLM);
-//		clrhdp.setLNormFlag(false);
-		clrhdp.setsdA(0.001);
-		clrhdp.setConcentrationParams(0.01, 0.01, 0.01);
+		clrhdp.setsdA(0.01);
+		clrhdp.setConcentrationParams(1, 1, 1);
 		clrhdp.loadUsers(analyzer.getUsers());
 		clrhdp.setR1TradeOff(eta1);
 		clrhdp.setDisplayLv(displayLv);
 		clrhdp.train();
 		clrhdp.test();
+		
+		MTCLRWithHDP mtclrhdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+		mtclrhdp.setGlobalLM(globalLM);
+		mtclrhdp.setsdA(0.1);
+		mtclrhdp.setConcentrationParams(100, 1, 1);
+		mtclrhdp.loadUsers(analyzer.getUsers());
+		mtclrhdp.setR1TradeOff(eta1);
+		mtclrhdp.setDisplayLv(displayLv);
+		mtclrhdp.train();
+		mtclrhdp.test();
 		
 		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
 		mtsvm.loadUsers(analyzer.getUsers());

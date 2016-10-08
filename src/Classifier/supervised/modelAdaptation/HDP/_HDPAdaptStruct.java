@@ -62,6 +62,8 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		if (m_dim==0) {//not adaptation based
 			for(int k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+				if(m_supModel != null)
+					sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
 				prob += probs[k] * Utils.logistic(sum); 
 			}			
 //		} else {

@@ -41,7 +41,7 @@ public class DirichletPrior {
 		}
 		
 		double[] alphas = new double[dim];
-		Arrays.fill(alphas, alpha/dim);
+		Arrays.fill(alphas, alpha);
 		sampling(target, alphas, toLog);
 	}
 }
