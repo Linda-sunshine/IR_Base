@@ -82,16 +82,16 @@ public class MTCLRWithDP extends CLRWithDP {
 		}
 	}
 	
-	@Override
-	protected void setPersonalizedModel() {
-		_DPAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			Utils.setArray(m_pWeights, m_supWeights, m_q);
-			Utils.scaleArray(m_pWeights, user.getThetaStar().getModel(), 1.0);
-			user.setPersonalizedModel(m_pWeights);
-		}
-	}
+//	@Override
+//	protected void setPersonalizedModel() {
+//		_DPAdaptStruct user;
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			Utils.setArray(m_pWeights, m_supWeights, m_q);
+//			Utils.scaleArray(m_pWeights, user.getThetaStar().getModel(), 1.0);
+//			user.setPersonalizedModel(m_pWeights);
+//		}
+//	}
 	
 	@Override
 	protected void setThetaStars(){
@@ -103,4 +103,14 @@ public class MTCLRWithDP extends CLRWithDP {
 	public String toString() {
 		return String.format("MTCLRWithDP[dim:%d,q:%.4f,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_q, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}	
+	
+	@Override
+	protected void evaluateModel() {
+		_DPAdaptStruct user;
+		for(_AdaptStruct u: m_userList){
+			user = (_DPAdaptStruct) u;
+			user.setSupModel(m_supWeights, m_q);
+		}
+		super.evaluateModel();	
+	}
 }

@@ -348,7 +348,7 @@ public class CLRWithDP extends LinAdapt {
 			} while(iflag[0] != 0);
 			System.out.println();
 		} catch(ExceptionWithIflag e) {
-			System.out.println("LBFGS fails!!!!");
+			System.err.println("LBFGS fails!!!!");
 			e.printStackTrace();
 		}	
 		return oldFValue;
