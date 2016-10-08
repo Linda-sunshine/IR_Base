@@ -43,15 +43,12 @@ public class CLRWithHDP extends CLRWithDP {
 	protected boolean m_newCluster = false;
 	protected int m_lmDim = -1; // dimension for language model
 	
-	private Object m_thetaLock=null;
-
 	public CLRWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_kBar = m_initK;//init kBar.
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
 		m_stirlings = new HashMap<String, Double>();
-		m_thetaLock = new Object();
 	}
 	
 	@Override
@@ -81,9 +78,7 @@ public class CLRWithHDP extends CLRWithDP {
 		double[] gamma = new double[m_kBar+1];
 		m_D0.sampling(gamma, m_kBar+1, m_alpha, false);
 		m_gamma_e = gamma[m_kBar];
-		
-//		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
-		
+				
 		for(int k=0; k<m_kBar; k++){
 			m_hdpThetaStars[k] = new _HDPThetaStar(m_dim, m_lmDim);
 			m_hdpThetaStars[k].setGamma(gamma[k]);

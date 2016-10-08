@@ -270,5 +270,5 @@ public class UserAnalyzer extends DocAnalyzer {
 					lm[i] = 0.0001;
 		}
 			return lm;
-		}
+	}
 }
