@@ -13,7 +13,6 @@ import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
  * @author lin
  */
 import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
@@ -38,8 +37,8 @@ public class CLRWithHDP extends CLRWithDP {
 	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e;
-	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 
+	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
 	
@@ -79,7 +78,7 @@ public class CLRWithHDP extends CLRWithDP {
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
-		
+	
 		m_D0.sampling(m_cache, m_kBar+1, m_alpha, false);
 		m_gamma_e = m_cache[m_kBar];//for stick breaking
 		
@@ -163,6 +162,7 @@ public class CLRWithHDP extends CLRWithDP {
 			likelihood += calcLogLikelihoodX(r);
 			
 			//p(z=k|\gamma,\eta)
+
 			gamma_k = m_hdpThetaStars[k].getGamma();
 			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k);
 			
@@ -184,6 +184,7 @@ public class CLRWithHDP extends CLRWithDP {
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
 		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3
 		
+
 		if(k >= m_kBar){//sampled a new cluster
 			m_hdpThetaStars[k].initPsiModel(m_lmDim);
 			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_lmDim, m_beta, true);//we should sample from Dir(\beta)
@@ -247,6 +248,7 @@ public class CLRWithHDP extends CLRWithDP {
 		return L;
 	}		
 
+
 	public double calcLogLikelihoodX(_Review r){		
 		double[] psi = r.getHDPThetaStar().getPsiModel();
 		//we will integrate it out
@@ -257,6 +259,21 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_SparseFeature fv: r.getSparse())
 				L += fv.getTF()*psi[fv.getIndex()];
 			return L;
+		}
+	}
+	
+	public void preCalcL4NewCluster(){
+		double L = 0, beta_lgamma = Utils.lgamma(m_beta), sum = 0;
+		for(_AdaptStruct u: m_userList){
+			for(_Review r: u.getReviews()){
+				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
+				for(_SparseFeature fv: r.getSparse()) {
+					sum += fv.getTF();
+					L += Utils.lgamma(m_beta+fv.getTF()) - beta_lgamma;
+				}
+				L += Utils.lgamma(m_beta*m_lmDim) - Utils.lgamma(m_beta*m_lmDim+sum);
+				r.setL4NewCluster(L);
+			}
 		}
 	}
 	
@@ -391,7 +408,6 @@ public class CLRWithHDP extends CLRWithDP {
 			//Step 3: update the setting after sampling z_ij.
 			curTheta = m_hdpThetaStars[(int)it.m_value];
 			curTheta.updateMemCount(1);//-->1
-//			curTheta.addOneReview(r);//-->2
 			r.setHDPThetaStar(curTheta);//-->3
 		
 			//Update the user info with the newly sampled hdpThetaStar.
@@ -416,7 +432,7 @@ public class CLRWithHDP extends CLRWithDP {
 		int n = user.getHDPThetaMemSize(s);
 		if(n==1)
 			return 1;//s(1,1)=1		
-		
+
 		double etaGammak = Math.log(m_eta) + Math.log(s.getGamma());
 		//the number of local groups lies in the range [1, n];
 		for(int h=1; h<=n; h++){
@@ -445,6 +461,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Sample the global mixture proportion, \gamma~Dir(m1, m2,..,\alpha)
 	protected void sampleGamma(){
+
 		for(int k=0; k<m_kBar; k++)
 			m_hdpThetaStars[k].m_hSize = 0;
 		
@@ -553,7 +570,7 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
-				
+
 				if(m_LNormFlag)
 					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
 				else
@@ -563,9 +580,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		return fValue;
 	}
-	
-	//Calculate loglikelihood in multi-thread.
-	@Override
+
 	protected double logLikelihood_MultiThread() {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();		
@@ -588,6 +603,7 @@ public class CLRWithHDP extends CLRWithDP {
 							
 							for(_Review review:user.getReviews()){
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
+
 									continue;	
 								
 								if(m_LNormFlag)
@@ -628,7 +644,7 @@ public class CLRWithHDP extends CLRWithDP {
 			Utils.scaleArray(m_g, m_gradients[k], 1);
 		return Utils.sumOfArray(m_fValues);
 	}
-	
+
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc r, double weight, double[] g) {
 		_DPAdaptStruct user = (_DPAdaptStruct)u;
@@ -813,5 +829,9 @@ public class CLRWithHDP extends CLRWithDP {
 		m_alpha = alpha;
 		m_eta = eta;
 		m_beta = beta;
+	}
+	
+	public void setMultiTheadFlag(boolean b){
+		m_multiThread = b;
 	}
 }
