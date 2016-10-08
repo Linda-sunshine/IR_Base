@@ -542,7 +542,6 @@ public class CLRWithHDP extends CLRWithDP {
 		return logLikelihood;
 	}
 	
-	//why do not we scan through the reviews associated with each cluster?
 	@Override
 	protected double logLikelihood() {
 		_HDPAdaptStruct user;
@@ -554,6 +553,7 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
+				
 				if(m_LNormFlag)
 					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
 				else
@@ -588,8 +588,12 @@ public class CLRWithHDP extends CLRWithDP {
 							
 							for(_Review review:user.getReviews()){
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
-									continue;								
-								m_fValue[core] -= calcLogLikelihoodY(review);
+									continue;	
+								
+								if(m_LNormFlag)
+									m_fValue[core] -= calcLogLikelihoodY(review)/user.getAdaptationSize();
+								else
+									m_fValue[core] -= calcLogLikelihoodY(review);
 
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
 							}			
@@ -652,48 +656,6 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double logit(_SparseFeature[] fvs, _Review r){
 		double sum = Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
 		return Utils.logistic(sum);
-	}
-	
-	protected double estPhi(){
-		int[] iflag = {0}, iprint = {-1, 3};
-		double fValue, oldFValue = Double.MAX_VALUE;
-		int displayCount = 0;		
-
-		initLBFGS();// init for lbfgs.
-		try{
-			do{
-				Arrays.fill(m_g, 0); // initialize gradient
-				
-				//regularization part
-				fValue = calculateR1();
-				if (m_multiThread)
-					fValue += logLikelihood_MultiThread();//this could be implemented at a per-review basis
-				else
-					fValue += logLikelihood();
-				
-				if (m_displayLv==2) {
-					System.out.print("Fvalue is " + fValue + "\t");
-					gradientTest();
-				} else if (m_displayLv==1) {
-					if (fValue<oldFValue)
-						System.out.print("o");
-					else
-						System.out.print("x");
-					
-					if (++displayCount%100==0)
-						System.out.println();
-				} 
-				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
-				setThetaStars();
-				oldFValue = fValue;
-			} while(iflag[0] != 0);
-			System.out.println();
-		} catch(ExceptionWithIflag e) {
-			System.err.println("LBFGS FAILURE!");
-//			e.printStackTrace();
-		}	
-		return oldFValue;
 	}
 	
 	// Assign the optimized \phi to the cluster.
