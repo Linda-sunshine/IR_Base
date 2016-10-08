@@ -164,7 +164,7 @@ public class CLRWithHDP extends CLRWithDP {
 			//p(z=k|\gamma,\eta)
 
 			gamma_k = m_hdpThetaStars[k].getGamma();
-			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k)/user.getAdaptationSize();
+			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k);
 			
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
 			
@@ -200,9 +200,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Sample hdpThetaStar with likelihood.
 	protected int sampleInLogSpace(double logSum){
-		double r = FloatUniform.staticNextFloat();
-		double lr = Math.log(r);
-		logSum += lr;//we might need a better random number generator
+		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
 		
 		int k = 0;
 		double newLogSum = m_hdpThetaStars[0].getProportion();
