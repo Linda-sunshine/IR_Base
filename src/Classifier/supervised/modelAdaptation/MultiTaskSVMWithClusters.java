@@ -1,11 +1,12 @@
 package Classifier.supervised.modelAdaptation;
 
 import java.util.HashMap;
-import structures._Review;
-import structures._SparseFeature;
+
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Problem;
+import structures._Review;
+import structures._SparseFeature;
 
 
 public class MultiTaskSVMWithClusters extends MultiTaskSVM {

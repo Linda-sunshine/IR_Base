@@ -2,10 +2,10 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 /**
  * In the class, we extend the CLR to multi-task learning.
  * Intead of clusters, we also have a global part.

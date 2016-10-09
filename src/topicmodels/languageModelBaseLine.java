@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import Analyzer.ParentChildAnalyzer;
 import structures._ChildDoc;
 import structures._Corpus;
 import structures._Doc;
@@ -21,7 +22,6 @@ import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
 import utils.Utils;
-import Analyzer.ParentChildAnalyzer;
 
 public class languageModelBaseLine{
 	public HashMap<Integer, Double> m_wordSstat; //TTF

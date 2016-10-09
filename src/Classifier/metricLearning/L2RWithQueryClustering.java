@@ -3,6 +3,7 @@ package Classifier.metricLearning;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+
 import structures._Corpus;
 import structures._Doc;
 import utils.Utils;

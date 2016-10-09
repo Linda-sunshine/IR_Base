@@ -1,14 +1,12 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import Classifier.supervised.modelAdaptation.DirichletProcess.NormalPrior;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
+import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
-
-import java.util.HashMap;
 
 public class MTCLRWithHDP extends CLRWithHDP{
 	protected double m_q = .10;// the wc + m_q*wg;

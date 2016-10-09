@@ -1,6 +1,7 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.LinkedList;
+
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._User;

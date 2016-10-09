@@ -4,9 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import clustering.KMeansAlg4Vct;
+
 import Classifier.BaseClassifier;
 import Classifier.supervised.SVM;
+import clustering.KMeansAlg4Vct;
 import structures._Corpus;
 import structures._Doc;
 
