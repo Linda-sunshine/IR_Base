@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
@@ -22,7 +21,6 @@ import utils.Utils;
 
 public class CLRWithHDP extends CLRWithDP {
 
-	protected int m_initK = 10;//assume we have 10 global groups at the beginning.
 	//\alpha is the concentration parameter for the first layer.
 	protected double m_eta = 1.0;//concentration parameter for second layer DP.  
 	protected double m_beta = 1.0; //concentration parameter for \psi.
@@ -30,7 +28,7 @@ public class CLRWithHDP extends CLRWithDP {
 	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
 	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
-	protected double m_gamma_e;
+	protected double m_gamma_e = 1.0;
 
 	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
@@ -41,7 +39,6 @@ public class CLRWithHDP extends CLRWithDP {
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
 			double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel);
-		m_kBar = m_initK;//init kBar.
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
 		m_stirlings = new HashMap<String, Double>();
 		m_thetaLock = new Object();
@@ -72,25 +69,8 @@ public class CLRWithHDP extends CLRWithDP {
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
-	
-		m_D0.sampling(m_cache, m_kBar+1, m_alpha, false);
-		m_gamma_e = m_cache[m_kBar];//for stick breaking
 		
-//		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
-		
-		for(int k=0; k<m_kBar; k++){
-			m_hdpThetaStars[k] = new _HDPThetaStar(m_dim, m_lmDim, m_cache[k]);
-			//sample \phi from Normal distribution.
-			m_G0.sampling(m_hdpThetaStars[k].getModel()); 
-			
-			//sample \psi from Dirichlet with the global language model.
-			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_globalLM, true);
-		}
-		
-		int rndIndex = 0;
-		_HDPThetaStar curTheta;
-		_HDPAdaptStruct user;
-		
+		_HDPAdaptStruct user;		
 		double L = 0, beta_lgamma = Utils.lgamma(m_beta), betaSum_lgamma = Utils.lgamma(m_beta*m_lmDim), sum = 0;
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
@@ -109,16 +89,11 @@ public class CLRWithHDP extends CLRWithDP {
 				if (r.getType() == rType.TEST)
 					continue;
 				
-				//for the training reviews, randomly assign them to an existing cluster
-				rndIndex = (int)(Math.random() * m_kBar);
-
-				//find the random theta and update the setting.
-				curTheta = m_hdpThetaStars[rndIndex];
-				curTheta.updateMemCount(1);
-				r.setHDPThetaStar(curTheta);
-				user.incHDPThetaStarMemSize(curTheta, 1);
+				sampleOneInstance(user, r);
 			} 
 		}
+		
+		sampleGamma();
 	}
 
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
@@ -241,7 +216,7 @@ public class CLRWithHDP extends CLRWithDP {
 		return L;
 	}		
 
-	public double calcLogLikelihoodX(_Review r){		
+	protected double calcLogLikelihoodX(_Review r){		
 		double[] psi = r.getHDPThetaStar().getPsiModel();
 		//we will integrate it out
 		if(psi == null){
@@ -283,11 +258,14 @@ public class CLRWithHDP extends CLRWithDP {
 				
 				if (++sampleSize%2000==0) {
 					System.out.print('.');
+					sampleGamma();//will this help sampling?
 					if (sampleSize%100000==0)
 						System.out.println();
 				}
 			}
 		}
+		
+		System.out.println(m_kBar);
 	}
 	
 	protected int[][] m_ks;//global variable for storing the cluster assignment.
@@ -750,7 +728,7 @@ public class CLRWithHDP extends CLRWithDP {
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
-					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta)+m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					probs[k] = Math.exp(prob);//this will be in real space!					
 				}
 				Utils.L1Normalization(probs);
@@ -791,9 +769,5 @@ public class CLRWithHDP extends CLRWithDP {
 		m_alpha = alpha;
 		m_eta = eta;
 		m_beta = beta;
-	}
-	
-	public void setMultiTheadFlag(boolean b){
-		m_multiThread = b;
 	}
 }

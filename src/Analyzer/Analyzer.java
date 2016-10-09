@@ -197,6 +197,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
@@ -217,6 +219,7 @@ public abstract class Analyzer {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
 					sf.setTF(sf.getValue());
+					
 					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = 1 + Math.log10(N / DF);
@@ -244,6 +247,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
@@ -270,6 +275,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
@@ -291,6 +298,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+					sf.setTF(sf.getValue());
+					
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
 					avgIDF += IDF;
