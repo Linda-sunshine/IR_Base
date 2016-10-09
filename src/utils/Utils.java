@@ -265,6 +265,15 @@ public class Utils {
 			vct[i] += weight * add[i];
 	}
 	
+	public static void add2Array(int[] a, int[] b){
+		if(a.length != b.length)
+			return;
+
+		for(int i=0; i<a.length; i++)
+			a[i] += b[i];
+		return;
+	}
+	
 	//L1 normalization: fsValue/sum(abs(fsValue))
 	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;
@@ -944,15 +953,5 @@ public class Utils {
 			if (max<xs[i])
 				max = xs[i];
 		return max;
-	}
-	
-	public static void add2Array(int[] a, int[] b){
-		if(a.length != b.length){
-			System.err.println("Different lengths!");
-			return;
-		}
-		for(int i=0; i<a.length; i++)
-			a[i] += b[i];
-		return;
 	}
 }
