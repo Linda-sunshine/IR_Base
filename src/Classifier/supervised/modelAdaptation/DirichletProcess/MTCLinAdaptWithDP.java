@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
@@ -79,7 +80,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
-		_DPAdaptStruct user = (_DPAdaptStruct)u;
+		_HDPAdaptStruct user = (_HDPAdaptStruct)u;
 		
 		int n, k, s; // feature index
 		int cIndex = user.getThetaStar().getIndex();
@@ -88,8 +89,8 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) * weight;
-		if(m_LNormFlag)
-			delta /= getAdaptationSize(user);
+//		if(m_LNormFlag)
+//			delta /= getAdaptationSize(user);
 		
 		// Bias term for individual user.
 		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1

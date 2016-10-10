@@ -2,6 +2,13 @@ package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess.NormalPrior;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._Doc;
+import structures._Review;
+import structures._SparseFeature;
+import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
@@ -9,7 +16,7 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class MTCLRWithHDP extends CLRWithHDP{
-	protected double m_q = .10;// the wc + m_q*wg;
+	protected double m_q = 1;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithHDP(int classNo, int featureSize,
@@ -48,12 +55,12 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		m_G0.sampling(m_supWeights);// sample super user's weights.
 	}
 
+	
 	@Override
-	protected double logit(_SparseFeature[] fvs, _AdaptStruct u){
-		double sum = m_q * Utils.dotProduct(m_supWeights, fvs, 0) + Utils.dotProduct(((_HDPAdaptStruct)u).getThetaStar().getModel(), fvs, 0);
+	protected double logit(_SparseFeature[] fvs, _Review r){
+		double sum = m_q * Utils.dotProduct(m_supWeights, fvs, 0)+Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
 		return Utils.logistic(sum);
 	}
-
 	@Override
 	protected double calculateR1(){
 		double R1 = super.calculateR1();//w_u should be close to 0
@@ -79,7 +86,6 @@ public class MTCLRWithHDP extends CLRWithHDP{
 
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
-		_HDPAdaptStruct user = (_HDPAdaptStruct)u;
 		_Review r = (_Review) review;
 		int n; // feature index
 		int cIndex = r.getHDPThetaStar().getIndex();
@@ -89,8 +95,8 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		int offset = m_dim*cIndex;
 		int offsetSup = m_dim*m_kBar;
 		double delta = weight * (r.getYLabel() - logit(r.getSparse(), r));
-		if(m_LNormFlag)
-			delta /= getAdaptationSize(user);
+//		if(m_LNormFlag)
+//			delta /= getAdaptationSize(user);
 
 		//Bias term.
 		g[offset] -= delta; //x0=1, each cluster.
@@ -111,6 +117,10 @@ public class MTCLRWithHDP extends CLRWithHDP{
 			user.setSupModel(m_supWeights, m_q);
 		}
 		super.evaluateModel();	
+	}
+	
+	public void setQ(double q){
+		m_q = q;
 	}
 
 }
