@@ -25,22 +25,35 @@ public class CLRWithHDP extends CLRWithDP {
 	//\alpha is the concentration parameter for the first layer.
 	protected double m_eta = 1.0;//concentration parameter for second layer DP.  
 	protected double m_beta = 1.0; //concentration parameter for \psi.
-	protected double[] m_globalLM;//the global language model serving as the prior for psi.
-	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[2000];//phi+psi
-	double[] m_cache = new double[2000]; // shared cache space to avoid repeatedly creating new space
+
+	protected double[] m_betas;//concentration vector for the prior of psi.
+	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
+	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e = 1.0;
+	protected double m_nBetaDir = 0; // normalization constant for Dir(\psi)
+
 	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
 	
 
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
-			double[] lm) {
+			double[] betas, double alpha, double beta, double eta) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Double>();		
-		setGlobalLM(lm);
+		m_stirlings = new HashMap<String, Double>();
+		
+		setConcentrationParams(alpha, beta, eta);
+		setBetas(betas);
+	}
+	
+	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
+			double[] betas) {
+		super(classNo, featureSize, featureMap, globalModel);
+		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
+		m_stirlings = new HashMap<String, Double>();
+		setBetas(betas);
 	}
 	
 	@Override
@@ -48,9 +61,15 @@ public class CLRWithHDP extends CLRWithDP {
 		return String.format("CLRWithHDP[dim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
-	public void setGlobalLM(double[] lm){
-		m_globalLM = lm;// this is in real space!
+	public void setBetas(double[] lm){
+		m_betas = lm;// this is in real space!
+		
 		m_lmDim = lm.length;
+		for(int i=0; i<m_lmDim; i++) {
+			m_betas[i] += m_beta;
+			m_nBetaDir -= Utils.lgamma(m_betas[i]);
+		}
+		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
 	}
 	
 	@Override
@@ -67,19 +86,22 @@ public class CLRWithHDP extends CLRWithDP {
 	public void initThetaStars(){
 		initPriorG0();
 		_HDPAdaptStruct user;		
-		double L = 0, beta_lgamma = Utils.lgamma(m_beta), betaSum_lgamma = Utils.lgamma(m_beta*m_lmDim), sum = 0;
+		double L = 0, beta_sum = Utils.sumOfArray(m_betas), betaSum_lgamma = Utils.lgamma(beta_sum), sum = 0;
+		int index;
+		
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
 				//for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				sum = 0;
+				sum = beta_sum;
 				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
 				for(_SparseFeature fv: r.getSparse()) {
-					sum += fv.getTF();
-					L += Utils.lgamma(m_beta+fv.getTF()) - beta_lgamma;
+					index = fv.getIndex();
+					sum += fv.getTF();					
+					L += Utils.lgamma(fv.getTF() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
 				}
-				L += betaSum_lgamma - Utils.lgamma(m_beta*m_lmDim+sum);
+				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
 				
 				if (r.getType() == rType.TEST)
@@ -88,8 +110,6 @@ public class CLRWithHDP extends CLRWithDP {
 				sampleOneInstance(user, r);
 			} 
 		}
-		
-		sampleGamma();
 	}
 
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
@@ -157,7 +177,7 @@ public class CLRWithHDP extends CLRWithDP {
 
 		if(k >= m_kBar){//sampled a new cluster
 			m_hdpThetaStars[k].initPsiModel(m_lmDim);
-			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_lmDim, m_beta, true);//we should sample from Dir(\beta)
+			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
 			
 			double rnd = Beta.staticNextDouble(1, m_alpha);
 			m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
@@ -181,10 +201,8 @@ public class CLRWithHDP extends CLRWithDP {
 			newLogSum = Utils.logSum(newLogSum, m_hdpThetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
 		
-		if (k==m_kBar+m_M) {
-			//System.err.println("[Warning]Hit the very last element in theatStar!");
+		if (k==m_kBar+m_M)
 			k--; // we might hit the very last
-		}
 		return k;
 	}
 	
@@ -370,7 +388,7 @@ public class CLRWithHDP extends CLRWithDP {
 		
 			if(k >= m_kBar && user.getHDPThetaMemSize(m_hdpThetaStars[k]) <= 0){
 				m_hdpThetaStars[k].initPsiModel(m_lmDim);
-				m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_globalLM, true);
+				m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);
 				
 				double rnd = Beta.staticNextDouble(1, m_alpha);
 				m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
@@ -471,7 +489,7 @@ public class CLRWithHDP extends CLRWithDP {
 			theta = m_hdpThetaStars[k];
 			lmProb = theta.getPsiModel();
 					
-			Arrays.fill(lmProb, m_beta);
+			System.arraycopy(m_betas, 0, lmProb, 0, m_lmDim);//start from prior mean vector
 		}
 		
 		//Step 2: accumulate count for each psi accordingly
@@ -488,14 +506,17 @@ public class CLRWithHDP extends CLRWithDP {
 			}
 		}
 		
-		//Step 3: normalize the language models
+		//Step 3: normalize the language models and compute the likelihood of Dir(\psi|\beta)
 		for(int k=0; k<m_kBar; k++){ 
 			theta = m_hdpThetaStars[k];
 			lmProb = theta.getPsiModel();
 					
 			sum = Math.log(Utils.sumOfArray(lmProb));
-			for(int v=0; v<m_lmDim; v++)
+			for(int v=0; v<m_lmDim; v++) {
 				lmProb[v] = Math.log(lmProb[v]) - sum;
+				logLikelihood += (m_betas[v]-1) * lmProb[v];//shall we compute the normalization constant in front of Dirichlet?
+			}
+			logLikelihood += m_nBetaDir;//Dirchlet normalization constant
 		}
 			
 		//Step 4: compute the data likelihood 
@@ -635,6 +656,7 @@ public class CLRWithHDP extends CLRWithDP {
 		int count = 0;
 		
 		init(); // clear user performance and init cluster assignment	
+//		calculate_M_step();
 		
 		// Burn in period.
 		while(count++ < m_burnIn){

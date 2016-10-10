@@ -104,7 +104,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 
 		// Bias term for super user.
 		g[offsetSup] -= delta*theta.getModel()[0]*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
-		g[offsetSup + m_dimSup] -= delta*theta.getModel()[m_dim]; //b_s[0] = a_i0*x_d0
+		g[offsetSup + m_dimSup] -= delta*theta.getModel()[0]; //b_s[0] = a_i0*x_d0
 		
 		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
 		for(_SparseFeature fv: review.getSparse()){
@@ -115,7 +115,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 			
 			s = m_featureGroupMap4SupUsr[n];
 			g[offsetSup + s] -= delta*theta.getModel()[k]*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
-			g[offsetSup + m_dimSup + s] -= delta*theta.getModel()[k+m_dim]*fv.getValue(); // a_i*x_di
+			g[offsetSup + m_dimSup + s] -= delta*theta.getModel()[k]*fv.getValue(); // a_i*x_di
 		}
 	}
 	
