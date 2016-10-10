@@ -8,8 +8,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import structures._Corpus;
 import Analyzer.ParentChildAnalyzer;
+import structures._Corpus;
 
 public class BurstinessMain {
 	public static void main(String[] args) throws IOException, ParseException {	

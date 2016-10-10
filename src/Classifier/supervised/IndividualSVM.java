@@ -3,11 +3,6 @@ package Classifier.supervised;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import structures._Review;
-import structures._SparseFeature;
-import structures._User;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
 import Classifier.supervised.liblinear.Linear;
@@ -17,6 +12,11 @@ import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
 
 public class IndividualSVM extends ModelAdaptation {
 	double m_C = 1; 

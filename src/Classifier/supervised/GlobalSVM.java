@@ -5,13 +5,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import structures._Review;
-import structures._Review.rType;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._Review;
+import structures._Review.rType;
 
 public class GlobalSVM extends IndividualSVM{
 

@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Calendar;
 
-import structures._Corpus;
-
 import Analyzer.ParentChildAnalyzer;
+import structures._Corpus;
 
 public class featureGeneration {
 	public static void main(String[] args) throws IOException, ParseException {	

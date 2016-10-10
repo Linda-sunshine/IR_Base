@@ -2,6 +2,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._RankItem;
 import structures._User;

@@ -3,13 +3,14 @@ package Classifier.supervised.modelAdaptation.RegLR;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 /***
  * This is the batch training of Multi-task regualized logistic regression.
  * @author lin

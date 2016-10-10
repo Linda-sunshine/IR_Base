@@ -1,21 +1,20 @@
 package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
 import structures._UserReviewPair;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import utils.Utils;
 
 public class asyncMTLinAdapt extends MTLinAdapt {

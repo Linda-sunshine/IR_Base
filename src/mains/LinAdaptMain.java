@@ -120,7 +120,7 @@ public class LinAdaptMain {
 		CLRWithHDP adaptation = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, analyzer.getCorpus().getBackgroundProb());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(true);
+		adaptation.setLNormFlag(false);
 		adaptation.setTestMode(TestMode.TM_batch);
 		adaptation.setR1TradeOffs(eta1, eta2);
 //		adaptation.setR2TradeOffs(eta3, eta4);

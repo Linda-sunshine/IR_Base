@@ -41,11 +41,7 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_gamma;
 	}
 	
-	public void resetGamma(){
-		m_gamma = 0;
-	}
-	
 	public String showStat() {
-		return String.format("%d(%.2f)", m_memSize, m_pCount/(m_pCount+m_nCount));
+		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
 	}
 }

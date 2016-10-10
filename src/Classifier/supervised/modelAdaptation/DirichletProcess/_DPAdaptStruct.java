@@ -10,7 +10,7 @@ import utils.Utils;
 public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	private _thetaStar m_thetaStar = null;
-	private double[] m_cluPosterior;
+	protected double[] m_cluPosterior;
 	protected double[] m_supModel;
 	protected double m_q;
 	
@@ -92,6 +92,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 	}
 	
 	public void setSupModel(double[] m, double q){
+		m_q = q;
 		if (m_supModel==null || m_supModel.length != m.length)
 			m_supModel = new double[m.length];
 		System.arraycopy(m, 0, m_supModel, 0, m.length);

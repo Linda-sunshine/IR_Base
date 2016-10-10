@@ -2,11 +2,11 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 /***
  * In this class, we utilize DP to do automatic grouping.
  * The method does not involve global learning.
@@ -113,23 +113,23 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		return Utils.logistic(value);
 	}
 	
-	@Override
-	protected void setPersonalizedModel() {
-		double[] As;
-		int ki;
-		_DPAdaptStruct user;
-
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			As = user.getThetaStar().getModel();
-			m_pWeights = new double[m_gWeights.length];
-			for(int n=0; n<=m_featureSize; n++){
-				ki = m_featureGroupMap[n];
-				m_pWeights[n] = As[ki]*m_gWeights[n] + As[ki+m_dim];
-			}
-			user.setPersonalizedModel(m_pWeights);
-		}
-	}
+//	@Override
+//	protected void setPersonalizedModel() {
+//		double[] As;
+//		int ki;
+//		_DPAdaptStruct user;
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			As = user.getThetaStar().getModel();
+//			m_pWeights = new double[m_gWeights.length];
+//			for(int n=0; n<=m_featureSize; n++){
+//				ki = m_featureGroupMap[n];
+//				m_pWeights[n] = As[ki]*m_gWeights[n] + As[ki+m_dim];
+//			}
+//			user.setPersonalizedModel(m_pWeights);
+//		}
+//	}
 	
 	// Assign the optimized models to the clusters.
 	@Override

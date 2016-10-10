@@ -7,6 +7,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
+import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 
@@ -23,6 +24,10 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 	}
 
+	public _HDPAdaptStruct(_User user, int dim){
+		super(user, dim);
+		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
+	}
 	//Return the number of members in the given thetaStar.
 	public int getHDPThetaMemSize(_HDPThetaStar s){
 		if(m_hdpThetaMemSizeMap.containsKey(s))
@@ -66,21 +71,19 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 					sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
 				prob += probs[k] * Utils.logistic(sum); 
 			}			
-//		} else {
-//			int n, m;
-//			double As[];
-//			for(int k=0; k<m_cluPosterior.length; k++) {
-//				As = CLRWithHDP.m_hdpThetaStars[k].getModel();
-//
-//				sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-//				for(_SparseFeature fv: doc.getSparse()){
-//					n = fv.getIndex() + 1;
-//					m = m_featureGroupMap[n];
-//					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-//				}
-//				
-//				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-//			}
+		} else {
+			int n, m;
+			double As[];
+			for(int k=0; k<probs.length; k++) {
+				As = CLRWithHDP.m_hdpThetaStars[k].getModel();
+				sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+				for(_SparseFeature fv: doc.getSparse()){
+					n = fv.getIndex() + 1;
+					m = m_featureGroupMap[n];
+					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+				}
+				prob += probs[k] * Utils.logistic(sum); 
+			}
 		}
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
