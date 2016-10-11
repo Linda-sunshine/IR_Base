@@ -1,15 +1,19 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.HashMap;
 
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._SparseFeature;
+import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
@@ -26,7 +30,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	protected double[] m_supModel; // linear transformation for super user
 	
 	protected double m_eta3 = 1.0, m_eta4 = 1.0; // will be used to scale regularization term
-	
+
 	public MTCLinAdaptWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,String featureGroupMap, String featureGroup4Sup, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, lm);
@@ -209,7 +213,8 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+											m_dim,m_dimSup,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	//apply current model in the assigned clusters to users
@@ -220,4 +225,48 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		
 		super.evaluateModel();	
 	}
+	
+//	public void initWriter() throws FileNotFoundException{
+//		m_writer = new PrintWriter(new File("cluster.txt"));	
+//	}
+//	
+//	@Override
+//	public void printInfo(){
+//		//clear the statistics
+//		for(int i=0; i<m_kBar; i++){
+//			m_hdpThetaStars[i].resetCount();
+//			m_hdpThetaStars[i].resetReviewNames();
+//		}
+//		//collect statistics across users in adaptation data
+//		_HDPThetaStar theta = null;
+//		_HDPAdaptStruct user;
+//		for(int i=0; i<m_userList.size(); i++) {
+//			user = (_HDPAdaptStruct)m_userList.get(i);
+//			for(_Review r: user.getReviews()){
+//				if (r.getType() != rType.ADAPTATION)
+//					continue; // only touch the adaptation data
+//				else{
+//					theta = r.getHDPThetaStar();
+//					theta.addReviewNames(r.getItemID());
+//					if(r.getYLabel() == 1) theta.incPosCount(); 
+//					else theta.incNegCount();
+//				}
+//			}
+//		}
+//		System.out.print("[Info]Clusters:");
+//		for(int i=0; i<m_kBar; i++){
+//			System.out.format("%s\t", m_hdpThetaStars[i].showStat());	
+//			if(m_hdpThetaStars[i].getReviewSize()<=2){
+//				for(String s: m_hdpThetaStars[i].getReviewNames())
+//					m_writer.print(s+"\t");
+//			}
+//			m_writer.write("\n");
+//		}
+//		m_writer.write("--------------------------");
+//		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+//	}
+//	
+//	public void closeWriter(){
+//		m_writer.close();
+//	}
 }

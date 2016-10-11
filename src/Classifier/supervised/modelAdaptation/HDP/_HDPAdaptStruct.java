@@ -64,31 +64,50 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		_Review r = (_Review) doc;
 		double prob = 0, sum;
 		double[] probs = r.getCluPosterior();
-		if (m_dim==0) {//not adaptation based
-			for(int k=0; k<probs.length; k++) {
-				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-				if(m_supModel != null)
-					sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
-				prob += probs[k] * Utils.logistic(sum); 
-			}			
+		
+		//not adaptation based
+		if (m_dim==0) {
+			int k;
+//			for(k=0; k<probs.length; k++) {
+//				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+//				if(m_supModel != null)
+//					sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
+//				prob += probs[k] * Utils.logistic(sum); 
+//			}	
+			k = r.getHDPThetaStar().getIndex();
+			sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+			if(m_supModel != null)
+				sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
+			prob = Utils.logistic(sum);
 		} else {
-			int n, m;
+			int n, m, k;
 			double As[];
-			for(int k=0; k<probs.length; k++) {
-				As = CLRWithHDP.m_hdpThetaStars[k].getModel();
-				sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-				for(_SparseFeature fv: doc.getSparse()){
-					n = fv.getIndex() + 1;
-					m = m_featureGroupMap[n];
-					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-				}
-				prob += probs[k] * Utils.logistic(sum); 
+//			for(k=0; k<probs.length; k++) {
+//				As = CLRWithHDP.m_hdpThetaStars[k].getModel();
+//				sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+//				for(_SparseFeature fv: doc.getSparse()){
+//					n = fv.getIndex() + 1;
+//					m = m_featureGroupMap[n];
+//					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+//				}
+//				prob1 += probs[k] * Utils.logistic(sum); 
+//			}
+			// we only record the prediction result of one cluster.
+//			int n, m, k;
+//			double As[];
+			k = r.getHDPThetaStar().getIndex();
+			As = CLRWithHDP.m_hdpThetaStars[k].getModel();
+			sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+			for(_SparseFeature fv: doc.getSparse()){
+				n = fv.getIndex() + 1;
+				m = m_featureGroupMap[n];
+				sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 			}
+			prob = Utils.logistic(sum); 
 		}
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
-		
 		return prob;
 	}	
 }

@@ -1,5 +1,7 @@
 package structures;
 
+import java.util.ArrayList;
+
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
  * @author lin
@@ -43,5 +45,20 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	public String showStat() {
 		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
+	}
+	
+	ArrayList<String> m_reviewNames = new ArrayList<String>();
+	public void resetReviewNames(){
+		m_reviewNames.clear();
+	}
+	public void addReviewNames(String s){
+		m_reviewNames.add(s);
+	}
+	
+	public int getReviewSize(){
+		return m_reviewNames.size();
+	}
+	public ArrayList<String> getReviewNames(){
+		return m_reviewNames;
 	}
 }

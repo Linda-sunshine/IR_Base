@@ -167,7 +167,8 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-
+//		System.out.println(k+"-----------------");
+		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
@@ -284,7 +285,7 @@ public class CLRWithHDP extends CLRWithDP {
 				}
 			}
 		}
-		
+//		sampleGamma();//will this help sampling?
 		System.out.println(m_kBar);
 	}
 	
@@ -743,7 +744,7 @@ public class CLRWithHDP extends CLRWithDP {
 			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
 			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		}
-			
+		int count = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
@@ -754,12 +755,21 @@ public class CLRWithHDP extends CLRWithDP {
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
 					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-					probs[k] = Math.exp(prob);//this will be in real space!					
+					probs[k] = prob+1000;
+//					probs[k] = Math.exp(prob);//this will be in real space!					
 				}
+				
+				int index = Utils.maxOfArrayIndex(probs);
+				r.setHDPThetaStar(m_hdpThetaStars[index]);
+
+				for(int k=0; k<probs.length; k++)
+					probs[k] = Math.exp(probs[k]);
 				Utils.L1Normalization(probs);
+				if(Utils.max(probs)==0) count++;
 				r.setClusterPosterior(probs);
 			}
 		}
+		System.out.println("count:" + count);
 	}
 	
 	@Override
