@@ -11,8 +11,6 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	private _thetaStar m_thetaStar = null;
 	protected double[] m_cluPosterior;
-	protected double[] m_supModel;
-	protected double m_q;
 	
 	public static int[] m_featureGroupMap;
 	
@@ -54,8 +52,8 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		if (m_dim==0) {//not adaptation based
 			for(int k=0; k<m_cluPosterior.length; k++) {
 				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-				if(m_supModel != null)
-					sum += m_q*Utils.dotProduct(m_supModel, doc.getSparse(), 0);
+				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
+					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
 				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}			
 		} else {
@@ -89,12 +87,5 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		else
 			prob = doc.m_prob/doc.m_pCount;
 		return prob>=0.5 ? 1:0;
-	}
-	
-	public void setSupModel(double[] m, double q){
-		m_q = q;
-		if (m_supModel==null || m_supModel.length != m.length)
-			m_supModel = new double[m.length];
-		System.arraycopy(m, 0, m_supModel, 0, m.length);
 	}
 }
