@@ -62,19 +62,22 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	@Override
 	public double evaluate(_Doc doc) {
 		_Review r = (_Review) doc;
-		double prob = 0, sum;
+		double prob = 0, sum = 0;
 		double[] probs = r.getCluPosterior();
-		if (m_dim==0) {//not adaptation based
-			for(int k=0; k<probs.length; k++) {
+		int n, m, k;
+
+		//not adaptation based
+		if (m_dim==0) {
+			for(k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-				if(m_supModel != null)
-					sum += Utils.dotProduct(m_supModel, doc.getSparse())*m_q;
-				prob += probs[k] * Utils.logistic(sum); 
-			}			
+				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
+					sum += MTCLRWithHDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
+				prob += Math.exp(probs[k]) * Utils.logistic(sum); 
+			}	
+			prob = Utils.logistic(sum);
 		} else {
-			int n, m;
 			double As[];
-			for(int k=0; k<probs.length; k++) {
+			for(k=0; k<probs.length; k++) {
 				As = CLRWithHDP.m_hdpThetaStars[k].getModel();
 				sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
 				for(_SparseFeature fv: doc.getSparse()){
@@ -82,13 +85,13 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 					m = m_featureGroupMap[n];
 					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 				}
-				prob += probs[k] * Utils.logistic(sum); 
+				prob += Math.exp(probs[k]) * Utils.logistic(sum); 
 			}
+			prob = Utils.logistic(sum); 
 		}
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
-		
 		return prob;
 	}	
 }

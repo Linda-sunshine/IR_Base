@@ -94,11 +94,12 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				//for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				sum = beta_sum;
+				sum = beta_sum;//sum = v*beta+\sum \pi_v(global language model)
 				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
 				for(_SparseFeature fv: r.getSparse()) {
 					index = fv.getIndex();
-					sum += fv.getTF();					
+					sum += fv.getTF();	
+					//log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
 					L += Utils.lgamma(fv.getTF() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
 				}
 				L += betaSum_lgamma - Utils.lgamma(sum);
@@ -167,7 +168,8 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-
+//		System.out.println(k+"-----------------");
+		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
@@ -284,120 +286,8 @@ public class CLRWithHDP extends CLRWithDP {
 				}
 			}
 		}
-		
+//		sampleGamma();//will this help sampling?
 		System.out.println(m_kBar);
-	}
-	
-	protected int[][] m_ks;//global variable for storing the cluster assignment.
-	protected int[] m_mergedK;
-	// One user's reviews will be assigned in multi-thread.
-	protected void sampleOneUser_multiThread(final _HDPAdaptStruct user){
-		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		m_ks = new int[numberOfCores][user.getAdaptationSize()];
-		
-		//Sample thetaStars.
-		sampleThetaStars();
-		
-		//init the shared structure		
-		for(int c=0; c<numberOfCores; ++c){			
-			threads.add((new Thread() {
-				int core, numOfCores;
-				int[] m_k;
-				@Override
-				public void run() {
-					try {	
-						int k;
-						double likelihood, logSum = 0, gamma_k;
-						ArrayList<_Review> reviews = user.getReviews();
-						for (int i = 0; i + core <reviews.size(); i += numOfCores) {
-							_Review r = reviews.get(i+core);
-							if (r.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
-								continue;								
-							//get the new cluster for the review.
-							for(k=0; k<m_kBar+m_M; k++){
-								r.setHDPThetaStar(m_hdpThetaStars[k]);
-								
-								//loglikelihood of y, i.e., p(y|x,\phi)
-								likelihood = calcLogLikelihoodY(r); 
-								
-								//p(z=k|\gamma,\eta)
-								gamma_k = (k < m_kBar) ? m_hdpThetaStars[k].getGamma():m_gamma_e/m_M;
-								likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k])+m_eta*gamma_k);
-								
-								//loglikelihood of x, i.e., p(x|\psi)	
-								likelihood += calcLogLikelihoodX(r);
-								
-								m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-								
-								if(k==0) 
-									logSum = likelihood;
-								else 
-									logSum = Utils.logSum(logSum, likelihood);
-							};
-							
-							//Sample group k with likelihood.
-							k = sampleInLogSpace(logSum);
-							m_k[i+core] = k;	
-						}
-					} catch(Exception ex) {
-						ex.printStackTrace(); 
-					}
-				}
-				
-				private Thread initialize(int core, int numOfCores, int[] k) {
-					this.core = core;
-					this.numOfCores = numOfCores;	
-					this.m_k = k;
-					return this;
-				}
-			}).initialize(c, numberOfCores, m_ks[c]));
-			threads.get(c).start();
-		}
-		
-		for(int c=0;c<numberOfCores;++c){
-			try {
-				threads.get(c).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		m_mergedK = new int[user.getAdaptationSize()];
-		for(int k=0;k<numberOfCores;++k)
-			Utils.add2Array(m_mergedK, m_ks[k]);
-		
-		// After we get all the indexes, we update the thetas.
-		int k;
-		_Review r;
-		_HDPThetaStar curTheta;
-		ArrayList<_Review> reviews = user.getReviews();
-		MyPriorityQueue<_RankItem> queue = new MyPriorityQueue<_RankItem>(user.getAdaptationSize());
-		for(int i=0; i<m_mergedK.length; i++)
-			queue.add(new _RankItem(i, m_mergedK[i]));
-		
-		for(_RankItem it: queue){
-			r = reviews.get(it.m_index);
-			k = (int) it.m_value;
-			//Step 3: update the setting after sampling z_ij.
-			curTheta = m_hdpThetaStars[(int)it.m_value];
-			curTheta.updateMemCount(1);//-->1
-			r.setHDPThetaStar(curTheta);//-->3
-		
-			//Update the user info with the newly sampled hdpThetaStar.
-			user.incHDPThetaStarMemSize(curTheta, 1);//-->4
-		
-			if(k >= m_kBar && user.getHDPThetaMemSize(m_hdpThetaStars[k]) <= 0){
-				m_hdpThetaStars[k].initPsiModel(m_lmDim);
-				m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);
-				
-				double rnd = Beta.staticNextDouble(1, m_alpha);
-				m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-				m_gamma_e = (1-rnd)*m_gamma_e;
-				
-				swapTheta(m_kBar, k);
-				m_kBar++;
-			}
-		}
 	}
 	
 	//Sample how many local groups inside user reviews.
@@ -728,7 +618,7 @@ public class CLRWithHDP extends CLRWithDP {
 	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
 	// Indeed, it is for per review, for inheritance we don't change the function name.
 	protected void calculateClusterProbPerUser(){
-		double prob;
+		double prob, logSum;
 		double[] probs;
 		if(m_newCluster) 
 			probs = new double[m_kBar+1];
@@ -743,7 +633,7 @@ public class CLRWithHDP extends CLRWithDP {
 			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
 			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		}
-			
+		int count = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
@@ -754,12 +644,18 @@ public class CLRWithHDP extends CLRWithDP {
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
 					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-					probs[k] = Math.exp(prob);//this will be in real space!					
+					probs[k] = prob;
 				}
-				Utils.L1Normalization(probs);
+			
+				logSum = Utils.logSumOfExponentials(probs);
+				for(int k=0; k<probs.length; k++)
+					probs[k] -= logSum;
+				if(Utils.max(probs)==0) count++;
 				r.setClusterPosterior(probs);
 			}
 		}
+		if(count > 0)
+			System.err.println("Prob zero vector count:" + count);
 	}
 	
 	@Override

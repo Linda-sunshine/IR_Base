@@ -16,7 +16,7 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class MTCLRWithHDP extends CLRWithHDP{
-	protected double m_q = 1;// the wc + m_q*wg;
+	protected static double m_q = 1;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithHDP(int classNo, int featureSize,
@@ -73,17 +73,6 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		return R1;
 	}
 
-//    @Override
-//	protected void setPersonalizedModel() {
-//		_HDPAdaptStruct user;
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_HDPAdaptStruct) m_userList.get(i);
-//			Utils.setArray(m_pWeights, m_supWeights, m_q);
-//			Utils.scaleArray(m_pWeights, user.getThetaStar().getModel(), 1.0);
-//			user.setPersonalizedModel(m_pWeights);
-//		}
-//	}
-
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
 		_Review r = (_Review) review;
@@ -108,15 +97,6 @@ public class MTCLRWithHDP extends CLRWithHDP{
 			g[offset + n] -= delta * fv.getValue();// cluster model.
 			g[offsetSup + n] -= delta * fv.getValue() * m_q;// super model.
 		}
-	}
-	@Override
-	protected void evaluateModel() {
-		_HDPAdaptStruct user;
-		for(_AdaptStruct u: m_userList){
-			user = (_HDPAdaptStruct) u;
-			user.setSupModel(m_supWeights, m_q);
-		}
-		super.evaluateModel();	
 	}
 	
 	public void setQ(double q){
