@@ -25,7 +25,8 @@ public class CLRWithHDP extends CLRWithDP {
 	//\alpha is the concentration parameter for the first layer.
 	protected double m_eta = 1.0;//concentration parameter for second layer DP.  
 	protected double m_beta = 1.0; //concentration parameter for \psi.
-
+	protected double m_c = 1;//the constant in front of probabilities of language model.
+	
 	protected double[] m_betas;//concentration vector for the prior of psi.
 	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
 	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
@@ -61,12 +62,16 @@ public class CLRWithHDP extends CLRWithDP {
 		return String.format("CLRWithHDP[dim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
+	// Set the constant of \pi_v.
+	public void setC(double c){
+		m_c = c;
+	}
 	public void setBetas(double[] lm){
 		m_betas = lm;// this is in real space!
 		
 		m_lmDim = lm.length;
 		for(int i=0; i<m_lmDim; i++) {
-			m_betas[i] += m_beta;
+			m_betas[i] = m_c * m_betas[i] + m_beta;
 			m_nBetaDir -= Utils.lgamma(m_betas[i]);
 		}
 		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
