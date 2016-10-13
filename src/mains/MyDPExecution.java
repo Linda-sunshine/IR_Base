@@ -30,17 +30,17 @@ public class MyDPExecution {
 		boolean enforceAdapt = true;
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv",  param.m_data); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users",  param.m_data);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fv);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fvSup);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt",  param.m_data);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv",  param.m_data); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users",  param.m_data);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fv);
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fvSup);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt",  param.m_data);
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", param.m_data);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fv);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", param.m_data);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fv);
+		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
 
 		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
