@@ -41,10 +41,10 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		m_supWeights = new double[m_featureSize+1];
 	}
 	
-	public void setR2TradeOffs(double eta3, double eta4){
-		m_eta3 = eta3;
-		m_eta4 = eta4;
-	}
+//	public void setR2TradeOffs(double eta3, double eta4){
+//		m_eta3 = eta3;
+//		m_eta4 = eta4;
+//	}
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim*2 + m_dimSup*2;// we have global here.
@@ -226,6 +226,10 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		super.evaluateModel();	
 	}
 	
+	public void setR2TradeOffs(double eta3, double eta4) {
+		m_eta3 = eta3;
+		m_eta4 = eta4;
+	}	
 //	public void initWriter() throws FileNotFoundException{
 //		m_writer = new PrintWriter(new File("cluster.txt"));	
 //	}

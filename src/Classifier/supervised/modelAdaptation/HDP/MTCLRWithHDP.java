@@ -1,14 +1,6 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.HashMap;
-
-import Classifier.supervised.modelAdaptation.DirichletProcess.NormalPrior;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import structures._Doc;
-import structures._Review;
-import structures._SparseFeature;
-import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
@@ -16,7 +8,6 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class MTCLRWithHDP extends CLRWithHDP{
-	protected static double m_q = 1;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithHDP(int classNo, int featureSize,
@@ -98,9 +89,4 @@ public class MTCLRWithHDP extends CLRWithHDP{
 			g[offsetSup + n] -= delta * fv.getValue() * m_q;// super model.
 		}
 	}
-	
-	public void setQ(double q){
-		m_q = q;
-	}
-
 }
