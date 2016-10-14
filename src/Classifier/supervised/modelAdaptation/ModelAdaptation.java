@@ -61,6 +61,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		m_personalized = true;
 	}
 	
+	public ModelAdaptation(int classNo, int featureSize, String globalModel) {
+		super(classNo, featureSize);
+		
+		loadGlobalModel(globalModel);
+		m_pWeights = null;
+		m_personalized = true;
+	}
+	
 	public void setDisplayLv(int level) {
 		m_displayLv = level;
 	}
@@ -107,6 +115,29 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
 	}
+	//Load global model from file.
+	public void loadGlobalModel(String filename){
+		if (filename==null)
+			return;
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line, features[];
+			int index = 0;
+			m_gWeights = new double[m_featureSize+1];//to include the bias term
+			while((line=reader.readLine()) != null) {
+				features = line.split(":");
+				if(features.length == 2 && features[0].equals("bias"))
+					m_gWeights[0] = Double.valueOf(features[1]);
+				if(features.length == 1 && !features[0].equals("w")){
+					m_gWeights[++index] = Double.valueOf(features[0]);
+				}
+			}			
+			reader.close();
+		} catch(IOException e){
+			System.err.format("[Error]Fail to open file %s.\n", filename);
+		}
+	}
+	
 	
 	abstract public void loadUsers(ArrayList<_User> userList);
 	
@@ -268,7 +299,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		int count = 0;
 		double[] macroF1 = new double[m_classNo];
 		_PerformanceStat userPerfStat;
-		
+
 		for(_AdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
 				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data

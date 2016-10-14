@@ -36,7 +36,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 
 	@Override
 	public String toString() {
-		return String.format("MTCLRWithHDP[dim:%d,q:%.3f,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_q, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
+		return String.format("MTCLRWithHDP[dim:%d,lmDim:%d,q:%.3f,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_lmDim,m_q, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 
 	@Override

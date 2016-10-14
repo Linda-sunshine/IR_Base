@@ -26,6 +26,13 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		_HDPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
 		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
 	}
+	
+	public CLinAdaptWithHDP(int classNo, int featureSize, String globalModel, String featureGroupMap, double[] lm) {
+		super(classNo, featureSize, globalModel, lm);
+		loadFeatureGroupMap(featureGroupMap);
+		_HDPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
+		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
+	}
 	public CLinAdaptWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, lm);
@@ -129,7 +136,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithHDP[dim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",m_dim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_numberOfIterations,m_abNuA[0],m_abNuA[1],m_abNuB[0],m_abNuB[1]);
+		return String.format("CLinAdaptWithHDP[dim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",m_dim,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_numberOfIterations,m_abNuA[0],m_abNuA[1],m_abNuB[0],m_abNuB[1]);
 	}
 	public void setsdB(double s){
 		m_abNuB[1] = s;

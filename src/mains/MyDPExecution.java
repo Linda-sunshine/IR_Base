@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
+import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
@@ -42,7 +43,7 @@ public class MyDPExecution {
 		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
 		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
 
-		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);

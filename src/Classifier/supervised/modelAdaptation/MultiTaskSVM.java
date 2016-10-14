@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import Classifier.supervised.SVM;
@@ -10,6 +13,7 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
@@ -17,8 +21,8 @@ import structures._SparseFeature;
 import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
-	double m_u = 1.0; // trade-off parameter between global model and individual model.
-	double m_C = 1.0; // trade-off parameter for SVM training 
+	double m_u = 1; // trade-off parameter between global model and individual model.
+	double m_C = 1; // trade-off parameter for SVM training 
 	
 	Model m_libModel; // Libmodel trained by liblinear.
 	boolean m_bias = true; // whether use bias term in SVM; by default, we will use it
@@ -182,5 +186,30 @@ public class MultiTaskSVM extends ModelAdaptation {
 			node[2*fvs.length+1] = new FeatureNode((m_featureSize + 1) * (m_userSize + 1), 1.0 / m_u);//global model's bias
 		}
 		return node;
+	}
+	
+	public void printEachUserPerf(){
+		PrintWriter writer;
+		_PerformanceStat stat;
+		double pos = 0, neg = 0, count = 0;
+		try{
+			writer = new PrintWriter(new File("perf.txt"));
+			for(_AdaptStruct user: m_userList){
+				stat = user.getPerfStat();
+				pos = 0; neg = 0;
+				for(_Review r: user.getReviews()){
+					if(r.getYLabel() == 1) pos++;
+					else neg++;
+				}
+				pos /= user.getReviews().size();
+				neg /= user.getReviews().size();
+				if(pos == 1) count++;
+				writer.write(String.format("%d\t(%.4f, %.4f)\t(%.4f, %.4f)\n", user.getReviews().size(), pos, neg, stat.getF1(1), stat.getF1(0)));
+			}
+			System.out.println(count);
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 }

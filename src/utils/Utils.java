@@ -457,6 +457,13 @@ public class Utils {
 		return spVct;
 	}
 	
+	static public HashMap<Integer, Double> revertSpVct(_SparseFeature[] fvs){
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		for(_SparseFeature fv: fvs)
+			vct.put(fv.getIndex(), fv.getValue());
+		return vct;
+	}
+	
 	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
 		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
 		

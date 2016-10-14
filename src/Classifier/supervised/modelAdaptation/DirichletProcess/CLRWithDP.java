@@ -47,6 +47,11 @@ public class CLRWithDP extends LinAdapt {
 		m_dim = m_featureSize + 1; // to add the bias term
 	}	
 	
+	public CLRWithDP(int classNo, int featureSize, String globalModel){
+		super(classNo, featureSize, globalModel, null);
+		m_dim = m_featureSize + 1; // to add the bias term
+	}	
+	
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
 	}

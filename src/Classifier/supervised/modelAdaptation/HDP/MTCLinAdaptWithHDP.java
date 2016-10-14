@@ -41,6 +41,16 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		m_supWeights = new double[m_featureSize+1];
 	}
 	
+	public MTCLinAdaptWithHDP(int classNo, int featureSize,
+			String globalModel,String featureGroupMap, String featureGroup4Sup, double[] lm) {
+		super(classNo, featureSize, globalModel, featureGroupMap, lm);
+		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
+
+		m_supModel = new double[m_dimSup*2]; // globally shared transformation matrix.
+		//construct the new global model for simplicity
+		m_supWeights = new double[m_featureSize+1];
+	}
+	
 //	public void setR2TradeOffs(double eta3, double eta4){
 //		m_eta3 = eta3;
 //		m_eta4 = eta4;
@@ -213,8 +223,8 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
-											m_dim,m_dimSup,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+											m_dim,m_dimSup,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	//apply current model in the assigned clusters to users

@@ -197,7 +197,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-					sf.setTF(sf.getValue());
+//					sf.setTF(sf.getValue());
 					
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
@@ -218,7 +218,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-					sf.setTF(sf.getValue());
+//					sf.setTF(sf.getValue());
 					
 					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
 					double DF = Utils.sumOfArray(stat.getDF());
@@ -247,7 +247,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-					sf.setTF(sf.getValue());
+//					sf.setTF(sf.getValue());
 					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
@@ -275,7 +275,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-					sf.setTF(sf.getValue());
+//					sf.setTF(sf.getValue());
 					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
@@ -298,7 +298,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-					sf.setTF(sf.getValue());
+//					sf.setTF(sf.getValue());
 					
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
@@ -323,7 +323,7 @@ public abstract class Analyzer {
 		
 		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
-	
+
 	//Select the features and store them in a file.
 	public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
@@ -338,7 +338,7 @@ public abstract class Analyzer {
 		else if (featureSelection.equals("CHI"))
 			selector.CHI(m_featureStat, m_classMemberNo);
 		
-		m_featureNames = selector.getSelectedFeatures();
+		m_featureNames = selector.getSelectedFeatures();		
 		SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
@@ -346,6 +346,35 @@ public abstract class Analyzer {
 		//clear memory for next step feature construction
 //		reset();
 //		LoadCV(location);//load the selected features
+	}
+	
+	// Added by Lin for feature selection.
+	//Select the features and store them in a file.
+	public void featureSelection(String location, String featureSelection, int maxDF, int minDF, int topK) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(0, 1, maxDF, minDF);
+
+		System.out.println("*******************************************************************");
+		if (featureSelection.equals("DF"))
+			selector.DF(m_featureStat);
+		else if (featureSelection.equals("IG"))
+			selector.IG(m_featureStat, m_classMemberNo);
+		else if (featureSelection.equals("MI"))
+			selector.MI(m_featureStat, m_classMemberNo);
+		else if (featureSelection.equals("CHI"))
+			selector.CHI(m_featureStat, m_classMemberNo);
+		
+		ArrayList<String> features = selector.getSelectedFeatures();	
+		if(topK > features.size())
+			m_featureNames = features;
+		else{
+			m_featureNames.clear();
+			for(int i=features.size()-1; i>features.size()-1-topK; i--){
+				m_featureNames.add(features.get(i));
+			}
+		}
+		
+		SaveCV(location, featureSelection, 0, 1, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
 	}
 	
 	//Save all the features and feature stat into a file.

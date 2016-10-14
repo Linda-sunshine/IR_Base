@@ -7,10 +7,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Doc;
 import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
@@ -157,6 +159,9 @@ public class UserAnalyzer extends DocAnalyzer {
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				allocateReviews(reviews);				
 				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
+				review = reviews.get(0);
+				rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
 			}
 			reader.close();
 		} catch(IOException e){
@@ -250,25 +255,11 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-	//Estimate a global language model.
-	// We traverse all review documents instead of using the global TF 
-	// since we did not roll back when we filter users with 1 review.
-	public double[] estimateGlobalLM(){
-		double[] lm = new double[getFeatureSize()];
-		double sum = 0;
+	public Collection<_Doc> mergeReviews(){
+		Collection<_Doc> rvws = new ArrayList<_Doc>();
 		for(_User u: m_users){
-			for(_Review r: u.getReviews()){
-				for(_SparseFeature fv: r.getSparse()){
-					lm[fv.getIndex()] += fv.getTF();
-					sum += fv.getTF();
-				}
-			}
+			rvws.addAll(u.getReviews());
 		}
-		for(int i=0; i<lm.length; i++){
-				lm[i] /= sum;
-				if(lm[i] == 0)
-					lm[i] = 0.0001;
-		}
-			return lm;
+		return rvws;
 	}
 }

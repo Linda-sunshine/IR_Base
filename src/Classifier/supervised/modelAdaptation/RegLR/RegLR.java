@@ -43,6 +43,14 @@ public class RegLR extends ModelAdaptation {
 		m_testmode = TestMode.TM_batch;
 	}
 	
+	public RegLR(int classNo, int featureSize, String globalModel) {
+		super(classNo, featureSize, globalModel);
+		// default value of trade-off parameters
+		m_eta1 = 0.5;
+		
+		// the only test mode for RegLR is batch
+		m_testmode = TestMode.TM_batch;
+	}
 	public void setR1TradeOff(double eta1) {
 		m_eta1 = eta1;
 	}
