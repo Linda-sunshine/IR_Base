@@ -34,9 +34,9 @@ public class UserAnalyzer extends DocAnalyzer {
 	double m_pCount[] = new double[3]; // to count the positive ratio in train/adapt/test
 	boolean m_enforceAdapt = false;
 	
-	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
+	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean b) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, b);
 		m_users = new ArrayList<_User>();
 	}
 	
@@ -57,9 +57,16 @@ public class UserAnalyzer extends DocAnalyzer {
 		m_enforceAdapt = enforceAdpt;
 	}
 	
-	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	// Load the features from a file and store them in the m_featurNames.@added by Lin.
 	@Override
 	protected boolean LoadCV(String filename) {
+		if(m_newCV){
+			return loadNewCV(filename);
+		} else
+			return loadOldCV(filename);
+		
+	}
+	protected boolean loadOldCV(String filename){
 		if (filename==null || filename.isEmpty())
 			return false;
 		
@@ -86,9 +93,39 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			reader.close();
 			
-			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			System.out.format("Load %d %d-gram old features from %s...\n", m_featureNames.size(), m_Ngram, filename);
 			m_isCVLoaded = true;
 //			m_isCVStatLoaded = true;
+			return true;
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+	}
+	
+	// Load the new cv.
+	protected boolean loadNewCV(String filename){
+		if (filename==null || filename.isEmpty())
+			return false;
+			
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+
+			m_Ngram = 1;//default value of Ngram
+
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")){//comments
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}						
+				} else 
+					expandVocabulary(line);
+			}
+			reader.close();
+			System.out.format("Load %d %d-gram new features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			m_isCVLoaded = true;
 			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);

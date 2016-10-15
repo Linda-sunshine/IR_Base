@@ -125,11 +125,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			int index = 0;
 			m_gWeights = new double[m_featureSize+1];//to include the bias term
 			while((line=reader.readLine()) != null) {
-				features = line.split(":");
-				if(features.length == 2 && features[0].equals("bias"))
-					m_gWeights[0] = Double.valueOf(features[1]);
+				features = line.split("\\s+");
 				if(features.length == 1 && !features[0].equals("w")){
-					m_gWeights[++index] = Double.valueOf(features[0]);
+					m_gWeights[index++] = Double.valueOf(features[0]);
 				}
 			}			
 			reader.close();

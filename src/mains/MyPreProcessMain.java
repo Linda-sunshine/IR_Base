@@ -11,7 +11,6 @@ import structures._User;
 import Analyzer.Analyzer;
 import Analyzer.CrossFeatureSelection;
 import Analyzer.MultiThreadedUserAnalyzer;
-import Analyzer.NewUserAnalyzer;
 import Analyzer.UserAnalyzer;
 import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.SVM;
@@ -68,18 +67,18 @@ public class MyPreProcessMain {
 //		analyzer.featureSelection(fvFile4LM, featureSelection, startProb, endProb, maxDF, minDF);		// Save global model weights.
 		
 		/**Train Global model**/
-		NewUserAnalyzer analyzer = new NewUserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true);
 		analyzer.loadUserDir(trainDir);
 		SVM svm = new SVM(classNumber, analyzer.getFeatureSize(), 1);
-//		svm.train(analyzer.mergeReviews());
+		svm.train(analyzer.mergeReviews());
 		svm.saveModel(globalModel);
 		
 		/**Cross feature groups**/
-		int kFold = 10, kmeans = 800;
-		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
-		ArrayList<_Doc> crossDocs = (ArrayList<_Doc>) analyzer.mergeReviews();
-		CrossFeatureSelection crossfs = new CrossFeatureSelection(crossDocs, classNumber, analyzer.getFeatureSize(), kFold, kmeans);
-		crossfs.train();
-		crossfs.kMeans(crossfv);
+//		int kFold = 10, kmeans = 800;
+//		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
+//		ArrayList<_Doc> crossDocs = (ArrayList<_Doc>) analyzer.mergeReviews();
+//		CrossFeatureSelection crossfs = new CrossFeatureSelection(crossDocs, classNumber, analyzer.getFeatureSize(), kFold, kmeans);
+//		crossfs.train();
+//		crossfs.kMeans(crossfv);
 	}
 }

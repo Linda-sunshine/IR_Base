@@ -38,9 +38,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	private Object m_featureStatLock=null;
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
-			String providedCV, int Ngram, int threshold, int numberOfCores)
+			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
 					throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, b);
 		
 		m_numberOfCores = numberOfCores;
 		

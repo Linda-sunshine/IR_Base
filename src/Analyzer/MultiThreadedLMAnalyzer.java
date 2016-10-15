@@ -24,9 +24,9 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	boolean m_isLMCVLoaded = false;
 	
 	public MultiThreadedLMAnalyzer(String tokenModel, int classNo, String providedCV, String lmFvFile,
-			int Ngram, int threshold, int numberOfCores)
+			int Ngram, int threshold, int numberOfCores, boolean b)
 			throws InvalidFormatException, FileNotFoundException, IOException {
-		super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, numberOfCores, b);
 		m_lmFeatureNames = new ArrayList<String>();
 		m_lmFeatureNameIndex = new HashMap<String, Integer>();
 		loadLMFeatures(lmFvFile);

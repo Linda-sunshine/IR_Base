@@ -7,7 +7,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.NewMultiThreadedUserAnalyzer;
+import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 
@@ -33,10 +33,13 @@ public class MyNewDPMain {
 		String userDir = String.format("./data/%s/Users_%dk", dataset, userSize);
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
+		int kFold = 10, kmeans = 800;
 		String featureSelection = "DF"; //Feature selection method.
 		String pattern = String.format("%dgram_%s", Ngram, featureSelection);
 		String fvFile = String.format("./data/%s/fv_%dk_%s.txt", dataset, trainSize, pattern);
 //		String fvFile4LM = String.format("./data/AmazonNew/fv_%dk_lm_%d_%s.txt", trainSize, topK, pattern);
+		String globalModel = String.format("./data/%s/GlobalWeights_%dk.txt", dataset, trainSize);
+		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
 
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
@@ -45,11 +48,12 @@ public class MyNewDPMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String featureFile4LM = String.format("/if15/lg5bt/DataSigir/%s/fv_lm.txt", dataset);
 
-		NewMultiThreadedUserAnalyzer analyzer = new NewMultiThreadedUserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, numberOfCores);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, fvFile, null, Ngram, lengthThreshold, numberOfCores, true);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userDir);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-		
+		double[] globalLM = analyzer.estimateGlobalLM();
+
 //		Base base = new Base(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 //		base.loadUsers(analyzer.getUsers());
 //		base.setPersonalizedModel();
@@ -72,7 +76,7 @@ public class MyNewDPMain {
 		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.1);
 
@@ -80,7 +84,7 @@ public class MyNewDPMain {
 		double alpha = 0.1, eta = 1, beta = 1;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(200);
+		hdp.setNumberOfIterations(20);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		hdp.train();
@@ -94,6 +98,6 @@ public class MyNewDPMain {
 		mtsvm.setBias(true);
 		mtsvm.train();
 		mtsvm.test();
-		mtsvm.printEachUserPerf();
+//		mtsvm.printEachUserPerf();
 	}
 }
