@@ -28,7 +28,7 @@ public class MyPreProcessMain {
 		String providedCV = null;
 		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
 
-		int trainSize = 3; // "3"
+		int trainSize = 2; // "3"
 		int userSize = 9; // "20"
 		String trainDir = String.format("./data/%s/Users_%dk", dataset, trainSize);
 		String userDir = String.format("./data/%s/Users_%dk",dataset, userSize);
@@ -53,7 +53,8 @@ public class MyPreProcessMain {
 		String globalModel = String.format("./data/%s/GlobalWeights_%dk.txt", dataset, trainSize);
 		
 		// Multi-thread may need access to some global variables at the same time. 
-//		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
+		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true);
+		analyzer.loadUserDir(trainDir);
 		
 //		// Feature selection for language model.
 //		analyzer.LoadStopwords(stopwords);
@@ -67,18 +68,16 @@ public class MyPreProcessMain {
 //		analyzer.featureSelection(fvFile4LM, featureSelection, startProb, endProb, maxDF, minDF);		// Save global model weights.
 		
 		/**Train Global model**/
-		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true);
-		analyzer.loadUserDir(trainDir);
-		SVM svm = new SVM(classNumber, analyzer.getFeatureSize(), 1);
-		svm.train(analyzer.mergeReviews());
-		svm.saveModel(globalModel);
+//		SVM svm = new SVM(classNumber, analyzer.getFeatureSize(), 1);
+//		svm.train(analyzer.mergeReviews());
+//		svm.saveModel(globalModel);
 		
 		/**Cross feature groups**/
-//		int kFold = 10, kmeans = 800;
-//		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
-//		ArrayList<_Doc> crossDocs = (ArrayList<_Doc>) analyzer.mergeReviews();
-//		CrossFeatureSelection crossfs = new CrossFeatureSelection(crossDocs, classNumber, analyzer.getFeatureSize(), kFold, kmeans);
-//		crossfs.train();
-//		crossfs.kMeans(crossfv);
+		int kFold = 10, kmeans = 800;
+		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
+		ArrayList<_Doc> crossDocs = (ArrayList<_Doc>) analyzer.mergeReviews();
+		CrossFeatureSelection crossfs = new CrossFeatureSelection(crossDocs, classNumber, analyzer.getFeatureSize(), kFold, kmeans);
+		crossfs.train();
+		crossfs.kMeans(crossfv);
 	}
 }

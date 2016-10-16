@@ -16,6 +16,10 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		m_supWeights = new double[m_dim];
 	}
 
+	public MTCLRWithHDP(int classNo, int featureSize, String globalModel, double[] lm) {
+		super(classNo, featureSize, globalModel, lm);
+		m_supWeights = new double[m_dim];
+	}
 	@Override
 	protected void setThetaStars() {
 		super.setThetaStars();

@@ -3,15 +3,15 @@ package structures;
 public class DPParameter {
 	public String m_data = "Amazon";
 	public String m_model = "mtclinhdp";
-	public int m_nuOfIterations = 20;
+	public int m_nuOfIterations = 30;
 	public int m_M = 6;
 	public double m_sdA = 0.1;
 	public double m_sdB = 0.1;
 	
 	// Concentration parameter
 	public double m_alpha = 0.1;
-	public double m_eta = 0.02;
-	public double m_beta = 0.01;
+	public double m_eta = 1;
+	public double m_beta = 1;
 	
 	public double m_eta1 = 0.05;
 	public double m_eta2 = 0.05;
@@ -20,6 +20,7 @@ public class DPParameter {
 	
 	// MTCLRWithDP, MTCLRWithHDP
 	public double m_q = 0.1; // global parameter.
+	public double m_c = 1;// coefficient in front of language model weights.
 	
 	public int m_fv = 800;
 	public int m_fvSup = 5000;
@@ -72,6 +73,8 @@ public class DPParameter {
 				m_M = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-q"))
 				m_q = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-lmc"))
+				m_c = Double.valueOf(argv[i]);
 			else
 				exit_with_help();
 		}

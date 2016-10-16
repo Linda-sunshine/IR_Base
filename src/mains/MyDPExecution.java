@@ -32,7 +32,7 @@ public class MyDPExecution {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 //		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv",  param.m_data); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users",  param.m_data);
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000",  param.m_data);
 //		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fv);
 //		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fvSup);
 //		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt",  param.m_data);
@@ -43,7 +43,7 @@ public class MyDPExecution {
 		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
 		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
 
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, true);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
@@ -70,27 +70,32 @@ public class MyDPExecution {
 		} else if(param.m_model.equals("clrhdp")){
 			adaptation = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
-
+			((CLRWithHDP) adaptation).setC(param.m_c);
+		
 		} else if(param.m_model.equals("mtclrhdp")){
 			adaptation = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 			adaptation.setQ(param.m_q);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
-			
+			((CLRWithHDP) adaptation).setC(param.m_c);
+
 		} else if(param.m_model.equals("clinhdp")){
 			adaptation = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
+			((CLRWithHDP) adaptation).setC(param.m_c);
 
 		} else if(param.m_model.equals("mtclinhdp")){
 			adaptation = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((CLRWithHDP) adaptation).setC(param.m_c);
 
 		} else{
 			System.out.println("CLRWithDP is running....");
 			adaptation = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 		}
+		
 		// commonly shared parameters.
 		adaptation.setM(param.m_M);
 		adaptation.setAlpha(param.m_alpha);
