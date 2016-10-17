@@ -446,6 +446,10 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
+//				if(m_LNormFlag)
+//					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
+//				else
+					
 				fValue -= calcLogLikelihoodY(r);
 				gradientByFunc(user, r, 1); // calculate the gradient by the review.
 			}
@@ -477,8 +481,11 @@ public class CLRWithHDP extends CLRWithDP {
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 
 									continue;	
-								
+//								if(m_LNormFlag)
+//									m_fValue[core] -= calcLogLikelihoodY(review)/user.getAdaptationSize();
+//								else
 								m_fValue[core] -= calcLogLikelihoodY(review);
+
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
 							}			
 						}
@@ -522,8 +529,10 @@ public class CLRWithHDP extends CLRWithDP {
 			System.err.println("Error,cannot find the HDP theta star!");
 		
 		int offset = m_dim*cIndex;
-		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));
-		
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));		
+//		if(m_LNormFlag)
+//			delta /= getAdaptationSize(u);
+
 		//Bias term.
 		g[offset] -= delta; //x0=1
 

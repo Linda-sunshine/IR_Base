@@ -70,7 +70,10 @@ public class _PerformanceStat {
 			
 			// F1
 			sumP = m_perfTable[i][0] + m_perfTable[i][1];
-			if ( sumP > 0)
+//			if(TP == 0)
+//				m_perfTable[i][2] = 1;
+//			else 
+				if ( sumP > 0)
 				m_perfTable[i][2] = 2*m_perfTable[i][0]*m_perfTable[i][1]/sumP;
 			else
 				m_perfTable[i][2] = 0;			

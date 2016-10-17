@@ -80,7 +80,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		int offsetSup = m_dim*m_kBar;
 		double delta = weight * (r.getYLabel() - logit(r.getSparse(), r));
 //		if(m_LNormFlag)
-//			delta /= getAdaptationSize(user);
+//			delta /= getAdaptationSize(u);
 
 		//Bias term.
 		g[offset] -= delta; //x0=1, each cluster.

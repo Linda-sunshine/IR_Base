@@ -110,8 +110,8 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
 //		if(m_LNormFlag)
-//			delta /= getAdaptationSize(user);
-//		
+//			delta /= getAdaptationSize(u);
+		
 		// Bias term for individual user.
 		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
 		g[offset + m_dim] -= delta;//b[0]
@@ -223,7 +223,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+		return String.format("MTCLinAdaptWithHDP[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
 											m_dim,m_dimSup,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	

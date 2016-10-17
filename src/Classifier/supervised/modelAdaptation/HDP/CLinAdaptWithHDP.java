@@ -88,7 +88,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
 //		if(m_LNormFlag)
-//			delta /= getAdaptationSize(user);
+//			delta /= getAdaptationSize(u);
 		
 		// Bias term for individual user.
 		g[offset] -= delta*m_gWeights[0]; //a[0] = ws0*x0; x0=1
