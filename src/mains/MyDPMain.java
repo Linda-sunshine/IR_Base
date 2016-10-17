@@ -36,7 +36,7 @@ public class MyDPMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
-		String dataset = "Yelp"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
