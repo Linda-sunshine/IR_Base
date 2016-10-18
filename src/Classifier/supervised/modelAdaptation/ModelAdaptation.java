@@ -43,7 +43,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_personalized;
 
 	// Decide if we will normalize the likelihood.
-	protected boolean m_LNormFlag=true;
+	protected boolean m_LNormFlag = true;
 	protected String m_dataset = "Amazon"; // Default dataset.
 
 	// added by Lin.
@@ -96,15 +96,20 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			int pos;
 			
 			m_gWeights = new double[m_featureSize+1];//to include the bias term
+			m_features = new String[m_featureSize+1];//list of detailed features
+			
 			while((line=reader.readLine()) != null) {
 				features = line.split(":");
-				if (features[0].equals("BIAS"))
+				if (features[0].equals("BIAS")) {
 					m_gWeights[0] = Double.valueOf(features[1]);
+					m_features[0] = "BIAS";
+				}
 				else if (featureMap.containsKey(features[0])){
 					pos = featureMap.get(features[0]);
-					if (pos>=0 && pos<m_featureSize)
+					if (pos>=0 && pos<m_featureSize) {
 						m_gWeights[pos+1] = Double.valueOf(features[1]);
-					else
+						m_features[pos+1] = features[0];
+					} else
 						System.err.println("[Warning]Unknown feature " + features[0]);
 				} else 
 					System.err.println("[Warning]Unknown feature " + features[0]);

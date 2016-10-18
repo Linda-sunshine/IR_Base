@@ -11,7 +11,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.DoubleNormalPrior;
 /***
  * In this class, we utilize HDP to do automatic grouping based on each review.
- * The method does not involve global learning.
+ * The method does not involve global model learning.
  * @author lin
  */
 public class CLinAdaptWithHDP extends CLRWithHDP {
@@ -33,6 +33,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		_HDPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
 		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
 	}
+
 	public CLinAdaptWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, lm);
@@ -56,17 +57,18 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		m_G0 = new DoubleNormalPrior(m_abNuB[0], m_abNuB[1], m_abNuA[0], m_abNuA[1]);
 	}
 	
-	
 	@Override
 	// R1 over each cluster, R1 over super cluster.
 	protected double calculateR1(){
 		double R1 = 0;
-		// Clusters.
-		for(int i=0; i<m_kBar; i++)
+		int offset;
+		
+		// scan through all clusters
+		for(int i=0; i<m_kBar; i++) {
+			//likelihood over prior
 			R1 += m_G0.logLikelihood(m_hdpThetaStars[i].getModel(), m_eta1, m_eta2);
 		
-		int offset;
-		for(int i=0; i<m_kBar; i++){
+			//gradient over prior
 			offset = m_dim*2*i;
 			for(int k=0; k<m_dim;k++){
 				m_g[offset+k] += m_eta1 * (m_models[offset+k]-m_abNuB[0])/m_abNuB[1]/m_abNuB[1]; //scaling
@@ -87,8 +89,6 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		int offset = m_dim*2*cIndex;
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(u);
 		
 		// Bias term for individual user.
 		g[offset] -= delta*m_gWeights[0]; //a[0] = ws0*x0; x0=1
@@ -138,6 +138,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	public String toString() {
 		return String.format("CLinAdaptWithHDP[dim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",m_dim,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_numberOfIterations,m_abNuA[0],m_abNuA[1],m_abNuB[0],m_abNuB[1]);
 	}
+
 	public void setsdB(double s){
 		m_abNuB[1] = s;
 	}

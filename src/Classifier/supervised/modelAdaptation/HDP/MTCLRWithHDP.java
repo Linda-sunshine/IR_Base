@@ -6,6 +6,13 @@ import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
+/***
+ * This class implements the MTCLRWithHDP with HDP added.
+ * Currently, each review is assigned to one group and each user is a mixture of the components.
+ * A global logistic regression model will be learned and each cluster's classification model is q*w_g + w_c 
+ * @author lin
+ *
+ */
 
 public class MTCLRWithHDP extends CLRWithHDP{
 	public static double[] m_supWeights; // newly learned global model
@@ -20,6 +27,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		super(classNo, featureSize, globalModel, lm);
 		m_supWeights = new double[m_dim];
 	}
+
 	@Override
 	protected void setThetaStars() {
 		super.setThetaStars();
@@ -46,24 +54,31 @@ public class MTCLRWithHDP extends CLRWithHDP{
 	@Override
 	protected void initPriorG0(){
 		super.initPriorG0();
-//		m_G0 = new NormalPrior(m_abNuA[0], m_abNuA[1]);//only for w_u
+		//do we assume the global model has the same prior as user models?
 		m_G0.sampling(m_supWeights);// sample super user's weights.
 	}
-
 	
 	@Override
 	protected double logit(_SparseFeature[] fvs, _Review r){
-		double sum = m_q * Utils.dotProduct(m_supWeights, fvs, 0)+Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
+		double sum = m_q * Utils.dotProduct(m_supWeights, fvs, 0) + Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
 		return Utils.logistic(sum);
 	}
+	
 	@Override
 	protected double calculateR1(){
 		double R1 = super.calculateR1();//w_u should be close to 0
 
 		// super model part.
 		R1 += m_G0.logLikelihood(m_gWeights, m_supWeights, m_eta2);
-		for(int i=m_kBar*m_dim; i<m_g.length; i++)//w_s should be close to w_0
-			m_g[i] += m_eta2 * (m_models[i]-m_gWeights[i%m_dim])/(m_abNuA[1]*m_abNuA[1]);
+		
+		// Gradient by the regularization.
+		if (m_G0.hasVctMean()) {//we have specified the whole mean vector
+			for(int i=m_kBar*m_dim; i<m_g.length; i++) 
+				m_g[i] += m_eta2 * (m_models[i]-m_gWeights[i%m_dim]) / (m_abNuA[1]*m_abNuA[1]);
+		} else {//we only have a simple prior
+			for(int i=m_kBar*m_dim; i<m_g.length; i++)
+				m_g[i] += m_eta2 * (m_models[i]-m_abNuA[0]) / (m_abNuA[1]*m_abNuA[1]);
+		}
 
 		return R1;
 	}
@@ -79,8 +94,6 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		int offset = m_dim*cIndex;
 		int offsetSup = m_dim*m_kBar;
 		double delta = weight * (r.getYLabel() - logit(r.getSparse(), r));
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(u);
 
 		//Bias term.
 		g[offset] -= delta; //x0=1, each cluster.
