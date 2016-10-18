@@ -37,6 +37,20 @@ public class LinAdapt extends RegLR {
 		m_testmode = TestMode.TM_batch;
 	}  
 	
+	public LinAdapt(int classNo, int featureSize, String globalModel, String featureGroupMap){
+		super(classNo, featureSize, globalModel);
+		m_userList = null;
+		
+		loadFeatureGroupMap(featureGroupMap);
+		
+		// default value of trade-off parameters
+		m_eta1 = 0.5;
+		m_eta2 = 0.5;
+		
+		// the only test mode for LinAdapt is batch
+		m_testmode = TestMode.TM_batch;
+	}  
+	
 	@Override
 	public String toString() {
 		return String.format("LinAdapt[dim:%d,eta1:%.3f,eta2:%.3f]", m_dim, m_eta1, m_eta2);
