@@ -52,8 +52,8 @@ public class MyDPExecution {
 		
 		CLRWithDP adaptation;
 		double[] globalLM = analyzer.estimateGlobalLM();
-		if(param.m_fv == 5000) featureGroupFile = null;
-		if(param.m_fvSup == 5000) featureGroupFileB = null;
+		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
+		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileB = null;
 		if(param.m_model.equals("mtclrdp")){
 			adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 			adaptation.setQ(param.m_q);

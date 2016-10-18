@@ -75,6 +75,8 @@ public class DPParameter {
 				m_q = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-lmc"))
 				m_c = Double.valueOf(argv[i]);
+			else if (argv[i-1].equals("-data"))
+				m_data = argv[i];
 			else
 				exit_with_help();
 		}
