@@ -13,9 +13,9 @@ import utils.Utils;
  *
  */
 public class MTCLRWithDP extends CLRWithDP {
-	protected static double m_q = .10;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
-
+	// parameters for global part in multi-task learning. 
+	
 	public MTCLRWithDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);

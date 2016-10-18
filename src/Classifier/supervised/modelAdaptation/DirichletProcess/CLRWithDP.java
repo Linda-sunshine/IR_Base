@@ -32,15 +32,23 @@ public class CLRWithDP extends LinAdapt {
 	protected boolean m_multiThread = true; // if we will use multi-threading in M-step
 	protected double[] m_fValues;
 	protected double[][] m_gradients;
-	
+
 	// Parameters of the prior for the intercept and coefficients.
 	protected double[] m_abNuA = new double[]{0, 1}; // N(0,1) for shifting in adaptation based models
+
+	// parameter for global weights.
+	public static double m_q = .10;// the wc + m_q*wg;
 
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
 	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
+		m_dim = m_featureSize + 1; // to add the bias term
+	}	
+	
+	public CLRWithDP(int classNo, int featureSize, String globalModel){
+		super(classNo, featureSize, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
 	}	
 	
@@ -696,5 +704,8 @@ public class CLRWithDP extends LinAdapt {
 	public void setGlobalModel(int fvSize){
 		m_gWeights = new double[fvSize+1];
 	}
-
+	
+	public void setQ(double q){
+		m_q = q;
+	}
 }

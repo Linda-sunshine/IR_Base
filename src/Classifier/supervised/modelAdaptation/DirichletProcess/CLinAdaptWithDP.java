@@ -143,4 +143,7 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	public String toString() {
 		return String.format("CLinAdaptWithDP[dim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim,m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
-}
+	
+	public void setsdB(double s){
+		m_abNuB[1] = s;
+	}}
