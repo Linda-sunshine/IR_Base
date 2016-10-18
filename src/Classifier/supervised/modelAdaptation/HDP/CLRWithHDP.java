@@ -384,7 +384,8 @@ public class CLRWithHDP extends CLRWithDP {
 	public double estPsi(){
 		double sum = 0, lmProb[], logLikelihood = 0;
 		_HDPThetaStar theta;
-		
+		lmProb = new double[1000];
+
 		//Step 1: reset psi in each cluster
 		for(int k=0; k<m_kBar; k++){ 
 			theta = m_hdpThetaStars[k];
