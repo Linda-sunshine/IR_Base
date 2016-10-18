@@ -97,7 +97,7 @@ public abstract class _DocBase {
 	public _SparseFeature[] getSparse(){
 		return this.m_x_sparse;
 	}
-	
+
 	//get the sparse feature indices for this document
 	public int[] getIndices() {
 		int[] indices = new int[m_x_sparse.length];
@@ -144,8 +144,18 @@ public abstract class _DocBase {
 		calcTotalLength();
 	}
 	
+	// Added by Lin for language model.
+	_SparseFeature[] m_lm_x_sparse;
+	public void createLMSpVct(HashMap<Integer, Double> spVct){
+		m_lm_x_sparse = Utils.createSpVct(spVct);
+	}
+	
 	public void setSpVct(_SparseFeature[] x) {
 		m_x_sparse = x;
 		calcTotalLength();
+	}
+	
+	public _SparseFeature[] getLMSparse(){
+		return m_lm_x_sparse;
 	}
 }
