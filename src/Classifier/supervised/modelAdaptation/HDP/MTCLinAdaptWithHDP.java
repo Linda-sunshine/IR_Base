@@ -1,22 +1,17 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._SparseFeature;
-import structures._Review.rType;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
 /***
  * This class implements the MTCLinAdapt with HDP added.
@@ -50,11 +45,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		//construct the new global model for simplicity
 		m_supWeights = new double[m_featureSize+1];
 	}
-	
-//	public void setR2TradeOffs(double eta3, double eta4){
-//		m_eta3 = eta3;
-//		m_eta4 = eta4;
-//	}
+
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim*2 + m_dimSup*2;// we have global here.
@@ -82,6 +73,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		double R1 = super.calculateR1();
 				
 		R1 += m_G0.logLikelihood(m_supModel, m_eta3, m_eta4);
+		
 		// R1 by super model.
 		int offset = m_dim*2*m_kBar;
 		for(int k=0; k<m_dimSup; k++){
@@ -106,19 +98,18 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		int cIndex = theta.getIndex();
 		if(cIndex <0 || cIndex >= m_kBar)
 			System.err.println("Error,cannot find the theta star!");
-		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
 		
+		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
+		double[] Au = theta.getModel();
 		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(u);
 		
 		// Bias term for individual user.
 		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
 		g[offset + m_dim] -= delta;//b[0]
 
 		// Bias term for super user.
-		g[offsetSup] -= delta*theta.getModel()[0]*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
-		g[offsetSup + m_dimSup] -= delta*theta.getModel()[0]; //b_s[0] = a_i0*x_d0
+		g[offsetSup] -= delta*Au[0]*m_gWeights[0]; //a_s[0] = a_i0*w_g0*x_d0
+		g[offsetSup + m_dimSup] -= delta*Au[0]; //b_s[0] = a_i0*x_d0
 		
 		//Traverse all the feature dimension to calculate the gradient for both individual users and super user.
 		for(_SparseFeature fv: review.getSparse()){
@@ -128,8 +119,8 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 			g[offset + m_dim + k] -= delta*fv.getValue(); // x_di
 			
 			s = m_featureGroupMap4SupUsr[n];
-			g[offsetSup + s] -= delta*theta.getModel()[k]*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
-			g[offsetSup + m_dimSup + s] -= delta*theta.getModel()[k]*fv.getValue(); // a_i*x_di
+			g[offsetSup + s] -= delta*Au[k]*m_gWeights[n]*fv.getValue(); // a_i*w_gi*x_di
+			g[offsetSup + m_dimSup + s] -= delta*Au[k]*fv.getValue(); // a_i*x_di
 		}
 	}
 	
@@ -144,7 +135,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		
 		if (m_displayLv==2)
 			System.out.format("Gradient magnitude for clusters: %.5f, super model: %.5f\n", magC/m_kBar, magS);
-		return 0;
+		return magC + magS;
 	}
 	
 	// Feature group map for the super user.
@@ -192,25 +183,6 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		}
 		return Utils.logistic(sum);
 	}
-	
-//	@Override
-//	protected void setPersonalizedModel() {
-//		double[] As;
-//		int ki, ks;
-//		_DPAdaptStruct user;
-//
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_DPAdaptStruct) m_userList.get(i);
-//			As = user.getThetaStar().getModel();
-//			m_pWeights = new double[m_gWeights.length];
-//			for(int n=0; n<=m_featureSize; n++){
-//				ki = m_featureGroupMap[n];
-//				ks = m_featureGroupMap4SupUsr[n];
-//				m_pWeights[n] = As[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+As[ki+m_dim];
-//			}
-//			user.setPersonalizedModel(m_pWeights);
-//		}
-//	}
 	
 	// Assign the optimized models to the clusters.
 	@Override

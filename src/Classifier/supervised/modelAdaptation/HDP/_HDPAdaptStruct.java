@@ -73,9 +73,13 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
 					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
-				prob += Math.exp(probs[k]) * Utils.logistic(sum); 
-			}	
-			prob = Utils.logistic(sum);
+				
+				//to maintain numerical precision, compute the expectation in log space as well
+				if (k==0)
+					prob = probs[k] + Math.log(Utils.logistic(sum));
+				else
+					prob = Utils.logSum(prob, probs[k] + Math.log(Utils.logistic(sum)));
+			}
 		} else {
 			double As[];
 			for(k=0; k<probs.length; k++) {
@@ -86,13 +90,17 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 					m = m_featureGroupMap[n];
 					sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 				}
-				prob += Math.exp(probs[k]) * Utils.logistic(sum); 
+				
+				//to maintain numerical precision, compute the expectation in log space as well
+				if (k==0)
+					prob = probs[k] + Math.log(Utils.logistic(sum));
+				else
+					prob = Utils.logSum(prob, probs[k] + Math.log(Utils.logistic(sum)));
 			}
-			prob = Utils.logistic(sum); 
 		}
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
-		doc.m_prob += prob; //>0.5?1:0;
+		doc.m_prob += Math.exp(prob); //>0.5?1:0;
 		return prob;
 	}	
 }

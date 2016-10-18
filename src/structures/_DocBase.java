@@ -156,6 +156,9 @@ public abstract class _DocBase {
 	}
 	
 	public _SparseFeature[] getLMSparse(){
-		return m_lm_x_sparse;
+		if (m_lm_x_sparse!=null)
+			return m_lm_x_sparse;
+		else
+			return m_x_sparse;//this will make all old implementation consistent 
 	}
 }

@@ -3,9 +3,9 @@ package Classifier.supervised.modelAdaptation.HDP;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
@@ -14,7 +14,6 @@ import structures._Doc;
 import structures._HDPThetaStar;
 import structures._RankItem;
 import structures._Review;
-import structures._thetaStar;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
@@ -106,7 +105,7 @@ public class CLRWithHDP extends CLRWithDP {
 				//for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
 				sum = beta_sum;//sum = v*beta+\sum \pi_v(global language model)
-				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
+				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
 				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
 					sum += fv.getValue();	
@@ -163,7 +162,6 @@ public class CLRWithHDP extends CLRWithDP {
 			likelihood += calcLogLikelihoodX(r);
 			
 			//p(z=k|\gamma,\eta)
-
 			gamma_k = m_hdpThetaStars[k].getGamma();
 			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k);
 			
@@ -174,12 +172,10 @@ public class CLRWithHDP extends CLRWithDP {
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
 //			System.out.print("likehood:"+likelihood+"\t"+"logsum:"+logSum+"\n");
-		}
-		
+		}		
 		
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.println(k+"-----------------");
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
@@ -257,7 +253,7 @@ public class CLRWithHDP extends CLRWithDP {
 		} else {		
 			double L = 0;
 			for(_SparseFeature fv: r.getLMSparse())
-				L += fv.getValue() * psi[fv.getIndex()];
+				L += fv.getValue() * psi[fv.getIndex()];			
 			return L;
 		}
 	}
@@ -480,10 +476,7 @@ public class CLRWithHDP extends CLRWithDP {
 							for(_Review review:user.getReviews()){
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 
-									continue;	
-//								if(m_LNormFlag)
-//									m_fValue[core] -= calcLogLikelihoodY(review)/user.getAdaptationSize();
-//								else
+									continue;
 								m_fValue[core] -= calcLogLikelihoodY(review);
 
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
@@ -587,7 +580,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo();
+			printInfo(i%3==0);//no need to print out the details very often
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -653,7 +646,7 @@ public class CLRWithHDP extends CLRWithDP {
 			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
 			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		}
-		int count = 0;
+
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
@@ -670,19 +663,19 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = Utils.logSumOfExponentials(probs);
 				for(int k=0; k<probs.length; k++)
 					probs[k] -= logSum;
-				if(Utils.max(probs)==0) count++;
-				r.setClusterPosterior(probs);
+				r.setClusterPosterior(probs);//posterior in log space
 			}
 		}
-		if(count > 0)
-			System.err.println("Prob zero vector count:" + count);
 	}
 	
-	@Override
-	public void printInfo(){
+	public void printInfo(boolean printDetails){
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(5);		
+		
 		//clear the statistics
-		for(int i=0; i<m_kBar; i++) 
+		for(int i=0; i<m_kBar; i++) {
 			m_hdpThetaStars[i].resetCount();
+			clusterRanker.add(new _RankItem(i, m_hdpThetaStars[i].getMemSize()));//get the most popular clusters
+		}
 
 		//collect statistics across users in adaptation data
 		_HDPThetaStar theta = null;
@@ -694,15 +687,58 @@ public class CLRWithHDP extends CLRWithDP {
 					continue; // only touch the adaptation data
 				else{
 					theta = r.getHDPThetaStar();
-					if(r.getYLabel() == 1) theta.incPosCount(); 
-					else theta.incNegCount();
+					if(r.getYLabel() == 1) 
+						theta.incPosCount(); 
+					else 
+						theta.incNegCount();
 				}
 			}
 		}
+		
 		System.out.print("[Info]Clusters:");
 		for(int i=0; i<m_kBar; i++)
 			System.out.format("%s\t", m_hdpThetaStars[i].showStat());	
-		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+		
+		if (m_features == null)
+			System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+		else if (printDetails) {
+			System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
+
+			for(_RankItem it:clusterRanker)
+				printTopWords(m_hdpThetaStars[it.m_index]);			
+		}
+	}
+	
+	void printTopWords(_HDPThetaStar cluster) {
+		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
+		double[] phi = cluster.getModel();
+		double[] psi = cluster.getPsiModel();
+		
+		//we will skip the bias term!
+		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, phi[i]*Math.exp(psi[i-1])));//top positive words with expected polarity
+		
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+		
+		System.out.format("\n[negative]: ");
+		wordRanker.clear();
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, -phi[i]*Math.exp(psi[i-1])));//top negative words
+		
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+		
+		System.out.format("\n[popular]: ");
+		
+		wordRanker.clear();
+		for(int i=0; i<psi.length; i++) 
+			wordRanker.add(new _RankItem(i, psi[i]));//top negative words
+		
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[1+it.m_index], psi[it.m_index]);//NOTE: feature list would contain the BIAS term, which is not in our language model!
+		System.out.println();
 	}
 	
 	// Set the parameters.
