@@ -1,14 +1,6 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.HashMap;
-
-import Classifier.supervised.modelAdaptation.DirichletProcess.NormalPrior;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import structures._Doc;
-import structures._Review;
-import structures._SparseFeature;
-import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
@@ -16,7 +8,6 @@ import structures._SparseFeature;
 import utils.Utils;
 
 public class MTCLRWithHDP extends CLRWithHDP{
-	protected static double m_q = 1;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
 
 	public MTCLRWithHDP(int classNo, int featureSize,
@@ -25,6 +16,10 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		m_supWeights = new double[m_dim];
 	}
 
+	public MTCLRWithHDP(int classNo, int featureSize, String globalModel, double[] lm) {
+		super(classNo, featureSize, globalModel, lm);
+		m_supWeights = new double[m_dim];
+	}
 	@Override
 	protected void setThetaStars() {
 		super.setThetaStars();
@@ -45,7 +40,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 
 	@Override
 	public String toString() {
-		return String.format("MTCLRWithHDP[dim:%d,q:%.3f,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_q, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
+		return String.format("MTCLRWithHDP[dim:%d,lmDim:%d,q:%.3f,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_lmDim,m_q, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 
 	@Override
@@ -85,7 +80,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 		int offsetSup = m_dim*m_kBar;
 		double delta = weight * (r.getYLabel() - logit(r.getSparse(), r));
 //		if(m_LNormFlag)
-//			delta /= getAdaptationSize(user);
+//			delta /= getAdaptationSize(u);
 
 		//Bias term.
 		g[offset] -= delta; //x0=1, each cluster.
@@ -98,9 +93,4 @@ public class MTCLRWithHDP extends CLRWithHDP{
 			g[offsetSup + n] -= delta * fv.getValue() * m_q;// super model.
 		}
 	}
-	
-	public void setQ(double q){
-		m_q = q;
-	}
-
 }

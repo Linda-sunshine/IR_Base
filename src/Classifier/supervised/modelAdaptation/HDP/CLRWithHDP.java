@@ -37,7 +37,6 @@ public class CLRWithHDP extends CLRWithDP {
 	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
-	
 
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
 			double[] betas, double alpha, double beta, double eta) {
@@ -57,9 +56,17 @@ public class CLRWithHDP extends CLRWithDP {
 		setBetas(betas);
 	}
 	
+	public CLRWithHDP(int classNo, int featureSize, String globalModel, 
+			double[] betas) {
+		super(classNo, featureSize, globalModel);
+		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
+		m_stirlings = new HashMap<String, Double>();
+		setBetas(betas);
+	}
+	
 	@Override
 	public String toString() {
-		return String.format("CLRWithHDP[dim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim, m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
+		return String.format("CLRWithHDP[dim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
 	// Set the constant of \pi_v.
@@ -93,7 +100,6 @@ public class CLRWithHDP extends CLRWithDP {
 		_HDPAdaptStruct user;		
 		double L = 0, beta_sum = Utils.sumOfArray(m_betas), betaSum_lgamma = Utils.lgamma(beta_sum), sum = 0;
 		int index;
-		
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
@@ -101,11 +107,11 @@ public class CLRWithHDP extends CLRWithDP {
 				L = 0;
 				sum = beta_sum;//sum = v*beta+\sum \pi_v(global language model)
 				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0.
-				for(_SparseFeature fv: r.getSparse()) {
+				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
-					sum += fv.getTF();	
+					sum += fv.getValue();	
 					//log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
-					L += Utils.lgamma(fv.getTF() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
+					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
 				}
 				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
@@ -250,8 +256,8 @@ public class CLRWithHDP extends CLRWithDP {
 			return r.getL4NewCluster();
 		} else {		
 			double L = 0;
-			for(_SparseFeature fv: r.getSparse())
-				L += fv.getTF() * psi[fv.getIndex()];
+			for(_SparseFeature fv: r.getLMSparse())
+				L += fv.getValue() * psi[fv.getIndex()];
 			return L;
 		}
 	}
@@ -396,8 +402,8 @@ public class CLRWithHDP extends CLRWithDP {
 					continue;
 				
 				lmProb = r.getHDPThetaStar().getPsiModel();
-				for(_SparseFeature fv: r.getSparse())
-					lmProb[fv.getIndex()] += fv.getTF();
+				for(_SparseFeature fv: r.getLMSparse())
+					lmProb[fv.getIndex()] += fv.getValue();
 			}
 		}
 		
@@ -422,8 +428,8 @@ public class CLRWithHDP extends CLRWithDP {
 					continue;
 				
 				lmProb = r.getHDPThetaStar().getPsiModel();
-				for(_SparseFeature fv: r.getSparse())
-					logLikelihood += fv.getTF() * lmProb[fv.getIndex()];
+				for(_SparseFeature fv: r.getLMSparse())
+					logLikelihood += fv.getValue() * lmProb[fv.getIndex()];
 			}
 		}
 		return logLikelihood;
@@ -440,6 +446,10 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
+//				if(m_LNormFlag)
+//					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
+//				else
+					
 				fValue -= calcLogLikelihoodY(r);
 				gradientByFunc(user, r, 1); // calculate the gradient by the review.
 			}
@@ -471,8 +481,11 @@ public class CLRWithHDP extends CLRWithDP {
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 
 									continue;	
-								
+//								if(m_LNormFlag)
+//									m_fValue[core] -= calcLogLikelihoodY(review)/user.getAdaptationSize();
+//								else
 								m_fValue[core] -= calcLogLikelihoodY(review);
+
 								gradientByFunc(user, review, 1.0, this.m_gradient);//weight all the instances equally
 							}			
 						}
@@ -516,8 +529,10 @@ public class CLRWithHDP extends CLRWithDP {
 			System.err.println("Error,cannot find the HDP theta star!");
 		
 		int offset = m_dim*cIndex;
-		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));
-		
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));		
+//		if(m_LNormFlag)
+//			delta /= getAdaptationSize(u);
+
 		//Bias term.
 		g[offset] -= delta; //x0=1
 

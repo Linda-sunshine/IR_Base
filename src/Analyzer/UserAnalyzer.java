@@ -7,10 +7,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Doc;
 import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
@@ -32,9 +34,9 @@ public class UserAnalyzer extends DocAnalyzer {
 	double m_pCount[] = new double[3]; // to count the positive ratio in train/adapt/test
 	boolean m_enforceAdapt = false;
 	
-	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
+	public UserAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean b) 
 			throws InvalidFormatException, FileNotFoundException, IOException{
-		super(tokenModel, classNo, providedCV, Ngram, threshold);
+		super(tokenModel, classNo, providedCV, Ngram, threshold, b);
 		m_users = new ArrayList<_User>();
 	}
 	
@@ -55,9 +57,16 @@ public class UserAnalyzer extends DocAnalyzer {
 		m_enforceAdapt = enforceAdpt;
 	}
 	
-	//Load the features from a file and store them in the m_featurNames.@added by Lin.
+	// Load the features from a file and store them in the m_featurNames.@added by Lin.
 	@Override
 	protected boolean LoadCV(String filename) {
+		if(m_newCV){
+			return loadNewCV(filename);
+		} else
+			return loadOldCV(filename);
+		
+	}
+	protected boolean loadOldCV(String filename){
 		if (filename==null || filename.isEmpty())
 			return false;
 		
@@ -84,9 +93,39 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 			reader.close();
 			
-			System.out.format("Load %d %d-gram features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			System.out.format("Load %d %d-gram old features from %s...\n", m_featureNames.size(), m_Ngram, filename);
 			m_isCVLoaded = true;
 //			m_isCVStatLoaded = true;
+			return true;
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			return false;
+		}
+	}
+	
+	// Load the new cv.
+	protected boolean loadNewCV(String filename){
+		if (filename==null || filename.isEmpty())
+			return false;
+			
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+
+			m_Ngram = 1;//default value of Ngram
+
+			while ((line = reader.readLine()) != null) {
+				if (line.startsWith("#")){//comments
+					if (line.startsWith("#NGram")) {//has to be decoded
+						int pos = line.indexOf(':');
+						m_Ngram = Integer.valueOf(line.substring(pos+1));
+					}						
+				} else 
+					expandVocabulary(line);
+			}
+			reader.close();
+			System.out.format("Load %d %d-gram new features from %s...\n", m_featureNames.size(), m_Ngram, filename);
+			m_isCVLoaded = true;
 			return true;
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
@@ -157,6 +196,9 @@ public class UserAnalyzer extends DocAnalyzer {
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				allocateReviews(reviews);				
 				m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
+				review = reviews.get(0);
+				rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
 			}
 			reader.close();
 		} catch(IOException e){
@@ -250,25 +292,11 @@ public class UserAnalyzer extends DocAnalyzer {
 		}
 	}
 	
-	//Estimate a global language model.
-	// We traverse all review documents instead of using the global TF 
-	// since we did not roll back when we filter users with 1 review.
-	public double[] estimateGlobalLM(){
-		double[] lm = new double[getFeatureSize()];
-		double sum = 0;
+	public Collection<_Doc> mergeReviews(){
+		Collection<_Doc> rvws = new ArrayList<_Doc>();
 		for(_User u: m_users){
-			for(_Review r: u.getReviews()){
-				for(_SparseFeature fv: r.getSparse()){
-					lm[fv.getIndex()] += fv.getTF();
-					sum += fv.getTF();
-				}
-			}
+			rvws.addAll(u.getReviews());
 		}
-		for(int i=0; i<lm.length; i++){
-				lm[i] /= sum;
-				if(lm[i] == 0)
-					lm[i] = 0.0001;
-		}
-			return lm;
-		}
+		return rvws;
+	}
 }

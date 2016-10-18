@@ -3,6 +3,7 @@ package Classifier.supervised.modelAdaptation.HDP;
 import java.util.Collection;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
@@ -71,7 +72,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			for(k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
-					sum += MTCLRWithHDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
+					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
 				prob += Math.exp(probs[k]) * Utils.logistic(sum); 
 			}	
 			prob = Utils.logistic(sum);

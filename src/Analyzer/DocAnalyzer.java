@@ -52,6 +52,7 @@ public class DocAnalyzer extends Analyzer {
 
 	protected SimpleDateFormat m_dateFormatter = new SimpleDateFormat("MMMMM dd,yyyy");// standard date format for this project;
 	protected int m_stnSizeThreshold = 2;//minimal size of sentences
+	boolean m_newCV = false;// flag to indicate whether we are using the old cv or new one. 
 
 	//shall we have it here???
 	protected HashMap<String, Integer> m_posTaggingFeatureNameIndex;//Added by Lin
@@ -72,6 +73,21 @@ public class DocAnalyzer extends Analyzer {
 		m_releaseContent = true;
 	}
 	
+	//Constructor with TokenModel, ngram and fValue.
+	public DocAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, boolean b) 
+			throws InvalidFormatException, FileNotFoundException, IOException {
+		super(classNo, threshold);
+		m_tokenizer = new TokenizerME(new TokenizerModel(new FileInputStream(tokenModel)));
+		m_stemmer = new englishStemmer();
+		m_stnDetector = null; // indicating we don't need sentence splitting
+		
+		m_posTaggingFeatureNameIndex = new HashMap<String, Integer>();
+		m_Ngram = Ngram;
+		m_newCV = b;// added by Lin for using different cv.
+		m_isCVLoaded = LoadCV(providedCV);
+		m_stopwords = new HashSet<String>();
+		m_releaseContent = true;
+	}
 	//TokenModel + stnModel.
 	public DocAnalyzer(String tokenModel, String stnModel, int classNo, String providedCV, int Ngram, int threshold)
 			throws InvalidFormatException, FileNotFoundException, IOException {
