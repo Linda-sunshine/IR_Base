@@ -26,8 +26,8 @@ public class MyPreProcessMain {
 
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		String providedCV = null;
-		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
-
+//		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "/CoLinAdapt/Yelp";
 		int trainSize = 3; // "3"
 //		int userSize = 9; // "20"
 		String trainDir = String.format("./data/%s/Users_%dk", dataset, trainSize);
