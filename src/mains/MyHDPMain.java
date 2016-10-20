@@ -22,7 +22,7 @@ import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 
-public class MyDPMain {
+public class MyHDPMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -31,13 +31,13 @@ public class MyDPMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
-		int displayLv = 1;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -74,33 +74,27 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 		
+		double[] globalLM = analyzer.estimateGlobalLM();
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 		
 //		MTCLRWithHDP hdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		hdp.setQ(0.2);
 		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-		
-		double alpha = 1;
-		eta1 = 0.01; eta3 = 0.03;
-		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-		
-		dp.setLNormFlag(false);
-		dp.setAlpha(alpha);
-		dp.setsdA(0.2);
-		dp.setsdB(0.2);
-		dp.setR1TradeOffs(eta1, eta1);
-		dp.setR2TradeOffs(eta3, eta3);
-		dp.setNumberOfIterations(30);
-		
-		dp.loadUsers(analyzer.getUsers());
-		dp.setDisplayLv(displayLv);
-		dp.train();
-		dp.test();
-		long time = System.currentTimeMillis();
-		String model = "./data/"+dataset + time+"/models/";
-		dp.saveInfo(model);
-		
+
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.1);
+
+		hdp.setsdA(0.1);
+		double alpha = 1, eta = 0.1, beta = 0.1;
+		hdp.setConcentrationParams(alpha, eta, beta);
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setNumberOfIterations(30);
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
+		hdp.train();
+		hdp.test();
 		
 		for(_User u: analyzer.getUsers())
 			u.getPerfStat().clear();

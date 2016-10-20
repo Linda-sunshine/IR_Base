@@ -2,6 +2,7 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -263,5 +264,43 @@ public class _User {
 			values[i] = m_BoWProfile[i].m_value;
 		
 		return values;
+	}
+	
+	// added by Lin for CF.
+	
+	/**added by Lin for cf.**/
+	private HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
+	private double m_nDCG;
+	private double m_MAP;
+	
+	/***added by Lin for cf***/
+	public void setNDCG(double d){
+		m_nDCG = d;
+	}
+	public void setMAP(double m){
+		m_MAP = m;
+	}
+	public double getNDCG(){
+		return m_nDCG;
+	}
+	public double getMAP(){
+		return m_MAP;
+	}
+	public void addOneItemIDRatingPair(String item, int r){
+		m_itemIDRating.put(item, r);
+	}
+	public HashMap<String, Integer> getItemIDRating(){
+		return m_itemIDRating;
+	}
+	
+	public void removeOneReview(String prodID){
+		int index = 0;
+		for(_Review r: m_reviews){
+			if(r.getItemID().equals(prodID)){
+				index = m_reviews.indexOf(r);
+				break;
+			}
+		}
+		m_reviews.remove(index);
 	}
  }

@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -707,5 +710,38 @@ public class CLRWithDP extends LinAdapt {
 	
 	public void setQ(double q){
 		m_q = q;
+	}
+	
+	public void saveInfo(String model){
+		PrintWriter writer;
+		String filename;
+		File dir = new File(model);
+		_thetaStar theta;
+		double[] weight;
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				theta = m_thetaStars[i];
+				filename = String.format("%s/%d.classifier", model, theta.getIndex());
+				writer = new PrintWriter(new File(filename));
+				weight = theta.getModel();
+				for(int v=0; v<weight.length; v++){
+					if(v == weight.length -1)
+						writer.write(Double.toString(weight[i]));
+					writer.write(weight[v]+",");
+				}
+				writer.close();
+			}
+			writer = new PrintWriter(new File(model+"/ClusterMember.txt"));
+			for(_AdaptStruct u: m_userList){
+				_DPAdaptStruct user = (_DPAdaptStruct) u;
+				writer.write(user.getUserID()+"\t"+user.getThetaStar().getIndex()+"\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		
 	}
 }

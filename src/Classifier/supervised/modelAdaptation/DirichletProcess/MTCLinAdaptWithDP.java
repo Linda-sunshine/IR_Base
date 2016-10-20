@@ -80,7 +80,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	
 	@Override
 	protected void gradientByFunc(_AdaptStruct u, _Doc review, double weight, double[] g) {
-		_HDPAdaptStruct user = (_HDPAdaptStruct)u;
+		_DPAdaptStruct user = (_DPAdaptStruct)u;
 		
 		int n, k, s; // feature index
 		int cIndex = user.getThetaStar().getIndex();
@@ -89,8 +89,8 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), user)) * weight;
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(user);
+		if(m_LNormFlag)
+			delta /= getAdaptationSize(user);
 		
 		// Bias term for individual user.
 		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
@@ -203,7 +203,7 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	
 	@Override
 	public String toString() {
-		return String.format("CLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	//apply current model in the assigned clusters to users

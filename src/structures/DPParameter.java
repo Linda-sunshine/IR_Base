@@ -9,7 +9,7 @@ public class DPParameter {
 	public double m_sdB = 0.1;
 	
 	// Concentration parameter
-	public double m_alpha = 0.1;
+	public double m_alpha = 1;
 	public double m_eta = 1;
 	public double m_beta = 1;
 	

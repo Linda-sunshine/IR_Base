@@ -203,7 +203,7 @@ public class MultiTaskSVM extends ModelAdaptation {
 				}
 				pos /= user.getReviews().size();
 				neg /= user.getReviews().size();
-				if(pos == 1) count++;
+				if(pos == 1 || neg == 1) count++;
 				writer.write(String.format("%d\t(%.4f, %.4f)\t(%.4f, %.4f)\n", user.getReviews().size(), pos, neg, stat.getF1(1), stat.getF1(0)));
 			}
 			System.out.println(count);
