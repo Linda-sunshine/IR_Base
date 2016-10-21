@@ -5,10 +5,12 @@ package Classifier.supervised.modelAdaptation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -329,6 +331,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	@Override
 	public void saveModel(String modelLocation) {	
+		File dir = new File(modelLocation);
+		if(!dir.exists())
+			dir.mkdirs();
 		for(_AdaptStruct user:m_userList) {
 			try {
 	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
@@ -373,5 +378,20 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void debug(_Doc d) {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
+	}
+	
+	
+	public void savePerf(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			for(_AdaptStruct u: m_userList){
+				writer.write(String.format("%s\t%.5f\t%.5f\n", u.getUserID(), u.getPerfStat().getF1(0), u.getPerfStat().getF1(1)));
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
 	}
 }

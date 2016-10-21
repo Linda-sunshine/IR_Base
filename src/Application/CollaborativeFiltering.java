@@ -40,23 +40,16 @@ public class CollaborativeFiltering {
 	HashMap<String, Integer> m_userIDIndex; //Given a user ID, access the index of the user.
 	HashMap<String, ArrayList<Integer>> m_itemIDUserIndex;
 	HashMap<String, ArrayList<Integer>> m_userIDRdmNeighbors;
-	private Object m_userWeightsLock = null, m_similarityLock = null;// lock when collecting review statistics
+	private Object m_userWeightsLock = null, m_similarityLock = null, m_NDCGMAPLock = null;// lock when collecting review statistics
 	
+
+	
+	double m_avgNDCG, m_avgMAP;
+	double[] m_similarity, m_NDCGs, m_MAPs;//Assume we have a cache containing all the similarities of all pairs of users.
+	double[][] m_userWeights;
 	int[][] m_ranks;
 	Pair[][] m_realRanks; 
 	
-	public void setUserIDRdmNeighbors(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
-		m_userIDRdmNeighbors = userIDRdmNeighbors;
-	}
-	
-	double m_avgNDCG;
-	double m_avgMAP;
-
-	double[] m_similarity;//Assume we have a cache containing all the similarities of all pairs of users.
-	double[] m_NDCGs;
-	double[] m_MAPs;
-	double[][] m_userWeights;
-
 	boolean m_equalWeight; // The flag for considering weight or not.
 	boolean m_avgFlag; //The flag is used to decide whether we take all users' average as ranking score or not.
 	
@@ -94,6 +87,10 @@ public class CollaborativeFiltering {
 		}
 	}
 	
+	public void setUserIDRdmNeighbors(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+		m_userIDRdmNeighbors = userIDRdmNeighbors;
+	}
+	
 	public CollaborativeFiltering(ArrayList<_User> users, int time){
 		m_users = users;
 		m_featureSize = 0;
@@ -104,6 +101,8 @@ public class CollaborativeFiltering {
 		m_model = "BoW";
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
+		m_NDCGMAPLock = new Object();
+		init();
 	}
 	
 	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k, int time, String model){
@@ -118,6 +117,8 @@ public class CollaborativeFiltering {
 		m_model = model;
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
+		m_NDCGMAPLock = new Object();
+		init();
 	}
 
 	public void setAvgFlag(boolean b){
@@ -195,7 +196,7 @@ public class CollaborativeFiltering {
 			}
 		}
 			
-		System.out.format("%d products in tatal before removal.\n", m_itemIDUserIndex.size());
+		System.out.format("[Info]%d products in total before removal/", m_itemIDUserIndex.size());
 		ArrayList<String> prodIDs = new ArrayList<String>();
 		ArrayList<Integer> rmUserIndexes = new ArrayList<Integer>();
 		// Remove the items that are only purchased by one user.
@@ -222,10 +223,11 @@ public class CollaborativeFiltering {
 		// Collect all the reviews of all the users.
 		for (_User u : m_users)
 			m_totalReviews.addAll(u.getReviews());
-		System.out.format("%d products are left after removal.\n", m_itemIDUserIndex.size());
+		System.out.format("%d are left after removal.\n", m_itemIDUserIndex.size());
 	}
 	
 	public void constructNeighborhood() {
+		System.out.println("\n[Info]Construct user neighborhood...");
 		m_similarity = new double[m_users.size() * (m_users.size()-1)/2];
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -270,7 +272,7 @@ public class CollaborativeFiltering {
 			} 
 		}
 
-		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users...\n", m_sType, m_users.size());
+		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users.\n", m_sType, m_users.size());
 	}	
 	
 	public void loadUserWeights(String folder, final String suffix){
@@ -331,7 +333,7 @@ public class CollaborativeFiltering {
 				} 
 			}
 		}
-		System.out.format("%d users weights are loaded!", m_userWeights.length);
+		System.out.format("[Info]%d users weights are loaded from %s.", m_userWeights.length, folder);
 	}
 	
 	//If not weights provided, use BoW weights.
@@ -511,76 +513,16 @@ public class CollaborativeFiltering {
 		}
 	
 //		System.out.format("DCG:%.4f\tiDCG:%.4f\tAP:%.4f\t%.1f\n", DCG, iDCG, AP, count);
-		m_NDCGs[userIndex] = DCG/iDCG;
-		m_MAPs[userIndex] = AP/count;
+		synchronized(m_NDCGMAPLock){
+			m_NDCGs[userIndex] = DCG/iDCG;
+			m_MAPs[userIndex] = AP/count;
 		
-		m_ranks[userIndex] = rank;
-		m_realRanks[userIndex] = realRank;
+			m_ranks[userIndex] = rank;
+			m_realRanks[userIndex] = realRank;
+		}
 		u.setNDCG(m_NDCGs[userIndex]);	
 		u.setMAP(m_MAPs[userIndex]);
 	}
-//	public void calculatenDCGMAP(_User u){
-//		
-//		int randomIndex = 0;
-//		int reviewSize = u.getReviewSize();
-//		int userIndex = m_userIDIndex.get(u.getUserID());
-//		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
-//		
-//		_Review review;
-//		_Review[] reviews = new _Review[reviewSize*m_time];
-//		int[] rank = new int[reviewSize];
-//		Pair[] realRank = new Pair[reviewSize];
-//		
-//		// Copy the user's own reviews in to the reviews array.
-//		Arrays.copyOfRange(reviews, 0, reviewSize);
-//		
-//		//Calculate the ideal rank and real rank.
-//		for(int i=0; i<reviews.length; i++){
-//			if(i < reviewSize){
-//				review = u.getReviews().get(i);
-//				rank[i] = review.getYLabel();
-//				realRank[i]=new Pair(rank[i], calculateRankScore(u, review));
-//			} else{
-//				randomIndex = (int) (Math.random() * m_totalReviews.size());
-//				review = m_totalReviews.get(randomIndex);
-//				while(u.getReviews().contains(review)){
-//					randomIndex = (int) (Math.random() * m_totalReviews.size());
-//					review = m_totalReviews.get(randomIndex);
-//				}	
-//				rank[i] = 0;
-//				realRank[i] = new Pair(rank[i], calculateRankScore(u, review));
-//			}
-//		}
-//		
-//		rank = sortPrimitives(rank);
-//		realRank = mergeSort(realRank);
-////		Collections.sort(realRank, new Comparator<Pair>(){
-////			public int compare(Pair p1, Pair p2){
-////				if (p1.getValue() > p2.getValue())
-////					return -1;
-////				else if (p1.getValue() < p2.getValue())
-////					return 1;
-////				else 
-////					return 0;
-////			}
-////		});
-//		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
-//		for(int i=0; i<rank.length; i++){
-//			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
-//			DCG += (Math.pow(2, realRank[i].getLabel())-1)/(Math.log(i+2));
-//			if(realRank[i].getLabel() >= 1){
-//				PatK = (count+1)/((double)i+1);
-//				AP += PatK;
-//				count++;
-//			}
-//		}
-//	
-//		m_NDCGs[userIndex] = DCG/iDCG;
-//		m_MAPs[userIndex] = AP/count;
-//		
-//		u.setNDCG(m_NDCGs[userIndex]);	
-//		u.setMAP(m_MAPs[userIndex]);
-//	}
 	public Pair[] mergeSort(Pair[] rank){
 		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
 		for(int i=0; i<rank.length; i=i+2){
@@ -642,9 +584,44 @@ public class CollaborativeFiltering {
 	
 	// The function for calculating all NDCGs and MAPs.
 	public void calculatAllNDCGMAP(){
-		for(_User u: m_users)
-			calculatenDCGMAP(u);
+		System.out.println("[Info]Start calculating NDCG and MAP...\n");
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_User u;
+					try {
+						for (int i = 0; i + core <m_users.size(); i += numOfCores) {
+							if(i%500==0) System.out.print(".");
+							u = m_users.get(i+core);
+							calculatenDCGMAP(u);
+						}
+					} catch(Exception ex) {
+							ex.printStackTrace(); 
+					}
+				}
+					
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			threads.get(k).start();
+		}
+			
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
 	}
+
 	
 	public void calcuateSaveAvgNDCGMAP(String fileName) throws FileNotFoundException{
 		System.out.println("Start writing NDCG and MAPs.");

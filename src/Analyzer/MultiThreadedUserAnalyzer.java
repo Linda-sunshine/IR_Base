@@ -128,12 +128,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			while((line = reader.readLine()) != null){
 				productID = line;
 				source = reader.readLine(); // review content
-				category = reader.readLine(); // review category
+//				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
-				timestamp = Long.valueOf(reader.readLine());
+//				timestamp = Long.valueOf(reader.readLine());
 
 				// Construct the new review.
-				if(ylabel != 3 && category.equals("Books")){
+				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
 					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
 					if(AnalyzeDoc(review,core)) //Create the sparse vector for the review.
