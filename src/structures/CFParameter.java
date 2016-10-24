@@ -2,7 +2,7 @@ package structures;
 
 public class CFParameter {
 	
-	public String m_data = "YelpNew";
+	public String m_data = "Amazon";
 	public int m_t = 2;
 	public int m_k = 6;
 	

@@ -114,6 +114,6 @@ public class MyDPExecution {
 		System.out.println(time);
 //		String model = "./data/"+param.m_data + time+"/models/";
 		String model = "/if15/lg5bt/dpModels/"+param.m_data + time+"/models/";
-		adaptation.saveInfo(model);
+		adaptation.saveClusterModels(model);
 	}
 }

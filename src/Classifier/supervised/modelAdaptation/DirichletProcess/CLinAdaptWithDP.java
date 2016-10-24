@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -23,6 +24,8 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		loadFeatureGroupMap(featureGroupMap);
 		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
 		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
+		Arrays.fill(m_thetaStars, null);
+
 	}
 	
 	@Override

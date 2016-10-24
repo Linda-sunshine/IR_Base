@@ -1,10 +1,12 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.util.Arrays;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
+import structures._thetaStar;
 import utils.Utils;
 /**
  * In the class, we extend the CLR to multi-task learning.
@@ -92,4 +94,14 @@ public class MTCLRWithDP extends CLRWithDP {
 	public String toString() {
 		return String.format("MTCLRWithDP[dim:%d,q:%.4f,M:%d,alpha:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_q, m_M, m_alpha, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}	
+	
+	@Override
+	protected void setPersonalizedModel() {
+		_DPAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			Utils.add2Array(user.getThetaStar().getModel(), m_supWeights, m_q);
+			user.setPersonalizedModel(user.getThetaStar().getModel());
+		}
+	}
 }

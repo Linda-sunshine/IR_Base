@@ -128,9 +128,9 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			while((line = reader.readLine()) != null){
 				productID = line;
 				source = reader.readLine(); // review content
-//				category = reader.readLine(); // review category
+				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
-//				timestamp = Long.valueOf(reader.readLine());
+				timestamp = Long.valueOf(reader.readLine());
 
 				// Construct the new review.
 				if(ylabel != 3){

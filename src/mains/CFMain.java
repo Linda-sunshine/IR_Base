@@ -20,7 +20,7 @@ public class CFMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -43,22 +43,37 @@ public class CFMain {
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
 		
 		String suffix = "classifer";
-		String[] models = new String[]{"mtclindp_0.5_1", "mtclindp_0.5_2", "mtclindp_0.5_3", "mtclindp_0.5_4",
-				"clindp_0.5_1", "clindp_0.5_2", "clinkmeans_0.5_1", "clinkmeans_0.5_2",
-				"mtsvm_0.5_1", "clrdp_0.5_1", "mtclrdp_0.5_1", "linadapt_0.5_1"};
-
+		String[] models;
+		if(dataset.equals("Amazon")){
+			models = new String[]{"avg", "mtclindp_0.5_1", "mtclindp_0.5_2", "mtclindp_0.5_3", "mtclindp_0.5_4",
+					"clindp_0.5_1", "clindp_0.5_2", "clinkmeans_0.5_1", "clinkmeans_0.5_2", 
+					"mtsvm_0.5_1", "clrdp_0.5_1", "mtclrdp_0.5_1", "linadapt_0.5_1"};
+		}else{
+			models = new String[]{"avg", "mtclindp_0.5_1", "mtclindp_0.5_2", "mtclindp_0.5_3",
+				"clindp_0.5_1", "clinkmeans_0.5_1", "mtsvm_0.5_1", 
+				"clrdp_0.5_1", "mtclrdp_0.5_1", "linadapt_0.5_1"};
+		}
+		
 		double[][] performance = new double[models.length][2];
 		for(int m=0; m<models.length; m++){
 			model = models[m];
-			dir = String.format("/home/lin/DataWWW2017/%s/CF/%s_%s", dataset, dataset, model);
-//			dir = String.format("/if15/lg5bt/DataWWW2017/%s/CF/%s_%s", dataset, dataset, model);
 			System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 			CollaborativeFiltering cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t, model);
 			cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
-			cf.loadWeights(dir, suffix);
+			
+			if(model.equals("avg"))
+				cf.setAvgFlag(true);
+			else{
+				dir = String.format("/home/lin/DataWWW2017/%s/CF/%s_%s", dataset, dataset, model);
+//				dir = String.format("/if15/lg5bt/DataWWW2017/%s/CF/%s_%s", dataset, dataset, model);
+				cf.loadWeights(dir, suffix);
+			}
 			cf.calculatAllNDCGMAP();
+			String perf = String.format("perf_%s_time_%d_top_%d.txt", model, t, k);
+			cf.savePerf(perf);
 			cf.calculateAvgNDCGMAP();
-			performance[m][0] =  cf.getAvgNDCG();
+//			System.out.println(cf.getItemStat());
+			performance[m][0] = cf.getAvgNDCG();
 			performance[m][1] = cf.getAvgMAP();
 		}
 		

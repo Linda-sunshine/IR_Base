@@ -142,9 +142,6 @@ public class CollaborativeFiltering {
 		for(int i=0; i<m_users.size(); i++){
 			m_userIDs[i] = m_users.get(i).getUserID();
 		}
-	}
-	
-	public void loadWeights(String weightFile, String suffix){
 		
 		m_NDCGs = new double[m_users.size()];
 		m_MAPs = new double[m_users.size()];
@@ -153,6 +150,9 @@ public class CollaborativeFiltering {
 		
 		m_avgNDCG = 0;
 		m_avgMAP = 0;
+	}
+	
+	public void loadWeights(String weightFile, String suffix){
 		loadUserWeights(weightFile, suffix);
 		constructNeighborhood();
 		checkSimi();
@@ -689,5 +689,19 @@ public class CollaborativeFiltering {
 			avg += m_itemIDUserIndex.get(itemID).size();
 		}
 		return avg/ m_itemIDUserIndex.size();
+	}
+	
+	public void savePerf(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			for(int i=0; i<m_NDCGs.length; i++){
+				writer.write(String.format("%s\t%.4f\t%.4f\n", m_userIDs[i], m_NDCGs[i], m_MAPs[i]));
+			}
+			writer.close();
+			
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

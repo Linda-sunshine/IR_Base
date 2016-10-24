@@ -1,6 +1,8 @@
 package structures;
 
-public class _thetaStar {
+import java.util.ArrayList;
+
+public class _thetaStar implements Comparable<_thetaStar> {
 	int m_index;
 	int m_dim;
 	int m_memSize;
@@ -9,7 +11,11 @@ public class _thetaStar {
 	double m_proportion;
 	
 	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
+	ArrayList<double[]> m_betas = new ArrayList<double[]>();
 	
+	public void addOneBeta(double[] b){
+		m_betas.add(b);
+	}
 	public _thetaStar(int dim){
 		m_dim = dim;
 		m_memSize = 0;
@@ -59,5 +65,13 @@ public class _thetaStar {
 	
 	public String showStat() {
 		return String.format("%d(%.2f,%.1f)", m_memSize, m_pCount/(m_pCount+m_nCount), (m_pCount+m_nCount)/m_memSize);
+	}
+	@Override
+	public int compareTo(_thetaStar o) {
+		return o.getMemSize() - m_memSize;
+	}
+	
+	public ArrayList<double[]> getAllModels(){
+		return m_betas;
 	}
 }

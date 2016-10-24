@@ -1,14 +1,20 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
+import structures._thetaStar;
 import utils.Utils;
 /***
  * Linear transformation matrix with DP.
@@ -193,14 +199,37 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	}
 	
 	// Assign the optimized models to the clusters.
+//	@Override
+//	protected void setThetaStars(){
+//		super.setThetaStars();
+//		
+//		// Assign model to super user.
+//		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
+//	}
+	
 	@Override
 	protected void setThetaStars(){
-		super.setThetaStars();
-		
+		double[] beta_cur, beta_pre, sup_pre;
+		for(int i=0; i<m_kBar; i++){
+			beta_cur = m_thetaStars[i].getModel();
+			beta_pre = Arrays.copyOf(beta_cur, beta_cur.length);
+			m_thetaStars[i].addOneBeta(beta_pre);
+			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].getModel(), 0, m_dim*2);
+		}		
 		// Assign model to super user.
+		sup_pre = Arrays.copyOf(m_supModel, m_supModel.length);
+		m_supModels.add(mapSup(sup_pre));
 		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
 	}
-	
+	public double[] mapSup(double[] As){
+		double[] sup = new double[m_featureSize+1];
+		int ks;
+		for(int n=0; n<=m_featureSize; n++){
+			ks = m_featureGroupMap4SupUsr[n];
+			sup[n] = As[ks]*m_gWeights[n] + As[ks+m_dimSup];
+		}		
+		return sup;
+	}
 	@Override
 	public String toString() {
 		return String.format("MTCLinAdaptWithDP[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
@@ -214,4 +243,86 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		
 		super.evaluateModel();	
 	}
+	@Override
+	public void saveClusterModels(String clusterdir){
+	
+		PrintWriter writer;
+		String filename;
+		File dir = new File(clusterdir);
+		double[] Ac;
+		int ki, ks;
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				Ac = m_thetaStars[i].getModel();
+				m_pWeights = new double[m_gWeights.length];
+				for(int n=0; n<=m_featureSize; n++){
+					ki = m_featureGroupMap[n];
+					ks = m_featureGroupMap4SupUsr[n];
+					m_pWeights[n] = Ac[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+Ac[ki+m_dim];
+				}
+				filename = String.format("%s/%d.classifier", clusterdir, m_thetaStars[i].getIndex());
+				writer = new PrintWriter(new File(filename));
+				for(int v=0; v<m_pWeights.length; v++){
+					if(v == m_pWeights.length-1)
+						writer.write(Double.toString(m_pWeights[v]));
+					else
+						writer.write(m_pWeights[v]+",");
+				}
+				writer.close();
+			}
+		} catch (IOException e){
+				e.printStackTrace();
+		}
+	}
+	ArrayList<double[]> m_supModels = new ArrayList<double[]>();
+	public void writeNorms(String supFile, String clusterFile, int k){
+		ArrayList<_thetaStar> thetas = new ArrayList<_thetaStar>();
+		for(int i=0; i<m_kBar; i++)
+			thetas.add(m_thetaStars[i]);
+		
+		Collections.sort(thetas);
+		PrintWriter writer;
+		double[] Ac;
+		int size = m_supModels.size();
+		ArrayList<double[]> Acs;
+		double[] wc = new double[m_featureSize+1];
+		try{
+			for(int i=0; i<k; i++){
+				writer = new PrintWriter(new File(clusterFile + "_" + i));
+				if(thetas.get(i).getAllModels().size() != size)
+					continue;
+				Acs = thetas.get(i).getAllModels();
+				for(int j=0; j<Acs.size(); j++){
+					Ac = Acs.get(j);
+					wc = mapCluster(Ac, j);
+					for(double w: wc)
+						writer.write(w+",");
+					writer.write("\n");
+				}
+				writer.close();
+			}
+			writer = new PrintWriter(new File(supFile));
+			for(double[] ws: m_supModels){
+				for(double w: ws)
+					writer.write(w+",");
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	public double[] mapCluster(double[] Ac, int j){
+		double[] wc = new double[m_featureSize+1];
+		double[] ws = m_supModels.get(j);
+		int kc;
+		for(int i=0; i<=m_featureSize; i++){
+			kc = m_featureGroupMap[i];
+			wc[i] = Ac[kc]*ws[i]+Ac[kc+m_dim];
+		}
+		return wc;
+	}
+
 }

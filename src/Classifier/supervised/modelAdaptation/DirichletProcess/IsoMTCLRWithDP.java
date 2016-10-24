@@ -3,27 +3,24 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-
-import cern.jet.random.tfloat.FloatUniform;
-
 import structures._PerformanceStat;
 import structures._Review;
 import structures._thetaStar;
 import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import cern.jet.random.tfloat.FloatUniform;
 
-public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
-	
+public class IsoMTCLRWithDP extends MTCLRWithDP {
+
+	public IsoMTCLRWithDP(int classNo, int featureSize,
+			HashMap<String, Integer> featureMap, String globalModel) {
+		super(classNo, featureSize, featureMap, globalModel);
+		// TODO Auto-generated constructor stub
+	}
 	boolean m_allFlag = false;
 	int m_threshold = 1; // how many reviews will be used for assignment.
-	
-	public IsoMTCLinAdaptWithDP(int classNo, int featureSize,
-			HashMap<String, Integer> featureMap, String globalModel,
-			String featureGroupMap, String featureGroup4Sup) {
-		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, featureGroup4Sup);
-	}
 
 	public void setClusterAssignThreshold(int t){
 		m_threshold = t;
@@ -31,7 +28,7 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 	public void setAllFlag(boolean b){
 		m_allFlag = b;
 	}
-	
+
 	// The main MCMC algorithm, assign each user to clusters.
 	protected void calculate_E_step() {
 		_thetaStar curThetaStar;
@@ -242,9 +239,6 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 	//apply current model in the assigned clusters to users
 		protected void evaluateModel() {
 			System.out.println("[Info]Accumulating evaluation results during sampling...");
-			//apply current model in the assigned clusters to users
-			for(int i=0; i<m_featureSize+1; i++)
-				m_supWeights[i] = getSupWeights(i);
 				
 			//calculate cluster posterior p(c|u)
 			calculateClusterProbPerUser();
@@ -302,4 +296,5 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 				} 
 			}
 		}
+
 }

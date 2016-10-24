@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
@@ -144,5 +145,29 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	
 	public int getLMFeatureSize(){
 		return m_lmFeatureNames.size();
+	}
+	
+	public void getStat(){
+		ArrayList<Integer> medians = new ArrayList<Integer>();
+		double pos = 0, total = 0;
+		for(_User u: m_users){
+			medians.add(u.getReviewSize());
+			for(_Review r: u.getReviews()){
+				if(r.getYLabel() == 1)
+					pos++;
+				total++;
+			}
+		}
+		Collections.sort(medians);
+		double median = 0;
+		if(medians.size() % 2 == 0)
+			median = (medians.get(medians.size()/2)+medians.get(medians.size()/2-1))/2;
+		else 
+			median = medians.get(medians.size()/2);
+		System.out.println("median: " + median);
+		System.out.println("pos: " + pos);
+		System.out.println("total: " + total);
+		System.out.println("pos ratio: " + pos/total);
+
 	}
 }
