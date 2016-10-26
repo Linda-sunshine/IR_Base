@@ -284,11 +284,15 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		double logLikelihood = 0;
 		for(_Doc d:sampleTestSet){
 			estThetaInDoc(d);
+			
+		}
+		for(_Doc d:sampleTestSet){
 			if(d instanceof _ParentDoc)
 				logLikelihood += cal_logLikelihood_Perplexity4Parent(d);
 			else
-				logLikelihood += cal_logLikelihood_Perplexity4Child(d);
+				logLikelihood += cal_logLikelihood_Perplexity4Child(d);	
 		}
+		
 		return logLikelihood;
 	}
 

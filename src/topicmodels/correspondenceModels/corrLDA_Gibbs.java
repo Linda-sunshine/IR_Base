@@ -241,8 +241,8 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 		for(_ChildDoc cDoc: pDoc.m_childDocs){
 			
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
-//			testLength = cDoc.getTotalDocLength();
-			testLength = 0;
+			testLength = cDoc.getTotalDocLength();
+//			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			sampleTestSet.add(cDoc);
 		}

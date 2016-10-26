@@ -64,7 +64,7 @@ public class TopicModelMain {
 		String topicmodel = "LDAGibbs4AC_test";
 
 		String category = "tablet";
-		int number_of_topics = 60;
+		int number_of_topics = 5;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -73,7 +73,7 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
@@ -97,7 +97,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		 articleType = "Yahoo"; 
+//		 articleType = "Yahoo"; 
 
 //		articleType = "APP";
 		
@@ -333,7 +333,7 @@ public class TopicModelMain {
 						ksi, tau);
 
 			}else if(topicmodel.equals("DCMLDA4AC_test")){
-				number_of_topics = 15;
+				number_of_topics = 5;
 				converge = 1e-3;
 				double ksi = 800;
 				double tau = 0.7;
