@@ -480,6 +480,8 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 		} while (++i < this.number_of_iteration);
 		
 		for (int j = 0; j < number_of_iteration; j++) {
+			init();
+			multithread_E_step();
 			calculate_M_step(j);
 		}
 

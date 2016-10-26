@@ -61,7 +61,7 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test, DCMCorrLDA_Multi_EM
-		String topicmodel = "LDAGibbs4AC_test";
+		String topicmodel = "DCMLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 60;
@@ -73,10 +73,11 @@ public class TopicModelMain {
 		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
 		int varIter = 10;
 		double varConverge = 1e-5;
-		int topK = 20, number_of_iteration = 50, crossV = 10;
+		int topK = 20, number_of_iteration = 50, crossV = 1;
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
+
 		gibbs_iteration = 500;
 		gibbs_lag = 20;
 		displayLap = 20;
@@ -97,7 +98,7 @@ public class TopicModelMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		 articleType = "Yahoo"; 
+		// articleType = "Yahoo";
 
 //		articleType = "APP";
 		
@@ -184,11 +185,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(commentFolder, suffix);
+		// analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(commentFolder, suffix);
 
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+		// analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
@@ -302,6 +303,9 @@ public class TopicModelMain {
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
+				String priorFile = "./data/Features/" + articleType
+						+ "TopicWord.txt";
+				model.LoadPrior(priorFile, eta);
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
 				number_of_topics = 15;
 				// in gibbs sampling, no need to compute

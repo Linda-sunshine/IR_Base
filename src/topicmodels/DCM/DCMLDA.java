@@ -1,9 +1,14 @@
 package topicmodels.DCM;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -56,6 +61,74 @@ public class DCMLDA extends LDA_Gibbs {
 
 	}
 
+	public void LoadPrior(String fileName, double eta) {
+		if (fileName == null || fileName.isEmpty()) {
+			return;
+		}
+
+		try {
+
+			if (word_topic_prior == null) {
+				word_topic_prior = new double[number_of_topics][vocabulary_size];
+			}
+
+			for (int k = 0; k < number_of_topics; k++)
+				Arrays.fill(word_topic_prior[k], 0);
+
+			String tmpTxt;
+			String[] lineContainer;
+			String[] featureContainer;
+			int tid = 0;
+
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for (int i = 0; i < m_corpus.getFeatureSize(); i++) {
+				featureNameIndex.put(m_corpus.getFeature(i),
+						featureNameIndex.size());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					new FileInputStream(fileName), "UTF-8"));
+
+			while ((tmpTxt = br.readLine()) != null) {
+				tmpTxt = tmpTxt.trim();
+				if (tmpTxt.isEmpty())
+					continue;
+
+				lineContainer = tmpTxt.split("\t");
+
+				tid = Integer.parseInt(lineContainer[0]);
+				for (int i = 1; i < lineContainer.length; i++) {
+					featureContainer = lineContainer[i].split(":");
+
+					String featureName = featureContainer[0];
+					double featureProb = Double
+							.parseDouble(featureContainer[1]);
+
+					int featureIndex = featureNameIndex.get(featureName);
+
+					word_topic_prior[tid][featureIndex] = featureProb;
+				}
+			}
+
+			System.out.println("prior is added");
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void imposePrior() {
+		if (word_topic_prior != null) {
+			Arrays.fill(m_totalBeta, 0);
+			for (int k = 0; k < number_of_topics; k++) {
+				for (int v = 0; v < vocabulary_size; v++) {
+					m_beta[k][v] = word_topic_prior[k][v];
+					m_totalBeta[k] += m_beta[k][v];
+				}
+			}
+		}
+	}
+
 	public void EM() {
 		System.out.format("Starting %s...\n", toString());
 
@@ -87,7 +160,7 @@ public class DCMLDA extends LDA_Gibbs {
 					+ (eEndTime - eStartTime));
 
 			long mStartTime = System.currentTimeMillis();
-			calculate_M_step(i, weightFolder);
+			updateParameter(i, weightFolder);
 			long mEndTime = System.currentTimeMillis();
 
 			// System.out.println("per iteration m step time\t"
@@ -130,6 +203,12 @@ public class DCMLDA extends LDA_Gibbs {
 						// many cases
 		} while (++i < this.number_of_iteration);
 
+		for (int j = 0; j < number_of_iteration; j++) {
+			init();
+			for (_Doc d : m_trainSet)
+				calculate_E_step(d);
+			calculate_M_step(j);
+		}
 		finalEst();
 
 		long endtime = System.currentTimeMillis() - starttime;
@@ -164,8 +243,9 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 
 			// allocate memory and randomize it
+			// ((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
 			d.setTopics4Gibbs(number_of_topics, 0);
-
+			
 			for (_Word w : d.getWords()) {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
