@@ -85,10 +85,11 @@ public class DCMLDA_multithread extends DCMLDA{
 					int docID = d.getID();
 					totalBetaDenominator += Utils.digamma(totalBeta+d.m_sstat[tid])-digBeta;
 					for(int v=0; v<vocabulary_size; v++){
-						wordNum += m_docWordTopicStats[docID][tid][v];
-						wordNum4V[v] += m_docWordTopicStats[docID][tid][v];
-						
-						totalBetaNumerator[v] += Utils.digamma(param[v]+m_docWordTopicStats[docID][tid][v]);
+						// wordNum += m_docWordTopicStats[docID][tid][v];
+						// wordNum4V[v] += m_docWordTopicStats[docID][tid][v];
+						//
+						// totalBetaNumerator[v] +=
+						// Utils.digamma(param[v]+m_docWordTopicStats[docID][tid][v]);
 						totalBetaNumerator[v] -= Utils.digamma(param[v]);
 					}
 				}

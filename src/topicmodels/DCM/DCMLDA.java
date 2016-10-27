@@ -152,7 +152,7 @@ public class DCMLDA extends LDA_Gibbs {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
-				calculate_M_step(j);
+				// calculate_M_step(j);
 			}
 			long endTime = System.currentTimeMillis();
 
@@ -164,7 +164,7 @@ public class DCMLDA extends LDA_Gibbs {
 			endTime = System.currentTimeMillis();
 
 			 System.out.println("per iteration m step time\t"
-			 + (endTime - startTime));
+					+ (startTime - endTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

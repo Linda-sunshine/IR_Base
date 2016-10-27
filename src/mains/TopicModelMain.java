@@ -186,7 +186,7 @@ public class TopicModelMain {
 //		
 		// analyzer.LoadParentDirectory(articleFolder, suffix);
 		analyzer.LoadDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(commentFolder, suffix);
+		// analyzer.LoadDirectory(commentFolder, suffix);
 
 		// analyzer.LoadChildDirectory(commentFolder, suffix);
 
@@ -302,9 +302,9 @@ public class TopicModelMain {
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
-				String priorFile = "./data/Features/" + articleType
-						+ "TopicWord.txt";
-				model.LoadPrior(priorFile, eta);
+				// String priorFile = "./data/Features/" + articleType
+				// + "TopicWord.txt";
+				// model.LoadPrior(priorFile, eta);
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
 				number_of_topics = 15;
 				// in gibbs sampling, no need to compute
