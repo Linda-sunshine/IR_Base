@@ -13,6 +13,7 @@ import java.util.HashMap;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._Doc4DCMLDA;
 import structures._RankItem;
 import structures._Word;
 import topicmodels.LDA.LDA_Gibbs;
@@ -28,8 +29,6 @@ public class DCMLDA extends LDA_Gibbs {
 	 * in the d.m_sstat
 	 */
 
-	protected double[][][] m_docWordTopicProb;
-	protected double[][][] m_docWordTopicStats;
 	// double[][] m_docTopicStats;
 
 	/**
@@ -111,7 +110,7 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 
 			System.out.println("prior is added");
-
+			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -148,23 +147,24 @@ public class DCMLDA extends LDA_Gibbs {
 		int i = 0, displayCount = 0;
 		do {
 
-			long eStartTime = System.currentTimeMillis();
+			long startTime = System.currentTimeMillis();
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
+				calculate_M_step(j);
 			}
-			long eEndTime = System.currentTimeMillis();
+			long endTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
+					+ (startTime - endTime));
 
-			long mStartTime = System.currentTimeMillis();
+			startTime = System.currentTimeMillis();
 			updateParameter(i, weightFolder);
-			long mEndTime = System.currentTimeMillis();
+			endTime = System.currentTimeMillis();
 
-			// System.out.println("per iteration m step time\t"
-			// + (mEndTime - mStartTime));
+			 System.out.println("per iteration m step time\t"
+			 + (endTime - startTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -223,11 +223,6 @@ public class DCMLDA extends LDA_Gibbs {
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
-		m_docWordTopicProb = new double[m_corpusSize][number_of_topics][vocabulary_size];
-		m_docWordTopicStats = new double[m_corpusSize][number_of_topics][vocabulary_size];
-
-		// m_docTopicStats = new double[corpusSize][number_of_topics];
-
 		m_alpha = new double[number_of_topics];
 		m_beta = new double[number_of_topics][vocabulary_size];
 
@@ -237,21 +232,14 @@ public class DCMLDA extends LDA_Gibbs {
 		m_alphaAuxilary = new double[number_of_topics];
 
 		for (_Doc d : collection) {
-			int docID = d.getID();
-			for (int k = 0; k < number_of_topics; k++) {
-				Arrays.fill(m_docWordTopicStats[docID][k], 0);
-			}
-
+			((_Doc4DCMLDA)d).setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
 			// allocate memory and randomize it
 			// ((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
-			d.setTopics4Gibbs(number_of_topics, 0);
 			
 			for (_Word w : d.getWords()) {
 				int wid = w.getIndex();
 				int tid = w.getTopic();
 				word_topic_sstat[tid][wid] ++;
-				m_docWordTopicStats[docID][tid][wid]++;
-
 			}
 		}
 
@@ -261,17 +249,19 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	public double calculate_E_step(_Doc d) {
-		d.permutation();
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
+		DCMDoc.permutation();
 		double p;
 		int wid, tid;
-		int docID = d.getID();
-		for(_Word w:d.getWords()) {
+		int docID = DCMDoc.getID();
+		for(_Word w:DCMDoc.getWords()) {
 			wid = w.getIndex();
 			tid = w.getTopic();
 			
 			//remove the word's topic assignment
-			d.m_sstat[tid]--;
-			m_docWordTopicStats[docID][tid][wid]--;
+			DCMDoc.m_sstat[tid]--;
+			DCMDoc.m_wordTopic_stat[tid][wid]--;
 			
 			if(m_collectCorpusStats)
 				word_topic_sstat[tid][wid] --;
@@ -279,10 +269,10 @@ public class DCMLDA extends LDA_Gibbs {
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
-				double term1 = topicInDocProb(tid, d);
-				term1 = wordTopicProb(tid, wid, d);
-				m_topicProbCache[tid] = topicInDocProb(tid, d)
-						* wordTopicProb(tid, wid, d);
+				double term1 = topicInDocProb(tid, DCMDoc);
+				term1 = wordTopicProb(tid, wid, DCMDoc);
+				m_topicProbCache[tid] = topicInDocProb(tid, DCMDoc)
+						* wordTopicProb(tid, wid, DCMDoc);
 				p += m_topicProbCache[tid];	
 			}
 			p *= m_rand.nextDouble();
@@ -295,8 +285,8 @@ public class DCMLDA extends LDA_Gibbs {
 			
 			//assign the selected topic to word
 			w.setTopic(tid);
-			d.m_sstat[tid]++;
-			m_docWordTopicStats[docID][tid][wid]++;
+			DCMDoc.m_sstat[tid]++;
+			DCMDoc.m_wordTopic_stat[tid][wid]++;
 			
 			if(m_collectCorpusStats)
 				word_topic_sstat[tid][wid]++;
@@ -314,13 +304,13 @@ public class DCMLDA extends LDA_Gibbs {
 
 	// p(w|z)
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
-		int docID = d.getID();
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
 	
-		return (m_docWordTopicStats[docID][tid][wid] + m_beta[tid][wid])
-				/ (d.m_sstat[tid] + m_totalBeta[tid]);
+		return (DCMDoc.m_wordTopic_stat[tid][wid] + m_beta[tid][wid])
+				/ (DCMDoc.m_sstat[tid] + m_totalBeta[tid]);
 	}
 
-	public void calculate_M_step(int iter, File weightFolder) {
+	public void calculate_M_step(int iter) {
 
 		for (_Doc d : m_trainSet)
 			collectStats(d);
@@ -329,30 +319,29 @@ public class DCMLDA extends LDA_Gibbs {
 			for(int v=0; v<vocabulary_size; v++)
 				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
 
-		File weightIterFolder = new File(weightFolder, "_" + iter);
-		if (!weightIterFolder.exists()) {
-			weightIterFolder.mkdir();
-		}
-
-		updateParameter(iter, weightIterFolder);
-
 	}
 
 	protected void collectStats(_Doc d) {
-		int docID = d.getID();
-
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
 		for (int k = 0; k < this.number_of_topics; k++) {
 			double topicProb = topicInDocProb(k, d);
 			d.m_topics[k] += d.m_sstat[k] + m_alpha[k];
 
 			for (int v = 0; v < vocabulary_size; v++){
-				m_docWordTopicProb[docID][k][v] += m_docWordTopicStats[docID][k][v] + m_beta[k][v];
+				DCMDoc.m_wordTopic_prob[k][v] += DCMDoc.m_wordTopic_stat[k][v]+m_beta[k][v];
 			}
 		}
 
 	}
 
-	protected void updateParameter(int iter, File weightIterFolder) {
+	protected void updateParameter(int iter, File weightFolder) {
+		
+		File weightIterFolder = new File(weightFolder, "_" + iter);
+		if (!weightIterFolder.exists()) {
+			weightIterFolder.mkdir();
+		}
+		
 		initialAlphaBeta();
 		updateAlpha();
 
@@ -376,16 +365,15 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 
 		for (_Doc d : m_trainSet) {
-			int docID = d.getID();
+			_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
 			for (int k = 0; k < number_of_topics; k++) {
 				double tempProb = d.m_sstat[k] / d.getTotalDocLength();
 				m_sstat[k] += tempProb;
 				m_alphaAuxilary[k] += tempProb * tempProb;
-				if (d.m_sstat[k] == 0)
-					continue;
+				if (DCMDoc.m_sstat[k] == 0) continue;
 				for (int v = 0; v < vocabulary_size; v++) {
-					tempProb = m_docWordTopicStats[docID][k][v]
-							/ d.m_sstat[k];
+					tempProb = DCMDoc.m_wordTopic_stat[k][v]
+							/ DCMDoc.m_sstat[k];
 
 					topic_term_probabilty[k][v] += tempProb;
 				
@@ -489,15 +477,15 @@ public class DCMLDA extends LDA_Gibbs {
 			double digBeta4Tid = Utils.digamma(m_totalBeta[tid]);
 
 			for (_Doc d : m_trainSet) {
-				int docID = d.getID();
+				_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
 				totalBetaDenominator += Utils.digamma(m_totalBeta[tid]
-						+ d.m_sstat[tid])
+						+ DCMDoc.m_sstat[tid])
 						- digBeta4Tid;
 				for (int v = 0; v < vocabulary_size; v++) {
-					wordNum4Tid += m_docWordTopicStats[docID][tid][v];
-					wordNum4Tid4V[v] += m_docWordTopicStats[docID][tid][v];
+					wordNum4Tid += DCMDoc.m_wordTopic_stat[tid][v];
+					wordNum4Tid4V[v] += DCMDoc.m_wordTopic_stat[tid][v];
 					totalBetaNumerator[v] += Utils.digamma(m_beta[tid][v]
-							+ m_docWordTopicStats[docID][tid][v]);
+							+ DCMDoc.m_wordTopic_stat[tid][v]);
 					totalBetaNumerator[v] -= Utils.digamma(m_beta[tid][v]);
 				}
 			}
@@ -567,8 +555,8 @@ public class DCMLDA extends LDA_Gibbs {
 
 	protected double calculate_log_likelihood(_Doc d) {
 		double docLogLikelihood = 0.0;
-
-		int docID = d.getID();
+		
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
 
 		for (int k = 0; k < number_of_topics; k++) {
 			double term = Utils.lgamma(d.m_sstat[k] + m_alpha[k]);
@@ -584,7 +572,7 @@ public class DCMLDA extends LDA_Gibbs {
 
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int v = 0; v < vocabulary_size; v++) {
-				double term = Utils.lgamma(m_docWordTopicStats[docID][k][v]
+				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v]
 						+ m_beta[k][v]);
 				docLogLikelihood += term;
 
@@ -608,10 +596,11 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 	
 	protected void estThetaInDoc(_Doc d) {
-
-		int docID = d.getID();
+		
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
 		for (int i = 0; i < number_of_topics; i++)
-			Utils.L1Normalization(m_docWordTopicProb[docID][i]);
+			Utils.L1Normalization(DCMDoc.m_wordTopic_prob[i]);
 		Utils.L1Normalization(d.m_topics);
 
 	}
@@ -673,20 +662,21 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 	
 	public void initTestDoc(_Doc d) {
-		int docID = d.getID();
 
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
 		for (int k = 0; k < number_of_topics; k++) {
-			Arrays.fill(m_docWordTopicStats[docID][k], 0);
+			Arrays.fill(DCMDoc.m_wordTopic_prob[k], 0);
 		}
 
-		int testLength = (int) (m_testWord4PerplexityProportion * d
+		int testLength = (int) (m_testWord4PerplexityProportion * DCMDoc
 				.getTotalDocLength());
-		d.setTopics4GibbsTest(number_of_topics, 0, testLength);
+		DCMDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 
-		for (_Word w : d.getWords()) {
+		for (_Word w : DCMDoc.getWords()) {
 			int wid = w.getIndex();
 			int tid = w.getTopic();
-			m_docWordTopicStats[docID][tid][wid]++;
+			DCMDoc.m_wordTopic_stat[tid][wid]++;
 
 		}
 	}
@@ -694,14 +684,14 @@ public class DCMLDA extends LDA_Gibbs {
 	protected double cal_logLikelihood4Partial(_Doc d) {
 		double docLogLikelihood = 0;
 		
-		int docID = d.getID();
-		for (_Word w : d.getTestWords()) {
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
+		for (_Word w : DCMDoc.getTestWords()) {
 			int wid = w.getIndex();
 			double wordLogLikelihood = 0;
 
 			for (int k = 0; k < number_of_topics; k++) {
-				double wordPerTopicLikelihood = d.m_topics[k]
-						* m_docWordTopicProb[docID][k][wid];
+				double wordPerTopicLikelihood = DCMDoc.m_topics[k]*DCMDoc.m_wordTopic_prob[k][wid];
 				wordLogLikelihood += wordPerTopicLikelihood;
 			}
 			
@@ -714,13 +704,13 @@ public class DCMLDA extends LDA_Gibbs {
 	protected double calculate_log_likelihood4Perplexity(_Doc d) {
 		double likelihood = 0;
 		
-		int docID = d.getID();
-		for (_Word w : d.getWords()) {
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
+		
+		for (_Word w : DCMDoc.getWords()) {
 			int wid = w.getIndex();
 			double wordLikelihood = 0;
 			for (int k = 0; k < number_of_topics; k++) {
-				wordLikelihood += d.m_topics[k]
-						* m_docWordTopicProb[docID][k][wid];
+				wordLikelihood += DCMDoc.m_topics[k]*DCMDoc.m_wordTopic_prob[k][wid];
 			}
 			likelihood += Math.log(wordLikelihood);
 		}

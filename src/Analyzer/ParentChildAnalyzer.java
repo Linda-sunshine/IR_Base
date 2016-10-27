@@ -14,9 +14,11 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
 import structures._Doc;
+import structures._Doc4DCMLDA;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._SparseFeature;
+import topicmodels.DCM.DCMLDA;
 import utils.Utils;
 
 /**
@@ -79,10 +81,6 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		// _ParentDoc d = new _ParentDoc(m_corpus.getSize(), name, title,
-		// content,
-		// 0);
-		//
 		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
 				content, 0);
 
@@ -101,7 +99,6 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			e.printStackTrace();
 		}
 	}
-
 	
 	public void loadChildDoc(String fileName) {
 		if (fileName == null || fileName.isEmpty())
@@ -149,6 +146,12 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 	}
 	
 	public void LoadDoc(String fileName){
+		boolean DCMLDAFlag = true;
+		if(DCMLDAFlag){
+			LoadDoc4DCMLDA(fileName);
+			return;
+		}
+		
 		if (fileName == null || fileName.isEmpty())
 			return;
 
@@ -162,6 +165,19 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		AnalyzeDoc(d);		
 	}
 	
+	public void LoadDoc4DCMLDA(String fileName){
+		if (fileName == null || fileName.isEmpty())
+			return;
+
+		JSONObject json = LoadJSON(fileName);
+		String content = Utils.getJSONValue(json, "content");
+		String name = Utils.getJSONValue(json, "name");
+		String parent = Utils.getJSONValue(json, "parent");
+
+		_Doc4DCMLDA d = new _Doc4DCMLDA(m_corpus.getSize(), name, "", content, 0);
+		d.setName(name);
+		AnalyzeDoc(d);		
+	}
 	
 	public void filterParentAndChildDoc(){
 		System.out.println("Before filtering\t"+m_corpus.getSize());
