@@ -21,16 +21,6 @@ import utils.Utils;
 
 public class DCMLDA extends LDA_Gibbs {
 
-	/*
-	 * m_docWordTopicProb---D*V*K D: number of documents V: number of words K:
-	 * number of topics
-	 * 
-	 * m_docWordTopicStats---D*V*K m_docTopicStats---D*K // this can be included
-	 * in the d.m_sstat
-	 */
-
-	// double[][] m_docTopicStats;
-
 	/**
 	 * 
 	 * m_alpha K m_beta K*V;
@@ -152,7 +142,6 @@ public class DCMLDA extends LDA_Gibbs {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
-				calculate_M_step(j);
 			}
 			long endTime = System.currentTimeMillis();
 
@@ -164,7 +153,7 @@ public class DCMLDA extends LDA_Gibbs {
 			endTime = System.currentTimeMillis();
 
 			 System.out.println("per iteration m step time\t"
-			 + (endTime - startTime));
+			 + (startTime - endTime));
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -203,12 +192,7 @@ public class DCMLDA extends LDA_Gibbs {
 						// many cases
 		} while (++i < this.number_of_iteration);
 
-		for (int j = 0; j < number_of_iteration; j++) {
-			init();
-			for (_Doc d : m_trainSet)
-				calculate_E_step(d);
-			calculate_M_step(j);
-		}
+		
 		finalEst();
 
 		long endtime = System.currentTimeMillis() - starttime;
@@ -220,6 +204,7 @@ public class DCMLDA extends LDA_Gibbs {
 						current, i, delta, endtime / 1000);
 	}
 
+	
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
@@ -235,12 +220,6 @@ public class DCMLDA extends LDA_Gibbs {
 			((_Doc4DCMLDA)d).setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
 			// allocate memory and randomize it
 			// ((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
-			
-			for (_Word w : d.getWords()) {
-				int wid = w.getIndex();
-				int tid = w.getTopic();
-				word_topic_sstat[tid][wid] ++;
-			}
 		}
 
 		initialAlphaBeta();
@@ -254,7 +233,6 @@ public class DCMLDA extends LDA_Gibbs {
 		DCMDoc.permutation();
 		double p;
 		int wid, tid;
-		int docID = DCMDoc.getID();
 		for(_Word w:DCMDoc.getWords()) {
 			wid = w.getIndex();
 			tid = w.getTopic();
@@ -325,7 +303,6 @@ public class DCMLDA extends LDA_Gibbs {
 		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
 		
 		for (int k = 0; k < this.number_of_topics; k++) {
-			double topicProb = topicInDocProb(k, d);
 			d.m_topics[k] += d.m_sstat[k] + m_alpha[k];
 
 			for (int v = 0; v < vocabulary_size; v++){
@@ -391,7 +368,7 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 	
 		 for (int k = 0; k < number_of_topics; k++){
-			m_alpha[k] = m_sstat[k];
+			m_alpha[k] = m_sstat[k]+d_alpha;
 			for (int v = 0; v < vocabulary_size; v++) {
 				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
 			}
@@ -588,6 +565,13 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected void finalEst(){
+		for (int j = 0; j < number_of_iteration; j++) {
+			init();
+			for (_Doc d : m_trainSet)
+				calculate_E_step(d);
+			calculate_M_step(j);
+		}
+		
 		for(int i=0; i<number_of_topics; i++)
 			Utils.L1Normalization(topic_term_probabilty[i]);
 		
