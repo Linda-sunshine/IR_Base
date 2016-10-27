@@ -12,6 +12,7 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
 import topicmodels.DCM.DCMLDA_test;
+import topicmodels.DCM.sparseDCMLDA_test;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Gibbs_test;
 import topicmodels.correspondenceModels.ACCTM;
@@ -60,8 +61,9 @@ public class TopicModelMain {
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
-		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test, DCMCorrLDA_Multi_EM
-		String topicmodel = "DCMLDA_test";
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
+		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test
+		String topicmodel = "sparseDCMLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 5;
@@ -420,6 +422,17 @@ public class TopicModelMain {
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
 						alphaC, burnIn, gibbs_lag, ksi, tau, newtonIter,
 						newtonConverge);
+			} else if (topicmodel.equals("sparseDCMLDA_test")) {
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				number_of_topics = 15;
+				double tParam = 1;
+				double sParam = 1;
+				model = new sparseDCMLDA_test(gibbs_iteration, converge,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag, newtonIter, newtonConverge, tParam, sParam);
 			}
 			
 			model.setDisplayLap(displayLap);

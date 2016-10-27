@@ -37,28 +37,28 @@ public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 	
 	public void setTopics4Gibbs(int k, double[] alpha, int vocalSize){
 		
-		boolean xid = false;
-		m_alphaDoc = 0;
-		for(int i=0; i<k; i++){
-			xid = m_rand.nextBoolean();
-			m_topicIndicator[i] = xid;
-			if(xid==true){
-				m_indicatorTrue_stat ++;
-				m_alphaDoc += alpha[i];
-			}
-			
-		}
-		
 		createSpace(k, 0);
 		setWordTopicStat(k, vocalSize);
 		
+		boolean xid = false;
+		m_alphaDoc = 0;
+		for (int i = 0; i < k; i++) {
+			xid = m_rand.nextBoolean();
+			m_topicIndicator[i] = xid;
+			if (xid == true) {
+				m_indicatorTrue_stat++;
+				m_alphaDoc += alpha[i];
+			}
+
+		}
+
 		int wIndex = 0, wid, tid;
 		for(_SparseFeature fv:m_x_sparse){
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
-				tid = m_rand.nextInt(k);
-				if(m_topicIndicator[tid]==false)
-					continue;
+				do {
+					tid = m_rand.nextInt(k);
+				} while (m_topicIndicator[tid] == false);
 				m_words[wIndex] = new _Word(wid, tid);
 				m_sstat[tid] ++;
 				

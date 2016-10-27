@@ -146,14 +146,14 @@ public class DCMLDA extends LDA_Gibbs {
 			long endTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
-					+ (startTime - endTime));
+					+ (endTime - startTime) / 1000);
 
 			startTime = System.currentTimeMillis();
 			updateParameter(i, weightFolder);
 			endTime = System.currentTimeMillis();
 
 			 System.out.println("per iteration m step time\t"
-					+ (startTime - endTime));
+					+ (endTime - startTime) / 1000);
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {

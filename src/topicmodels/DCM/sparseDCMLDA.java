@@ -1,14 +1,10 @@
 package topicmodels.DCM;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 
-import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
-
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._Word;
 import utils.Utils;
@@ -259,10 +255,25 @@ public class sparseDCMLDA extends DCMLDA{
 	}
 	
 	protected void finalEst(){
+		double statisticsIter = 0;
+//		double term2 = 0;
 		for (int j = 0; j < number_of_iteration; j++) {
 			init();
-			for (_Doc d : m_trainSet)
+			for (_Doc d : m_trainSet){
 				calculate_E_step(d);
+
+				_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+				if (j % 20 == 0) {
+					statisticsIter += 1;
+					for(int k=0; k<number_of_topics; k++)
+						if(DCMDoc.m_topicIndicator[k]==true){
+							DCMDoc.m_topicIndicator_prob[k] += 1; // miss m_s
+						}
+
+					DCMDoc.m_topicIndicator_distribution += DCMDoc.m_indicatorTrue_stat;
+				}
+			}
+				
 		}
 		
 		for(int k=0; k<number_of_topics; k++)
@@ -291,7 +302,13 @@ public class sparseDCMLDA extends DCMLDA{
 			}
 		}
 		
-		for(_Doc d:m_trainSet)
+		for (_Doc d : m_trainSet) {
 			estThetaInDoc(d);
+			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+			DCMDoc.m_topicIndicator_distribution /= statisticsIter
+					* number_of_topics;
+			for(int k=0; k<number_of_topics; k++)
+				DCMDoc.m_topicIndicator_prob[k] /= statisticsIter;
+		}
 	}
 }
