@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._Word;
 import utils.Utils;
@@ -147,13 +146,15 @@ public class sparseDCMLDA extends DCMLDA{
 			denominator += Utils.sumOfArray(DCMDoc.m_sstat);
 			
 			for(tid=0; tid<number_of_topics; tid++){
+				m_topicProbCache[tid] = 0;
 				if(DCMDoc.m_topicIndicator[tid]==false)
 					continue;
 				double term1 = 0;
 				term1 = topicInDocProb(tid, denominator, DCMDoc);
 				term1 = wordTopicProb(tid, wid, DCMDoc);
-				
-				m_topicProbCache[tid] = topicInDocProb(tid, DCMDoc)*wordTopicProb(tid, wid, DCMDoc);
+
+				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc)
+						* wordTopicProb(tid, wid, DCMDoc);
 				p += m_topicProbCache[tid];
 			}
 			
@@ -189,15 +190,22 @@ public class sparseDCMLDA extends DCMLDA{
 				double prob = 0;
 				
 				double trueProb = 0;
-				double term1 = gammaRatio(DCMDoc.m_alphaDoc+m_alpha[k], DCMDoc.m_alphaDoc+m_alpha[k]+DCMDoc.getTotalDocLength());
-				double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
-				trueProb = term1*term2;
-				
 				double falseProb = 0;
-				term1 = gammaRatio(DCMDoc.m_alphaDoc, DCMDoc.m_alphaDoc+DCMDoc.getTotalDocLength());
-				term2 = (m_t+number_of_topics-DCMDoc.m_indicatorTrue_stat);
-				falseProb = term1*term2;
-				
+				double term1 = DCMDoc.m_alphaDoc;
+				double term2 = m_alpha[k];
+				double term3 = m_s + DCMDoc.m_indicatorTrue_stat;
+				double term4 = m_t + number_of_topics
+						- DCMDoc.m_indicatorTrue_stat;
+				//double term1 = DCMDoc.m_alphaDoc+m_alpha[k], DCMDoc.m_alphaDoc+m_alpha[k]+DCMDoc.getTotalDocLength());
+				//double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
+				double Q = term3 / term4;
+				for (int i = 0; i < DCMDoc.getTotalDocLength(); i++) {
+					Q *= (term1 + i) / (term1 + term2 + i);
+				}
+
+				falseProb = 1.0/(Q+1);
+				trueProb = 1-falseProb;
+
 				prob = m_rand.nextDouble()*(trueProb+falseProb);
 				if(prob<trueProb)
 					xk = true;
@@ -216,9 +224,9 @@ public class sparseDCMLDA extends DCMLDA{
 	}
 	
 	protected double gammaRatio(double nominator, double denominator){
-		double ratio = 0;
+		double ratio = 1;
 		
-		double gap = denominator-nominator;
+		double gap = denominator;
 		for(int i=0; i<gap; i++){
 			ratio *= (denominator-1-i);
 		}
@@ -308,14 +316,15 @@ public class sparseDCMLDA extends DCMLDA{
 //		double term2 = 0;
 		for (int j = 0; j < number_of_iteration; j++) {
 			init();
-			for (_Doc d : m_trainSet){
-				calculate_E_step(d);
+			if (j % 20 == 0) {
+				statisticsIter += 1;
+				for (_Doc d : m_trainSet) {
+					calculate_E_step(d);
 
-				_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
-				if (j % 20 == 0) {
-					statisticsIter += 1;
-					for(int k=0; k<number_of_topics; k++)
-						if(DCMDoc.m_topicIndicator[k]==true){
+					_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+
+					for (int k = 0; k < number_of_topics; k++)
+						if (DCMDoc.m_topicIndicator[k] == true) {
 							DCMDoc.m_topicIndicator_prob[k] += 1; // miss m_s
 						}
 

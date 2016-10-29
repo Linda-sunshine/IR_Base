@@ -426,7 +426,7 @@ public class DCMLDA extends LDA_Gibbs {
 			if(iteration > m_newtonIter)
 				break;
 			
-		}while(diff>m_newtonConverge);
+		} while (diff > m_newtonConverge);
 
 //		System.out.println("iteration\t" + iteration);
 		m_totalAlpha = 0;
@@ -490,9 +490,9 @@ public class DCMLDA extends LDA_Gibbs {
 
 			iteration++;
 
-		} while (diff > m_newtonConverge);
+		} while ((diff > m_newtonConverge) && (iteration < m_newtonIter));
 
-//		System.out.println("iteration\t" + iteration);
+		System.out.println("iteration\t" + iteration);
 
 	}
 
