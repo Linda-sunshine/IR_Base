@@ -1,7 +1,13 @@
 package topicmodels.LDA;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.Arrays;
+
+import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
+import structures._RankItem;
 import structures._Word;
 import topicmodels.multithreads.TopicModelWorker;
 import utils.Utils;
@@ -16,6 +22,78 @@ public class LDA_Gibbs_test extends LDA_Gibbs {
 
 	}
 
+	public void printTopWords(int k, String betaFile) {
+
+		double loglikelihood = calculate_log_likelihood();
+		System.out.format("Final Log Likelihood %.3f\t", loglikelihood);
+
+		String filePrefix = betaFile.replace("topWords.txt", "");
+		debugOutput(filePrefix);
+
+		Arrays.fill(m_sstat, 0);
+
+		System.out.println("print top words");
+		for (_Doc d : m_trainSet) {
+			for (int i = 0; i < number_of_topics; i++)
+				m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
+						: d.m_topics[i];
+		}
+
+		Utils.L1Normalization(m_sstat);
+
+		try {
+			System.out.println("beta file");
+			PrintWriter betaOut = new PrintWriter(new File(betaFile));
+			for (int i = 0; i < topic_term_probabilty.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
+						k);
+				for (int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j),
+							topic_term_probabilty[i][j]));
+
+				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
+				for (_RankItem it : fVector) {
+					betaOut.format("%s(%.3f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+					System.out.format("%s(%.3f)\t", it.m_name,
+							m_logSpace ? Math.exp(it.m_value) : it.m_value);
+				}
+				betaOut.println();
+				System.out.println();
+			}
+
+			betaOut.flush();
+			betaOut.close();
+		} catch (Exception ex) {
+			System.err.print("File Not Found");
+		}
+	}
+
+	public void	debugOutput(String filePrefix){
+		printTopicWordDistribution(filePrefix);
+	}
+
+	protected void printTopicWordDistribution(String filePrefix) {
+		String topicWordFile = filePrefix + "topicWord.txt";
+		try{
+			PrintWriter pw = new PrintWriter(new File(topicWordFile));
+			
+			for (int k = 0; k < number_of_topics; k++) {
+				pw.print(k + "\t");
+				for (int v = 0; v < vocabulary_size; v++) {
+					pw.print(m_corpus.getFeature(v) + ":"
+							+ topic_term_probabilty[k][v] + "\t");
+				}
+				pw.println();
+			}
+
+			pw.flush();
+			pw.close();
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public double inference(_Doc d) {
 
 		initTest(d);
