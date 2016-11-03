@@ -5,13 +5,14 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._Word;
 import utils.Utils;
 
 public class sparseDCMLDA extends DCMLDA{
 	
-	public double m_t, m_s;
+	public double m_t, m_s, m_mu;
 	
 	public sparseDCMLDA(int number_of_iteration, double converge, double beta, _Corpus c, 
 			double lambda, int number_of_topics, double alpha, double burnIn, int lag, int newtonIter, double newtonConverge, double tParam, double sParam){
@@ -19,6 +20,7 @@ public class sparseDCMLDA extends DCMLDA{
 		
 		m_t = tParam;
 		m_s = sParam;
+		m_mu = 1;
 		
 		m_corpusSize = c.getSize();
 		m_newtonIter = newtonIter;
@@ -66,15 +68,17 @@ public class sparseDCMLDA extends DCMLDA{
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int v = 0; v < vocabulary_size; v++) {
 				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v]
-						+ m_beta[k][v]);
+ + m_mu
+						* m_beta[k][v]);
 				docLogLikelihood += term;
 
-				term = Utils.lgamma(m_beta[k][v]);
+				term = Utils.lgamma(m_mu * m_beta[k][v]);
 				docLogLikelihood -= term;
 
 			}
-			docLogLikelihood += Utils.lgamma(m_totalBeta[k]);
-			docLogLikelihood -= Utils.lgamma(DCMDoc.m_sstat[k] + m_totalBeta[k]);
+			docLogLikelihood += Utils.lgamma(m_mu * m_totalBeta[k]);
+			docLogLikelihood -= Utils.lgamma(DCMDoc.m_sstat[k] + m_mu
+					* m_totalBeta[k]);
 		}
 
 		docLogLikelihood += Utils.lgamma(m_t+m_s)-Utils.lgamma(m_t)-Utils.lgamma(m_s);
@@ -185,7 +189,6 @@ public class sparseDCMLDA extends DCMLDA{
 			
 			if(DCMDoc.m_sstat[k]>0){
 				xk = true;
-				
 			}else{
 				double prob = 0;
 				
@@ -242,6 +245,13 @@ public class sparseDCMLDA extends DCMLDA{
 		return term1/denominator;
 	}
 	
+	protected double wordTopicProb(int tid, int wid, _Doc d) {
+		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
+
+		return (DCMDoc.m_wordTopic_stat[tid][wid] + m_mu * m_beta[tid][wid])
+				/ (DCMDoc.m_sstat[tid] + m_mu * m_totalBeta[tid]);
+	}
+
 	protected void updateAlpha(){
 		double diff = 0;
 		double smallAlpha = 0.1;
@@ -311,9 +321,71 @@ public class sparseDCMLDA extends DCMLDA{
 		}
 	}
 	
+	protected void updateBeta(int tid) {
+
+		double diff = 0;
+		int iteration = 0;
+		double smoothingBeta = 0.1;
+
+		do {
+			diff = 0;
+			double deltaBeta = 0;
+			double wordNum4Tid = 0;
+			double[] wordNum4Tid4V = new double[vocabulary_size];
+			double totalBetaDenominator = 0;
+			double[] totalBetaNumerator = new double[vocabulary_size];
+			Arrays.fill(totalBetaNumerator, 0);
+			Arrays.fill(wordNum4Tid4V, 0);
+			m_totalBeta[tid] = Utils.sumOfArray(m_beta[tid]);
+			double digBeta4Tid = Utils.digamma(m_mu * m_totalBeta[tid]);
+
+			for (_Doc d : m_trainSet) {
+				_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
+				totalBetaDenominator += Utils.digamma(m_mu * m_totalBeta[tid]
+						+ DCMDoc.m_sstat[tid])
+						- digBeta4Tid;
+				for (int v = 0; v < vocabulary_size; v++) {
+					wordNum4Tid += DCMDoc.m_wordTopic_stat[tid][v];
+					wordNum4Tid4V[v] += DCMDoc.m_wordTopic_stat[tid][v];
+					totalBetaNumerator[v] += Utils.digamma(m_mu
+							* m_beta[tid][v]
+							+ DCMDoc.m_wordTopic_stat[tid][v]);
+					totalBetaNumerator[v] -= Utils.digamma(m_mu
+							* m_beta[tid][v]);
+				}
+			}
+
+			for (int v = 0; v < vocabulary_size; v++) {
+				if (wordNum4Tid == 0)
+					break;
+				if (wordNum4Tid4V[v] == 0) {
+					deltaBeta = 0;
+
+				} else {
+					deltaBeta = totalBetaNumerator[v] / totalBetaDenominator;
+
+				}
+
+				double newBeta = m_beta[tid][v] * deltaBeta + d_beta;
+
+				double t_diff = Math.abs(m_beta[tid][v] - newBeta);
+				if (t_diff > diff)
+					diff = t_diff;
+
+				m_beta[tid][v] = newBeta;
+
+			}
+
+			iteration++;
+
+		} while ((diff > m_newtonConverge) && (iteration < m_newtonIter));
+
+		System.out.println("iteration\t" + iteration);
+
+	}
+
 	protected void finalEst(){
 		double statisticsIter = 0;
-//		double term2 = 0;
 		for (int j = 0; j < number_of_iteration; j++) {
 			init();
 			if (j % 20 == 0) {
@@ -339,7 +411,8 @@ public class sparseDCMLDA extends DCMLDA{
 		
 		for(int k=0; k<number_of_topics; k++)
 			for(int v=0; v<vocabulary_size; v++)
-				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
+				topic_term_probabilty[k][v] += word_topic_sstat[k][v] + m_mu
+						* m_beta[k][v];
 
 		
 		for(int i=0; i<number_of_topics; i++)
@@ -355,7 +428,8 @@ public class sparseDCMLDA extends DCMLDA{
 				DCMDoc.m_topics[k] += DCMDoc.m_sstat[k] + m_alpha[k];
 	
 				for (int v = 0; v < vocabulary_size; v++){
-					DCMDoc.m_wordTopic_prob[k][v] += DCMDoc.m_wordTopic_stat[k][v]+m_beta[k][v];
+					DCMDoc.m_wordTopic_prob[k][v] += DCMDoc.m_wordTopic_stat[k][v]
+							+ m_mu * m_beta[k][v];
 				}
 			}
 		}

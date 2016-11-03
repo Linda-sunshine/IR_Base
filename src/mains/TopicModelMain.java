@@ -62,8 +62,8 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
-		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test
-		String topicmodel = "LDAGibbs4AC_test";
+		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test
+		String topicmodel = "sparseDCMLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 5;
@@ -304,9 +304,9 @@ public class TopicModelMain {
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
-				// String priorFile = "./data/Features/" + articleType
-				// + "TopicWord.txt";
-				// model.LoadPrior(priorFile, eta);
+				String priorFile = "./data/Features/" + articleType
+						+ "TopicWord.txt";
+				model.LoadPrior(priorFile, eta);
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
 				number_of_topics = 15;
 				// in gibbs sampling, no need to compute
@@ -433,6 +433,10 @@ public class TopicModelMain {
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
 						gibbs_lag, newtonIter, newtonConverge, tParam, sParam);
+				/*
+				 * String priorFile = "./data/Features/" + articleType +
+				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
+				 */
 			}
 			
 			model.setDisplayLap(displayLap);
