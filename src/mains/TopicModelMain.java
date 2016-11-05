@@ -304,9 +304,11 @@ public class TopicModelMain {
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
+
 				String priorFile = "./data/Features/" + articleType
 						+ "TopicWord.txt";
 				model.LoadPrior(priorFile, eta);
+
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
 				number_of_topics = 15;
 				// in gibbs sampling, no need to compute
@@ -428,15 +430,17 @@ public class TopicModelMain {
 				double newtonConverge = 1e-3;
 				number_of_topics = 15;
 				double tParam = 1;
-				double sParam = 1;
+				double sParam = 10;
 				model = new sparseDCMLDA_test(gibbs_iteration, converge,
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
 						gibbs_lag, newtonIter, newtonConverge, tParam, sParam);
+
 				/*
 				 * String priorFile = "./data/Features/" + articleType +
 				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
 				 */
+
 			}
 			
 			model.setDisplayLap(displayLap);

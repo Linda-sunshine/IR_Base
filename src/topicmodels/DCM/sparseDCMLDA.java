@@ -203,7 +203,8 @@ public class sparseDCMLDA extends DCMLDA{
 				//double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
 				double Q = term3 / term4;
 				for (int i = 0; i < DCMDoc.getTotalDocLength(); i++) {
-					Q *= (term1 + i) / (term1 + term2 + i);
+					double QTemp = (term1 + i) / (term1 + term2 + i);
+					Q *= QTemp;
 				}
 
 				falseProb = 1.0/(Q+1);
