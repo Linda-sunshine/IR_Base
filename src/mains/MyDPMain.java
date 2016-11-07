@@ -44,19 +44,19 @@ public class MyDPMain {
 		String dataset = "Amazon"; // "Amazon", "Yelp", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800" + ".txt", dataset);
-//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_1600.txt", dataset);
-//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm.txt", dataset);
+		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800" + ".txt", dataset);
+		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_1600.txt", dataset);
+		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm.txt", dataset);
 		
-		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-		String featureFile4LM = String.format("/if15/lg5bt/DataSigir/%s/fv_lm.txt", dataset);
+//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+//		String featureFile4LM = String.format("/if15/lg5bt/DataSigir/%s/fv_lm.txt", dataset);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -142,20 +142,20 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //
-//		/***baseline 5: CLinAdaptWithDP***/
-//		// Create an instance of CLinAdaptWithDP
-//		CLinAdaptWithDP clindp = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
-//		clindp.loadUsers(analyzer.getUsers());
-//		clindp.setDisplayLv(displayLv);
-//		clindp.setLNormFlag(false);
-//		clindp.setR1TradeOffs(eta1, eta1);
-//		clindp.setsdA(sdA);
-//		clindp.setsdB(sdB);
-//		clindp.train();
-//		clindp.test();
+		/***baseline 5: CLinAdaptWithDP***/
+		// Create an instance of CLinAdaptWithDP
+		CLinAdaptWithDP clindp = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+		clindp.loadUsers(analyzer.getUsers());
+		clindp.setDisplayLv(displayLv);
+		clindp.setLNormFlag(false);
+		clindp.setR1TradeOffs(eta1, eta1);
+		clindp.setsdA(sdA);
+		clindp.setsdB(sdB);
+		clindp.train();
+		clindp.test();
 //		clindp.saveModel(String.format("./data/%s_clindp_0.5_1", dataset));
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 //		
 //		/***baseline 6: CLRWithDP***/
 //		CLRWithDP clrdp = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
@@ -197,23 +197,23 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //
-		/***our algorithm: MTCLinAdaptWithDP***/
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
-		adaptation.setsdA(sdA);
-		adaptation.setsdB(sdB);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		//String traceFile = dataset + "_iter.csv";
-		//adaptation.trainTrace(traceFile);
-		adaptation.setBurnIn(0);
-		adaptation.setNumberOfIterations(100);
-		adaptation.train();
-		adaptation.writeNorms("./data/Amazon_norm/sup.txt", "./data/Amazon_norm/cluster", 20);
-		adaptation.test();
-		
+//		/***our algorithm: MTCLinAdaptWithDP***/
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setLNormFlag(false);
+//		adaptation.setsdA(sdA);
+//		adaptation.setsdB(sdB);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
+//		//String traceFile = dataset + "_iter.csv";
+//		//adaptation.trainTrace(traceFile);
+//		adaptation.setBurnIn(0);
+//		//adaptation.setNumberOfIterations(100);
+//		adaptation.train();
+//		adaptation.writeNorms("./data/Amazon_norm/sup.txt", "./data/Amazon_norm/cluster", 20);
+//		adaptation.test();
+//		
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;
 ////		String umodel = String.format("./data/%s/%s_mtclindp_u_0.5/", pattern, dataset);

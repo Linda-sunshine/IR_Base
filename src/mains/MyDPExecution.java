@@ -110,10 +110,7 @@ public class MyDPExecution {
 		adaptation.setDisplayLv(displayLv);
 		adaptation.train();
 		adaptation.test();
-		long time = System.currentTimeMillis();
-		System.out.println(time);
-//		String model = "./data/"+param.m_data + time+"/models/";
-		String model = "/if15/lg5bt/dpModels/"+param.m_data + time+"/models/";
-		adaptation.saveClusterModels(model);
+//		long time = System.currentTimeMillis();
+//		System.out.println(time);
 	}
 }

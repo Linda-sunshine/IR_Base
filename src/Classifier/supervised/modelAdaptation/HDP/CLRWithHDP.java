@@ -157,13 +157,13 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of y, i.e., p(y|x,\phi)
-			likelihood = calcLogLikelihoodY(r); 
+			likelihood = calcLogLikelihoodY(r);
 			
-			//log likelihood of x, i.e., p(x|\psi)	
+			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
+//			System.out.println("y: "+y+"\tx: "+x);
 			
 			//p(z=k|\gamma,\eta)
-
 			gamma_k = m_hdpThetaStars[k].getGamma();
 			likelihood += Math.log(user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k);
 			
@@ -177,7 +177,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.println(k+"-----------------");
+//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
@@ -251,12 +251,12 @@ public class CLRWithHDP extends CLRWithDP {
 		double[] psi = r.getHDPThetaStar().getPsiModel();
 		//we will integrate it out
 		if(psi == null){
-			return r.getL4NewCluster();
+			return r.getL4NewCluster()/1000;
 		} else {		
 			double L = 0;
 			for(_SparseFeature fv: r.getLMSparse())
 				L += fv.getValue() * psi[fv.getIndex()];			
-			return L;
+			return L/1000;
 		}
 	}
 	

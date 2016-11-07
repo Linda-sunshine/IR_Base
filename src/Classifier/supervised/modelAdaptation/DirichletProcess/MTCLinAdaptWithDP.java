@@ -199,28 +199,28 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 	}
 	
 	// Assign the optimized models to the clusters.
-//	@Override
-//	protected void setThetaStars(){
-//		super.setThetaStars();
-//		
-//		// Assign model to super user.
-//		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
-//	}
-	
 	@Override
 	protected void setThetaStars(){
-		double[] beta_cur, beta_pre, sup_pre;
-		for(int i=0; i<m_kBar; i++){
-			beta_cur = m_thetaStars[i].getModel();
-			beta_pre = Arrays.copyOf(beta_cur, beta_cur.length);
-			m_thetaStars[i].addOneBeta(beta_pre);
-			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].getModel(), 0, m_dim*2);
-		}		
+		super.setThetaStars();
+		
 		// Assign model to super user.
-		sup_pre = Arrays.copyOf(m_supModel, m_supModel.length);
-		m_supModels.add(mapSup(sup_pre));
 		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
 	}
+	
+//	@Override
+//	protected void setThetaStars(){
+//		double[] beta_cur, beta_pre, sup_pre;
+//		for(int i=0; i<m_kBar; i++){
+//			beta_cur = m_thetaStars[i].getModel();
+//			beta_pre = Arrays.copyOf(beta_cur, beta_cur.length);
+//			m_thetaStars[i].addOneBeta(beta_pre);
+//			System.arraycopy(m_models, m_dim*2*i, m_thetaStars[i].getModel(), 0, m_dim*2);
+//		}		
+//		// Assign model to super user.
+//		sup_pre = Arrays.copyOf(m_supModel, m_supModel.length);
+//		m_supModels.add(mapSup(sup_pre));
+//		System.arraycopy(m_models, m_dim*2*m_kBar, m_supModel, 0, m_dimSup*2);
+//	}
 	public double[] mapSup(double[] As){
 		double[] sup = new double[m_featureSize+1];
 		int ks;
