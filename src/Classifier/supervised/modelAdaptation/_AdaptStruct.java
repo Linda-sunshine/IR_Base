@@ -168,10 +168,14 @@ public class _AdaptStruct {
 		m_user.setModel(pWeight);
 	}
 	
-	public int predict(_Doc doc) {
-		return m_user.predict(doc);
-	}
+//	public int predict(_Doc doc) {
+//		return m_user.predict(doc);
+//	}
 	
+	
+	public int predict(_Doc doc){
+		return doc.getPredValue()>0.5 ? 1: 0;
+	}
 	public double linearFunc(_SparseFeature[] fvs, int classid) {
 		return m_user.linearFunc(fvs, classid);
 	}

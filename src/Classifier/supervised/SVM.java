@@ -219,6 +219,10 @@ public class SVM extends BaseClassifier {
 		return (int)Linear.predict(m_libModel, Utils.createLibLinearFV(doc, m_featureSize));
 	}
 	
+	public double predictDouble(_Doc doc){
+		return Linear.predict(m_libModel, Utils.createLibLinearFV(doc, m_featureSize));
+
+	}
 	@Override
 	public double score(_Doc doc, int label) {
 		return Linear.predictValue(m_libModel, Utils.createLibLinearFV(doc, m_featureSize), label);

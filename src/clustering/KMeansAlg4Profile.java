@@ -41,7 +41,7 @@ public class KMeansAlg4Profile extends KMeansAlg {
 	}
 	
 	// Return the corresponding cluster numbers.
-	public int[] getClusters(){
+	public int[] assignClusters(){
 		int[] clusterNos = new int[m_instances.size()];
 		_User user;
 		for(int i=0; i<m_clusters.length; i++){

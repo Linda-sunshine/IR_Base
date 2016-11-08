@@ -45,7 +45,7 @@ public class KMeansAlg extends BaseClassifier {
 		m_k = k;
 	}
 	
-	FeatureVector createInstance(_Doc d) {
+	public FeatureVector createInstance(_Doc d) {
 		int[] indices = d.getIndices();
 		for(int i:indices) {
 			m_dict.lookupIndex(i, true);
@@ -67,6 +67,9 @@ public class KMeansAlg extends BaseClassifier {
 		return 0; // we can compute the corresponding loss function
 	}
 
+	public InstanceList[] getClusters(){
+		return m_clusters;
+	}
 	//assign to the closest cluster 
 	@Override
 	public int predict(_Doc doc) {
@@ -103,7 +106,10 @@ public class KMeansAlg extends BaseClassifier {
 		// TODO Auto-generated method stub
 		
 	}
-
+	// Get the centroids as sparse vectors.
+	public ArrayList<SparseVector> getCentroids(){
+		return m_centroids;
+	}
 	@Override
 	public void saveModel(String modelLocation) {
 		try {
@@ -121,6 +127,8 @@ public class KMeansAlg extends BaseClassifier {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+	}
+	public Metric getDistance(){
+		return m_distance;
 	}
 }

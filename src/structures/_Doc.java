@@ -445,4 +445,14 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	public int m_pCount = 0;
 	public double m_prob = 0;
 	
+	// Added by Lin for clustered svm.
+	double m_predV = 0;
+
+	public void setPredValue(double v) {
+		m_predV = v;
+	}
+
+	public double getPredValue() {
+		return m_predV;
+	}
 }

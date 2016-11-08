@@ -89,4 +89,5 @@ public class _Review extends _Doc {
 	public double getL4NewCluster(){
 		return m_L4New;
 	}
+	
 }

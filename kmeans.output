@@ -1,0 +1,1584 @@
+Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+Language models share the same features with classification models!
+9760 users are loaded from ./data/CoLinAdapt/Amazon/Users...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 3.1058487052564363
+Iter 2 deltaMeans = 0.15950733744679513
+Iter 3 deltaMeans = 0.09883521421363961
+Iter 4 deltaMeans = 0.009157416759167814
+KMeans converged with deltaMeans = 0.009157416759167814
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -1180.23
+nSV = 4428
+...................................................................*...............................***.*
+optimization finished, #iter = 992
+Objective value = -130.860
+nSV = 3116
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -1184.26
+nSV = 4577
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -358.175
+nSV = 3881
+IndividualSVMWithKmeans[k:4]
+Micro confusion matrix:
+	0	1
+0	12317	5927
+1	7703	47964
+Micro F1:
+Class 0: 0.6438	Class 1: 0.8756	
+Macro F1:
+Class 0: 0.4626	Class 1: 0.8052	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 4.2897877483827465
+Iter 2 deltaMeans = 0.23299012863119473
+Iter 3 deltaMeans = 0.121071172235243
+Iter 4 deltaMeans = 0.036635516825116676
+Iter 5 deltaMeans = 0.012726381701533507
+Iter 6 deltaMeans = 0.008242580917575348
+KMeans converged with deltaMeans = 0.008242580917575348
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -114.811
+nSV = 2486
+...........................................................*....*
+optimization finished, #iter = 634
+Objective value = -24.2501
+nSV = 1880
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -1336.97
+nSV = 4734
+...........................................................*......................................*...
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -173.901
+nSV = 3386
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -152.377
+nSV = 3128
+.......................................................................*......*.
+optimization finished, #iter = 780
+Objective value = -38.0449
+nSV = 2228
+IndividualSVMWithKmeans[k:6]
+Micro confusion matrix:
+	0	1
+0	12173	4258
+1	7847	49633
+Micro F1:
+Class 0: 0.6679	Class 1: 0.8913	
+Macro F1:
+Class 0: 0.4683	Class 1: 0.8234	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.Iter 5 deltaMeans = 0.05918593335821032
+Iter 6 deltaMeans = 0.028266894634873307
+Iter 7 deltaMeans = 0.010546761135073246
+Iter 8 deltaMeans = 0.003311494893321054
+KMeans converged with delIter 5 deltaMeans = 0.027271559..........Iter 6 deltaMeans = 0.016541900026930678
+Iter 7 deltaMeans = 0.009846283354211671
+KMeans converged with deltaMeans = 0.009846283354211671
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -91.3925
+nSV = 2311
+..........................................................*.....*.
+optimization finished, #iter = 640
+Objective value = -22.0975
+nSV = 1825
+...............................................*..........................*....**.*
+optimization finished, #iter = 781
+Objective value = -130.731
+nSV = 3216
+.........................................*......................*..*
+optimization finished, #iter = 651
+Objective value = -98.8667
+nSV = 3084
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -119.487
+nSV = 2941
+.................................*......*.**
+optimization finished, #iter = 406
+Objective value = -36.3240
+nSV = 2195
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -75.7866
+nSV = 2883
+.......*
+optimization finished, #iter = 78
+Objective value = -8.65994
+nSV = 1287
+IndividualSVMWithKmeans[k:8]
+Micro confusion matrix:
+	0	1
+0	12685	4079
+1	7335	49812
+Micro F1:
+Class 0: 0.6897	Class 1: 0.8972	
+Macro F1:
+Class 0: 0.4836	Class 1: 0.8292	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeanIter 3 deltaMeans = 0.21687203716882675
+Iter 4 deltaMeans = 0.10283182725264828
+Iter 5 deltaMeans = 0.07500199238909466
+Iter 6 deltaMeans = 0.04066534968262958
+Iter 7 deltaMeans = 0.017245342427349764
+Iter 8 deltaMeans = 0.00734171458885613
+KMeans converged with deltaMeans = 0.00734171458Iter 8 deltaMeans = 0.004748459181516229
+KMeans converged with deltaMeans = 0.004748459181516229
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -43.1846
+nSV = 1891
+..........................................................*....**
+optimization finished, #iter = 629
+Objective value = -22.9599
+nSV = 1850
+....................*.......*.**
+optimization finished, #iter = 285
+Objective value = -30.3272
+nSV = 2380
+..............................*...............*
+optimization finished, #iter = 455
+Objective value = -72.5368
+nSV = 2811
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -150.033
+nSV = 2955
+................*.......**
+optimization finished, #iter = 239
+Objective value = -34.4859
+nSV = 2179
+......................................................*............**.**
+optimization finished, #iter = 674
+Objective value = -85.7386
+nSV = 2770
+......*
+optimization finished, #iter = 68
+Objective value = -7.49567
+nSV = 1169
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value IndividualSVMWithKmeans[k:10]
+Micro confusion matrix:
+	0	1
+0	12528	3740
+1	7492	50151
+Micro F1:
+ClassIndividualSVMWithKmeans[k:10]
+Micro confusion matrix:
+	0	1
+0	12606	3626
+1	7414	50265
+Micro F1:
+Class 0: 0.6955	Class 1: 0.9010	
+Macro F1:
+Class 0: 0.4865	Class 1: 0.8339	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0Iter 2 deltaMeans = 0.4615968722963927
+Iter 3 deltaMeans = 0.236180879786832
+Iter 4 deltaMeans = 0.13086383355136344
+Iter 5 deltaMeans = 0.07756710193496508
+Iter 6 deltaMeans = 0.06234215133879828
+Iter 7 deltaMeans = 0.04851302605741714
+Iter 8 deltaMeans = 0.023200077995792268
+Iter 9 deltaMeans = 0.014664170487435957
+Iter 10 deltaMeans = 0.017841825681684353
+Iter 11 deltaMeans = 0.019800075978407605
+Iter 12 deltaMeans = 0.015177434312767302
+Iter 13 deltaMeans = 0.01597415367110111
+Iter 14 deltaMeans = 0.013508868039451838
+Iter 15 deltaMeans = 0.002634420715303065
+KMeans converged with deltaMeans = 0.002634420715303065
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -615.047
+nSV = 3621
+...........*
+optimization finished, #iter = 111
+Objective value = -6.74449
+nSV = 1153
+.................*......***.*
+optimization finished, #iter = 241
+Objective value = -29.6931
+nSV = 2320
+................*.....***
+optimization finished, #iter = 215
+Objective value = -26.4490
+nSV = 1964
+...........................................................*..*.
+optimization finished, #iter = 620
+Objective value = -9.27256
+nSV = 1168
+..........*
+optimization finished, #iter = 104
+Objective value = -10.5529
+nSV = 1350
+.......**
+optimization finished, #iter = 76
+Objective value = -10.4891
+nSV = 1428
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -20.1310
+nSV = 2276
+....*
+optimization finished, #iter = 48
+Objective value = -4.76625
+nSV = 1048
+......*
+optimization finished, #iter = 66
+Objective value = -9.71346
+nSV = 1387
+...........................................................*.................*
+optimization finished, #iter = 766
+Objective value = -106.756
+nSV = 2994
+.........*..***.
+optimization finished, #iter = 120
+Objective value = -9.85567
+nSV = 1655
+IndividualSVMWithKmeans[k:12]
+Micro confusion matrix:
+	0	1
+0	13003	4073
+1	7017	49818
+Micro F1:
+Class 0: 0.7010	Class 1: 0.8998	
+Macro F1:
+Class 0: 0.4975	Class 1: 0.8343	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 9.062273162774678
+Iter 2 deltaMeans = 0.5409629379664679
+Iter 3 deltaMeans = 0.29084612535407584
+Iter 4 deltaMeans = 0.12664690360737518
+Iter 5 deltaMeans = 0.08954688147163925
+Iter 6 deltaMeans = 0.08546143260127848
+Iter 7 deltaMeans = 0.0654842146410084
+Iter 8 deltaMeans = 0.032568648237344955
+Iter 9 deltaMeans = 0.02935749067927773
+Iter 10 deltaMeans = 0.03669706481371293
+Iter 11 deltaMeans = 0.019579388204505888
+Iter 12 deltaMeans = 0.02185212709522466
+Iter 13 deltaMeans = 0.019610540480030303
+Iter 14 deltaMeans = 0.011423684569590642
+Iter 15 deltaMeans = 0.007569436034768673
+KMeans converged with deltaMeans = 0.007569436034768673
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -38.2170
+nSV = 1890
+.....**
+optimization finished, #iter = 59
+Objective value = -6.52124
+nSV = 1027
+................*....**
+optimization finished, #iter = 209
+Objective value = -24.8562
+nSV = 2198
+.................*....***.
+optimization finished, #iter = 220
+Objective value = -26.2870
+nSV = 1972
+..........................................................*..*
+optimization finished, #iter = 601
+Objective value = -6.79315
+nSV = 1021
+.........*.*
+optimization finished, #iter = 101
+Objective value = -9.90003
+nSV = 1333
+............*.*
+optimization finished, #iter = 131
+Objective value = -12.4884
+nSV = 1410
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -17.0441
+nSV = 2165
+....**
+optimization finished, #iter = 45
+Objective value = -3.87789
+nSV = 992
+...............*.*
+optimization finished, #iter = 165
+Objective value = -7.25982
+nSV = 1240
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -98.0945
+nSV = 2920
+......*..*
+optimization finished, #iter = 85
+Objective value = -9.06652
+nSV = 1600
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -71.1813
+nSV = 2372
+.......................*..*.*
+optimization finished, #iter = 263
+Objective value = -15.3013
+nSV = 1615
+IndividualSVMWithKmeans[k:14]
+Micro confusion matrix:
+	0	1
+0	12938	3822
+1	7082	50069
+Micro F1:
+Class 0: 0.7035	Class 1: 0.9018	
+Macro F1:
+Class 0: 0.4943	Class 1: 0.8354	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 10.220911897235206
+Iter 2 deltaMeans = 0.603176944403887
+Iter 3 deltaMeans = 0.22249752025876712
+Iter 4 deltaMeans = 0.107432320701079
+Iter 5 deltaMeans = 0.08878860418233514
+Iter 6 deltaMeans = 0.06274575245046299
+Iter 7 deltaMeans = 0.057710663783967275
+Iter 8 deltaMeans = 0.04342053317305761
+Iter 9 deltaMeans = 0.018749509286625776
+Iter 10 deltaMeans = 0.0195306249874041
+Iter 11 deltaMeans = 0.020417592201825485
+Iter 12 deltaMeans = 0.017524415686456907
+Iter 13 deltaMeans = 0.014776356245707833
+Iter 14 deltaMeans = 0.012988290010577108
+Iter 15 deltaMeans = 0.016944435454581797
+Iter 16 deltaMeans = 0.02000596710549074
+Iter 17 deltaMeans = 0.017219020579043565
+Iter 18 deltaMeans = 0.011192442719305196
+Iter 19 deltaMeans = 0.008827265133021123
+KMeans converged with deltaMeans = 0.008827265133021123
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -139.997
+nSV = 2765
+..........***
+optimization finished, #iter = 108
+Objective value = -6.36692
+nSV = 1061
+..............*..*.*
+optimization finished, #iter = 173
+Objective value = -19.2866
+nSV = 1941
+..................*....*
+optimization finished, #iter = 223
+Objective value = -25.7200
+nSV = 1986
+...........................................................*.*.
+optimization finished, #iter = 610
+Objective value = -6.37297
+nSV = 970
+........*.*.*
+optimization finished, #iter = 101
+Objective value = -13.8410
+nSV = 1414
+......*
+optimization finished, #iter = 63
+Objective value = -7.47759
+nSV = 1332
+....*.
+optimization finished, #iter = 50
+Objective value = -6.19246
+nSV = 1403
+....*
+optimization finished, #iter = 42
+Objective value = -3.89486
+nSV = 971
+..........**.
+optimization finished, #iter = 110
+Objective value = -9.74330
+nSV = 1644
+.......................................................................*.............*
+optimization finished, #iter = 845
+Objective value = -64.6572
+nSV = 2578
+...*
+optimization finished, #iter = 37
+Objective value = -1.68468
+nSV = 622
+.......*.*
+optimization finished, #iter = 82
+Objective value = -2.76043
+nSV = 714
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -10.7330
+nSV = 1814
+.......................*..*
+optimization finished, #iter = 259
+Objective value = -14.3757
+nSV = 1575
+.............*....*
+optimization finished, #iter = 179
+Objective value = -25.1893
+nSV = 2034
+IndividualSVMWithKmeans[k:16]
+Micro confusion matrix:
+	0	1
+0	13070	3888
+1	6950	50003
+Micro F1:
+Class 0: 0.7069	Class 1: 0.9022	
+Macro F1:
+Class 0: 0.4967	Class 1: 0.8360	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 11.329373202810173
+Iter 2 deltaMeans = 0.6581744942486949
+Iter 3 deltaMeans = 0.3137640363398001
+Iter 4 deltaMeans = 0.14092177463043432
+Iter 5 deltaMeans = 0.0943239815026573
+Iter 6 deltaMeans = 0.06729248941682042
+Iter 7 deltaMeans = 0.06663006968466745
+Iter 8 deltaMeans = 0.03366358215394294
+Iter 9 deltaMeans = 0.021054133108677875
+Iter 10 deltaMeans = 0.020277481879595105
+Iter 11 deltaMeans = 0.016771116193598723
+Iter 12 deltaMeans = 0.013207093285357185
+Iter 13 deltaMeans = 0.008984223917274825
+KMeans converged with deltaMeans = 0.008984223917274825
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -14.6961
+nSV = 1385
+.....*
+optimization finished, #iter = 54
+Objective value = -6.08200
+nSV = 965
+.............*.*
+optimization finished, #iter = 146
+Objective value = -16.3890
+nSV = 1834
+........................*......*
+optimization finished, #iter = 308
+Objective value = -39.5250
+nSV = 2309
+...........................................................*.*
+optimization finished, #iter = 605
+Objective value = -5.51470
+nSV = 911
+..........................................................*.......*.**.***.*
+optimization finished, #iter = 682
+Objective value = -23.0725
+nSV = 1576
+......*
+optimization finished, #iter = 64
+Objective value = -12.3739
+nSV = 1494
+....*
+optimization finished, #iter = 43
+Objective value = -4.73260
+nSV = 1295
+....*
+optimization finished, #iter = 41
+Objective value = -3.55381
+nSV = 946
+........**
+optimization finished, #iter = 86
+Objective value = -10.0619
+nSV = 1505
+....................................................*...........*****.
+optimization finished, #iter = 640
+Objective value = -64.5976
+nSV = 2632
+..........................**.*
+optimization finished, #iter = 271
+Objective value = -0.494290
+nSV = 273
+.................................................................*...........***
+optimization finished, #iter = 769
+Objective value = -20.8328
+nSV = 1707
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -9.43771
+nSV = 1733
+............*
+optimization finished, #iter = 127
+Objective value = -13.5794
+nSV = 1510
+.........................................*.....**
+optimization finished, #iter = 464
+Objective value = -20.9792
+nSV = 1919
+.......**
+optimization finished, #iter = 76
+Objective value = -4.50953
+nSV = 1012
+.........*
+optimization finished, #iter = 99
+Objective value = -2.00831
+nSV = 660
+IndividualSVMWithKmeans[k:18]
+Micro confusion matrix:
+	0	1
+0	13138	3824
+1	6882	50067
+Micro F1:
+Class 0: 0.7105	Class 1: 0.9034	
+Macro F1:
+Class 0: 0.5000	Class 1: 0.8389	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 12.442544097050577
+Iter 2 deltaMeans = 0.8165101500685745
+Iter 3 deltaMeans = 0.43075660859382603
+Iter 4 deltaMeans = 0.20531957646617105
+Iter 5 deltaMeans = 0.08159170913343361
+Iter 6 deltaMeans = 0.04230462742276253
+Iter 7 deltaMeans = 0.02739983257305456
+Iter 8 deltaMeans = 0.03073332755331948
+Iter 9 deltaMeans = 0.028524638349547438
+Iter 10 deltaMeans = 0.020299269547165655
+Iter 11 deltaMeans = 0.01193945329483792
+Iter 12 deltaMeans = 0.00935254239872263
+KMeans converged with deltaMeans = 0.00935254239872263
+.......*
+optimization finished, #iter = 79
+Objective value = -10.3650
+nSV = 1115
+.....*
+optimization finished, #iter = 51
+Objective value = -5.84056
+nSV = 923
+............*...*
+optimization finished, #iter = 155
+Objective value = -15.2735
+nSV = 1754
+......*..*
+optimization finished, #iter = 81
+Objective value = -8.97508
+nSV = 1626
+............................................................*..*.*
+optimization finished, #iter = 631
+Objective value = -5.68375
+nSV = 935
+..............*.*
+optimization finished, #iter = 153
+Objective value = -8.00071
+nSV = 1000
+........*.*
+optimization finished, #iter = 96
+Objective value = -16.3896
+nSV = 1695
+...*.
+optimization finished, #iter = 40
+Objective value = -3.92781
+nSV = 1190
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -34.1949
+nSV = 1879
+.........*
+optimization finished, #iter = 98
+Objective value = -7.66198
+nSV = 1295
+....................................................*.........**.*
+optimization finished, #iter = 621
+Objective value = -58.9089
+nSV = 2550
+...*.
+optimization finished, #iter = 40
+Objective value = -0.427724
+nSV = 255
+.................................*............*.*
+optimization finished, #iter = 461
+Objective value = -6.29729
+nSV = 1022
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -8.79775
+nSV = 1733
+..........*..*.
+optimization finished, #iter = 130
+Objective value = -11.6545
+nSV = 1392
+.......................................*...*
+optimization finished, #iter = 422
+Objective value = -19.2536
+nSV = 1797
+.....**
+optimization finished, #iter = 58
+Objective value = -4.54328
+nSV = 981
+.......*
+optimization finished, #iter = 78
+Objective value = -1.96338
+nSV = 645
+................*....**
+optimization finished, #iter = 208
+Objective value = -22.8181
+nSV = 1855
+....*
+optimization finished, #iter = 43
+Objective value = -3.49748
+nSV = 958
+IndividualSVMWithKmeans[k:20]
+Micro confusion matrix:
+	0	1
+0	13221	3906
+1	6799	49985
+Micro F1:
+Class 0: 0.7118	Class 1: 0.9033	
+Macro F1:
+Class 0: 0.5033	Class 1: 0.8384	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 9.682773354933083
+Iter 2 deltaMeans = 0.6143566639823244
+Iter 3 deltaMeans = 0.22443245300484505
+Iter 4 deltaMeans = 0.11139244393998671
+Iter 5 deltaMeans = 0.0973887607436259
+Iter 6 deltaMeans = 0.08885172572406796
+Iter 7 deltaMeans = 0.072615560259636
+Iter 8 deltaMeans = 0.05472642374928094
+Iter 9 deltaMeans = 0.028351167269524025
+Iter 10 deltaMeans = 0.010940128008088967
+Iter 11 deltaMeans = 0.008379835585395679
+KMeans converged with deltaMeans = 0.008379835585395679
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -39.6952
+nSV = 2004
+............****
+optimization finished, #iter = 129
+Objective value = -6.91421
+nSV = 1083
+.............*...**.
+optimization finished, #iter = 170
+Objective value = -16.7761
+nSV = 1904
+..................................*.............*.*
+optimization finished, #iter = 481
+Objective value = -56.3495
+nSV = 2556
+...........................................................*.......*
+optimization finished, #iter = 662
+Objective value = -6.79912
+nSV = 1012
+.....................................................................*.....****
+optimization finished, #iter = 748
+Objective value = -27.9025
+nSV = 1715
+.......*
+optimization finished, #iter = 74
+Objective value = -10.8980
+nSV = 1458
+....*
+optimization finished, #iter = 43
+Objective value = -5.33375
+nSV = 1274
+....**
+optimization finished, #iter = 46
+Objective value = -3.77976
+nSV = 994
+..........*.*
+optimization finished, #iter = 113
+Objective value = -9.51524
+nSV = 1435
+...................................................*............*.**
+optimization finished, #iter = 644
+Objective value = -70.6230
+nSV = 2660
+..*
+optimization finished, #iter = 23
+Objective value = -2.31253
+nSV = 686
+.......................................*.........*.*.
+optimization finished, #iter = 500
+Objective value = -10.6258
+nSV = 1235
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -11.4913
+nSV = 1888
+............................*.........*.***
+optimization finished, #iter = 387
+Objective value = -44.8505
+nSV = 2341
+IndividualSVMWithKmeans[k:15]
+Micro confusion matrix:
+	0	1
+0	13106	3636
+1	6914	50255
+Micro F1:
+Class 0: 0.7130	Class 1: 0.9050	
+Macro F1:
+Class 0: 0.5021	Class 1: 0.8395	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: Iter 13 deltaMeans = 0.011759178261986691
+Iter 14 deltaMeans = 0.006986230371115232
+KMeans converged with dIter 2 deltaMeans = 1.2826663763621737
+Iter 3 deltaMeans = 0.5624829594273715
+Iter 4 deltaMeans = 0.290304992933902
+Iter 5 deltaMeans = 0.11052109175778568
+Iter 6 deltaMeans = 0.05580461007375359
+Iter 7 deltaMeans = 0.05270240091134071
+Iter 8 deltaMeans = 0.06922286215242635
+Iter 9 deltaMeans = 0.06437007814134676
+Iter 10 deltaMeans = 0.05302159043496113
+Iter 11 deltaMeans = 0.07314891872618612
+Iter 12 deltaMeans = 0.08821085850276955
+Iter 13 deltaMeans = 0.05400740716814023
+Iter 14 deltaMeans = 0.026316611757103203
+Iter 15 deltaMeans = 0.014691977881705287
+Iter 16 deltaMeans = 0.010527333636456415
+Iter 17 deltaMeans = 0.009542613135561706
+KMeans converged with deltaMeans = 0.009542613135561706
+....*
+optimization finished, #iter = 44
+Objective value = -5.62860
+nSV = 804
+....*
+optimization finished, #iter = 48
+Objective value = -4.43367
+nSV = 763
+....*
+optimization finished, #iter = 45
+Objective value = -5.05907
+nSV = 1264
+.....*
+optimization finished, #iter = 56
+Objective value = -6.84942
+nSV = 1396
+...........................................................*..*
+optimization finished, #iter = 612
+Objective value = -4.99289
+nSV = 814
+......**
+optimization finished, #iter = 64
+Objective value = -3.75846
+nSV = 763
+.....**.
+optimization finished, #iter = 60
+Objective value = -8.60572
+nSV = 1272
+.......*
+optimization finished, #iter = 74
+Objective value = -6.64332
+nSV = 1288
+..................................................................................................*..
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -20.6505
+nSV = 1663
+.......................*.*
+optimization finished, #iter = 246
+Objective value = -5.06519
+nSV = 1023
+.....*.
+optimization finished, #iter = 60
+Objective value = -6.11371
+nSV = 1444
+.......*
+optimization finished, #iter = 73
+Objective value = -0.360073
+nSV = 217
+................................*........*
+optimization finished, #iter = 404
+Objective value = -3.26790
+nSV = 723
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -6.57266
+nSV = 1463
+.........*
+optimization finished, #iter = 91
+Objective value = -7.74784
+nSV = 1162
+.........*
+optimization finished, #iter = 95
+Objective value = -10.5641
+nSV = 1480
+.*
+optimization finished, #iter = 15
+Objective value = -0.524539
+nSV = 288
+.............................................................................*...**.**.*
+optimization finished, #iter = 824
+Objective value = -1.68061
+nSV = 577
+.......*.
+optimization finished, #iter = 80
+Objective value = -9.68415
+nSV = 1168
+....*
+optimization finished, #iter = 41
+Objective value = -3.33272
+nSV = 923
+....*
+optimization finished, #iter = 45
+Objective value = -4.26182
+nSV = 765
+..........*
+optimization finished, #iter = 107
+Objective value = -6.54083
+nSV = 929
+......*
+optimization finished, #iter = 67
+Objective value = -6.09730
+nSV = 1055
+....*
+optimization finished, #iter = 41
+Objective value = -1.41259
+nSV = 475
+.....*
+optimization finished, #iter = 58
+Objective value = -6.67782
+nSV = 1071
+....*
+optimization finished, #iter = 44
+Objective value = -3.38330
+nSV = 1039
+...........*.*
+optimization finished, #iter = 124
+Objective value = -5.13578
+nSV = 1116
+.......**
+optimization finished, #iter = 79
+Objective value = -3.46409
+nSV = 874
+.............................................................*....**
+optimization finished, #iter = 656
+Objective value = -6.63166
+nSV = 1097
+..............*.......**
+optimization finished, #iter = 214
+Objective value = -22.7819
+nSV = 1879
+IndividualSVMWithKmeans[k:30]
+Micro confusion matrix:
+	0	1
+0	13490	3991
+1	6530	49900
+Micro F1:
+Class 0: 0.7194	Class 1: 0.9046	
+Macro F1:
+Class 0: 0.5114	Class 1: 0.8392	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 20.367601547661334
+Iter 2 deltaMeans = 1.4655759138443312
+Iter 3 deltaMeans = 0.7243244394033876
+Iter 4 deltaMeans = 0.4058802745041574
+Iter 5 deltaMeans = 0.2053063282557831
+Iter 6 deltaMeans = 0.10640916001435674
+Iter 7 deltaMeans = 0.060667826431012206
+Iter 8 deltaMeans = 0.03649862670609072
+Iter 9 deltaMeans = 0.026961501380229902
+Iter 10 deltaMeans = 0.02277420325679058
+Iter 11 deltaMeans = 0.027829877642239653
+Iter 12 deltaMeans = 0.03501224488502108
+Iter 13 deltaMeans = 0.034656425598742824
+Iter 14 deltaMeans = 0.026302285989599272
+Iter 15 deltaMeans = 0.017019493718334888
+Iter 16 deltaMeans = 0.0066120501328834624
+KMeans converged with deltaMeans = 0.0066120501328834624
+..*.
+optimization finished, #iter = 30
+Objective value = -2.99751
+nSV = 587
+....**
+optimization finished, #iter = 49
+Objective value = -4.19455
+nSV = 736
+....*
+optimization finished, #iter = 46
+Objective value = -4.58400
+nSV = 1235
+.....*
+optimization finished, #iter = 54
+Objective value = -6.51632
+nSV = 1377
+.........................................................*...*
+optimization finished, #iter = 603
+Objective value = -4.31912
+nSV = 722
+.....*
+optimization finished, #iter = 56
+Objective value = -3.49815
+nSV = 747
+........***
+optimization finished, #iter = 89
+Objective value = -9.22493
+nSV = 1513
+......*
+optimization finished, #iter = 66
+Objective value = -5.64843
+nSV = 1187
+.............................................................................................*.......
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -19.0668
+nSV = 1599
+.........*
+optimization finished, #iter = 92
+Objective value = -1.27265
+nSV = 420
+......*
+optimization finished, #iter = 63
+Objective value = -5.89540
+nSV = 1424
+...*
+optimization finished, #iter = 31
+Objective value = -0.360678
+nSV = 222
+.................................*......*
+optimization finished, #iter = 395
+Objective value = -3.49345
+nSV = 737
+.*
+optimization finished, #iter = 19
+Objective value = -0.803119
+nSV = 480
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -5.48137
+nSV = 1153
+..........*
+optimization finished, #iter = 104
+Objective value = -13.8876
+nSV = 1657
+.*
+optimization finished, #iter = 14
+Objective value = -0.532196
+nSV = 285
+................................................................*
+optimization finished, #iter = 648
+Objective value = -1.64753
+nSV = 577
+.......*.*
+optimization finished, #iter = 83
+Objective value = -8.51036
+nSV = 1092
+....*
+optimization finished, #iter = 45
+Objective value = -3.08971
+nSV = 913
+....*
+optimization finished, #iter = 43
+Objective value = -3.87442
+nSV = 730
+................*.**
+optimization finished, #iter = 176
+Objective value = -6.68960
+nSV = 910
+.......*
+optimization finished, #iter = 79
+Objective value = -6.33069
+nSV = 1066
+....*
+optimization finished, #iter = 41
+Objective value = -1.41969
+nSV = 478
+...........*.*
+optimization finished, #iter = 123
+Objective value = -9.42275
+nSV = 1287
+..*
+optimization finished, #iter = 25
+Objective value = -1.56700
+nSV = 564
+.....*
+optimization finished, #iter = 58
+Objective value = -5.12164
+nSV = 1122
+......**
+optimization finished, #iter = 69
+Objective value = -1.06808
+nSV = 321
+...........................................................*....**
+optimization finished, #iter = 639
+Objective value = -5.99433
+nSV = 1035
+.................*
+optimization finished, #iter = 177
+Objective value = -19.6727
+nSV = 1706
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -4.96676
+nSV = 1319
+........*
+optimization finished, #iter = 86
+Objective value = -2.86431
+nSV = 644
+.*
+optimization finished, #iter = 18
+Objective value = -0.931180
+nSV = 409
+.......*
+optimization finished, #iter = 76
+Objective value = -2.07472
+nSV = 632
+...*
+optimization finished, #iter = 32
+Objective value = -4.96030
+nSV = 752
+IndividualSVMWithKmeans[k:35]
+Micro confusion matrix:
+	0	1
+0	13249	3821
+1	6771	50070
+Micro F1:
+Class 0: 0.7144	Class 1: 0.9043	
+Macro F1:
+Class 0: 0.5038	Class 1: 0.8388	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 23.09730687943343
+Iter 2 deltaMeans = 1.7690050527105
+Iter 3 deltaMeans = 0.8080236770093794
+Iter 4 deltaMeans = 0.4415387999938697
+Iter 5 deltaMeans = 0.22974925291010773
+Iter 6 deltaMeans = 0.13466886319010962
+Iter 7 deltaMeans = 0.06914335131051386
+Iter 8 deltaMeans = 0.03791553261528868
+Iter 9 deltaMeans = 0.026507031807828874
+Iter 10 deltaMeans = 0.024949515213343654
+Iter 11 deltaMeans = 0.0320347115677051
+Iter 12 deltaMeans = 0.03543664020419923
+Iter 13 deltaMeans = 0.028437811633176713
+Iter 14 deltaMeans = 0.016839195986661726
+#iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -7.36424
+nSV = 998
+............................*.....*
+optimization finished, #iter = 339
+Objective value = -1.73646
+nSV = 485
+..*
+optimization finished, #iter = 25
+Objective value = -0.336692
+nSV = 208
+....*
+optimization finished, #iter = 42
+Objective value = -2.26021
+nSV = 623
+...........*
+optimization finished, #iter = 118
+Objective value = -0.801058
+nSV = 475
+.........*
+optimization finished, #iter = 96
+Objective value = -8.03488
+nSV = 1181
+................*.
+optimization finished, #iter = 170
+Objective value = -1.62852
+nSV = 553
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -4.72771
+nSV = 1272
+.*
+optimization finished, #iter = 14
+Objective value = -0.501071
+nSV = 276
+......*.*
+optimization finished, #iter = 73
+Objective value = -8.95742
+nSV = 1153
+...*
+optimization finished, #iter = 31
+Objective value = -1.64066
+nSV = 483
+.......*
+optimization finished, #iter = 77
+Objective value = -3.43995
+nSV = 731
+.*
+optimization finished, #iter = 17
+Objective value = -0.980665
+nSV = 403
+..*
+optimization finished, #iter = 25
+Objective value = -1.78904
+nSV = 613
+..*.
+optimization finished, #iter = 30
+Objective value = -1.99366
+nSV = 415
+..*
+optimization finished, #iter = 25
+Objective value = -1.48611
+nSV = 542
+...*.
+optimization finished, #iter = 40
+Objective value = -1.37414
+nSV = 459
+....*
+optimization finished, #iter = 45
+Objective value = -5.18441
+nSV = 833
+.........*.
+optimization finished, #iter = 100
+Objective value = -9.58973
+nSV = 1222
+...........*..*
+optimization finished, #iter = 131
+Objective value = -15.0571
+nSV = 1682
+.....**.
+optimization finished, #iter = 60
+Objective value = -2.69265
+nSV = 935
+.........................................................*.*
+optimization finished, #iter = 586
+Objective value = -4.12064
+nSV = 716
+......*
+optimization finished, #iter = 61
+Objective value = -5.84732
+nSV = 1433
+..................................................................................*....*
+optimization finished, #iter = 862
+Objective value = -9.92557
+nSV = 1376
+....*
+optimization finished, #iter = 42
+Objective value = -3.00462
+nSV = 895
+........*
+optimization finished, #iter = 81
+Objective value = -5.86351
+nSV = 1037
+.*
+optimization finished, #iter = 14
+Objective value = -0.423044
+nSV = 244
+....*
+optimization finished, #iter = 42
+Objective value = -3.10715
+nSV = 703
+...*
+optimization finished, #iter = 38
+Objective value = -2.97244
+nSV = 694
+..*
+optimization finished, #iter = 27
+Objective value = -2.84879
+nSV = 570
+..............*
+optimization finished, #iter = 141
+Objective value = -3.98139
+nSV = 945
+IndividualSVMWithKmeans[k:40]
+Micro confusion matrix:
+	0	1
+0	13312	4030
+1	6708	49861
+Micro F1:
+Class 0: 0.7126	Class 1: 0.9028	
+Macro F1:
+Class 0: 0.5042	Class 1: 0.8359	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+Entering KMeans iteration
+Iter 1 deltaMeans = 27.932454766315647
+Iter 2 deltaMeans = 2.1193135112818386
+Iter 3 deltaMeans = 0.8241650633449337
+Iter 4 deltaMeans = 0.4124620318963469
+Iter 5 deltaMeans = 0.20869962580437373
+Iter 6 deltaMeans = 0.12107380189663097
+Iter 7 deltaMeans = 0.09089630456291475
+Iter 8 deltaMeans = 0.10329428594275225
+Iter 9 deltaMeans = 0.08648843654114591
+Iter 10 deltaMeans = 0.041005955439899044
+Iter 11 deltaMeans = 0.03344466740222829
+Iter 12 deltaMeans = 0.0333154652458183
+Iter 13 deltaMeans = 0.02810481435193435
+Iter 14 deltaMeans = 0.018770089992187322
+Iter 15 deltaMeans = 0.012334773309600089
+Iter 16 deltaMeans = 0.0070829859359735625
+KMeans converged with deltaMeans = 0.0070829859359735625
+.*.
+optimization finished, #iter = 20
+Objective value = -1.10607
+nSV = 384
+...*
+optimization finished, #iter = 38
+Objective value = -3.22773
+nSV = 563
+....*
+optimization finished, #iter = 41
+Objective value = -4.14296
+nSV = 1150
+....*
+optimization finished, #iter = 46
+Objective value = -5.30465
+nSV = 1237
+.................................................*.*.
+optimization finished, #iter = 510
+Objective value = -12.7908
+nSV = 1304
+.....*
+optimization finished, #iter = 58
+Objective value = -6.63879
+nSV = 1215
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -1.29285
+nSV = 193
+...*.
+optimization finished, #iter = 40
+Objective value = -3.36166
+nSV = 670
+.....*
+optimization finished, #iter = 51
+Objective value = -4.04308
+nSV = 947
+....................................................................*.....*
+optimization finished, #iter = 732
+Objective value = -5.46680
+nSV = 831
+......................*
+optimization finished, #iter = 228
+Objective value = -1.05777
+nSV = 367
+..*
+optimization finished, #iter = 28
+Objective value = -0.326961
+nSV = 193
+......*
+optimization finished, #iter = 68
+Objective value = -1.85413
+nSV = 545
+.*
+optimization finished, #iter = 18
+Objective value = -0.724264
+nSV = 431
+.........................................................*.*
+optimization finished, #iter = 581
+Objective value = -2.98809
+nSV = 518
+................*
+optimization finished, #iter = 166
+Objective value = -1.52356
+nSV = 525
+....................................................................................................
+optimization finished, #iter = 1000
+
+WARNING: reaching max number of iterations
+Using -s 2 may be faster (also see FAQ)
+
+Objective value = -3.03334
+nSV = 1009
+.*
+optimization finished, #iter = 14
+Objective value = -0.473451
+nSV = 261
+......*..*
+optimization finished, #iter = 81
+Objective value = -8.05006
+nSV = 1071
+....*
+optimization finished, #iter = 45
+Objective value = -1.40813
+nSV = 429
+.....*
+optimization finished, #iter = 59
+Objective value = -3.04713
+nSV = 652
+.*
+optimization finished, #iter = 16
+Objective value = -0.860413
+nSV = 342
+..*
+optimization finished, #iter = 28
+Objective value = -1.59012
+nSV = 546
+..*
+optimization finished, #iter = 28
+Objective value = -1.91899
+nSV = 397
+..*
+optimization finished, #iter = 22
+Objective value = -1.39321
+nSV = 495
+....*
+optimization finished, #iter = 41
+Objective value = -1.32332
+nSV = 428
+...*
+optimization finished, #iter = 38
+Objective value = -4.64320
+nSV = 784
+...*
+optimization finished, #iter = 33
+Objective value = -2.37011
+nSV = 761
+.........**
+optimization finished, #iter = 96
+Objective value = -17.8079
+nSV = 1671
+...*.
+optimization finished, #iter = 40
+Objective value = -2.19067
+nSV = 788
+......*
+optimization finished, #iter = 68
+Objective value = -2.17176
+nSV = 669
+.....**
+optimization finished, #iter = 55
+Objective value = -4.90352
+nSV = 1294
+.....*
+optimization finished, #iter = 52
+Objective value = -5.76098
+nSV = 1028
+....*
+optimization finished, #iter = 42
+Objective value = -2.93744
+nSV = 867
+....*
+optimization finished, #iter = 46
+Objective value = -5.35398
+nSV = 971
+.*
+optimization finished, #iter = 14
+Objective value = -0.408312
+nSV = 232
+....*
+optimization finished, #iter = 47
+Objective value = -2.75599
+nSV = 629
+...*
+optimization finished, #iter = 36
+Objective value = -2.37579
+nSV = 609
+....*.
+optimization finished, #iter = 50
+Objective value = -1.97288
+nSV = 663
+......*
+optimization finished, #iter = 63
+Objective value = -3.08324
+nSV = 810
+........*
+optimization finished, #iter = 84
+Objective value = -7.56366
+nSV = 1117
+.*
+optimization finished, #iter = 17
+Objective value = -0.630805
+nSV = 325
+...*
+optimization finished, #iter = 36
+Objective value = -3.80567
+nSV = 855
+........*
+optimization finished, #iter = 81
+Objective value = -3.56830
+nSV = 859
+...*
+optimization finished, #iter = 32
+Objective value = -1.97198
+nSV = 638
+.......*.*
+optimization finished, #iter = 82
+Objective value = -4.36260
+nSV = 1005
+............**.
+optimization finished, #iter = 130
+Objective value = -0.576457
+nSV = 197
+.*
+optimization finished, #iter = 14
+Objective value = -0.490992
+nSV = 280
+.*.
+optimization finished, #iter = 20
+Objective value = -0.922365
+nSV = 488
+..*
+optimization finished, #iter = 24
+Objective value = -1.66097
+nSV = 717
+IndividualSVMWithKmeans[k:50]
+Micro confusion matrix:
+	0	1
+0	12991	3717
+1	7029	50174
+Micro F1:
+Class 0: 0.7074	Class 1: 0.9033	
+Macro F1:
+Class 0: 0.4959	Class 1: 0.8365	
+
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)

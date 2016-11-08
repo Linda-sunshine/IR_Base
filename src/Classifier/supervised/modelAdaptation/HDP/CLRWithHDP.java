@@ -251,12 +251,12 @@ public class CLRWithHDP extends CLRWithDP {
 		double[] psi = r.getHDPThetaStar().getPsiModel();
 		//we will integrate it out
 		if(psi == null){
-			return r.getL4NewCluster()/1000;
+			return r.getL4NewCluster();
 		} else {		
 			double L = 0;
 			for(_SparseFeature fv: r.getLMSparse())
 				L += fv.getValue() * psi[fv.getIndex()];			
-			return L/1000;
+			return L;
 		}
 	}
 	
