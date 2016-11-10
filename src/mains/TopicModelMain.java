@@ -463,7 +463,7 @@ public class TopicModelMain {
 				double tParam = 1;
 				double sParam = 1;
 				double gammaParam = 0.01;
-				int clusterNum = 1;
+				int clusterNum = 2;
 				model = new sparseClusterDCMLDA(gibbs_iteration, converge,
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
