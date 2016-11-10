@@ -85,6 +85,7 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 	}
 
 	public double calculate_E_step(_Doc d) {
+		// System.out.println("docName\t" + d.getName());
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
 		DCMDoc.permutation();
@@ -110,14 +111,59 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		}
 
 		// m_clusterSamplingCache[0] = 1;
-		p += 1;
+		// p += 1;
 		
+		double avgClusterProb = 0;
+		double maxClusterProb = 0;
+		double minClusterProb = 0;
+
 		for (int c = 0; c < m_clusterNum; c++) {
 			double term1 = wordByClusterProb(d, c);
 			term1 = clusterProb(c);
 
-			m_clusterSamplingCache[c] = wordByClusterProb(d, c) * clusterProb(c);
+			m_clusterSamplingCache[c] = wordByClusterProb(d, c)
+					+ clusterProb(c);
+
+			avgClusterProb = (avgClusterProb * (c) + m_clusterSamplingCache[c])
+						/ ((c + 1) * 1.0);
+
+			if (c == 0)
+				maxClusterProb = m_clusterSamplingCache[c];
+			else if (m_clusterSamplingCache[c] > maxClusterProb)
+				maxClusterProb = m_clusterSamplingCache[c];
+
+		}
+
+		boolean overflowFlag = false;
+		for (int c = 0; c < m_clusterNum; c++) {
+			m_clusterSamplingCache[c] = Math.exp(m_clusterSamplingCache[c]
+					- maxClusterProb);
+			if (m_clusterSamplingCache[c] > Double.MAX_VALUE) {
+				clusterIndex = c;
+				System.out.println("maximum overflow\t" + Double.MAX_VALUE);
+				overflowFlag = true;
+				break;
+			} else {
+				if (m_clusterSamplingCache[c] < Double.MIN_VALUE) {
+					m_clusterSamplingCache[c] = 0;
+					// System.out.println("minimum overflow\t" +
+					// Double.MIN_VALUE);
+				}
+			}
 			p += m_clusterSamplingCache[c];
+
+		}
+
+		if (overflowFlag) {
+			DCMDoc.m_clusterIndicator = clusterIndex;
+			m_clusterStats[clusterIndex]++;
+			for (_Word w : DCMDoc.getWords()) {
+				int wid = w.getIndex();
+				int tid = w.getTopic();
+				m_clusterTopicWordStats[clusterIndex][tid][wid]++;
+				m_clusterTopicStats[clusterIndex][tid]++;
+			}
+			return;
 		}
 
 		p *= m_rand.nextDouble();
@@ -128,8 +174,11 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			}
 		}
 
-		if (clusterIndex >= m_clusterNum)
+		if (clusterIndex >= m_clusterNum) {
 			System.out.println("p\t" + p);
+			for (int c = 0; c < m_clusterNum; c++)
+				System.out.println("c\t" + m_clusterSamplingCache[c]);
+		}
 		DCMDoc.m_clusterIndicator = clusterIndex;
 		m_clusterStats[clusterIndex]++;
 		for (_Word w : DCMDoc.getWords()) {
@@ -183,6 +232,13 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 	// return wordClusterProb;
 	// }
 
+	// protected double clusterProb(int clusterIndex) {
+	// double clusterProb = 0;
+	// clusterProb = (m_gamma + m_clusterStats[clusterIndex])
+	// / (m_gamma + m_clusterStats[0]);
+	// return clusterProb;
+	// }
+
 	protected double wordByClusterProb(_Doc d, int clusterIndex) {
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
@@ -206,18 +262,17 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 						+ m_clusterTopicWordStats[clusterIndex][k][v];
 
 				iter += 1;
-				product += Math.log(gammaRatio(termc0,
-						DCMDoc.m_wordTopic_stat[k][v]));
+				product += logGammaRatio(termc0, DCMDoc.m_wordTopic_stat[k][v]);
 			}
 			if (DCMDoc.m_sstat[k] == 0)
 				continue;
 			termc = m_totalBeta[k] + m_clusterTopicStats[clusterIndex][k];
 
 			wordClusterProb += product
-					- Math.log(gammaRatio(termc, DCMDoc.m_sstat[k]));
+					- logGammaRatio(termc, DCMDoc.m_sstat[k]);
 		}
 
-		System.out.println("iter\t" + iter);
+		// System.out.println("iter\t" + iter);
 		return wordClusterProb;
 	}
 
@@ -243,9 +298,20 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		return ratio;
 	}
 
+	protected double logGammaRatio(double cluster0Start, double iteration) {
+		double ratio = 0;
+
+		while (iteration > 0) {
+			ratio += Math.log(cluster0Start + iteration - 1);
+			iteration -= 1;
+		}
+
+		return ratio;
+	}
+
 	protected double clusterProb(int clusterIndex) {
 		double clusterProb = 0;
-		clusterProb = (m_gamma + m_clusterStats[clusterIndex])/(m_gamma + m_clusterStats[0]);
+		clusterProb = Math.log(m_gamma + m_clusterStats[clusterIndex]);
 		return clusterProb;
 	}
 

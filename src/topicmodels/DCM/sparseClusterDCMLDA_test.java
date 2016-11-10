@@ -9,7 +9,6 @@ import java.util.Arrays;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._RankItem;
 import structures._Word;
@@ -160,12 +159,13 @@ public class sparseClusterDCMLDA_test extends sparseClusterDCMLDA{
 	}
 
 	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
-		String topicAssignmentFile = d.getName() + ".txt";
+		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+		String topicAssignmentFile = DCMDoc.getName() + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(topicFolder,
 					topicAssignmentFile));
-
-			for (_Word w : d.getWords()) {
+			pw.println("cluster\t" + DCMDoc.m_clusterIndicator);
+			for (_Word w : DCMDoc.getWords()) {
 				int index = w.getIndex();
 				int topic = w.getTopic();
 
