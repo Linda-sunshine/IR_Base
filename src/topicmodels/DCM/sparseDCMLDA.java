@@ -45,7 +45,16 @@ public class sparseDCMLDA extends DCMLDA{
 
 		imposePrior();
 	}
-
+	
+	protected double calculate_log_likelihood() {
+		double logLikelihood = 0.0;
+		for (_Doc d : m_trainSet) {
+			logLikelihood += calculate_log_likelihood(d);
+		}
+		logLikelihood 
+		return logLikelihood;
+	}
+	
 	protected double calculate_log_likelihood(_Doc d) {
 		double docLogLikelihood = 0.0;
 		

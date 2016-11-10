@@ -367,4 +367,44 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		for (int k = 0; k < number_of_topics; k++)
 			DCMDoc.m_topicIndicator_prob[k] /= DCMDoc.m_MStepIter;
 	}
+	
+	protected double calculate_log_likelihood(_Doc d) {
+		double docLogLikelihood = 0.0;
+		
+		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+
+		for (int k = 0; k < number_of_topics; k++) {
+			if(DCMDoc.m_topicIndicator[k]==false)
+				continue;
+			double term = Utils.lgamma(DCMDoc.m_sstat[k] + m_alpha[k]);
+			docLogLikelihood += term;
+
+			term = Utils.lgamma(m_alpha[k]);
+			docLogLikelihood -= term;
+
+		}
+
+		docLogLikelihood += Utils.lgamma(DCMDoc.m_alphaDoc);
+		docLogLikelihood -= Utils.lgamma(DCMDoc.getTotalDocLength() + DCMDoc.m_alphaDoc);
+
+		for (int k = 0; k < number_of_topics; k++) {
+			for (int v = 0; v < vocabulary_size; v++) {
+				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v]+ m_mu	* m_beta[k][v]);
+				docLogLikelihood += term;
+
+				term = Utils.lgamma(m_mu * m_beta[k][v]);
+				docLogLikelihood -= term;
+
+			}
+			docLogLikelihood += Utils.lgamma(m_mu * m_totalBeta[k]);
+			docLogLikelihood -= Utils.lgamma(DCMDoc.m_sstat[k] + m_mu
+					* m_totalBeta[k]);
+		}
+
+		docLogLikelihood += Utils.lgamma(m_t+m_s)-Utils.lgamma(m_t)-Utils.lgamma(m_s);
+		docLogLikelihood += Utils.lgamma(DCMDoc.m_indicatorTrue_stat+m_s)+Utils.lgamma(m_t+number_of_topics-DCMDoc.m_indicatorTrue_stat)-Utils.lgamma(m_t+m_s+number_of_topics);
+		
+		return docLogLikelihood;
+	}
+	
 }
