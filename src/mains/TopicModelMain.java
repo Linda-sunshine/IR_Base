@@ -12,9 +12,12 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
 import topicmodels.DCM.DCMLDA_test;
+import topicmodels.DCM.sparseClusterDCMLDA;
 import topicmodels.DCM.sparseDCMLDA_test;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Gibbs_test;
+import topicmodels.LDA.sparseLDA;
+import topicmodels.LDA.sparseLDA_test;
 import topicmodels.correspondenceModels.ACCTM;
 import topicmodels.correspondenceModels.ACCTM_C;
 import topicmodels.correspondenceModels.ACCTM_CHard;
@@ -62,11 +65,12 @@ public class TopicModelMain {
 
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
-		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test
-		String topicmodel = "sparseDCMLDA_test";
+		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
+		//sparseClusterDCMLDA
+		String topicmodel = "sparseClusterDCMLDA";
 
 		String category = "tablet";
-		int number_of_topics = 5;
+		int number_of_topics = 15;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -223,7 +227,7 @@ public class TopicModelMain {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 						lambda, number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("LDA_Variational_multithread")) {		
@@ -281,7 +285,7 @@ public class TopicModelMain {
 				alpha = 1.01;
 				double ksi = 800;
 				double tau = 0.7;
-				number_of_topics = 30;
+//				number_of_topics = 30;
 				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma);
@@ -292,7 +296,7 @@ public class TopicModelMain {
 				alpha = 1.01;
 				double ksi = 800;
 				double tau = 0.7;
-				number_of_topics = 30;
+//				number_of_topics = 30;
 				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma);
@@ -300,7 +304,7 @@ public class TopicModelMain {
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
@@ -310,7 +314,7 @@ public class TopicModelMain {
 				model.LoadPrior(priorFile, eta);
 
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				// in gibbs sampling, no need to compute
 				// log-likelihood during sampling
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
@@ -340,7 +344,7 @@ public class TopicModelMain {
 						ksi, tau);
 
 			}else if(topicmodel.equals("DCMLDA4AC_test")){
-				number_of_topics = 5;
+//				number_of_topics = 5;
 				converge = 1e-3;
 				double ksi = 800;
 				double tau = 0.7;
@@ -360,7 +364,7 @@ public class TopicModelMain {
 						beta-1, c, lambda, number_of_topics, alpha-1, burnIn,
 						gibbs_lag, ksi, tau);
 			}else if(topicmodel.equals("DCMDMCorrLDA_multi_E_test")){
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
@@ -373,7 +377,7 @@ public class TopicModelMain {
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
 			}else if(topicmodel.equals("DCMDMCorrLDA_test")){
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
@@ -386,7 +390,7 @@ public class TopicModelMain {
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
 			} else if (topicmodel.equals("DCMDMMCorrLDA_test")) {
-				number_of_topics = 50;
+//				number_of_topics = 50;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
@@ -400,7 +404,7 @@ public class TopicModelMain {
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
 						newtonConverge);
 			}else if (topicmodel.equals("DCMCorrLDA_test")) {
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
@@ -428,9 +432,9 @@ public class TopicModelMain {
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				double tParam = 1;
-				double sParam = 10;
+				double sParam = 1;
 				model = new sparseDCMLDA_test(gibbs_iteration, converge,
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
@@ -441,6 +445,34 @@ public class TopicModelMain {
 				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
 				 */
 
+			}else if(topicmodel.equals("sparseLDA_test")){
+				converge = 1e-3;
+				
+//				number_of_topics = 15;
+				double tParam = 1;
+				double sParam = 1;
+				
+				model = new sparseLDA_test(gibbs_iteration, 0,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag,  tParam, sParam);
+			}else if(topicmodel.equals("sparseClusterDCMLDA")){
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double tParam = 1;
+				double sParam = 1;
+				double gammaParam = 0.01;
+				int clusterNum = 1;
+				model = new sparseClusterDCMLDA(gibbs_iteration, converge,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag, newtonIter, newtonConverge, tParam, sParam, clusterNum, gammaParam);
+
+				/*
+				 * String priorFile = "./data/Features/" + articleType +
+				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
+				 */
 			}
 			
 			model.setDisplayLap(displayLap);

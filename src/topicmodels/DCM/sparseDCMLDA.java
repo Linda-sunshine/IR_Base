@@ -109,7 +109,6 @@ public class sparseDCMLDA extends DCMLDA{
 
 	}
 	
-	
 	public double calculate_E_step(_Doc d){
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
 
@@ -159,6 +158,8 @@ public class sparseDCMLDA extends DCMLDA{
 
 				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc)
 						* wordTopicProb(tid, wid, DCMDoc);
+				if(m_topicProbCache[tid]<0)
+					System.out.println("negative\t"+m_topicProbCache[tid]);
 				p += m_topicProbCache[tid];
 			}
 			
@@ -197,7 +198,7 @@ public class sparseDCMLDA extends DCMLDA{
 				double term1 = DCMDoc.m_alphaDoc;
 				double term2 = m_alpha[k];
 				double term3 = m_s + DCMDoc.m_indicatorTrue_stat;
-				double term4 = m_t + number_of_topics
+				double term4 = m_t + number_of_topics-1
 						- DCMDoc.m_indicatorTrue_stat;
 				//double term1 = DCMDoc.m_alphaDoc+m_alpha[k], DCMDoc.m_alphaDoc+m_alpha[k]+DCMDoc.getTotalDocLength());
 				//double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
@@ -230,12 +231,12 @@ public class sparseDCMLDA extends DCMLDA{
 	protected double gammaRatio(double nominator, double denominator){
 		double ratio = 1;
 		
-		double gap = denominator;
-		for(int i=0; i<gap; i++){
-			ratio *= (denominator-1-i);
+		double initialVal = denominator;
+		while(initialVal>nominator){
+			ratio *= (initialVal-1);
+			initialVal -= 1;
 		}
 		
-		ratio = 1.0/ratio;
 		return ratio;
 	}
 	
@@ -386,15 +387,23 @@ public class sparseDCMLDA extends DCMLDA{
 	}
 
 	protected void finalEst(){
-		double statisticsIter = 0;
+		runLastEM();
+		for (_Doc d : m_trainSet) {
+			estThetaInDoc(d);
+		}
+		estGlobalParameter();
+	}
+	
+	protected void runLastEM(){
+
 		for (int j = 0; j < number_of_iteration; j++) {
 			init();
-			if (j % 20 == 0) {
-				statisticsIter += 1;
-				for (_Doc d : m_trainSet) {
-					calculate_E_step(d);
+			for (_Doc d : m_trainSet) {
+				_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
-					_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+				calculate_E_step(DCMDoc);
+				if (j % 20 == 0) {
+					DCMDoc.m_MStepIter += 1;
 
 					for (int k = 0; k < number_of_topics; k++)
 						if (DCMDoc.m_topicIndicator[k] == true) {
@@ -407,41 +416,48 @@ public class sparseDCMLDA extends DCMLDA{
 				
 		}
 		
-		for(int k=0; k<number_of_topics; k++)
-			Arrays.fill(topic_term_probabilty[k], 0);
+		collectStats();
 		
+	}
+	
+	protected void collectStats(){
 		for(int k=0; k<number_of_topics; k++)
 			for(int v=0; v<vocabulary_size; v++)
-				topic_term_probabilty[k][v] += word_topic_sstat[k][v] + m_mu
+				topic_term_probabilty[k][v] = word_topic_sstat[k][v] + m_mu
 						* m_beta[k][v];
 
-		
-		for(int i=0; i<number_of_topics; i++)
-			Utils.L1Normalization(topic_term_probabilty[i]);
-		
 		for(_Doc d:m_trainSet){
 			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
-			Arrays.fill(DCMDoc.m_topics, 0);
 			
 			for (int k = 0; k < this.number_of_topics; k++) {
 				if(DCMDoc.m_topicIndicator[k]==false)
 					continue;
-				DCMDoc.m_topics[k] += DCMDoc.m_sstat[k] + m_alpha[k];
+				DCMDoc.m_topics[k] = DCMDoc.m_sstat[k] + m_alpha[k];
 	
 				for (int v = 0; v < vocabulary_size; v++){
-					DCMDoc.m_wordTopic_prob[k][v] += DCMDoc.m_wordTopic_stat[k][v]
+					DCMDoc.m_wordTopic_prob[k][v] = DCMDoc.m_wordTopic_stat[k][v]
 							+ m_mu * m_beta[k][v];
 				}
 			}
 		}
+	}
+	
+	protected void estThetaInDoc(_Doc d){
 		
-		for (_Doc d : m_trainSet) {
-			estThetaInDoc(d);
-			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
-			DCMDoc.m_topicIndicator_distribution /= statisticsIter
-					* number_of_topics;
-			for(int k=0; k<number_of_topics; k++)
-				DCMDoc.m_topicIndicator_prob[k] /= statisticsIter;
-		}
+		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+		for (int i = 0; i < number_of_topics; i++)
+			Utils.L1Normalization(DCMDoc.m_wordTopic_prob[i]);
+		Utils.L1Normalization(d.m_topics);
+
+		DCMDoc.m_topicIndicator_distribution /= DCMDoc.m_MStepIter
+				* number_of_topics;
+		for(int k=0; k<number_of_topics; k++)
+			DCMDoc.m_topicIndicator_prob[k] /= DCMDoc.m_MStepIter;
+	
+	}
+
+	protected void estGlobalParameter(){
+		for(int i=0; i<number_of_topics; i++)
+			Utils.L1Normalization(topic_term_probabilty[i]);
 	}
 }
