@@ -12,11 +12,10 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
 import topicmodels.DCM.DCMLDA_test;
-import topicmodels.DCM.sparseClusterDCMLDA;
+import topicmodels.DCM.sparseClusterDCMLDA_test;
 import topicmodels.DCM.sparseDCMLDA_test;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Gibbs_test;
-import topicmodels.LDA.sparseLDA;
 import topicmodels.LDA.sparseLDA_test;
 import topicmodels.correspondenceModels.ACCTM;
 import topicmodels.correspondenceModels.ACCTM_C;
@@ -67,7 +66,7 @@ public class TopicModelMain {
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
 		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
 		//sparseClusterDCMLDA
-		String topicmodel = "sparseClusterDCMLDA";
+		String topicmodel = "sparseClusterDCMLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 15;
@@ -456,15 +455,15 @@ public class TopicModelMain {
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
 						gibbs_lag,  tParam, sParam);
-			}else if(topicmodel.equals("sparseClusterDCMLDA")){
+			} else if (topicmodel.equals("sparseClusterDCMLDA_test")) {
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
 				double tParam = 1;
 				double sParam = 1;
 				double gammaParam = 0.01;
-				int clusterNum = 2;
-				model = new sparseClusterDCMLDA(gibbs_iteration, converge,
+				int clusterNum = 10;
+				model = new sparseClusterDCMLDA_test(gibbs_iteration, converge,
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,
 						gibbs_lag, newtonIter, newtonConverge, tParam, sParam, clusterNum, gammaParam);

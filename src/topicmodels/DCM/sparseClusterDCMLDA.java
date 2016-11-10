@@ -5,7 +5,6 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._Word;
 import utils.Utils;
@@ -72,6 +71,7 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		for (_Doc d : collection) {
 			((_Doc4SparseDCMLDA) d).setTopics4GibbsCluster(number_of_topics, m_alpha, m_clusterNum, vocabulary_size);
 			int cID = ((_Doc4SparseDCMLDA) d).m_clusterIndicator;
+			m_clusterStats[cID]++;
 			for (_Word w : d.getWords()) {
 				int tid = w.getTopic();
 				int wid = w.getIndex();
@@ -109,10 +109,10 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			m_clusterTopicStats[clusterIndex][tid]--;
 		}
 
-		m_clusterSamplingCache[0] = 1;
+		// m_clusterSamplingCache[0] = 1;
 		p += 1;
 		
-		for (int c = 1; c < m_clusterNum; c++) {
+		for (int c = 0; c < m_clusterNum; c++) {
 			double term1 = wordByClusterProb(d, c);
 			term1 = clusterProb(c);
 
@@ -128,6 +128,8 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			}
 		}
 
+		if (clusterIndex >= m_clusterNum)
+			System.out.println("p\t" + p);
 		DCMDoc.m_clusterIndicator = clusterIndex;
 		m_clusterStats[clusterIndex]++;
 		for (_Word w : DCMDoc.getWords()) {
@@ -138,34 +140,84 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		}
 	}
 
+	//
+	// protected double wordByClusterProb(_Doc d, int clusterIndex) {
+	// _Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+	//
+	// double wordClusterProb = 1;
+	// double term0 = 0;
+	// double term00 = 0;
+	// double termc = 0;
+	// double termc0 = 0;
+	//
+	// double product = 1;
+	// int iter = 0;
+	// for (int k = 0; k < number_of_topics; k++) {
+	// term0 = 0;
+	// product = 1;
+	//
+	// for (int v = 0; v < vocabulary_size; v++) {
+	// if (DCMDoc.m_wordTopic_stat[k][v] == 0)
+	// continue;
+	// term00 = m_beta[k][v] + m_clusterTopicWordStats[0][k][v];
+	// termc0 = m_beta[k][v] + m_clusterTopicWordStats[clusterIndex][k][v];
+	// if (term00 == termc0) {
+	// continue;
+	// }
+	// iter += 1;
+	// product *= gammaRatio(termc0, term00,
+	// DCMDoc.m_wordTopic_stat[k][v]);
+	// }
+	// if (DCMDoc.m_sstat[k] == 0)
+	// continue;
+	// term0 = m_totalBeta[k] + m_clusterTopicStats[0][k];
+	// termc = m_totalBeta[k] + m_clusterTopicStats[clusterIndex][k];
+	// if (term0 == termc) {
+	// continue;
+	// }
+	// wordClusterProb *= (gammaRatio(term0, termc, DCMDoc.m_sstat[k]) *
+	// product);
+	// }
+	//
+	// System.out.println("iter\t" + iter);
+	// return wordClusterProb;
+	// }
+
 	protected double wordByClusterProb(_Doc d, int clusterIndex) {
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
-		double wordClusterProb = 1;
+		double wordClusterProb = 0;
 		double term0 = 0;
 		double term00 = 0;
 		double termc = 0;
 		double termc0 = 0;
 
-		double product = 1;
-		
+		double product = 0;
+		int iter = 0;
 		for (int k = 0; k < number_of_topics; k++) {
 			term0 = 0;
-			product = 1;
+			product = 0;
+
 			for (int v = 0; v < vocabulary_size; v++) {
 				if (DCMDoc.m_wordTopic_stat[k][v] == 0)
 					continue;
-				term00 = m_beta[k][v] + m_clusterTopicWordStats[0][k][v];
-				termc0 = m_beta[k][v] + m_clusterTopicWordStats[clusterIndex][k][v];
-				product *= gammaRatio(term00, termc0, DCMDoc.m_wordTopic_stat[k][v]);
+				// term00 = m_beta[k][v] + m_clusterTopicWordStats[0][k][v];
+				termc0 = m_beta[k][v]
+						+ m_clusterTopicWordStats[clusterIndex][k][v];
+
+				iter += 1;
+				product += Math.log(gammaRatio(termc0,
+						DCMDoc.m_wordTopic_stat[k][v]));
 			}
 			if (DCMDoc.m_sstat[k] == 0)
 				continue;
-			term0 = m_totalBeta[k] + m_clusterTopicStats[0][k];
-			termc = m_totalBeta[k] + m_clusterTopicStats[clusterIndex][k];	
-			wordClusterProb *= gammaRatio(term0, termc, DCMDoc.m_sstat[k])/product;
+			termc = m_totalBeta[k] + m_clusterTopicStats[clusterIndex][k];
+
+			wordClusterProb += product
+					- Math.log(gammaRatio(termc, DCMDoc.m_sstat[k]));
 		}
 
+		System.out.println("iter\t" + iter);
 		return wordClusterProb;
 	}
 
@@ -180,6 +232,17 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		return ratio;
 	}
 	
+	protected double gammaRatio(double cluster0Start, double iteration) {
+		double ratio = 1;
+
+		while (iteration > 0) {
+			ratio *= (cluster0Start + iteration - 1);
+			iteration -= 1;
+		}
+
+		return ratio;
+	}
+
 	protected double clusterProb(int clusterIndex) {
 		double clusterProb = 0;
 		clusterProb = (m_gamma + m_clusterStats[clusterIndex])/(m_gamma + m_clusterStats[0]);
@@ -368,6 +431,32 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			DCMDoc.m_topicIndicator_prob[k] /= DCMDoc.m_MStepIter;
 	}
 	
+	protected double calculate_log_likelihood() {
+		double logLikelihood = 0.0;
+		for (_Doc d : m_trainSet) {
+			logLikelihood += calculate_log_likelihood(d);
+		}
+
+		for (int c = 0; c < m_clusterNum; c++) {
+			for (int k = 0; k < number_of_topics; k++) {
+				for (int v = 0; v < vocabulary_size; v++) {
+					double term = Utils.lgamma(m_clusterTopicWordStats[c][k][v]
+							+ m_mu * m_beta[k][v]);
+					logLikelihood += term;
+
+					term = Utils.lgamma(m_mu * m_beta[k][v]);
+					logLikelihood -= term;
+
+				}
+				logLikelihood += Utils.lgamma(m_mu * m_totalBeta[k]);
+				logLikelihood -= Utils.lgamma(m_clusterTopicStats[c][k]
+						+ m_mu*m_totalBeta[k]);
+			}
+		}
+
+		return logLikelihood;
+	}
+
 	protected double calculate_log_likelihood(_Doc d) {
 		double docLogLikelihood = 0.0;
 		
@@ -386,20 +475,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 
 		docLogLikelihood += Utils.lgamma(DCMDoc.m_alphaDoc);
 		docLogLikelihood -= Utils.lgamma(DCMDoc.getTotalDocLength() + DCMDoc.m_alphaDoc);
-
-		for (int k = 0; k < number_of_topics; k++) {
-			for (int v = 0; v < vocabulary_size; v++) {
-				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v]+ m_mu	* m_beta[k][v]);
-				docLogLikelihood += term;
-
-				term = Utils.lgamma(m_mu * m_beta[k][v]);
-				docLogLikelihood -= term;
-
-			}
-			docLogLikelihood += Utils.lgamma(m_mu * m_totalBeta[k]);
-			docLogLikelihood -= Utils.lgamma(DCMDoc.m_sstat[k] + m_mu
-					* m_totalBeta[k]);
-		}
 
 		docLogLikelihood += Utils.lgamma(m_t+m_s)-Utils.lgamma(m_t)-Utils.lgamma(m_s);
 		docLogLikelihood += Utils.lgamma(DCMDoc.m_indicatorTrue_stat+m_s)+Utils.lgamma(m_t+number_of_topics-DCMDoc.m_indicatorTrue_stat)-Utils.lgamma(m_t+m_s+number_of_topics);

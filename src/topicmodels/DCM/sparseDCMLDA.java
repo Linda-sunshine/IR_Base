@@ -67,8 +67,7 @@ public class sparseDCMLDA extends DCMLDA{
 
 		for (int k = 0; k < number_of_topics; k++) {
 			for (int v = 0; v < vocabulary_size; v++) {
-				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v]
- + m_mu
+				double term = Utils.lgamma(DCMDoc.m_wordTopic_stat[k][v] + m_mu
 						* m_beta[k][v]);
 				docLogLikelihood += term;
 
@@ -136,13 +135,6 @@ public class sparseDCMLDA extends DCMLDA{
 				word_topic_sstat[tid][wid] --;
 			
 			p = 0;
-			
-//			double totalAlphaDoc = 0;
-//			for(int i=0; i<number_of_topics; i++){
-//				if(DCMDoc.m_topicIndicator[i]==true)
-//					totalAlphaDoc += m_alpha[i];
-//			}
-			
 			
 			double denominator = 0;
 			denominator += DCMDoc.m_alphaDoc;
