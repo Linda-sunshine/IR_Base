@@ -46,13 +46,15 @@ public class featureGeneration {
 		/*****The parameters used in loading files.*****/
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
-		String articleType = "Tech";
+		String articleType = "Reuters";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
 		String commentFolder = String.format("./data/ParentChildTopicModel/%sComments", articleType);
-
+		articleFolder = String.format(
+				"./data/ParentChildTopicModel/Reuters",
+						articleType);
 		// articleFolder = "../../Code/Data/TextMiningProject/APPDescriptions";
 		// commentFolder = "../../Code/Data/TextMiningProject/APPReviews";
 
@@ -104,8 +106,8 @@ public class featureGeneration {
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.50; // Used in feature selection, the starting point of the features.
-		double endProb = 1; // Used in feature selection, the ending point of
+		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+		double endProb = 0.90; // Used in feature selection, the ending point of
 								// the features.
 		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.
@@ -119,7 +121,7 @@ public class featureGeneration {
 //		analyzer.LoadParentDirectory(articleFolder, suffix);
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
 		analyzer.LoadDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(commentFolder, suffix);
+//		analyzer.LoadDirectory(commentFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		

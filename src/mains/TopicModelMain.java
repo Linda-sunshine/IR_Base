@@ -65,7 +65,7 @@ public class TopicModelMain {
 		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
 		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
-		//sparseClusterDCMLDA
+		//sparseClusterDCMLDA, sparseClusterDCMLDA_test
 		String topicmodel = "sparseClusterDCMLDA_test";
 
 		String category = "tablet";
@@ -102,6 +102,7 @@ public class TopicModelMain {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
+//		articleType = "Reuters";
 //		articleType = "Gadgets";
 //		 articleType = "Yahoo"; 
 //		articleType = "APP";
@@ -109,6 +110,9 @@ public class TopicModelMain {
 		String articleFolder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
 						articleType);
+//		articleFolder = String.format(
+//				"./data/ParentChildTopicModel/Reuters",
+//						articleType);
 		String commentFolder = String.format(
 				"./data/ParentChildTopicModel/%sComments",
 						articleType);
@@ -462,7 +466,7 @@ public class TopicModelMain {
 				double tParam = 1;
 				double sParam = 1;
 				double gammaParam = 0.01;
-				int clusterNum = 10;
+				int clusterNum = 1;
 				model = new sparseClusterDCMLDA_test(gibbs_iteration, converge,
 						beta - 1,
 						c, lambda, number_of_topics, alpha - 1, burnIn,

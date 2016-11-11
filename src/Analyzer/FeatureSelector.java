@@ -51,25 +51,30 @@ public class FeatureSelector {
 		int totalSize = m_selectedFeatures.size();
 		
 		System.out.println("total\t"+totalSize);
-		
-		int totalCorpusSize = 4000;
-		// int start = (int) (totalSize * m_startProb);
-		// int end = (int) (totalSize * m_endProb);
-		//
-		// for(int i=start; i<end; i++)
-		// features.add(m_selectedFeatures.get(i).m_name);
-		
-		int upDF = (int) (totalCorpusSize * 0.3);
-		int bottomDF = (int) (totalCorpusSize * 0.00001);
+		//for ArsTech
+//		int totalCorpusSize = 4000;
+//		// int start = (int) (totalSize * m_startProb);
+//		// int end = (int) (totalSize * m_endProb);
+//		//
+//		// for(int i=start; i<end; i++)
+//		// features.add(m_selectedFeatures.get(i).m_name);
+//		
+//		int upDF = (int) (totalCorpusSize * 0.3);
+//		int bottomDF = (int) (totalCorpusSize * 0.00001);
 
-		System.out.println("up DF\t" + upDF + "\t bottom DF \t" + bottomDF);
+//		System.out.println("up DF\t" + upDF + "\t bottom DF \t" + bottomDF);
 
-		for (int i = 0; i < totalSize; i++) {
-			if ((m_selectedFeatures.get(i).m_value < upDF)
-					&& (m_selectedFeatures.get(i).m_value > bottomDF)) {
-				features.add(m_selectedFeatures.get(i).m_name);
-			}
-		}
+//		for (int i = 0; i < totalSize; i++) {
+//			if ((m_selectedFeatures.get(i).m_value < upDF)
+//					&& (m_selectedFeatures.get(i).m_value > bottomDF)) {
+//				features.add(m_selectedFeatures.get(i).m_name);
+//			}
+//		}
+		
+		int start = (int) (totalSize * m_startProb);
+		int end = (int) (totalSize * m_endProb);
+		for(int i=start; i<end; i++)
+			features.add(m_selectedFeatures.get(i).m_name);
 		
 		return features;
 	}

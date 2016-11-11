@@ -96,8 +96,13 @@ public class sparseDCMLDA extends DCMLDA{
 
 		 for (int k = 0; k < number_of_topics; k++){
 			m_alpha[k] = m_rand.nextDouble()+d_alpha;
+			m_alpha[k] = d_alpha;
+			m_alpha[k] = 1.0/number_of_topics;
+
 			for (int v = 0; v < vocabulary_size; v++) {
 				m_beta[k][v] = m_rand.nextDouble() + d_beta;
+				m_beta[k][v] =  d_beta;
+				m_beta[k][v] = 1.0/vocabulary_size;
 			}
 		}
 		

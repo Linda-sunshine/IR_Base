@@ -85,7 +85,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 	}
 
 	public double calculate_E_step(_Doc d) {
-		// System.out.println("docName\t" + d.getName());
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
 		DCMDoc.permutation();
@@ -110,9 +109,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			m_clusterTopicStats[clusterIndex][tid]--;
 		}
 
-		// m_clusterSamplingCache[0] = 1;
-		// p += 1;
-		
 		double avgClusterProb = 0;
 		double maxClusterProb = 0;
 		double minClusterProb = 0;
@@ -146,8 +142,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 			} else {
 				if (m_clusterSamplingCache[c] < Double.MIN_VALUE) {
 					m_clusterSamplingCache[c] = 0;
-					// System.out.println("minimum overflow\t" +
-					// Double.MIN_VALUE);
 				}
 			}
 			p += m_clusterSamplingCache[c];
@@ -189,55 +183,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 		}
 	}
 
-	//
-	// protected double wordByClusterProb(_Doc d, int clusterIndex) {
-	// _Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
-	//
-	// double wordClusterProb = 1;
-	// double term0 = 0;
-	// double term00 = 0;
-	// double termc = 0;
-	// double termc0 = 0;
-	//
-	// double product = 1;
-	// int iter = 0;
-	// for (int k = 0; k < number_of_topics; k++) {
-	// term0 = 0;
-	// product = 1;
-	//
-	// for (int v = 0; v < vocabulary_size; v++) {
-	// if (DCMDoc.m_wordTopic_stat[k][v] == 0)
-	// continue;
-	// term00 = m_beta[k][v] + m_clusterTopicWordStats[0][k][v];
-	// termc0 = m_beta[k][v] + m_clusterTopicWordStats[clusterIndex][k][v];
-	// if (term00 == termc0) {
-	// continue;
-	// }
-	// iter += 1;
-	// product *= gammaRatio(termc0, term00,
-	// DCMDoc.m_wordTopic_stat[k][v]);
-	// }
-	// if (DCMDoc.m_sstat[k] == 0)
-	// continue;
-	// term0 = m_totalBeta[k] + m_clusterTopicStats[0][k];
-	// termc = m_totalBeta[k] + m_clusterTopicStats[clusterIndex][k];
-	// if (term0 == termc) {
-	// continue;
-	// }
-	// wordClusterProb *= (gammaRatio(term0, termc, DCMDoc.m_sstat[k]) *
-	// product);
-	// }
-	//
-	// System.out.println("iter\t" + iter);
-	// return wordClusterProb;
-	// }
-
-	// protected double clusterProb(int clusterIndex) {
-	// double clusterProb = 0;
-	// clusterProb = (m_gamma + m_clusterStats[clusterIndex])
-	// / (m_gamma + m_clusterStats[0]);
-	// return clusterProb;
-	// }
 
 	protected double wordByClusterProb(_Doc d, int clusterIndex) {
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;

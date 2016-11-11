@@ -140,7 +140,7 @@ public class DCMLDA extends LDA_Gibbs {
 			long startTime = System.currentTimeMillis();
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
-				System.out.println("iteration\t" + j);
+//				System.out.println("iteration\t" + j);
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
 			}
