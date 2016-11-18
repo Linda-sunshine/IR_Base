@@ -20,8 +20,10 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
+import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeansExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 
 public class MyHDPMain {
 	
@@ -49,7 +51,7 @@ public class MyHDPMain {
 		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm.txt", dataset);
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
@@ -60,16 +62,15 @@ public class MyHDPMain {
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		int[] ks = new int[]{4, 6, 8, 10, 12, 14, 16, 18, 20, 25, 30, 35, 40, 50, 60, 70, 80, 90, 100};
-		for(int k: ks){
-		IndSVMWithKmeans svmkmeans = new IndSVMWithKmeans(classNumber, analyzer.getFeatureSize(), k);
+	
+		IndSVMWithKmeansExp svmkmeans = new IndSVMWithKmeansExp(classNumber, analyzer.getFeatureSize(), 100);
 		svmkmeans.loadUsers(analyzer.getUsers());
 		svmkmeans.setLabel(false);
 		svmkmeans.train();
 		svmkmeans.test();
-		for(_User u: analyzer.getUsers())
-		u.getPerfStat().clear();
-		}
+		
+		int threshold = 100;
+		svmkmeans.CrossValidation(5, threshold);
 		
 //		Base base = new Base(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 //		base.loadUsers(analyzer.getUsers());
@@ -85,27 +86,32 @@ public class MyHDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 		
-//		double[] globalLM = analyzer.estimateGlobalLM();
+		double[] globalLM = analyzer.estimateGlobalLM();
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-		
+//		
 //		MTCLRWithHDP hdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//		hdp.setQ(0.1);
-		
+//		hdp.setQ(0);
+//		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//
+//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 //		hdp.setR2TradeOffs(eta3, eta4);
 //		hdp.setsdB(0.1);
-//
+
 //		hdp.setsdA(0.1);
 //		double alpha = 1, eta = 0.1, beta = 0.1;
 //		hdp.setConcentrationParams(alpha, eta, beta);
 //		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setNumberOfIterations(30);
+//		hdp.setNumberOfIterations(20);
 //		hdp.loadUsers(analyzer.getUsers());
 //		hdp.setDisplayLv(displayLv);
+////		hdp.setPosteriorSanityCheck(true);
 //		hdp.train();
 //		hdp.test();
+//		
+//		int threshold = 100;
+//		hdp.CrossValidation(5, threshold);
+		
 //		
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();

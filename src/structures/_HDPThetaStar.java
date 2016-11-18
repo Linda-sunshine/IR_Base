@@ -61,4 +61,7 @@ public class _HDPThetaStar extends _thetaStar {
 	public ArrayList<String> getReviewNames(){
 		return m_reviewNames;
 	}
+	public void resetPsiModel(){
+		m_psi = null;
+	}
 }

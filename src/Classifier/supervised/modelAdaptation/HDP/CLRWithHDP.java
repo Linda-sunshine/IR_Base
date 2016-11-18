@@ -28,8 +28,8 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double m_c = 1;//the constant in front of probabilities of language model.
 	
 	protected double[] m_betas;//concentration vector for the prior of psi.
-	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
-	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
+	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[10000];//phi+psi
+	double[] m_cache = new double[10000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e = 1.0;
 	protected double m_nBetaDir = 0; // normalization constant for Dir(\psi)
@@ -278,6 +278,7 @@ public class CLRWithHDP extends CLRWithDP {
 				curThetaStar.updateMemCount(-1);
 
 				if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
+					curThetaStar.resetPsiModel();
 					m_gamma_e += curThetaStar.getGamma();
 					index = findHDPThetaStar(curThetaStar);
 					swapTheta(m_kBar-1, index); // move it back to \theta*
