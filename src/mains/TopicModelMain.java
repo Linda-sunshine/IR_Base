@@ -12,15 +12,26 @@ import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
 import topicmodels.DCM.DCMLDA_test;
+import topicmodels.DCM.sparseClusterDCMLDA_test;
+import topicmodels.DCM.sparseDCMLDA_test;
 import topicmodels.LDA.LDA_Gibbs;
 import topicmodels.LDA.LDA_Gibbs_test;
+import topicmodels.LDA.sparseLDA_test;
 import topicmodels.correspondenceModels.ACCTM;
 import topicmodels.correspondenceModels.ACCTM_C;
 import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
+import topicmodels.correspondenceModels.DCMCorrLDA_Multi_EM;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMCorrLDA_test;
+import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
+import topicmodels.correspondenceModels.DCMDMCorrLDA_test;
+import topicmodels.correspondenceModels.DCMDMMCorrLDA_test;
+import topicmodels.correspondenceModels.DCMLDA4AC_test;
+import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
+import topicmodels.correspondenceModels.corrLDA_Gibbs_test;
 import topicmodels.markovmodel.HTMM;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.markovmodel.LRHTMM;
@@ -50,12 +61,15 @@ public class TopicModelMain {
 		//ACCTM, ACCTM_TwoTheta, ACCTM_C, ACCTM_CZ, ACCTM_CZLR, LDAonArticles, ACCTM_C, 
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
-		
-		String topicmodel = "DCMCorrLDA_multi_E_test";
 
+		// LDAGibbs4AC_test, DCMCorrLDA_multi_E_test,DCMLDA4AC_test, DCMDMCorrLDA_multi_E_test
+		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
+		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
+		//sparseClusterDCMLDA, sparseClusterDCMLDA_test
+		String topicmodel = "sparseClusterDCMLDA_test";
 
 		String category = "tablet";
-		int number_of_topics = 30;
+		int number_of_topics = 15;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
 		boolean setRandomFold = true; // false means no shuffling and true means shuffling
 		int loadAspectSentiPrior = 0; // 0 means nothing loaded as prior; 1 = load both senti and aspect; 2 means load only aspect 
@@ -68,10 +82,11 @@ public class TopicModelMain {
 
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
-		// gibbs_iteration = 4;
-		// gibbs_lag = 2;
-		// displayLap = 2;
-		
+
+		gibbs_iteration = 500;
+		gibbs_lag = 20;
+		displayLap = 20;
+
 		double burnIn = 0.4;
 
 		boolean sentence = false;
@@ -87,13 +102,17 @@ public class TopicModelMain {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
+//		articleType = "Reuters";
 //		articleType = "Gadgets";
-//		 articleType = "Yahoo";
+//		 articleType = "Yahoo"; 
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
 						articleType);
+//		articleFolder = String.format(
+//				"./data/ParentChildTopicModel/Reuters",
+//						articleType);
 		String commentFolder = String.format(
 				"./data/ParentChildTopicModel/%sComments",
 						articleType);
@@ -174,11 +193,11 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(articleFolder, suffix);
+		// analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
 		// analyzer.LoadDirectory(commentFolder, suffix);
 
-		analyzer.LoadChildDirectory(commentFolder, suffix);
+		// analyzer.LoadChildDirectory(commentFolder, suffix);
 
 //		if((topicmodel."LDA_APP")&&(topicmodel!="LDA_APPMerged"))
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
@@ -211,7 +230,7 @@ public class TopicModelMain {
 				model = new pLSA_multithread(number_of_iteration, converge, beta, c, 
 						lambda, number_of_topics, alpha);
 			} else if (topicmodel.equals("LDA_Gibbs")) {
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				model = new LDA_Gibbs(gibbs_iteration, 0, beta, c, //in gibbs sampling, no need to compute log-likelihood during sampling
 					lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("LDA_Variational_multithread")) {		
@@ -269,7 +288,7 @@ public class TopicModelMain {
 				alpha = 1.01;
 				double ksi = 800;
 				double tau = 0.7;
-				number_of_topics = 30;
+//				number_of_topics = 30;
 				model = new ACCTM_CZ(gibbs_iteration, 0, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						gamma);
@@ -280,7 +299,7 @@ public class TopicModelMain {
 				alpha = 1.01;
 				double ksi = 800;
 				double tau = 0.7;
-				number_of_topics = 30;
+//				number_of_topics = 30;
 				converge = 1e-9;
 				model = new ACCTM_CZLR(gibbs_iteration, converge, beta-1, c, 
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag, gamma);
@@ -288,22 +307,27 @@ public class TopicModelMain {
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				model = new DCMLDA_test(gibbs_iteration, converge, beta - 1, c,
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
+
+				String priorFile = "./data/Features/" + articleType
+						+ "TopicWord.txt";
+				model.LoadPrior(priorFile, eta);
+
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
-				number_of_topics = 15;
+//				number_of_topics = 15;
 				// in gibbs sampling, no need to compute
 				// log-likelihood during sampling
 				model = new LDA_Gibbs_test(gibbs_iteration, 0, beta, c,
 						lambda, number_of_topics, alpha, burnIn, gibbs_lag);
 			} else if (topicmodel.equals("DCMCorrLDA_multi_E_test")) {
-				number_of_topics = 15;
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
-				number_of_topics = 15;
+				converge = 1e-2;
+				int newtonIter = 30;
+				double newtonConverge = 1e-2;
+				gibbs_iteration = 40;
+				gibbs_lag = 10;
 				double ksi = 800;
 				double tau = 0.7;
 				double alphaC = 0.001;
@@ -312,12 +336,152 @@ public class TopicModelMain {
 						alphaC,
 						burnIn, ksi, tau, gibbs_lag,
 						newtonIter, newtonConverge);
+				 String priorFile = "./data/Features/"+articleType+"TopWords.txt";
+				 model.LoadPrior(priorFile, eta);
+			} else if (topicmodel.equals("LDAGibbs4AC_test")) {
+				
+				double ksi = 800;
+				double tau = 0.7;
+				model = new LDAGibbs4AC_test(gibbs_iteration, 0, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						ksi, tau);
+
+			}else if(topicmodel.equals("DCMLDA4AC_test")){
+//				number_of_topics = 5;
+				converge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				int newtonIter = 1000;
+				double newtonConverge = 1e-3;
+				model = new DCMLDA4AC_test(gibbs_iteration, converge, beta-1, c,
+						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
+						ksi, tau, newtonIter, newtonConverge);
+			} else if (topicmodel.equals("corrLDA_Gibbs_test")) {
+				converge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				int newtonIter = 1000;
+				double newtonConverge = 1e-3;
+			
+				model = new corrLDA_Gibbs_test(gibbs_iteration, 0,
+						beta-1, c, lambda, number_of_topics, alpha-1, burnIn,
+						gibbs_lag, ksi, tau);
+			}else if(topicmodel.equals("DCMDMCorrLDA_multi_E_test")){
+//				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMDMCorrLDA_multi_E_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC,
+						burnIn, ksi, tau, gibbs_lag,
+						newtonIter, newtonConverge);
+			}else if(topicmodel.equals("DCMDMCorrLDA_test")){
+//				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMDMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC,
+						burnIn, ksi, tau, gibbs_lag,
+						newtonIter, newtonConverge);
+			} else if (topicmodel.equals("DCMDMMCorrLDA_test")) {
+//				number_of_topics = 50;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				gibbs_iteration = 300;
+				gibbs_lag = 20;
+				model = new DCMDMMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
+						newtonConverge);
+			}else if (topicmodel.equals("DCMCorrLDA_test")) {
+//				number_of_topics = 15;
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				model = new DCMCorrLDA_test(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
+						newtonConverge);
+			} else if (topicmodel.equals("DCMCorrLDA_Multi_EM")) {
+				converge = 1e-2;
+				int newtonIter = 30;
+				double newtonConverge = 1e-2;
+				double ksi = 800;
+				double tau = 0.7;
+				double alphaC = 0.001;
+				gibbs_iteration = 40;
+				gibbs_lag = 20;
+				model = new DCMCorrLDA_Multi_EM(gibbs_iteration, converge,
+						beta - 1, c, lambda, number_of_topics, alpha - 1,
+						alphaC, burnIn, gibbs_lag, ksi, tau, newtonIter,
+						newtonConverge);
+			} else if (topicmodel.equals("sparseDCMLDA_test")) {
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+//				number_of_topics = 15;
+				double tParam = 1;
+				double sParam = 1;
+				model = new sparseDCMLDA_test(gibbs_iteration, converge,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag, newtonIter, newtonConverge, tParam, sParam);
+
+				/*
+				 * String priorFile = "./data/Features/" + articleType +
+				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
+				 */
+
+			}else if(topicmodel.equals("sparseLDA_test")){
+				converge = 1e-3;
+				
+//				number_of_topics = 15;
+				double tParam = 1;
+				double sParam = 1;
+				
+				model = new sparseLDA_test(gibbs_iteration, 0,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag,  tParam, sParam);
+			} else if (topicmodel.equals("sparseClusterDCMLDA_test")) {
+				converge = 1e-3;
+				int newtonIter = 50;
+				double newtonConverge = 1e-3;
+				double tParam = 1;
+				double sParam = 1;
+				double gammaParam = 0.01;
+				int clusterNum = 1;
+				model = new sparseClusterDCMLDA_test(gibbs_iteration, converge,
+						beta - 1,
+						c, lambda, number_of_topics, alpha - 1, burnIn,
+						gibbs_lag, newtonIter, newtonConverge, tParam, sParam, clusterNum, gammaParam);
+
+				/*
+				 * String priorFile = "./data/Features/" + articleType +
+				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
+				 */
 			}
 			
 			model.setDisplayLap(displayLap);
 			model.setInforWriter(infoFilePath);
 //			model.setNewEggLoadInTrain(loadNewEggInTrain);
-			
+
 			if(loadAspectSentiPrior==1){
 				System.out.println("Loading aspect-senti list from "+aspectSentiList);
 				model.setSentiAspectPrior(true);
@@ -338,7 +502,7 @@ public class TopicModelMain {
 					model.printTopWords(topK, topWordPath);
 			} else {
 				model.setRandomFold(setRandomFold);
-				double trainProportion = 0.5;
+				double trainProportion = 0.8;
 				double testProportion = 1-trainProportion;
 				model.setPerplexityProportion(testProportion);
 				model.crossValidation(crossV);
