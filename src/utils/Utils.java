@@ -8,12 +8,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
 
 public class Utils {
 	
@@ -264,6 +265,15 @@ public class Utils {
 			vct[i] += weight * add[i];
 	}
 	
+	public static void add2Array(int[] a, int[] b){
+		if(a.length != b.length)
+			return;
+
+		for(int i=0; i<a.length; i++)
+			a[i] += b[i];
+		return;
+	}
+	
 	//L1 normalization: fsValue/sum(abs(fsValue))
 	static public double sumOfFeaturesL1(_SparseFeature[] fs) {
 		double sum = 0;
@@ -445,6 +455,13 @@ public class Utils {
 		}
 		Arrays.sort(spVct);		
 		return spVct;
+	}
+	
+	static public HashMap<Integer, Double> revertSpVct(_SparseFeature[] fvs){
+		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
+		for(_SparseFeature fv: fvs)
+			vct.put(fv.getIndex(), fv.getValue());
+		return vct;
 	}
 	
 	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
@@ -887,5 +904,61 @@ public class Utils {
 		double D = N - DF - cDF + A;//!t & !c
 		
 		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
+	}
+	
+	//Calculate the similarity between two documents.
+	public static double calculateSimilarity(_Doc d1, _Doc d2){
+		return calculateSimilarity(d1.getSparse(), d2.getSparse());
+	}
+	
+	//Calculate the similarity between two sparse vectors.
+	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+	
+	//Sample with a given log array.
+	public static int sampleInLogArray(double[] logP, int length){
+		double sum = Utils.logSum(logP, length), rnd = FloatUniform.staticNextFloat();
+		int i = -1;
+		while(rnd>0 && i<length){
+			i++;
+			rnd -= Math.exp(logP[i]-sum);
+		}
+		return i;
+	}
+	
+	public static double logSum(double[] xs, int length) {
+        if (length == 1) return xs[0];
+        double max = maximum(xs, length);
+        double sum = 0.0;
+        for (int i = 0; i < length; ++i)
+            if (xs[i] != Double.NEGATIVE_INFINITY)
+                sum += java.lang.Math.exp(xs[i] - max);
+        return max + java.lang.Math.log(sum);
+    }
+	
+	public static double maximum(double[] xs, int length){
+		double max = xs[0];
+		for(int i=1;i<length; i++)
+			if (max<xs[i])
+				max = xs[i];
+		return max;
 	}
 }

@@ -9,8 +9,8 @@ import utils.Utils;
 
 public class _DPAdaptStruct extends _LinAdaptStruct {
 
-	_thetaStar m_thetaStar = null;
-	double[] m_cluPosterior;
+	private _thetaStar m_thetaStar = null;
+	protected double[] m_cluPosterior;
 	
 	public static int[] m_featureGroupMap;
 	
@@ -52,6 +52,8 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		if (m_dim==0) {//not adaptation based
 			for(int k=0; k<m_cluPosterior.length; k++) {
 				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
+					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
 				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}			
 		} else {

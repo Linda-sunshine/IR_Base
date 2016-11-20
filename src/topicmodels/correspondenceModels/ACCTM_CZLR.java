@@ -4,6 +4,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import Classifier.supervised.liblinear.Linear;
+import Classifier.supervised.liblinear.Model;
+import Classifier.supervised.liblinear.Parameter;
+import Classifier.supervised.liblinear.Problem;
+import Classifier.supervised.liblinear.SolverType;
 import structures._ChildDoc;
 import structures._ChildDoc4BaseWithPhi;
 import structures._Corpus;
@@ -13,13 +20,6 @@ import structures._SparseFeature;
 import structures._Stn;
 import structures._Word;
 import utils.Utils;
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import Classifier.supervised.liblinear.Linear;
-import Classifier.supervised.liblinear.Model;
-import Classifier.supervised.liblinear.Parameter;
-import Classifier.supervised.liblinear.Problem;
-import Classifier.supervised.liblinear.SolverType;
 
 public class ACCTM_CZLR extends ACCTM_CZ{
 

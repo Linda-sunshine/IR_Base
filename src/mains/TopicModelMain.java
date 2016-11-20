@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
@@ -39,7 +40,6 @@ import topicmodels.markovmodel.LRHTSM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
-import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 

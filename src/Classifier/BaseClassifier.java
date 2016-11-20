@@ -21,7 +21,7 @@ public abstract class BaseClassifier {
 	protected ArrayList<_Doc> m_testSet; //All the documents used as the testing set.
 	
 	protected double[] m_cProbs;
-	
+	protected String[] m_features; //the detailed features
 	//for cross-validation
 	protected int[][] m_confusionMat, m_TPTable;//confusion matrix over all folds, prediction table in each fold
 	protected ArrayList<double[][]> m_precisionsRecalls; //Use this array to represent the precisions and recalls.

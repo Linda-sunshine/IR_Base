@@ -23,7 +23,8 @@ public class DCMLDA extends LDA_Gibbs {
 
 	/**
 	 * 
-	 * m_alpha K m_beta K*V;
+	 * m_alpha K 
+	 * m_beta K*V;
 	 * 
 	 */
 	protected double[] m_alpha;
@@ -146,15 +147,29 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 			long endTime = System.currentTimeMillis();
 
+<<<<<<< HEAD
 			System.out.println("per iteration e step time\t"
 					+ (endTime - startTime) / 1000);
+||||||| merged common ancestors
+			System.out.println("per iteration e step time\t"
+					+ (eEndTime - eStartTime));
+=======
+			System.out.println("per iteration e step time\t" + (eEndTime - eStartTime));
+>>>>>>> ba73c63d9d95c146271779938bf6d85828848945
 
 			startTime = System.currentTimeMillis();
 			updateParameter(i, weightFolder);
 			endTime = System.currentTimeMillis();
 
+<<<<<<< HEAD
 			 System.out.println("per iteration m step time\t"
 					+ (endTime - startTime) / 1000);
+||||||| merged common ancestors
+			// System.out.println("per iteration m step time\t"
+			// + (mEndTime - mStartTime));
+=======
+			System.out.println("per iteration m step time\t" + (mEndTime - mStartTime));
+>>>>>>> ba73c63d9d95c146271779938bf6d85828848945
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -248,10 +263,21 @@ public class DCMLDA extends LDA_Gibbs {
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
+<<<<<<< HEAD
 				double term1 = topicInDocProb(tid, DCMDoc);
 				term1 = wordTopicProb(tid, wid, DCMDoc);
 				m_topicProbCache[tid] = topicInDocProb(tid, DCMDoc)
 						* wordTopicProb(tid, wid, DCMDoc);
+||||||| merged common ancestors
+				double term1 = topicInDocProb(tid, d);
+				term1 = wordTopicProb(tid, wid, d);
+				m_topicProbCache[tid] = topicInDocProb(tid, d)
+						* wordTopicProb(tid, wid, d);
+=======
+				double pzd = topicInDocProb(tid, d);
+				double pwz = wordTopicProb(tid, wid, d);
+				m_topicProbCache[tid] = pzd * pwz;
+>>>>>>> ba73c63d9d95c146271779938bf6d85828848945
 				p += m_topicProbCache[tid];	
 			}
 			p *= m_rand.nextDouble();
@@ -275,9 +301,6 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	protected double topicInDocProb(int tid, _Doc d) {
-		double term1 = d.m_sstat[tid];
-		term1 = m_alpha[tid];
-
 		return (d.m_sstat[tid] + m_alpha[tid]);
 	}
 
@@ -289,8 +312,28 @@ public class DCMLDA extends LDA_Gibbs {
 				/ (DCMDoc.m_sstat[tid] + m_totalBeta[tid]);
 	}
 
+<<<<<<< HEAD
 	public void calculate_M_step(int iter) {
+||||||| merged common ancestors
+	public void calculate_M_step(int iter, File weightFolder) {
+=======
+	protected void updateStats(boolean preFlag, _Word w, _Doc d) {
+		int docID = d.getID();
+		int wid = w.getIndex();
+		int tid = w.getTopic();
 
+		if (!preFlag) {
+			d.m_sstat[tid]++;
+			m_docWordTopicStats[docID][tid][wid]++;
+>>>>>>> ba73c63d9d95c146271779938bf6d85828848945
+
+		} else {
+			d.m_sstat[tid]--;
+			m_docWordTopicStats[docID][tid][wid]--;
+		}
+	}
+
+	public void calculate_M_step(int iter, File weightFolder) {
 		for (_Doc d : m_trainSet)
 			collectStats(d);
 		
@@ -298,6 +341,23 @@ public class DCMLDA extends LDA_Gibbs {
 			for(int v=0; v<vocabulary_size; v++)
 				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
 
+<<<<<<< HEAD
+||||||| merged common ancestors
+		File weightIterFolder = new File(weightFolder, "_" + iter);
+		if (!weightIterFolder.exists()) {
+			weightIterFolder.mkdir();
+		}
+
+		updateParameter(iter, weightIterFolder);
+
+=======
+		File weightIterFolder = new File(weightFolder, "_" + iter);
+		if (!weightIterFolder.exists()) {
+			weightIterFolder.mkdir();
+		}
+
+		updateParameter(iter, weightIterFolder);
+>>>>>>> ba73c63d9d95c146271779938bf6d85828848945
 	}
 
 	protected void collectStats(_Doc d) {

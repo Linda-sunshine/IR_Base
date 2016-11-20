@@ -2,10 +2,10 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 /**
  * In the class, we extend the CLR to multi-task learning.
  * Intead of clusters, we also have a global part.
@@ -13,9 +13,9 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
  *
  */
 public class MTCLRWithDP extends CLRWithDP {
-	protected double m_q = .10;// the wc + m_q*wg;
 	public static double[] m_supWeights; // newly learned global model
-
+	// parameters for global part in multi-task learning. 
+	
 	public MTCLRWithDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize, featureMap, globalModel);
@@ -79,17 +79,6 @@ public class MTCLRWithDP extends CLRWithDP {
 			n = fv.getIndex() + 1;
 			g[offset + n] -= delta * fv.getValue();// cluster model.
 			g[offsetSup + n] -= delta * fv.getValue() * m_q;// super model.
-		}
-	}
-	
-	@Override
-	protected void setPersonalizedModel() {
-		_DPAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			Utils.setArray(m_pWeights, m_supWeights, m_q);
-			Utils.scaleArray(m_pWeights, user.getThetaStar().getModel(), 1.0);
-			user.setPersonalizedModel(m_pWeights);
 		}
 	}
 	

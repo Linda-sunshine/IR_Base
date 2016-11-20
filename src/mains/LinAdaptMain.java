@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import opennlp.tools.util.InvalidFormatException;
 import structures._PerformanceStat.TestMode;
 
@@ -27,13 +27,13 @@ public class LinAdaptMain {
 		
 		String tokenModel = "./data/Model/en-token.bin"; //Token model.
 		String providedCV = "./data/CoLinAdapt/SelectedVocab.csv"; // CV.
-		String userFolder = "./data/CoLinAdapt/Users_4000";
+		String userFolder = "./data/CoLinAdapt/Users";
 		String featureGroupFile = "./data/CoLinAdapt/CrossGroups_800.txt";
 		String featureGroupFileB = null; //"./data/CoLinAdapt/CrossGroups_1600.txt";
 		String globalModel = "./data/CoLinAdapt/GlobalWeights.txt";
 		
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold);
-		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores);
+		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
@@ -111,11 +111,13 @@ public class LinAdaptMain {
 //		MTCLRWithDP adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 
 		// Create an instance of Multi-task DP over Multi-task logistic regression 
-		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
+//		CLinAdaptWithDP adaptation = new CLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile);
 
 		// Create an instance of Multi-task DP over MT-LinAdapt 
 //		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB);
 		
+
+		CLRWithHDP adaptation = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, analyzer.getCorpus().getBackgroundProb());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);

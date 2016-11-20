@@ -1,4 +1,4 @@
-package topicmodels.multithreads;
+package topicmodels.multithreads.DCMLDA;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -8,6 +8,8 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.DCM.DCMLDA;
+import topicmodels.multithreads.updateParamWorker;
+import topicmodels.multithreads.updateParam_worker;
 import topicmodels.multithreads.updateParam_worker.RunType;
 import utils.Utils;
 

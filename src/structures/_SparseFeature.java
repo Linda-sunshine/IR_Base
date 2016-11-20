@@ -10,6 +10,7 @@ package structures;
 public class _SparseFeature implements Comparable<_SparseFeature> {
 	String m_content; //Content of the feature.
 	int m_index; // Index of the feature
+	double m_TF; // raw TF value of this feature
 	double m_value; // Value of the feature (non-zero)
 	
 	// feature value under different segments (E.g., in NewEgg we have Pro/Con/Comments segments)
@@ -99,4 +100,12 @@ public class _SparseFeature implements Comparable<_SparseFeature> {
 	public int compareTo(_SparseFeature sfv) {
 		return m_index - sfv.m_index;
 	}	
+	
+	// Added by Lin for storing raw TF for language models.
+	public void setTF(double tf){
+		m_TF = tf;
+	}
+	public double getTF(){
+		return m_TF;
+	}
 }

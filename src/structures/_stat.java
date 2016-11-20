@@ -17,6 +17,7 @@ public class _stat {
 	public _stat(int classNo){
 		m_DF = new int[classNo];
 		m_TTF = new int[classNo];
+		m_rawDF = new int [classNo];
 	}
 	
 	public void reset(int classNo) {
@@ -33,6 +34,13 @@ public class _stat {
 		return this.m_DF;
 	}
 	
+	//For debugging purpose.
+	int[] m_rawDF;
+	public void setRawDF(int[] DFs){
+		if (DFs.length != m_rawDF.length)
+			return;
+		System.arraycopy(DFs, 0, m_rawDF, 0, DFs.length);
+	}
 	public void setDF(int[] DFs) {
 		if (DFs.length != m_DF.length)
 			return;

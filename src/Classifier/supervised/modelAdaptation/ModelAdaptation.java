@@ -43,13 +43,28 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected boolean m_personalized;
 
 	// Decide if we will normalize the likelihood.
-	protected boolean m_LNormFlag=true;
+	protected boolean m_LNormFlag = true;
 	protected String m_dataset = "Amazon"; // Default dataset.
 
+	// added by Lin.
+	public ModelAdaptation(int classNo, int featureSize) {
+		super(classNo, featureSize);
+		m_pWeights = null;
+		m_personalized = true;
+	}
+	
 	public ModelAdaptation(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel) {
 		super(classNo, featureSize);
 		
 		loadGlobalModel(featureMap, globalModel);
+		m_pWeights = null;
+		m_personalized = true;
+	}
+	
+	public ModelAdaptation(int classNo, int featureSize, String globalModel) {
+		super(classNo, featureSize);
+		
+		loadGlobalModel(globalModel);
 		m_pWeights = null;
 		m_personalized = true;
 	}
@@ -81,15 +96,20 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			int pos;
 			
 			m_gWeights = new double[m_featureSize+1];//to include the bias term
+			m_features = new String[m_featureSize+1];//list of detailed features
+			
 			while((line=reader.readLine()) != null) {
 				features = line.split(":");
-				if (features[0].equals("BIAS"))
+				if (features[0].equals("BIAS")) {
 					m_gWeights[0] = Double.valueOf(features[1]);
+					m_features[0] = "BIAS";
+				}
 				else if (featureMap.containsKey(features[0])){
 					pos = featureMap.get(features[0]);
-					if (pos>=0 && pos<m_featureSize)
+					if (pos>=0 && pos<m_featureSize) {
 						m_gWeights[pos+1] = Double.valueOf(features[1]);
-					else
+						m_features[pos+1] = features[0];
+					} else
 						System.err.println("[Warning]Unknown feature " + features[0]);
 				} else 
 					System.err.println("[Warning]Unknown feature " + features[0]);
@@ -100,6 +120,27 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
 	}
+	//Load global model from file.
+	public void loadGlobalModel(String filename){
+		if (filename==null)
+			return;
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line, features[];
+			int index = 0;
+			m_gWeights = new double[m_featureSize+1];//to include the bias term
+			while((line=reader.readLine()) != null) {
+				features = line.split("\\s+");
+				if(features.length == 1 && !features[0].equals("w")){
+					m_gWeights[index++] = Double.valueOf(features[0]);
+				}
+			}			
+			reader.close();
+		} catch(IOException e){
+			System.err.format("[Error]Fail to open file %s.\n", filename);
+		}
+	}
+	
 	
 	abstract public void loadUsers(ArrayList<_User> userList);
 	
@@ -261,7 +302,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		int count = 0;
 		double[] macroF1 = new double[m_classNo];
 		_PerformanceStat userPerfStat;
-		
+
 		for(_AdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
 				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data

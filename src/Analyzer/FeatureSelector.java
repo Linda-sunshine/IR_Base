@@ -72,6 +72,7 @@ public class FeatureSelector {
 		
 	//Feature Selection -- IG.
 	public void IG(HashMap<String, _stat> featureStat, int[] classMemberNo){
+		m_selectedFeatures.clear();
 		double classMemberSum = Utils.sumOfArray(classMemberNo);
 		double[] PrCi = new double [classMemberNo.length];//I
 		double[] PrCit = new double [classMemberNo.length];//II
@@ -116,6 +117,7 @@ public class FeatureSelector {
 		
 	//Feature Selection -- MI.
 	public void MI(HashMap<String, _stat> featureStat, int[] classMemberNo){
+		m_selectedFeatures.clear();
 		double[] PrCi = new double[classMemberNo.length];
 		double[] ItCi = new double[classMemberNo.length];
 		double N = Utils.sumOfArray(classMemberNo);
@@ -143,6 +145,7 @@ public class FeatureSelector {
 		
 	//Feature Selection -- CHI.
 	public void CHI(HashMap<String, _stat> featureStat, int[] classMemberNo){
+		m_selectedFeatures.clear();
 		int classNo = classMemberNo.length;
 		int N = Utils.sumOfArray(classMemberNo), sumDF;
 		double[] X2tc = new double [classNo];

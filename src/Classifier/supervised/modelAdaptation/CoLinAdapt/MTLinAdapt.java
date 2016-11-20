@@ -32,18 +32,12 @@ public class MTLinAdapt extends CoLinAdapt {
 	boolean m_LNormFlag; // Decide if we will normalize the likelihood.
 	int m_lbfgs = 1; // m_lbfgs = 0, fails; m_lbfgs = 1, succeed.
 	
+	// The constructor only constructs feature group for individual users, not super user.
 	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
-						int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
+			int topK, String globalModel, String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
 
-		m_LNormFlag = true;
-	}
-	
-	//this constructor will not construct feature group mapping for super user
-	public MTLinAdapt(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
-			int topK, String globalModel, String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
 		m_LNormFlag = true;
 	}
 	
@@ -53,7 +47,7 @@ public class MTLinAdapt extends CoLinAdapt {
 	
 	@Override
 	public String toString() {
-		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,lambda1:%.3f,lambda2:%.3f, personalized:%b]", 
+		return String.format("MT-LinAdapt[dim:%d, supDim:%d, eta1:%.3f,eta2:%.3f,eta3:%.3f,eta4:%.3f, personalized:%b]", 
 				m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4, m_personalized);
 	}
 	
@@ -243,8 +237,6 @@ public class MTLinAdapt extends CoLinAdapt {
 						System.out.println();
 				}
 				oldFValue = fValue;
-//				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
-
 				LBFGS.lbfgs(vSize, 6, m_A, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);// In the training process, A is updated.
 			} while (iflag[0] != 0);
 			System.out.println();

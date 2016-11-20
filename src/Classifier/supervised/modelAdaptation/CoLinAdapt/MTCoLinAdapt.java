@@ -2,6 +2,7 @@ package Classifier.supervised.modelAdaptation.CoLinAdapt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._RankItem;
 import structures._User;
@@ -10,8 +11,8 @@ public class MTCoLinAdapt extends MTLinAdapt {
 
 	public MTCoLinAdapt(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, int topK, String globalModel,
-			String featureGroupMap) {
-		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap);
+			String featureGroupMap, String featureGroupMap4Sup) {
+		super(classNo, featureSize, featureMap, topK, globalModel, featureGroupMap, featureGroupMap4Sup);
 	}
 	
 	@Override

@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 import structures._Corpus;
 import structures._Doc;
@@ -197,6 +199,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
@@ -216,6 +220,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					sf.setTF(sf.getValue());
+					
 					double TF = 1 + Math.log10(sf.getValue());// sublinear TF
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = 1 + Math.log10(N / DF);
@@ -243,6 +249,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N - DF + 0.5) / (DF + 0.5));
@@ -269,6 +277,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					sf.setTF(sf.getValue());
+					
 					double TF = sf.getValue();
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
@@ -290,6 +300,8 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
+//					sf.setTF(sf.getValue());
+					
 					double DF = Utils.sumOfArray(stat.getDF());
 					double IDF = Math.log((N + 1) / DF);
 					avgIDF += IDF;
@@ -313,7 +325,7 @@ public abstract class Analyzer {
 		
 		System.out.format("Text feature generated for %d documents...\n", m_corpus.getSize());
 	}
-	
+
 	//Select the features and store them in a file.
 	public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
 		FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
@@ -328,7 +340,7 @@ public abstract class Analyzer {
 		else if (featureSelection.equals("CHI"))
 			selector.CHI(m_featureStat, m_classMemberNo);
 		
-		m_featureNames = selector.getSelectedFeatures();
+		m_featureNames = selector.getSelectedFeatures();		
 		SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
 		
@@ -338,6 +350,104 @@ public abstract class Analyzer {
 //		LoadCV(location);//load the selected features
 	}
 	
+	// Added by Lin for feature selection.
+	//Select the features and store them in a file.
+	public void featureSelection(String location, String featureSelection, int maxDF, int minDF, int topK) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(0, 1, maxDF, minDF);
+
+		System.out.println("*******************************************************************");
+		if (featureSelection.equals("DF"))
+			selector.DF(m_featureStat);
+		else if (featureSelection.equals("IG"))
+			selector.IG(m_featureStat, m_classMemberNo);
+		else if (featureSelection.equals("MI"))
+			selector.MI(m_featureStat, m_classMemberNo);
+		else if (featureSelection.equals("CHI"))
+			selector.CHI(m_featureStat, m_classMemberNo);
+		
+		ArrayList<String> features = selector.getSelectedFeatures();	
+		if(topK > features.size())
+			m_featureNames = features;
+		else{
+			m_featureNames.clear();
+			for(int i=features.size()-1; i>features.size()-1-topK; i--){
+				m_featureNames.add(features.get(i));
+			}
+		}
+		
+		SaveCV(location, featureSelection, 0, 1, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
+	}
+	
+	// Added by Lin for feature selection.
+	//Select the features and store them in a file.
+	public void featureSelection(String location, String fs1, String fs2, int maxDF, int minDF, int topK) throws FileNotFoundException {
+		FeatureSelector selector = new FeatureSelector(0, 1, maxDF, minDF);
+		String featureSelection1 = fs1;
+		String featureSelection2 = fs2;
+		
+		System.out.println("*******************************************************************");
+		if (featureSelection1.equals("DF"))
+			selector.DF(m_featureStat);
+		else if (featureSelection1.equals("IG"))
+			selector.IG(m_featureStat, m_classMemberNo);
+		else if (featureSelection1.equals("MI"))
+			selector.MI(m_featureStat, m_classMemberNo);
+		else if (featureSelection1.equals("CHI"))
+			selector.CHI(m_featureStat, m_classMemberNo);
+		ArrayList<String> features1 = selector.getSelectedFeatures();	
+		String cur;
+		int end = 0;
+		for(int i=0; i<features1.size()/2; i++){
+			end = features1.size()-1-i;
+			cur = features1.get(i);
+			features1.set(i, features1.get(end));
+			features1.set(end, cur);
+		}
+		
+		if (featureSelection2.equals("DF"))
+			selector.DF(m_featureStat);
+		else if (featureSelection2.equals("IG"))
+			selector.IG(m_featureStat, m_classMemberNo);
+		else if (featureSelection2.equals("MI"))
+			selector.MI(m_featureStat, m_classMemberNo);
+		else if (featureSelection2.equals("CHI"))
+			selector.CHI(m_featureStat, m_classMemberNo);
+		
+		ArrayList<String> features2 = selector.getSelectedFeatures();	
+		for(int i=0; i<features2.size()/2; i++){
+			end = features2.size()-1-i;
+			cur = features2.get(i);
+			features2.set(i, features1.get(end));
+			features2.set(end, cur);
+		}
+		// Take the union of the two sets of features.
+		HashSet<String> selectedFeatures = new HashSet<String>();
+		for(int i=0; i<features1.size() || i<features2.size(); i++){
+			if(i < features1.size() && i < features2.size()){
+				selectedFeatures.add(features1.get(i));
+				selectedFeatures.add(features2.get(i));
+			} else if(i >= features1.size() && i < features2.size())
+				selectedFeatures.add(features2.get(i));
+			else
+				selectedFeatures.add(features1.get(i));
+		}
+		ArrayList<String> features = new ArrayList<String>();
+		for(String s: selectedFeatures)
+			features.add(s);
+		if(topK > selectedFeatures.size())
+			m_featureNames = features;
+		else{
+			m_featureNames.clear();
+			for(int i=selectedFeatures.size()-1; i>selectedFeatures.size()-1-topK; i--){
+				m_featureNames.add(features.get(i));
+			}
+		}
+		
+		SaveCV(location, fs1+"_"+fs2, 0, 1, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
+		System.out.println(m_featureNames.size() + " features are selected!");
+	}
+
 	//Save all the features and feature stat into a file.
 	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
 		if (featureLocation==null || featureLocation.isEmpty())
@@ -413,5 +523,9 @@ public abstract class Analyzer {
 	//Return the number of features.
 	public int getFeatureSize(){
 		return m_featureNames.size();
+	}
+	
+	public HashMap<String, _stat> getFeatureStat(){
+		return m_featureStat;
 	}
 }
