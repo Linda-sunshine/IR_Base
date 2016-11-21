@@ -48,22 +48,22 @@ public class DCMLDA extends LDA_Gibbs {
 		m_corpusSize = c.getSize();
 		m_newtonIter = newtonIter;
 		m_newtonConverge = newtonConverge;
-
 	}
 
+	//why do we need to override this function?
+	@Override
 	public void LoadPrior(String fileName, double eta) {
-		if (fileName == null || fileName.isEmpty()) {
+		if (fileName == null || fileName.isEmpty())
 			return;
-		}
 
 		try {
 
-			if (word_topic_prior == null) {
+			if (word_topic_prior == null)
 				word_topic_prior = new double[number_of_topics][vocabulary_size];
+			else {
+				for (int k = 0; k < number_of_topics; k++)
+					Arrays.fill(word_topic_prior[k], 0);
 			}
-
-			for (int k = 0; k < number_of_topics; k++)
-				Arrays.fill(word_topic_prior[k], 0);
 
 			String tmpTxt;
 			String[] lineContainer;
@@ -71,13 +71,10 @@ public class DCMLDA extends LDA_Gibbs {
 			int tid = 0;
 
 			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
-			for (int i = 0; i < m_corpus.getFeatureSize(); i++) {
-				featureNameIndex.put(m_corpus.getFeature(i),
-						featureNameIndex.size());
-			}
+			for (int i = 0; i < m_corpus.getFeatureSize(); i++) 
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
 
-			BufferedReader br = new BufferedReader(new InputStreamReader(
-					new FileInputStream(fileName), "UTF-8"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
 
 			while ((tmpTxt = br.readLine()) != null) {
 				tmpTxt = tmpTxt.trim();
@@ -91,8 +88,7 @@ public class DCMLDA extends LDA_Gibbs {
 					featureContainer = lineContainer[i].split(":");
 
 					String featureName = featureContainer[0];
-					double featureProb = Double
-							.parseDouble(featureContainer[1]);
+					double featureProb = Double.parseDouble(featureContainer[1]);
 
 					int featureIndex = featureNameIndex.get(featureName);
 
@@ -107,6 +103,7 @@ public class DCMLDA extends LDA_Gibbs {
 		}
 	}
 
+	@Override
 	protected void imposePrior() {
 		if (word_topic_prior != null) {
 			Arrays.fill(m_totalBeta, 0);
@@ -147,29 +144,13 @@ public class DCMLDA extends LDA_Gibbs {
 			}
 			long endTime = System.currentTimeMillis();
 
-<<<<<<< HEAD
-			System.out.println("per iteration e step time\t"
-					+ (endTime - startTime) / 1000);
-||||||| merged common ancestors
-			System.out.println("per iteration e step time\t"
-					+ (eEndTime - eStartTime));
-=======
-			System.out.println("per iteration e step time\t" + (eEndTime - eStartTime));
->>>>>>> ba73c63d9d95c146271779938bf6d85828848945
+			System.out.println("per iteration e step time\t" + (endTime - startTime) / 1000);
 
 			startTime = System.currentTimeMillis();
 			updateParameter(i, weightFolder);
 			endTime = System.currentTimeMillis();
 
-<<<<<<< HEAD
-			 System.out.println("per iteration m step time\t"
-					+ (endTime - startTime) / 1000);
-||||||| merged common ancestors
-			// System.out.println("per iteration m step time\t"
-			// + (mEndTime - mStartTime));
-=======
-			System.out.println("per iteration m step time\t" + (mEndTime - mStartTime));
->>>>>>> ba73c63d9d95c146271779938bf6d85828848945
+			 System.out.println("per iteration m step time\t" + (endTime - startTime) / 1000);
 
 			if (m_converge > 0
 					|| (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
@@ -263,21 +244,9 @@ public class DCMLDA extends LDA_Gibbs {
 			//perform random sampling
 			p = 0;
 			for(tid=0; tid<number_of_topics; tid++){
-<<<<<<< HEAD
-				double term1 = topicInDocProb(tid, DCMDoc);
-				term1 = wordTopicProb(tid, wid, DCMDoc);
-				m_topicProbCache[tid] = topicInDocProb(tid, DCMDoc)
-						* wordTopicProb(tid, wid, DCMDoc);
-||||||| merged common ancestors
-				double term1 = topicInDocProb(tid, d);
-				term1 = wordTopicProb(tid, wid, d);
-				m_topicProbCache[tid] = topicInDocProb(tid, d)
-						* wordTopicProb(tid, wid, d);
-=======
 				double pzd = topicInDocProb(tid, d);
 				double pwz = wordTopicProb(tid, wid, d);
 				m_topicProbCache[tid] = pzd * pwz;
->>>>>>> ba73c63d9d95c146271779938bf6d85828848945
 				p += m_topicProbCache[tid];	
 			}
 			p *= m_rand.nextDouble();
