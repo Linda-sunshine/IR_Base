@@ -27,6 +27,7 @@ public class sparseDCMLDA extends DCMLDA{
 		m_newtonConverge = newtonConverge;
 	}
 	
+	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 
 		m_alpha = new double[number_of_topics];
@@ -46,6 +47,7 @@ public class sparseDCMLDA extends DCMLDA{
 		imposePrior();
 	}
 
+	@Override
 	protected double calculate_log_likelihood(_Doc d) {
 		double docLogLikelihood = 0.0;
 		
@@ -86,24 +88,19 @@ public class sparseDCMLDA extends DCMLDA{
 		return docLogLikelihood;
 	}
 	
+	@Override
 	protected void initialAlphaBeta() {
 
 		Arrays.fill(m_sstat, 0);
 		Arrays.fill(m_alphaAuxilary, 0);
-		for (int k = 0; k < number_of_topics; k++) {
+		for (int k = 0; k < number_of_topics; k++) 
 			Arrays.fill(topic_term_probabilty[k], 0);
-		}
 
 		 for (int k = 0; k < number_of_topics; k++){
-			m_alpha[k] = m_rand.nextDouble()+d_alpha;
-			m_alpha[k] = d_alpha;
-			m_alpha[k] = 1.0/number_of_topics;
+			m_alpha[k] = m_rand.nextDouble()+ d_alpha;
 
-			for (int v = 0; v < vocabulary_size; v++) {
+			for (int v = 0; v < vocabulary_size; v++)
 				m_beta[k][v] = m_rand.nextDouble() + d_beta;
-				m_beta[k][v] =  d_beta;
-				m_beta[k][v] = 1.0/vocabulary_size;
-			}
 		}
 		
 		m_totalAlpha = Utils.sumOfArray(m_alpha);
@@ -113,6 +110,7 @@ public class sparseDCMLDA extends DCMLDA{
 
 	}
 	
+	@Override
 	public double calculate_E_step(_Doc d){
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
 
@@ -149,22 +147,18 @@ public class sparseDCMLDA extends DCMLDA{
 				m_topicProbCache[tid] = 0;
 				if(DCMDoc.m_topicIndicator[tid]==false)
 					continue;
-				double term1 = 0;
-				term1 = topicInDocProb(tid, denominator, DCMDoc);
-				term1 = wordTopicProb(tid, wid, DCMDoc);
-
-				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc)
-						* wordTopicProb(tid, wid, DCMDoc);
+				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc) * wordTopicProb(tid, wid, DCMDoc);
+				
 				if(m_topicProbCache[tid]<0)
 					System.out.println("negative\t"+m_topicProbCache[tid]);
 				p += m_topicProbCache[tid];
 			}
 			
 			p *= m_rand.nextDouble();
-			tid = -1;
+			tid = 0;
 			while(p>0 && tid<number_of_topics-1){
-				tid ++;
 				p -= m_topicProbCache[tid];
+				tid ++;
 			}
 			
 			w.setTopic(tid);
@@ -188,32 +182,20 @@ public class sparseDCMLDA extends DCMLDA{
 			if(DCMDoc.m_sstat[k]>0){
 				xk = true;
 			}else{
-				double prob = 0;
-				
-				double trueProb = 0;
-				double falseProb = 0;
 				double term1 = DCMDoc.m_alphaDoc;
 				double term2 = m_alpha[k];
 				double term3 = m_s + DCMDoc.m_indicatorTrue_stat;
-				double term4 = m_t + number_of_topics-1
-						- DCMDoc.m_indicatorTrue_stat;
+				double term4 = m_t + number_of_topics - 1 - DCMDoc.m_indicatorTrue_stat;
 				//double term1 = DCMDoc.m_alphaDoc+m_alpha[k], DCMDoc.m_alphaDoc+m_alpha[k]+DCMDoc.getTotalDocLength());
 				//double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
 				double Q = term3 / term4;
 				for (int i = 0; i < DCMDoc.getTotalDocLength(); i++) {
-					double QTemp = (term1 + i) / (term1 + term2 + i);
-					Q *= QTemp;
+					Q *= (term1 + i) / (term1 + term2 + i);
 				}
-
-				falseProb = 1.0/(Q+1);
-				trueProb = 1-falseProb;
-
-				prob = m_rand.nextDouble()*(trueProb+falseProb);
-				if(prob<trueProb)
-					xk = true;
-				else
+				if((Q+1) * m_rand.nextDouble()<1.0)
 					xk = false;
-				
+				else
+					xk = true;
 			}
 			
 			DCMDoc.m_topicIndicator[k] = xk;
@@ -225,6 +207,7 @@ public class sparseDCMLDA extends DCMLDA{
 		}
 	}
 	
+	//no one will call this function?
 	protected double gammaRatio(double nominator, double denominator){
 		double ratio = 1;
 		
@@ -238,12 +221,10 @@ public class sparseDCMLDA extends DCMLDA{
 	}
 	
 	protected double topicInDocProb(int tid, double denominator, _Doc4SparseDCMLDA d){
-		double term1 = d.m_sstat[tid];
-		term1 += m_alpha[tid];
-		
-		return term1/denominator;
+		return (d.m_sstat[tid] + m_alpha[tid])/denominator;
 	}
 	
+	@Override
 	protected double wordTopicProb(int tid, int wid, _Doc d) {
 		_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
 
@@ -251,6 +232,7 @@ public class sparseDCMLDA extends DCMLDA{
 				/ (DCMDoc.m_sstat[tid] + m_mu * m_totalBeta[tid]);
 	}
 
+	@Override
 	protected void updateAlpha(){
 		double diff = 0;
 		double smallAlpha = 0.1;
@@ -320,6 +302,7 @@ public class sparseDCMLDA extends DCMLDA{
 		}
 	}
 	
+	@Override
 	protected void updateBeta(int tid) {
 
 		double diff = 0;
@@ -383,6 +366,7 @@ public class sparseDCMLDA extends DCMLDA{
 
 	}
 
+	@Override
 	protected void finalEst(){
 		runLastEM();
 		for (_Doc d : m_trainSet) {
@@ -439,6 +423,7 @@ public class sparseDCMLDA extends DCMLDA{
 		}
 	}
 	
+	@Override
 	protected void estThetaInDoc(_Doc d){
 		
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
