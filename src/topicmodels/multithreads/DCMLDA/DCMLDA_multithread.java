@@ -7,6 +7,7 @@ import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
+import structures._Doc4DCMLDA;
 import topicmodels.DCM.DCMLDA;
 import topicmodels.multithreads.updateParamWorker;
 import topicmodels.multithreads.updateParam_worker;
@@ -84,13 +85,13 @@ public class DCMLDA_multithread extends DCMLDA{
 				double digBeta = Utils.digamma(totalBeta);
 				
 				for(_Doc d:m_trainSet){
-					int docID = d.getID();
+					_Doc4DCMLDA doc = (_Doc4DCMLDA)d;
 					totalBetaDenominator += Utils.digamma(totalBeta+d.m_sstat[tid])-digBeta;
 					for(int v=0; v<vocabulary_size; v++){
-						wordNum += m_docWordTopicStats[docID][tid][v];
-						wordNum4V[v] += m_docWordTopicStats[docID][tid][v];
+						wordNum += doc.m_wordTopic_stat[tid][v];
+						wordNum4V[v] += doc.m_wordTopic_stat[tid][v];
 						
-						totalBetaNumerator[v] += Utils.digamma(param[v]+m_docWordTopicStats[docID][tid][v]);
+						totalBetaNumerator[v] += Utils.digamma(param[v]+doc.m_wordTopic_stat[tid][v]);
 						totalBetaNumerator[v] -= Utils.digamma(param[v]);
 					}
 				}

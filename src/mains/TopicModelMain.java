@@ -23,12 +23,8 @@ import topicmodels.correspondenceModels.ACCTM_C;
 import topicmodels.correspondenceModels.ACCTM_CHard;
 import topicmodels.correspondenceModels.ACCTM_CZ;
 import topicmodels.correspondenceModels.ACCTM_CZLR;
-import topicmodels.correspondenceModels.DCMCorrLDA_Multi_EM;
 import topicmodels.correspondenceModels.DCMCorrLDA_multi_E_test;
 import topicmodels.correspondenceModels.DCMCorrLDA_test;
-import topicmodels.correspondenceModels.DCMDMCorrLDA_multi_E_test;
-import topicmodels.correspondenceModels.DCMDMCorrLDA_test;
-import topicmodels.correspondenceModels.DCMDMMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMLDA4AC_test;
 import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
@@ -83,7 +79,7 @@ public class TopicModelMain {
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
 
-		gibbs_iteration = 500;
+		gibbs_iteration = 50;
 		gibbs_lag = 20;
 		displayLap = 20;
 
@@ -356,57 +352,7 @@ public class TopicModelMain {
 				model = new DCMLDA4AC_test(gibbs_iteration, converge, beta-1, c,
 						lambda, number_of_topics, alpha-1, burnIn, gibbs_lag,
 						ksi, tau, newtonIter, newtonConverge);
-			} else if (topicmodel.equals("corrLDA_Gibbs_test")) {
-				converge = 1e-3;
-				double ksi = 800;
-				double tau = 0.7;
-				int newtonIter = 1000;
-				double newtonConverge = 1e-3;
-			
-				model = new corrLDA_Gibbs_test(gibbs_iteration, 0,
-						beta-1, c, lambda, number_of_topics, alpha-1, burnIn,
-						gibbs_lag, ksi, tau);
-			}else if(topicmodel.equals("DCMDMCorrLDA_multi_E_test")){
-//				number_of_topics = 15;
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
-				double ksi = 800;
-				double tau = 0.7;
-				double alphaC = 0.001;
-				model = new DCMDMCorrLDA_multi_E_test(gibbs_iteration, converge,
-						beta - 1, c, lambda, number_of_topics, alpha - 1,
-						alphaC,
-						burnIn, ksi, tau, gibbs_lag,
-						newtonIter, newtonConverge);
-			}else if(topicmodel.equals("DCMDMCorrLDA_test")){
-//				number_of_topics = 15;
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
-				double ksi = 800;
-				double tau = 0.7;
-				double alphaC = 0.001;
-				model = new DCMDMCorrLDA_test(gibbs_iteration, converge,
-						beta - 1, c, lambda, number_of_topics, alpha - 1,
-						alphaC,
-						burnIn, ksi, tau, gibbs_lag,
-						newtonIter, newtonConverge);
-			} else if (topicmodel.equals("DCMDMMCorrLDA_test")) {
-//				number_of_topics = 50;
-				converge = 1e-3;
-				int newtonIter = 50;
-				double newtonConverge = 1e-3;
-				double ksi = 800;
-				double tau = 0.7;
-				double alphaC = 0.001;
-				gibbs_iteration = 300;
-				gibbs_lag = 20;
-				model = new DCMDMMCorrLDA_test(gibbs_iteration, converge,
-						beta - 1, c, lambda, number_of_topics, alpha - 1,
-						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
-						newtonConverge);
-			}else if (topicmodel.equals("DCMCorrLDA_test")) {
+			} else if (topicmodel.equals("DCMCorrLDA_test")) {
 //				number_of_topics = 15;
 				converge = 1e-3;
 				int newtonIter = 50;
@@ -418,20 +364,7 @@ public class TopicModelMain {
 						beta - 1, c, lambda, number_of_topics, alpha - 1,
 						alphaC, burnIn, ksi, tau, gibbs_lag, newtonIter,
 						newtonConverge);
-			} else if (topicmodel.equals("DCMCorrLDA_Multi_EM")) {
-				converge = 1e-2;
-				int newtonIter = 30;
-				double newtonConverge = 1e-2;
-				double ksi = 800;
-				double tau = 0.7;
-				double alphaC = 0.001;
-				gibbs_iteration = 40;
-				gibbs_lag = 20;
-				model = new DCMCorrLDA_Multi_EM(gibbs_iteration, converge,
-						beta - 1, c, lambda, number_of_topics, alpha - 1,
-						alphaC, burnIn, gibbs_lag, ksi, tau, newtonIter,
-						newtonConverge);
-			} else if (topicmodel.equals("sparseDCMLDA_test")) {
+			}  else if (topicmodel.equals("sparseDCMLDA_test")) {
 				converge = 1e-3;
 				int newtonIter = 50;
 				double newtonConverge = 1e-3;
