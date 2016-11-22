@@ -205,7 +205,6 @@ public class DCMLDA extends LDA_Gibbs {
 						current, i, delta, endtime / 1000);
 	}
 
-	
 	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 

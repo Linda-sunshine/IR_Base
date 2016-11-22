@@ -66,7 +66,7 @@ public class TopicModelMain {
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
 		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
 		//sparseClusterDCMLDA, sparseClusterDCMLDA_test
-		String topicmodel = "sparseClusterDCMLDA_test";
+		String topicmodel = "sparseDCMLDA_test";
 
 		String category = "tablet";
 		int number_of_topics = 15;
@@ -312,9 +312,9 @@ public class TopicModelMain {
 						lambda, number_of_topics, alpha - 1, burnIn, gibbs_lag,
 						newtonIter, newtonConverge);
 
-				String priorFile = "./data/Features/" + articleType
-						+ "TopicWord.txt";
-				model.LoadPrior(priorFile, eta);
+//				String priorFile = "./data/Features/" + articleType
+//						+ "TopicWord.txt";
+//				model.LoadPrior(priorFile, eta);
 
 			} else if (topicmodel.equals("LDA_Gibbs_test")) {
 //				number_of_topics = 15;
