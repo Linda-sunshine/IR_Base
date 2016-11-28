@@ -145,7 +145,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			return;
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
-			if(f.isFile()){
+			if(f.isFile() && f.getAbsolutePath().endsWith("txt")){
 				loadUser(f.getAbsolutePath());
 				count++;
 			} else if (f.isDirectory())
