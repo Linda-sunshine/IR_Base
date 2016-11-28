@@ -86,7 +86,6 @@ public class sparseClusterDCMLDA extends sparseDCMLDA {
 
 	public double calculate_E_step(_Doc d) {
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
-
 		DCMDoc.permutation();
 
 		sampleTopicAssignment(DCMDoc);

@@ -41,6 +41,11 @@ public class sparseDCMLDA extends DCMLDA{
 
 		for (_Doc d : collection) {
 			((_Doc4SparseDCMLDA)d).setTopics4Gibbs(number_of_topics, m_alpha, vocabulary_size);
+			for(_Word w: d.getWords()){
+				int wid = w.getIndex();
+				int tid = w.getTopic();
+				word_topic_sstat[tid][wid] ++;
+			}
 		}
 
 		imposePrior();
@@ -252,6 +257,26 @@ public class sparseDCMLDA extends DCMLDA{
 	}
 
 	protected void updateAlpha(){
+		
+		fixedPointUpdateAlpha();
+//		System.out.println("iteration\t" + iteration);
+		m_totalAlpha = 0;
+		for (int k = 0; k < number_of_topics; k++) {
+			m_totalAlpha += m_alpha[k];
+		}
+		
+		for(_Doc d:m_trainSet){
+			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
+			DCMDoc.m_alphaDoc = 0;
+			for(int k=0; k<number_of_topics; k++){
+				if(DCMDoc.m_topicIndicator[k]==true)
+					DCMDoc.m_alphaDoc += m_alpha[k];
+			}
+				
+		}
+	}
+
+	protected void fixedPointUpdateAlpha(){
 		double diff = 0;
 		double smallAlpha = 0.1;
 		
@@ -303,21 +328,72 @@ public class sparseDCMLDA extends DCMLDA{
 			
 		}while(diff>m_newtonConverge);
 
-//		System.out.println("iteration\t" + iteration);
-		m_totalAlpha = 0;
-		for (int k = 0; k < number_of_topics; k++) {
-			m_totalAlpha += m_alpha[k];
-		}
-		
-		for(_Doc d:m_trainSet){
-			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
-			DCMDoc.m_alphaDoc = 0;
-			for(int k=0; k<number_of_topics; k++){
-				if(DCMDoc.m_topicIndicator[k]==true)
-					DCMDoc.m_alphaDoc += m_alpha[k];
+	}
+
+	protected void newtonMethodUpdateAlpha(){
+		double alphaSum, alphaStatSum, diAlphaSum, triAlphaSum, diAlphaStatSum, triAlphaStatSum, c, b, b1, b2;
+		int iteration = 0;
+		double diff = 0;
+
+		do{
+			alphaSum = Utils.sumOfArray(m_alpha);
+
+			diAlphaSum = Utils.digamma(alphaSum);
+			triAlphaSum = Utils.trigamma(alphaSum);
+
+			diAlphaStatSum = 0;
+			triAlphaStatSum = 0;
+			for(_Doc d:m_trainSet){
+
+				_Doc4SparseDCMLDA doc = (_Doc4SparseDCMLDA)d;
+				alphaStatSum = alphaSum + doc.getTotalDocLength();
+
+				diAlphaStatSum += Utils.digamma(alphaStatSum);
+				triAlphaStatSum += Utils.trigamma(alphaStatSum);
 			}
-				
-		}
+
+			diAlphaSum = diAlphaSum*m_trainSet.size();
+			triAlphaSum = triAlphaSum*m_trainSet.size();
+
+			double[] q = new double[number_of_topics];
+			double[] g = new double[number_of_topics];
+
+			Arrays.fill(q, 0);
+			Arrays.fill(g, 0);
+
+			c = 0; b=0;
+			b1 = 0; b2 = 0;
+			c = triAlphaSum - triAlphaStatSum;
+			for(int k=0; k<number_of_topics; k++){
+				for(_Doc d:m_trainSet){
+					_Doc4SparseDCMLDA doc = (_Doc4SparseDCMLDA)d;
+					q[k] += Utils.trigamma(doc.m_sstat[k]+m_alpha[k])
+						-Utils.trigamma(m_alpha[k]);
+					g[k] += Utils.digamma(doc.m_sstat[k]+m_alpha[k])
+						-Utils.digamma(m_alpha[k]);
+				}
+
+				g[k] += diAlphaSum-diAlphaStatSum;
+
+				b1 += g[k]/q[k];
+				b2 += 1/q[k];
+			}
+
+			b = b1/(b2+1/c);
+			for(int k=0; k<number_of_topics; k++){
+				double t_diff = (g[k]-b)/q[k];
+				m_alpha[k] -= t_diff;
+				if (t_diff > diff)
+					diff = t_diff;
+			}
+
+			iteration++;
+	
+			if(iteration > m_newtonIter)
+				break;
+			
+
+		}while(diff>m_newtonConverge);
 	}
 	
 	protected void updateBeta(int tid) {

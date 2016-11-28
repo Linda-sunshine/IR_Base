@@ -174,8 +174,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 
-		 _Doc4DCMLDA d = new _Doc4DCMLDA(m_corpus.getSize(), name, "", content, 0);
-//		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, 0);
+//		 _Doc4DCMLDA d = new _Doc4DCMLDA(m_corpus.getSize(), name, "", content, 0);
+		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, 0);
 		d.setName(name);
 		AnalyzeDoc(d);		
 	}

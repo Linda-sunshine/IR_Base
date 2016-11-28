@@ -336,44 +336,19 @@ public class DCMLDA extends LDA_Gibbs {
 	protected void initialAlphaBeta() {
 
 		Arrays.fill(m_sstat, 0);
-		Arrays.fill(m_alphaAuxilary, 0);
 		for (int k = 0; k < number_of_topics; k++) {
-			Arrays.fill(topic_term_probabilty[k], 0);
+			Arrays.fill(m_beta[k], 0);
 		}
 
-		for (_Doc d : m_trainSet) {
-			_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA)d;
-			for (int k = 0; k < number_of_topics; k++) {
-				double tempProb = d.m_sstat[k] / d.getTotalDocLength();
-				m_sstat[k] += tempProb;
-				m_alphaAuxilary[k] += tempProb * tempProb;
-				if (DCMDoc.m_sstat[k] == 0) continue;
-				for (int v = 0; v < vocabulary_size; v++) {
-					tempProb = DCMDoc.m_wordTopic_stat[k][v]
-							/ DCMDoc.m_sstat[k];
-
-					topic_term_probabilty[k][v] += tempProb;
-				
-				}
-			}
-		}
-
-		int trainSetSize = m_trainSet.size();
 		for (int k = 0; k < number_of_topics; k++) {
-			m_sstat[k] /= trainSetSize;
-			m_alphaAuxilary[k] /= trainSetSize;
+			m_alpha[k] = d_alpha;
+//			m_alpha[k] = 1.0/number_of_topics;
 			for (int v = 0; v < vocabulary_size; v++) {
-				topic_term_probabilty[k][v] /= trainSetSize;
+				m_beta[k][v] = d_beta;
+//				m_beta[k][v] = 1.0/vocabulary_size;
 			}
 		}
-	
-		 for (int k = 0; k < number_of_topics; k++){
-			m_alpha[k] = m_sstat[k]+d_alpha;
-			for (int v = 0; v < vocabulary_size; v++) {
-				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
-			}
-		}
-		
+
 		m_totalAlpha = Utils.sumOfArray(m_alpha);
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
@@ -412,8 +387,8 @@ public class DCMLDA extends LDA_Gibbs {
 				deltaAlpha = totalAlphaNumerator * 1.0
 						/ totalAlphaDenominator;
 
-
-				double newAlpha = m_alpha[k] * deltaAlpha;
+				
+				double newAlpha = m_alpha[k] * deltaAlpha+d_alpha;
 				double t_diff = Math.abs(m_alpha[k] - newAlpha);
 				if (t_diff > diff)
 					diff = t_diff;
