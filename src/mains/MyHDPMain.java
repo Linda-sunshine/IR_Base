@@ -30,7 +30,7 @@ public class MyHDPMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-	
+
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -45,36 +45,33 @@ public class MyHDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		String stopwords = "./data/Model/stopwords.dat";
 
+		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
+		int lrTopK = 3000, lmTopK = 1000; // topK for language model.
+		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		
+		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%d.txt", dataset, lmTopK);
+
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm.txt", dataset);
-		
-		// Feature selection for language model.
-		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lrTopK = 3000, lmTopK = 1000; // topK for language model.
-		int lmFvSize = 1000;
-		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%d.txt", dataset, lmFvSize);
-		
-		
-		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
-		analyzer.LoadStopwords(stopwords);
-		analyzer.loadUserDir(userFolder);
-		analyzer.featureSelection(lmFvFile, "DF", maxDF, minDF, lmTopK);
-
-//		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
-//		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
+//		/**** Feature selection for language model.***/
+//		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
+//		analyzer.LoadStopwords(stopwords);
 //		analyzer.loadUserDir(userFolder);
-//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-//		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+//		analyzer.featureSelection(lmFvFile, "DF", maxDF, minDF, lmTopK);
+
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadUserDir(userFolder);
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 //	
 //		IndSVMWithKmeansExp svmkmeans = new IndSVMWithKmeansExp(classNumber, analyzer.getFeatureSize(), 100);
 //		svmkmeans.loadUsers(analyzer.getUsers());
@@ -99,7 +96,7 @@ public class MyHDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 		
-//		double[] globalLM = analyzer.estimateGlobalLM();
+		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		
@@ -108,20 +105,23 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.1);
-//
-//		hdp.setsdA(0.1);
-//		double alpha = 1, eta = 0.1, beta = 0.1;
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setNumberOfIterations(20);
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-////		hdp.setPosteriorSanityCheck(true);
-//		hdp.train();
-//		hdp.test();
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.1);
+
+		hdp.setsdA(0.1);
+		double alpha = 1, eta = 0.1, beta = 0.1;
+		hdp.setConcentrationParams(alpha, eta, beta);
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setNumberOfIterations(40);
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
+//		hdp.setPosteriorSanityCheck(true);
+		hdp.train();
+		hdp.test();
+//		hdp.printPerfs();
 //		
 //		int threshold = 100;
 //		hdp.CrossValidation(5, threshold);

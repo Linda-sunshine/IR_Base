@@ -212,10 +212,10 @@ public class MyDPMain {
 		//adaptation.setNumberOfIterations(100);
 		
 		adaptation.train();
-		adaptation.test();
-		
-		int threshold = 100;
-		adaptation.CrossValidation(5, threshold);
+//		adaptation.test();
+		adaptation.printPerfs();
+//		int threshold = 100;
+//		adaptation.CrossValidation(5, threshold);
 			
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;

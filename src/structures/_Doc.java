@@ -455,4 +455,7 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	public double getPredValue() {
 		return m_predV;
 	}
+	
+	public int m_pTrainCount = 0;
+	public double m_probTrain = 0;
 }

@@ -584,7 +584,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo(i%5==0);//no need to print out the details very often
+//			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
