@@ -1,4 +1,5 @@
 package Classifier.supervised;
+import java.awt.List;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -174,15 +175,19 @@ public class SVM extends BaseClassifier {
 		double[] y = new double[trainSet.size()];
 		
 		int fid = 0; // file id
+//		ArrayList<Integer> labelList = new ArrayList<Integer>();
 		for(_Doc d:trainSet) {
 			if (bias>0)
 				fvs[fid] = Utils.createLibLinearFV(d, fSize);
 			else
 				fvs[fid] = Utils.createLibLinearFV(d, 0);
 			
+//			if (!labelList.contains(d.getYLabel()))
+//				labelList.add(d.getYLabel());
 			y[fid] = d.getYLabel();
 			fid ++;
 		}
+//		System.out.println("total documents\t"+fid);
 		
 		Problem libProblem = new Problem();
 		libProblem.l = fid;

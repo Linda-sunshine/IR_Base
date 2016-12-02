@@ -2,6 +2,7 @@ package topicmodels.LDA;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import structures.MyPriorityQueue;
@@ -71,6 +72,11 @@ public class LDA_Gibbs_test extends LDA_Gibbs {
 
 	public void	debugOutput(String filePrefix){
 		printTopicWordDistribution(filePrefix);
+		
+		String parentParameterFile = filePrefix + "parentParameter.txt";
+		String childParameterFile = filePrefix + "childParameter.txt";
+
+		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 	}
 
 	protected void printTopicWordDistribution(String filePrefix) {
@@ -216,5 +222,35 @@ public class LDA_Gibbs_test extends LDA_Gibbs {
 		}
 
 		return logLikelihood;
+	}
+	
+	protected void printParameter(String parentParameterFile,
+			String childParameterFile, ArrayList<_Doc> docList) {
+		System.out.println("printing parameter");
+
+		try {
+			System.out.println(parentParameterFile);
+			System.out.println(childParameterFile);
+
+			PrintWriter parentParaOut = new PrintWriter(new File(
+					parentParameterFile));
+			PrintWriter childParaOut = new PrintWriter(new File(
+					childParameterFile));
+
+			for (_Doc d : docList) {
+				parentParaOut.print(d.getName() + "\t");
+				parentParaOut.print("topicProportion\t");
+				for (int k = 0; k < number_of_topics; k++) {
+					parentParaOut.print(d.m_topics[k] + "\t");
+				}
+
+				parentParaOut.println();
+			}
+
+			parentParaOut.flush();
+			parentParaOut.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

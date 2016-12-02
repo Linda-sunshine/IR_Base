@@ -146,7 +146,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 	}
 	
 	public void LoadDoc(String fileName){
-		boolean DCMLDAFlag = true;
+		boolean DCMLDAFlag = false;
 		if(DCMLDAFlag){
 			LoadDoc4DCMLDA(fileName);
 			return;
@@ -156,13 +156,22 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			return;
 
 		JSONObject json = LoadJSON(fileName);
+//		if(json.has("name")){
+//			System.out.println("exist name");
+//		}
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
-
-		_Doc d = new _Doc(m_corpus.getSize(), content, 0);
+		String label = Utils.getJSONValue(json, "label");
+		
+		int yLabel = 0;
+		if(!label.equals("NULL")){
+//			System.out.println("label\t"+label);
+			yLabel = Integer.parseInt(label);
+		}
+		_Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
 		d.setName(name);
-		AnalyzeDoc(d);		
+		AnalyzeDoc(d);
 	}
 	
 	public void LoadDoc4DCMLDA(String fileName){
@@ -175,7 +184,14 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 
 //		 _Doc4DCMLDA d = new _Doc4DCMLDA(m_corpus.getSize(), name, "", content, 0);
-		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, 0);
+		String label = Utils.getJSONValue(json, "label");
+		
+		int yLabel = 0;
+		if(!label.equals("NULL")){
+//			System.out.println("label\t"+label);
+			yLabel = Integer.parseInt(label);
+		}
+		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, yLabel);
 		d.setName(name);
 		AnalyzeDoc(d);		
 	}

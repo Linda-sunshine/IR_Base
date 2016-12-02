@@ -52,15 +52,18 @@ public class LDA_Gibbs extends pLSA {
 		Arrays.fill(m_sstat, d_beta*vocabulary_size);
 		Arrays.fill(m_topicProbCache, 0);
 		
+		double avgDocLen = 0;
 		// initialize topic-word allocation, p(w|z)
 		for(_Doc d:collection) {
+			avgDocLen += d.getTotalDocLength();
 			d.setTopics4Gibbs(number_of_topics, d_alpha);//allocate memory and randomize it
 			for(_Word w:d.getWords()) {
 				word_topic_sstat[w.getTopic()][w.getIndex()] ++;
 				m_sstat[w.getTopic()] ++;
 			}
 		}
-		
+		avgDocLen = avgDocLen*1.0/collection.size();
+		System.out.println("avg len\t"+avgDocLen);
 		imposePrior();		
 	}
 	

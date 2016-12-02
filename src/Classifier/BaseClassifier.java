@@ -10,6 +10,7 @@ import java.util.Collection;
 import structures._Corpus;
 import structures._Doc;
 import structures._PerformanceStat;
+import sun.security.util.Length;
 import utils.Utils;
 
 
@@ -129,19 +130,23 @@ public abstract class BaseClassifier {
 			//Use this loop to iterate all the ten folders, set the train set and test set.
 			for (int i = 0; i < k; i++) {
 				for (int j = 0; j < masks.length; j++) {
-					//more for testing
-					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
-						m_trainSet.add(docs.get(j));
-					else
+					//more for training
+					if(masks[j]==i)
 						m_testSet.add(docs.get(j));
-					
-//					//more for training
-//					if(masks[j]==i) 
-//						m_testSet.add(docs.get(j));
-//					else
+					else
+						m_trainSet.add(docs.get(j));
+//					if( masks[j]==(i+1)%k || masks[j]==(i+2)%k ) // || masks[j]==(i+3)%k 
 //						m_trainSet.add(docs.get(j));
+//					else
+//						m_testSet.add(docs.get(j));
+					
+//					//more for testing
+//					if(masks[j]==i) 
+//						m_trainSet.add(docs.get(j));
+//					else
+//						m_testSet.add(docs.get(j));
 				}
-				
+				System.out.println("train set\t"+m_trainSet.size()+"\t test set\t"+m_testSet.size());
 				long start = System.currentTimeMillis();
 				train();
 				double accuracy = test();

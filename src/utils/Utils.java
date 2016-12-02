@@ -888,4 +888,33 @@ public class Utils {
 		
 		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
+	
+	public static double getVariance(double[] argArray){
+		double arrayVar = 0;
+		double arrayAvg = 0;
+		int arrayLen = argArray.length;
+		for(int i=0; i<arrayLen; i++){
+			arrayAvg += argArray[i];
+		}
+		
+		arrayAvg = arrayAvg/arrayLen;
+		
+		for(int i=0; i<arrayLen; i++){
+			arrayVar += (argArray[i]-arrayAvg)*(argArray[i]-arrayAvg);
+		}
+		
+		arrayVar /= arrayLen;
+		return arrayVar;
+	}
+	
+	public static double getMean(double[] argArray){
+		double arrayAvg = 0;
+		int arrayLen = argArray.length;
+		for(int i=0; i<arrayLen; i++){
+			arrayAvg += argArray[i];
+		}
+		
+		return arrayAvg/arrayLen;
+		
+	}
 }
