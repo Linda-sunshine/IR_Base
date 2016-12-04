@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
@@ -67,7 +68,7 @@ public class MyHDPMain {
 //		analyzer.loadUserDir(userFolder);
 //		analyzer.featureSelection(lmFvFile, "DF", maxDF, minDF, lmTopK);
 
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
@@ -104,7 +105,7 @@ public class MyHDPMain {
 //		hdp.setQ(0);
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-//
+
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
@@ -113,15 +114,16 @@ public class MyHDPMain {
 
 		hdp.setsdA(0.1);
 		double alpha = 1, eta = 0.1, beta = 0.1;
+		hdp.setM(10);
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(40);
+		hdp.setNumberOfIterations(50);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 //		hdp.setPosteriorSanityCheck(true);
 		hdp.train();
 		hdp.test();
-//		hdp.printPerfs();
+//		//hdp.printPerfs();
 //		
 //		int threshold = 100;
 //		hdp.CrossValidation(5, threshold);

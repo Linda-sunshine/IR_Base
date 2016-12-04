@@ -259,4 +259,9 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 //	public void closeWriter(){
 //		m_writer.close();
 //	}
+	
+	
+//	protected double calcLogLikelihoodX(_Review r){		
+//		return 0;
+//	}
 }

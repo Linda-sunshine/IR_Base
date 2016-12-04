@@ -317,6 +317,14 @@ public class Utils {
 		}
 		return Math.sqrt(sum);
 	}
+	static public double sumOfFeaturesL2(double[] fs){
+		if(fs == null)
+			return 0;
+		double sum = 0;
+		for(double f: fs)
+			sum += f * f;
+		return Math.sqrt(sum);
+	}
 	
 	static public void L2Normalization(_SparseFeature[] fs) {
 		double sum = sumOfFeaturesL2(fs);

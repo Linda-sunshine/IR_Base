@@ -157,11 +157,13 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of y, i.e., p(y|x,\phi)
+			double y = calcLogLikelihoodY(r);
 			likelihood = calcLogLikelihoodY(r);
 			
 			//log likelihood of x, i.e., p(x|\psi)
+			double x = calcLogLikelihoodX(r);
 			likelihood += calcLogLikelihoodX(r);
-//			System.out.println("y: "+y+"\tx: "+x);
+			System.out.println("y: "+y+"\tx: "+x);
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -177,7 +179,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
