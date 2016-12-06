@@ -5,11 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
-import net.didion.jwnl.util.factory.Param;
 import structures._Corpus;
 import structures._Doc;
 import structures._Doc4DCMLDA;
-import structures._ParentDoc;
 import topicmodels.multithreads.updateParam_worker;
 import topicmodels.multithreads.updateParam_worker.RunType;
 import utils.Utils;
@@ -17,7 +15,7 @@ import utils.Utils;
 public class DCMLDA_multi_M extends DCMLDA{
 	protected updateParam_worker[] m_updateParam_workers;
 	
-	public class DCMLDA_multi_mWorker extends updateParam_worker{
+	public class DCMLDA_multi_mWorker extends updateParam_worker {
 		protected ArrayList<double[]> m_param;
 		protected ArrayList<Integer> m_paramIndex;
 		
@@ -136,7 +134,9 @@ public class DCMLDA_multi_M extends DCMLDA{
 	}
 	
 	public String toString(){
-		return String.format("DCMCorrLDA_Multi[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta);
+		return String.format(
+				"DCMLDA_multi_M[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]",
+				number_of_topics, d_alpha, d_beta);
 	}
 	
 	protected void initialize_probability(Collection<_Doc> collection){

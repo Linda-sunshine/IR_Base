@@ -14,7 +14,6 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures._ChildDoc;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._Doc4SparseDCMLDA;
 import structures._ParentDoc;
 import structures._ParentDoc4DCM;
@@ -159,7 +158,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 	}
 	
 	public void LoadDoc(String fileName){
-		boolean DCMLDAFlag = false;
+		boolean DCMLDAFlag = true;
 		if(DCMLDAFlag){
 			LoadDoc4DCMLDA(fileName);
 			return;
