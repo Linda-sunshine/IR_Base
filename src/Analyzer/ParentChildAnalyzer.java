@@ -29,11 +29,24 @@ import utils.Utils;
 public class ParentChildAnalyzer extends DocAnalyzer {
 	public HashMap<String, _ParentDoc> parentHashMap;
 
+	public HashMap<String, Integer> labelIntMap = new HashMap<String, Integer>();
+	
 	public static int ChildDocFeatureSize = 6;
 	public ParentChildAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold) 
 			throws InvalidFormatException, FileNotFoundException, IOException {
 		super(tokenModel, classNo, providedCV, Ngram, threshold);
 		parentHashMap = new HashMap<String, _ParentDoc>();
+		labelIntMap.put("earn", 0);
+		labelIntMap.put("acq", 1);
+		labelIntMap.put("crude", 2);
+		labelIntMap.put("trade", 3);
+		labelIntMap.put("money-fx", 4);
+		labelIntMap.put("interest", 5);
+		labelIntMap.put("ship", 6);
+		labelIntMap.put("sugar", 7);
+		labelIntMap.put("coffee", 8);
+		labelIntMap.put("gold", 9);
+
 	}
 
 	public void LoadParentDirectory(String folder, String suffix) {
@@ -167,7 +180,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		int yLabel = 0;
 		if(!label.equals("NULL")){
 //			System.out.println("label\t"+label);
-			yLabel = Integer.parseInt(label);
+//			yLabel = Integer.parseInt(label);
+			yLabel = labelIntMap.get(label);
 		}
 		_Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
 		d.setName(name);
@@ -189,7 +203,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		int yLabel = 0;
 		if(!label.equals("NULL")){
 //			System.out.println("label\t"+label);
-			yLabel = Integer.parseInt(label);
+//			yLabel = Integer.parseInt(label);
+			yLabel = labelIntMap.get(label);
 		}
 		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, yLabel);
 		d.setName(name);

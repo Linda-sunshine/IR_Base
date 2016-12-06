@@ -20,7 +20,7 @@ public class documentClassificationMain {
 		_Corpus corpus = new _Corpus();
 		/*****Set these parameters before run the classifiers.*****/
 		int featureSize = 0; //Initialize the fetureSize to be zero at first.
-		int classNumber = 20; //Define the number of classes in this Naive Bayes.
+		int classNumber = 9; //Define the number of classes in this Naive Bayes.
 		int Ngram = 1; //The default value is unigram. 
 		int lengthThreshold = 5; //Document length threshold
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
@@ -31,7 +31,7 @@ public class documentClassificationMain {
 
 		/*****The parameters used in loading files.*****/
 		String articleType = "20NewsGroupTrain";
-		articleType = "Reuters8";
+		articleType = "Reuters10";
 		String folder = String.format(
 				"./data/ParentChildTopicModel/%sArticles",
 				articleType);

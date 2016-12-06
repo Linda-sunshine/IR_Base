@@ -1,6 +1,8 @@
 package mains;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.text.ParseException;
 import java.util.Calendar;
 
@@ -13,7 +15,7 @@ public class featureGeneration {
 		int Ngram = 1; //The default value is unigram. 
 		String featureValue = "TF"; //The way of calculating the feature value, which can also be "TFIDF", "BM25"
 		int norm = 0;//The way of normalization.(only 1 and 2)
-		int lengthThreshold = 5; //Document length threshold
+		int lengthThreshold = 0; //Document length threshold
 		int minimunNumberofSentence = 2; // each document should have at least 2 sentences
 		
 		/*****parameters for the two-topic topic model*****/
@@ -47,7 +49,7 @@ public class featureGeneration {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "20NewsGroupTrain";
-//		articleType = "Reuters8";
+		articleType = "Reuters10";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
@@ -101,6 +103,11 @@ public class featureGeneration {
 			resultFolder.mkdir();
 		}
 		
+		String outputFile = filePrefix + "/consoleOutput.txt";
+		PrintStream printStream = new PrintStream(new FileOutputStream(
+				outputFile));
+		System.setOut(printStream);
+		
 		String infoFilePath = filePrefix + "/Information.txt";
 		////store top k words distribution over topic
 		String topWordPath = filePrefix + "/topWords.txt";
@@ -109,7 +116,7 @@ public class featureGeneration {
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-		double endProb = 0.9; // Used in feature selection, the ending point of
+		double endProb = 0.99; // Used in feature selection, the ending point of
 								// the features.
 		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.

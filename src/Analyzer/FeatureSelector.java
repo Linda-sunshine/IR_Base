@@ -73,6 +73,7 @@ public class FeatureSelector {
 		
 		int start = (int) (totalSize * m_startProb);
 		int end = (int) (totalSize * m_endProb);
+		System.out.println("start feature val\t"+m_selectedFeatures.get(start).m_value+"\t"+"end feature val\t"+m_selectedFeatures.get(end).m_value);
 		for(int i=start; i<end; i++)
 			features.add(m_selectedFeatures.get(i).m_name);
 		

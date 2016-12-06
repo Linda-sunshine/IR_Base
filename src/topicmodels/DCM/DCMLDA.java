@@ -217,7 +217,8 @@ public class DCMLDA extends LDA_Gibbs {
 		m_alphaAuxilary = new double[number_of_topics];
 
 		for (_Doc d : collection) {
-			((_Doc4DCMLDA)d).setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
+			_Doc4DCMLDA doc = (_Doc4DCMLDA)d;
+			doc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
 			// allocate memory and randomize it
 			// ((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
 		}
@@ -289,14 +290,14 @@ public class DCMLDA extends LDA_Gibbs {
 	}
 
 	public void calculate_M_step(int iter) {
-
-		for (_Doc d : m_trainSet)
-			collectStats(d);
-		
-		for(int k=0; k<number_of_topics; k++)
-			for(int v=0; v<vocabulary_size; v++)
-				topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
-
+		if(iter>m_burnIn&&iter%m_lag==0){
+			for (_Doc d : m_trainSet)
+				collectStats(d);
+			
+			for(int k=0; k<number_of_topics; k++)
+				for(int v=0; v<vocabulary_size; v++)
+					topic_term_probabilty[k][v] += word_topic_sstat[k][v]+m_beta[k][v];
+		}
 	}
 
 	protected void collectStats(_Doc d) {

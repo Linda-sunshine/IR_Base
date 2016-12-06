@@ -116,6 +116,12 @@ public abstract class Analyzer {
 			} else if (f.isDirectory())
 				LoadDirectory(f.getAbsolutePath(), suffix);
 		}
+		double avgDocLen = 0;
+		for(_Doc d:m_corpus.getCollection()){
+			avgDocLen += d.getTotalDocLength();
+		}
+		avgDocLen = avgDocLen*1.0/m_corpus.getSize();
+		System.out.println("avg doc Len\t"+avgDocLen);
 		System.out.format("Loading %d reviews from %s\n", m_corpus.getSize()-current, folder);
 	}
 	

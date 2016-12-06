@@ -40,7 +40,8 @@ public class sparseDCMLDA extends DCMLDA{
 		initialAlphaBeta();
 
 		for (_Doc d : collection) {
-			((_Doc4SparseDCMLDA)d).setTopics4Gibbs(number_of_topics, m_alpha, vocabulary_size);
+			_Doc4SparseDCMLDA doc = (_Doc4SparseDCMLDA)d;
+			doc.setTopics4Gibbs(number_of_topics, m_alpha, vocabulary_size);
 			for(_Word w: d.getWords()){
 				int wid = w.getIndex();
 				int tid = w.getTopic();
