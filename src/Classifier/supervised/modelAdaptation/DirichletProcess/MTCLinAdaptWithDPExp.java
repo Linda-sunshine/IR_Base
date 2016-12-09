@@ -3,6 +3,7 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.TreeMap;
@@ -144,7 +145,7 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		return prf;
 	}
 	
-	@Override
+//	@Override
 //	public double train(){
 //		System.out.println(toString());
 //		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -440,33 +441,33 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 //		}
 //	}
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
-	protected void calculateClusterProbPerUser(){
-		double prob;
-		_DPAdaptStruct user;
-		double[] probs = new double[m_kBar];
-		_thetaStar oldTheta;
-
-		// calculate the centroids of all the clusters.
-		calculateCentroids();
-
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-				
-			oldTheta = user.getThetaStar();
-			for(int k=0; k<m_kBar; k++){
-				user.setThetaStar(m_thetaStars[k]);
-
-				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-//				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-
-				probs[k] = Math.exp(prob);//this will be in real space!
-			}
-			Utils.L1Normalization(probs);
-			user.setClusterPosterior(probs);
-
-			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
-		}
-	}
+//	protected void calculateClusterProbPerUser(){
+//		double prob;
+//		_DPAdaptStruct user;
+//		double[] probs = new double[m_kBar];
+//		_thetaStar oldTheta;
+//
+//		// calculate the centroids of all the clusters.
+//		calculateCentroids();
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//				
+//			oldTheta = user.getThetaStar();
+//			for(int k=0; k<m_kBar; k++){
+//				user.setThetaStar(m_thetaStars[k]);
+//
+//				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+////				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//
+//				probs[k] = Math.exp(prob);//this will be in real space!
+//			}
+//			Utils.L1Normalization(probs);
+//			user.setClusterPosterior(probs);
+//
+//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
+//		}
+//	}
 	
 	double[][] m_centroids;
 	double[] m_counts;
@@ -523,4 +524,87 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 //			m_thetaUserMap.get(user.getThetaStar()).add(user);
 //		}
 //	}
+	
+	// we want to test if one cluster's model works better than others.
+	public void sanityCheck(int k){
+		setSupModel();
+		// we first collect the test review size for each hdpthetastar.
+		_DPAdaptStruct user;
+		HashMap<Integer, ArrayList<_Review>> indexRvwMap = new HashMap<Integer, ArrayList<_Review>>();
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			int index = user.getThetaStar().getIndex();
+			for(_Review r: user.getReviews()){
+				if (r.getType() != rType.TEST)
+					continue;
+				if(!indexRvwMap.containsKey(index))
+					indexRvwMap.put(index, new ArrayList<_Review>());
+				indexRvwMap.get(index).add(r);
+			}
+		}
+		MyPriorityQueue<_RankItem> q = new MyPriorityQueue<_RankItem>(k);
+		for(int in: indexRvwMap.keySet()){
+			q.add(new _RankItem(in, indexRvwMap.get(in).size()));
+		}
+		ArrayList<_RankItem> rq = new ArrayList<_RankItem>();
+		for(_RankItem it: q)
+			rq.add(it);
+		Collections.sort(rq, new Comparator<_RankItem>(){
+			@Override
+			public int compare(_RankItem r1, _RankItem r2){
+				return (int) (r2.m_value - r1.m_value);
+			}
+		});
+		int[] indexes = new int[rq.size()];
+		for(int i=0; i<rq.size(); i++)
+			indexes[i] = rq.get(i).m_index;
+		double[][][] perf = new double[k][k][2];
+		int i = 0;// thetastar[k]
+		for(int in: indexes){
+			int j = 0;
+			_thetaStar theta = m_thetaStars[in];
+			System.out.print(indexRvwMap.get(in).size() + "\t");
+			for(int subin: indexes){
+				perf[i][j] = calcPerf(theta, indexRvwMap.get(subin));
+				System.out.print(String.format("%.4f/%.4f\t", perf[i][j][0], perf[i][j][1]));
+				j++;
+			}
+			System.out.println();
+			i++;
+		}
+	}
+	
+	public double[] calcPerf(_thetaStar theta, ArrayList<_Review> rs){
+		int[][] TPTable = new int[m_classNo][m_classNo];
+		for(_Review r: rs){
+			int predL = predict(theta, r);
+			int trueL = r.getYLabel();
+			TPTable[predL][trueL]++;
+		}
+		double[] prf = new double[6];
+		for (int i = 0; i < m_classNo; i++) {
+			prf[3*i] = (double) TPTable[i][i] / (Utils.sumOfRow(TPTable, i) + 0.00001);// Precision of the class.
+			prf[3*i + 1] = (double) TPTable[i][i] / (Utils.sumOfColumn(TPTable, i) + 0.00001);// Recall of the class.
+			prf[3*i + 2] = 2 * prf[3 * i] * prf[3 * i + 1] / (prf[3 * i] + prf[3 * i + 1] + 0.00001);
+		}
+		return new double[]{prf[2], prf[5]};
+	}
+	
+	public void setSupModel(){
+		for(int i=0; i<m_featureSize+1; i++)
+			m_supWeights[i] = getSupWeights(i);
+	}
+	public int predict(_thetaStar theta, _Review r){
+		
+		double[] As = theta.getModel();
+		double prob, sum = As[0]*m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+		int m, n;
+		for(_SparseFeature fv: r.getSparse()){
+			n = fv.getIndex() + 1;
+			m = m_featureGroupMap[n];
+			sum += (As[m]*m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+		}
+		prob = Utils.logistic(sum);
+		return prob > 0.5 ? 1 : 0;
+	}
 }
