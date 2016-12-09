@@ -7,7 +7,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Review;
 import structures._User;
+import topicmodels.LDA.LDA_Gibbs;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Analyzer.UserAnalyzer;
@@ -50,31 +52,50 @@ public class MyHDPMain {
 		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
 		int lrTopK = 3000, lmTopK = 1000; // topK for language model.
 		
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%d.txt", dataset, lmTopK);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%d.txt", dataset, lmTopK);
 
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users_1000", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
 //		/**** Feature selection for language model.***/
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.loadUserDir(userFolder);
 //		analyzer.featureSelection(lmFvFile, "DF", maxDF, minDF, lmTopK);
+		
+		int number_of_topics = 40, topK = 30;
+		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
 
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//	
+		
+		
+		/**Parameters in topic modeling.***/
+//		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!
+//		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
+//		double varConverge = 1e-5, burnIn = 0.4;
+//		int varIter = 10, gibbs_iteration = 1000, gibbs_lag = 50;
+//		int number_of_topics = 40, topK = 30;
+//		String infoFilePath = "./data/info.txt";
+//		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
+//		
+//		LDA_Gibbs model = new LDA_Gibbs(gibbs_iteration, 0, beta, analyzer.getCorpus(), //in gibbs sampling, no need to compute log-likelihood during sampling
+//			lambda, number_of_topics, alpha, burnIn, gibbs_lag);
+//		model.setInforWriter(infoFilePath);
+//		model.EMonCorpus();
+//		model.printOnlyTopWords(topK, topWordPath);
+
 //		IndSVMWithKmeansExp svmkmeans = new IndSVMWithKmeansExp(classNumber, analyzer.getFeatureSize(), 100);
 //		svmkmeans.loadUsers(analyzer.getUsers());
 //		svmkmeans.setLabel(false);
@@ -106,10 +127,10 @@ public class MyHDPMain {
 //		hdp.setQ(0);
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-//
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		
-//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.1);
 
@@ -117,13 +138,15 @@ public class MyHDPMain {
 		double alpha = 1, eta = 0.1, beta = 0.1;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(40);
+		hdp.setNumberOfIterations(50);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
-//		hdp.setPosteriorSanityCheck(true);
 		hdp.train();
-		hdp.test();
-//		hdp.printPerfs();
+		hdp.sanityCheck(10);
+
+//		hdp.train();
+//		hdp.test();
+		//hdp.printPerfs();
 //		
 //		int threshold = 100;
 //		hdp.CrossValidation(5, threshold);

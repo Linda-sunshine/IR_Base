@@ -314,6 +314,33 @@ public class pLSA extends twoTopic {
 		}
 	}
 	
+	public void printOnlyTopWords(int k, String topWordPath) {
+		System.out.println("TopWord FilePath:" + topWordPath);
+		Arrays.fill(m_sstat, 0);
+		for(_Doc d:m_trainSet) {
+			for(int i=0; i<number_of_topics; i++)
+				m_sstat[i] += m_logSpace?Math.exp(d.m_topics[i]):d.m_topics[i];
+		}
+		Utils.L1Normalization(m_sstat);			
+	
+		try{
+			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+		
+			for(int i=0; i<topic_term_probabilty.length; i++) {
+				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+				for(int j = 0; j < vocabulary_size; j++)
+					fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+				
+//				topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+				for(_RankItem it:fVector)
+					topWordWriter.format("%s\n", it.m_name);
+			}
+			topWordWriter.close();
+		} catch(Exception ex){
+			System.err.print("File Not Found");
+		}
+	}
+	
 	//print all the quantities in real space
 	@Override
 	public void printTopWords(int k) {
