@@ -1,7 +1,9 @@
 package topicmodels.DCM;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 
 import structures._Corpus;
 import structures._Doc;
@@ -13,7 +15,9 @@ import utils.Utils;
  * Created by jetcai1900 on 12/5/16.
  */
 public class sparseDCMLDA_multi_M extends sparseDCMLDA{
-	public class sparseDCMLDA_multi_mWorker extends updateParam_worker {
+    protected updateParam_worker[] m_updateParam_workers;
+
+    public class sparseDCMLDA_multi_mWorker extends updateParam_worker {
 		protected ArrayList<double[]> m_param;
 		protected ArrayList<Integer> m_paramIndex;
 
@@ -129,12 +133,67 @@ public class sparseDCMLDA_multi_M extends sparseDCMLDA{
 			double newtonConverge, double tParam, double sParam) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
 				alpha, burnIn, lag, newtonIter, newtonConverge, tParam, sParam);
-	}
+        m_multithread = true;
+
+    }
 
 	public String toString() {
 		return String
 				.format("sparseDCMLDA_multi_M[k:%d, alphaA:%.2f, beta:%.2f, Gibbs Sampling]",
 						number_of_topics, d_alpha, d_beta);
+	}
+
+    protected void initialize_probability(Collection<_Doc> collection){
+        super.initialize_probability(collection);
+
+        int cores = Runtime.getRuntime().availableProcessors();
+
+        m_threadpool = new Thread[cores];
+        m_updateParam_workers = new sparseDCMLDA_multi_mWorker[cores];
+
+        for(int i=0; i<cores; i++)
+            m_updateParam_workers[i] = new sparseDCMLDA_multi_mWorker();
+
+        int workerID = 0;
+        for(int k=0; k<number_of_topics; k++){
+            m_updateParam_workers[workerID%cores].addParameter(m_beta[k], k);
+            workerID ++;
+        }
+    }
+
+	protected void updateBeta(){
+		for(int i=0; i<m_updateParam_workers.length; i++){
+			m_updateParam_workers[i].setType(updateParam_worker.RunType.RT_EM);
+			m_threadpool[i] = new Thread(m_updateParam_workers[i]);
+			m_threadpool[i].start();
+		}
+
+		for(Thread thread:m_threadpool){
+			try{
+				thread.join();
+			}catch(InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	protected void updateParameter(int iter, File weightFolder) {
+		File weightIterFolder = new File(weightFolder, "_" + iter);
+		if (!weightIterFolder.exists()) {
+			weightIterFolder.mkdir();
+		}
+
+		initialAlphaBeta();
+		updateAlpha();
+
+		updateBeta();
+
+		for (int k = 0; k < number_of_topics; k++)
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+
+		String fileName = iter + ".txt";
+		saveParameter2File(weightIterFolder, fileName);
+
 	}
 	
 

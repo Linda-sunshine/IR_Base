@@ -39,7 +39,11 @@ public class sparseDCMLDA extends DCMLDA{
 		
 		initialAlphaBeta();
 
+		int i=0;
+
 		for (_Doc d : collection) {
+			System.out.println("doc index\t"+i);
+			i ++;
 			_Doc4SparseDCMLDA doc = (_Doc4SparseDCMLDA)d;
 			doc.setTopics4Gibbs(number_of_topics, m_alpha, vocabulary_size);
 			for(_Word w: d.getWords()){
@@ -186,6 +190,7 @@ public class sparseDCMLDA extends DCMLDA{
 	protected void sampleOnOffIndicator(_Doc4SparseDCMLDA DCMDoc){
 		for(int k=0; k<number_of_topics; k++){
 			boolean xk = DCMDoc.m_topicIndicator[k];
+
 			if(xk==true){
 				DCMDoc.m_indicatorTrue_stat --;
 				DCMDoc.m_alphaDoc -= m_alpha[k];
@@ -214,6 +219,8 @@ public class sparseDCMLDA extends DCMLDA{
 				falseProb = 1.0/(Q+1);
 				trueProb = 1-falseProb;
 
+				System.out.println("falseProb:\t"+falseProb);
+
 				prob = m_rand.nextDouble()*(trueProb+falseProb);
 				if(prob<trueProb)
 					xk = true;
@@ -221,7 +228,7 @@ public class sparseDCMLDA extends DCMLDA{
 					xk = false;
 				
 			}
-			
+
 			DCMDoc.m_topicIndicator[k] = xk;
 			if(xk==true){
 				DCMDoc.m_indicatorTrue_stat++;	

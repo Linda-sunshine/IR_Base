@@ -113,6 +113,7 @@ public class sparseLDA extends LDA_Gibbs {
 	
 	protected void sampleOnOffIndicator(_Doc4SparseDCMLDA DCMDoc){
 		for(int k=0; k<number_of_topics; k++){
+
 			boolean xk = DCMDoc.m_topicIndicator[k];
 			if(xk==true){
 				DCMDoc.m_indicatorTrue_stat --;
@@ -142,14 +143,15 @@ public class sparseLDA extends LDA_Gibbs {
 				falseProb = 1.0/(Q+1);
 				trueProb = 1-falseProb;
 
+				System.out.println("falseProb:\t"+falseProb);
+
 				prob = m_rand.nextDouble()*(trueProb+falseProb);
 				if(prob<trueProb)
 					xk = true;
 				else
 					xk = false;
-				
 			}
-			
+
 			DCMDoc.m_topicIndicator[k] = xk;
 			if(xk==true){
 				DCMDoc.m_indicatorTrue_stat++;	

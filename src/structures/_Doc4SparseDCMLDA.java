@@ -1,16 +1,17 @@
 package structures;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 	public boolean[] m_topicIndicator;
 	public double[] m_topicIndicator_prob;
 	public double m_MStepIter; 
-	public double m_indicatorTrue_stat;
+	public int m_indicatorTrue_stat;
 	public double m_alphaDoc;
 	public double m_topicIndicator_distribution;
 	public int m_clusterIndicator;
-		
+
 	public _Doc4SparseDCMLDA(int ID, String name, String title, String source, int ylabel){
 		super(ID, name, title, source, ylabel);
 		m_MStepIter = 0;
@@ -39,16 +40,19 @@ public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 	}
 	
 	public void setTopics4Gibbs(int k, double[] alpha, int vocalSize){
-		
+		System.out.println("set..");
 		createSpace(k, 0);
 		setWordTopicStat(k, vocalSize);
 		
 		boolean xid = false;
 		m_alphaDoc = 0;
+		ArrayList<Integer> onTopicList = new ArrayList<Integer>();
 		for (int i = 0; i < k; i++) {
 			xid = m_rand.nextBoolean();
 			m_topicIndicator[i] = xid;
+
 			if (xid == true) {
+				onTopicList.add(i);
 				m_indicatorTrue_stat++;
 				m_alphaDoc += alpha[i];
 			}
@@ -56,12 +60,16 @@ public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 		}
 
 		int wIndex = 0, wid, tid;
+
 		for(_SparseFeature fv:m_x_sparse){
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
-				do {
-					tid = m_rand.nextInt(k);
-				} while (m_topicIndicator[tid] == false);
+//				System.out.println("on topic num\t"+m_indicatorTrue_stat);
+				tid = m_rand.nextInt(m_indicatorTrue_stat);
+				tid = onTopicList.get(tid);
+//				do {
+//					tid = m_rand.nextInt(k);
+//				} while (m_topicIndicator[tid] == false);
 				m_words[wIndex] = new _Word(wid, tid);
 				m_sstat[tid] ++;
 				

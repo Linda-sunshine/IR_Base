@@ -180,7 +180,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		if(!label.equals("NULL")){
 //			System.out.println("label\t"+label);
 //			yLabel = Integer.parseInt(label);
-			yLabel = labelIntMap.get(label);
+//			yLabel = labelIntMap.get(label);
 		}
 		_Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
 		d.setName(name);
@@ -203,7 +203,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		if(!label.equals("NULL")){
 //			System.out.println("label\t"+label);
 //			yLabel = Integer.parseInt(label);
-			yLabel = labelIntMap.get(label);
+//			yLabel = labelIntMap.get(label);
 		}
 		_Doc4SparseDCMLDA d = new _Doc4SparseDCMLDA(m_corpus.getSize(), name, "", content, yLabel);
 		d.setName(name);
