@@ -139,7 +139,7 @@ public class CLRWithHDP extends CLRWithDP {
 			
 			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
-			
+
 			//we do not need to sample psi since we will integrate it out in likelihood calculation.
 		}
 	}
@@ -154,6 +154,7 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		//Step 2: sample thetaStar based on the loglikelihood of p(z=k|\gamma,\eta)p(y|x,\phi)p(x|\psi)
 		for(k=0; k<m_kBar+m_M; k++){
+
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of y, i.e., p(y|x,\phi)
@@ -161,8 +162,7 @@ public class CLRWithHDP extends CLRWithDP {
 			
 			//log likelihood of x, i.e., p(x|\psi)
 //			double x = calcLogLikelihoodX(r);
-			likelihood += calcLogLikelihoodX(r);
-//			System.out.println(likelihood + "\t"+x);
+//			likelihood += calcLogLikelihoodX(r);
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -174,11 +174,11 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print("likehood:"+likelihood+"\t"+"logsum:"+logSum+"\n");
+			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
@@ -193,6 +193,7 @@ public class CLRWithHDP extends CLRWithDP {
 			
 			double rnd = Beta.staticNextDouble(1, m_alpha);
 			m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
+			System.out.println(rnd + "\t" + m_gamma_e + "\t" + rnd*m_gamma_e);
 			m_gamma_e = (1-rnd)*m_gamma_e;
 			
 			swapTheta(m_kBar, k);
