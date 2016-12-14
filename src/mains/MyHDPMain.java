@@ -36,10 +36,10 @@ public class MyHDPMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-		int i = 0;
-		while(i++ < 10){
-			System.out.println(Beta.staticNextDouble(0.1, 0.5));
-		}
+//		int i = 0;
+//		while(i++ < 10){
+//			System.out.println(Beta.staticNextDouble(1, 3));
+//		}
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -76,14 +76,14 @@ public class MyHDPMain {
 //		analyzer.loadUserDir(userFolder);
 //		analyzer.featureSelection(lmFvFile, "DF", maxDF, minDF, lmTopK);
 		
-//		int number_of_topics = 40, topK = 30;
-//		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
-//
-//		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-//		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-//		analyzer.loadUserDir(userFolder);
-//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-//		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		int number_of_topics = 40, topK = 30;
+		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
+
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
+		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadUserDir(userFolder);
+		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
 		
 		/**Parameters in topic modeling.***/
@@ -124,7 +124,7 @@ public class MyHDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 		
-//		double[] globalLM = analyzer.estimateGlobalLM();
+		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		
@@ -133,24 +133,24 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.1);
-//
-//		hdp.setsdA(0.1);
-//		double alpha = 1, eta = 0.1, beta = 0.01;
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setNumberOfIterations(20);
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-//		hdp.train();
-//		hdp.sanityCheck(10);
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.1);
 
+		hdp.setsdA(0.1);
+		double alpha = 3, eta = 0.1, beta = 0.01;
+		hdp.setConcentrationParams(alpha, eta, beta);
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setNumberOfIterations(20);
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
 //		hdp.train();
-//		hdp.test();
+		//hdp.sanityCheck(10);
+
+		hdp.train();
+		hdp.test();
 		//hdp.printPerfs();
 //		
 //		int threshold = 100;

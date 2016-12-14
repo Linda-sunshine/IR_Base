@@ -161,8 +161,7 @@ public class CLRWithHDP extends CLRWithDP {
 			likelihood = calcLogLikelihoodY(r);
 			
 			//log likelihood of x, i.e., p(x|\psi)
-//			double x = calcLogLikelihoodX(r);
-//			likelihood += calcLogLikelihoodX(r);
+			likelihood += calcLogLikelihoodX(r);
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -193,7 +192,7 @@ public class CLRWithHDP extends CLRWithDP {
 			
 			double rnd = Beta.staticNextDouble(1, m_alpha);
 			m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-			System.out.println(rnd + "\t" + m_gamma_e + "\t" + rnd*m_gamma_e);
+//			System.out.println(rnd + "\t" + m_gamma_e + "\t" + rnd*m_gamma_e);
 			m_gamma_e = (1-rnd)*m_gamma_e;
 			
 			swapTheta(m_kBar, k);
