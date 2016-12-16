@@ -63,13 +63,14 @@ public class MyHDPMain {
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%d.txt", dataset, lmTopK);
-
+//
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
 //		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
+		
 //		/**** Feature selection for language model.***/
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
 //		analyzer.LoadStopwords(stopwords);
@@ -136,14 +137,14 @@ public class MyHDPMain {
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.1);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.1);
 
 		hdp.setsdA(0.1);
-		double alpha = 3, eta = 0.1, beta = 0.01;
+		double alpha = 1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(20);
+		hdp.setNumberOfIterations(30);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 //		hdp.train();
@@ -151,6 +152,7 @@ public class MyHDPMain {
 
 		hdp.train();
 		hdp.test();
+		hdp.printClusterInfo();
 		//hdp.printPerfs();
 //		
 //		int threshold = 100;

@@ -219,7 +219,16 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		m_eta3 = eta3;
 		m_eta4 = eta4;
 	}	
-	
+	public void printClusterInfo(){
+		int[] sizes = new int[m_kBar];
+		for(int i=0; i<m_kBar; i++){
+			sizes[i] = m_hdpThetaStars[i].getMemSize();
+		}
+		Arrays.sort(sizes);
+		for(int i=sizes.length-1; i>=0; i--)
+			System.out.print(sizes[i]+"\t");
+		System.out.println();
+	}
 //	@Override
 //	public void printInfo(){
 //		//clear the statistics
