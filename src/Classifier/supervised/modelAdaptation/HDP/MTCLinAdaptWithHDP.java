@@ -229,48 +229,4 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 			System.out.print(sizes[i]+"\t");
 		System.out.println();
 	}
-//	@Override
-//	public void printInfo(){
-//		//clear the statistics
-//		for(int i=0; i<m_kBar; i++){
-//			m_hdpThetaStars[i].resetCount();
-//			m_hdpThetaStars[i].resetReviewNames();
-//		}
-//		//collect statistics across users in adaptation data
-//		_HDPThetaStar theta = null;
-//		_HDPAdaptStruct user;
-//		for(int i=0; i<m_userList.size(); i++) {
-//			user = (_HDPAdaptStruct)m_userList.get(i);
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() != rType.ADAPTATION)
-//					continue; // only touch the adaptation data
-//				else{
-//					theta = r.getHDPThetaStar();
-//					theta.addReviewNames(r.getItemID());
-//					if(r.getYLabel() == 1) theta.incPosCount(); 
-//					else theta.incNegCount();
-//				}
-//			}
-//		}
-//		System.out.print("[Info]Clusters:");
-//		for(int i=0; i<m_kBar; i++){
-//			System.out.format("%s\t", m_hdpThetaStars[i].showStat());	
-//			if(m_hdpThetaStars[i].getReviewSize()<=2){
-//				for(String s: m_hdpThetaStars[i].getReviewNames())
-//					m_writer.print(s+"\t");
-//			}
-//			m_writer.write("\n");
-//		}
-//		m_writer.write("--------------------------");
-//		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
-//	}
-//	
-//	public void closeWriter(){
-//		m_writer.close();
-//	}
-	
-	
-//	protected double calcLogLikelihoodX(_Review r){		
-//		return 0;
-//	}
 }

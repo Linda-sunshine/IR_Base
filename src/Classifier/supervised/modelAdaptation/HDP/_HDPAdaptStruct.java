@@ -70,12 +70,10 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		//not adaptation based
 		if (m_dim==0) {
 			for(k=0; k<probs.length; k++) {
-//				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
-					sum = CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
-
-//					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
-				
+					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse(), 0);
+								
 				//to maintain numerical precision, compute the expectation in log space as well
 				if (k==0)
 					prob = probs[k] + Math.log(Utils.logistic(sum));
@@ -118,9 +116,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			for(k=0; k<probs.length; k++) {
 //				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
-					sum = CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
-
-//					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
+					sum += CLRWithDP.m_q*Utils.dotProduct(MTCLRWithHDP.m_supWeights, doc.getSparse());
 				
 				//to maintain numerical precision, compute the expectation in log space as well
 				if (k==0)
@@ -152,12 +148,4 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		doc.m_probTrain += Math.exp(prob); //>0.5?1:0;
 		return prob;
 	}
-//	public int predictTrain(_Doc doc){
-//		double prob = 0;
-//		if (doc.m_pTrainCount==0)//this document has not been tested yet??
-//			prob = evaluate(doc);
-//		else
-//			prob = doc.m_probTrain/doc.m_pTrainCount;
-//		return prob>=0.5 ? 1:0;
-//	}
 }

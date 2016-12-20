@@ -187,7 +187,6 @@ public class CLRWithDP extends LinAdapt {
 		for(k=0; k<m_kBar+m_M; k++){
 			user.setThetaStar(m_thetaStars[k]);
 			likelihood = calcLogLikelihood(user);
-			
 			if (k<m_kBar)
 				likelihood += Math.log(m_thetaStars[k].getMemSize());
 			else
@@ -199,6 +198,8 @@ public class CLRWithDP extends LinAdapt {
 				logSum = likelihood;
 			else
 				logSum = Utils.logSum(logSum, likelihood);
+//			System.out.print(String.format("%.4f\t%.4f\n",likelihood, logSum));
+
 		}
 		
 		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
@@ -211,7 +212,7 @@ public class CLRWithDP extends LinAdapt {
 			k++;
 			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
-		
+//		System.out.print(String.format("------kBar:%d, k:%d-----------", m_kBar, k));
 
 		if (k==m_kBar+m_M) {
 			System.err.println("[Warning]Hit the very last element in theatStar!");
@@ -354,7 +355,7 @@ public class CLRWithDP extends LinAdapt {
 						System.out.println();
 				} 
 				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 6, m_models, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
 				

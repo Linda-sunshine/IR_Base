@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -173,11 +176,11 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
+//			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
@@ -447,9 +450,6 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;
-//				if(m_LNormFlag)
-//					fValue -= calcLogLikelihoodY(r)/user.getAdaptationSize();
-//				else
 					
 				fValue -= calcLogLikelihoodY(r);
 				gradientByFunc(user, r, 1); // calculate the gradient by the review.
@@ -564,8 +564,7 @@ public class CLRWithHDP extends CLRWithDP {
 		int count = 0;
 		
 		init(); // clear user performance and init cluster assignment	
-//		calculate_M_step();
-		
+
 		// Burn in period.
 		while(count++ < m_burnIn){
 			calculate_E_step();
@@ -576,7 +575,7 @@ public class CLRWithHDP extends CLRWithDP {
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.
 			calculate_E_step();
-			
+
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
 
@@ -755,5 +754,23 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
+	}
+	PrintWriter m_writer;
+	public void initWriter(){
+		try{
+			m_writer = new PrintWriter(new File("./data/cluster_1000.txt"));
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	public void printClusterStat(){
+		int[] sizes = new int[m_kBar];
+		for(int i=0; i<m_kBar; i++){
+			sizes[i] = m_hdpThetaStars[i].getMemSize();
+		}
+		Arrays.sort(sizes);
+		for(int i=sizes.length-1; i>=0; i--)
+			m_writer.write(sizes[i]+",");
+		m_writer.write("\n");
 	}
 }

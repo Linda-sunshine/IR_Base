@@ -60,7 +60,7 @@ public class MyDPMain {
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
 
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
@@ -199,23 +199,29 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //
+		
+		int[] bases = new int[]{30, 50, 70, 100, 150, 200};
+		double[] ths = new double[]{0.1, 0.2, 0.3, 0.4, 0.5};
+//		for(int base: bases){
+//			for(double th: ths){
+		
 		/***our algorithm: MTCLinAdaptWithDP***/
 		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
-		adaptation.setNumberOfIterations(50);
+		adaptation.setNumberOfIterations(30);
 		adaptation.setsdA(sdA);
 		adaptation.setsdB(sdB);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
+//		adaptation.setBaseThreshold(base, th);
 		//String traceFile = dataset + "_iter.csv";
 		//adaptation.trainTrace(traceFile);
 		//adaptation.setNumberOfIterations(100);
 		
 		adaptation.train();
-		adaptation.sanityCheck(10);
-//		adaptation.test();
+		adaptation.test();
 //		adaptation.printPerfs();
 //		int threshold = 100;
 //		adaptation.CrossValidation(5, threshold);
