@@ -272,11 +272,10 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 	
 	/****We treat each cluster as one cluster***/
 	double[][] m_centroids;
-	double[] m_counts;
 	// Calculate the centroids of the clusters.
 	public void calculateCentroids(){
 		m_centroids = new double [m_kBar][m_featureSize];
-		m_counts = new double[m_kBar];
+		double[] m_counts = new double[m_kBar];
 		for(_AdaptStruct u: m_userList){
 			_DPAdaptStruct user = (_DPAdaptStruct)u;
 			int index = user.getThetaStar().getIndex();
