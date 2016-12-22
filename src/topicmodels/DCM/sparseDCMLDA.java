@@ -272,7 +272,7 @@ public class sparseDCMLDA extends DCMLDA{
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalAlpha += m_alpha[k];
 		}
-		
+
 		for(_Doc d:m_trainSet){
 			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
 			DCMDoc.m_alphaDoc = 0;
@@ -280,7 +280,7 @@ public class sparseDCMLDA extends DCMLDA{
 				if(DCMDoc.m_topicIndicator[k]==true)
 					DCMDoc.m_alphaDoc += m_alpha[k];
 			}
-				
+
 		}
 	}
 

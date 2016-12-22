@@ -249,7 +249,6 @@ public abstract class TopicModel {
 			if (m_multithread)
 				current = multithread_E_step();
 			else {
-//				current = 0;
 				for(_Doc d:m_trainSet)
 					calculate_E_step(d);
 //					current += calculate_E_step(d);
@@ -260,7 +259,7 @@ public abstract class TopicModel {
 			if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
 				current = calculate_log_likelihood();//together with corpus-level log-likelihood
 //				current += calculate_log_likelihood();//together with corpus-level log-likelihood
-			
+
 				if (i>0)
 					delta = (last-current)/last;
 				else

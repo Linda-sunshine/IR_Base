@@ -35,18 +35,30 @@ public class Utils {
 		return max(w, 0, w.length);
 	}
 	
+//	public static double max(double[] w, int start, int size) {
+//		double max = Math.abs(w[start]);
+//		int index = 0;
+//		for(int i=1; i<size; i++) {
+//			if (Math.abs(w[start+i]) > max) {
+//				max = Math.abs(w[start+i]);
+//				index = i;
+//			}
+//		}
+//		return w[start+index];
+//	}
+
 	public static double max(double[] w, int start, int size) {
-		double max = Math.abs(w[start]);
+		double max = w[start];
 		int index = 0;
 		for(int i=1; i<size; i++) {
-			if (Math.abs(w[start+i]) > max) {
-				max = Math.abs(w[start+i]);
+			if (w[start+i] > max) {
+				max = w[start+i];
 				index = i;
 			}
 		}
 		return w[start+index];
 	}
-	
+
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
 		return maxOfArrayIndex(probs, probs.length);
@@ -151,18 +163,22 @@ public class Utils {
 		if(xs.length == 1){
 			return xs[0];
 		}
-		
+
 		double max = max(xs, 0, xs.length), sum = 0.0;
 		for (int i = 0; i < xs.length; i++) {
-			if (!Double.isInfinite(xs[i])) 
+			if (!Double.isInfinite(xs[i])) {
+				// if the gap between the value and the maximum value is too small,
+				//the exponential will become zero
 				sum += Math.exp(xs[i] - max);
+
+			}
 		}
-		
+
 		if (sum==0)
 			return max;
 		return Math.log(sum) + max;
 	}
-	
+
 	public static double logSum(double log_a, double log_b) {
 		if (Double.isInfinite(log_a))
 			return log_b;
@@ -220,8 +236,9 @@ public class Utils {
 	//The function defines the sum of an array.
 	public static double sumOfArray(double[] a) {
 		double sum = 0;
-		for (double i : a)
+		for (double i : a) {
 			sum += i;
+		}
 		return sum;
 	}
 	

@@ -125,7 +125,39 @@ public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 			}
 		}
 	}
-	
+
+	public void setTopics4Gibbs(int k, double[] alpha){
+
+		createSpace(k, 0);
+		setWordTopicStat(k);
+
+		boolean xid = false;
+		m_alphaDoc = 0;
+		for (int i = 0; i < k; i++) {
+			xid = m_rand.nextBoolean();
+			m_topicIndicator[i] = xid;
+			if (xid == true) {
+				m_indicatorTrue_stat++;
+				m_alphaDoc += alpha[i];
+			}
+
+		}
+
+		int wIndex = 0, wid, tid;
+		for(_SparseFeature fv:m_x_sparse){
+			wid = fv.getIndex();
+			for(int j=0; j<fv.getValue(); j++){
+				do {
+					tid = m_rand.nextInt(k);
+				} while (m_topicIndicator[tid] == false);
+				m_words[wIndex] = new _Word(wid, tid);
+				m_sstat[tid] ++;
+
+				wIndex ++;
+			}
+		}
+	}
+
 	public void setTopics4GibbsCluster(int k, double[] alpha, int clusterNum, int vocalSize){
 		createSpace(k, 0);
 		setWordTopicStatCluster(k, vocalSize);
