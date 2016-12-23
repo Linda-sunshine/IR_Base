@@ -10,8 +10,8 @@ public class DPParameter {
 	
 	// Concentration parameter
 	public double m_alpha = 1;
-	public double m_eta = 1;
-	public double m_beta = 1;
+	public double m_eta = 0.1;
+	public double m_beta = 0.01;
 	
 	public double m_eta1 = 0.05;
 	public double m_eta2 = 0.05;
@@ -24,6 +24,15 @@ public class DPParameter {
 	
 	public int m_fv = 800;
 	public int m_fvSup = 5000;
+	
+	// parameters for language models.7
+	public String m_fs = "DF";
+	public int m_lmTopK = 1000;
+	public boolean m_post = false;
+	
+	// used in the sanity check of dp + x in testing.
+	public int m_base = 30;
+	public double m_th = 0.05;
 	
 //	public int m_userSet = 10; // The set of users we want to use.
 //	public int m_ttlSizeSet = 24; // The total number of sizes.
@@ -77,6 +86,17 @@ public class DPParameter {
 				m_c = Double.valueOf(argv[i]);
 			else if (argv[i-1].equals("-data"))
 				m_data = argv[i];
+			else if (argv[i-1].equals("-fs"))
+				m_fs = argv[i];
+			else if(argv[i-1].equals("-lmtopk"))
+				m_lmTopK = Integer.parseInt(argv[i]);
+			else if(argv[i-1].equals("-post"))
+				m_post = Boolean.parseBoolean(argv[i]);
+			
+			else if(argv[i-1].equals("-base"))
+				m_base = Integer.parseInt(argv[i]);
+			else if(argv[i-1].equals("-th"))
+				m_th = Double.parseDouble(argv[i-1]);
 			else
 				exit_with_help();
 		}

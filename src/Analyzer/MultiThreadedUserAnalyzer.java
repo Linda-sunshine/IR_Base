@@ -20,6 +20,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
+import structures._Review.rType;
 import structures._User;
 import utils.Utils;
 
@@ -259,7 +260,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					} else {
 						spVct.put(index, 1.0);
 						if (docWordMap==null || !docWordMap.containsKey(index)) {
-							if(m_featureStat.containsKey(token)){
+							if(m_featureStat.containsKey(0)){
 								synchronized(m_featureStatLock){
 									m_featureStat.get(token).addOneDF(y);
 								}
@@ -387,6 +388,14 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			e.printStackTrace();
 		}
 		return weights;
+	}
+	// assign some of the users for testing only.
+	public void separateUsers(int k){
+		int count = 0;
+		while(count < k){
+			for(_Review r: m_users.get(count++).getReviews())
+				r.setType(rType.TEST);
+		}
 	}
 		
 }

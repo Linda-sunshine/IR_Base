@@ -240,6 +240,7 @@ public class CLRWithDP extends LinAdapt {
 		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() < 1) continue;
 			curThetaStar = user.getThetaStar();
 			curThetaStar.updateMemCount(-1);
 			
@@ -409,7 +410,7 @@ public class CLRWithDP extends LinAdapt {
 		}
 
 		evaluateModel(); // we do not want to miss the last sample?!
-		setPersonalizedModel();
+//		setPersonalizedModel();
 		return curLikelihood;
 	}
 	

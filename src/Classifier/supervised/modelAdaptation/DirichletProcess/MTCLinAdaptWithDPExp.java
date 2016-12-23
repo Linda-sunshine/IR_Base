@@ -155,6 +155,36 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		return prf;
 	}
 	
+//	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
+//	protected void calculateClusterProbPerUser(){
+//		double prob;
+//		_DPAdaptStruct user;
+//		double[] probs = new double[m_kBar];
+//		_thetaStar oldTheta;
+//
+//		// calculate the centroids of all the clusters.
+//		calculateCentroids();
+//
+////		constructCentroids();
+//		
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//				
+//			oldTheta = user.getThetaStar();
+//			for(int k=0; k<m_kBar; k++){
+//				user.setThetaStar(m_thetaStars[k]);
+//
+//				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+////				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//
+//				probs[k] = Math.exp(prob);//this will be in real space!
+//			}
+//			Utils.L1Normalization(probs);
+//			user.setClusterPosterior(probs);
+//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
+//		}
+//	}
+	
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
 	protected void calculateClusterProbPerUser(){
 		double prob;
@@ -162,21 +192,14 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		double[] probs = new double[m_kBar];
 		_thetaStar oldTheta;
 
-		// calculate the centroids of all the clusters.
-		calculateCentroids();
-
-//		constructCentroids();
-		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-				
+			
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 
-				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-//				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-
+				prob = Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
@@ -185,9 +208,22 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		}
 	}
 	
+	// Assign cluster assignment to each user.
+	protected void initThetaStars(){
+		initPriorG0();
+		
+		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
+		_DPAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() > 1)
+				sampleOneInstance(user);
+		}		
+	}
 	KMeansAlg m_kmeans;
 	HashMap<Integer, _SparseFeature[][]> m_centMap = new HashMap<Integer, _SparseFeature[][]>();
 
+	// calculate the distance between the test review and the subcentroids.
 //	public double calcDistance(int k, _AdaptStruct user){
 //		_SparseFeature[][] subCentroids = m_centMap.get(k);
 //		_SparseFeature[] subCentroid;
@@ -201,7 +237,47 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 //		}
 //		return Math.log(ds[Utils.minOfArrayIndex(ds)]);
 //	}
+
+//	// The distance between the user and the kth thetastar, sum_{cosine(r, thetestar_k)}
+//	public double calcDistance(int k, _AdaptStruct user){
+//		double distance = 0;
+//		for(_Review r: user.getReviews()){
+//			if(r.getType() == rType.TEST){
+//				distance += cosDistance(r, k);
+//			}
+//		}
+//		return distance;
+//	}
 	
+	public double cosDistance(_Review r, int k){
+		double sum = 0;
+		for(_SparseFeature sf: r.getLMSparse()){
+			sum += m_centroids[k][sf.getIndex()]*sf.getValue();
+		}
+		return sum / (Utils.sumOfFeaturesL2(r.getLMSparse()) * Utils.sumOfFeaturesL2(m_centroids[k]));
+	}
+	
+	// The distance between the user and the kth thetastar, weighted by the model weight.
+	public double calcDistance(int k, _AdaptStruct user){
+		double distance = 0;
+		double[] ws = calcClusterWeights(m_thetaStars[k].getModel());
+		for(_Review r: user.getReviews()){
+			if(r.getType() == rType.TEST){
+				distance += weightedCosine(r, k, ws);
+			}
+		}
+		return distance;
+	}
+	
+	public double weightedCosine(_Review r, int k, double[] ws){
+		double sum = 0, wsum = 0;
+		for(_SparseFeature sf: r.getSparse()){
+			sum += m_centroids[k][sf.getIndex()]*sf.getValue()*ws[sf.getIndex()+1];
+			wsum += ws[sf.getIndex()+1]*ws[sf.getIndex()+1]*sf.getValue()*sf.getValue();
+		}
+		return sum / Math.sqrt(wsum) * Utils.sumOfFeaturesL2(m_centroids[k]);		
+	}
+
 	int m_base = 100; double m_threshold = 0.2;
 	public void setBaseThreshold(int base, double th){
 		m_base = base;
@@ -222,7 +298,7 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		}
 		// Construct subcluster inside each cluster.
 		int k = 0; double[] ws;
-		Set<Integer> indices = new HashSet<Integer>();
+		HashSet<Integer> indices = new HashSet<Integer>();
 		for(int in: map.keySet()){
 			indices.clear();
 			k = map.get(in).size()/m_base + 1;
@@ -230,6 +306,10 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 			for(int i=1; i<ws.length; i++){
 				if(Math.abs(ws[i]) > m_threshold)
 					indices.add(i-1);
+			}
+			// after collecting the indices, we represent docs with these indices.
+			for(_Doc d: map.get(in)){
+				d.filterIndicesValues(indices);
 			}
 			m_centMap.put(in, kmeans(map.get(in), k, indices));
 		}
@@ -293,25 +373,6 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 				m_centroids[k][j] /= m_counts[k]; 
 			}
 		}
-	}
-
-	// The distance between the user and the kth thetastar.
-	public double calcDistance(int k, _AdaptStruct user){
-		double distance = 0;
-		for(_Review r: user.getReviews()){
-			if(r.getType() == rType.TEST){
-				distance += cosDistance(r, k);
-			}
-		}
-		return Math.log(distance);
-	}
-	
-	public double cosDistance(_Review r, int k){
-		double sum = 0;
-		for(_SparseFeature sf: r.getLMSparse()){
-			sum += m_centroids[k][sf.getIndex()]*sf.getValue();
-		}
-		return sum / (Utils.sumOfFeaturesL2(r.getLMSparse()) * Utils.sumOfFeaturesL2(m_centroids[k]));
 	}
 	
 	//codes for incorporating the content of reviews.

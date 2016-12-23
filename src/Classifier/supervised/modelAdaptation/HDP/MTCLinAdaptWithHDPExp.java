@@ -5,9 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.PriorityQueue;
 import java.util.Random;
-import java.util.TreeMap;
 
 import structures.MyPriorityQueue;
 import structures._Doc;
@@ -21,9 +19,6 @@ import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.SVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
 public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 	double[] m_trainPerf;
@@ -41,6 +36,7 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 	public void setPosteriorSanityCheck(boolean b){
 		m_postCheck = b;
 	}
+	
 	public ArrayList<ArrayList<_Review>> collectClusterRvws(){
 		HashMap<Integer, ArrayList<_Review>> clusters = new HashMap<Integer, ArrayList<_Review>>();
 		_HDPThetaStar theta = null;
@@ -194,7 +190,8 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 					if(m_postCheck)
 						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					else
-						prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+						prob = Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+//						prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					probs[k] = prob;
 				}
 //				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);

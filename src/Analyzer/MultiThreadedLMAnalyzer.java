@@ -13,6 +13,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._Doc;
 import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import structures._stat;
@@ -170,4 +171,13 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 		System.out.println("pos ratio: " + pos/total);
 
 	}
+	
+//	// added by Lin, selected k users for separate testing.
+//	public void seperateUsers(int k){
+//		int count = 0;
+//		while(count < k){
+//			for(_Review r: m_users.get(count++).getReviews())
+//				r.setType(rType.SEPARATE);
+//		}
+//	}
 }

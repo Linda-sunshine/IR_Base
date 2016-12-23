@@ -11,10 +11,12 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 
 public class MyDPExecution {
 	
@@ -42,12 +44,13 @@ public class MyDPExecution {
 		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fv);
 		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
 		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
+		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", param.m_data, param.m_fs, param.m_lmTopK);
 
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
+//		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
 		CLRWithDP adaptation;
@@ -69,6 +72,13 @@ public class MyDPExecution {
 			((MTCLinAdaptWithDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 	
+		} else if(param.m_model.equals("mtclindpexp")){
+			adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+			adaptation.setLNormFlag(false);
+			((MTCLinAdaptWithDP) adaptation).setsdB(param.m_sdB);
+			((MTCLinAdaptWithDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((MTCLinAdaptWithDPExp) adaptation).setBaseThreshold(param.m_base, param.m_th);
+
 		} else if(param.m_model.equals("clrhdp")){
 			adaptation = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
@@ -92,6 +102,14 @@ public class MyDPExecution {
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLRWithHDP) adaptation).setC(param.m_c);
+
+		} else if(param.m_model.equals("mtclinhdpexp")){
+			adaptation = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB, globalLM);
+			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
+			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
+			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((CLRWithHDP) adaptation).setC(param.m_c);
+			((MTCLinAdaptWithHDPExp) adaptation).setPosteriorSanityCheck(param.m_post);
 
 		} else{
 			System.out.println("CLRWithDP is running....");

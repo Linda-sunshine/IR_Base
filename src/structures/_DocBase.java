@@ -5,6 +5,7 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import utils.Utils;
 
@@ -98,23 +99,23 @@ public abstract class _DocBase {
 		return this.m_x_sparse;
 	}
 
-	//get the sparse feature indices for this document
-	public int[] getIndices() {
-		int[] indices = new int[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			indices[i] = m_x_sparse[i].m_index;
-		
-		return indices;
-	}
-	
-	//get the sparse feature values for this document
-	public double[] getValues() {
-		double[] values = new double[m_x_sparse.length];
-		for(int i=0; i<m_x_sparse.length; i++) 
-			values[i] = m_x_sparse[i].m_value;
-		
-		return values;
-	}
+//	//get the sparse feature indices for this document
+//	public int[] getIndices() {
+//		int[] indices = new int[m_x_sparse.length];
+//		for(int i=0; i<m_x_sparse.length; i++) 
+//			indices[i] = m_x_sparse[i].m_index;
+//		
+//		return indices;
+//	}
+//	
+//	//get the sparse feature values for this document
+//	public double[] getValues() {
+//		double[] values = new double[m_x_sparse.length];
+//		for(int i=0; i<m_x_sparse.length; i++) 
+//			values[i] = m_x_sparse[i].m_value;
+//		
+//		return values;
+//	}
 	
 	//return the unique number of features in the doc
 	public int getDocLength() {
@@ -160,5 +161,31 @@ public abstract class _DocBase {
 			return m_lm_x_sparse;
 		else
 			return m_x_sparse;//this will make all old implementation consistent 
+	}
+	
+	//added by Lin for sanity check purpose.
+	int[] m_indices;
+	double[] m_values;
+	public void filterIndicesValues(HashSet<Integer> indices){
+		ArrayList<Integer> inds = new ArrayList<Integer>();
+		ArrayList<Double> vals = new ArrayList<Double>();
+		for(_SparseFeature sf: m_x_sparse){
+			if(indices.contains(sf.getIndex())){
+				inds.add(sf.getIndex());
+				vals.add(sf.getValue());
+			}
+		}
+		m_indices = new int[inds.size()];
+		m_values = new double[vals.size()];
+		for(int i=0; i<inds.size(); i++){
+			m_indices[i] = inds.get(i);
+			m_values[i] = vals.get(i);
+		} 		
+	}
+	public int[] getIndices(){
+		return m_indices;
+	}
+	public double[] getValues(){
+		return m_values;
 	}
 }

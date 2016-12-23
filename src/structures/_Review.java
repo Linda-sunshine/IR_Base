@@ -4,7 +4,8 @@ public class _Review extends _Doc {
 	public enum rType {
 		TRAIN, // for training the global model
 		ADAPTATION, // for training the personalized model
-		TEST // for testing
+		TEST, // for testing
+		SEPARATE // added by Lin for sanity check.
 	}
 	
 	String m_userID;
