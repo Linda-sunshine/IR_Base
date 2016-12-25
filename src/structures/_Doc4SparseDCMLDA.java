@@ -86,6 +86,7 @@ public class _Doc4SparseDCMLDA extends _Doc4DCMLDA{
 		m_topicIndicator_distribution = 0;
 	}
 	
+	@Override
 	public void setTopics4Gibbs(int k, double alpha){
 		
 		createSpace(k, 0);

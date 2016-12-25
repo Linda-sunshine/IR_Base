@@ -21,13 +21,14 @@ public class sparseLDA extends LDA_Gibbs {
 
 		m_t = tParam;
 		m_s = sParam;
-
 	}
 	
+	@Override
 	public String toString() {
 		return String.format("sparseLDA[k:%d, alpha:%.2f, beta:%.2f, trainProportion:%.2f, Gibbs Sampling]", number_of_topics, d_alpha, d_beta, 1-m_testWord4PerplexityProportion);
 	}
 	
+	@Override
 	protected void initialize_probability(Collection<_Doc> collection) {
 		for(int i=0; i<number_of_topics; i++)
 			Arrays.fill(word_topic_sstat[i], d_beta);
@@ -48,6 +49,7 @@ public class sparseLDA extends LDA_Gibbs {
 		imposePrior();		
 	}
 	
+	@Override
 	public double calculate_E_step(_Doc d){
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA)d;
 
@@ -75,29 +77,21 @@ public class sparseLDA extends LDA_Gibbs {
 			}
 			
 			p = 0;
-		
-			double denominator = 0;
-			denominator += DCMDoc.m_alphaDoc;
-			denominator += Utils.sumOfArray(DCMDoc.m_sstat);
-			
+			double denominator = DCMDoc.m_alphaDoc + Utils.sumOfArray(DCMDoc.m_sstat);//why do we need this? isn't it a constant?
 			for(tid=0; tid<number_of_topics; tid++){
 				m_topicProbCache[tid] = 0;
 				if(DCMDoc.m_topicIndicator[tid]==false)
-					continue;
-				double term1 = 0;
-				term1 = topicInDocProb(tid, denominator, DCMDoc);
-				term1 = wordTopicProb(tid, wid, DCMDoc);
+					continue;				
 
-				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc)
-						* wordTopicProb(tid, wid, DCMDoc);
+				m_topicProbCache[tid] = topicInDocProb(tid, denominator, DCMDoc) * wordByTopicProb(tid, wid);
 				p += m_topicProbCache[tid];
 			}
 			
 			p *= m_rand.nextDouble();
-			tid = -1;
+			tid = 0;
 			while(p>0 && tid<number_of_topics-1){
-				tid ++;
 				p -= m_topicProbCache[tid];
+				tid ++;
 			}
 			
 			w.setTopic(tid);
@@ -114,7 +108,7 @@ public class sparseLDA extends LDA_Gibbs {
 	protected void sampleOnOffIndicator(_Doc4SparseDCMLDA DCMDoc){
 		for(int k=0; k<number_of_topics; k++){
 			boolean xk = DCMDoc.m_topicIndicator[k];
-			if(xk==true){
+			if(xk){
 				DCMDoc.m_indicatorTrue_stat --;
 				DCMDoc.m_alphaDoc -= d_alpha;
 			}
@@ -122,76 +116,56 @@ public class sparseLDA extends LDA_Gibbs {
 			if(DCMDoc.m_sstat[k]>0){
 				xk = true;
 			}else{
-				double prob = 0;
 				
-				double trueProb = 0;
-				double falseProb = 0;
+				//none of them has anything to do with topic k?
 				double term1 = DCMDoc.m_alphaDoc;
 				double term2 = d_alpha;
 				double term3 = m_s + DCMDoc.m_indicatorTrue_stat;
-				double term4 = m_t + number_of_topics-1
-						- DCMDoc.m_indicatorTrue_stat;
+				double term4 = m_t + number_of_topics - 1 - DCMDoc.m_indicatorTrue_stat;
 				//double term1 = DCMDoc.m_alphaDoc+m_alpha[k], DCMDoc.m_alphaDoc+m_alpha[k]+DCMDoc.getTotalDocLength());
 				//double term2 = (m_s+DCMDoc.m_indicatorTrue_stat);
 				double Q = term3 / term4;
-				for (int i = 0; i < DCMDoc.getTotalDocLength(); i++) {
-					double QTemp = (term1 + i) / (term1 + term2 + i);
-					Q *= QTemp;
-				}
+				for (int i = 0; i < DCMDoc.getTotalDocLength(); i++) 
+					Q *= (term1 + i) / (term1 + term2 + i);
 
-				falseProb = 1.0/(Q+1);
-				trueProb = 1-falseProb;
-
-				prob = m_rand.nextDouble()*(trueProb+falseProb);
-				if(prob<trueProb)
-					xk = true;
-				else
+				if(m_rand.nextDouble()<1.0/(Q+1))
 					xk = false;
-				
+				else
+					xk = true;				
 			}
 			
 			DCMDoc.m_topicIndicator[k] = xk;
-			if(xk==true){
+			if(xk){
 				DCMDoc.m_indicatorTrue_stat++;	
 				DCMDoc.m_alphaDoc += d_alpha;
-			}
-					
+			}					
 		}
 	}
 	
 	protected double topicInDocProb(int tid, double denominator, _Doc4SparseDCMLDA d){
-		double term1 = d.m_sstat[tid];
-		term1 += d_alpha;
-		
-		return term1/denominator;
+		return (d.m_sstat[tid] + d_alpha)/denominator;
 	}
 	
-	protected double wordTopicProb(int tid, int wid, _Doc d) {
-
-		return (word_topic_sstat[tid][wid] )
-				/ (m_sstat[tid] );
-	}
-	
+	@Override
 	protected void collectStats(_Doc d) {
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 		
 		DCMDoc.m_MStepIter += 1;
 		for(int k=0; k<this.number_of_topics; k++){
 			DCMDoc.m_topics[k] += DCMDoc.m_sstat[k]+d_alpha;
-			if (DCMDoc.m_topicIndicator[k] == true) {
+			if (DCMDoc.m_topicIndicator[k] == true) 
 				DCMDoc.m_topicIndicator_prob[k] += 1; // miss m_s
-			}
 		}
 
 		DCMDoc.m_topicIndicator_distribution += DCMDoc.m_indicatorTrue_stat;
 	}
 	
+	@Override
 	protected void estThetaInDoc(_Doc d) {
 		Utils.L1Normalization(d.m_topics);
 		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
 
-		DCMDoc.m_topicIndicator_distribution /= (DCMDoc.m_MStepIter
-				* number_of_topics);
+		DCMDoc.m_topicIndicator_distribution /= (DCMDoc.m_MStepIter * number_of_topics);
 		for(int k=0; k<number_of_topics; k++)
 			DCMDoc.m_topicIndicator_prob[k] /= DCMDoc.m_MStepIter;
 	}
