@@ -36,6 +36,7 @@ import topicmodels.markovmodel.LRHTSM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
+import topicmodels.correspondenceModels.weightedCorrespondenceModel_test;
 
 public class TopicModelMain {
 
@@ -62,7 +63,7 @@ public class TopicModelMain {
 		// DCMDMCorrLDA_test, DCMDMMCorrLDA_test, corrLDA_Gibbs_test,
 		// DCMCorrLDA_Multi_EM, sparseDCMLDA_test, DCMLDA_test, sparseLDA_test, LDA_Gibbs_test
 		//sparseClusterDCMLDA, sparseClusterDCMLDA_test
-		String topicmodel = "sparseClusterDCMLDA_test";
+		String topicmodel = "weightedCorrespondenceModel_test";
 
 		String category = "tablet";
 		int number_of_topics = 15;
@@ -79,9 +80,9 @@ public class TopicModelMain {
 		int gibbs_iteration = 1000, gibbs_lag = 50;
 		int displayLap = 20;
 
-		gibbs_iteration = 50;
-		gibbs_lag = 20;
-		displayLap = 20;
+//		gibbs_iteration = 50;
+//		gibbs_lag = 20;
+//		displayLap = 20;
 
 		double burnIn = 0.4;
 
@@ -189,9 +190,9 @@ public class TopicModelMain {
 //				"./data/ParentChildTopicModel/%sComments4Merged",
 //				articleType);
 //		
-		// analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadDirectory(articleFolder, suffix);
-		// analyzer.LoadDirectory(commentFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
 
 		// analyzer.LoadChildDirectory(commentFolder, suffix);
 
@@ -409,6 +410,18 @@ public class TopicModelMain {
 				 * String priorFile = "./data/Features/" + articleType +
 				 * "TopicWord.txt"; model.LoadPrior(priorFile, eta);
 				 */
+			}else if(topicmodel.equals("weightedCorrespondenceModel_test")){
+				beta = beta-1;
+				alpha = alpha-1;
+//				number_of_iteration = 2;
+				double lbfgsConverge = varConverge;
+				converge = 1e-3;
+				model = new weightedCorrespondenceModel_test(number_of_iteration, converge, beta, c,
+						lambda, number_of_topics, alpha, varIter, varConverge, lbfgsConverge);
+//
+//				String priorFile = "./data/Features/" + articleType + "TopicWord.txt";
+//				model.LoadPrior(priorFile, eta);eta
+
 			}
 			
 			model.setDisplayLap(displayLap);
