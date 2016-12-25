@@ -26,15 +26,22 @@ public class _ParentDoc4DCM extends _ParentDoc {
 			m_phi = new double[m_x_sparse.length][k]; // this is the eta in the derivation for variational inference
 		}
 
+		for(int i=0; i<m_x_sparse.length; i++)
+			Arrays.fill(m_phi[i], 0);
+
 		m_lambda_stat = new double[k][vocalSize];
 		m_lambda_topicStat = new double[k];
 
+		m_wordTopic_prob = new double[k][vocalSize];
+
 		for(int i=0; i<k; i++) {
 			Arrays.fill(m_lambda_stat[i], beta);
+			Arrays.fill(m_wordTopic_prob[i], 0);
 			m_lambda_topicStat[i] = Utils.sumOfArray(m_lambda_stat[i]);
 		}
 
 		Arrays.fill(m_sstat, alpha);
+		Arrays.fill(m_topics, 0);
 		for(int n=0; n<m_x_sparse.length; n++) {
 			Utils.randomize(m_phi[n], alpha);
 			double v = m_x_sparse[n].getValue();

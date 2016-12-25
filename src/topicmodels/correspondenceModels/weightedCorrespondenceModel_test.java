@@ -20,6 +20,8 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
         super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha,
                 varMaxIter, varConverge, lbfgsConverge);
 
+        m_logSpace = false;
+
 
     }
 
@@ -33,7 +35,7 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
         Arrays.fill(m_sstat, 0);
 
         System.out.println("print top words");
-//        printTopWordsDistribution(k, betaFile);
+        printTopWordsDistribution(k, betaFile);
     }
 
     protected void debugOutput(int topK, String filePrefix) {
@@ -127,10 +129,17 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
                     parentParaOut.println();
 
                     for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+                        double topicSum = 0;
                         childParaOut.print(cDoc.getName() + "\t");
-                        childParaOut.print("topicProportion\t");
+                        childParaOut.print("weight\t");
                         for (int k = 0; k < number_of_topics; k++) {
+                            topicSum += cDoc.m_topics[k]*d.m_topics[k];
                             childParaOut.print(cDoc.m_topics[k] + "\t");
+                        }
+
+                        for(int k=0; k<number_of_topics; k++){
+                            childParaOut.print("child topic proportion\t");
+                            childParaOut.print(cDoc.m_topics[k]*d.m_topics[k]/topicSum+"\t");
                         }
                         childParaOut.println();
                     }
@@ -186,7 +195,7 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
                         k);
                 for (int v = 0; v < vocabulary_size; v++) {
                     String featureName = m_corpus.getFeature(v);
-                    double wordProb = pDoc.m_lambda_stat[i][v];
+                    double wordProb = pDoc.m_wordTopic_prob[i][v];
 
                     _RankItem ri = new _RankItem(featureName, wordProb);
                     fVector.add(ri);
@@ -304,4 +313,5 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
             System.err.print("File Not Found");
         }
     }
+
 }

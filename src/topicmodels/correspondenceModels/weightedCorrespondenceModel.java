@@ -6,6 +6,10 @@ import structures._Corpus;
 import structures._Doc;
 import structures._ChildDoc;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import structures._ParentDoc4DCM;
@@ -13,6 +17,7 @@ import structures._Stn;
 import structures._SparseFeature;
 import utils.Utils;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Created by jetcai1900 on 12/17/16.
@@ -100,6 +105,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 //                System.out.println("totalWords\t"+totalWords+"\t"+totalLambda);
             }
         }
+        imposePrior();
     }
 
     protected void init(){
@@ -115,6 +121,121 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             Arrays.fill(m_beta_stat[k], 0);
         }
 
+    }
+
+    public void EM() {
+        System.out.format("Starting %s...\n", toString());
+
+        long starttime = System.currentTimeMillis();
+
+        m_collectCorpusStats = true;
+        initialize_probability(m_trainSet);
+
+//		double delta, last = calculate_log_likelihood(), current;
+        double delta=0, last=0, current=0;
+        int i = 0, displayCount = 0;
+        do {
+            init();
+
+            for(_Doc d:m_trainSet)
+                calculate_E_step(d);
+
+            calculate_M_step(i);
+
+            if (m_converge>0 || (m_displayLap>0 && i%m_displayLap==0 && displayCount > 6)){//required to display log-likelihood
+                current = calculate_log_likelihood();//together with corpus-level log-likelihood
+//				current += calculate_log_likelihood();//together with corpus-level log-likelihood
+
+                if (i>0)
+                    delta = (last-current)/last;
+                else
+                    delta = 1.0;
+                last = current;
+            }
+
+            if (m_converge>0) {
+                System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+                infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
+
+            }
+
+
+            if (m_converge>0 && Math.abs(delta)<m_converge)
+                break;//to speed-up, we don't need to compute likelihood in many cases
+        } while (++i<this.number_of_iteration);
+
+        finalEst();
+
+        long endtime = System.currentTimeMillis() - starttime;
+        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
+
+    }
+
+    protected void imposePrior() {
+        if (word_topic_prior != null) {
+            for (int k = 0; k < number_of_topics; k++) {
+                for (int v = 0; v < vocabulary_size; v++) {
+                    m_beta[k][v] = word_topic_prior[k][v];
+                }
+            }
+        }
+    }
+
+    public void LoadPrior(String fileName, double eta) {
+        if (fileName == null || fileName.isEmpty()) {
+            return;
+        }
+
+        try {
+
+            if (word_topic_prior == null) {
+                word_topic_prior = new double[number_of_topics][vocabulary_size];
+            }
+
+            for (int k = 0; k < number_of_topics; k++)
+                Arrays.fill(word_topic_prior[k], 0);
+
+            String tmpTxt;
+            String[] lineContainer;
+            String[] featureContainer;
+            int tid = 0;
+
+            HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+            for (int i = 0; i < m_corpus.getFeatureSize(); i++) {
+                featureNameIndex.put(m_corpus.getFeature(i),
+                        featureNameIndex.size());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(
+                    new FileInputStream(fileName), "UTF-8"));
+
+            while ((tmpTxt = br.readLine()) != null) {
+                tmpTxt = tmpTxt.trim();
+                if (tmpTxt.isEmpty())
+                    continue;
+
+                lineContainer = tmpTxt.split("\t");
+
+                tid = Integer.parseInt(lineContainer[0]);
+                for (int i = 1; i < lineContainer.length; i++) {
+                    featureContainer = lineContainer[i].split(":");
+
+                    String featureName = featureContainer[0];
+                    double featureProb = Double
+                            .parseDouble(featureContainer[1]);
+
+                    int featureIndex = featureNameIndex.get(featureName);
+
+                    word_topic_prior[tid][featureIndex] = featureProb;
+                }
+            }
+
+            System.out.println("prior is added");
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public double calculate_E_step(_Doc d){
@@ -250,8 +371,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         for(int k=0; k<fSize; k++){
             pDoc.m_sstat[k] = Math.exp(gamma[k]);
 
-            System.out.println(pDoc.getName()+"\tpDoc.m_sstat[]"+pDoc.m_sstat[k]);
-
+//            System.out.println(pDoc.getName()+"\tpDoc.m_sstat[]"+pDoc.m_sstat[k]);
         }
 
     }
@@ -442,7 +562,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
             for(int k=0; k<fSize; k++){
                 cDoc.m_sstat[k] = Math.exp(pi[k]);
-                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
+//                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
             }
         }
 
@@ -598,8 +718,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         if(iter%5!=4)
             return;
-        updateAlpha4Parent();
-        updateAlpha4Child();
+//        updateAlpha4Parent();
+//        updateAlpha4Child();
         updateBeta();
 
         for(int k=0; k<number_of_topics; k++){
@@ -612,83 +732,106 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     }
 
     public void updateAlpha4Parent(){
-        double[] alphaGradient = new double[number_of_topics];
-        double[] alphaDiag = new double[number_of_topics];
-
-        Arrays.fill(alphaGradient,0);
-        Arrays.fill(alphaDiag, 0);
-
-        double alphaHessianConstant = 0;
-        double alphaSum = Utils.sumOfArray(m_alpha);
-
-        for(int k=0; k<number_of_topics; k++){
-            alphaGradient[k] = m_parentDocNum*(Utils.digamma(alphaSum)-Utils.digamma(m_alpha[k]));
-            alphaGradient[k] += m_alpha_stat[k];
-
-            alphaDiag[k] = -m_parentDocNum*(Utils.trigamma(m_alpha[k]));
-        }
-
-        alphaHessianConstant = m_parentDocNum*Utils.trigamma(alphaSum);
-
-        updateParamViaNewtonMethod(m_alpha, alphaGradient, alphaDiag, alphaHessianConstant);
+//        double[] alphaGradient = new double[number_of_topics];
+//        double[] alphaDiag = new double[number_of_topics];
+//
+//        Arrays.fill(alphaGradient,0);
+//        Arrays.fill(alphaDiag, 0);
+//
+//        double alphaHessianConstant = 0;
+//        double alphaSum = Utils.sumOfArray(m_alpha);
+//
+//        for(int k=0; k<number_of_topics; k++){
+//            alphaGradient[k] = m_parentDocNum*(Utils.digamma(alphaSum)-Utils.digamma(m_alpha[k]));
+//            alphaGradient[k] += m_alpha_stat[k];
+//
+//            alphaDiag[k] = -m_parentDocNum*(Utils.trigamma(m_alpha[k]));
+//        }
+//
+//        alphaHessianConstant = m_parentDocNum*Utils.trigamma(alphaSum);
+//
+//        updateParamViaNewtonMethod(m_alpha, alphaGradient, alphaDiag, alphaHessianConstant);
+        updateParamViaNewtonMethod(m_alpha, m_parentDocNum, m_alpha_stat);
 
     }
 
     public void updateAlpha4Child(){
 
-        double[] alphaCGradient = new double[number_of_topics];
-        double[] alphaCDiag = new double[number_of_topics];
+//        double[] alphaCGradient = new double[number_of_topics];
+//        double[] alphaCDiag = new double[number_of_topics];
 
-        Arrays.fill(alphaCGradient,0);
-        Arrays.fill(alphaCDiag, 0);
+//        Arrays.fill(alphaCGradient,0);
+//        Arrays.fill(alphaCDiag, 0);
+//
+//        double alphaCHessianConstant = 0;
+//        double alphaCSum = Utils.sumOfArray(m_alpha_c);
+//
+//        for(int k=0; k<number_of_topics; k++){
+//            alphaCGradient[k] = m_childDocNum*(Utils.digamma(alphaCSum)-Utils.digamma(m_alpha_c[k]));
+//            alphaCGradient[k] += m_alpha_c_stat[k];
+//
+//            alphaCDiag[k] = -m_childDocNum*(Utils.trigamma(m_alpha_c[k]));
+//        }
 
-        double alphaCHessianConstant = 0;
-        double alphaCSum = Utils.sumOfArray(m_alpha_c);
+//        alphaCHessianConstant = m_childDocNum*Utils.trigamma(alphaCSum);
 
-        for(int k=0; k<number_of_topics; k++){
-            alphaCGradient[k] = m_childDocNum*(Utils.digamma(alphaCSum)-Utils.digamma(m_alpha_c[k]));
-            alphaCGradient[k] += m_alpha_c_stat[k];
-
-            alphaCDiag[k] = -m_childDocNum*(Utils.trigamma(m_alpha_c[k]));
-        }
-
-        alphaCHessianConstant = m_childDocNum*Utils.trigamma(alphaCSum);
-
-        updateParamViaNewtonMethod(m_alpha_c, alphaCGradient, alphaCDiag, alphaCHessianConstant);
+        updateParamViaNewtonMethod(m_alpha_c, m_childDocNum, m_alpha_c_stat);
 
     }
 
     public void updateBeta(){
         for(int k=0; k<number_of_topics; k++){
-            double[] betaGradient = new double[vocabulary_size];
-            double[] betaDiag = new double[vocabulary_size];
+//            double[] betaGradient = new double[vocabulary_size];
+//            double[] betaDiag = new double[vocabulary_size];
+//
+//            Arrays.fill(betaGradient,0);
+//            Arrays.fill(betaDiag, 0);
+//
+//            double betaHessianConstant = 0;
+//            double betaSum = Utils.sumOfArray(m_beta[k]);
+//
+//            for(int v=0; v<vocabulary_size; v++){
+//                betaGradient[v] = m_parentDocNum*(Utils.digamma(betaSum)-Utils.digamma(m_beta[k][v]));
+//                betaGradient[v] += m_beta_stat[k][v];
+//
+//                betaDiag[v] = -m_parentDocNum*(Utils.trigamma(m_beta[k][v]));
+//            }
+//
+//            betaHessianConstant = m_parentDocNum*Utils.trigamma(betaSum);
+//
+//            updateParamViaNewtonMethod(m_beta[k], betaGradient, betaDiag, betaHessianConstant);
+//
+            updateParamViaNewtonMethod(m_beta[k], m_parentDocNum, m_beta_stat[k]);
 
-            Arrays.fill(betaGradient,0);
-            Arrays.fill(betaDiag, 0);
-
-            double betaHessianConstant = 0;
-            double betaSum = Utils.sumOfArray(m_beta[k]);
-
-            for(int v=0; v<vocabulary_size; v++){
-                betaGradient[v] = m_parentDocNum*(Utils.digamma(betaSum)-Utils.digamma(m_beta[k][v]));
-                betaGradient[v] += m_beta_stat[k][v];
-
-                betaDiag[v] = -m_parentDocNum*(Utils.trigamma(m_beta[k][v]));
-            }
-
-            betaHessianConstant = m_parentDocNum*Utils.trigamma(betaSum);
-
-            updateParamViaNewtonMethod(m_beta[k], betaGradient, betaDiag, betaHessianConstant);
         }
     }
 
     //update parameters via newton method
-    protected void updateParamViaNewtonMethod(double[] param, double paramGradient[], double[] paramDiag, double paramHessianConstant){
+    protected void updateParamViaNewtonMethod(double[] param, double paramMultiplier, double[] paramConstant){
         int iterIndex=0;
         double diff = 0;
+        int paramSize = param.length;
+        double[] paramUpdate = new double[param.length];
+        double[] paramDiag = new double[param.length];
+        double[] paramGradient = new double[param.length];
+
+        double paramHessianConstant = 0;
+        double paramSum = 0;
+
         do {
-            
-            double[] paramUpdate = new double[param.length];
+            paramHessianConstant = 0;
+            paramSum = Utils.sumOfArray(param);
+            Arrays.fill(paramUpdate, 0);
+            Arrays.fill(paramDiag, 0);
+            Arrays.fill(paramGradient, 0);
+
+            for(int i=0; i<paramSize; i++){
+                paramGradient[i] = paramMultiplier*(Utils.digamma(paramSum)-Utils.digamma(param[i]));
+                paramGradient[i] += paramConstant[i];
+
+                paramDiag[i] = -paramMultiplier*(Utils.trigamma(param[i]));
+            }
+            paramHessianConstant = paramMultiplier*Utils.trigamma(paramSum);
 
             double paramDiagInverseSum = 0;
             double paramDiagInverseParamGradientSum = 0;
@@ -722,18 +865,18 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 estTopicWordDistribution4Parent((_ParentDoc4DCM)d);
         }
 
-        for(int k=0; k<number_of_topics; k++){
-            double betaSum = Utils.sumOfArray(m_beta[k]);
-            for(int v=0; v<vocabulary_size; v++){
-                m_beta[k][v] = m_beta[k][v]/betaSum;
-            }
-        }
+//        for(int k=0; k<number_of_topics; k++){
+//            double betaSum = Utils.sumOfArray(m_beta[k]);
+//            for(int v=0; v<vocabulary_size; v++){
+//                m_beta[k][v] = m_beta[k][v]/betaSum;
+//            }
+//        }
     }
 
     protected void estTopicWordDistribution4Parent(_ParentDoc4DCM pDoc){
         for(int k=0; k<number_of_topics; k++){
             for(int v=0; v<vocabulary_size; v++){
-                pDoc.m_lambda_stat[k][v] = pDoc.m_lambda_stat[k][v]/pDoc.m_lambda_topicStat[k];
+                pDoc.m_wordTopic_prob[k][v] = pDoc.m_lambda_stat[k][v]/pDoc.m_lambda_topicStat[k];
             }
         }
     }
@@ -761,7 +904,15 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 double updateLikelihood = 0;
 
                 updateLikelihood -= pDoc.m_phi[n][k]*(Math.log(pDoc.m_phi[n][k]));
+                if(Double.isInfinite(updateLikelihood)){
+                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
+                }
                 updateLikelihood += pDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum));
+
+                if(Double.isInfinite(updateLikelihood)){
+                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
+                }
+
                 updateLikelihood += pDoc.m_phi[n][k]*wVal*(Utils.digamma(pDoc.m_lambda_stat[k][wID])-Utils.digamma(pDoc.m_lambda_topicStat[k]));
 
 
@@ -772,8 +923,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
                     System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
                     System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("pDoc.m_lambda_stat[k][wID]\t"+pDoc.m_lambda_stat[k][wID]);
-                    System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]);
+                    System.out.println("pDoc.m_lambda_stat[k][wID]\t"+pDoc.m_lambda_stat[k][wID]+"\t"+Utils.digamma(pDoc.m_lambda_stat[k][wID]));
+                    System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]+"\t"+Utils.digamma(pDoc.m_lambda_topicStat[k]));
                 }
 
                 logLikelihood += updateLikelihood;
@@ -864,7 +1015,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             }
         }
 
-        System.out.println("doc \t"+pDoc.getName()+"\t likelihood \t"+logLikelihood);
+//        System.out.println("doc \t"+pDoc.getName()+"\t likelihood \t"+logLikelihood);
         return logLikelihood;
     }
 
