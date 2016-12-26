@@ -1,23 +1,22 @@
 package topicmodels.correspondenceModels;
 
-import LBFGS.LBFGS;
-import topicmodels.LDA.LDA_Variational;
-import structures._Corpus;
-import structures._Doc;
-import structures._ChildDoc;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import structures._ParentDoc4DCM;
-import structures._Stn;
-import structures._SparseFeature;
-import utils.Utils;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+
+import LBFGS.LBFGS;
+import structures._ChildDoc;
+import structures._Corpus;
+import structures._Doc;
+import structures._ParentDoc4DCM;
+import structures._SparseFeature;
+import structures._Stn;
+import topicmodels.LDA.LDA_Variational;
+import utils.Utils;
 
 /**
  * Created by jetcai1900 on 12/17/16.
@@ -45,6 +44,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
     }
 
+    @Override
     public void createSpace(){
         super.createSpace();
 
@@ -61,10 +61,12 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
     }
 
+    @Override
     public String toString(){
         return String.format("WCM, Variational Inference[k:%d, alpha:%.2f, beta:%.2f]",number_of_topics, d_alpha, d_beta);
     }
 
+    @Override
     protected void initialize_probability(Collection<_Doc> collection){
         init();
         for(_Doc d:collection){
@@ -77,9 +79,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 pDoc.setTopics4Variational(number_of_topics, d_alpha, vocabulary_size, d_beta);
 
                 totalWords += pDoc.getTotalDocLength();
-                for(_Stn stnObj:pDoc.getSentences()){
+                for(_Stn stnObj:pDoc.getSentences())
                     stnObj.setTopicsVct(number_of_topics);
-                }
 
                 for(_ChildDoc cDoc:pDoc.m_childDocs){
                     totalWords += cDoc.getTotalDocLength();
@@ -108,6 +109,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         imposePrior();
     }
 
+    @Override
     protected void init(){
         m_alpha_stat = new double[number_of_topics];
         m_alpha_c_stat = new double[number_of_topics];
@@ -115,14 +117,13 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         for(int k=0; k<number_of_topics; k++){
             m_alpha_stat[k] = 0;
-
             m_alpha_c_stat[k] =0;
 
             Arrays.fill(m_beta_stat[k], 0);
         }
-
     }
 
+    @Override
     public void EM() {
         System.out.format("Starting %s...\n", toString());
 
@@ -156,9 +157,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             if (m_converge>0) {
                 System.out.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
                 infoWriter.format("Likelihood %.3f at step %s converge to %f...\n", current, i, delta);
-
             }
-
 
             if (m_converge>0 && Math.abs(delta)<m_converge)
                 break;//to speed-up, we don't need to compute likelihood in many cases
@@ -169,32 +168,31 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         long endtime = System.currentTimeMillis() - starttime;
         System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
         infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime/1000);
-
     }
 
+    @Override
     protected void imposePrior() {
         if (word_topic_prior != null) {
             for (int k = 0; k < number_of_topics; k++) {
                 for (int v = 0; v < vocabulary_size; v++) {
-                    m_beta[k][v] = word_topic_prior[k][v];
+                    m_beta[k][v] = word_topic_prior[k][v];//how could we make sure that beta is not zero
                 }
             }
         }
     }
 
+    @Override
     public void LoadPrior(String fileName, double eta) {
-        if (fileName == null || fileName.isEmpty()) {
+        if (fileName == null || fileName.isEmpty())
             return;
-        }
 
         try {
-
-            if (word_topic_prior == null) {
+            if (word_topic_prior == null)
                 word_topic_prior = new double[number_of_topics][vocabulary_size];
+            else {
+	            for (int k = 0; k < number_of_topics; k++)
+	                Arrays.fill(word_topic_prior[k], 0);
             }
-
-            for (int k = 0; k < number_of_topics; k++)
-                Arrays.fill(word_topic_prior[k], 0);
 
             String tmpTxt;
             String[] lineContainer;
@@ -202,13 +200,10 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             int tid = 0;
 
             HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
-            for (int i = 0; i < m_corpus.getFeatureSize(); i++) {
-                featureNameIndex.put(m_corpus.getFeature(i),
-                        featureNameIndex.size());
-            }
+            for (int i = 0; i < m_corpus.getFeatureSize(); i++)
+                featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
 
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                    new FileInputStream(fileName), "UTF-8"));
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
 
             while ((tmpTxt = br.readLine()) != null) {
                 tmpTxt = tmpTxt.trim();
@@ -222,8 +217,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     featureContainer = lineContainer[i].split(":");
 
                     String featureName = featureContainer[0];
-                    double featureProb = Double
-                            .parseDouble(featureContainer[1]);
+                    double featureProb = Double.parseDouble(featureContainer[1]);
 
                     int featureIndex = featureNameIndex.get(featureName);
 
@@ -238,6 +232,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         }
     }
 
+    @Override
     public double calculate_E_step(_Doc d){
         if(d instanceof _ChildDoc)
             return 0;
@@ -255,6 +250,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             updateEta4Parent(pDoc);
             updateGamma4Parent(pDoc);
 //            updateLambda(pDoc);
+            
             updatePi4Child(pDoc);
             updateZeta4Child(pDoc);
             updateEta4Child(pDoc);
@@ -268,12 +264,11 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 if(converge<m_varConverge)
                     break;
             }
-        }while(++iter<m_varMaxIter);
+        } while(++iter<m_varMaxIter);
 
         collectStats(pDoc);
 
         return current;
-
     }
 
     protected void collectStats(_ParentDoc4DCM pDoc){
@@ -301,7 +296,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             int wID = fvs[n].getIndex();
             double wVal = fvs[n].getValue();
             for(int k=0; k<number_of_topics; k++){
-                pDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(pDoc.m_lambda_stat[k][wID]);
+                pDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k]) + Utils.digamma(pDoc.m_lambda_stat[k][wID]);
                 pDoc.m_phi[n][k] -= Utils.digamma(pDoc.m_lambda_topicStat[k]);
             }
 
@@ -317,8 +312,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 phiSum += pDoc.m_phi[n][k];
             }
 
-            if(Math.abs(phiSum-1)>1)
-                System.out.println("phiSum for article\t"+phiSum);
+            if(Math.abs(phiSum-1)>0)
+                System.out.println("phiSum for article\t" + phiSum);
         }
     }
 
@@ -398,9 +393,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         for(int k=0; k<number_of_topics; k++){
             gammaGradient[k] = (m_alpha[k]-expGamma[k])*Utils.trigamma(expGamma[k]);
-            funcVal += (m_alpha[k]-1)*(Utils.digamma(expGamma[k])-Utils.digamma(expGammaSum));
+            funcVal += (m_alpha[k]-expGamma[k])*(Utils.digamma(expGamma[k])-Utils.digamma(expGammaSum));
             funcVal += Utils.lgamma(expGamma[k]);
-            funcVal -= (expGamma[k]-1)*(Utils.digamma(expGamma[k])-Utils.digamma(expGammaSum));
         }
 
         _SparseFeature[] fvs = pDoc.getSparse();
@@ -429,7 +423,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     funcVal += cDoc.m_phi[n][k]*wVal*(Utils.digamma(expGamma[k])-Utils.digamma(expGammaSum));
                     funcVal -= cDoc.m_phi[n][k]*wVal*(Utils.dotProduct(cDoc.m_sstat, expGamma))/(piSum*expGammaSum*cDoc.m_zeta);
 
-                    gammaGradient[k] += cDoc.m_phi[n][k]*wVal*(Utils.trigamma(expGamma[k]));
+                    gammaGradient[k] += cDoc.m_phi[n][k]*wVal*Utils.trigamma(expGamma[k]);
                     constantGradient += cDoc.m_phi[n][k]*wVal*Utils.trigamma(expGammaSum);
 //                    gammaGradient[k] -= cDoc.m_phi[n][k]*wVal*Utils.trigamma(expGammaSum);
                     double temp = cDoc.m_sstat[k]*expGammaSum-Utils.dotProduct(cDoc.m_sstat, expGamma);
@@ -552,8 +546,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 //                        System.out.print("diff\t"+diff+"finish update pi");
                         break;
                     }
-
-
 
                 } while (iflag[0] != 0);
             } catch (LBFGS.ExceptionWithIflag e) {
@@ -714,6 +706,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         }
     }
 
+    @Override
     public void calculate_M_step(int iter){
 
         if(iter%5!=4)
@@ -858,6 +851,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
     }
 
+    @Override
     protected void finalEst(){
         for(_Doc d:m_trainSet){
             estThetaInDoc(d);
@@ -881,6 +875,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         }
     }
 
+    @Override
     public double calculate_log_likelihood(_Doc d){
 
         _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
@@ -1020,8 +1015,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     }
 
 
+    @Override
     protected double calculate_log_likelihood() {
-
         double corpusLogLikelihood = 0;
         for(_Doc d:m_trainSet){
             if(d instanceof _ParentDoc4DCM){
@@ -1029,7 +1024,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 corpusLogLikelihood += calculate_log_likelihood(pDoc);
             }
         }
-
         return corpusLogLikelihood;
     }
 

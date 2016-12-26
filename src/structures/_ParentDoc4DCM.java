@@ -50,13 +50,11 @@ public class _ParentDoc4DCM extends _ParentDoc {
 				m_sstat[i] += m_phi[n][i] * v;
 				m_lambda_stat[i][wId] += v*m_phi[n][i];
 			}
-
 		}
 
 		for(int i=0; i<k; i++) {
 			m_lambda_topicStat[i] = Utils.sumOfArray(m_lambda_stat[i]);
 		}
-
 	}
 
 	protected void setWordTopicStat(int k, int vocalSize){
