@@ -29,17 +29,6 @@ public class _ParentDoc4DCM extends _ParentDoc {
 		for(int i=0; i<m_x_sparse.length; i++)
 			Arrays.fill(m_phi[i], 0);
 
-		m_lambda_stat = new double[k][vocalSize];
-		m_lambda_topicStat = new double[k];
-
-		m_wordTopic_prob = new double[k][vocalSize];
-
-		for(int i=0; i<k; i++) {
-			Arrays.fill(m_lambda_stat[i], beta);
-			Arrays.fill(m_wordTopic_prob[i], 0);
-			m_lambda_topicStat[i] = Utils.sumOfArray(m_lambda_stat[i]);
-		}
-
 		Arrays.fill(m_sstat, alpha);
 		Arrays.fill(m_topics, 0);
 		for(int n=0; n<m_x_sparse.length; n++) {
@@ -48,15 +37,9 @@ public class _ParentDoc4DCM extends _ParentDoc {
 			int wId = m_x_sparse[n].getIndex();
 			for(int i=0; i<k; i++) {
 				m_sstat[i] += m_phi[n][i] * v;
-				m_lambda_stat[i][wId] += v*m_phi[n][i];
 			}
 
 		}
-
-		for(int i=0; i<k; i++) {
-			m_lambda_topicStat[i] = Utils.sumOfArray(m_lambda_stat[i]);
-		}
-
 	}
 
 	protected void setWordTopicStat(int k, int vocalSize){

@@ -158,7 +158,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 	}
 	
 	public void LoadDoc(String fileName){
-		boolean DCMLDAFlag = true;
+		boolean DCMLDAFlag = false;
 		if(DCMLDAFlag){
 			LoadDoc4DCMLDA(fileName);
 			return;

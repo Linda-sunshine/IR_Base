@@ -63,8 +63,7 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
         for (_Doc d : m_trainSet) {
             if (d instanceof _ParentDoc) {
                 printParentTopicAssignment(d, parentTopicFolder);
-                printWordTopicDistribution(d,
-                        parentWordTopicDistributionFolder, topK);
+//                WordTopicDistributionFolder, topK);
             } else {
                 printChildTopicAssignment(d, childTopicFolder);
             }
@@ -262,7 +261,7 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
                 int wid = w.getIndex();
 
                 for (int k = 0; k < number_of_topics; k++) {
-                    wordLikelihood += cDoc.m_topics[k]*pDoc.m_lambda_stat[k][wid];
+                    wordLikelihood += cDoc.m_topics[k]*topic_term_probabilty[k][wid];
                 }
 
                 stnLogLikelihood += Math.log(wordLikelihood);
@@ -289,12 +288,12 @@ public class weightedCorrespondenceModel_test extends weightedCorrespondenceMode
         try {
             System.out.println("top word file");
             PrintWriter betaOut = new PrintWriter(new File(topWordFile));
-            for (int i = 0; i < m_beta.length; i++) {
+            for (int i = 0; i < topic_term_probabilty.length; i++) {
                 MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
                         topK);
                 for (int j = 0; j < vocabulary_size; j++)
                     fVector.add(new _RankItem(m_corpus.getFeature(j),
-                            m_beta[i][j]));
+                            topic_term_probabilty[i][j]));
 
                 betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
                 for (_RankItem it : fVector) {

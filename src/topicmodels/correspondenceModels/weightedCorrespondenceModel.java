@@ -51,12 +51,10 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         m_parentDocNum = 0;
         m_childDocNum = 0;
 
-        m_beta = new double[number_of_topics][vocabulary_size];
         m_alpha_c  = new double[number_of_topics];
 
         for(int k=0; k<number_of_topics; k++) {
             m_alpha_c[k] = d_alpha;
-            Arrays.fill(m_beta[k], d_beta);
         }
 
     }
@@ -67,10 +65,15 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
     protected void initialize_probability(Collection<_Doc> collection){
         init();
+
+        for(int k=0; k<number_of_topics; k++){
+            Arrays.fill(topic_term_probabilty[k], d_beta);
+        }
+
         for(_Doc d:collection){
             if(d instanceof _ParentDoc4DCM){
                 int totalWords = 0;
-                double totalLambda = 0;
+//                double totalLambda = 0;
 
                 m_parentDocNum += 1;
                 _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
@@ -92,14 +95,23 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                         int wID = fv.getIndex();
                         double wVal = fv.getValue();
                         for(int k=0; k<number_of_topics; k++){
-                            pDoc.m_lambda_stat[k][wID] += cDoc.m_phi[n][k]*wVal;
+                            word_topic_sstat[k][wID] += cDoc.m_phi[n][k]*wVal;
                         }
                     }
                 }
 
+                _SparseFeature[] pDocFV = pDoc.getSparse();
+                for(int n=0; n<pDocFV.length; n++){
+                    _SparseFeature fv = pDocFV[n];
+                    int wID = fv.getIndex();
+                    double wVal = fv.getValue();
+                    for(int k=0; k<number_of_topics; k++){
+                        word_topic_sstat[k][wID] += pDoc.m_phi[n][k]*wVal;
+                    }
+                }
+
                 for(int k=0; k<number_of_topics; k++) {
-                    pDoc.m_lambda_topicStat[k] = Utils.sumOfArray(pDoc.m_lambda_stat[k]);
-                    totalLambda += pDoc.m_lambda_topicStat[k];
+                    m_sstat[k] = Utils.sumOfArray(word_topic_sstat[k]);
                 }
 
 //                System.out.println("totalWords\t"+totalWords+"\t"+totalLambda);
@@ -111,14 +123,14 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     protected void init(){
         m_alpha_stat = new double[number_of_topics];
         m_alpha_c_stat = new double[number_of_topics];
-        m_beta_stat = new double[number_of_topics][vocabulary_size];
+        word_topic_sstat = new double[number_of_topics][vocabulary_size];
 
         for(int k=0; k<number_of_topics; k++){
             m_alpha_stat[k] = 0;
 
             m_alpha_c_stat[k] =0;
 
-            Arrays.fill(m_beta_stat[k], 0);
+            Arrays.fill(word_topic_sstat[k], 0);
         }
 
     }
@@ -258,7 +270,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             updatePi4Child(pDoc);
             updateZeta4Child(pDoc);
             updateEta4Child(pDoc);
-            updateLambda(pDoc);
+//            updateLambda(pDoc);
 
             if(m_varConverge>0){
                 current = calculate_log_likelihood(pDoc);
@@ -278,13 +290,19 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
     protected void collectStats(_ParentDoc4DCM pDoc){
 
+        _SparseFeature[] pDocFV = pDoc.getSparse();
+        for(int n=0; n<pDocFV.length; n++){
+            _SparseFeature fv = pDocFV[n];
+            int wID = fv.getIndex();
+            double wVal = fv.getValue();
+            for(int k=0; k<number_of_topics; k++){
+                word_topic_sstat[k][wID] += wVal*pDoc.m_phi[n][k];
+            }
+        }
+
         double gammaSum = Utils.sumOfArray(pDoc.m_sstat);
         for(int k=0; k<number_of_topics; k++) {
             m_alpha_stat[k] += Utils.digamma(pDoc.m_sstat[k]) - Utils.digamma(gammaSum);
-            double lambdaSum = Utils.sumOfArray(pDoc.m_lambda_stat[k]);
-            for(int v=0; v<vocabulary_size; v++){
-                m_beta_stat[k][v] += Utils.digamma(pDoc.m_lambda_stat[k][v])-Utils.digamma(lambdaSum);
-            }
         }
 
         for(_ChildDoc cDoc:pDoc.m_childDocs) {
@@ -292,6 +310,15 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             double piSum = Utils.sumOfArray(cDoc.m_sstat);
             for (int k = 0; k < number_of_topics; k++)
                 m_alpha_c_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
+
+            _SparseFeature[] cDocFV = cDoc.getSparse();
+            for(int n=0; n< cDocFV.length; n++){
+                int wID = cDocFV[n].getIndex();
+                double wVal = cDocFV[n].getValue();
+                for(int k=0; k<number_of_topics; k++){
+                    word_topic_sstat[k][wID] += wVal*cDoc.m_phi[n][k];
+                }
+            }
         }
     }
 
@@ -301,8 +328,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             int wID = fvs[n].getIndex();
             double wVal = fvs[n].getValue();
             for(int k=0; k<number_of_topics; k++){
-                pDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(pDoc.m_lambda_stat[k][wID]);
-                pDoc.m_phi[n][k] -= Utils.digamma(pDoc.m_lambda_topicStat[k]);
+                pDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Math.log(topic_term_probabilty[k][wID]);
             }
 
             double logSum = logSumOfExponentials(pDoc.m_phi[n]);
@@ -650,12 +676,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             if (!Double.isInfinite(xs[i])) {
                 // if the gap between the value and the maximum value is too small,
                 //the exponential will become zero
-                if((max-xs[i])>300){
-                    continue;
-                }else{
-                    sum += Math.exp(xs[i]-max);
-                }
-
+                sum += Math.exp(xs[i]-max);
             }
         }
 
@@ -666,19 +687,19 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         for(_ChildDoc cDoc:pDoc.m_childDocs) {
             _SparseFeature[] fvs = cDoc.getSparse();
             for (int n = 0; n < fvs.length; n++) {
-                int wId = fvs[n].getIndex();
+                int wID = fvs[n].getIndex();
                 double wVal = fvs[n].getValue();
 
                 for (int k = 0; k < number_of_topics; k++) {
                     cDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(cDoc.m_sstat[k]);
-                    cDoc.m_phi[n][k] += Utils.digamma(pDoc.m_lambda_stat[k][wId])-Utils.digamma(pDoc.m_lambda_topicStat[k]);
+                    cDoc.m_phi[n][k] +=Math.log(topic_term_probabilty[k][wID]);
                 }
 
                 double logSum = logSumOfExponentials(cDoc.m_phi[n]);
 
                 if(Double.isInfinite(logSum)){
                     System.out.println("infinite");
-                    System.out.println("this doc\t"+cDoc.getName()+"\t"+"this word has a total biased probability assignment\t"+m_corpus.getFeature(wId));
+                    System.out.println("this doc\t"+cDoc.getName()+"\t"+"this word has a total biased probability assignment\t"+m_corpus.getFeature(wID));
                 }
                 if(Double.isNaN(logSum)){
                     System.out.println("nan");
@@ -705,8 +726,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     for(int k=0; k<number_of_topics; k++){
                         System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
                         System.out.println("cDoc.m_sstat[k]\t"+cDoc.m_sstat[k]);
-                        System.out.println("pDoc.m_lambda_stat[k][wId]\t"+pDoc.m_lambda_stat[k][wId]);
-                        System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]);
                         System.out.println("cDoc.m_phi[n][k]\t"+cDoc.m_phi[n][k]);
                     }
                 }
@@ -718,91 +737,44 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         if(iter%5!=4)
             return;
-//        updateAlpha4Parent();
-//        updateAlpha4Child();
-        updateBeta();
+        updateAlpha4Parent();
+        updateAlpha4Child();
+//        updateBeta();
+        updatePhi();
 
         for(int k=0; k<number_of_topics; k++){
             System.out.println("alpha\t"+m_alpha[k]);
             System.out.println("alpha_c\t"+m_alpha_c[k]);
             for(int v=0; v<vocabulary_size; v++){
-                System.out.println("beta\t"+m_beta[k][v]);
+                System.out.println(k+"\t"+v+"\t"+topic_term_probabilty[k][v]);
             }
         }
     }
 
     public void updateAlpha4Parent(){
-//        double[] alphaGradient = new double[number_of_topics];
-//        double[] alphaDiag = new double[number_of_topics];
-//
-//        Arrays.fill(alphaGradient,0);
-//        Arrays.fill(alphaDiag, 0);
-//
-//        double alphaHessianConstant = 0;
-//        double alphaSum = Utils.sumOfArray(m_alpha);
-//
-//        for(int k=0; k<number_of_topics; k++){
-//            alphaGradient[k] = m_parentDocNum*(Utils.digamma(alphaSum)-Utils.digamma(m_alpha[k]));
-//            alphaGradient[k] += m_alpha_stat[k];
-//
-//            alphaDiag[k] = -m_parentDocNum*(Utils.trigamma(m_alpha[k]));
-//        }
-//
-//        alphaHessianConstant = m_parentDocNum*Utils.trigamma(alphaSum);
-//
-//        updateParamViaNewtonMethod(m_alpha, alphaGradient, alphaDiag, alphaHessianConstant);
         updateParamViaNewtonMethod(m_alpha, m_parentDocNum, m_alpha_stat);
 
     }
 
     public void updateAlpha4Child(){
-
-//        double[] alphaCGradient = new double[number_of_topics];
-//        double[] alphaCDiag = new double[number_of_topics];
-
-//        Arrays.fill(alphaCGradient,0);
-//        Arrays.fill(alphaCDiag, 0);
-//
-//        double alphaCHessianConstant = 0;
-//        double alphaCSum = Utils.sumOfArray(m_alpha_c);
-//
-//        for(int k=0; k<number_of_topics; k++){
-//            alphaCGradient[k] = m_childDocNum*(Utils.digamma(alphaCSum)-Utils.digamma(m_alpha_c[k]));
-//            alphaCGradient[k] += m_alpha_c_stat[k];
-//
-//            alphaCDiag[k] = -m_childDocNum*(Utils.trigamma(m_alpha_c[k]));
-//        }
-
-//        alphaCHessianConstant = m_childDocNum*Utils.trigamma(alphaCSum);
-
         updateParamViaNewtonMethod(m_alpha_c, m_childDocNum, m_alpha_c_stat);
 
     }
 
     public void updateBeta(){
         for(int k=0; k<number_of_topics; k++){
-//            double[] betaGradient = new double[vocabulary_size];
-//            double[] betaDiag = new double[vocabulary_size];
-//
-//            Arrays.fill(betaGradient,0);
-//            Arrays.fill(betaDiag, 0);
-//
-//            double betaHessianConstant = 0;
-//            double betaSum = Utils.sumOfArray(m_beta[k]);
-//
-//            for(int v=0; v<vocabulary_size; v++){
-//                betaGradient[v] = m_parentDocNum*(Utils.digamma(betaSum)-Utils.digamma(m_beta[k][v]));
-//                betaGradient[v] += m_beta_stat[k][v];
-//
-//                betaDiag[v] = -m_parentDocNum*(Utils.trigamma(m_beta[k][v]));
-//            }
-//
-//            betaHessianConstant = m_parentDocNum*Utils.trigamma(betaSum);
-//
-//            updateParamViaNewtonMethod(m_beta[k], betaGradient, betaDiag, betaHessianConstant);
-//
             updateParamViaNewtonMethod(m_beta[k], m_parentDocNum, m_beta_stat[k]);
 
+        }
+    }
+
+    public void updatePhi(){
+        double topicWordSum = 0;
+        for(int k=0; k<number_of_topics; k++) {
+            topicWordSum = Utils.sumOfArray(word_topic_sstat[k]);
+            for (int v = 0; v < vocabulary_size; v++) {
+                topic_term_probabilty[k][v] = word_topic_sstat[k][v]/topicWordSum;
+            }
         }
     }
 
@@ -861,16 +833,8 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     protected void finalEst(){
         for(_Doc d:m_trainSet){
             estThetaInDoc(d);
-            if(d instanceof  _ParentDoc4DCM)
-                estTopicWordDistribution4Parent((_ParentDoc4DCM)d);
         }
 
-//        for(int k=0; k<number_of_topics; k++){
-//            double betaSum = Utils.sumOfArray(m_beta[k]);
-//            for(int v=0; v<vocabulary_size; v++){
-//                m_beta[k][v] = m_beta[k][v]/betaSum;
-//            }
-//        }
     }
 
     protected void estTopicWordDistribution4Parent(_ParentDoc4DCM pDoc){
@@ -913,8 +877,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
                 }
 
-                updateLikelihood += pDoc.m_phi[n][k]*wVal*(Utils.digamma(pDoc.m_lambda_stat[k][wID])-Utils.digamma(pDoc.m_lambda_topicStat[k]));
-
+                updateLikelihood += pDoc.m_phi[n][k]*wVal*(Math.log(topic_term_probabilty[k][wID]));
 
                 if(Double.isInfinite(updateLikelihood)){
                     System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
@@ -923,8 +886,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
                     System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
                     System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("pDoc.m_lambda_stat[k][wID]\t"+pDoc.m_lambda_stat[k][wID]+"\t"+Utils.digamma(pDoc.m_lambda_stat[k][wID]));
-                    System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]+"\t"+Utils.digamma(pDoc.m_lambda_topicStat[k]));
+                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
                 }
 
                 logLikelihood += updateLikelihood;
@@ -937,8 +899,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
                     System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
                     System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("pDoc.m_lambda_stat[k][wID]\t"+pDoc.m_lambda_stat[k][wID]);
-                    System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]);
+                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
                 }
 
 
@@ -949,8 +910,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
                     System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
                     System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("pDoc.m_lambda_stat[k][wID]\t"+pDoc.m_lambda_stat[k][wID]);
-                    System.out.println("pDoc.m_lambda_topicStat[k]\t"+pDoc.m_lambda_topicStat[k]);
+                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
                 }
             }
         }
@@ -978,7 +938,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 for(int k=0; k<number_of_topics; k++){
                     logLikelihood += cDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum)+Utils.digamma(cDoc.m_sstat[k])-Utils.digamma(piSum));
                     logLikelihood -= cDoc.m_phi[n][k]*(Utils.dotProduct(cDoc.m_sstat, pDoc.m_sstat)/(piSum*gammaSum*cDoc.m_zeta)+Math.log(cDoc.m_zeta)-1);
-                    logLikelihood += wVal*cDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_lambda_stat[k][wID])-Utils.digamma(pDoc.m_lambda_topicStat[k]));
+                    logLikelihood += wVal*cDoc.m_phi[n][k]*(Math.log(topic_term_probabilty[k][wID]));
 
                     logLikelihood -= cDoc.m_phi[n][k]*Math.log(cDoc.m_phi[n][k]);
 
@@ -986,7 +946,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                         System.out.println("\ncDoc likelihood\t"+"\t"+logLikelihood);
                         System.out.println("cDoc.m_phi[n][k]\t"+cDoc.m_phi[n][k]);
 //                System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                        System.out.println("pDoc.m_lambda_stat[][]\t"+pDoc.m_lambda_topicStat[k]);
+                        System.out.println("topic_term_probabilty[][]\t"+topic_term_probabilty[k][wID]);
                         System.out.println("cDoc.m_sstat[k]\t" + cDoc.m_sstat[k]);
                         System.out.println("piSum\t" + piSum);
 //                    System.out.println("pDoc.m_lambda_stat[k][wID]\t" + pDoc.m_lambda_stat[k][wID]);
@@ -1001,19 +961,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         }
 
-        for(int k=0; k<number_of_topics; k++){
-            double betaSum = Utils.sumOfArray(m_beta[k]);
-
-            logLikelihood += Utils.lgamma(betaSum);
-            logLikelihood -= Utils.lgamma(pDoc.m_lambda_topicStat[k]);
-            for(int v=0; v<vocabulary_size; v++) {
-                logLikelihood -= Utils.lgamma(m_beta[k][v]);
-                logLikelihood += (m_beta[k][v]-1)*(Utils.digamma(pDoc.m_lambda_stat[k][v])-Utils.digamma(pDoc.m_lambda_topicStat[k]));
-
-                logLikelihood += Utils.lgamma(pDoc.m_lambda_stat[k][v]);
-                logLikelihood -= (pDoc.m_lambda_stat[k][v]-1)*(Utils.digamma(pDoc.m_lambda_stat[k][v])-Utils.digamma(pDoc.m_lambda_topicStat[k]));
-            }
-        }
 
 //        System.out.println("doc \t"+pDoc.getName()+"\t likelihood \t"+logLikelihood);
         return logLikelihood;
