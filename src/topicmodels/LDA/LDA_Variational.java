@@ -49,6 +49,9 @@ public class LDA_Variational extends pLSA {
 		m_alphaH = new double[number_of_topics];
 		
 		Arrays.fill(m_alpha, d_alpha);
+
+		System.out.println("m_alpha\t"+d_alpha);
+		System.out.println("m_beta\t"+d_beta);
 	}
 	
 	@Override
@@ -191,6 +194,9 @@ public class LDA_Variational extends pLSA {
 			}
 			diff /= number_of_topics;
 		} while(++i<m_varMaxIter && diff>m_varConverge);
+		for(int k=0; k<number_of_topics; k++){
+			System.out.println("alpha\t"+m_alpha[k]);
+		}
 	}
 	
 	@Override

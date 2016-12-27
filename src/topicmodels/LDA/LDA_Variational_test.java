@@ -105,13 +105,19 @@ public class LDA_Variational_test extends LDA_Variational {
                     parameterFile));
 
             for (_Doc d : docList) {
+                int maxTopicIndex = 0;
+                double maxTopicProportion = 0;
                 paraOut.print(d.getName() + "\t");
                 paraOut.print("topicProportion\t");
                 for (int k = 0; k < number_of_topics; k++) {
                     if(m_logSpace==true)
                         paraOut.print(Math.exp(d.m_topics[k]) + "\t");
+                    if(maxTopicProportion < Math.exp(d.m_topics[k])){
+                        maxTopicIndex = k;
+                        maxTopicProportion = Math.exp(d.m_topics[k]);
+                    }
                 }
-
+                paraOut.println("maxTopicIndex\t"+maxTopicIndex);
                 paraOut.println();
             }
 

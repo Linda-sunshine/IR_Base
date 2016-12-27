@@ -73,7 +73,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         for(_Doc d:collection){
             if(d instanceof _ParentDoc4DCM){
                 int totalWords = 0;
-//                double totalLambda = 0;
 
                 m_parentDocNum += 1;
                 _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
@@ -88,36 +87,10 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     totalWords += cDoc.getTotalDocLength();
                     m_childDocNum += 1;
                     cDoc.setTopics4Variational(number_of_topics, d_alpha);
-
-                    //update the article thread sufficient statistics
-                    for(int n=0; n<cDoc.getSparse().length; n++){
-                        _SparseFeature fv = cDoc.getSparse()[n];
-                        int wID = fv.getIndex();
-                        double wVal = fv.getValue();
-                        for(int k=0; k<number_of_topics; k++){
-                            word_topic_sstat[k][wID] += cDoc.m_phi[n][k]*wVal;
-                        }
-                    }
                 }
-
-                _SparseFeature[] pDocFV = pDoc.getSparse();
-                for(int n=0; n<pDocFV.length; n++){
-                    _SparseFeature fv = pDocFV[n];
-                    int wID = fv.getIndex();
-                    double wVal = fv.getValue();
-                    for(int k=0; k<number_of_topics; k++){
-                        word_topic_sstat[k][wID] += pDoc.m_phi[n][k]*wVal;
-                    }
-                }
-
-                for(int k=0; k<number_of_topics; k++) {
-                    m_sstat[k] = Utils.sumOfArray(word_topic_sstat[k]);
-                }
-
-//                System.out.println("totalWords\t"+totalWords+"\t"+totalLambda);
             }
         }
-        imposePrior();
+//        imposePrior();
     }
 
     protected void init(){
@@ -268,7 +241,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             updateGamma4Parent(pDoc);
 //            updateLambda(pDoc);
             updatePi4Child(pDoc);
-            updateZeta4Child(pDoc);
+//            updateZeta4Child(pDoc);
             updateEta4Child(pDoc);
 //            updateLambda(pDoc);
 
@@ -307,9 +280,12 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         for(_ChildDoc cDoc:pDoc.m_childDocs) {
 
+//            double piSum = Utils.sumOfArray(cDoc.m_sstat);
+//            for (int k = 0; k < number_of_topics; k++)
+//                m_alpha_c_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
             double piSum = Utils.sumOfArray(cDoc.m_sstat);
             for (int k = 0; k < number_of_topics; k++)
-                m_alpha_c_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
+                m_alpha_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
 
             _SparseFeature[] cDocFV = cDoc.getSparse();
             for(int n=0; n< cDocFV.length; n++){
@@ -337,6 +313,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             for(int k=0; k<number_of_topics; k++){
                 if((pDoc.m_phi[n][k]-logSum)<-200){
                     pDoc.m_phi[n][k] = 1e-20;
+                    System.out.println("too small");
                 }else {
                     pDoc.m_phi[n][k] = Math.exp(pDoc.m_phi[n][k] - logSum);
                 }
@@ -349,58 +326,74 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     }
 
     public void updateGamma4Parent(_ParentDoc4DCM pDoc){
-        int[] iflag = {0}, iprint={-1,3};
-        double fValue = 0;
-        int fSize = pDoc.m_sstat.length;
+        _SparseFeature[] pDocFV = pDoc.getSparse();
+        for(int k=0; k<number_of_topics; k++)
+            pDoc.m_sstat[k] = m_alpha[k];
 
-        double[] gammaGradient = new double[fSize];
-        Arrays.fill(gammaGradient,0);
+        for(int n=0; n<pDocFV.length; n++){
+            _SparseFeature fv = pDocFV[n];
+            int wID = fv.getIndex();
+            double wVal = fv.getValue();
 
-        double[] gammaDiag = new double[fSize];
-        Arrays.fill(gammaDiag, 0);
-
-        double[] gamma = new double[fSize];
-        double[] oldGamma = new double[fSize];
-
-        for(int k=0; k<fSize; k++){
-            gamma[k] = Math.log(pDoc.m_sstat[k]);
-            oldGamma[k] = Math.log(pDoc.m_sstat[k]);
+            for(int k=0; k<number_of_topics; k++){
+                pDoc.m_sstat[k] += wVal*pDoc.m_phi[n][k];
+            }
         }
-
-//        double diff = 0;
-
-        try{
-            do{
-                double diff = 0;
-                fValue = gammaFuncGradientVal(pDoc, gamma, gammaGradient);
-                LBFGS.lbfgs(fSize, 4, gamma, fValue, gammaGradient, false, gammaDiag, iprint, 1e-2, 1e-10, iflag);
-
-                for(int k=0; k<fSize; k++){
-                    double tempDiff = 0;
-                    tempDiff = gamma[k]-oldGamma[k];
-                    if(Math.abs(tempDiff)>diff){
-                        diff = Math.abs(tempDiff);
-                    }
-                    oldGamma[k] = gamma[k];
-                }
-
-                if(diff<m_lbfgsConverge){
-//                    System.out.print("diff\t"+diff+"finish update gamma");
-                    break;
-                }
-
-            }while(iflag[0]!=0);
-        }catch(LBFGS.ExceptionWithIflag e){
-            e.printStackTrace();
-        }
-
-        for(int k=0; k<fSize; k++){
-            pDoc.m_sstat[k] = Math.exp(gamma[k]);
-
-//            System.out.println(pDoc.getName()+"\tpDoc.m_sstat[]"+pDoc.m_sstat[k]);
-        }
-
     }
+
+//    public void updateGamma4Parent(_ParentDoc4DCM pDoc){
+//        int[] iflag = {0}, iprint={-1,3};
+//        double fValue = 0;
+//        int fSize = pDoc.m_sstat.length;
+//
+//        double[] gammaGradient = new double[fSize];
+//        Arrays.fill(gammaGradient,0);
+//
+//        double[] gammaDiag = new double[fSize];
+//        Arrays.fill(gammaDiag, 0);
+//
+//        double[] gamma = new double[fSize];
+//        double[] oldGamma = new double[fSize];
+//
+//        for(int k=0; k<fSize; k++){
+//            gamma[k] = Math.log(pDoc.m_sstat[k]);
+//            oldGamma[k] = Math.log(pDoc.m_sstat[k]);
+//        }
+//
+////        double diff = 0;
+//
+//        try{
+//            do{
+//                double diff = 0;
+//                fValue = gammaFuncGradientVal(pDoc, gamma, gammaGradient);
+//                LBFGS.lbfgs(fSize, 4, gamma, fValue, gammaGradient, false, gammaDiag, iprint, 1e-2, 1e-10, iflag);
+//
+//                for(int k=0; k<fSize; k++){
+//                    double tempDiff = 0;
+//                    tempDiff = gamma[k]-oldGamma[k];
+//                    if(Math.abs(tempDiff)>diff){
+//                        diff = Math.abs(tempDiff);
+//                    }
+//                    oldGamma[k] = gamma[k];
+//                }
+//
+//                if(diff<m_lbfgsConverge){
+////                    System.out.print("diff\t"+diff+"finish update gamma");
+//                    break;
+//                }
+//
+//            }while(iflag[0]!=0);
+//        }catch(LBFGS.ExceptionWithIflag e){
+//            e.printStackTrace();
+//        }
+//
+//        for(int k=0; k<fSize; k++){
+//            pDoc.m_sstat[k] = Math.exp(gamma[k]);
+//
+////            System.out.println(pDoc.getName()+"\tpDoc.m_sstat[]"+pDoc.m_sstat[k]);
+//        }
+//
+//    }
 
     public double gammaFuncGradientVal(_ParentDoc4DCM pDoc, double[]gamma, double[] gammaGradient){
 
@@ -538,61 +531,80 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     }
 
     public void updatePi4Child(_ParentDoc4DCM pDoc){
-        double gammaSum = Utils.sumOfArray(pDoc.m_sstat);
-        for(_ChildDoc cDoc:pDoc.m_childDocs) {
-            int[] iflag = {0}, iprint = {-1, 3};
-            double fValue = 0;
-            int fSize = cDoc.m_sstat.length;
-
-            double[] piGradient = new double[fSize];
-            Arrays.fill(piGradient, 0);
-
-            double[] piDiag = new double[fSize];
-            Arrays.fill(piDiag, 0);
-
-            double[] pi = new double[fSize];
-            double[] oldPi = new double[fSize];
-
-            for(int k=0; k<fSize; k++){
-                pi[k] = Math.log(cDoc.m_sstat[k]);
-                oldPi[k] = Math.log(cDoc.m_sstat[k]);
+        for(_ChildDoc cDoc:pDoc.m_childDocs){
+            for(int k=0; k<number_of_topics; k++){
+                cDoc.m_sstat[k] = m_alpha[k];
             }
+            _SparseFeature[] cDocFv = cDoc.getSparse();
+            for(int n=0; n<cDocFv.length; n++){
+                _SparseFeature fv = cDocFv[n];
+                int wID = fv.getIndex();
+                double wVal = fv.getValue();
 
-            try {
-                do {
-                    double diff = 0;
-
-                    fValue = piFuncGradientVal(pDoc, gammaSum, cDoc, pi, piGradient);
-                    LBFGS.lbfgs(fSize, 4, pi, fValue, piGradient, false, piDiag, iprint, 1e-2, 1e-10, iflag);
-
-                    for(int k=0; k<fSize; k++){
-                        double tempDiff = 0;
-                        tempDiff = pi[k]-oldPi[k];
-                        if(Math.abs(tempDiff)>diff){
-                            diff = Math.abs(tempDiff);
-                        }
-                        oldPi[k] = pi[k];
-                    }
-
-                    if(diff<m_lbfgsConverge){
-//                        System.out.print("diff\t"+diff+"finish update pi");
-                        break;
-                    }
-
-
-
-                } while (iflag[0] != 0);
-            } catch (LBFGS.ExceptionWithIflag e) {
-                e.printStackTrace();
-            }
-
-            for(int k=0; k<fSize; k++){
-                cDoc.m_sstat[k] = Math.exp(pi[k]);
-//                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
+                for(int k=0; k<number_of_topics; k++){
+                    cDoc.m_sstat[k] += wVal*cDoc.m_phi[n][k];
+                }
             }
         }
 
     }
+
+//    public void updatePi4Child(_ParentDoc4DCM pDoc){
+//        double gammaSum = Utils.sumOfArray(pDoc.m_sstat);
+//        for(_ChildDoc cDoc:pDoc.m_childDocs) {
+//            int[] iflag = {0}, iprint = {-1, 3};
+//            double fValue = 0;
+//            int fSize = cDoc.m_sstat.length;
+//
+//            double[] piGradient = new double[fSize];
+//            Arrays.fill(piGradient, 0);
+//
+//            double[] piDiag = new double[fSize];
+//            Arrays.fill(piDiag, 0);
+//
+//            double[] pi = new double[fSize];
+//            double[] oldPi = new double[fSize];
+//
+//            for(int k=0; k<fSize; k++){
+//                pi[k] = Math.log(cDoc.m_sstat[k]);
+//                oldPi[k] = Math.log(cDoc.m_sstat[k]);
+//            }
+//
+//            try {
+//                do {
+//                    double diff = 0;
+//
+//                    fValue = piFuncGradientVal(pDoc, gammaSum, cDoc, pi, piGradient);
+//                    LBFGS.lbfgs(fSize, 4, pi, fValue, piGradient, false, piDiag, iprint, 1e-2, 1e-10, iflag);
+//
+//                    for(int k=0; k<fSize; k++){
+//                        double tempDiff = 0;
+//                        tempDiff = pi[k]-oldPi[k];
+//                        if(Math.abs(tempDiff)>diff){
+//                            diff = Math.abs(tempDiff);
+//                        }
+//                        oldPi[k] = pi[k];
+//                    }
+//
+//                    if(diff<m_lbfgsConverge){
+////                        System.out.print("diff\t"+diff+"finish update pi");
+//                        break;
+//                    }
+//
+//
+//
+//                } while (iflag[0] != 0);
+//            } catch (LBFGS.ExceptionWithIflag e) {
+//                e.printStackTrace();
+//            }
+//
+//            for(int k=0; k<fSize; k++){
+//                cDoc.m_sstat[k] = Math.exp(pi[k]);
+////                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
+//            }
+//        }
+//
+//    }
 
     public double piFuncGradientVal(_ParentDoc4DCM pDoc, double gammaSum, _ChildDoc cDoc, double[]pi, double[] piGradient){
         double funcVal = 0;
@@ -656,7 +668,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         }
     }
 
-
     //to be improved
     double logSumOfExponentials(double[] xs){
         if(xs.length == 1){
@@ -674,8 +685,6 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         for (int i = 0; i < xs.length; i++) {
             if (!Double.isInfinite(xs[i])) {
-                // if the gap between the value and the maximum value is too small,
-                //the exponential will become zero
                 sum += Math.exp(xs[i]-max);
             }
         }
@@ -691,21 +700,12 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 double wVal = fvs[n].getValue();
 
                 for (int k = 0; k < number_of_topics; k++) {
-                    cDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(cDoc.m_sstat[k]);
+                    cDoc.m_phi[n][k] = Utils.digamma(cDoc.m_sstat[k]);
                     cDoc.m_phi[n][k] +=Math.log(topic_term_probabilty[k][wID]);
                 }
 
                 double logSum = logSumOfExponentials(cDoc.m_phi[n]);
 
-                if(Double.isInfinite(logSum)){
-                    System.out.println("infinite");
-                    System.out.println("this doc\t"+cDoc.getName()+"\t"+"this word has a total biased probability assignment\t"+m_corpus.getFeature(wID));
-                }
-                if(Double.isNaN(logSum)){
-                    System.out.println("nan");
-                    for(int k=0; k<number_of_topics; k++)
-                        System.out.println("cDoc.m_phi\t"+cDoc.m_phi[n][k]);
-                }
                 double phiSum = 0;
                 for(int k=0; k<number_of_topics; k++){
                     if((cDoc.m_phi[n][k]-logSum)<-200){
@@ -715,30 +715,43 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                     }
                     phiSum += cDoc.m_phi[n][k];
                 }
-
-                if(Math.abs(phiSum-1)>1) {
-                    System.out.println("phiSum for comment\t" + phiSum);
-                    for(int k=0; k<number_of_topics; k++)
-                        System.out.println("m_phi\t"+cDoc.m_phi[n][k]);
-                }
-
-                if(Double.isNaN(phiSum)){
-                    for(int k=0; k<number_of_topics; k++){
-                        System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
-                        System.out.println("cDoc.m_sstat[k]\t"+cDoc.m_sstat[k]);
-                        System.out.println("cDoc.m_phi[n][k]\t"+cDoc.m_phi[n][k]);
-                    }
-                }
             }
         }
     }
+
+//    public void updateEta4Child(_ParentDoc4DCM pDoc){
+//        for(_ChildDoc cDoc:pDoc.m_childDocs) {
+//            _SparseFeature[] fvs = cDoc.getSparse();
+//            for (int n = 0; n < fvs.length; n++) {
+//                int wID = fvs[n].getIndex();
+//                double wVal = fvs[n].getValue();
+//
+//                for (int k = 0; k < number_of_topics; k++) {
+//                    cDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(cDoc.m_sstat[k]);
+//                    cDoc.m_phi[n][k] +=Math.log(topic_term_probabilty[k][wID]);
+//                }
+//
+//                double logSum = logSumOfExponentials(cDoc.m_phi[n]);
+//
+//                double phiSum = 0;
+//                for(int k=0; k<number_of_topics; k++){
+//                    if((cDoc.m_phi[n][k]-logSum)<-200){
+//                        cDoc.m_phi[n][k] = 1e-20;
+//                    }else {
+//                        cDoc.m_phi[n][k] = Math.exp(cDoc.m_phi[n][k] - logSum);
+//                    }
+//                    phiSum += cDoc.m_phi[n][k];
+//                }
+//            }
+//        }
+//    }
 
     public void calculate_M_step(int iter){
 
         if(iter%5!=4)
             return;
         updateAlpha4Parent();
-        updateAlpha4Child();
+//        updateAlpha4Child();
 //        updateBeta();
         updatePhi();
 
@@ -752,7 +765,7 @@ public class weightedCorrespondenceModel extends LDA_Variational {
     }
 
     public void updateAlpha4Parent(){
-        updateParamViaNewtonMethod(m_alpha, m_parentDocNum, m_alpha_stat);
+        updateParamViaNewtonMethod(m_alpha, m_parentDocNum+m_childDocNum, m_alpha_stat);
 
     }
 
@@ -815,13 +828,16 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             c = (1.0 / paramHessianConstant) + paramDiagInverseSum;
             c =  paramDiagInverseParamGradientSum/c;
 
+            diff = 0;
             for (int i = 0; i < param.length; i++) {
                 paramUpdate[i] = (paramGradient[i] - c) / paramDiag[i];
-                if(Math.abs(paramUpdate[i])>diff)
-                    diff = Math.abs(paramUpdate[i]);
+                diff += paramUpdate[i]*paramUpdate[i];
+                // if(Math.abs(paramUpdate[i])>diff)
+                    // diff = Math.abs(paramUpdate[i]);
                 param[i] -= paramUpdate[i];
             }
 
+            diff /= number_of_topics;
 
             if(diff<m_varConverge)
                 break;
@@ -868,64 +884,34 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 double updateLikelihood = 0;
 
                 updateLikelihood -= pDoc.m_phi[n][k]*(Math.log(pDoc.m_phi[n][k]));
-                if(Double.isInfinite(updateLikelihood)){
-                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
-                }
-                updateLikelihood += pDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum));
 
-                if(Double.isInfinite(updateLikelihood)){
-                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
-                }
+                updateLikelihood += pDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum));
 
                 updateLikelihood += pDoc.m_phi[n][k]*wVal*(Math.log(topic_term_probabilty[k][wID]));
 
-                if(Double.isInfinite(updateLikelihood)){
-                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
-                    System.out.println("wVal\t"+wVal);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
-                    System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
-                }
 
                 logLikelihood += updateLikelihood;
-//                System.out.println("loglikelihood\t"+logLikelihood);
 
-                if(Double.isNaN(updateLikelihood)){
-                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
-                    System.out.println("wVal\t"+wVal);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
-                    System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
-                }
-
-
-                if(Double.isInfinite(updateLikelihood)){
-                    System.out.println("\nlikelihood\t"+updateLikelihood+"\t"+logLikelihood);
-                    System.out.println("wVal\t"+wVal);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                    System.out.println("pDoc.m_sstat[k]\t"+pDoc.m_sstat[k]);
-                    System.out.println("gammaSum\t"+gammaSum);
-                    System.out.println("topic_term_probabilty[k][wID]\t"+topic_term_probabilty[k][wID]);
-                }
             }
         }
 
         double alphaCSum = Utils.sumOfArray(m_alpha_c);
 
         for(_ChildDoc cDoc:pDoc.m_childDocs){
-            logLikelihood += Utils.lgamma(alphaCSum);
+//            logLikelihood += Utils.lgamma(alphaCSum);
+            logLikelihood += Utils.lgamma(alphaSum);
+
             double piSum = Utils.sumOfArray(cDoc.m_sstat);
 
             logLikelihood -= Utils.lgamma(piSum);
 
             for (int k = 0; k < number_of_topics; k++) {
-                logLikelihood -= Utils.lgamma(m_alpha_c[k]);
-                logLikelihood += (m_alpha_c[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
+//                logLikelihood -= Utils.lgamma(m_alpha_c[k]);
+//                logLikelihood += (m_alpha_c[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
+
+                logLikelihood -= Utils.lgamma(m_alpha[k]);
+
+                logLikelihood += (m_alpha[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
 
                 logLikelihood += Utils.lgamma(cDoc.m_sstat[k]);
                 logLikelihood -= (cDoc.m_sstat[k]-1)*(Utils.digamma(cDoc.m_sstat[k])-Utils.digamma(piSum));
@@ -936,24 +922,12 @@ public class weightedCorrespondenceModel extends LDA_Variational {
                 int wID = cDocFvs[n].getIndex();
                 double wVal = cDocFvs[n].getValue();
                 for(int k=0; k<number_of_topics; k++){
-                    logLikelihood += cDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum)+Utils.digamma(cDoc.m_sstat[k])-Utils.digamma(piSum));
-                    logLikelihood -= cDoc.m_phi[n][k]*(Utils.dotProduct(cDoc.m_sstat, pDoc.m_sstat)/(piSum*gammaSum*cDoc.m_zeta)+Math.log(cDoc.m_zeta)-1);
+//                    logLikelihood += cDoc.m_phi[n][k]*(Utils.digamma(pDoc.m_sstat[k])-Utils.digamma(gammaSum)+Utils.digamma(cDoc.m_sstat[k])-Utils.digamma(piSum));
+                    logLikelihood += cDoc.m_phi[n][k]*(Utils.digamma(cDoc.m_sstat[k])-Utils.digamma(piSum));
+//                    logLikelihood -= cDoc.m_phi[n][k]*(Utils.dotProduct(cDoc.m_sstat, pDoc.m_sstat)/(piSum*gammaSum*cDoc.m_zeta)+Math.log(cDoc.m_zeta)-1);
                     logLikelihood += wVal*cDoc.m_phi[n][k]*(Math.log(topic_term_probabilty[k][wID]));
 
                     logLikelihood -= cDoc.m_phi[n][k]*Math.log(cDoc.m_phi[n][k]);
-
-                    if(Double.isInfinite(logLikelihood)){
-                        System.out.println("\ncDoc likelihood\t"+"\t"+logLikelihood);
-                        System.out.println("cDoc.m_phi[n][k]\t"+cDoc.m_phi[n][k]);
-//                System.out.println("pDoc.m_phi[n][k]\t"+pDoc.m_phi[n][k]);
-                        System.out.println("topic_term_probabilty[][]\t"+topic_term_probabilty[k][wID]);
-                        System.out.println("cDoc.m_sstat[k]\t" + cDoc.m_sstat[k]);
-                        System.out.println("piSum\t" + piSum);
-//                    System.out.println("pDoc.m_lambda_stat[k][wID]\t" + pDoc.m_lambda_stat[k][wID]);
-//                    System.out.println("pDoc.m_lambda_topicStat[k]\t" + pDoc.m_lambda_topicStat[k]);
-                        System.out.println("cDoc zeta\t"+cDoc.m_zeta);
-
-                    }
 
                 }
             }
