@@ -144,7 +144,7 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, null, null, globalLM);
 
 		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-	
+		
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.1);
 

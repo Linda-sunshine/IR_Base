@@ -24,6 +24,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithKmean
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPLR;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
@@ -200,13 +201,10 @@ public class MyDPMain {
 //			u.getPerfStat().clear();
 //
 		
-		int[] bases = new int[]{30, 50, 70, 100, 150, 200};
-		double[] ths = new double[]{0.1, 0.2, 0.3, 0.4, 0.5};
-//		for(int base: bases){
-//			for(double th: ths){
-		
 		/***our algorithm: MTCLinAdaptWithDP***/
-		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		
+//		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
@@ -215,6 +213,7 @@ public class MyDPMain {
 		adaptation.setsdB(sdB);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
+		
 //		adaptation.setBaseThreshold(base, th);
 		//String traceFile = dataset + "_iter.csv";
 		//adaptation.trainTrace(traceFile);
@@ -222,7 +221,7 @@ public class MyDPMain {
 		
 		adaptation.train();
 		adaptation.test();
-//		adaptation.printPerfs();
+//		adaptation.printPerfs();availableProcessors
 //		int threshold = 100;
 //		adaptation.CrossValidation(5, threshold);
 			
