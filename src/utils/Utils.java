@@ -37,11 +37,11 @@ public class Utils {
 	}
 	
 	public static double max(double[] w, int start, int size) {
-		double max = Math.abs(w[start]);
+		double max = w[start];
 		int index = 0;
 		for(int i=1; i<size; i++) {
-			if (Math.abs(w[start+i]) > max) {
-				max = Math.abs(w[start+i]);
+			if (w[start+i] > max) {
+				max = w[start+i];
 				index = i;
 			}
 		}
