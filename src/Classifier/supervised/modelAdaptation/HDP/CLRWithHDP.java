@@ -26,7 +26,7 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double m_beta = 1.0; //concentration parameter for \psi.
 	protected double m_c = 1;//the constant in front of probabilities of language model.
 	
-	protected double[] m_betas;//concentration vector for the prior of psi.
+	protected double[] m_betas;// prior of psi.
 	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[1000];//phi+psi
 	double[] m_cache = new double[1000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
@@ -72,15 +72,16 @@ public class CLRWithHDP extends CLRWithDP {
 	public void setC(double c){
 		m_c = c;
 	}
+	
 	public void setBetas(double[] lm){
 		m_betas = lm;// this is in real space!
 		
 		m_lmDim = lm.length;
+		m_nBetaDir = Utils.lgamma(Utils.sumOfArray(m_betas));
 		for(int i=0; i<m_lmDim; i++) {
 			m_betas[i] = m_c * m_betas[i] + m_beta;
 			m_nBetaDir -= Utils.lgamma(m_betas[i]);
 		}
-		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
 	}
 	
 	@Override
@@ -113,7 +114,7 @@ public class CLRWithHDP extends CLRWithDP {
 					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
 				}
 				L += betaSum_lgamma - Utils.lgamma(sum);
-				r.setL4NewCluster(L);
+				r.setPriorLMLikelihood(L);
 				
 				if (r.getType() == rType.TEST)
 					continue;
@@ -249,7 +250,7 @@ public class CLRWithHDP extends CLRWithDP {
 		double[] psi = r.getHDPThetaStar().getPsiModel();
 		//we will integrate it out
 		if(psi == null){
-			return r.getL4NewCluster();
+			return r.getPriorLMLikelihood();
 		} else {		
 			double L = 0;
 			for(_SparseFeature fv: r.getLMSparse())
@@ -259,6 +260,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	// The main MCMC algorithm, assign each review to clusters.
+	@Override
 	protected void calculate_E_step(){
 		_HDPThetaStar curThetaStar;
 		_HDPAdaptStruct user;
@@ -386,7 +388,7 @@ public class CLRWithHDP extends CLRWithDP {
 			theta = m_hdpThetaStars[k];
 			lmProb = theta.getPsiModel();
 					
-			System.arraycopy(m_betas, 0, lmProb, 0, m_lmDim);//start from prior mean vector
+			System.arraycopy(m_betas, 0, lmProb, 0, m_lmDim);//start from prior mean vector in real space
 		}
 		
 		//Step 2: accumulate count for each psi accordingly
@@ -453,6 +455,7 @@ public class CLRWithHDP extends CLRWithDP {
 		return fValue;
 	}
 
+	@Override
 	protected double logLikelihood_MultiThread() {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();		
@@ -522,9 +525,7 @@ public class CLRWithHDP extends CLRWithDP {
 			System.err.println("Error,cannot find the HDP theta star!");
 		
 		int offset = m_dim*cIndex;
-		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));		
-//		if(m_LNormFlag)
-//			delta /= getAdaptationSize(u);
+		double delta = weight * (review.getYLabel() - logit(review.getSparse(), review));	
 
 		//Bias term.
 		g[offset] -= delta; //x0=1
@@ -668,7 +669,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 	}
 	
-	public void printInfo(boolean printDetails){
+	void printInfo(boolean printDetails){
 		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(5);		
 		
 		//clear the statistics
@@ -746,9 +747,5 @@ public class CLRWithHDP extends CLRWithDP {
 		m_alpha = alpha;
 		m_eta = eta;
 		m_beta = beta;
-	}
-	
-	public void setMultiTheadFlag(boolean b){
-		m_multiThread = b;
 	}
 }

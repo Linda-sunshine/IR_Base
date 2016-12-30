@@ -81,12 +81,13 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
-	double m_L4New = 0;
-	public void setL4NewCluster(double l){
-		m_L4New = l;
+	
+	double m_priorLMLikelihood = 0;
+	public void setPriorLMLikelihood(double l){
+		m_priorLMLikelihood = l;
 	}
 	
-	public double getL4NewCluster(){
-		return m_L4New;
+	public double getPriorLMLikelihood(){
+		return m_priorLMLikelihood;
 	}
 }
