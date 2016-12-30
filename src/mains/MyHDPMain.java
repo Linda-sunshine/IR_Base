@@ -46,7 +46,7 @@ public class MyHDPMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Yelp"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -77,7 +77,7 @@ public class MyHDPMain {
 //		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
 		
 //		adaptRatio = 1; int k = 2000;
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 //		analyzer.separateUsers(k);
@@ -139,7 +139,7 @@ public class MyHDPMain {
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		
 //		MTCLRWithHDP hdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//		hdp.setQ(q);
+//		hdp.setQ(1);
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
@@ -147,9 +147,9 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		
 		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.1);
+		hdp.setsdB(0.2);
 
-		hdp.setsdA(0.1);
+		hdp.setsdA(0.2);
 		double alpha = 1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
