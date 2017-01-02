@@ -44,7 +44,7 @@ public class MyDPMain {
 		boolean enforceAdapt = true;
 		int lmTopK = 1000; // topK for language model.
 
-		String dataset = "Amazon"; // "Amazon", "Yelp", "YelpNew"
+		String dataset = "YelpNew"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -208,7 +208,7 @@ public class MyDPMain {
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
-		adaptation.setNumberOfIterations(30);
+		adaptation.setNumberOfIterations(20);
 		adaptation.setsdA(sdA);
 		adaptation.setsdB(sdB);
 		adaptation.setR1TradeOffs(eta1, eta2);

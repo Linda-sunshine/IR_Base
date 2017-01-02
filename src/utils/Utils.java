@@ -48,6 +48,18 @@ public class Utils {
 		return w[start+index];
 	}
 	
+//	public static double max(double[] w, int start, int size) {
+//		double max = Math.abs(w[start]);
+//		int index = 0;
+//		for(int i=1; i<size; i++) {
+//			if (Math.abs(w[start+i]) > max) {
+//				max = Math.abs(w[start+i]);
+//				index = i;
+//			}
+//		}
+//		return Math.abs(w[start+index]);
+//	}
+	
 	//Find the max value's index of an array, return Index of the maximum.
 	public static int maxOfArrayIndex(double[] probs){
 		return maxOfArrayIndex(probs, probs.length);
