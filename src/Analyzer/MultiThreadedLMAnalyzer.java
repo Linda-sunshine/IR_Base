@@ -14,8 +14,6 @@ import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
-import structures._stat;
-import utils.Utils;
 
 public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	// We don't record the feature stats.
@@ -134,12 +132,14 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 				}
 			}
 		}
+		
 		for(int i=0; i<lm.length; i++){
 				lm[i] /= sum;
 				if(lm[i] == 0)
 					lm[i] = 0.0001;
 		}
-			return lm;
+		
+		return lm;
 	}
 	
 	public int getLMFeatureSize(){

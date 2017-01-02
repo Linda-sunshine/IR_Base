@@ -91,8 +91,8 @@ public class CLRWithDP extends LinAdapt {
 		double Pi = 0;
 			
 		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION  && review.getType() != rType.TEST)
-					continue; // only touch the adaptation data
+			if (review.getType() != rType.ADAPTATION && review.getType() != rType.TEST)
+				continue; // only touch the adaptation data, so this will be only for training data? What's the purpose of this function?
 				
 			Pi = logit(review.getSparse(), user);
 			if(review.getYLabel() == 1) {
@@ -112,6 +112,7 @@ public class CLRWithDP extends LinAdapt {
 		else
 			return L;
 	}
+	
 	public int predict(_AdaptStruct user, _thetaStar theta){
 		double[] As;
 		double sum;
@@ -369,6 +370,7 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
+	@Override
 	public double train(){
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;

@@ -59,7 +59,8 @@ public class MTCLRWithHDP extends CLRWithHDP{
 	}
 	
 	@Override
-	protected double logit(_SparseFeature[] fvs, _Review r){
+	protected double logit(_Review r){
+		_SparseFeature[] fvs = r.getSparse();
 		double sum = m_q * Utils.dotProduct(m_supWeights, fvs, 0) + Utils.dotProduct(r.getHDPThetaStar().getModel(), fvs, 0);
 		return Utils.logistic(sum);
 	}
@@ -93,7 +94,7 @@ public class MTCLRWithHDP extends CLRWithHDP{
 
 		int offset = m_dim*cIndex;
 		int offsetSup = m_dim*m_kBar;
-		double delta = weight * (r.getYLabel() - logit(r.getSparse(), r));
+		double delta = weight * (r.getYLabel() - logit(r));
 
 		//Bias term.
 		g[offset] -= delta; //x0=1, each cluster.

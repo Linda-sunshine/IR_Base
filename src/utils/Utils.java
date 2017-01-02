@@ -10,6 +10,7 @@ import java.util.Random;
 
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
+import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
@@ -960,5 +961,15 @@ public class Utils {
 			if (max<xs[i])
 				max = xs[i];
 		return max;
+	}
+	
+	public static double sampleFromGamma(double a, double b) {
+		double v = 0;
+		
+		do {
+			v = Gamma.staticNextDouble(a, b);
+		} while (Math.abs(v)==0);
+		
+		return v;
 	}
 }

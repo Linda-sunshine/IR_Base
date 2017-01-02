@@ -2,7 +2,7 @@ package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.Arrays;
 
-import cern.jet.random.tdouble.Gamma;
+import utils.Utils;
 /**
  * Dirichlet distribution, implemented by gamma function.
  * Referal: https://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation
@@ -14,8 +14,8 @@ public class DirichletPrior {
 	public void sampling(double[] target, double[] alphas, boolean toLog){
 		double sum = 0;
 		for(int i=0; i<alphas.length; i++){
-			while(target[i] == 0)
-				target[i] = Gamma.staticNextDouble(alphas[i], 1);
+			
+			target[i] = Utils.sampleFromGamma(alphas[i], 1);			
 			sum += target[i];
 		}
 		

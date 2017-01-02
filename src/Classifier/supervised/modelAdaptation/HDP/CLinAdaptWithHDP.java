@@ -89,7 +89,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*2*cIndex;
 		
-		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
+		double delta = (review.getYLabel() - logit(r)) * weight;
 		
 		// Bias term for individual user.
 		g[offset] -= delta*m_gWeights[0]; //a[0] = ws0*x0; x0=1
@@ -115,11 +115,11 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	}
 	
 	@Override
-	protected double logit(_SparseFeature[] fvs, _Review r){
+	protected double logit(_Review r){
 		int k, n;
 		double[] Au = r.getHDPThetaStar().getModel(); 
 		double sum = Au[0]*m_gWeights[0] + Au[m_dim];//Bias term: w_s0*a0+b0.
-		for(_SparseFeature fv: fvs){
+		for(_SparseFeature fv: r.getSparse()){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
 			sum += (Au[k]*m_gWeights[n] + Au[m_dim+k]) * fv.getValue();

@@ -67,8 +67,8 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		double[] probs = r.getCluPosterior();
 		int n, m, k;
 
-		//not adaptation based
-		if (m_dim==0) {
+		
+		if (m_dim==0) {//not transformation based
 			for(k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
