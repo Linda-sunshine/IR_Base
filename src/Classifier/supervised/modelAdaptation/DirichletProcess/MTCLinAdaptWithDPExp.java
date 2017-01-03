@@ -155,36 +155,6 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		return prf;
 	}
 	
-//	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
-//	protected void calculateClusterProbPerUser(){
-//		double prob;
-//		_DPAdaptStruct user;
-//		double[] probs = new double[m_kBar];
-//		_thetaStar oldTheta;
-//
-//		// calculate the centroids of all the clusters.
-//		calculateCentroids();
-//
-////		constructCentroids();
-//		
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_DPAdaptStruct) m_userList.get(i);
-//				
-//			oldTheta = user.getThetaStar();
-//			for(int k=0; k<m_kBar; k++){
-//				user.setThetaStar(m_thetaStars[k]);
-//
-//				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-////				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-//
-//				probs[k] = Math.exp(prob);//this will be in real space!
-//			}
-//			Utils.L1Normalization(probs);
-//			user.setClusterPosterior(probs);
-//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
-//		}
-//	}
-	
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
 	protected void calculateClusterProbPerUser(){
 		double prob;
@@ -192,14 +162,21 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		double[] probs = new double[m_kBar];
 		_thetaStar oldTheta;
 
+		// calculate the centroids of all the clusters.
+		calculateCentroids();
+
+//		constructCentroids();
+		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			
+				
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 
-				prob = Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
@@ -207,6 +184,29 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
 		}
 	}
+	
+//	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
+//	protected void calculateClusterProbPerUser(){
+//		double prob;
+//		_DPAdaptStruct user;
+//		double[] probs = new double[m_kBar];
+//		_thetaStar oldTheta;
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			
+//			oldTheta = user.getThetaStar();
+//			for(int k=0; k<m_kBar; k++){
+//				user.setThetaStar(m_thetaStars[k]);
+//
+//				prob = Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//				probs[k] = Math.exp(prob);//this will be in real space!
+//			}
+//			Utils.L1Normalization(probs);
+//			user.setClusterPosterior(probs);
+//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
+//		}
+//	}
 	
 	// Assign cluster assignment to each user.
 	protected void initThetaStars(){
@@ -471,299 +471,3 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		return prob > 0.5 ? 1 : 0;
 	}
 }
-
-//@Override
-//public double train(){
-//	System.out.println(toString());
-//	double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-//	int count = 0;
-//	
-//	init(); // clear user performance and init cluster assignment	
-////	calculate_M_step();
-//	
-//	// Burn in period.
-//	while(count++ < m_burnIn){
-//		calculate_E_step();
-//		lastLikelihood = calculate_M_step();
-//	}
-//	
-//	// EM iteration.
-//	for(int i=0; i<m_numberOfIterations; i++){
-//		// Cluster assignment, thinning to reduce auto-correlation.
-//		calculate_E_step();
-//		
-//		// Optimize the parameters
-//		curLikelihood = calculate_M_step();
-//
-//		delta = (lastLikelihood - curLikelihood)/curLikelihood;
-//		
-//		if (i%m_thinning==0) {
-//			evaluateModel();
-//			test();
-//			testTrain();
-//		}
-//		
-////		printInfo(i%5==0);//no need to print out the details very often
-//		System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-//		if(Math.abs(delta) < m_converge)
-//			break;
-//		lastLikelihood = curLikelihood;
-//	}
-//
-//	evaluateModel(); // we do not want to miss the last sample?!
-////	setPersonalizedModel();
-//	return curLikelihood;
-//}
-//// In this part, we will also check each adaptation review's prediction.
-//protected void evaluateModel() {//this should be only used in batch testing!
-//	for(int i=0; i<m_featureSize+1; i++)
-//		m_supWeights[i] = getSupWeights(i);
-//	
-//	System.out.println("[Info]Accumulating evaluation results during sampling...");
-//
-//	//calculate cluster posterior p(c|u)
-//	calculateClusterProbPerUser();
-//	
-//	int numberOfCores = Runtime.getRuntime().availableProcessors();
-//	ArrayList<Thread> threads = new ArrayList<Thread>();		
-//	
-//	for(int k=0; k<numberOfCores; ++k){
-//		threads.add((new Thread() {
-//			int core, numOfCores;
-//			public void run() {
-//				_DPAdaptStruct user;
-//				try {
-//					for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-//						user = (_DPAdaptStruct)m_userList.get(i+core);
-//						if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//							|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//							|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//							continue;
-//							
-//						if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-//							//record prediction results
-//							for(_Review r:user.getReviews()) {
-//								if (r.getType() != rType.TEST)
-//									user.evaluateTrain(r);
-//								else
-//									user.evaluate(r); // evoke user's own model
-//							}
-//						}							
-//					}
-//				} catch(Exception ex) {
-//					ex.printStackTrace(); 
-//				}
-//			}
-//			
-//			private Thread initialize(int core, int numOfCores) {
-//				this.core = core;
-//				this.numOfCores = numOfCores;
-//				return this;
-//			}
-//		}).initialize(k, numberOfCores));
-//		
-//		threads.get(k).start();
-//	}
-//	
-//	for(int k=0;k<numberOfCores;++k){
-//		try {
-//			threads.get(k).join();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		} 
-//	}
-//}
-//
-//@Override
-//public double test(){
-//	int numberOfCores = Runtime.getRuntime().availableProcessors();
-//	ArrayList<Thread> threads = new ArrayList<Thread>();
-//	
-//	// Init all users in user list.
-//	for(int i=0; i<m_userList.size(); i++){
-//		m_userList.get(i).getPerfStat().clear();
-//	}
-//	for(int k=0; k<numberOfCores; ++k){
-//		threads.add((new Thread() {
-//			int core, numOfCores;
-//			public void run() {
-//				_AdaptStruct user;
-//				_PerformanceStat userPerfStat;
-//				try {
-//					for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-//						user = m_userList.get(i+core);
-//						if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//							|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//							|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//							continue;
-//							
-//						userPerfStat = user.getPerfStat();								
-//						if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-//							//record prediction results
-//							for(_Review r:user.getReviews()) {
-//								if (r.getType() != rType.TEST)
-//									continue;
-//								int trueL = r.getYLabel();
-//								int predL = user.predict(r); // evoke user's own model
-//								userPerfStat.addOnePredResult(predL, trueL);
-//							}
-//						}							
-//						userPerfStat.calculatePRF();	
-//					}
-//				} catch(Exception ex) {
-//					ex.printStackTrace(); 
-//				}
-//			}
-//			
-//			private Thread initialize(int core, int numOfCores) {
-//				this.core = core;
-//				this.numOfCores = numOfCores;
-//				return this;
-//			}
-//		}).initialize(k, numberOfCores));
-//		
-//		threads.get(k).start();
-//	}
-//	
-//	for(int k=0;k<numberOfCores;++k){
-//		try {
-//			threads.get(k).join();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		} 
-//	}
-//	
-//	int count = 0;
-//	double[] macroF1 = new double[m_classNo];
-//	_PerformanceStat userPerfStat;
-//	m_microStat.clear();
-//	for(_AdaptStruct user:m_userList) {
-//		if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//			|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//			|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//			continue;
-//		
-//		userPerfStat = user.getPerfStat();
-//		for(int i=0; i<m_classNo; i++)
-//			macroF1[i] += userPerfStat.getF1(i);
-//		m_microStat.accumulateConfusionMat(userPerfStat);
-//		count ++;
-//	}
-//	
-//	System.out.println(toString());
-//	calcMicroPerfStat();
-//	
-//	// macro average
-//	m_perf = new double[2];
-//	System.out.println("\nMacro F1:");
-//	for(int i=0; i<m_classNo; i++){
-//		System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-//		m_perf[i] = macroF1[i]/count;
-//	}
-//	m_perfs.add(m_perf);
-//	System.out.println("\n");
-//	return Utils.sumOfArray(macroF1);
-//}
-//// test the performance of the traing documents.
-//public void testTrain(){
-//	int numberOfCores = Runtime.getRuntime().availableProcessors();
-//	ArrayList<Thread> threads = new ArrayList<Thread>();
-//	
-//	// Init all users in user list.
-//	for(int i=0; i<m_userList.size(); i++){
-//		m_userList.get(i).getPerfStat().clear();
-//	}
-//	
-//	for(int k=0; k<numberOfCores; ++k){
-//		threads.add((new Thread() {
-//			int core, numOfCores;
-//			public void run() {
-//				_DPAdaptStruct user;
-//				_PerformanceStat userPerfStat;
-//
-//				try {
-//					for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-//						user = (_DPAdaptStruct) m_userList.get(i+core);
-//						if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//							|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//							|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//							continue;
-//							
-//						userPerfStat = user.getPerfStat();
-//						if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-//							//record prediction results
-//							for(_Review r:user.getReviews()) {
-//								if (r.getType() == rType.ADAPTATION){
-//									int trueL = r.getYLabel();
-//									int predL = user.predictTrain(r);
-//									userPerfStat.addOnePredResult(predL, trueL);
-//								}
-//							}
-//						}							
-//						userPerfStat.calculatePRF();	
-//					}
-//				} catch(Exception ex) {
-//					ex.printStackTrace(); 
-//				}
-//			}
-//			
-//			private Thread initialize(int core, int numOfCores) {
-//				this.core = core;
-//				this.numOfCores = numOfCores;
-//				return this;
-//			}
-//		}).initialize(k, numberOfCores));
-//		
-//		threads.get(k).start();
-//	}
-//	
-//	for(int k=0;k<numberOfCores;++k){
-//		try {
-//			threads.get(k).join();
-//		} catch (InterruptedException e) {
-//			e.printStackTrace();
-//		} 
-//	}
-//	
-//	int count = 0;
-//	double[] macroF1 = new double[m_classNo];
-//	_PerformanceStat userPerfStat;
-//	m_microStat.clear();
-//	for(_AdaptStruct user:m_userList) {
-//		if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//			|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//			|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//			continue;
-//		
-//		userPerfStat = user.getPerfStat();
-//		for(int i=0; i<m_classNo; i++)
-//			macroF1[i] += userPerfStat.getF1(i);
-//		m_microStat.accumulateConfusionMat(userPerfStat);
-//		count ++;
-//	}
-//	
-//	System.out.println(toString());
-//	calcMicroPerfStat();
-//	
-//	
-//	// macro average
-//	m_trainPerf = new double[2];
-//	System.out.println("\nMacro F1:");
-//	for(int i=0; i<m_classNo; i++){
-//		System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-//		m_trainPerf[i] = macroF1[i]/count;
-//	}
-//	m_trainPerfs.add(m_trainPerf);
-//	System.out.println("\n");
-//}
-//
-//public void printPerfs(){
-//	System.out.println("Test documents performance:");
-//	for(double[] perf: m_perfs){
-//		System.out.print(String.format("%.4f\t%.4f\n", perf[0], perf[1]));
-//	}
-//	System.out.println("Train documents performance:");
-//	for(double[] perf: m_trainPerfs){
-//		System.out.print(String.format("%.4f\t%.4f\n", perf[0], perf[1]));
-//	}
-//}

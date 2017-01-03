@@ -3,6 +3,7 @@ package structures;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -27,7 +28,7 @@ public class _User {
 	protected double[] m_pWeight;
 	protected int m_classNo;
 	protected int m_featureSize;
-	protected int[] m_category;
+	protected ArrayList<Integer> m_category;
 	protected double[] m_svmWeights;
 	
 	protected double m_sim; // Similarity of itself.
@@ -71,9 +72,11 @@ public class _User {
 		
 		constructSparseVector();
 		calcPosRatio();
+		calcCtgSize();
+		calcAdpatTestPosRatio();
 	}
 	
-	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
+	public _User(String userID, int classNo, ArrayList<_Review> reviews, ArrayList<Integer> category){
 		m_userID = userID;
 		m_reviews = reviews;
 		m_classNo = classNo;
@@ -85,6 +88,8 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_category = category;
 		constructSparseVector();
+		calcCtgSize();
+		calcAdpatTestPosRatio();
 	}
 	// added by Lin for setting the index of user cluster.
 	public void setClusterIndex(int i) {
@@ -211,10 +216,6 @@ public class _User {
 		}
 		return count/m_reviews.size();
 	}
-	
-	public int[] getCategory(){
-		return m_category;
-	}
 
 	double m_avgIDF = 0;
 	// Set average IDF value.
@@ -302,5 +303,37 @@ public class _User {
 			}
 		}
 		m_reviews.remove(index);
+	}
+	
+	// added by Lin for sanity check.
+	int m_ctgSize = 0;
+	public void calcCtgSize(){
+		HashSet<String> ctg = new HashSet<String>();
+		for(_Review r: m_reviews)
+			ctg.add(r.getCategory());
+		m_ctgSize = ctg.size();
+	}
+	
+	public ArrayList<Integer> getCategory(){
+		return m_category;
+	}
+	public int getCtgSize(){
+		return m_ctgSize;
+	}
+	double m_adaPos = 0;
+	double m_testPos = 0;
+	public void calcAdpatTestPosRatio(){
+		for(_Review r: m_reviews){
+			if(r.getType() == rType.ADAPTATION && r.getYLabel() == 1)
+				m_adaPos++;
+			else if(r.getType() == rType.TEST && r.getYLabel() == 1)
+				m_testPos++;
+		}
+	}
+	public double getAdaptationPos(){
+		return m_adaPos;
+	}
+	public double getTestPos(){
+		return m_testPos;
 	}
  }

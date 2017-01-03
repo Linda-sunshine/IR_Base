@@ -444,7 +444,7 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	/////////////////////////////////////////////////////////
 	public int m_pCount = 0;
 	public double m_prob = 0;
-	
+	public double m_prob_orc = 0;
 	// Added by Lin for clustered svm.
 	double m_predV = 0;
 

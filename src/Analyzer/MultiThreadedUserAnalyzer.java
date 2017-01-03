@@ -58,12 +58,29 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_rollbackLock = new Object(); // lock when revising corpus statistics
 		m_featureStatLock = new Object();
 	}
-	
+	HashMap<String, Integer> m_ctgIndex = new HashMap<String, Integer>();
+	//Load category information.
+	public void loadCategory(String filename){
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			while((line = reader.readLine()) != null){
+				m_ctgIndex.put(line, m_ctgIndex.size());
+			}
+			reader.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		System.out.println(m_ctgIndex.size() + " categories are loaded!");
+	}
 	//Load all the users.
 	@Override
 	public void loadUserDir(String folder){
 		if(folder == null || folder.isEmpty())
 			return;
+		
+		loadCategory("category.txt");
 		File dir = new File(folder);
 		final File[] files=dir.listFiles();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -110,7 +127,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
-	
+
 	// Load one file as a user here. 
 	private void loadUser(String filename, int core){
 		try {
@@ -123,6 +140,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
 			String productID, source, category="";
 			ArrayList<_Review> reviews = new ArrayList<_Review>();
+			ArrayList<Integer> ctgIndexes = new ArrayList<Integer>();
 			_Review review;
 			int ylabel;
 			long timestamp=0;
@@ -132,20 +150,22 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
-
+			
 				// Construct the new review.
 				if(ylabel != 3){
 					ylabel = (ylabel >= 4) ? 1:0;
 					review = new _Review(m_corpus.getCollection().size(), source, ylabel, userID, productID, category, timestamp);
-					if(AnalyzeDoc(review,core)) //Create the sparse vector for the review.
+					if(AnalyzeDoc(review,core)){ //Create the sparse vector for the review.
 						reviews.add(review);
+						ctgIndexes.add(m_ctgIndex.get(category));
+					}
 				}
 			}
 
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				
-					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
+					m_users.add(new _User(userID, m_classNo, reviews, ctgIndexes)); //create new user from the file.
 				}
 			} else if(reviews.size() == 1){// added by Lin, for those users with fewer than 2 reviews, ignore them.
 				review = reviews.get(0);

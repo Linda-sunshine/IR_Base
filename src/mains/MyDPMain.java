@@ -24,6 +24,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithKmean
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp2;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPLR;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
@@ -44,7 +45,7 @@ public class MyDPMain {
 		boolean enforceAdapt = true;
 		int lmTopK = 1000; // topK for language model.
 
-		String dataset = "YelpNew"; // "Amazon", "YelpNew"
+		String dataset = "Amazon"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -62,23 +63,12 @@ public class MyDPMain {
 //		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
+		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-				
-//		int max = 0;
-//		for(_User u: analyzer.getUsers()){
-//			if(u.getReviewSize() > max)
-//				max = u.getReviewSize();
-//		}
-//		System.out.println(max);
-//		
-//		PrintWriter writer = new PrintWriter(new File("size.txt"));
-//		for(_User u: analyzer.getUsers())
-//			writer.write(u.getUserID()+"\t"+u.getReviewSize()+"\n");
-//		writer.close();
-////		analyzer.getStat();
+		
 		double sdA = 0.2, sdB =0.2;
 		
 		//Amazon parameters.
@@ -202,28 +192,20 @@ public class MyDPMain {
 //
 		
 		/***our algorithm: MTCLinAdaptWithDP***/
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 		
 //		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
-		adaptation.setNumberOfIterations(20);
+		adaptation.setNumberOfIterations(30);
 		adaptation.setsdA(sdA);
 		adaptation.setsdB(sdB);
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		
-//		adaptation.setBaseThreshold(base, th);
-		//String traceFile = dataset + "_iter.csv";
-		//adaptation.trainTrace(traceFile);
-		//adaptation.setNumberOfIterations(100);
-		
 		adaptation.train();
 		adaptation.test();
-//		adaptation.printPerfs();availableProcessors
-//		int threshold = 100;
-//		adaptation.CrossValidation(5, threshold);
 			
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;
