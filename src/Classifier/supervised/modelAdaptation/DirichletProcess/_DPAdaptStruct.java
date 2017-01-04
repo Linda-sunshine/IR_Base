@@ -51,40 +51,9 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 	public double getShifting(int k){
 		return m_thetaStar.getModel()[m_dim+k];
 	}
-//	
-//	public double evaluate(_Doc doc) {
-//		double prob = 0, sum;
-//		
-//		if (m_dim==0) {//not adaptation based
-//			for(int k=0; k<m_cluPosterior.length; k++) {
-//				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-//				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
-//					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
-//				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-//			}			
-//		} else {
-//			int n, m;
-//			double As[];
-//			for(int k=0; k<m_cluPosterior.length; k++) {
-//				As = CLRWithDP.m_thetaStars[k].getModel();
-//				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-//				for(_SparseFeature fv: doc.getSparse()){
-//					n = fv.getIndex() + 1;
-//					m = m_featureGroupMap[n];
-//					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-//				}
-//				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-//			}
-//		}
-//		
-//		//accumulate the prediction results during sampling procedure
-//		doc.m_pCount ++;
-//		doc.m_prob += prob; //>0.5?1:0;
-//		return prob;
-//	}
 	
 	public double evaluate(_Doc doc) {
-		double prob = 0, prob_orc = 0, sum;
+		double prob = 0, sum;
 		
 		if (m_dim==0) {//not adaptation based
 			for(int k=0; k<m_cluPosterior.length; k++) {
@@ -104,18 +73,49 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 					m = m_featureGroupMap[n];
 					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 				}
-				double log = Utils.logistic(sum);
-				prob += m_cluPosterior[k] * log; 
-				prob_orc += m_cluPosterior_orc[k] * log;
+				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}
 		}
 		
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
-		doc.m_prob_orc += prob_orc;
 		return prob;
 	}
+	
+//	public double evaluate(_Doc doc) {
+//		double prob = 0, prob_orc = 0, sum;
+//		
+//		if (m_dim==0) {//not adaptation based
+//			for(int k=0; k<m_cluPosterior.length; k++) {
+//				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
+//				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
+//					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
+//				prob += m_cluPosterior[k] * Utils.logistic(sum); 
+//			}			
+//		} else {
+//			int n, m;
+//			double As[];
+//			for(int k=0; k<m_cluPosterior.length; k++) {
+//				As = CLRWithDP.m_thetaStars[k].getModel();
+//				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+//				for(_SparseFeature fv: doc.getSparse()){
+//					n = fv.getIndex() + 1;
+//					m = m_featureGroupMap[n];
+//					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+//				}
+//				double log = Utils.logistic(sum);
+//				prob += m_cluPosterior[k] * log; 
+//				prob_orc += m_cluPosterior_orc[k] * log;
+//			}
+//		}
+//		
+//		//accumulate the prediction results during sampling procedure
+//		doc.m_pCount ++;
+//		doc.m_prob += prob; //>0.5?1:0;
+//		doc.m_prob_orc += prob_orc;
+//		return prob;
+//	}
 	public double evaluateTrain(_Doc doc) {
 		double prob = 0, sum;
 		

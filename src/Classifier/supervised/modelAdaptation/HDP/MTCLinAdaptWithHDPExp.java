@@ -154,10 +154,6 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		return prf;
 	}
 	
-//	protected double calcLogLikelihoodX(_Review r){		
-//		return 0;
-//	}
-	
 	@Override
 	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
 	// Indeed, it is for per review, for inheritance we don't change the function name.
@@ -190,8 +186,7 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 					if(m_postCheck)
 						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					else
-						prob = Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-//						prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+						prob = calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					probs[k] = prob;
 				}
 //				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);

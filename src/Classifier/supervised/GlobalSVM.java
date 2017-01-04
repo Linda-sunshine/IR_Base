@@ -10,8 +10,10 @@ import Classifier.supervised.liblinear.Linear;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import structures._Doc;
 import structures._Review;
 import structures._Review.rType;
+import utils.Utils;
 
 public class GlobalSVM extends IndividualSVM{
 
@@ -68,8 +70,21 @@ public class GlobalSVM extends IndividualSVM{
 		}
 	
 		m_libModel = Linear.train(libProblem, new Parameter(m_solverType, m_C, SVM.EPS));
-		setPersonalizedModel();
+//		setPersonalizedModel();
+		calcPredValue();
 		return 0;
+	}
+
+	public void calcPredValue(){
+		for(_AdaptStruct u: m_userList){
+			for(_Review r: u.getReviews())
+				r.setPredValue(predictDouble(r));
+		}
+	}
+	
+	public double predictDouble(_Doc doc){
+		return Linear.predict(m_libModel, Utils.createLibLinearFV(doc, m_featureSize));
+
 	}
 	
 	@Override

@@ -53,7 +53,7 @@ public class MTCLinAdaptWithDPExp2 extends MTCLinAdaptWithDP {
 //				m_writer.write(String.format("%d\t%d\t%.4f\t[", user.getUser().getReviewSize(), user.getUser().getCtgSize(), dist));
 				
 				System.out.print(String.format("%d\t%d\t%.4f\t[", user.getUser().getReviewSize(), user.getUser().getCtgSize(), dist));
-//				
+				
 				double adaPosRatio = user.getUser().getAdaptationPos()/user.getAdaptationSize();
 				double testPosRatio = user.getUser().getTestPos()/user.getTestSize();
 				System.out.print(String.format("adaPosRation: %.4f, testPosRatio: %.4f\n", adaPosRatio, testPosRatio));

@@ -14,13 +14,17 @@ import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.LogisticRegression4DP;
 
 public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
-
+	int m_lmFvSize = 0;
 	public MTCLinAdaptWithDPLR(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
 			String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
 				featureGroup4Sup);
 		// TODO Auto-generated constructor stub
+	}
+	
+	public void setLMFvSize(int s){
+		m_lmFvSize = s;
 	}
 	double m_lambda = 1; // parameter used in lr.
 	LogisticRegression4DP m_lr;
@@ -31,7 +35,7 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 		int cNo = 0;
 		_DPAdaptStruct user;
 		m_lrTrainSet.clear();
-		m_lr = new LogisticRegression4DP(m_kBar, m_featureSize, m_lambda);
+		m_lr = new LogisticRegression4DP(m_kBar, m_lmFvSize, m_lambda);
 		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
@@ -45,12 +49,9 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 		}
 		m_lr.train(m_lrTrainSet);
 	}
-	Object m_countLock = new Object();
-	int m_count = 0;
 	//apply current model in the assigned clusters to users
 	@Override
 	protected void evaluateModel() {
-		m_count = 0;
 		for(int i=0; i<m_featureSize+1; i++)
 			m_supWeights[i] = getSupWeights(i);
 		
@@ -81,11 +82,6 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 								for(_Review r:user.getReviews()) {
 									if (r.getType() != rType.TEST)
 										continue;
-									if(m_lr.predict(r) != user.getThetaStar().getIndex()){
-										synchronized(m_countLock){
-											m_count++;
-										}
-									}
 									evaluate(r); // evoke user's own model
 								}
 							}							
@@ -112,24 +108,27 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 				e.printStackTrace();
 			} 
 		}	
-		
-		System.out.println("different: " + m_count);
 	}
 	
-	public void evaluate(_Review r){
-		int c = m_lr.predict(r);
+	void evaluate(_Review r){
+		double[] cProbs = m_lr.calcCProbs(r);
 		int n, m;
-		double As[] = CLRWithDP.m_thetaStars[c].getModel();
-		double sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-		for(_SparseFeature fv: r.getSparse()){
-			n = fv.getIndex() + 1;
-			m = m_featureGroupMap[n];
-			sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+		double As[], prob = 0;
+		
+		double sum = 0;
+		for(int k=0; k<cProbs.length; k++){
+			As = CLRWithDP.m_thetaStars[k].getModel();
+			sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+			for(_SparseFeature fv: r.getSparse()){
+				n = fv.getIndex() + 1;
+				m = m_featureGroupMap[n];
+				sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+			}
+			prob += cProbs[k] * Utils.logistic(sum);
 		}
-		sum = Utils.logistic(sum); 
 	
 		//accumulate the prediction results during sampling procedure
 		r.m_pCount ++;
-		r.m_prob += sum; //>0.5?1:0;
+		r.m_prob += prob; //>0.5?1:0;
 	}
 }

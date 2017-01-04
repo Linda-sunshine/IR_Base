@@ -1,8 +1,10 @@
 package Classifier.supervised;
 
 import java.util.Collection;
+
 import structures._Doc;
 import structures._SparseFeature;
+import utils.Utils;
 
 public class LogisticRegression4DP extends LogisticRegression {	
 	
@@ -28,7 +30,7 @@ public class LogisticRegression4DP extends LogisticRegression {
 		double weight;
 		for (_Doc doc: trainSet) {
 			Yi = doc.getClusterNo();
-			fv = doc.getSparse();
+			fv = doc.getLMSparse();
 			weight = doc.getWeight();
 			
 			//compute P(Y=j|X=xi)
@@ -53,5 +55,14 @@ public class LogisticRegression4DP extends LogisticRegression {
 			
 		// LBFGS is used to calculate the minimum value while we are trying to calculate the maximum likelihood.
 		return m_lambda*L2 - fValue;
+	}
+	
+	public double[] calcCProbs(_Doc doc){
+		_SparseFeature[] fv = doc.getLMSparse();
+		double[] cProbs = new double[m_classNo];
+		for(int i = 0; i < m_classNo; i++)
+			cProbs[i] = 1/(1+ Math.exp(-Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1))));
+		Utils.L1Normalization(cProbs);
+		return cProbs;
 	}
 }

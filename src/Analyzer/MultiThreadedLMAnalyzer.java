@@ -172,6 +172,7 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 
 	}
 	
+	
 //	// added by Lin, selected k users for separate testing.
 //	public void seperateUsers(int k){
 //		int count = 0;

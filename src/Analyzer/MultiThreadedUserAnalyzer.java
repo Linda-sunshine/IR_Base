@@ -92,7 +92,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					try {
 						for (int j = 0; j + core <files.length; j += m_numberOfCores) {
 							File f = files[j+core];
-							if(f.isFile()){//load the user								
+							if(f.isFile() && f.getAbsolutePath().endsWith("txt")){//load the user								
 								loadUser(f.getAbsolutePath(),core);
 							}
 						}
@@ -412,10 +412,21 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	// assign some of the users for testing only.
 	public void separateUsers(int k){
 		int count = 0;
+		double light = 0, medium = 0;
 		while(count < k){
-			for(_Review r: m_users.get(count++).getReviews())
-				r.setType(rType.TEST);
+			if(m_users.get(count).getReviewSize() <= 10)
+				light++;
+			else if(m_users.get(count).getReviewSize() <= 50)
+				medium++;
+			for(_Review r: m_users.get(count++).getReviews()){
+				if(r.getType() == rType.ADAPTATION){
+					m_adaptSize--;
+					r.setType(rType.TEST);
+					m_testSize++;
+				}
+			}
 		}
+		System.out.print(String.format("[Prob Info]Light: %.4f, medium: %.4f, heavy: %.4f\n", light/k, medium/k, (k-light-medium)/k));
 	}
 		
 }
