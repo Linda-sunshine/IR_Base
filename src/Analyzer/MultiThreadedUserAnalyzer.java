@@ -423,6 +423,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					m_adaptSize--;
 					r.setType(rType.TEST);
 					m_testSize++;
+					if(r.getYLabel() == 1){
+						m_pCount[1]--;
+						m_pCount[2]++;
+					}
 				}
 			}
 		}

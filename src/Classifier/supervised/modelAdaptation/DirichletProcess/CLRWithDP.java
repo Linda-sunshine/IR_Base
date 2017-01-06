@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -748,5 +750,30 @@ public class CLRWithDP extends LinAdapt {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	// added by Lin for model performance comparison.
+	// print out each user's test review's performance.
+	public void printUserPerformance(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+				@Override
+				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+				}
+			});
+			
+			for(_AdaptStruct u: m_userList){
+				for(_Review r: u.getReviews()){
+					if(r.getType() == rType.TEST){
+						writer.write(String.format("%s\t%d\t%d\t%s\n", u.getUserID(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+					}
+				}
+			}
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }

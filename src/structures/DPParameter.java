@@ -30,6 +30,7 @@ public class DPParameter {
 	public int m_lmTopK = 1000;
 	public boolean m_post = false;
 	
+	public double m_adaptRatio = 0.5;
 	// used in the sanity check of dp + x in testing.
 	public int m_base = 30;
 	public double m_th = 0.05;
@@ -97,6 +98,8 @@ public class DPParameter {
 				m_base = Integer.parseInt(argv[i]);
 			else if(argv[i-1].equals("-th"))
 				m_th = Double.parseDouble(argv[i-1]);
+			else if(argv[i-1].equals("-adaptRatio"))
+				m_adaptRatio = Double.parseDouble(argv[i-1]);
 			else
 				exit_with_help();
 		}

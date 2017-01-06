@@ -26,7 +26,7 @@ public class MyDPExecution {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
@@ -47,7 +47,7 @@ public class MyDPExecution {
 		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", param.m_data, param.m_fs, param.m_lmTopK);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 //		analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.

@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-
 import structures._PerformanceStat;
 import structures._Review;
 import structures._thetaStar;
