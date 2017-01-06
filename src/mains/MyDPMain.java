@@ -194,9 +194,9 @@ public class MyDPMain {
 		
 		/***our algorithm: MTCLinAdaptWithDP***/
 //		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 
-//		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 
 //		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
@@ -212,7 +212,7 @@ public class MyDPMain {
 		
 		adaptation.train();
 		adaptation.test();
-		adaptation.printUserPerformance("mtclindp_10k.xls");
+		adaptation.printUserPerformance("mtclindp_exp_10k.xls");
 			
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;

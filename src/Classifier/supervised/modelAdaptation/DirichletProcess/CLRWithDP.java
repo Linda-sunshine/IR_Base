@@ -768,7 +768,7 @@ public class CLRWithDP extends LinAdapt {
 			for(_AdaptStruct u: m_userList){
 				for(_Review r: u.getReviews()){
 					if(r.getType() == rType.TEST){
-						writer.write(String.format("%s\t%d\t%d\t%s\n", u.getUserID(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+						writer.write(String.format("%s\t%d\t%d\t%d\t%s\n", u.getUserID(), u.getUser().getReviewSize(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
 					}
 				}
 			}
