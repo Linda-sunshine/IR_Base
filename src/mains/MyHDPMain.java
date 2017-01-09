@@ -39,7 +39,7 @@ public class MyHDPMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.6;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
@@ -54,7 +54,7 @@ public class MyHDPMain {
 		String fs = "DF";//"IG_CHI"
 		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users_1000", dataset);
+		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
 		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
 		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
@@ -77,7 +77,8 @@ public class MyHDPMain {
 //		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
 		
 //		adaptRatio = 1; int k = 400;
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 //		analyzer.separateUsers(k);
@@ -152,7 +153,7 @@ public class MyHDPMain {
 		hdp.setsdB(0.2);
 
 		hdp.setsdA(0.2);
-		double alpha = 0.1, eta = 0.1, beta = 0.01;
+		double alpha = 1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		hdp.setNumberOfIterations(30);
@@ -161,6 +162,7 @@ public class MyHDPMain {
 
 		hdp.train();
 		hdp.test();
+		hdp.printUserPerformance("./data/hdp_10k.xls");
 		
 //		int threshold = 100;
 //		hdp.CrossValidation(5, threshold);
