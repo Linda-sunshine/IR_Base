@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
@@ -172,13 +173,30 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 
 	}
 	
+	// added by Lin, selected k users for separate testing.
+	public void seperateUsers(int k){
+		int count = 0;
+		while(count < k){
+			for(_Review r: m_users.get(count++).getReviews())
+				r.setType(rType.SEPARATE);
+		}
+	}
 	
-//	// added by Lin, selected k users for separate testing.
-//	public void seperateUsers(int k){
-//		int count = 0;
-//		while(count < k){
-//			for(_Review r: m_users.get(count++).getReviews())
-//				r.setType(rType.SEPARATE);
-//		}
-//	}
+	int[][] m_ctgStat = new int[2][2]; // global variable to record the ctg info.
+	// Correglation analysis of the review categories.
+	public void CtgCorrelation(){
+		HashSet<String> one = new HashSet<String>();
+		for(_User u: m_users){
+			for(_Review r: u.getReviews()){
+				if(r.getType() == rType.ADAPTATION){
+					one.add(r.getCategory());
+				} else{
+					if(one.contains(r.getCategory()))
+						m_ctgStat[0][0]++;
+					else
+						
+				}
+			}
+		}
+	}
 }
