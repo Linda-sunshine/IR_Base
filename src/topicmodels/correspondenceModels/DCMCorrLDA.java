@@ -123,14 +123,14 @@ public class DCMCorrLDA extends DCMLDA4AC {
 	protected void initialize_probability(Collection<_Doc>collection){
 		m_alpha_c = new double[number_of_topics];
 		m_alphaAuxilary = new double[number_of_topics];
-		
+
 		m_alpha = new double[number_of_topics];
 		m_beta = new double[number_of_topics][vocabulary_size];
 
 		m_totalAlpha = 0;
 		m_totalAlpha_c = 0;
 		m_totalBeta = new double[number_of_topics];
-		
+
 		m_topic_word_prob = new double[number_of_topics][vocabulary_size];
 		for (int k = 0; k < number_of_topics; k++)
 			Arrays.fill(word_topic_sstat[k], 0);
@@ -139,7 +139,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			if(d instanceof _ParentDoc4DCM){
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				pDoc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size);
-				
+
 				for (_Stn stnObj : d.getSentences()) {
 					stnObj.setTopicsVct(number_of_topics);
 				}
@@ -149,21 +149,40 @@ public class DCMCorrLDA extends DCMLDA4AC {
 					for(_Word w:cDoc.getWords()){
 						int wid = w.getIndex();
 						int tid = w.getTopic();
-						
+
 						pDoc.m_wordTopic_stat[tid][wid] ++;
 						pDoc.m_topic_stat[tid]++;
 					}
 					computeMu4Doc(cDoc);
 				}
 			}
-			
+
 		}
-		
+
 		initialAlphaBeta();
 		// imposePrior();
 
 	}
-	
+
+	/**
+	 *the alpha, beta, alpha_c parameters does not make sense to the initialization.
+	 * */
+	protected void initialAlphaBeta(){
+		Arrays.fill(m_alpha, 1.0/number_of_topics);
+		Arrays.fill(m_alpha_c, 1.0/number_of_topics);
+
+		for(int k=0; k<number_of_topics; k++){
+			Arrays.fill(m_beta[k], 1.0/vocabulary_size);
+			Arrays.fill(topic_term_probabilty[k], 1.0/vocabulary_size);
+			Arrays.fill(word_topic_sstat[k], 0);
+		}
+
+		m_totalAlpha = Utils.sumOfArray(m_alpha);
+		for (int k = 0; k < number_of_topics; k++) {
+			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
+		}
+	}
+
 	protected void computeMu4Doc(_ChildDoc d){
 		_ParentDoc tempParent = d.m_parentDoc;
 		double mu = Utils.cosine(tempParent.getSparse(), d.getSparse());
@@ -347,67 +366,6 @@ public class DCMCorrLDA extends DCMLDA4AC {
 				/ (m_totalAlpha_c + muDp * parentTopicSum + childTopicSum);
 		
 		return prob;
-	}
-
-	protected void initialAlphaBeta(){
-		
-		double parentDocNum = 0;
-		double childDocNum = 0;
-		
-		Arrays.fill(m_sstat, 0);
-		Arrays.fill(m_alphaAuxilary, 0);
-		for(int k=0; k<number_of_topics; k++){
-			Arrays.fill(topic_term_probabilty[k], 0);
-			Arrays.fill(word_topic_sstat[k], 0);
-		}
-		
-		for(_Doc d:m_trainSet){
-			if(d instanceof _ParentDoc4DCM){
-				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-				for(int k=0; k<number_of_topics; k++){
-					double tempProb = pDoc.m_sstat[k]/pDoc.getTotalDocLength();
-					m_sstat[k] += tempProb;
-					
-					if(pDoc.m_sstat[k] == 0)
-						continue;
-					for(int v=0; v<vocabulary_size; v++){
-						tempProb = pDoc.m_wordTopic_stat[k][v]/pDoc.m_topic_stat[k];
-						topic_term_probabilty[k][v] += tempProb;
-					}
-				}
-				parentDocNum += 1;
-			
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					for(int k=0; k<number_of_topics; k++){
-						double tempProb = cDoc.m_sstat[k]/cDoc.getTotalDocLength();
-						m_alphaAuxilary[k] += tempProb;
-					}
-					childDocNum += 1;
-				}
-			}
-		}
-		
-		for(int k=0; k<number_of_topics; k++){
-			m_sstat[k] /= parentDocNum;
-			m_alphaAuxilary[k] /= childDocNum;
-			for(int v=0; v<vocabulary_size; v++){
-				topic_term_probabilty[k][v] /= (parentDocNum);
-			}
-		}
-		
-		for(int k=0; k<number_of_topics; k++){
-			m_alpha[k] = m_sstat[k]+d_alpha;
-			m_alpha_c[k] = m_alphaAuxilary[k]+d_alpha_c;
-			for (int v = 0; v < vocabulary_size; v++)
-				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
-		}
-		
-		m_totalAlpha = Utils.sumOfArray(m_alpha);
-		m_totalAlpha_c = Utils.sumOfArray(m_alpha_c);
-		for (int k = 0; k < number_of_topics; k++) {
-			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
-		}
-		
 	}
 	
 	protected void updateAlpha(){
@@ -605,8 +563,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		
 		return logLikelihood;
 	}
-	
-	
+
 	public void updateParameter(int iter, File weightFolder){
 		File weightIterFolder = new File(weightFolder, "_" + iter);
 		if (!weightIterFolder.exists()) {
@@ -632,7 +589,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		if(d instanceof _ParentDoc4DCM){
 			_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 			for(int k=0; k<number_of_topics; k++){
-				pDoc.m_topics[k] += pDoc.m_sstat[k];
+				pDoc.m_topics[k] += pDoc.m_sstat[k]+m_alpha[k];
 				for(int v=0; v<vocabulary_size; v++){
 					pDoc.m_wordTopic_prob[k][v] += pDoc.m_wordTopic_stat[k][v]+m_beta[k][v];
 				}
@@ -643,7 +600,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			double topicSum = Utils.sumOfArray(pDoc.m_sstat);
 			double muDp = cDoc.getMu()/topicSum;
 			for(int k=0; k<number_of_topics; k++){
-				cDoc.m_topics[k] += cDoc.m_sstat[k];
+				cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k];
 			}
 		}
 	}
@@ -730,23 +687,6 @@ public class DCMCorrLDA extends DCMLDA4AC {
 			}
 			docLogLikelihood += term;
 		}
-		
-//		if(docLogLikelihood>0){
-//			for(int k=0; k<number_of_topics; k++){
-//				System.out.print(m_alpha[k]+"\t");
-//			}
-//			System.out.println();
-//			for(int k=0; k<number_of_topics; k++){
-//				System.out.print(m_alpha_c[k]+"\t");
-//			}
-//			System.out.println();
-//			for(int k=0; k<number_of_topics; k++){
-//				for(int v=0; v<vocabulary_size; v++){
-//					System.out.print(m_beta[k][v]+"\t");
-//				}
-//				System.out.println();
-//			}
-//		}
 		
 		return docLogLikelihood;
 		
@@ -869,8 +809,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 
 		return docLogLikelihood;
 	}
-	
-	
+
 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d){
 		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 		for(_Stn stnObj:pDoc.getSentences()){
@@ -878,14 +817,16 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 		int testLength = 0;
+		testLength = (int) (m_testWord4PerplexityProportion * pDoc
+				.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength, vocabulary_size);
 		pDoc.createSparseVct4Infer();
 
 		sampleTestSet.add(pDoc);
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
-//			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 //			testLength = cDoc.getTotalDocLength();
-			testLength = 0;
+//			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
@@ -903,10 +844,31 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 	}
-	
-	protected double cal_logLikelihood_partial4Child(_ChildDoc cDoc) {
+
+	protected double cal_logLikelihood_partial4Parent(_Doc d) {
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : pDoc.getTestWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						*pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+
+	protected double cal_logLikelihood_partial4Child(_Doc d) {
+
 		double childLikelihood = 0;
-		
+
+		_ChildDoc cDoc = (_ChildDoc)d;
 		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)cDoc.m_parentDoc;
 		
 		for(_Word w:cDoc.getTestWords()){

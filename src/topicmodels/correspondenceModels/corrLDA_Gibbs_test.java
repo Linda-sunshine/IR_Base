@@ -3,9 +3,7 @@ package topicmodels.correspondenceModels;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
 
 import structures.MyPriorityQueue;
 import structures._ChildDoc;
@@ -109,6 +107,166 @@ public class corrLDA_Gibbs_test extends corrLDA_Gibbs {
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
 		printTopKChild4Stn(filePrefix, topK);
 		printTopKChild4Parent(filePrefix, topK);
+
+		int randomNum = 5;
+		selectStn(filePrefix, topK, randomNum);
+
+		printTopStn4ParentByNormLikelihood(filePrefix, topK);
+		printTopStn4ParentByMajorTopic(filePrefix, topK);
+	}
+
+	protected void selectStn(String filePrefix, int topK, int randomNum){
+		topK = 5;
+		int docSize = m_trainSet.size();
+		int[] selectedArray = new int[randomNum];
+		for(int i=0; i<randomNum; i++)
+			selectedArray[i]=m_rand.nextInt(500);
+
+		System.out.println("printing sentence");
+		String sentenceFile = filePrefix+"selectedStn.txt";
+		String sentenceIndexFile = filePrefix + "stnIndex.txt";
+		try {
+			PrintWriter stnOut = new PrintWriter(new File(sentenceFile));
+			PrintWriter stnIndexOut = new PrintWriter(new File(sentenceIndexFile));
+
+			for (_Doc d : m_trainSet) {
+				if (d instanceof _ParentDoc) {
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+					if(pDoc.getSenetenceSize()<topK){
+						continue;
+					}
+
+					ArrayList<Integer> mergedStnIndexList = new ArrayList<Integer>();
+					ArrayList<Integer> normLikelihoodStnList = new ArrayList<Integer>();
+					ArrayList<Integer> majorTopicStnList = new ArrayList<Integer>();
+					ArrayList<Integer> parentLikelihoodStnList = new ArrayList<Integer>();
+
+					estimateTopicProb4Words(pDoc);
+					topStn4ParentByNormLikelihood(pDoc, topK, normLikelihoodStnList, mergedStnIndexList);
+					topStn4ParentByMajorTopic(pDoc, topK, majorTopicStnList, mergedStnIndexList);
+					topStn4ParentByParentLikelihood(pDoc, topK, parentLikelihoodStnList, mergedStnIndexList);
+
+					stnOut.print(pDoc.getName());
+					for (int stnIndex : mergedStnIndexList) {
+						stnOut.print("\t"+stnIndex);
+					}
+					stnOut.println();
+
+					stnIndexOut.print(pDoc.getName());
+					stnIndexOut.print("\tnormLikelihood");
+					for (int stnIndex : normLikelihoodStnList) {
+						stnIndexOut.print("\t"+stnIndex);
+					}
+
+					stnIndexOut.print("\tmajorTopic");
+					for (int stnIndex : majorTopicStnList) {
+						stnIndexOut.print("\t" + stnIndex);
+					}
+
+					stnIndexOut.print("\tparentLikelihood");
+					for (int stnIndex : parentLikelihoodStnList) {
+						stnIndexOut.print("\t"+stnIndex);
+					}
+					stnIndexOut.println();
+				}
+			}
+
+			stnIndexOut.flush();
+			stnIndexOut.close();
+
+			stnOut.flush();
+			stnOut.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	protected void topStn4ParentByNormLikelihood(_ParentDoc4DCM pDoc, int topK, ArrayList<Integer> stnList, ArrayList<Integer> mergedStnList){
+
+		HashMap<Integer, Double> stnNormLikelihoodMap = new HashMap<Integer, Double>();
+
+		for (_Stn stnObj : pDoc.getSentences()) {
+
+			double likelihood = rankStn4ParentByNormLikelihood(stnObj, pDoc);
+			likelihood = likelihood/(stnObj.getLength()*1.0);
+			stnNormLikelihoodMap.put(stnObj.getIndex(), likelihood);
+
+		}
+
+		List<Map.Entry<Integer, Double>> stnNormLikelihoodList = new ArrayList<Map.Entry<Integer, Double>>(stnNormLikelihoodMap.entrySet());
+
+		Collections.sort(stnNormLikelihoodList, new Comparator<Map.Entry<Integer, Double>>() {
+			public int compare(Map.Entry<Integer, Double> o1,
+							   Map.Entry<Integer, Double> o2) {
+				return (o2.getValue()).toString().compareTo(o1.getValue().toString());
+			}
+		});
+
+		for(int i=0; i<topK; i++){
+			int selectedKey = stnNormLikelihoodList.get(i).getKey();
+			stnList.add(selectedKey);
+			if(!mergedStnList.contains(selectedKey)){
+				mergedStnList.add(selectedKey);
+			}
+		}
+
+	}
+
+	protected void topStn4ParentByMajorTopic(_ParentDoc4DCM pDoc, int topK, ArrayList<Integer> stnList, ArrayList<Integer> mergedStnList){
+		int maxTopicIndex = 0;
+		double maxTopicProportion = 0;
+		for(int k=0; k<number_of_topics; k++){
+			if(pDoc.m_topics[k]>maxTopicProportion) {
+				maxTopicIndex = k;
+				maxTopicProportion = pDoc.m_topics[k];
+			}
+		}
+
+		int stnNum = 1;
+		for (_Stn stnObj : pDoc.getSentences()) {
+
+			int stnMajorTopic = rankStn4ParentByMajorTopic(stnObj, pDoc);
+			if(stnMajorTopic==maxTopicIndex) {
+				if(stnNum>topK)
+					break;
+				stnList.add(stnObj.getIndex());
+				if (!mergedStnList.contains(stnObj.getIndex())) {
+					mergedStnList.add(stnObj.getIndex());
+				}
+				stnNum += 1;
+			}
+		}
+
+
+	}
+
+	protected void topStn4ParentByParentLikelihood(_ParentDoc4DCM pDoc, int topK, ArrayList<Integer> stnList, ArrayList<Integer> mergedStnList){
+		HashMap<Integer, Double> stnParentLikelihoodMap = new HashMap<Integer, Double>();
+
+		for (_Stn stnObj : pDoc.getSentences()) {
+
+			double likelihood = rankStn4ParentByParentLikelihood(stnObj, pDoc);
+			stnParentLikelihoodMap.put(stnObj.getIndex(), likelihood);
+
+		}
+
+		List<Map.Entry<Integer, Double>> stnParentLikelihoodList = new ArrayList<Map.Entry<Integer, Double>>(stnParentLikelihoodMap.entrySet());
+
+		Collections.sort(stnParentLikelihoodList, new Comparator<Map.Entry<Integer, Double>>() {
+			public int compare(Map.Entry<Integer, Double> o1,
+							   Map.Entry<Integer, Double> o2) {
+				return (o2.getValue()).toString().compareTo(o1.getValue().toString());
+			}
+		});
+
+		for(int i=0; i<topK; i++){
+			int selectedKey = stnParentLikelihoodList.get(i).getKey();
+			stnList.add(selectedKey);
+			if(!mergedStnList.contains(selectedKey)){
+				mergedStnList.add(selectedKey);
+			}
+		}
 	}
 
 	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
@@ -294,5 +452,179 @@ public class corrLDA_Gibbs_test extends corrLDA_Gibbs {
 
 		return likelihoodMap;
 	}
+
+	// the ranking is based on likelihood
+	protected void printTopStn4ParentByNormLikelihood(String filePrefix, int topK){
+		String topKChild4StnFile = filePrefix + "topStn4Parent_normStnlikelihood.txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+
+			for (_Doc d : m_trainSet) {
+
+				if (d instanceof _ParentDoc4DCM) {
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+
+					pw.println(pDoc.getName() + "\t" + pDoc.getSenetenceSize()+"\t");
+
+					for (_Stn stnObj : pDoc.getSentences()) {
+						double likelihood = rankStn4ParentByNormLikelihood(stnObj, pDoc);
+						likelihood = likelihood/(stnObj.getLength()*1.0);
+						pw.print((stnObj.getIndex() + 1));
+						pw.print(":" + likelihood);
+						pw.print("\t");
+
+					}
+					pw.println();
+
+				}
+			}
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected double rankStn4ParentByNormLikelihood(_Stn stnObj,
+													_ParentDoc4DCM pDoc) {
+		double stnLogLikelihood = 0;
+		for (_Word w : stnObj.getWords()) {
+			double wordLikelihood = 0;
+			int wid = w.getIndex();
+
+			for (int k = 0; k < number_of_topics; k++) {
+				wordLikelihood += pDoc.m_topics[k] *topic_term_probabilty[k][wid];
+			}
+
+			stnLogLikelihood += Math.log(wordLikelihood);
+		}
+
+		return stnLogLikelihood;
+	}
+
+	// the ranking is based on major topic
+	protected void printTopStn4ParentByMajorTopic(String filePrefix, int topK){
+		String topKChild4StnByMajorTopicFile = filePrefix + "topStn4Parent_majorTopic.txt";
+		String topKChild4StnFile = filePrefix + "topStn4Parent_parentLikelihood.txt";
+		try {
+			PrintWriter pwByMajor = new PrintWriter(new File(topKChild4StnByMajorTopicFile));
+			PrintWriter pw = new PrintWriter(new File(topKChild4StnFile));
+
+			for (_Doc d : m_trainSet) {
+
+				if (d instanceof _ParentDoc4DCM) {
+					_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+
+					pwByMajor.println(pDoc.getName() + ":" + pDoc.getSenetenceSize()+"\t");
+					pw.println(pDoc.getName()+":"+pDoc.getSenetenceSize()+"\t");
+
+					for(int k=0; k<number_of_topics; k++){
+						pwByMajor.print(pDoc.m_topics[k]+"\t");
+						pw.print(pDoc.m_topics[k]+"\t");
+					}
+
+					estimateTopicProb4Words(pDoc);
+
+					for (_Stn stnObj : pDoc.getSentences()) {
+						int majorTopicIndex = rankStn4ParentByMajorTopic(stnObj, pDoc);
+
+						pwByMajor.print((stnObj.getIndex() + 1));
+						pwByMajor.print(":" + majorTopicIndex);
+						pwByMajor.print("\t");
+
+						double likelihood = rankStn4ParentByParentLikelihood(stnObj, pDoc);
+						pw.print((stnObj.getIndex() + 1));
+						pw.print(":"+likelihood);
+						pw.print("\t");
+					}
+					pwByMajor.println();
+					pw.println();
+
+				}
+			}
+			pwByMajor.flush();
+			pwByMajor.close();
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected int rankStn4ParentByMajorTopic(_Stn stnObj,
+											 _ParentDoc4DCM pDoc) {
+
+		int[] topicNumArray = new int[number_of_topics];
+		Arrays.fill(topicNumArray, 0);
+		int maxTopicIndex = 0;
+		double maxTopicRatio = 0;
+		for (_Word w : stnObj.getWords()) {
+			int wid = w.getIndex();
+			int sparseWid = pDoc.m_word2Index.get(wid);
+			for(int k=0; k<number_of_topics; k++) {
+				topicNumArray[k] += pDoc.m_phi[sparseWid][k];
+				if(maxTopicRatio<topicNumArray[k]) {
+					maxTopicIndex = k;
+					maxTopicRatio = topicNumArray[k];
+				}
+			}
+		}
+
+		return maxTopicIndex;
+
+	}
+
+	protected void estimateTopicProb4Words(_ParentDoc4DCM pDoc){
+		int uniqueWordsNum = pDoc.getSparse().length;
+		for(int i=0; i<uniqueWordsNum; i++){
+			Arrays.fill(pDoc.m_phi[i], 0);
+		}
+
+		for(_Word w: pDoc.getWords()){
+			int tid = w.getTopic();
+			int wid = w.getIndex();
+			int sparseWid = pDoc.m_word2Index.get(wid);
+			pDoc.m_phi[sparseWid][tid] ++;
+		}
+
+		for(int i=0; i<uniqueWordsNum; i++){
+			double phiSum = 0;
+			phiSum = Utils.sumOfArray(pDoc.m_phi[i]);
+			for(int k=0; k<number_of_topics; k++){
+				pDoc.m_phi[i][k] /= phiSum;
+			}
+		}
+	}
+
+	protected double rankStn4ParentByParentLikelihood(_Stn stnObj,
+													  _ParentDoc4DCM pDoc) {
+
+		double parentLikelihood = 0;
+
+		double[] topicProportion = new double[number_of_topics];
+		Arrays.fill(topicProportion, 0);
+		for (_Word w : stnObj.getWords()) {
+			int wid = w.getIndex();
+			int sparseWid = pDoc.m_word2Index.get(wid);
+			for(int k=0; k<number_of_topics; k++) {
+				topicProportion[k] += pDoc.m_phi[sparseWid][k];
+			}
+		}
+
+		Utils.L1Normalization(topicProportion);
+
+		for(_Word w:pDoc.getWords()){
+			int wid = w.getIndex();
+
+			double wordLikelihood = 0;
+			for(int k=0; k<number_of_topics; k++){
+				wordLikelihood += topicProportion[k]*topic_term_probabilty[k][wid];
+			}
+			parentLikelihood += Math.log(wordLikelihood);
+		}
+
+		return parentLikelihood;
+	}
+
 
 }

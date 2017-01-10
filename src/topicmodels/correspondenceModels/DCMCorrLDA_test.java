@@ -276,12 +276,12 @@ public class DCMCorrLDA_test extends DCMCorrLDA {
 		try {
 			System.out.println("top word file");
 			PrintWriter betaOut = new PrintWriter(new File(topWordFile));
-			for (int i = 0; i < topic_term_probabilty.length; i++) {
+			for (int i = 0; i < m_beta.length; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						topK);
 				for (int j = 0; j < vocabulary_size; j++)
 					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							topic_term_probabilty[i][j]));
+							m_beta[i][j]));
 
 				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 				for (_RankItem it : fVector) {
