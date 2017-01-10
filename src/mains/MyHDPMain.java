@@ -76,7 +76,7 @@ public class MyHDPMain {
 //		int number_of_topics = 40, topK = 30;
 //		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
 		
-		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -93,19 +93,19 @@ public class MyHDPMain {
 //		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 //		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-//		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-//
-//		//MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-//		dp.loadUsers(analyzer.getUsers());
-//		dp.setLNormFlag(false);
-//		dp.setDisplayLv(displayLv);
-//		dp.setNumberOfIterations(30);
-//		dp.setsdA(0.2);
-//		dp.setsdB(0.2);
-//		dp.setR1TradeOffs(eta1, eta2);
-//		dp.setR2TradeOffs(eta3, eta4);
-//		dp.train();
-//		dp.test();
+		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+
+		//MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		dp.loadUsers(analyzer.getUsers());
+		dp.setLNormFlag(false);
+		dp.setDisplayLv(displayLv);
+		dp.setNumberOfIterations(30);
+		dp.setsdA(0.2);
+		dp.setsdB(0.2);
+		dp.setR1TradeOffs(eta1, eta2);
+		dp.setR2TradeOffs(eta3, eta4);
+		dp.train();
+		dp.test();
 		
 		/*****hdp related models.****/
 		double[] globalLM = analyzer.estimateGlobalLM();
@@ -117,24 +117,23 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-
-//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);
-
-		hdp.setsdA(0.2);
-		double alpha = 1, eta = 0.1, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(30);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-
-		hdp.train();
-		hdp.test();
-		hdp.printUserPerformance("./data/hdp_10k.xls");
-		
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//
+//		//MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.2);
+//
+//		hdp.setsdA(0.2);
+//		double alpha = 1, eta = 0.1, beta = 0.01;
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		hdp.setNumberOfIterations(30);
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//
+//		hdp.train();
+//		hdp.test();
+				
 		/**Parameters in topic modeling.***/
 //		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!
 //		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency

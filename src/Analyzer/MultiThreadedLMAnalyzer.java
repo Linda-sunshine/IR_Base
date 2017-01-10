@@ -183,20 +183,37 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	}
 	
 	int[][] m_ctgStat = new int[2][2]; // global variable to record the ctg info.
+	HashSet<String> train = new HashSet<String>();
+	HashSet<String> test = new HashSet<String>();
 	// Correglation analysis of the review categories.
 	public void CtgCorrelation(){
-		HashSet<String> one = new HashSet<String>();
 		for(_User u: m_users){
+			train.clear();
+			test.clear();
 			for(_Review r: u.getReviews()){
 				if(r.getType() == rType.ADAPTATION){
-					one.add(r.getCategory());
+					train.add(r.getCategory());
 				} else{
-					if(one.contains(r.getCategory()))
-						m_ctgStat[0][0]++;
-					else{}
-						
+					test.add(r.getCategory());
 				}
 			}
+			for(_Review r: u.getReviews()){
+				if(r.getType() == rType.ADAPTATION){
+					if(test.contains(r.getCategory()))
+						m_ctgStat[0][0]++;
+					else
+						m_ctgStat[0][1]++;
+				} else{
+					if(train.contains(r.getCategory()))
+						m_ctgStat[0][0]++;
+					else
+						m_ctgStat[1][0]++;
+				}
+			}
+		}
+		
+		for(int[] c: m_ctgStat){
+			System.out.print(String.format("%d\t%d\n", c[0], c[1]));
 		}
 	}
 }

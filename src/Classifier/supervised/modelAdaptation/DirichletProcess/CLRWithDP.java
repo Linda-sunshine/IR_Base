@@ -18,6 +18,9 @@ import structures._Doc;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
+import structures.MyPriorityQueue;
+import structures._HDPThetaStar;
+import structures._RankItem;
 import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
@@ -684,9 +687,14 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	public void printInfo(){
+		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(5);		
+
 		//clear the statistics
-		for(int i=0; i<m_kBar; i++) 
+		for(int i=0; i<m_kBar; i++){ 
 			m_thetaStars[i].resetCount();
+			clusterRanker.add(new _RankItem(i, m_thetaStars[i].getMemSize()));
+		}
 
 		//collect statistics across users in adaptation data
 		_thetaStar theta = null;
@@ -708,8 +716,34 @@ public class CLRWithDP extends LinAdapt {
 		for(int i=0; i<m_kBar; i++)
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+		System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
+
+		for(_RankItem it:clusterRanker)
+				printTopWords(m_thetaStars[it.m_index]);			
+		
 	}
+
+void printTopWords(_thetaStar cluster) {
+	MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
+	double[] phi = cluster.getModel();
 	
+	//we will skip the bias term!
+	System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
+	for(int i=1; i<phi.length; i++) 
+		wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+
+	for(_RankItem it:wordRanker)
+		System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+	
+	System.out.format("\n[negative]: ");
+	wordRanker.clear();
+	for(int i=1; i<phi.length; i++) 
+		wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+
+	for(_RankItem it:wordRanker)
+		System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);	
+	
+}
 	public void setGlobalModel(int fvSize){
 		m_gWeights = new double[fvSize+1];
 	}

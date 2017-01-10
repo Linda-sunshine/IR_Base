@@ -586,7 +586,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-//			printInfo(i%5==0);//no need to print out the details very often
+			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -723,16 +723,16 @@ public class CLRWithHDP extends CLRWithDP {
 		//we will skip the bias term!
 		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
 		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, phi[i]*Math.exp(psi[i-1])));//top positive words with expected polarity
-		
+			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+		//Math.exp(psi[i-1])
 		for(_RankItem it:wordRanker)
 			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
 		
 		System.out.format("\n[negative]: ");
 		wordRanker.clear();
 		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, -phi[i]*Math.exp(psi[i-1])));//top negative words
-		
+			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+		//*Math.exp(psi[i-1])
 		for(_RankItem it:wordRanker)
 			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
 		
