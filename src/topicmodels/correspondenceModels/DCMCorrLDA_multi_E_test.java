@@ -322,12 +322,12 @@ public class DCMCorrLDA_multi_E_test extends DCMCorrLDA_multi_E {
 		try {
 			System.out.println("top word file");
 			PrintWriter betaOut = new PrintWriter(new File(topWordFile));
-			for (int i = 0; i < m_topic_word_prob.length; i++) {
+			for (int i = 0; i < topic_term_probabilty.length; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						topK);
 				for (int j = 0; j < vocabulary_size; j++)
 					fVector.add(new _RankItem(m_corpus.getFeature(j),
-							m_topic_word_prob[i][j]));
+							topic_term_probabilty[i][j]));
 
 				betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
 				for (_RankItem it : fVector) {

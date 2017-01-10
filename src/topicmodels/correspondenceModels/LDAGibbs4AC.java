@@ -246,7 +246,34 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 
 		return logLikelihood;
 	}
-	
+
+	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d) {
+
+		_ParentDoc pDoc = (_ParentDoc) d;
+		for (_Stn stnObj : pDoc.getSentences()) {
+			stnObj.setTopicsVct(number_of_topics);
+		}
+
+		int testLength = 0;
+		testLength = (int) (m_testWord4PerplexityProportion * pDoc
+				.getTotalDocLength());
+		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
+		sampleTestSet.add(pDoc);
+
+		pDoc.createSparseVct4Infer();
+
+		for (_ChildDoc cDoc : pDoc.m_childDocs) {
+			testLength = (int) (m_testWord4PerplexityProportion * cDoc
+					.getTotalDocLength());
+//			testLength = 0;
+//			testLength = cDoc.getTotalDocLength();
+			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
+			sampleTestSet.add(cDoc);
+			cDoc.createSparseVct4Infer();
+
+		}
+	}
+
 	protected double inference4Doc(ArrayList<_Doc> sampleTestSet) {
 		double logLikelihood = 0, count = 0;
 		int iter = 0;
@@ -275,11 +302,27 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		
 //		logLikelihood = calPerplexity(sampleTestSet);
 //		logLikelihood = calConditionalPerplexity(sampleTestSet);
-		logLikelihood = calPerplexity4Child(sampleTestSet);
+//		logLikelihood = calPerplexity4Child(sampleTestSet);
+		logLikelihood = calPartialPerplexity(sampleTestSet);
 		
 		return logLikelihood;
 	}
-	
+
+	protected double calPartialPerplexity(ArrayList<_Doc> sampleTestSet){
+		double logLikelihood = 0;
+		for(_Doc d:sampleTestSet){
+			estThetaInDoc(d);
+		}
+
+		for(_Doc d:sampleTestSet){
+			if(d instanceof _ParentDoc)
+				logLikelihood += cal_logLikelihood_partial4Parent(d);
+			else
+				logLikelihood += cal_logLikelihood_partial4Child(d);
+		}
+		return logLikelihood;
+	}
+
 	protected double calPerplexity(ArrayList<_Doc> sampleTestSet) {
 		double logLikelihood = 0;
 		for(_Doc d:sampleTestSet){
@@ -383,31 +426,6 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		}
 
 		return docLogLikelihood;
-	}
-	
- 	protected void initTest(ArrayList<_Doc> sampleTestSet, _Doc d) {
-
-		_ParentDoc pDoc = (_ParentDoc) d;
-		for (_Stn stnObj : pDoc.getSentences()) {
-			stnObj.setTopicsVct(number_of_topics);
-		}
-
-		int testLength = 0;
-		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
-		sampleTestSet.add(pDoc);
-
-		pDoc.createSparseVct4Infer();
-
-		for (_ChildDoc cDoc : pDoc.m_childDocs) {
-			testLength = (int) (m_testWord4PerplexityProportion * cDoc
-					.getTotalDocLength());
-//			testLength = 0;
-			testLength = cDoc.getTotalDocLength();
-			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
-			sampleTestSet.add(cDoc);
-			cDoc.createSparseVct4Infer();
-
-		}
 	}
 
 	protected double calculate_log_likelihood() {

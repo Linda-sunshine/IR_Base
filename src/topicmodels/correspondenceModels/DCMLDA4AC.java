@@ -69,21 +69,22 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			
 			long eStartTime = System.currentTimeMillis();
 
-			for (_Doc d : m_trainSet){
-				Arrays.fill(d.m_topics, 0);
-				if(d instanceof _ParentDoc4DCM){
-					for(int k=0; k<number_of_topics; k++){
-						Arrays.fill(((_ParentDoc4DCM)d).m_wordTopic_prob[k], 0);
-					}
-				}
-			}
+//			for (_Doc d : m_trainSet){
+//				Arrays.fill(d.m_topics, 0);
+//				if(d instanceof _ParentDoc4DCM){
+//					for(int k=0; k<number_of_topics; k++){
+//						Arrays.fill(((_ParentDoc4DCM)d).m_wordTopic_prob[k], 0);
+//					}
+//				}
+//			}
 
 			for (int j = 0; j < number_of_iteration; j++) {
 				init();
 				for (_Doc d : m_trainSet)
 					calculate_E_step(d);
-				calculate_M_step(j);
 			}
+
+
 			long eEndTime = System.currentTimeMillis();
 
 			System.out.println("per iteration e step time\t"
@@ -154,8 +155,7 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 
 		m_totalAlpha = 0;
 		m_totalBeta = new double[number_of_topics];
-
-		m_topic_word_prob = new double[number_of_topics][vocabulary_size];
+		topic_term_probabilty = new double[number_of_topics][vocabulary_size];
 
 		for(_Doc d:collection){
 			if(d instanceof _ParentDoc4DCM){
@@ -306,17 +306,18 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		
 		return (term1+m_beta[tid][wid])/(d.m_topic_stat[tid]+m_totalBeta[tid]);
 	}
-	
-	public void calculate_M_step(int iter) {
 
-		for (_Doc d : m_trainSet){
-			collectStats(d);
+	public void calculate_M_step(int iter) {
+		if (iter>m_burnIn && iter%m_lag == 0) {
+			for (_Doc d : m_trainSet) {
+				collectStats(d);
+			}
+
+			for (int k = 0; k < number_of_topics; k++)
+				for (int v = 0; v < vocabulary_size; v++)
+					topic_term_probabilty[k][v] += word_topic_sstat[k][v]
+							+ m_beta[k][v];
 		}
-		
-		for(int k=0; k<number_of_topics; k++)
-			for(int v=0; v<vocabulary_size; v++)
-				m_topic_word_prob[k][v] += word_topic_sstat[k][v]
-						+ m_beta[k][v];
 	}
 	
 	public void updateParameter(int iter, File weightFolder){
@@ -364,69 +365,19 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		}
 	}
 
-	protected void initialAlphaBeta() {
+	protected void initialAlphaBeta(){
+		Arrays.fill(m_alpha, 1.0/number_of_topics);
 
-		Arrays.fill(m_sstat, 0);
-		for (int k = 0; k < number_of_topics; k++) {
-			Arrays.fill(topic_term_probabilty[k], 0);
-		}
-		
-		int parentSize = 0;
-		
-		for (_Doc d : m_trainSet) {
-			if(d instanceof _ParentDoc4DCM){
-				parentSize += 1;
-				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-				double pDocTopicSum = Utils.sumOfArray(pDoc.m_sstat);
-				
-				for (int k = 0; k < number_of_topics; k++) {
-					double tempProb = pDoc.m_sstat[k] / pDocTopicSum;
-					m_sstat[k] += tempProb;
-				
-					for (int v = 0; v < vocabulary_size; v++) {
-						if(pDoc.m_topic_stat[k]==0){
-//							System.out.println("0000");
-							continue;
-						}
-						tempProb = pDoc.m_wordTopic_stat[k][v]
-								/pDoc.m_topic_stat[k];
-	
-						topic_term_probabilty[k][v] += tempProb;
-					}
-				}
-				
-				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					double cDocTopicSum = Utils.sumOfArray(cDoc.m_sstat);
-					for(int k=0; k<number_of_topics; k++){
-						double tempProb = cDoc.m_sstat[k]/cDocTopicSum;
-						m_sstat[k] += tempProb;
-						
-					}
-				}
-			}
+		for(int k=0; k<number_of_topics; k++){
+			Arrays.fill(m_beta[k], 1.0/vocabulary_size);
+			Arrays.fill(topic_term_probabilty[k], 1.0/vocabulary_size);
+			Arrays.fill(word_topic_sstat[k], 0);
 		}
 
-		int trainSetSize = m_trainSet.size();
-		
-		for (int k = 0; k < number_of_topics; k++) {
-			m_sstat[k] /= trainSetSize;
-			for (int v = 0; v < vocabulary_size; v++) {
-				topic_term_probabilty[k][v] /= parentSize;
-			}
-		}
-	
-		 for (int k = 0; k < number_of_topics; k++){
-			m_alpha[k] = m_sstat[k];
-			for (int v = 0; v < vocabulary_size; v++) {
-				m_beta[k][v] = topic_term_probabilty[k][v] + d_beta;
-			}
-		}
-		
 		m_totalAlpha = Utils.sumOfArray(m_alpha);
 		for (int k = 0; k < number_of_topics; k++) {
 			m_totalBeta[k] = Utils.sumOfArray(m_beta[k]);
 		}
-
 	}
 
 	protected void updateAlpha() {
@@ -576,7 +527,19 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 			System.out.println(e.getMessage());
 		}
 	}
-	
+
+	protected void finalEst(){
+		for (int j = 0; j < number_of_iteration; j++) {
+			init();
+			for (_Doc d : m_trainSet)
+				calculate_E_step(d);
+			calculate_M_step(j);
+		}
+
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
+	}
+
 	protected double calculate_log_likelihood() {
 		double logLikelihood = 0.0;
 		for (_Doc d : m_trainSet) {
@@ -635,14 +598,6 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		}
 		
 		return docLogLikelihood;
-	}
-
-	protected void finalEst() {
-		for(int k=0; k<number_of_topics; k++)
-			Utils.L1Normalization(m_topic_word_prob[k]);
-		
-		for(_Doc d:m_trainSet)
-			estThetaInDoc(d);
 	}
 
 	protected void estThetaInDoc(_Doc d) {

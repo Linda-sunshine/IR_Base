@@ -292,42 +292,11 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             updateEta4Parent(pDoc);
             updateGamma4Parent(pDoc);
 //            updateLambda(pDoc);
-//            updateEta4Child(pDoc);
-//            updatePi4Child(pDoc);
-//            updateZeta4Child(pDoc);
-//            updateLambda(pDoc);
 
-            if(m_varConverge>0){
-                current = calculate_log_likelihood4Parent(pDoc);
-                converge = Math.abs((current-last)/last);
-                last = current;
-
-                if(converge<m_varConverge)
-                    break;
-            }
-        }while(++iter<m_varMaxIter);
-
-        collectStats4Parent(pDoc);
-
-        return current;
-
-    }
-
-    public double calculate_E_step4Child(_ChildDoc cDoc){
-        double last = 1;
-        if(m_varConverge>0)
-            last = calculate_log_likelihood4Child(cDoc);
-
-        double current = last, converge, logSum, wVal;
-        int iter=0, wID;
-
-        do{
-//            updateEta4Parent(pDoc);
-//            updateGamma4Parent(pDoc);
-//            updateLambda(pDoc);
-            updateEta4Child(cDoc);
-            updatePi4Child(cDoc);
-//            updateZeta4Child(pDoc);
+            updateZeta4Child(pDoc);
+            updateEta4Child(pDoc);
+            updatePi4Child(pDoc);
+            updateZeta4Child(pDoc);
 //            updateLambda(pDoc);
 
             if(m_varConverge>0){
@@ -448,6 +417,10 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             double piSum = Utils.sumOfArray(cDoc.m_sstat);
             for (int k = 0; k < number_of_topics; k++)
                 m_alpha_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
+                // m_alpha_c_stat[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
+
+                // m_alpha[k] += Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum);
+
 
             _SparseFeature[] cDocFV = cDoc.getSparse();
             for(int n=0; n< cDocFV.length; n++){
@@ -783,16 +756,22 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
         double constantGradient = 0;
         for(int k=0; k<number_of_topics; k++){
-            constantGradient += (m_alpha_c[k]-expPi[k])*Utils.digamma(expPiSum);
+            constantGradient += (m_alpha[k]-expPi[k])*Utils.digamma(expPiSum);
+
+//            constantGradient += (m_alpha_c[k]-expPi[k])*Utils.digamma(expPiSum);
         }
 
         funcVal -= Utils.lgamma(expPiSum);
         for(int k=0; k<number_of_topics; k++){
-            funcVal += (m_alpha_c[k] - 1) * (Utils.digamma(expPi[k]) - Utils.digamma(expPiSum));
+//            funcVal += (m_alpha_c[k] - 1) * (Utils.digamma(expPi[k]) - Utils.digamma(expPiSum));
+            funcVal += (m_alpha[k] - 1) * (Utils.digamma(expPi[k]) - Utils.digamma(expPiSum));
+
             funcVal -= (expPi[k]-1)*(Utils.digamma(expPi[k])-Utils.digamma(expPiSum));
             funcVal += Utils.lgamma(expPi[k]);
 
-            piGradient[k] = (m_alpha_c[k]-expPi[k])*Utils.digamma(expPi[k]);
+            piGradient[k] = (m_alpha[k]-expPi[k])*Utils.digamma(expPi[k]);
+//            piGradient[k] = (m_alpha_c[k]-expPi[k])*Utils.digamma(expPi[k]);
+
 //            piGradient[k] -= (m_alpha_c[k]-expPi[k])*Utils.digamma(expPiSum);
         }
 
@@ -915,18 +894,19 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 //    }
 
     public void calculate_M_step(int iter){
+        updatePhi();
 
-//        updatePhi();
         if(iter%5!=4)
             return;
         updateAlpha4Parent();
 //        updateAlpha4Child();
 //        updateBeta();
-        updatePhi();
+
 
         for(int k=0; k<number_of_topics; k++){
             System.out.println("alpha\t"+m_alpha[k]);
-            System.out.println("alpha_c\t"+m_alpha_c[k]);
+
+//            System.out.println("alpha_c\t"+m_alpha_c[k]);
 //            for(int v=0; v<vocabulary_size; v++){
 //                System.out.println(k+"\t"+v+"\t"+topic_term_probabilty[k][v]);
 //            }
@@ -1064,7 +1044,9 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             }
         }
 
-        double alphaCSum = Utils.sumOfArray(m_alpha_c);
+//        double alphaCSum = Utils.sumOfArray(m_alpha_c);
+        double alphaCSum = Utils.sumOfArray(m_alpha);
+
 
         for(_ChildDoc cDoc:pDoc.m_childDocs){
 //            logLikelihood += Utils.lgamma(alphaCSum);
@@ -1075,11 +1057,11 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             logLikelihood -= Utils.lgamma(piSum);
 
             for (int k = 0; k < number_of_topics; k++) {
-//                logLikelihood -= Utils.lgamma(m_alpha_c[k]);
-//                logLikelihood += (m_alpha_c[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
 
+//                logLikelihood -= Utils.lgamma(m_alpha_c[k]);
                 logLikelihood -= Utils.lgamma(m_alpha[k]);
 
+//                logLikelihood += (m_alpha_c[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
                 logLikelihood += (m_alpha[k] - 1) * (Utils.digamma(cDoc.m_sstat[k]) - Utils.digamma(piSum));
 
                 logLikelihood += Utils.lgamma(cDoc.m_sstat[k]);

@@ -9,7 +9,7 @@ import utils.Utils;
 public class _ParentDoc extends _Doc {
 	public ArrayList<_ChildDoc> m_childDocs4Dynamic;
 	public ArrayList<_ChildDoc> m_childDocs;
-	HashMap<Integer, Integer> m_word2Index;
+	public HashMap<Integer, Integer> m_word2Index;
 	public double[] m_featureWeight;
 	double[] m_wordDistribution;
 

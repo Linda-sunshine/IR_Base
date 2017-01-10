@@ -375,8 +375,8 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 	public void updateParameter(int iter, File weightIterFolder) {
 
 		initialAlphaBeta();
-		updateAlpha();
-		updateAlphaC();
+//		updateAlpha();
+//		updateAlphaC();
 
 		updateBeta();
 
@@ -478,12 +478,6 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 				break;// to speed-up, we don't need to compute likelihood in
 						// many cases
 		} while (++i < this.number_of_iteration);
-		
-		for (int j = 0; j < number_of_iteration; j++) {
-			init();
-			multithread_E_step();
-			calculate_M_step(j);
-		}
 
 		finalEst();
 
@@ -494,6 +488,17 @@ public class DCMCorrLDA_Multi_EM extends DCMCorrLDA{
 		infoWriter
 				.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n",
 						current, i, delta, endtime / 1000);
+	}
+
+	protected void finalEst(){
+		for (int j = 0; j < number_of_iteration; j++) {
+			init();
+			multithread_E_step();
+			calculate_M_step(j);
+		}
+
+		for(_Doc d:m_trainSet)
+			estThetaInDoc(d);
 	}
 
 }
