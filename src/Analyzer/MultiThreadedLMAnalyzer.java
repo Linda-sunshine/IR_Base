@@ -193,7 +193,7 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 				} else{
 					if(one.contains(r.getCategory()))
 						m_ctgStat[0][0]++;
-					else
+					else{}
 						
 				}
 			}
