@@ -229,61 +229,16 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             e.printStackTrace();
         }
     }
-
-
-//    public double calculate_E_step(_Doc d){
-//        if(d instanceof _ChildDoc)
-//            return;
-//
-//        _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-//
-//        double last = 1;
-//        if(m_varConverge>0)
-//            last = calculate_log_likelihood(pDoc);
-//
-//        double current = last, converge, logSum, wVal;
-//        int iter=0, wID;
-//
-//        do{
-//            updateEta4Parent(pDoc);
-//            updateGamma4Parent(pDoc);
-////            updateLambda(pDoc);
-//            updateEta4Child(pDoc);
-//            updatePi4Child(pDoc);
-////            updateZeta4Child(pDoc);
-////            updateLambda(pDoc);
-//
-//            if(m_varConverge>0){
-//                current = calculate_log_likelihood(pDoc);
-//                converge = Math.abs((current-last)/last);
-//                last = current;
-//
-//                if(converge<m_varConverge)
-//                    break;
-//            }
-//        }while(++iter<m_varMaxIter);
-//
-//        collectStats(pDoc);
-//
-//        return current;
-//
-//    }
-
+    
     public double calculate_E_step(_Doc d){
-        if(d instanceof _ChildDoc) {
-            return calculate_E_step4Child((_ChildDoc) d);
-        }
-        else if(d instanceof _ParentDoc)
-           return calculate_E_step4Parent((_ParentDoc4DCM)d);
+        if(d instanceof _ChildDoc)
+            return;
 
-        return 0;
-    }
-
-    public double calculate_E_step4Parent(_ParentDoc4DCM pDoc){
+        _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 
         double last = 1;
         if(m_varConverge>0)
-            last = calculate_log_likelihood4Parent(pDoc);
+            last = calculate_log_likelihood(pDoc);
 
         double current = last, converge, logSum, wVal;
         int iter=0, wID;
@@ -292,15 +247,13 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             updateEta4Parent(pDoc);
             updateGamma4Parent(pDoc);
 //            updateLambda(pDoc);
-
-            updateZeta4Child(pDoc);
             updateEta4Child(pDoc);
             updatePi4Child(pDoc);
-            updateZeta4Child(pDoc);
+//            updateZeta4Child(pDoc);
 //            updateLambda(pDoc);
 
             if(m_varConverge>0){
-                current = calculate_log_likelihood4Child(cDoc);
+                current = calculate_log_likelihood(pDoc);
                 converge = Math.abs((current-last)/last);
                 last = current;
 
@@ -309,48 +262,13 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             }
         }while(++iter<m_varMaxIter);
 
-        collectStats4Child(cDoc);
+        collectStats(pDoc);
 
         return current;
+
     }
 
-//    public double calculate_E_step(_Doc d){
-//        if(d instanceof _ChildDoc)
-//            return 0;
-//
-//        _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
-//
-//        double last = 1;
-//        if(m_varConverge>0)
-//            last = calculate_log_likelihood(pDoc);
-//
-//        double current = last, converge, logSum, wVal;
-//        int iter=0, wID;
-//
-//        do{
-//            updateEta4Parent(pDoc);
-//            updateGamma4Parent(pDoc);
-////            updateLambda(pDoc);
-//            updateEta4Child(pDoc);
-//            updatePi4Child(pDoc);
-////            updateZeta4Child(pDoc);
-////            updateLambda(pDoc);
-//
-//            if(m_varConverge>0){
-//                current = calculate_log_likelihood(pDoc);
-//                converge = Math.abs((current-last)/last);
-//                last = current;
-//
-//                if(converge<m_varConverge)
-//                    break;
-//            }
-//        }while(++iter<m_varMaxIter);
-//
-//        collectStats(pDoc);
-//
-//        return current;
-//
-//    }
+
 
     protected void collectStats4Parent(_ParentDoc4DCM pDoc){
 
