@@ -229,10 +229,10 @@ public class weightedCorrespondenceModel extends LDA_Variational {
             e.printStackTrace();
         }
     }
-    
+
     public double calculate_E_step(_Doc d){
         if(d instanceof _ChildDoc)
-            return;
+            return 0;
 
         _ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 
@@ -585,81 +585,62 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 //        System.out.println("total Words in this doc\t"+pDoc.getName()+"\t"+totalWord+"\t"+totalLambda);
     }
 
-    public void updatePi4Child(_ChildDoc cDoc){
-//        for(_ChildDoc cDoc:pDoc.m_childDocs){
-            for(int k=0; k<number_of_topics; k++){
-                cDoc.m_sstat[k] = m_alpha[k];
-            }
-            _SparseFeature[] cDocFv = cDoc.getSparse();
-            for(int n=0; n<cDocFv.length; n++){
-                _SparseFeature fv = cDocFv[n];
-                int wID = fv.getIndex();
-                double wVal = fv.getValue();
+    public void updatePi4Child(_ParentDoc4DCM pDoc){
+        double gammaSum = Utils.sumOfArray(pDoc.m_sstat);
+        for(_ChildDoc cDoc:pDoc.m_childDocs) {
+            int[] iflag = {0}, iprint = {-1, 3};
+            double fValue = 0;
+            int fSize = cDoc.m_sstat.length;
 
-                for(int k=0; k<number_of_topics; k++){
-                    cDoc.m_sstat[k] += wVal*cDoc.m_phi[n][k];
-                }
+            double[] piGradient = new double[fSize];
+            Arrays.fill(piGradient, 0);
+
+            double[] piDiag = new double[fSize];
+            Arrays.fill(piDiag, 0);
+
+            double[] pi = new double[fSize];
+            double[] oldPi = new double[fSize];
+
+            for(int k=0; k<fSize; k++){
+                pi[k] = Math.log(cDoc.m_sstat[k]);
+                oldPi[k] = Math.log(cDoc.m_sstat[k]);
             }
-//        }
+
+            try {
+                do {
+                    double diff = 0;
+
+                    fValue = piFuncGradientVal(pDoc, gammaSum, cDoc, pi, piGradient);
+                    LBFGS.lbfgs(fSize, 4, pi, fValue, piGradient, false, piDiag, iprint, 1e-2, 1e-10, iflag);
+
+                    for(int k=0; k<fSize; k++){
+                        double tempDiff = 0;
+                        tempDiff = pi[k]-oldPi[k];
+                        if(Math.abs(tempDiff)>diff){
+                            diff = Math.abs(tempDiff);
+                        }
+                        oldPi[k] = pi[k];
+                    }
+
+                    if(diff<m_lbfgsConverge){
+//                        System.out.print("diff\t"+diff+"finish update pi");
+                        break;
+                    }
+
+
+
+                } while (iflag[0] != 0);
+            } catch (LBFGS.ExceptionWithIflag e) {
+                e.printStackTrace();
+            }
+
+            for(int k=0; k<fSize; k++){
+                cDoc.m_sstat[k] = Math.exp(pi[k]);
+//                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
+            }
+        }
 
     }
-
-//    public void updatePi4Child(_ParentDoc4DCM pDoc){
-//        double gammaSum = Utils.sumOfArray(pDoc.m_sstat);
-//        for(_ChildDoc cDoc:pDoc.m_childDocs) {
-//            int[] iflag = {0}, iprint = {-1, 3};
-//            double fValue = 0;
-//            int fSize = cDoc.m_sstat.length;
-//
-//            double[] piGradient = new double[fSize];
-//            Arrays.fill(piGradient, 0);
-//
-//            double[] piDiag = new double[fSize];
-//            Arrays.fill(piDiag, 0);
-//
-//            double[] pi = new double[fSize];
-//            double[] oldPi = new double[fSize];
-//
-//            for(int k=0; k<fSize; k++){
-//                pi[k] = Math.log(cDoc.m_sstat[k]);
-//                oldPi[k] = Math.log(cDoc.m_sstat[k]);
-//            }
-//
-//            try {
-//                do {
-//                    double diff = 0;
-//
-//                    fValue = piFuncGradientVal(pDoc, gammaSum, cDoc, pi, piGradient);
-//                    LBFGS.lbfgs(fSize, 4, pi, fValue, piGradient, false, piDiag, iprint, 1e-2, 1e-10, iflag);
-//
-//                    for(int k=0; k<fSize; k++){
-//                        double tempDiff = 0;
-//                        tempDiff = pi[k]-oldPi[k];
-//                        if(Math.abs(tempDiff)>diff){
-//                            diff = Math.abs(tempDiff);
-//                        }
-//                        oldPi[k] = pi[k];
-//                    }
-//
-//                    if(diff<m_lbfgsConverge){
-////                        System.out.print("diff\t"+diff+"finish update pi");
-//                        break;
-//                    }
-//
-//
-//
-//                } while (iflag[0] != 0);
-//            } catch (LBFGS.ExceptionWithIflag e) {
-//                e.printStackTrace();
-//            }
-//
-//            for(int k=0; k<fSize; k++){
-//                cDoc.m_sstat[k] = Math.exp(pi[k]);
-////                System.out.println(cDoc.getName()+"\tcDoc.m_sstat[]"+cDoc.m_sstat[k]);
-//            }
-//        }
-//
-//    }
 
     public double piFuncGradientVal(_ParentDoc4DCM pDoc, double gammaSum, _ChildDoc cDoc, double[]pi, double[] piGradient){
         double funcVal = 0;
@@ -753,15 +734,15 @@ public class weightedCorrespondenceModel extends LDA_Variational {
         return Math.log(sum)+max;
     }
 
-    public void updateEta4Child(_ChildDoc cDoc){
-//        for(_ChildDoc cDoc:pDoc.m_childDocs) {
+    public void updateEta4Child(_ParentDoc4DCM pDoc){
+        for(_ChildDoc cDoc:pDoc.m_childDocs) {
             _SparseFeature[] fvs = cDoc.getSparse();
             for (int n = 0; n < fvs.length; n++) {
                 int wID = fvs[n].getIndex();
                 double wVal = fvs[n].getValue();
 
                 for (int k = 0; k < number_of_topics; k++) {
-                    cDoc.m_phi[n][k] = Utils.digamma(cDoc.m_sstat[k]);
+                    cDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(cDoc.m_sstat[k]);
                     cDoc.m_phi[n][k] +=Math.log(topic_term_probabilty[k][wID]);
                 }
 
@@ -769,47 +750,16 @@ public class weightedCorrespondenceModel extends LDA_Variational {
 
                 double phiSum = 0;
                 for(int k=0; k<number_of_topics; k++){
-                    cDoc.m_phi[n][k] = Math.exp(cDoc.m_phi[n][k] - logSum);
-
-//                    if((cDoc.m_phi[n][k]-logSum)<-200){
-//                        cDoc.m_phi[n][k] = 1e-20;
-//                    }else {
-//                        cDoc.m_phi[n][k] = Math.exp(cDoc.m_phi[n][k] - logSum);
-//                    }
+                    if((cDoc.m_phi[n][k]-logSum)<-200){
+                        cDoc.m_phi[n][k] = 1e-20;
+                    }else {
+                        cDoc.m_phi[n][k] = Math.exp(cDoc.m_phi[n][k] - logSum);
+                    }
                     phiSum += cDoc.m_phi[n][k];
                 }
-                if(Math.abs(phiSum-1)>1)
-                    System.out.println("cDoc phisum error");
             }
-//        }
+        }
     }
-
-//    public void updateEta4Child(_ParentDoc4DCM pDoc){
-//        for(_ChildDoc cDoc:pDoc.m_childDocs) {
-//            _SparseFeature[] fvs = cDoc.getSparse();
-//            for (int n = 0; n < fvs.length; n++) {
-//                int wID = fvs[n].getIndex();
-//                double wVal = fvs[n].getValue();
-//
-//                for (int k = 0; k < number_of_topics; k++) {
-//                    cDoc.m_phi[n][k] = Utils.digamma(pDoc.m_sstat[k])+Utils.digamma(cDoc.m_sstat[k]);
-//                    cDoc.m_phi[n][k] +=Math.log(topic_term_probabilty[k][wID]);
-//                }
-//
-//                double logSum = logSumOfExponentials(cDoc.m_phi[n]);
-//
-//                double phiSum = 0;
-//                for(int k=0; k<number_of_topics; k++){
-//                    if((cDoc.m_phi[n][k]-logSum)<-200){
-//                        cDoc.m_phi[n][k] = 1e-20;
-//                    }else {
-//                        cDoc.m_phi[n][k] = Math.exp(cDoc.m_phi[n][k] - logSum);
-//                    }
-//                    phiSum += cDoc.m_phi[n][k];
-//                }
-//            }
-//        }
-//    }
 
     public void calculate_M_step(int iter){
         updatePhi();
