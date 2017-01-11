@@ -43,7 +43,9 @@ public class MyHDPMain {
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
+//		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
+		double eta1 = 0.1, eta2 = 0.1, eta3 = 0.05, eta4 = 0.05;
+
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
@@ -82,7 +84,7 @@ public class MyHDPMain {
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		analyzer.CtgCorrelation();
+//		analyzer.CtgCorrelation();
 		
 		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;
