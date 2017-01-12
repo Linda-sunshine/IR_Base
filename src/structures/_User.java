@@ -131,7 +131,7 @@ public class _User {
 		for(_Review r: m_reviews) 
 			reviews.add(r.getSparse());
 		
-		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
+		m_BoWProfile = Utils.mergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
 	
 	//Get the sparse vector of the user.

@@ -446,7 +446,7 @@ public class Utils {
 		return vct;
 	}
 	
-	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+	static public _SparseFeature[] mergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
 		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
 		
 		for(_SparseFeature[] fv:vcts) {
