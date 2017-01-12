@@ -506,7 +506,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		
 		for(int k=0;k<numberOfCores;++k)
-			Utils.scaleArray(m_g, m_gradients[k], 1);
+			Utils.add2Array(m_g, m_gradients[k], 1);
 		return Utils.sumOfArray(m_fValues);
 	}
 

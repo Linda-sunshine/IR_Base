@@ -66,6 +66,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			return loadOldCV(filename);
 		
 	}
+	
 	protected boolean loadOldCV(String filename){
 		if (filename==null || filename.isEmpty())
 			return false;
@@ -86,7 +87,7 @@ public class UserAnalyzer extends DocAnalyzer {
 					DFs[1] = (int)(Double.parseDouble(stats[4]));
 					setVocabStat(stats[1], DFs);
 					
-					ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
+					ngram = 1+Utils.count(stats[1], "-");
 					if (m_Ngram<ngram)
 						m_Ngram = ngram;
 				}

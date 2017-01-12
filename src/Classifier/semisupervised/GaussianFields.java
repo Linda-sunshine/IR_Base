@@ -431,14 +431,14 @@ public class GaussianFields extends BaseClassifier {
 	int getLabel3(double pred){
 		for(int i = 0; i < m_classNo; i++)			
 			m_cProbs[i] = m_pY[i] * Math.exp(-Math.abs(i-pred)) / m_pYSum[i];
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	//exp(-|c-f(u_i)|)/sum_j{exp(-|c-f(u_j))} j represents all unlabeled data, without class probabilities.
 	int getLabel4(double pred) {		
 		for (int i = 0; i < m_classNo; i++)
 			m_cProbs[i] = Math.exp(-Math.abs(i - pred)) / m_pYSum[i];
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	@Override

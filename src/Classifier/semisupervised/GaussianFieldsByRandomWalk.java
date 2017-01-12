@@ -124,7 +124,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 			label = (int) node.m_classifierPred;
 			m_cProbs[label] += 1-m_eta; 
 			
-			node.m_pred = Utils.maxOfArrayIndex(m_cProbs);
+			node.m_pred = Utils.argmax(m_cProbs);
 			
 			if (node.m_label == node.m_pred)
 				acc ++;

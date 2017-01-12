@@ -106,7 +106,7 @@ public class KNN extends BaseClassifier{
 		for(_RankItem rt:neighbors)
 			m_cProbs[rt.m_index] ++;//why don't we consider the similarity?
 		
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	@Override
