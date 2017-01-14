@@ -37,6 +37,15 @@ public class MTCLinAdaptWithDP extends CLinAdaptWithDP {
 		m_supWeights = new double[m_featureSize+1];
 	}
 	
+	public MTCLinAdaptWithDP(int classNo, int featureSize, String globalModel, String featureGroupMap, String featureGroup4Sup){
+		super(classNo, featureSize, globalModel, featureGroupMap);
+		loadFeatureGroupMap4SupUsr(featureGroup4Sup);
+				
+		m_supModel = new double[m_dimSup*2]; // globally shared transformation matrix.
+		//construct the new global model for simplicity
+		m_supWeights = new double[m_featureSize+1];
+	}
+	
 	public void setR2TradeOffs(double eta3, double eta4) {
 		m_eta3 = eta3;
 		m_eta4 = eta4;

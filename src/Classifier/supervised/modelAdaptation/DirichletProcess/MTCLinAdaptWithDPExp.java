@@ -39,6 +39,14 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 				featureGroup4Sup);
 		// TODO Auto-generated constructor stub
 	}
+	
+	public MTCLinAdaptWithDPExp(int classNo, int featureSize, String globalModel,
+			String featureGroupMap, String featureGroup4Sup) {
+		super(classNo, featureSize, globalModel, featureGroupMap,
+				featureGroup4Sup);
+		// TODO Auto-generated constructor stub
+	}
+	
 	@Override
 	public String toString() {
 		return String.format("MTCLinAdaptWithDPExp[dim:%d,supDim:%d,base:%d,threshold:%.1f,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_base, m_threshold, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);

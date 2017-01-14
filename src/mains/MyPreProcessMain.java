@@ -26,8 +26,8 @@ public class MyPreProcessMain {
 
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		String providedCV = null;
-//		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
-		String dataset = "/CoLinAdapt/Yelp";
+		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
+//		String dataset = "/CoLinAdapt/Yelp";
 		int trainSize = 3; // "3"
 //		int userSize = 9; // "20"
 		String trainDir = String.format("./data/%s/Users_%dk", dataset, trainSize);
@@ -43,13 +43,13 @@ public class MyPreProcessMain {
 		double startProb = 0; // Used in feature selection, the starting point of the features.
 		double endProb = 1; // Used in feature selection, the ending point of the features.
 		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lrTopK = 3000, lmTopK = 4000; // topK for language model.
+		int lrTopK = 3000, lmTopK = 2000; // topK for language model.
 
 		String stopwords = "./data/Model/stopwords.dat";
 		String fs1 = "IG", fs2 = "CHI";
 		String fvFile = String.format("./data/%s/fv_%dk_%s_%s_%d.txt", dataset, trainSize, fs1, fs2, lrTopK);
 		String fvFile4LM = String.format("./data/%s/fv_%dk_lm_%d_DF.txt", dataset, trainSize, lmTopK);
-		String globalModel = String.format("./data/%s/GlobalWeights_%dk.txt", dataset, trainSize);
+		String globalModel = String.format("./data/%s/GlobalWeights_%dk_%d.txt", dataset, trainSize, lrTopK);
 		
 //		// Analyzer for feature selection.
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
@@ -59,20 +59,21 @@ public class MyPreProcessMain {
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.loadUserDir(trainDir);
 //		analyzer.featureSelection(fvFile4LM, "DF", maxDF, minDF, lmTopK);
-//		// Feature selection for logistic model.
+		// Feature selection for logistic model.
 //		analyzer.featureSelection(fvFile, fs1, fs2, maxDF, minDF, lrTopK);
 
 		// Analyzer for training global model.
 		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, true);
 		analyzer.loadUserDir(trainDir);
+//	
 //		/**Train Global model**/
 //		SVM svm = new SVM(classNumber, analyzer.getFeatureSize(), 1);
 //		svm.train(analyzer.mergeReviews());
 //		svm.saveModel(globalModel);
 		
 		/**Cross feature groups**/
-		int kFold = 5, kmeans = 200;
-		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
+		int kFold = 10, kmeans = 400;
+		String crossfv = String.format("./data/%s/CrossFeatures_%dk_%d_%d_%d/", dataset, trainSize, lrTopK, kFold, kmeans);
 		ArrayList<_Doc> crossDocs = (ArrayList<_Doc>) analyzer.mergeReviews();
 		CrossFeatureSelection crossfs = new CrossFeatureSelection(crossDocs, classNumber, analyzer.getFeatureSize(), kFold, kmeans);
 		crossfs.train();

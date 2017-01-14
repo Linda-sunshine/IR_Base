@@ -716,10 +716,10 @@ public class CLRWithDP extends LinAdapt {
 		for(int i=0; i<m_kBar; i++)
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
 		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
-		System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
-
-		for(_RankItem it:clusterRanker)
-				printTopWords(m_thetaStars[it.m_index]);			
+//		System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
+//
+//		for(_RankItem it:clusterRanker)
+//				printTopWords(m_thetaStars[it.m_index]);			
 		
 	}
 

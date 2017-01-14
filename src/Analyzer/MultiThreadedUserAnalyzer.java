@@ -161,7 +161,19 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					}
 				}
 			}
-
+//
+//			if(reviews.size() > 10){//at least one for adaptation and one for testing
+//				synchronized (m_allocReviewLock) {
+//					allocateReviews(reviews);				
+//					m_users.add(new _User(userID, m_classNo, reviews, ctgIndexes)); //create new user from the file.
+//				}
+//			} else{// added by Lin, for those users with fewer than 2 reviews, ignore them.
+//				for(_Review r: reviews){			
+//					synchronized (m_rollbackLock) {
+//						rollBack(Utils.revertSpVct(r.getSparse()), r.getYLabel());
+//					}
+//				}
+//			}
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);				

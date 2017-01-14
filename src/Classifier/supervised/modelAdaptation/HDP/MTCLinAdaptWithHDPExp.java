@@ -32,6 +32,11 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
 				featureGroup4Sup, lm);
 	}
+	public MTCLinAdaptWithHDPExp(int classNo, int featureSize, String globalModel,
+			String featureGroupMap, String featureGroup4Sup, double[] lm) {
+		super(classNo, featureSize, globalModel, featureGroupMap,
+				featureGroup4Sup, lm);
+	}
 	
 	public void setPosteriorSanityCheck(boolean b){
 		m_postCheck = b;

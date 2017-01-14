@@ -28,6 +28,15 @@ public class CLinAdaptWithDP extends CLRWithDP {
 
 	}
 	
+	public CLinAdaptWithDP(int classNo, int featureSize, String globalModel, String featureGroupMap) {
+		super(classNo, featureSize, globalModel);
+		loadFeatureGroupMap(featureGroupMap);
+		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
+		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
+		Arrays.fill(m_thetaStars, null);
+
+	}
+	
 	@Override
 	protected void accumulateClusterModels(){
 		if (m_models==null || m_models.length!=getVSize())
