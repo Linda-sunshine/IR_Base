@@ -97,9 +97,9 @@ public class DPParameter {
 			else if(argv[i-1].equals("-base"))
 				m_base = Integer.parseInt(argv[i]);
 			else if(argv[i-1].equals("-th"))
-				m_th = Double.parseDouble(argv[i-1]);
+				m_th = Double.parseDouble(argv[i]);
 			else if(argv[i-1].equals("-adaptRatio"))
-				m_adaptRatio = Double.parseDouble(argv[i-1]);
+				m_adaptRatio = Double.parseDouble(argv[i]);
 			else
 				exit_with_help();
 		}

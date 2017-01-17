@@ -26,7 +26,7 @@ public class MyNewDPMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.75;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
@@ -35,7 +35,7 @@ public class MyNewDPMain {
 		boolean enforceAdapt = true;
 
 		int trainSize = 3; // "3"
-		int userSize = 9; // "20"
+		int userSize = 20; // "20"
 		String dataset = "AmazonNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 //		int[] kFolds = new int[]{5, 10};
@@ -64,10 +64,15 @@ public class MyNewDPMain {
 //		String crossfv = String.format("/if15/lg5bt/%s/CrossFeatures_%dk_%d_%d/", dataset, trainSize, kFold, kmeans);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, fvFile, fvFile4LM, Ngram, lengthThreshold, numberOfCores, true);
+		String ctgFile = "./data/category_AmazonNew.txt";
+		analyzer.setCtgFile(ctgFile);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userDir);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+		
 		double[] globalLM = analyzer.estimateGlobalLM();
+//		//analyzer.saveCategory(ctgFile);
+		analyzer.printCategoryInfo();
 		
 //		double[] globalLM = analyzer.estimateGlobalLM();
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, globalLM);
@@ -75,12 +80,9 @@ public class MyNewDPMain {
 //		MTCLRWithHDP hdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, globalLM);
 //		hdp.setQ(0.6);
 		
-//		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, null, globalLM);
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, crossfv, null, globalLM);
-
 //		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null);
 //
-////		MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null);
+//		MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null);
 //		dp.loadUsers(analyzer.getUsers());
 //		dp.setLNormFlag(false);
 //		dp.setDisplayLv(displayLv);
@@ -94,19 +96,19 @@ public class MyNewDPMain {
 		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null, globalLM);
 
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);
-
-		hdp.setsdA(0.2);
-		double alpha = 1, eta = 0.01, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(20);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-		hdp.train();
-		hdp.test();
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, crossfv, null, globalLM);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.1);
+//
+//		hdp.setsdA(0.1);
+//		double alpha = 1, eta = 0.01, beta = 0.01;
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		hdp.setNumberOfIterations(20);
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//		hdp.train();
+//		hdp.test();
 		
 //		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
 //		gsvm.loadUsers(analyzer.getUsers());

@@ -180,7 +180,7 @@ public abstract class BaseClassifier {
 		// micro average
 		System.out.println("Micro F1:");
 		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.4f\t", i, m_microStat.getF1(i));
+			System.out.format("Class %d: %.4f\t\t", i, m_microStat.getF1(i));
 	}
 	
 	//Calculate the precision and recall for one folder tests.

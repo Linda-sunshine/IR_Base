@@ -70,13 +70,10 @@ public class _PerformanceStat {
 			
 			// F1
 			sumP = m_perfTable[i][0] + m_perfTable[i][1];
-//			if(TP == 0)
-//				m_perfTable[i][2] = 1;
-//			else 
-				if ( sumP > 0)
+			if ( sumP > 0)
 				m_perfTable[i][2] = 2*m_perfTable[i][0]*m_perfTable[i][1]/sumP;
 			else
-				m_perfTable[i][2] = 0;			
+				m_perfTable[i][2] = 0;	// precision=0, recall=0		
 		}
 	}
 	
@@ -86,6 +83,11 @@ public class _PerformanceStat {
 	
 	public int getEntry(int i, int j) {
 		return m_confusionMat[i][j];
+	}
+	
+	// How many reviews with the true class label specified.
+	public int getTrueClassNo(int classId){
+		return Utils.sumOfRow(m_confusionMat, classId);
 	}
 	
 	public double getAccuracy() {
