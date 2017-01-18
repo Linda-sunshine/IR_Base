@@ -43,26 +43,32 @@ public class MyDPMain {
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
-		int lmTopK = 1000; // topK for language model.
-		String fs = "DF";
 	
 		String dataset = "Amazon"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		 
+		int lmTopK = 1000; // topK for language model.
+		int fvGroupSize = 800, fvGroupSizeSup = 5000;
+
+		String fs = "DF";//"IG_CHI"
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800" + ".txt", dataset);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_1600.txt", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 		
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+//		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
 //		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
+		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
+		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
+		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
+		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -193,12 +199,12 @@ public class MyDPMain {
 //
 		
 		/***our algorithm: MTCLinAdaptWithDP***/
-//		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-//		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 //		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
 		
 		adaptation.loadUsers(analyzer.getUsers());
@@ -212,7 +218,7 @@ public class MyDPMain {
 		
 		adaptation.train();
 		adaptation.test();
-		adaptation.printUserPerformance("mtclindp_exp_10k.xls");
+		adaptation.printUserPerformance("dp_exp_10k.xls");
 			
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;

@@ -43,32 +43,37 @@ public class MyHDPMain {
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
-//		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
-		double eta1 = 0.1, eta2 = 0.1, eta3 = 0.04, eta4 = 0.04;
+		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
+//		double eta1 = 0.1, eta2 = 0.1, eta3 = 0.04, eta4 = 0.04;
 
 		boolean enforceAdapt = true;
 
 		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 1000; // topK for language model.
+		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
+		int lmTopK = 5000; // topK for language model.
+		int fvGroupSize = 800, fvGroupSizeSup = 5000;
+
 		String fs = "DF";//"IG_CHI"
-		
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
 		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_800.txt", dataset);
-		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups.txt", dataset);
+		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
 		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
 		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
 //		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
-//		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_800.txt", dataset);
+//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+//		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
 //		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%d.txt", dataset, lmTopK);
-//		
+//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
+		
+		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
+		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
+		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
+		
 		/**** Feature selection for language model.***/
 //		UserAnalyzer analyzer = new UserAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold, false);
 //		analyzer.LoadStopwords(stopwords);
@@ -83,7 +88,7 @@ public class MyHDPMain {
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-		analyzer.printCategoryInfo();
+		//analyzer.printCategoryInfo();
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 //		//analyzer.CtgCorrelation();
 		
@@ -109,6 +114,7 @@ public class MyHDPMain {
 //		dp.setR2TradeOffs(eta3, eta4);
 //		dp.train();
 //		dp.test();
+//		//dp.printUserPerformance("./data/dp_full_10k.xls");
 		
 		/*****hdp related models.****/
 		double[] globalLM = analyzer.estimateGlobalLM();
@@ -120,7 +126,7 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 		//MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
@@ -136,7 +142,9 @@ public class MyHDPMain {
 
 		hdp.train();
 		hdp.test();
-		hdp.printUserPerformance("./data/hdp_10k.xls");
+		
+		String perfFile = String.format("./data/hdp_full_lm_%d_10k.xls", lmTopK);
+		hdp.printUserPerformance(perfFile);
 				
 		/**Parameters in topic modeling.***/
 //		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!

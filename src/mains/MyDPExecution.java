@@ -36,13 +36,13 @@ public class MyDPExecution {
 //		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv",  param.m_data); // CV.
 //		String userFolder = String.format("./data/CoLinAdapt/%s/Users",  param.m_data);
 //		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fv);
-//		String featureGroupFileB = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fvSup);
+//		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt",  param.m_data, param.m_fvSup);
 //		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt",  param.m_data);
 		
 		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
 		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", param.m_data);
 		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fv);
-		String featureGroupFileB = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
+		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", param.m_data, param.m_fvSup);
 		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", param.m_data);
 		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", param.m_data, param.m_fs, param.m_lmTopK);
 
@@ -56,7 +56,8 @@ public class MyDPExecution {
 		CLRWithDP adaptation;
 		double[] globalLM = analyzer.estimateGlobalLM();
 		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
-		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileB = null;
+		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
+		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
 		if(param.m_model.equals("mtclrdp")){
 			adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
@@ -97,14 +98,14 @@ public class MyDPExecution {
 			((CLRWithHDP) adaptation).setC(param.m_c);
 
 		} else if(param.m_model.equals("mtclinhdp")){
-			adaptation = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB, globalLM);
+			adaptation = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLRWithHDP) adaptation).setC(param.m_c);
 
 		} else if(param.m_model.equals("mtclinhdpexp")){
-			adaptation = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileB, globalLM);
+			adaptation = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
