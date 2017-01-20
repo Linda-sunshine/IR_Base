@@ -799,6 +799,7 @@ public class CLRWithHDP extends CLRWithDP {
 					}
 				}
 			}
+			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
 		}

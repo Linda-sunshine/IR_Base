@@ -103,7 +103,7 @@ public class MyHDPMain {
 		
 //		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //
-//		//MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+//		MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //		dp.loadUsers(analyzer.getUsers());
 //		dp.setLNormFlag(false);
 //		dp.setDisplayLv(displayLv);
@@ -114,7 +114,7 @@ public class MyHDPMain {
 //		dp.setR2TradeOffs(eta3, eta4);
 //		dp.train();
 //		dp.test();
-//		//dp.printUserPerformance("./data/dp_full_10k.xls");
+//		dp.printUserPerformance("./data/dp_full_exp_10k.xls");
 		
 		/*****hdp related models.****/
 		double[] globalLM = analyzer.estimateGlobalLM();
@@ -128,7 +128,7 @@ public class MyHDPMain {
 //		
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
-		//MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.2);
 
@@ -143,7 +143,7 @@ public class MyHDPMain {
 		hdp.train();
 		hdp.test();
 		
-		String perfFile = String.format("./data/hdp_full_lm_%d_10k.xls", lmTopK);
+		String perfFile = String.format("./data/hdp_exp_full_lm_%d_10k.xls", lmTopK);
 		hdp.printUserPerformance(perfFile);
 				
 		/**Parameters in topic modeling.***/
