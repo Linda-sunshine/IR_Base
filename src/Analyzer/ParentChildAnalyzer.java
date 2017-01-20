@@ -19,7 +19,7 @@ import structures._ParentDoc;
 import structures._ParentDoc4DCM;
 import structures._SparseFeature;
 import utils.Utils;
-
+import structures._Word;
 /**
  * 
  * @author Renqin Cai
@@ -429,6 +429,43 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		}
 		
 		return wid;
+	}
+
+	public void randomizeComment(String filePrefix){
+		File fakeCorpusFolder = new File(filePrefix+"fakeCorpus");
+		if(!fakeCorpusFolder.exists()){
+			System.out.println("creating directory\t"+fakeCorpusFolder);
+			fakeCorpusFolder.mkdir();
+		}
+
+		ArrayList<_Doc> childList = new ArrayList<_Doc>();
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof _ChildDoc){
+				childList.add(d);
+			}
+		}
+		System.out.println("child docs num\t"+childList.size());
+
+		int j=0;
+		Random m_rand = new Random();
+		_Word tempWord;
+		for(int i=0; i<childList.size(); i++){
+			_Doc d = childList.get(i);
+
+			for(_Word w:d.getWords()) {
+				j = m_rand.nextInt(i);
+				_Doc tempDoc = childList.get(j);
+
+				int exchangeDocLen = tempDoc.getTotalDocLength();
+				int exchangeWordIndex = m_rand.nextInt(exchangeDocLen);
+				_Word exchangeWord = tempDoc.getWordByIndex(exchangeWordIndex);
+
+				tempWord = w;
+				w = exchangeWord;
+				exchangeWord = tempWord;
+			}
+
+		}
 	}
 
 }

@@ -136,7 +136,9 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	public _Word[] getWords() {
 		return m_words;
 	}
-	
+
+	public _Word getWordByIndex(int i){return m_words[i];}
+
 	public _Word[] getTestWords(){
 		return m_testWords;
 	}

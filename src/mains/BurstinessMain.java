@@ -33,7 +33,6 @@ public class BurstinessMain {
 		
 		String topicmodel = "Burstiness";
 
-
 		String category = "tablet";
 		int number_of_topics = 30;
 		boolean loadNewEggInTrain = true; // false means in training there is no reviews from NewEgg
@@ -68,7 +67,7 @@ public class BurstinessMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		articleType = "Yahoo";
+//		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -174,7 +173,8 @@ public class BurstinessMain {
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
-		analyzer.generateFakeCorpus(filePrefix);
+//		analyzer.generateFakeCorpus(filePrefix);
+		analyzer.randomizeComment(filePrefix);
 //		analyzer.analyzeBurstiness(filePrefix);
 		
 	}

@@ -22,7 +22,6 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
         d_alpha_c = alpha_c;
     }
 
-
     protected void initialize_probability(Collection<_Doc> collection){
         createSpace();
 
@@ -105,8 +104,10 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
 
     protected void collectChildStats(_Doc d) {
         _ChildDoc cDoc = (_ChildDoc) d;
+        _ParentDoc pDoc = cDoc.m_parentDoc;
+        double pDocStatSum = Utils.sumOfArray(pDoc.m_sstat);
         for(int k=0; k<number_of_topics; k++)
-            cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k];
+            cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k]+cDoc.getMu()*pDoc.m_sstat[k]/pDocStatSum;
     }
 
     protected double calculate_log_likelihood4Parent(_Doc d) {
