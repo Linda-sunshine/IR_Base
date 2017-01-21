@@ -372,7 +372,7 @@ public class CorrDCMLDA_Multi_EM extends CorrDCMLDA {
     public void updateParameter(int iter, File weightIterFolder) {
 
         initialAlphaBeta();
-//        updateAlpha();
+        updateAlpha();
 
         updateBeta();
 

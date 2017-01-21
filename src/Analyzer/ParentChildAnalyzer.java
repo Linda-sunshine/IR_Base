@@ -12,14 +12,9 @@ import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
-import structures._ChildDoc;
-import structures._Doc;
-import structures._Doc4SparseDCMLDA;
-import structures._ParentDoc;
-import structures._ParentDoc4DCM;
-import structures._SparseFeature;
+import structures.*;
 import utils.Utils;
-import structures._Word;
+
 /**
  * 
  * @author Renqin Cai
@@ -251,13 +246,31 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		System.out.println("vocal size\t"+vocalSize);
 		
 		int corpusSize = 0;
-		
+		double threadLen = 0;
+		double threadNum = 0;
 		for(_Doc d:m_corpus.getCollection()){
 			if(d instanceof _ParentDoc4DCM){
+				threadNum ++;
 				corpusSize ++;
 				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				threadLen += pDoc.getTotalDocLength();
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					System.out.println("cDoc\t"+cDoc.getName());
+					threadLen += cDoc.getTotalDocLength();
+//					for(_Word w:cDoc.getWords()){
+//						int wid = w.getIndex();
+//						System.out.print("wid\t"+wid+"\t");
+//						if(!wordFrequencyMap.containsKey(wid)){
+//							wordFrequencyMap.put(wid, 1.0);
+//						}else{
+//							double oldFeaturetimes = wordFrequencyMap.get(wid);
+//							oldFeaturetimes += 1;
+//							wordFrequencyMap.put(wid, oldFeaturetimes);
+//						}
+//					}
+//					System.out.print("\n");
+
 					_SparseFeature[] sfs = cDoc.getSparse();
 					for(_SparseFeature sf:sfs){
 						int wid = sf.getIndex();
@@ -269,10 +282,10 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 							oldFeatureTimes += featureTimes;
 							wordFrequencyMap.put(wid, oldFeatureTimes);
 						}
-							
+
 					}
 				}
-				
+
 				_SparseFeature[] sfs = pDoc.getSparse();
 				for(_SparseFeature sf:sfs){
 					int wid = sf.getIndex();
@@ -310,6 +323,9 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			}
 			
 		}
+
+		threadLen = threadLen/threadNum;
+		System.out.println("threadLen\t"+threadLen+"\tthreadNum\t"+threadNum);
 		
 		double totalFeatureTimes = vocalSize*corpusSize;
 		for(double featureTimes:burstinessMap.keySet()){
@@ -431,17 +447,23 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		return wid;
 	}
 
-	public void randomizeComment(String filePrefix){
+	public void randomizeComment(String filePrefix, int number_of_topics){
 		File fakeCorpusFolder = new File(filePrefix+"fakeCorpus");
 		if(!fakeCorpusFolder.exists()){
 			System.out.println("creating directory\t"+fakeCorpusFolder);
 			fakeCorpusFolder.mkdir();
 		}
 
-		ArrayList<_Doc> childList = new ArrayList<_Doc>();
+
+
+		ArrayList<_ChildDoc> childList = new ArrayList<_ChildDoc>();
 		for(_Doc d:m_corpus.getCollection()){
-			if(d instanceof _ChildDoc){
-				childList.add(d);
+			if (d instanceof _ParentDoc) {
+				d.setTopics4Gibbs(number_of_topics, 0);
+			} else if (d instanceof _ChildDoc) {
+				_ChildDoc cDoc = (_ChildDoc)d;
+				((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
+				childList.add(cDoc);
 			}
 		}
 		System.out.println("child docs num\t"+childList.size());
@@ -449,12 +471,15 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		int j=0;
 		Random m_rand = new Random();
 		_Word tempWord;
-		for(int i=0; i<childList.size(); i++){
-			_Doc d = childList.get(i);
-
-			for(_Word w:d.getWords()) {
+		for(int i=1; i<childList.size(); i++){
+			_ChildDoc d = childList.get(i);
+			System.out.println("cDoc\t"+d.getName());
+			for(int wIndex=0; wIndex<d.getTotalDocLength(); wIndex++) {
+				_Word w = d.getWordByIndex(wIndex);
 				j = m_rand.nextInt(i);
 				_Doc tempDoc = childList.get(j);
+
+				System.out.print("wid\t"+w.getIndex());
 
 				int exchangeDocLen = tempDoc.getTotalDocLength();
 				int exchangeWordIndex = m_rand.nextInt(exchangeDocLen);
@@ -463,9 +488,29 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				tempWord = w;
 				w = exchangeWord;
 				exchangeWord = tempWord;
+				d.setWordByIndex(wIndex, w);
+				tempDoc.setWordByIndex(exchangeWordIndex, exchangeWord);
+				System.out.print("--->"+w.getIndex()+"\t"+d.getWordByIndex(wIndex).getIndex());
+
+			}
+			System.out.print("\n");
+			for(_Word w:d.getWords()){
+				System.out.print("wid\t"+w.getIndex());
 			}
 
 		}
+
+		for(_ChildDoc cDoc:childList){
+			System.out.println("cDoc\t"+cDoc.getName());
+			for(_Word w:cDoc.getWords()) {
+				System.out.print("wid\t"+w.getIndex());
+
+			}
+			System.out.print("\n");
+		}
+
+		System.out.println("randomization");
+		analyzeBurstiness(filePrefix);
 	}
 
 }
