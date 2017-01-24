@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ClassDiagram>
+    <Class name="topicmodels.ParentChildBaseWithPhi_Gibbs" x="476" y="336">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.ParentChild_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChild_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChildBase_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+    </Class>
+    <Class name="topicmodels.ParentChild_Gibbs.MatchPair" x="9" y="142">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+    <Class name="topicmodels.pLSA" x="977" y="34">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+    <Class name="topicmodels.ParentChild_Gibbs" x="94" y="282">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.ParentChildBase_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChildBase_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.TopicModel"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+    </Class>
+    <Class name="topicmodels.ParentChildBase_Gibbs" x="129" y="8">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.TopicModel"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+    </Class>
+    <Class name="topicmodels.LDA_Gibbs" x="760" y="38">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.pLSA"/>
+    </Class>
+    <Class name="topicmodels.TopicModel" x="1011" y="207">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+    </Class>
+    <Class name="topicmodels.LDA_Gibbs_Debug" x="443" y="4">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.TopicModel"/>
+    </Class>
+    <Class name="topicmodels.ParentChildWith3Phi" x="48" y="444">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.ParentChild_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChild_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChildBase_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+    </Class>
+    <Class name="topicmodels.ParentChildBaseWithPhi_Hard_Gibbs" x="498" y="511">
+        <AttributesDisplayFilter public-accepted="true"
+            private-accepted="true" protected-accepted="true"
+            default-accepted="true" static-accepted="false"/>
+        <MethodDisplayFilter public-accepted="true"
+            private-accepted="false" protected-accepted="false"
+            default-accepted="false" static-accepted="false"
+            accessors-accepted="false" constructors-accepted="false"/>
+        <Extension destinationClassName="topicmodels.ParentChildBaseWithPhi_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChildBaseWithPhi_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChild_Gibbs"/>
+        <Communication destinationClassName="topicmodels.ParentChildBase_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs"/>
+        <Communication destinationClassName="topicmodels.LDA_Gibbs_Debug"/>
+    </Class>
+</ClassDiagram>

@@ -293,7 +293,7 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		 articleType = "Yahoo";
+//		 articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);

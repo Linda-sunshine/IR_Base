@@ -255,6 +255,21 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				threadLen += pDoc.getTotalDocLength();
+
+				_SparseFeature[] pDocFS = pDoc.getSparse();
+				for(_SparseFeature sf:pDocFS){
+					int wid = sf.getIndex();
+					double featureTimes = sf.getValue();
+					if(!wordFrequencyMap.containsKey(wid))
+						wordFrequencyMap.put(wid, featureTimes);
+					else{
+						double oldFeatureTimes = wordFrequencyMap.get(wid);
+						oldFeatureTimes += featureTimes;
+						wordFrequencyMap.put(wid, oldFeatureTimes);
+					}
+
+				}
+
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
 					System.out.println("cDoc\t"+cDoc.getName());
 					threadLen += cDoc.getTotalDocLength();
@@ -276,7 +291,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 						int wid = sf.getIndex();
 						double featureTimes = sf.getValue();
 						if(!wordFrequencyMap.containsKey(wid))
-							wordFrequencyMap.put(wid, featureTimes);
+							continue
+//							wordFrequencyMap.put(wid, featureTimes);
 						else{
 							double oldFeatureTimes = wordFrequencyMap.get(wid);
 							oldFeatureTimes += featureTimes;
@@ -286,19 +302,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					}
 				}
 
-				_SparseFeature[] sfs = pDoc.getSparse();
-				for(_SparseFeature sf:sfs){
-					int wid = sf.getIndex();
-					double featureTimes = sf.getValue();
-					if(!wordFrequencyMap.containsKey(wid))
-						wordFrequencyMap.put(wid, featureTimes);
-					else{
-						double oldFeatureTimes = wordFrequencyMap.get(wid);
-						oldFeatureTimes += featureTimes;
-						wordFrequencyMap.put(wid, oldFeatureTimes);
-					}
-						
-				}
+
 				
 				double zeroWordNum = vocalSize-wordFrequencyMap.size();
 				
