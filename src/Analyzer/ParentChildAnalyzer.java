@@ -248,6 +248,9 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		int corpusSize = 0;
 		double threadLen = 0;
 		double threadNum = 0;
+
+		double totalFeatureTimes = 0;
+
 		for(_Doc d:m_corpus.getCollection()){
 			if(d instanceof _ParentDoc4DCM){
 				threadNum ++;
@@ -261,23 +264,24 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					int wid = sf.getIndex();
 					double featureTimes = sf.getValue();
 					if(!wordFrequencyMap.containsKey(wid))
-						wordFrequencyMap.put(wid, featureTimes);
-					else{
-						double oldFeatureTimes = wordFrequencyMap.get(wid);
-						oldFeatureTimes += featureTimes;
-						wordFrequencyMap.put(wid, oldFeatureTimes);
-					}
+						wordFrequencyMap.put(wid, 0.0);
+//					else{
+//						double oldFeatureTimes = wordFrequencyMap.get(wid);
+//						oldFeatureTimes += featureTimes;
+//						wordFrequencyMap.put(wid, oldFeatureTimes);
+//					}
 
 				}
 
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
-					System.out.println("cDoc\t"+cDoc.getName());
+//					System.out.println("cDoc\t"+cDoc.getName());
 					threadLen += cDoc.getTotalDocLength();
 //					for(_Word w:cDoc.getWords()){
 //						int wid = w.getIndex();
 //						System.out.print("wid\t"+wid+"\t");
 //						if(!wordFrequencyMap.containsKey(wid)){
-//							wordFrequencyMap.put(wid, 1.0);
+//							continue;
+////							wordFrequencyMap.put(wid, 1.0);
 //						}else{
 //							double oldFeaturetimes = wordFrequencyMap.get(wid);
 //							oldFeaturetimes += 1;
@@ -291,7 +295,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 						int wid = sf.getIndex();
 						double featureTimes = sf.getValue();
 						if(!wordFrequencyMap.containsKey(wid))
-							continue
+							continue;
 //							wordFrequencyMap.put(wid, featureTimes);
 						else{
 							double oldFeatureTimes = wordFrequencyMap.get(wid);
@@ -302,10 +306,17 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					}
 				}
 
+				totalFeatureTimes += wordFrequencyMap.size();
+//				double zeroWordNum = 0;
+//				for(int wid: wordFrequencyMap.keySet()){
+//					if(wordFrequencyMap.get(wid)==0.0) {
+////						System.out.println(wordFrequencyMap.get(wid) + "\t" + wid);
+//						zeroWordNum += 1;
+//					}
+//				}
 
-				
-				double zeroWordNum = vocalSize-wordFrequencyMap.size();
-				
+//				System.out.println("wordFrequencyMap.size()\t"+wordFrequencyMap.size()+"zeroWordNum\t"+zeroWordNum);
+
 				for(int wid:wordFrequencyMap.keySet()){
 					double featureTimes = wordFrequencyMap.get(wid);
 					if(!burstinessMap.containsKey(featureTimes))
@@ -317,12 +328,12 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 						
 				}
 				
-				if(!burstinessMap.containsKey((double)0)){
-					burstinessMap.put((double)0, zeroWordNum);
-				}else{
-					zeroWordNum += burstinessMap.get((double)0);
-					burstinessMap.put((double)0, zeroWordNum);
-				}
+//				if(!burstinessMap.containsKey((double)0)){
+//					burstinessMap.put((double)0, zeroWordNum);
+//				}else{
+//					zeroWordNum += burstinessMap.get((double)0);
+//					burstinessMap.put((double)0, zeroWordNum);
+//				}
 		
 			}
 			
@@ -331,9 +342,10 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		threadLen = threadLen/threadNum;
 		System.out.println("threadLen\t"+threadLen+"\tthreadNum\t"+threadNum);
 		
-		double totalFeatureTimes = vocalSize*corpusSize;
+//		double totalFeatureTimes = vocalSize*corpusSize;
 		for(double featureTimes:burstinessMap.keySet()){
 			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
+			System.out.println(totalFeatureTimes+"\t"+burstinessMap.get(featureTimes));
 			burstinessMap.put(featureTimes, featureTimesProb);
 		}
 		
@@ -396,10 +408,11 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				int docLength = 0;
 //				docLength += pDoc.getTotalDocLength();
-				for(_ChildDoc cDoc:pDoc.m_childDocs)
-					docLength += cDoc.getTotalDocLength();
-				generateFakeDoc(pDoc, fakeCorpusFolder, docLength, t_wordSstat, widList, docIndex);
-				docIndex ++;
+				for(_ChildDoc cDoc:pDoc.m_childDocs) {
+					docLength = cDoc.getTotalDocLength();
+					generateFakeDoc(pDoc, fakeCorpusFolder, docLength, t_wordSstat, widList, docIndex);
+					docIndex++;
+				}
 			}
 		}
 	}
