@@ -775,35 +775,35 @@ public class CLRWithHDP extends CLRWithDP {
 			m_writer.write(sizes[i]+",");
 		m_writer.write("\n");
 	}
-	// added by Lin for model performance comparison.
-	// print out each user's test review's performance.
-	public void printUserPerformance(String filename){
-		PrintWriter writer;
-		try{
-			writer = new PrintWriter(new File(filename));
-			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-				@Override
-				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-				}
-			});
-			
-			for(_AdaptStruct u: m_userList){
-				writer.write("-----\n");
-				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-				for(_Review r: u.getReviews()){
-					if(r.getType() == rType.ADAPTATION)
-						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-					if(r.getType() == rType.TEST){
-						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-					}
-				}
-			}
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
+//	// added by Lin for model performance comparison.
+//	// print out each user's test review's performance.
+//	public void printUserPerformance(String filename){
+//		PrintWriter writer;
+//		try{
+//			writer = new PrintWriter(new File(filename));
+//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+//				@Override
+//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+//				}
+//			});
+//			
+//			for(_AdaptStruct u: m_userList){
+//				writer.write("-----\n");
+//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+//				for(_Review r: u.getReviews()){
+//					if(r.getType() == rType.ADAPTATION)
+//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+//					if(r.getType() == rType.TEST){
+//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+//					}
+//				}
+//			}
+//			writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//	}
 	
 //	// Previous implementation
 //	// added by Lin for model performance comparison.

@@ -38,6 +38,11 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 				featureGroup4Sup, lm);
 	}
 	
+	@Override
+	public String toString() {
+		return String.format("MTCLinAdaptWithHDPExp[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+											m_dim,m_dimSup,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
+	}
 	public void setPosteriorSanityCheck(boolean b){
 		m_postCheck = b;
 	}
@@ -159,6 +164,50 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		return prf;
 	}
 	
+//	@Override
+//	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
+//	// Indeed, it is for per review, for inheritance we don't change the function name.
+//	protected void calculateClusterProbPerUser(){
+//		double prob, logSum;
+//		double[] probs;
+//		if(m_newCluster) 
+//			probs = new double[m_kBar+1];
+//		else 
+//			probs = new double[m_kBar];
+//		
+//		_HDPAdaptStruct user;
+//		_HDPThetaStar curTheta;
+//		
+//		//sample a new cluster parameter first.
+//		if(m_newCluster) {
+//			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
+//			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
+//		}
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_HDPAdaptStruct) m_userList.get(i);
+//			for(_Review r: user.getReviews()){
+//				if (r.getType() != rType.TEST)
+//					continue;				
+//				
+//				for(int k=0; k<probs.length; k++){
+//					curTheta = m_hdpThetaStars[k];
+//					r.setHDPThetaStar(curTheta);
+//					if(m_postCheck)
+//						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+//					else
+//						prob = calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+//					probs[k] = prob;
+//				}
+////				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);
+//				logSum = Utils.logSumOfExponentials(probs);
+//				for(int k=0; k<probs.length; k++)
+//					probs[k] -= logSum;
+//				r.setClusterPosterior(probs);//posterior in log space
+//			}
+//		}
+//	}
+	
 	@Override
 	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
 	// Indeed, it is for per review, for inheritance we don't change the function name.
@@ -178,23 +227,21 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
 			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		}
-
+		int rvwSize = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
+			rvwSize = user.getReviews().size();
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
-					continue;				
+				continue;				
 				
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
-					if(m_postCheck)
-						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-					else
-						prob = calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+					prob = rvwSize <= 15 ? calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma()):
+						calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());
 					probs[k] = prob;
 				}
-//				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);
 				logSum = Utils.logSumOfExponentials(probs);
 				for(int k=0; k<probs.length; k++)
 					probs[k] -= logSum;
@@ -202,7 +249,6 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 			}
 		}
 	}
-	
 //	
 //	@Override
 //	public double train(){

@@ -169,7 +169,10 @@ public class _AdaptStruct {
 	}
 	
 	public int predict(_Doc doc){
-		return doc.getPredValue()>0.5 ? 1: 0;
+		if(doc.getPredValue() != -1)
+			return doc.getPredValue()>0.5 ? 1: 0;
+		else
+			return m_user.predict(doc);
 	}
 	public double linearFunc(_SparseFeature[] fvs, int classid) {
 		return m_user.linearFunc(fvs, classid);
