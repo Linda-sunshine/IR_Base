@@ -13,18 +13,23 @@ public class _HDPThetaStar extends _thetaStar {
 	//this will be in log space!
 	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
-
 	protected double m_gamma;
+	
+	// Parameters used in MMB model.
+	protected int m_edgeSize;
+	double[] m_B;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
 		m_psi = new double[lmSize];
 		m_gamma = gamma;
+		m_edgeSize = 0;
 	}
 	
 	public _HDPThetaStar(int dim, double gamma) {
 		super(dim);
 		m_gamma = gamma;
+		m_edgeSize = 0;
 	}
 	
 	public void initPsiModel(int lmSize){
@@ -63,5 +68,19 @@ public class _HDPThetaStar extends _thetaStar {
 	}
 	public void resetPsiModel(){
 		m_psi = null;
+	}
+	
+	
+	// Functions used in MMB model.
+	public void updateEdgeCount(int c){
+		m_edgeSize += c;
+	}
+	
+	public int getEdgeSize(){
+		return m_edgeSize;
+	}
+	
+	public double[] getB(){
+		return m_B;
 	}
 }

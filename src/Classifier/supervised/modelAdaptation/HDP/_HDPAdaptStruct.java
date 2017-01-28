@@ -16,18 +16,26 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
 	_HDPThetaStar  m_hdpThetaStar = null;
 	
-	/**key: global component parameter \phi; 
-	 * val: member size.**/
+	// key: global component parameter; val: member size
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
+	// key: global component parameter; val: edge size.
+	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
+	// key: uj; val: group parameter-_HDPThetaStar.
+	protected HashMap<_HDPAdaptStruct, _HDPThetaStar> m_neighborMap;
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
 	}
 
 	public _HDPAdaptStruct(_User user, int dim){
 		super(user, dim);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
+
 	}
 	//Return the number of members in the given thetaStar.
 	public int getHDPThetaMemSize(_HDPThetaStar s){
@@ -51,10 +59,51 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			m_hdpThetaMemSizeMap.remove(s);
 	}
 	
+	/**Functions used in MMB model.**/
+	// Return the number of edges in the given thetaStar.
+	public int getHDPThetaEdgeSize(_HDPThetaStar s){
+		if(m_hdpThetaEdgeSizeMap.containsKey(s))
+			return m_hdpThetaEdgeSizeMap.get(s);
+		else 
+			return 0;
+	}
+	// Update the size of the edges belong to the group.
+	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
+		if (v==0)
+			return;
+		
+		if(m_hdpThetaEdgeSizeMap.containsKey(s))
+			v += m_hdpThetaEdgeSizeMap.get(s);
+		
+		if (v>0)
+			m_hdpThetaEdgeSizeMap.put(s, v);
+		else
+			m_hdpThetaEdgeSizeMap.remove(s);
+	}
+	
+	// Check if the user has connection with another user, uj.
+	public boolean hasEdge(_HDPAdaptStruct uj){
+		if(m_neighborMap.containsKey(uj))
+			return true;
+		else
+			return false;
+	}
+	
+	public void updateNeighbors(_HDPAdaptStruct uj, _HDPThetaStar theta){
+		m_neighborMap.put(uj, theta);
+	}
+	
+	public _HDPThetaStar getThetaStar(_HDPAdaptStruct uj){
+		return m_neighborMap.get(uj);
+	}
+	
 	public Collection<_HDPThetaStar> getHDPTheta(){
 		return m_hdpThetaMemSizeMap.keySet();
 	}
 	
+	public void setThetaStar(_HDPThetaStar theta){
+		m_hdpThetaStar = theta;
+	}
 	@Override
 	public _HDPThetaStar getThetaStar(){
 		return m_hdpThetaStar;
