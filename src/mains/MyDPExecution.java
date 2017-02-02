@@ -111,7 +111,7 @@ public class MyDPExecution {
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLRWithHDP) adaptation).setC(param.m_c);
 			((MTCLinAdaptWithHDPExp) adaptation).setPosteriorSanityCheck(param.m_post);
-
+			((MTCLinAdaptWithHDPExp) adaptation).setThreshold(param.m_threshold);
 		} else{
 			System.out.println("CLRWithDP is running....");
 			adaptation = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);

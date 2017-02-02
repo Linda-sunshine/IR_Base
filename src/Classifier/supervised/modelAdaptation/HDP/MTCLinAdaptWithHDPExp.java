@@ -17,6 +17,7 @@ import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import utils.Utils;
+import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.SVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 
@@ -26,6 +27,13 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 	ArrayList<double[]> m_trainPerfs = new ArrayList<double[]>();
 
 	boolean m_postCheck = false;
+	
+	GlobalSVM m_gsvm;
+	public void trainGlobalSVM(){
+		m_gsvm = new GlobalSVM(m_classNo, m_featureSize);
+		m_gsvm.train(m_userList);
+	}	
+	
 	public MTCLinAdaptWithHDPExp(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
 			String featureGroupMap, String featureGroup4Sup, double[] lm) {
@@ -164,50 +172,6 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		return prf;
 	}
 	
-//	@Override
-//	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
-//	// Indeed, it is for per review, for inheritance we don't change the function name.
-//	protected void calculateClusterProbPerUser(){
-//		double prob, logSum;
-//		double[] probs;
-//		if(m_newCluster) 
-//			probs = new double[m_kBar+1];
-//		else 
-//			probs = new double[m_kBar];
-//		
-//		_HDPAdaptStruct user;
-//		_HDPThetaStar curTheta;
-//		
-//		//sample a new cluster parameter first.
-//		if(m_newCluster) {
-//			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
-//			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
-//		}
-//
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_HDPAdaptStruct) m_userList.get(i);
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() != rType.TEST)
-//					continue;				
-//				
-//				for(int k=0; k<probs.length; k++){
-//					curTheta = m_hdpThetaStars[k];
-//					r.setHDPThetaStar(curTheta);
-//					if(m_postCheck)
-//						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-//					else
-//						prob = calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-//					probs[k] = prob;
-//				}
-////				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);
-//				logSum = Utils.logSumOfExponentials(probs);
-//				for(int k=0; k<probs.length; k++)
-//					probs[k] -= logSum;
-//				r.setClusterPosterior(probs);//posterior in log space
-//			}
-//		}
-//	}
-	
 	@Override
 	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
 	// Indeed, it is for per review, for inheritance we don't change the function name.
@@ -227,27 +191,172 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
 			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		}
-		int rvwSize = 0;
+
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
-			rvwSize = user.getReviews().size();
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
-				continue;				
+					continue;				
 				
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
-					prob = rvwSize <= 15 ? calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma()):
-						calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());
+					if(m_postCheck)
+						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+					else
+						prob = calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
 					probs[k] = prob;
 				}
+//				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);
 				logSum = Utils.logSumOfExponentials(probs);
 				for(int k=0; k<probs.length; k++)
 					probs[k] -= logSum;
 				r.setClusterPosterior(probs);//posterior in log space
 			}
 		}
+	}
+	
+	int m_threshold = 15;
+	public void setThreshold(int t){
+		m_threshold = t;
+		System.out.println("[Info]Mix model threshold: "+ m_threshold);
+	}
+//	@Override
+//	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
+//	// Indeed, it is for per review, for inheritance we don't change the function name.
+//	protected void calculateClusterProbPerUser(){
+//		double prob, logSum;
+//		double[] probs;
+//		if(m_newCluster) 
+//			probs = new double[m_kBar+1];
+//		else 
+//			probs = new double[m_kBar];
+//		
+//		_HDPAdaptStruct user;
+//		_HDPThetaStar curTheta;
+//		
+//		//sample a new cluster parameter first.
+//		if(m_newCluster) {
+//			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
+//			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
+//		}
+//		int rvwSize = 0;
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_HDPAdaptStruct) m_userList.get(i);
+//			rvwSize = user.getReviews().size();
+//			for(_Review r: user.getReviews()){
+//				if (r.getType() != rType.TEST)
+//				continue;				
+//				
+//				for(int k=0; k<probs.length; k++){
+//					curTheta = m_hdpThetaStars[k];
+//					r.setHDPThetaStar(curTheta);
+//					prob = rvwSize <= m_threshold ? calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma()):
+//						calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());
+//					probs[k] = prob;
+//				}
+//				logSum = Utils.logSumOfExponentials(probs);
+//				for(int k=0; k<probs.length; k++)
+//					probs[k] -= logSum;
+//				r.setClusterPosterior(probs);//posterior in log space
+//			}
+//		}
+//	}
+//	
+	
+	@Override
+	public double test(){
+		trainGlobalSVM();
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_AdaptStruct user;
+					_PerformanceStat userPerfStat;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							userPerfStat = user.getPerfStat();								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									int trueL = r.getYLabel();
+									int predL = user.getReviews().size() > m_threshold ? user.predict(r): predictL(r.getPredValue()); // evoke user's own model
+									r.setPredictLabel(predL);
+									userPerfStat.addOnePredResult(predL, trueL);
+								}
+							}							
+							userPerfStat.calculatePRF();	
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+		
+		int count = 0;
+		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
+		
+		//init macroF1
+		for(int i=0; i<m_classNo; i++)
+			macroF1.add(new ArrayList<Double>());
+		
+		_PerformanceStat userPerfStat;
+		m_microStat.clear();
+		for(_AdaptStruct user:m_userList) {
+			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+				continue;
+			
+			userPerfStat = user.getPerfStat();
+			for(int i=0; i<m_classNo; i++){
+				if(userPerfStat.getTrueClassNo(i)!=0)
+					macroF1.get(i).add(userPerfStat.getF1(i));
+			}
+			m_microStat.accumulateConfusionMat(userPerfStat);
+			count ++;
+		}
+		
+		System.out.println(toString());
+		calcMicroPerfStat();
+		// macro average and standard deviation.
+		System.out.println("\nMacro F1:");
+		for(int i=0; i<m_classNo; i++){
+			double[] avgStd = calcAvgStd(macroF1.get(i));
+			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
+		}
+		return 0;
+	}
+	public int predictL(double v){
+		return v > 0.5 ? 1 : 0;
 	}
 //	
 //	@Override

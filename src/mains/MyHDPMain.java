@@ -48,12 +48,12 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 3071; // topK for language model.
-		int fvGroupSize = 800, fvGroupSizeSup = 3071;
+		int lmTopK = 1000; // topK for language model.
+		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 
 		String fs = "DF";//"IG_CHI"
 		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
@@ -92,6 +92,11 @@ public class MyHDPMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 //		//analyzer.CtgCorrelation();
 		
+//		int count = 0;
+//		System.out.println(analyzer.getUsers().size());
+//		for(_User u: analyzer.getUsers())
+//			count += u.getReviewSize();
+//		System.out.println(count);
 		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;
 //		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
@@ -120,31 +125,31 @@ public class MyHDPMain {
 		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//
+
 //		MTCLRWithHDP hdp = new MTCLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		hdp.setQ(1);
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//
-////		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.2);
-//
-//		hdp.setsdA(0.2);
-//		double alpha = 1, eta = 0.1, beta = 0.01;
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setNumberOfIterations(30);
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-//
-//		hdp.train();
-//		hdp.test();
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-//		String perfFile = String.format("./data/hdp_lm_%d_10k_1.xls", lmTopK);
-//		hdp.printUserPerformance(perfFile);
+//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.2);
+
+		hdp.setsdA(0.2);
+		double alpha = 1, eta = 0.1, beta = 0.01;
+		hdp.setConcentrationParams(alpha, eta, beta);
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setNumberOfIterations(30);
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
+
+		hdp.train();
+		hdp.test();
+		
+		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
+		hdp.printUserPerformance(perfFile);
 				
 		/**Parameters in topic modeling.***/
 //		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!
@@ -182,15 +187,16 @@ public class MyHDPMain {
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.train();
 //		gsvm.test();
+//		System.out.println(analyzer.getUsers().size());
 //		gsvm.printUserPerformance("./data/gsvm_0.75.xls");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
-			
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(false);
-		mtsvm.train();
-		mtsvm.test();
+//			
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(false);
+//		mtsvm.train();
+//		mtsvm.test();
 //		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
 	}
 }

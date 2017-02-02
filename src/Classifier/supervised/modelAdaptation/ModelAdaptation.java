@@ -327,7 +327,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		
+		System.out.println("neg users: " + macroF1.get(0).size());
+		System.out.println("pos users: " + macroF1.get(1).size());
+
 		System.out.println(toString());
 		calcMicroPerfStat();
 		// macro average and standard deviation.
@@ -528,7 +530,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
 				}
 			});
-			
 			for(_AdaptStruct u: m_userList){
 				writer.write("-----\n");
 				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));

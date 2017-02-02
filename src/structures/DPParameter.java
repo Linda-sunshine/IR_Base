@@ -35,6 +35,9 @@ public class DPParameter {
 	public int m_base = 30;
 	public double m_th = 0.05;
 	
+	// used in the mixed model tuning.
+	public int m_threshold = 15;
+	
 //	public int m_userSet = 10; // The set of users we want to use.
 //	public int m_ttlSizeSet = 24; // The total number of sizes.
 //	public int m_ttlUserSetNo = 10; // The total number of user sets.
@@ -100,6 +103,8 @@ public class DPParameter {
 				m_th = Double.parseDouble(argv[i]);
 			else if(argv[i-1].equals("-adaptRatio"))
 				m_adaptRatio = Double.parseDouble(argv[i]);
+			else if(argv[i-1].equals("-threshold"))
+				m_threshold = Integer.parseInt(argv[i]);
 			else
 				exit_with_help();
 		}

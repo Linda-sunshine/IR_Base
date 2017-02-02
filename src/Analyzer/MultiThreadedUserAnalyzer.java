@@ -154,7 +154,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				}
 			}
 
-//			if(reviews.size() > 10){//at least one for adaptation and one for testing
+//			if(reviews.size() > 20){//at least one for adaptation and one for testing
 //				synchronized (m_allocReviewLock) {
 //					allocateReviews(reviews);				
 //					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.

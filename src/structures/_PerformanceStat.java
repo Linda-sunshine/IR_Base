@@ -87,7 +87,7 @@ public class _PerformanceStat {
 	
 	// How many reviews with the true class label specified.
 	public int getTrueClassNo(int classId){
-		return Utils.sumOfRow(m_confusionMat, classId);
+		return Utils.sumOfColumn(m_confusionMat, classId);
 	}
 	
 	public double getAccuracy() {

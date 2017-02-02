@@ -156,7 +156,7 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		else
 			prob = doc.m_prob/doc.m_pCount;
 		return prob>=0.5 ? 1:0;
-	}
+	}	
 	
 	public int predict_orc(_Doc doc){
 		double prob = 0;
