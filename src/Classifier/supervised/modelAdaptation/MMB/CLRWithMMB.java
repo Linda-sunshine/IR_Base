@@ -2,18 +2,19 @@ package Classifier.supervised.modelAdaptation.MMB;
 
 import java.util.HashMap;
 
+import org.apache.commons.math3.distribution.BinomialDistribution;
+
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import structures._HDPThetaStar;
-import structures._Review;
-import structures._Review.rType;
-import structures._thetaStar;
-import utils.Utils;
+import utils.Utils; 
 
 public class CLRWithMMB extends CLRWithHDP {
+	double[] m_ab = new double[]{0.1, 0.1}; // parameters used in the gamma function in mmb model.
+	double m_rho = 0.1;
+	BinomialDistribution m_bernoulli = new BinomialDistribution(1, m_rho);
 	
-	boolean m_mmb = false; // Flag whether we will generate edge from mmb.
 	public CLRWithMMB(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel,
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, betas);
@@ -29,7 +30,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	public void sampleOneEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
 		int k;
 		double likelihood, gamma_k, logSum = 0;
-		for(k=0; k<m_kBar; k++){
+		for(k=0; k<m_kBar+m_M; k++){
 			
 			ui.setThetaStar(m_hdpThetaStars[k]);
 			
@@ -42,9 +43,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			likelihood += Math.log(calcGroupPopularity(ui, k, gamma_k));
 			
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-			
-			// ????Integrate out new cluster probability?
-			
+						
 			if(k==0) 
 				logSum = likelihood;
 			else 
@@ -62,8 +61,8 @@ public class CLRWithMMB extends CLRWithHDP {
 
 		if(k >= m_kBar){//sampled a new cluster
 			
-			//
 			m_hdpThetaStars[k].initPsiModel(m_lmDim);
+			m_hdpThetaStars[k].initB();
 			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
 			
 			double rnd = Beta.staticNextDouble(1, m_alpha);
@@ -75,17 +74,21 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
-		// probability for Bernoulli distribution.
-		//	p(e_ij|z_{i->j}, z_{j->i},B)
-		double p = ui.getThetaStar().getB()[uj.getThetaStar().getIndex()];
-		double loglikelihood = 0;
-		
-		// how to get eij for amazon data? How to observe it?
-		int eij = 0;
-		loglikelihood = eij == 0 ? (1 - p) : p;
-		loglikelihood = Math.log(loglikelihood);
-		
-		return loglikelihood;
+		int eij = ui.hasEdge(uj) ? 1 : 0;
+		double[] B = ui.getThetaStar().getB();
+		if(B == null){
+			return Utils.lgamma(m_ab[0] + eij) + Utils.lgamma(1- eij + m_ab[1])
+					- Math.log(m_ab[0] + m_ab[1] + 1) - Utils.lgamma(m_ab[0]) - Utils.lgamma(m_ab[1]);
+		}
+		else{
+			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
+			double p = ui.getThetaStar().getB()[uj.getThetaStar().getIndex()];
+			double loglikelihood = 0;
+			//int eij = 0; // get eij from user perspective.
+			loglikelihood = eij == 0 ? (1 - p) : p;
+			loglikelihood = Math.log(loglikelihood);
+			return loglikelihood;
+		}
 	}
 	
 	protected void calculate_E_step(){
@@ -99,12 +102,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			for(int j=0; j<m_userList.size() && i!=j; j++){
-				
-				// sample from the Bernoulli distribution of one edge.
-				// m_mmb = ;
-				if(m_mmb){
-					uj = (_HDPAdaptStruct) m_userList.get(j);
-				
+				uj = (_HDPAdaptStruct) m_userList.get(j);
+
+				// if(eij == 1 || eij == 0 && bernoulli == 1)
+				if(ui.hasEdge(uj) || !ui.hasEdge(uj) && m_bernoulli.sample() == 1){
 					// If there is connection between ui and uj, update the connection.
 					if(ui.hasEdge(uj)){
 						//Step 1: remove the current review from the thetaStar and user side.
@@ -113,8 +114,8 @@ public class CLRWithMMB extends CLRWithHDP {
 						curThetaStar.updateEdgeCount(-1);
 
 						if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0) {// No data associated with the cluster.
-							//????
-							curThetaStar.resetPsiModel();
+							curThetaStar.resetB();// Clear the probability vector.
+							curThetaStar.resetPsiModel();// Clear the language model parameter.
 							m_gamma_e += curThetaStar.getGamma();
 							index = findHDPThetaStar(curThetaStar);
 							swapTheta(m_kBar-1, index); // move it back to \theta*

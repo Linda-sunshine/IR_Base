@@ -83,4 +83,7 @@ public class _HDPThetaStar extends _thetaStar {
 	public double[] getB(){
 		return m_B;
 	}
+	public void resetB(){
+		m_B = null;
+	}
 }
