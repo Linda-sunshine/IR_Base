@@ -104,24 +104,25 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(int j=0; j<m_userList.size() && i!=j; j++){
 				uj = (_HDPAdaptStruct) m_userList.get(j);
 
-				// if(eij == 1 || eij == 0 && bernoulli == 1)
-				if(ui.hasEdge(uj) || !ui.hasEdge(uj) && m_bernoulli.sample() == 1){
-					// If there is connection between ui and uj, update the connection.
-					if(ui.hasEdge(uj)){
-						//Step 1: remove the current review from the thetaStar and user side.
-						curThetaStar = ui.getThetaStar(uj);
-						ui.incHDPThetaStarEdgeSize(curThetaStar, -1);				
-						curThetaStar.updateEdgeCount(-1);
-
-						if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0) {// No data associated with the cluster.
-							curThetaStar.resetB();// Clear the probability vector.
-							curThetaStar.resetPsiModel();// Clear the language model parameter.
-							m_gamma_e += curThetaStar.getGamma();
-							index = findHDPThetaStar(curThetaStar);
-							swapTheta(m_kBar-1, index); // move it back to \theta*
-							m_kBar --;
-						}
+				// There are three cases.
+				// case 1: eij = 1
+				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
+					//Step 1: remove the edge from the thetaStar and user side.
+					curThetaStar = ui.getThetaStar(uj);
+					ui.incHDPThetaStarEdgeSize(curThetaStar, -1);	
+					ui.rmNeighbor(uj); // remove the neighbor
+					curThetaStar.updateEdgeCount(-1);
+					
+					if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0){// No data associated with the cluster.
+						curThetaStar.resetB();// Clear the probability vector.
+						curThetaStar.resetPsiModel();// Clear the language model parameter.
+						m_gamma_e += curThetaStar.getGamma();
+						index = findHDPThetaStar(curThetaStar);
+						swapTheta(m_kBar-1, index); // move it back to \theta*
+						m_kBar --;
 					}
+				// case 2: eij = 0 (the connection between ui and uj is from MMB while it is 0)
+				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 					//Step 2: sample new cluster assignment for this pair (ui, uj).
 					sampleOneEdge(ui, uj);
 				
@@ -131,6 +132,9 @@ public class CLRWithMMB extends CLRWithHDP {
 						if (sampleSize%100000==0)
 							System.out.println();
 					}
+				// case 3: there is no connection between ui and uj.
+				} else{
+					
 				}
 			}
 		}

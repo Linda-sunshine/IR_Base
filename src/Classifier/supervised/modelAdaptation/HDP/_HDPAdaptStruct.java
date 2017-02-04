@@ -22,12 +22,15 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
 	// key: uj; val: group parameter-_HDPThetaStar.
 	protected HashMap<_HDPAdaptStruct, _HDPThetaStar> m_neighborMap;
+	// key: uj; val: the edge: 1 or 0.
+	protected HashMap<_HDPAdaptStruct, Integer> m_neighborEdgeMap;
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
+		m_neighborEdgeMap = new HashMap<_HDPAdaptStruct, Integer>();
 	}
 
 	public _HDPAdaptStruct(_User user, int dim){
@@ -35,7 +38,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
-
+		m_neighborEdgeMap = new HashMap<_HDPAdaptStruct, Integer>();
 	}
 	//Return the number of members in the given thetaStar.
 	public int getHDPThetaMemSize(_HDPThetaStar s){
@@ -59,7 +62,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			m_hdpThetaMemSizeMap.remove(s);
 	}
 	
-	/**Functions used in MMB model.**/
+	/********Functions used in MMB model.********/
 	// Return the number of edges in the given thetaStar.
 	public int getHDPThetaEdgeSize(_HDPThetaStar s){
 		if(m_hdpThetaEdgeSizeMap.containsKey(s))
@@ -88,11 +91,20 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		else
 			return false;
 	}
-	
-	public void updateNeighbors(_HDPAdaptStruct uj, _HDPThetaStar theta){
+	public int getEdge(_HDPAdaptStruct uj){
+		return m_neighborEdgeMap.get(uj);
+	}
+	// Update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
+	public void updateNeighbors(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
 		m_neighborMap.put(uj, theta);
+		m_neighborEdgeMap.put(uj, e);
 	}
 	
+	public void rmNeighbor(_HDPAdaptStruct uj){
+		m_neighborMap.remove(uj);
+		m_neighborEdgeMap.remove(uj);
+	}
+	/**********************/
 	public _HDPThetaStar getThetaStar(_HDPAdaptStruct uj){
 		return m_neighborMap.get(uj);
 	}
