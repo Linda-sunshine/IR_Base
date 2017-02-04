@@ -95,8 +95,9 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		return m_neighborEdgeMap.get(uj);
 	}
 	// Update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
-	public void updateNeighbors(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
+	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
 		m_neighborMap.put(uj, theta);
+		if(m_hdpThetaStar)
 		m_neighborEdgeMap.put(uj, e);
 	}
 	
