@@ -8,6 +8,7 @@ import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import structures._HDPThetaStar;
+import structures._MMBNeighbor;
 import utils.Utils; 
 
 public class CLRWithMMB extends CLRWithHDP {
@@ -27,7 +28,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// Sample one edge between (ui, uj)
-	public void sampleOneEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
+	public void sampleOneEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
 		int k;
 		double likelihood, gamma_k, logSum = 0;
 		for(k=0; k<m_kBar+m_M; k++){
@@ -54,13 +55,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(1);//-->1
-		ui.updateNeighbors(uj, m_hdpThetaStars[k]);
+		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
 		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3		
 
 		if(k >= m_kBar){//sampled a new cluster
-			
+
 			m_hdpThetaStars[k].initPsiModel(m_lmDim);
 			m_hdpThetaStars[k].initB();
 			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
@@ -105,12 +106,12 @@ public class CLRWithMMB extends CLRWithHDP {
 				uj = (_HDPAdaptStruct) m_userList.get(j);
 
 				// There are three cases.
-				// case 1: eij = 1
-				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
-					//Step 1: remove the edge from the thetaStar and user side.
+				// Case 1&2: eij = 1 or (eij = 0 && eij is from mmb)
+				if(ui.hasEdge(uj)){
+					// remove the neighbor from user.
+					ui.rmNeighbor(uj);
+					// remove the edge from the theta.
 					curThetaStar = ui.getThetaStar(uj);
-					ui.incHDPThetaStarEdgeSize(curThetaStar, -1);	
-					ui.rmNeighbor(uj); // remove the neighbor
 					curThetaStar.updateEdgeCount(-1);
 					
 					if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0){// No data associated with the cluster.
@@ -121,33 +122,66 @@ public class CLRWithMMB extends CLRWithHDP {
 						swapTheta(m_kBar-1, index); // move it back to \theta*
 						m_kBar --;
 					}
-				// case 2: eij = 0 (the connection between ui and uj is from MMB while it is 0)
-				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
-					//Step 2: sample new cluster assignment for this pair (ui, uj).
-					sampleOneEdge(ui, uj);
-				
-					if (++sampleSize%2000==0) {
-						System.out.print('.');
-						sampleGamma();//will this help sampling?
-						if (sampleSize%100000==0)
-							System.out.println();
+					// if eij == 1, sample z_{i->j}
+					if(ui.getEdge(uj) == 1){
+						sampleOneEdge(ui, uj, 1);
+						sampleSize++;
 					}
-				// case 3: there is no connection between ui and uj.
+					// else if eij == 0, we need another variable to decide whether sample it or not.
+					else{
+						if(m_bernoulli.sample() == 1){
+							sampleOneEdge(ui, uj, 0);
+							sampleSize++;
+						}
+					}
+				// Case 3: eij = 0 && eij is from background model.
+				// We don't record the edge, thus no need to remove it.
 				} else{
-					
+					if(m_bernoulli.sample() == 1){
+						sampleOneEdge(ui, uj, 0);
+						sampleSize++;
+					}
+				}				
+				if (++sampleSize%2000==0) {
+					System.out.print('.');
+					if (sampleSize%100000==0)
+						System.out.println();
 				}
 			}
 		}
 	}
 	@Override
 	protected double calculate_M_step(){
+		assignClusterIndex();
+		
 		// sample gamma + estPsi + estPhi
 		double likelihood = super.calculate_M_step();
 		return likelihood + estB() + estRho();
 	}
 	
-	// Estimate the Bernoulli rates matrix.
+	// Estimate the Bernoulli rates matrix using Newton-Raphson method.
+	// We maintain two matrixes to calculate the B. 
 	public double estB(){
+		int g = 0, h = 0;
+		_HDPAdaptStruct ui;
+		_MMBNeighbor uj;
+		double[][] B_n = new double[m_kBar][m_kBar];
+		double[][] B_d = new double[m_kBar][m_kBar];
+		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighborsMap;
+		// Iterate through all the user pairs.
+		for(int i=0; i<m_userList.size(); i++){
+			ui = (_HDPAdaptStruct) m_userList.get(i);
+			neighborsMap = ui.getNeighbors();
+			for(_HDPAdaptStruct uin: neighborsMap.keySet()){
+				uj = neighborsMap.get(uin);
+				if(uj.getEdge() == 1){
+					g = findIndex(uj.getHDPThetaStar());
+					h = findIndex(uin.getOneNeighbor(ui).getHDPThetaStar());
+					B_n[g][h] += uj.getHDPThetaStar().getB()[h] * uin.getOneNeighbor(ui).getHDPThetaStar().getB()[g];
+					B_d[g][h] += 
+				}
+			}
+		}
 		return 0;
 	}
 	

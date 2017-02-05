@@ -7,6 +7,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
+import structures._MMBNeighbor;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
@@ -21,24 +22,20 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	// key: global component parameter; val: edge size.
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
 	// key: uj; val: group parameter-_HDPThetaStar.
-	protected HashMap<_HDPAdaptStruct, _HDPThetaStar> m_neighborMap;
-	// key: uj; val: the edge: 1 or 0.
-	protected HashMap<_HDPAdaptStruct, Integer> m_neighborEdgeMap;
+	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
-		m_neighborEdgeMap = new HashMap<_HDPAdaptStruct, Integer>();
+		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	public _HDPAdaptStruct(_User user, int dim){
 		super(user, dim);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_neighborMap = new HashMap<_HDPAdaptStruct, _HDPThetaStar>();
-		m_neighborEdgeMap = new HashMap<_HDPAdaptStruct, Integer>();
+		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 	//Return the number of members in the given thetaStar.
 	public int getHDPThetaMemSize(_HDPThetaStar s){
@@ -92,24 +89,38 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			return false;
 	}
 	public int getEdge(_HDPAdaptStruct uj){
-		return m_neighborEdgeMap.get(uj);
+		return m_neighborMap.get(uj).getEdge();
 	}
-	// Update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
+	// Add a neighbor, update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
 	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
-		m_neighborMap.put(uj, theta);
-		if(m_hdpThetaStar)
-		m_neighborEdgeMap.put(uj, e);
+		m_neighborMap.put(uj, new _MMBNeighbor(uj, theta, e));
+		
+		// Increase the edge size by 1.
+		incHDPThetaStarEdgeSize(theta, 1);
 	}
 	
+	// Remove one neighbor, 
 	public void rmNeighbor(_HDPAdaptStruct uj){
+		// Decrease the edge size by 1.
+		_HDPThetaStar theta = m_neighborMap.get(uj).getHDPThetaStar();
+		incHDPThetaStarEdgeSize(theta, -1);
+		
 		m_neighborMap.remove(uj);
-		m_neighborEdgeMap.remove(uj);
+	}
+	
+	// Get the group membership for the edge between i->j.
+	public _HDPThetaStar getThetaStar(_HDPAdaptStruct uj){
+		return m_neighborMap.get(uj).getHDPThetaStar();
+	}
+	
+	public _MMBNeighbor getOneNeighbor(_HDPAdaptStruct u){
+		return m_neighborMap.get(u);
+	}
+	public HashMap<_HDPAdaptStruct, _MMBNeighbor> getNeighbors(){
+		return m_neighborMap;
 	}
 	/**********************/
-	public _HDPThetaStar getThetaStar(_HDPAdaptStruct uj){
-		return m_neighborMap.get(uj);
-	}
-	
+
 	public Collection<_HDPThetaStar> getHDPTheta(){
 		return m_hdpThetaMemSizeMap.keySet();
 	}
