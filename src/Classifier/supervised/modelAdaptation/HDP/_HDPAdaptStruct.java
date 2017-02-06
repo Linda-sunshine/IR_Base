@@ -37,6 +37,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
+
 	//Return the number of members in the given thetaStar.
 	public int getHDPThetaMemSize(_HDPThetaStar s){
 		if(m_hdpThetaMemSizeMap.containsKey(s))

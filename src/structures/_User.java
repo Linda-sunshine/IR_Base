@@ -336,4 +336,13 @@ public class _User {
 	public double getTestPos(){
 		return m_testPos;
 	}
+	
+	// added by Lin for friendship.
+	String[] m_friends;
+	public void setFriends(String[] fs){
+		m_friends = Arrays.copyOf(fs, fs.length);
+	}
+	public String[] getFriends(){
+		return m_friends;
+	}
  }

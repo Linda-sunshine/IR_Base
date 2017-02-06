@@ -1,10 +1,12 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -179,6 +181,18 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 		while(count < k){
 			for(_Review r: m_users.get(count++).getReviews())
 				r.setType(rType.SEPARATE);
+		}
+	}
+	
+	public void saveUsers(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_User u: m_users)
+				writer.write(u.getUserID()+"\n");
+			writer.close();
+			System.out.println(m_users.size() + " users are saved!");
+		} catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

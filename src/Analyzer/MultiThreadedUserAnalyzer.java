@@ -4,10 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -117,6 +121,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
+	
 
 	// Load one file as a user here. 
 	private void loadUser(String filename, int core){
@@ -124,7 +129,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line;			
-			String userID = extractUserID(file.getName()); //UserId is contained in the filename.
+			String userID = extractUserID(file.getName()); //UserId is contained in the filename.				
+			
 			// Skip the first line since it is user name.
 			reader.readLine(); 
 
@@ -526,6 +532,32 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		
 		for(int[] c: m_ctgStat){
 			System.out.print(String.format("%d\t%d\n", c[0], c[1]));
+		}
+	}
+	
+	// key: user id; value: friends array.
+	HashMap<String, String[]> m_neighborsMap = new HashMap<String, String[]>();
+	public void buildFriendship(String filename){
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, friends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				friends = Arrays.copyOfRange(users, 1, users.length);
+				m_neighborsMap.put(users[0], friends);
+			}
+			reader.close();
+			// map friends to users.
+			for(_User u: m_users){
+				if(m_neighborsMap.containsKey(u.getUserID()))
+					u.setFriends(m_neighborsMap.get(u.getUserID()));
+				else
+					System.out.println("The user does not have any friends.");
+			}
+		} catch(IOException e){
+			e.printStackTrace();
 		}
 	}
 }

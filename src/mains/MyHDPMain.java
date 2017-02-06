@@ -48,7 +48,7 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -88,9 +88,7 @@ public class MyHDPMain {
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
-		//analyzer.printCategoryInfo();
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-//		//analyzer.CtgCorrelation();
 		
 //		int count = 0;
 //		System.out.println(analyzer.getUsers().size());
@@ -131,25 +129,25 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		
-//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);
-
-		hdp.setsdA(0.2);
-		double alpha = 1, eta = 0.1, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(30);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-
-		hdp.train();
-		hdp.test();
-		
-		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
-		hdp.printUserPerformance(perfFile);
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		
+////		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.2);
+//
+//		hdp.setsdA(0.2);
+//		double alpha = 1, eta = 0.1, beta = 0.01;
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		hdp.setNumberOfIterations(30);
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//
+//		hdp.train();
+//		hdp.test();
+//		
+//		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
+//		hdp.printUserPerformance(perfFile);
 				
 		/**Parameters in topic modeling.***/
 //		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!
