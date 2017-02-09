@@ -86,7 +86,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			ui.setThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of the edge p(e_{ij}, z, B)
-			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pi_j})
+			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
 			likelihood = calcLogLikelihoodE(ui, uj);
 						
 			//p(z=k|\gamma,\eta)
@@ -151,7 +151,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
-		int eij = ui.hasEdge(uj) ? 1 : 0;
+		int eij = ui.hasEdge(uj) ? ui.getEdge(uj) : 0;
+		if(uj.getThetaStar() == null)
+			System.out.println("Bug here!");
 		if(!ui.getThetaStar().hasB(uj.getThetaStar())){
 			return Utils.lgamma(m_ab[0] + eij) + Utils.lgamma(1- eij + m_ab[1])
 					- Math.log(m_ab[0] + m_ab[1] + 1) - Utils.lgamma(m_ab[0]) - Utils.lgamma(m_ab[1]);
@@ -250,6 +252,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			neighborsMap = ui.getNeighbors();
 			thetai = ui.getThetaStar();
 			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
+				if(uj == null) continue;
 				muj = neighborsMap.get(uj);
 				mui = uj.getOneNeighbor(ui);
 				g = muj.getHDPThetaStar().getIndex();
