@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
@@ -17,7 +18,7 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	// Parameters used in MMB model.
 	protected int m_edgeSize;
-	double[] m_B;
+	HashMap<_HDPThetaStar, Double> m_B;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
@@ -40,8 +41,8 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_psi;
 	}
 	
-	public void initB(int dim){
-		m_B = new double[dim];
+	public void initB(){
+		m_B = new HashMap<_HDPThetaStar, Double>();
 	}
 	public void setGamma(double g){
 		m_gamma = g;
@@ -73,7 +74,6 @@ public class _HDPThetaStar extends _thetaStar {
 		m_psi = null;
 	}
 	
-	
 	// Functions used in MMB model.
 	public void updateEdgeCount(int c){
 		m_edgeSize += c;
@@ -82,8 +82,26 @@ public class _HDPThetaStar extends _thetaStar {
 	public int getEdgeSize(){
 		return m_edgeSize;
 	}
-	
-	public double[] getB(){
+	// key: the thetastar, value: probability.
+	public void addOneB(_HDPThetaStar t, double p){
+		m_B.put(t, p);
+	}
+	// check if the user group existing or not.
+	public boolean hasB(_HDPThetaStar theta){
+		if(m_B.containsKey(theta))
+			return true;
+		else
+			return false;
+	}
+	public double getOneB(_HDPThetaStar t){
+		if(hasB(t))
+			return m_B.get(t);
+		else{
+			System.out.println("The probability does not exist!");
+			return 0;
+		}
+	}
+	public HashMap<_HDPThetaStar, Double> getB(){
 		return m_B;
 	}
 	// update B with the newly estimated value.

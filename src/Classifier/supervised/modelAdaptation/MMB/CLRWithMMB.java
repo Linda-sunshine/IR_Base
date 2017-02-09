@@ -130,9 +130,9 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	public void sampleNewCluster(int k){
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
-		m_hdpThetaStars[k].initB(m_kBar+1);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
-		sampleFromBeta(m_hdpThetaStars[k].getB());// use the true space.
+		m_hdpThetaStars[k].initB();
+		sampleB(m_hdpThetaStars[k]);
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
@@ -140,20 +140,24 @@ public class CLRWithMMB extends CLRWithHDP {
 		swapTheta(m_kBar, k);
 		m_kBar++;
 	}
+	
 	// sample each element of the vector 
-	public void sampleFromBeta(double[] b){
-		for(int i=0; i<b.length; i++)
-			b[i] = m_Beta.sample();
+	public void sampleB(_HDPThetaStar theta){
+		for(int k=0; k<m_kBar; k++){
+			// add the prob between B_{existing theta, new theta} to the hashmap. 
+			m_hdpThetaStars[k].addOneB(theta, m_Beta.sample());
+			// add the prob between B_{new theta, existing theta} to the hashmap. 
+			theta.addOneB(m_hdpThetaStars[k], m_Beta.sample());
+		}
 	}
 	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
 		int eij = ui.hasEdge(uj) ? 1 : 0;
-		double[] B = ui.getThetaStar().getB();
-		if(B == null){
+		if(!ui.getThetaStar().hasB(uj.getThetaStar())){
 			return Utils.lgamma(m_ab[0] + eij) + Utils.lgamma(1- eij + m_ab[1])
 					- Math.log(m_ab[0] + m_ab[1] + 1) - Utils.lgamma(m_ab[0]) - Utils.lgamma(m_ab[1]);
 		} else{
 			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
-			double p = ui.getThetaStar().getB()[uj.getThetaStar().getIndex()];
+			double p = ui.getThetaStar().getOneB(uj.getThetaStar());
 			double loglikelihood = 0;
 			//int eij = 0; // get eij from user perspective.
 			loglikelihood = eij == 0 ? (1 - p) : p;
@@ -187,11 +191,10 @@ public class CLRWithMMB extends CLRWithHDP {
 					ui.rmNeighbor(uj);
 					
 					if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0){// No data associated with the cluster.
-						curThetaStar.resetB();// Clear the probability vector.
-						curThetaStar.resetPsiModel();// Clear the language model parameter.
 						m_gamma_e += curThetaStar.getGamma();
 						index = findHDPThetaStar(curThetaStar);
 						swapTheta(m_kBar-1, index); // move it back to \theta*
+						curThetaStar = null;// Clear the probability vector.
 						m_kBar --;
 					}
 					// if eij == 1, sample z_{i->j}
@@ -209,16 +212,15 @@ public class CLRWithMMB extends CLRWithHDP {
 				// Case 3: eij = 0 && eij is from background model.
 				// We don't record the edge, thus no need to remove it.
 				} else{
-					if(m_bernoulli.samp
-							(ui, uj, 0);
+					if(m_bernoulli.sample() == 1)
+						sampleOneEdge(ui, uj, 0);
 						sampleSize++;
 					}
 				}				
-				if (sampleSize%2000==0) {
-					System.out.print('.');
-					if (sampleSize%100000==0)
-						System.out.println();
-				}
+			if (sampleSize%2000==0) {
+				System.out.print('.');
+				if (sampleSize%100000==0)
+					System.out.println();
 			}
 		}
 	}
@@ -236,6 +238,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	public double estB(){
 		double phi_gh = 0;
 		_HDPAdaptStruct ui;
+		_HDPThetaStar thetai, thetaj;
 		_MMBNeighbor mui, muj;
 		double[][] B_n = new double[m_kBar][m_kBar];
 		double[][] B_d = new double[m_kBar][m_kBar];
@@ -245,12 +248,14 @@ public class CLRWithMMB extends CLRWithHDP {
 			int g = 0, h = 0;
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			neighborsMap = ui.getNeighbors();
+			thetai = ui.getThetaStar();
 			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
 				muj = neighborsMap.get(uj);
 				mui = uj.getOneNeighbor(ui);
 				g = muj.getHDPThetaStar().getIndex();
 				h = mui.getHDPThetaStar().getIndex();
-				phi_gh = muj.getHDPThetaStar().getB()[h] * mui.getHDPThetaStar().getB()[g];
+				thetaj = neighborsMap.get(uj).getHDPThetaStar();
+				phi_gh = thetai.getOneB(thetaj) * thetaj.getOneB(thetai);
 				// B(g, h) = B_n/B_d
 				// B_n = (\sum_{p,q}Y(p,q)phi_{p->q,g}phi_{q->p, h})
 				// B_d = (1-\rho)(\sum_{p,q}phi_{p->q,g}phi_{q->p, h})
@@ -271,8 +276,14 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	// Assign the newly estimated Bs to each group parameter.
 	public void assignB(){
-		for(int i=0; i<m_Bs.length; i++){
-			m_hdpThetaStars[i].updateB(m_Bs[i]);
+		int h = 0;
+		HashMap<_HDPThetaStar, Double> B;
+		for(int g=0; g<m_kBar; g++){
+			B = m_hdpThetaStars[g].getB();
+			for(_HDPThetaStar thetaj: B.keySet()){
+				h = thetaj.getIndex();
+				B.put(thetaj, m_Bs[g][h]);
+			}
 		}
 	}
 	
