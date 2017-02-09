@@ -45,6 +45,34 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
+	public void check(){
+		m_userMap = new HashMap<String, _HDPAdaptStruct>();
+		// construct the map.
+		for(_AdaptStruct ui: m_userList)
+			m_userMap.put(ui.getUserID(), (_HDPAdaptStruct) ui);
+		
+		// add the friends one by one.
+		for(_AdaptStruct ui: m_userList){
+			for(String nei: ui.getUser().getFriends()){
+				if(m_userMap.containsKey(nei)){
+					String[] frds = m_userMap.get(nei).getUser().getFriends();
+					if(hasFriend(frds, ui.getUserID()))
+						System.out.print("");
+					else
+						System.out.print("x");
+				}
+			}
+		}
+		
+	}
+	
+	public boolean hasFriend(String[] arr, String str){
+		for(String a: arr){
+			if(str.equals(a))
+				return true;
+		}
+		return false;
+	}
 	@Override
 	public void initThetaStars(){
 		// assign each review to one cluster.
@@ -87,7 +115,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
-			likelihood = calcLogLikelihoodE(ui, uj);
+			likelihood = calcLogLikelihoodE(ui, uj, e);
 						
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -150,19 +178,15 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta.addOneB(m_hdpThetaStars[k], m_Beta.sample());
 		}
 	}
-	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
-		int eij = ui.hasEdge(uj) ? ui.getEdge(uj) : 0;
-		if(uj.getThetaStar() == null)
-			System.out.println("Bug here!");
-		if(!ui.getThetaStar().hasB(uj.getThetaStar())){
-			return Utils.lgamma(m_ab[0] + eij) + Utils.lgamma(1- eij + m_ab[1])
+	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
+		if(!ui.hasEdge(uj)){
+			return Utils.lgamma(m_ab[0] + e) + Utils.lgamma(1- e + m_ab[1])
 					- Math.log(m_ab[0] + m_ab[1] + 1) - Utils.lgamma(m_ab[0]) - Utils.lgamma(m_ab[1]);
 		} else{
 			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
-			double p = ui.getThetaStar().getOneB(uj.getThetaStar());
+			double bij = ui.getOneNeighbor(uj).getHDPThetaStar().getOneB(uj.getOneNeighbor(uj).getHDPThetaStar());
 			double loglikelihood = 0;
-			//int eij = 0; // get eij from user perspective.
-			loglikelihood = eij == 0 ? (1 - p) : p;
+			loglikelihood = e == 0 ? (1 - bij) : bij;
 			loglikelihood = Math.log(loglikelihood);
 			return loglikelihood;
 		}
@@ -175,7 +199,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		// sample z_{i->j}
 		_HDPThetaStar curThetaStar;
 		_HDPAdaptStruct ui, uj;
-		int index, sampleSize = 0, eij = 0;
+		int index, sampleSize = 1, eij = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			for(int j=0; j<m_userList.size() && i!=j; j++){
@@ -214,17 +238,19 @@ public class CLRWithMMB extends CLRWithHDP {
 				// Case 3: eij = 0 && eij is from background model.
 				// We don't record the edge, thus no need to remove it.
 				} else{
-					if(m_bernoulli.sample() == 1)
+					if(m_bernoulli.sample() == 1){
 						sampleOneEdge(ui, uj, 0);
 						sampleSize++;
 					}
-				}				
-			if (sampleSize%2000==0) {
-				System.out.print('.');
-				if (sampleSize%100000==0)
-					System.out.println();
+				}	
+				if (sampleSize%5000==0) {
+					System.out.print('.');
+					if (sampleSize%100000==0)
+						System.out.println();
+				}
 			}
 		}
+		System.out.println(sampleSize + " edges are sampled.");
 	}
 	@Override
 	protected double calculate_M_step(){
@@ -234,6 +260,24 @@ public class CLRWithMMB extends CLRWithHDP {
 		double likelihood = super.calculate_M_step();
 		return likelihood + estB() + estRho();
 	}
+	
+//	public void checkB(){
+//		_HDPAdaptStruct ui;
+//		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighborsMap;
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			ui = (_HDPAdaptStruct) m_userList.get(i);
+//			neighborsMap = ui.getNeighbors();
+//			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
+//				if(!uj.getNeighbors().containsKey(ui))
+//					System.out.print("x");
+//			}
+//		}
+//	}
+//	public double estB(){
+//		checkB();
+//		return 0;
+//	}
 	
 	// Estimate the Bernoulli rates matrix using Newton-Raphson method.
 	// We maintain two matrixes to calculate the B. 
@@ -252,9 +296,15 @@ public class CLRWithMMB extends CLRWithHDP {
 			neighborsMap = ui.getNeighbors();
 			thetai = ui.getThetaStar();
 			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
-				if(uj == null) continue;
+				if(uj == null) 
+					System.out.print("u");
 				muj = neighborsMap.get(uj);
 				mui = uj.getOneNeighbor(ui);
+				if(mui == null || muj == null)
+					System.out.print("m");
+				
+				if(muj.getHDPThetaStar() == null || mui.getHDPThetaStar() == null)
+					System.out.print("mt");
 				g = muj.getHDPThetaStar().getIndex();
 				h = mui.getHDPThetaStar().getIndex();
 				thetaj = neighborsMap.get(uj).getHDPThetaStar();

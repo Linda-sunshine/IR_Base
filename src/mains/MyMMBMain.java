@@ -70,10 +70,9 @@ public class MyMMBMain {
 		hdp.setNumberOfIterations(30);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
-
 		hdp.train();
 		hdp.test();
-//		
+		
 //		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
 //		hdp.printUserPerformance(perfFile);
 	}
