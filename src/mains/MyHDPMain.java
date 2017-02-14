@@ -48,7 +48,7 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -90,11 +90,6 @@ public class MyHDPMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-//		int count = 0;
-//		System.out.println(analyzer.getUsers().size());
-//		for(_User u: analyzer.getUsers())
-//			count += u.getReviewSize();
-//		System.out.println(count);
 		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;
 //		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, null, Ngram, lengthThreshold, numberOfCores, false);
@@ -130,57 +125,27 @@ public class MyHDPMain {
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		
-////		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.2);
-//
-//		hdp.setsdA(0.2);
-//		double alpha = 1, eta = 0.1, beta = 0.01;
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setNumberOfIterations(30);
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-//
-//		hdp.train();
-//		hdp.test();
-//		
-//		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
-//		hdp.printUserPerformance(perfFile);
-				
-		/**Parameters in topic modeling.***/
-//		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 200;//these two parameters must be larger than 1!!!
-//		double converge = 1e-9, lambda = 0.9; // negative converge means do not need to check likelihood convergency
-//		double varConverge = 1e-5, burnIn = 0.4;
-//		int varIter = 10, gibbs_iteration = 1000, gibbs_lag = 50;
-//		int number_of_topics = 40, topK = 30;
-//		String infoFilePath = "./data/info.txt";
-//		String topWordPath = String.format("./data/topWords_%d_topics_top%d.txt", number_of_topics, topK);
-//		
-//		LDA_Gibbs model = new LDA_Gibbs(gibbs_iteration, 0, beta, analyzer.getCorpus(), //in gibbs sampling, no need to compute log-likelihood during sampling
-//			lambda, number_of_topics, alpha, burnIn, gibbs_lag);
-//		model.setInforWriter(infoFilePath);
-//		model.EMonCorpus();
-//		model.printOnlyTopWords(topK, topWordPath);
+		
+		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.2);
+
+		hdp.setsdA(0.2);
+		double alpha = 1, eta = 0.1, beta = 0.01;
+		hdp.setConcentrationParams(alpha, eta, beta);
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setNumberOfIterations(30);
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
+		hdp.setPosteriorSanityCheck(true);
+		
+		hdp.train();
+		hdp.test();
+		
+		//String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
+		//hdp.printUserPerformance(perfFile);
 		
 		/**Baselines***/
-//		IndSVMWithKmeansExp svmkmeans = new IndSVMWithKmeansExp(classNumber, analyzer.getFeatureSize(), 100);
-//		svmkmeans.loadUsers(analyzer.getUsers());
-//		svmkmeans.setLabel(false);
-//		svmkmeans.train();
-//		svmkmeans.test();
-//		
-//		int threshold = 100;
-//		svmkmeans.CrossValidation(5, threshold);
-		
-//		Base base = new Base(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
-//		base.loadUsers(analyzer.getUsers());
-//		base.setPersonalizedModel();
-//		base.test();
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-		
 //		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.train();

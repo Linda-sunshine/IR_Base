@@ -1,0 +1,672 @@
+Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+45 categories are loaded!
+9760 users are loaded from ./data/CoLinAdapt/Amazon/Users...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 69235(0.75), and testing size: 73911(0.73)
+MTCLinAdaptWithHDPExp[dim:801,supDim:5001,lmDim:1000,M:6,alpha:1.0000,eta:0.1000,beta:0.0100,nScale:(0.050,0.050),supScale:(0.050,0.050),#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+..................................28
+oxooxoxooooooooooooxooooooooooooooxooooooooooxoooooxooooooooxoooooxooooooooooooooooooxoooooooooxoooo
+oxoooooooxooooxooooooooooooooxooxoooooooooooooxoooooooooooooooooxooooooooooooooooxoooooxooooxoooooxo
+oooooooooooooooooooxooooxoooooxoooooooooxooooooooooooooooxooooooxoooooooooxooxooooooxooooooooxoooooo
+xoooxooooxoooooxoooooooxooooooooxooooooooxooooxooooooooxoooooooooxooooooxoooooooxoooooooooxooooooooo
+ooooooooxoooooooooooooooooooooooooooooooooooxoooooooooooooooooxooxooooooooxoooooxoooooooooxooooooooo
+oooooooooooooooooooooooooooooooooooooooxoooooooooooooxooooooooooooooooxooooooooooooooooooooooooooooo
+ooooooxooooooooooooooxooooooooooxoooooooooooooooooooooooooooooooooooooooxooooooooxoooxooooxooooooooo
+oxooooooooxoooooxooooooooooooooxoooxoooooxooooooooooxooooooooooxooooooooooooooooooxooooxoooooooooooo
+ooxooooxoooooooooooooooooooooooxooooxooooooooooooooooooooooooooooooooxoooooooooxoooooooooooooooxoooo
+ooooxooooooooooooooooxooooooooxoooooooooooooooooooooooooooooooooxooooooooooooooooooooooooooooxoooooo
+xooooooooxooooooooxooooooooxooooxooooooooxoooooooooooooooooooooxooxoooooooooooooooxoooooooxoooooooox
+oooooooooooooooooxooooxoooooxoooooooooxoooooooooooooooooooooooooooooooxoooooxooooooooooooooooooooooo
+oooooooooooooooxoooooxoooooooxooooxoooooooooxooooooxooooooooxooooooooxoooooooooooooooooooooooooooooo
+xoooooooooooooooooooxoooooooxooooooooxoooooooooooooxoooooooooooooooxoooooooooooooooxooooooooxoooxooo
+ooxoooooooooxooooxooooooooxooooooooxoooooooxooooooooooooooooooooooxooooooooxoooooxooooxooooooooooxoo
+ooooooooooxoooooooxooooooooooooooooxoooooooooxoooooooooooooooooooooooooxoooooooooooooooooxooooxooooo
+oooxooooooooooooooooooooooooooooooooooooooxooooooooooooooxoooooooxoooooooooxoooooooooxooooxooooooooo
+oooxooooooooooooooooxooooooooxoooooooooooxoooooooooooooooooooooooxooooooooxoooooooooxooooooooooooooo
+oooooooooxooooooooxoooooxoooxoooooxooooxoooooooooooooooooooooooooooooooooooooooxooooooooooooooooxooo
+oooxooxoooooxooooxooooooooxoooooooooooooooxoooooooooooooooooooxoooooooxoooooxoooooooooooooxooooxoooo
+oooooxooooooooxooooooooxooooooxooxoooooooxoooooooooooooooxoooooooxoooooooooxooooooooxooooooooxoooooo
+ooooooooooxooooooooooooooooooooooxoooxooooooxooooooooxoooooooooooooxooxoooooxooooooooooooooooxoooooo
+ooxooooooooooooooooxoooooooooxooooooooooxoooooxoooooooooooooooooooooooooooooooxooooxoooooooooooooooo
+oooooooxoooooooooooooxooooxoooooooxooooooxooxooooooooooooooxooooooooxoooooooooooooooxooooooooooooooo
+oxoooooooooooxooooxoooooooooxoooooxooooxooooooooooooooxooxooxoooooxooooooxooooooxooooxoooooooooooooo
+oooooooooooooooooooooooxooooooooxooxoooooooooooooxooooooooooooooooooooooooxoooooooooxooooxoooooxoooo
+xoooooxoooooooooxooooxooooooooxooooooxoooooooooxoooooxooooxoooooooooooooooooooooooooxoooooooooxooooo
+ooooxooooooxoooooxooooxooooxooooooooooooooxooooxoooooooooooooxooooxoooooooooooooooooooxooooooooxoooo
+ooxoooooooooxoooooooxooooooxoooxoooooooooxooooooooxoooooooxooooooooxooooooooooooooooooooxooooooooooo
+ooooooxooooxooooooooooooooooooooxooooooxoooxoooooxoooooooooooooooooxoooooooooooooooooooxoooooooxoooo
+oooooxoooooooooooooooxooooooooooxooooooooooooooooooooooxoooooooooooooooooooooooooooooooooooxoooooxoo
+ooxoooooxooooooooooxooooxoooooxoooooooooooooooooooxooooxooooxooooooooooooooooooooooooooooooxoooooooo
+oooooooooooooooooooooooooooooxooooooooooooooooooooxoooooooooooooooooooxoooooooooxoooooooooxooooooxoo
+oooooooooooooooooooooooooooooooooooxooooooooooooooooooooooooooooooooooooxooooooooxoooooooooooooxoooo
+xoooooxooooxoooooxooooxooooooooooxoooooooooxooooxooooxoooooooooooooxoooooooooxoooooxoooooooooooooooo
+oxooooooooxooooxoooooxooooxooooooxoooooooxooooooooooooooooxooooooooxoooooooooxoooooooooxoooooxoooxoo
+oooooooooxooooooooxooooooooooooooooooxoooooxoooooxoooooooooooooooooooxoooooxooooxoooxooooooxoooooooo
+oooooooooooooooooooooxoooooooooxoooooooooxoooxooooooooooooooxooooooooxooooooooooooxoooooxoooooooooxo
+ooooooooxoooooooooxooooooooxooooooooxoooooxoooooooooooooxoooooxoooooooooxooooxoooooxoooooooooxooooxo
+ooooooooxooooooooxoooooooooooooooooooooooxooooxooooooooxooooooooooooooxoooooooooooooooooxooooooxoooo
+oooooooooooooooooooooooooooxoooooooooooooooooooooxooooooxooxoooooooooooooxoooooooooooooooooooooooooo
+ooooooooxooooooooooooooooxoooooooxoooooooxooooooooxooooooooooooooooxooooooooooooooooooooooooooooooox
+oooooxooooooooooxooooooooooxoooooooooooooxoo
+..................................29
+oxooooooooxoooooxooooooooooooooooooxooooooooooooooxooooxoooooxoooooooooooooooooooooooooooxooooooooox
+oooooxooooxoooooxooooxoooooooooxooooooxooooooooooooooxooooooooooooxoooooooooooooxoooooooooxoooooxooo
+ooooooxoooooooooxooooxooooooooxooooxooooooooooooxooooooooxooooooooooooooooooooooooxooooooooooxoooooo
+oooxooooxoooooooooxooooooooooooxoooooooooooooooxoooooooooxooooooooooxoooooxooooooooooooooxoooooooooo
+ooooooooooooooxoooooooooooooxoooxooooooxooooooooooooooooooooooxoooooooooooooooooooooooooooooooooooox
+oooooooooooxooooooooooooooooooxooooxoooooooooooooxoooooxoooooooooooooooxooooooooooooooooooooooooooxo
+ooooxooooooooooxoooxoooooooooooooooxooooooooxoooooooxoooooxooooooxoooxoooooooooxoooooooooxoooooooooo
+ooxooooooooooooooooooooooooooooooooooooooxooooooooooooooooooooooooooooooooxoooxooooooxoooooxoooooooo
+oxooooooooooooooxoooxooooooxoooooooooooooooxooooooooxooooooooooxoooooooooooooxooooxoooooxooooxooooox
+ooooxoooooxooooooooxoooxooooooxoooooooooooooooooooooooooooooooooxooooxoooooooxooooooxooooooooxoooooo
+ooxoooooooooooooooooxooooooooooxoooxooooooooooooooooooooooooooooooooxooooooooooooxoooxoooooooooooooo
+oooxoooooooooxooooooooooooooooooooxoxooooooooxoooooooooxoooooooxoooooooooooooooooooooooooooooooooooo
+ooxooooooooxoooooooooxooooooooooooooooooooooooxoooooooxoooooooooxoooooooooxooooooooxooooooooxooooooo
+ooooooxoooooooooxooooooooxooooxoooooooooooooooooooxooooxoooooooooooooooooooooooooooooxooooxooooooooo
+xoooooooooooooooxooooooooooooooooooxoooooooooooooooooooooxoooooooooooooooooooooooooxoooooooooooooooo
+xooooooooooooooxooooooooxooooxooooxoooooxooooxooooxoooooxooooxoooooooooxooooooooooooooooxoooooxoooox
+oooooooooooooooxooooooxooxooooooxoooxoooooxoooooooooxoooooooxoooooooooxooxoooooooooooooooooooooooxoo
+oooooooooooooooooooooxoooooooooooxoooxoooooxoooxoooooxoooooooooooxooooooooxoooooooooooooooooooooooxo
+oooooooxooxooooooooooooooooxooooooooooooooooxoooooooooooooooooooooooooooooooxooooooooooooooooooxoooo
+ooxooooooooooooooooooooooooooxooooooooooooooooxooooooooxoooooooooooooooooooooooooooooxoooooooooooooo
+xooooooooooxooooooooooooooooooooooxooooooooooooooooooxoooooooooooooooooooooooooooooooooooooooooooooo
+oooooxooooooooxooooooooooooooooooooooxooooooooxooooxooooxoooooxooooxoooooooooxooooooxooxooooooooxooo
+oxooooxooooooooxooooxoooooooooxoooooxooooxoooooxoooooxoo
+..................................27
+oxooooooooxoooooxoooxoooooooooooooooooooooooxoooooxoooooooooxoooooxoooooooooooooooxoooooooooooooxooo
+oooooooxooooooooxoooxooooooooooooooooooooooooooooooooxoooooooooxoooooxoooxoooooxoooooxoooooxooooooxo
+ooooooooxooxoooooooooooooxoooooooooooooooooxoooooooooxooooxoooooxooooxoooooooooxooooooooxooooooooooo
+ooxooooxooooooxoooooooooooooooooxooooooooooooooooooooxooooxooooooooooooooooxooooooooxoooooooooooooox
+ooooooooxoooooooooooooooooooooxooooooooooooxooooxooooooooooooooooooooooooooooxooooxoooooxooooxooooox
+ooooooooooooooooooooxoooxoooooooooooooxooooxooooooooooooooooooooooooooooooooxooooooooooxoooooxoooooo
+ooxoooxoooooooooooooxooooooooooooooooooxooooooooooooooooooooooooooooooooooooxoooooxooooooooooooooooo
+ooooooooooooooooooxooooooooooooooooxoooooooooooooooxoooooooooooooooooxooooxoooooxooooxoooooooooooooo
+oxooooooooooxooooxoooooooooxooooooxooxoooooxooooxoooooooooooooooxoooooxooooooooooxoxooooooooooxooooo
+oxoooooooxoooooooooxoooooooooxooooooooxooooooxooooooooooooooooooooooooooooooooooooooooooxooooooxoooo
+oooooooooooooooxooooooooooooooxooooooooooooooooxoooooooooooooxooooooooooooooooooooooooooooooooooooox
+oooooooooooooooooooooooooooooxoooooooooxoooxooooxooooxooooooooooooooxoooxoooooxooooxooooooooxooooooo
+ooooooxooooooooxoooooooooooooooooooooooooooooooooooooooxoooxoooooooooooooooooooooxoooooooxoooooooooo
+oooooooooooooooooooooooxooooxooooooooooooooooxooooxoooooooooxoooooxooooooooooxooooooooooooooxoooooox
+oooxoooooxooooooooooxoxooooooooxooooooooxooooooooooooooooooooooxooooxoooooooxoooooooooxooooooooooooo
+oxoooooxoooooooooooooooxoooooooooooooooxooooooooooooooooooooooooooxoooooooooxooooxooooooooxooooooooo
+ooooooooooooxoooxoooooooxooooooooooooxoooxoooooooooooooooxooooooooxooooooooxoooooxoooooooooxooxooooo
+oooxoooooxoooxooooooxooxooooooooxoooooooooooooxoooooooooxooooooooxooxooooooooxooxoooooxooooooooxoooo
+oxoooxooooooooooooooxooooooxooooooooxooooooooooooooooxoxoooooooxoooooooooxooooooooxoooooooooooooooxo
+ooooxoooxoooooxoooxoooooooooooooooxoooooooooxooooooooxoooooooxooooooooxooooooooxoooooooooooooxooxooo
+ooooxooooooooooooooooooooooooooooooooooxooooooooxooooooooooooooooooooxoooxooooooxooxooooooxoooooooxo
+oooooxoooxooooooooxoooooooooooooooooooooooxoooooooxooo
+..................................27
+oxooooooooooooooooooooooooxooooooxooxooooooooooooooxooooooooooooxoooooooooooooooooooooooooooooooxooo
+ooooooooooooxoooooooooooooxoooxoooooooooooooooooooooooooooooxoooooooooxooooooxoooooooooooooooooooooo
+oooooooooooooooooxoooxooooooxoooooooooxooooooooooooxooooxooooxoooooooooxoooooxooooooooooooooxoooxooo
+ooooooooooooooooooooxoooooooooooooxooooxoooooooooooooooxooxooooooooooooooooooooooxoooooooooooooxooox
+oooooxooooooooooooooooooxooooxooooooooooooooxooooxoooooooooooooxoooxooooooxooooooooooooooooooxoooxoo
+oooxoooxooooooxoooooooooooooooooxoooooxoooooooooxoooooooooooooooooooooooooxoooooxooooxooooxoooooxooo
+oooooxooooooooxooooooooooooxoooooooooooooooooxoooooooxoooooooxoooooooooooooooooooooooooxooooxooooooo
+oxooooooxoooooooxoooooooxoooxoooooooooooooooooxoooooooooooooooooooooooooooooooooooooooooooooooooooox
+ooooxooooooooooooooxooooxoooooooxooooooooooooooooooooooooooxoooooxoooxooooooooooxooooooooooooooooooo
+xoooooooooooooooooooooooooooooooooooooooooooooooooxooooooooooooooxoooooooxoxooooooooxooooooooooooooo
+oxoooooooooooooxooxooxooooooxoooooxoooooooooooooxoooooxoooxoooooxooooooooooooooooooooooooooooooxoooo
+ooooxoooooooooxooooooooooooxooooxoooooooooxoooooxoooooxoooooooooooooooxooooooooxooooxoooooxooooxoooo
+ooooooooooxoooooooooooooxoooooxooooooooxooooxooooooooooooooxoooooooooxooxoooooooooooooooooxoooooooox
+oooooooooxooooooooxooooooooxoooooooxooooooooxooooooooooooooooxoooooooooxooooooooooooooxooooooooooooo
+oxoooooooooxooooooooooooooxoooxoooooxoooooooooxooooxoooooxooooxooooooooooooxooooooooxooooxoooooooooo
+oooooxooooooooooxoooooooooxoooooxooooxoooooxooooxooooooooooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooxooooxoooooooxooooooooxoooooxoooooooooooooxooooooooxooooooooxoooooxoooooooooo
+ooooooxoooxooooooooooooooxoooooooooooooooxooxooooooooxoooooooooooooooooooooooooooooooooooooooxoooooo
+oxooooooooxoooooooooooooxoxooooooooxooooooooooooooxooxoooooxoooooooooooooxoooooooooooooxoooooooooooo
+ooooooxoooooxooooxoooooxooooooooooooooooxooxoooooooxoooooxoooooxoooooxoooxooooooxoooooooxooooooooxoo
+ooxoooooxooooxoooooooooxoooooooooxoooooooooooooxoooxoooooooooooooooooooxoooooxooooooooxooooxoooooooo
+ooooooooxooooooooooooxoooooxoooooxoooxoooooooooooo
+..................................28
+oxooooooooooooooxoxoooooooxoooooooooooooooooxoooooooooooooxoooooooooxooooxooooooooooooooxoooooxooooo
+ooooxoooooooooooooooooooooxoooooxooooooooooooooxoooooxooooxoooooxooooooooooooooxoooooooxooooooooooox
+ooooooxoooooooooxoooooooxoooooooooooooooooooooooooxooooooooooooooooooxooooxooooooooooooooooooooooooo
+oooxooxooooooooxoooooxooooxooooooooooooooooooooooooooooooooooxoooooooooooooooxooooooooooooxoooooooox
+oooooooooooxooooooooooooooooooooooooooooooooooooooxooooooooooooooxoooooooxooxoooooooxoooooooxooooooo
+xooooooooxooooooooooooooooooooooooooooooooooooooooooooooooooxoooooooooooooxooooxoooooooooooooooxooxo
+oooooxooooooooooooooooooooooooxoooooooooxooooxooooxooooxooooxoooooooooooxoooxoooooxoooooooooooxooooo
+oooxooooooooooooxooooooooooooooooooooxooooooooxooooxoooooxoooxoooooxooooooooooxoooooooxoooooxooooooo
+oooooooxoooooooooooooxooooooooooooooooooooooooooooooxooooooooooooxooooxoooooxooooxoooooooooxooooxooo
+oooooooxoooooxoooooooooooooooxoooooxoooooooooooooooooooooooxooooxoooooooxoooooooxoooooxoooooxooooooo
+oooooooooxoooooooooxooooooxooooooooooxooooooxooooooooxooxoooooooxoooooooooxooooooxooxooooooooooooooo
+oooxoooooooooooooooooooooooxooooooooooooooooxooooooooooooooxoooooooxoooooxooooooooooooxooooooooxoooo
+xooooooooooooxooooooooooooooxooooxooooooooxoooooooooooooooooooxooooooooooooxooooooxooooxooooxooooooo
+oooooooxoooooooooooooxooooooooxooxooooooxooooooxoooxooooooooooooooooooooooooooooooooooooooooxoooooxo
+oooxoooooxooooxoooooooooxoooooxooooxoooooooooooooooooooooooooooooooooooooxooooxoooooxoooooooooxooooo
+oooooooooooooooxoooooooooxoooooooooooooxoooooooooxooooooooxoooooooooooooooooxoooooxoooooooooooxooooo
+oooxoooooxoooxooooooooxooooooxooooooooxooxoooooooooooooooooooooooooooooxoooooooooooxooooooooooooooxo
+oooooooxoooooxooooxoooooxooooxooooooxooooooxooxoooooooxooooxoooooooxooooooxoooooooooooooooooooooxooo
+ooxooxooooooxoooooooooooooooooxooooooooxooooooooxooooooooooooooooooooooxoooo
+..................................28
+oxoooooooooooooxoooxooooooxooooxoooooxooooooooxooooooooxooooooooxoooooooooxooooxooooxooooooooxooooxo
+oooooooxooooxooooxooooxoooooooooooooxooooxooooxoooooxooooxoooooxooooooooooooooxoooooxoooxooooooxoooo
+ooooxoooooooxooooooooxooooooxoooooooooxooooooooxoooooooooxooooooxoooooooooooooooooooooooooxooooxoooo
+ooooooooooooooooooooooooooooooooooooooooooooooxooooxoooooooooooooooooooooooxoooooooxoooooooooooooooo
+oooooooooooooooooooooooooooxoooooxoooxoooooooooxoooooooooooooxooxoooooooooooooooxooooooooxooooooooxo
+oooooooxooooooooooooooxooooxooooooooxooooooooooooooooooooooooooooooooooooooooooooxooooxooooooooooooo
+ooooooooxoooooxooooooooooooxoooooxoooooooooxoooooxoooooooooooooxooooxoooooxoooooooooooooooxooooooooo
+oooooxoooooooooxooooooxooooooooxoooooooooxooooooooxoooxooooooooxoooooxoooxoooooxoooooooooxoooooxoooo
+oooooxooooooooooxooooxoooooooxooooooooooooooooooooooooooooooooooxooooooxooooooooxooooooooooooooooooo
+oooooooooooxooooxoooooxooooxooooooooooooooooooooooooooooooooxooooxooooxooooooooxoooooooooooooxoooxoo
+ooooxooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:35544(0.75/0.508)	5235(0.74/0.077)	8765(0.75/0.123)	5534(0.76/0.085)	7014(0.76/0.095)	2419(0.72/0.040)	1503(0.66/0.022)	215(0.77/0.003)	974(0.74/0.013)	203(0.72/0.003)	190(0.79/0.003)	352(0.61/0.005)	166(0.52/0.002)	12(0.83/0.000)	59(0.53/0.002)	85(0.55/0.001)	62(0.63/0.001)	74(0.89/0.001)	15(0.47/0.000)	346(0.40/0.007)	39(0.56/0.000)	277(0.44/0.005)	14(0.93/0.001)	66(0.38/0.001)	46(0.54/0.001)	10(0.60/0.001)	15(0.67/0.000)	1(1.00/0.000)	
+[Info]28 Clusters are found in total! And the highligt is as follows
+Cluster 0 (35544)
+[positive]: amount:2.496	rate:2.440	greatest:2.348	import:2.332	differ:2.310	run:2.278	book-is:2.277	game-for:2.274	action:2.259	look-like:2.199	
+[negative]: actor:-1.430	carri:-1.410	a-new:-1.240	abl-to:-1.226	minut:-1.039	visit:-0.996	to-hear:-0.970	dark:-0.954	bad:-0.949	everyth:-0.948	
+[popular]: nt:-3.525	all:-3.592	will:-4.438	good:-4.474	get:-4.486	great:-4.531	do-nt:-4.632	no:-4.759	buy:-4.847	make:-4.860	
+Cluster 2 (8765)
+[positive]: ask:2.349	type:2.245	easi-to:2.068	similar:2.026	singer:2.015	receiv:2.011	histori:2.006	the-movi:1.991	bit-of:1.969	sort:1.968	
+[negative]: the-dark:-1.158	price:-1.151	the-camera:-1.014	grew:-1.004	no-problem:-0.974	the-machin:-0.972	is-worth:-0.966	are-mani:-0.922	all-that:-0.911	to-show:-0.900	
+[popular]: nt:-3.466	all:-3.604	will:-4.440	do-nt:-4.491	good:-4.496	get:-4.521	great:-4.569	also:-4.871	make:-4.872	no:-4.938	
+Cluster 4 (7014)
+[positive]: late:1.966	outstand:1.925	the-price:1.920	new:1.911	nt:1.910	note:1.898	perhap:1.883	includ:1.839	a-game:1.837	that-will:1.834	
+[negative]: care-about:-1.216	to-show:-1.092	spirit:-1.063	the-perform:-1.034	tone:-1.030	reason-i:-1.016	servic:-1.006	danc:-0.961	the-record:-0.925	record-of:-0.891	
+[popular]: nt:-3.585	all:-3.711	good:-4.489	do-nt:-4.520	will:-4.522	get:-4.536	great:-4.563	make:-4.852	no:-4.891	also:-4.894	
+Cluster 3 (5534)
+[positive]: between:1.979	friend:1.935	the-author:1.861	buy-this:1.841	heard:1.833	this-film:1.818	larg:1.781	the-seri:1.776	total:1.722	polit:1.720	
+[negative]: piano:-1.256	to-write:-1.188	a-perfect:-1.148	manufactur:-1.027	noth-to:-1.006	year-and:-1.003	site:-0.995	nt-believ:-0.974	haunt:-0.951	the-perform:-0.942	
+[popular]: nt:-3.514	all:-3.618	will:-4.455	good:-4.459	get:-4.507	do-nt:-4.580	great:-4.630	make:-4.869	no:-4.902	also:-4.942	
+Cluster 1 (5235)
+[positive]: hit:2.070	have-no:1.817	claim:1.756	humor:1.726	heart:1.724	either:1.714	type-of:1.688	have-been:1.683	i-wish:1.674	repeat:1.665	
+[negative]: begin-to:-1.288	appropri:-1.104	finger:-1.005	read-a:-0.999	but-still:-0.991	america:-0.966	lp:-0.947	vari:-0.912	is-better:-0.888	figur:-0.856	
+[popular]: nt:-3.527	all:-3.731	get:-4.523	good:-4.564	will:-4.582	great:-4.622	do-nt:-4.640	music:-4.869	make:-4.889	no:-4.945	
+
+[Info]Step 0: likelihood: -16033263.2688, Delta_likelihood: -0.000
+..................................27
+oxooooooooxooooooooxoooooooooooooooooooooooxoooooooooooooxooooxoooooooooooooooxooooooooooooooooooxoo
+ooooooooooooooooooooooooooooooooxooooooxooooooooxoooooooooooooooooxoooooxooooxoooooxooooxoooooxooooo
+oooooxoooooooooooooxooooooooooxoooooooooxooooxooooooooooooooooxoooooxoooxooooooooooooooooxooooooooxo
+oooooooooooooooooooooxoooooooooxooooooooxoooooxoooooooooooooooooooooooooooxoooxooooooooooooooooooooo
+xooxoooooooooooooxooxooooooooxoooooooxoooooooxooooooooooooooxoooxooooooxooooxoooooooooxooooooooooooo
+oooooooooooooooxoooxoooooxooooooooxoooxoooooxooooooooooxoooooxooooooooooooooooooooooooooooooooooxooo
+oooooooooooxooooxoooooooooooooxoooooooooooooooooooxoooooooooooooxoooxooooooooooooooooooooooooooooooo
+oooooooooxoooooxoooooooooooxooooooooxoooxoooooooooooooooooxoooooooooxoooooooooxooooooooooooooooooooo
+ooooooooooooooooooooxoooooooooxooooxooooooooxooooooooxoooooooooooooooxooooooooooooooooooooooxooooooo
+oxoooooooooooooooxoooooooxooooooooooooooxooooooooooooooooooooooxoxooooooooooooxooooxoooooooooooooooo
+oxoooooxoooooooooooooxooooxoooooxooooooooooooooxooooxooooxoooooooooooooooxoooxooooooxooooooooooooooo
+ooxoooooooooooooooooooooooooooooxooooooooxooooooooxooooooooxooooooxoooooooooooooooooxoooooooooooooox
+ooooooo
+[Info]Clusters:35275(0.75/0.509)	5292(0.75/0.079)	8748(0.76/0.121)	5715(0.76/0.088)	6945(0.76/0.095)	2395(0.73/0.035)	1545(0.67/0.020)	205(0.76/0.003)	1014(0.73/0.013)	210(0.73/0.003)	203(0.79/0.003)	355(0.60/0.006)	160(0.51/0.002)	11(0.91/0.000)	59(0.47/0.001)	94(0.60/0.002)	61(0.61/0.001)	66(0.91/0.000)	14(0.57/0.000)	353(0.44/0.007)	50(0.66/0.000)	300(0.44/0.007)	18(0.83/0.000)	76(0.42/0.002)	49(0.55/0.001)	11(0.55/0.000)	11(0.64/0.000)	
+[Info]Step 1: likelihood: -16035062.8035, Delta_likelihood: -0.000
+..................................27
+oxoooooooxoooooooooooooxooxooxoooooooooooxooxooooooooooooxooooooooooxoooooooooxooooxooooooooooooooxo
+oooooooooooooxoooooooooooooooooooooooooooooooxooooooooooooooooooooxooooooxooooooooooooooooxooooooooo
+oooooooooooooxooooooooxoooooooooooooooooooooooooxooooooooooxoooooxoooooooooxooooooooooxooooooooxoooo
+ooooxoooooooooooooooooooooooxoooooooooooooxooooooooooooooooooooooooxooooooooooooooooxooooooooooooooo
+oxooooooooxooooxooooooooxooooooooooooooooooooooxoooooooooooooooooooxoooooooooxoooooooooxoooooxooooxo
+ooooxooooxoooooooooooooooooooooooxoooooxoooooooooxooooxoooooxoooxooooooxoooooooooxoooooooooooxooooxo
+ooooxoooxoooooooooooooooooooxooooxooooooxooooooooooooooooooooooooooxooooooxooooooooxoooooooooooooooo
+oxoooooooooooooooooxooooooooooooooooooooooooooooooooooooooooxooooooooooooooooxooooooxooxoooooooooooo
+oxooooooooxoooooooooooooooooooooxooxooooooooooooooxooooooooooooooooxoooooxoooxooooooooxooooooxoooooo
+oooxoooooooooxooooooooxooooooooxooooooooxoooooooooooooooxooooooooxooooooooxooooooooooooooxoooooooooo
+ooooxooooxooooooooxoooooooooooooxoooooooooooooooooxooooxoooooxoooooooooooooooooxooooxoooooooooooooxo
+ooooooooooooooooxooxooooooooooooooooooooooxooooxooooooooooooooooooooooxooxoooooooxooooooooooxooooooo
+ooxoooooooooxooooooooooooooooooooooxoooooooooooooooxooooooooooooooxooooooooooooooooooooooxooooooooox
+ooxooooooooooooooooxooooooooxoooooooooxoooooooooooooooo
+[Info]Clusters:34917(0.75/0.491)	5262(0.75/0.082)	8744(0.75/0.131)	5788(0.77/0.085)	7020(0.76/0.101)	2432(0.72/0.035)	1556(0.67/0.021)	209(0.75/0.004)	1076(0.73/0.014)	236(0.72/0.003)	209(0.79/0.002)	341(0.60/0.005)	155(0.53/0.001)	11(0.91/0.000)	61(0.54/0.001)	101(0.60/0.001)	72(0.65/0.001)	66(0.88/0.000)	13(0.54/0.000)	382(0.43/0.009)	54(0.63/0.000)	332(0.46/0.007)	29(0.83/0.001)	83(0.49/0.001)	59(0.56/0.001)	10(0.60/0.001)	17(0.59/0.001)	
+[Info]Step 2: likelihood: -16036364.2505, Delta_likelihood: -0.000
+..................................27
+oxooooooooooooooooxoooooooooooooooooxooooooooooooooooooooooooooooooooxooooooooxooooooooooooxooooxooo
+ooxooooxoooooxooooxooooooooooooooxooooooooxooooxooooooooxoooooxooooooooooooxoooooooooooooooooooooooo
+oooooooooxooooooooooooooooooxoooooooooooooooooxooooooooxooooooooooooooooxooooxoooooooooooooooooooooo
+xoooooooooooooooooooooooxooooooooooooooooooooooxooooxoooooooooooooxooxooooooooooooooxooooooooxooooox
+oooooooooxooooxooooooooxoooooooooooooxooooooxooxooooxoooooooooooooooxoooooxoooxoooooooooooooooooxooo
+ooxooooxoooooooooooxooooxoooooooooooooooxooooooxooooooxoooxooooooooxooooooooooooooooooooxooooooooooo
+ooooooooooooooxoooooxooooooooooxooooooxoooooooooxooooooooxooooooooxooooxooooooxooooooxoooooooooooooo
+xoooooxoooooooooxoooooooooxoooooooooxoooooxoooooooooxooooooooooooxooooxoooooxooooxooooooxooooooxooxo
+ooooxoooxooooooooxooooooxooooooooxooxooooooooxooooooooxoooooooooooooooxooxooooooooooooooxooooooooooo
+oooooooooooooooxoooooxooooooooooooxooooxoooooooooooooxoooooooxooooxoooooxooooxooooooooxoooooxooooxoo
+ooooooxooooooooooxooooooooxooooooooooooooxoooxoooooxooooooooooxoooooxooooxoooooxooooxooooooooxooo
+[Info]Clusters:34581(0.75/0.497)	5313(0.74/0.081)	8692(0.75/0.125)	5898(0.76/0.091)	7093(0.76/0.099)	2462(0.72/0.032)	1603(0.67/0.020)	197(0.80/0.003)	1133(0.75/0.015)	246(0.73/0.002)	218(0.79/0.003)	343(0.61/0.005)	179(0.56/0.002)	11(0.91/0.000)	59(0.54/0.002)	108(0.56/0.002)	66(0.71/0.001)	71(0.85/0.001)	15(0.40/0.000)	366(0.43/0.008)	58(0.67/0.000)	308(0.48/0.006)	35(0.89/0.001)	90(0.51/0.002)	62(0.63/0.001)	10(0.70/0.001)	18(0.61/0.000)	
+[Info]Step 3: likelihood: -16034734.8452, Delta_likelihood: 0.000
+..................................28
+oxoooooooooooooooooooooxooxooooooxoooooooooxooooooooooooooooooooooxooxoooooooooooooooooooooxoooooxoo
+ooxoooooooooooooooxoooooooooxooooooooooooooooooooooooooooxoooooooooxoooooxoooooooooxooooooooxoooooxo
+ooooooooxooooxooooxoooooooooxoooooxooooxoooooxooooxooooooooooooooxoooooooooxoooooxooooxoooooxoooxooo
+oooxooooooooooooooxoooxoooooooxoooooooooxoooooxoooxooooooooxooooooxooooooooooxoooooxoooxoooooooooooo
+oooxooooooooooooooxoooooxooooxoooooxooooxoooooxooooxooooooooooxooooooooooxoooooxooooxoooooooooxooooo
+oooooooooooooooooooooooooxooxooooooxoooooooooooooooooooxooooooxooxooooooooooooooxooooooooooooooooooo
+ooooooooooooxoooooooooxoooooooooooooooooooooooooooooxooooxoooooooooxoooooooooxoooooxooooxooooooooooo
+ooooxoooxooooooooooxoooooxoooooooooooooooxoooooooooxooooooooooooooooxoooooooxooooooooooooo
+[Info]Clusters:34379(0.75/0.497)	5348(0.74/0.078)	8612(0.75/0.123)	5941(0.76/0.085)	7147(0.76/0.105)	2505(0.72/0.035)	1631(0.67/0.021)	209(0.80/0.003)	1160(0.76/0.013)	262(0.74/0.004)	230(0.81/0.002)	357(0.62/0.004)	176(0.48/0.003)	11(0.91/0.000)	61(0.51/0.001)	106(0.60/0.001)	63(0.67/0.001)	77(0.84/0.001)	13(0.46/0.000)	360(0.44/0.009)	67(0.69/0.001)	312(0.43/0.007)	37(0.86/0.000)	89(0.55/0.002)	57(0.61/0.001)	10(0.70/0.000)	14(0.64/0.001)	1(1.00/0.000)	
+[Info]Step 4: likelihood: -16028328.9063, Delta_likelihood: 0.000
+..................................28
+oxoooxooooxoooooooooooooooxoooooooooooooxooooooooxooooooooxooxooooooooooooooooooooooooooooooooooxooo
+ooooooooooooooooooxoooooxoooxoooooxooooxoooooxooooxoooooxooooooooxoooooooooxoooooooooxoooooooooooooo
+ooooooooooooooooxoooooooooxoooooxooooxooooooooxoooooxooooooooooooxoooooxoooooxoooooxoooooooooooooxoo
+ooooxooxoooooxoooooxoooooooooooooooooooooooooxooooooooxooooooooooooooooooooooooooooooxoooooxoooxoooo
+ooxoooooooooxoooooooxoooooxooooooooooxooxoooooooxooooooooooooooxoooxoooooxooooooooxooooooooooxoooooo
+oooxooooxooooooooooooooooxooooooooooooooooooooooooooooooooooooooooxooooooooooooooxooooxooooooooxoooo
+ooooxoooooooooooooooxoooooooooxoooooooooxoooooooooxooooxoooooooxooooooooxooooooooxooooooooxooooooooo
+oooooooooooooooxoooooooooxooooooooooooooxooooooooxooooxoooooooooxooooooooxoooooxooooooooooooooxooooo
+ooxoooooooooooooooooooooooxoooooooxoooxoooooooooooooooooxoooooooooooooooooooooooxooooooooooxoooooooo
+oooooxoxooooooooooxoooooxoooooooooxooooxooooooxooxooooooxoooooooxooooooooooxoooxooooooooxoooooooooxo
+ooooooooooooooooooooooxooxoooooooooooooooooxoooooxoooooooooooooxoooooooxoooooooooooooooooooooooooooo
+xoooooxooooxoooooooooxoooooxooooooooxooooooooooooxoooooooooooooooxooxooooooooooooooooooooooooooooooo
+oooooooooooooxooooooooooooooooooooooooooooooooooooooooooooooooooooooooxoooooooooooooooooxooooxoooxoo
+oooxoooooooxooooooooooooxooooooooooooooooxoooooooooooooooooxooooooxoooooooooooooooxoooooooooooooooxo
+oooooxoooxoooooxooooooooooooooooooooooooooxoooooooooooxoooooooooxoooooooooxoooooooooxooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:34182(0.75/0.495)	5292(0.74/0.079)	8722(0.75/0.123)	6052(0.77/0.089)	7045(0.76/0.101)	2547(0.72/0.038)	1620(0.67/0.022)	221(0.83/0.002)	1215(0.75/0.013)	283(0.74/0.004)	236(0.77/0.003)	372(0.61/0.006)	180(0.49/0.002)	12(0.92/0.000)	58(0.55/0.001)	103(0.60/0.001)	67(0.64/0.001)	77(0.84/0.000)	9(0.56/0.000)	345(0.44/0.008)	59(0.64/0.000)	324(0.47/0.007)	45(0.82/0.001)	95(0.58/0.001)	50(0.56/0.001)	10(0.60/0.001)	13(0.62/0.000)	1(1.00/0.000)	
+[Info]28 Clusters are found in total! And the highligt is as follows
+Cluster 0 (34182)
+[positive]: amount:2.542	differ:2.541	run:2.477	book-is:2.447	play:2.436	rate:2.364	game-for:2.363	later:2.344	longer:2.339	nt-even:2.337	
+[negative]: carri:-1.489	actor:-1.441	abl-to:-1.436	a-new:-1.379	work-in:-1.161	everyth:-1.138	chanc:-1.073	bad:-1.052	small:-1.045	the-edg:-1.020	
+[popular]: nt:-3.526	all:-3.590	will:-4.439	good:-4.464	get:-4.503	great:-4.518	do-nt:-4.623	no:-4.765	buy:-4.827	make:-4.874	
+Cluster 2 (8722)
+[positive]: ask:2.486	histori:2.247	edg:2.189	type:2.180	receiv:2.152	sort:2.141	lost:2.090	the-movi:2.037	sometim:2.034	singer:2.032	
+[negative]: song-on:-1.233	the-dark:-1.204	ton:-1.040	multiplay:-1.002	no-problem:-0.992	the-camera:-0.948	first-of:-0.916	is-worth:-0.901	the-machin:-0.900	price:-0.898	
+[popular]: nt:-3.467	all:-3.634	will:-4.474	good:-4.511	get:-4.522	do-nt:-4.539	great:-4.567	make:-4.860	also:-4.902	no:-4.910	
+Cluster 4 (7045)
+[positive]: care:2.318	the-fact:2.140	home:1.979	late:1.959	add:1.923	the-price:1.909	perhap:1.892	new:1.851	load:1.824	decid-to:1.807	
+[negative]: danc:-1.123	NUM-time:-1.107	servic:-1.094	reason-i:-1.074	spirit:-1.068	care-about:-1.033	nois:-1.002	of-music:-0.922	the-power:-0.917	perspect:-0.897	
+[popular]: nt:-3.581	all:-3.681	good:-4.483	will:-4.483	get:-4.506	do-nt:-4.523	great:-4.548	no:-4.839	also:-4.862	make:-4.872	
+Cluster 3 (6052)
+[positive]: battl:1.994	friend:1.987	between:1.953	stori-is:1.853	heard:1.831	total:1.791	the-seri:1.782	polit:1.773	the-author:1.764	in-NUM:1.745	
+[negative]: site:-1.221	ll-be:-1.206	the-perform:-1.055	a-young:-1.036	christma:-1.017	grip:-0.975	ii:-0.911	a-perfect:-0.885	none-of:-0.849	civil:-0.843	
+[popular]: nt:-3.514	all:-3.591	will:-4.426	get:-4.483	good:-4.490	do-nt:-4.565	great:-4.648	make:-4.828	no:-4.905	also:-4.926	
+Cluster 1 (5292)
+[positive]: hit:1.966	essenti:1.783	heart:1.763	my-favorit:1.738	at-time:1.710	also-a:1.685	repeat:1.660	have-been:1.658	pay:1.657	reason:1.634	
+[negative]: vari:-1.151	america:-1.021	hardcor:-1.011	ton:-0.989	finger:-0.984	lp:-0.955	begin-to:-0.922	predict:-0.921	appropri:-0.909	in-addit:-0.905	
+[popular]: nt:-3.554	all:-3.733	get:-4.492	good:-4.545	will:-4.585	do-nt:-4.616	great:-4.645	make:-4.854	music:-4.855	also:-4.966	
+
+[Info]Step 5: likelihood: -16028537.2786, Delta_likelihood: -0.000
+..................................27
+oxooooooooxooooooooxooooooxooxooooooooooooooooxoooooooooooooooxooooooooxoooooooooooooooooooooooooooo
+oooooooooooooooxooooooooooooooxoooooooooooooooooooooxooxoooooooxoxoooooooxoooooooooooooxooooooooxooo
+oooooxooooooooooooooooooooooooooooooxoooooooooxooooxooooooooooxoooooooooooooooooooooooooxooooooxoooo
+ooooooooxoooooooooooooooooooooooxoooxooooooooxooooooooooooooxooooooxooooooooooooooooxoooxooooooxooxo
+ooooxooooooooooxooooooxoooooooooooooooxooooxooooooooooooooooooooooooxoooooooooxoooxoooooxooooooooooo
+oooooooxooooooooooooooooooxooooooooooooooooxooooooxooxoooooooooooooooooooooxooooooxooooooooxooooxooo
+oxoooooooooooooooooooooxoooooooooxooooooooooxoooxoooooxooooooooooooooooooxoooooooooxoooooooooooooooo
+oooxooooxoooooxooooxoooooxooooxooooooooooxooooooooxoooooxoooooooooxooxooooooooxooooooooooooooooooooo
+ooxooooooooooooooooooooooooooxoooooxooooooooxooooooooooooxoooooxoooooooooxooooxooooxoooooooooxoooooo
+ooooxooooooooooooxooooxooooooooooooxoooooxoo
+[Info]Clusters:34107(0.75/0.487)	5298(0.75/0.082)	8669(0.75/0.121)	6109(0.77/0.090)	7041(0.76/0.104)	2539(0.71/0.036)	1658(0.67/0.022)	224(0.83/0.003)	1274(0.75/0.016)	286(0.75/0.003)	232(0.78/0.004)	378(0.60/0.006)	175(0.50/0.002)	10(0.90/0.000)	49(0.57/0.001)	90(0.62/0.001)	71(0.65/0.001)	75(0.85/0.001)	14(0.64/0.000)	346(0.40/0.009)	55(0.65/0.000)	335(0.45/0.008)	39(0.85/0.001)	88(0.55/0.001)	57(0.56/0.002)	9(0.67/0.001)	7(0.57/0.000)	
+[Info]Step 6: likelihood: -16035454.9126, Delta_likelihood: -0.000
+..................................27
+oxooooooooooooooooooooooxooooxooooooooooooxooooooooxoooooooooooooxoooooooooxooooxooooooooxooooooxooo
+oooooxooooooooxooooooooooooooxooooooooxoooooooooooxoooooooooooooooooooooooxooooooooooooxooooxooooooo
+ooooooxoooooooooooooooooooxooooooooxooooooooooooooooooooooxooooooooxoooooooxooooooxoooxoooooooxooooo
+oooooooxoooooooooooooooooxooooooooxoooooooooooooooooooooooooooooxooxooooooooooooooooooxooooooooxoooo
+ooooooooooxoooooooooxooooooooooooooxooxoooooxooooxoooooooooxoooooxoooooooooooooooooooooxoooooooooxoo
+ooooooooooxooooooooxooooxoooooooooxooooooxoooooooooxooooooooxooooooooxooooooooxoooooxooooooooooooooo
+oooooooooooxooooooooxoooooxooxoooooooooooooooxooxooooooxooooooooxoooooooooooooooooooooooooxooooooooo
+ooooxoxooooooooxoooxoooooooxoooooooooooxooooooooooooxoooooxooooxoooooooooxooooooooooooooooxoooooooox
+ooooooxooxoooooooxooooooxooxoooooooxooooooxooxoooooooxooxooooooxooooooxooxoooooooo
+[Info]Clusters:34026(0.75/0.489)	5393(0.75/0.080)	8678(0.75/0.130)	6070(0.76/0.083)	7005(0.76/0.100)	2545(0.73/0.034)	1675(0.67/0.022)	223(0.79/0.003)	1283(0.75/0.018)	292(0.74/0.004)	224(0.78/0.003)	370(0.58/0.005)	174(0.52/0.002)	8(0.88/0.000)	52(0.60/0.001)	91(0.57/0.001)	62(0.69/0.001)	74(0.85/0.001)	17(0.59/0.000)	339(0.40/0.009)	61(0.64/0.001)	349(0.47/0.008)	52(0.83/0.001)	104(0.60/0.002)	52(0.60/0.001)	10(0.60/0.000)	6(0.67/0.000)	
+[Info]Step 7: likelihood: -16034659.4789, Delta_likelihood: 0.000
+..................................28
+oxooooooooxooooooooxooooooooooooooooooooooooooooooooooooooooooxoooooooooooooooooooooooooooooooooooxo
+oooooooxooooooxoooooooxoooooooooooooooxooooooooxoooooxoooooooooxoooooooxooooooooxooooooooooooxoooooo
+oooooooxoooooooooooooooooooooxooooxoooooxooooxoooooxooooxoooooooooxooooooooxoooooooooooooooxoooooooo
+ooooxooooooooooxooooxooooooooooooooxoooooooooxooooooooxoooooooooooooooooooooooooooooooooooooxooxoooo
+oooxoooooooooxoooooooooxoooooxooooooooooxooxooxoooooooooooooooooooooooxooooooxooxoooooooooooooooxooo
+ooooooooooooooooooooxooooooooxoooooooooooxoooooooooooooxooooooooxoooooooooxooooooooxoooooooooxooooox
+ooooxooooooooooxooooooooooooooooooooooooooooooooooxooooooooooooooooooooooxoooooxooooooooooooooooooox
+ooooooooxoooooooooooooooooooooooooooooooooooooooooooooxooooooooooooooxoooooooooooooooooooooooooooooo
+oooooxooooooooooooooooooooooooooooooooooxooooooooxooooooooxooooooooxooooooxooxooooooooooooooxooooooo
+ooooooxoxooooooooxooooooooooooxoooooooooooooooooooooooooooooooooooooxoooxooooooooooo
+[Info]Clusters:33821(0.75/0.478)	5484(0.75/0.083)	8683(0.75/0.126)	6102(0.76/0.090)	7013(0.76/0.106)	2549(0.72/0.035)	1701(0.68/0.024)	224(0.80/0.003)	1307(0.75/0.016)	266(0.72/0.004)	228(0.80/0.003)	370(0.59/0.005)	163(0.50/0.002)	6(0.83/0.000)	67(0.60/0.001)	101(0.66/0.001)	65(0.71/0.000)	80(0.86/0.001)	18(0.61/0.000)	364(0.41/0.007)	54(0.61/0.001)	337(0.44/0.008)	53(0.81/0.001)	108(0.62/0.002)	57(0.68/0.002)	8(0.75/0.000)	4(0.50/0.000)	2(0.00/0.000)	
+[Info]Step 8: likelihood: -16029745.8633, Delta_likelihood: 0.000
+..................................27
+oxoooooooooooooooooooooxooooooxoooooooooooooooooooooooxoooxoooooxoooxooooooooooooooooooooooooooooooo
+ooooooooxoooooooooooooooooooooooooxoooooooooooooooooxoooooooooooooooooxoooooooooxoooooxooooooooooooo
+oooooooxooooooooooooooooxoooxooooooxooooxoooooxooooooooooooooxoooooooooxooooooooxooooooooooooooooooo
+oooooooooxoooooooooooooooooooooooooooooxooooooooxooooooooooooooxoooxooooooooxooooooooxooxooooooxoooo
+ooooooooooooooooooxooxoooooooooooooooxoooooooxooooooooxooooooooooooooxoooooooxoooooxooooxooooooooooo
+ooooxooooxooooooooooooooxooooooooooooooooooxooxooooooooooooooooooooooxoooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooxoooooooooxoooooooxoooooooxooooooooooooooooxoooooooooooooooooooooooooooo
+ooooooooooooooooxoooooooooxooooooxooooooxooooooooooxooooooxoooxooooooxoooooooooxooooooooxooooooooooo
+oooxooooooooooxoooooxoooxooooooxooooooooxooxooooxooooooooooooooooooxooooooooooooooxoooooooooooooooox
+oooooooxooooooooooooooooooxoooooxooooooooooooooooooooxooooooooooooxooooxoooooooooooooooooooxoooooooo
+ooooooooooooooxooooooxooooooooxooooooooxooooooooooooooooxooooxooooooooooooooooxoooooooooxooooooooxoo
+ooooxooooooooooooooxoooooxooooxoooooxooooxooooooooooxooooxooooxooooooooooooooooooooxoooooxooooxooooo
+xoooooooooxoooooooooooooooxooooooooooooooooooxooooooooooooooooooooooxoooooooooxoooooxooooxooo
+[Info]Clusters:33492(0.75/0.471)	5607(0.74/0.080)	8667(0.75/0.133)	6148(0.76/0.091)	7075(0.77/0.100)	2583(0.72/0.039)	1740(0.68/0.025)	219(0.80/0.003)	1308(0.74/0.018)	288(0.73/0.004)	224(0.79/0.002)	390(0.58/0.004)	161(0.48/0.002)	6(0.83/0.000)	63(0.62/0.001)	107(0.65/0.000)	65(0.72/0.001)	76(0.86/0.001)	18(0.56/0.001)	367(0.39/0.011)	51(0.59/0.001)	335(0.46/0.008)	55(0.82/0.002)	118(0.65/0.001)	57(0.58/0.001)	7(0.71/0.000)	8(0.75/0.000)	
+[Info]Step 9: likelihood: -16034546.9821, Delta_likelihood: -0.000
+..................................28
+oxooooooooxooooooooxooooooooooooooooooooooooooooooooooxoooooxooooxoooooooooooooooooooooooooooooxoooo
+ooxoooooooooxooooooooooxooooxooooxoooooooxooooooxooxoooooxooooooooxoooxooooooooooooooooooooooooooxoo
+ooooooooxooooooooxooooooooxooxoooooxoooxooooooxooooooooooooooooxoooooooooooooooooooooooooxooooooooxo
+ooxoooooxoooxoooooooooooooooooxooooxoooooooooxooooxoooooooooooooooooooooooooooooooooooxooooooooooooo
+xoooooooooooxooooooxooooooooxoooooxooooooooxooooxooooooooooooooooooooxoooooooooooxoooooooooooooooooo
+xooooooooooooooooxoooooooooooooxoooooooooooooooooooooxoooooooxooooxooooooooxooooooxooooooxooooooooox
+ooooooooooooooooooooooxooooxooooooooxoooooooooxoooooxooooxoooooxooooooooooxoxoooooooooooooxoxooooooo
+oxooooooxoooooooooooooooooooooxooooooooooooooooooxoooooooooooooooxooooooooxooooxooooxooooooooxoooooo
+oooxoooooxooooooooooooooooooooooooooooxoooooooooxooooooooooooooxoooooooooxooooooooxooooooooooooooooo
+ooooooooooooooooooooooxoooooxooooooooooooooxoooooooooxoooooooooooooooxooooooooooooooooxoooooooooxooo
+ooooooooooooooooooooxoooooooooxoooooxoooooooooooooooooooooooooooooooooooooooxoooooxooooooooooooooxoo
+ooooooooxooooooooooooooooooooooxooooooooooooooooooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:33114(0.75/0.471)	5759(0.75/0.083)	8761(0.75/0.132)	6064(0.76/0.089)	7177(0.76/0.103)	2607(0.72/0.038)	1779(0.69/0.025)	221(0.80/0.004)	1315(0.74/0.017)	286(0.74/0.002)	201(0.76/0.002)	403(0.58/0.004)	167(0.49/0.002)	6(0.83/0.000)	60(0.58/0.001)	106(0.60/0.002)	65(0.71/0.000)	74(0.86/0.001)	20(0.65/0.001)	404(0.42/0.009)	53(0.60/0.001)	338(0.48/0.008)	59(0.81/0.001)	120(0.66/0.001)	57(0.68/0.001)	7(0.71/0.000)	10(0.40/0.000)	2(1.00/0.000)	
+[Info]28 Clusters are found in total! And the highligt is as follows
+Cluster 0 (33114)
+[positive]: amount:2.562	differ:2.495	rate:2.475	nt-even:2.474	later:2.459	book-is:2.442	play:2.391	discov:2.381	greatest:2.354	particular:2.343	
+[negative]: abl-to:-1.466	carri:-1.345	a-new:-1.343	the-edg:-1.303	actor:-1.205	small:-1.177	everyth:-1.161	work-in:-1.143	chanc:-1.114	to-mention:-1.092	
+[popular]: nt:-3.524	all:-3.595	will:-4.435	good:-4.457	get:-4.494	great:-4.513	do-nt:-4.615	no:-4.770	buy:-4.809	stori:-4.852	
+Cluster 2 (8761)
+[positive]: edg:2.325	ask:2.215	sort:2.164	receiv:2.155	type:2.134	histori:2.101	annoy:2.089	lost:2.024	easi-to:1.950	leav:1.944	
+[negative]: the-dark:-1.267	song-on:-1.185	ton:-1.154	the-camera:-1.127	are-great:-1.005	awar:-0.979	no-problem:-0.970	first-of:-0.921	to-turn:-0.918	western:-0.850	
+[popular]: nt:-3.453	all:-3.629	get:-4.494	will:-4.500	do-nt:-4.516	good:-4.531	great:-4.596	make:-4.870	also:-4.921	no:-4.949	
+Cluster 4 (7177)
+[positive]: the-fact:2.094	late:2.073	the-price:1.992	fine:1.948	new:1.892	perhap:1.872	recommend-it:1.864	a-lot:1.827	piec-of:1.817	at-least:1.732	
+[negative]: care-about:-1.519	servic:-1.194	danc:-1.176	reason-i:-1.095	nois:-1.089	them-all:-1.079	knife:-1.039	NUM-time:-1.030	hope-that:-0.953	the-record:-0.943	
+[popular]: nt:-3.586	all:-3.681	good:-4.472	will:-4.488	do-nt:-4.499	get:-4.531	great:-4.594	also:-4.827	no:-4.838	make:-4.889	
+Cluster 3 (6064)
+[positive]: battl:2.115	friend:2.016	buy-this:1.929	heard:1.915	hold:1.888	the-seri:1.790	in-NUM:1.706	this-film:1.694	the-author:1.687	current:1.654	
+[negative]: ll-be:-1.449	the-perform:-1.317	a-perfect:-1.217	defin:-1.175	site:-1.042	a-young:-1.018	civil:-0.999	visual:-0.887	compil:-0.882	outstand:-0.875	
+[popular]: nt:-3.511	all:-3.624	will:-4.439	good:-4.480	get:-4.515	do-nt:-4.590	great:-4.657	make:-4.802	no:-4.936	also:-4.947	
+Cluster 1 (5759)
+[positive]: heart:1.997	hit:1.866	have-been:1.816	my-favorit:1.792	bring:1.778	essenti:1.755	at-time:1.755	reason:1.690	humor:1.680	pay:1.668	
+[negative]: finger:-1.169	predict:-1.122	and-will:-1.092	vari:-0.988	although-it:-0.914	add-to:-0.879	cloth:-0.871	lp:-0.856	begin-to:-0.855	read-a:-0.843	
+[popular]: nt:-3.538	all:-3.680	get:-4.502	will:-4.561	good:-4.575	great:-4.620	do-nt:-4.688	make:-4.855	no:-4.910	also:-4.910	
+
+[Info]Step 10: likelihood: -16031337.7399, Delta_likelihood: 0.000
+..................................27
+oxooooooooxoooooooooxoooooooooooooooooxooooooooxoooooooxooooooooxooooooooooooooooooooooooooooooooooo
+xoooooooooooooooooooxoooxoooooooooooooooooooooooooxooooooooooooooooooooooooooooooxoooooooooooooooooo
+ooxooooxooooooooooooooxooooooooooooooooooooooooooxooooooooooooooooxooooooooxoooooooooxoooooooooooxoo
+oooxooooxoooooxoooooooooxooooxoooooooooxooxooooooxoooooooooxooooooooxooooooooooooooooooooooooooooooo
+ooooooooxooooooooooxoooooooooooooooxoooooooooooxooooooooxoooooooxooooooooooooooooxooooooooooooooxooo
+oooooooxooooooooxooooooxooooooooooooooooooooooooooxoooooooooooooooooooooxoooxoooooooooooooooooxooooo
+ooooooooooooxooooooooxooooooooxooooooooooooooooooooooxoooooxooooxoooooxooooooooooooooooxooooxoooooxo
+oooxoooooooooxoooooooooxoooooxooooooooooxooooxooooooooxoo
+[Info]Clusters:33161(0.75/0.476)	5704(0.75/0.088)	8786(0.75/0.124)	6139(0.76/0.087)	7150(0.76/0.105)	2585(0.71/0.036)	1800(0.69/0.024)	239(0.77/0.003)	1329(0.74/0.016)	286(0.71/0.003)	198(0.78/0.003)	397(0.57/0.005)	164(0.53/0.003)	2(1.00/0.000)	63(0.56/0.002)	88(0.65/0.002)	55(0.75/0.001)	72(0.88/0.001)	19(0.63/0.000)	366(0.43/0.009)	49(0.61/0.000)	323(0.47/0.009)	64(0.77/0.001)	119(0.66/0.002)	57(0.65/0.001)	8(0.75/0.000)	12(0.58/0.001)	
+[Info]Step 11: likelihood: -16036672.1409, Delta_likelihood: -0.000
+..................................26
+oxoooooooooooooooooxoooooxoooooooooooooxoooooooooooooooooxooooooooooooooooooooooooxoooooooooooooxooo
+xooooooooooooooooooooooxooooooooooxoooooooooxooooooooooooooooooooooooooooooooooxoooooooooooooooooooo
+ooooooooooooooxoooooooooxooooooxooooooxoooxooooooooxooooooxoooxoooooooooooooooxoooooooooooooooxooooo
+oooooooxooooooooooooooooxoooooooooxoooooxoooooooooxooooxoooooxoooooooooxooooooooooooooxoooooooooxooo
+ooooxooooooooxooooooooooooooxooxooxoooooxooooxoooooxooooooooooooooooooooxooooooooooooooxooooooxooooo
+oooooxooooooooxoooooooooxooooooooxooooooooooooooooxooooooxoooooooooxooooooooxooooooooxooooooxooooooo
+oooooxoooooooooooooxoooooooooooooooooxoooooxooooooooooooooooooooxooooxoooooxoooxoooooooooooooooxoooo
+ooooooooooxoooxooooooooxooooooooooooooooooooooxooooooooooxooooooooxooooooooooxooooooooxoooooxooooooo
+
+[Info]Clusters:32901(0.75/0.473)	5742(0.75/0.085)	8709(0.75/0.126)	6155(0.76/0.092)	7237(0.77/0.105)	2615(0.71/0.035)	1807(0.68/0.024)	230(0.80/0.002)	1367(0.75/0.017)	315(0.72/0.003)	207(0.82/0.002)	419(0.58/0.006)	164(0.51/0.002)	19(0.58/0.001)	80(0.66/0.001)	90(0.60/0.001)	57(0.65/0.001)	69(0.84/0.001)	22(0.77/0.001)	373(0.45/0.008)	50(0.58/0.000)	347(0.48/0.009)	69(0.81/0.001)	120(0.65/0.001)	64(0.66/0.001)	7(0.71/0.000)	
+[Info]Step 12: likelihood: -16044614.0692, Delta_likelihood: -0.000
+..................................26
+oxooooooooooooooooooooooooooooxooooooooxooooooooooooooooxoooooooooxooooooooooxooooooooooooooooooooox
+oooxoooooooooooooooooooxoooooooooxooooooooxooooxooooxooooooooooooooooooxooooooooooooooooxooooooooooo
+xooooxoooooooooooooxoooooooooxoooooxoooooooooxoooooooooxoooooxooooxoooooooooooooooxoooooxooooxooooox
+ooooxoooooxooooxoooooxooooxoooooxooooxoooooooooxooooooxooooooxooxoooooooooxooooooooooooooooooooooooo
+xoooooooooxoooooooooxooooooxoooooooooooooooooxooooooooooooooxooooooooxooooooooxoooooooxoooooooooxooo
+ooxooooxoooooxoooooooooooooooooooooooooooooooxoooooooooooooooooooooooxoooooxoooooooooooooooooooooooo
+ooxoooooooooooooooxoooxoooooooxooooooxoooooooooooooooooxoooooooooooooxoooxooooooooooooooooooooooooxo
+ooooooooooooooxooooooooxoo
+[Info]Clusters:33012(0.75/0.473)	5742(0.75/0.082)	8590(0.75/0.124)	6192(0.76/0.090)	7188(0.77/0.104)	2619(0.71/0.039)	1789(0.69/0.026)	244(0.80/0.003)	1364(0.75/0.016)	311(0.74/0.004)	196(0.78/0.002)	423(0.59/0.005)	183(0.53/0.003)	32(0.63/0.001)	74(0.58/0.002)	97(0.68/0.001)	53(0.64/0.001)	81(0.81/0.001)	15(0.67/0.000)	356(0.44/0.010)	53(0.57/0.000)	353(0.47/0.008)	69(0.81/0.002)	121(0.65/0.001)	69(0.67/0.002)	9(0.67/0.001)	
+[Info]Step 13: likelihood: -16042951.4316, Delta_likelihood: 0.000
+..................................26
+oxoooooooooooooxooxoooooooooooooooooooooxoxooooooooooooooxooooooooooooooooxooooooooooxoooooxoooooooo
+oooooooxooxooooooxooxoooooooxoooooxoooxooooooooxooooooooxooooooooooxooooooooxooooooooooooooooooooooo
+oooooooxoooooooooxoooooxooooxooooooooooxooooxooooooooooooooxoooooooooxooooooooxooooooooxooooooooxooo
+oooooxooooooooxoooooooooooooooooooooxoooxooooooooxoooooooooooooooooxoooooooooooooooxoooxooooooooxooo
+oooxoooooooooooooooooooooxooooooooooooooooooooooooooooooooooooooooxooooooooooooooooxoooooxooooxooooo
+xoooxoooooooxooooooooxoooooxooooooooooxooooxooooooxooooooooooooooooooooooooooooooxooxooooooooxoooooo
+ooooooooooooooooooooooooooooooooooooooooxooooooooooooooooxooooooooxoooooooooxoooooxooooooooooooooxoo
+oooooooxoooxoooooxooooooooooooooxoooooxoooooooooooooooooooxooooooooooooxoooooooooo
+[Info]Clusters:32859(0.75/0.474)	5761(0.75/0.088)	8550(0.75/0.122)	6278(0.76/0.091)	7128(0.77/0.103)	2672(0.72/0.038)	1785(0.69/0.024)	253(0.81/0.003)	1390(0.75/0.016)	329(0.71/0.004)	200(0.78/0.002)	412(0.56/0.006)	188(0.53/0.003)	24(0.58/0.000)	74(0.58/0.001)	102(0.66/0.001)	54(0.70/0.000)	80(0.81/0.001)	23(0.61/0.001)	372(0.43/0.009)	58(0.64/0.000)	382(0.51/0.007)	62(0.82/0.001)	119(0.63/0.002)	70(0.61/0.001)	10(0.70/0.000)	
+[Info]Step 14: likelihood: -16042362.5055, Delta_likelihood: 0.000
+..................................26
+oxooooooooxooooooooooooooooooooooooooooooooooxooooooooooooooooooooooxooooooooxooooxoooooooooooooooox
+ooooooooxooooooxoooooooooooooooooooooooooxoooooooooooooooooxooooooxoooxooooooooxooooooxooxooooooooxo
+oooooooooooooooooooooooxoooooooooooooooooooooooooxoooooooooooooooooxooooxooooooxoooooooooxoooooooxoo
+oooooxoooooooooooooooooooooooooooooooooooooooooooooxooooxooooooooxooooxoooooooooooooooooooooooxoooox
+ooooooooooooxooooxooooxooooooooooooooooxoooooxoooooooooooooooooxooooooooxoooooxooooooooooooxoooooooo
+ooooooooooooooooxooooooxoooooooooxoooooooooxoooooooooooooxoooxooooooooooooooooxooooooooxoooooooooooo
+ooooooooooxoooooooooooooooooxoooooooooooooooooooooooxooooooxoooooooooooooooooooooooooooooooooxoooooo
+oooooooooxooooooooooooooooooooooooooooooooooxoooooooooooooooxooooooooooooooxoooxoooooxoooooooooxoooo
+ooooooooooooooooooooooxooooooooooxoooooooooxooooxoooooooooxooooooxooooooooxooooxoooooooooxooooooxooo
+oooooxooooooooooooooxooooooooxooooooooxoooooooooooooxoooooooooooooooooooxoooooooooooooooooooooooooxo
+oooooooxooooooooooooooooooxooooooxooxoooooooooooooooooooooooooxooooooooooooooooooooooooooooooooooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:32638(0.75/0.475)	5866(0.75/0.079)	8559(0.74/0.123)	6301(0.76/0.088)	7139(0.76/0.106)	2633(0.71/0.036)	1823(0.69/0.024)	250(0.81/0.003)	1396(0.75/0.019)	325(0.70/0.004)	203(0.78/0.003)	418(0.57/0.006)	196(0.56/0.003)	28(0.68/0.000)	75(0.57/0.002)	98(0.65/0.002)	72(0.71/0.001)	85(0.81/0.001)	27(0.56/0.001)	401(0.45/0.010)	52(0.58/0.001)	413(0.54/0.009)	51(0.82/0.001)	107(0.65/0.001)	70(0.61/0.002)	9(0.56/0.000)	
+[Info]26 Clusters are found in total! And the highligt is as follows
+Cluster 0 (32638)
+[positive]: amount:2.703	discov:2.646	play:2.569	differ:2.541	book-is:2.505	run:2.488	pick:2.459	constant:2.429	nt-even:2.413	greatest:2.411	
+[negative]: abl-to:-1.510	a-new:-1.401	actor:-1.338	everyth:-1.318	carri:-1.264	chanc:-1.218	step:-1.192	to-mention:-1.142	bad:-1.120	small:-1.112	
+[popular]: nt:-3.521	all:-3.586	will:-4.422	good:-4.465	get:-4.494	great:-4.519	do-nt:-4.609	no:-4.777	buy:-4.837	stori:-4.847	
+Cluster 2 (8559)
+[positive]: listen-to:2.304	ask:2.285	edg:2.148	histori:2.084	sometim:2.032	graphic-are:1.999	the-movi:1.978	leav:1.967	otherwis:1.962	caus:1.948	
+[negative]: the-dark:-1.078	no-problem:-0.946	song-on:-0.946	ton:-0.921	armi:-0.917	excit:-0.906	evid:-0.889	defin:-0.875	the-camera:-0.855	the-machin:-0.819	
+[popular]: nt:-3.463	all:-3.634	will:-4.488	get:-4.501	good:-4.504	do-nt:-4.508	great:-4.586	make:-4.878	no:-4.915	also:-4.950	
+Cluster 4 (7139)
+[positive]: the-fact:2.027	late:1.876	home:1.873	fine:1.838	perhap:1.797	new:1.781	piec-of:1.779	roll:1.754	at-least:1.748	ship:1.744	
+[negative]: servic:-1.278	nois:-1.220	NUM-time:-1.212	care-about:-1.098	reason-i:-1.074	danc:-1.036	hope-that:-1.019	enter:-0.973	them-all:-0.956	slide:-0.943	
+[popular]: nt:-3.580	all:-3.713	good:-4.475	do-nt:-4.492	will:-4.527	get:-4.533	great:-4.600	also:-4.812	no:-4.818	make:-4.865	
+Cluster 3 (6301)
+[positive]: battl:2.159	friend:2.051	buy-this:2.040	wo:1.883	this-film:1.841	hold:1.825	overal:1.739	heard:1.733	larg:1.702	previous:1.667	
+[negative]: ll-be:-1.582	the-perform:-1.384	defin:-1.278	visual:-1.083	a-perfect:-1.078	grip:-0.990	site:-0.966	a-young:-0.894	assum:-0.837	civil:-0.806	
+[popular]: nt:-3.553	all:-3.588	will:-4.439	good:-4.490	get:-4.525	great:-4.643	do-nt:-4.664	make:-4.796	also:-4.893	no:-4.915	
+Cluster 1 (5866)
+[positive]: have-been:2.083	hit:1.932	heart:1.784	either:1.771	bring:1.758	essenti:1.747	my-favorit:1.740	ll:1.721	howev:1.696	pay:1.690	
+[negative]: although-it:-1.184	finger:-1.160	vari:-1.108	predict:-1.028	add-to:-0.975	and-will:-0.967	joke:-0.893	to-replac:-0.867	lp:-0.862	read-a:-0.858	
+[popular]: nt:-3.530	all:-3.730	get:-4.507	good:-4.543	great:-4.585	will:-4.602	do-nt:-4.604	make:-4.860	music:-4.887	no:-4.916	
+
+[Info]Step 15: likelihood: -16042060.2089, Delta_likelihood: 0.000
+..................................26
+oxooooooooxooooooxoooooooooooooxoooooooooxoooooxooooxoooooooooxooooooooxooooooooxooooooooxooooooooox
+oooooooooooooooooooooooooooooooooxooooooooxooooooooooooooooooooooxoooooooooxoooooooooooooooooooxoooo
+oooooooooxoooooooooooooooooooxooooxooooxoooooooooxooooxoooooxooooxoooooooooxooooooooxooooooooxoooooo
+ooooooooooxooooooooooooooooooooooxooxoooooooooxooooooooooooooooooooxooooxoooooooooxooooooooxoooooooo
+ooooooxooxooooxoooooooooooooxooooooooooooxooooxooooooooxooooooxooooooooooooooooooooooooooooooooooooo
+ooooooooxoooooxoooooooooooooxooooxoooooooooooooooxoooooooooooooooooxooooxooooooooooxoooooooooooooooo
+oxooooxoooooxooooxoooooxooooxoooooxooooxoooooooooooooooooooooooxooxoooooooooooooooooooxooooooooooooo
+ooxooooxooooooooooooooxooooxooooooooxooooxoooooxooooxoooooooooxoooooxooooooooooooooooxooooxooooooooo
+ooooooooo
+[Info]Clusters:32306(0.75/0.462)	5878(0.75/0.086)	8535(0.75/0.121)	6348(0.76/0.094)	7238(0.77/0.102)	2700(0.72/0.039)	1837(0.69/0.027)	268(0.79/0.003)	1390(0.75/0.016)	336(0.73/0.004)	209(0.77/0.002)	460(0.57/0.007)	213(0.58/0.003)	40(0.78/0.000)	68(0.56/0.001)	106(0.63/0.002)	64(0.70/0.001)	78(0.85/0.001)	26(0.58/0.001)	408(0.44/0.011)	53(0.58/0.000)	430(0.54/0.010)	52(0.83/0.001)	113(0.65/0.002)	66(0.61/0.002)	13(0.77/0.000)	
+[Info]Step 16: likelihood: -16041901.6700, Delta_likelihood: 0.000
+..................................26
+oxooooooooooooooooooooxooooooooooxoooooooooxooooooooooooooooooxooooooooooooxooooooooxoooooooxooooooo
+oooooooxoooooooooooxooooooooooooxooooxooooxooooooooooooxooooxooooooooooooooxooooxooooooooxooooooooxo
+oooooxooxoooooooxooooooooooooooooxoooooooxoooooooooxoooooxooooxoooooxoooooxooooooooooooooooooxoooooo
+ooxoooooooooxoooooxoooxooooooxooxooooooooooooooooooooooooooxooooxoooooooooooooooooxooooooooooooooooo
+oooooooooxooooooooxooooooooxooooooooooooxooooooooooooxooooooooooooooooooooooooxooooooooooooxooooxooo
+ooooooxooooooxoooooooooooooooooooooxooooxooooooooooxoooooxooooxoooooxooooxoooooxooooooooooooooooooox
+oooooooooxoooooooxoooxoooooxooooxoooooooooxooooooooooooooxooxoooooxoooooooooooooooooxooooxoooooooooo
+oooooooooooooxooooxooooooooxooooooo
+[Info]Clusters:32169(0.75/0.461)	5759(0.75/0.081)	8649(0.75/0.129)	6378(0.76/0.093)	7220(0.76/0.104)	2688(0.72/0.039)	1871(0.69/0.027)	268(0.80/0.003)	1414(0.75/0.017)	327(0.73/0.004)	205(0.79/0.003)	486(0.56/0.007)	217(0.57/0.005)	45(0.71/0.000)	57(0.56/0.002)	103(0.67/0.001)	64(0.70/0.001)	83(0.84/0.001)	36(0.58/0.001)	433(0.45/0.007)	67(0.63/0.001)	440(0.54/0.010)	59(0.78/0.002)	111(0.68/0.001)	73(0.63/0.001)	13(0.77/0.000)	
+[Info]Step 17: likelihood: -16040802.6361, Delta_likelihood: 0.000
+..................................26
+oxooooooooxooooooxoooooooooooxoooooxooooxoooooxooooxoooooxooooxoooooooooxoooooooooxooooooooxoooooooo
+oooooxoooooooxooooooooooooxoooooxoooxooooooooxooooooooxoooooooxoooooooooxoooooooooooooxooooooooxoooo
+xooooxooooxoooooooooxoooooooooxoooooxoooooooooxoooooooooxooooxoooooooooxoooooxoooooooooooooooooxoooo
+oooooooooooxoooxoooooxooooxoooooooooxoooooooooooooooooooooxoooooxooooooooooooxooooooooooooooooooxooo
+oooxoooooooooxoooooooooooooooxooooooooxooooooooooooooooxooooooooxooooooooxoooooxoooooooooooooooooooo
+ooooooxooooxoooooxooooxooooooooxooooxoooooooooooooooooxoooooooooooooxooooxoooooxoooooooooxoooooooooo
+oooooxooooooooooooooooooooooooooooxoooooooooooooooxooooooooxoooooxooooxoooooxoooooooooxooooooooxoooo
+xoooooooooooooooooooooooooooxooooooooxoooooooooxoooooooooxooooooxoooooooooooooooooxooxooooooooxooooo
+oooxooooooxoooooooooooooooooooooooooooooooooooooooxoooooooooooxooxooooooooooooooxoooooooxooooooooooo
+ooooooooooooooooooooooooooooooooxoooooooooxooooooooxoooooooxoooooooxooooxooooooooooooooxooooxoooooox
+ooooooooxoooooxoooooxoooooooooooooxooooooo
+[Info]Clusters:32083(0.75/0.469)	5718(0.75/0.080)	8712(0.75/0.125)	6377(0.77/0.091)	7322(0.77/0.106)	2686(0.72/0.035)	1894(0.69/0.027)	253(0.78/0.003)	1422(0.76/0.015)	311(0.71/0.004)	199(0.79/0.003)	474(0.55/0.007)	225(0.56/0.004)	32(0.66/0.001)	63(0.56/0.002)	102(0.71/0.001)	61(0.75/0.001)	86(0.81/0.002)	44(0.75/0.001)	421(0.45/0.010)	61(0.62/0.001)	436(0.52/0.007)	61(0.85/0.002)	106(0.65/0.002)	75(0.67/0.002)	11(0.73/0.000)	
+[Info]Step 18: likelihood: -16042162.9457, Delta_likelihood: -0.000
+..................................27
+oxooooooooooooxooooooooxoooooooooxoooooooooxoooxoooooooooooooooooooooooooooooooxoooooooooooxoooooxoo
+oxooooooooooooooxooooooooooxooooooooooooooooxooooooooooooooooooxoooooxoooooooxoooooxooooooooxoooooxo
+oooxoooooxooooxoooooxooooxoooooxooooooooooooooooooooxoooxoooooxoooxoooooooooooooooooxooooooxoooooooo
+ooxoooxooooooooooooooooooxoooooooooxoooooooooxoooooxoooxoooooooooxooooooooxooooooxooxoooooxoooooooox
+ooxooxoooooooooxoooooxoooxooooooxooooooooooooooxooooooooooooooooooxoooxoooooooooooooooxooooooooooooo
+oxooooooooooooxoooooxoooooooooxoooooooooooooxoooooxoooooooooxooooxoooooxooooxoooooooooxooooooooooooo
+ooooxoooooxoooxooooooooooooooooooooooooxoooooooooxoooooooooxoooooxoooooooooooooooxooxooxoooooxoooooo
+oooxoooooooooxooooooooooooooooooooooooooooxooooxooooooxoooooooxoooxooooooooooooooooooooooooooxoooooo
+ooooooooooooooooooooooxoooooooooooxooooooooxooooooooooxoooooxoooxoooooooooooooooxoooxoooooooooxoooox
+ooooxooooxooooooooxoooooxooooooooxoooooooooooooooooooxoooooxoooooooooxoooooooooooooooooooxoooooxoooo
+oooooxoooooxooooooxoooooooooooxoooxooo
+[Info]Clusters:31840(0.75/0.455)	5790(0.75/0.082)	8672(0.75/0.127)	6424(0.76/0.094)	7365(0.76/0.104)	2718(0.73/0.036)	1951(0.70/0.026)	254(0.79/0.004)	1453(0.76/0.020)	310(0.71/0.004)	219(0.78/0.002)	457(0.55/0.007)	245(0.55/0.005)	32(0.66/0.001)	53(0.51/0.001)	95(0.67/0.002)	55(0.73/0.001)	72(0.82/0.001)	32(0.66/0.001)	389(0.43/0.010)	69(0.62/0.001)	452(0.56/0.009)	76(0.84/0.002)	124(0.67/0.001)	75(0.68/0.002)	12(0.58/0.001)	1(1.00/0.000)	
+[Info]Step 19: likelihood: -16035977.7132, Delta_likelihood: 0.000
+..................................26
+oxoooooooooooxoooooooooooooooooooooooxooooxooooooooxooooooooooooooxooooooooooooooooooooxoooooooooooo
+ooxoooooooooooooooooooooooooooxooooooxooooooooxoooooooooxoooooooooooooxooooxooooooooooxooooxoooooooo
+oxooooxooooooooooxooooooooxoooooooxooooooooooxooooxoooooooooooooooooooxooxoooooooxooooooooooooooooxo
+oooooooooooooxooooooooxooooooooooxoooooooooooooooooxooooooooooooooooooooooxoooxoooooxoooooooooooooxo
+oooooxooooooxoooxooooooooxoooooooxoooooooooxoooooooxooooooooxoooooooooooooxooooooooxoooooooooooooooo
+oxooooooooooooooooooooooooxooooooooxoooooooooooooooooooooooooooooxoooooxooooxoooooxooooxoooooooooooo
+ooooooxooooooooooooooxooxoooooxoooxoooooxoooooooooxoooxooooooxoooooooooooooooooxooooooooooooooxooooo
+oooooxooooooooooooooooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:31556(0.75/0.448)	5912(0.74/0.088)	8607(0.75/0.130)	6397(0.77/0.093)	7427(0.77/0.105)	2759(0.71/0.036)	1976(0.69/0.028)	268(0.77/0.003)	1467(0.75/0.020)	323(0.72/0.004)	215(0.80/0.003)	485(0.52/0.008)	251(0.55/0.004)	42(0.64/0.001)	63(0.52/0.002)	90(0.67/0.002)	68(0.74/0.001)	74(0.85/0.002)	36(0.72/0.001)	384(0.43/0.009)	80(0.68/0.001)	463(0.56/0.008)	72(0.85/0.001)	131(0.63/0.001)	69(0.67/0.002)	20(0.80/0.001)	
+[Info]26 Clusters are found in total! And the highligt is as follows
+Cluster 0 (31556)
+[positive]: discov:2.627	book-is:2.621	pick:2.614	play:2.582	NUM-s:2.522	amount:2.508	greatest:2.446	is-about:2.444	run:2.436	longer:2.421	
+[negative]: actor:-1.408	abl-to:-1.391	a-new:-1.366	sort:-1.301	chanc:-1.282	everyth:-1.243	carri:-1.233	work-in:-1.195	bad:-1.164	howev:-1.123	
+[popular]: nt:-3.525	all:-3.573	will:-4.412	good:-4.456	get:-4.502	great:-4.514	do-nt:-4.622	no:-4.768	buy:-4.803	stori:-4.839	
+Cluster 2 (8607)
+[positive]: edg:2.306	ask:2.196	caus:2.193	lost:2.057	the-movi:2.028	listen-to:1.990	histori:1.984	otherwis:1.947	it-all:1.940	sometim:1.929	
+[negative]: song-on:-1.087	abil-to:-1.070	no-problem:-0.972	the-dark:-0.955	drum:-0.931	are-great:-0.910	this-movi:-0.909	purpos:-0.899	the-cd:-0.849	ton:-0.843	
+[popular]: nt:-3.442	all:-3.654	good:-4.513	will:-4.521	get:-4.527	do-nt:-4.532	great:-4.582	make:-4.867	no:-4.935	also:-4.964	
+Cluster 4 (7427)
+[positive]: home:1.962	replac:1.941	late:1.910	the-fact:1.905	new:1.898	perhap:1.809	fine:1.767	ship:1.762	piec-of:1.754	voic:1.740	
+[negative]: nois:-1.271	the-record:-1.249	servic:-1.208	care-about:-1.178	NUM-time:-1.133	danc:-1.109	reason-i:-1.103	tone:-1.091	hope-that:-1.030	trust:-1.029	
+[popular]: nt:-3.596	all:-3.725	good:-4.474	do-nt:-4.483	will:-4.528	get:-4.533	great:-4.586	no:-4.819	also:-4.832	make:-4.849	
+Cluster 3 (6397)
+[positive]: battl:1.959	buy-this:1.901	friend:1.832	leav:1.788	it-work:1.759	popular:1.751	stori-is:1.733	critic:1.726	heard:1.677	ve-been:1.673	
+[negative]: defin:-1.325	ll-be:-1.258	the-perform:-1.229	in-everi:-1.007	a-young:-0.995	grip:-0.989	a-perfect:-0.955	civil:-0.948	reason-i:-0.891	in-mani:-0.885	
+[popular]: nt:-3.572	all:-3.603	will:-4.457	good:-4.489	get:-4.501	do-nt:-4.568	great:-4.635	make:-4.832	also:-4.881	no:-4.946	
+Cluster 1 (5912)
+[positive]: hit:1.894	have-been:1.794	bring:1.787	els:1.770	cast:1.767	essenti:1.726	pay:1.725	battl:1.719	ll:1.704	humor:1.696	
+[negative]: although-it:-1.145	finger:-1.129	add-to:-1.110	lp:-1.072	predict:-1.011	joke:-0.896	welcom:-0.895	america:-0.883	read-a:-0.861	and-will:-0.859	
+[popular]: nt:-3.528	all:-3.680	get:-4.502	good:-4.539	will:-4.562	great:-4.587	do-nt:-4.625	make:-4.867	no:-4.899	also:-4.926	
+
+[Info]Step 20: likelihood: -16041526.4221, Delta_likelihood: -0.000
+..................................26
+oxoooooooooooooooooooooooxooooxoooooooooxooooooooooooooxooooxoooooxoooooooooooxooxoooooooooooooxoooo
+oooooxoooooooooxooxoooooooooooooxoooooxoooxooooooooooooooooooooooooooooooooooxooooooooxooooooooxoooo
+ooooooooooooxooooooooxooooooooooooooooxooooooooooooooooxoooooooooooooooooooooxooooxooooooooooooooooo
+ooooooooooxoooooxooooooooooooooooooxooooooooxoooooooooooooxooooooooooxoooxooooooxoooooooxooxoooooooo
+oooooooooooooooooooooooooooooooooxoooooxoooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooxoooooooooooooxoooooxooooooooxoooooxoooooooooooooooooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooooxooooooooooooooxoooooxoooooooooooooooooooooooooooooxoooooooooxoooooooooo
+ooxoooxooooooooooooooooooooxoooooooooxooooooooooxoooooooooxooooooooooooooooxoooooooooooooooooooooooo
+xoooooxooooxooooooooooxooooxooooooooxooooxoooooooooxooooxooooooooooxooooooooooooxoooooxooooxoooooxoo
+ooxooooooooooooooooooooooooxoooooooooooooooooooxooooooooxoooooooooxoooooxooooxoooooooxoooooooooooooo
+oooooooooooooooooooooooooooooooxoooooooxooooxoooooxooooxoooooooooooooooooooooxoooxooooooxooxoooooxoo
+oxooooooxooooo
+[Info]Clusters:31371(0.75/0.451)	5967(0.75/0.086)	8709(0.75/0.124)	6364(0.76/0.095)	7422(0.76/0.105)	2766(0.72/0.038)	1959(0.69/0.030)	253(0.80/0.004)	1525(0.76/0.019)	333(0.72/0.005)	216(0.79/0.002)	481(0.53/0.007)	270(0.55/0.005)	40(0.83/0.001)	64(0.55/0.002)	95(0.63/0.002)	67(0.69/0.001)	75(0.84/0.001)	40(0.65/0.001)	392(0.45/0.008)	77(0.68/0.001)	449(0.57/0.010)	77(0.81/0.002)	124(0.62/0.002)	76(0.70/0.002)	23(0.74/0.000)	
+[Info]Step 21: likelihood: -16042174.9801, Delta_likelihood: -0.000
+..................................26
+oxoooooooxooooooooxooooooxooooooooxoooooooooxooooxooooxooooxoooooooooooooooooooooooooooooooooooooooo
+xooooooooooooooooooooxoooooooooooooxooooooooxooooooooxooooooooxoooooooooxooooooooxoooooooooooooooooo
+oooxoooxooooooooooooooxooooooooooooxoooooxooooooooooooooxoooooooooooooooxooooooooxooooooooxooooooooo
+ooooxooooooooooooooooooooooooooxoooooooooooooooooooxooooxooooooooooxoooooooxoooooooooooooooxoooxoooo
+ooxoooooooooooooooooooooooooooooooxooooooooooxoooooooooooooooooooooooooooooooooooxoooooooooooooooooo
+xooooxoooooooooooooooooooooooooooooooooooooxoooooooooxoooxooooooooooooooxooooxoooooooooxoooooooooooo
+ooxooxooooooooooooxoooooooooooooooooxooxooooooxooxoooooooooooooooooxooooooxooooooooooxooooooxooooooo
+ooxooooooooooooooxooooo
+[Info]Clusters:31358(0.75/0.455)	5956(0.75/0.085)	8700(0.75/0.129)	6327(0.77/0.091)	7424(0.76/0.106)	2797(0.71/0.038)	1962(0.69/0.026)	243(0.81/0.002)	1519(0.76/0.019)	349(0.71/0.005)	201(0.82/0.002)	466(0.52/0.007)	271(0.55/0.005)	49(0.69/0.001)	64(0.58/0.001)	86(0.60/0.002)	83(0.75/0.001)	86(0.79/0.001)	36(0.75/0.001)	397(0.45/0.009)	83(0.67/0.001)	469(0.58/0.007)	88(0.85/0.001)	123(0.63/0.001)	75(0.61/0.002)	23(0.70/0.000)	
+[Info]Step 22: likelihood: -16039978.1420, Delta_likelihood: 0.000
+..................................26
+oxoooooooooxooooooooooooooxoooooooooooooooooooooooooooooooooooooxooooooooooooooxoooooooooooooooooooo
+ooxooooxoooooooooooxoooooooooxooooooooooooooxoooooooooooooooooooooooooooooooooooooxooooooooxoooooxoo
+ooxooooooooxooooooooxoooooooooooooooooooooooooooooooooooooxooxooooooooxoooooooooxoooooxoooooooooooox
+ooooxooooxoooooxooooooooooooooooxooxooooooxoooooooooooooooooxooooooooooooooooooooooooooooooooxoooooo
+xooxoooooooooooooooooooxoooooxooooxoooooooooooooxoooxooooooooooooooooooooxoooxoooooxooooxoooooxoooox
+oooooooooxoooooooooooooooooooooooxooooxoooooooooxoooooooooooooooooooooooooooooooxooooooooooooooxooox
+oooooxoooooooooxoooooooxooooooooxoooooooooooxoooxooooooooooooooooooxooooooxooooooooooooooxoooooooooo
+ooxooooooooxoooooxooooxoooooxoooxoooooxoo
+[Info]Clusters:31148(0.75/0.445)	5955(0.75/0.080)	8719(0.75/0.127)	6352(0.77/0.096)	7524(0.76/0.111)	2807(0.72/0.037)	1993(0.69/0.028)	252(0.82/0.003)	1528(0.75/0.021)	360(0.71/0.007)	192(0.79/0.002)	485(0.55/0.008)	265(0.56/0.005)	41(0.63/0.001)	57(0.54/0.001)	80(0.60/0.001)	86(0.74/0.001)	88(0.81/0.002)	30(0.67/0.000)	391(0.45/0.008)	82(0.70/0.001)	482(0.59/0.009)	96(0.83/0.002)	118(0.61/0.002)	85(0.64/0.003)	19(0.79/0.001)	
+[Info]Step 23: likelihood: -16039502.4839, Delta_likelihood: 0.000
+..................................26
+oxoooooooooooooooooooooooooxooooooxoooooooooooooooooxooooooooxoooooxooooxoooooxoooooooooxooxooooooox
+ooooooxoooooooooooooooooooooooooxoooooooooooooooooxooooooooxoooooooxooooooooooooxooooooxoooooooooooo
+ooooxooooxooooxooooooooooooxoooxoooooooooooooooooooooooooxoooooooooooooxooooxooooooooooooooooooooooo
+oooxooooooooooooooooooooooooxooooxooooooooooxoooooooooxooooooxoooooooooxooooxooooooooooooooooooooooo
+ooooooooooooooooooooxooooxoooooooooooooxoooooooooooooooxooooooooxoooooxooooooooooooxooooxooooooooooo
+ooxooxooooooooxoooooxooooxoooooxooooooooxooxooooooxoooooooxoooooooooxoooooooxooooooooxoooooxoooxoooo
+oooooooooxoooooooooooooooooooooooxooxoooooxooooooooxooooxoooooo
+[Info]Clusters:31207(0.75/0.445)	6050(0.75/0.085)	8693(0.75/0.124)	6334(0.77/0.097)	7462(0.76/0.110)	2732(0.72/0.034)	1962(0.69/0.028)	273(0.80/0.003)	1572(0.75/0.022)	357(0.72/0.005)	195(0.79/0.003)	508(0.53/0.008)	259(0.53/0.005)	57(0.70/0.001)	52(0.54/0.001)	77(0.57/0.002)	84(0.73/0.001)	76(0.84/0.001)	32(0.75/0.001)	386(0.40/0.009)	86(0.67/0.001)	477(0.57/0.009)	99(0.86/0.001)	100(0.63/0.002)	86(0.64/0.002)	19(0.79/0.000)	
+[Info]Step 24: likelihood: -16040691.7933, Delta_likelihood: -0.000
+..................................27
+oxoooooooxoooooooooxooooooooxoooooooooooooxoooxooooooooxooooooooooooooooxoooooooooooooooxooooooooooo
+ooxooxooooooooxooooooooxoooooooooooooooooooooooxoooooooooooooooooxoooooxoooooooooooooxooooooooooooxo
+ooooooooooooooxoooxoooooxoooxooooooxooooooooooooooooooooooooooooxoooooxoooooooooooooxooooooooooxoooo
+ooooxooooooooooxoooxoooooxooooooooxooooooooooooooooxooooxoooooxooooxoooooxooooxoooooxooooooooooxoooo
+xooooooooooooooxoooooooooxoooooxooooooxoooooooooooooooooxooooooooooooooooooooooooooooooooooooooooooo
+oooooooooooooooooooooooooooooxoooooooooooooooooxoooooooooxoooooxooooxooooooooxoooooooooooooooooooooo
+ooooooooooooooooxoooooooooxooooooooxooooooooooooxooooooooxoooxooooooooxooooooooooooooxooooooooooxooo
+ooooooooooooooooooooooooooooooooooooxooooooooooooooooxoooxooooooxooxoooooooooooooooxoooooooooooooooo
+
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:30958(0.75/0.446)	6084(0.75/0.085)	8748(0.74/0.132)	6379(0.77/0.091)	7541(0.76/0.107)	2687(0.72/0.036)	1958(0.70/0.028)	292(0.80/0.004)	1635(0.76/0.022)	338(0.70/0.005)	192(0.81/0.002)	527(0.52/0.009)	251(0.53/0.004)	57(0.70/0.001)	59(0.56/0.000)	86(0.57/0.002)	84(0.74/0.001)	73(0.79/0.002)	36(0.81/0.001)	378(0.45/0.008)	81(0.69/0.000)	484(0.60/0.008)	101(0.82/0.001)	100(0.63/0.001)	85(0.61/0.002)	20(0.70/0.000)	1(0.00/0.000)	
+[Info]27 Clusters are found in total! And the highligt is as follows
+Cluster 0 (30958)
+[positive]: play:2.657	book-is:2.643	amount:2.510	discov:2.510	greatest:2.503	differ:2.449	dead:2.428	NUM-s:2.423	improv:2.419	is-about:2.402	
+[negative]: a-new:-1.465	abl-to:-1.424	bad:-1.294	howev:-1.294	actor:-1.292	chanc:-1.291	carri:-1.198	small:-1.150	everyth:-1.143	step:-1.099	
+[popular]: nt:-3.528	all:-3.570	will:-4.404	good:-4.474	get:-4.500	great:-4.523	do-nt:-4.608	no:-4.769	buy:-4.848	stori:-4.868	
+Cluster 2 (8748)
+[positive]: the-movi:2.167	pace:2.147	caus:2.127	edg:2.090	listen-to:2.070	histori:2.059	ask:2.018	genr:1.956	need:1.949	receiv:1.939	
+[negative]: song-on:-1.207	purpos:-1.069	fine:-0.976	the-cd:-0.973	western:-0.942	are-great:-0.940	evid:-0.916	no-problem:-0.878	shame:-0.872	everi-time:-0.868	
+[popular]: nt:-3.482	all:-3.640	good:-4.496	will:-4.508	get:-4.526	do-nt:-4.562	great:-4.572	make:-4.866	no:-4.913	also:-4.941	
+Cluster 4 (7541)
+[positive]: expect:2.054	replac:2.030	home:2.024	care:1.980	late:1.916	perhap:1.875	remov:1.841	voic:1.831	you-ll:1.770	recommend-it:1.761	
+[negative]: nois:-1.625	reason-i:-1.227	care-about:-1.174	danc:-1.132	sweet:-1.124	servic:-1.115	the-record:-1.064	bare:-1.031	them-all:-1.011	NUM-time:-1.008	
+[popular]: nt:-3.548	all:-3.742	good:-4.465	do-nt:-4.532	get:-4.539	will:-4.560	great:-4.575	no:-4.831	make:-4.856	also:-4.873	
+Cluster 3 (6379)
+[positive]: leav:1.950	friend:1.917	hold:1.821	buy-this:1.811	critic:1.806	battl:1.805	larg:1.796	popular:1.691	heard:1.680	heat:1.675	
+[negative]: the-perform:-1.394	ll-be:-1.216	grip:-1.196	defin:-1.148	site:-1.065	superior:-1.016	bought-the:-0.962	in-everi:-0.924	buck:-0.890	gamer:-0.847	
+[popular]: nt:-3.545	all:-3.571	will:-4.433	good:-4.464	get:-4.489	do-nt:-4.553	great:-4.667	make:-4.830	also:-4.874	no:-4.953	
+Cluster 1 (6084)
+[positive]: hit:2.068	humor:1.935	els:1.851	love-it:1.808	have-been:1.781	have-no:1.762	the-greatest:1.740	heart:1.731	the-point:1.719	around:1.718	
+[negative]: although-it:-1.102	predict:-1.040	add-to:-1.025	and-will:-1.002	lp:-0.959	joke:-0.896	to-replac:-0.878	debut:-0.848	finger:-0.845	you-love:-0.832	
+[popular]: nt:-3.543	all:-3.711	get:-4.497	good:-4.525	great:-4.561	will:-4.588	do-nt:-4.631	make:-4.850	no:-4.893	music:-4.952	
+
+[Info]Step 25: likelihood: -16035331.3290, Delta_likelihood: 0.000
+..................................27
+oxoooooooxoooooxooooxoooooxoooooooooooooooooxooooooooooooxoooooxooooxoooooooooooooxooooxoooooooooooo
+oxoooooooooooooooooooooooooooooooooooooooxoooooooooooooooooxooooxooooooooxoooooxoooooooooooooooooxoo
+oooooooooxoooooooooxooooxoooooooooooooooxooooooooxooooooooxoooooxooooxoooooxooooooooooooooooooooooox
+oooooxooooxooooooxooooooooxoooooooooooxoooooxooooooooxooooooooxoooooooooxoooooooooooooxooooooxooxooo
+ooooxoooooooooxooooooxoooooooooooooooooooooooooooooooooooooooooxoooooooooxoooooooxooooooooooooxooooo
+ooooxoooooooooooooooooxooooooooooooxoooooooooooooxooooooxoooooooooooooooooooooooooooxoooooooooxooooo
+oooxooooooooxoooooooooooooxooooooooooooxoooooooooooooxoooooooooooooxooooxooooooooxoooooo
+[Info]Clusters:30757(0.75/0.439)	6074(0.75/0.090)	8820(0.74/0.131)	6383(0.77/0.091)	7563(0.76/0.107)	2760(0.72/0.037)	2016(0.70/0.027)	302(0.79/0.005)	1610(0.75/0.020)	345(0.69/0.005)	201(0.78/0.001)	509(0.54/0.009)	246(0.52/0.005)	57(0.74/0.001)	60(0.58/0.001)	82(0.61/0.002)	78(0.72/0.001)	74(0.85/0.001)	44(0.68/0.001)	379(0.44/0.010)	83(0.69/0.001)	477(0.59/0.009)	102(0.82/0.001)	99(0.65/0.001)	89(0.69/0.002)	23(0.74/0.001)	2(1.00/0.000)	
+[Info]Step 26: likelihood: -16033649.7549, Delta_likelihood: 0.000
+..................................28
+oxooooooooooooxooooxoooooxooooxoooooxooooxoooooooooxoooooooooxooooooooxooooooooooxooooooooxooooooooo
+ooooooooooooooooxooooooooooooooooxooxooooooxooooooooxoooooooooooooooxoooooxooooxoooooooooooooooooooo
+ooxooooooooxooooooooooooooooooxoooooxooooooooooxoooooxooooooooxooxoooooooxoooooxoooooooooxoooooooooo
+ooxooooooooooooooooxoooooooooooooooooooooooooooooooooooooooooooooxooooxoooooooooooooooxooooooooooxoo
+ooxooooooooooooooxoooooooooooooooooooooooooooxoooooooxoooxoooooooxoooooxoooxoooooooooooooooooooooooo
+oooooooooooooooooooooooooxooooxooooooooooooxooooooooxooooooooooooooooooooooooooxoooooooooooooooooxoo
+ooooooxoooooooxooooooooxooooooxoooooooooooxooooooxooxoooooooxooooooooooo
+[Info]Clusters:30568(0.75/0.438)	6052(0.75/0.085)	8869(0.74/0.130)	6386(0.77/0.088)	7603(0.76/0.112)	2832(0.71/0.038)	2024(0.71/0.027)	306(0.78/0.004)	1635(0.76/0.023)	343(0.70/0.006)	194(0.78/0.003)	519(0.54/0.007)	235(0.50/0.004)	43(0.72/0.001)	58(0.53/0.001)	83(0.61/0.001)	89(0.72/0.002)	70(0.86/0.001)	48(0.73/0.000)	366(0.43/0.008)	93(0.68/0.001)	507(0.60/0.012)	93(0.84/0.001)	106(0.61/0.002)	89(0.66/0.002)	22(0.68/0.001)	1(0.00/0.000)	1(1.00/0.000)	
+[Info]Step 27: likelihood: -16028157.5371, Delta_likelihood: 0.000
+..................................28
+oxooooooooooooooooxooooooooxooooooxooxooooooooxooooooooooooooooooooooooooooooooooooxoooxoooooxoooooo
+ooooooxooooooooooooooooooooooooooooxoooooooooooooooooooooooooooooooooooooooxoooooooooxoooooooooooooo
+ooooooooxooooooooxoooooooooxooooooxooxoooooooxooooooxooxoooooooxooooooooooooooooooooooooxooooooooooo
+ooooooxoooooooooxoooooxoooooooooxoooooooooxooooooooxooooooooooooooooooooooooooooooooooooooxooooooooo
+xoooooooooooxoooooooooxooooooooooooooooooooooxooooooxooooooooooooooooooooooooxoxoooooxooooooooooooox
+ooooooooooxoooooxooooxoooooooooxoooooooooooooooxoooooxooooxoooooxooooxoooooxooooooooooooooooooooxooo
+ooooooooxooooooooxooooooooooxooooooooxoooooxoooo
+[Info]Clusters:30484(0.75/0.440)	6101(0.75/0.090)	8872(0.75/0.136)	6413(0.77/0.093)	7645(0.76/0.107)	2780(0.71/0.035)	1988(0.70/0.025)	328(0.80/0.003)	1682(0.76/0.020)	344(0.70/0.006)	188(0.78/0.002)	497(0.54/0.007)	235(0.53/0.004)	38(0.68/0.001)	66(0.55/0.002)	89(0.62/0.001)	90(0.72/0.002)	70(0.87/0.002)	43(0.74/0.001)	372(0.44/0.009)	92(0.67/0.001)	506(0.61/0.010)	89(0.83/0.001)	107(0.64/0.002)	91(0.68/0.002)	23(0.70/0.000)	1(1.00/0.000)	1(0.00/0.000)	
+[Info]Step 28: likelihood: -16028778.4194, Delta_likelihood: -0.000
+..................................27
+oxoooooooooooooooooooooxoooooooxoooooooooooooooooooxoooooooooooooooxoooooooooooooooooooooooooxoooooo
+ooxooooooxoooooooooooooxooooooooooooooooooxoooooooooooooooooooooooooooooooxooooxoooooxooooxooooooooo
+oxooooooooooooxoooooxoooooooooooooooooooooooooooooxoooooooooooooxooooooooooooooooooooooooooooxoooooo
+ooooooxoooooooooooooooooooooooooooooooooxoooooooooooooooooooooooxooooxooooooooxooooooooooooooooooooo
+oxoooooooooooooxooooxooooooooxoooooxoooooooooxoooooooooooooooxooooxooooooooooxooooxooooooooooooooooo
+xoooooxoooooxooooxooooxooooooooooooooooooooooooooooooxooooooxooooooooxooxooooooxoooooooooxooooooooox
+oooooooooooooxooooooooooooxoooooxoooxoooooooooooo
+[Info]Clusters:30384(0.75/0.430)	6091(0.75/0.089)	8962(0.75/0.136)	6410(0.77/0.084)	7660(0.76/0.119)	2792(0.71/0.038)	1972(0.70/0.027)	336(0.79/0.004)	1685(0.75/0.020)	339(0.70/0.006)	193(0.79/0.003)	491(0.54/0.007)	236(0.53/0.005)	44(0.68/0.000)	69(0.55/0.001)	108(0.66/0.001)	91(0.74/0.002)	76(0.87/0.001)	40(0.78/0.001)	362(0.41/0.008)	91(0.68/0.001)	488(0.61/0.008)	89(0.87/0.001)	118(0.66/0.003)	81(0.69/0.002)	25(0.72/0.000)	2(1.00/0.000)	
+[Info]Step 29: likelihood: -16035667.2736, Delta_likelihood: -0.000
+[Info]Accumulating evaluation results during sampling...
+neg users: 7532
+pos users: 9188
+MTCLinAdaptWithHDPExp[dim:801,supDim:5001,lmDim:1000,M:6,alpha:1.0000,eta:0.1000,beta:0.0100,nScale:(0.050,0.050),supScale:(0.050,0.050),#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	17189	2428
+1	2831	51463
+Micro F1:
+Class 0: 0.8673		Class 1: 0.9514		
+Macro F1:
+Class 0: 0.8506+0.2718	Class 1: 0.9461+0.1244	
