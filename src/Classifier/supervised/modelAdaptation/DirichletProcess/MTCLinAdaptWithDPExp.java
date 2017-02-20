@@ -206,7 +206,7 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 
-				prob = Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
