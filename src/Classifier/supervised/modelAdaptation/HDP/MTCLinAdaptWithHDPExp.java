@@ -171,52 +171,54 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		}
 		return prf;
 	}
-	protected double calcLogLikelihoodX(_Review r){		
-		return 0;
-	}
 	
-	@Override
-	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
-	// Indeed, it is for per review, for inheritance we don't change the function name.
-	protected void calculateClusterProbPerUser(){
-		double prob, logSum;
-		double[] probs;
-		if(m_newCluster) 
-			probs = new double[m_kBar+1];
-		else 
-			probs = new double[m_kBar];
+	//Assign cluster to each review.
+	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
+		double likelihood, logSum = 0, gamma_k;
+		int k;
 		
-		_HDPAdaptStruct user;
-		_HDPThetaStar curTheta;
+		//Step 1: reset thetaStars for the auxiliary thetaStars.
+		sampleThetaStars();
 		
-		//sample a new cluster parameter first.
-		if(m_newCluster) {
-			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
-			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
-		}
+		//Step 2: sample thetaStar based on the loglikelihood of p(z=k|\gamma,\eta)p(y|x,\phi)p(x|\psi)
+		for(k=0; k<m_kBar+m_M; k++){
 
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_HDPAdaptStruct) m_userList.get(i);
-			for(_Review r: user.getReviews()){
-				if (r.getType() != rType.TEST)
-					continue;				
-				
-				for(int k=0; k<probs.length; k++){
-					curTheta = m_hdpThetaStars[k];
-					r.setHDPThetaStar(curTheta);
-					if(m_postCheck)
-						prob = calcLogLikelihoodX(r) + calcLogLikelihoodY(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-					else
-						prob = calcConfidence(r) + calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
-					probs[k] = prob;
-				}
-//				r.setHDPThetaStar(m_hdpThetaStars[Utils.maxOfArrayIndex(probs)]);
-				logSum = Utils.logSumOfExponentials(probs);
-				for(int k=0; k<probs.length; k++)
-					probs[k] -= logSum;
-				r.setClusterPosterior(probs);//posterior in log space
-			}
+			r.setHDPThetaStar(m_hdpThetaStars[k]);
+			
+			//log likelihood of y, i.e., p(y|x,\phi)
+			likelihood = calcLogLikelihoodY(r);
+			
+			//log likelihood of x, i.e., p(x|\psi)
+			likelihood += calcLogLikelihoodX(r);
+			
+			//p(z=k|\gamma,\eta)
+			gamma_k = m_hdpThetaStars[k].getGamma();
+			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
+			
+			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
+			
+			if(k==0) 
+				logSum = likelihood;
+			else 
+				logSum = Utils.logSum(logSum, likelihood);
+//			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
 		}
+		//Sample group k with likelihood.
+		k = sampleInLogSpace(logSum);
+//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		
+		//Step 3: update the setting after sampling z_ij.
+		m_hdpThetaStars[k].updateMemCount(1);//-->1
+		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
+		
+		//Step 4: Update the user info with the newly sampled hdpThetaStar.
+		double conf = calcLogLikelihoodY(r);
+		conf = Math.exp(conf);
+		conf = 1 - conf*(1-conf);
+		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], conf);//-->3		
+		
+		if(k >= m_kBar)
+			sampleNewCluster(k, r.getLMSparse());
 	}
 	
 	public double calcConfidence(_Review r){
@@ -270,11 +272,6 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 //		}
 //	}
 	
-
-//	public int predictL(double v){
-//		return v > 0.5 ? 1 : 0;
-//	}
-	
 	public void printPerfs(){
 		System.out.println("Test documents performance:");
 		for(double[] perf: m_perfs){
@@ -290,17 +287,17 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		for(int i=0; i<m_featureSize+1; i++)
 			m_supWeights[i] = getSupWeights(i);
 	}
-	public int predict(_HDPThetaStar theta, _Review r){
-		
-		double[] As = theta.getModel();
-		double prob, sum = As[0]*m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-		int m, n;
-		for(_SparseFeature fv: r.getSparse()){
-			n = fv.getIndex() + 1;
-			m = m_featureGroupMap[n];
-			sum += (As[m]*m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-		}
-		prob = Utils.logistic(sum);
-		return prob > 0.5 ? 1 : 0;
-	}
+//	public int predict(_HDPThetaStar theta, _Review r){
+//		
+//		double[] As = theta.getModel();
+//		double prob, sum = As[0]*m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+//		int m, n;
+//		for(_SparseFeature fv: r.getSparse()){
+//			n = fv.getIndex() + 1;
+//			m = m_featureGroupMap[n];
+//			sum += (As[m]*m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+//		}
+//		prob = Utils.logistic(sum);
+//		return prob > 0.5 ? 1 : 0;
+//	}
 }

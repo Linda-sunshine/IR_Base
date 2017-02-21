@@ -20,7 +20,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	double m_rho = 0.1;
 	double m_rhoCount = 0; // count how many 1 edges we have.
 	double[][] m_Bs; // the matrix of all probability.  
-	BinomialDistribution m_bernoulli = new BinomialDistribution(1, m_rho);
+	BinomialDistribution m_bernoulli;
 	BetaDistribution m_Beta = new BetaDistribution(m_ab[0], m_ab[1]);
 	
 	HashMap<String, _HDPAdaptStruct> m_userMap; // key: userID, value: _AdaptStruct
@@ -230,6 +230,9 @@ public class CLRWithMMB extends CLRWithHDP {
 					}
 					// else if eij == 0, we need another variable to decide whether sample it or not.
 					else{
+						double prob = 
+						m_bernoulli = new BinomialDistribution(1, m_rho);
+
 						if(m_bernoulli.sample() == 1){
 							sampleOneEdge(ui, uj, 0);
 							sampleSize++;
@@ -243,11 +246,11 @@ public class CLRWithMMB extends CLRWithHDP {
 						sampleSize++;
 					}
 				}	
-				if (sampleSize%5000==0) {
-					System.out.print('.');
-					if (sampleSize%100000==0)
-						System.out.println();
-				}
+//				if (sampleSize%5000==0) {
+//					System.out.print('.');
+//					if (sampleSize%100000==0)
+//						System.out.println();
+//				}
 			}
 		}
 		System.out.println(sampleSize + " edges are sampled.");
@@ -260,24 +263,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		double likelihood = super.calculate_M_step();
 		return likelihood + estB() + estRho();
 	}
-	
-//	public void checkB(){
-//		_HDPAdaptStruct ui;
-//		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighborsMap;
-//
-//		for(int i=0; i<m_userList.size(); i++){
-//			ui = (_HDPAdaptStruct) m_userList.get(i);
-//			neighborsMap = ui.getNeighbors();
-//			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
-//				if(!uj.getNeighbors().containsKey(ui))
-//					System.out.print("x");
-//			}
-//		}
-//	}
-//	public double estB(){
-//		checkB();
-//		return 0;
-//	}
 	
 	// Estimate the Bernoulli rates matrix using Newton-Raphson method.
 	// We maintain two matrixes to calculate the B. 

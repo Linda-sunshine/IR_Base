@@ -18,7 +18,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	_HDPThetaStar  m_hdpThetaStar = null;
 	
 	// key: global component parameter; val: member size
-	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
+	protected HashMap<_HDPThetaStar, Double> m_hdpThetaMemSizeMap;
 	// key: global component parameter; val: edge size.
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
 	// key: uj; val: group parameter-_HDPThetaStar.
@@ -26,20 +26,20 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
-		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Double>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	public _HDPAdaptStruct(_User user, int dim){
 		super(user, dim);
-		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Double>();
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	//Return the number of members in the given thetaStar.
-	public int getHDPThetaMemSize(_HDPThetaStar s){
+	public double getHDPThetaMemSize(_HDPThetaStar s){
 		if(m_hdpThetaMemSizeMap.containsKey(s))
 			return m_hdpThetaMemSizeMap.get(s);
 		else 
@@ -47,7 +47,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	}
 
 	//will remove the key if the updated value is zero
-	public void incHDPThetaStarMemSize(_HDPThetaStar s, int v){
+	public void incHDPThetaStarMemSize(_HDPThetaStar s, double v){
 		if (v==0)
 			return;
 		

@@ -2,6 +2,8 @@ package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.Arrays;
 
+import structures._SparseFeature;
+
 import cern.jet.random.tdouble.Gamma;
 /**
  * Dirichlet distribution, implemented by gamma function.
@@ -26,6 +28,24 @@ public class DirichletPrior {
 		}
 	}
 	
+	//Sampling from posterior [\alpha_1+n_1, \alpha_2+n_2,...,\alpha_k+n_k].
+	public void sampling(double[] target, double[] alphas, _SparseFeature[] fvs, boolean toLog){
+		double sum = 0;
+		for(_SparseFeature fv: fvs)
+			alphas[fv.getIndex()] += fv.getValue();
+		
+		for(int i=0; i<alphas.length; i++){
+			while(target[i] == 0)
+				target[i] = Gamma.staticNextDouble(alphas[i], 1);
+			sum += target[i];
+		}
+		
+		for(int i=0; i<alphas.length; i++) {
+				target[i]/=sum;
+			if (toLog)
+				target[i] = Math.log(target[i]);
+		}
+	}
 //	//Sampling each dim of given target vector.
 //	public void sampling(double[] target, double alpha){
 //		double[] alphas = new double[target.length];
