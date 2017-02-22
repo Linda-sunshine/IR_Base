@@ -197,63 +197,63 @@ public class CLRWithMMB extends CLRWithHDP {
 		super.calculate_E_step();
 		
 		// sample z_{i->j}
-		_HDPThetaStar curThetaStar;
+		_HDPThetaStar thetai, thetaj;
 		_HDPAdaptStruct ui, uj;
 		int index, sampleSize = 1, eij = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
-			for(int j=0; j<m_userList.size() && i!=j; j++){
+			for(int j=i+1; j<m_userList.size(); j++){
 				uj = (_HDPAdaptStruct) m_userList.get(j);
 
-				// There are three cases.
-				// Case 1&2: eij = 1 or (eij = 0 && eij is from mmb)
-				if(ui.hasEdge(uj)){
-					eij = ui.getEdge(uj);
-					// remove the edge from the theta.
-					curThetaStar = ui.getThetaStar(uj);
-					curThetaStar.updateEdgeCount(-1);
+				// There are three cases--case1: eij = 1
+				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
 					
-					// remove the neighbor from user.
-					ui.rmNeighbor(uj);
-					
-					if(curThetaStar.getMemSize() == 0 && curThetaStar.getEdgeSize() == 0){// No data associated with the cluster.
-						m_gamma_e += curThetaStar.getGamma();
-						index = findHDPThetaStar(curThetaStar);
-						swapTheta(m_kBar-1, index); // move it back to \theta*
-						curThetaStar = null;// Clear the probability vector.
-						m_kBar --;
-					}
-					// if eij == 1, sample z_{i->j}
-					if(eij == 1){
-						sampleOneEdge(ui, uj, 1);
-						sampleSize++;
-					}
-					// else if eij == 0, we need another variable to decide whether sample it or not.
-					else{
-						double prob = 
-						m_bernoulli = new BinomialDistribution(1, m_rho);
+					updateOneMembership(ui, uj, 1);// update membership from ui->uj
+					checkSampleSize(sampleSize++);
+					updateOneMembership(uj, ui, 1);// update membership from uj->ui
+					checkSampleSize(sampleSize++);
 
-						if(m_bernoulli.sample() == 1){
-							sampleOneEdge(ui, uj, 0);
-							sampleSize++;
-						}
+				}else{// else if eij == 0 and from mmb
+					m_bernoulli = new BinomialDistribution(1, m_rho);
+					if(m_bernoulli.sample() == 1){
+						updateOneMembership(ui, uj, 0);
+						checkSampleSize(sampleSize++);
+						updateOneMembership(uj, ui, 0);
+						checkSampleSize(sampleSize++);
 					}
 				// Case 3: eij = 0 && eij is from background model.
 				// We don't record the edge, thus no need to remove it.
-				} else{
-					if(m_bernoulli.sample() == 1){
-						sampleOneEdge(ui, uj, 0);
-						sampleSize++;
-					}
-				}	
-//				if (sampleSize%5000==0) {
-//					System.out.print('.');
-//					if (sampleSize%100000==0)
-//						System.out.println();
-//				}
+				} // we just put them in the background model.
+				
 			}
 		}
 		System.out.println(sampleSize + " edges are sampled.");
+	}
+	
+	// Check the sample size and print out hint information.
+	public void checkSampleSize(int sampleSize){
+		if (sampleSize%5000==0) {
+			System.out.print('.');
+			if (sampleSize%100000==0)
+				System.out.println();
+		}
+	}
+	public void updateOneMembership(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int eij){
+		int index = 0;
+		_HDPThetaStar thetai = ui.getThetaStar(uj);
+		thetai.updateEdgeCount(-1);
+		
+		// remove the neighbor from user.
+		ui.rmNeighbor(uj);
+		
+		if(thetai.getMemSize() == 0 && thetai.getEdgeSize() == 0){// No data associated with the cluster.
+			m_gamma_e += thetai.getGamma();
+			index = findHDPThetaStar(thetai);
+			swapTheta(m_kBar-1, index); // move it back to \theta*
+			thetai = null;// Clear the probability vector.
+			m_kBar --;
+		}
+		sampleOneEdge(ui, uj, eij);
 	}
 	@Override
 	protected double calculate_M_step(){
