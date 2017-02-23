@@ -52,7 +52,7 @@ public class MyHDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 5000; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
@@ -124,9 +124,9 @@ public class MyHDPMain {
 		
 //		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.5);
+		hdp.setsdB(0.2);//0.2
 
-		hdp.setsdA(0.5);
+		hdp.setsdA(0.2);//0.2
 		double alpha = 1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);

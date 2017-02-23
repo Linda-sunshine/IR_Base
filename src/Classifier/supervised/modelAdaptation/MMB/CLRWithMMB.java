@@ -139,21 +139,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3		
 
 		if(k >= m_kBar) 
-			sampleNewCluster(k);
-		
-//		if(k >= m_kBar){//sampled a new cluster
-//
-//			m_hdpThetaStars[k].initPsiModel(m_lmDim);
-//			m_hdpThetaStars[k].initB(m_kBar+1);
-//			m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
-//			m_D0.sampling(m_hdpThetaStars[k].getB(), m_ab, false);// use the true space.
-//			double rnd = Beta.staticNextDouble(1, m_alpha);
-//			m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-//			m_gamma_e = (1-rnd)*m_gamma_e;
-//			
-//			swapTheta(m_kBar, k);
-//			m_kBar++;
-//		}
+			sampleNewCluster(k);// shall we consider the current edge?? posterior sampling??
 	}
 	
 	public void sampleNewCluster(int k){
@@ -197,9 +183,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		super.calculate_E_step();
 		
 		// sample z_{i->j}
-		_HDPThetaStar thetai, thetaj;
 		_HDPAdaptStruct ui, uj;
-		int index, sampleSize = 1, eij = 0;
+		int sampleSize = 1;
+		double prob_cij = 0, prob_cij_not = 0, bij = 0, bji = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -213,23 +199,33 @@ public class CLRWithMMB extends CLRWithHDP {
 					updateOneMembership(uj, ui, 1);// update membership from uj->ui
 					checkSampleSize(sampleSize++);
 
-				}else{// else if eij == 0 and from mmb
-					m_bernoulli = new BinomialDistribution(1, m_rho);
+				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){// else if eij == 0 and from mmb
+					// p(cij=1)p(cji=1) = \rho(1-z_{i->j}Bz_{j->i})\rho(1-z_{j->i}Bz_{i->j})
+					bij = getBij(ui, uj);
+					bji = getBij(uj, ui);
+					prob_cij = m_rho * m_rho * (1 - bij) * (1 - bji);
+					prob_cij_not = (1 - m_rho) * (1 - m_rho);
+					prob_cij /= (prob_cij + prob_cij_not);
+					
+					m_bernoulli = new BinomialDistribution(1, prob_cij);
 					if(m_bernoulli.sample() == 1){
 						updateOneMembership(ui, uj, 0);
 						checkSampleSize(sampleSize++);
 						updateOneMembership(uj, ui, 0);
 						checkSampleSize(sampleSize++);
 					}
-				// Case 3: eij = 0 && eij is from background model.
-				// We don't record the edge, thus no need to remove it.
-				} // we just put them in the background model.
-				
+					// else the edge goes to background model.
+				}
+				// else the edges goes to background model.
 			}
 		}
 		System.out.println(sampleSize + " edges are sampled.");
 	}
 	
+	// Get the corresponding probability based on indicators, i->j, j->i
+	public double getBij(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
+		return ui.getOneNeighbor(uj).getHDPThetaStar().getOneB(uj.getOneNeighbor(ui).getHDPThetaStar());
+	}
 	// Check the sample size and print out hint information.
 	public void checkSampleSize(int sampleSize){
 		if (sampleSize%5000==0) {

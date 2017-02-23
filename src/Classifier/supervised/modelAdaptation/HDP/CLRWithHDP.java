@@ -39,7 +39,7 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double m_gamma_e = 1.0;
 	protected double m_nBetaDir = 0; // normalization constant for Dir(\psi)
 
-	protected HashMap<String, Double> m_stirlings; //store the calculated stirling numbers.
+	protected HashMap<String, Integer> m_stirlings; //store the calculated stirling numbers.
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
 
@@ -47,7 +47,7 @@ public class CLRWithHDP extends CLRWithDP {
 			double[] betas, double alpha, double beta, double eta) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Double>();
+		m_stirlings = new HashMap<String, Integer>();
 		
 		setConcentrationParams(alpha, beta, eta);
 		setBetas(betas);
@@ -57,7 +57,7 @@ public class CLRWithHDP extends CLRWithDP {
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Double>();
+		m_stirlings = new HashMap<String, Integer>();
 		setBetas(betas);
 	}
 	
@@ -65,7 +65,7 @@ public class CLRWithHDP extends CLRWithDP {
 			double[] betas) {
 		super(classNo, featureSize, globalModel);
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
-		m_stirlings = new HashMap<String, Double>();
+		m_stirlings = new HashMap<String, Integer>();
 		setBetas(betas);
 	}
 	
@@ -343,14 +343,14 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	// n is the total number of observation under group k for the user.
 	// h is the number of tables in group k for the user.
-	double stirling(int n, int h){
+	int stirling(int n, int h){
 		if(n==h) return 1;
 		if(h==0 || h>n) return 0;
 		String key = n+"@"+h;
 		if(m_stirlings.containsKey(key))
 			return m_stirlings.get(key);
 		else {
-			double result = stirling(n-1, h-1) + (n-1)*stirling(n-1, h);
+			int result = stirling(n-1, h-1) + (n-1)*stirling(n-1, h);
 			m_stirlings.put(key, result);
 			return result;
 		}

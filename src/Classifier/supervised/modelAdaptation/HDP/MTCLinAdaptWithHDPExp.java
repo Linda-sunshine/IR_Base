@@ -212,10 +212,10 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		double conf = calcLogLikelihoodY(r);
-		conf = Math.exp(conf);
-		conf = 1 - conf*(1-conf);
-		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], conf);//-->3		
+//		double conf = calcLogLikelihoodY(r);
+//		conf = Math.exp(conf);
+//		conf = 1 - conf*(1-conf);
+//		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], conf);//-->3		
 		
 		if(k >= m_kBar)
 			sampleNewCluster(k, r.getLMSparse());
@@ -287,17 +287,4 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		for(int i=0; i<m_featureSize+1; i++)
 			m_supWeights[i] = getSupWeights(i);
 	}
-//	public int predict(_HDPThetaStar theta, _Review r){
-//		
-//		double[] As = theta.getModel();
-//		double prob, sum = As[0]*m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-//		int m, n;
-//		for(_SparseFeature fv: r.getSparse()){
-//			n = fv.getIndex() + 1;
-//			m = m_featureGroupMap[n];
-//			sum += (As[m]*m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-//		}
-//		prob = Utils.logistic(sum);
-//		return prob > 0.5 ? 1 : 0;
-//	}
 }
