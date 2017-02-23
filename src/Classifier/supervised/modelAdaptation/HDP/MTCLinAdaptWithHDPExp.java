@@ -172,105 +172,11 @@ public class MTCLinAdaptWithHDPExp extends MTCLinAdaptWithHDP {
 		return prf;
 	}
 	
-	//Assign cluster to each review.
-	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, logSum = 0, gamma_k;
-		int k;
-		
-		//Step 1: reset thetaStars for the auxiliary thetaStars.
-		sampleThetaStars();
-		
-		//Step 2: sample thetaStar based on the loglikelihood of p(z=k|\gamma,\eta)p(y|x,\phi)p(x|\psi)
-		for(k=0; k<m_kBar+m_M; k++){
-
-			r.setHDPThetaStar(m_hdpThetaStars[k]);
-			
-			//log likelihood of y, i.e., p(y|x,\phi)
-			likelihood = calcLogLikelihoodY(r);
-			
-			//log likelihood of x, i.e., p(x|\psi)
-			likelihood += calcLogLikelihoodX(r);
-			
-			//p(z=k|\gamma,\eta)
-			gamma_k = m_hdpThetaStars[k].getGamma();
-			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
-			
-			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-			
-			if(k==0) 
-				logSum = likelihood;
-			else 
-				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
-		}
-		//Sample group k with likelihood.
-		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
-		
-		//Step 3: update the setting after sampling z_ij.
-		m_hdpThetaStars[k].updateMemCount(1);//-->1
-		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
-		
-		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-//		double conf = calcLogLikelihoodY(r);
-//		conf = Math.exp(conf);
-//		conf = 1 - conf*(1-conf);
-//		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], conf);//-->3		
-		
-		if(k >= m_kBar)
-			sampleNewCluster(k, r.getLMSparse());
-	}
-	
-	public double calcConfidence(_Review r){
-		double conf = logit(r.getSparse(), r);
-		return Math.log(conf) + Math.log(1 - conf);
-	}
 	int m_threshold = 15;
 	public void setThreshold(int t){
 		m_threshold = t;
 		System.out.println("[Info]Mix model threshold: "+ m_threshold);
 	}
-//	@Override
-//	// After we finish estimating the clusters, we calculate the probability of each testing review belongs to each cluster.
-//	// Indeed, it is for per review, for inheritance we don't change the function name.
-//	protected void calculateClusterProbPerUser(){
-//		double prob, logSum;
-//		double[] probs;
-//		if(m_newCluster) 
-//			probs = new double[m_kBar+1];
-//		else 
-//			probs = new double[m_kBar];
-//		
-//		_HDPAdaptStruct user;
-//		_HDPThetaStar curTheta;
-//		
-//		//sample a new cluster parameter first.
-//		if(m_newCluster) {
-//			m_hdpThetaStars[m_kBar].setGamma(m_gamma_e);//to make it consistent since we will only use one auxiliary variable
-//			m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
-//		}
-//		int rvwSize = 0;
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_HDPAdaptStruct) m_userList.get(i);
-//			rvwSize = user.getReviews().size();
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() != rType.TEST)
-//				continue;				
-//				
-//				for(int k=0; k<probs.length; k++){
-//					curTheta = m_hdpThetaStars[k];
-//					r.setHDPThetaStar(curTheta);
-//					prob = rvwSize <= m_threshold ? calcLogLikelihoodX(r) + Math.log(curTheta.getMemSize() + m_eta*curTheta.getGamma()):
-//						calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());
-//					probs[k] = prob;
-//				}
-//				logSum = Utils.logSumOfExponentials(probs);
-//				for(int k=0; k<probs.length; k++)
-//					probs[k] -= logSum;
-//				r.setClusterPosterior(probs);//posterior in log space
-//			}
-//		}
-//	}
 	
 	public void printPerfs(){
 		System.out.println("Test documents performance:");

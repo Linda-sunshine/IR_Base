@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -11,6 +12,7 @@ import structures._MMBNeighbor;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
+import structures._WeightedCount;
 import utils.Utils;
 
 public class _HDPAdaptStruct extends _DPAdaptStruct {
@@ -53,6 +55,23 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		
 		if(m_hdpThetaMemSizeMap.containsKey(s))
 			v += m_hdpThetaMemSizeMap.get(s);
+		
+		if (v>0)
+			m_hdpThetaMemSizeMap.put(s, v);
+		else
+			m_hdpThetaMemSizeMap.remove(s);
+	}
+	
+	/********Functions and variables used in confidence learning.
+	 * Same functions with different parameters.********/
+	protected HashMap<_HDPThetaStar, ArrayList<_WeightedCount>> m_hdpThetaWeightedMemSizeMap;
+
+	public void incHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
+		if (v.getWeightedCount()==0)
+			return;
+		
+		if(m_hdpThetaWeightedMemSizeMap.containsKey(s))
+			m_hdpThetaWeightedMemSizeMap.get(s).add(v);
 		
 		if (v>0)
 			m_hdpThetaMemSizeMap.put(s, v);

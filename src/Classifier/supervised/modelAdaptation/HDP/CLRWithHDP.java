@@ -189,11 +189,17 @@ public class CLRWithHDP extends CLRWithDP {
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3		
+		updateUserHDPThetaStarMemSize(user, r, k);
 		
 		if(k >= m_kBar)
 			sampleNewCluster(k, r.getLMSparse());
 	}
+	
+	// Write this as an independent function for overriding purpose.
+	public void updateUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r, int k){
+		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3		
+	}
+	
 	// Our previous implementation, sample psi based simply on prior.
 	public void sampleNewCluster(int k){
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
