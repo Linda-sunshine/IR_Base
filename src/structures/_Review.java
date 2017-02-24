@@ -91,4 +91,12 @@ public class _Review extends _Doc {
 		return m_L4New;
 	}
 	
+	_WeightedCount m_wc = null;
+	public void setWeightedCount(_WeightedCount wc){
+		m_wc = wc;
+	}
+	
+	public _WeightedCount getWeightedCount(){
+		return m_wc;
+	}
 }

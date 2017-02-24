@@ -1,6 +1,7 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -41,7 +42,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	}
 
 	//Return the number of members in the given thetaStar.
-	public double getHDPThetaMemSize(_HDPThetaStar s){
+	public int getHDPThetaMemSize(_HDPThetaStar s){
 		if(m_hdpThetaMemSizeMap.containsKey(s))
 			return m_hdpThetaMemSizeMap.get(s);
 		else 
@@ -69,16 +70,36 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	public void incHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
 		if (v.getWeightedCount()==0)
 			return;
-		
 		if(m_hdpThetaWeightedMemSizeMap.containsKey(s))
 			m_hdpThetaWeightedMemSizeMap.get(s).add(v);
-		
-		if (v>0)
-			m_hdpThetaMemSizeMap.put(s, v);
 		else
-			m_hdpThetaMemSizeMap.remove(s);
+			m_hdpThetaWeightedMemSizeMap.put(s, new ArrayList<_WeightedCount>(Arrays.asList(v)));
 	}
 	
+	// Reduce the count from the hash map.
+	public void decHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
+		if (v.getWeightedCount()==0)
+			return;
+		ArrayList<_WeightedCount> mems;
+		if(m_hdpThetaWeightedMemSizeMap.containsKey(s)){
+			mems = m_hdpThetaWeightedMemSizeMap.get(s);
+			if(mems.contains(v) && mems.size() == 1)
+				m_hdpThetaWeightedMemSizeMap.remove(s);
+			else
+				mems.remove(v);
+		}
+	}
+	
+	//Return the number of members in the given thetaStar.
+	public int getHDPThetaWeightedMemSize(_HDPThetaStar s){
+		double wSum = 0;
+		if(m_hdpThetaWeightedMemSizeMap.containsKey(s)){
+			for(_WeightedCount wc: m_hdpThetaWeightedMemSizeMap.get(s))
+				wSum += wc.getWeightedCount();
+			return (int) wSum;
+		} else 
+			return 0;
+	}
 	/********Functions used in MMB model.********/
 	// Return the number of edges in the given thetaStar.
 	public int getHDPThetaEdgeSize(_HDPThetaStar s){

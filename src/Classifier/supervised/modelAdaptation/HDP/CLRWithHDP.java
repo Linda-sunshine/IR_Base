@@ -189,14 +189,14 @@ public class CLRWithHDP extends CLRWithDP {
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		updateUserHDPThetaStarMemSize(user, r, k);
+		incUserHDPThetaStarMemSize(user, r, k);
 		
 		if(k >= m_kBar)
 			sampleNewCluster(k, r.getLMSparse());
 	}
 	
 	// Write this as an independent function for overriding purpose.
-	public void updateUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r, int k){
+	public void incUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r, int k){
 		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3		
 	}
 	
@@ -304,7 +304,7 @@ public class CLRWithHDP extends CLRWithDP {
 				curThetaStar = r.getHDPThetaStar();
 				
 				//Step 1: remove the current review from the thetaStar and user side.
-				user.incHDPThetaStarMemSize(curThetaStar, -1);				
+				decUserHDPThetaStarMemSize(user, r);
 				curThetaStar.updateMemCount(-1);
 
 				if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
@@ -330,9 +330,13 @@ public class CLRWithHDP extends CLRWithDP {
 		System.out.println(m_kBar);
 	}
 	
+	public void decUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r){
+		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
+
+	}
 	//Sample how many local groups inside user reviews.
 	protected int sampleH(_HDPAdaptStruct user, _HDPThetaStar s){
-		int n = (int) user.getHDPThetaMemSize(s);
+		int n = user.getHDPThetaMemSize(s);
 		if(n==1)
 			return 1;//s(1,1)=1		
 

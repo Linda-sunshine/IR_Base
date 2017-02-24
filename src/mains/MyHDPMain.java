@@ -29,6 +29,7 @@ import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
 import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeansExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 
 public class MyHDPMain {
@@ -120,9 +121,9 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-//		MTCLinAdaptWithHDPExp hdp = new MTCLinAdaptWithHDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.2);//0.2
 
