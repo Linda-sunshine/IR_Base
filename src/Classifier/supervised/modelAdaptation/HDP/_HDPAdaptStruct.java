@@ -65,7 +65,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
 	/********Functions and variables used in confidence learning.
 	 * Same functions with different parameters.********/
-	protected HashMap<_HDPThetaStar, ArrayList<_WeightedCount>> m_hdpThetaWeightedMemSizeMap;
+	protected HashMap<_HDPThetaStar, ArrayList<_WeightedCount>> m_hdpThetaWeightedMemSizeMap = new HashMap<_HDPThetaStar, ArrayList<_WeightedCount>>();
 
 	public void incHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
 		if (v.getWeightedCount()==0)

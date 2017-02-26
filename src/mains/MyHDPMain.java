@@ -123,21 +123,21 @@ public class MyHDPMain {
 //		
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);//0.2
-
-		hdp.setsdA(0.2);//0.2
-		double alpha = 1, eta = 0.1, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(30);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-//		hdp.setPosteriorSanityCheck(true);
-		
-		hdp.train();
-		hdp.test();
+//		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.2);//0.2
+//
+//		hdp.setsdA(0.2);//0.2
+//		double alpha = 0.5, eta = 0.1, beta = 0.01;
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		hdp.setNumberOfIterations(30);
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+////		hdp.setPosteriorSanityCheck(true);
+//		
+//		hdp.train();
+//		hdp.test();
 		
 		//String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
 		//hdp.printUserPerformance(perfFile);
@@ -152,11 +152,11 @@ public class MyHDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 			
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(false);
-//		mtsvm.train();
-//		mtsvm.test();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
 //		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
 	}
 }

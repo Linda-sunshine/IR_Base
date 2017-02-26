@@ -142,6 +142,26 @@ public class CLRWithMMB extends CLRWithHDP {
 			sampleNewCluster(k);// shall we consider the current edge?? posterior sampling??
 	}
 	
+	// sample eij = 0, either from mmb model or from the background model.
+	public void sampleZeroEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
+		double prob_cij = 0, prob_cij_not = 0, bij = 0, bji = 0;
+
+		/***we will consider all possible combinations of different memberships.
+		 * 1.cij=0, cji=0, prob: (1-\rho)(1-\rho), 1 case
+		 * 2.cij=1, cji=1, known (Bgh, Bhg), prob: \rho\rho(1-Bgh)(1-Bhg), k^2 possible cases
+		 * 3.cij=1, cji=1, unknows (Bgh Bhg), prob: \Gamma(a)\Gamma(b+1)/\Gamma(a+b+1), 2k+1 possible cases
+		 */
+		
+		bij = getBij(ui, uj);
+		bji = getBij(uj, ui);
+		prob_cij = m_rho * m_rho * (1 - bij) * (1 - bji);
+		prob_cij_not = (1 - m_rho) * (1 - m_rho);
+		prob_cij /= (prob_cij + prob_cij_not);
+		
+		m_bernoulli = new BinomialDistribution(1, prob_cij);
+		// As fo
+	}
+	
 	public void sampleNewCluster(int k){
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
@@ -185,7 +205,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		// sample z_{i->j}
 		_HDPAdaptStruct ui, uj;
 		int sampleSize = 1;
-		double prob_cij = 0, prob_cij_not = 0, bij = 0, bji = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -193,30 +212,22 @@ public class CLRWithMMB extends CLRWithHDP {
 
 				// There are three cases--case1: eij = 1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
+					updateOneMembership(ui, uj);// update membership from ui->uj
+					sampleOneEdge(ui, uj, 1);
+					checkSampleSize(sampleSize++);
 					
-					updateOneMembership(ui, uj, 1);// update membership from ui->uj
+					updateOneMembership(uj, ui);// update membership from uj->ui
 					checkSampleSize(sampleSize++);
-					updateOneMembership(uj, ui, 1);// update membership from uj->ui
-					checkSampleSize(sampleSize++);
+					sampleOneEdge(uj, ui, 1);
 
-				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){// else if eij == 0 and from mmb
-					// p(cij=1)p(cji=1) = \rho(1-z_{i->j}Bz_{j->i})\rho(1-z_{j->i}Bz_{i->j})
-					bij = getBij(ui, uj);
-					bji = getBij(uj, ui);
-					prob_cij = m_rho * m_rho * (1 - bij) * (1 - bji);
-					prob_cij_not = (1 - m_rho) * (1 - m_rho);
-					prob_cij /= (prob_cij + prob_cij_not);
-					
-					m_bernoulli = new BinomialDistribution(1, prob_cij);
-					if(m_bernoulli.sample() == 1){
-						updateOneMembership(ui, uj, 0);
-						checkSampleSize(sampleSize++);
-						updateOneMembership(uj, ui, 0);
-						checkSampleSize(sampleSize++);
+				}else{
+					// If eij == 0 and from mmb, rm the membership first.
+					if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+						updateOneMembership(ui, uj);
+						updateOneMembership(uj, ui);				
 					}
-					// else the edge goes to background model.
+					sampleZeroEdge(ui, uj);
 				}
-				// else the edges goes to background model.
 			}
 		}
 		System.out.println(sampleSize + " edges are sampled.");
@@ -234,7 +245,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				System.out.println();
 		}
 	}
-	public void updateOneMembership(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int eij){
+	public void updateOneMembership(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
 		int index = 0;
 		_HDPThetaStar thetai = ui.getThetaStar(uj);
 		thetai.updateEdgeCount(-1);
@@ -249,7 +260,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			thetai = null;// Clear the probability vector.
 			m_kBar --;
 		}
-		sampleOneEdge(ui, uj, eij);
+//		sampleOneEdge(ui, uj, eij);
 	}
 	@Override
 	protected double calculate_M_step(){
@@ -324,7 +335,6 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Estimate the sparsity parameter.
 	// \rho = (1 - \sum_{p,q}Y(p,q)/N^2
 	public double estRho(){
-		m_rho = 1 - m_rhoCount/(m_userList.size()*m_userList.size());
 		return 0;
 	}
 }
