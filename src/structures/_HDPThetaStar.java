@@ -3,6 +3,8 @@ package structures;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import utils.Utils;
+
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
  * @author lin
@@ -17,20 +19,20 @@ public class _HDPThetaStar extends _thetaStar {
 	protected double m_gamma;
 	
 	// Parameters used in MMB model.
-	protected int m_edgeSize;
+	protected int m_edgeSize[];//0: zero-edge count;1: one-edge count.
+	
 	HashMap<_HDPThetaStar, Double> m_B;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
 		m_psi = new double[lmSize];
 		m_gamma = gamma;
-		m_edgeSize = 0;
+		m_edgeSize = new int[2];
 	}
-	
 	public _HDPThetaStar(int dim, double gamma) {
 		super(dim);
 		m_gamma = gamma;
-		m_edgeSize = 0;
+		m_edgeSize = new int[2];
 	}
 	
 	public void initPsiModel(int lmSize){
@@ -75,12 +77,16 @@ public class _HDPThetaStar extends _thetaStar {
 	}
 	
 	// Functions used in MMB model.
-	public void updateEdgeCount(int c){
-		m_edgeSize += c;
+	public void updateEdgeCount(int e, int c){
+		m_edgeSize[e] += c;
 	}
 	
-	public int getEdgeSize(){
-		return m_edgeSize;
+	public int getEdgeSize(int e){
+		return m_edgeSize[e];
+	}
+	
+	public int getTotalEdgeSize(){
+		return Utils.sumOfArray(m_edgeSize);
 	}
 	// key: the thetastar, value: probability.
 	public void addOneB(_HDPThetaStar t, double p){

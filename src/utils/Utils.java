@@ -981,4 +981,20 @@ public class Utils {
 				max = xs[i];
 		return max;
 	}
+	
+	// The array contains log values and we want to normalize the arr elements to sum to 1(logsum = 0).
+	public static void normalzie2DimArrayInLog(double[][] arr){
+		if(arr.length == 0 || arr[0].length == 0)
+			return;
+		
+		double logSum = 0;
+		for(int i=0; i<arr.length; i++){
+			for(int j=0; j<arr[0].length; j++)
+				logSum = Utils.logSum(logSum, arr[i][j]);
+		}
+		for(int i=0; i<arr.length; i++){
+			for(int j=0; j<arr[0].length; j++)
+				arr[i][j] -= logSum;
+		}
+	}
 }
