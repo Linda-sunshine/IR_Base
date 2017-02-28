@@ -1,55 +1,43 @@
 package Classifier.supervised.modelAdaptation.MMB;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-
 import org.apache.commons.math3.distribution.BetaDistribution;
-import org.apache.commons.math3.distribution.BinomialDistribution;
-
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
-import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
 import structures._SparseFeature;
-import structures._User;
 import utils.Utils; 
 
 public class CLRWithMMB extends CLRWithHDP {
-	double m_p_new = 0;	// prob for the new cluster in sampling zero edges.
+	double m_pNew_1 = 0; // prob for the new cluster in sampling one edges.
+	double m_pNew_0 = 0; // prob for the new cluster in sampling zero edges.
 	double m_rho = 0.1; // sparsity parameter
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
 	double[] m_abcd = new double[]{0.1, 0.1, 0.1, 0.1}; 
-	// M: total number of edges eij=1;N: total number of edges eij=0 from mmb; L: total number of edges eij=0 from background model.
-	double m_M = 0, m_N = 0, m_L = 0;
+	// Me: total number of edges eij=1;Ne: total number of edges eij=0 from mmb; Le: total number of edges eij=0 from background model.
+	double m_Me = 0, m_Ne = 0, m_Le = 0;
 	double[][] m_Bs;
 	double[][] m_cache; // two-dim array for storing probs used in sampling zero edge.
 	BetaDistribution m_Beta = new BetaDistribution(m_abcd[0], m_abcd[1]);
 	
 	HashMap<String, _HDPAdaptStruct> m_userMap; // key: userID, value: _AdaptStruct
+	boolean m_calcB = false; // whether we need to re-calculate the bij.
 	
 	public CLRWithMMB(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel,
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, betas);
-		m_p_new = Utils.lgamma(m_abcd[0]) + Utils.lgamma(m_abcd[1]+1) - Utils.lgamma(m_abcd[0]+m_abcd[1]+1);
+		m_pNew_0 = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
+		m_pNew_1 = Utils.lgamma(m_abcd[0] + 1) + Utils.lgamma(m_abcd[1])
+				- Math.log(m_abcd[0] + m_abcd[1] + 1) - Utils.lgamma(m_abcd[0]) - Utils.lgamma(m_abcd[1]);
 	} 
 	
 	
 	@Override
 	public String toString() {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
-	}
-	
-	@Override
-	public void loadUsers(ArrayList<_User> userList) {
-		m_userList = new ArrayList<_AdaptStruct>();
-		
-		for(_User user:userList)
-			m_userList.add(new _HDPAdaptStruct(user));
-		m_pWeights = new double[m_gWeights.length];		
 	}
 	
 	public void check(){
@@ -70,12 +58,33 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		
 	}
 	
 	public boolean hasFriend(String[] arr, String str){
 		for(String a: arr){
 			if(str.equals(a))
+				return true;
+		}
+		return false;
+	}
+	
+	public void sanityCheck(){
+		_HDPAdaptStruct uj;
+		for(_AdaptStruct ui: m_userList){
+			for(String nei: ui.getUser().getFriends()){
+				if(m_userMap.containsKey(nei)){	
+					uj = m_userMap.get(nei);
+					if(!isContain(uj.getUser().getFriends(), ui.getUserID())){
+						System.out.print("(o,x)");
+					}
+				}
+			}
+		}
+	}
+	
+	public boolean isContain(String[] strs, String s){
+		for(String str: strs){
+			if(str.equals(s))
 				return true;
 		}
 		return false;
@@ -90,19 +99,15 @@ public class CLRWithMMB extends CLRWithHDP {
 		// construct the map.
 		for(_AdaptStruct ui: m_userList)
 			m_userMap.put(ui.getUserID(), (_HDPAdaptStruct) ui);
-		
+		sanityCheck();
 		// add the friends one by one.
 		for(_AdaptStruct ui: m_userList){
 			for(String nei: ui.getUser().getFriends()){
 				if(m_userMap.containsKey(nei)){
 					uj = m_userMap.get(nei);
-					sampleOneEdge((_HDPAdaptStruct) ui, uj, 1);
-					System.out.print("o");
-				} else{
-					System.out.print("x");
+					sampleOneEdge((_HDPAdaptStruct) ui, uj);
 				}
 			}
-			System.out.println();
 		}
 	}
 
@@ -113,16 +118,16 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// Sample one edge between (ui, uj)
-	public void sampleOneEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
+	public void sampleOneEdge(_HDPAdaptStruct ui, _HDPAdaptStruct uj){
 		int k;
 		double likelihood, gamma_k, logSum = 0;
-		for(k=0; k<m_kBar+m_M; k++){
+		for(k=0; k<m_kBar; k++){
 			
 			ui.setThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
-			likelihood = calcLogLikelihoodE(ui, uj, e);
+			likelihood = calcLogLikelihoodE(ui, uj, 1);
 						
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -135,18 +140,38 @@ public class CLRWithMMB extends CLRWithHDP {
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
 		}
+		logSum = Utils.logSum(logSum, m_pNew_1);
+		
 		//Sample group k with likelihood.
-		k = sampleInLogSpace(logSum);
+		k = sampleEdgeInLogSpace(logSum);
+		
+		if(k == -1) 
+			sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
 		
 		//Step 3: update the setting after sampling z_ij.
-		m_hdpThetaStars[k].updateEdgeCount(1, 1);//first 1 means edge 1, the second one mean increase by 1.
-		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
+		m_hdpThetaStars[m_kBar-1].updateEdgeCount(1, 1);//first 1 means edge 1, the second one mean increase by 1.
+		ui.addNeighbor(uj, m_hdpThetaStars[m_kBar-1], 1);
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3		
-
-		if(k >= m_kBar) 
-			sampleNewCluster(k);// shall we consider the current edge?? posterior sampling??
+		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[m_kBar-1], 1);//-->3		
+	}
+	
+	//Sample hdpThetaStar with likelihood.
+	protected int sampleEdgeInLogSpace(double logSum){
+		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
+			
+		int k = -1;
+		double newLogSum = m_pNew_1;
+		do {
+			if (newLogSum>=logSum)
+				break;
+			k++;
+			newLogSum = Utils.logSum(newLogSum, m_hdpThetaStars[k].getProportion());
+		} while (k<m_kBar);
+			
+		if (k==m_kBar)
+			k--; // we might hit the very last
+		return k;
 	}
 	
 	// sample eij = 0, either from mmb model or from the background model.
@@ -158,28 +183,36 @@ public class CLRWithMMB extends CLRWithHDP {
 		 */
 		
 		double bij = 0, bji = 0, logSum = 0, prob = 0;
-		m_cache = new double[m_kBar+1][m_kBar+1];
+		// If the matrix does not change (no new clusters added.)
+		if(m_calcB){
+			m_cache = new double[m_kBar+1][m_kBar+1];
 		
-		// Step 1: calc prob for different cases of cij, cji.
-		_HDPThetaStar theta_g, theta_h;
-		// case 1: existing thetas.
-		for(int g=0; g<m_kBar; g++){
-			theta_g = m_hdpThetaStars[g];
-			for(int h=0; h<m_kBar; h++){
-				theta_h = m_hdpThetaStars[h];
-				bij = theta_g.getOneB(theta_h);
-				bji = theta_h.getOneB(theta_g);
-				// m_rho * m_rho * (1 - bij) * (1 - bji)
-				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-bij)+Math.log(1-bji);
-				m_cache[g][h] = prob;
-				logSum = Utils.logSum(logSum, prob);
+			// Step 1: calc prob for different cases of cij, cji.
+			_HDPThetaStar theta_g, theta_h;
+			// case 1: existing thetas.
+			for(int g=0; g<m_kBar; g++){
+				theta_g = m_hdpThetaStars[g];
+				for(int h=0; h<m_kBar; h++){
+					theta_h = m_hdpThetaStars[h];
+					bij = theta_g.getOneB(theta_h);
+					bji = theta_h.getOneB(theta_g);
+					// m_rho * m_rho * (1 - bij) * (1 - bji)
+					prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-bij)+Math.log(1-bji);
+					m_cache[g][h] = prob;
+				}
 			}
+			// case 2: either one is from new cluster.
+			for(int k=0; k<=m_kBar; k++){
+				m_cache[k][m_kBar] = m_pNew_0;
+				m_cache[m_kBar][k] = m_pNew_0;
+			}
+			m_calcB = false;
 		}
-		// case 2: either one is from new cluster.
-		for(int k=0; k<=m_kBar; k++){
-			m_cache[k][m_kBar] = m_p_new;
-			m_cache[m_kBar][k] = m_p_new;
-			logSum = Utils.logSum(logSum, 2*m_p_new); 
+		// Accumulate the log sum
+		for(int i=0; i<m_cache.length; i++){
+			for(int j=0; j<m_cache[0].length; j++){
+				logSum = Utils.logSum(logSum, m_cache[i][j]);
+			}
 		}
 		// case 3: background model while the prob is not stored in the two-dim array.
 		prob = Math.log(1 - m_rho) + Math.log(1 - m_rho);
@@ -204,20 +237,26 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_hdpThetaStars[g].updateEdgeCount(0, 1);//-->1
 			ui.addNeighbor(uj, m_hdpThetaStars[g], 0);
 			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1);		
-			m_N++;
+			m_Ne++;
 			// Update the thetaStar and user info after getting z_ji.
 			m_hdpThetaStars[h].updateEdgeCount(0, 1);
 			uj.addNeighbor(ui, m_hdpThetaStars[h], 0);
 			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
-			m_N++;
+			m_Ne++;
 		} else{
-			m_L++;// else it belongs to background model.
+			m_Le++;// else it belongs to background model.
 		}
 	}
 	
 	
 	//Sample hdpThetaStar with likelihood.
 	protected int sampleIn2DimArrayLogSpace(double logSum, double back_prob){
+		double sum = back_prob;
+		for(int i=0; i<m_kBar+1; i++){
+			for(int j=0; j<m_kBar+1; j++){
+				sum = Utils.logSum(sum, m_cache[i][j]);
+			}
+		}
 		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
 		
 		int k = -1;
@@ -227,48 +266,48 @@ public class CLRWithMMB extends CLRWithHDP {
 			if (newLogSum>=logSum)
 				break;
 			k++;
+			if (k==(m_kBar+1)*(m_kBar+1)){
+				k--; // we might hit the very last
+				return k;
+			}
 			newLogSum = Utils.logSum(newLogSum, m_cache[k/(m_kBar+1)][k%(m_kBar+1)]);
 			
 		} while (k<(m_kBar+1)*(m_kBar+1));
-		
-//		if (k==m_kBar+m_M)
-//			k--; // we might hit the very last
 		return k;
 	}
+	@Override
 	// Sample new cluster based on sampling of z_{i,d}, thus, the cluster will not have edges.
-	public void sampleNewCluster(int k, _SparseFeature[] fvs){
-		m_hdpThetaStars[k].initPsiModel(m_lmDim);
-		// we have fvs for sampling of language model parameters
-		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
-		// we don't have edge info for sampling of B
-		m_hdpThetaStars[k].initB();
-		sampleB(m_hdpThetaStars[k]);
-		double rnd = Beta.staticNextDouble(1, m_alpha);
-		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-		m_gamma_e = (1-rnd)*m_gamma_e;
-			
-		swapTheta(m_kBar, k);
-		m_kBar++;
+	public void sampleNewCluster(int k, _SparseFeature[] fvs){		
+		super.sampleNewCluster(k, fvs);
+		// we need to sample the values for B and the new one is in index kBar-1 since kBar has increased.
+		m_hdpThetaStars[m_kBar-1].initB();
+		sampleB(m_hdpThetaStars[m_kBar-1]);
 	}
 	
 	// Sample new cluster based on sampling of z_{i->j}, thus, the cluster will have edges info.
 	public void sampleNewCluster4Edge(){
 		// use the first available one as the new cluster.
+		if(m_hdpThetaStars[m_kBar] == null){			
+			m_hdpThetaStars[m_kBar] = new _HDPThetaStar(m_dim, 0);
+		}
 		m_hdpThetaStars[m_kBar].initPsiModel(m_lmDim);
+		
 		// we don't have fvs for sampling of language model parameters
 		m_D0.sampling(m_hdpThetaStars[m_kBar].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
+		
 		// we have edge info for sampling of B
 		m_hdpThetaStars[m_kBar].initB();
 		sampleB(m_hdpThetaStars[m_kBar]);
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[m_kBar].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
-			
-//		swapTheta(m_kBar, k);
 		m_kBar++;
+		m_calcB = true;
 	}
-	// sample each element of the vector 
+	// sample each element of the vector, including the new cluster.
 	public void sampleB(_HDPThetaStar theta){
+		// Add itself.
+		theta.addOneB(theta, m_Beta.sample());
 		for(int k=0; k<m_kBar; k++){
 			// add the prob between B_{existing theta, new theta} to the hashmap. 
 			m_hdpThetaStars[k].addOneB(theta, m_Beta.sample());
@@ -276,24 +315,25 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta.addOneB(m_hdpThetaStars[k], m_Beta.sample());
 		}
 	}
+	
+	// The function is only used for edge 1.
 	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
-		if(!ui.hasEdge(uj)){
-			return Utils.lgamma(m_abcd[0] + e) + Utils.lgamma(1- e + m_abcd[1])
-					- Math.log(m_abcd[0] + m_abcd[1] + 1) - Utils.lgamma(m_abcd[0]) - Utils.lgamma(m_abcd[1]);
-		} else{
+		if(ui.hasEdge(uj)){
 			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
 			double bij = ui.getOneNeighbor(uj).getHDPThetaStar().getOneB(uj.getOneNeighbor(uj).getHDPThetaStar());
 			double loglikelihood = 0;
 			loglikelihood = e == 0 ? (1 - bij) : bij;
 			loglikelihood = Math.log(loglikelihood);
 			return loglikelihood;
+		} else{
+			return m_pNew_1;
 		}
 	}
 	// Init the counters for different edges in E steps.
 	private void initE(){
-		m_M =0;
-		m_N = 0;
-		m_L = 0;
+		m_Me = 0;
+		m_Ne = 0;
+		m_Le = 0;
 	}
 	protected void calculate_E_step(){
 		initE();
@@ -302,7 +342,6 @@ public class CLRWithMMB extends CLRWithHDP {
 
 		// sample z_{i->j}
 		_HDPAdaptStruct ui, uj;
-		int sampleSize = 1;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -311,12 +350,10 @@ public class CLRWithMMB extends CLRWithHDP {
 				// There are three cases--case1: eij = 1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
 					updateOneMembership(ui, uj, 1);// update membership from ui->uj
-					sampleOneEdge(ui, uj, 1);
-					checkSampleSize(sampleSize++);
+					sampleOneEdge(ui, uj);
 					
 					updateOneMembership(uj, ui, 1);// update membership from uj->ui
-					checkSampleSize(sampleSize++);
-					sampleOneEdge(uj, ui, 1);
+					sampleOneEdge(uj, ui);
 
 				}else{
 					// If eij == 0 and from mmb, rm the membership first.
@@ -326,14 +363,16 @@ public class CLRWithMMB extends CLRWithHDP {
 					}
 					sampleZeroEdge(ui, uj);
 				}
+				checkSampleSize((int)(m_Me+m_Ne+m_Le));
 			}
 		}
-		System.out.println(sampleSize + " edges are sampled.");
+		System.out.print(String.format("[Info]eij=1: %d, eij=0(mmb):%d, eij=0(background):%d\n",m_Me, m_Ne,m_Le));
+		
 	}
 
 	// Check the sample size and print out hint information.
 	public void checkSampleSize(int sampleSize){
-		if (sampleSize%5000==0) {
+		if (sampleSize%2000==0) {
 			System.out.print('.');
 			if (sampleSize%100000==0)
 				System.out.println();
@@ -422,7 +461,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
-		m_rho = (m_M+m_N+m_abcd[2]-1)/(m_M+m_N+m_L+m_abcd[2]+m_abcd[3]-2);
+		m_rho = (m_Me+m_Ne+m_abcd[2]-1)/(m_Me+m_Ne+m_Le+m_abcd[2]+m_abcd[3]-2);
 		return 0;
 	}
 }

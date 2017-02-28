@@ -199,19 +199,7 @@ public class CLRWithHDP extends CLRWithDP {
 	public void incUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r, int k){
 		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3		
 	}
-	
-	// Our previous implementation, sample psi based simply on prior.
-	public void sampleNewCluster(int k){
-		m_hdpThetaStars[k].initPsiModel(m_lmDim);
-		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
-				
-		double rnd = Beta.staticNextDouble(1, m_alpha);
-		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-		m_gamma_e = (1-rnd)*m_gamma_e;
-			
-		swapTheta(m_kBar, k);
-		m_kBar++;
-	 }
+
 	// Current implementation, sample psi based on posterior.
 	public void sampleNewCluster(int k, _SparseFeature[] fvs){
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
