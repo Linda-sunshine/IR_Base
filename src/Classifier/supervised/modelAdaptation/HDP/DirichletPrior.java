@@ -30,6 +30,11 @@ public class DirichletPrior {
 	
 	//Sampling from posterior [\alpha_1+n_1, \alpha_2+n_2,...,\alpha_k+n_k].
 	public void sampling(double[] target, double[] alphas, _SparseFeature[] fvs, boolean toLog){
+		if(fvs.length == 0){
+			sampling(target, alphas, toLog);
+			return;
+		}
+		
 		double sum = 0;
 		int count = 0;
 		for(int i=0; i<alphas.length; i++){
@@ -52,12 +57,6 @@ public class DirichletPrior {
 				target[i] = Math.log(target[i]);
 		}
 	}
-//	//Sampling each dim of given target vector.
-//	public void sampling(double[] target, double alpha){
-//		double[] alphas = new double[target.length];
-//		Arrays.fill(alphas, alpha/target.length);
-//		sampling(target, alphas);
-//	}
 	
 	//Sampling given dim of target vector.
 	public void sampling(double[] target, int dim, double alpha, boolean toLog){

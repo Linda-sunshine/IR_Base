@@ -1,10 +1,13 @@
 package structures;
 
 public class DPParameter {
+	
+	public String m_prefix = "/if15/lg5bt/DataSigir"; //"./data/CoLinAdapt"
 	public String m_data = "Amazon";
 	public String m_model = "mtclinhdp";
 	public int m_nuOfIterations = 30;
 	public int m_M = 6;
+	public int m_thinning = 5;
 	public double m_sdA = 0.1;
 	public double m_sdB = 0.1;
 	
@@ -96,7 +99,6 @@ public class DPParameter {
 				m_lmTopK = Integer.parseInt(argv[i]);
 			else if(argv[i-1].equals("-post"))
 				m_post = Boolean.parseBoolean(argv[i]);
-			
 			else if(argv[i-1].equals("-base"))
 				m_base = Integer.parseInt(argv[i]);
 			else if(argv[i-1].equals("-th"))
@@ -105,6 +107,10 @@ public class DPParameter {
 				m_adaptRatio = Double.parseDouble(argv[i]);
 			else if(argv[i-1].equals("-threshold"))
 				m_threshold = Integer.parseInt(argv[i]);
+			else if(argv[i-1].equals("-prefix"))
+				m_prefix = argv[i];
+			else if(argv[i-1].equals("-thin"))
+				m_thinning = Integer.valueOf(argv[i]);
 			else
 				exit_with_help();
 		}
