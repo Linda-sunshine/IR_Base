@@ -50,6 +50,8 @@ public class featureGeneration {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "20NewsGroupTrain";
 		articleType = "Reuters10";
+		articleType = "TripAdvisor";
+		articleType = "NYT";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";

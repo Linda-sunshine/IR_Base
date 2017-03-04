@@ -4,10 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.TreeMap;
+import java.util.*;
 
 import structures._ChildDoc;
 import structures._Corpus;
@@ -16,6 +13,7 @@ import structures._ParentDoc;
 import structures._SparseFeature;
 import structures._Stn;
 import Analyzer.ParentChildAnalyzer;
+import structures._DynamicDoc;
 
 public class outputFile {
 	
@@ -225,10 +223,74 @@ public class outputFile {
 			e.printStackTrace();
 		}
 	}
+
+	static void transformDoc2CDTMFormat(String filePrefix, _Corpus c){
+		TreeMap<Long, ArrayList<_Doc>> timeDocMap = new TreeMap<Long, ArrayList<_Doc>>();
+
+		String outputCorpusFile = "cdtmCorpus.txt";
+		String outputVocFile = "cdtmVoc.txt";
+
+		long smallTimeStamp = Long.MAX_VALUE;
+		ArrayList<_Doc> trainSet = c.getCollection();
+		for(_Doc d:trainSet){
+			long timeStamp = d.getTimeStamp();
+
+			if(timeStamp<smallTimeStamp)
+				smallTimeStamp = timeStamp;
+
+			System.out.println("timestamp\t"+timeStamp);
+			if(timeDocMap.containsKey(timeStamp)){
+				ArrayList<_Doc> docListPerTime = timeDocMap.get(timeStamp);
+				docListPerTime.add(d);
+			}else{
+				ArrayList<_Doc> docListPerTime = new ArrayList<_Doc>();
+				docListPerTime.add(d);
+				timeDocMap.put(timeStamp, docListPerTime);
+			}
+		}
+
+		try{
+			PrintWriter corpusPW = new PrintWriter(new File(filePrefix, outputCorpusFile));
+			PrintWriter vocPW = new PrintWriter(new File(filePrefix, outputVocFile));
+
+			int timeNum = timeDocMap.size();
+
+			corpusPW.println(timeNum);
+			int docNum = 0;
+			for(long timestamp : timeDocMap.keySet()){
+				corpusPW.println(timestamp-smallTimeStamp);
+				ArrayList<_Doc> docListPerTime = timeDocMap.get(timestamp);
+				corpusPW.println(docListPerTime.size());
+				for(_Doc d:docListPerTime){
+					docNum += 1;
+					_SparseFeature[] sfs = d.getSparse();
+					corpusPW.print(sfs.length+"\t");
+					for(_SparseFeature sf : sfs) {
+						corpusPW.print(sf.getIndex() + ":" + (int)sf.getValue()+"\t");
+					}
+					corpusPW.println();
+				}
+			}
+
+			System.out.print("docNum\t"+docNum);
+			corpusPW.flush();
+			corpusPW.close();
+
+			for(int i=0; i<c.getFeatureSize(); i++){
+				vocPW.println(c.getFeature(i));
+			}
+
+			vocPW.flush();
+			vocPW.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
 	
 	public static void outputFiles(String filePrefix, _Corpus c) {
-		
-		transformDocuments2SCTMFormat(filePrefix, c);
+		transformDoc2CDTMFormat(filePrefix, c);
+//		transformDocuments2SCTMFormat(filePrefix, c);
 	}
 	
 	public static void statisticDocLen(_Corpus c){
@@ -293,6 +355,7 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
+		articleType = "NYT";
 //		 articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
@@ -355,9 +418,9 @@ public class outputFile {
 		System.out.println("Performing feature selection, wait...");
 		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-		analyzer.LoadParentDirectory(articleFolder, suffix);
-		analyzer.LoadChildDirectory(commentFolder, suffix);
-		// analyzer.LoadDirectory(commentFolder, suffix);
+//		analyzer.LoadParentDirectory(articleFolder, suffix);
+//		analyzer.LoadChildDirectory(commentFolder, suffix);
+		analyzer.LoadDirectory(articleFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		

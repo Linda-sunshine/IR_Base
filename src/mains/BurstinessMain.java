@@ -67,7 +67,7 @@ public class BurstinessMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-//		articleType = "Yahoo";
+		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -173,8 +173,8 @@ public class BurstinessMain {
 		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
-		analyzer.generateFakeCorpus(filePrefix);
-//		analyzer.randomizeComment(filePrefix, number_of_topics);
+//		analyzer.generateFakeCorpus(filePrefix);
+		analyzer.randomizeComment(filePrefix, number_of_topics);
 //		analyzer.analyzeBurstiness(filePrefix);
 		
 	}

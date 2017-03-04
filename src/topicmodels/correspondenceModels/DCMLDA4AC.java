@@ -645,7 +645,8 @@ public class DCMLDA4AC extends LDAGibbs4AC {
 		sampleTestSet.add(pDoc);
 		
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
-			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+//			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			
 			for (_Word w : d.getWords()) {

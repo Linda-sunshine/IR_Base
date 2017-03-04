@@ -818,8 +818,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		}
 		
 		int testLength = 0;
-		testLength = (int) (m_testWord4PerplexityProportion * pDoc
-				.getTotalDocLength());
+//		testLength = (int) (m_testWord4PerplexityProportion * pDoc.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, 0, testLength, vocabulary_size);
 		pDoc.createSparseVct4Infer();
 
@@ -827,7 +826,7 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		for(_ChildDoc cDoc:pDoc.m_childDocs){
 			testLength = (int)(m_testWord4PerplexityProportion*cDoc.getTotalDocLength());
 //			testLength = cDoc.getTotalDocLength();
-//			testLength = 0;
+			testLength = 0;
 			cDoc.setTopics4GibbsTest(number_of_topics, 0, testLength);
 			
 			for(_Word w:cDoc.getWords()){
@@ -949,6 +948,45 @@ public class DCMCorrLDA extends DCMLDA4AC {
 		} catch (Exception ex) {
 			System.err.print("File Not Found");
 		}
+	}
+
+	protected double cal_logLikelihood_Perplexity4Parent(_Doc d){
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
+		double docLogLikelihood = 0.0;
+
+		for (_Word w : pDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = pDoc.m_topics[k]
+						*pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
+	}
+
+	protected double cal_logLikelihood_Perplexity4Child(_Doc d){
+		_ChildDoc cDoc = (_ChildDoc)d;
+		double docLogLikelihood = 0.0;
+		_ParentDoc4DCM pDoc = (_ParentDoc4DCM)cDoc.m_parentDoc;
+
+		for (_Word w : cDoc.getWords()) {
+			int wid = w.getIndex();
+
+			double wordLogLikelihood = 0;
+			for (int k = 0; k < number_of_topics; k++) {
+				double wordPerTopicLikelihood = cDoc.m_topics[k]
+						* pDoc.m_wordTopic_prob[k][wid];
+				wordLogLikelihood += wordPerTopicLikelihood;
+			}
+			docLogLikelihood += Math.log(wordLogLikelihood);
+		}
+
+		return docLogLikelihood;
 	}
 }
 

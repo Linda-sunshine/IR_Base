@@ -174,14 +174,16 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			loglikelihood = inference(d);
 			sumLikelihood += loglikelihood;
 			perplexity += loglikelihood;
-//			totalWords += d.getTotalDocLength();
-//			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
-//				totalWords += cDoc.getTotalDocLength();
-//			}
-			totalWords += d.getDocTestLength();
-			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-				totalWords += cDoc.getDocTestLength();
+			totalWords += d.getTotalDocLength();
+			for(_ChildDoc cDoc:((_ParentDoc)d).m_childDocs){
+				totalWords += cDoc.getTotalDocLength();
 			}
+
+			//partialPerplexity
+//			totalWords += d.getDocTestLength();
+//			for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+//				totalWords += cDoc.getDocTestLength();
+//			}
 		}
 		System.out.println("total Words\t" + totalWords + "perplexity\t"
 				+ perplexity);
@@ -255,8 +257,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		}
 
 		int testLength = 0;
-		testLength = (int) (m_testWord4PerplexityProportion * pDoc
-				.getTotalDocLength());
+//		testLength = (int) (m_testWord4PerplexityProportion * pDoc.getTotalDocLength());
 		pDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 		sampleTestSet.add(pDoc);
 
@@ -265,7 +266,7 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 		for (_ChildDoc cDoc : pDoc.m_childDocs) {
 			testLength = (int) (m_testWord4PerplexityProportion * cDoc
 					.getTotalDocLength());
-//			testLength = 0;
+			testLength = 0;
 //			testLength = cDoc.getTotalDocLength();
 			cDoc.setTopics4GibbsTest(number_of_topics, d_alpha, testLength);
 			sampleTestSet.add(cDoc);
@@ -300,10 +301,10 @@ public class LDAGibbs4AC extends LDA_Gibbs {
 			
 		}while(++iter<number_of_iteration);
 		
-//		logLikelihood = calPerplexity(sampleTestSet);
+		logLikelihood = calPerplexity(sampleTestSet);
 //		logLikelihood = calConditionalPerplexity(sampleTestSet);
 //		logLikelihood = calPerplexity4Child(sampleTestSet);
-		logLikelihood = calPartialPerplexity(sampleTestSet);
+//		logLikelihood = calPartialPerplexity(sampleTestSet);
 		
 		return logLikelihood;
 	}

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -14,6 +16,7 @@ import json.JSONObject;
 import opennlp.tools.util.InvalidFormatException;
 import structures.*;
 import utils.Utils;
+import java.util.Date;
 
 /**
  * 
@@ -168,7 +171,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		}
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
-		String parent = Utils.getJSONValue(json, "parent");
+//		String parent = Utils.getJSONValue(json, "parent");
+		String timeStampStr = Utils.getJSONValue(json, "time");
 		String label = Utils.getJSONValue(json, "label");
 		
 		int yLabel = 0;
@@ -177,9 +181,23 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //			yLabel = Integer.parseInt(label);
 //			yLabel = labelIntMap.get(label);
 		}
-		_Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
-		d.setName(name);
-		AnalyzeDoc(d);
+
+		DateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
+        try{
+            Date date = formatter.parse(timeStampStr);
+            long timeStamp = date.getTime();
+            _Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
+            d.setTimeStamp(timeStamp);
+
+            d.setName(name);
+            AnalyzeDoc(d);
+        }catch (Exception e){
+            System.out.print(fileName);
+            e.printStackTrace();
+        }
+
+//		_DynamicDoc d = new _DynamicDoc(m_corpus.getSize(), content, yLabel, timeStamp);
+
 	}
 	
 	public void LoadDoc4DCMLDA(String fileName){
@@ -276,34 +294,34 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				for(_ChildDoc cDoc:pDoc.m_childDocs){
 //					System.out.println("cDoc\t"+cDoc.getName());
 					threadLen += cDoc.getTotalDocLength();
-//					for(_Word w:cDoc.getWords()){
-//						int wid = w.getIndex();
-//						System.out.print("wid\t"+wid+"\t");
-//						if(!wordFrequencyMap.containsKey(wid)){
-//							continue;
-////							wordFrequencyMap.put(wid, 1.0);
-//						}else{
-//							double oldFeaturetimes = wordFrequencyMap.get(wid);
-//							oldFeaturetimes += 1;
-//							wordFrequencyMap.put(wid, oldFeaturetimes);
-//						}
-//					}
-//					System.out.print("\n");
-
-					_SparseFeature[] sfs = cDoc.getSparse();
-					for(_SparseFeature sf:sfs){
-						int wid = sf.getIndex();
-						double featureTimes = sf.getValue();
-						if(!wordFrequencyMap.containsKey(wid))
+					for(_Word w:cDoc.getWords()){
+						int wid = w.getIndex();
+						System.out.print("wid\t"+wid+"\t");
+						if(!wordFrequencyMap.containsKey(wid)){
 							continue;
-//							wordFrequencyMap.put(wid, featureTimes);
-						else{
-							double oldFeatureTimes = wordFrequencyMap.get(wid);
-							oldFeatureTimes += featureTimes;
-							wordFrequencyMap.put(wid, oldFeatureTimes);
+//							wordFrequencyMap.put(wid, 1.0);
+						}else{
+							double oldFeaturetimes = wordFrequencyMap.get(wid);
+							oldFeaturetimes += 1;
+							wordFrequencyMap.put(wid, oldFeaturetimes);
 						}
-
 					}
+					System.out.print("\n");
+
+//					_SparseFeature[] sfs = cDoc.getSparse();
+//					for(_SparseFeature sf:sfs){
+//						int wid = sf.getIndex();
+//						double featureTimes = sf.getValue();
+//						if(!wordFrequencyMap.containsKey(wid))
+//							continue;
+////							wordFrequencyMap.put(wid, featureTimes);
+//						else{
+//							double oldFeatureTimes = wordFrequencyMap.get(wid);
+//							oldFeatureTimes += featureTimes;
+//							wordFrequencyMap.put(wid, oldFeatureTimes);
+//						}
+//
+//					}
 				}
 
 				totalFeatureTimes += wordFrequencyMap.size();
@@ -407,23 +425,24 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			if(d instanceof _ParentDoc4DCM){
 				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
 				int docLength = 0;
+				generateParentDocFeature(pDoc, fakeCorpusFolder);
 //				docLength += pDoc.getTotalDocLength();
 				for(_ChildDoc cDoc:pDoc.m_childDocs) {
 					docLength = cDoc.getTotalDocLength();
-					generateFakeDoc(pDoc, fakeCorpusFolder, docLength, t_wordSstat, widList, docIndex);
-					docIndex++;
+					String docName = cDoc.getName();
+					generateFakeDoc(pDoc, fakeCorpusFolder, docLength, t_wordSstat, widList, docName);
 				}
 			}
 		}
 	}
-	
-	public void generateFakeDoc(_ParentDoc pDoc, File folder, int docLength, HashMap<Integer, Double>wordSstat, ArrayList<Integer>widList, int docIndex){
-		String fakeDocName = docIndex+".txt";
-		
+
+	public void generateParentDocFeature(_ParentDoc pDoc, File folder){
+		String fakeDocName = pDoc.getName()+".txt";
+
 		try{
-			
+
 			PrintWriter pw = new PrintWriter(new File(folder, fakeDocName));
-			
+
 			for(_SparseFeature sf:pDoc.getSparse()){
 				int wid = sf.getIndex();
 				double val = sf.getValue();
@@ -432,6 +451,29 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					pw.print("\t");
 				}
 			}
+
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void generateFakeDoc(_ParentDoc pDoc, File folder, int docLength, HashMap<Integer, Double>wordSstat, ArrayList<Integer>widList, String docName){
+		String fakeDocName = docName+".txt";
+		
+		try{
+			
+			PrintWriter pw = new PrintWriter(new File(folder, fakeDocName));
+			
+//			for(_SparseFeature sf:pDoc.getSparse()){
+//				int wid = sf.getIndex();
+//				double val = sf.getValue();
+//				for(int i=0; i<val; i++){
+//					pw.print(wid);
+//					pw.print("\t");
+//				}
+//			}
 			
 			for(int i=0; i<docLength; i++){
 				int wid = generateFakeWord(wordSstat, widList);
@@ -529,5 +571,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		System.out.println("randomization");
 		analyzeBurstiness(filePrefix);
 	}
+
+
 
 }

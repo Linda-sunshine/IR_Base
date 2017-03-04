@@ -174,5 +174,43 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
         return docLogLikelihood;
     }
 
+    protected double cal_logLikelihood_Perplexity4Parent(_Doc d){
+        _ParentDoc pDoc = (_ParentDoc) d;
+        double docLogLikelihood = 0.0;
+
+        for (_Word w : pDoc.getWords()) {
+            int wid = w.getIndex();
+
+            double wordLogLikelihood = 0;
+            for (int k = 0; k < number_of_topics; k++) {
+                double wordPerTopicLikelihood = pDoc.m_topics[k]
+                        * topic_term_probabilty[k][wid];
+                wordLogLikelihood += wordPerTopicLikelihood;
+            }
+            docLogLikelihood += Math.log(wordLogLikelihood);
+        }
+
+        return docLogLikelihood;
+    }
+
+    protected double cal_logLikelihood_Perplexity4Child(_Doc d){
+        _ChildDoc cDoc = (_ChildDoc)d;
+        double docLogLikelihood = 0.0;
+
+        for (_Word w : cDoc.getWords()) {
+            int wid = w.getIndex();
+
+            double wordLogLikelihood = 0;
+            for (int k = 0; k < number_of_topics; k++) {
+                double wordPerTopicLikelihood = cDoc.m_topics[k]
+                        * topic_term_probabilty[k][wid];
+                wordLogLikelihood += wordPerTopicLikelihood;
+            }
+            docLogLikelihood += Math.log(wordLogLikelihood);
+        }
+
+        return docLogLikelihood;
+    }
+
 
 }

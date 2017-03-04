@@ -195,4 +195,6 @@ public class CorrDCMLDA extends DCMCorrLDA {
         return docLogLikelihood;
     }
 
+
+
 }
