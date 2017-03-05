@@ -32,8 +32,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_pNew_0 = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
 		m_pNew_1 = Utils.lgamma(m_abcd[0] + 1) + Utils.lgamma(m_abcd[1])
 				- Math.log(m_abcd[0] + m_abcd[1] + 1) - Utils.lgamma(m_abcd[0]) - Utils.lgamma(m_abcd[1]);
-	} 
-	
+	}
 	
 	@Override
 	public String toString() {
