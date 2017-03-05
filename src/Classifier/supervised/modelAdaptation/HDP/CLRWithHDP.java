@@ -199,7 +199,19 @@ public class CLRWithHDP extends CLRWithDP {
 	public void incUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r, int k){
 		user.incHDPThetaStarMemSize(m_hdpThetaStars[k], 1);//-->3		
 	}
-
+	
+	// Our previous implementation, sample psi based simply on prior.
+	public void sampleNewCluster(int k){
+		m_hdpThetaStars[k].initPsiModel(m_lmDim);
+		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
+				
+		double rnd = Beta.staticNextDouble(1, m_alpha);
+		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
+		m_gamma_e = (1-rnd)*m_gamma_e;
+			
+		swapTheta(m_kBar, k);
+		m_kBar++;
+	 }
 	// Current implementation, sample psi based on posterior.
 	public void sampleNewCluster(int k, _SparseFeature[] fvs){
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
@@ -619,7 +631,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (theta == m_hdpThetaStars[i])
 				return i;
 		
-		System.err.println("[Error]Hit unknown theta star when searching!");
+//		System.err.println("[Error]Hit unknown theta star when searching!");
 		return -1;// impossible to hit here!
 	}
 	
@@ -791,59 +803,4 @@ public class CLRWithHDP extends CLRWithDP {
 			m_writer.write(sizes[i]+",");
 		m_writer.write("\n");
 	}
-//	// added by Lin for model performance comparison.
-//	// print out each user's test review's performance.
-//	public void printUserPerformance(String filename){
-//		PrintWriter writer;
-//		try{
-//			writer = new PrintWriter(new File(filename));
-//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-//				@Override
-//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-//				}
-//			});
-//			
-//			for(_AdaptStruct u: m_userList){
-//				writer.write("-----\n");
-//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-//				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.ADAPTATION)
-//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-//					if(r.getType() == rType.TEST){
-//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-//					}
-//				}
-//			}
-//			writer.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
-	
-//	// Previous implementation
-//	// added by Lin for model performance comparison.
-//	// print out each user's test review's performance.
-//	public void printUserPerformance(String filename){
-//		PrintWriter writer;
-//		try{
-//			writer = new PrintWriter(new File(filename));
-//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-//				@Override
-//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-//				}
-//			});
-//			
-//			for(_AdaptStruct u: m_userList){
-//				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.TEST){
-//						writer.write(String.format("%s\t%d\t%d\t%d\t%s\n", u.getUserID(), u.getUser().getReviewSize(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-//					}
-//				}
-//			}
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
 }

@@ -60,6 +60,9 @@ public class CLRWithDP extends LinAdapt {
 		m_dim = m_featureSize + 1; // to add the bias term
 	}	
 	
+	public void setThinning(int t){
+		m_thinning = t;
+	}
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
 	}
