@@ -292,28 +292,28 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	// The main MCMC algorithm, assign each review to clusters.
 	protected void calculate_E_step(){
-		_HDPThetaStar curThetaStar;
 		_HDPAdaptStruct user;
-		int index, sampleSize=0;
+		int sampleSize=0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;//do not touch testing reviews!
 				
-				curThetaStar = r.getHDPThetaStar();
+//				curThetaStar = r.getHDPThetaStar();
 				
-				//Step 1: remove the current review from the thetaStar and user side.
-				decUserHDPThetaStarMemSize(user, r);
-				curThetaStar.updateMemCount(-1);
-
-				if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
-					curThetaStar.resetPsiModel();
-					m_gamma_e += curThetaStar.getGamma();
-					index = findHDPThetaStar(curThetaStar);
-					swapTheta(m_kBar-1, index); // move it back to \theta*
-					m_kBar --;
-				}
+				updateDocMembership(user, r);
+//				//Step 1: remove the current review from the thetaStar and user side.
+//				decUserHDPThetaStarMemSize(user, r);
+//				curThetaStar.updateMemCount(-1);
+//
+//				if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
+//					curThetaStar.resetPsiModel();
+//					m_gamma_e += curThetaStar.getGamma();
+//					index = findHDPThetaStar(curThetaStar);
+//					swapTheta(m_kBar-1, index); // move it back to \theta*
+//					m_kBar --;
+//				}
 				
 				//Step 2: sample new cluster assignment for this review
 				sampleOneInstance(user, r);
@@ -330,6 +330,22 @@ public class CLRWithHDP extends CLRWithDP {
 		System.out.println(m_kBar);
 	}
 	
+	public void updateDocMembership(_HDPAdaptStruct user, _Review r){
+		int index = -1;
+		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
+		//Step 1: remove the current review from the thetaStar and user side.
+		decUserHDPThetaStarMemSize(user, r);
+		curThetaStar.updateMemCount(-1);
+
+		if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
+			curThetaStar.resetPsiModel();
+			m_gamma_e += curThetaStar.getGamma();
+			index = findHDPThetaStar(curThetaStar);
+			swapTheta(m_kBar-1, index); // move it back to \theta*
+			m_kBar --;
+		}
+	}
+
 	public void decUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r){
 		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
 

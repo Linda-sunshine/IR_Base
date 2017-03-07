@@ -64,7 +64,7 @@ public class MyMMBMain {
 //		hdp.setsdB(0.2);
 
 		hdp.setsdA(0.2);
-		double alpha = 1, eta = 0.1, beta = 0.01;
+		double alpha = 0.1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		hdp.setNumberOfIterations(30);

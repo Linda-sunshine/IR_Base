@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.MMB;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
@@ -12,6 +13,7 @@ import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tfloat.FloatUniform;
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
+import structures._Review;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils; 
@@ -26,7 +28,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
 
 	// Me: total number of edges eij=1;Ne: total number of edges eij=0 from mmb; Le: total number of edges eij=0 from background model.
-	double m_Me = 0, m_Ne = 0, m_Le = 0;
+	double[] m_MNL = new double[3];
 	
 	double[][] m_Bs;
 	double[][] m_cache; // two-dim array for storing probs used in sampling zero edge.
@@ -122,10 +124,14 @@ public class CLRWithMMB extends CLRWithHDP {
 				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
 					randomSampleEdge(i, j, 1);
 					randomSampleEdge(j, i, 1);
+					updateSampleSize(0);// update m_MNL: 0:1 from mmb; 1: 0 from mmb; 2: 0 from background.
+				
+					
 				} else{
 				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
 					randomSampleEdge(i, j, 0);
 					randomSampleEdge(j, i, 0); 
+					m_MNL[1] ++;
 				}
 			}
 		}
@@ -148,7 +154,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
-		ui.addNeighbor(uj, m_hdpThetaStars[k], 1);
+		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 			
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
 		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
@@ -195,7 +201,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
-		ui.addNeighbor(uj, m_hdpThetaStars[k], 1);
+		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
 		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
@@ -286,16 +292,17 @@ public class CLRWithMMB extends CLRWithHDP {
 			ui.addNeighbor(uj, m_hdpThetaStars[g], 0);
 			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1);	
 			m_indicator[i][j] = m_hdpThetaStars[g];
-			m_Ne++;
+			updateSampleSize(1);
 			
 			// Update the thetaStar and user info after getting z_ji.
 			m_hdpThetaStars[h].updateEdgeCount(0, 1);
 			uj.addNeighbor(ui, m_hdpThetaStars[h], 0);
 			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
 			m_indicator[i][j] = m_hdpThetaStars[h];
-			m_Ne++; 
+			updateSampleSize(1);
 		} else{
-			m_Le += 2;// else it belongs to background model.
+			updateSampleSize(2);
+			updateSampleSize(2);
 		}
 	}
 	
@@ -381,9 +388,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	// Init the counters for different edges in E steps.
 	private void initE(){
-		m_Me = 0;
-		m_Ne = 0;
-		m_Le = 0;
+		Arrays.fill(m_MNL, 0);
 	}
 	
 	/***
@@ -396,7 +401,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		initE();
 		// sample z_{i,d}
 		super.calculate_E_step();
-
+		checkKBar();
 		// sample z_{i->j}
 		_HDPAdaptStruct ui, uj;
 		double m_p_bk = 1-m_rho, m_p_mmb_0 = 0;
@@ -407,44 +412,56 @@ public class CLRWithMMB extends CLRWithHDP {
 
 				// eij = 1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
-					updateOneMembership(ui, uj, 1);// update membership from ui->uj					
-					updateOneMembership(uj, ui, 1);// update membership from uj->ui
+					updateEdgeMembership(ui, uj, 1);// update membership from ui->uj					
+					updateEdgeMembership(uj, ui, 1);// update membership from uj->ui
 					
 					sampleEdge(i, j, 1);
 					sampleEdge(j, i, 1);
-					m_Me += 2;
+					updateSampleSize(0);
+					updateSampleSize(0);
 
 				}else{
 					// eij = 0 from mmb， remove the membership first.
 					if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
-						updateOneMembership(ui, uj, 0);
-						updateOneMembership(uj, ui, 0);
+						updateEdgeMembership(ui, uj, 0);
+						updateEdgeMembership(uj, ui, 0);
 					}
 					// Decide whether it belongs to mmb or background model.
 					// If Bij and Bji exist
 					if(isBijValid(i, j)){
 						m_p_mmb_0 = m_rho*(1-getBij(i, j));
 						// sample i->j
+						if( m_p_bk/(m_p_bk+m_p_mmb_0) > 1)
+							System.out.println("Bug");
 						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
 						// put the edge(two nodes) in the background model.
 						if(m_bernoulli.sample() == 1){
-							m_Le+=2;// the two nodes of the edges are assigned to background model
+							updateSampleSize(2);
+							updateSampleSize(2);
 							continue; // their cluster assignment keep the same.
 						}
 						// sample from mmb for zero edges.
 						sampleEdge(i, j, 0);
 						sampleEdge(j, i, 0);
-						m_Ne += 2;
+						updateSampleSize(1);
+						updateSampleSize(1);
 					} else{
 						sampleZeroEdgeJoint(i, j);
 					}
 				}
-				checkSampleSize((int)(m_Me+m_Ne+m_Le));
 			}
 		}
-		System.out.print(String.format("[Info]eij=1: %d, eij=0(mmb):%d, eij=0(background):%d\n",m_Me, m_Ne,m_Le));
+		System.out.print(String.format("\n[Info]kBar: %d, eij=1: %.1f, eij=0(mmb):%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
+		checkKBar();
 	}
 	
+	public void checkKBar(){
+		int index = 0;
+		while(m_hdpThetaStars[index] != null){
+			index++;
+		}
+		System.out.print(String.format("kBar:%d, non_null hdp: %d\n", m_kBar, index));
+	}
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/
 	public boolean isBijValid(int i, int j){
@@ -458,15 +475,40 @@ public class CLRWithMMB extends CLRWithHDP {
 		_HDPThetaStar z_ji = m_indicator[j][i];
 		return z_ij.getOneB(z_ji);
 	}
+	
+	
 	// Check the sample size and print out hint information.
-	public void checkSampleSize(int sampleSize){
-		if (sampleSize%2000==0) {
+	public void updateSampleSize(int index){
+		if(index <0 || index > m_MNL.length)
+			System.err.println("[Error]Wrong index!");
+		m_MNL[index]++;
+		if (Utils.sumOfArray(m_MNL) % 5000==0) {
 			System.out.print('.');
-			if (sampleSize%100000==0)
+			if (Utils.sumOfArray(m_MNL) % 500000==0)
 				System.out.println();
 		}
 	}
-	public void updateOneMembership(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
+	@Override
+	// Override this function since we have different conditions for removing clusters.
+	public void updateDocMembership(_HDPAdaptStruct user, _Review r){
+		int index = -1;
+		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
+
+		decUserHDPThetaStarMemSize(user, r);
+		curThetaStar.updateMemCount(-1);
+
+		if(curThetaStar.getMemSize() == 0 && curThetaStar.getTotalEdgeSize() == 0) {// No data associated with the cluster.
+			curThetaStar.resetPsiModel();
+			m_gamma_e += curThetaStar.getGamma();
+			index = findHDPThetaStar(curThetaStar);
+			swapTheta(m_kBar-1, index); // move it back to \theta*
+			index = m_kBar-1;
+			while(m_hdpThetaStars[index] != null)
+				m_hdpThetaStars[index++] = null;
+			m_kBar --;
+		}
+	}
+	public void updateEdgeMembership(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
 		int index = 0;
 		_HDPThetaStar thetai = ui.getThetaStar(uj);
 		thetai.updateEdgeCount(e, -1);
@@ -477,8 +519,11 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(thetai.getMemSize() == 0 && thetai.getTotalEdgeSize() == 0){// No data associated with the cluster.
 			m_gamma_e += thetai.getGamma();
 			index = findHDPThetaStar(thetai);
+			if(index == -1)
+				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			thetai = null;// Clear the probability vector.
+			m_hdpThetaStars[m_kBar-1] = null;
+//			thetai = null;// Clear the probability vector.
 			m_kBar --;
 		}
 	}
@@ -535,12 +580,15 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	// Assign the newly estimated Bs to each group parameter.
 	public void assignB(){
-		int h = 0;
+		int h = 0, h_2 = 0;
 		HashMap<_HDPThetaStar, Double> B;
 		for(int g=0; g<m_kBar; g++){
 			B = m_hdpThetaStars[g].getB();
 			for(_HDPThetaStar thetaj: B.keySet()){
+				h_2 = findHDPThetaStar(thetaj);
 				h = thetaj.getIndex();
+				if(h != h_2 || h >= m_kBar || h_2 >= m_kBar)
+					System.out.println("bug");
 				B.put(thetaj, m_Bs[g][h]);
 			}
 		}
@@ -548,7 +596,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
-		m_rho = (m_Me+m_Ne+m_abcd[2]-1)/(m_Me+m_Ne+m_Le+m_abcd[2]+m_abcd[3]-2);
+		m_rho = (m_MNL[0]+m_MNL[1]+m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
 		return 0;
 	}
 }

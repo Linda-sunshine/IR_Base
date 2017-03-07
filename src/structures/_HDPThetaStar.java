@@ -44,7 +44,10 @@ public class _HDPThetaStar extends _thetaStar {
 	}
 	
 	public void initB(){
-		m_B = new HashMap<_HDPThetaStar, Double>();
+		if(m_B == null)
+			m_B = new HashMap<_HDPThetaStar, Double>();
+		else
+			m_B.clear();
 	}
 	public void setGamma(double g){
 		m_gamma = g;
@@ -110,11 +113,11 @@ public class _HDPThetaStar extends _thetaStar {
 	public HashMap<_HDPThetaStar, Double> getB(){
 		return m_B;
 	}
-	// update B with the newly estimated value.
-	public void updateB(double[] b){
-		System.arraycopy(b, 0, m_B, 0, b.length);
-	}
-	public void resetB(){
-		m_B = null;
-	}
+//	// update B with the newly estimated value.
+//	public void updateB(double[] b){
+//		System.arraycopy(b, 0, m_B, 0, b.length);
+//	}
+//	public void resetB(){
+//		m_B = null;
+//	}
 }
