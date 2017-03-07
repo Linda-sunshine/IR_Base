@@ -8,7 +8,6 @@ import org.apache.commons.math3.distribution.BinomialDistribution;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
-import cern.jet.random.Binomial;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tfloat.FloatUniform;
 import structures._HDPThetaStar;
@@ -348,6 +347,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(m_hdpThetaStars[m_kBar] == null){			
 			m_hdpThetaStars[m_kBar] = new _HDPThetaStar(m_dim, 0);
 		}
+		m_hdpThetaStars[m_kBar].enable();
 		m_hdpThetaStars[m_kBar].initPsiModel(m_lmDim);
 		
 		// we don't have fvs for sampling of language model parameters
@@ -465,7 +465,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/
 	public boolean isBijValid(int i, int j){
-		return (m_indicator[i][j] != null) && (m_indicator[j][i] != null);
+		return m_indicator[i][j].isValid() && m_indicator[j][i].isValid();
 	}
 	
 	// z_{i->j}Bz_{j->i}
@@ -502,9 +502,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			index = m_kBar-1;
-			while(m_hdpThetaStars[index] != null)
-				m_hdpThetaStars[index++] = null;
+			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
@@ -512,6 +510,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		int index = 0;
 		_HDPThetaStar thetai = ui.getThetaStar(uj);
 		thetai.updateEdgeCount(e, -1);
+		if(!thetai.isValid())
+			System.out.println("Invalid theta!!!");
 		
 		// remove the neighbor from user.
 		ui.rmNeighbor(uj);
@@ -522,8 +522,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if(index == -1)
 				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			m_hdpThetaStars[m_kBar-1] = null;
-//			thetai = null;// Clear the probability vector.
+			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
@@ -549,16 +548,15 @@ public class CLRWithMMB extends CLRWithHDP {
 			ui = (_HDPAdaptStruct) m_userList.get(i);
 			neighborsMap = ui.getNeighbors();
 			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
-				if(uj == null) 
-					System.out.print("u");
+				
 				muj = neighborsMap.get(uj);
 				mui = uj.getOneNeighbor(ui);
 				
 				if(mui == null || muj == null)
-					System.out.print("m");
+					System.out.print("mx");
 				
-				if(muj.getHDPThetaStar() == null || mui.getHDPThetaStar() == null)
-					System.out.print("mt");
+				if(!muj.getHDPThetaStar().isValid() || !mui.getHDPThetaStar().isValid())
+					System.out.print("tx");
 				
 				g = muj.getHDPThetaStar().getIndex();
 				h = mui.getHDPThetaStar().getIndex();
@@ -580,15 +578,14 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	// Assign the newly estimated Bs to each group parameter.
 	public void assignB(){
-		int h = 0, h_2 = 0;
+		int h = 0;
 		HashMap<_HDPThetaStar, Double> B;
 		for(int g=0; g<m_kBar; g++){
 			B = m_hdpThetaStars[g].getB();
 			for(_HDPThetaStar thetaj: B.keySet()){
-				h_2 = findHDPThetaStar(thetaj);
+				if(!thetaj.isValid()) 
+					continue;
 				h = thetaj.getIndex();
-				if(h != h_2 || h >= m_kBar || h_2 >= m_kBar)
-					System.out.println("bug");
 				B.put(thetaj, m_Bs[g][h]);
 			}
 		}

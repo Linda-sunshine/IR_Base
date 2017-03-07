@@ -202,6 +202,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	// Our previous implementation, sample psi based simply on prior.
 	public void sampleNewCluster(int k){
+		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
 				
@@ -214,6 +215,7 @@ public class CLRWithHDP extends CLRWithDP {
 	 }
 	// Current implementation, sample psi based on posterior.
 	public void sampleNewCluster(int k, _SparseFeature[] fvs){
+		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
 				
