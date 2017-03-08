@@ -10,7 +10,6 @@ import java.util.Random;
 
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
-import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
@@ -19,7 +18,7 @@ import structures._SparseFeature;
 
 public class Utils {
 	
-	public static double MAX_VALUE = 1e7;
+	public static double MAX_VALUE = 1e5;
 	
 	public static void shuffle(int[] order, int size){
 		Random rand = new Random();
@@ -49,40 +48,40 @@ public class Utils {
 		return w[start+index];
 	}
 	
+//	public static double max(double[] w, int start, int size) {
+//		double max = Math.abs(w[start]);
+//		int index = 0;
+//		for(int i=1; i<size; i++) {
+//			if (Math.abs(w[start+i]) > max) {
+//				max = Math.abs(w[start+i]);
+//				index = i;
+//			}
+//		}
+//		return Math.abs(w[start+index]);
+//	}
+	
 	//Find the max value's index of an array, return Index of the maximum.
-	public static int argmax(double[] p){
-		return argmax(p, p.length);
+	public static int maxOfArrayIndex(double[] probs){
+		return maxOfArrayIndex(probs, probs.length);
 	}
 	
-	public static int argmax(double[] p, int length){
+	public static int maxOfArrayIndex(double[] probs, int length){
 		int maxIndex = 0;
-		double maxValue = p[0];
+		double maxValue = probs[0];
 		for(int i = 1; i < length; i++){
-			if(p[i] > maxValue){
-				maxValue = p[i];
+			if(probs[i] > maxValue){
+				maxValue = probs[i];
 				maxIndex = i;
 			}
 		}
 		return maxIndex;
 	}
 	
-	public static int argmin(double[] p){
-		return argmin(p, p.length);
+	public static int minOfArrayIndex(double[] probs){
+		return minOfArrayIndex(probs, probs.length);
 	}
 	
-	public static int argmin(double[] p, int length){
-		int minIndex = 0;
-		double minValue = p[0];
-		for(int i = 1; i < length; i++){
-			if(p[i] < minValue){
-				minValue = p[i];
-				minIndex = i;
-			}
-		}
-		return minIndex;
-	}
-	
-	public static int count(String text, String pat) {
+	public static int countOccurrencesOf(String text, String pat) {
 		int start = 0, count = 0;
 		while ((start = text.indexOf(pat, start))!=-1) {
 			count ++;
@@ -91,35 +90,48 @@ public class Utils {
 		return count;
 	}
 	
+	public static int minOfArrayIndex(double[] probs, int length){
+		int minIndex = 0;
+		double minValue = probs[0];
+		for(int i = 1; i < length; i++){
+			if(probs[i] < minValue){
+				minValue = probs[i];
+				minIndex = i;
+			}
+		}
+		return minIndex;
+	}
+	
 	//Calculate the sum of a column in an array.
-	public static double sumOfRow(double[][] mat, int rid){
-		return sumOfArray(mat[rid]);
+	public static double sumOfRow(double[][] mat, int i){
+		return sumOfArray(mat[i]);
 	}
 	
 	//Calculate the sum of a row in an array.
-	public static double sumOfColumn(double[][] mat, int cid){
+	public static double sumOfColumn(double[][] mat, int i){
 		double sum = 0;
-		for(int j = 0; j < mat.length; j++)
-			sum += mat[j][cid];
+		for(int j = 0; j < mat.length; j++){
+			sum += mat[j][i];
+		}
 		return sum;
 	}
 	
 	//Calculate the sum of a column in an array.
-	public static int sumOfRow(int[][] mat, int rid){
-		return sumOfArray(mat[rid]);
+	public static int sumOfRow(int[][] mat, int i){
+		return sumOfArray(mat[i]);
 	}
 	
 	//Calculate the sum of a row in an array.
-	public static int sumOfColumn(int[][] mat, int cid){
+	public static int sumOfColumn(int[][] mat, int i){
 		int sum = 0;
 		for(int j = 0; j < mat.length; j++){
-			sum += mat[j][cid];
+			sum += mat[j][i];
 		}
 		return sum;
 	}
 	
 	//this requires the sparse feature vector has been sorted in ascending order
-	public static int indexOf(_SparseFeature[] vct, int wid) {
+	public static int indexOf(_SparseFeature[] vct, double wid) {
 		int start = 0, end = vct.length-1, mid=0;
 		do {
 			mid = (start+end)/2;
@@ -130,12 +142,12 @@ public class Utils {
 			else if (vct[mid].getIndex() < wid)
 				start = mid + 1;
 			else
-				return mid;	
+				return mid;		
+			
 		} while (end>=start);
 		return -1;
 	}
 	
-	//logScale: if prob is in log scale
 	public static double entropy(double[] prob, boolean logScale) {
 		double ent = 0;
 		for(double p:prob) {
@@ -148,16 +160,12 @@ public class Utils {
 	}
 	
 	//This function is used to calculate the log of the sum of several values.
-	public static double logSum(double[] xs){
-		return logSum(xs, xs.length);
-	}
-	
-	public static double logSum(double[] xs, int length){
+	public static double logSumOfExponentials(double[] xs){
 		if(xs.length == 1){
 			return xs[0];
 		}
 		
-		double max = max(xs), sum = 0.0;
+		double max = max(xs, 0, xs.length), sum = 0.0;
 		for (int i = 0; i < xs.length; i++) {
 			if (!Double.isInfinite(xs[i])) 
 				sum += Math.exp(xs[i] - max);
@@ -203,7 +211,6 @@ public class Utils {
 	}
 	
 	//Logistic function: 1.0 / (1.0 + exp(-wf))
-	//We assume w[0] is the bias term
 	public static double logistic(double[] fv, double[] w){
 		double sum = w[0];//start from bias term
 		for(int i = 0; i < fv.length; i++)
@@ -251,11 +258,14 @@ public class Utils {
 			a[i] *= b;
 	}
 	
+	//scale array a by array b
+	public static void scaleArray(double[] a, double[] b, double scale) {
+		for (int i=0; i<a.length; i++)
+			a[i] += b[i] * scale;
+	}
+	
 	//set array a by array b
 	public static void setArray(double[] a, double[] b, double scale) {
-		if (a.length != b.length)
-			return;
-		
 		for (int i=0; i<a.length; i++)
 			a[i] = b[i] * scale;
 	}
@@ -265,6 +275,15 @@ public class Utils {
 			return;
 		for(int i=0; i<vct.length; i++)
 			vct[i] += weight * add[i];
+	}
+	
+	public static void add2Array(int[] a, int[] b){
+		if(a.length != b.length)
+			return;
+
+		for(int i=0; i<a.length; i++)
+			a[i] += b[i];
+		return;
 	}
 	
 	//L1 normalization: fsValue/sum(abs(fsValue))
@@ -282,7 +301,10 @@ public class Utils {
 			//L1 length normalization
 			for(_SparseFeature f:fs)
 				f.setValue(f.getValue()/sum);
-		}//otherwise, this is an empty feature vector
+		} else{//why should we set everything to zero in this case?
+			for(_SparseFeature f: fs)
+				f.setValue(0.0);
+		}
 	}
 	
 	//L1 normalization
@@ -292,7 +314,7 @@ public class Utils {
 			for(int i=0; i<v.length; i++){
 				v[i] /= sum;
 			}
-		}//what if the sum is negative?
+		}
 	}
 	
 	//L2 normalization: fsValue/sqrt(sum of fsValue*fsValue)
@@ -307,13 +329,28 @@ public class Utils {
 		}
 		return Math.sqrt(sum);
 	}
+	static public double sumOfFeaturesL2(double[] fs){
+		if(fs == null)
+			return 0;
+		double sum = 0;
+		for(double f: fs)
+			sum += f * f;
+		return Math.sqrt(sum);
+	}
 	
 	static public void L2Normalization(_SparseFeature[] fs) {
 		double sum = sumOfFeaturesL2(fs);
 		if (sum>0) {			
-			for(_SparseFeature f: fs)
-				f.setValue(f.getValue()/sum);
-		}//otherwise, this is an empty feature vector
+			for(_SparseFeature f: fs){
+				double normValue = f.getValue()/sum;
+				f.setValue(normValue);
+			}
+		}
+		else{
+			for(_SparseFeature f: fs){
+				f.setValue(0.0);
+			}
+		}
 	}
 	
 	static public String getJSONValue(JSONObject json, String key) {
@@ -337,18 +374,18 @@ public class Utils {
 			return 0; // What is the minimal value of similarity?
 		
 		double overlap = 0;
-		int p1 = 0, p2 = 0;
-		while (p1 < spVct1.length && p2 < spVct2.length) {
-			_SparseFeature t1 = spVct1[p1];
-			_SparseFeature t2 = spVct2[p2];
-			if (t1.getIndex() == t2.getIndex()) {
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
 				overlap ++;
-				p1++;
-				p2++;
-			} else if (t1.getIndex() > t2.getIndex())
-				p2++;
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
 			else
-				p1++;
+				pointer1++;
 		}
 		return overlap/(spVct1.length + spVct2.length - overlap);
 	}
@@ -362,7 +399,7 @@ public class Utils {
 	}
 	
 	public static double cosine(double[] a, double[] b) {
-		if(L2Norm(a)==0 || L2Norm(b)==0)
+		if(L2Norm(a)==0||L2Norm(b)==0)
 			return 0;
 		else
 			return dotProduct(a, b) / L2Norm(a) / L2Norm(b);
@@ -374,18 +411,18 @@ public class Utils {
 			return 0; // What is the minimal value of similarity?
 		
 		double similarity = 0;
-		int p1 = 0, p2 = 0;
-		while (p1 < spVct1.length && p2 < spVct2.length) {
-			_SparseFeature t1 = spVct1[p1];
-			_SparseFeature t2 = spVct2[p2];
-			if (t1.getIndex() == t2.getIndex()) {
-				similarity += t1.getValue() * t2.getValue();
-				p1++;
-				p2++;
-			} else if (t1.getIndex() > t2.getIndex())
-				p2++;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
 			else
-				p1++;
+				pointer1++;
 		}
 		return similarity;
 	}
@@ -432,7 +469,8 @@ public class Utils {
 		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
 		while(it.hasNext()){
 			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
-			spVct[i] = new _SparseFeature(pairs.getKey(), pairs.getValue());
+			double fv = pairs.getValue();
+			spVct[i] = new _SparseFeature(pairs.getKey(), fv);
 			i++;
 		}
 		Arrays.sort(spVct);		
@@ -446,7 +484,7 @@ public class Utils {
 		return vct;
 	}
 	
-	static public _SparseFeature[] mergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
+	static public _SparseFeature[] MergeSpVcts(ArrayList<_SparseFeature[]> vcts) {
 		HashMap<Integer, Double> vct = new HashMap<Integer, Double>();
 		
 		for(_SparseFeature[] fv:vcts) {
@@ -666,10 +704,8 @@ public class Utils {
 	
 	//Dot product of the random vector and document sparse vector.
 	public static double dotProduct(double[] vct, _SparseFeature[] sf){
-		if(sf[sf.length-1].getIndex() > vct.length) {
+		if(sf[sf.length-1].getIndex() > vct.length)
 			System.err.print("Error in computing dot product between a sparse vector and a full vector");
-			return Double.NaN;
-		}
 		
 		double value = 0;
 		for(_SparseFeature fv:sf)
@@ -774,9 +810,6 @@ public class Utils {
 	}
 	
 	public static double KLsymmetric(double[] p, double [] q) {
-		if (q.length != p.length)
-			return Double.NaN;
-		
 		double sum = 0;
 		for(int i=0; i<p.length; i++) {
 			if(p[i] != 0 && q[i] != 0)
@@ -785,39 +818,37 @@ public class Utils {
 		return sum;
 	}
 	
-	public static double klDivergence(double[] p, double[] q) {
-		if (q.length != p.length)
-			return Double.NaN;
-		
+	public static double klDivergence(double[] p1, double[] p2) {
+		double log2 = Math.log(2);
 		double klDiv = 0.0;
-		for (int i = 0; i < p.length; ++i) {
-			if (p[i] == 0.0) { continue; }
-			if (q[i] == 0.0) { continue; } 
+		for (int i = 0; i < p1.length; ++i) {
+			if (p1[i] == 0.0) { continue; }
+			if (p2[i] == 0.0) { continue; } 
 			
-			klDiv += p[i] * Math.log( p[i] / q[i] );
+			klDiv += p1[i] * Math.log( p1[i] / p2[i] );
 		}
-		return klDiv; 
+		return klDiv / log2; 
 	}
 	
-	public static double RBF(_SparseFeature[] spVct1, _SparseFeature[] spVct2, double delta){
+	public static double EuclideanSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2){
 		if (spVct1.length==0 || spVct2.length==0)
 			return 0;
 		else{
 			double similarity = 0;
-			int p1 = 0, p2 = 0;
-			while (p1 < spVct1.length && p2 < spVct2.length) {
-				_SparseFeature t1 = spVct1[p1];
-				_SparseFeature t2 = spVct2[p2];
-				if (t1.getIndex() == t2.getIndex()) {
-					similarity += (t1.getValue() - t2.getValue()) * (t1.getValue() - t2.getValue());
-					p1++;
-					p2++;
-				} else if (t1.getIndex() > t2.getIndex())
-					p2++;
+			int pointer1 = 0, pointer2 = 0;
+			while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+				_SparseFeature temp1 = spVct1[pointer1];
+				_SparseFeature temp2 = spVct2[pointer2];
+				if (temp1.getIndex() == temp2.getIndex()) {
+					similarity += (temp1.getValue() - temp2.getValue()) * (temp1.getValue() - temp2.getValue());
+					pointer1++;
+					pointer2++;
+				} else if (temp1.getIndex() > temp2.getIndex())
+					pointer2++;
 				else
-					p1++;
+					pointer1++;
 			}
-			return Math.exp(-similarity/delta);
+			return Math.exp(-similarity);
 		}
 	}
 	
@@ -831,7 +862,6 @@ public class Utils {
 			tmpArray[i] = tmp;
 			tmp = 0;
 		}//(x_i - x_j)^T * A
-		
 		for(int i = 0; i < tmpArray.length; i++){
 			distance += tmpArray[i] * (t1[i] - t2[i]);
 		} //(x_i - x_j)^T * A * (x_i - x_j)
@@ -839,16 +869,14 @@ public class Utils {
 	}
 	
 	//The Euclidean distance for two arrays of the same length.
-	public static double euclideanDistance(double[] t1, double[] t2){
+	public static double EuclideanDistance(double[] t1, double[] t2){
+		double sum = 0;
 		if(t1.length == t2.length){
-			double sum = 0;
 			for(int i=0; i < t1.length; i++){
 				sum += (t1[i] - t2[i]) * (t1[i] - t2[i]);
 			}	
-			return sum;
-		} else 
-			return Double.NaN;
-		
+		}
+		return sum;
 	}
 	
 	// added by Lin for computing LCS.
@@ -898,24 +926,75 @@ public class Utils {
 		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
 	
+	//Calculate the similarity between two documents.
+	public static double calculateSimilarity(_Doc d1, _Doc d2){
+		return calculateSimilarity(d1.getSparse(), d2.getSparse());
+	}
+	
+	//Calculate the similarity between two sparse vectors.
+	public static double calculateSimilarity(_SparseFeature[] spVct1, _SparseFeature[] spVct2) {
+		if (spVct1==null || spVct2==null)
+			return 0; // What is the minimal value of similarity?
+		
+		double similarity = 0;
+		int pointer1 = 0, pointer2 = 0;
+		while (pointer1 < spVct1.length && pointer2 < spVct2.length) {
+			_SparseFeature temp1 = spVct1[pointer1];
+			_SparseFeature temp2 = spVct2[pointer2];
+			if (temp1.getIndex() == temp2.getIndex()) {
+				similarity += temp1.getValue() * temp2.getValue();
+				pointer1++;
+				pointer2++;
+			} else if (temp1.getIndex() > temp2.getIndex())
+				pointer2++;
+			else
+				pointer1++;
+		}
+		return similarity;
+	}
+	
 	//Sample with a given log array.
 	public static int sampleInLogArray(double[] logP, int length){
-		double sum = logP[0], rnd = Math.log(FloatUniform.staticNextFloat());
-		int i = 0;
-		while(sum<rnd && i<length){
+		double sum = Utils.logSum(logP, length), rnd = FloatUniform.staticNextFloat();
+		int i = -1;
+		while(rnd>0 && i<length){
 			i++;
-			sum = logSum(sum, logP[i]);
+			rnd -= Math.exp(logP[i]-sum);
 		}
 		return i;
 	}
 	
-	public static double sampleFromGamma(double a, double b) {
-		double v = 0;
+	public static double logSum(double[] xs, int length) {
+        if (length == 1) return xs[0];
+        double max = maximum(xs, length);
+        double sum = 0.0;
+        for (int i = 0; i < length; ++i)
+            if (xs[i] != Double.NEGATIVE_INFINITY)
+                sum += java.lang.Math.exp(xs[i] - max);
+        return max + java.lang.Math.log(sum);
+    }
+	
+	public static double maximum(double[] xs, int length){
+		double max = xs[0];
+		for(int i=1;i<length; i++)
+			if (max<xs[i])
+				max = xs[i];
+		return max;
+	}
+	
+	// The array contains log values and we want to normalize the arr elements to sum to 1(logsum = 0).
+	public static void normalzie2DimArrayInLog(double[][] arr){
+		if(arr.length == 0 || arr[0].length == 0)
+			return;
 		
-		do {
-			v = Gamma.staticNextDouble(a, b);
-		} while (Math.abs(v)==0);
-		
-		return v;
+		double logSum = 0;
+		for(int i=0; i<arr.length; i++){
+			for(int j=0; j<arr[0].length; j++)
+				logSum = Utils.logSum(logSum, arr[i][j]);
+		}
+		for(int i=0; i<arr.length; i++){
+			for(int j=0; j<arr[0].length; j++)
+				arr[i][j] -= logSum;
+		}
 	}
 }
