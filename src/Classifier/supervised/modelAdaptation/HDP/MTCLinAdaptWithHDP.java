@@ -4,12 +4,19 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.TreeMap;
 
+import Classifier.supervised.SVM;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import utils.Utils;
 
@@ -101,7 +108,7 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		
 		int offset = m_dim*2*cIndex, offsetSup = m_dim*2*m_kBar;
 		double[] Au = theta.getModel();
-		double delta = (review.getYLabel() - logit(r)) * weight;
+		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
 		
 		// Bias term for individual user.
 		g[offset] -= delta*getSupWeights(0); //a[0] = ws0*x0; x0=1
@@ -172,18 +179,18 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	
 	// Logit function is different from the father class.
 	@Override
-	protected double logit(_Review r){
+	protected double logit(_SparseFeature[] fvs, _Review r){
 		int k, n;
 		double[] Au = r.getHDPThetaStar().getModel();
 		double sum = Au[0]*getSupWeights(0) + Au[m_dim];//Bias term: w_s0*a0+b0.
-		for(_SparseFeature fv: r.getSparse()){
+		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
 			sum += (Au[k]*getSupWeights(n) + Au[m_dim+k]) * fv.getValue();
 		}
 		return Utils.logistic(sum);
 	}
-	
+
 	// Assign the optimized models to the clusters.
 	@Override
 	protected void setThetaStars(){
@@ -212,47 +219,14 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 		m_eta3 = eta3;
 		m_eta4 = eta4;
 	}	
-//	public void initWriter() throws FileNotFoundException{
-//		m_writer = new PrintWriter(new File("cluster.txt"));	
-//	}
-//	
-//	@Override
-//	public void printInfo(){
-//		//clear the statistics
-//		for(int i=0; i<m_kBar; i++){
-//			m_hdpThetaStars[i].resetCount();
-//			m_hdpThetaStars[i].resetReviewNames();
-//		}
-//		//collect statistics across users in adaptation data
-//		_HDPThetaStar theta = null;
-//		_HDPAdaptStruct user;
-//		for(int i=0; i<m_userList.size(); i++) {
-//			user = (_HDPAdaptStruct)m_userList.get(i);
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() != rType.ADAPTATION)
-//					continue; // only touch the adaptation data
-//				else{
-//					theta = r.getHDPThetaStar();
-//					theta.addReviewNames(r.getItemID());
-//					if(r.getYLabel() == 1) theta.incPosCount(); 
-//					else theta.incNegCount();
-//				}
-//			}
-//		}
-//		System.out.print("[Info]Clusters:");
-//		for(int i=0; i<m_kBar; i++){
-//			System.out.format("%s\t", m_hdpThetaStars[i].showStat());	
-//			if(m_hdpThetaStars[i].getReviewSize()<=2){
-//				for(String s: m_hdpThetaStars[i].getReviewNames())
-//					m_writer.print(s+"\t");
-//			}
-//			m_writer.write("\n");
-//		}
-//		m_writer.write("--------------------------");
-//		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
-//	}
-//	
-//	public void closeWriter(){
-//		m_writer.close();
-//	}
+	public void printClusterInfo(){
+		int[] sizes = new int[m_kBar];
+		for(int i=0; i<m_kBar; i++){
+			sizes[i] = m_hdpThetaStars[i].getMemSize();
+		}
+		Arrays.sort(sizes);
+		for(int i=sizes.length-1; i>=0; i--)
+			System.out.print(sizes[i]+"\t");
+		System.out.println();
+	}
 }

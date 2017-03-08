@@ -33,7 +33,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		_HDPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
 		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
 	}
-	
+
 	public CLinAdaptWithHDP(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, lm);
@@ -53,7 +53,6 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		return m_kBar*m_dim*2;
 	}
 	
-	@Override
 	protected void initPriorG0() {
 		m_G0 = new DoubleNormalPrior(m_abNuB[0], m_abNuB[1], m_abNuA[0], m_abNuA[1]);
 	}
@@ -89,7 +88,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*2*cIndex;
 		
-		double delta = (review.getYLabel() - logit(r)) * weight;
+		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
 		
 		// Bias term for individual user.
 		g[offset] -= delta*m_gWeights[0]; //a[0] = ws0*x0; x0=1
@@ -115,11 +114,11 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	}
 	
 	@Override
-	protected double logit(_Review r){
+	protected double logit(_SparseFeature[] fvs, _Review r){
 		int k, n;
 		double[] Au = r.getHDPThetaStar().getModel(); 
 		double sum = Au[0]*m_gWeights[0] + Au[m_dim];//Bias term: w_s0*a0+b0.
-		for(_SparseFeature fv: r.getSparse()){
+		for(_SparseFeature fv: fvs){
 			n = fv.getIndex() + 1;
 			k = m_featureGroupMap[n];
 			sum += (Au[k]*m_gWeights[n] + Au[m_dim+k]) * fv.getValue();
@@ -139,7 +138,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	public String toString() {
 		return String.format("CLinAdaptWithHDP[dim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",m_dim,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_numberOfIterations,m_abNuA[0],m_abNuA[1],m_abNuB[0],m_abNuB[1]);
 	}
-	
+
 	public void setsdB(double s){
 		m_abNuB[1] = s;
 	}
