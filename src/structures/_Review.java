@@ -1,10 +1,13 @@
 package structures;
 
+import java.util.HashMap;
+
 public class _Review extends _Doc {
 	public enum rType {
 		TRAIN, // for training the global model
 		ADAPTATION, // for training the personalized model
-		TEST // for testing
+		TEST, // for testing
+		SEPARATE // added by Lin for sanity check.
 	}
 	
 	String m_userID;
@@ -65,6 +68,25 @@ public class _Review extends _Doc {
 		m_hdpThetaStar = s;
 	}
 	
+	// key: hdpThetaStar, value: count
+	HashMap<_HDPThetaStar, Integer> m_thetaCountMap = new HashMap<_HDPThetaStar, Integer>();
+	
+	// Increase the current hdpThetaStar count.
+	public void updateThetaCountMap(int c){
+		if(!m_thetaCountMap.containsKey(m_hdpThetaStar)){
+			m_thetaCountMap.put(m_hdpThetaStar, c);
+		} else{
+			int v = m_thetaCountMap.get(m_hdpThetaStar);
+			m_thetaCountMap.put(m_hdpThetaStar, v+c);
+		}
+	}
+	
+	public HashMap<_HDPThetaStar, Integer> getThetaCountMap(){
+		return m_thetaCountMap;
+	}
+	public void clearThetaCountMap(){
+		m_thetaCountMap.clear();
+	}
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
@@ -81,13 +103,21 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
-	
-	double m_priorLMLikelihood = 0;
-	public void setPriorLMLikelihood(double l){
-		m_priorLMLikelihood = l;
+	double m_L4New = 0;
+	public void setL4NewCluster(double l){
+		m_L4New = l;
 	}
 	
-	public double getPriorLMLikelihood(){
-		return m_priorLMLikelihood;
+	public double getL4NewCluster(){
+		return m_L4New;
+	}
+	
+	_WeightedCount m_wc = null;
+	public void setWeightedCount(_WeightedCount wc){
+		m_wc = wc;
+	}
+	
+	public _WeightedCount getWeightedCount(){
+		return m_wc;
 	}
 }
