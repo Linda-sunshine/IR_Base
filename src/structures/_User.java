@@ -2,6 +2,8 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -26,7 +28,7 @@ public class _User {
 	protected double[] m_pWeight;
 	protected int m_classNo;
 	protected int m_featureSize;
-	protected int[] m_category;
+	protected ArrayList<Integer> m_category;
 	protected double[] m_svmWeights;
 	
 	protected double m_sim; // Similarity of itself.
@@ -70,9 +72,11 @@ public class _User {
 		
 		constructSparseVector();
 		calcPosRatio();
+		calcCtgSize();
+		calcAdpatTestPosRatio();
 	}
 	
-	public _User(String userID, int classNo, ArrayList<_Review> reviews, int[] category){
+	public _User(String userID, int classNo, ArrayList<_Review> reviews, ArrayList<Integer> category){
 		m_userID = userID;
 		m_reviews = reviews;
 		m_classNo = classNo;
@@ -84,6 +88,8 @@ public class _User {
 		m_perfStat = new _PerformanceStat(classNo);
 		m_category = category;
 		constructSparseVector();
+		calcCtgSize();
+		calcAdpatTestPosRatio();
 	}
 	// added by Lin for setting the index of user cluster.
 	public void setClusterIndex(int i) {
@@ -131,7 +137,7 @@ public class _User {
 		for(_Review r: m_reviews) 
 			reviews.add(r.getSparse());
 		
-		m_BoWProfile = Utils.mergeSpVcts(reviews);// this BoW representation is not normalized?!
+		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
 	
 	//Get the sparse vector of the user.
@@ -210,10 +216,6 @@ public class _User {
 		}
 		return count/m_reviews.size();
 	}
-	
-	public int[] getCategory(){
-		return m_category;
-	}
 
 	double m_avgIDF = 0;
 	// Set average IDF value.
@@ -263,5 +265,84 @@ public class _User {
 			values[i] = m_BoWProfile[i].m_value;
 		
 		return values;
+	}
+	
+	// added by Lin for CF.
+	
+	/**added by Lin for cf.**/
+	private HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
+	private double m_nDCG;
+	private double m_MAP;
+	
+	/***added by Lin for cf***/
+	public void setNDCG(double d){
+		m_nDCG = d;
+	}
+	public void setMAP(double m){
+		m_MAP = m;
+	}
+	public double getNDCG(){
+		return m_nDCG;
+	}
+	public double getMAP(){
+		return m_MAP;
+	}
+	public void addOneItemIDRatingPair(String item, int r){
+		m_itemIDRating.put(item, r);
+	}
+	public HashMap<String, Integer> getItemIDRating(){
+		return m_itemIDRating;
+	}
+	
+	public void removeOneReview(String prodID){
+		int index = 0;
+		for(_Review r: m_reviews){
+			if(r.getItemID().equals(prodID)){
+				index = m_reviews.indexOf(r);
+				break;
+			}
+		}
+		m_reviews.remove(index);
+	}
+	
+	// added by Lin for sanity check.
+	int m_ctgSize = 0;
+	public void calcCtgSize(){
+		HashSet<String> ctg = new HashSet<String>();
+		for(_Review r: m_reviews)
+			ctg.add(r.getCategory());
+		m_ctgSize = ctg.size();
+	}
+	
+	public ArrayList<Integer> getCategory(){
+		return m_category;
+	}
+	public int getCtgSize(){
+		return m_ctgSize;
+	}
+	double m_adaPos = 0;
+	double m_testPos = 0;
+	public void calcAdpatTestPosRatio(){
+		for(_Review r: m_reviews){
+			if(r.getType() == rType.ADAPTATION && r.getYLabel() == 1)
+				m_adaPos++;
+			else if(r.getType() == rType.TEST && r.getYLabel() == 1)
+				m_testPos++;
+		}
+	}
+	public double getAdaptationPos(){
+		return m_adaPos;
+	}
+	public double getTestPos(){
+		return m_testPos;
+	}
+	
+	// added by Lin for friendship.
+	String[] m_friends;
+	public void setFriends(String[] fs){
+		m_friends = Arrays.copyOf(fs, fs.length);
+	}
+	public String[] getFriends(){
+		return m_friends;
 	}
  }

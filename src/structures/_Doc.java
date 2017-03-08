@@ -150,7 +150,6 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	}
 		
 	public _SparseFeature[] m_x_sparse_infer;
-
 	public void createSparseVct4Infer(){
 		HashMap<Integer, Double> inferVct = new HashMap<Integer, Double>();
 		
@@ -158,7 +157,7 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 			int wIndex = w.getIndex();
 			int featureIndex = Utils.indexOf(m_x_sparse, wIndex);
 			double featureVal = m_x_sparse[featureIndex].getValue();
-			inferVct.put(wIndex, featureVal--);
+			inferVct.put(featureIndex,  featureVal--);
 		}
 		
 		m_x_sparse_infer = Utils.createSpVct(inferVct);	
@@ -445,5 +444,18 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	/////////////////////////////////////////////////////////
 	public int m_pCount = 0;
 	public double m_prob = 0;
+	public double m_prob_orc = 0;
+	// Added by Lin for clustered svm.
+	double m_predV = -1;
+
+	public void setPredValue(double v) {
+		m_predV = v;
+	}
+
+	public double getPredValue() {
+		return m_predV;
+	}
 	
+	public int m_pTrainCount = 0;
+	public double m_probTrain = 0;
 }
