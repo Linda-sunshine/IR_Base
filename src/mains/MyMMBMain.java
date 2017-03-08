@@ -38,7 +38,7 @@ public class MyMMBMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -48,7 +48,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = "./data/CoLinAdapt/YelpNew/yelpFriends_1000.txt";
+		String friendFile = String.format("%s/YelpNew/yelpFriends.txt", prefix);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -67,7 +67,7 @@ public class MyMMBMain {
 		double alpha = 0.1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(30);
+		hdp.setNumberOfIterations(10);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		hdp.train();

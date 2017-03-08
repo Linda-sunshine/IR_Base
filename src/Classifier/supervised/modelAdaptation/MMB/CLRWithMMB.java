@@ -22,7 +22,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	double m_rho = 0.1; // sparsity parameter
 	double[] m_pNew = new double[2]; // prob for the new cluster in sampling mmb edges.
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
-	double[] m_abcd = new double[]{0.1, 0.1, 0.1, 0.1}; 
+	double[] m_abcd = new double[]{2, 2, 2, 2}; 
 	// The probability for the new cluster in the joint probabilities.
 	double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
 
@@ -366,10 +366,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Add itself.
 		theta.addOneB(theta, m_Beta.sample());
 		for(int k=0; k<m_kBar; k++){
+			double b1 = m_Beta.sample(), b2 = m_Beta.sample();
+			if(b1 > 1 || b2 > 1)
+				System.out.println("Wrong probability!!");
 			// add the prob between B_{existing theta, new theta} to the hashmap. 
-			m_hdpThetaStars[k].addOneB(theta, m_Beta.sample());
+			m_hdpThetaStars[k].addOneB(theta, b1);
 			// add the prob between B_{new theta, existing theta} to the hashmap. 
-			theta.addOneB(m_hdpThetaStars[k], m_Beta.sample());
+			theta.addOneB(m_hdpThetaStars[k], b2);
 		}
 	}
 	
@@ -431,8 +434,10 @@ public class CLRWithMMB extends CLRWithHDP {
 					if(isBijValid(i, j)){
 						m_p_mmb_0 = m_rho*(1-getBij(i, j));
 						// sample i->j
-						if( m_p_bk/(m_p_bk+m_p_mmb_0) > 1)
+						if( m_p_bk/(m_p_bk+m_p_mmb_0) > 1){
 							System.out.println("Bug");
+							System.out.print(String.format("[BugInfo]rho:%.5f,p_bk:%.5f,p_mmb_0:%.5f,bij:%.5f\n", m_rho, m_p_bk, m_p_mmb_0, getBij(i,j)));
+						}
 						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
 						// put the edge(two nodes) in the background model.
 						if(m_bernoulli.sample() == 1){
@@ -571,6 +576,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		for(int g=0; g<m_kBar; g++){
 			for(int h=0; h<m_kBar; h++){
 				m_Bs[g][h] = (B[g][h][1]+m_abcd[0]-1)/(B[g][h][0]+B[g][h][1]+m_abcd[0]+m_abcd[1]-2);
+				if(m_Bs[g][h] > 1)
+					System.out.println("Wrong Bs!!");
 			}
 		}
 		assignB();

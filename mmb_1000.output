@@ -1,0 +1,15 @@
+Load 3071 2-gram old features from ./data/CoLinAdapt/YelpNew/SelectedVocab.csv...
+Language models share the same features with classification models!
+45 categories are loaded!
+1000 users are loaded from ./data/CoLinAdapt/YelpNew/Users_1000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 19267 documents...
+Exception in thread "main" java.lang.NoClassDefFoundError: org/apache/commons/math3/distribution/BetaDistribution
+	at Classifier.supervised.modelAdaptation.MMB.CLRWithMMB.<init>(CLRWithMMB.java:34)
+	at mains.MyMMBMain.main(MyMMBMain.java:62)
+Caused by: java.lang.ClassNotFoundException: org.apache.commons.math3.distribution.BetaDistribution
+	at java.net.URLClassLoader.findClass(URLClassLoader.java:381)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:424)
+	at sun.misc.Launcher$AppClassLoader.loadClass(Launcher.java:331)
+	at java.lang.ClassLoader.loadClass(ClassLoader.java:357)
+	... 2 more
