@@ -38,7 +38,7 @@ public class MyMMBMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -64,10 +64,10 @@ public class MyMMBMain {
 //		hdp.setsdB(0.2);
 
 		hdp.setsdA(0.2);
-		double alpha = 0.1, eta = 0.1, beta = 0.01;
+		double alpha = 0.5, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(10);
+		hdp.setNumberOfIterations(20);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		hdp.train();

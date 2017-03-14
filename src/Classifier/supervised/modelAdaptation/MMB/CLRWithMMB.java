@@ -404,7 +404,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		initE();
 		// sample z_{i,d}
 		super.calculate_E_step();
-		checkKBar();
+//		checkKBar();
 		// sample z_{i->j}
 		_HDPAdaptStruct ui, uj;
 		double m_p_bk = 1-m_rho, m_p_mmb_0 = 0;
@@ -457,15 +457,20 @@ public class CLRWithMMB extends CLRWithHDP {
 			}
 		}
 		System.out.print(String.format("\n[Info]kBar: %d, eij=1: %.1f, eij=0(mmb):%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
-		checkKBar();
+		checkClusters();
 	}
 	
-	public void checkKBar(){
+	public void checkClusters(){
 		int index = 0;
+		int zeroDoc = 0, zeroEdge = 0;
 		while(m_hdpThetaStars[index] != null){
+			if(index < m_kBar && m_hdpThetaStars[index].getTotalEdgeSize() == 0)
+				zeroEdge++;
+			if(index < m_kBar && m_hdpThetaStars[index].getMemSize() == 0)
+				zeroDoc++;
 			index++;
 		}
-		System.out.print(String.format("kBar:%d, non_null hdp: %d\n", m_kBar, index));
+		System.out.print(String.format("[Info]Zero doc clusters: %d, zero edge clusters: kBar:%d, non_null hdp: %d\n", zeroDoc, zeroEdge, m_kBar, index));
 	}
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/
@@ -487,7 +492,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(index <0 || index > m_MNL.length)
 			System.err.println("[Error]Wrong index!");
 		m_MNL[index]++;
-		if (Utils.sumOfArray(m_MNL) % 5000==0) {
+		if (Utils.sumOfArray(m_MNL) % 10000==0) {
 			System.out.print('.');
 			if (Utils.sumOfArray(m_MNL) % 500000==0)
 				System.out.println();
