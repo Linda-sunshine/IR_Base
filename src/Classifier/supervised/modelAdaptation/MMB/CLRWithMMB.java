@@ -470,7 +470,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				zeroDoc++;
 			index++;
 		}
-		System.out.print(String.format("[Info]Zero doc clusters: %d, zero edge clusters: kBar:%d, non_null hdp: %d\n", zeroDoc, zeroEdge, m_kBar, index));
+		System.out.print(String.format("[Info]Zero doc clusters: %d, zero edge clusters: %d, kBar:%d, non_null hdp: %d\n", zeroDoc, zeroEdge, m_kBar, index));
 	}
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/

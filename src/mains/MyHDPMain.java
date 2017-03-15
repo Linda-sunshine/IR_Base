@@ -58,8 +58,8 @@ public class MyHDPMain {
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/if15/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -122,9 +122,9 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-//		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.2);//0.2
 

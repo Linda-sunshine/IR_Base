@@ -42,6 +42,10 @@ public class MyDPExecution {
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", param.m_prefix, param.m_data);
 		String lmFvFile = String.format("%s/%s/fv_lm_%s_%d.txt", param.m_prefix, param.m_data, param.m_fs, param.m_lmTopK);
 		
+		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
+		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
+		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
+		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -51,9 +55,6 @@ public class MyDPExecution {
 		
 		CLRWithDP adaptation;
 		double[] globalLM = analyzer.estimateGlobalLM();
-		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
-		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
-		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
 		if(param.m_model.equals("mtclrdp")){
 			adaptation = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);

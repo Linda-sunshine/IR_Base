@@ -6,6 +6,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.UserAnalyzer;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 
 
@@ -57,21 +58,18 @@ public class MyMMBMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
-		/*****hdp related models.****/
 		double[] globalLM = analyzer.estimateGlobalLM();
-		CLRWithMMB hdp = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.2);
-
-		hdp.setsdA(0.2);
 		double alpha = 0.5, eta = 0.1, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(20);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-		hdp.train();
-		hdp.test();
+		
+		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+		mmb.setsdA(0.2);
+		mmb.setConcentrationParams(alpha, eta, beta);
+		mmb.setR1TradeOffs(eta1, eta2);
+		mmb.setNumberOfIterations(20);
+		mmb.loadUsers(analyzer.getUsers());
+		mmb.setDisplayLv(displayLv);
+		mmb.train();
+		mmb.test();
 		
 //		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
 //		hdp.printUserPerformance(perfFile);
