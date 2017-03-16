@@ -63,6 +63,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	public void check(){
+		double graphEdgeCount = 0, edgeCount = 0;
 		m_userMap = new HashMap<String, _HDPAdaptStruct>();
 		// construct the map.
 		for(_AdaptStruct ui: m_userList)
@@ -70,16 +71,25 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// add the friends one by one.
 		for(_AdaptStruct ui: m_userList){
+			graphEdgeCount += ui.getUser().getFriends().length;
 			for(String nei: ui.getUser().getFriends()){
-				if(m_userMap.containsKey(nei)){
+				if(!m_userMap.containsKey(nei)){
+					System.out.print("o");
+				}
+//				if(m_userMap.containsKey(nei)){
+				else{
 					String[] frds = m_userMap.get(nei).getUser().getFriends();
-					if(hasFriend(frds, ui.getUserID()))
-						System.out.print("");
+					if(hasFriend(frds, ui.getUserID())){
+						System.out.print("y");
+						edgeCount++;
+					}
 					else
 						System.out.print("x");
 				}
 			}
+			System.out.println();
 		}
+		System.out.print(String.format("[Info]Graph avg edge size: %.4f, avg edge size: %.4f, user size: %d\n", graphEdgeCount/m_userList.size(), edgeCount/m_userList.size(), m_userList.size()));
 	}
 	
 	public boolean hasFriend(String[] arr, String str){
@@ -88,20 +98,6 @@ public class CLRWithMMB extends CLRWithHDP {
 				return true;
 		}
 		return false;
-	}
-	
-	public void sanityCheck(){
-		_HDPAdaptStruct uj;
-		for(_AdaptStruct ui: m_userList){
-			for(String nei: ui.getUser().getFriends()){
-				if(m_userMap.containsKey(nei)){	
-					uj = m_userMap.get(nei);
-					if(!hasFriend(uj.getUser().getFriends(), ui.getUserID())){
-						System.out.print("(o,x)");
-					}
-				}
-			}
-		}
 	}
 
 	@Override
@@ -607,5 +603,15 @@ public class CLRWithMMB extends CLRWithHDP {
 	public double estRho(){
 		m_rho = (m_MNL[0]+m_MNL[1]+m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
 		return 0;
+	}
+	
+	// Get some stat of the users' information.
+	public void calcStat(){
+		_HDPAdaptStruct ui, uj;
+		int frdCount = 0;
+		for(_AdaptStruct u: m_userList){
+			ui = (_HDPAdaptStruct) u;
+			
+		}
 	}
 }
