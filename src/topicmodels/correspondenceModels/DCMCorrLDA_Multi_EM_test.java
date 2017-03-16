@@ -6,6 +6,7 @@ import utils.Utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -62,20 +63,29 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
             parentWordTopicDistributionFolder.mkdir();
         }
 
+        File parentChildTopicDistributionFolder = new File(filePrefix
+                + "topicProportion");
+        if (!parentChildTopicDistributionFolder.exists()) {
+            System.out.println("creating topic distribution folder\t"
+                    + parentChildTopicDistributionFolder);
+            parentChildTopicDistributionFolder.mkdir();
+        }
+
         for (_Doc d : m_trainSet) {
             if (d instanceof _ParentDoc) {
                 printParentTopicAssignment(d, parentTopicFolder);
                 printWordTopicDistribution(d,
                         parentWordTopicDistributionFolder, topK);
+                printParameter(d, parentChildTopicDistributionFolder);
+
             } else {
                 printChildTopicAssignment(d, childTopicFolder);
             }
         }
 
-        String parentParameterFile = filePrefix + "parentParameter.txt";
-        String childParameterFile = filePrefix + "childParameter.txt";
+//        String parentParameterFile = filePrefix + "parentParameter.txt";
+//        String childParameterFile = filePrefix + "childParameter.txt";
 
-        printParameter(parentParameterFile, childParameterFile, m_trainSet);
         printTopKChild4Stn(filePrefix, topK);
         printTopKChild4Parent(filePrefix, topK);
         printTopStn4ParentByNormLikelihood(filePrefix, topK);
@@ -284,45 +294,92 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
         }
     }
 
-    protected void printParameter(String parentParameterFile,
-                                  String childParameterFile, ArrayList<_Doc> docList) {
+//    protected void printParameter(_Doc d, File parentChildTopicDistributionFolder) {
+//        System.out.println("printing parameter");
+//        String topicDistributionFile = d.getName() + ".txt";
+//
+//        try {
+//
+//            PrintWriter pw = new PrintWriter(new File(
+//                    parentChildTopicDistributionFolder, topicDistributionFile));
+//
+//            if (d instanceof _ParentDoc) {
+//                pw.print(d.getName() + "\t");
+//                pw.print("topicProportion\t");
+//                for (int k = 0; k < number_of_topics; k++) {
+//                    pw.print(d.m_topics[k] + "\t");
+//                }
+//
+//                pw.println();
+//
+//                for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+//                    pw.print(cDoc.getName() + "\t");
+//                    pw.print("topicProportion\t");
+//                    for (int k = 0; k < number_of_topics; k++) {
+//                        pw.print(cDoc.m_topics[k] + "\t");
+//                    }
+//                    pw.println();
+//                }
+//            }
+//
+//
+//            pw.flush();
+//            pw.close();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//    }
+
+    protected void printParameter(_Doc d, File parentChildTopicDistributionFolder) {
         System.out.println("printing parameter");
+        String topicDistributionFile = d.getName() + ".txt";
 
         try {
-            System.out.println(parentParameterFile);
-            System.out.println(childParameterFile);
 
-            PrintWriter parentParaOut = new PrintWriter(new File(
-                    parentParameterFile));
-            PrintWriter childParaOut = new PrintWriter(new File(
-                    childParameterFile));
+            PrintWriter pw = new PrintWriter(new File(
+                    parentChildTopicDistributionFolder, topicDistributionFile));
 
-            for (_Doc d : docList) {
-                if (d instanceof _ParentDoc) {
-                    parentParaOut.print(d.getName() + "\t");
-                    parentParaOut.print("topicProportion\t");
+            if (d instanceof _ParentDoc) {
+                pw.print(d.getName() + "\t");
+//                Date dateFormat = new Date(d.getTimeStamp());
+//                SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+//                String dateText = df2.format(dateFormat);
+                pw.print("topicProportion\t");
+//                pw.print("time\t"+dateText+"\t topicProportion\t");
+                for (int k = 0; k < number_of_topics; k++) {
+                    pw.print(d.m_topics[k] + "\t");
+                }
+
+                pw.println();
+
+                TreeMap<Long, _ChildDoc> timeChildDocMap = new TreeMap<Long, _ChildDoc>();
+                for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs){
+                    long cDocDate = cDoc.getTimeStamp();
+                    if(timeChildDocMap.containsKey(cDocDate)){
+                        System.out.print("duplicate time");
+                    }else{
+                        timeChildDocMap.put(cDocDate, cDoc);
+                    }
+
+                }
+
+                for(long cDocDate:timeChildDocMap.keySet()){
+                    _ChildDoc cDoc = timeChildDocMap.get(cDocDate);
+                    pw.print(cDoc.getName()+"\t");
+                    Date cdateFormat = new Date(cDocDate);
+                    SimpleDateFormat cdf2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+                    String cdateText = cdf2.format(cdateFormat);
+                    pw.print("time\t"+cdateText+"\t topicProportion\t");
                     for (int k = 0; k < number_of_topics; k++) {
-                        parentParaOut.print(d.m_topics[k] + "\t");
+                        pw.print(cDoc.m_topics[k] + "\t");
                     }
-
-                    parentParaOut.println();
-
-                    for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-                        childParaOut.print(cDoc.getName() + "\t");
-                        childParaOut.print("topicProportion\t");
-                        for (int k = 0; k < number_of_topics; k++) {
-                            childParaOut.print(cDoc.m_topics[k] + "\t");
-                        }
-                        childParaOut.println();
-                    }
+                    pw.println();
                 }
             }
 
-            parentParaOut.flush();
-            parentParaOut.close();
 
-            childParaOut.flush();
-            childParaOut.close();
+            pw.flush();
+            pw.close();
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -51,7 +51,7 @@ public class featureGeneration {
 		String articleType = "20NewsGroupTrain";
 		articleType = "Reuters10";
 		articleType = "TripAdvisor";
-		articleType = "NYT";
+		articleType = "CNN";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
@@ -118,7 +118,7 @@ public class featureGeneration {
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
 		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-		double endProb = 0.99; // Used in feature selection, the ending point of
+		double endProb = 0.9999999999; // Used in feature selection, the ending point of
 								// the features.
 		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.

@@ -3,13 +3,8 @@ package topicmodels.correspondenceModels;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.Map.Entry;
 
 import structures.*;
@@ -104,9 +99,20 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 
 		int topKStn = 10;
 		int topKChild = 10;
+
+		File parentChildTopicDistributionFolder = new File(filePrefix
+				+ "topicProportion");
+		if (!parentChildTopicDistributionFolder.exists()) {
+			System.out.println("creating topic distribution folder\t"
+					+ parentChildTopicDistributionFolder);
+			parentChildTopicDistributionFolder.mkdir();
+		}
+
 		for (_Doc d : m_trainSet) {
 			if (d instanceof _ParentDoc) {
 				printParentTopicAssignment(d, topicFolder);
+				printParameter(d, parentChildTopicDistributionFolder);
+
 			} else if (d instanceof _ChildDoc) {
 				printChildTopicAssignment(d, topicFolder);
 			}
@@ -405,6 +411,70 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 			e.printStackTrace();
 		}
 
+	}
+
+	protected void printParameter(_Doc d, File parentChildTopicDistributionFolder) {
+		System.out.println("printing parameter");
+		String topicDistributionFile = d.getName() + ".txt";
+
+		try {
+
+			PrintWriter pw = new PrintWriter(new File(
+					parentChildTopicDistributionFolder, topicDistributionFile));
+
+			if (d instanceof _ParentDoc) {
+				pw.print(d.getName() + "\t");
+//				Date dateFormat = new Date(d.getTimeStamp());
+//				SimpleDateFormat df2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+//				String dateText = df2.format(dateFormat);
+//				pw.print("time\t"+dateText+"\t topicProportion\t");
+				pw.print("topicProportion\t");
+				for (int k = 0; k < number_of_topics; k++) {
+					pw.print(d.m_topics[k] + "\t");
+				}
+
+				pw.println();
+
+				TreeMap<Long, _ChildDoc> timeChildDocMap = new TreeMap<Long, _ChildDoc>();
+				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs){
+					long cDocDate = cDoc.getTimeStamp();
+					if(timeChildDocMap.containsKey(cDocDate)){
+						System.out.print("duplicate time");
+					}else{
+						timeChildDocMap.put(cDocDate, cDoc);
+					}
+
+				}
+
+				for(long cDocDate:timeChildDocMap.keySet()){
+					_ChildDoc cDoc = timeChildDocMap.get(cDocDate);
+					pw.print(cDoc.getName()+"\t");
+					Date cdateFormat = new Date(cDocDate);
+					SimpleDateFormat cdf2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+					String cdateText = cdf2.format(cdateFormat);
+					pw.print("time\t"+cdateText+"\t topicProportion\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						pw.print(cDoc.m_topics[k] + "\t");
+					}
+					pw.println();
+				}
+
+//				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+//					pw.print(cDoc.getName() + "\t");
+//					pw.print("topicProportion\t");
+//					for (int k = 0; k < number_of_topics; k++) {
+//						pw.print(cDoc.m_topics[k] + "\t");
+//					}
+//					pw.println();
+//				}
+			}
+
+
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void printParameter(String parentParameterFile,

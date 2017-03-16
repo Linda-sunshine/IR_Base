@@ -17,6 +17,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.*;
 import utils.Utils;
 import java.util.Date;
+import java.util.concurrent.atomic.DoubleAccumulator;
 
 /**
  * 
@@ -88,13 +89,20 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		JSONObject json = LoadJSON(fileName);
 		String title = Utils.getJSONValue(json, "title");
 		String content = Utils.getJSONValue(json, "content");
+		String timeStampStr = Utils.getJSONValue(json, "date");
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
 		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
 				content, 0);
 
+//		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {
+//			Date date = formatter.parse(timeStampStr);
+//			long timeStamp = date.getTime();
+//			long timeStamp = Long.parseLong(timeStampStr);
+//			d.setTimeStamp(timeStamp);
+
 			JSONArray sentenceArray = json.getJSONArray("sentences");
 				
 			sentences = new String[sentenceArray.length()];
@@ -105,7 +113,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			if (AnalyzeDocByStn(d, sentences))
 				parentHashMap.put(name, d);
 
-		} catch (JSONException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -119,7 +127,33 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
+		String timeStampStr = Utils.getJSONValue(json, "cdate");
+		System.out.print("time\t"+timeStampStr);
+		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+        try{
+            Date date = formatter.parse(timeStampStr);
+            long timeStamp = date.getTime();
+			_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+            d.setTimeStamp(timeStamp);
 
+            d.setName(name);
+
+			if(parentHashMap.containsKey(parent)){
+				if (AnalyzeDoc(d)) {//this is a valid child document
+//			if (parentHashMap.containsKey(parent)) {
+					_ParentDoc pDoc = parentHashMap.get(parent);
+					d.setParentDoc(pDoc);
+					pDoc.addChildDoc(d);
+				} else {
+//				System.err.format("filtering comments %s!\n", parent);
+				}
+			}else {
+//			System.err.format("[Warning]Missing parent document %s!\n", parent);
+			}
+        }catch (Exception e){
+            System.out.print(fileName);
+            e.printStackTrace();
+        }
 //		
 
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
@@ -133,7 +167,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //				"", content, 0);
 //		_ChildDoc4OneTopicProportion d = new _ChildDoc4OneTopicProportion(m_corpus.getSize(), name, "", content, 0);
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
 		// _ChildDoc4DCMDMMCorrLDA d = new _ChildDoc4DCMDMMCorrLDA(
 		// m_corpus.getSize(), name, "", content, 0);
 
@@ -141,18 +175,18 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		_ChildDoc4ProbitModel d = new _ChildDoc4ProbitModel(m_corpus.getSize(), name, "", content, 0);
 //		_ChildDoc4LogisticRegression d = new _ChildDoc4LogisticRegression(m_corpus.getSize(), name, "", content, 0);
 	
-		if(parentHashMap.containsKey(parent)){
-			if (AnalyzeDoc(d)) {//this is a valid child document
-//			if (parentHashMap.containsKey(parent)) {
-				_ParentDoc pDoc = parentHashMap.get(parent);
-				d.setParentDoc(pDoc);
-				pDoc.addChildDoc(d);
-			} else {
-//				System.err.format("filtering comments %s!\n", parent);
-			}			
-		}else {
-//			System.err.format("[Warning]Missing parent document %s!\n", parent);
-		}	
+//		if(parentHashMap.containsKey(parent)){
+//			if (AnalyzeDoc(d)) {//this is a valid child document
+////			if (parentHashMap.containsKey(parent)) {
+//				_ParentDoc pDoc = parentHashMap.get(parent);
+//				d.setParentDoc(pDoc);
+//				pDoc.addChildDoc(d);
+//			} else {
+////				System.err.format("filtering comments %s!\n", parent);
+//			}
+//		}else {
+////			System.err.format("[Warning]Missing parent document %s!\n", parent);
+//		}
 	}
 	
 	public void LoadDoc(String fileName){
@@ -171,8 +205,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		}
 		String content = Utils.getJSONValue(json, "content");
 		String name = Utils.getJSONValue(json, "name");
-//		String parent = Utils.getJSONValue(json, "parent");
-		String timeStampStr = Utils.getJSONValue(json, "time");
+		String parent = Utils.getJSONValue(json, "parent");
+//		String timeStampStr = Utils.getJSONValue(json, "time");
 		String label = Utils.getJSONValue(json, "label");
 		
 		int yLabel = 0;
@@ -182,19 +216,24 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //			yLabel = labelIntMap.get(label);
 		}
 
-		DateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
-        try{
-            Date date = formatter.parse(timeStampStr);
-            long timeStamp = date.getTime();
-            _Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
-            d.setTimeStamp(timeStamp);
+		_Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
 
-            d.setName(name);
-            AnalyzeDoc(d);
-        }catch (Exception e){
-            System.out.print(fileName);
-            e.printStackTrace();
-        }
+		d.setName(name);
+		AnalyzeDoc(d);
+
+//		DateFormat formatter = new SimpleDateFormat("yyyy-mm-dd");
+//        try{
+//            Date date = formatter.parse(timeStampStr);
+//            long timeStamp = date.getTime();
+//            _Doc d = new _Doc(m_corpus.getSize(), content, yLabel);
+//            d.setTimeStamp(timeStamp);
+//
+//            d.setName(name);
+//            AnalyzeDoc(d);
+//        }catch (Exception e){
+//            System.out.print(fileName);
+//            e.printStackTrace();
+//        }
 
 //		_DynamicDoc d = new _DynamicDoc(m_corpus.getSize(), content, yLabel, timeStamp);
 
@@ -572,6 +611,99 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		analyzeBurstiness(filePrefix);
 	}
 
+	public void analyzeGeneralizedBurstiness(String filePrefix){
+		int TTFThreshold = 10;
+		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
 
+		String fileName = filePrefix+"/burstiness.txt";
+		int vocalSize = m_corpus.getFeatureSize();
+		System.out.println("vocal size\t"+vocalSize);
 
+		int corpusSize = 0;
+		double totalFeatureTimes = 0;
+
+		for(_Doc d:m_corpus.getCollection()){
+			if(d instanceof  _ParentDoc4DCM){
+				corpusSize ++;
+				HashMap<Integer, Double> wordFrequencyMap = new HashMap<Integer, Double>();
+
+				_ParentDoc4DCM pDoc = (_ParentDoc4DCM)d;
+				_SparseFeature[] pDocFS = pDoc.getSparse();
+
+				for(_SparseFeature sf:pDocFS){
+					int wid = sf.getIndex();
+					String strW = m_corpus.getFeature(wid);
+					int wTTF = m_corpus.m_featureStat.get(strW).getTTF()[0];
+
+					if(wTTF<TTFThreshold){
+						continue;
+					}
+
+					if(!wordFrequencyMap.containsKey(wid)){
+						wordFrequencyMap.put(wid, 0.0);
+					}
+
+				}
+
+				for(_ChildDoc cDoc:pDoc.m_childDocs){
+					for(_Word w:cDoc.getWords()){
+						int wid = w.getIndex();
+						String strW = m_corpus.getFeature(wid);
+						int wTTF = m_corpus.m_featureStat.get(strW).getTTF()[0];
+
+						if(wTTF>=TTFThreshold){
+							continue;
+						}
+
+						double maxSim = 0.0;
+						int maxWKey = 0;
+						for(int wKey:wordFrequencyMap.keySet()){
+							double wordSim = getSim4Words(wid, wKey);
+							if(wordSim > maxSim) {
+								maxWKey = wKey;
+							}
+						}
+
+						double oldFeatureTimes = wordFrequencyMap.get(maxWKey);
+						wordFrequencyMap.put(wid, oldFeatureTimes+1);
+					}
+				}
+
+				totalFeatureTimes += wordFrequencyMap.size();
+
+				for(int wid:wordFrequencyMap.keySet()){
+					double featureTimes = wordFrequencyMap.get(wid);
+					if(!burstinessMap.containsKey(featureTimes))
+						burstinessMap.put(featureTimes, 1.0);
+					else{
+						double value = burstinessMap.get(featureTimes);
+						burstinessMap.put(featureTimes, value+1);
+					}
+
+				}
+			}
+		}
+
+		for(double featureTimes:burstinessMap.keySet()){
+			double featureTimesProb = burstinessMap.get(featureTimes)/totalFeatureTimes;
+			burstinessMap.put(featureTimes, featureTimesProb);
+		}
+
+		try{
+			PrintWriter pw = new PrintWriter(new File(fileName));
+
+			for(double featureTimes: burstinessMap.keySet()){
+				pw.println(featureTimes+":"+burstinessMap.get(featureTimes));
+			}
+
+			pw.flush();
+			pw.close();
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public double getSim4Words(int pWid, int cWid){
+
+	}
 }
