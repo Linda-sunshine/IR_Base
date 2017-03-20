@@ -20,12 +20,17 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 			String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
 				featureGroup4Sup);
-		// TODO Auto-generated constructor stub
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("MTCLinAdaptWithDPLR[dim:%d,supDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup, m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	public void setLMFvSize(int s){
 		m_lmFvSize = s;
 	}
+	
 	double m_lambda = 1; // parameter used in lr.
 	LogisticRegression4DP m_lr;
 	ArrayList<_Doc> m_lrTrainSet = new ArrayList<_Doc>();

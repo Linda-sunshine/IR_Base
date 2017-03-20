@@ -25,6 +25,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp2;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPKMeans;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPLR;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
@@ -202,11 +203,13 @@ public class MyDPMain {
 //		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 //		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
 //		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 //		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
 		
+		MTCLinAdaptWithDPKMeans adaptation = new MTCLinAdaptWithDPKMeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
@@ -218,7 +221,7 @@ public class MyDPMain {
 		
 		adaptation.train();
 		adaptation.test();
-		adaptation.printUserPerformance("dp_exp_10k.xls");
+		//adaptation.printUserPerformance("dp_exp_10k.xls");
 			
 //		long time = System.currentTimeMillis();
 //		String pattern = dataset+"_"+time;

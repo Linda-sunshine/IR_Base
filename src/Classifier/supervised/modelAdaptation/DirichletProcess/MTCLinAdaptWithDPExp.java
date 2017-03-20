@@ -37,14 +37,12 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 			String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
 				featureGroup4Sup);
-		// TODO Auto-generated constructor stub
 	}
 	
 	public MTCLinAdaptWithDPExp(int classNo, int featureSize, String globalModel,
 			String featureGroupMap, String featureGroup4Sup) {
 		super(classNo, featureSize, globalModel, featureGroupMap,
 				featureGroup4Sup);
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
@@ -162,36 +160,6 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		return prf;
 	}
 	
-//	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
-//	protected void calculateClusterProbPerUser(){
-//		double prob;
-//		_DPAdaptStruct user;
-//		double[] probs = new double[m_kBar];
-//		_thetaStar oldTheta;
-//
-//		// calculate the centroids of all the clusters.
-//		calculateCentroids();
-//
-////		constructCentroids();
-//		
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_DPAdaptStruct) m_userList.get(i);
-//				
-//			oldTheta = user.getThetaStar();
-//			for(int k=0; k<m_kBar; k++){
-//				user.setThetaStar(m_thetaStars[k]);
-//
-//				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-////				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
-//
-//				probs[k] = Math.exp(prob);//this will be in real space!
-//			}
-//			Utils.L1Normalization(probs);
-//			user.setClusterPosterior(probs);
-//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
-//		}
-//	}
-	
 	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
 	protected void calculateClusterProbPerUser(){
 		double prob;
@@ -199,14 +167,21 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		double[] probs = new double[m_kBar];
 		_thetaStar oldTheta;
 
+		// calculate the centroids of all the clusters.
+		calculateCentroids();
+
+//		constructCentroids();
+		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			
+				
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
 
-				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+				prob = calcDistance(k, user) + calcLogLikelihood(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+
 				probs[k] = Math.exp(prob);//this will be in real space!
 			}
 			Utils.L1Normalization(probs);
@@ -215,18 +190,41 @@ public class MTCLinAdaptWithDPExp extends MTCLinAdaptWithDP {
 		}
 	}
 	
-	// Assign cluster assignment to each user.
-	protected void initThetaStars(){
-		initPriorG0();
-		
-		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
-		_DPAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			if(user.getAdaptationSize() >= 1)
-				sampleOneInstance(user);
-		}		
-	}
+//	// After we finish estimating the clusters, we calculate the probability of each user belongs to each cluster.
+//	protected void calculateClusterProbPerUser(){
+//		double prob;
+//		_DPAdaptStruct user;
+//		double[] probs = new double[m_kBar];
+//		_thetaStar oldTheta;
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			
+//			oldTheta = user.getThetaStar();
+//			for(int k=0; k<m_kBar; k++){
+//				user.setThetaStar(m_thetaStars[k]);
+//
+//				prob = calcLogLikelihood4Posterior(user) + Math.log(m_thetaStars[k].getMemSize());//this proportion includes the user's current cluster assignment
+//				probs[k] = Math.exp(prob);//this will be in real space!
+//			}
+//			Utils.L1Normalization(probs);
+//			user.setClusterPosterior(probs);
+//			user.setThetaStar(oldTheta);//restore the cluster assignment during EM iterations
+//		}
+//	}
+	
+//	// Assign cluster assignment to each user.
+//	protected void initThetaStars(){
+//		initPriorG0();
+//		
+//		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
+//		_DPAdaptStruct user;
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			if(user.getAdaptationSize() >= 1)
+//				sampleOneInstance(user);
+//		}		
+//	}
 	KMeansAlg m_kmeans;
 	HashMap<Integer, _SparseFeature[][]> m_centMap = new HashMap<Integer, _SparseFeature[][]>();
 
