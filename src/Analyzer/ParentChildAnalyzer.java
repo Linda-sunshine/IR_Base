@@ -1,9 +1,6 @@
 package Analyzer;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,11 +10,12 @@ import java.util.Random;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
+import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
 import structures.*;
 import utils.Utils;
 import java.util.Date;
-import java.util.concurrent.atomic.DoubleAccumulator;
+import java.util.Collections;
 
 /**
  * 
@@ -93,8 +91,10 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
-				content, 0);
+//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
+//				content, 0);
+        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title,
+                content, 0);
 
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {
@@ -117,8 +117,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			e.printStackTrace();
 		}
 	}
-	
-	public void loadChildDoc(String fileName) {
+
+	public void loadChildDocwithTime(String fileName) {
 		if (fileName == null || fileName.isEmpty())
 			return;
 
@@ -130,13 +130,13 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String timeStampStr = Utils.getJSONValue(json, "cdate");
 		System.out.print("time\t"+timeStampStr);
 		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-        try{
-            Date date = formatter.parse(timeStampStr);
-            long timeStamp = date.getTime();
+		try{
+			Date date = formatter.parse(timeStampStr);
+			long timeStamp = date.getTime();
 			_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-            d.setTimeStamp(timeStamp);
+			d.setTimeStamp(timeStamp);
 
-            d.setName(name);
+			d.setName(name);
 
 			if(parentHashMap.containsKey(parent)){
 				if (AnalyzeDoc(d)) {//this is a valid child document
@@ -150,10 +150,38 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			}else {
 //			System.err.format("[Warning]Missing parent document %s!\n", parent);
 			}
-        }catch (Exception e){
-            System.out.print(fileName);
-            e.printStackTrace();
-        }
+		}catch (Exception e){
+			System.out.print(fileName);
+			e.printStackTrace();
+		}
+
+	}
+
+	public void loadChildDoc(String fileName) {
+		if (fileName == null || fileName.isEmpty())
+			return;
+
+		JSONObject json = LoadJSON(fileName);
+		String content = Utils.getJSONValue(json, "content");
+		String name = Utils.getJSONValue(json, "name");
+		String parent = Utils.getJSONValue(json, "parent");
+		String title = Utils.getJSONValue(json, "title");
+
+		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		d.setName(name);
+
+		if(parentHashMap.containsKey(parent)){
+			if (AnalyzeDoc(d)) {//this is a valid child document
+//			if (parentHashMap.containsKey(parent)) {
+				_ParentDoc pDoc = parentHashMap.get(parent);
+				d.setParentDoc(pDoc);
+				pDoc.addChildDoc(d);
+			} else {
+//				System.err.format("filtering comments %s!\n", parent);
+			}
+		}else {
+//			System.err.format("[Warning]Missing parent document %s!\n", parent);
+		}
 //		
 
 //		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(),
@@ -294,7 +322,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 
 		System.out.println("after filtering\t"+m_corpus.getSize());
 	}
-	
+
 	public void analyzeBurstiness(String filePrefix){
 		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
 		
@@ -335,7 +363,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					threadLen += cDoc.getTotalDocLength();
 					for(_Word w:cDoc.getWords()){
 						int wid = w.getIndex();
-						System.out.print("wid\t"+wid+"\t");
+//						System.out.print("wid\t"+wid+"\t");
 						if(!wordFrequencyMap.containsKey(wid)){
 							continue;
 //							wordFrequencyMap.put(wid, 1.0);
@@ -552,8 +580,6 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			fakeCorpusFolder.mkdir();
 		}
 
-
-
 		ArrayList<_ChildDoc> childList = new ArrayList<_ChildDoc>();
 		for(_Doc d:m_corpus.getCollection()){
 			if (d instanceof _ParentDoc) {
@@ -571,13 +597,13 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		_Word tempWord;
 		for(int i=1; i<childList.size(); i++){
 			_ChildDoc d = childList.get(i);
-			System.out.println("cDoc\t"+d.getName());
+//			System.out.println("cDoc\t"+d.getName());
 			for(int wIndex=0; wIndex<d.getTotalDocLength(); wIndex++) {
 				_Word w = d.getWordByIndex(wIndex);
 				j = m_rand.nextInt(i);
 				_Doc tempDoc = childList.get(j);
 
-				System.out.print("wid\t"+w.getIndex());
+//				System.out.print("wid\t"+w.getIndex());
 
 				int exchangeDocLen = tempDoc.getTotalDocLength();
 				int exchangeWordIndex = m_rand.nextInt(exchangeDocLen);
@@ -588,31 +614,51 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				exchangeWord = tempWord;
 				d.setWordByIndex(wIndex, w);
 				tempDoc.setWordByIndex(exchangeWordIndex, exchangeWord);
-				System.out.print("--->"+w.getIndex()+"\t"+d.getWordByIndex(wIndex).getIndex());
+//				System.out.print("--->"+w.getIndex()+"\t"+d.getWordByIndex(wIndex).getIndex());
 
 			}
-			System.out.print("\n");
-			for(_Word w:d.getWords()){
-				System.out.print("wid\t"+w.getIndex());
-			}
+//			System.out.print("\n");
+//			for(_Word w:d.getWords()){
+//				System.out.print("wid\t"+w.getIndex());
+//			}
 
 		}
 
-		for(_ChildDoc cDoc:childList){
-			System.out.println("cDoc\t"+cDoc.getName());
-			for(_Word w:cDoc.getWords()) {
-				System.out.print("wid\t"+w.getIndex());
-
-			}
-			System.out.print("\n");
-		}
+//		for(_ChildDoc cDoc:childList){
+//			System.out.println("cDoc\t"+cDoc.getName());
+//			for(_Word w:cDoc.getWords()) {
+//				System.out.print("wid\t"+w.getIndex());
+//
+//			}
+//			System.out.print("\n");
+//		}
 
 		System.out.println("randomization");
 		analyzeBurstiness(filePrefix);
 	}
 
+    public void burstiness4Original(String filePrefix, int number_of_topics){
+        for(_Doc d:m_corpus.getCollection()){
+            if (d instanceof _ParentDoc) {
+                d.setTopics4Gibbs(number_of_topics, 0);
+            } else if (d instanceof _ChildDoc) {
+                _ChildDoc cDoc = (_ChildDoc)d;
+                ((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
+            }
+        }
+        analyzeBurstiness(filePrefix);
+    }
+
+    public void burstiness4Randomized(String filePrefix, int number_of_topics){
+        randomizeComment(filePrefix, number_of_topics);
+        analyzeBurstiness(filePrefix);
+    }
+
 	public void analyzeGeneralizedBurstiness(String filePrefix){
-		int TTFThreshold = 10;
+
+		double SimThreshold = 0.8;//0.08938088820714778,0.3495393872095217
+        System.out.print("thresholding\t"+SimThreshold);
+
 		HashMap<Double, Double> burstinessMap = new HashMap<Double, Double>();
 
 		String fileName = filePrefix+"/burstiness.txt";
@@ -635,9 +681,9 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 					String strW = m_corpus.getFeature(wid);
 					int wTTF = m_corpus.m_featureStat.get(strW).getTTF()[0];
 
-					if(wTTF<TTFThreshold){
-						continue;
-					}
+//					if(wTTF<TTFThreshold){
+//						continue;
+//					}
 
 					if(!wordFrequencyMap.containsKey(wid)){
 						wordFrequencyMap.put(wid, 0.0);
@@ -651,18 +697,22 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 						String strW = m_corpus.getFeature(wid);
 						int wTTF = m_corpus.m_featureStat.get(strW).getTTF()[0];
 
-						if(wTTF>=TTFThreshold){
-							continue;
-						}
+//						if(wTTF>=TTFThreshold){
+//							continue;
+//						}
 
-						double maxSim = 0.0;
+						double maxSim = -1;
 						int maxWKey = 0;
 						for(int wKey:wordFrequencyMap.keySet()){
 							double wordSim = getSim4Words(wid, wKey);
 							if(wordSim > maxSim) {
 								maxWKey = wKey;
+                                maxSim = wordSim;
 							}
 						}
+
+						if(maxSim <= SimThreshold)
+						    continue;
 
 						double oldFeatureTimes = wordFrequencyMap.get(maxWKey);
 						wordFrequencyMap.put(wid, oldFeatureTimes+1);
@@ -703,7 +753,197 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		}
 	}
 
+    public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
+        FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
+
+        System.out.println("*******************************************************************");
+        if (featureSelection.equals("DF"))
+            selector.DF(m_featureStat);
+        else if (featureSelection.equals("IG"))
+            selector.IG(m_featureStat, m_classMemberNo);
+        else if (featureSelection.equals("MI"))
+            selector.MI(m_featureStat, m_classMemberNo);
+        else if (featureSelection.equals("CHI"))
+            selector.CHI(m_featureStat, m_classMemberNo);
+
+        m_featureNames = selector.getSelectedFeatures();
+
+        SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
+        System.out.println(m_featureNames.size() + " features are selected!");
+
+        // need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
+        //clear memory for next step feature construction
+//		reset();
+//		LoadCV(location);//load the selected features
+    }
+
+    protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
+        if (featureLocation==null || featureLocation.isEmpty())
+            return;
+        String feature;
+        System.out.format("Saving controlled vocabulary to %s...\n", featureLocation);
+        PrintWriter writer = new PrintWriter(new File(featureLocation));
+        //print out the configurations as comments
+        writer.format("#NGram:%d\n", m_Ngram);
+        writer.format("#Selection:%s\n", featureSelection);
+        writer.format("#Start:%f\n", startProb);
+        writer.format("#End:%f\n", endProb);
+        writer.format("#DF_MaxCut:%d\n", maxDF);
+        writer.format("#DF_MinCut:%d\n", minDF);
+
+        //print out the features
+        for (int i = 0; i < m_featureNames.size(); i++){
+            feature = m_featureNames.get(i);
+
+            if(m_featureStat.get(feature).getM_gloveVec()==null){
+                System.out.println("removing feature\t"+feature);
+                continue;
+            }
+            writer.println(feature);
+        }
+
+        writer.close();
+    }
+
+	public void loadGloveVec(String gloveFile){
+		try{
+			String tmpTxt;
+			String[] lineContainer;
+			double[] featureVecEle;
+			int tid = 0;
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(gloveFile), "UTF-8"));
+
+			while((tmpTxt=br.readLine())!=null){
+				tmpTxt = tmpTxt.trim();
+				if(tmpTxt.isEmpty())
+					continue;
+
+				lineContainer = tmpTxt.split(" ");
+				String rawWordStr = lineContainer[0];
+                TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
+                if(resultToken.getTokens().length==0)
+                    continue;
+                String wordStr = resultToken.getTokens()[0];
+
+				if(!m_featureStat.containsKey(wordStr))
+					continue;
+
+//                System.out.println(wordStr);
+				_stat wordStat = m_featureStat.get(wordStr);
+
+				featureVecEle = new double[lineContainer.length-1];
+				for(int i=1; i<lineContainer.length; i++){
+					featureVecEle[i-1] = Double.parseDouble(lineContainer[i]);
+				}
+
+				wordStat.setM_gloveVec(featureVecEle);
+			}
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void generateWordSimFile(String gloveFile, String filePrefix){
+        String wordSimFile = filePrefix+"wordSim.txt";
+
+        try{
+            PrintWriter pw = new PrintWriter(new File(wordSimFile));
+
+
+
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
 	public double getSim4Words(int pWid, int cWid){
+		String pWStr = m_corpus.getFeature(pWid);
+		String cWStr = m_corpus.getFeature(cWid);
+//		System.out.println("pword\t"+pWStr+"\t cword\t"+cWStr);
+        if(m_corpus.m_featureStat.get(pWStr).getM_gloveVec()==null){
+            System.out.println(pWStr+"\tno glove vec");
+        }
+
+        if(m_corpus.m_featureStat.get(cWStr).getM_gloveVec()==null){
+            System.out.println(cWStr+"\tno glove vec");
+        }
+
+		double cosSim = Utils.cosine(m_corpus.m_featureStat.get(pWStr).getM_gloveVec(), m_corpus.m_featureStat.get(cWStr).getM_gloveVec());
+//		System.out.println(pWStr+"\t"+cWStr+"\tcosSim\t"+cosSim);
+		return cosSim;
+	}
+
+	public void generalizedBurstiness4Original(String filePrefix, String gloveFile, int number_of_topics){
+
+		ArrayList<_ChildDoc> childList = new ArrayList<_ChildDoc>();
+		for(_Doc d:m_corpus.getCollection()){
+			if (d instanceof _ParentDoc) {
+				d.setTopics4Gibbs(number_of_topics, 0);
+			} else if (d instanceof _ChildDoc) {
+				_ChildDoc cDoc = (_ChildDoc)d;
+				((_ChildDoc) d).setTopics4Gibbs_LDA(number_of_topics, 0);
+			}
+		}
+		loadGloveVec(gloveFile);
+		analyzeGeneralizedBurstiness(filePrefix);
 
 	}
+
+	public void generalizedBurstiness4Fake(String filePrefix, String gloveFile, int number_of_topics){
+		loadGloveVec(gloveFile);
+		randomizeComment(filePrefix, number_of_topics);
+		analyzeGeneralizedBurstiness(filePrefix);
+	}
+
+	public void simWords4Corpus(String filePrefix, String gloveFile){
+        loadGloveVec(gloveFile);
+        String wordSimFile = filePrefix+"wordSim_Tech.txt";
+        ArrayList<Double> simList = new ArrayList<Double>();
+
+        try{
+            PrintWriter pw = new PrintWriter(new File(wordSimFile));
+
+            for(int i=0; i<m_featureNames.size(); i++){
+                pw.print(m_featureNames.get(i)+"\t");
+            }
+            pw.println();
+
+            for(int i=0; i<m_featureNames.size(); i++){
+                String wStrRow = m_featureNames.get(i);
+                _stat wStatRow = m_featureStat.get(wStrRow);
+//                wStatRow.setSimMap();
+                for(int j=i+1; j<m_featureNames.size(); j++){
+                    String wStrCol = m_featureNames.get(j);
+
+                    double cosSim = Utils.cosine(wStatRow.getM_gloveVec(), m_featureStat.get(wStrCol).getM_gloveVec());
+    //                wStatRow.m_wordSimMap.put(wStrCol, cosSim);
+                    pw.print(cosSim+"\t");
+                    simList.add(cosSim);
+                }
+                pw.println();
+            }
+
+            pw.flush();
+            pw.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+        Collections.sort(simList, Collections.reverseOrder());
+        System.out.println("number of sim pairs\t"+simList.size());
+        System.out.println("max sim\t"+Collections.max(simList)+"\t"+simList.get(0));
+        System.out.println("min sim\t"+Collections.min(simList)+"\t"+simList.get(simList.size()-1));
+        int mediumIndex = (int)simList.size()/2;
+        int top10Index = (int)(simList.size()*0.1);
+        int top20Index = (int)(simList.size()*0.2);
+        int top40Index = (int)(simList.size()*0.4);
+        System.out.println("medium \t"+simList.get(mediumIndex));
+        System.out.println("top 10 sim \t"+simList.get(top10Index));
+        System.out.println("top 20 sim \t"+simList.get(top20Index));
+        System.out.println("top 40 sim \t"+simList.get(top40Index));
+
+    }
 }

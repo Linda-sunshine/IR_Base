@@ -4,6 +4,7 @@
 package structures;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 
 /**
@@ -11,8 +12,12 @@ import java.util.Arrays;
  * basic statistics for each feature
  */
 public class _stat {
+	double[] m_gloveVec;//word embedding
+
 	int[] m_DF; // document frequency for this feature
 	int[] m_TTF; // total term frequency for this feature
+
+//	public HashMap<String, Double> m_wordSimMap;
 	
 	public _stat(int classNo){
 		m_DF = new int[classNo];
@@ -28,7 +33,23 @@ public class _stat {
 			Arrays.fill(m_TTF, 0);
 		}
 	}
-	
+
+	public void setSimMap(){
+//		m_wordSimMap = new HashMap<String, Double>();
+	}
+
+	public void setM_gloveVec(double[] gloveVec){
+		int gloveLen = gloveVec.length;
+		m_gloveVec = new double[gloveLen];
+		for(int i=0; i<gloveLen; i++){
+			m_gloveVec[i] = gloveVec[i];
+		}
+	}
+
+	public double[] getM_gloveVec(){
+		return m_gloveVec;
+	}
+
 	public int[] getDF(){
 		return this.m_DF;
 	}

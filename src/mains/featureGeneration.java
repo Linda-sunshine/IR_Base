@@ -51,8 +51,8 @@ public class featureGeneration {
 		String articleType = "20NewsGroupTrain";
 		articleType = "Reuters10";
 		articleType = "TripAdvisor";
-		articleType = "CNN";
-//		articleType = "Yahoo";
+		articleType = "Tech";
+		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
@@ -117,8 +117,8 @@ public class featureGeneration {
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.5; // Used in feature selection, the starting point of the features.
-		double endProb = 0.9999999999; // Used in feature selection, the ending point of
+		double startProb = 0.7; // Used in feature selection, the starting point of the features.
+		double endProb = 0.99; // Used in feature selection, the ending point of
 								// the features.
 		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.
@@ -133,10 +133,11 @@ public class featureGeneration {
 //		analyzer.LoadChildDirectory(commentFolder, suffix);
 		analyzer.LoadDirectory(articleFolder, suffix);
 //		analyzer.LoadDirectory(articleFolder2, suffix);
-//		analyzer.LoadDirectory(commentFolder, suffix);
-		
-//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
-//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
+		analyzer.LoadDirectory(commentFolder, suffix);
+//		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
+//		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
+		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
+		analyzer.loadGloveVec(gloveFile);
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");

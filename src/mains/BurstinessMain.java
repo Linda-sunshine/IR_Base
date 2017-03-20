@@ -67,7 +67,7 @@ public class BurstinessMain {
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
 //		articleType = "Gadgets";
-		articleType = "Yahoo";
+//		articleType = "Yahoo";
 //		articleType = "APP";
 		
 		String articleFolder = String.format(
@@ -174,8 +174,13 @@ public class BurstinessMain {
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.	
 //		_Corpus c = analyzer.getCorpus();
 //		analyzer.generateFakeCorpus(filePrefix);
-		analyzer.randomizeComment(filePrefix, number_of_topics);
-//		analyzer.analyzeBurstiness(filePrefix);
-		
+//		analyzer.randomizeComment(filePrefix, number_of_topics);
+//		analyzer.burstiness4Original(filePrefix, number_of_topics);
+		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
+
+//		analyzer.loadGloveVec(gloveFile);
+//		analyzer.generalizedBurstiness4Original(filePrefix, gloveFile, number_of_topics);
+//		analyzer.generalizedBurstiness4Fake(filePrefix, gloveFile, number_of_topics);
+		analyzer.simWords4Corpus(filePrefix, gloveFile);
 	}
 }

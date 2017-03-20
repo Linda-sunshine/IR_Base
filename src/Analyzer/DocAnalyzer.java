@@ -29,12 +29,7 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
-import structures.SentiWordNet;
-import structures.TokenizeResult;
-import structures._Doc;
-import structures._Post;
-import structures._Product;
-import structures._Stn;
+import structures.*;
 import utils.Utils;
 
 /**
@@ -203,6 +198,43 @@ public class DocAnalyzer extends Analyzer {
 				senScore+=tmp;
 		}
 		return senScore/tokens.length;//This is average, we may have different ways of calculation.
+	}
+
+	protected void loadGloveVec(String gloveFile){
+		try{
+			String tmpTxt;
+			String[] lineContainer;
+			double[] featureVecEle;
+			int tid = 0;
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(gloveFile), "UTF-8"));
+			while((tmpTxt=br.readLine())!=null){
+				tmpTxt = tmpTxt.trim();
+				if(tmpTxt.isEmpty())
+					continue;
+
+				lineContainer = tmpTxt.split(" ");
+				String rawWordStr = lineContainer[0];
+				TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
+				if(resultToken.getTokens().length==0)
+					continue;
+				String wordStr = resultToken.getTokens()[0];
+
+				if(!m_corpus.m_featureStat.containsKey(wordStr))
+					continue;
+				_stat wordStat = m_corpus.m_featureStat.get(wordStr);
+
+				featureVecEle = new double[lineContainer.length-1];
+				for(int i=1; i<lineContainer.length; i++){
+					featureVecEle[i-1] = Double.parseDouble(lineContainer[i]);
+				}
+
+				wordStat.setM_gloveVec(featureVecEle);
+			}
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
 	}
 		
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.

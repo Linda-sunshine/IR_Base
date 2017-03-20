@@ -12,10 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
-import structures._Corpus;
-import structures._Doc;
-import structures._SparseFeature;
-import structures._stat;
+import structures.*;
 import utils.Utils;
 
 /**
@@ -337,13 +334,13 @@ public abstract class Analyzer {
 		m_featureNames = selector.getSelectedFeatures();
 		SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
 		System.out.println(m_featureNames.size() + " features are selected!");
-		
+
 		// need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
 		//clear memory for next step feature construction
 //		reset();
 //		LoadCV(location);//load the selected features
 	}
-	
+
 	//Save all the features and feature stat into a file.
 	protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
 		if (featureLocation==null || featureLocation.isEmpty())
