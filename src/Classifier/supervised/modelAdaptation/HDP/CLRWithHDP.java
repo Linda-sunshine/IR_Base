@@ -218,7 +218,9 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
-				
+		//****//
+//		m_hdpThetaStars[k].initLMStat(fvs, m_lmDim);
+		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
@@ -302,20 +304,8 @@ public class CLRWithHDP extends CLRWithDP {
 				if (r.getType() == rType.TEST)
 					continue;//do not touch testing reviews!
 				
-//				curThetaStar = r.getHDPThetaStar();
-				
+				//Step 1: remove the current review from the thetaStar and user side.
 				updateDocMembership(user, r);
-//				//Step 1: remove the current review from the thetaStar and user side.
-//				decUserHDPThetaStarMemSize(user, r);
-//				curThetaStar.updateMemCount(-1);
-//
-//				if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
-//					curThetaStar.resetPsiModel();
-//					m_gamma_e += curThetaStar.getGamma();
-//					index = findHDPThetaStar(curThetaStar);
-//					swapTheta(m_kBar-1, index); // move it back to \theta*
-//					m_kBar --;
-//				}
 				
 				//Step 2: sample new cluster assignment for this review
 				sampleOneInstance(user, r);
@@ -350,7 +340,6 @@ public class CLRWithHDP extends CLRWithDP {
 
 	public void decUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r){
 		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
-
 	}
 	//Sample how many local groups inside user reviews.
 	protected int sampleH(_HDPAdaptStruct user, _HDPThetaStar s){

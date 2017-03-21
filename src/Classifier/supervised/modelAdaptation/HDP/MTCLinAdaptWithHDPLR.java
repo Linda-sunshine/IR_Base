@@ -1,4 +1,4 @@
-package Classifier.supervised.modelAdaptation.DirichletProcess;
+package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,27 +9,24 @@ import structures._SparseFeature;
 import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
 import utils.Utils;
-
-import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.LogisticRegression4DP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
-public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
-	int m_lmFvSize = 0;
-	public MTCLinAdaptWithDPLR(int classNo, int featureSize,
+public class MTCLinAdaptWithHDPLR extends MTCLinAdaptWithHDP{
+
+	public MTCLinAdaptWithHDPLR(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
-			String featureGroupMap, String featureGroup4Sup) {
+			String featureGroupMap, String featureGroup4Sup, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
-				featureGroup4Sup);
+				featureGroup4Sup, lm);
 	}
-	
+
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithDPLR[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]", m_dim, m_dimSup,m_lmFvSize,m_M, m_alpha, m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
-	}
-	
-	public void setLMFvSize(int s){
-		m_lmFvSize = s;
-		System.out.print(String.format("[Info]lm dim: %d", m_lmFvSize));
+		return String.format("MTCLinAdaptWithHDPLR[dim:%d,supDim:%d,lmDim:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+											m_dim,m_dimSup,m_lmDim,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	
 	double m_lambda = 1; // parameter used in lr.
@@ -41,13 +38,13 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 		int cNo = 0;
 		_DPAdaptStruct user;
 		m_lrTrainSet.clear();
-		m_lr = new LogisticRegression4DP(m_kBar, m_lmFvSize, m_lambda);
+		m_lr = new LogisticRegression4DP(m_kBar, m_lmDim, m_lambda);
 		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			cNo = user.getThetaStar().getIndex();
 			for(_Review r: user.getReviews()){
 				if(r.getType() == rType.ADAPTATION){
+					cNo = r.getHDPThetaStar().getIndex();
 					r.setClusterNo(cNo);
 					m_lrTrainSet.add(r);
 				}
@@ -74,10 +71,10 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 			threads.add((new Thread() {
 				int core, numOfCores;
 				public void run() {
-					_DPAdaptStruct user;
+					_HDPAdaptStruct user;
 					try {
 						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-							user = (_DPAdaptStruct)m_userList.get(i+core);
+							user = (_HDPAdaptStruct)m_userList.get(i+core);
 							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
 								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
 								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
@@ -114,21 +111,27 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 				e.printStackTrace();
 			} 
 		}	
+		System.out.print(String.format("[Info]Same: %d, Different: %d\n", m_same, m_diff));
 	}
 	
+	int m_same = 0, m_diff = 0;
 	void evaluate(_Review r){
 		double[] cProbs = m_lr.calcCProbs(r);
+		if(Utils.maxOfArrayIndex(cProbs) == r.getHDPThetaStar().getIndex())
+			m_same++;
+		else
+			m_diff++;
 		int n, m;
 		double As[], prob = 0;
 		
 		double sum = 0;
 		for(int k=0; k<cProbs.length; k++){
-			As = CLRWithDP.m_thetaStars[k].getModel();
-			sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
+			As = CLRWithHDP.m_hdpThetaStars[k].getModel();
+			sum = As[0]*CLinAdaptWithHDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
 			for(_SparseFeature fv: r.getSparse()){
 				n = fv.getIndex() + 1;
 				m = m_featureGroupMap[n];
-				sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
+				sum += (As[m]*CLinAdaptWithHDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 			}
 			prob += cProbs[k] * Utils.logistic(sum);
 		}

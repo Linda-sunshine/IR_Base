@@ -111,7 +111,18 @@ public class _Review extends _Doc {
 	public double getL4NewCluster(){
 		return m_L4New;
 	}
-	
+	// total count of words of the review represented in language model.
+	double m_lmSum = -1;
+	public double getLMSum(){
+		if(m_lmSum != -1)
+			return m_lmSum;
+		else{
+			double sum = 0;
+			for(_SparseFeature sf: m_lm_x_sparse)
+				sum += sf.getValue();
+			return sum;
+		}
+	}
 	_WeightedCount m_wc = null;
 	public void setWeightedCount(_WeightedCount wc){
 		m_wc = wc;

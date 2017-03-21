@@ -32,6 +32,8 @@ import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPLR;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
 
 public class MyHDPMain {
 	
@@ -50,11 +52,11 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 3071; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
@@ -62,7 +64,7 @@ public class MyHDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -122,8 +124,14 @@ public class MyHDPMain {
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
+//		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		
+		MTCLinAdaptWithHDPPost hdp = new MTCLinAdaptWithHDPPost(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+
 //		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.2);//0.2
@@ -132,7 +140,8 @@ public class MyHDPMain {
 		double alpha = 0.5, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(20);
+		hdp.setBurnIn(30);
+		hdp.setNumberOfIterations(30);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 //		hdp.setPosteriorSanityCheck(true);
