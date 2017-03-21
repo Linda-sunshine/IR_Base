@@ -48,23 +48,23 @@ public class MyDPMain {
 		String dataset = "Amazon"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		 
-		int lmTopK = 1000; // topK for language model.
+		int lmTopK = 5000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 
 		String fs = "DF";//"IG_CHI"
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
-		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
+//		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
+//		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
+//		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+//		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
+//		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
+//		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
-//		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
+		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
+		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
+		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
+		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
+		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
+		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
