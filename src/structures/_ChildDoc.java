@@ -56,6 +56,7 @@ public class _ChildDoc extends _Doc {
 			wid = fv.getIndex();
 			for(int j=0; j<fv.getValue(); j++){
 				tid = m_rand.nextInt(k);
+				xid = 0;
 				xid = m_rand.nextInt(gammaSize);
 				m_words[wIndex] = new _Word(wid, tid, xid);
 

@@ -914,7 +914,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
                 String wStrRow = m_featureNames.get(i);
                 _stat wStatRow = m_featureStat.get(wStrRow);
 //                wStatRow.setSimMap();
-                for(int j=i+1; j<m_featureNames.size(); j++){
+                for(int j=0; j<m_featureNames.size(); j++){
                     String wStrCol = m_featureNames.get(j);
 
                     double cosSim = Utils.cosine(wStatRow.getM_gloveVec(), m_featureStat.get(wStrCol).getM_gloveVec());

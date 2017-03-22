@@ -50,9 +50,11 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 for(_Stn stnObj:pDoc.getSentences()){
                     stnObj.setTopicsVct(number_of_topics);
                 }
+//                d.setTopics4Gibbs(number_of_topics, 0);
                 pDoc.setTopics4Gibbs(number_of_topics, 0, vocabulary_size, m_gamma.length);
 
                 for(_ChildDoc cDoc:pDoc.m_childDocs) {
+//                    cDoc.setTopics4Gibbs_LDA(number_of_topics, 0);
                     cDoc.createXSpace(number_of_topics, m_gamma.length);
                     cDoc.setTopics4Gibbs(number_of_topics, 0);
                     for(_Word w:cDoc.getWords()){
@@ -62,7 +64,6 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
                         cDoc.m_sstat[tid] ++;
                         pDoc.m_commentThread_wordSS[xid][tid][wid]++;
-
                     }
                 }
             }
@@ -126,7 +127,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
                     for(int i=0; i<lineContainer.length; i++){
                         int colWId = featureNameIndex.get(featureList.get(i));
-                        m_wordSimVec[rowWId] += Double.parseDouble(lineContainer[i]);
+//                        m_wordSimVec[rowWId] += Double.parseDouble(lineContainer[i]);
                         m_wordSimMatrix[rowWId][colWId] = Double.parseDouble(lineContainer[i]);
 
                         if(m_wordSimMatrix[rowWId][colWId] > maxSim){
@@ -148,12 +149,16 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
     }
 
     public void normalizeSim(double maxSim, double minSim){
-        for(int i=0; i<vocabulary_size; i++)
-            for(int j=0; j<vocabulary_size; j++){
-                double normalizedSim = (m_wordSimMatrix[i][j]-minSim)/(maxSim-minSim);
+        for(int i=0; i<vocabulary_size; i++) {
+            m_wordSimVec[i] = 0;
+            for (int j = 0; j < vocabulary_size; j++) {
+//                System.out.println("word \t"+m_corpus.getFeature(i)+"\t j\t"+m_corpus.getFeature(j)+"\t"+m_wordSimMatrix[i][j]+"after");
+                double normalizedSim = (m_wordSimMatrix[i][j] - minSim) / (maxSim - minSim);
                 m_wordSimMatrix[i][j] = normalizedSim;
-//                System.out.println("word \t"+i+"\t j\t"+j+"\t"+normalizedSim);
+                m_wordSimVec[i] += normalizedSim;
+//                System.out.println("word \t"+m_corpus.getFeature(i)+"\t j\t"+m_corpus.getFeature(j)+"\t"+normalizedSim);
             }
+        }
     }
 
     public void LoadPrior(String fileName, double eta) {
@@ -216,81 +221,81 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 number_of_topics, d_alpha, d_beta);
     }
 
-    public void EM() {
-        System.out.format("Starting %s...\n", toString());
-
-        long starttime = System.currentTimeMillis();
-
-        m_collectCorpusStats = true;
-        initialize_probability(m_trainSet);
-
-        double delta = 0, last = 0, current = 0;
-        int i = 0, displayCount = 0;
-        do {
-
-            long eStartTime = System.currentTimeMillis();
-
-            init();
-            for(_Doc d:m_trainSet) {
-                calculate_E_step(d);
-                sampleX4Child(d);
-            }
-
-            long eEndTime = System.currentTimeMillis();
-
-            System.out.println("per iteration e step time\t"
-                    + (eEndTime - eStartTime) / 1000.0 + "\t seconds");
-
-            long mStartTime = System.currentTimeMillis();
-            calculate_M_step(i);
-            long mEndTime = System.currentTimeMillis();
-
-            System.out.println("per iteration m step time\t"
-                    + (mEndTime - mStartTime) / 1000.0 + "\t seconds");
-
-//            if (m_converge > 0
-//                    || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
-//                // required to display log-likelihood
-//                current = calculate_log_likelihood();
-//                // together with corpus-level log-likelihood
+//    public void EM() {
+//        System.out.format("Starting %s...\n", toString());
 //
-//                if (i > 0)
-//                    delta = (last - current) / last;
-//                else
-//                    delta = 1.0;
-//                last = current;
-//            }
-
-//            if (m_displayLap > 0 && i % m_displayLap == 0) {
-//                if (m_converge > 0) {
-//                    System.out.format(
-//                            "Likelihood %.3f at step %s converge to %f...\n",
-//                            current, i, delta);
-//                    infoWriter.format(
-//                            "Likelihood %.3f at step %s converge to %f...\n",
-//                            current, i, delta);
+//        long starttime = System.currentTimeMillis();
 //
-//                } else {
-//                    System.out.print(".");
-//                    if (displayCount > 6) {
-//                        System.out.format("\t%d:%.3f\n", i, current);
-//                        infoWriter.format("\t%d:%.3f\n", i, current);
-//                    }
-//                    displayCount++;
-//                }
+//        m_collectCorpusStats = true;
+//        initialize_probability(m_trainSet);
+//
+//        double delta = 0, last = 0, current = 0;
+//        int i = 0, displayCount = 0;
+//        do {
+//
+//            long eStartTime = System.currentTimeMillis();
+//
+//            init();
+//            for(_Doc d:m_trainSet) {
+//                calculate_E_step(d);
+//                sampleX4Child(d);
 //            }
-
-//            if (m_converge > 0 && Math.abs(delta) < m_converge)
-//                break;// to speed-up, we don't need to compute likelihood in
-            // many cases
-        } while (++i < this.number_of_iteration);
-
-        finalEst();
-
-//        long endtime = System.currentTimeMillis() - starttime;
-//        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
-//        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
-    }
+//
+//            long eEndTime = System.currentTimeMillis();
+//
+//            System.out.println("per iteration e step time\t"
+//                    + (eEndTime - eStartTime) / 1000.0 + "\t seconds");
+//
+//            long mStartTime = System.currentTimeMillis();
+//            calculate_M_step(i);
+//            long mEndTime = System.currentTimeMillis();
+//
+//            System.out.println("per iteration m step time\t"
+//                    + (mEndTime - mStartTime) / 1000.0 + "\t seconds");
+//
+////            if (m_converge > 0
+////                    || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
+////                // required to display log-likelihood
+////                current = calculate_log_likelihood();
+////                // together with corpus-level log-likelihood
+////
+////                if (i > 0)
+////                    delta = (last - current) / last;
+////                else
+////                    delta = 1.0;
+////                last = current;
+////            }
+//
+////            if (m_displayLap > 0 && i % m_displayLap == 0) {
+////                if (m_converge > 0) {
+////                    System.out.format(
+////                            "Likelihood %.3f at step %s converge to %f...\n",
+////                            current, i, delta);
+////                    infoWriter.format(
+////                            "Likelihood %.3f at step %s converge to %f...\n",
+////                            current, i, delta);
+////
+////                } else {
+////                    System.out.print(".");
+////                    if (displayCount > 6) {
+////                        System.out.format("\t%d:%.3f\n", i, current);
+////                        infoWriter.format("\t%d:%.3f\n", i, current);
+////                    }
+////                    displayCount++;
+////                }
+////            }
+//
+////            if (m_converge > 0 && Math.abs(delta) < m_converge)
+////                break;// to speed-up, we don't need to compute likelihood in
+//            // many cases
+//        } while (++i < this.number_of_iteration);
+//
+//        finalEst();
+//
+////        long endtime = System.currentTimeMillis() - starttime;
+////        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
+////        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
+//    }
 
     @Override
     protected void sampleInParentDoc(_Doc d){
@@ -318,13 +323,15 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
             for(int k=0; k<number_of_topics; k++){
                 double wordTopicProbfromCommentWordEmbed = parentWordByTopicProbFromCommentWordEmbed(wid, tid, k, pDoc);
-                double wordTopicProbfromCommentPhi = parentWordTopicProbfromCommentPhi(tid, pDoc);
-                double wordTopicProbInDoc = parentWordByTopicProb(wid, tid);
-                double topicProbfromComment = parentChildInfluenceProb(tid, pDoc);
-                double topicProbInDoc = parentTopicInDocProb(tid, pDoc);
+                double wordTopicProbfromCommentPhi = parentWordTopicProbfromCommentPhi(k, pDoc);
+                double wordTopicProbInDoc = parentWordByTopicProb(k, wid);
+                double topicProbfromComment = parentChildInfluenceProb(k, pDoc);
+                double topicProbInDoc = parentTopicInDocProb(k, pDoc);
 
                 m_topicProbCache[k] = wordTopicProbfromCommentWordEmbed*wordTopicProbfromCommentPhi
                         *wordTopicProbInDoc*topicProbfromComment*topicProbInDoc;
+
+//                m_topicProbCache[k] = wordTopicProbInDoc*topicProbfromComment*topicProbInDoc;
                 normalizedProb += m_topicProbCache[k];
             }
 
@@ -332,7 +339,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
             for(tid=0; tid<number_of_topics; tid++){
                 normalizedProb -= m_topicProbCache[tid];
-                if(normalizedProb<=0)
+                if(normalizedProb<0)
                     break;
             }
 
@@ -359,9 +366,11 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         double wordTopicProb = 1.0;
 
         for(int wid=0; wid<vocabulary_size; wid++){
-            double widNum = pDoc.m_commentThread_wordSS[0][samplePTId][wid];
-            for(int i=0; i<widNum; i++)
+            double widNum = pDoc.m_commentThread_wordSS[1][samplePTId][wid];
+            for(int i=0; i<widNum; i++) {
                 wordTopicProb *= wordByTopicEmbedInComm(curPWId, curPTId, wid, samplePTId, pDoc);
+//                System.out.println("error we should not jump here");
+            }
 
         }
 
@@ -376,15 +385,16 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
         double commentThreadWordSS =0;
         for(int v=0; v<vocabulary_size; v++){
-            for(int n=0; n<pDoc.m_commentThread_wordSS[0][tid][v]; n++){
+            double wordSS = pDoc.m_commentThread_wordSS[0][tid][v];
+            for(int n=0; n<wordSS; n++){
                 numerator *= (word_topic_sstat[tid][v]+n);
             }
 
-            commentThreadWordSS += pDoc.m_commentThread_wordSS[0][tid][v];
+            commentThreadWordSS += wordSS;
         }
 
         for(int n=0; n<commentThreadWordSS; n++){
-            denominator *= (d_beta*vocabulary_size+n+m_sstat[tid]);
+            denominator *= (n+m_sstat[tid]);
         }
 
         wordTopicProb=numerator/denominator;
@@ -392,7 +402,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         return wordTopicProb;
     }
 
-    protected double parentWordByTopicProb(int wid, int tid){
+    protected double parentWordByTopicProb(int tid, int wid){
         double wordTopicProb = 0;
 
         wordTopicProb = word_topic_sstat[tid][wid]/m_sstat[tid];
@@ -406,10 +416,11 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         _ChildDoc cDoc = (_ChildDoc)d;
         _ParentDoc4WordEmbedding pDoc = (_ParentDoc4WordEmbedding)(cDoc.m_parentDoc);
 
-        for(_Word w:d.getWords()){
+        for(_Word w:cDoc.getWords()){
             double normalizedProb = 0.0;
             wid = w.getIndex();
             tid = w.getTopic();
+//            xid = 0;
             xid = w.getX();
 
             cDoc.m_sstat[tid]--;
@@ -418,7 +429,6 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 if (m_collectCorpusStats) {
                     word_topic_sstat[tid][wid]--;
                     m_sstat[tid] --;
-
                 }
             }
 
@@ -439,7 +449,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             normalizedProb *= m_rand.nextDouble();
             for(tid=0; tid<number_of_topics; tid++){
                 normalizedProb -= m_topicProbCache[tid];
-                if(normalizedProb<=0)
+                if(normalizedProb<0)
                     break;
             }
 
@@ -493,7 +503,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             normalizedProb += m_xProbCache[0];
             normalizedProb += m_xProbCache[1];
 
-            normalizedProb *= normalizedProb*m_rand.nextDouble();
+            normalizedProb *= m_rand.nextDouble();
             if(normalizedProb<=m_xProbCache[0])
                 xid = 0;
             else
@@ -534,9 +544,47 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             normalizedTerm += m_wordSimVec[curPWId];
         }
 
+        if(wordEmbeddingSim==0.0){
+            System.out.println("zero similarity for topic\t"+cTId);
+        }
+
+        wordEmbeddingSim += d_beta;
+        normalizedTerm += d_beta*vocabulary_size;
         wordEmbeddingSim /= normalizedTerm;
         return wordEmbeddingSim;
     }
+//
+//    protected double wordByTopicEmbedInComm(int curPWId, int curPTId, int cWId, int cTId, _ParentDoc pDoc){
+//        double wordEmbeddingSim = 0.0;
+//
+//        double normalizedTerm = 0.0;
+//
+//        for (_Word pWord : pDoc.getWords()) {
+//            int pWId = pWord.getIndex();
+//            int pTId = pWord.getTopic();
+//
+//            if (pTId != cTId)
+//                continue;
+//
+//            if (pWId == cWId) {
+//                wordEmbeddingSim += 1;
+//            }
+//
+//        }
+//
+//        if(curPTId != cTId){
+//            if(curPWId==cWId)
+//                wordEmbeddingSim += 1;
+//            normalizedTerm += 1;
+//        }
+//
+//        normalizedTerm += pDoc.m_sstat[cTId];
+//        wordEmbeddingSim += d_beta;
+//        normalizedTerm += d_beta*vocabulary_size;
+//
+//        wordEmbeddingSim /= normalizedTerm;
+//        return wordEmbeddingSim;
+//    }
 
     protected double wordByTopicEmbedInComm(int wid, int tid, _ParentDoc pDoc){
         double wordEmbeddingSim = 0.0;
@@ -555,9 +603,41 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             normalizedTerm += m_wordSimVec[pWId];
         }
 
+        if(wordEmbeddingSim==0.0){
+            System.out.println("zero similarity for topic\t"+tid);
+        }
+
+        wordEmbeddingSim += d_beta;
+        normalizedTerm += d_beta*vocabulary_size;
+
         wordEmbeddingSim /= normalizedTerm;
         return wordEmbeddingSim;
     }
+
+//    protected double wordByTopicEmbedInComm(int wid, int tid, _ParentDoc pDoc){
+//        double wordEmbeddingSim = 0.0;
+//
+//        double normalizedTerm = 0.0;
+//
+//        for (_Word pWord : pDoc.getWords()) {
+//            int pWId = pWord.getIndex();
+//            int pTId = pWord.getTopic();
+//
+//            if (pTId != tid)
+//                continue;
+//
+//            if(pWId == wid){
+//                wordEmbeddingSim += 1;
+//            }
+//
+//        }
+//
+//        wordEmbeddingSim += d_beta;
+//        normalizedTerm = pDoc.m_sstat[tid]+d_beta*vocabulary_size;
+//
+//        wordEmbeddingSim /= normalizedTerm;
+//        return wordEmbeddingSim;
+//    }
 
     protected double wordByTopicProbInComm(int wid, int tid){
         double wordTopicProb = 0.0;
@@ -582,9 +662,9 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             _ChildDoc cDoc = (_ChildDoc)d;
             for(int k=0; k<number_of_topics; k++)
                 cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k];
-
-            for(int x=0; x<m_gamma.length; x++)
-                cDoc.m_xProportion[x] += cDoc.m_xSstat[x]+m_gamma[x];
+//
+//            for(int x=0; x<m_gamma.length; x++)
+//                cDoc.m_xProportion[x] += cDoc.m_xSstat[x]+m_gamma[x];
         }
     }
 
@@ -607,7 +687,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         }else{
             _ChildDoc cDoc = (_ChildDoc)d;
             Utils.L1Normalization(cDoc.m_topics);
-            Utils.L1Normalization(cDoc.m_xProportion);
+//            Utils.L1Normalization(cDoc.m_xProportion);
         }
     }
 

@@ -130,6 +130,7 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 //        discoverSpecificComments(similarityFile);
 //        printEntropy(filePrefix);
         printTopKChild4Parent(filePrefix, topKChild);
+        printXVal(filePrefix);
 //        printTopKChild4Stn(filePrefix, topKChild);
 //        printTopKChild4StnWithHybrid(filePrefix, topKChild);
 //        printTopKChild4StnWithHybridPro(filePrefix, topKChild);
@@ -292,4 +293,18 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
         return childSim;
     }
 
+    protected void printXVal(String filePrefix){
+        String xValFile = filePrefix+"xVal.txt";
+        try{
+            PrintWriter pw = new PrintWriter(new File(xValFile));
+            for(_Doc d:m_trainSet){
+                if (d instanceof _ParentDoc){
+                    for(_ChildDoc cDoc:((_ParentDoc) d).m_childDocs )
+                    pw.println(cDoc.getName()+"\t"+cDoc.m_xProportion[0]+"\t"+cDoc.m_xProportion[1]);
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 }
