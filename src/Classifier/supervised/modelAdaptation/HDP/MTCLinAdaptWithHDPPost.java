@@ -119,8 +119,7 @@ public class MTCLinAdaptWithHDPPost extends MTCLinAdaptWithHDP {
 		//Step 1: sample gamma based on the current assignment.
 		sampleGamma(); // why for loop BETA_K times?
 		
-		//Step 2: Optimize language model parameters with MLE.
-		//Step 3: Optimize logistic regression parameters with lbfgs.
+		//Step 2: Optimize logistic regression parameters with lbfgs.
 		return estPhi();
 	}
 }

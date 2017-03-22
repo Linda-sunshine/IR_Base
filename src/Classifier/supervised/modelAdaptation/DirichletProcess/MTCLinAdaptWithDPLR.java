@@ -47,7 +47,7 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 			user = (_DPAdaptStruct) m_userList.get(i);
 			cNo = user.getThetaStar().getIndex();
 			for(_Review r: user.getReviews()){
-				if(r.getType() == rType.ADAPTATION){
+				if(r.getType() == rType.ADAPTATION && user.evaluateTrainReview(r) == r.getYLabel()){
 					r.setClusterNo(cNo);
 					m_lrTrainSet.add(r);
 				}
@@ -55,6 +55,7 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 		}
 		m_lr.train(m_lrTrainSet);
 	}
+
 	//apply current model in the assigned clusters to users
 	@Override
 	protected void evaluateModel() {
