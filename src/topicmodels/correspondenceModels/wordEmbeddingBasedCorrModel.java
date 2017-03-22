@@ -221,81 +221,81 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 number_of_topics, d_alpha, d_beta);
     }
 
-//    public void EM() {
-//        System.out.format("Starting %s...\n", toString());
+    public void EM() {
+        System.out.format("Starting %s...\n", toString());
+
+        long starttime = System.currentTimeMillis();
+
+        m_collectCorpusStats = true;
+        initialize_probability(m_trainSet);
+
+        double delta = 0, last = 0, current = 0;
+        int i = 0, displayCount = 0;
+        do {
+
+            long eStartTime = System.currentTimeMillis();
+
+            init();
+            for(_Doc d:m_trainSet) {
+                calculate_E_step(d);
+                sampleX4Child(d);
+            }
+
+            long eEndTime = System.currentTimeMillis();
+
+            System.out.println("per iteration e step time\t"
+                    + (eEndTime - eStartTime) / 1000.0 + "\t seconds");
+
+            long mStartTime = System.currentTimeMillis();
+            calculate_M_step(i);
+            long mEndTime = System.currentTimeMillis();
+
+            System.out.println("per iteration m step time\t"
+                    + (mEndTime - mStartTime) / 1000.0 + "\t seconds");
+
+//            if (m_converge > 0
+//                    || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
+//                // required to display log-likelihood
+//                current = calculate_log_likelihood();
+//                // together with corpus-level log-likelihood
 //
-//        long starttime = System.currentTimeMillis();
-//
-//        m_collectCorpusStats = true;
-//        initialize_probability(m_trainSet);
-//
-//        double delta = 0, last = 0, current = 0;
-//        int i = 0, displayCount = 0;
-//        do {
-//
-//            long eStartTime = System.currentTimeMillis();
-//
-//            init();
-//            for(_Doc d:m_trainSet) {
-//                calculate_E_step(d);
-//                sampleX4Child(d);
+//                if (i > 0)
+//                    delta = (last - current) / last;
+//                else
+//                    delta = 1.0;
+//                last = current;
 //            }
+
+//            if (m_displayLap > 0 && i % m_displayLap == 0) {
+//                if (m_converge > 0) {
+//                    System.out.format(
+//                            "Likelihood %.3f at step %s converge to %f...\n",
+//                            current, i, delta);
+//                    infoWriter.format(
+//                            "Likelihood %.3f at step %s converge to %f...\n",
+//                            current, i, delta);
 //
-//            long eEndTime = System.currentTimeMillis();
-//
-//            System.out.println("per iteration e step time\t"
-//                    + (eEndTime - eStartTime) / 1000.0 + "\t seconds");
-//
-//            long mStartTime = System.currentTimeMillis();
-//            calculate_M_step(i);
-//            long mEndTime = System.currentTimeMillis();
-//
-//            System.out.println("per iteration m step time\t"
-//                    + (mEndTime - mStartTime) / 1000.0 + "\t seconds");
-//
-////            if (m_converge > 0
-////                    || (m_displayLap > 0 && i % m_displayLap == 0 && displayCount > 6)) {
-////                // required to display log-likelihood
-////                current = calculate_log_likelihood();
-////                // together with corpus-level log-likelihood
-////
-////                if (i > 0)
-////                    delta = (last - current) / last;
-////                else
-////                    delta = 1.0;
-////                last = current;
-////            }
-//
-////            if (m_displayLap > 0 && i % m_displayLap == 0) {
-////                if (m_converge > 0) {
-////                    System.out.format(
-////                            "Likelihood %.3f at step %s converge to %f...\n",
-////                            current, i, delta);
-////                    infoWriter.format(
-////                            "Likelihood %.3f at step %s converge to %f...\n",
-////                            current, i, delta);
-////
-////                } else {
-////                    System.out.print(".");
-////                    if (displayCount > 6) {
-////                        System.out.format("\t%d:%.3f\n", i, current);
-////                        infoWriter.format("\t%d:%.3f\n", i, current);
-////                    }
-////                    displayCount++;
-////                }
-////            }
-//
-////            if (m_converge > 0 && Math.abs(delta) < m_converge)
-////                break;// to speed-up, we don't need to compute likelihood in
-//            // many cases
-//        } while (++i < this.number_of_iteration);
-//
-//        finalEst();
-//
-////        long endtime = System.currentTimeMillis() - starttime;
-////        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
-////        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
-//    }
+//                } else {
+//                    System.out.print(".");
+//                    if (displayCount > 6) {
+//                        System.out.format("\t%d:%.3f\n", i, current);
+//                        infoWriter.format("\t%d:%.3f\n", i, current);
+//                    }
+//                    displayCount++;
+//                }
+//            }
+
+//            if (m_converge > 0 && Math.abs(delta) < m_converge)
+//                break;// to speed-up, we don't need to compute likelihood in
+            // many cases
+        } while (++i < this.number_of_iteration);
+
+        finalEst();
+
+//        long endtime = System.currentTimeMillis() - starttime;
+//        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
+//        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
+    }
 
     @Override
     protected void sampleInParentDoc(_Doc d){
@@ -303,12 +303,12 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
         _ParentDoc4WordEmbedding pDoc = (_ParentDoc4WordEmbedding)d;
 
-        for(tid=0; tid< number_of_topics; tid++) {
-            for (wid = 0; wid < vocabulary_size; wid++) {
-                word_topic_sstat[tid][wid] -= pDoc.m_commentThread_wordSS[0][tid][wid];
-                m_sstat[tid] -= pDoc.m_commentThread_wordSS[0][tid][wid];
-            }
-        }
+//        for(tid=0; tid< number_of_topics; tid++) {
+//            for (wid = 0; wid < vocabulary_size; wid++) {
+//                word_topic_sstat[tid][wid] -= pDoc.m_commentThread_wordSS[0][tid][wid];
+//                m_sstat[tid] -= pDoc.m_commentThread_wordSS[0][tid][wid];
+//            }
+//        }
 
         for(_Word w:pDoc.getWords()){
             double normalizedProb = 0;
@@ -323,12 +323,12 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
             for(int k=0; k<number_of_topics; k++){
                 double wordTopicProbfromCommentWordEmbed = parentWordByTopicProbFromCommentWordEmbed(wid, tid, k, pDoc);
-                double wordTopicProbfromCommentPhi = parentWordTopicProbfromCommentPhi(k, pDoc);
-                double wordTopicProbInDoc = parentWordByTopicProb(k, wid);
+//                double wordTopicProbfromCommentPhi = parentWordTopicProbfromCommentPhi(k, pDoc);
+                double wordTopicProbInDoc = parentWordByTopicProb(k, wid)/parentWordByTopicProb(0, wid);
                 double topicProbfromComment = parentChildInfluenceProb(k, pDoc);
                 double topicProbInDoc = parentTopicInDocProb(k, pDoc);
 
-                m_topicProbCache[k] = wordTopicProbfromCommentWordEmbed*wordTopicProbfromCommentPhi
+                m_topicProbCache[k] = wordTopicProbfromCommentWordEmbed
                         *wordTopicProbInDoc*topicProbfromComment*topicProbInDoc;
 
 //                m_topicProbCache[k] = wordTopicProbInDoc*topicProbfromComment*topicProbInDoc;
@@ -353,12 +353,12 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
         }
 
-        for(tid=0; tid< number_of_topics; tid++) {
-            for (wid = 0; wid < vocabulary_size; wid++) {
-                word_topic_sstat[tid][wid] += pDoc.m_commentThread_wordSS[0][tid][wid];
-                m_sstat[tid] += pDoc.m_commentThread_wordSS[0][tid][wid];
-            }
-        }
+//        for(tid=0; tid< number_of_topics; tid++) {
+//            for (wid = 0; wid < vocabulary_size; wid++) {
+//                word_topic_sstat[tid][wid] += pDoc.m_commentThread_wordSS[0][tid][wid];
+//                m_sstat[tid] += pDoc.m_commentThread_wordSS[0][tid][wid];
+//            }
+//        }
 
     }
 
