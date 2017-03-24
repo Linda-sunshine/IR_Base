@@ -47,9 +47,14 @@ public class _HDPThetaStar extends _thetaStar {
 	public void clearLMStat(){
 		Arrays.fill(m_lmStat, 0);
 	}
+	
 	public void addLMStat(_SparseFeature[] fvs){
 		for(_SparseFeature fv: fvs)
 			m_lmStat[fv.getIndex()] += fv.getValue();
+	}
+	public void rmLMStat(_SparseFeature[] fvs){
+		for(_SparseFeature fv: fvs)
+			m_lmStat[fv.getIndex()] -= fv.getValue();
 	}
 	public double[] getLMStat(){
 		return m_lmStat;

@@ -178,7 +178,7 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
+//			System.out.print(String.format("gammak: %.5f\tlikehood y: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
@@ -218,8 +218,6 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
-		//****//
-//		m_hdpThetaStars[k].initLMStat(fvs, m_lmDim);
 		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
@@ -621,7 +619,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo(i%5==0);//no need to print out the details very often
+//			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
