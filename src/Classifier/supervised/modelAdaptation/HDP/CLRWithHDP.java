@@ -151,7 +151,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, logSum = 0, gamma_k;
+		double likelihood, lx = 0, ly = 0, logSum = 0, gamma_k;
 		int k;
 		
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
@@ -163,10 +163,12 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of y, i.e., p(y|x,\phi)
-			likelihood = calcLogLikelihoodY(r);
+			ly = calcLogLikelihoodY(r);
+			likelihood = ly;
 			
 			//log likelihood of x, i.e., p(x|\psi)
-			likelihood += calcLogLikelihoodX(r);
+			lx = calcLogLikelihoodX(r);
+			likelihood += lx;
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -178,11 +180,11 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print(String.format("gammak: %.5f\tlikehood y: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
+			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1

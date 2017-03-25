@@ -88,7 +88,7 @@ public class MTCLinAdaptWithHDPPost extends MTCLinAdaptWithHDP {
 		
 		if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
 //			curThetaStar.resetPsiModel();
-			// just for checkig purpose, to see if every dim gets 0 count.
+			// just for checking purpose, to see if every dim gets 0 count.
 			LMStatSanityCheck(curThetaStar);
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);

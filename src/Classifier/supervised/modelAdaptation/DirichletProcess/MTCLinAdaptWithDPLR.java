@@ -35,7 +35,7 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 	double m_lambda = 1; // parameter used in lr.
 	LogisticRegression4DP m_lr;
 	ArrayList<_Doc> m_lrTrainSet = new ArrayList<_Doc>();
-	
+	int count = 0;
 	// collect the training reviews and train the lr model.
 	public void buildLogisticRegression(){
 		int cNo = 0;
@@ -47,12 +47,16 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 			user = (_DPAdaptStruct) m_userList.get(i);
 			cNo = user.getThetaStar().getIndex();
 			for(_Review r: user.getReviews()){
-				if(r.getType() == rType.ADAPTATION && user.evaluateTrainReview(r) == r.getYLabel()){
-					r.setClusterNo(cNo);
-					m_lrTrainSet.add(r);
+				if(r.getType() == rType.ADAPTATION){
+					if(user.evaluateTrainReview(r) == r.getYLabel()){
+						r.setClusterNo(cNo);
+						m_lrTrainSet.add(r);
+					} else
+						count++;
 				}
 			}
 		}
+		System.out.println("[Info]" + count);
 		m_lr.train(m_lrTrainSet);
 	}
 
