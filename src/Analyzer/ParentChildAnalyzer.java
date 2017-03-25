@@ -91,10 +91,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
-//				content, 0);
-        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title,
-                content, 0);
+//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
 
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {

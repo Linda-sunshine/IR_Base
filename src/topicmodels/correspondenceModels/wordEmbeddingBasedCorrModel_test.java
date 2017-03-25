@@ -106,6 +106,12 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             parentChildTopicDistributionFolder.mkdir();
         }
 
+        File xFolder = new File(filePrefix+"xAssignment");
+        if(!xFolder.exists()){
+            System.out.println("creating directory for x assignment"+xFolder);
+            xFolder.mkdir();
+        }
+
         for (_Doc d : m_trainSet) {
             if (d instanceof _ParentDoc) {
                 printParentTopicAssignment(d, topicFolder);
@@ -113,6 +119,7 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 
             } else if (d instanceof _ChildDoc) {
                 printChildTopicAssignment(d, topicFolder);
+                printXAssignment(d, xFolder);
             }
             // if(d instanceof _ParentDoc){
             // printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
@@ -131,6 +138,7 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 //        printEntropy(filePrefix);
         printTopKChild4Parent(filePrefix, topKChild);
         printXVal(filePrefix);
+
 //        printTopKChild4Stn(filePrefix, topKChild);
 //        printTopKChild4StnWithHybrid(filePrefix, topKChild);
 //        printTopKChild4StnWithHybridPro(filePrefix, topKChild);
@@ -303,6 +311,25 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
                     pw.println(cDoc.getName()+"\t"+cDoc.m_xProportion[0]+"\t"+cDoc.m_xProportion[1]);
                 }
             }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    protected void printXAssignment(_Doc d, File xFolder){
+        String xFile = d.getName()+".txt";
+        try{
+            PrintWriter pw = new PrintWriter(new File(xFolder, xFile));
+            for(_Word w:d.getWords()){
+                int wId = w.getIndex();
+                int xId = w.getX();
+
+                String featureName = m_corpus.getFeature(wId);
+                pw.print(featureName+":"+xId+":"+w.getXProb()+"\t");
+            }
+
+            pw.flush();
+            pw.close();
         }catch(Exception e){
             e.printStackTrace();
         }

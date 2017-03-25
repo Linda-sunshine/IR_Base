@@ -79,6 +79,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
     }
 
     public void loadWordSim4Corpus(String wordSimFileName){
+        double simThreshold = 1;
         if(wordSimFileName == null||wordSimFileName.isEmpty()){
             return;
         }
@@ -142,20 +143,24 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                     lineIndex ++;
                 }
             }
-            normalizeSim(maxSim, minSim);
+            normalizeSim(maxSim, minSim, simThreshold);
         }catch (Exception e){
             e.printStackTrace();
         }
     }
 
-    public void normalizeSim(double maxSim, double minSim){
+    public void normalizeSim(double maxSim, double minSim, double threshold){
         for(int i=0; i<vocabulary_size; i++) {
             m_wordSimVec[i] = 0;
             for (int j = 0; j < vocabulary_size; j++) {
 //                System.out.println("word \t"+m_corpus.getFeature(i)+"\t j\t"+m_corpus.getFeature(j)+"\t"+m_wordSimMatrix[i][j]+"after");
                 double normalizedSim = (m_wordSimMatrix[i][j] - minSim) / (maxSim - minSim);
-                m_wordSimMatrix[i][j] = normalizedSim;
-                m_wordSimVec[i] += normalizedSim;
+
+                if(normalizedSim< threshold)
+                    m_wordSimMatrix[i][j] = 0;
+                else
+                    m_wordSimMatrix[i][j] = normalizedSim;
+                    m_wordSimVec[i] += normalizedSim;
 //                System.out.println("word \t"+m_corpus.getFeature(i)+"\t j\t"+m_corpus.getFeature(j)+"\t"+normalizedSim);
             }
         }
@@ -239,6 +244,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             for(_Doc d:m_trainSet) {
                 calculate_E_step(d);
                 sampleX4Child(d);
+                sanityCheck(d);
             }
 
             long eEndTime = System.currentTimeMillis();
@@ -295,6 +301,32 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 //        long endtime = System.currentTimeMillis() - starttime;
 //        System.out.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
 //        infoWriter.format("Likelihood %.3f after step %s converge to %f after %d seconds...\n", current, i, delta, endtime / 1000);
+    }
+
+    protected void sanityCheck(_Doc d){
+        if(d instanceof _ParentDoc){
+            double cWordNumInSS = 0.0;
+            _ParentDoc4WordEmbedding pDoc = (_ParentDoc4WordEmbedding)d;
+
+            for(int x=0; x<m_gamma.length; x++){
+                for(int k=0; k<number_of_topics; k++){
+                    for(int v=0; v<vocabulary_size; v++){
+                        cWordNumInSS += pDoc.m_commentThread_wordSS[x][k][v];
+                    }
+                }
+            }
+
+            double cWordNum = 0.0;
+            for(_ChildDoc cDoc:pDoc.m_childDocs){
+                cWordNum += cDoc.getTotalDocLength();
+            }
+
+            if(cWordNum==cWordNumInSS){
+//                System.out.println("pass sanityCheck");
+            }else{
+//                System.out.println("Wuwu, wrong sanityCheck");
+            }
+        }
     }
 
     @Override
@@ -366,39 +398,19 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         double wordTopicProb = 1.0;
 
         for(int wid=0; wid<vocabulary_size; wid++){
-            double widNum = pDoc.m_commentThread_wordSS[1][samplePTId][wid];
-            for(int i=0; i<widNum; i++) {
-                wordTopicProb *= wordByTopicEmbedInComm(curPWId, curPTId, wid, samplePTId, pDoc);
-//                System.out.println("error we should not jump here");
+            double widNum4SamplePTId = pDoc.m_commentThread_wordSS[1][samplePTId][wid];
+            for (int i = 0; i < widNum4SamplePTId; i++) {
+                wordTopicProb *= wordByTopicEmbedInComm(curPWId, curPTId, wid, samplePTId, samplePTId, pDoc);
+                wordTopicProb /= wordByTopicEmbedInComm(curPWId, curPTId, wid, samplePTId, 0, pDoc);
+            }
+
+            double widNum4Sample0 = pDoc.m_commentThread_wordSS[1][0][wid];
+            for (int i = 0; i < widNum4Sample0; i++) {
+                wordTopicProb /= wordByTopicEmbedInComm(curPWId, curPTId, wid, 0, 0, pDoc);
+                wordTopicProb *= wordByTopicEmbedInComm(curPWId, curPTId, wid, 0, samplePTId, pDoc);
             }
 
         }
-
-        return wordTopicProb;
-    }
-
-    protected double parentWordTopicProbfromCommentPhi(int tid, _ParentDoc4WordEmbedding pDoc){
-        double wordTopicProb = 0.0;
-
-        double numerator = 1.0;
-        double denominator = 1.0;
-
-        double commentThreadWordSS =0;
-        for(int v=0; v<vocabulary_size; v++){
-            double wordSS = pDoc.m_commentThread_wordSS[0][tid][v];
-            for(int n=0; n<wordSS; n++){
-                numerator *= (word_topic_sstat[tid][v]+n);
-            }
-
-            commentThreadWordSS += wordSS;
-        }
-
-        for(int n=0; n<commentThreadWordSS; n++){
-            denominator *= (n+m_sstat[tid]);
-        }
-
-        wordTopicProb=numerator/denominator;
-//        System.out.println("parentWordTopicProbfromCommentPhi, numerator\t"+numerator+"\tdenominator\t"+denominator+"\t prob\t"+wordTopicProb);
         return wordTopicProb;
     }
 
@@ -424,8 +436,9 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             xid = w.getX();
 
             cDoc.m_sstat[tid]--;
+            pDoc.m_commentThread_wordSS[xid][tid][wid]--;
+
             if(xid==0) {
-                pDoc.m_commentThread_wordSS[xid][tid][wid]--;
                 if (m_collectCorpusStats) {
                     word_topic_sstat[tid][wid]--;
                     m_sstat[tid] --;
@@ -459,8 +472,8 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             w.setTopic(tid);
             cDoc.m_sstat[tid]++;
 
+            pDoc.m_commentThread_wordSS[xid][tid][wid]++;
             if(xid==0) {
-                pDoc.m_commentThread_wordSS[xid][tid][wid]++;
                 if (m_collectCorpusStats) {
                     word_topic_sstat[tid][wid]++;
                     m_sstat[tid] ++;
@@ -522,7 +535,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
     //this one is specially designed for the change of the topic of the word in the article
     //cTId is the topic to be assigned to the word in the article
-    protected double wordByTopicEmbedInComm(int curPWId, int curPTId, int cWId, int cTId, _ParentDoc pDoc){
+    protected double wordByTopicEmbedInComm(int curPWId, int curPTId, int cWId, int cTId, int samplePTId, _ParentDoc pDoc){
         double wordEmbeddingSim = 0.0;
 
         double normalizedTerm = 0.0;
@@ -540,12 +553,17 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         }
 
         if(curPTId != cTId){
+            wordEmbeddingSim -= m_wordSimMatrix[cWId][curPWId];
+            normalizedTerm -= m_wordSimVec[curPWId];
+        }
+
+        if(samplePTId == cTId){
             wordEmbeddingSim += m_wordSimMatrix[cWId][curPWId];
             normalizedTerm += m_wordSimVec[curPWId];
         }
 
         if(wordEmbeddingSim==0.0){
-            System.out.println("zero similarity for topic\t"+cTId);
+//            System.out.println("zero similarity for topic sampling parent\t"+cTId);
         }
 
         wordEmbeddingSim += d_beta;
@@ -553,6 +571,9 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         wordEmbeddingSim /= normalizedTerm;
         return wordEmbeddingSim;
     }
+
+
+
 //
 //    protected double wordByTopicEmbedInComm(int curPWId, int curPTId, int cWId, int cTId, _ParentDoc pDoc){
 //        double wordEmbeddingSim = 0.0;
@@ -599,12 +620,13 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 continue;
 
             double wordCosSim = m_wordSimMatrix[wid][pWId];
+
             wordEmbeddingSim += wordCosSim;
             normalizedTerm += m_wordSimVec[pWId];
         }
 
         if(wordEmbeddingSim==0.0){
-            System.out.println("zero similarity for topic\t"+tid);
+//            System.out.println("zero similarity for topic child\t"+tid);
         }
 
         wordEmbeddingSim += d_beta;
@@ -663,8 +685,12 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             for(int k=0; k<number_of_topics; k++)
                 cDoc.m_topics[k] += cDoc.m_sstat[k]+m_alpha_c[k];
 //
-//            for(int x=0; x<m_gamma.length; x++)
-//                cDoc.m_xProportion[x] += cDoc.m_xSstat[x]+m_gamma[x];
+            for(int x=0; x<m_gamma.length; x++)
+                cDoc.m_xProportion[x] += cDoc.m_xSstat[x]+m_gamma[x];
+
+            for(_Word w:d.getWords()){
+                w.collectXStats();
+            }
         }
     }
 
@@ -687,7 +713,11 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         }else{
             _ChildDoc cDoc = (_ChildDoc)d;
             Utils.L1Normalization(cDoc.m_topics);
-//            Utils.L1Normalization(cDoc.m_xProportion);
+            Utils.L1Normalization(cDoc.m_xProportion);
+
+            for(_Word w:d.getWords()){
+                w.getXProb();
+            }
         }
     }
 
