@@ -151,7 +151,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, logSum = 0, gamma_k;
+		double likelihood, lx = 0, ly = 0, logSum = 0, gamma_k;
 		int k;
 		
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
@@ -163,10 +163,12 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 			
 			//log likelihood of y, i.e., p(y|x,\phi)
-			likelihood = calcLogLikelihoodY(r);
+			ly = calcLogLikelihoodY(r);
+			likelihood = ly;
 			
 			//log likelihood of x, i.e., p(x|\psi)
-			likelihood += calcLogLikelihoodX(r);
+			lx = calcLogLikelihoodX(r);
+			likelihood += lx;
 			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -178,11 +180,11 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print(String.format("gammak: %.5f\tlikehood: %.5f\tlogsum:%.5f\n", gamma_k, likelihood, logSum));
+			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
@@ -218,8 +220,6 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initPsiModel(m_lmDim);
 		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
-		//****//
-//		m_hdpThetaStars[k].initLMStat(fvs, m_lmDim);
 		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
@@ -621,7 +621,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo(i%5==0);//no need to print out the details very often
+//			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
