@@ -65,10 +65,22 @@ public class corrLDA_Gibbs extends LDAGibbs4AC {
 	public double calculate_E_step(_Doc d){
 		d.permutation();
 		
-		if(d instanceof _ParentDoc)
+		if(d instanceof _ParentDoc) {
+			long eStartTime = System.currentTimeMillis();
 			sampleInParentDoc(d);
-		else if(d instanceof _ChildDoc)
+			long eEndTime = System.currentTimeMillis();
+
+			System.out.println("per iteration time 4 pDoc\t"
+					+ (eEndTime - eStartTime) / 1000.0 + "\t seconds");
+		}
+		else if(d instanceof _ChildDoc) {
+			long eStartTime = System.currentTimeMillis();
 			sampleInChildDoc(d);
+			long eEndTime = System.currentTimeMillis();
+
+			System.out.println("per iteration time 4 cDoc\t"
+					+ (eEndTime - eStartTime) / 1000.0 + "\t seconds");
+		}
 		
 		return 0;
 	}

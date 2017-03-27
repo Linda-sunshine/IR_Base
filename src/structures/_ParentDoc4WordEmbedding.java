@@ -10,6 +10,8 @@ import java.util.HashMap;
  */
 public class _ParentDoc4WordEmbedding extends _ParentDoc {
     public double[][][] m_commentThread_wordSS;
+    public double[][][] m_commentWordEmbed_simSS; ////used to store the similarity and dissimilarity
+    public double[][] m_commentWordEmbed_normSimSS; //// used to store the normalized similarity and dissimilarity
 
     public _ParentDoc4WordEmbedding(int ID, String name, String title, String source, int ylabel){
         super(ID, name, title, source, ylabel);
@@ -19,6 +21,9 @@ public class _ParentDoc4WordEmbedding extends _ParentDoc {
         createSpace(k, alpha);
 
         m_commentThread_wordSS = new double[gammaSize][k][vocSize];
+        m_commentWordEmbed_simSS = new double[k][vocSize][2];
+
+        m_commentWordEmbed_normSimSS = new double[k][2];
 
         int wIndex = 0, wid, tid;
         for (_SparseFeature fv : m_x_sparse) {
