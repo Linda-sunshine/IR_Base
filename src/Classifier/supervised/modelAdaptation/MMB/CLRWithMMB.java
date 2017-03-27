@@ -333,8 +333,8 @@ public class CLRWithMMB extends CLRWithHDP {
 	public void sampleNewCluster(int k, _SparseFeature[] fvs){		
 		super.sampleNewCluster(k, fvs);
 		// we need to sample the values for B and the new one is in index kBar-1 since kBar has increased.
-		m_hdpThetaStars[m_kBar-1].initB();
-		sampleB(m_hdpThetaStars[m_kBar-1]);
+//		m_hdpThetaStars[m_kBar-1].initB();
+//		sampleB(m_hdpThetaStars[m_kBar-1]);
 	}
 	
 	// Sample new cluster based on sampling of z_{i->j}, thus, the cluster will have edges info.
@@ -350,41 +350,61 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_D0.sampling(m_hdpThetaStars[m_kBar].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
 		
 		// we have edge info for sampling of B
-		m_hdpThetaStars[m_kBar].initB();
-		sampleB(m_hdpThetaStars[m_kBar]);
+//		m_hdpThetaStars[m_kBar].initB();
+//		sampleB(m_hdpThetaStars[m_kBar]);
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[m_kBar].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
 		m_kBar++;
 	}
-	// sample each element of the vector, including the new cluster.
-	public void sampleB(_HDPThetaStar theta){
-		// Add itself.
-		theta.addOneB(theta, m_Beta.sample());
-		for(int k=0; k<m_kBar; k++){
-			double b1 = m_Beta.sample(), b2 = m_Beta.sample();
-			if(b1 > 1 || b2 > 1)
-				System.out.println("Wrong probability!!");
-			// add the prob between B_{existing theta, new theta} to the hashmap. 
-			m_hdpThetaStars[k].addOneB(theta, b1);
-			// add the prob between B_{new theta, existing theta} to the hashmap. 
-			theta.addOneB(m_hdpThetaStars[k], b2);
-		}
-	}
+//	// sample each element of the vector, including the new cluster.
+//	public void sampleB(_HDPThetaStar theta){
+//		// Add itself.
+//		theta.addOneB(theta, m_Beta.sample());
+//		for(int k=0; k<m_kBar; k++){
+//			double b1 = m_Beta.sample(), b2 = m_Beta.sample();
+//			if(b1 > 1 || b2 > 1)
+//				System.out.println("Wrong probability!!");
+//			// add the prob between B_{existing theta, new theta} to the hashmap. 
+//			m_hdpThetaStars[k].addOneB(theta, b1);
+//			// add the prob between B_{new theta, existing theta} to the hashmap. 
+//			theta.addOneB(m_hdpThetaStars[k], b2);
+//		}
+//	}
 	
+//	// The function calculates the likelihood given by one edge from mmb model.
+//	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
+//		if(ui.hasEdge(uj)){
+//			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
+//			double bij = ui.getOneNeighbor(uj).getHDPThetaStar().getOneB(uj.getOneNeighbor(uj).getHDPThetaStar());
+//			double loglikelihood = 0;
+//			loglikelihood = e == 0 ? (1 - bij) : bij;
+//			loglikelihood = Math.log(loglikelihood);
+//			return loglikelihood;
+//		} else{
+//			return m_pNew[e];
+//		}
+//	}
 	// The function calculates the likelihood given by one edge from mmb model.
 	protected double calcLogLikelihoodE(_HDPAdaptStruct ui, _HDPAdaptStruct uj, int e){
+		_HDPThetaStar theta;
+		double likelihood = 0;
+		// Likelihood for e=0: 1/(a+b+e_0+e_1+1)*(b+e_0+1)
+		// Likelihood for e=1: 1/(a+b+e_0+e_1+1)*(a+e_1+1)
 		if(ui.hasEdge(uj)){
-			// probability for Bernoulli distribution: p(e_ij|z_{i->j}, z_{j->i},B)
-			double bij = ui.getOneNeighbor(uj).getHDPThetaStar().getOneB(uj.getOneNeighbor(uj).getHDPThetaStar());
-			double loglikelihood = 0;
-			loglikelihood = e == 0 ? (1 - bij) : bij;
-			loglikelihood = Math.log(loglikelihood);
-			return loglikelihood;
+			theta = ui.getOneNeighbor(uj).getHDPThetaStar();
+			likelihood = 1/(m_abcd[0] + m_abcd[1] + theta.getEdgeSize(0) + theta.getEdgeSize(1) + 1);
+			if(ui.getEdge(uj) == 0){
+				likelihood *= (m_abcd[1] + theta.getEdgeSize(0) + 1);
+			} else if(ui.getEdge(uj) == 1){
+				likelihood *= (m_abcd[0] + theta.getEdgeSize(1) + 1);
+			}
+			return Math.log(likelihood);
 		} else{
 			return m_pNew[e];
 		}
 	}
+	
 	// Init the counters for different edges in E steps.
 	private void initE(){
 		Arrays.fill(m_MNL, 0);
@@ -508,7 +528,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			m_hdpThetaStars[m_kBar-1].disable();
+//			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
@@ -516,8 +536,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		int index = 0;
 		_HDPThetaStar thetai = ui.getThetaStar(uj);
 		thetai.updateEdgeCount(e, -1);
-		if(!thetai.isValid())
-			System.out.println("Invalid theta!!!");
+//		if(!thetai.isValid())
+//			System.out.println("Invalid theta!!!");
 		
 		// remove the neighbor from user.
 		ui.rmNeighbor(uj);
@@ -528,7 +548,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if(index == -1)
 				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			m_hdpThetaStars[m_kBar-1].disable();
+//			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
@@ -538,66 +558,68 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// sample gamma + estPsi + estPhi
 		double likelihood = super.calculate_M_step();
-		return likelihood + estB() + estRho();
+//		return likelihood + estB() + estRho();
+		return likelihood + estRho();
+
 	}
 	
 	// Estimate the Bernoulli rates matrix using Newton-Raphson method.
 	// We maintain two matrixes to calculate the B. 
-	public double estB(){
-		_HDPAdaptStruct ui;
-		_MMBNeighbor mui, muj;
-		double[][][] B = new double[m_kBar][m_kBar][2];
-		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighborsMap;
-		// Iterate through all the user pairs.
-		for(int i=0; i<m_userList.size(); i++){
-			int g = 0, h = 0;
-			ui = (_HDPAdaptStruct) m_userList.get(i);
-			neighborsMap = ui.getNeighbors();
-			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
-				
-				muj = neighborsMap.get(uj);
-				mui = uj.getOneNeighbor(ui);
-				
-				if(mui == null || muj == null)
-					System.out.print("mx");
-				
-				if(!muj.getHDPThetaStar().isValid() || !mui.getHDPThetaStar().isValid())
-					System.out.print("tx");
-				
-				g = muj.getHDPThetaStar().getIndex();
-				h = mui.getHDPThetaStar().getIndex();
-				/*** B(g, h) = sum_{m+a-1/m+n+a+b-2}
-				 * m is the total number of edges eij=1 among the edges {i->j \in g, j->i \in h}
-				 * n is the total number of edges eij=0 among the edges {i->j \in g, j->i \in h}*/
-				B[g][h][muj.getEdge()]++;
-				B[h][g][mui.getEdge()]++;
-			}
-		}
-		m_Bs = new double[m_kBar][m_kBar];
-		for(int g=0; g<m_kBar; g++){
-			for(int h=0; h<m_kBar; h++){
-				m_Bs[g][h] = (B[g][h][1]+m_abcd[0]-1)/(B[g][h][0]+B[g][h][1]+m_abcd[0]+m_abcd[1]-2);
-				if(m_Bs[g][h] > 1)
-					System.out.println("Wrong Bs!!");
-			}
-		}
-		assignB();
-		return 0;// how to calculate the likelihood.
-	}
-	// Assign the newly estimated Bs to each group parameter.
-	public void assignB(){
-		int h = 0;
-		HashMap<_HDPThetaStar, Double> B;
-		for(int g=0; g<m_kBar; g++){
-			B = m_hdpThetaStars[g].getB();
-			for(_HDPThetaStar thetaj: B.keySet()){
-				if(!thetaj.isValid()) 
-					continue;
-				h = thetaj.getIndex();
-				B.put(thetaj, m_Bs[g][h]);
-			}
-		}
-	}
+//	public double estB(){
+//		_HDPAdaptStruct ui;
+//		_MMBNeighbor mui, muj;
+//		double[][][] B = new double[m_kBar][m_kBar][2];
+//		HashMap<_HDPAdaptStruct, _MMBNeighbor> neighborsMap;
+//		// Iterate through all the user pairs.
+//		for(int i=0; i<m_userList.size(); i++){
+//			int g = 0, h = 0;
+//			ui = (_HDPAdaptStruct) m_userList.get(i);
+//			neighborsMap = ui.getNeighbors();
+//			for(_HDPAdaptStruct uj: neighborsMap.keySet()){
+//				
+//				muj = neighborsMap.get(uj);
+//				mui = uj.getOneNeighbor(ui);
+//				
+//				if(mui == null || muj == null)
+//					System.out.print("mx");
+//				
+//				if(!muj.getHDPThetaStar().isValid() || !mui.getHDPThetaStar().isValid())
+//					System.out.print("tx");
+//				
+//				g = muj.getHDPThetaStar().getIndex();
+//				h = mui.getHDPThetaStar().getIndex();
+//				/*** B(g, h) = sum_{m+a-1/m+n+a+b-2}
+//				 * m is the total number of edges eij=1 among the edges {i->j \in g, j->i \in h}
+//				 * n is the total number of edges eij=0 among the edges {i->j \in g, j->i \in h}*/
+//				B[g][h][muj.getEdge()]++;
+//				B[h][g][mui.getEdge()]++;
+//			}
+//		}
+//		m_Bs = new double[m_kBar][m_kBar];
+//		for(int g=0; g<m_kBar; g++){
+//			for(int h=0; h<m_kBar; h++){
+//				m_Bs[g][h] = (B[g][h][1]+m_abcd[0]-1)/(B[g][h][0]+B[g][h][1]+m_abcd[0]+m_abcd[1]-2);
+//				if(m_Bs[g][h] > 1)
+//					System.out.println("Wrong Bs!!");
+//			}
+//		}
+//		assignB();
+//		return 0;// how to calculate the likelihood.
+//	}
+//	// Assign the newly estimated Bs to each group parameter.
+//	public void assignB(){
+//		int h = 0;
+//		HashMap<_HDPThetaStar, Double> B;
+//		for(int g=0; g<m_kBar; g++){
+//			B = m_hdpThetaStars[g].getB();
+//			for(_HDPThetaStar thetaj: B.keySet()){
+//				if(!thetaj.isValid()) 
+//					continue;
+//				h = thetaj.getIndex();
+//				B.put(thetaj, m_Bs[g][h]);
+//			}
+//		}
+//	}
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){

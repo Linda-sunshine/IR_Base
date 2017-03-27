@@ -112,9 +112,21 @@ public class _HDPThetaStar extends _thetaStar {
 		m_psi = null;
 	}
 	
+	@Override
+	// override the function to make the disabling and enabling by itself.
+	public void updateMemCount(int c){
+		m_memSize += c;
+		// auto check whenever the count changes
+		if(m_memSize == 0 && getTotalEdgeSize() == 0)
+			m_isValid = false;
+	}
+	
 	// Functions used in MMB model.
 	public void updateEdgeCount(int e, int c){
 		m_edgeSize[e] += c;
+		// auto check whenever the count changes
+		if(m_memSize == 0 && getTotalEdgeSize() == 0)
+			m_isValid = false;
 	}
 	
 	public int getEdgeSize(int e){
@@ -146,11 +158,4 @@ public class _HDPThetaStar extends _thetaStar {
 	public HashMap<_HDPThetaStar, Double> getB(){
 		return m_B;
 	}
-//	// update B with the newly estimated value.
-//	public void updateB(double[] b){
-//		System.arraycopy(b, 0, m_B, 0, b.length);
-//	}
-//	public void resetB(){
-//		m_B = null;
-//	}
 }

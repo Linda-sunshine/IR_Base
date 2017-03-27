@@ -35,11 +35,11 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/if15/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -59,7 +59,7 @@ public class MyMMBMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.5, eta = 0.1, beta = 0.01;
+		double alpha = 0.1, eta = 0.1, beta = 0.01;
 		
 		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 		mmb.setsdA(0.2);
