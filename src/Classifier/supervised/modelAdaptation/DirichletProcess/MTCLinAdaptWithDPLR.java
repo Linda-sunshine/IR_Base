@@ -1,5 +1,8 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,6 +15,7 @@ import utils.Utils;
 
 import Classifier.supervised.LogisticRegression;
 import Classifier.supervised.LogisticRegression4DP;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 	int m_lmFvSize = 0;
@@ -35,10 +39,9 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 	double m_lambda = 1; // parameter used in lr.
 	LogisticRegression4DP m_lr;
 	ArrayList<_Doc> m_lrTrainSet = new ArrayList<_Doc>();
-	int count = 0;
 	// collect the training reviews and train the lr model.
 	public void buildLogisticRegression(){
-		int cNo = 0;
+		int cNo = 0, count = 0;
 		_DPAdaptStruct user;
 		m_lrTrainSet.clear();
 		m_lr = new LogisticRegression4DP(m_kBar, m_lmFvSize, m_lambda);
@@ -59,7 +62,57 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 		System.out.println("[Info]" + count);
 		m_lr.train(m_lrTrainSet);
 	}
+	// added by Lin for tracking trace. 
+	public double trainTrace(String tracefile){
+		m_numberOfIterations = 50;
+		m_burnIn = 1;
+		m_thinning = 1;
+		
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+		
+		init(); // clear user performance and init cluster assignment		
+		
+		// Burn in period.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			lastLikelihood = calculate_M_step();
+		}
+		try{
+			PrintWriter writer = new PrintWriter(new File(tracefile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+			
+				// Optimize the parameters
+				curLikelihood = calculate_M_step();
+			
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[0], m_perf[1]));
 
+				printInfo();
+				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+		}
+		writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+		setPersonalizedModel();
+		return curLikelihood;
+	}
+	
 	//apply current model in the assigned clusters to users
 	@Override
 	protected void evaluateModel() {

@@ -180,11 +180,11 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
+//			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
 		}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1

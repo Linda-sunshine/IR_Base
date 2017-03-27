@@ -419,19 +419,19 @@ public class CLRWithDP extends LinAdapt {
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
-	
+
 	// added by Lin for tracking trace. 
 	public double trainTrace(String tracefile){
 		m_numberOfIterations = 50;
 		m_burnIn = 1;
 		m_thinning = 1;
-		
+			
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		int count = 0;
-		
+			
 		init(); // clear user performance and init cluster assignment		
-		
+			
 		// Burn in period.
 		while(count++ < m_burnIn){
 			calculate_E_step();
@@ -443,10 +443,10 @@ public class CLRWithDP extends LinAdapt {
 			for(int i=0; i<m_numberOfIterations; i++){
 				// Cluster assignment, thinning to reduce auto-correlation.
 				calculate_E_step();
-			
+				
 				// Optimize the parameters
 				curLikelihood = calculate_M_step();
-			
+				
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
 				if (i%m_thinning==0){
 					evaluateModel();
@@ -470,8 +470,7 @@ public class CLRWithDP extends LinAdapt {
 		setPersonalizedModel();
 		return curLikelihood;
 	}
-	
-
+		
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim;

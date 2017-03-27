@@ -44,7 +44,7 @@ public class MyHDPMain {
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
 		double trainRatio = 0, adaptRatio = 0.5;
-		int displayLv = 1;
+		int displayLv = 2;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
@@ -60,11 +60,11 @@ public class MyHDPMain {
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/if15/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -130,7 +130,7 @@ public class MyHDPMain {
 
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-		MTCLinAdaptWithHDPPost hdp = new MTCLinAdaptWithHDPPost(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 //		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);

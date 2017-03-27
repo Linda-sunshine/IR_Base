@@ -35,8 +35,8 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/if15/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);

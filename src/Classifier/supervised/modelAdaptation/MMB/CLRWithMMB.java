@@ -75,9 +75,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(String nei: ui.getUser().getFriends()){
 				if(!m_userMap.containsKey(nei)){
 					System.out.print("o");
-				}
-//				if(m_userMap.containsKey(nei)){
-				else{
+				} else{
 					String[] frds = m_userMap.get(nei).getUser().getFriends();
 					if(hasFriend(frds, ui.getUserID())){
 						System.out.print("y");
@@ -165,7 +163,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		_HDPAdaptStruct ui = (_HDPAdaptStruct) m_userList.get(i);
 		_HDPAdaptStruct uj = (_HDPAdaptStruct) m_userList.get(j);
 
-		double likelihood, gamma_k, logSum = 0;
+		double likelihood, logNew, gamma_k, logSum = 0;
 		for(k=0; k<m_kBar; k++){
 			// In the initial states, we have to create new clusters.
 			ui.setThetaStar(m_hdpThetaStars[k]);
@@ -185,7 +183,9 @@ public class CLRWithMMB extends CLRWithHDP {
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
 		}
-		logSum = Utils.logSum(logSum, m_pNew[e]);
+		// fix1: the probability for new cluster
+		logNew = Utils.logSum(m_eta*m_gamma_e, m_pNew[e]);
+		logSum = Utils.logSum(logSum, logNew);
 		
 		//Sample group k with likelihood.
 		k = sampleEdgeInLogSpace(logSum, e);
@@ -603,15 +603,5 @@ public class CLRWithMMB extends CLRWithHDP {
 	public double estRho(){
 		m_rho = (m_MNL[0]+m_MNL[1]+m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
 		return 0;
-	}
-	
-	// Get some stat of the users' information.
-	public void calcStat(){
-		_HDPAdaptStruct ui, uj;
-		int frdCount = 0;
-		for(_AdaptStruct u: m_userList){
-			ui = (_HDPAdaptStruct) u;
-			
-		}
 	}
 }
