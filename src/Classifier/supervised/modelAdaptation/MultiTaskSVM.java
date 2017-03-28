@@ -212,4 +212,12 @@ public class MultiTaskSVM extends ModelAdaptation {
 			e.printStackTrace();
 		}
 	}
+	// for debug purpose
+	public _AdaptStruct findUser(String userID){
+		for(_AdaptStruct u: m_userList){
+			if(u.getUserID().equals(userID))
+				return u;
+		}
+		return null;
+	}
 }

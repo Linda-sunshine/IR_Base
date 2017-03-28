@@ -161,8 +161,8 @@ public class IndividualSVM extends ModelAdaptation {
 		
 		return node;
 	}
-
 	@Override
 	protected void setPersonalizedModel() {
+		// TODO Auto-generated method stub
 	}
 }

@@ -15,8 +15,6 @@ import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 

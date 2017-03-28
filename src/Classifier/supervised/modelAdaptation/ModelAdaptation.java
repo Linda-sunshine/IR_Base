@@ -546,4 +546,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			e.printStackTrace();
 		}
 	}
+	
+	public ArrayList<_AdaptStruct> getUsers(){
+		return m_userList;
+	}
 }

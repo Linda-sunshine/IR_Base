@@ -9,6 +9,7 @@ import cern.jet.random.Beta;
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
 import structures._User;
+import structures._Review.rType;
 import topicmodels.LDA.LDA_Gibbs;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.MultiThreadedUserAnalyzer;
@@ -29,8 +30,8 @@ import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
 import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeansExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceE;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPLR;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
@@ -115,7 +116,7 @@ public class MyHDPMain {
 //		dp.printUserPerformance("./data/dp_exp_full_10k.xls");
 //		
 		/*****hdp related models.****/
-		double[] globalLM = analyzer.estimateGlobalLM();
+//		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 
@@ -130,42 +131,76 @@ public class MyHDPMain {
 
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDPConfidenceE hdp = new MTCLinAdaptWithHDPConfidenceE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 //		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);//0.2
-
-		hdp.setsdA(0.2);//0.2
-		double alpha = 0.5, eta = 0.1, beta = 0.01;
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setBurnIn(15);
-		hdp.setNumberOfIterations(30);
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-//		hdp.setPosteriorSanityCheck(true);
-		
-		hdp.train();
-		hdp.test();
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		hdp.setsdB(0.2);//0.2
+//
+//		hdp.setsdA(0.2);//0.2
+//		double alpha = 0.2, eta = 0.1, beta = 0.01;
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+////		hdp.setBurnIn(15);
+//		hdp.setNumberOfIterations(30);
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+////		hdp.setPosteriorSanityCheck(true);
+//		
+//		hdp.train();
+//		hdp.test();
 		
 		//String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
 		//hdp.printUserPerformance(perfFile);
 		
 		/**Baselines***/
-//		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
-//		gsvm.loadUsers(analyzer.getUsers());
-//		gsvm.train();
+		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
+		gsvm.loadUsers(analyzer.getUsers());
+		gsvm.train();
 //		gsvm.test();
+		
+		MultiThreadedLMAnalyzer analyzer_mtsvm = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+		analyzer_mtsvm.setReleaseContent(false);
+		analyzer_mtsvm.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer_mtsvm.loadUserDir(userFolder);
+		analyzer_mtsvm.setFeatureValues("TFIDF-sublinear", 0);
+		
 //		System.out.println(analyzer.getUsers().size());
 //		gsvm.printUserPerformance("./data/gsvm_0.75.xls");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 			
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer_mtsvm.getFeatureSize());
+		mtsvm.loadUsers(analyzer_mtsvm.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		
+		ArrayList<_AdaptStruct> gsvmUsers = gsvm.getUsers();
+//		ArrayList<_AdaptStruct> mtsvmUsers = mtsvm.getUsers();
+		String userID = "";
+		_AdaptStruct mu;
+		int trueY = 0, gsvmpred = 0, mtpred = 0;
+		for(_AdaptStruct gu: gsvmUsers){
+			userID = gu.getUserID();
+			mu = mtsvm.findUser(userID);
+			for(int i=0; i<gu.getReviews().size(); i++){
+				_Review gsvmr = gu.getReviews().get(i);
+				if(gsvmr.getType() == rType.TEST){
+					gsvmpred = gu.predict(gsvmr);
+					mtpred = mu.predict(mu.getReviews().get(i));
+					if(gsvmpred == trueY && mtpred == trueY)
+						continue;
+					else if(gsvmpred != trueY && mtpred == trueY){
+						System.out.println("\n[g]"+gsvmr.getSource());
+					} else if(gsvmpred == trueY && mtpred != trueY){
+						System.out.println("\n[m]"+gsvmr.getSource());
+					} else
+						System.out.print("x");
+				}
+			}
+		}
+		gsvm.test();
+		mtsvm.test();
 //		mtsvm.test();
 //		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
 	}

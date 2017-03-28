@@ -2,7 +2,7 @@ package Classifier.supervised.modelAdaptation.MMB;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import org.apache.commons.math3.distribution.BetaDistribution;
+//import org.apache.commons.math3.distribution.BetaDistribution;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -31,7 +31,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	double[][] m_Bs;
 	double[][] m_cache; // two-dim array for storing probs used in sampling zero edge.
-	BetaDistribution m_Beta = new BetaDistribution(m_abcd[0], m_abcd[1]);
+//	BetaDistribution m_Beta = new BetaDistribution(m_abcd[0], m_abcd[1]);
 	BinomialDistribution m_bernoulli;
 	HashMap<String, _HDPAdaptStruct> m_userMap; // key: userID, value: _AdaptStruct
 	
@@ -224,6 +224,12 @@ public class CLRWithMMB extends CLRWithHDP {
 		return k;
 	}
 	
+	// Beta(a+e1, b+e0)
+	protected double drawBij(_HDPThetaStar theta){
+		double a = m_abcd[0] + theta.getEdgeSize(1);
+		double b = m_abcd[1] + theta.getEdgeSize(0);
+		return  Beta.staticNextDouble(a, b);
+	}
 	// sample eij = 0 from the joint probabilities of cij, zij and zji.
 	public void sampleZeroEdgeJoint(int i, int j){
 		/***we will consider all possible combinations of different memberships.
@@ -231,7 +237,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * 2.cij=1, cji=1, known (Bgh, Bhg), prob: \rho\rho(1-Bgh)(1-Bhg), k^2 possible cases
 		 * 3.cij=1, cji=1, unknows (Bgh Bhg), prob: \Gamma(a)\Gamma(b+1)/\Gamma(a+b+1), 2k+1 possible cases */
 		
-		double bij = 0, bji = 0, logSum = 0, prob = 0;
+		double b_gh = 0, b_hg = 0, logSum = 0, prob = 0;
 		_HDPAdaptStruct ui = (_HDPAdaptStruct) m_userList.get(i);
 		_HDPAdaptStruct uj = (_HDPAdaptStruct) m_userList.get(j);
 
@@ -245,10 +251,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta_g = m_hdpThetaStars[g];
 			for(int h=0; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
-				bij = theta_g.getOneB(theta_h);
-				bji = theta_h.getOneB(theta_g);
+				b_gh = drawBij();
+				b_hg = drawBij();
 				// m_rho * m_rho * (1 - bij) * (1 - bji)
-				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-bij)+Math.log(1-bji);
+				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
 				m_cache[g][h] = prob;
 			}
 		}

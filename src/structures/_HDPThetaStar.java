@@ -24,7 +24,7 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	// The count of the features inside clusters.
 	double[] m_lmStat = null;
-	HashMap<_HDPThetaStar, Double> m_B;
+//	HashMap<_HDPThetaStar, Double> m_B;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
@@ -76,12 +76,12 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_psi;
 	}
 	
-	public void initB(){
-		if(m_B == null)
-			m_B = new HashMap<_HDPThetaStar, Double>();
-		else
-			m_B.clear();
-	}
+//	public void initB(){
+//		if(m_B == null)
+//			m_B = new HashMap<_HDPThetaStar, Double>();
+//		else
+//			m_B.clear();
+//	}
 	public void setGamma(double g){
 		m_gamma = g;
 	}
@@ -136,26 +136,26 @@ public class _HDPThetaStar extends _thetaStar {
 	public int getTotalEdgeSize(){
 		return Utils.sumOfArray(m_edgeSize);
 	}
-	// key: the thetastar, value: probability.
-	public void addOneB(_HDPThetaStar t, double p){
-		m_B.put(t, p);
-	}
-	// check if the user group existing or not.
-	public boolean hasB(_HDPThetaStar theta){
-		if(m_B.containsKey(theta))
-			return true;
-		else
-			return false;
-	}
-	public double getOneB(_HDPThetaStar t){
-		if(hasB(t))
-			return m_B.get(t);
-		else{
-			System.out.println("The probability does not exist!");
-			return 0;
-		}
-	}
-	public HashMap<_HDPThetaStar, Double> getB(){
-		return m_B;
-	}
+//	// key: the thetastar, value: probability.
+//	public void addOneB(_HDPThetaStar t, double p){
+//		m_B.put(t, p);
+//	}
+//	// check if the user group existing or not.
+//	public boolean hasB(_HDPThetaStar theta){
+//		if(m_B.containsKey(theta))
+//			return true;
+//		else
+//			return false;
+//	}
+//	public double getOneB(_HDPThetaStar t){
+//		if(hasB(t))
+//			return m_B.get(t);
+//		else{
+//			System.out.println("The probability does not exist!");
+//			return 0;
+//		}
+//	}
+//	public HashMap<_HDPThetaStar, Double> getB(){
+//		return m_B;
+//	}
 }

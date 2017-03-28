@@ -67,6 +67,10 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	 * Same functions with different parameters.********/
 	protected HashMap<_HDPThetaStar, ArrayList<_WeightedCount>> m_hdpThetaWeightedMemSizeMap = new HashMap<_HDPThetaStar, ArrayList<_WeightedCount>>();
 
+	public Collection<_HDPThetaStar> getWeightedHDPThetas(){
+		return m_hdpThetaWeightedMemSizeMap.keySet();
+	}
+	
 	public void incHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
 		if (v.getWeightedCount()==0)
 			return;
@@ -90,8 +94,8 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		}
 	}
 	
-	//Return the number of members in the given thetaStar.
-	public int getHDPThetaWeightedMemSize(_HDPThetaStar s){
+	// Return the weighted sum of members in the given thetaStar, i.e., each count is treated differently regarding their weight.
+	public int getHDPThetaWeightedSumMemSize(_HDPThetaStar s){
 		double wSum = 0;
 		if(m_hdpThetaWeightedMemSizeMap.containsKey(s)){
 			for(_WeightedCount wc: m_hdpThetaWeightedMemSizeMap.get(s))
@@ -100,6 +104,11 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		} else 
 			return 0;
 	}
+	// Return the sum of members in the given thetaStar, i.e., each count is treated equally.
+	public int getHDPThetaSumMemSize(_HDPThetaStar s){
+		return m_hdpThetaWeightedMemSizeMap.get(s).size();
+	}
+	
 	/********Functions used in MMB model.********/
 	// Return the number of edges in the given thetaStar.
 	public int getHDPThetaEdgeSize(_HDPThetaStar s){

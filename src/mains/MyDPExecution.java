@@ -15,8 +15,9 @@ import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceE;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceEM;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
@@ -110,14 +111,20 @@ public class MyDPExecution {
 			((CLRWithHDP) adaptation).setC(param.m_c);
 			((MTCLinAdaptWithHDPExp) adaptation).setPosteriorSanityCheck(param.m_post);
 			((MTCLinAdaptWithHDPExp) adaptation).setThreshold(param.m_threshold);
-		} else if(param.m_model.equals("mtclinhdpconf")){
-			 adaptation = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		} else if(param.m_model.equals("mtclinhdpconfe")){
+			 adaptation = new MTCLinAdaptWithHDPConfidenceE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLRWithHDP) adaptation).setC(param.m_c);
 		} else if(param.m_model.equals("mtclinhdpconfm")){
-			adaptation = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+			adaptation = new MTCLinAdaptWithHDPConfidenceM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
+			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
+			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((CLRWithHDP) adaptation).setC(param.m_c);
+		} else if(param.m_model.equals("mtclinhdpconfem")){
+			adaptation = new MTCLinAdaptWithHDPConfidenceEM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
