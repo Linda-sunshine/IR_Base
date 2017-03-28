@@ -18,7 +18,6 @@ import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 
 public class MyDPExecution {
@@ -128,12 +127,6 @@ public class MyDPExecution {
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLRWithHDP) adaptation).setC(param.m_c);
-		} else if(param.m_model.equals("mtclinadaptpost")){
-			adaptation = new MTCLinAdaptWithHDPPost(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
-			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
-			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
-			
 		} else{
 			System.out.println("CLRWithDP is running....");
 			adaptation = new CLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);

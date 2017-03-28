@@ -1,7 +1,6 @@
 package structures;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 import utils.Utils;
@@ -22,8 +21,6 @@ public class _HDPThetaStar extends _thetaStar {
 	// Parameters used in MMB model.
 	protected int m_edgeSize[];//0: zero-edge count;1: one-edge count.
 	
-	// The count of the features inside clusters.
-	double[] m_lmStat = null;
 	HashMap<_HDPThetaStar, Double> m_B;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
@@ -38,36 +35,6 @@ public class _HDPThetaStar extends _thetaStar {
 		m_edgeSize = new int[2];
 	}
 	
-	public void initLMStat(int lmDim){
-		if(m_lmStat == null)
-			m_lmStat = new double[lmDim];
-		else 
-			Arrays.fill(m_lmStat, 0);
-	}
-	public void clearLMStat(){
-		Arrays.fill(m_lmStat, 0);
-	}
-	
-	public void addLMStat(_SparseFeature[] fvs){
-		for(_SparseFeature fv: fvs)
-			m_lmStat[fv.getIndex()] += fv.getValue();
-	}
-	public void rmLMStat(_SparseFeature[] fvs){
-		for(_SparseFeature fv: fvs)
-			m_lmStat[fv.getIndex()] -= fv.getValue();
-	}
-	public double[] getLMStat(){
-		return m_lmStat;
-	}
-	public double getOneLMStat(int index){
-		return m_lmStat[index];
-	}
-	public double getLMSum(){
-		double sum = 0;
-		for(double v: m_lmStat)
-			sum += v;
-		return sum;
-	}
 	public void initPsiModel(int lmSize){
 		m_psi = new double[lmSize];
 	}
@@ -112,21 +79,9 @@ public class _HDPThetaStar extends _thetaStar {
 		m_psi = null;
 	}
 	
-	@Override
-	// override the function to make the disabling and enabling by itself.
-	public void updateMemCount(int c){
-		m_memSize += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
-	}
-	
 	// Functions used in MMB model.
 	public void updateEdgeCount(int e, int c){
 		m_edgeSize[e] += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
 	}
 	
 	public int getEdgeSize(int e){
@@ -158,4 +113,11 @@ public class _HDPThetaStar extends _thetaStar {
 	public HashMap<_HDPThetaStar, Double> getB(){
 		return m_B;
 	}
+//	// update B with the newly estimated value.
+//	public void updateB(double[] b){
+//		System.arraycopy(b, 0, m_B, 0, b.length);
+//	}
+//	public void resetB(){
+//		m_B = null;
+//	}
 }

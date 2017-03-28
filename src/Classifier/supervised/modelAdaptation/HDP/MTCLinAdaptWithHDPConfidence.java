@@ -36,6 +36,7 @@ public class MTCLinAdaptWithHDPConfidence extends MTCLinAdaptWithHDP{
 		if(r.getWeightedCount() != null)
 			user.decHDPThetaStarMemSize(r.getHDPThetaStar(), r.getWeightedCount());				
 	}
+	
 	//Sample how many local groups inside user reviews.
 	protected int sampleH(_HDPAdaptStruct user, _HDPThetaStar s){
 		int n = user.getHDPThetaMemSize(s);
@@ -48,8 +49,9 @@ public class MTCLinAdaptWithHDPConfidence extends MTCLinAdaptWithHDP{
 			double stir = stirling(n, h);
 			m_cache[h-1] = h*etaGammak + Math.log(stir);
 		}
-		
+			
 		//h starts from 0, we want the number of tables here.	
 		return Utils.sampleInLogArray(m_cache, n) + 1;
 	}
+		
 }

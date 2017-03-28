@@ -24,6 +24,7 @@ import utils.Utils;
  * This class implements the MTCLinAdapt with HDP added.
  * Currently, each review is assigned to one group and each user is a mixture of the components.
  * @author lin
+ *
  */
 public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 	protected int m_dimSup;

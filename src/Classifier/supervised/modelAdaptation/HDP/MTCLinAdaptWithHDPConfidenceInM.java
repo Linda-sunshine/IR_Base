@@ -16,7 +16,7 @@ import structures._Review.rType;
  * @author lin
  *
  */
-public class MTCLinAdaptWithHDPConfidenceInM extends MTCLinAdaptWithHDP{
+public class MTCLinAdaptWithHDPConfidenceInM extends MTCLinAdaptWithHDPConfidence{
 
 	public MTCLinAdaptWithHDPConfidenceInM(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
