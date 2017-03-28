@@ -32,6 +32,8 @@ import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceInM;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPLR;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
 
 public class MyHDPMain {
 	
@@ -54,7 +56,7 @@ public class MyHDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 5000; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
@@ -124,7 +126,13 @@ public class MyHDPMain {
 //		
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+//		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		
+		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+
+//		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.2);//0.2
 
@@ -132,7 +140,8 @@ public class MyHDPMain {
 		double alpha = 0.5, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setNumberOfIterations(20);
+//		hdp.setBurnIn(15);
+		hdp.setNumberOfIterations(30);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 //		hdp.setPosteriorSanityCheck(true);
@@ -153,11 +162,11 @@ public class MyHDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 			
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 //		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
 	}
 }

@@ -59,7 +59,7 @@ public class MyMMBMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.5, eta = 0.1, beta = 0.01;
+		double alpha = 0.1, eta = 0.1, beta = 0.01;
 		
 		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 		mmb.setsdA(0.2);
@@ -67,6 +67,7 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setNumberOfIterations(20);
 		mmb.loadUsers(analyzer.getUsers());
+		//mmb.check();
 		mmb.setDisplayLv(displayLv);
 		mmb.train();
 		mmb.test();

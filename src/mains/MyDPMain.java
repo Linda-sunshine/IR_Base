@@ -25,6 +25,7 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp2;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPKMeans;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPLR;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
@@ -51,20 +52,17 @@ public class MyDPMain {
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 
 		String fs = "DF";//"IG_CHI"
-		String providedCV = String.format("./data/CoLinAdapt/%s/SelectedVocab.csv", dataset); // CV.
-		String userFolder = String.format("./data/CoLinAdapt/%s/Users", dataset);
-		String featureGroupFile = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
-		String featureGroupFileSup = String.format("./data/CoLinAdapt/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
-		String globalModel = String.format("./data/CoLinAdapt/%s/GlobalWeights.txt", dataset);
-		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 		
-//		String providedCV = String.format("/if15/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
-//		String userFolder = String.format("/if15/lg5bt/DataSigir/%s/Users", dataset);
-//		String featureGroupFile = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSize);
-//		String featureGroupFileSup = String.format("/if15/lg5bt/DataSigir/%s/CrossGroups_%d.txt", dataset, fvGroupSizeSup);
-//		String globalModel = String.format("/if15/lg5bt/DataSigir/%s/GlobalWeights.txt", dataset);
-//		String lmFvFile = String.format("/if15/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/if15/lg5bt/DataSigir";
 
+		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
+		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
+		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
+		String lmFvFile = String.format("%s/%s/fv_lm_%s_%d.txt", prefix, dataset, fs, lmTopK);
+		
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
@@ -202,11 +200,13 @@ public class MyDPMain {
 //		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 //		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-//		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-//		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
+		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
 		
+//		MTCLinAdaptWithDPKMeans adaptation = new MTCLinAdaptWithDPKMeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.setLNormFlag(false);
@@ -216,20 +216,15 @@ public class MyDPMain {
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		
-		adaptation.train();
+		adaptation.trainTrace("./data/dplr_trace.txt");
 		adaptation.test();
-		adaptation.printUserPerformance("dp_exp_10k.xls");
-			
-//		long time = System.currentTimeMillis();
-//		String pattern = dataset+"_"+time;
-////		String umodel = String.format("./data/%s/%s_mtclindp_u_0.5/", pattern, dataset);
-////		String cmodel = String.format("./data/%s/%s_mtclindp_c_0.5/", pattern, dataset);
-//		String perf = String.format("./data/mtclindp_perf.txt", pattern, dataset);
-////		adaptation.saveModel(umodel);
-////		adaptation.saveClusterModels(cmodel);
-//		adaptation.savePerf(perf);
-//	
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		//adaptation.printUserPerformance("dp_exp_10k.xls");
+		
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
+		
 	}
 }
