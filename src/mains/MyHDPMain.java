@@ -191,9 +191,9 @@ public class MyHDPMain {
 					if(gsvmpred == trueY && mtpred == trueY)
 						continue;
 					else if(gsvmpred != trueY && mtpred == trueY){
-						System.out.println("\n[g]"+gsvmr.getSource());
+						System.out.println("\n[gx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
 					} else if(gsvmpred == trueY && mtpred != trueY){
-						System.out.println("\n[m]"+gsvmr.getSource());
+						System.out.println("\n[mx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
 					} else
 						System.out.print("x");
 				}
