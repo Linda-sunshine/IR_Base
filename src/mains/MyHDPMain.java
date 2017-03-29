@@ -157,51 +157,51 @@ public class MyHDPMain {
 		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
 		gsvm.loadUsers(analyzer.getUsers());
 		gsvm.train();
-//		gsvm.test();
-		
-		MultiThreadedLMAnalyzer analyzer_mtsvm = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		analyzer_mtsvm.setReleaseContent(false);
-		analyzer_mtsvm.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer_mtsvm.loadUserDir(userFolder);
-		analyzer_mtsvm.setFeatureValues("TFIDF-sublinear", 0);
-		
-//		System.out.println(analyzer.getUsers().size());
-//		gsvm.printUserPerformance("./data/gsvm_0.75.xls");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
-			
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer_mtsvm.getFeatureSize());
-		mtsvm.loadUsers(analyzer_mtsvm.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		
-		ArrayList<_AdaptStruct> gsvmUsers = gsvm.getUsers();
-//		ArrayList<_AdaptStruct> mtsvmUsers = mtsvm.getUsers();
-		String userID = "";
-		_AdaptStruct mu;
-		int trueY = 0, gsvmpred = 0, mtpred = 0;
-		for(_AdaptStruct gu: gsvmUsers){
-			userID = gu.getUserID();
-			mu = mtsvm.findUser(userID);
-			for(int i=0; i<gu.getReviews().size(); i++){
-				_Review gsvmr = gu.getReviews().get(i);
-				if(gsvmr.getType() == rType.TEST){
-					gsvmpred = gu.predict(gsvmr);
-					mtpred = mu.predict(mu.getReviews().get(i));
-					if(gsvmpred == trueY && mtpred == trueY)
-						continue;
-					else if(gsvmpred != trueY && mtpred == trueY){
-						System.out.println("\n[gx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
-					} else if(gsvmpred == trueY && mtpred != trueY){
-						System.out.println("\n[mx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
-					} else
-						System.out.print("x");
-				}
-			}
-		}
 		gsvm.test();
-		mtsvm.test();
+		
+//		MultiThreadedLMAnalyzer analyzer_mtsvm = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
+//		analyzer_mtsvm.setReleaseContent(false);
+//		analyzer_mtsvm.config(trainRatio, adaptRatio, enforceAdapt);
+//		analyzer_mtsvm.loadUserDir(userFolder);
+//		analyzer_mtsvm.setFeatureValues("TFIDF-sublinear", 0);
+//		
+////		System.out.println(analyzer.getUsers().size());
+////		gsvm.printUserPerformance("./data/gsvm_0.75.xls");
+////		for(_User u: analyzer.getUsers())
+////			u.getPerfStat().clear();
+//			
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer_mtsvm.getFeatureSize());
+//		mtsvm.loadUsers(analyzer_mtsvm.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		
+//		ArrayList<_AdaptStruct> gsvmUsers = gsvm.getUsers();
+////		ArrayList<_AdaptStruct> mtsvmUsers = mtsvm.getUsers();
+//		String userID = "";
+//		_AdaptStruct mu;
+//		int trueY = 0, gsvmpred = 0, mtpred = 0;
+//		for(_AdaptStruct gu: gsvmUsers){
+//			userID = gu.getUserID();
+//			mu = mtsvm.findUser(userID);
+//			for(int i=0; i<gu.getReviews().size(); i++){
+//				_Review gsvmr = gu.getReviews().get(i);
+//				if(gsvmr.getType() == rType.TEST){
+//					gsvmpred = gu.predict(gsvmr);
+//					mtpred = mu.predict(mu.getReviews().get(i));
+//					if(gsvmpred == trueY && mtpred == trueY)
+//						continue;
+//					else if(gsvmpred != trueY && mtpred == trueY){
+//						System.out.println("\n[gx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
+//					} else if(gsvmpred == trueY && mtpred != trueY){
+//						System.out.println("\n[mx]: trueY-"+gsvmr.getYLabel() + " " + gsvmr.getSource());
+//					} else
+//						System.out.print("x");
+//				}
+//			}
+//		}
+//		gsvm.test();
 //		mtsvm.test();
-//		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
+////		mtsvm.test();
+////		mtsvm.printUserPerformance("./data/mtsvm_0.75.xls");
 	}
 }

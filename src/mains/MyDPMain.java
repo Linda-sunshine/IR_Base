@@ -53,8 +53,8 @@ public class MyDPMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/if15/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -216,7 +216,7 @@ public class MyDPMain {
 		adaptation.setR1TradeOffs(eta1, eta2);
 		adaptation.setR2TradeOffs(eta3, eta4);
 		
-		adaptation.trainTrace("./data/dplr_trace.txt");
+		adaptation.train();
 		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
