@@ -150,6 +150,7 @@ public class MyDPExecution {
 		adaptation.setM(param.m_M);
 		adaptation.setAlpha(param.m_alpha);
 		adaptation.setsdA(param.m_sdA);
+		adaptation.setBurnIn(param.m_burnin);
 		adaptation.setThinning(param.m_thinning);
 		adaptation.setR1TradeOffs(param.m_eta1, param.m_eta2);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
