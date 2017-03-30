@@ -3,8 +3,6 @@
  */
 package structures;
 
-import utils.Utils;
-
 /**
  * @author Hongning Wang
  * structure used for Gibbs sampling in documents
@@ -97,7 +95,7 @@ public class _Word {
 	}
 	
 	public double getXProb(){
-		return m_xProb[0]/ Utils.sumOfArray(m_xProb);
+		return m_xProb[1];
 	}
 	
 	public void setFeatures(double[] features){
