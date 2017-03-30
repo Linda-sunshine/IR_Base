@@ -8,6 +8,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+
+import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
@@ -148,15 +151,17 @@ public class CLRWithHDP extends CLRWithDP {
 			//we do not need to sample psi since we will integrate it out in likelihood calculation.
 		}
 	}
-	
+	StandardDeviation sd = new StandardDeviation();
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
 		double likelihood, lx = 0, ly = 0, logSum = 0, gamma_k;
 		int k;
+		//A1CUX21NK1E013-B000K3Y4VI
 		
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
 		sampleThetaStars();
-		
+		double[] yvar = new double[m_kBar];
+		double[] xvar = new double[m_kBar];
 		//Step 2: sample thetaStar based on the loglikelihood of p(z=k|\gamma,\eta)p(y|x,\phi)p(x|\psi)
 		for(k=0; k<m_kBar+m_M; k++){
 
@@ -180,11 +185,15 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-//			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
+			if(k <m_kBar){
+				yvar[k] = ly; xvar[k] = lx;
+			}
+			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
 		}
+		System.out.print(String.format("Var of likelihood y: %.4f, var of likelihood x: %.4f\n", sd.evaluate(yvar), sd.evaluate(xvar)));
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
+		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
 		
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
