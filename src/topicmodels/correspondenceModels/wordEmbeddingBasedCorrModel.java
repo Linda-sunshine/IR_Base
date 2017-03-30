@@ -79,7 +79,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
     }
 
     public void loadWordSim4Corpus(String wordSimFileName){
-        double simThreshold = -1;
+        double simThreshold = 1;
         if(wordSimFileName == null||wordSimFileName.isEmpty()){
             return;
         }
@@ -307,7 +307,8 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
             double wordTopicProbInDoc4Zero = parentWordByTopicProb(0, wid);
             for(int k=0; k<number_of_topics; k++){
-//                addWordSimFromCommentWordEmbedSS(wid, k, pDoc);
+                addWordSimFromCommentWordEmbedSS(wid, k, pDoc);
+                pDoc.m_sstat[k] ++;
                 double wordTopicProbfromCommentWordEmbed = parentWordByTopicProbFromCommentWordEmbed(wid, k, pDoc);
                 double wordTopicProbInDoc = parentWordByTopicProb(k, wid)/wordTopicProbInDoc4Zero;
                 double topicProbfromComment = parentChildInfluenceProb(k, pDoc);
@@ -317,7 +318,8 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                         *wordTopicProbInDoc*topicProbfromComment*topicProbInDoc;
                 normalizedProb += m_topicProbCache[k];
 
-//                removeWordSimFromCommentWordEmbedSS(wid, k, pDoc);
+                pDoc.m_sstat[k] --;
+                removeWordSimFromCommentWordEmbedSS(wid, k, pDoc);
             }
 
             normalizedProb *= m_rand.nextDouble();
@@ -369,44 +371,46 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
                 else
                     pDoc.m_commentWordEmbed_normSimSS[k][1] += vocabulary_size- m_wordSimVec[wid];
             }
-
-
         }
 
     }
 
     protected void removeWordSimFromCommentWordEmbedSS(int curPWId, int curPTId, _ParentDoc4WordEmbedding pDoc){
 
-        for (int v = 0; v < vocabulary_size; v++){
-            for(int k=0; k<number_of_topics; k++) {
-                if(k==curPTId) {
+        for(int k=0; k<number_of_topics; k++) {
+            if(k==curPTId) {
+                for (int v = 0; v < vocabulary_size; v++){
                     pDoc.m_commentWordEmbed_simSS[curPTId][v][0] -= m_wordSimMatrix[curPWId][v];
-                    pDoc.m_commentWordEmbed_normSimSS[curPTId][0] -= m_wordSimVec[curPWId];
                 }
-                else {
-                    pDoc.m_commentWordEmbed_simSS[k][v][1] -= (1-m_wordSimMatrix[curPWId][v]);
-                    pDoc.m_commentWordEmbed_normSimSS[k][1] -= (vocabulary_size-m_wordSimVec[curPWId]);
-                }
+                pDoc.m_commentWordEmbed_normSimSS[curPTId][0] -= m_wordSimVec[curPWId];
             }
+            else {
+                for (int v = 0; v < vocabulary_size; v++) {
+                    pDoc.m_commentWordEmbed_simSS[k][v][1] -= (1 - m_wordSimMatrix[curPWId][v]);
+                }
+                pDoc.m_commentWordEmbed_normSimSS[k][1] -= (vocabulary_size-m_wordSimVec[curPWId]);
+            }
+
         }
 
     }
 
     protected void addWordSimFromCommentWordEmbedSS(int curPWId, int samplePTId, _ParentDoc4WordEmbedding pDoc){
-
-        for (int v = 0; v < vocabulary_size; v++){
-            for(int k=0; k<number_of_topics; k++) {
-                if(k==samplePTId) {
+        for(int k=0; k<number_of_topics; k++) {
+            if(k==samplePTId) {
+                for (int v = 0; v < vocabulary_size; v++){
                     pDoc.m_commentWordEmbed_simSS[samplePTId][v][0] += m_wordSimMatrix[curPWId][v];
-                    pDoc.m_commentWordEmbed_normSimSS[samplePTId][0] += m_wordSimVec[curPWId];
                 }
-                else {
-                    pDoc.m_commentWordEmbed_simSS[k][v][1] += (1-m_wordSimMatrix[curPWId][v]);
-                    pDoc.m_commentWordEmbed_normSimSS[k][1] += (vocabulary_size-m_wordSimVec[curPWId]);
-                }
+                pDoc.m_commentWordEmbed_normSimSS[samplePTId][0] += m_wordSimVec[curPWId];
             }
-        }
+            else {
+                for (int v = 0; v < vocabulary_size; v++) {
+                    pDoc.m_commentWordEmbed_simSS[k][v][1] += (1 - m_wordSimMatrix[curPWId][v]);
+                }
+                pDoc.m_commentWordEmbed_normSimSS[k][1] += (vocabulary_size-m_wordSimVec[curPWId]);
+            }
 
+        }
     }
 
     protected double parentWordByTopicProbFromCommentWordEmbed(int curPWId, int samplePTId, _ParentDoc4WordEmbedding pDoc) {
@@ -420,26 +424,15 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
                 double wordNum4KinArticle = pDoc.m_sstat[k];
 
-                if(k==samplePTId) {
-                    wordNum4KinArticle++;
-                }
-
                 double commentWordTopicProb4SampleSim = pDoc.m_commentWordEmbed_simSS[k][wid][0];
                 double commentWordTopicProb4SampleNormTermSim = pDoc.m_commentWordEmbed_normSimSS[k][0];
-                if(k==samplePTId) {
-                    commentWordTopicProb4SampleSim += m_wordSimMatrix[curPWId][wid];
-                    commentWordTopicProb4SampleNormTermSim += m_wordSimVec[curPWId];
-                }
 
                 commentWordTopicProb4SampleSim /= wordNum4KinArticle;
                 commentWordTopicProb4SampleNormTermSim /= wordNum4KinArticle;
 
                 double commentWordTopicProb4SampleDissim = pDoc.m_commentWordEmbed_simSS[k][wid][1];
                 double commentWordTopicProb4SampleNormTermDissim = pDoc.m_commentWordEmbed_normSimSS[k][1];
-                if(k!=samplePTId) {
-                    commentWordTopicProb4SampleDissim += 1 - m_wordSimMatrix[curPWId][wid];
-                    commentWordTopicProb4SampleNormTermDissim += (vocabulary_size-m_wordSimVec[curPWId]);
-                }
+
                 commentWordTopicProb4SampleDissim /= (pDoc.getTotalDocLength()-wordNum4KinArticle);
                 commentWordTopicProb4SampleNormTermDissim /= (pDoc.getTotalDocLength()-wordNum4KinArticle);
 
@@ -447,30 +440,30 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
 
 ////for make the value of wordTopicProb small
-                double wordNum4ZeroinArticle = pDoc.m_sstat[k];
-                if(k==0)
-                    wordNum4ZeroinArticle ++;
-                
-                double commentWordTopicProb4ZeroSim = pDoc.m_commentWordEmbed_simSS[k][wid][0];
-                double commentWordTopicProb4ZeroNormTermSim = pDoc.m_commentWordEmbed_normSimSS[k][0];
-                if(k==0) {
-                    commentWordTopicProb4ZeroSim += m_wordSimMatrix[curPWId][wid];
-                    commentWordTopicProb4ZeroNormTermSim += m_wordSimVec[curPWId];
-                }
-
-                commentWordTopicProb4ZeroSim /= wordNum4ZeroinArticle;
-                commentWordTopicProb4ZeroNormTermSim /= wordNum4ZeroinArticle;
-
-                double commentWordTopicProb4ZeroDissim = pDoc.m_commentWordEmbed_simSS[k][wid][1];
-                double commentWordTopicProb4ZeroNormTermDissim = pDoc.m_commentWordEmbed_normSimSS[k][1];
-                if(k!=0) {
-                    commentWordTopicProb4ZeroDissim += 1 - m_wordSimMatrix[curPWId][wid];
-                    commentWordTopicProb4ZeroNormTermDissim += (vocabulary_size-m_wordSimVec[curPWId]);
-                }
-                commentWordTopicProb4ZeroDissim /= (pDoc.getTotalDocLength()-wordNum4ZeroinArticle);
-                commentWordTopicProb4ZeroNormTermDissim /= (pDoc.getTotalDocLength()-wordNum4ZeroinArticle);
-
-                wordTopicProb *= (commentWordTopicProb4ZeroNormTermSim+commentWordTopicProb4ZeroNormTermDissim)/(commentWordTopicProb4ZeroSim+commentWordTopicProb4ZeroDissim);
+//                double wordNum4ZeroinArticle = pDoc.m_sstat[k];
+//                if(k==0)
+//                    wordNum4ZeroinArticle ++;
+//
+//                double commentWordTopicProb4ZeroSim = pDoc.m_commentWordEmbed_simSS[k][wid][0];
+//                double commentWordTopicProb4ZeroNormTermSim = pDoc.m_commentWordEmbed_normSimSS[k][0];
+//                if(k==0) {
+//                    commentWordTopicProb4ZeroSim += m_wordSimMatrix[curPWId][wid];
+//                    commentWordTopicProb4ZeroNormTermSim += m_wordSimVec[curPWId];
+//                }
+//
+//                commentWordTopicProb4ZeroSim /= wordNum4ZeroinArticle;
+//                commentWordTopicProb4ZeroNormTermSim /= wordNum4ZeroinArticle;
+//
+//                double commentWordTopicProb4ZeroDissim = pDoc.m_commentWordEmbed_simSS[k][wid][1];
+//                double commentWordTopicProb4ZeroNormTermDissim = pDoc.m_commentWordEmbed_normSimSS[k][1];
+//                if(k!=0) {
+//                    commentWordTopicProb4ZeroDissim += 1 - m_wordSimMatrix[curPWId][wid];
+//                    commentWordTopicProb4ZeroNormTermDissim += (vocabulary_size-m_wordSimVec[curPWId]);
+//                }
+//                commentWordTopicProb4ZeroDissim /= (pDoc.getTotalDocLength()-wordNum4ZeroinArticle);
+//                commentWordTopicProb4ZeroNormTermDissim /= (pDoc.getTotalDocLength()-wordNum4ZeroinArticle);
+//
+//                wordTopicProb *= (commentWordTopicProb4ZeroNormTermSim+commentWordTopicProb4ZeroNormTermDissim)/(commentWordTopicProb4ZeroSim+commentWordTopicProb4ZeroDissim);
 
             }
         }
@@ -682,7 +675,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
     }
 
     protected double wordByTopicEmbedInComm(int wid, int tid, _ParentDoc4WordEmbedding pDoc){
-        double wordTopicProb = 0.0;
+        double wordTopicProb = 1.0;
 
         double wordSim = pDoc.m_commentWordEmbed_simSS[tid][wid][0];
         double wordDissim = pDoc.m_commentWordEmbed_simSS[tid][wid][1];

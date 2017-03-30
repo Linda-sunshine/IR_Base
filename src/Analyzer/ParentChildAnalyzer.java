@@ -3,9 +3,7 @@ package Analyzer;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
 import json.JSONArray;
 import json.JSONException;
@@ -14,8 +12,6 @@ import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
 import structures.*;
 import utils.Utils;
-import java.util.Date;
-import java.util.Collections;
 
 /**
  * 
@@ -91,8 +87,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
-//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
-        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
+		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+//        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
 
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {
@@ -165,7 +161,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 
-		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
 		d.setName(name);
 
 		if(parentHashMap.containsKey(parent)){
@@ -944,4 +941,150 @@ public class ParentChildAnalyzer extends DocAnalyzer {
         System.out.println("top 40 sim \t"+simList.get(top40Index));
 
     }
+
+    public void randOutputSim4Comment(String filePrefix, String wordSimFileName){
+		int vocabulary_size = m_featureNames.size();
+
+		double[][] m_wordSimMatrix;
+		double[] m_wordSimVec;
+
+		m_wordSimMatrix = new double[vocabulary_size][vocabulary_size];
+		m_wordSimVec = new double[vocabulary_size];
+		loadWordSim4Corpus(wordSimFileName, m_wordSimMatrix, m_wordSimVec, vocabulary_size);
+
+
+		Random m_rand = new Random();
+
+		ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
+
+		for(_Doc d: m_corpus.getCollection()){
+			if(d instanceof _ParentDoc)
+				if(d.getName().equals("5"))
+					pDocList.add((_ParentDoc) d);
+		}
+
+		int randArticleIndex = m_rand.nextInt(pDocList.size());
+		_ParentDoc pDoc = pDocList.get(randArticleIndex);
+
+
+		try {
+			for (_ChildDoc cDoc : pDoc.m_childDocs) {
+				String commentSimFile = cDoc.getName()+".txt";
+				PrintWriter childOut = new PrintWriter(new File(
+						filePrefix, commentSimFile));
+				for(_SparseFeature sf:cDoc.getSparse()) {
+					childOut.print(m_featureNames.get(sf.getIndex())+"\t");
+					for(_SparseFeature pSf: pDoc.getSparse()) {
+						int pSfVal = (int)pSf.getValue();
+						for(int i=0; i< pSfVal; i++)
+							childOut.print(m_featureNames.get(pSf.getIndex())+":"+m_wordSimMatrix[sf.getIndex()][pSf.getIndex()]+"\t");
+					}
+					childOut.println();
+				}
+				childOut.println();
+				childOut.flush();
+				childOut.close();
+			}
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void loadWordSim4Corpus(String wordSimFileName, double[][]m_wordSimMatrix, double[] m_wordSimVec, int vocabulary_size){
+		double simThreshold = -1;
+		if(wordSimFileName == null||wordSimFileName.isEmpty()){
+			return;
+		}
+
+//		double[][] m_wordSimMatrix;
+//		double[] m_wordSimVec;
+
+		try{
+			double maxSim = -2;
+			double minSim = 2;
+
+			for(int v=0; v<vocabulary_size; v++) {
+				Arrays.fill(m_wordSimMatrix[v], 0);
+				Arrays.fill(m_wordSimVec, 0);
+			}
+
+			String tmpTxt;
+			String[] lineContainer;
+
+			HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+			for(int i=0; i<m_corpus.getFeatureSize(); i++){
+				featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+			}
+
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(wordSimFileName), "UTF-8"));
+
+			ArrayList<String> featureList = new ArrayList<String>();
+
+			boolean firstLineFlag = false;
+			int lineIndex = 0;
+			while((tmpTxt=br.readLine())!=null){
+				tmpTxt = tmpTxt.trim();
+				if(tmpTxt.isEmpty())
+					continue;
+
+				lineContainer = tmpTxt.split("\t");
+				if(firstLineFlag==false){
+					for(int i=0; i<lineContainer.length; i++){
+						featureList.add(lineContainer[i]);
+					}
+					firstLineFlag = true;
+				}else{
+					int rowWId = featureNameIndex.get(featureList.get(lineIndex));
+
+					for(int i=0; i<lineContainer.length; i++){
+						int colWId = featureNameIndex.get(featureList.get(i));
+						m_wordSimMatrix[rowWId][colWId] = Double.parseDouble(lineContainer[i]);
+
+						if(m_wordSimMatrix[rowWId][colWId] > maxSim){
+							maxSim = m_wordSimMatrix[rowWId][colWId];
+						}else{
+							if(m_wordSimMatrix[rowWId][colWId] < minSim) {
+								minSim = m_wordSimMatrix[rowWId][colWId];
+							}
+						}
+					}
+
+					lineIndex ++;
+				}
+			}
+			normalizeSimByExp(simThreshold, vocabulary_size, m_wordSimMatrix, m_wordSimVec);
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+	}
+
+	public void normalizeSimByMaxMin(double maxSim, double minSim, double threshold, int vocabulary_size, double[][]m_wordSimMatrix, double[]m_wordSimVec){
+		for(int i=0; i<vocabulary_size; i++) {
+			m_wordSimVec[i] = 0;
+			for (int j = 0; j < vocabulary_size; j++) {
+				double normalizedSim = (m_wordSimMatrix[i][j] - minSim) / (maxSim - minSim);
+
+				if(normalizedSim< threshold)
+					m_wordSimMatrix[i][j] = 0;
+				else
+					m_wordSimMatrix[i][j] = normalizedSim;
+				m_wordSimVec[i] += normalizedSim;
+			}
+		}
+	}
+
+	public void normalizeSimByExp(double threshold, int vocabulary_size, double[][]m_wordSimMatrix, double[]m_wordSimVec){
+		for(int i=0; i<vocabulary_size; i++) {
+			m_wordSimVec[i] = 0;
+			for (int j = 0; j < vocabulary_size; j++) {
+				double normalizedSim = Math.exp(m_wordSimMatrix[i][j] );
+
+				if(normalizedSim< threshold)
+					m_wordSimMatrix[i][j] = 0;
+				else
+					m_wordSimMatrix[i][j] = normalizedSim;
+				m_wordSimVec[i] += normalizedSim;
+			}
+		}
+	}
 }
