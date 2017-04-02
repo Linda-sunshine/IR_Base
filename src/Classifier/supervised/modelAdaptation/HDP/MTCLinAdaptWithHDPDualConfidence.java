@@ -10,15 +10,14 @@ import structures._Review;
 import structures._Review.rType;
 
 /***
- * In the class, we also consider the confidence of y in the M step, 
- * i.e., when we try to estimate the model parameters.
- * We can assign each review to different clusters in multiple E steps and use them to do MLE.
+ * In the class, we consider both:
+ * 1. The confidence for each review;
+ * 2. Multiple sampling of the cluster assignment.
  * @author lin
- *
  */
-public class MTCLinAdaptWithHDPConfidenceEM extends MTCLinAdaptWithHDPConfidenceE{
+public class MTCLinAdaptWithHDPDualConfidence extends MTCLinAdaptWithHDPConfidence{
 
-	public MTCLinAdaptWithHDPConfidenceEM(int classNo, int featureSize,
+	public MTCLinAdaptWithHDPDualConfidence(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
 			String featureGroupMap, String featureGroup4Sup, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
@@ -27,7 +26,7 @@ public class MTCLinAdaptWithHDPConfidenceEM extends MTCLinAdaptWithHDPConfidence
 
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithHDPConfidenceEM[dim:%d,supDim:%d,lmDim:%d,thinning:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+		return String.format("MTCLinAdaptWithHDPConfidenceDual[dim:%d,supDim:%d,lmDim:%d,thinning:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
 											m_dim,m_dimSup,m_lmDim,m_thinning,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
@@ -89,18 +88,6 @@ public class MTCLinAdaptWithHDPConfidenceEM extends MTCLinAdaptWithHDPConfidence
 
 		evaluateModel(); // we do not want to miss the last sample?!
 		return curLikelihood;
-	}
-
-	// Sample the weights given the cluster assignment.
-	@Override
-	protected double calculate_M_step(){
-		assignClusterIndex();		
-		
-		//Step 1: sample gamma based on the current assignment.
-		sampleGamma(); // why for loop BETA_K times?
-		
-		//Step 2: Optimize language model parameters with MLE.
-		return estPsi();
 	}
 	
 	// In function logLikelihood, we update the loglikelihood and corresponding gradients.

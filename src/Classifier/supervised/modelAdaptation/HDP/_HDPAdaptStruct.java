@@ -63,50 +63,38 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			m_hdpThetaMemSizeMap.remove(s);
 	}
 	
-	/********Functions and variables used in confidence learning.
-	 * Same functions with different parameters.********/
-	protected HashMap<_HDPThetaStar, ArrayList<_WeightedCount>> m_hdpThetaWeightedMemSizeMap = new HashMap<_HDPThetaStar, ArrayList<_WeightedCount>>();
 
-	public Collection<_HDPThetaStar> getWeightedHDPThetas(){
-		return m_hdpThetaWeightedMemSizeMap.keySet();
-	}
 	
-	public void incHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
-		if (v.getWeightedCount()==0)
-			return;
-		if(m_hdpThetaWeightedMemSizeMap.containsKey(s))
-			m_hdpThetaWeightedMemSizeMap.get(s).add(v);
-		else
-			m_hdpThetaWeightedMemSizeMap.put(s, new ArrayList<_WeightedCount>(Arrays.asList(v)));
-	}
-	
-	// Reduce the count from the hash map.
-	public void decHDPThetaStarMemSize(_HDPThetaStar s, _WeightedCount v){
-		if (v.getWeightedCount()==0)
-			return;
-		ArrayList<_WeightedCount> mems;
-		if(m_hdpThetaWeightedMemSizeMap.containsKey(s)){
-			mems = m_hdpThetaWeightedMemSizeMap.get(s);
-			if(mems.contains(v) && mems.size() == 1)
-				m_hdpThetaWeightedMemSizeMap.remove(s);
-			else
-				mems.remove(v);
-		}
-	}
-	
+	/***Functions and variables used in confidence learning.***/
+	// We need the reviews to calculate the weighted sum for one thetastar.
+	protected HashMap<_HDPThetaStar, ArrayList<_Review>> m_hdpThetaMemMap = new HashMap<_HDPThetaStar, ArrayList<_Review>>();
+
 	// Return the weighted sum of members in the given thetaStar, i.e., each count is treated differently regarding their weight.
-	public int getHDPThetaWeightedSumMemSize(_HDPThetaStar s){
+	public int getWeightedHDPThetaMemSize(_HDPThetaStar s){
 		double wSum = 0;
-		if(m_hdpThetaWeightedMemSizeMap.containsKey(s)){
-			for(_WeightedCount wc: m_hdpThetaWeightedMemSizeMap.get(s))
-				wSum += wc.getWeightedCount();
+		if(m_hdpThetaMemMap.containsKey(s)){
+			for(_Review r: m_hdpThetaMemMap.get(s))
+				wSum += r.getConfidence();
 			return (int) wSum;
 		} else 
 			return 0;
 	}
-	// Return the sum of members in the given thetaStar, i.e., each count is treated equally.
-	public int getHDPThetaSumMemSize(_HDPThetaStar s){
-		return m_hdpThetaWeightedMemSizeMap.get(s).size();
+
+	// Add one review to one thetastar.
+	protected void addHDPThetaStarMem(_HDPThetaStar s, _Review r){
+		if(!m_hdpThetaMemMap.containsKey(s))
+			m_hdpThetaMemMap.put(s, new ArrayList<_Review>());
+		m_hdpThetaMemMap.get(s).add(r);
+	}
+	// Remove one review from one thetastar.
+	protected void rmHDPThetaStarMem(_HDPThetaStar s, _Review r){
+		if(!m_hdpThetaMemMap.containsKey(s)){
+			System.err.println("The Theta star doesn't exist!");
+			return;
+		}
+		m_hdpThetaMemMap.get(s).remove(r);
+		if(m_hdpThetaMemMap.get(s).size() == 0)
+			m_hdpThetaMemMap.remove(s);
 	}
 	
 	/********Functions used in MMB model.********/

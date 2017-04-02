@@ -10,15 +10,14 @@ import structures._Review;
 import structures._Review.rType;
 
 /***
- * In the class, we consider the confidence of y in the M step, 
- * i.e., when we try to estimate the model parameters.
+ * In the class, we consider the cluster sampling multiple times to get an expectation of the sampling results. 
  * We can assign each review to different clusters in multiple E steps and use them to do MLE.
  * @author lin
  *
  */
-public class MTCLinAdaptWithHDPConfidenceM extends MTCLinAdaptWithHDP{
+public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 
-	public MTCLinAdaptWithHDPConfidenceM(int classNo, int featureSize,
+	public MTCLinAdaptWithHDPMultipleE(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
 			String featureGroupMap, String featureGroup4Sup, double[] lm) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
@@ -27,7 +26,7 @@ public class MTCLinAdaptWithHDPConfidenceM extends MTCLinAdaptWithHDP{
 
 	@Override
 	public String toString() {
-		return String.format("MTCLinAdaptWithHDPConfidenceM[dim:%d,supDim:%d,lmDim:%d,thinning:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
+		return String.format("MTCLinAdaptWithHDPMultipleE[dim:%d,supDim:%d,lmDim:%d,thinning:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
 											m_dim,m_dimSup,m_lmDim,m_thinning,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
@@ -56,7 +55,7 @@ public class MTCLinAdaptWithHDPConfidenceM extends MTCLinAdaptWithHDP{
 		
 		init(); // clear user performance and init cluster assignment	
 
-		// Burn in period.
+		// Burn in period, still one E-step -> one M-step -> one E-step -> one M-step
 		while(count++ < m_burnIn){
 			calculate_E_step();
 			calculate_M_step();
@@ -68,7 +67,9 @@ public class MTCLinAdaptWithHDPConfidenceM extends MTCLinAdaptWithHDP{
 		for(int i=0; i<m_numberOfIterations; i++){
 			while(ecount++ < m_thinning){
 				calculate_E_step();
-				curLikelihood = calculate_M_step();
+				// split steps in M-step, multiple E -> MLE -> multiple E -> MLE
+				assignClusterIndex();		
+				sampleGamma();
 			}
 			
 			curLikelihood += estPhi();
@@ -100,7 +101,7 @@ public class MTCLinAdaptWithHDPConfidenceM extends MTCLinAdaptWithHDP{
 		sampleGamma(); // why for loop BETA_K times?
 		
 		//Step 2: Optimize language model parameters with MLE.
-		return estPsi();
+		return estPhi();
 	}
 	
 	// In function logLikelihood, we update the loglikelihood and corresponding gradients.

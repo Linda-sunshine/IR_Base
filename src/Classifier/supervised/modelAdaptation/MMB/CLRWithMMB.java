@@ -246,18 +246,18 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// Step 1: calc prob for different cases of cij, cji.
 		_HDPThetaStar theta_g, theta_h;
-		// case 1: existing thetas.
-		for(int g=0; g<m_kBar; g++){
-			theta_g = m_hdpThetaStars[g];
-			for(int h=0; h<m_kBar; h++){
-				theta_h = m_hdpThetaStars[h];
-				b_gh = drawBij();
-				b_hg = drawBij();
-				// m_rho * m_rho * (1 - bij) * (1 - bji)
-				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
-				m_cache[g][h] = prob;
-			}
-		}
+//		// case 1: existing thetas.
+//		for(int g=0; g<m_kBar; g++){
+//			theta_g = m_hdpThetaStars[g];
+//			for(int h=0; h<m_kBar; h++){
+//				theta_h = m_hdpThetaStars[h];
+//				b_gh = drawBij();
+//				b_hg = drawBij();
+//				// m_rho * m_rho * (1 - bij) * (1 - bji)
+//				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
+//				m_cache[g][h] = prob;
+//			}
+//		}
 		// case 2: either one is from new cluster.
 		for(int k=0; k<=m_kBar; k++){
 			m_cache[k][m_kBar] = m_pNewJoint;
@@ -350,10 +350,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_hdpThetaStars[m_kBar] = new _HDPThetaStar(m_dim, 0);
 		}
 		m_hdpThetaStars[m_kBar].enable();
-		m_hdpThetaStars[m_kBar].initPsiModel(m_lmDim);
+//		m_hdpThetaStars[m_kBar].initPsiModel(m_lmDim);
 		
 		// we don't have fvs for sampling of language model parameters
-		m_D0.sampling(m_hdpThetaStars[m_kBar].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
+//		m_D0.sampling(m_hdpThetaStars[m_kBar].getPsiModel(), m_betas, true);//we should sample from Dir(\beta)
 		
 		// we have edge info for sampling of B
 //		m_hdpThetaStars[m_kBar].initB();
@@ -454,11 +454,11 @@ public class CLRWithMMB extends CLRWithHDP {
 					// Decide whether it belongs to mmb or background model.
 					// If Bij and Bji exist
 					if(isBijValid(i, j)){
-						m_p_mmb_0 = m_rho*(1-getBij(i, j));
+//						m_p_mmb_0 = m_rho*(1-getBij(i, j));
 						// sample i->j
 						if( m_p_bk/(m_p_bk+m_p_mmb_0) > 1){
 							System.out.println("Bug");
-							System.out.print(String.format("[BugInfo]rho:%.5f,p_bk:%.5f,p_mmb_0:%.5f,bij:%.5f\n", m_rho, m_p_bk, m_p_mmb_0, getBij(i,j)));
+//							System.out.print(String.format("[BugInfo]rho:%.5f,p_bk:%.5f,p_mmb_0:%.5f,bij:%.5f\n", m_rho, m_p_bk, m_p_mmb_0, getBij(i,j)));
 						}
 						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
 						// put the edge(two nodes) in the background model.
@@ -502,12 +502,12 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// z_{i->j}Bz_{j->i}
 	// Get the probability for later sampling for both zero edge from mmb or background.
-	public double getBij(int i, int j){
-		_HDPThetaStar z_ij = m_indicator[i][j];
-		_HDPThetaStar z_ji = m_indicator[j][i];
-		return z_ij.getOneB(z_ji);
-	}
-	
+//	public double getBij(int i, int j){
+//		_HDPThetaStar z_ij = m_indicator[i][j];
+//		_HDPThetaStar z_ji = m_indicator[j][i];
+//		return z_ij.getOneB(z_ji);
+//	}
+//	
 	
 	// Check the sample size and print out hint information.
 	public void updateSampleSize(int index){
@@ -526,11 +526,11 @@ public class CLRWithMMB extends CLRWithHDP {
 		int index = -1;
 		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
 
-		decUserHDPThetaStarMemSize(user, r);
+		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
 		curThetaStar.updateMemCount(-1);
 
 		if(curThetaStar.getMemSize() == 0 && curThetaStar.getTotalEdgeSize() == 0) {// No data associated with the cluster.
-			curThetaStar.resetPsiModel();
+//			curThetaStar.resetPsiModel();
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*

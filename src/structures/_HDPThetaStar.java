@@ -15,7 +15,7 @@ public class _HDPThetaStar extends _thetaStar {
 	// beta in _thetaStar is \phi used in HDP.
 	
 	//this will be in log space!
-	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
+//	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
 	protected double m_gamma;
 	
@@ -28,7 +28,7 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
-		m_psi = new double[lmSize];
+//		m_psi = new double[lmSize];
 		m_gamma = gamma;
 		m_edgeSize = new int[2];
 	}
@@ -68,13 +68,13 @@ public class _HDPThetaStar extends _thetaStar {
 			sum += v;
 		return sum;
 	}
-	public void initPsiModel(int lmSize){
-		m_psi = new double[lmSize];
-	}
-	
-	public double[] getPsiModel(){
-		return m_psi;
-	}
+//	public void initPsiModel(int lmSize){
+//		m_psi = new double[lmSize];
+//	}
+//	
+//	public double[] getPsiModel(){
+//		return m_psi;
+//	}
 	
 //	public void initB(){
 //		if(m_B == null)
@@ -108,9 +108,9 @@ public class _HDPThetaStar extends _thetaStar {
 	public ArrayList<String> getReviewNames(){
 		return m_reviewNames;
 	}
-	public void resetPsiModel(){
-		m_psi = null;
-	}
+//	public void resetPsiModel(){
+//		m_psi = null;
+//	}
 	
 	@Override
 	// override the function to make the disabling and enabling by itself.

@@ -30,10 +30,11 @@ import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
 import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeansExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceE;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidenceM;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPDualConfidence;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPLR;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPMultipleE;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPPost;
 
 public class MyHDPMain {
@@ -129,20 +130,22 @@ public class MyHDPMain {
 		
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
-//		MTCLinAdaptWithHDPConfidenceE hdp = new MTCLinAdaptWithHDPConfidenceE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
-//		MTCLinAdaptWithHDPConfidenceInM hdp = new MTCLinAdaptWithHDPConfidenceInM(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		hdp.setsdB(0.2);//0.2
+		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+
+//		MTCLinAdaptWithHDPDualConfidence hdp = new MTCLinAdaptWithHDPDualConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
+		hdp.setR2TradeOffs(eta3, eta4);
+		hdp.setsdB(0.2);//0.2
 //
 		hdp.setsdA(0.2);//0.2
 		double alpha = 0.2, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setBurnIn(15);
-		hdp.setNumberOfIterations(30);
+//		hdp.setBurnIn(30);
+//		hdp.setNumberOfIterations(200);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 //		hdp.setPosteriorSanityCheck(true);

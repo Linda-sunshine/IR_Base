@@ -123,12 +123,13 @@ public class _Review extends _Doc {
 			return sum;
 		}
 	}
-	_WeightedCount m_wc = null;
-	public void setWeightedCount(_WeightedCount wc){
-		m_wc = wc;
+	// Assign each review a confidence, used in hdp model.
+	protected double m_confidence = 1;
+	public void setConfidence(double conf){
+		m_confidence = conf;
 	}
 	
-	public _WeightedCount getWeightedCount(){
-		return m_wc;
+	public double getConfidence(){
+		return m_confidence;
 	}
 }

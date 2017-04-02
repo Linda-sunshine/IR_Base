@@ -81,8 +81,9 @@ public class MTCLinAdaptWithHDPPost extends MTCLinAdaptWithHDP {
 	public void updateDocMembership(_HDPAdaptStruct user, _Review r){
 		int index = -1;
 		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
+		
 		//Step 1: remove the current review from the thetaStar and user side.
-		decUserHDPThetaStarMemSize(user, r);
+		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
 		curThetaStar.updateMemCount(-1);
 		curThetaStar.rmLMStat(r.getLMSparse());
 		
