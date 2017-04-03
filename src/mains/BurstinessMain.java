@@ -10,6 +10,7 @@ import java.util.Date;
 
 import structures._Corpus;
 import Analyzer.ParentChildAnalyzer;
+import Analyzer.topicmodelAnalyzer;
 
 public class BurstinessMain {
 	public static void main(String[] args) throws IOException, ParseException {	
@@ -138,7 +139,7 @@ public class BurstinessMain {
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 
 		/***** parent child topic model *****/
-		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(commentFolder, suffix);
 		if(topicmodel.equals("LDA_APPMerged"))
@@ -176,9 +177,9 @@ public class BurstinessMain {
 //		analyzer.generateFakeCorpus(filePrefix);
 //		analyzer.randomizeComment(filePrefix, number_of_topics);
 //		analyzer.burstiness4Original(filePrefix, number_of_topics);
-//		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
+		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
 
-//		analyzer.loadGloveVec(gloveFile);
+		analyzer.loadGloveVec(gloveFile);
 //		analyzer.generalizedBurstiness4Original(filePrefix, gloveFile, number_of_topics);
 //		analyzer.generalizedBurstiness4Fake(filePrefix, gloveFile, number_of_topics);
 //		analyzer.simWords4Corpus(filePrefix, gloveFile);

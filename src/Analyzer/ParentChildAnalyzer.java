@@ -164,8 +164,8 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String parent = Utils.getJSONValue(json, "parent");
 		String title = Utils.getJSONValue(json, "title");
 
-//		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
-		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
+		_ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+//		_ChildDoc4BaseWithPhi d = new _ChildDoc4BaseWithPhi(m_corpus.getSize(), name, "", content, 0);
 		d.setName(name);
 
 		if(parentHashMap.containsKey(parent)){
@@ -819,6 +819,20 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 
 				lineContainer = tmpTxt.split(" ");
 				String rawWordStr = lineContainer[0];
+
+				if(rawWordStr.equals("work")) {
+					for(int i=0; i<lineContainer.length; i++)
+						System.out.print(lineContainer[i]+"\t");
+				}
+				if(rawWordStr.equals("tricky")) {
+					for(int i=0; i<lineContainer.length; i++)
+					System.out.print(lineContainer[i]+"\t");
+				}
+				if(rawWordStr.equals("laboratory")) {
+					for(int i=0; i<lineContainer.length; i++)
+						System.out.print(lineContainer[i]+"\t");
+				}
+
                 TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
                 if(resultToken.getTokens().length==0)
                     continue;
@@ -910,7 +924,26 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 
             for(int i=0; i<m_featureNames.size(); i++){
                 String wStrRow = m_featureNames.get(i);
+
                 _stat wStatRow = m_featureStat.get(wStrRow);
+				if(wStrRow.equals("work")) {
+					System.out.println("work\t");
+					for(double vecEle: wStatRow.getM_gloveVec())
+						System.out.print(vecEle+"\t");
+				}
+
+				if(wStrRow.equals("tricki")) {
+					System.out.println("tricki\t");
+					for(double vecEle: wStatRow.getM_gloveVec())
+						System.out.print(vecEle+"\t");
+				}
+
+				if(wStrRow.equals("laboratori")) {
+					System.out.println("laboratori\t");
+					for(double vecEle: wStatRow.getM_gloveVec())
+						System.out.print(vecEle+"\t");
+				}
+
 //                wStatRow.setSimMap();
                 for(int j=0; j<m_featureNames.size(); j++){
                     String wStrCol = m_featureNames.get(j);
@@ -968,7 +1001,6 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 
 		int randArticleIndex = m_rand.nextInt(pDocList.size());
 		_ParentDoc pDoc = pDocList.get(randArticleIndex);
-
 
 		try {
 			for (_ChildDoc cDoc : pDoc.m_childDocs) {

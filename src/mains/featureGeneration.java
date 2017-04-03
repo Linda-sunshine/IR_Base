@@ -8,6 +8,7 @@ import java.util.Calendar;
 
 import structures._Corpus;
 import Analyzer.ParentChildAnalyzer;
+import Analyzer.topicmodelAnalyzer;
 
 public class featureGeneration {
 	public static void main(String[] args) throws IOException, ParseException {	
@@ -52,7 +53,7 @@ public class featureGeneration {
 		articleType = "Reuters10";
 		articleType = "TripAdvisor";
 		articleType = "Tech";
-		articleType = "Yahoo";
+//		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
 		String articleFolder = String.format("./data/ParentChildTopicModel/%sArticles", articleType);
@@ -117,8 +118,8 @@ public class featureGeneration {
 		/*****Parameters in feature selection.*****/
 		String stopwords = "./data/Model/stopwords.dat";
 		String featureSelection = "DF"; //Feature selection method.
-		double startProb = 0.7; // Used in feature selection, the starting point of the features.
-		double endProb = 0.99; // Used in feature selection, the ending point of
+		double startProb = 0.3; // Used in feature selection, the starting point of the features.
+		double endProb = 0.9999; // Used in feature selection, the ending point of
 								// the features.
 		int maxDF = -1, minDF = 1; // Filter the features with DFs smaller than this
 								// threshold.
@@ -126,7 +127,7 @@ public class featureGeneration {
 		double DFUpperThreshold = 0.05;
 		
 		System.out.println("Performing feature selection, wait...");
-		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 		analyzer.LoadStopwords(stopwords);
 		
 //		analyzer.LoadParentDirectory(articleFolder, suffix);

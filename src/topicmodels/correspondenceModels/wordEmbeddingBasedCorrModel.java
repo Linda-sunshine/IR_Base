@@ -158,9 +158,10 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
 
                 if(normalizedSim< threshold)
                     m_wordSimMatrix[i][j] = 0;
-                else
+                else {
                     m_wordSimMatrix[i][j] = normalizedSim;
-                m_wordSimVec[i] += normalizedSim;
+                    m_wordSimVec[i] += normalizedSim;
+                }
 //                System.out.println("word \t"+m_corpus.getFeature(i)+"\t j\t"+m_corpus.getFeature(j)+"\t"+normalizedSim);
             }
         }
@@ -244,7 +245,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             for(_Doc d:m_trainSet) {
                 calculate_E_step(d);
                 sampleX4Child(d);
-                sanityCheck(d);
+//                sanityCheck(d);
             }
 
             long eEndTime = System.currentTimeMillis();
@@ -552,7 +553,7 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             normalizedTerm += m_wordSimVec[pWId];
         }
 
-        if(curPTId != cTId){
+        if(curPTId == cTId){
             wordEmbeddingSim -= m_wordSimMatrix[cWId][curPWId];
             normalizedTerm -= m_wordSimVec[curPWId];
         }

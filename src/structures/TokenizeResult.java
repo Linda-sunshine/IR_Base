@@ -15,7 +15,9 @@ public class TokenizeResult {
 	int m_originLength;
 	
 	public TokenizeResult(String[] rawTokens) {
-		m_rawTokens = rawTokens;
+		m_rawTokens = new String[rawTokens.length];
+		System.arraycopy(rawTokens, 0, m_rawTokens, 0, rawTokens.length);
+//		m_rawTokens = rawTokens;
 		m_originLength = rawTokens.length;
 		m_tokens = null;
 		m_stopwords = 0;
@@ -47,5 +49,9 @@ public class TokenizeResult {
 	
 	public double getStopwordProportion() {
 		return (double)m_stopwords / m_originLength;
+	}
+
+	public void setRawTokens(String[] rawTokens){
+		System.arraycopy(rawTokens, 0, m_rawTokens, 0, rawTokens.length);
 	}
 }

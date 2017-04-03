@@ -199,49 +199,13 @@ public class DocAnalyzer extends Analyzer {
 		}
 		return senScore/tokens.length;//This is average, we may have different ways of calculation.
 	}
-
-	protected void loadGloveVec(String gloveFile){
-		try{
-			String tmpTxt;
-			String[] lineContainer;
-			double[] featureVecEle;
-			int tid = 0;
-
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(gloveFile), "UTF-8"));
-			while((tmpTxt=br.readLine())!=null){
-				tmpTxt = tmpTxt.trim();
-				if(tmpTxt.isEmpty())
-					continue;
-
-				lineContainer = tmpTxt.split(" ");
-				String rawWordStr = lineContainer[0];
-				TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
-				if(resultToken.getTokens().length==0)
-					continue;
-				String wordStr = resultToken.getTokens()[0];
-
-				if(!m_corpus.m_featureStat.containsKey(wordStr))
-					continue;
-				_stat wordStat = m_corpus.m_featureStat.get(wordStr);
-
-				featureVecEle = new double[lineContainer.length-1];
-				for(int i=1; i<lineContainer.length; i++){
-					featureVecEle[i-1] = Double.parseDouble(lineContainer[i]);
-				}
-
-				wordStat.setM_gloveVec(featureVecEle);
-			}
-
-		}catch (Exception e){
-			e.printStackTrace();
-		}
-	}
 		
 	//Given a long string, tokenize it, normalie it and stem it, return back the string array.
 	protected TokenizeResult TokenizerNormalizeStemmer(String source){
 		String[] tokens = Tokenizer(source); //Original tokens.
 		TokenizeResult result = new TokenizeResult(tokens);
-		
+		String[] rawTokens = result.getRawTokens();
+
 		//Normalize them and stem them.		
 		for(int i = 0; i < tokens.length; i++)
 			tokens[i] = SnowballStemming(Normalize(tokens[i]));
@@ -272,6 +236,7 @@ public class DocAnalyzer extends Analyzer {
 		}
 		
 		result.setTokens(Ngrams.toArray(new String[Ngrams.size()]));
+//		String[] rawTokens = result.getRawTokens();
 		return result;
 	}
 
@@ -482,6 +447,10 @@ public class DocAnalyzer extends Analyzer {
 		
 		for(String sentence : sentences) {
 			result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+
+			String[] rawTokens = result.getRawTokens();
+			String[] tokens = result.getTokens();
+
 			HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), y, spVct);// construct bag-of-word vector based on normalized tokens	
 
 			if (sentence_vector.size()>2) {//avoid empty sentence	

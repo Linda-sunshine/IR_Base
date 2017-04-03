@@ -383,5 +383,13 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 	/////////////////////////////////////////////////////////
 	public int m_pCount = 0;
 	public double m_prob = 0;
-	
+
+	public void setWords(ArrayList<_Word> wordList){
+		m_words = new _Word[wordList.size()];
+		for(int listIndex=0; listIndex<wordList.size(); listIndex++){
+			_Word w = wordList.get(listIndex);
+			m_words[listIndex] = new _Word(w.getIndex());
+			m_words[listIndex].setRawToken(w.getRawToken());
+		}
+	}
 }

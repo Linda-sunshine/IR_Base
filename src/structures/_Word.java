@@ -22,6 +22,8 @@ public class _Word {
 	double m_xVal;
 	int m_localIndex; // index in the sorted sparse vector of its original documents
 
+	String m_rawToken;
+
 	public _Word(int index){
 		m_index = index;
 		m_xProb = new double[2];
@@ -109,4 +111,8 @@ public class _Word {
 	public double[] getFeatures(){
 		return m_features;
 	}
+
+	public void setRawToken(String rawToken){m_rawToken = rawToken;}
+
+	public String getRawToken(){return m_rawToken;}
 }
