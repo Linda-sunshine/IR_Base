@@ -1122,4 +1122,53 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			}
 		}
 	}
+
+	public void randArticle(String filePrefix, String gloveFile){
+
+		loadGloveVec(gloveFile);
+		Random m_rand = new Random();
+
+		ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
+
+		for(_Doc d: m_corpus.getCollection()){
+			if(d instanceof _ParentDoc){
+				if(d.getName().equals("444")){
+					pDocList.add((_ParentDoc)d);
+				}
+			}
+		}
+
+		int randArticleIndex = m_rand.nextInt(pDocList.size());
+		_ParentDoc pDoc = pDocList.get(randArticleIndex);
+
+		try {
+			double totalSim = 0;
+			double avgSim = 0;
+			double cosim =0;
+
+			String parentSimFile = pDoc.getName()+".txt";
+			PrintWriter parentOut = new PrintWriter(new File(
+					filePrefix, parentSimFile));
+
+			for (String feature:m_featureNames) {
+				parentOut.print(feature + "\t");
+
+				for(_SparseFeature pSf: pDoc.getSparse()) {
+					int pSfVal = (int)pSf.getValue();
+					String parentFeature = m_featureNames.get(pSf.getIndex());
+					for(int i=0; i< pSfVal; i++)
+						cosim = Utils.cosine(m_featureStat.get(feature).getM_gloveVec(), m_featureStat.get(parentFeature).getM_gloveVec());
+						parentOut.print(parentFeature+":"+cosim+"\t");
+				}
+
+				parentOut.println();
+			}
+			parentOut.flush();
+			parentOut.close();
+
+		}catch (Exception e){
+			e.printStackTrace();
+		}
+
+	}
 }

@@ -1,5 +1,6 @@
 package Analyzer;
 
+import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
 import structures.*;
 import utils.Utils;
@@ -35,26 +36,44 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
     HashMap<String, rawToken> m_rawTokenMap;
     ArrayList<String> m_rawTokenStrList;
     ArrayList<String> m_outputFeatureList;
+    ArrayList<String> m_rawFeatureList;
 //    int embeddingSize = 100;
 
-    public topicmodelAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold)
+    public topicmodelAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String rawFeatureFile)
             throws InvalidFormatException, FileNotFoundException, IOException {
         super(tokenModel, classNo, providedCV, Ngram, threshold);
         parentHashMap = new HashMap<String, _ParentDoc>();
         m_rawTokenMap = new HashMap<String, rawToken>();
         m_rawTokenStrList = new ArrayList<String>();
         m_outputFeatureList = new ArrayList<String>();
+        m_rawFeatureList = new ArrayList<String>();
 
-        labelIntMap.put("earn", 0);
-        labelIntMap.put("acq", 1);
-        labelIntMap.put("crude", 2);
-        labelIntMap.put("trade", 3);
-        labelIntMap.put("money-fx", 4);
-        labelIntMap.put("interest", 5);
-        labelIntMap.put("ship", 6);
-        labelIntMap.put("sugar", 7);
-        labelIntMap.put("coffee", 8);
-        labelIntMap.put("gold", 9);
+        try{
+
+            if (rawFeatureFile==null || rawFeatureFile.isEmpty())
+                return;
+
+            String tmpTxt;
+            String[] lineContainer;
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(rawFeatureFile), "UTF-8"));
+            while((tmpTxt=br.readLine())!=null){
+                tmpTxt = tmpTxt.trim();
+                if(tmpTxt.isEmpty())
+                    continue;
+
+                lineContainer = tmpTxt.split(" ");
+                String rawWordStr = lineContainer[0];
+
+                m_rawFeatureList.add(rawWordStr);
+
+            }
+        }catch(Exception e){
+            System.err.format("[Error]Failed to open file %s!!", rawFeatureFile);
+            return;
+        }
+
+
     }
 
     protected boolean AnalyzeDoc(_Doc doc) {
@@ -143,12 +162,39 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
                 _Word w = new _Word(index);
                 rawToken = Normalize(rawToken);
-                w.setRawToken(rawToken);
-                wordList.add(w);
+
+                if(m_rawFeatureList.contains(rawToken)) {
+                    w.setRawToken(rawToken);
+                    wordList.add(w);
+                }
             }
         }
 
         return spVct;
+    }
+
+    public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF, String rawFeatureFile) throws FileNotFoundException {
+        FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
+
+        System.out.println("*******************************************************************");
+        if (featureSelection.equals("DF"))
+            selector.DF(m_featureStat);
+        else if (featureSelection.equals("IG"))
+            selector.IG(m_featureStat, m_classMemberNo);
+        else if (featureSelection.equals("MI"))
+            selector.MI(m_featureStat, m_classMemberNo);
+        else if (featureSelection.equals("CHI"))
+            selector.CHI(m_featureStat, m_classMemberNo);
+
+        m_featureNames = selector.getSelectedFeatures();
+
+        SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); // Save all the features and probabilities we get after analyzing.
+        System.out.println(m_featureNames.size() + " features are selected!");
+
+        // need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
+        //clear memory for next step feature construction
+//		reset();
+//		LoadCV(location);//load the selected features
     }
 
     protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {
@@ -209,7 +255,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         }
     }
 
-    protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
+    protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF, String rawFeatureFile) throws FileNotFoundException {
         if (featureLocation==null || featureLocation.isEmpty())
             return;
         String feature;
@@ -253,6 +299,15 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         System.out.println("outputFeature Size\t"+totalOutputFeature);
 
         writer.close();
+
+        PrintWriter rawFeaturePW = new PrintWriter(new File(rawFeatureFile));
+
+        for(String rawFeature:m_rawTokenMap.keySet()){
+            rawFeaturePW.println(rawFeature);
+        }
+        rawFeaturePW.flush();
+        rawFeaturePW.close();
+
     }
 
     public void loadGloveVec(String gloveFile){
@@ -276,8 +331,6 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 lineContainer = tmpTxt.split(" ");
                 String rawWordStr = lineContainer[0];
 
-                if(!gloveRawTokenList.contains(rawWordStr))
-                    gloveRawTokenList.add(rawWordStr);
                 if(!m_rawTokenStrList.contains(rawWordStr))
                     continue;
 
@@ -436,7 +489,99 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         return result;
     }
 
-    public void
+    public void articleSim4Corpus(String filePrefix){
+        Random m_rand = new Random();
+
+        ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
+
+        for(_Doc d: m_corpus.getCollection()){
+            if(d instanceof _ParentDoc){
+                pDocList.add((_ParentDoc)d);
+            }
+        }
+
+
+        try {
+            File resultFolder = new File(filePrefix+"/articleSim/");
+
+            if(!resultFolder.exists()){
+                System.out.println("creating root directory"+resultFolder);
+                resultFolder.mkdir();
+            }
+
+            for(_ParentDoc pDoc : pDocList) {
+                String parentSimFile = pDoc.getName() + ".txt";
+                PrintWriter parentOut = new PrintWriter(new File(
+                        resultFolder, parentSimFile));
+
+                for (String rawToken : m_rawTokenMap.keySet()) {
+                    rawToken rawTokenObj = m_rawTokenMap.get(rawToken);
+                    parentOut.print(rawToken + "\t");
+
+                    for (_Word pWord : pDoc.getWords()) {
+                        String pWordStr = pWord.getRawToken();
+                        rawToken pWordTokenObj = m_rawTokenMap.get(pWordStr);
+                        double cosineSim = Utils.cosine(pWordTokenObj.getEmbeddingVec(), rawTokenObj.getEmbeddingVec());
+                        parentOut.print(pWordStr + ":" + cosineSim + "\t");
+                    }
+
+                    parentOut.println();
+                }
+                parentOut.flush();
+                parentOut.close();
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+    public void randArticle(String filePrefix){
+
+        Random m_rand = new Random();
+
+        ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
+
+        for(_Doc d: m_corpus.getCollection()){
+            if(d instanceof _ParentDoc){
+                if(d.getName().equals("444")){
+                    pDocList.add((_ParentDoc)d);
+                }
+            }
+        }
+
+        int randArticleIndex = m_rand.nextInt(pDocList.size());
+        _ParentDoc pDoc = pDocList.get(randArticleIndex);
+
+        try {
+            double totalSim = 0;
+            double avgSim = 0;
+
+            String parentSimFile = pDoc.getName()+".txt";
+            PrintWriter parentOut = new PrintWriter(new File(
+                    filePrefix, parentSimFile));
+
+            for (String rawToken:m_rawTokenMap.keySet()) {
+                rawToken rawTokenObj = m_rawTokenMap.get(rawToken);
+                parentOut.print(rawToken + "\t");
+
+                for (_Word pWord : pDoc.getWords()) {
+                    String pWordStr = pWord.getRawToken();
+                    rawToken pWordTokenObj = m_rawTokenMap.get(pWordStr);
+                    double cosineSim = Utils.cosine(pWordTokenObj.getEmbeddingVec(), rawTokenObj.getEmbeddingVec());
+                    parentOut.print(pWordStr + ":" + cosineSim + "\t");
+                }
+
+                parentOut.println();
+            }
+            parentOut.flush();
+            parentOut.close();
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+    }
 
     public void randOutputSim4Comment(String filePrefix, String wordSimFileName){
 //        int vocabulary_size = m_featureNames.size();
@@ -447,7 +592,6 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 //        m_wordSimMatrix = new double[vocabulary_size][vocabulary_size];
 //        m_wordSimVec = new double[vocabulary_size];
 //        loadWordSim4Corpus(wordSimFileName, m_wordSimMatrix, m_wordSimVec, vocabulary_size);
-
 
         Random m_rand = new Random();
 

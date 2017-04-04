@@ -91,7 +91,9 @@ public class BurstinessMain {
 
 		String fvFile = String.format("./data/Features/fv_%dgram_topicmodel_%s.txt", Ngram, articleType);
 		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_%s_%s.txt", Ngram, articleType, topicmodel);
-		
+		String rawFeatureFile = String.format(
+				"./data/Features/rawFv_%dgram_topicmodel_%s.txt", Ngram,
+				articleType);
 		String aspectList = "./data/Model/aspect_"+ category + ".txt";
 		String aspectSentiList = "./data/Model/aspect_sentiment_"+ category + ".txt";
 		
@@ -139,7 +141,7 @@ public class BurstinessMain {
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
 
 		/***** parent child topic model *****/
-		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, rawFeatureFile);
 //		analyzer.LoadStopwords(stopwords);
 //		analyzer.LoadDirectory(commentFolder, suffix);
 		if(topicmodel.equals("LDA_APPMerged"))
@@ -183,7 +185,10 @@ public class BurstinessMain {
 //		analyzer.generalizedBurstiness4Original(filePrefix, gloveFile, number_of_topics);
 //		analyzer.generalizedBurstiness4Fake(filePrefix, gloveFile, number_of_topics);
 //		analyzer.simWords4Corpus(filePrefix, gloveFile);
-		String wordSimFileName = String.format("./data/Features/wordSim_%s.txt", articleType);
-		analyzer.randOutputSim4Comment(filePrefix, wordSimFileName);
+//		String wordSimFileName = String.format("./data/Features/wordSim_%s.txt", articleType);
+//		analyzer.randArticle(filePrefix);
+//		analyzer.randArticle(filePrefix, gloveFile);
+//		analyzer.randOutputSim4Comment(filePrefix, wordSimFileName);
+		analyzer.articleSim4Corpus(filePrefix);
 	}
 }

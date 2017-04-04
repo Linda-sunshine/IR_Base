@@ -125,9 +125,13 @@ public class featureGeneration {
 								// threshold.
 
 		double DFUpperThreshold = 0.05;
-		
+
+		String rawFeatureFile = String.format(
+				"./data/Features/rawFv_%dgram_topicmodel_%s.txt", Ngram,
+				articleType);
+
 		System.out.println("Performing feature selection, wait...");
-		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, rawFeatureFile);
 		analyzer.LoadStopwords(stopwords);
 		
 //		analyzer.LoadParentDirectory(articleFolder, suffix);
@@ -139,7 +143,7 @@ public class featureGeneration {
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
 		analyzer.loadGloveVec(gloveFile);
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); //Select the features.
 		
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
