@@ -184,11 +184,11 @@ public class BurstinessMain {
 		analyzer.loadGloveVec(gloveFile);
 //		analyzer.generalizedBurstiness4Original(filePrefix, gloveFile, number_of_topics);
 //		analyzer.generalizedBurstiness4Fake(filePrefix, gloveFile, number_of_topics);
-//		analyzer.simWords4Corpus(filePrefix, gloveFile);
+		analyzer.simWords4Corpus(filePrefix, gloveFile);
 //		String wordSimFileName = String.format("./data/Features/wordSim_%s.txt", articleType);
 //		analyzer.randArticle(filePrefix);
 //		analyzer.randArticle(filePrefix, gloveFile);
 //		analyzer.randOutputSim4Comment(filePrefix, wordSimFileName);
-		analyzer.articleSim4Corpus(filePrefix);
+//		analyzer.articleSim4Corpus(filePrefix);
 	}
 }

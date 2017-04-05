@@ -23,6 +23,7 @@ public class _Word {
 	int m_localIndex; // index in the sorted sparse vector of its original documents
 
 	String m_rawToken;
+	int m_rawIndex;
 
 	public _Word(int index){
 		m_index = index;
@@ -115,4 +116,8 @@ public class _Word {
 	public void setRawToken(String rawToken){m_rawToken = rawToken;}
 
 	public String getRawToken(){return m_rawToken;}
+
+	public void setRawIndex(int rawIndex){m_rawIndex = rawIndex;}
+
+	public int getRawIndex(){return m_rawIndex;}
 }

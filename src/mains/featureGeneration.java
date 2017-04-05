@@ -142,9 +142,10 @@ public class featureGeneration {
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
-		analyzer.loadGloveVec(gloveFile);
+//		analyzer.loadGloveVec(gloveFile);
 		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); //Select the features.
-		
+		analyzer.filterFeaturesbyGlove(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile, gloveFile);
+
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);
 //		newEggAnalyzer analyzer = new newEggAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel, category, 2);

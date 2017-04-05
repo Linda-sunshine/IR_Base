@@ -93,10 +93,17 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
             for(_Word w:doc.getWords()){
                 String rawToken = w.getRawToken();
-                if(!m_rawTokenStrList.contains(rawToken)){
-                    m_rawTokenStrList.add(rawToken);
+                if(!m_isCVLoaded){
+                    if(!m_rawTokenStrList.contains(rawToken)){
+                        m_rawTokenStrList.add(rawToken);
+                    }
+                }else{
+                    if(!m_rawFeatureList.contains(rawToken)){
+                        System.out.println("error raw feature\t"+rawToken);
+                    }
                 }
             }
+
 
             m_corpus.addDoc(doc);
             m_classMemberNo[y]++;
@@ -164,7 +171,9 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 rawToken = Normalize(rawToken);
 
                 if(m_rawFeatureList.contains(rawToken)) {
+                    int rawIndex = m_rawFeatureList.indexOf(rawToken);
                     w.setRawToken(rawToken);
+                    w.setRawIndex(rawIndex);
                     wordList.add(w);
                 }
             }
@@ -188,13 +197,19 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
         m_featureNames = selector.getSelectedFeatures();
 
-        SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); // Save all the features and probabilities we get after analyzing.
         System.out.println(m_featureNames.size() + " features are selected!");
 
         // need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
         //clear memory for next step feature construction
 //		reset();
 //		LoadCV(location);//load the selected features
+    }
+
+    public void filterFeaturesbyGlove (String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF, String rawFeatureFile, String gloveFile)throws FileNotFoundException{
+        loadGloveVec(gloveFile); //filter features whose corresponding rawFeature do not have embeddings and filter rawFeatures whose features are not selected.
+
+        System.out.println("m_featureName size\t"+m_featureNames.size());
+        SaveCV(featureLocation, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile);
     }
 
     protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {
@@ -237,8 +252,14 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
             for(_Word w:doc.getWords()){
                 String rawToken = w.getRawToken();
-                if(!m_rawTokenStrList.contains(rawToken)){
-                    m_rawTokenStrList.add(rawToken);
+                if(!m_isCVLoaded) {
+                    if (!m_rawTokenStrList.contains(rawToken)) {
+                        m_rawTokenStrList.add(rawToken);
+                    }
+                }else{
+                    if(!m_rawFeatureList.contains(rawToken)){
+                        System.out.println("error raw feature\t"+rawToken);
+                    }
                 }
             }
 
@@ -283,31 +304,23 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         for(int i=0; i<m_outputFeatureList.size(); i++){
             feature = m_outputFeatureList.get(i);
             System.out.println("output feature\t"+feature);
+            writer.println(feature);
         }
         System.out.println("output feature============");
 
-        for(int i=0; i<m_featureNames.size(); i++) {
-            feature = m_featureNames.get(i);
-            if(m_outputFeatureList.contains(feature)) {
-                totalOutputFeature ++;
-                writer.println(feature);
-            }else{
-//                System.out.println("removing feature\t"+feature);
-            }
-        }
-
-        System.out.println("outputFeature Size\t"+totalOutputFeature);
+        System.out.println("outputFeature Size\t"+m_outputFeatureList.size());
 
         writer.close();
 
         PrintWriter rawFeaturePW = new PrintWriter(new File(rawFeatureFile));
 
-        for(String rawFeature:m_rawTokenMap.keySet()){
+        for(String rawFeature:m_rawFeatureList){
             rawFeaturePW.println(rawFeature);
         }
         rawFeaturePW.flush();
         rawFeaturePW.close();
 
+        System.out.println("m_rawFeatureList Size\t"+m_rawFeatureList.size());
     }
 
     public void loadGloveVec(String gloveFile){
@@ -329,29 +342,55 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                     continue;
 
                 lineContainer = tmpTxt.split(" ");
-                String rawWordStr = lineContainer[0];
+                String rawWordStr = Normalize(lineContainer[0]);
 
-                if(!m_rawTokenStrList.contains(rawWordStr))
-                    continue;
+                if(!m_isCVLoaded) {
+                    //filter word embeddings
+                    if (!m_rawTokenStrList.contains(rawWordStr))
+                        continue;
 
-                double[] tokenEmbeddingVec = new double[lineContainer.length-1];
-                rawToken rawTokenObj = new rawToken(rawWordStr);
+                    double[] tokenEmbeddingVec = new double[lineContainer.length - 1];
+                    rawToken rawTokenObj = new rawToken(rawWordStr);
 
-                for(int i=1; i<lineContainer.length; i++){
-                    tokenEmbeddingVec[i-1] = Double.parseDouble(lineContainer[i]);
+                    for (int i = 1; i < lineContainer.length; i++) {
+                        tokenEmbeddingVec[i - 1] = Double.parseDouble(lineContainer[i]);
+                    }
+
+                    TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
+                    if (resultToken.getTokens().length == 0)
+                        continue;
+                    String wordStr = resultToken.getTokens()[0];
+                    rawTokenObj.setEmbeddingVec(tokenEmbeddingVec);
+
+                    // in featureNames and have word embedding
+                    if (m_featureNames.contains(wordStr)) {
+                        if(!m_outputFeatureList.contains(wordStr))
+                            m_outputFeatureList.add(wordStr);
+                        if(!m_rawFeatureList.contains(rawWordStr))
+                            m_rawFeatureList.add(rawWordStr);
+                    }
+                }else{
+                    if (!m_rawFeatureList.contains(rawWordStr))
+                        continue;
+
+                    double[] tokenEmbeddingVec = new double[lineContainer.length - 1];
+                    rawToken rawTokenObj = new rawToken(rawWordStr);
+
+                    for (int i = 1; i < lineContainer.length; i++) {
+                        tokenEmbeddingVec[i - 1] = Double.parseDouble(lineContainer[i]);
+                    }
+
+                    TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
+                    if (resultToken.getTokens().length == 0){
+                        System.out.println("error"+rawWordStr);
+                        continue;
+                    }
+
+                    String wordStr = resultToken.getTokens()[0];
+                    rawTokenObj.setEmbeddingVec(tokenEmbeddingVec);
+
+                    m_rawTokenMap.put(rawWordStr, rawTokenObj);
                 }
-
-                TokenizeResult resultToken = TokenizerNormalizeStemmer(rawWordStr);
-                if(resultToken.getTokens().length==0)
-                    continue;
-                String wordStr = resultToken.getTokens()[0];
-
-//                System.out.println(rawWordStr+"---->"+wordStr);
-
-                rawTokenObj.setEmbeddingVec(tokenEmbeddingVec);
-                if(!m_outputFeatureList.contains(wordStr))
-                    m_outputFeatureList.add(wordStr);
-                m_rawTokenMap.put(rawWordStr, rawTokenObj);
             }
 
 //            System.out.println("================");
@@ -375,27 +414,26 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
     public void simWords4Corpus(String filePrefix, String gloveFile){
         loadGloveVec(gloveFile);
-        String wordSimFile = filePrefix+"wordSim_Tech.txt";
+
+        String wordSimFile = filePrefix+"rawFeatureSim_Tech.txt";
         ArrayList<Double> simList = new ArrayList<Double>();
 
         try{
             PrintWriter pw = new PrintWriter(new File(wordSimFile));
             System.out.println("rawTokenList len\t"+m_rawTokenStrList.size());
-            for(int i=0; i<m_rawTokenStrList.size(); i++){
-                if(!m_rawTokenMap.containsKey(m_rawTokenStrList.get(i)))
+            for(int i=0; i<m_rawFeatureList.size(); i++){
+                String rawFeature = m_rawFeatureList.get(i);
+                if(!m_rawTokenMap.containsKey(rawFeature)){
+                    System.out.println("sim word 4corpus error raw feature no word embedding\t"+rawFeature);
                     continue;
-                rawToken rawTokenObj = m_rawTokenMap.get(m_rawTokenStrList.get(i));
-//                if(rawTokenObj.getEmbeddingVec()==null) {
-//                    System.out.println(m_rawTokenStrList.get(i) + "\tno embedding vec");
-//                    continue;
-//                }
-                pw.print(m_rawTokenStrList.get(i)+"\t");
+                }
+                pw.print(rawFeature+"\t");
             }
             pw.println();
 
-            for(int i=0; i<m_rawTokenStrList.size(); i++){
+            for(int i=0; i<m_rawFeatureList.size(); i++){
 
-                String wStrRow = m_rawTokenStrList.get(i);
+                String wStrRow = m_rawFeatureList.get(i);
                 if(!m_rawTokenMap.containsKey(wStrRow))
                     continue;
                 rawToken rawTokenObjRow = m_rawTokenMap.get(wStrRow);
@@ -404,8 +442,8 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 //                    continue;
 //                }
 
-                for(int j=0; j<m_rawTokenStrList.size(); j++){
-                    String wStrCol = m_rawTokenStrList.get(j);
+                for(int j=0; j<m_rawFeatureList.size(); j++){
+                    String wStrCol = m_rawFeatureList.get(j);
 
                     if(!m_rawTokenMap.containsKey(wStrCol))
                         continue;
@@ -417,7 +455,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
                     double cosSim = Utils.cosine(rawTokenObjCol.getEmbeddingVec(),rawTokenObjRow.getEmbeddingVec());
                     //                wStatRow.m_wordSimMap.put(wStrCol, cosSim);
-//                    pw.print(cosSim+"\t");
+                    pw.print(cosSim+"\t");
                     simList.add(cosSim);
                 }
                 pw.println();
@@ -489,8 +527,96 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         return result;
     }
 
-    public void articleSim4Corpus(String filePrefix){
+    public void loadWordSim4Corpus(String wordSimFileName, double[][]m_wordSimMatrix, double[] m_wordSimVec){
+        double simThreshold = -1;
+        if(wordSimFileName == null||wordSimFileName.isEmpty()){
+            return;
+        }
+
+        try{
+            double maxSim = -2;
+            double minSim = 2;
+
+            int rawFeatureSize = m_wordSimMatrix.length;
+            for(int rawV=0; rawV<rawFeatureSize; rawV++) {
+                Arrays.fill(m_wordSimMatrix[rawV], 0);
+                Arrays.fill(m_wordSimVec, 0);
+            }
+
+            String tmpTxt;
+            String[] lineContainer;
+
+            HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
+            for(int i=0; i<m_corpus.getFeatureSize(); i++){
+                featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+            }
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(wordSimFileName), "UTF-8"));
+
+            ArrayList<String> featureList = new ArrayList<String>();
+
+            boolean firstLineFlag = false;
+            int lineIndex = 0;
+            while((tmpTxt=br.readLine())!=null){
+                tmpTxt = tmpTxt.trim();
+                if(tmpTxt.isEmpty())
+                    continue;
+
+                lineContainer = tmpTxt.split("\t");
+                if(firstLineFlag==false){
+                    for(int i=0; i<lineContainer.length; i++){
+                        featureList.add(lineContainer[i]);
+                    }
+                    firstLineFlag = true;
+                }else{
+                    int rowWId = featureNameIndex.get(featureList.get(lineIndex));
+
+                    for(int i=0; i<lineContainer.length; i++){
+                        int colWId = featureNameIndex.get(featureList.get(i));
+                        m_wordSimMatrix[rowWId][colWId] = Double.parseDouble(lineContainer[i]);
+
+                        if(m_wordSimMatrix[rowWId][colWId] > maxSim){
+                            maxSim = m_wordSimMatrix[rowWId][colWId];
+                        }else{
+                            if(m_wordSimMatrix[rowWId][colWId] < minSim) {
+                                minSim = m_wordSimMatrix[rowWId][colWId];
+                            }
+                        }
+                    }
+
+                    lineIndex ++;
+                }
+            }
+//            normalizeSimByExp(simThreshold, rawFeatureSize, m_wordSimMatrix, m_wordSimVec);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void normalizeSimByExp(double threshold, int rawFeatureSize, double[][]m_wordSimMatrix, double[]m_wordSimVec){
+        for(int i=0; i<rawFeatureSize; i++) {
+            m_wordSimVec[i] = 0;
+            for (int j = 0; j < rawFeatureSize; j++) {
+                double normalizedSim = Math.exp(m_wordSimMatrix[i][j] );
+
+                if(normalizedSim< threshold)
+                    m_wordSimMatrix[i][j] = 0;
+                else
+                    m_wordSimMatrix[i][j] = normalizedSim;
+                m_wordSimVec[i] += normalizedSim;
+            }
+        }
+    }
+
+    public void articleSim4Corpus(String filePrefix, String wordSimFileName){
+
         Random m_rand = new Random();
+
+        int rawFeatureSize = m_rawFeatureList.size();
+        double[][] m_wordSimMatrix = new double[rawFeatureSize][rawFeatureSize];
+        double[] m_wordSimVec = new double[rawFeatureSize];
+
+        loadWordSim4Corpus(wordSimFileName, m_wordSimMatrix, m_wordSimVec);
 
         ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
 
@@ -514,14 +640,14 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 PrintWriter parentOut = new PrintWriter(new File(
                         resultFolder, parentSimFile));
 
-                for (String rawToken : m_rawTokenMap.keySet()) {
-                    rawToken rawTokenObj = m_rawTokenMap.get(rawToken);
-                    parentOut.print(rawToken + "\t");
+                for (int rawFeatureIndex=0; rawFeatureIndex<rawFeatureSize; rawFeatureIndex++) {
+                    String rawFeature = m_rawFeatureList.get(rawFeatureIndex);
+                    parentOut.print(rawFeature + "\t");
 
                     for (_Word pWord : pDoc.getWords()) {
                         String pWordStr = pWord.getRawToken();
-                        rawToken pWordTokenObj = m_rawTokenMap.get(pWordStr);
-                        double cosineSim = Utils.cosine(pWordTokenObj.getEmbeddingVec(), rawTokenObj.getEmbeddingVec());
+                        int pRawFeatureIndex = pWord.getRawIndex();
+                        double cosineSim = m_wordSimMatrix[rawFeatureIndex][pRawFeatureIndex];
                         parentOut.print(pWordStr + ":" + cosineSim + "\t");
                     }
 

@@ -1,6 +1,8 @@
 package structures;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * Created by jetcai1900 on 3/18/17.
@@ -35,6 +37,27 @@ public class _ParentDoc4WordEmbedding extends _ParentDoc {
 
                 wIndex++;
             }
+        }
+
+        m_phi = new double[m_x_sparse.length][k];
+        m_word2Index = new HashMap<Integer, Integer>();
+        for (int i = 0; i < m_x_sparse.length; i++)
+            m_word2Index.put(m_x_sparse[i].m_index, i);
+    }
+
+    public void setTopics4GibbsbyRawToken(int k, double alpha, int vocSize, int gammaSize) {
+        createSpace(k, alpha);
+
+        m_commentThread_wordSS = new double[gammaSize][k][vocSize];
+        m_commentWordEmbed_simSS = new double[k][vocSize][2];
+
+        m_commentWordEmbed_normSimSS = new double[k][2];
+
+        int wIndex = 0, wid, tid;
+        for(_Word w:m_words){
+            tid = m_rand.nextInt(k);
+            w.setTopic(tid);
+            m_sstat[tid] ++;
         }
 
         m_phi = new double[m_x_sparse.length][k];

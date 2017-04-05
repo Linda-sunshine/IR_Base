@@ -73,7 +73,30 @@ public class _ChildDoc extends _Doc {
 			}
 		}
 	}
-	
+
+	public void setTopics4GibbsbyRawToken(int k, double alpha){
+		createSpace(k, alpha);
+		m_wordXStat = new HashMap<Integer, Integer>();
+		int wIndex = 0, wid, tid, xid, gammaSize = m_xSstat.length;
+
+		for(_Word w:m_words){
+			wid = w.getIndex();
+			tid = m_rand.nextInt(k);
+			xid = m_rand.nextInt(gammaSize);
+			w.setTopic(tid);
+			w.setX(xid);
+
+			m_xTopicSstat[xid][tid] ++;
+			m_xSstat[xid] ++;
+
+			if(m_wordXStat.containsKey(wid)){
+				m_wordXStat.put(wid, m_wordXStat.get(wid)+1);
+			}else{
+				m_wordXStat.put(wid, 1);
+			}
+		}
+	}
+
 	public void setMu(double mu){
 		m_mu = mu;
 	}
