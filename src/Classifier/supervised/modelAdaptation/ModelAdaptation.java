@@ -21,6 +21,7 @@ import Classifier.BaseClassifier;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
+import structures._SparseFeature;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
@@ -248,6 +249,17 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	abstract protected void setPersonalizedModel();
 	
+	// Used for sanity check for personalization.
+	public int predictG(_Doc doc) {
+		_SparseFeature[] fv = doc.getSparse();
+
+		double maxScore = Utils.dotProduct(m_gWeights, fv, 0);
+		if (m_classNo==2) {
+			return maxScore>0?1:0;
+		} 
+		System.err.print("Wrong classification task!");
+		return -1;
+	}
 	@Override
 	public double test(){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -275,7 +287,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 										continue;
 									int trueL = r.getYLabel();
 									int predL = user.predict(r); // evoke user's own model
+									int predLG = predictG(r);
 									r.setPredictLabel(predL);
+									r.setPredictLabelG(predLG);
 									userPerfStat.addOnePredResult(predL, trueL);
 								}
 							}							
@@ -327,8 +341,8 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		System.out.println("neg users: " + macroF1.get(0).size());
-		System.out.println("pos users: " + macroF1.get(1).size());
+		System.out.print("neg users: " + macroF1.get(0).size());
+		System.out.print("\tpos users: " + macroF1.get(1).size()+"\n");
 
 		System.out.println(toString());
 		calcMicroPerfStat();
@@ -339,15 +353,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
 		}
 		return 0;
-		
-//		// macro average
-//		System.out.println("\nMacro F1:");
-//		for(int i=0; i<m_classNo; i++){
-//			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-//			m_perf[i] = macroF1[i]/count;
-//		}
-//		System.out.println("\n");
-//		return Utils.sumOfArray(macroF1);
 	}
 	
 //	@Override
@@ -455,7 +460,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			dir.mkdirs();
 		for(_AdaptStruct user:m_userList) {
 			try {
-	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
+	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".txt"));
 	            StringBuilder buffer = new StringBuilder(512);
 	            double[] pWeights = user.getPWeights();
 	            for(int i=0; i<pWeights.length; i++) {
@@ -469,7 +474,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	            e.printStackTrace(); 
 	        } 
 		}
-		System.out.format("[Info]Save personalized models to %s.", modelLocation);
+		System.out.format("\n[Info]Save personalized models to %s.", modelLocation);
 	}
 	
 	@Override

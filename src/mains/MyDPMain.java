@@ -96,7 +96,8 @@ public class MyDPMain {
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.train();
 //		gsvm.test();
-//		gsvm.savePerf("./data/gsvm_perf.txt");
+//		gsvm.printUserPerformance("./data/gsvm_perf.txt");
+//		gsvm.saveSupModel("./data/gsvm_weights.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
@@ -167,15 +168,17 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
-//		/***baseline 7: mtsvm***/
-//		//Create the instance of MT-SVM
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
-//		mtsvm.savePerf("./data/mtsvm_perf.txt");
-//		mtsvm.saveModel(String.format("./data/%s_mtsvm_0.5_1/", dataset));
+		/***baseline 7: mtsvm***/
+		//Create the instance of MT-SVM
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
+		mtsvm.printUserPerformance("./data/mtsvm_perf.txt");
+		mtsvm.printGlobalUserPerformance("./data/mtsvm_global_perf.txt");
+		mtsvm.saveModel(String.format("./data/mtsvm/", dataset));
+		mtsvm.saveSupModel("./data/mtsvm_global_weights.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //
@@ -202,22 +205,22 @@ public class MyDPMain {
 
 //		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
-		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
-		
-//		MTCLinAdaptWithDPKMeans adaptation = new MTCLinAdaptWithDPKMeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.setDisplayLv(displayLv);
-		adaptation.setLNormFlag(false);
-		adaptation.setNumberOfIterations(30);
-		adaptation.setsdA(sdA);
-		adaptation.setsdB(sdB);
-		adaptation.setR1TradeOffs(eta1, eta2);
-		adaptation.setR2TradeOffs(eta3, eta4);
-		
-		adaptation.train();
-		adaptation.test();
+//		MTCLinAdaptWithDPLR adaptation = new MTCLinAdaptWithDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//		adaptation.setLMFvSize(analyzer.getLMFeatureSize());
+//		
+////		MTCLinAdaptWithDPKMeans adaptation = new MTCLinAdaptWithDPKMeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//
+//		adaptation.loadUsers(analyzer.getUsers());
+//		adaptation.setDisplayLv(displayLv);
+//		adaptation.setLNormFlag(false);
+//		adaptation.setNumberOfIterations(30);
+//		adaptation.setsdA(sdA);
+//		adaptation.setsdB(sdB);
+//		adaptation.setR1TradeOffs(eta1, eta2);
+//		adaptation.setR2TradeOffs(eta3, eta4);
+//		
+//		adaptation.train();
+//		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
 //		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());

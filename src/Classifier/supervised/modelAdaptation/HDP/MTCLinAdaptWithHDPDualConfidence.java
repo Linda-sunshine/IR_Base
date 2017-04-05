@@ -67,7 +67,8 @@ public class MTCLinAdaptWithHDPDualConfidence extends MTCLinAdaptWithHDPConfiden
 		for(int i=0; i<m_numberOfIterations; i++){
 			while(ecount++ < m_thinning){
 				calculate_E_step();
-				curLikelihood = calculate_M_step();
+				assignClusterIndex();		
+				sampleGamma();
 			}
 			
 			curLikelihood += estPhi();

@@ -83,12 +83,23 @@ public abstract class _DocBase {
 		return this.m_predict_label;
 	}
 	
+	//Get the predicted result, which is used for comparison.
+	public int getPredictLabelG() {
+		return this.m_predict_label_g;
+	}	
+	
 	//Set the predict result back to the doc.
 	public int setPredictLabel(int label){
 		this.m_predict_label = label;
 		return this.m_predict_label;
 	}
 
+	int m_predict_label_g = 0;
+	//Set the predict result back to the doc.
+	public int setPredictLabelG(int label){
+		this.m_predict_label_g = label;
+		return this.m_predict_label_g;
+	}
 	//Set the time stamp for the document.
 	public void setTimeStamp(long t){
 		this.m_timeStamp = t;

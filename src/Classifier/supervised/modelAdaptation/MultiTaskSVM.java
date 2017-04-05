@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -124,6 +126,8 @@ public class MultiTaskSVM extends ModelAdaptation {
 		int class0 = m_libModel.getLabels()[0];
 		double sign = class0 > 0 ? 1 : -1, block=m_personalized?1:0;//disable personalized model when required
 		int userOffset = 0, globalOffset = m_bias?(m_featureSize+1)*m_userSize:m_featureSize*m_userSize;
+		setSupWeights(sign, block, weight, globalOffset);
+		
 		for(_AdaptStruct user:m_userList) {
 			if (user.getAdaptationSize()>0) {
 				for(int i=0; i<m_featureSize; i++) 
@@ -146,6 +150,15 @@ public class MultiTaskSVM extends ModelAdaptation {
 		}
 	}
 	
+	// Set the global part in mt-svm
+	public void setSupWeights(double sign, double block, double[] weight, int globalOffset){
+		m_gWeights = new double[m_featureSize+1];
+		for(int i=0; i<m_featureSize; i++) 
+			m_gWeights[i+1] = sign*weight[globalOffset+i]/m_u;
+		
+		if (m_bias)
+			m_gWeights[0] = sign*weight[globalOffset+m_featureSize]/m_u;
+	}
 	//create a training instance of svm.
 	//for MT-SVM feature vector construction: we put user models in front of global model
 	public Feature[] createLibLinearFV(_Review r, int userIndex){
@@ -212,6 +225,36 @@ public class MultiTaskSVM extends ModelAdaptation {
 			e.printStackTrace();
 		}
 	}
+	
+	// added by Lin for model performance comparison.
+	// print out each user's test review's performance.
+	public void printGlobalUserPerformance(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+				@Override
+				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+				}
+			});
+			for(_AdaptStruct u: m_userList){
+				writer.write("-----\n");
+				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+				for(_Review r: u.getReviews()){
+					if(r.getType() == rType.ADAPTATION)
+						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+					if(r.getType() == rType.TEST){
+						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
+					}
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+		
 	// for debug purpose
 	public _AdaptStruct findUser(String userID){
 		for(_AdaptStruct u: m_userList){
@@ -219,5 +262,23 @@ public class MultiTaskSVM extends ModelAdaptation {
 				return u;
 		}
 		return null;
+	}
+	
+	// print out the sup part of the mt-svm
+	public void saveSupModel(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			if(m_bias)
+				writer.write(m_gWeights[m_featureSize]+"\n");
+			else
+				writer.write(0);
+				
+			for(int i=0; i<m_featureSize; i++)
+					writer.write(m_gWeights[i]+"\n");
+			
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }
