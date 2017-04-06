@@ -15,27 +15,30 @@ public class _HDPThetaStar extends _thetaStar {
 	// beta in _thetaStar is \phi used in HDP.
 	
 	//this will be in log space!
-//	protected double[] m_psi;// psi used in multinomal distribution of language model (may be of different dimension as \phi).
 	public int m_hSize; //total number of local groups in the component.
 	protected double m_gamma;
 	
+	/****edge is indicator for one direction, i->j \in g (current theta),
+	 ****connection contains two indicators: i->j \in g and j->i \in h.****/
 	// Parameters used in MMB model.
 	protected int m_edgeSize[];//0: zero-edge count;1: one-edge count.
 	
 	// The count of the features inside clusters.
 	double[] m_lmStat = null;
-//	HashMap<_HDPThetaStar, Double> m_B;
+	// key: theta, value: corresponding edge counts.
+	HashMap<_HDPThetaStar, int[]> m_connectionCount;
 	
 	public _HDPThetaStar(int dim, int lmSize, double gamma) {
 		super(dim);
-//		m_psi = new double[lmSize];
 		m_gamma = gamma;
 		m_edgeSize = new int[2];
+		m_connectionCount = new HashMap<_HDPThetaStar, int[]>();
 	}
 	public _HDPThetaStar(int dim, double gamma) {
 		super(dim);
 		m_gamma = gamma;
 		m_edgeSize = new int[2];
+		m_connectionCount = new HashMap<_HDPThetaStar, int[]>();
 	}
 	
 	public void initLMStat(int lmDim){
@@ -68,20 +71,7 @@ public class _HDPThetaStar extends _thetaStar {
 			sum += v;
 		return sum;
 	}
-//	public void initPsiModel(int lmSize){
-//		m_psi = new double[lmSize];
-//	}
-//	
-//	public double[] getPsiModel(){
-//		return m_psi;
-//	}
-	
-//	public void initB(){
-//		if(m_B == null)
-//			m_B = new HashMap<_HDPThetaStar, Double>();
-//		else
-//			m_B.clear();
-//	}
+
 	public void setGamma(double g){
 		m_gamma = g;
 	}
@@ -108,9 +98,6 @@ public class _HDPThetaStar extends _thetaStar {
 	public ArrayList<String> getReviewNames(){
 		return m_reviewNames;
 	}
-//	public void resetPsiModel(){
-//		m_psi = null;
-//	}
 	
 	@Override
 	// override the function to make the disabling and enabling by itself.
@@ -129,6 +116,7 @@ public class _HDPThetaStar extends _thetaStar {
 			m_isValid = false;
 	}
 	
+	// Get the edge count for i->j falls in the current theta.
 	public int getEdgeSize(int e){
 		return m_edgeSize[e];
 	}
@@ -136,26 +124,33 @@ public class _HDPThetaStar extends _thetaStar {
 	public int getTotalEdgeSize(){
 		return Utils.sumOfArray(m_edgeSize);
 	}
-//	// key: the thetastar, value: probability.
-//	public void addOneB(_HDPThetaStar t, double p){
-//		m_B.put(t, p);
-//	}
-//	// check if the user group existing or not.
-//	public boolean hasB(_HDPThetaStar theta){
-//		if(m_B.containsKey(theta))
-//			return true;
-//		else
-//			return false;
-//	}
-//	public double getOneB(_HDPThetaStar t){
-//		if(hasB(t))
-//			return m_B.get(t);
-//		else{
-//			System.out.println("The probability does not exist!");
-//			return 0;
-//		}
-//	}
-//	public HashMap<_HDPThetaStar, Double> getB(){
-//		return m_B;
-//	}
+	
+	// Get the edge count for B_gh (i->j falls in theta_g, j->i falls in theta_h)
+	// And 'e' indicates whether it is 0 edge or 1 edge.
+	public int getConnectionSize(_HDPThetaStar theta, int e){
+		if(m_connectionCount.containsKey(theta))
+			return m_connectionCount.get(theta)[e];
+		else{
+			System.err.print("No such connections!");
+			return 0;
+		}
+	}
+	
+	public void rmConnection(_HDPThetaStar theta, int e){
+		if(m_connectionCount.containsKey(theta)){
+			m_connectionCount.get(theta)[e]--;
+			if(m_connectionCount.get(theta)[0] + m_connectionCount.get(theta)[1] == 0)
+				m_connectionCount.remove(theta);
+		} else
+			System.err.println("No such thetas!");
+	}
+	
+	public void addConnection(_HDPThetaStar theta, int e){
+		if(m_connectionCount.containsKey(theta))
+			m_connectionCount.get(theta)[e]++;
+		else{
+			m_connectionCount.put(theta, new int[2]);
+			
+		}
+	}
 }
