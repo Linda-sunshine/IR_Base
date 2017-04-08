@@ -42,6 +42,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	public CLRWithMMB(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel,
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, betas);
+		calcProbNew();
 	} 
 	
 	public void calcProbNew(){
@@ -186,7 +187,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				logSum = Utils.logSum(logSum, likelihood);
 		}
 		// fix1: the probability for new cluster
-		logNew = Utils.logSum(m_eta*m_gamma_e, m_pNew[e]);
+		logNew = Math.log(m_eta*m_gamma_e) + m_pNew[e];
 		logSum = Utils.logSum(logSum, logNew);
 		
 		//Sample group k with likelihood.
@@ -296,6 +297,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
 			m_indicator[i][j] = m_hdpThetaStars[h];
 			updateSampleSize(1);
+			addConnection(ui, uj, 0);
 		} else{
 			updateSampleSize(2);
 			updateSampleSize(2);
@@ -344,6 +346,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_hdpThetaStars[m_kBar] = new _HDPThetaStar(m_dim, 0);
 		}
 		m_hdpThetaStars[m_kBar].enable();
+		m_hdpThetaStars[m_kBar].initLMStat(m_lmDim);
 
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[m_kBar].setGamma(rnd*m_gamma_e);

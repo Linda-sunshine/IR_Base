@@ -131,7 +131,7 @@ public class _HDPThetaStar extends _thetaStar {
 		if(m_connectionCount.containsKey(theta))
 			return m_connectionCount.get(theta)[e];
 		else{
-			System.err.print("No such connections!");
+			//System.err.println("No such connections!");
 			return 0;
 		}
 	}

@@ -175,10 +175,10 @@ public class MyDPMain {
 		mtsvm.setBias(true);
 		mtsvm.train();
 		mtsvm.test();
-		mtsvm.printUserPerformance("./data/mtsvm_perf.txt");
-		mtsvm.printGlobalUserPerformance("./data/mtsvm_global_perf.txt");
-		mtsvm.saveModel(String.format("./data/mtsvm/", dataset));
-		mtsvm.saveSupModel("./data/mtsvm_global_weights.txt");
+//		mtsvm.printUserPerformance("./data/mtsvm_perf_train.txt");
+//		mtsvm.printGlobalUserPerformance("./data/mtsvm_global_perf_train.txt");
+//		mtsvm.saveModel(String.format("./data/mtsvm_train/", dataset));
+//		mtsvm.saveSupModel("./data/mtsvm_global_weights_train.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //

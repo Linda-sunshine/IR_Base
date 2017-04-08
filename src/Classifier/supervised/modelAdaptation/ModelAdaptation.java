@@ -250,6 +250,17 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	abstract protected void setPersonalizedModel();
 	
+	// Used for sanity check for personalization.
+	public int predictG(_Doc doc) {
+		_SparseFeature[] fv = doc.getSparse();
+
+		double maxScore = Utils.dotProduct(m_gWeights, fv, 0);
+		if (m_classNo==2) {
+			return maxScore>0?1:0;
+		} 
+		System.err.print("Wrong classification task!");
+		return -1;
+	}
 	@Override
 	public double test(){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -273,11 +284,13 @@ public abstract class ModelAdaptation extends BaseClassifier {
 							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
 								//record prediction results
 								for(_Review r:user.getReviews()) {
-									if (r.getType() != rType.TEST)
+									if (r.getType() != rType.ADAPTATION)
 										continue;
 									int trueL = r.getYLabel();
 									int predL = user.predict(r); // evoke user's own model
+//									int predLG = predictG(r);
 									r.setPredictLabel(predL);
+//									r.setPredictLabelG(predLG);
 									userPerfStat.addOnePredResult(predL, trueL);
 								}
 							}							
