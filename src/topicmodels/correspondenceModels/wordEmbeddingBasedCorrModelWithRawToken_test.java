@@ -6,23 +6,19 @@ import utils.Utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.TreeMap;
 
 /**
- * Created by jetcai1900 on 3/19/17.
+ * Created by jetcai1900 on 4/6/17.
  */
-public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrModel{
-    public wordEmbeddingBasedCorrModel_test(int number_of_iteration, double converge, double beta, _Corpus c,
-                                            double lambda, int number_of_topics, double alpha, double alpha_c,
-                                            double[]gamma, double burnIn, int lag){
+public class wordEmbeddingBasedCorrModelWithRawToken_test extends wordEmbeddingBasedCorrModelWithRawToken {
+    public wordEmbeddingBasedCorrModelWithRawToken_test(int number_of_iteration, double converge, double beta, _Corpus c,
+                                                        double lambda, int number_of_topics, double alpha, double alpha_c,
+                                                        double[]gamma, double burnIn, int lag){
         super(number_of_iteration, converge, beta, c,
-        lambda, number_of_topics, alpha, alpha_c,
-        gamma, burnIn, lag);
-
+                lambda, number_of_topics, alpha, alpha_c,
+                gamma, burnIn, lag);
     }
 
     public void printTopWords(int k, String betaFile) {
@@ -73,12 +69,17 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
     }
 
     public void debugOutput(String filePrefix) {
+        File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
+        File childTopicFolder = new File(filePrefix + "childTopicAssignment");
 
-        File topicFolder = new File(filePrefix + "topicAssignment");
+        if (!parentTopicFolder.exists()) {
+            System.out.println("creating directory" + parentTopicFolder);
+            parentTopicFolder.mkdir();
+        }
 
-        if (!topicFolder.exists()) {
-            System.out.println("creating directory" + topicFolder);
-            topicFolder.mkdir();
+        if (!childTopicFolder.exists()) {
+            System.out.println("creating directory" + childTopicFolder);
+            childTopicFolder.mkdir();
         }
 
         File childTopKStnFolder = new File(filePrefix + "topKStn");
@@ -95,6 +96,10 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             stnTopKChildFolder.mkdir();
         }
 
+        int topKStn = 10;
+        int topKChild = 10;
+
+
         File xFolder = new File(filePrefix + "xAssignment");
 
         if (!xFolder.exists()) {
@@ -102,8 +107,6 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             xFolder.mkdir();
         }
 
-        int topKStn = 10;
-        int topKChild = 10;
 
         File parentChildTopicDistributionFolder = new File(filePrefix
                 + "topicProportion");
@@ -115,11 +118,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 
         for (_Doc d : m_trainSet) {
             if (d instanceof _ParentDoc) {
-                printParentTopicAssignment(d, topicFolder);
+                printParentTopicAssignment(d, parentTopicFolder);
 //                printParameter(d, parentChildTopicDistributionFolder);
 
             } else if (d instanceof _ChildDoc) {
-                printChildTopicAssignment(d, topicFolder);
+                printChildTopicAssignment(d, childTopicFolder);
                 printXAssignment(d, xFolder);
             }
             // if(d instanceof _ParentDoc){
@@ -160,9 +163,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             for (_Word w : pDoc.getWords()) {
                 int index = w.getIndex();
                 int topic = w.getTopic();
+                int rawWId = w.getRawIndex();
 
                 String featureName = m_corpus.getFeature(index);
-                pw.print(featureName + ":" + topic + "\t");
+                String rawFeature = m_corpus.m_rawFeatureList.get(rawWId);
+                pw.print(rawFeature+ ":" + featureName+":"+topic + "\t");
             }
 
             pw.flush();
@@ -183,9 +188,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             for (_Word w : d.getWords()) {
                 int index = w.getIndex();
                 int topic = w.getTopic();
+                int rawWId = w.getRawIndex();
 
                 String featureName = m_corpus.getFeature(index);
-                pw.print(featureName + ":" + topic + "\t");
+                String rawFeature = m_corpus.m_rawFeatureList.get(rawWId);
+                pw.print(rawFeature+ ":" + featureName+":"+topic + "\t");
             }
 
             pw.flush();
@@ -308,7 +315,7 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             for(_Doc d:m_trainSet){
                 if (d instanceof _ParentDoc){
                     for(_ChildDoc cDoc:((_ParentDoc) d).m_childDocs )
-                    pw.println(cDoc.getName()+"\t"+cDoc.m_xProportion[0]+"\t"+cDoc.m_xProportion[1]);
+                        pw.println(cDoc.getName()+"\t"+cDoc.m_xProportion[0]+"\t"+cDoc.m_xProportion[1]);
                 }
             }
         }catch(Exception e){

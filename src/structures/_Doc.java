@@ -245,6 +245,7 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 		
 		//Warning: in topic modeling, we cannot normalize the feature vector and we should only use TF as feature value!
 		int docSize = getTotalDocLength();
+//		int wordsSize = m_words.length;
 		if (m_words==null || m_words.length != docSize) {
 			m_words = new _Word[docSize];
 		} 
@@ -390,6 +391,21 @@ public class _Doc extends _DocBase implements Comparable<_Doc> {
 			_Word w = wordList.get(listIndex);
 			m_words[listIndex] = new _Word(w.getIndex());
 			m_words[listIndex].setRawToken(w.getRawToken());
+			m_words[listIndex].setRawIndex(w.getRawIndex());
+		}
+	}
+
+	public void setTopics4GibbsbyRawTokenLDA(int k, double alpha){
+		createSpace(k, alpha);
+		int wid, tid;
+
+		for(_Word w:m_words){
+			wid = w.getIndex();
+			tid = m_rand.nextInt(k);
+			w.setTopic(tid);
+
+			m_sstat[tid] ++;
+
 		}
 	}
 }

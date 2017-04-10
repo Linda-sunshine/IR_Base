@@ -14,12 +14,14 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
     protected double[] m_alpha_c;
     protected double m_totalAlpha_c;
     protected double d_alpha_c;
+    protected double m_mu;
 
     public PriorCorrLDA(int number_of_iteration, double converge, double beta, _Corpus c, double lambda,
                         int number_of_topics, double alpha, double alpha_c, double burnIn, int lag){
         super(number_of_iteration, converge, beta, c, lambda,
          number_of_topics, alpha, burnIn, lag);
         d_alpha_c = alpha_c;
+        m_mu = 0.5;
     }
 
     protected void initialize_probability(Collection<_Doc> collection){
@@ -41,6 +43,7 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
                 }
                 d.setTopics4Gibbs(number_of_topics, 0);
             }else if(d instanceof  _ChildDoc){
+                ((_ChildDoc)d).setMu(m_mu);
                 ((_ChildDoc)d).setTopics4Gibbs_LDA(number_of_topics, 0);
             }
 
@@ -55,8 +58,8 @@ public class PriorCorrLDA extends corrLDA_Gibbs{
     }
 
     public String toString(){
-        return String.format("Prior Corr LDA [k:%d, alpha:%.2f, beta:%.2f, Gibbs Sampling]",
-                number_of_topics, d_alpha, d_beta);
+        return String.format("Prior Corr LDA [k:%d, alpha:%.2f, mu: %.2f, beta:%.2f, Gibbs Sampling]",
+                number_of_topics, d_alpha, m_mu, d_beta);
     }
 
     protected double parentChildInfluenceProb(int tid, _ParentDoc d) {

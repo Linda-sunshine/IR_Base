@@ -25,6 +25,8 @@ public class _Corpus {
 	ArrayList<String> m_features; //ArrayList for feature names
 	public HashMap<String, _stat> m_featureStat; //statistics about the features
 	boolean m_withContent = false; // by default all documents' content has been released
+
+	public ArrayList<String> m_rawFeatureList; //ArrayList for raw features
 		
 	public void setFeatureStat(HashMap<String, _stat> featureStat) {
 		this.m_featureStat = featureStat;
@@ -176,5 +178,12 @@ public class _Corpus {
 		for(int i = 0; i<m_features.size();i++)
 			back_ground_probabilty[i] = (1.0 + back_ground_probabilty[i]) / sum;
 		return back_ground_probabilty;
+	}
+
+	public void setRawFeatures(ArrayList<String> rawFeaturelist){
+		m_rawFeatureList = new ArrayList<String>();
+		for(String rawFeature: rawFeaturelist){
+			m_rawFeatureList.add(rawFeature);
+		}
 	}
 }

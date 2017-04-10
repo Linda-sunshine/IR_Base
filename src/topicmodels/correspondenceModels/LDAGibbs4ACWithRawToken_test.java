@@ -6,23 +6,18 @@ import utils.Utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.TreeMap;
 
 /**
- * Created by jetcai1900 on 3/19/17.
+ * Created by jetcai1900 on 4/7/17.
  */
-public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrModel{
-    public wordEmbeddingBasedCorrModel_test(int number_of_iteration, double converge, double beta, _Corpus c,
-                                            double lambda, int number_of_topics, double alpha, double alpha_c,
-                                            double[]gamma, double burnIn, int lag){
-        super(number_of_iteration, converge, beta, c,
-        lambda, number_of_topics, alpha, alpha_c,
-        gamma, burnIn, lag);
-
+public class LDAGibbs4ACWithRawToken_test extends LDAGibbs4ACWithRawToken {
+    public LDAGibbs4ACWithRawToken_test(int number_of_iteration, double converge,
+                                        double beta, _Corpus c, double lambda, int number_of_topics,
+                                        double alpha, double burnIn, int lag, double ksi, double ta){
+        super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
+                alpha, burnIn, lag);
     }
 
     public void printTopWords(int k, String betaFile) {
@@ -74,11 +69,17 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 
     public void debugOutput(String filePrefix) {
 
-        File topicFolder = new File(filePrefix + "topicAssignment");
+        File parentTopicFolder = new File(filePrefix + "parentTopicAssignment");
+        File childTopicFolder = new File(filePrefix + "childTopicAssignment");
 
-        if (!topicFolder.exists()) {
-            System.out.println("creating directory" + topicFolder);
-            topicFolder.mkdir();
+        if (!parentTopicFolder.exists()) {
+            System.out.println("creating directory" + parentTopicFolder);
+            parentTopicFolder.mkdir();
+        }
+
+        if (!childTopicFolder.exists()) {
+            System.out.println("creating directory" + childTopicFolder);
+            childTopicFolder.mkdir();
         }
 
         File childTopKStnFolder = new File(filePrefix + "topKStn");
@@ -95,13 +96,6 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             stnTopKChildFolder.mkdir();
         }
 
-        File xFolder = new File(filePrefix + "xAssignment");
-
-        if (!xFolder.exists()) {
-            System.out.println("creating directory" + xFolder);
-            xFolder.mkdir();
-        }
-
         int topKStn = 10;
         int topKChild = 10;
 
@@ -115,12 +109,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 
         for (_Doc d : m_trainSet) {
             if (d instanceof _ParentDoc) {
-                printParentTopicAssignment(d, topicFolder);
+                printParentTopicAssignment(d, parentTopicFolder);
 //                printParameter(d, parentChildTopicDistributionFolder);
 
             } else if (d instanceof _ChildDoc) {
-                printChildTopicAssignment(d, topicFolder);
-                printXAssignment(d, xFolder);
+                printChildTopicAssignment(d, childTopicFolder);
             }
             // if(d instanceof _ParentDoc){
             // printTopKChild4Stn(topKChild, (_ParentDoc)d, stnTopKChildFolder);
@@ -138,7 +131,6 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
 //        discoverSpecificComments(similarityFile);
 //        printEntropy(filePrefix);
         printTopKChild4Parent(filePrefix, topKChild);
-        printXVal(filePrefix);
 //        printTopKChild4Stn(filePrefix, topKChild);
 //        printTopKChild4StnWithHybrid(filePrefix, topKChild);
 //        printTopKChild4StnWithHybridPro(filePrefix, topKChild);
@@ -160,9 +152,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             for (_Word w : pDoc.getWords()) {
                 int index = w.getIndex();
                 int topic = w.getTopic();
+                int rawIndex = w.getRawIndex();
 
                 String featureName = m_corpus.getFeature(index);
-                pw.print(featureName + ":" + topic + "\t");
+                String rawFeature = m_corpus.m_rawFeatureList.get(rawIndex);
+                pw.print(rawFeature+":"+featureName + ":" + topic + "\t");
             }
 
             pw.flush();
@@ -183,9 +177,11 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
             for (_Word w : d.getWords()) {
                 int index = w.getIndex();
                 int topic = w.getTopic();
+                int rawWId = w.getRawIndex();
 
                 String featureName = m_corpus.getFeature(index);
-                pw.print(featureName + ":" + topic + "\t");
+                String rawFeature = m_corpus.m_rawFeatureList.get(rawWId);
+                pw.print(rawFeature+ ":" + featureName+":"+topic + "\t");
             }
 
             pw.flush();
@@ -301,43 +297,4 @@ public class wordEmbeddingBasedCorrModel_test extends wordEmbeddingBasedCorrMode
         return childSim;
     }
 
-    protected void printXVal(String filePrefix){
-        String xValFile = filePrefix+"xVal.txt";
-        try{
-            PrintWriter pw = new PrintWriter(new File(xValFile));
-            for(_Doc d:m_trainSet){
-                if (d instanceof _ParentDoc){
-                    for(_ChildDoc cDoc:((_ParentDoc) d).m_childDocs )
-                    pw.println(cDoc.getName()+"\t"+cDoc.m_xProportion[0]+"\t"+cDoc.m_xProportion[1]);
-                }
-            }
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    protected void printXAssignment(_Doc d, File xFolder) {
-        String xAssignmentFile = d.getName() + ".txt";
-
-        try {
-            PrintWriter pw = new PrintWriter(new File(xFolder,
-                    xAssignmentFile));
-
-            _ChildDoc cDoc = (_ChildDoc)d;
-            for (_Word w : cDoc.getWords()) {
-                int index = w.getIndex();
-                int topic = w.getTopic();
-                int xid = w.getX();
-                double xProportion = w.getXProb();
-
-                String featureName = m_corpus.getFeature(index);
-                pw.print(featureName + ":" + xid +":"+xProportion+ "\t");
-            }
-
-            pw.flush();
-            pw.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 }

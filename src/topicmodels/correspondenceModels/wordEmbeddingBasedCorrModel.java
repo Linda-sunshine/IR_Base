@@ -573,8 +573,6 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
         return wordEmbeddingSim;
     }
 
-
-
 //
 //    protected double wordByTopicEmbedInComm(int curPWId, int curPTId, int cWId, int cTId, _ParentDoc pDoc){
 //        double wordEmbeddingSim = 0.0;
@@ -716,9 +714,6 @@ public class wordEmbeddingBasedCorrModel extends PriorCorrLDA {
             Utils.L1Normalization(cDoc.m_topics);
             Utils.L1Normalization(cDoc.m_xProportion);
 
-            for(_Word w:d.getWords()){
-                w.getXProb();
-            }
         }
     }
 

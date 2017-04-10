@@ -2,6 +2,7 @@ package Analyzer;
 
 import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
+import opennlp.tools.util.StringList;
 import structures.*;
 import utils.Utils;
 
@@ -73,7 +74,6 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             return;
         }
 
-
     }
 
     protected boolean AnalyzeDoc(_Doc doc) {
@@ -85,6 +85,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
         ArrayList<_Word> wordList = new ArrayList<_Word>();
         HashMap<Integer, Double> spVct = constructSpVct(tokens, rawTokens, y, null, wordList);
+//        HashMap<Integer, Double> spVct = constructSpVct(rawTokens, rawTokens, y, null, wordList);
 
         if (spVct.size()>m_lengthThreshold) {
             doc.createSpVct(spVct);
@@ -154,6 +155,9 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 wordList.add(w);
 
             } else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+                rawToken = Normalize(rawToken);
+                if(!m_rawFeatureList.contains(rawToken))
+                    continue;
                 index = m_featureNameIndex.get(token);
                 if (spVct.containsKey(index)) {
                     value = spVct.get(index) + 1;
@@ -168,14 +172,12 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                     m_featureStat.get(token).addOneTTF(y);
 
                 _Word w = new _Word(index);
-                rawToken = Normalize(rawToken);
 
-                if(m_rawFeatureList.contains(rawToken)) {
-                    int rawIndex = m_rawFeatureList.indexOf(rawToken);
-                    w.setRawToken(rawToken);
-                    w.setRawIndex(rawIndex);
-                    wordList.add(w);
-                }
+                int rawIndex = m_rawFeatureList.indexOf(rawToken);
+                w.setRawToken(rawToken);
+                w.setRawIndex(rawIndex);
+                wordList.add(w);
+
             }
         }
 
@@ -223,9 +225,13 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
         for(String sentence : sentences) {
             result = TokenizerNormalizeStemmer(sentence);// Three-step analysis.
+            String[] tokens = result.getTokens();
             String[] rawTokens = result.getRawTokens();
 
-            HashMap<Integer, Double> sentence_vector = constructSpVct(result.getTokens(), rawTokens, y, null, wordList);// construct bag-of-word vector based on normalized tokens
+            ArrayList<_Word> sentence_wordList = new ArrayList<_Word>();
+            HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, rawTokens, y, null, sentence_wordList);// construct bag-of-word vector based on normalized tokens
+
+//            HashMap<Integer, Double> sentence_vector = constructSpVct(rawTokens, rawTokens, y, null, wordList);// construct bag-of-word vector based on normalized tokens
 
             if (sentence_vector.size()>2) {//avoid empty sentence
                 String[] posTags;
@@ -236,6 +242,10 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
                 stnList.add(new _Stn(index, Utils.createSpVct(sentence_vector), result.getRawTokens(), posTags, sentence));
                 Utils.mergeVectors(sentence_vector, spVct);
+
+                for(_Word sentence_Word:sentence_wordList){
+                    wordList.add(sentence_Word);
+                }
 
                 stopwordCnt += result.getStopwordCnt();
                 rawCnt += result.getRawCnt();
@@ -386,7 +396,6 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                         continue;
                     }
 
-                    String wordStr = resultToken.getTokens()[0];
                     rawTokenObj.setEmbeddingVec(tokenEmbeddingVec);
 
                     m_rawTokenMap.put(rawWordStr, rawTokenObj);
@@ -431,6 +440,8 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             }
             pw.println();
 
+            System.out.println("m_rawTokenMap size\t"+m_rawTokenMap.size());
+
             for(int i=0; i<m_rawFeatureList.size(); i++){
 
                 String wStrRow = m_rawFeatureList.get(i);
@@ -455,7 +466,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
                     double cosSim = Utils.cosine(rawTokenObjCol.getEmbeddingVec(),rawTokenObjRow.getEmbeddingVec());
                     //                wStatRow.m_wordSimMap.put(wStrCol, cosSim);
-                    pw.print(cosSim+"\t");
+//                    pw.print(cosSim+"\t");
                     simList.add(cosSim);
                 }
                 pw.println();
@@ -547,8 +558,8 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             String[] lineContainer;
 
             HashMap<String, Integer> featureNameIndex = new HashMap<String, Integer>();
-            for(int i=0; i<m_corpus.getFeatureSize(); i++){
-                featureNameIndex.put(m_corpus.getFeature(i), featureNameIndex.size());
+            for(int i=0; i<m_rawFeatureList.size(); i++){
+                featureNameIndex.put(m_rawFeatureList.get(i), i);
             }
 
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(wordSimFileName), "UTF-8"));
@@ -620,10 +631,14 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
         ArrayList<_ParentDoc> pDocList = new ArrayList<_ParentDoc>();
 
+        int pDocIndex = 0;
         for(_Doc d: m_corpus.getCollection()){
-            if(d instanceof _ParentDoc){
-                pDocList.add((_ParentDoc)d);
-            }
+//            if(pDocIndex < 3) {
+                if (d instanceof _ParentDoc) {
+//                    pDocIndex += 1;
+                    pDocList.add((_ParentDoc) d);
+                }
+//            }
         }
 
 
@@ -640,19 +655,47 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 PrintWriter parentOut = new PrintWriter(new File(
                         resultFolder, parentSimFile));
 
-                for (int rawFeatureIndex=0; rawFeatureIndex<rawFeatureSize; rawFeatureIndex++) {
-                    String rawFeature = m_rawFeatureList.get(rawFeatureIndex);
-                    parentOut.print(rawFeature + "\t");
+                ArrayList<Integer> featureList = new ArrayList<Integer>();
+                for(_ChildDoc cDoc: pDoc.m_childDocs){
+                    for(_Word cWord:cDoc.getWords()){
+                        int cFeatureIndex= cWord.getRawIndex();
+                        if(!featureList.contains(cFeatureIndex))
+                            featureList.add(cFeatureIndex);
+                    }
+                }
 
-                    for (_Word pWord : pDoc.getWords()) {
-                        String pWordStr = pWord.getRawToken();
+                for(int rawFeatureIndex=0; rawFeatureIndex<featureList.size(); rawFeatureIndex++){
+                    String rawFeature = m_rawFeatureList.get(rawFeatureIndex);
+                    parentOut.print(rawFeature+"\t");
+
+                    for(_Word pWord: pDoc.getWords()){
                         int pRawFeatureIndex = pWord.getRawIndex();
+                        String pWordStr = pWord.getRawToken();
                         double cosineSim = m_wordSimMatrix[rawFeatureIndex][pRawFeatureIndex];
-                        parentOut.print(pWordStr + ":" + cosineSim + "\t");
+                        parentOut.print(pWordStr+":"+cosineSim+"\t");
                     }
 
                     parentOut.println();
                 }
+
+                parentOut.println("Here is the boundary");
+
+                for(int rawFeatureIndex=0; rawFeatureIndex<m_rawFeatureList.size(); rawFeatureIndex++){
+                    if(featureList.contains(rawFeatureIndex))
+                        continue;
+                    String rawFeature = m_rawFeatureList.get(rawFeatureIndex);
+                    parentOut.print(rawFeature+"\t");
+
+                    for(_Word pWord: pDoc.getWords()){
+                        int pRawFeatureIndex = pWord.getRawIndex();
+                        String pWordStr = pWord.getRawToken();
+                        double cosineSim = m_wordSimMatrix[rawFeatureIndex][pRawFeatureIndex];
+                        parentOut.print(pWordStr+":"+cosineSim+"\t");
+                    }
+
+                    parentOut.println();
+                }
+
                 parentOut.flush();
                 parentOut.close();
             }
@@ -758,4 +801,15 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             e.printStackTrace();
         }
     }
+
+    public _Corpus getCorpus() {
+        //store the feature names into corpus
+        m_corpus.setFeatures(m_featureNames);
+        m_corpus.setFeatureStat(m_featureStat);
+        m_corpus.setMasks(); // After collecting all the documents, shuffle all the documents' labels.
+        m_corpus.setContent(!m_releaseContent);
+        m_corpus.setRawFeatures(m_rawFeatureList);
+        return m_corpus;
+    }
+
 }

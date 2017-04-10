@@ -169,8 +169,24 @@ public class LDA_Gibbs extends pLSA {
 	}
 
 	@Override
-	public void calculate_M_step(int iter) {	
-		//literally we do not have M-step in Gibbs sampling		
+//	public void calculate_M_step(int iter) {
+//		//literally we do not have M-step in Gibbs sampling
+//		if (iter>m_burnIn && iter%m_lag == 0) {
+//			//accumulate p(w|z)
+//			for(int i=0; i<this.number_of_topics; i++) {
+//				for(int v=0; v<this.vocabulary_size; v++) {
+//					topic_term_probabilty[i][v] += word_topic_sstat[i][v]; // accumulate the samples during sampling iterations
+//				}
+//			}
+//
+//			//accumulate p(z|d)
+//			for(_Doc d:m_trainSet)
+//				collectStats(d);
+//		}
+//	}
+
+	public void calculate_M_step(int iter) {
+		//literally we do not have M-step in Gibbs sampling
 		if (iter>m_burnIn && iter%m_lag == 0) {
 			//accumulate p(w|z)
 			for(int i=0; i<this.number_of_topics; i++) {
@@ -178,7 +194,7 @@ public class LDA_Gibbs extends pLSA {
 					topic_term_probabilty[i][v] += word_topic_sstat[i][v]; // accumulate the samples during sampling iterations
 				}
 			}
-			
+
 			//accumulate p(z|d)
 			for(_Doc d:m_trainSet)
 				collectStats(d);

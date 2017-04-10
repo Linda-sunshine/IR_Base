@@ -45,13 +45,22 @@ public class _ParentDoc4WordEmbedding extends _ParentDoc {
             m_word2Index.put(m_x_sparse[i].m_index, i);
     }
 
-    public void setTopics4GibbsbyRawToken(int k, double alpha, int vocSize, int gammaSize) {
+    public void setTopics4GibbsbyRawToken(int k, double alpha, int vocSize, int rawFeatureSize, int gammaSize) {
         createSpace(k, alpha);
 
-        m_commentThread_wordSS = new double[gammaSize][k][vocSize];
-        m_commentWordEmbed_simSS = new double[k][vocSize][2];
+        m_commentThread_wordSS = new double[gammaSize][k][];
+//        m_commentWordEmbed_simSS = new double[k][vocSize][2];
+//        m_commentWordEmbed_normSimSS = new double[k][2];
 
-        m_commentWordEmbed_normSimSS = new double[k][2];
+
+        for(int t=0; t<k; t++){
+            m_commentThread_wordSS[0][t] = new double[vocSize];
+        }
+
+        for(int t=0; t<k; t++){
+            m_commentThread_wordSS[1][t] = new double[rawFeatureSize];
+        }
+
 
         int wIndex = 0, wid, tid;
         for(_Word w:m_words){
