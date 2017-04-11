@@ -8,21 +8,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-
-import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
-
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._HDPThetaStar;
+import structures._PerformanceStat;
 import structures._RankItem;
 import structures._Review;
-import structures._thetaStar;
+import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
@@ -47,6 +45,8 @@ public class CLRWithHDP extends CLRWithDP {
 	protected int m_lmDim = -1; // dimension for language model
 	double m_betaSum = 0;
 
+	protected ArrayList<String> m_lmFeatures;
+	
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
 			double[] betas, double alpha, double beta, double eta) {
 		super(classNo, featureSize, featureMap, globalModel);
@@ -71,6 +71,10 @@ public class CLRWithHDP extends CLRWithDP {
 		m_D0 = new DirichletPrior();//dirichlet distribution for psi and gamma.
 		m_stirlings = new HashMap<String, Integer>();
 		setBetas(betas);
+	}
+	
+	public void loadLMFeatures(ArrayList<String> lmFvs){
+		m_lmFeatures = lmFvs;
 	}
 	
 	@Override
@@ -212,7 +216,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, lx = 0, ly = 0, logSum = 0, gamma_k;
+		double likelihood, logSum = 0, gamma_k;
 		int k;
 			
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
@@ -629,7 +633,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-//			printInfo(i%5==0);//no need to print out the details very often
+			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -759,24 +763,16 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	void printTopWords(_HDPThetaStar cluster) {
-		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
-		double[] phi = cluster.getModel();
+		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(20);
+		double[] lmStat = cluster.getLMStat();
 		
 		//we will skip the bias term!
-		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
-		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+		System.out.format("Cluster %d (%d)\n[popular]: ", cluster.getIndex(), cluster.getMemSize());
+		for(int i=0; i<lmStat.length; i++) 
+			wordRanker.add(new _RankItem(i, lmStat[i]));//top positive words with expected polarity
 
 		for(_RankItem it:wordRanker)
-			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
-		
-		System.out.format("\n[negative]: ");
-		wordRanker.clear();
-		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
-
-		for(_RankItem it:wordRanker)
-			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+			System.out.format("%s:%.1f\t", m_lmFeatures.get(it.m_index), lmStat[it.m_index]);
 		
 		System.out.println();
 	}
@@ -810,115 +806,182 @@ public class CLRWithHDP extends CLRWithDP {
 		m_writer.write("\n");
 	}
 	
+	//apply current model in the assigned clusters to users
+	protected void evaluateModel() {//this should be only used in batch testing!
+		System.out.println("[Info]Accumulating evaluation results during sampling...");
+
+		//calculate cluster posterior p(c|u)
+		calculateClusterProbPerUser();
+			
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();		
+			
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_HDPAdaptStruct user;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_HDPAdaptStruct)m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+									
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									user.evaluate(r); // evoke user's own model
+									user.evaluateG(r);
+								}
+							}							
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+					
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+				
+			threads.get(k).start();
+		}
+			
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+	}	
+	@Override
+	public double test(){
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				public void run() {
+					_AdaptStruct user;
+					_PerformanceStat userPerfStat;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							userPerfStat = user.getPerfStat();								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									int trueL = r.getYLabel();
+									int predL = user.predict(r); // evoke user's own model
+									int predLG = ((_DPAdaptStruct) user).predictG(r);
+									r.setPredictLabel(predL);
+									r.setPredictLabelG(predLG);
+									userPerfStat.addOnePredResult(predL, trueL);
+								}
+							}							
+							userPerfStat.calculatePRF();	
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+		
+		int count = 0;
+		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
+		
+		//init macroF1
+		for(int i=0; i<m_classNo; i++)
+			macroF1.add(new ArrayList<Double>());
+		
+		_PerformanceStat userPerfStat;
+		m_microStat.clear();
+		for(_AdaptStruct user:m_userList) {
+			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+				continue;
+			
+			userPerfStat = user.getPerfStat();
+			for(int i=0; i<m_classNo; i++){
+				if(userPerfStat.getTrueClassNo(i)!=0)
+					macroF1.get(i).add(userPerfStat.getF1(i));
+			}
+			m_microStat.accumulateConfusionMat(userPerfStat);
+			count ++;
+		}
+		System.out.print("neg users: " + macroF1.get(0).size());
+		System.out.print("\tpos users: " + macroF1.get(1).size()+"\n");
+
+		System.out.println(toString());
+		calcMicroPerfStat();
+		// macro average and standard deviation.
+		System.out.println("\nMacro F1:");
+		for(int i=0; i<m_classNo; i++){
+			double[] avgStd = calcAvgStd(macroF1.get(i));
+			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
+		}
+		return 0;
+	}
 	
-	
-//	// Sample the weights given the cluster assignment.
-//	@Override
-//	protected double calculate_M_step(){
-//		assignClusterIndex();		
-//		
-//		//Step 1: sample gamma based on the current assignment.
-//		sampleGamma(); // why for loop BETA_K times?
-//		
-//		//Step 2: Optimize language model parameters with MLE.
-//		//Step 3: Optimize logistic regression parameters with lbfgs.
-//		return estPsi() + estPhi();
-//	}
-	
-//	//We should use maximum a posterior to estimate language models.
-//	public double estPsi(){
-//		double sum = 0, lmProb[], logLikelihood = 0;
-//		_HDPThetaStar theta;
-//		lmProb = new double[1000];
-//
-//		//Step 1: reset psi in each cluster
-//		for(int k=0; k<m_kBar; k++){ 
-//			theta = m_hdpThetaStars[k];
-//			lmProb = theta.getPsiModel();
-//					
-//			System.arraycopy(m_betas, 0, lmProb, 0, m_lmDim);//start from prior mean vector
-//		}
-//		
-//		//Step 2: accumulate count for each psi accordingly
-//		_HDPAdaptStruct user;
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_HDPAdaptStruct) m_userList.get(i);		
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() == rType.TEST)
-//					continue;
-//				
-//				lmProb = r.getHDPThetaStar().getPsiModel();
-//				for(_SparseFeature fv: r.getLMSparse())
-//					lmProb[fv.getIndex()] += fv.getValue();
-//			}
-//		}
-//		
-//		//Step 3: normalize the language models and compute the likelihood of Dir(\psi|\beta)
-//		for(int k=0; k<m_kBar; k++){ 
-//			theta = m_hdpThetaStars[k];
-//			lmProb = theta.getPsiModel();
-//					
-//			sum = Math.log(Utils.sumOfArray(lmProb));
-//			for(int v=0; v<m_lmDim; v++) {
-//				lmProb[v] = Math.log(lmProb[v]) - sum;
-//				logLikelihood += (m_betas[v]-1) * lmProb[v];//shall we compute the normalization constant in front of Dirichlet?
-//			}
-//			logLikelihood += m_nBetaDir;//Dirchlet normalization constant
-//		}
-//			
-//		//Step 4: compute the data likelihood 
-//		for(int i=0; i<m_userList.size(); i++){
-//			user = (_HDPAdaptStruct) m_userList.get(i);		
-//			for(_Review r: user.getReviews()){
-//				if (r.getType() == rType.TEST)
-//					continue;
-//				
-//				lmProb = r.getHDPThetaStar().getPsiModel();
-//				for(_SparseFeature fv: r.getLMSparse())
-//					logLikelihood += fv.getValue() * lmProb[fv.getIndex()];
-//			}
-//		}
-//		return logLikelihood;
-//	}
-//	
-//	public void updateDocMembership(_HDPAdaptStruct user, _Review r){
-//	int index = -1;
-//	_HDPThetaStar curThetaStar = r.getHDPThetaStar();
-//	//Step 1: remove the current review from the thetaStar and user side.
-//	user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
-//	curThetaStar.updateMemCount(-1);
-//
-//	if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
-//		curThetaStar.resetPsiModel();
-//		m_gamma_e += curThetaStar.getGamma();
-//		index = findHDPThetaStar(curThetaStar);
-//		swapTheta(m_kBar-1, index); // move it back to \theta*
-//		m_kBar --;
-//	}
-//}
-//	protected double calcLogLikelihoodX(_Review r){		
-//	double[] psi = r.getHDPThetaStar().getPsiModel();
-//	//we will integrate it out
-//	if(psi == null){
-//		return r.getL4NewCluster();
-//	} else {		
-//		double L = 0;
-//		for(_SparseFeature fv: r.getLMSparse())
-//			L += fv.getValue() * psi[fv.getIndex()];			
-//		return L;
-//	}
-//}
-//	// Current implementation, sample psi based on posterior.
-//	public void sampleNewCluster(int k, _SparseFeature[] fvs){
-//		m_hdpThetaStars[k].enable();
-//		m_hdpThetaStars[k].initPsiModel(m_lmDim);
-//		m_D0.sampling(m_hdpThetaStars[k].getPsiModel(), m_betas, fvs, true);//we should sample from Dir(\beta)
-//		
-//		double rnd = Beta.staticNextDouble(1, m_alpha);
-//		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-//		m_gamma_e = (1-rnd)*m_gamma_e;
-//			
-//		swapTheta(m_kBar, k);
-//		m_kBar++;
-//	 }
+	// print out each user's test review's performance.
+	public void printGlobalUserPerformance(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+				@Override
+				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+				}
+			});
+			for(_AdaptStruct u: m_userList){
+				writer.write("-----\n");
+				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+				for(_Review r: u.getReviews()){
+					if(r.getType() == rType.ADAPTATION)
+						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+					if(r.getType() == rType.TEST){
+						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
+					}
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }

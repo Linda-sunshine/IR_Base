@@ -11,6 +11,7 @@ import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
 import cern.jet.random.tfloat.FloatUniform;

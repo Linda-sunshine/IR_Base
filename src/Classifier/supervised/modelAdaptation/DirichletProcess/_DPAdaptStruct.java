@@ -82,100 +82,9 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		doc.m_prob += prob; //>0.5?1:0;
 		return prob;
 	}
-	
-	public double evaluateTrainReview(_Doc doc) {
-		double prob = 0, sum;
-		
-		if (m_dim==0) {//not adaptation based
-			for(int k=0; k<m_cluPosterior.length; k++) {
-				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
-					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
-				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-			}			
-		} else {
-			int n, m;
-			double As[];
-			for(int k=0; k<m_cluPosterior.length; k++) {
-				As = CLRWithDP.m_thetaStars[k].getModel();
-				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-				for(_SparseFeature fv: doc.getSparse()){
-					n = fv.getIndex() + 1;
-					m = m_featureGroupMap[n];
-					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-				}
-				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-			}
-		}
-		return prob > 0.5 ? 1: 0; //>0.5?1:0;
-	}
-//	public double evaluate(_Doc doc) {
-//		double prob = 0, prob_orc = 0, sum;
-//		
-//		if (m_dim==0) {//not adaptation based
-//			for(int k=0; k<m_cluPosterior.length; k++) {
-//				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-//				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
-//					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
-//				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-//			}			
-//		} else {
-//			int n, m;
-//			double As[];
-//			for(int k=0; k<m_cluPosterior.length; k++) {
-//				As = CLRWithDP.m_thetaStars[k].getModel();
-//				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-//				for(_SparseFeature fv: doc.getSparse()){
-//					n = fv.getIndex() + 1;
-//					m = m_featureGroupMap[n];
-//					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-//				}
-//				double log = Utils.logistic(sum);
-//				prob += m_cluPosterior[k] * log; 
-//				prob_orc += m_cluPosterior_orc[k] * log;
-//			}
-//		}
-//		
-//		//accumulate the prediction results during sampling procedure
-//		doc.m_pCount ++;
-//		doc.m_prob += prob; //>0.5?1:0;
-//		doc.m_prob_orc += prob_orc;
-//		return prob;
-//	}
-	public double evaluateTrain(_Doc doc) {
-		double prob = 0, sum;
-		
-		if (m_dim==0) {//not adaptation based
-			for(int k=0; k<m_cluPosterior.length; k++) {
-				sum = Utils.dotProduct(CLRWithDP.m_thetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
-				if(MTCLRWithDP.m_supWeights != null && MTCLRWithDP.m_q != 0)
-					sum += MTCLRWithDP.m_q*Utils.dotProduct(MTCLRWithDP.m_supWeights, doc.getSparse(), 0);
-				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-			}			
-		} else {
-			int n, m;
-			double As[];
-			for(int k=0; k<m_cluPosterior.length; k++) {
-				As = CLRWithDP.m_thetaStars[k].getModel();
-				sum = As[0]*CLinAdaptWithDP.m_supWeights[0] + As[m_dim];//Bias term: w_s0*a0+b0.
-				for(_SparseFeature fv: doc.getSparse()){
-					n = fv.getIndex() + 1;
-					m = m_featureGroupMap[n];
-					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
-				}
-				
-				prob += m_cluPosterior[k] * Utils.logistic(sum); 
-			}
-		}
-		
-		//accumulate the prediction results during sampling procedure
-		doc.m_pTrainCount ++;
-		doc.m_probTrain += prob; //>0.5?1:0;
-		
-		return prob;
-	}
+
 	@Override
-	public int predict(_Doc doc) {
+	public int predict(_Doc doc){
 		double prob = 0;
 		if (doc.m_pCount==0)//this document has not been tested yet??
 			prob = evaluate(doc);
@@ -184,20 +93,12 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		return prob>=0.5 ? 1:0;
 	}	
 	
-	public int predict_orc(_Doc doc){
+	public int predictG(_Doc doc){
 		double prob = 0;
-		if (doc.m_pCount==0)//this document has not been tested yet??
-			prob = evaluate(doc);
+		if (doc.m_pCount_g == 0)
+			System.err.println("Not accumulated!");
 		else
-			prob = doc.m_prob_orc/doc.m_pCount;
-		return prob>=0.5 ? 1:0;
-	}
-	public int predictTrain(_Doc doc){
-		double prob = 0;
-		if (doc.m_pTrainCount==0)//this document has not been tested yet??
-			prob = evaluate(doc);
-		else
-			prob = doc.m_probTrain/doc.m_pTrainCount;
+			prob = doc.m_prob_g/doc.m_pCount_g;
 		return prob>=0.5 ? 1:0;
 	}
 }

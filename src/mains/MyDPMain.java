@@ -57,7 +57,7 @@ public class MyDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -168,13 +168,13 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
 //		
-		/***baseline 7: mtsvm***/
-		//Create the instance of MT-SVM
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		/***baseline 7: mtsvm***/
+//		//Create the instance of MT-SVM
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 //		mtsvm.printUserPerformance("./data/mtsvm_perf_train.txt");
 //		mtsvm.printGlobalUserPerformance("./data/mtsvm_global_perf_train.txt");
 //		mtsvm.saveModel(String.format("./data/mtsvm_train/", dataset));
@@ -184,15 +184,15 @@ public class MyDPMain {
 //
 //		/***baseline 8: MTCLRWithDP***/
 //		// Create an instance of MTCLRWithDP
-//		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
-//		mtclrdp.loadUsers(analyzer.getUsers());
-//		mtclrdp.setDisplayLv(displayLv);
-//		mtclrdp.setLNormFlag(false);
-//		mtclrdp.setQ(0.4);
-//		mtclrdp.setsdA(sdA);
-//		mtclrdp.setR1TradeOffs(eta1, eta2);
-//		mtclrdp.train();
-//		mtclrdp.test();
+		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
+		mtclrdp.loadUsers(analyzer.getUsers());
+		mtclrdp.setDisplayLv(displayLv);
+		mtclrdp.setLNormFlag(false);
+		mtclrdp.setQ(0.4);
+		mtclrdp.setsdA(sdA);
+		mtclrdp.setR1TradeOffs(eta1, eta2);
+		mtclrdp.train();
+		mtclrdp.test();
 //		mtclrdp.savePerf("./data/mtclrdp_perf.txt");
 //		mtclrdp.saveModel(String.format("./data/%s_mtclrdp_0.5_1/", dataset));
 //		for(_User u: analyzer.getUsers())

@@ -24,6 +24,7 @@ import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
@@ -61,11 +62,11 @@ public class MyHDPMain {
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/if15/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -130,26 +131,27 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		
+		hdp.loadLMFeatures(analyzer.getLMFeatures());
 //		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 //		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
 //		MTCLinAdaptWithHDPDualConfidence hdp = new MTCLinAdaptWithHDPDualConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.2);//0.2
-//
-		hdp.setsdA(0.2);//0.2
+		hdp.setsdB(0.1);//0.2
+
+		hdp.setsdA(0.1);//0.2
 		double alpha = 0.2, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setBurnIn(30);
-//		hdp.setNumberOfIterations(200);
+		hdp.setBurnIn(5);
+		hdp.setNumberOfIterations(100);
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
-//		hdp.setPosteriorSanityCheck(true);
 		
 		hdp.train();
 		hdp.test();
+//		hdp.printUserPerformance("./data/hdp_perf_train.txt");
+//		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
 	}
 }

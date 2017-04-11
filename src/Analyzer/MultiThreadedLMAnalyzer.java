@@ -195,4 +195,8 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 			e.printStackTrace();
 		}
 	}
+	
+	public ArrayList<String> getLMFeatures(){
+		return m_lmFeatureNames;
+	}
 }

@@ -284,13 +284,11 @@ public abstract class ModelAdaptation extends BaseClassifier {
 							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
 								//record prediction results
 								for(_Review r:user.getReviews()) {
-									if (r.getType() != rType.ADAPTATION)
+									if (r.getType() != rType.TEST)
 										continue;
 									int trueL = r.getYLabel();
 									int predL = user.predict(r); // evoke user's own model
-//									int predLG = predictG(r);
 									r.setPredictLabel(predL);
-//									r.setPredictLabelG(predLG);
 									userPerfStat.addOnePredResult(predL, trueL);
 								}
 							}							

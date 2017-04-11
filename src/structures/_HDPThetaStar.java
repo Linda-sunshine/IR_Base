@@ -146,11 +146,9 @@ public class _HDPThetaStar extends _thetaStar {
 	}
 	
 	public void addConnection(_HDPThetaStar theta, int e){
-		if(m_connectionCount.containsKey(theta))
-			m_connectionCount.get(theta)[e]++;
-		else{
+		if(!m_connectionCount.containsKey(theta))
 			m_connectionCount.put(theta, new int[2]);
-			
-		}
+		
+		m_connectionCount.get(theta)[e]++;
 	}
 }

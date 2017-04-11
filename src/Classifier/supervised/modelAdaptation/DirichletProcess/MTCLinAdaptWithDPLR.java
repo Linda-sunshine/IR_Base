@@ -41,26 +41,26 @@ public class MTCLinAdaptWithDPLR extends MTCLinAdaptWithDP {
 	ArrayList<_Doc> m_lrTrainSet = new ArrayList<_Doc>();
 	// collect the training reviews and train the lr model.
 	public void buildLogisticRegression(){
-		int cNo = 0, count = 0;
-		_DPAdaptStruct user;
-		m_lrTrainSet.clear();
-		m_lr = new LogisticRegression4DP(m_kBar, m_lmFvSize, m_lambda);
-		
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			cNo = user.getThetaStar().getIndex();
-			for(_Review r: user.getReviews()){
-				if(r.getType() == rType.ADAPTATION){
-					if(user.evaluateTrainReview(r) == r.getYLabel()){
-						r.setClusterNo(cNo);
-						m_lrTrainSet.add(r);
-					} else
-						count++;
-				}
-			}
-		}
-		System.out.println("[Info]" + count);
-		m_lr.train(m_lrTrainSet);
+//		int cNo = 0, count = 0;
+//		_DPAdaptStruct user;
+//		m_lrTrainSet.clear();
+//		m_lr = new LogisticRegression4DP(m_kBar, m_lmFvSize, m_lambda);
+//		
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			cNo = user.getThetaStar().getIndex();
+//			for(_Review r: user.getReviews()){
+//				if(r.getType() == rType.ADAPTATION){
+//					if(user.evaluateTrainReview(r) == r.getYLabel()){
+//						r.setClusterNo(cNo);
+//						m_lrTrainSet.add(r);
+//					} else
+//						count++;
+//				}
+//			}
+//		}
+//		System.out.println("[Info]" + count);
+//		m_lr.train(m_lrTrainSet);
 	}
 	// added by Lin for tracking trace. 
 	public double trainTrace(String tracefile){
