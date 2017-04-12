@@ -4,13 +4,13 @@ public class DPParameter {
 	
 	public String m_prefix = "/if15/lg5bt/DataSigir";//"./data/CoLinAdapt"
 	public String m_data = "Amazon";
-	public String m_model = "mtclinhdp";
+	public String m_model = "mtclinhdpconfm";
 	public double m_adaptRatio = 0.5;
 
-	public int m_nuOfIterations = 30;
+	public int m_nuOfIterations = 50;
 	public int m_M = 6;
-	public int m_burnin = 5;
-	public int m_thinning = 5;
+	public int m_burnin = 20;
+	public int m_thinning = 3;
 	public double m_sdA = 0.1;
 	public double m_sdB = 0.1;
 	

@@ -29,8 +29,8 @@ import utils.Utils;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
-	protected int m_numberOfIterations = 30;
-	protected int m_burnIn = 5, m_thinning = 5;// burn in time, thinning time.
+	protected int m_numberOfIterations = 50;
+	protected int m_burnIn = 20, m_thinning = 3;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
 	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts

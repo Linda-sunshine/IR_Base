@@ -154,65 +154,8 @@ public class CLRWithHDP extends CLRWithDP {
 			
 			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
-
-			//we do not need to sample psi since we will integrate it out in likelihood calculation.
 		}
 	}
-//	StandardDeviation sd = new StandardDeviation();
-//	//Assign cluster to each review.
-//	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-//		double likelihood, lx = 0, ly = 0, logSum = 0, gamma_k;
-//		int k;
-//		//A1CUX21NK1E013-B000K3Y4VI
-//		
-//		//Step 1: reset thetaStars for the auxiliary thetaStars.
-//		sampleThetaStars();
-////		double[] yvar = new double[m_kBar];
-////		double[] xvar = new double[m_kBar];
-//		//Step 2: sample thetaStar based on the loglikelihood of p(z=k|\gamma,\eta)p(y|x,\phi)p(x|\psi)
-//		for(k=0; k<m_kBar+m_M; k++){
-//
-//			r.setHDPThetaStar(m_hdpThetaStars[k]);
-//			
-//			//log likelihood of y, i.e., p(y|x,\phi)
-//			ly = calcLogLikelihoodY(r);
-//			likelihood = ly;
-//			
-//			//log likelihood of x, i.e., p(x|\psi)
-//			lx = calcLogLikelihoodX(r);
-//			likelihood += lx;
-//			
-//			//p(z=k|\gamma,\eta)
-//			gamma_k = m_hdpThetaStars[k].getGamma();
-//			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
-//			
-//			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-//			
-//			if(k==0) 
-//				logSum = likelihood;
-//			else 
-//				logSum = Utils.logSum(logSum, likelihood);
-////			if(k <m_kBar){
-////				yvar[k] = ly; xvar[k] = lx;
-////			}
-////			System.out.print(String.format("gammak: %.5f\tlikelihood y: %.5f\tlikelihood x:%.5f\tlikelihood:%.5f\tlogsum:%.5f\n", gamma_k, ly, lx, likelihood, logSum));
-//		}
-////		System.out.print(String.format("Var of likelihood y: %.4f, var of likelihood x: %.4f\n", sd.evaluate(yvar), sd.evaluate(xvar)));
-//		//Sample group k with likelihood.
-//		k = sampleInLogSpace(logSum);
-////		System.out.print(String.format("------kBar:%d, k:%d-----\n", m_kBar, k));
-//		
-//		//Step 3: update the setting after sampling z_ij.
-//		m_hdpThetaStars[k].updateMemCount(1);//-->1
-//		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
-//		
-//		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-//		incUserHDPThetaStarMemSize(user, r);
-//		
-//		if(k >= m_kBar)
-//			sampleNewCluster(k, r.getLMSparse());
-//	}
-	
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
@@ -722,7 +665,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	public void printInfo(boolean printDetails){
-		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(5);		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(50);		
 		
 		//clear the statistics
 		for(int i=0; i<m_kBar; i++) {
@@ -763,11 +706,28 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	void printTopWords(_HDPThetaStar cluster) {
-		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(20);
+		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(30);
 		double[] lmStat = cluster.getLMStat();
+		double[] phi = cluster.getModel();
 		
-		//we will skip the bias term!
-		System.out.format("Cluster %d (%d)\n[popular]: ", cluster.getIndex(), cluster.getMemSize());
+		// features with positive weights (skip the bias term)
+		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+			
+		// features with negative weights
+		wordRanker.clear();
+		System.out.format("\n[negative]: ");
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+				
+		// features with highest frequency
+		wordRanker.clear();
+		System.out.format("\n[popular]: ");
 		for(int i=0; i<lmStat.length; i++) 
 			wordRanker.add(new _RankItem(i, lmStat[i]));//top positive words with expected polarity
 

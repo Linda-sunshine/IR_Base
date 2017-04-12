@@ -125,33 +125,26 @@ public class MyHDPMain {
 //		hdp.setQ(1);
 //		
 //		CLinAdaptWithHDP hdp = new CLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-//		
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		
+//				
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 
-		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
-//		MTCLinAdaptWithHDPConfidence hdp = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-
-//		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-
-//		MTCLinAdaptWithHDPDualConfidence hdp = new MTCLinAdaptWithHDPDualConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(0.1);//0.2
 
 		hdp.setsdA(0.1);//0.2
-		double alpha = 0.2, eta = 0.1, beta = 0.01;
+		double alpha = 1, eta = 0.1, beta = 0.01;
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
-		hdp.setBurnIn(5);
-		hdp.setNumberOfIterations(100);
+//		hdp.setThinning(5);// default 3
+//		hdp.setNumberOfIterations(100);// default 50
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		
 		hdp.train();
 		hdp.test();
-//		hdp.printUserPerformance("./data/hdp_perf_train.txt");
-//		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
+		hdp.printUserPerformance("./data/hdp_perf_train.txt");
+		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
 	}
 }

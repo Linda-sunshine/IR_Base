@@ -543,6 +543,11 @@ public abstract class ModelAdaptation extends BaseClassifier {
 					if(r.getType() == rType.TEST){
 						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
 					}
+//					if(r.getType() == rType.TEST)
+//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+//					if(r.getType() == rType.ADAPTATION){
+//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+//					}
 				}
 			}
 			writer.close();
