@@ -8,6 +8,9 @@ import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.UserAnalyzer;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
 
 public class MyMMBMain {
@@ -23,7 +26,6 @@ public class MyMMBMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
-//		double eta1 = 0.1, eta2 = 0.1, eta3 = 0.04, eta4 = 0.04;
 
 		boolean enforceAdapt = true;
 
@@ -59,20 +61,34 @@ public class MyMMBMain {
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 1, eta = 0.1, beta = 0.01;
 		
-		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-		mmb.setsdA(0.2);
+//		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+//		mmb.setsdA(0.2);
+		
+//		MTCLRWithMMB mmb = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+//		mmb.setQ(0.1);
+		
+		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
+		mmb.setsdB(0.1);//0.2
+
+//		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		mmb.setR2TradeOffs(eta3, eta4);
+
+		mmb.setsdA(0.1);//0.2	
+		double alpha = 1, eta = 0.1, beta = 0.01;
 		mmb.setConcentrationParams(alpha, eta, beta);
 		mmb.setR1TradeOffs(eta1, eta2);
-		mmb.setNumberOfIterations(20);
+
+		mmb.setRho(0.01);
+		mmb.setBurnIn(10);
+//		mmb.setThinning(5);// default 3
+//		mmb.setNumberOfIterations(50);
+		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
-		//mmb.check();
 		mmb.setDisplayLv(displayLv);					
+		
 		mmb.train();
 		mmb.test();
 		
-//		String perfFile = String.format("./data/hdp_lm_%d_10k.xls", lmTopK);
-//		hdp.printUserPerformance(perfFile);
 	}
 }

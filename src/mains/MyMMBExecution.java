@@ -17,6 +17,9 @@ import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
 public class MyMMBExecution {
 	
@@ -58,17 +61,35 @@ public class MyMMBExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		CLRWithMMB adaptation = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+		CLRWithMMB adaptation = null;
+		
+		if(param.m_model.equals("mtmmb")){
+			adaptation = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
+			adaptation.setQ(param.m_q);
+			adaptation.setC(param.m_c);
+		} else if(param.m_model.equals("clinmmb")){
+			adaptation = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
+			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+		} else if(param.m_model.equals("mtclinmmb")){
+			adaptation = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+		} else
+			adaptation = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);			
 		
 		// commonly shared parameters.
-		adaptation.setM(param.m_M);
-		adaptation.setAlpha(param.m_alpha);
-		adaptation.setsdA(param.m_sdA);
-		adaptation.setThinning(param.m_thinning);
 		adaptation.setR1TradeOffs(param.m_eta1, param.m_eta2);
+		adaptation.setM(param.m_M);
+		adaptation.setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
+		adaptation.setsdA(param.m_sdA);
+		
+		adaptation.setRho(param.m_rho);
+		adaptation.setBurnIn(param.m_burnin);
+		adaptation.setThinning(param.m_thinning);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
-
+	
 		// training testing operations.
+		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		adaptation.train();

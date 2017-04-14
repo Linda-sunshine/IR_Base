@@ -28,9 +28,9 @@ public class _HDPThetaStar extends _thetaStar {
 	// key: theta, value: corresponding edge counts.
 	HashMap<_HDPThetaStar, int[]> m_connectionCount;
 	
-	public _HDPThetaStar(int dim, int lmSize, double gamma) {
+	public _HDPThetaStar(int dim) {
 		super(dim);
-		m_gamma = gamma;
+		m_gamma = 0;
 		m_edgeSize = new int[2];
 		m_connectionCount = new HashMap<_HDPThetaStar, int[]>();
 	}

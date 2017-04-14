@@ -22,23 +22,15 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
 	// key: global component parameter; val: member size
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
-	// key: global component parameter; val: edge size.
-	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
-	// key: uj; val: group parameter-_HDPThetaStar.
-	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
 	
 	public _HDPAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	public _HDPAdaptStruct(_User user, int dim){
 		super(user, dim);
 		m_hdpThetaMemSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
-		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	//Return the number of members in the given thetaStar.
@@ -62,8 +54,6 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		else
 			m_hdpThetaMemSizeMap.remove(s);
 	}
-	
-
 	
 	/***Functions and variables used in confidence learning.***/
 	// We need the reviews to calculate the weighted sum for one thetastar.
@@ -97,69 +87,6 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			m_hdpThetaMemMap.remove(s);
 	}
 	
-	/********Functions used in MMB model.********/
-	// Return the number of edges in the given thetaStar.
-	public int getHDPThetaEdgeSize(_HDPThetaStar s){
-		if(m_hdpThetaEdgeSizeMap.containsKey(s))
-			return m_hdpThetaEdgeSizeMap.get(s);
-		else 
-			return 0;
-	}
-	// Update the size of the edges belong to the group.
-	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
-		if (v==0)
-			return;
-		
-		if(m_hdpThetaEdgeSizeMap.containsKey(s))
-			v += m_hdpThetaEdgeSizeMap.get(s);
-		
-		if (v>0)
-			m_hdpThetaEdgeSizeMap.put(s, v);
-		else
-			m_hdpThetaEdgeSizeMap.remove(s);
-	}
-	
-	// Check if the user has connection with another user, uj.
-	public boolean hasEdge(_HDPAdaptStruct uj){
-		if(m_neighborMap.containsKey(uj))
-			return true;
-		else
-			return false;
-	}
-	public int getEdge(_HDPAdaptStruct uj){
-		return m_neighborMap.get(uj).getEdge();
-	}
-	// Add a neighbor, update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
-	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
-		m_neighborMap.put(uj, new _MMBNeighbor(uj, theta, e));
-		
-		// Increase the edge size by 1.
-		incHDPThetaStarEdgeSize(theta, 1);
-	}
-	
-	// Remove one neighbor, 
-	public void rmNeighbor(_HDPAdaptStruct uj){
-		// Decrease the edge size by 1.
-		_HDPThetaStar theta = m_neighborMap.get(uj).getHDPThetaStar();
-		incHDPThetaStarEdgeSize(theta, -1);
-		
-		m_neighborMap.remove(uj);
-	}
-	
-	// Get the group membership for the edge between i->j.
-	public _HDPThetaStar getThetaStar(_HDPAdaptStruct uj){
-		return m_neighborMap.get(uj).getHDPThetaStar();
-	}
-	
-	public _MMBNeighbor getOneNeighbor(_HDPAdaptStruct u){
-		return m_neighborMap.get(u);
-	}
-	public HashMap<_HDPAdaptStruct, _MMBNeighbor> getNeighbors(){
-		return m_neighborMap;
-	}
-	
-	/**********************/
-
 	public Collection<_HDPThetaStar> getHDPTheta(){
 		return m_hdpThetaMemSizeMap.keySet();
 	}
