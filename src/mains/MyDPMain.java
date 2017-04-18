@@ -66,6 +66,8 @@ public class MyDPMain {
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
+		for(int i=0; i<9; i++){
+		adaptRatio = i * 0.1;
 		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
@@ -184,15 +186,15 @@ public class MyDPMain {
 //
 //		/***baseline 8: MTCLRWithDP***/
 //		// Create an instance of MTCLRWithDP
-		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
-		mtclrdp.loadUsers(analyzer.getUsers());
-		mtclrdp.setDisplayLv(displayLv);
-		mtclrdp.setLNormFlag(false);
-		mtclrdp.setQ(0.4);
-		mtclrdp.setsdA(sdA);
-		mtclrdp.setR1TradeOffs(eta1, eta2);
-		mtclrdp.train();
-		mtclrdp.test();
+//		MTCLRWithDP mtclrdp = new MTCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);	
+//		mtclrdp.loadUsers(analyzer.getUsers());
+//		mtclrdp.setDisplayLv(displayLv);
+//		mtclrdp.setLNormFlag(false);
+//		mtclrdp.setQ(0.4);
+//		mtclrdp.setsdA(sdA);
+//		mtclrdp.setR1TradeOffs(eta1, eta2);
+//		mtclrdp.train();
+//		mtclrdp.test();
 //		mtclrdp.savePerf("./data/mtclrdp_perf.txt");
 //		mtclrdp.saveModel(String.format("./data/%s_mtclrdp_0.5_1/", dataset));
 //		for(_User u: analyzer.getUsers())
@@ -223,11 +225,11 @@ public class MyDPMain {
 //		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
-		
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
+		}
 	}
 }

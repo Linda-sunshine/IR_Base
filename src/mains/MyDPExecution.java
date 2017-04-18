@@ -114,7 +114,7 @@ public class MyDPExecution {
 			((MTCLinAdaptWithHDPExp) adaptation).setThreshold(param.m_threshold);
 			((CLRWithHDP) adaptation).loadLMFeatures(analyzer.getLMFeatures());
 
-		} else if(param.m_model.equals("mtclinhdpconfe")){
+		} else if(param.m_model.equals("mtclinhdpe")){
 			 adaptation = new MTCLinAdaptWithHDPConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
@@ -122,7 +122,7 @@ public class MyDPExecution {
 			((CLRWithHDP) adaptation).setC(param.m_c);
 			((CLRWithHDP) adaptation).loadLMFeatures(analyzer.getLMFeatures());
 
-		} else if(param.m_model.equals("mtclinhdpconfm")){
+		} else if(param.m_model.equals("mtclinhdpm")){
 			adaptation = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
@@ -130,7 +130,7 @@ public class MyDPExecution {
 			((CLRWithHDP) adaptation).setC(param.m_c);
 			((CLRWithHDP) adaptation).loadLMFeatures(analyzer.getLMFeatures());
 
-		} else if(param.m_model.equals("mtclinhdpconfem")){
+		} else if(param.m_model.equals("mtclinhdpem")){
 			adaptation = new MTCLinAdaptWithHDPDualConfidence(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null, globalLM);
 			((CLRWithHDP) adaptation).setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 			((CLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);

@@ -52,12 +52,20 @@ public class _HDPThetaStar extends _thetaStar {
 	}
 	
 	public void addLMStat(_SparseFeature[] fvs){
-		for(_SparseFeature fv: fvs)
+		for(_SparseFeature fv: fvs){
 			m_lmStat[fv.getIndex()] += fv.getValue();
+//			if(fv.getIndex() == 156)
+//				System.out.println(m_lmStat[fv.getIndex()]);
+		}
 	}
 	public void rmLMStat(_SparseFeature[] fvs){
-		for(_SparseFeature fv: fvs)
+		for(_SparseFeature fv: fvs){
 			m_lmStat[fv.getIndex()] -= fv.getValue();
+			if(m_lmStat[fv.getIndex()] < 0)
+				System.out.println("Bug");
+//			if(fv.getIndex() == 156)
+//				System.out.println(m_lmStat[fv.getIndex()]);
+		}
 	}
 	public double[] getLMStat(){
 		return m_lmStat;
