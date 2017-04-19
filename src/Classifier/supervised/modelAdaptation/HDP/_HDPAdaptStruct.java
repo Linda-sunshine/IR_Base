@@ -143,32 +143,4 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		doc.m_prob += Math.exp(prob); //>0.5?1:0;
 		return prob;
 	}	
-	
-	// Evaluate the performance of the global part.
-	public double evaluateG(_Doc doc){
-		_Review r = (_Review) doc;
-		double prob = 0, sum = 0;
-		double[] probs = r.getCluPosterior();
-		int n, k;
-
-		for(k=0; k<probs.length; k++) {
-			//As = CLRWithHDP.m_hdpThetaStars[k].getModel();
-			sum = CLinAdaptWithHDP.m_supWeights[0];//Bias term: w_s0*a0+b0.
-			for(_SparseFeature fv: doc.getSparse()){
-				n = fv.getIndex() + 1;
-				sum += CLinAdaptWithHDP.m_supWeights[n] * fv.getValue();
-			}
-				
-			//to maintain numerical precision, compute the expectation in log space as well
-			if (k==0)
-				prob = probs[k] + Math.log(Utils.logistic(sum));
-			else
-				prob = Utils.logSum(prob, probs[k] + Math.log(Utils.logistic(sum)));
-		}
-		
-		//accumulate the prediction results during sampling procedure
-		doc.m_pCount_g++;
-		doc.m_prob_g += Math.exp(prob); //>0.5?1:0;
-		return prob;
-	}
 }
