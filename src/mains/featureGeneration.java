@@ -53,6 +53,7 @@ public class featureGeneration {
 		articleType = "Reuters10";
 		articleType = "TripAdvisor";
 		articleType = "Tech";
+		articleType = "Medium";
 //		articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
@@ -131,7 +132,8 @@ public class featureGeneration {
 				articleType);
 
 		System.out.println("Performing feature selection, wait...");
-		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, rawFeatureFile);
+		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+//		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, rawFeatureFile);
 		analyzer.LoadStopwords(stopwords);
 		
 //		analyzer.LoadParentDirectory(articleFolder, suffix);
@@ -143,8 +145,9 @@ public class featureGeneration {
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.
 		String gloveFile = String.format("./data/Features/wordEmbedding/glove.6B.100d.txt");
 //		analyzer.loadGloveVec(gloveFile);
-		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); //Select the features.
-		analyzer.filterFeaturesbyGlove(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile, gloveFile);
+		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF); //Select the features.
+//		analyzer.featureSelection(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile); //Select the features.
+//		analyzer.filterFeaturesbyGlove(fvFile, featureSelection, startProb, endProb, maxDF, minDF, rawFeatureFile, gloveFile);
 
 		System.out.println("Creating feature vectors, wait...");
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold, stnModel, posModel);

@@ -1,5 +1,6 @@
 package Analyzer;
 
+import cern.colt.matrix.Norm;
 import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
@@ -38,6 +39,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
     ArrayList<String> m_rawTokenStrList;
     ArrayList<String> m_outputFeatureList;
     ArrayList<String> m_rawFeatureList;
+    HashMap<String, String> m_rawFeatureProjectFeatureMap;
 //    int embeddingSize = 100;
 
     public topicmodelAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold, String rawFeatureFile)
@@ -48,6 +50,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         m_rawTokenStrList = new ArrayList<String>();
         m_outputFeatureList = new ArrayList<String>();
         m_rawFeatureList = new ArrayList<String>();
+        m_rawFeatureProjectFeatureMap = new HashMap<String, String>();
 
         try{
 
@@ -59,6 +62,11 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
             BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(rawFeatureFile), "UTF-8"));
             while((tmpTxt=br.readLine())!=null){
+
+                if (tmpTxt.startsWith("#")) {//comments
+                    continue;
+                }
+
                 tmpTxt = tmpTxt.trim();
                 if(tmpTxt.isEmpty())
                     continue;
@@ -84,8 +92,8 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         int y = doc.getYLabel();
 
         ArrayList<_Word> wordList = new ArrayList<_Word>();
-        HashMap<Integer, Double> spVct = constructSpVct(tokens, rawTokens, y, null, wordList);
-//        HashMap<Integer, Double> spVct = constructSpVct(rawTokens, rawTokens, y, null, wordList);
+//        HashMap<Integer, Double> spVct = constructSpVct(tokens, rawTokens, y, null, wordList);
+        HashMap<Integer, Double> spVct = constructSpVct(rawTokens, rawTokens, y, null, wordList);
 
         if (spVct.size()>m_lengthThreshold) {
             doc.createSpVct(spVct);
@@ -101,6 +109,9 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 }else{
                     if(!m_rawFeatureList.contains(rawToken)){
                         System.out.println("error raw feature\t"+rawToken);
+                    }
+                    if(!m_rawFeatureProjectFeatureMap.containsKey(rawToken)){
+                        m_rawFeatureProjectFeatureMap.put(rawToken, m_featureNames.get(w.getIndex()));
                     }
                 }
             }
@@ -125,6 +136,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
         for(int tokenIndex=0; tokenIndex<tokens.length; tokenIndex++){
             String token = tokens[tokenIndex];
+            token = Normalize(token);
             String rawToken = rawTokens[tokenIndex];
             if (!m_isCVLoaded) {
                 if (m_featureNameIndex.containsKey(token)) {
@@ -155,6 +167,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                 wordList.add(w);
 
             } else if (m_featureNameIndex.containsKey(token)) {// CV is loaded.
+
                 rawToken = Normalize(rawToken);
                 if(!m_rawFeatureList.contains(rawToken))
                     continue;
@@ -164,12 +177,22 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                     spVct.put(index, value);
                 } else {
                     spVct.put(index, 1.0);
-                    if (!m_isCVStatLoaded)
+                    if (!m_isCVStatLoaded) {
                         m_featureStat.get(token).addOneDF(y);
+                        if(token.equals("nasa")){
+                            double nasaDF = m_featureStat.get(token).getDF()[0];
+                            System.out.println("nasa\t"+nasaDF);
+                        }
+                    }
                 }
 
-                if (!m_isCVStatLoaded)
+                if (!m_isCVStatLoaded){
                     m_featureStat.get(token).addOneTTF(y);
+                    if(token.equals("nasa")){
+                        double nasaDF = m_featureStat.get(token).getTTF()[0];
+                        System.out.println("nasa\t"+nasaDF);
+                    }
+                }
 
                 _Word w = new _Word(index);
 
@@ -229,7 +252,9 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             String[] rawTokens = result.getRawTokens();
 
             ArrayList<_Word> sentence_wordList = new ArrayList<_Word>();
-            HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, rawTokens, y, null, sentence_wordList);// construct bag-of-word vector based on normalized tokens
+//            HashMap<Integer, Double> sentence_vector = constructSpVct(tokens, rawTokens, y, null, sentence_wordList);// construct bag-of-word vector based on normalized tokens
+
+            HashMap<Integer, Double> sentence_vector = constructSpVct(rawTokens, rawTokens, y, null, sentence_wordList);// construct bag-of-word vector based on normalized tokens
 
 //            HashMap<Integer, Double> sentence_vector = constructSpVct(rawTokens, rawTokens, y, null, wordList);// construct bag-of-word vector based on normalized tokens
 
@@ -270,6 +295,10 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                     if(!m_rawFeatureList.contains(rawToken)){
                         System.out.println("error raw feature\t"+rawToken);
                     }
+
+                    if(!m_rawFeatureProjectFeatureMap.containsKey(rawToken)){
+                        m_rawFeatureProjectFeatureMap.put(rawToken, m_featureNames.get(w.getIndex()));
+                    }
                 }
             }
 
@@ -285,6 +314,7 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             return false;
         }
     }
+
 
     protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF, String rawFeatureFile) throws FileNotFoundException {
         if (featureLocation==null || featureLocation.isEmpty())
@@ -810,6 +840,23 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
         m_corpus.setContent(!m_releaseContent);
         m_corpus.setRawFeatures(m_rawFeatureList);
         return m_corpus;
+    }
+
+    public void outputFeatureMap(String filePrefix){
+
+        try {
+            String featureMapFile = "rawFeature2FeatureMap.txt";
+            PrintWriter childOut = new PrintWriter(new File(
+                    filePrefix, featureMapFile));
+
+            for (String rawFeature : m_rawFeatureProjectFeatureMap.keySet()) {
+                childOut.println(rawFeature + "\t" + m_rawFeatureProjectFeatureMap.get(rawFeature));
+            }
+            childOut.flush();
+            childOut.close();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

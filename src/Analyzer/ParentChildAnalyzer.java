@@ -87,10 +87,13 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 		String name = Utils.getJSONValue(json, "name");
 		String[] sentences = null;
 
+//		if(name.equals("49")){
+//			System.out.println("49");
+//		}
+
 //
-//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title,
-//				content, 0);
-        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
+		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+//        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
 
 //		_ParentDocWithRawToken d = new _ParentDocWithRawToken(m_corpus.getSize(), name, title, content, 0);
 
@@ -179,7 +182,7 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //				System.err.format("filtering comments %s!\n", parent);
 			}
 		}else {
-//			System.err.format("[Warning]Missing parent document %s!\n", parent);
+			System.err.format("[Warning]Missing parent document %s!\n", parent);
 		}
 //		
 
@@ -751,58 +754,6 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 			e.printStackTrace();
 		}
 	}
-
-    public void featureSelection(String location, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
-        FeatureSelector selector = new FeatureSelector(startProb, endProb, maxDF, minDF);
-
-        System.out.println("*******************************************************************");
-        if (featureSelection.equals("DF"))
-            selector.DF(m_featureStat);
-        else if (featureSelection.equals("IG"))
-            selector.IG(m_featureStat, m_classMemberNo);
-        else if (featureSelection.equals("MI"))
-            selector.MI(m_featureStat, m_classMemberNo);
-        else if (featureSelection.equals("CHI"))
-            selector.CHI(m_featureStat, m_classMemberNo);
-
-        m_featureNames = selector.getSelectedFeatures();
-
-        SaveCV(location, featureSelection, startProb, endProb, maxDF, minDF); // Save all the features and probabilities we get after analyzing.
-        System.out.println(m_featureNames.size() + " features are selected!");
-
-        // need some redesign of the current awkward procedure for feature selection and feature vector construction!!!!
-        //clear memory for next step feature construction
-//		reset();
-//		LoadCV(location);//load the selected features
-    }
-
-    protected void SaveCV(String featureLocation, String featureSelection, double startProb, double endProb, int maxDF, int minDF) throws FileNotFoundException {
-        if (featureLocation==null || featureLocation.isEmpty())
-            return;
-        String feature;
-        System.out.format("Saving controlled vocabulary to %s...\n", featureLocation);
-        PrintWriter writer = new PrintWriter(new File(featureLocation));
-        //print out the configurations as comments
-        writer.format("#NGram:%d\n", m_Ngram);
-        writer.format("#Selection:%s\n", featureSelection);
-        writer.format("#Start:%f\n", startProb);
-        writer.format("#End:%f\n", endProb);
-        writer.format("#DF_MaxCut:%d\n", maxDF);
-        writer.format("#DF_MinCut:%d\n", minDF);
-
-        //print out the features
-        for (int i = 0; i < m_featureNames.size(); i++){
-            feature = m_featureNames.get(i);
-
-            if(m_featureStat.get(feature).getM_gloveVec()==null){
-                System.out.println("removing feature\t"+feature);
-                continue;
-            }
-            writer.println(feature);
-        }
-
-        writer.close();
-    }
 
 	public void loadGloveVec(String gloveFile){
 		try{
