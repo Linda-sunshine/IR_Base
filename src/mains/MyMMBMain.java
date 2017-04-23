@@ -11,6 +11,7 @@ import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMBDocFirst;
 
 
 public class MyMMBMain {
@@ -68,12 +69,15 @@ public class MyMMBMain {
 //		MTCLRWithMMB mmb = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		mmb.setQ(0.1);
 		
-		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-		mmb.setsdB(0.1);//0.2
+//		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
+//		mmb.setsdB(0.1);//0.2
 
 //		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		mmb.setR2TradeOffs(eta3, eta4);
-
+//
+		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		mmb.setR2TradeOffs(eta3, eta4);
+		
 		mmb.setsdA(0.1);//0.2	
 		double alpha = 1, eta = 0.1, beta = 0.01;
 		mmb.setConcentrationParams(alpha, eta, beta);
@@ -82,7 +86,7 @@ public class MyMMBMain {
 		mmb.setRho(0.01);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-//		mmb.setNumberOfIterations(50);
+		mmb.setNumberOfIterations(100);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					

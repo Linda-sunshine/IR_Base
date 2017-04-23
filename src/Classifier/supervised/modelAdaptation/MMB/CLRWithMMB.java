@@ -23,7 +23,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	double m_rho = 0.1; // sparsity parameter
 	double[] m_pNew = new double[2]; // prob for the new cluster in sampling mmb edges.
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
-	double[] m_abcd = new double[]{1, 1, 1, 1}; 
+	double[] m_abcd = new double[]{2, 2, 2, 2}; 
 	// The probability for the new cluster in the joint probabilities.
 	double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
 
@@ -129,10 +129,8 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
 		}
 	}
-	@Override
-	public void initThetaStars(){
-		// assign each review to one cluster.
-		super.initThetaStars();
+
+	public void initThetaStars4Edges(){
 		_MMBAdaptStruct ui, uj;
 		
 		m_userMap = new HashMap<String, _MMBAdaptStruct>();
@@ -413,22 +411,61 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 
-	// Init the counters for different edges in E steps.
-	private void initE(){
-		Arrays.fill(m_MNL, 0);
-	}
-	
 	/***
-	 * The current sampling scheme for zero edges (e_0) is as follows:
-	 * We assign group indicator to all zero edges (e_0) in the init stage.
-	 * In E step: we decide whether e_0 is from background model or mmb model base on probs:
-	 * p(background model)=1-\rho, p(e_0 from mmb)=\rho(1-z_{i->j}Bz_{j->i})
-	 */
-	protected void calculate_E_step(){
-		initE();
-		// sample z_{i,d}
-		super.calculate_E_step();
-//		checkKBar();
+	 * In the training process, we sample documents first.
+	 * Then we sample documents and edges together.*/
+	@Override
+	public double train(){
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+		
+		// Because we want to sample documents first without sampling edges.
+		// So we have to rewrite the init function to split init thetastar for docs and edges.
+		
+		// assign each review to one cluster.
+		init(); // clear user performance and init cluster assignment	
+			
+		// assign each edge to one cluster.
+		initThetaStars4Edges();
+		
+		// Burn in period for doc.
+		while(count++ < m_burnIn){
+			super.calculate_E_step();
+			calculate_E_step_Edge();
+			lastLikelihood = calculate_M_step();
+			lastLikelihood += estRho();
+		}
+		
+		// EM iteration.
+		for(int i=0; i<m_numberOfIterations; i++){
+			// Cluster assignment, thinning to reduce auto-correlation.
+			calculate_E_step();
+			calculate_E_step_Edge();
+
+			// Optimize the parameters
+			curLikelihood = calculate_M_step();
+			curLikelihood += estRho();
+
+			delta = (lastLikelihood - curLikelihood)/curLikelihood;
+			
+			if (i%m_thinning==0)
+				evaluateModel();
+			
+			printInfo(i%5==0);//no need to print out the details very often
+			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+			if(Math.abs(delta) < m_converge)
+				break;
+			lastLikelihood = curLikelihood;
+		}
+
+		evaluateModel(); // we do not want to miss the last sample?!
+//		setPersonalizedModel();
+		return curLikelihood;
+	}
+		
+	protected void calculate_E_step_Edge(){
+		Arrays.fill(m_MNL, 0);
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
 		double m_p_bk = 1-m_rho, m_p_mmb_0 = 0;
@@ -491,6 +528,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		System.out.print(String.format("[Info]mmb_0 prob: %.5f, background prob: %.5f\n",m_p_mmb_0, m_p_bk));
 		checkClusters();
 	}
+	
+	
 	// remove the connection between ui and uj, where i->j \in g, j->i \in h.
 	public void rmConnection(_MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
 		_HDPThetaStar theta_g, theta_h;
@@ -573,15 +612,15 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_kBar --;
 		}
 	}
-	@Override
-	protected double calculate_M_step(){
-		assignClusterIndex();
-		
-		// sample gamma + estPsi + estPhi
-		double likelihood = super.calculate_M_step();
-		return likelihood + estRho();
-
-	}
+//	@Override
+//	protected double calculate_M_step(){
+//		assignClusterIndex();
+//		
+//		// sample gamma + estPsi + estPhi
+//		double likelihood = super.calculate_M_step();
+//		return likelihood + estRho();
+//
+//	}
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){

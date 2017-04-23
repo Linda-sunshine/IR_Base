@@ -245,7 +245,42 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 		}
 	}
-
+	// Allocate the reviews by specific number
+//	void allocateReviews(ArrayList<_Review> reviews) {
+//		Collections.sort(reviews);// sort the reviews by timestamp
+//		int train = (int)(reviews.size() * m_trainRatio), adapt;
+//		if (m_enforceAdapt)
+//			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
+//		else
+//			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+////		adapt = 1;
+//		adapt = reviews.size() >= 2? 2:reviews.size();
+//		_Review r;
+//		for(int i=0; i<reviews.size(); i++) {
+//			r = reviews.get(i);
+//			if (i<train) {
+//				r.setType(rType.TRAIN);
+//				if (r.getYLabel()==1)
+//					m_pCount[0] ++;
+//				
+//				m_trainSize ++;
+//			} else if (i<adapt) {
+//				r.setType(rType.ADAPTATION);
+//				if (r.getYLabel()==1)
+//					m_pCount[1] ++;
+//				
+//				m_adaptSize ++;
+//			// in case the adaptation ratio is smaller than 0.5, ignore the middle part. 
+//			} else{
+//				r.setType(rType.TEST);
+//				if (r.getYLabel()==1)
+//					m_pCount[2] ++;
+//				
+//				m_testSize ++;
+//			}
+//		}
+//	}
+	
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
 		System.out.format("[Info]Training size: %d(%.2f), adaptation size: %d(%.2f), and testing size: %d(%.2f)\n", 

@@ -40,7 +40,7 @@ public class MyDPMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.5;
+		double trainRatio = 0, adaptRatio = 0.1;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
@@ -57,7 +57,7 @@ public class MyDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -66,8 +66,8 @@ public class MyDPMain {
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
-		for(int i=0; i<9; i++){
-		adaptRatio = i * 0.1;
+//		for(int i=1; i<10; i++){
+//		adaptRatio = i * 0.1;
 		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
@@ -230,6 +230,16 @@ public class MyDPMain {
 		mtsvm.setBias(true);
 		mtsvm.train();
 		mtsvm.test();
-		}
+		
+//		String testPerfFile = String.format("./data/mtsvm_perf_test_adapt_%.1f.txt", adaptRatio);
+//		String testPerfGlobalFile = String.format("./data/mtsvm_global_perf_test_adapt_%.1f.txt", adaptRatio);
+//		mtsvm.printUserPerformance(testPerfFile);
+//		mtsvm.printGlobalUserPerformance(testPerfGlobalFile);
+		
+//		String trainPerfFile = String.format("./data/0422mtsvm_perf_train_adapt_2_all.txt");
+//		String trainPerfGlobalFile = String.format("./data/0422mtsvm_global_perf_train_adapt_2_all.txt", adaptRatio);
+//		mtsvm.printUserPerformance(trainPerfFile);
+//		mtsvm.printGlobalUserPerformance(trainPerfGlobalFile);
+//		}
 	}
 }

@@ -20,6 +20,7 @@ import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMBDocFirst;
 
 public class MyMMBExecution {
 	
@@ -72,6 +73,10 @@ public class MyMMBExecution {
 			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
 		} else if(param.m_model.equals("mtclinmmb")){
 			adaptation = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+		} else if(param.m_model.equals("mtclinmmbdoc")){
+			adaptation = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
 		} else

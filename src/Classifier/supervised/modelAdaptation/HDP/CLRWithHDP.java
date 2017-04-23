@@ -670,7 +670,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	public void printInfo(boolean printDetails){
-		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(50);		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(10);		
 		
 		//clear the statistics
 		for(int i=0; i<m_kBar; i++) {

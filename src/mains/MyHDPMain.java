@@ -149,7 +149,7 @@ public class MyHDPMain {
 		
 		hdp.train();
 		hdp.test();
-		hdp.printUserPerformance("./data/hdp_perf_train.txt");
+//		hdp.printUserPerformance("./data/hdp_perf_train.txt");
 //		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
 	}
 }
