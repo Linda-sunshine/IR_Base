@@ -66,8 +66,8 @@ public class MyDPMain {
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
-//		for(int i=1; i<10; i++){
-//		adaptRatio = i * 0.1;
+		for(int i=1; i<6; i++){
+		adaptRatio = i * 0.1;
 		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
@@ -94,11 +94,12 @@ public class MyDPMain {
 //			u.getPerfStat().clear();
 //		
 //		/***baseline 1: global***/
-//		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
-//		gsvm.loadUsers(analyzer.getUsers());
-//		gsvm.train();
-//		gsvm.test();
-//		gsvm.printUserPerformance("./data/gsvm_perf.txt");
+		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
+		gsvm.loadUsers(analyzer.getUsers());
+		gsvm.train();
+		gsvm.test();
+		gsvm.printUserPerformance(String.format("./data/gsvm_perf_0.%d.txt", i));
+		}
 //		gsvm.saveSupModel("./data/gsvm_weights.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
@@ -225,11 +226,11 @@ public class MyDPMain {
 //		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 		
 //		String testPerfFile = String.format("./data/mtsvm_perf_test_adapt_%.1f.txt", adaptRatio);
 //		String testPerfGlobalFile = String.format("./data/mtsvm_global_perf_test_adapt_%.1f.txt", adaptRatio);
