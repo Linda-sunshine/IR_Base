@@ -14,6 +14,7 @@ import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.IndividualSVM;
 import Classifier.supervised.modelAdaptation.Base;
 import Classifier.supervised.modelAdaptation.ModelAdaptation;
+import Classifier.supervised.modelAdaptation.MultiTaskLR;
 import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.ReTrain;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -40,7 +41,7 @@ public class MyDPMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 0.1;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
@@ -53,8 +54,8 @@ public class MyDPMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/if15/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -66,8 +67,8 @@ public class MyDPMain {
 		if(fvGroupSize == 5000 || fvGroupSize == 3071) featureGroupFile = null;
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
-		for(int i=1; i<6; i++){
-		adaptRatio = i * 0.1;
+//		for(int i=1; i<6; i++){
+//		adaptRatio = i * 0.1;
 		
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
@@ -94,12 +95,12 @@ public class MyDPMain {
 //			u.getPerfStat().clear();
 //		
 //		/***baseline 1: global***/
-		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
-		gsvm.loadUsers(analyzer.getUsers());
-		gsvm.train();
-		gsvm.test();
-		gsvm.printUserPerformance(String.format("./data/gsvm_perf_0.%d.txt", i));
-		}
+//		GlobalSVM gsvm = new GlobalSVM(classNumber, analyzer.getFeatureSize());
+//		gsvm.loadUsers(analyzer.getUsers());
+//		gsvm.train();
+//		gsvm.test();
+//		gsvm.printUserPerformance(String.format("./data/gsvm_perf_0.%d.txt", i));
+//		}
 //		gsvm.saveSupModel("./data/gsvm_weights.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
@@ -231,6 +232,15 @@ public class MyDPMain {
 //		mtsvm.setBias(true);
 //		mtsvm.train();
 //		mtsvm.test();
+//		mtsvm.saveSupModel("./data/mtsvm_global.txt");
+//		mtsvm.saveModel("./data/mtsvm_models");
+		
+		MultiTaskLR mtlr = new MultiTaskLR(classNumber, analyzer.getFeatureSize());
+		mtlr.setLambda(0.1);
+		mtlr.loadUsers(analyzer.getUsers());
+		mtlr.train();
+		mtlr.test();
+		mtlr.saveModel("./data/mtlr_models");
 		
 //		String testPerfFile = String.format("./data/mtsvm_perf_test_adapt_%.1f.txt", adaptRatio);
 //		String testPerfGlobalFile = String.format("./data/mtsvm_global_perf_test_adapt_%.1f.txt", adaptRatio);

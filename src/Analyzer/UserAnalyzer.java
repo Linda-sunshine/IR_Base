@@ -213,39 +213,6 @@ public class UserAnalyzer extends DocAnalyzer {
 	//[0, train) for training purpose
 	//[train, adapt) for adaptation purpose
 	//[adapt, 1] for testing purpose
-//	void allocateReviews(ArrayList<_Review> reviews) {
-//		Collections.sort(reviews);// sort the reviews by timestamp
-//		int train = (int)(reviews.size() * m_trainRatio), adapt;
-//		if (m_enforceAdapt)
-//			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
-//		else
-//			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
-//		
-//		_Review r;
-//		for(int i=0; i<reviews.size(); i++) {
-//			r = reviews.get(i);
-//			if (i<train) {
-//				r.setType(rType.TRAIN);
-//				if (r.getYLabel()==1)
-//					m_pCount[0] ++;
-//				
-//				m_trainSize ++;
-//			} else if (i<adapt) {
-//				r.setType(rType.ADAPTATION);
-//				if (r.getYLabel()==1)
-//					m_pCount[1] ++;
-//				
-//				m_adaptSize ++;
-//			} else {
-//				r.setType(rType.TEST);
-//				if (r.getYLabel()==1)
-//					m_pCount[2] ++;
-//				
-//				m_testSize ++;
-//			}
-//		}
-//	}
-	// Allocate the reviews by specific number
 	void allocateReviews(ArrayList<_Review> reviews) {
 		Collections.sort(reviews);// sort the reviews by timestamp
 		int train = (int)(reviews.size() * m_trainRatio), adapt;
@@ -253,8 +220,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
 		else
 			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
-//		adapt = 1;
-//		adapt = reviews.size() >= 2? 2:reviews.size();
+		
 		_Review r;
 		for(int i=0; i<reviews.size(); i++) {
 			r = reviews.get(i);
@@ -270,10 +236,7 @@ public class UserAnalyzer extends DocAnalyzer {
 					m_pCount[1] ++;
 				
 				m_adaptSize ++;
-			// in case the adaptation ratio is smaller than 0.5, ignore the middle part.
-			} else if (i<(int)(0.5*reviews.size()))
-				continue; 
-			else{
+			} else {
 				r.setType(rType.TEST);
 				if (r.getYLabel()==1)
 					m_pCount[2] ++;
@@ -282,6 +245,43 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 		}
 	}
+//	// Allocate the reviews by specific number
+//	void allocateReviews(ArrayList<_Review> reviews) {
+//		Collections.sort(reviews);// sort the reviews by timestamp
+//		int train = (int)(reviews.size() * m_trainRatio), adapt;
+//		if (m_enforceAdapt)
+//			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
+//		else
+//			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+////		adapt = 1;
+////		adapt = reviews.size() >= 2? 2:reviews.size();
+//		_Review r;
+//		for(int i=0; i<reviews.size(); i++) {
+//			r = reviews.get(i);
+//			if (i<train) {
+//				r.setType(rType.TRAIN);
+//				if (r.getYLabel()==1)
+//					m_pCount[0] ++;
+//				
+//				m_trainSize ++;
+//			} else if (i<adapt) {
+//				r.setType(rType.ADAPTATION);
+//				if (r.getYLabel()==1)
+//					m_pCount[1] ++;
+//				
+//				m_adaptSize ++;
+//			// in case the adaptation ratio is smaller than 0.5, ignore the middle part.
+//			} else if (i<(int)(0.5*reviews.size()))
+//				continue; 
+//			else{
+//				r.setType(rType.TEST);
+//				if (r.getYLabel()==1)
+//					m_pCount[2] ++;
+//				
+//				m_testSize ++;
+//			}
+//		}
+//	}
 	
 	//Return all the users.
 	public ArrayList<_User> getUsers(){

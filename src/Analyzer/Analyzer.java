@@ -199,7 +199,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-//					sf.setTF(sf.getValue());
+					sf.setTF(sf.getValue());
 					
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());

@@ -353,93 +353,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		}
 		return 0;
 	}
-	
-//	@Override
-//	public double test(){
-//		int numberOfCores = Runtime.getRuntime().availableProcessors();
-//		ArrayList<Thread> threads = new ArrayList<Thread>();
-//		
-//		for(int k=0; k<numberOfCores; ++k){
-//			threads.add((new Thread() {
-//				int core, numOfCores;
-//				public void run() {
-//					_AdaptStruct user;
-//					_PerformanceStat userPerfStat;
-//					try {
-//						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-//							user = m_userList.get(i+core);
-//							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//								continue;
-//								
-//							userPerfStat = user.getPerfStat();								
-//							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
-//								//record prediction results
-//								for(_Review r:user.getReviews()) {
-//									if (r.getType() != rType.TEST)
-//										continue;
-//									int trueL = r.getYLabel();
-//									int predL = user.predict(r); // evoke user's own model
-//									r.setPredictLabel(predL);
-//									userPerfStat.addOnePredResult(predL, trueL);
-//								}
-//							}							
-//							userPerfStat.calculatePRF();	
-//						}
-//					} catch(Exception ex) {
-//						ex.printStackTrace(); 
-//					}
-//				}
-//				
-//				private Thread initialize(int core, int numOfCores) {
-//					this.core = core;
-//					this.numOfCores = numOfCores;
-//					return this;
-//				}
-//			}).initialize(k, numberOfCores));
-//			
-//			threads.get(k).start();
-//		}
-//		
-//		for(int k=0;k<numberOfCores;++k){
-//			try {
-//				threads.get(k).join();
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			} 
-//		}
-//		
-//		int count = 0;
-//		double[] macroF1 = new double[m_classNo];
-//		_PerformanceStat userPerfStat;
-//		m_microStat.clear();
-//		for(_AdaptStruct user:m_userList) {
-//			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-//				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-//				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-//				continue;
-//			
-//			userPerfStat = user.getPerfStat();
-//			for(int i=0; i<m_classNo; i++)
-//				macroF1[i] += userPerfStat.getF1(i);
-//	
-//			m_microStat.accumulateConfusionMat(userPerfStat);
-//			count ++;
-//		}
-//		
-//		System.out.println(toString());
-//		calcMicroPerfStat();
-//		
-//		// macro average
-//		System.out.println("\nMacro F1:");
-//		for(int i=0; i<m_classNo; i++){
-//			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-//			m_perf[i] = macroF1[i]/count;
-//		}
-//		System.out.println("\n");
-//		return Utils.sumOfArray(macroF1);
-//	}	
 
 	public double[] calcAvgStd(ArrayList<Double> fs){
 		double avg = 0, std = 0;
@@ -543,11 +456,6 @@ public abstract class ModelAdaptation extends BaseClassifier {
 					if(r.getType() == rType.TEST){
 						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
 					}
-//					if(r.getType() == rType.TEST)
-//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-//					if(r.getType() == rType.ADAPTATION){
-//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-//					}
 				}
 			}
 			writer.close();

@@ -226,35 +226,6 @@ public class MultiTaskSVM extends ModelAdaptation {
 			e.printStackTrace();
 		}
 	}
-	
-	// added by Lin for model performance comparison.
-	// print out each user's test review's performance.
-//	public void printGlobalUserPerformance(String filename){
-//		PrintWriter writer;
-//		try{
-//			writer = new PrintWriter(new File(filename));
-//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-//				@Override
-//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-//				}
-//			});
-//			for(_AdaptStruct u: m_userList){
-//				writer.write("-----\n");
-//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-//				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.ADAPTATION)
-//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-//					if(r.getType() == rType.TEST){
-//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
-//					}
-//				}
-//			}
-//			writer.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
 		
 	// for debug purpose
 	public _AdaptStruct findUser(String userID){
@@ -283,168 +254,192 @@ public class MultiTaskSVM extends ModelAdaptation {
 		}
 	}
 	
-	@Override
-	public double test(){
-		int numberOfCores = Runtime.getRuntime().availableProcessors();
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		for(int k=0; k<numberOfCores; ++k){
-			threads.add((new Thread() {
-				int core, numOfCores;
-				public void run() {
-					_AdaptStruct user;
-					_PerformanceStat userPerfStat;
-					try {
-						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
-							user = m_userList.get(i+core);
-							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-								continue;
-								
-							userPerfStat = user.getPerfStat();								
-							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
-//								// Only predict the first review of each user.
-//								_Review r = user.getReviews().get(0);
-//								if (r.getType() != rType.ADAPTATION)
-//									System.out.println("Not adaptation data.");
-//								int trueL = r.getYLabel();
-//								int predL = user.predict(r); // evoke user's own model
-//								int predL_G = predictG(r);
-//								r.setPredictLabel(predL);
-//								r.setPredictLabelG(predL_G);
-//								userPerfStat.addOnePredResult(predL, trueL);
-								
-								//record prediction results
-								for(_Review r:user.getReviews()) {
-									if (r.getType() != rType.ADAPTATION)
-										continue;
-									int trueL = r.getYLabel();
-									int predL = user.predict(r); // evoke user's own model
-									int predL_G = predictG(r);
-									r.setPredictLabel(predL);
-									r.setPredictLabelG(predL_G);
-									userPerfStat.addOnePredResult(predL, trueL);
-								}
-							}							
-							userPerfStat.calculatePRF();	
-						}
-					} catch(Exception ex) {
-						ex.printStackTrace(); 
-					}
-				}
-				
-				private Thread initialize(int core, int numOfCores) {
-					this.core = core;
-					this.numOfCores = numOfCores;
-					return this;
-				}
-			}).initialize(k, numberOfCores));
-			
-			threads.get(k).start();
-		}
-		
-		for(int k=0;k<numberOfCores;++k){
-			try {
-				threads.get(k).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} 
-		}
-		
-		int count = 0;
-		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
-		
-		//init macroF1
-		for(int i=0; i<m_classNo; i++)
-			macroF1.add(new ArrayList<Double>());
-		
-		_PerformanceStat userPerfStat;
-		m_microStat.clear();
-		for(_AdaptStruct user:m_userList) {
-			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
-				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
-				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
-				continue;
-			
-			
-			userPerfStat = user.getPerfStat();
-			for(int i=0; i<m_classNo; i++){
-				if(userPerfStat.getTrueClassNo(i)!=0)
-					macroF1.get(i).add(userPerfStat.getF1(i));
-			}
-			m_microStat.accumulateConfusionMat(userPerfStat);
-			count ++;
-		}
-		System.out.print("neg users: " + macroF1.get(0).size());
-		System.out.print("\tpos users: " + macroF1.get(1).size()+"\n");
-
-		System.out.println(toString());
-		calcMicroPerfStat();
-		// macro average and standard deviation.
-		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++){
-			double[] avgStd = calcAvgStd(macroF1.get(i));
-			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
-		}
-		return 0;
-	}
+//	/*****Predict each review's label based on mtsvm and mtsvm_global******/
+//	@Override
+//	public double test(){
+//		int numberOfCores = Runtime.getRuntime().availableProcessors();
+//		ArrayList<Thread> threads = new ArrayList<Thread>();
+//		for(int k=0; k<numberOfCores; ++k){
+//			threads.add((new Thread() {
+//				int core, numOfCores;
+//				public void run() {
+//					_AdaptStruct user;
+//					_PerformanceStat userPerfStat;
+//					try {
+//						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+//							user = m_userList.get(i+core);
+//							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+//								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+//								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+//								continue;
+//								
+//							userPerfStat = user.getPerfStat();								
+//							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {
+////								// Only predict the first review of each user.
+////								_Review r = user.getReviews().get(0);
+////								if (r.getType() != rType.ADAPTATION)
+////									System.out.println("Not adaptation data.");
+////								int trueL = r.getYLabel();
+////								int predL = user.predict(r); // evoke user's own model
+////								int predL_G = predictG(r);
+////								r.setPredictLabel(predL);
+////								r.setPredictLabelG(predL_G);
+////								userPerfStat.addOnePredResult(predL, trueL);
+//								
+//								//record prediction results
+//								for(_Review r:user.getReviews()) {
+//									if (r.getType() != rType.ADAPTATION)
+//										continue;
+//									int trueL = r.getYLabel();
+//									int predL = user.predict(r); // evoke user's own model
+//									int predL_G = predictG(r);
+//									r.setPredictLabel(predL);
+//									r.setPredictLabelG(predL_G);
+//									userPerfStat.addOnePredResult(predL, trueL);
+//								}
+//							}							
+//							userPerfStat.calculatePRF();	
+//						}
+//					} catch(Exception ex) {
+//						ex.printStackTrace(); 
+//					}
+//				}
+//				
+//				private Thread initialize(int core, int numOfCores) {
+//					this.core = core;
+//					this.numOfCores = numOfCores;
+//					return this;
+//				}
+//			}).initialize(k, numberOfCores));
+//			
+//			threads.get(k).start();
+//		}
+//		
+//		for(int k=0;k<numberOfCores;++k){
+//			try {
+//				threads.get(k).join();
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			} 
+//		}
+//		
+//		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
+//		
+//		//init macroF1
+//		for(int i=0; i<m_classNo; i++)
+//			macroF1.add(new ArrayList<Double>());
+//		
+//		_PerformanceStat userPerfStat;
+//		m_microStat.clear();
+//		for(_AdaptStruct user:m_userList) {
+//			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+//				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+//				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+//				continue;
+//			
+//			
+//			userPerfStat = user.getPerfStat();
+//			for(int i=0; i<m_classNo; i++){
+//				if(userPerfStat.getTrueClassNo(i)!=0)
+//					macroF1.get(i).add(userPerfStat.getF1(i));
+//			}
+//			m_microStat.accumulateConfusionMat(userPerfStat);
+//		}
+//		System.out.print("neg users: " + macroF1.get(0).size());
+//		System.out.print("\tpos users: " + macroF1.get(1).size()+"\n");
+//
+//		System.out.println(toString());
+//		calcMicroPerfStat();
+//		// macro average and standard deviation.
+//		System.out.println("\nMacro F1:");
+//		for(int i=0; i<m_classNo; i++){
+//			double[] avgStd = calcAvgStd(macroF1.get(i));
+//			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
+//		}
+//		return 0;
+//	}
 	
 	
-	public void printUserPerformance(String filename){
-		PrintWriter writer;
-		try{
-			writer = new PrintWriter(new File(filename));
-			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-				@Override
-				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-				}
-			});
-			for(_AdaptStruct u: m_userList){
-				writer.write("-----\n");
-				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.TEST)
+	/*****Print out users' testing performance of mtsvm_gloabl******/
+//	public void printGlobalUserPerformance(String filename){
+//		PrintWriter writer;
+//		try{
+//			writer = new PrintWriter(new File(filename));
+//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+//				@Override
+//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+//				}
+//			});
+//			for(_AdaptStruct u: m_userList){
+//				writer.write("-----\n");
+//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+//				for(_Review r: u.getReviews()){
+//					if(r.getType() == rType.ADAPTATION)
 //						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-					if(r.getType() == rType.ADAPTATION){
-						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-					}
-					else
-						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-				}
-			}
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
+//					if(r.getType() == rType.TEST){
+//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
+//					}
+//				}
+//			}
+//			writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//	}
 	
-	// print out each user's test review's performance.
-	public void printGlobalUserPerformance(String filename){
-		PrintWriter writer;
-		try{
-			writer = new PrintWriter(new File(filename));
-			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-				@Override
-				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-				}
-			});
-			for(_AdaptStruct u: m_userList){
-				writer.write("-----\n");
-				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.TEST)
+	/*****Print out users' training performance******/
+//	public void printUserPerformance(String filename){
+//		PrintWriter writer;
+//		try{
+//			writer = new PrintWriter(new File(filename));
+//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+//				@Override
+//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+//				}
+//			});
+//			for(_AdaptStruct u: m_userList){
+//				writer.write("-----\n");
+//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+//				for(_Review r: u.getReviews()){
+//					if(r.getType() == rType.ADAPTATION){
+//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+//					}
+//					else
 //						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-					if(r.getType() == rType.ADAPTATION){
-						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
-					} else
-						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-				}
-			}
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-	}
+//				}
+//			}
+//			writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	// print out each user's training review's performance.
+//	public void printGlobalUserPerformance(String filename){
+//		PrintWriter writer;
+//		try{
+//			writer = new PrintWriter(new File(filename));
+//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+//				@Override
+//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+//				}
+//			});
+//			for(_AdaptStruct u: m_userList){
+//				writer.write("-----\n");
+//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+//				for(_Review r: u.getReviews()){
+//					if(r.getType() == rType.ADAPTATION){
+//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabelG(), r.getSource()));
+//					} else
+//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+//				}
+//			}
+//			writer.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//	}
 }
