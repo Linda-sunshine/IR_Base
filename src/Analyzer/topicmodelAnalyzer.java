@@ -1,6 +1,7 @@
 package Analyzer;
 
 import cern.colt.matrix.Norm;
+import json.JSONObject;
 import net.didion.jwnl.data.Exc;
 import opennlp.tools.util.InvalidFormatException;
 import opennlp.tools.util.StringList;
@@ -81,6 +82,52 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
             System.err.format("[Error]Failed to open file %s!!", rawFeatureFile);
             return;
         }
+
+    }
+
+    public void LoadChildDirectory(String folder, String suffix) {
+        if(folder==null||folder.isEmpty())
+            return;
+
+        int current = m_corpus.getSize();
+        File dir = new File(folder);
+        for(File f: dir.listFiles()){
+            if(f.isFile() && f.getName().endsWith(suffix)){
+                loadChildDoc(f.getAbsolutePath());
+            }else if(f.isDirectory()){
+                LoadChildDirectory(folder, suffix);
+            }
+        }
+        System.out.format("loading %d comments from %s\n", m_corpus.getSize() - current, folder);
+
+        filterParentAndChildDoc();
+    }
+
+    public void LoadDoc(String fileName){
+        boolean DCMLDAFlag = false;
+        if(DCMLDAFlag){
+            LoadDoc4DCMLDA(fileName);
+            return;
+        }
+
+        if (fileName == null || fileName.isEmpty())
+            return;
+
+        JSONObject json = LoadJSON(fileName);
+
+        String content = Utils.getJSONValue(json, "content");
+        String name = Utils.getJSONValue(json, "name");
+        String parent = Utils.getJSONValue(json, "parent");
+        String title = Utils.getJSONValue(json, "title");
+
+        int yLabel = 0;
+
+        _Doc d = new _DocWithRawToken(m_corpus.getSize(), content, yLabel);
+//        _Doc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+
+
+        d.setName(name);
+        AnalyzeDoc(d);
 
     }
 
@@ -179,19 +226,13 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
                     spVct.put(index, 1.0);
                     if (!m_isCVStatLoaded) {
                         m_featureStat.get(token).addOneDF(y);
-                        if(token.equals("nasa")){
-                            double nasaDF = m_featureStat.get(token).getDF()[0];
-                            System.out.println("nasa\t"+nasaDF);
-                        }
+
                     }
                 }
 
                 if (!m_isCVStatLoaded){
                     m_featureStat.get(token).addOneTTF(y);
-                    if(token.equals("nasa")){
-                        double nasaDF = m_featureStat.get(token).getTTF()[0];
-                        System.out.println("nasa\t"+nasaDF);
-                    }
+
                 }
 
                 _Word w = new _Word(index);

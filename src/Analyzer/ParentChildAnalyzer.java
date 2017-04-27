@@ -92,10 +92,10 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		}
 
 //
-		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
 //        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
 
-//		_ParentDocWithRawToken d = new _ParentDocWithRawToken(m_corpus.getSize(), name, title, content, 0);
+		_ParentDocWithRawToken d = new _ParentDocWithRawToken(m_corpus.getSize(), name, title, content, 0);
 
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {
@@ -108,8 +108,12 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 				
 			sentences = new String[sentenceArray.length()];
 			//shall we add title into this sentence array
-			for (int i = 0; i < sentenceArray.length(); i++)
-				sentences[i] = Utils.getJSONValue(sentenceArray.getJSONObject(i), "sentence");
+			for (int i = 0; i < sentenceArray.length(); i++) {
+				JSONObject jObject = sentenceArray.getJSONObject(i);
+				String sentenceID = (String) jObject.keys().next();
+//				sentences[i] = Utils.getJSONValue(sentenceArray.getJSONObject(i), "sentence");
+				sentences[i] = Utils.getJSONValue(sentenceArray.getJSONObject(i), sentenceID);
+			}
 			
 			if (AnalyzeDocByStn(d, sentences))
 				parentHashMap.put(name, d);
@@ -322,7 +326,13 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 
 		}
 
-		System.out.println("after filtering\t"+m_corpus.getSize());
+		int totalParentNum = 0;
+		for(_Doc d:m_corpus.getCollection()){
+			if (d instanceof _ParentDoc){
+				totalParentNum += 1;
+			}
+		}
+		System.out.println("after filtering\t"+m_corpus.getSize()+"\t article Num:"+totalParentNum+"\t comment num:"+(m_corpus.getSize()-totalParentNum));
 	}
 
 	public void analyzeBurstiness(String filePrefix){

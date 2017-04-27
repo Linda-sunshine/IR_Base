@@ -435,38 +435,38 @@ public class LDAGibbs4AC_test extends LDAGibbs4AC {
 
 				pw.println();
 
-				TreeMap<Long, _ChildDoc> timeChildDocMap = new TreeMap<Long, _ChildDoc>();
-				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs){
-					long cDocDate = cDoc.getTimeStamp();
-					if(timeChildDocMap.containsKey(cDocDate)){
-						System.out.print("duplicate time");
-					}else{
-						timeChildDocMap.put(cDocDate, cDoc);
-					}
+//				TreeMap<Long, _ChildDoc> timeChildDocMap = new TreeMap<Long, _ChildDoc>();
+//				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs){
+//					long cDocDate = cDoc.getTimeStamp();
+//					if(timeChildDocMap.containsKey(cDocDate)){
+//						System.out.print("duplicate time");
+//					}else{
+//						timeChildDocMap.put(cDocDate, cDoc);
+//					}
+//
+//				}
 
-				}
-
-				for(long cDocDate:timeChildDocMap.keySet()){
-					_ChildDoc cDoc = timeChildDocMap.get(cDocDate);
-					pw.print(cDoc.getName()+"\t");
-					Date cdateFormat = new Date(cDocDate);
-					SimpleDateFormat cdf2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-					String cdateText = cdf2.format(cdateFormat);
-					pw.print("time\t"+cdateText+"\t topicProportion\t");
-					for (int k = 0; k < number_of_topics; k++) {
-						pw.print(cDoc.m_topics[k] + "\t");
-					}
-					pw.println();
-				}
-
-//				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-//					pw.print(cDoc.getName() + "\t");
-//					pw.print("topicProportion\t");
+//				for(long cDocDate:timeChildDocMap.keySet()){
+//					_ChildDoc cDoc = timeChildDocMap.get(cDocDate);
+//					pw.print(cDoc.getName()+"\t");
+//					Date cdateFormat = new Date(cDocDate);
+//					SimpleDateFormat cdf2 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
+//					String cdateText = cdf2.format(cdateFormat);
+//					pw.print("time\t"+cdateText+"\t topicProportion\t");
 //					for (int k = 0; k < number_of_topics; k++) {
 //						pw.print(cDoc.m_topics[k] + "\t");
 //					}
 //					pw.println();
 //				}
+
+				for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
+					pw.print(cDoc.getName() + "\t");
+					pw.print("topicProportion\t");
+					for (int k = 0; k < number_of_topics; k++) {
+						pw.print(cDoc.m_topics[k] + "\t");
+					}
+					pw.println();
+				}
 			}
 
 
