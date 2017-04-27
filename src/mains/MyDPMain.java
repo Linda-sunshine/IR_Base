@@ -5,9 +5,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import clustering.KMeansAlg4Profile;
 import opennlp.tools.util.InvalidFormatException;
+import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.GlobalSVM;
@@ -54,8 +56,8 @@ public class MyDPMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/if15/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -77,6 +79,21 @@ public class MyDPMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
+//		int rsize = 0;
+//		HashSet<String> items = new HashSet<String>();
+//		for(_User u: analyzer.getUsers()){
+//			for(_Review r: u.getReviews()){
+//				items.add(r.getItemID());
+//				rsize++;
+//			}
+//		}
+//		
+//		PrintWriter writer = new PrintWriter(new File("./data/Amazon_items.txt"));
+//		for(String item: items)
+//			writer.write(item+"\n");
+//		writer.close();
+//		
+//		System.out.print(String.format("Total review number: %d, items number: %d.\n", rsize, items.size()));
 		double sdA = 0.2, sdB =0.2;
 		
 		//Amazon parameters.
@@ -235,12 +252,12 @@ public class MyDPMain {
 //		mtsvm.saveSupModel("./data/mtsvm_global.txt");
 //		mtsvm.saveModel("./data/mtsvm_models");
 		
-		MultiTaskLR mtlr = new MultiTaskLR(classNumber, analyzer.getFeatureSize());
-		mtlr.setLambda(0.1);
-		mtlr.loadUsers(analyzer.getUsers());
-		mtlr.train();
-		mtlr.test();
-		mtlr.saveModel("./data/mtlr_models");
+//		MultiTaskLR mtlr = new MultiTaskLR(classNumber, analyzer.getFeatureSize());
+//		mtlr.setLambda(0.1);
+//		mtlr.loadUsers(analyzer.getUsers());
+//		mtlr.train();
+//		mtlr.test();
+//		mtlr.saveModel("./data/mtlr_models");
 		
 //		String testPerfFile = String.format("./data/mtsvm_perf_test_adapt_%.1f.txt", adaptRatio);
 //		String testPerfGlobalFile = String.format("./data/mtsvm_global_perf_test_adapt_%.1f.txt", adaptRatio);
