@@ -10,17 +10,15 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Created by jetcai1900 on 1/2/17.
+ * Created by jetcai1900 on 4/29/17.
  */
-public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
-
-    public DCMCorrLDA_Multi_EM_test(int number_of_iteration, double converge, double beta,
-                                   _Corpus c, double lambda, int number_of_topics,
-                                   double alpha, double alphaC, double burnIn, double ksi, double tau,
-                                   int lag, int newtonIter, double newtonConverge) {
-        super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-                alpha, alphaC, burnIn, lag, ksi, tau, newtonIter,
-                newtonConverge);
+public class CCTM_Online_test extends CCTM_Online {
+    public CCTM_Online_test(int number_of_iteration, double converge, double beta,
+                       _Corpus c, double lambda, int number_of_topics, double alpha_a,
+                       double alpha_c, double burnIn, double ksi, double tau, int lag,
+                       int newtonIter, double newtonConverge){
+        super(number_of_iteration, converge, beta, c, lambda, number_of_topics, alpha_a,
+                alpha_c, burnIn, ksi, tau, lag, newtonIter, newtonConverge);
 
     }
 
@@ -34,14 +32,6 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
         Arrays.fill(m_sstat, 0);
 
         System.out.println("print top words");
-
-        printTopWordsDistribution(k, filePrefix);
-
-        String alphaFile = betaFile.replace("topWords.txt", "alphas.txt");
-        printTopAlphas(alphaFile);
-
-        betaFile = betaFile.replace("topWords.txt", "fullBetas.txt");
-        printTopBeta(betaFile);
 
     }
 
@@ -87,84 +77,12 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
             }
         }
 
-//        String parentParameterFile = filePrefix + "parentParameter.txt";
-//        String childParameterFile = filePrefix + "childParameter.txt";
-
         printTopKChild4Stn(filePrefix, topK);
         printTopKChild4Parent(filePrefix, topK);
         printTopStn4ParentByNormLikelihood(filePrefix, topK);
         printTopStn4ParentByMajorTopic(filePrefix, topK);
 
         int randomNum = 5;
-        selectStn(filePrefix, topK, randomNum);
-
-    }
-
-    protected void selectStn(String filePrefix, int topK, int randomNum){
-        topK = 5;
-        int docSize = m_trainSet.size();
-        int[] selectedArray = new int[randomNum];
-        for(int i=0; i<randomNum; i++)
-            selectedArray[i]=m_rand.nextInt(500);
-
-        System.out.println("printing sentence");
-        String sentenceFile = filePrefix+"selectedStn.txt";
-        String sentenceIndexFile = filePrefix + "stnIndex.txt";
-        try {
-            PrintWriter stnOut = new PrintWriter(new File(sentenceFile));
-            PrintWriter stnIndexOut = new PrintWriter(new File(sentenceIndexFile));
-
-            for (_Doc d : m_trainSet) {
-                if (d instanceof _ParentDoc) {
-                    _ParentDoc4DCM pDoc = (_ParentDoc4DCM) d;
-                    if(pDoc.getSenetenceSize()<topK){
-                        continue;
-                    }
-
-                    ArrayList<Integer> mergedStnIndexList = new ArrayList<Integer>();
-                    ArrayList<Integer> normLikelihoodStnList = new ArrayList<Integer>();
-                    ArrayList<Integer> majorTopicStnList = new ArrayList<Integer>();
-                    ArrayList<Integer> parentLikelihoodStnList = new ArrayList<Integer>();
-
-                    estimateTopicProb4Words(pDoc);
-                    topStn4ParentByNormLikelihood(pDoc, topK, normLikelihoodStnList, mergedStnIndexList);
-                    topStn4ParentByMajorTopic(pDoc, topK, majorTopicStnList, mergedStnIndexList);
-                    topStn4ParentByParentLikelihood(pDoc, topK, parentLikelihoodStnList, mergedStnIndexList);
-
-                    stnOut.print(pDoc.getName());
-                    for (int stnIndex : mergedStnIndexList) {
-                        stnOut.print("\t"+stnIndex);
-                    }
-                    stnOut.println();
-
-                    stnIndexOut.print(pDoc.getName());
-                    stnIndexOut.print("\tnormLikelihood");
-                    for (int stnIndex : normLikelihoodStnList) {
-                        stnIndexOut.print("\t"+stnIndex);
-                    }
-
-                    stnIndexOut.print("\tmajorTopic");
-                    for (int stnIndex : majorTopicStnList) {
-                        stnIndexOut.print("\t" + stnIndex);
-                    }
-
-                    stnIndexOut.print("\tparentLikelihood");
-                    for (int stnIndex : parentLikelihoodStnList) {
-                        stnIndexOut.print("\t"+stnIndex);
-                    }
-                    stnIndexOut.println();
-                }
-            }
-
-            stnIndexOut.flush();
-            stnIndexOut.close();
-
-            stnOut.flush();
-            stnOut.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     protected void topStn4ParentByNormLikelihood(_ParentDoc4DCM pDoc, int topK, ArrayList<Integer> stnList, ArrayList<Integer> mergedStnList){
@@ -298,41 +216,6 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
         }
     }
 
-//    protected void printParameter(_Doc d, File parentChildTopicDistributionFolder) {
-//        System.out.println("printing parameter");
-//        String topicDistributionFile = d.getName() + ".txt";
-//
-//        try {
-//
-//            PrintWriter pw = new PrintWriter(new File(
-//                    parentChildTopicDistributionFolder, topicDistributionFile));
-//
-//            if (d instanceof _ParentDoc) {
-//                pw.print(d.getName() + "\t");
-//                pw.print("topicProportion\t");
-//                for (int k = 0; k < number_of_topics; k++) {
-//                    pw.print(d.m_topics[k] + "\t");
-//                }
-//
-//                pw.println();
-//
-//                for (_ChildDoc cDoc : ((_ParentDoc) d).m_childDocs) {
-//                    pw.print(cDoc.getName() + "\t");
-//                    pw.print("topicProportion\t");
-//                    for (int k = 0; k < number_of_topics; k++) {
-//                        pw.print(cDoc.m_topics[k] + "\t");
-//                    }
-//                    pw.println();
-//                }
-//            }
-//
-//
-//            pw.flush();
-//            pw.close();
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     protected void printParameter(_Doc d, File parentChildTopicDistributionFolder) {
         System.out.println("printing parameter");
@@ -499,91 +382,6 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
         return likelihoodMap;
     }
 
-    protected void printTopWordsDistribution(int topK, String filePrefix) {
-        String topWordFile = filePrefix + "topWords.txt";
-
-        Arrays.fill(m_sstat, 0);
-
-        System.out.println("print top words");
-        for (_Doc d : m_trainSet) {
-            for (int i = 0; i < number_of_topics; i++)
-                m_sstat[i] += m_logSpace ? Math.exp(d.m_topics[i])
-                        : d.m_topics[i];
-        }
-
-        Utils.L1Normalization(m_sstat);
-
-        try {
-            System.out.println("top word file");
-            PrintWriter betaOut = new PrintWriter(new File(topWordFile));
-            for (int i = 0; i < m_topic_word_prob.length; i++) {
-                MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
-                        topK);
-                for (int j = 0; j < vocabulary_size; j++)
-                    fVector.add(new _RankItem(m_corpus.getFeature(j),
-                            m_topic_word_prob[i][j]));
-
-                betaOut.format("Topic %d(%.3f):\t", i, m_sstat[i]);
-                for (_RankItem it : fVector) {
-                    betaOut.format("%s(%.3f)\t", it.m_name,
-                            m_logSpace ? Math.exp(it.m_value) : it.m_value);
-                    System.out.format("%s(%.3f)\t", it.m_name,
-                            m_logSpace ? Math.exp(it.m_value) : it.m_value);
-                }
-                betaOut.println();
-                System.out.println();
-            }
-
-            betaOut.flush();
-            betaOut.close();
-        } catch (Exception ex) {
-            System.err.print("File Not Found");
-        }
-    }
-
-    protected void printTopBeta(String betaFile) {
-        try {
-            PrintWriter pw = new PrintWriter(new File(betaFile));
-
-            for (int k = 0; k < number_of_topics; k++) {
-                pw.print(k + "\t");
-                for (int v = 0; v < vocabulary_size; v++) {
-                    pw.print(m_corpus.getFeature(v) + ":"
-                            + m_beta[k][v] + "\t");
-                }
-                pw.println();
-            }
-
-            pw.flush();
-            pw.close();
-        } catch (Exception ex) {
-            System.err.print("File Not Found");
-        }
-    }
-
-    protected void printTopAlphas(String alphaFile) {
-        try {
-            PrintWriter pw = new PrintWriter(new File(alphaFile));
-
-            pw.print("alpha\t");
-            for (int k = 0; k < number_of_topics; k++) {
-                pw.print(m_alpha[k]+"\t");
-            }
-            pw.println();
-
-            pw.print("alpha_c\t");
-            for (int k = 0; k < number_of_topics; k++) {
-                pw.print(m_alpha_c[k]+"\t");
-            }
-            pw.println();
-
-            pw.flush();
-            pw.close();
-        } catch (Exception ex) {
-            System.err.print("File Not Found");
-        }
-    }
-
     // the ranking is based on likelihood
     protected void printTopStn4ParentByNormLikelihood(String filePrefix, int topK){
         String topKChild4StnFile = filePrefix + "topStn4Parent_normStnlikelihood.txt";
@@ -617,7 +415,7 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
     }
 
     protected double rankStn4ParentByNormLikelihood(_Stn stnObj,
-                                                                _ParentDoc4DCM pDoc) {
+                                                    _ParentDoc4DCM pDoc) {
         double stnLogLikelihood = 0;
         for (_Word w : stnObj.getWords()) {
             double wordLikelihood = 0;
@@ -683,7 +481,7 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
     }
 
     protected int rankStn4ParentByMajorTopic(_Stn stnObj,
-                                                    _ParentDoc4DCM pDoc) {
+                                             _ParentDoc4DCM pDoc) {
 
         int[] topicNumArray = new int[number_of_topics];
         Arrays.fill(topicNumArray, 0);
@@ -728,7 +526,7 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
     }
 
     protected double rankStn4ParentByParentLikelihood(_Stn stnObj,
-                                             _ParentDoc4DCM pDoc) {
+                                                      _ParentDoc4DCM pDoc) {
 
         double parentLikelihood = 0;
 
@@ -756,6 +554,5 @@ public class DCMCorrLDA_Multi_EM_test extends DCMCorrLDA_Multi_EM {
 
         return parentLikelihood;
     }
-
 
 }

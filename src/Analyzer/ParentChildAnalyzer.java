@@ -92,10 +92,10 @@ public class ParentChildAnalyzer extends DocAnalyzer {
 //		}
 
 //
-//		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
+		_ParentDoc d = new _ParentDoc4DCM(m_corpus.getSize(), name, title, content, 0);
 //        _ParentDoc4WordEmbedding d = new _ParentDoc4WordEmbedding(m_corpus.getSize(), name, title, content, 0);
 
-		_ParentDocWithRawToken d = new _ParentDocWithRawToken(m_corpus.getSize(), name, title, content, 0);
+//		_ParentDocWithRawToken d = new _ParentDocWithRawToken(m_corpus.getSize(), name, title, content, 0);
 
 //		DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
 		try {
