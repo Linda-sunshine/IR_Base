@@ -6,7 +6,8 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.*;
 
-import structures._ChildDoc;
+import Analyzer.topicmodelAnalyzer;
+import structures.*;
 import structures._Corpus;
 import structures._Doc;
 import structures._ParentDoc;
@@ -41,11 +42,13 @@ public class outputFile {
 			}
 //			outputFeatureFile(featureFile, c);
 
-			outputSelectedStnFile(selectedSentenceFile, parentMap);
-			outputSelectedCommentFile(selectedCommentsFile, parentMap);
-			outputSctmInputParentFile(sctmInputParentFile, parentMap);
-			outputSctmInputChildFile(sctmInputCommentFile, parentMap);
-			
+//			outputSelectedStnFile(selectedSentenceFile, parentMap);
+//			outputSelectedCommentFile(selectedCommentsFile, parentMap);
+//			outputSctmInputParentFile(sctmInputParentFile, parentMap);
+//			outputSctmInputChildFile(sctmInputCommentFile, parentMap);
+			outputBitermInputChildFile(sctmInputCommentFile, parentMap, c);
+
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -224,6 +227,36 @@ public class outputFile {
 		}
 	}
 
+	static void outputBitermInputChildFile(String childFile,
+										 TreeMap<Integer, _ParentDoc> parentMap, _Corpus c) {
+		try{
+			PrintWriter pw = new PrintWriter(new File(childFile));
+
+			int totalParentNum = parentMap.size();
+//			pw.println(totalParentNum);
+
+			for (int parentID : parentMap.keySet()) {
+				_ParentDoc pDoc = parentMap.get(parentID);
+
+				TreeMap<Integer, _ChildDoc> childMap = new TreeMap<Integer, _ChildDoc>();
+				String parentName = pDoc.getName();
+
+				for (_ChildDoc cDoc : pDoc.m_childDocs) {
+					for(_Word w:cDoc.getWords()){
+						pw.print(c.m_rawFeatureList.get(w.getIndex())+"\t");
+					}
+					pw.print("\n");
+				}
+
+
+			}
+			pw.flush();
+			pw.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 	static void transformDoc2CDTMFormat(String filePrefix, _Corpus c){
 		TreeMap<Long, ArrayList<_Doc>> timeDocMap = new TreeMap<Long, ArrayList<_Doc>>();
 
@@ -355,7 +388,7 @@ public class outputFile {
 		String amazonFolder = "./data/amazon/tablet/topicmodel";
 		String newEggFolder = "./data/NewEgg";
 		String articleType = "Tech";
-		articleType = "NYT";
+//		articleType = "NYT";
 //		 articleType = "Yahoo";
 //		articleType = "Gadgets";
 //		articleType = "APP";
@@ -416,11 +449,18 @@ public class outputFile {
 		int DFthreshold = 3; // Filter the features with DFs smaller than this threshold.
 
 		System.out.println("Performing feature selection, wait...");
-		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
+
+		String rawFeatureFile = String.format(
+				"./data/Features/rawFv_%dgram_topicmodel_%s.txt", Ngram,
+				articleType);
+
+		topicmodelAnalyzer analyzer = new topicmodelAnalyzer(tokenModel, classNumber, rawFeatureFile, Ngram, lengthThreshold, rawFeatureFile);
+
+//		ParentChildAnalyzer analyzer = new ParentChildAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
 //		analyzer.LoadStopwords(stopwords);
-//		analyzer.LoadParentDirectory(articleFolder, suffix);
-//		analyzer.LoadChildDirectory(commentFolder, suffix);
-		analyzer.LoadDirectory(articleFolder, suffix);
+		analyzer.LoadParentDirectory(articleFolder, suffix);
+		analyzer.LoadChildDirectory(commentFolder, suffix);
+//		analyzer.LoadDirectory(articleFolder, suffix);
 		
 //		jsonAnalyzer analyzer = new jsonAnalyzer(tokenModel, classNumber, null, Ngram, lengthThreshold);	
 //		analyzer.LoadDirectory(folder, suffix); //Load all the documents as the data set.		
@@ -440,7 +480,8 @@ public class outputFile {
 //		analyzer.setFeatureValues(featureValue, norm);
 		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
 		// statisticDocLen(c);
-		outputFile.outputFiles(filePrefix, c);
+		outputFile.transformDocuments2SCTMFormat(filePrefix, c);
+//		outputFile.outputFiles(filePrefix, c);
 
 	}
 }

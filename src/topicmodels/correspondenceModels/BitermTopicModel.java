@@ -55,6 +55,7 @@ public class BitermTopicModel extends LDA_Gibbs {
             }
         }
 
+        System.out.println("biterm size\t"+m_bitermList.size());
         avgDocLen = avgDocLen*1.0/collection.size();
         System.out.println("avg len\t"+avgDocLen);
         imposePrior();
@@ -235,6 +236,8 @@ public class BitermTopicModel extends LDA_Gibbs {
     }
 
     protected void collectStats(_Doc d) {
+        if(d instanceof _ParentDoc)
+            return;
         for(int k=0; k<this.number_of_topics; k++)
             d.m_topics[k] += d.m_sstat[k];
     }
@@ -253,6 +256,8 @@ public class BitermTopicModel extends LDA_Gibbs {
 
     @Override
     protected void estThetaInDoc(_Doc d) {
+        if(d instanceof _ParentDoc)
+            return;
         Utils.L1Normalization(d.m_topics);
     }
 

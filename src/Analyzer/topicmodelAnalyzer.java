@@ -85,22 +85,32 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
     }
 
-    public void LoadChildDirectory(String folder, String suffix) {
-        if(folder==null||folder.isEmpty())
+    public void loadChildDoc(String fileName) {
+        if (fileName == null || fileName.isEmpty())
             return;
 
-        int current = m_corpus.getSize();
-        File dir = new File(folder);
-        for(File f: dir.listFiles()){
-            if(f.isFile() && f.getName().endsWith(suffix)){
-                loadChildDoc(f.getAbsolutePath());
-            }else if(f.isDirectory()){
-                LoadChildDirectory(folder, suffix);
-            }
-        }
-        System.out.format("loading %d comments from %s\n", m_corpus.getSize() - current, folder);
+        JSONObject json = LoadJSON(fileName);
+        String content = Utils.getJSONValue(json, "content");
+        String name = Utils.getJSONValue(json, "name");
+        String parent = Utils.getJSONValue(json, "parent");
+        String title = Utils.getJSONValue(json, "title");
 
-        filterParentAndChildDoc();
+//        _ChildDoc d = new _ChildDoc(m_corpus.getSize(), name, "", content, 0);
+        _ChildDoc4BitermTM d = new _ChildDoc4BitermTM(m_corpus.getSize(), name, "", content, 0);
+        d.setName(name);
+
+        if(parentHashMap.containsKey(parent)){
+            if (AnalyzeDoc(d)) {//this is a valid child document
+                _ParentDoc pDoc = parentHashMap.get(parent);
+                d.setParentDoc(pDoc);
+                pDoc.addChildDoc(d);
+            } else {
+//				System.err.format("filtering comments %s!\n", parent);
+            }
+        }else {
+            System.err.format("[Warning]Missing parent document %s!\n", parent);
+        }
+
     }
 
     public void LoadDoc(String fileName){
@@ -127,9 +137,42 @@ public class topicmodelAnalyzer extends ParentChildAnalyzer{
 
 
         d.setName(name);
+//        printDoc(d);
         AnalyzeDoc(d);
 
     }
+
+
+    protected boolean printDoc(_Doc doc) {
+
+        try{
+
+            String techCommentsFile = "./words_tech"+doc.getName()+".txt";
+
+            PrintWriter wordPW = new PrintWriter(new File(techCommentsFile));
+
+            TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+            String[] tokens = result.getTokens();
+            String[] rawTokens = result.getRawTokens();
+
+            for(String rawToken: rawTokens){
+                rawToken = Normalize(rawToken);
+
+                wordPW.print(rawToken+"\t");
+            }
+
+            wordPW.flush();
+            wordPW.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+
+        return true;
+
+    }
+
 
     protected boolean AnalyzeDoc(_Doc doc) {
         TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
