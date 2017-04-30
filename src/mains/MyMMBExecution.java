@@ -37,19 +37,19 @@ public class MyMMBExecution {
 		boolean enforceAdapt = true;
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
-		String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", param.m_prefix, dataset);
-		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, dataset, param.m_fv);
-		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, dataset, param.m_fvSup);
-		String globalModel = String.format("%s/%s/GlobalWeights.txt", param.m_prefix, dataset);
-		String lmFvFile = String.format("%s/%s/fv_lm_%s_%d.txt", param.m_prefix, dataset, param.m_fs, param.m_lmTopK);
+//		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data); // CV.
+		String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
+		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fv);
+		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fvSup);
+		String globalModel = String.format("%s/%s/GlobalWeights.txt", param.m_prefix, param.m_data);
+		String lmFvFile = String.format("%s/%s/fv_lm_%s_%d.txt", param.m_prefix, param.m_data, param.m_fs, param.m_lmTopK);
 				
 		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/YelpNew/yelpFriends.txt", param.m_prefix);
+		String friendFile = String.format("%s/%s/Friends.txt", param.m_prefix,param.m_data);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);

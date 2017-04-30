@@ -30,7 +30,7 @@ public class MyMMBMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 5000; // topK for language model.
@@ -42,7 +42,7 @@ public class MyMMBMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -52,7 +52,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/YelpNew/yelpFriends.txt", prefix);
+		String friendFile = String.format("%s/%s/Friends.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -72,21 +72,21 @@ public class MyMMBMain {
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		mmb.setsdB(0.1);//0.2
 
-//		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		mmb.setR2TradeOffs(eta3, eta4);
-//
-		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
+//
+//		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		mmb.setR2TradeOffs(eta3, eta4);
 		
 		mmb.setsdA(0.1);//0.2	
 		double alpha = 1, eta = 0.1, beta = 0.01;
 		mmb.setConcentrationParams(alpha, eta, beta);
 		mmb.setR1TradeOffs(eta1, eta2);
 
-		mmb.setRho(0.01);
+		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(100);
+		mmb.setNumberOfIterations(30);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					

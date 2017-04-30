@@ -345,4 +345,14 @@ public class _User {
 	public String[] getFriends(){
 		return m_friends;
 	}
+	
+	// The function is used for finding friends from Amazon data set.
+	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
+	public void addAmazonFriend(String s){
+		m_amazonFriends.add(s);
+	}
+	
+	public ArrayList<String> getAmazonFriends(){
+		return m_amazonFriends;
+	}
  }
