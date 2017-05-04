@@ -1,19 +1,33 @@
 package Analyzer;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+
+import json.JSONArray;
+import json.JSONException;
+import json.JSONObject;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._Doc;
+import structures._Post;
+import structures._Product;
 import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
+import structures._stat;
+import utils.Utils;
 
 public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	// We don't record the feature stats.
@@ -132,17 +146,152 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 				}
 			}
 		}
-		
 		for(int i=0; i<lm.length; i++){
 				lm[i] /= sum;
 				if(lm[i] == 0)
 					lm[i] = 0.0001;
 		}
-		
-		return lm;
+			return lm;
 	}
 	
 	public int getLMFeatureSize(){
 		return m_lmFeatureNames.size();
+	}
+	
+	public void getStat(){
+		ArrayList<Integer> medians = new ArrayList<Integer>();
+		double pos = 0, total = 0;
+		for(_User u: m_users){
+			medians.add(u.getReviewSize());
+			for(_Review r: u.getReviews()){
+				if(r.getYLabel() == 1)
+					pos++;
+				total++;
+			}
+		}
+		Collections.sort(medians);
+		double median = 0;
+		if(medians.size() % 2 == 0)
+			median = (medians.get(medians.size()/2)+medians.get(medians.size()/2-1))/2;
+		else 
+			median = medians.get(medians.size()/2);
+		System.out.println("median: " + median);
+		System.out.println("pos: " + pos);
+		System.out.println("total: " + total);
+		System.out.println("pos ratio: " + pos/total);
+
+	}
+	
+	// added by Lin, selected k users for separate testing.
+	public void seperateUsers(int k){
+		int count = 0;
+		while(count < k){
+			for(_Review r: m_users.get(count++).getReviews())
+				r.setType(rType.SEPARATE);
+		}
+	}
+	
+	public void saveUsers(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_User u: m_users)
+				writer.write(u.getUserID()+"\n");
+			writer.close();
+			System.out.println(m_users.size() + " users are saved!");
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public ArrayList<String> getLMFeatures(){
+		return m_lmFeatureNames;
+	}
+	
+	//Load a document and analyze it.
+	public void LoadJsonDoc(String filename) {
+		_Product prod = null;
+		JSONArray jarray = null;
+		
+		try {
+			JSONObject json = LoadJSON(filename);
+			prod = new _Product(json.getJSONObject("asin"));
+			jarray = json.getJSONArray("related");
+		} catch (Exception e) {
+			System.err.print('X');//fail to parse a json document
+			return;
+		}	
+		
+		for(int i=0; i<jarray.length(); i++) {
+			try {
+				_Post post = new _Post(jarray.getJSONObject(i));
+				if (post.isValid(m_dateFormatter)) {
+					long timeStamp = m_dateFormatter.parse(post.getDate()).getTime();
+					String content;
+					
+					//append document title into document content
+					if (Utils.endWithPunct(post.getTitle()))
+						content = post.getTitle() + " " + post.getContent();
+					else
+						content = post.getTitle() + ". " + post.getContent();
+					
+					//int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp
+					_Doc review = new _Doc(m_corpus.getSize(), post.getID(), prod.getID(), post.getTitle(), content, post.getLabel()-1, timeStamp);
+					if(this.m_stnDetector!=null)
+						AnalyzeDocWithStnSplit(review);
+					else
+						AnalyzeDoc(review);
+				}
+			} catch (ParseException e) {
+				System.out.print('T');
+			} catch (JSONException e) {
+				System.out.print('P');
+			}
+		}
+	}
+	
+	// Check if two users have the co-purchase 
+	protected boolean hasCoPurchase(_User ui, _User uj){
+		int count = 0;
+		HashSet<String> item_i = new HashSet<String>();
+		for(_Review r: ui.getReviews()){
+			item_i.add(r.getItemID());
+		}
+		for(_Review r: uj.getReviews()){
+			if(item_i.contains(r.getItemID())){
+				count++;
+				if(count == 1)
+					return true;
+			}
+		}
+		return false;
+	}
+	public void findFriends(String filename){
+		_User ui, uj;
+		// Detect all co-purchase.
+		for(int i=0; i<m_users.size(); i++){
+			ui = m_users.get(i);
+			for(int j=i+1; j<m_users.size(); j++){
+				uj = m_users.get(j);
+				if(hasCoPurchase(ui, uj)){
+					ui.addAmazonFriend(uj.getUserID());
+					uj.addAmazonFriend(ui.getUserID());
+				}
+			}
+		}
+		try{
+			double avg = 0;
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_User u: m_users){
+				avg += u.getAmazonFriends().size();
+				writer.write(u.getUserID()+"\t");
+				for(String frd: u.getAmazonFriends())
+					writer.write(frd+"\t");
+				writer.write("\n");
+			}
+			System.out.println("[Info] Avg friends: "+ avg/m_users.size());
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
 	}
 }
