@@ -55,7 +55,7 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -142,8 +142,8 @@ public class MyHDPMain {
 		hdp.setR1TradeOffs(eta1, eta2);
 		
 		hdp.setBurnIn(20);
-		//hdp.setThinning(5);// default 3
-		//hdp.setNumberOfIterations(100);// default 50
+//		hdp.setThinning(5);// default 3
+//		hdp.setNumberOfIterations(100);// default 50
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		

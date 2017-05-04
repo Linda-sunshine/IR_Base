@@ -172,18 +172,14 @@ public class CLRWithHDP extends CLRWithDP {
 				
 			//log likelihood of y, i.e., p(y|x,\phi)
 			likelihood = calcLogLikelihoodY(r);
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
+		
 			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
-			calcLogLikelihoodX(r);
+	
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
 			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
+
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
 				
 			if(k==0) 

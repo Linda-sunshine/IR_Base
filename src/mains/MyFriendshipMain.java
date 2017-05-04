@@ -17,10 +17,10 @@ public class MyFriendshipMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		int lmTopK = 5000; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 
 		String fs = "DF";//"IG_CHI"
 		
@@ -33,7 +33,7 @@ public class MyFriendshipMain {
 
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/Friends.txt", prefix, dataset);
+		String friendFile = String.format("%s/%s/Co_Review_Friends_1.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);

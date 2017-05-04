@@ -251,13 +251,17 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	
 	// Check if two users have the co-purchase 
 	protected boolean hasCoPurchase(_User ui, _User uj){
+		int count = 0;
 		HashSet<String> item_i = new HashSet<String>();
 		for(_Review r: ui.getReviews()){
 			item_i.add(r.getItemID());
 		}
 		for(_Review r: uj.getReviews()){
-			if(item_i.contains(r.getItemID()))
-				return true;
+			if(item_i.contains(r.getItemID())){
+				count++;
+				if(count == 1)
+					return true;
+			}
 		}
 		return false;
 	}

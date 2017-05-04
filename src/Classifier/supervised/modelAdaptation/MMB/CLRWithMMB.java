@@ -178,7 +178,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		int k = (int) (Math.random() * m_kBar);
 		
 		//Step 3: update the setting after sampling z_ij.
-		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
+		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first param means edge (0 or 1), the second one mean increase by 1.
 		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 			
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
@@ -420,12 +420,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		int count = 0;
 		
-		// Because we want to sample documents first without sampling edges.
-		// So we have to rewrite the init function to split init thetastar for docs and edges.
-		
+		/**Because we want to sample documents first without sampling edges.
+		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
 		// assign each review to one cluster.
 		init(); // clear user performance and init cluster assignment	
-			
 		// assign each edge to one cluster.
 		initThetaStars4Edges();
 		
@@ -500,10 +498,6 @@ public class CLRWithMMB extends CLRWithHDP {
 					if(isBijValid(i, j)){
 						m_p_mmb_0 = m_rho * calcPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i]);
 						// sample i->j
-						if( m_p_bk/(m_p_bk+m_p_mmb_0) > 1){
-							System.out.println("Bug");
-//							System.out.print(String.format("[BugInfo]rho:%.5f,p_bk:%.5f,p_mmb_0:%.5f,bij:%.5f\n", m_rho, m_p_bk, m_p_mmb_0, getBij(i,j)));
-						}
 						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
 						// put the edge(two nodes) in the background model.
 						if(m_bernoulli.sample() == 1){
@@ -588,7 +582,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-//			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
@@ -596,8 +589,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		int index = 0;
 		_HDPThetaStar thetai = ui.getThetaStar(uj);
 		thetai.updateEdgeCount(e, -1);
-//		if(!thetai.isValid())
-//			System.out.println("Invalid theta!!!");
 		
 		// remove the neighbor from user.
 		ui.rmNeighbor(uj);
@@ -608,19 +599,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			if(index == -1)
 				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-//			m_hdpThetaStars[m_kBar-1].disable();
 			m_kBar --;
 		}
 	}
-//	@Override
-//	protected double calculate_M_step(){
-//		assignClusterIndex();
-//		
-//		// sample gamma + estPsi + estPhi
-//		double likelihood = super.calculate_M_step();
-//		return likelihood + estRho();
-//
-//	}
+
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
