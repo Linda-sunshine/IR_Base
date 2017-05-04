@@ -172,18 +172,14 @@ public class CLRWithHDP extends CLRWithDP {
 				
 			//log likelihood of y, i.e., p(y|x,\phi)
 			likelihood = calcLogLikelihoodY(r);
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
+		
 			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
-			calcLogLikelihoodX(r);
+	
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
 			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
-			if(Double.isNaN(likelihood))
-				System.out.println("Bug!");
+
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
 				
 			if(k==0) 
@@ -670,7 +666,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	public void printInfo(boolean printDetails){
-		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(50);		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(10);		
 		
 		//clear the statistics
 		for(int i=0; i<m_kBar; i++) {
@@ -704,29 +700,53 @@ public class CLRWithHDP extends CLRWithDP {
 			System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
 		else if (printDetails) {
 			System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
-
+			
+			accumulateFeatureCount();
 			for(_RankItem it:clusterRanker)
 				printTopWords(m_hdpThetaStars[it.m_index]);			
 		}
 	}
+	int[][] m_tf_count;
+	public void accumulateFeatureCount(){
+		int cIndex = 0;
+		// store the tf count of features in one cluster
+		m_tf_count = new int[m_kBar][m_featureSize];
+		for(_AdaptStruct user: m_userList){
+			for(_Review r: user.getReviews()){
+				if(r.getType() == rType.ADAPTATION){
+					cIndex = r.getHDPThetaStar().getIndex();
+					// aggregate each cluster's word counts
+					for(_SparseFeature fv: r.getSparse()){
+						m_tf_count[cIndex][fv.getIndex()] += fv.getValue();
+					}
+				}
+			}
+		}
+	}
 	
 	void printTopWords(_HDPThetaStar cluster) {
+		
 		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(30);
 		double[] lmStat = cluster.getLMStat();
 		double[] phi = cluster.getModel();
-		
-		// features with positive weights (skip the bias term)
+		int[] tfs = m_tf_count[cluster.getIndex()];
+		double tf;
+		// features with positive/negative weights (skip the bias term)
 		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
-		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+		for(int i=1; i<phi.length; i++){
+			tf = tfs[i-1] == 0 ? 0.1 : tfs[i-1];
+			wordRanker.add(new _RankItem(i, phi[i]*tf));//top positive words with expected polarity
+		}	
 		for(_RankItem it:wordRanker)
 			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
 			
 		// features with negative weights
 		wordRanker.clear();
 		System.out.format("\n[negative]: ");
-		for(int i=1; i<phi.length; i++) 
-			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+		for(int i=1; i<phi.length; i++) {
+			tf = tfs[i-1] == 0 ? 0.1 : tfs[i-1];
+			wordRanker.add(new _RankItem(i, -phi[i]*tf));//top negative words
+		}
 		for(_RankItem it:wordRanker)
 			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
 				
