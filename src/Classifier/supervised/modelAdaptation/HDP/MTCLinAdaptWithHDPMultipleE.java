@@ -1,23 +1,12 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-
 import structures._Doc;
 import structures._HDPThetaStar;
-import structures._PerformanceStat;
 import structures._Review;
-import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
-import utils.Utils;
 
 /***
  * In the class, we consider the cluster sampling multiple times to get an expectation of the sampling results. 

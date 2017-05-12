@@ -163,7 +163,7 @@ public class CLRWithMMB extends CLRWithHDP {
 
 	@Override
 	// The function is used in "sampleOneInstance".
-	public double calcGroupPopularity(_HDPAdaptStruct u, int k, double gamma_k){
+	public double calcGroupProportion(_HDPAdaptStruct u, int k, double gamma_k){
 		_MMBAdaptStruct user= (_MMBAdaptStruct) u;
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
 	}
@@ -369,7 +369,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// Sample new cluster based on sampling of z_{i->j}, thus, the cluster will have edges info.
-	public void sampleNewCluster4Edge(){
+	protected void sampleNewCluster4Edge(){
 		// use the first available one as the new cluster.	
 		if (m_hdpThetaStars[m_kBar] == null){
 			if (this instanceof CLinAdaptWithMMB)// this should include all the inherited classes for adaptation based models

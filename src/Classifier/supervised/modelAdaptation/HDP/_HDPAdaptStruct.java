@@ -1,7 +1,6 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -9,11 +8,9 @@ import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
-import structures._MMBNeighbor;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
-import structures._WeightedCount;
 import utils.Utils;
 
 public class _HDPAdaptStruct extends _DPAdaptStruct {
@@ -65,7 +62,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		if(m_hdpThetaMemMap.containsKey(s)){
 			for(_Review r: m_hdpThetaMemMap.get(s))
 				wSum += r.getConfidence();
-			return (int) wSum;
+			return (int) wSum;//why should we cast it into an integer?
 		} else 
 			return 0;
 	}
@@ -76,12 +73,14 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 			m_hdpThetaMemMap.put(s, new ArrayList<_Review>());
 		m_hdpThetaMemMap.get(s).add(r);
 	}
+	
 	// Remove one review from one thetastar.
 	protected void rmHDPThetaStarMem(_HDPThetaStar s, _Review r){
 		if(!m_hdpThetaMemMap.containsKey(s)){
 			System.err.println("The Theta star doesn't exist!");
 			return;
 		}
+		
 		m_hdpThetaMemMap.get(s).remove(r);
 		if(m_hdpThetaMemMap.get(s).size() == 0)
 			m_hdpThetaMemMap.remove(s);
@@ -94,6 +93,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	public void setThetaStar(_HDPThetaStar theta){
 		m_hdpThetaStar = theta;
 	}
+	
 	@Override
 	public _HDPThetaStar getThetaStar(){
 		return m_hdpThetaStar;
@@ -105,9 +105,8 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 		double prob = 0, sum = 0;
 		double[] probs = r.getCluPosterior();
 		int n, m, k;
-
-		//not adaptation based
-		if (m_dim==0) {
+		
+		if (m_dim==0) {//not adaptation based
 			for(k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithHDP.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithHDP.m_supWeights != null && MTCLRWithHDP.m_q != 0)
@@ -119,7 +118,7 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 				else
 					prob = Utils.logSum(prob, probs[k] + Math.log(Utils.logistic(sum)));
 			}
-		} else {
+		} else {// linear transformation based adaptation
 			double As[];
 			for(k=0; k<probs.length; k++) {
 				As = CLRWithHDP.m_hdpThetaStars[k].getModel();

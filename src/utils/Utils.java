@@ -231,6 +231,14 @@ public class Utils {
 		return sum;
 	}
 	
+	//The function defines the sum of an array.
+	public static double sumOfArray(_SparseFeature[] fv) {
+		double sum = 0;
+		for (_SparseFeature f : fv)
+			sum += f.getValue();
+		return sum;
+	}
+	
 	//sum_i a[i] - b[i]
 	public static double[] diff(double[] a, double[] b) {
 		if (a.length != b.length)

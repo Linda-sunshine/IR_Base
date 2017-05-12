@@ -47,6 +47,7 @@ public class _HDPThetaStar extends _thetaStar {
 		else 
 			Arrays.fill(m_lmStat, 0);
 	}
+	
 	public void clearLMStat(){
 		Arrays.fill(m_lmStat, 0);
 	}
@@ -54,25 +55,25 @@ public class _HDPThetaStar extends _thetaStar {
 	public void addLMStat(_SparseFeature[] fvs){
 		for(_SparseFeature fv: fvs){
 			m_lmStat[fv.getIndex()] += fv.getValue();
-//			if(fv.getIndex() == 156)
-//				System.out.println(m_lmStat[fv.getIndex()]);
 		}
 	}
+	
 	public void rmLMStat(_SparseFeature[] fvs){
 		for(_SparseFeature fv: fvs){
 			m_lmStat[fv.getIndex()] -= fv.getValue();
 			if(m_lmStat[fv.getIndex()] < 0)
-				System.out.println("Bug");
-//			if(fv.getIndex() == 156)
-//				System.out.println(m_lmStat[fv.getIndex()]);
+				System.err.println("Negative sufficient statistics for \\psi!");
 		}
 	}
+	
 	public double[] getLMStat(){
 		return m_lmStat;
 	}
+	
 	public double getOneLMStat(int index){
 		return m_lmStat[index];
 	}
+	
 	public double getLMSum(){
 		double sum = 0;
 		for(double v: m_lmStat)
@@ -103,6 +104,7 @@ public class _HDPThetaStar extends _thetaStar {
 	public int getReviewSize(){
 		return m_reviewNames.size();
 	}
+	
 	public ArrayList<String> getReviewNames(){
 		return m_reviewNames;
 	}
