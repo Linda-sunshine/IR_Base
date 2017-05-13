@@ -44,8 +44,7 @@ public class MTCLinAdaptWithMMBDocFirst extends MTCLinAdaptWithMMB {
 		
 		count = 0;
 		while(count++ < m_burnIn){
-			super.calculate_E_step();
-			calculate_E_step_Edge();
+			calculate_E_step();
 
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
@@ -55,7 +54,6 @@ public class MTCLinAdaptWithMMBDocFirst extends MTCLinAdaptWithMMB {
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.
 			calculate_E_step();
-			calculate_E_step_Edge();
 
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();

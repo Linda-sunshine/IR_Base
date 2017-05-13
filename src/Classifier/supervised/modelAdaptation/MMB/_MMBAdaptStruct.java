@@ -2,6 +2,8 @@ package Classifier.supervised.modelAdaptation.MMB;
 
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
@@ -9,11 +11,6 @@ import structures._Review;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
 public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	
@@ -28,9 +25,13 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
-	// key: global component parameter; val: edge size.
+	
+	// key: global component parameter; 
+	// val: edge size.
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
-	// key: uj; val: group parameter-_HDPThetaStar.
+	
+	// key: uj; 
+	// val: group parameter-_HDPThetaStar.
 	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
 	
 	/********Functions used in MMB model.********/
@@ -41,8 +42,9 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		else 
 			return 0;
 	}
+	
 	// Update the size of the edges belong to the group.
-	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
+	public void incHDPThetaEdgeSize(_HDPThetaStar s, int v){
 		if (v==0)
 			return;
 		
@@ -62,22 +64,24 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		else
 			return false;
 	}
+	
 	public int getEdge(_HDPAdaptStruct uj){
 		return m_neighborMap.get(uj).getEdge();
 	}
+	
 	// Add a neighbor, update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
 	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
 		m_neighborMap.put(uj, new _MMBNeighbor(uj, theta, e));
 		
 		// Increase the edge size by 1.
-		incHDPThetaStarEdgeSize(theta, 1);
+		incHDPThetaEdgeSize(theta, 1);
 	}
 	
 	// Remove one neighbor, 
 	public void rmNeighbor(_HDPAdaptStruct uj){
 		// Decrease the edge size by 1.
 		_HDPThetaStar theta = m_neighborMap.get(uj).getHDPThetaStar();
-		incHDPThetaStarEdgeSize(theta, -1);
+		incHDPThetaEdgeSize(theta, -1);
 		
 		m_neighborMap.remove(uj);
 	}
@@ -90,6 +94,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	public _MMBNeighbor getOneNeighbor(_HDPAdaptStruct u){
 		return m_neighborMap.get(u);
 	}
+	
 	public HashMap<_HDPAdaptStruct, _MMBNeighbor> getNeighbors(){
 		return m_neighborMap;
 	}
@@ -100,9 +105,8 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		double prob = 0, sum = 0;
 		double[] probs = r.getCluPosterior();
 		int n, m, k;
-
-		//not adaptation based
-		if (m_dim==0) {
+		
+		if (m_dim==0) {//not adaptation based
 			for(k=0; k<probs.length; k++) {
 				sum = Utils.dotProduct(CLRWithMMB.m_hdpThetaStars[k].getModel(), doc.getSparse(), 0);//need to be fixed: here we assumed binary classification
 				if(MTCLRWithMMB.m_supWeights != null && CLRWithDP.m_q != 0)
@@ -114,7 +118,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 				else
 					prob = Utils.logSum(prob, probs[k] + Math.log(Utils.logistic(sum)));
 			}
-		} else {
+		} else {// linear transformation based adaptation
 			double As[];
 			for(k=0; k<probs.length; k++) {
 				As = CLRWithMMB.m_hdpThetaStars[k].getModel();
@@ -137,7 +141,5 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		doc.m_pCount ++;
 		doc.m_prob += Math.exp(prob); //>0.5?1:0;
 		return prob;
-	}	
-	
-	
+	}
 }

@@ -3,6 +3,7 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
@@ -42,6 +43,8 @@ public class CLRWithDP extends LinAdapt {
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
+	protected Random m_rand = new Random();
+	
 	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
@@ -160,11 +163,15 @@ public class CLRWithDP extends LinAdapt {
 		return -1;// impossible to hit here!
 	}
 	
+	protected boolean isTransformationBased() {
+		return false;
+	}
+	
 	// Sample thetaStars.
 	protected void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_thetaStars[m] == null) {
-				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes for adaptation based models
+				if (isTransformationBased())// this should include all the inherited classes for adaptation based models
 					m_thetaStars[m] = new _thetaStar(2*m_dim);
 				else
 					m_thetaStars[m] = new _thetaStar(m_dim);
@@ -228,11 +235,26 @@ public class CLRWithDP extends LinAdapt {
 		m_thetaStars[b] = cTheta;// kBar starts from 0, the size decides how many are valid.
 	}
 	
+	protected void permutateUsers() {		
+		_AdaptStruct user;
+		int s;
+		
+		for(int i=m_userList.size()-1; i>1; i--) {
+			s = m_rand.nextInt(i);
+			
+			//swap the user
+			user = m_userList.get(s);
+			m_userList.set(s, m_userList.get(i));
+			m_userList.set(i, user);
+		}		
+	}
+	
 	// The main MCMC algorithm, assign each user to clusters.
 	protected void calculate_E_step(){
 		_thetaStar curThetaStar;
 		_DPAdaptStruct user;
 		
+		permutateUsers();
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
 			curThetaStar = user.getThetaStar();
@@ -628,6 +650,8 @@ public class CLRWithDP extends LinAdapt {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				
+				@Override
 				public void run() {
 					_DPAdaptStruct user;
 					try {

@@ -139,11 +139,11 @@ public class CLRWithHDP extends CLRWithDP {
 
 	//Sample auxiliary \phis for further use, also sample one \psi in case we get the new cluster.
 	@Override
-	public void sampleThetaStars(){
+	protected void sampleThetaStars(){
 		double gamma_e = m_gamma_e/m_M;
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_hdpThetaStars[m] == null){
-				if (this instanceof CLinAdaptWithHDP)// this should include all the inherited classes for adaptation based models
+				if (isTransformationBased())// this should include all the inherited classes for adaptation based models
 					m_hdpThetaStars[m] = new _HDPThetaStar(2*m_dim, gamma_e);
 				else
 					m_hdpThetaStars[m] = new _HDPThetaStar(m_dim, gamma_e);
@@ -216,8 +216,8 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
 				
 		double rnd = Beta.staticNextDouble(1, m_alpha);
-		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
-		m_gamma_e = (1-rnd)*m_gamma_e;
+		m_hdpThetaStars[k].setGamma(rnd * m_gamma_e);
+		m_gamma_e = (1-rnd) * m_gamma_e;
 			
 		swapTheta(m_kBar, k);
 		m_kBar++;
@@ -301,11 +301,14 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		return res;
 	}
+	
 	// The main MCMC algorithm, assign each review to clusters.
 	@Override
 	protected void calculate_E_step(){
 		_HDPAdaptStruct user;
 		int sampleSize=0;
+		
+		permutateUsers();
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
 			for(_Review r: user.getReviews()){
@@ -326,36 +329,37 @@ public class CLRWithHDP extends CLRWithDP {
 				}
 			}
 		}
-//		sampleGamma();//will this help sampling?
 		System.out.println(m_kBar);
 	}
 	
-	public void updateDocMembership(_HDPAdaptStruct user, _Review r){
+	protected void updateDocMembership(_HDPAdaptStruct user, _Review r){
 		int index = -1;
 		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
 		
 		//Step 1: remove the current review from the thetaStar and user side.
-		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
+		user.incHDPThetaStarMemSize(curThetaStar, -1);				
 		curThetaStar.updateMemCount(-1);
 		curThetaStar.rmLMStat(r.getLMSparse());
 		
-		if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
+		if(curThetaStar.getMemSize() == 0) {// No review associated with the cluster.
 			// just for checking purpose, to see if every dim gets 0 count.
-			LMStatSanityCheck(curThetaStar);
+			isLMStatEmpty(curThetaStar);
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
 			m_kBar --;
 		}
 	}
-	public void LMStatSanityCheck(_HDPThetaStar theta){
-		for(double c: theta.getLMStat()){
-			if(c != 0){
-				System.err.println("Non-zero count in lm stat!");
-				return;
-			}
+	
+	protected boolean isLMStatEmpty(_HDPThetaStar theta){		
+		if(Utils.sumOfArray(theta.getLMStat())>0){
+			System.err.println("Non-zero count in lm stat!");
+			return false;
 		}
+		else
+			return true;
 	}
+	
 	// Sample the weights given the cluster assignment.
 	@Override
 	protected double calculate_M_step(){
@@ -402,7 +406,6 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Sample the global mixture proportion, \gamma~Dir(m1, m2,..,\alpha)
 	protected void sampleGamma(){
-
 		for(int k=0; k<m_kBar; k++)
 			m_hdpThetaStars[k].m_hSize = 0;
 		
@@ -475,7 +478,6 @@ public class CLRWithHDP extends CLRWithDP {
 							
 							for(_Review review:user.getReviews()){
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
-
 									continue;
 								m_fValue[core] -= calcLogLikelihoodY(review);
 
@@ -574,10 +576,11 @@ public class CLRWithHDP extends CLRWithDP {
 
 			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			
-			if (i%m_thinning==0)
-				evaluateModel();
+			if (i%m_thinning==0) {
+				evaluateModel();			
+				printInfo(true);//no need to print out the details very often
+			}
 			
-			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -585,7 +588,6 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 
 		evaluateModel(); // we do not want to miss the last sample?!
-//		setPersonalizedModel();
 		return curLikelihood;
 	}
 	
@@ -594,7 +596,7 @@ public class CLRWithHDP extends CLRWithDP {
 			if (theta == m_hdpThetaStars[i])
 				return i;
 		
-//		System.err.println("[Error]Hit unknown theta star when searching!");
+		System.err.println("[Error]Searching theta out of range!");
 		return -1;// impossible to hit here!
 	}
 	
@@ -603,8 +605,9 @@ public class CLRWithHDP extends CLRWithDP {
 		if (m_models==null || m_models.length!=getVSize())
 			m_models = new double[getVSize()];
 		
+		int dim = isTransformationBased() ? 2*m_dim : m_dim;
 		for(int i=0; i<m_kBar; i++)
-			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, m_dim*i, m_dim);
+			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, dim*i, dim);
 	}
 	
 	@Override

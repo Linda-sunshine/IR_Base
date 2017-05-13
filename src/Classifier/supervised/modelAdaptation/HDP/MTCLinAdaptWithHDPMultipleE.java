@@ -14,13 +14,12 @@ import structures._Review.rType;
  * @author lin
  *
  */
-public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
+public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP {
 
 	public MTCLinAdaptWithHDPMultipleE(int classNo, int featureSize,
 			HashMap<String, Integer> featureMap, String globalModel,
 			String featureGroupMap, String featureGroup4Sup, double[] lm) {
-		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
-				featureGroup4Sup, lm);
+		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, featureGroup4Sup, lm);
 	}
 
 	@Override
@@ -28,13 +27,15 @@ public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 		return String.format("MTCLinAdaptWithHDPMultipleE[dim:%d,supDim:%d,lmDim:%d,thinning:%d,M:%d,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),supScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",
 											m_dim,m_dimSup,m_lmDim,m_thinning,m_M,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_eta3,m_eta4,m_numberOfIterations, m_abNuA[0], m_abNuA[1], m_abNuB[0], m_abNuB[1]);
 	}
+	
+	@Override
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
 		super.sampleOneInstance(user, r);
 		// We also put the sampled cluster to the review for later MLE.
 		r.updateThetaCountMap(1);
 	}
 	
-	public void clearReviewStats(){
+	void clearReviewStats(){
 		_HDPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
@@ -45,6 +46,7 @@ public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 			}
 		}
 	}
+	
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
 	@Override
 	public double train(){
@@ -105,6 +107,7 @@ public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 	
 	// In function logLikelihood, we update the loglikelihood and corresponding gradients.
 	// Thus, we only need to update the two functions correspondingly with.
+	@Override
 	protected double calcLogLikelihoodY(_Review r){
 		int index = -1;
 		_HDPThetaStar oldTheta = r.getHDPThetaStar();
@@ -128,7 +131,7 @@ public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 		int index = -1;
 		double confidence = 1;
 		_Review r = (_Review) review;
-		_HDPThetaStar oldTheta = r.getHDPThetaStar();
+		_HDPThetaStar lastTheta = r.getHDPThetaStar();
 		HashMap<_HDPThetaStar, Integer> thetaCountMap = r.getThetaCountMap();
 		
 		for(_HDPThetaStar theta: thetaCountMap.keySet()){
@@ -141,6 +144,6 @@ public class MTCLinAdaptWithHDPMultipleE extends MTCLinAdaptWithHDP{
 			// confidence plays the role of weight here, how many times the review shows in the cluster.
 			super.gradientByFunc(u, review, confidence, g);
 		}
-		r.setHDPThetaStar(oldTheta);
+		r.setHDPThetaStar(lastTheta);
 	}
 }

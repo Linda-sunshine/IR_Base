@@ -29,19 +29,6 @@ public class CLinAdaptWithMMB extends CLRWithMMB {
 	public String toString() {
 		return String.format("CLinAdaptWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:(%.3f,%.3f),#Iter:%d,N1(%.3f,%.3f),N2(%.3f,%.3f)]",m_dim,m_lmDim,m_M,m_rho,m_alpha,m_eta,m_beta,m_eta1,m_eta2,m_numberOfIterations,m_abNuA[0],m_abNuA[1],m_abNuB[0],m_abNuB[1]);
 	}
-
-	@Override
-	protected void accumulateClusterModels(){
-		if (m_models==null || m_models.length!=getVSize())
-			m_models = new double[getVSize()];
-		
-		for(int i=0; i<m_kBar; i++){
-//			double[] src = m_hdpThetaStars[i].getModel();
-//			double[] dest = m_models;
-//			System.out.print(String.format("src len: %d, dest len: %d, total: %d\n", src.length, dest.length, m_dim*2*i + m_dim*2));
-			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
-		}
-	}
 	
 	@Override
 	protected int getVSize() {

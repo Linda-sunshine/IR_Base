@@ -86,9 +86,11 @@ public class _Review extends _Doc {
 	public HashMap<_HDPThetaStar, Integer> getThetaCountMap(){
 		return m_thetaCountMap;
 	}
+	
 	public void clearThetaCountMap(){
 		m_thetaCountMap.clear();
 	}
+	
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
