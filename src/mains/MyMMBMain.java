@@ -86,7 +86,7 @@ public class MyMMBMain {
 		mmb.setRho(0.01);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-//		mmb.setNumberOfIterations(30);
+		mmb.setNumberOfIterations(20);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
