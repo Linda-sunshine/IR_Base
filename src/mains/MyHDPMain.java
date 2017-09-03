@@ -131,13 +131,17 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		double alpha = 0.6, eta = 0.1, beta = 0.01, sdA = 0.1, sdB = 0.1; 
+		
+		// best parameter for yelp so far.
+		alpha = 0.01; sdA = 0.05; sdB = 0.05;
+		
 		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
 		hdp.setR2TradeOffs(eta3, eta4);
-		hdp.setsdB(0.1);//0.2
+		hdp.setsdB(sdA);//0.2
 
-		hdp.setsdA(0.1);//0.2
-		double alpha = 1, eta = 0.1, beta = 0.01;
+		hdp.setsdA(sdB);//0.2
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		

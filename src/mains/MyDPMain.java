@@ -48,7 +48,7 @@ public class MyDPMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
 	
-		String dataset = "Amazon"; // "Amazon", "YelpNew"
+		String dataset = "YelpNew"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		 
 		int lmTopK = 1000; // topK for language model.
@@ -244,11 +244,11 @@ public class MyDPMain {
 //		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
-//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-//		mtsvm.loadUsers(analyzer.getUsers());
-//		mtsvm.setBias(true);
-//		mtsvm.train();
-//		mtsvm.test();
+		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+		mtsvm.loadUsers(analyzer.getUsers());
+		mtsvm.setBias(true);
+		mtsvm.train();
+		mtsvm.test();
 //		mtsvm.saveSupModel("./data/mtsvm_global.txt");
 //		mtsvm.saveModel("./data/mtsvm_models");
 		
