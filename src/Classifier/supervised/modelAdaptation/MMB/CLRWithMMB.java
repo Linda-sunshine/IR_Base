@@ -1,4 +1,7 @@
 package Classifier.supervised.modelAdaptation.MMB;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -457,9 +460,25 @@ public class CLRWithMMB extends CLRWithHDP {
 			lastLikelihood = curLikelihood;
 		}
 
+		printClusterInfo();
 		evaluateModel(); // we do not want to miss the last sample?!
 //		setPersonalizedModel();
 		return curLikelihood;
+	}
+	
+	private void printClusterInfo(){
+		try {
+			_HDPThetaStar theta;
+			PrintWriter writer = new PrintWriter(new File("cluster.txt"));
+			for(int k=0; k<m_kBar; k++){
+				theta = m_hdpThetaStars[k];
+				writer.write(String.format("%d,%d,%d\n", theta.getMemSize(), theta.getEdgeSize(0), theta.getEdgeSize(1)));
+			}
+			writer.close();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 		
 	protected void calculate_E_step_Edge(){

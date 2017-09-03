@@ -2,7 +2,7 @@ package structures;
 
 public class DPParameter {
 	
-	public String m_prefix = "/if15/lg5bt/DataSigir";//"./data/CoLinAdapt"
+	public String m_prefix = "/zf8/lg5bt/DataSigir";//"./data/CoLinAdapt"
 	public String m_data = "Amazon";
 	public String m_model = "mtclinhdpconfm";
 	public double m_adaptRatio = 0.5;
