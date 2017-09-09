@@ -86,13 +86,14 @@ public class MyMMBMain {
 		mmb.setRho(0.01);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(20);
+		mmb.setNumberOfIterations(50);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
 		
 		mmb.train();
 		mmb.test();
+		mmb.printStat();
 		
 	}
 }

@@ -1,6 +1,7 @@
 package Classifier.supervised.modelAdaptation.MMB;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,16 +44,25 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Thus, we can maintain a matrix for indexing.
 	_HDPThetaStar[][] m_indicator;
 		
+	private HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
+	private void initStat(){
+		stat.put("onlyedges", new ArrayList<Integer>());
+		stat.put("onlydocs", new ArrayList<Integer>());
+		stat.put("mixture", new ArrayList<Integer>());
+	}
+
 	public CLRWithMMB(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel,
 			double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, betas);
 		calcProbNew();
+		initStat();
 	} 
 	
 	public CLRWithMMB(int classNo, int featureSize, String globalModel,
 			double[] betas) {
 		super(classNo, featureSize, globalModel, betas);
 		calcProbNew();
+		initStat();
 	} 
 	
 	// Set the sparsity parameter
@@ -559,6 +569,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		theta_g.addConnection(theta_h, e);
 		theta_h.addConnection(theta_g, e);
 	}
+	
 	public void checkClusters(){
 		int index = 0;
 		int zeroDoc = 0, zeroEdge = 0;
@@ -569,7 +580,11 @@ public class CLRWithMMB extends CLRWithHDP {
 				zeroDoc++;
 			index++;
 		}
-		System.out.print(String.format("[Info]Zero doc clusters: %d, zero edge clusters: %d, kBar:%d, non_null hdp: %d\n", zeroDoc, zeroEdge, m_kBar, index));
+		stat.get("onlyedges").add(zeroDoc);
+		stat.get("onlydocs").add(zeroEdge);
+		stat.get("mixture").add(m_kBar-zeroDoc-zeroEdge);
+		
+		System.out.print(String.format("[Info]Clusters with only edges: %d, Clusters with only docs: %d, kBar:%d, non_null hdp: %d\n", zeroDoc, zeroEdge, m_kBar, index));
 	}
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/
@@ -627,5 +642,20 @@ public class CLRWithMMB extends CLRWithHDP {
 	public double estRho(){
 		m_rho = (m_MNL[0]+m_MNL[1]+m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
 		return 0;
+	}
+	
+	public void printStat(){
+		try{
+			PrintWriter writer = new PrintWriter(new File("./data/cluster_stat.txt"));
+			for(String key: stat.keySet()){
+				for(int v: stat.get(key)){
+					writer.write(v+",");
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
 	}
 }
