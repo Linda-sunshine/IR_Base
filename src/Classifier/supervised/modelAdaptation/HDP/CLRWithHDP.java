@@ -171,17 +171,21 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 				
 			//log likelihood of y, i.e., p(y|x,\phi)
+			double likelihoodY = calcLogLikelihoodY(r);
 			likelihood = calcLogLikelihoodY(r);
 		
+			double likelihoodX = calcLogLikelihoodX(r);
 			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
 	
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
+			double likelihoodPop = Math.log(calcGroupPopularity(user, k, gamma_k));
 			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
 
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-				
+			
+//			System.out.println(String.format("k:%d, X:%.4f, Y:%.4f, pop:%.4f, all:%.4f", k, likelihoodX, likelihoodY, likelihoodPop, likelihood));
 			if(k==0) 
 				logSum = likelihood;
 			else 
@@ -192,6 +196,7 @@ public class CLRWithHDP extends CLRWithDP {
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
 			
+//		System.out.println(k);
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
@@ -216,7 +221,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
 				
-		double rnd = Beta.staticNextDouble(1, m_alpha);
+		double rnd = Beta.staticNextDouble(2, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
 			
@@ -344,6 +349,7 @@ public class CLRWithHDP extends CLRWithDP {
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
+			curThetaStar.disable();
 			m_kBar --;
 		}
 	}

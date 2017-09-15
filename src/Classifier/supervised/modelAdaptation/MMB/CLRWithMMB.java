@@ -161,14 +161,14 @@ public class CLRWithMMB extends CLRWithHDP {
 					randomSampleEdge(j, i, 1);
 					addConnection(ui, uj, 1);
 					updateSampleSize(0);// update m_MNL: 0:1 from mmb; 1: 0 from mmb; 2: 0 from background.
-				
-					
+					updateSampleSize(0);
 				} else{
 				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
 					randomSampleEdge(i, j, 0);
 					randomSampleEdge(j, i, 0); 
 					addConnection(ui, uj, 0);
-					m_MNL[1] ++;
+					updateSampleSize(1);
+					updateSampleSize(1);
 				}
 			}
 		}
@@ -178,6 +178,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// The function is used in "sampleOneInstance".
 	public double calcGroupPopularity(_HDPAdaptStruct u, int k, double gamma_k){
 		_MMBAdaptStruct user= (_MMBAdaptStruct) u;
+//		System.out.print(String.format("%d/%d, %.5f, %d/%d\n", user.getHDPThetaMemSize(m_hdpThetaStars[k]), m_hdpThetaStars[k].getMemSize(), m_eta*gamma_k, user.getHDPThetaEdgeSize(m_hdpThetaStars[k]), m_hdpThetaStars[k].getTotalEdgeSize()));
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
 	}
 	
@@ -194,8 +195,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first param means edge (0 or 1), the second one mean increase by 1.
 		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 			
-		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
+//		//Step 4: Update the user info with the newly sampled hdpThetaStar.
+//		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
 			
 		//Step 5: Put the reference to the matrix for later usage.
 		//Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
@@ -241,10 +242,11 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
-		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 		
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
+		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
+		
+//		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
 		
 		//Step 5: Put the reference to the matrix for later usage.
 		//Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
@@ -329,15 +331,15 @@ public class CLRWithMMB extends CLRWithHDP {
 			// Update the thetaStar and user info after getting z_ij.
 			m_hdpThetaStars[g].updateEdgeCount(0, 1);//-->1
 			ui.addNeighbor(uj, m_hdpThetaStars[g], 0);
-			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1);	
+//			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1);	
 			m_indicator[i][j] = m_hdpThetaStars[g];
 			updateSampleSize(1);
 			
 			// Update the thetaStar and user info after getting z_ji.
 			m_hdpThetaStars[h].updateEdgeCount(0, 1);
 			uj.addNeighbor(ui, m_hdpThetaStars[h], 0);
-			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
-			m_indicator[i][j] = m_hdpThetaStars[h];
+//			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
+			m_indicator[j][i] = m_hdpThetaStars[h];
 			updateSampleSize(1);
 			addConnection(ui, uj, 0);
 		} else{
@@ -440,10 +442,12 @@ public class CLRWithMMB extends CLRWithHDP {
 		// assign each edge to one cluster.
 		initThetaStars4Edges();
 		
+		checkEdges();
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			super.calculate_E_step();
 			calculate_E_step_Edge();
+			checkEdges();
 			lastLikelihood = calculate_M_step();
 			lastLikelihood += estRho();
 		}
@@ -463,7 +467,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo(i%5==0);//no need to print out the details very often
+//			printInfo(i%5==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -476,6 +480,19 @@ public class CLRWithMMB extends CLRWithHDP {
 		return curLikelihood;
 	}
 	
+	protected void checkEdges(){
+		int mmb_0 = 0, mmb_1 = 0;
+		_HDPThetaStar theta;
+		for(int i=0; i<m_kBar; i++){
+			theta = m_hdpThetaStars[i];
+			mmb_0 += theta.getEdgeSize(0);
+			mmb_1 += theta.getEdgeSize(1);
+		}
+		if(mmb_0 != m_MNL[1])
+			System.out.println("Zero edges sampled from mmb is not correct!");
+		if(mmb_1 != m_MNL[0])
+			System.out.println("One edges sampled from mmb is not correct!");
+	}
 	private void printClusterInfo(){
 		try {
 			_HDPThetaStar theta;
@@ -611,11 +628,15 @@ public class CLRWithMMB extends CLRWithHDP {
 
 		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
 		curThetaStar.updateMemCount(-1);
+		curThetaStar.rmLMStat(r.getLMSparse());
 
 		if(curThetaStar.getMemSize() == 0 && curThetaStar.getTotalEdgeSize() == 0) {// No data associated with the cluster.
+			// just for checking purpose, to see if every dim gets 0 count.
+			LMStatSanityCheck(curThetaStar);
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
+			curThetaStar.disable();
 			m_kBar --;
 		}
 	}
@@ -633,6 +654,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if(index == -1)
 				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
+			thetai.disable();
 			m_kBar --;
 		}
 	}
@@ -644,12 +666,72 @@ public class CLRWithMMB extends CLRWithHDP {
 		return 0;
 	}
 	
-	public void printStat(){
+	public void printStat(String filename){
 		try{
-			PrintWriter writer = new PrintWriter(new File("./data/cluster_stat.txt"));
+			PrintWriter writer = new PrintWriter(new File(filename));
 			for(String key: stat.keySet()){
+				writer.write(key+"\n");
 				for(int v: stat.get(key)){
 					writer.write(v+",");
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void printEdgeAssignment(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			_MMBAdaptStruct u1;
+			int eij = 0, index1 = 0, index2 = 0;
+			HashMap<_HDPAdaptStruct, _MMBNeighbor> neighbors;
+			for(int i=0; i<m_userList.size(); i++){
+				u1 = (_MMBAdaptStruct) m_userList.get(i);
+				neighbors = u1.getNeighbors();
+				for(_HDPAdaptStruct nei: neighbors.keySet()){
+					eij = u1.getNeighbors().get(nei).getEdge();
+					if(eij == 1){
+						index1 = neighbors.get(nei).getHDPThetaStarIndex();
+						index2 = ((_MMBAdaptStruct) nei).getNeighbors().get(u1).getHDPThetaStarIndex();
+						writer.write(String.format("%s,%s,%d,%d\n", u1.getUserID(), nei.getUserID(), index1, index2));
+					}
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void printBMatrix(String filename){
+		// Get the B matrix
+		int[] eij;
+		int[][] B = new int[m_kBar][m_kBar];
+		_HDPThetaStar theta1;
+		int index1 = 0, index2 = 0;
+		for(int i=0; i<m_kBar; i++){
+			theta1 = m_hdpThetaStars[i];
+			index1 = theta1.getIndex();
+			HashMap<_HDPThetaStar, int[]> connectionMap = theta1.getConnectionMap();
+			for(_HDPThetaStar theta2: connectionMap.keySet()){
+				index2 = theta2.getIndex();
+				eij = connectionMap.get(theta2);
+				B[index1][index2] = eij[1];
+			}
+		}
+		// print out the B matrix
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename), "UTF-8");
+			for(int i=0; i<B.length; i++){
+				int[] row = B[i];
+				for(int j=0; j<row.length; j++){
+					writer.write(String.format("%d", B[i][j]));
+					if(j != row.length - 1){
+						writer.write(",");
+					}
 				}
 				writer.write("\n");
 			}
