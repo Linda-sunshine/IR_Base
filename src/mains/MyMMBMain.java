@@ -45,7 +45,7 @@ public class MyMMBMain {
 //		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -55,7 +55,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/yelpFriends.txt", prefix, dataset);
+		String friendFile = String.format("%s/%s/yelpFriends_1000.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -64,16 +64,11 @@ public class MyMMBMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
-		double sum = 0;
-		for(_User u: analyzer.getUsers()){
-			sum += u.getFriends().length;
-		}
-		System.out.println("The average friend size: " + sum/analyzer.getUsers().size());
-		// This part tries to pre-process the data in order to perform chi-square test.
-		Preprocess process = new Preprocess(analyzer.getUsers());
-		process.getRestaurantsStat();
-		process.printRestaurantStat("./data/yelp_chi_test.txt");
-		/***
+//		// This part tries to pre-process the data in order to perform chi-square test.
+//		Preprocess process = new Preprocess(analyzer.getUsers());
+//		process.getRestaurantsStat();
+//		process.printRestaurantStat("./data/yelp_chi_test.txt");
+		
 		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
@@ -111,6 +106,5 @@ public class MyMMBMain {
 //		mmb.printStat("./data/yelp_stat_" + size + ".txt");
 //		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
 //		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
-		***/
 	}
 }

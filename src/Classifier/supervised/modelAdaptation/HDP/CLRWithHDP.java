@@ -108,7 +108,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
-	//Randomly assign user reviews to k user groups.
+	// Randomly assign user reviews to k user groups.
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
@@ -118,15 +118,17 @@ public class CLRWithHDP extends CLRWithDP {
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
-				//for all reviews pre-compute the likelihood of being generated from a random language model				
+				// for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				sum = beta_sum;//sum = v*beta+\sum \pi_v(global language model)
-				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
+				// sum = v*beta+\sum \pi_v(global language model)
+				sum = beta_sum;
+				// for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
 				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
 					sum += fv.getValue();	
-					//log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
-					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
+					// log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
+					// logGamma(\beta_i) is pre-computed for efficiency
+					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
 				}
 				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
@@ -149,9 +151,10 @@ public class CLRWithHDP extends CLRWithDP {
 					m_hdpThetaStars[m] = new _HDPThetaStar(2*m_dim, gamma_e);
 				else
 					m_hdpThetaStars[m] = new _HDPThetaStar(m_dim, gamma_e);
-			} else
-				m_hdpThetaStars[m].setGamma(gamma_e);//to unify the later operations
-			
+			} else{
+				//to unify the later operations
+				m_hdpThetaStars[m].setGamma(gamma_e);
+			}
 			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
 		}
@@ -230,7 +233,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	// For later overwritten methods.
-	public double calcGroupPopularity(_HDPAdaptStruct user, int k, double gamma_k){
+	protected double calcGroupPopularity(_HDPAdaptStruct user, int k, double gamma_k){
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k;
 	}
 	//Sample hdpThetaStar with likelihood.
