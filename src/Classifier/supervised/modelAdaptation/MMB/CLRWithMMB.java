@@ -520,6 +520,7 @@ public class CLRWithMMB extends CLRWithHDP {
 					if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 						rmConnection(ui, uj, 0);
 						updateEdgeMembership(ui, uj, 0);
+	
 						updateEdgeMembership(uj, ui, 0);
 					}
 					// Decide whether it belongs to mmb or background model.
