@@ -15,9 +15,13 @@ public class _MMBNeighbor {
 		m_hdpThetaStar = theta;
 		m_eij = eij;
 	}
-	
+		
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
+	}
+	
+	public int getHDPThetaStarIndex(){
+		return m_hdpThetaStar.getIndex();
 	}
 	
 	public int getEdge(){

@@ -42,7 +42,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 			return 0;
 	}
 	// Update the size of the edges belong to the group.
-	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
+	private void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
 		if (v==0)
 			return;
 		

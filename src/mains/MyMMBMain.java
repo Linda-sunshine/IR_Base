@@ -3,7 +3,10 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+
+import StatTests.Preprocess;
 import opennlp.tools.util.InvalidFormatException;
+import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.UserAnalyzer;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
@@ -29,7 +32,7 @@ public class MyMMBMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 
 		boolean enforceAdapt = true;
-
+ 
 		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
@@ -39,7 +42,7 @@ public class MyMMBMain {
 		String fs = "DF";//"IG_CHI"
 		
 		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/if15/lg5bt/DataSigir";
+//		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
@@ -52,7 +55,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/Friends.txt", prefix, dataset);
+		String friendFile = String.format("%s/%s/yelpFriends_1000.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -61,6 +64,11 @@ public class MyMMBMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
+//		// This part tries to pre-process the data in order to perform chi-square test.
+//		Preprocess process = new Preprocess(analyzer.getUsers());
+//		process.getRestaurantsStat();
+//		process.printRestaurantStat("./data/yelp_chi_test.txt");
+		
 		double[] globalLM = analyzer.estimateGlobalLM();
 		
 //		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
@@ -78,22 +86,25 @@ public class MyMMBMain {
 //		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		mmb.setR2TradeOffs(eta3, eta4);
 		
-		mmb.setsdA(0.1);//0.2	
-		double alpha = 1, eta = 0.1, beta = 0.01;
+		mmb.setsdA(0.0425);//0.2
+		mmb.setsdB(0.0425);
+		double alpha = 2, eta = 0.1, beta = 0.01;
 		mmb.setConcentrationParams(alpha, eta, beta);
 		mmb.setR1TradeOffs(eta1, eta2);
 
-		mmb.setRho(0.01);
+		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(50);
+		mmb.setNumberOfIterations(30);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
 		
 		mmb.train();
 		mmb.test();
-		mmb.printStat();
-		
+//		String size = "10k";
+//		mmb.printStat("./data/yelp_stat_" + size + ".txt");
+//		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
+//		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
 	}
 }

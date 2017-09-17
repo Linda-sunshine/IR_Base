@@ -13,22 +13,6 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
 	ArrayList<double[]> m_betas = new ArrayList<double[]>();
 	
-	
-	/***
-	 * This variable is used to decide whether the theta star is valid or not.
-	 */
-	boolean m_isValid = false;
-	public void enable(){
-		m_isValid = true;
-	}
-	
-	public void disable(){
-		m_isValid = false;
-	}
-	
-	public boolean isValid(){
-		return m_isValid;
-	}
 	public void addOneBeta(double[] b){
 		m_betas.add(b);
 	}

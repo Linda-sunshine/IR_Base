@@ -5,22 +5,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._HDPThetaStar;
-import structures._PerformanceStat;
 import structures._RankItem;
 import structures._Review;
-import structures._PerformanceStat.TestMode;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
@@ -108,7 +103,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_pWeights = new double[m_gWeights.length];		
 	}
 	
-	//Randomly assign user reviews to k user groups.
+	// Randomly assign user reviews to k user groups.
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
@@ -118,15 +113,17 @@ public class CLRWithHDP extends CLRWithDP {
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
-				//for all reviews pre-compute the likelihood of being generated from a random language model				
+				// for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				sum = beta_sum;//sum = v*beta+\sum \pi_v(global language model)
-				//for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
+				// sum = v*beta+\sum \pi_v(global language model)
+				sum = beta_sum;
+				// for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
 				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
 					sum += fv.getValue();	
-					//log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
-					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);//logGamma(\beta_i) can be pre-computed for efficiency
+					// log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
+					// logGamma(\beta_i) is pre-computed for efficiency
+					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
 				}
 				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
@@ -149,9 +146,10 @@ public class CLRWithHDP extends CLRWithDP {
 					m_hdpThetaStars[m] = new _HDPThetaStar(2*m_dim, gamma_e);
 				else
 					m_hdpThetaStars[m] = new _HDPThetaStar(m_dim, gamma_e);
-			} else
-				m_hdpThetaStars[m].setGamma(gamma_e);//to unify the later operations
-			
+			} else{
+				//to unify the later operations
+				m_hdpThetaStars[m].setGamma(gamma_e);
+			}
 			//sample \phi from Normal distribution.
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
 		}
@@ -171,17 +169,21 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 				
 			//log likelihood of y, i.e., p(y|x,\phi)
+			double likelihoodY = calcLogLikelihoodY(r);
 			likelihood = calcLogLikelihoodY(r);
 		
+			double likelihoodX = calcLogLikelihoodX(r);
 			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
 	
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
+			double likelihoodPop = Math.log(calcGroupPopularity(user, k, gamma_k));
 			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
 
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
-				
+			
+//			System.out.println(String.format("k:%d, X:%.4f, Y:%.4f, pop:%.4f, all:%.4f", k, likelihoodX, likelihoodY, likelihoodPop, likelihood));
 			if(k==0) 
 				logSum = likelihood;
 			else 
@@ -192,6 +194,7 @@ public class CLRWithHDP extends CLRWithDP {
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
 			
+//		System.out.println(k);
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
@@ -216,7 +219,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
 				
-		double rnd = Beta.staticNextDouble(1, m_alpha);
+		double rnd = Beta.staticNextDouble(2, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
 			
@@ -225,7 +228,7 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	// For later overwritten methods.
-	public double calcGroupPopularity(_HDPAdaptStruct user, int k, double gamma_k){
+	protected double calcGroupPopularity(_HDPAdaptStruct user, int k, double gamma_k){
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k;
 	}
 	//Sample hdpThetaStar with likelihood.
@@ -344,6 +347,7 @@ public class CLRWithHDP extends CLRWithDP {
 			m_gamma_e += curThetaStar.getGamma();
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
+			curThetaStar.disable();
 			m_kBar --;
 		}
 	}
