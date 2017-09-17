@@ -17,6 +17,14 @@ import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
 public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	
+	// This is cluster and edge size map.
+	// key: global component parameter; val: edge size.
+	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
+	
+	// This is the uj and neighbor map.
+	// key: uj; val: group parameter-_HDPThetaStar.
+	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
+	
 	public _MMBAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
@@ -28,10 +36,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
-	// key: global component parameter; val: edge size.
-	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
-	// key: uj; val: group parameter-_HDPThetaStar.
-	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
+	
 	
 	/********Functions used in MMB model.********/
 	// Return the number of edges in the given thetaStar.
@@ -42,7 +47,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 			return 0;
 	}
 	// Update the size of the edges belong to the group.
-	private void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
+	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
 		if (v==0)
 			return;
 		
@@ -65,20 +70,14 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	public int getEdge(_HDPAdaptStruct uj){
 		return m_neighborMap.get(uj).getEdge();
 	}
+	
 	// Add a neighbor, update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
 	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
 		m_neighborMap.put(uj, new _MMBNeighbor(uj, theta, e));
-		
-		// Increase the edge size by 1.
-		incHDPThetaStarEdgeSize(theta, 1);
 	}
 	
 	// Remove one neighbor, 
 	public void rmNeighbor(_HDPAdaptStruct uj){
-		// Decrease the edge size by 1.
-		_HDPThetaStar theta = m_neighborMap.get(uj).getHDPThetaStar();
-		incHDPThetaStarEdgeSize(theta, -1);
-		
 		m_neighborMap.remove(uj);
 	}
 	

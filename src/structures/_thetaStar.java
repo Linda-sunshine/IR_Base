@@ -13,13 +13,14 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
 	ArrayList<double[]> m_betas = new ArrayList<double[]>();
 	
-	public void addOneBeta(double[] b){
-		m_betas.add(b);
-	}
 	public _thetaStar(int dim){
 		m_dim = dim;
 		m_memSize = 0;
 		m_beta = new double[m_dim];
+	}
+	
+	public void addOneBeta(double[] b){
+		m_betas.add(b);
 	}
 	
 	public int getMemSize(){

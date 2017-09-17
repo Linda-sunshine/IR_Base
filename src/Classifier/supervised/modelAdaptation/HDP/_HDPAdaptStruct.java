@@ -20,7 +20,8 @@ public class _HDPAdaptStruct extends _DPAdaptStruct {
 	
 	_HDPThetaStar  m_hdpThetaStar = null;
 	
-	// key: global component parameter; val: member size
+	// This is cluster and documents size map.
+	// key: global component parameter; val: document member size
 	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaMemSizeMap;
 	
 	public _HDPAdaptStruct(_User user) {

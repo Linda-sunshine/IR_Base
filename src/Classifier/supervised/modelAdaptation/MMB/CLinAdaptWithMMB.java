@@ -36,9 +36,6 @@ public class CLinAdaptWithMMB extends CLRWithMMB {
 			m_models = new double[getVSize()];
 		
 		for(int i=0; i<m_kBar; i++){
-//			double[] src = m_hdpThetaStars[i].getModel();
-//			double[] dest = m_models;
-//			System.out.print(String.format("src len: %d, dest len: %d, total: %d\n", src.length, dest.length, m_dim*2*i + m_dim*2));
 			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
 		}
 	}

@@ -336,29 +336,46 @@ public class CLRWithHDP extends CLRWithDP {
 		int index = -1;
 		_HDPThetaStar curThetaStar = r.getHDPThetaStar();
 		
-		//Step 1: remove the current review from the thetaStar and user side.
-		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);				
-		curThetaStar.updateMemCount(-1);
-		curThetaStar.rmLMStat(r.getLMSparse());
+		// remove the current review from the user side.
+		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), -1);	
 		
-		if(curThetaStar.getMemSize() == 0) {// No data associated with the cluster.
-			// just for checking purpose, to see if every dim gets 0 count.
+		// remove the current review from the theta side.
+		// remove the lm stat first before decrease the document count
+		curThetaStar.rmLMStat(r.getLMSparse());
+		curThetaStar.updateMemCount(-1);
+		
+		// No data associated with the cluster
+		if(curThetaStar.getMemSize() == 0) {
+			// check if every dim gets 0 count in language model
 			LMStatSanityCheck(curThetaStar);
+
+			// recycle the gamma
 			m_gamma_e += curThetaStar.getGamma();
+			curThetaStar.resetGamma();
+			
+			// swap the disabled theta to the last for later use
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
-			curThetaStar.disable();
+			
+			// in case we forget to init some variable, we set it to null
+			curThetaStar = null;
+//			curThetaStar.disable();
 			m_kBar --;
 		}
 	}
-	public void LMStatSanityCheck(_HDPThetaStar theta){
-		for(double c: theta.getLMStat()){
-			if(c != 0){
-				System.err.println("Non-zero count in lm stat!");
-				return;
-			}
+	
+	// check if each dimension of lm model goes to zero
+	protected boolean LMStatSanityCheck(_HDPThetaStar theta){
+		double[] lmStat = theta.getLMStat();
+		if(lmStat == null)
+			return true;
+		for(double v: lmStat){
+			if(v != 0)
+				return false;
 		}
+		return true;
 	}
+	
 	// Sample the weights given the cluster assignment.
 	@Override
 	protected double calculate_M_step(){

@@ -4,17 +4,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import sun.reflect.generics.tree.VoidDescriptor;
 import utils.Utils;
 
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
  * @author lin
- *
  */
 public class _HDPThetaStar extends _thetaStar {
 	// beta in _thetaStar is \phi used in HDP.
 	
 	private double m_gamma;
+	
 	// This variable is used to decide whether the theta star is valid or not.
 	private boolean m_isValid = false;
 	
@@ -25,6 +26,7 @@ public class _HDPThetaStar extends _thetaStar {
 	
 	// The count of the features inside clusters.
 	protected double[] m_lmStat = null;
+	
 	// key: theta, value: corresponding edge counts.
 	protected HashMap<_HDPThetaStar, int[]> m_connectionCount;
 	
@@ -54,6 +56,7 @@ public class _HDPThetaStar extends _thetaStar {
 	public void disable(){
 		m_isValid = false;
 		m_lmStat = null;
+		m_gamma = 0;
 	}
 	
 	public boolean isValid(){
@@ -104,6 +107,9 @@ public class _HDPThetaStar extends _thetaStar {
 		return sum;
 	}
 
+	public void resetGamma(){
+		setGamma(0);
+	}
 	public void setGamma(double g){
 		m_gamma = g;
 	}
@@ -131,21 +137,15 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_reviewNames;
 	}
 	
-	@Override
-	// override the function to make the disabling and enabling by itself.
-	public void updateMemCount(int c){
-		m_memSize += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
-	}
+//	@Override
+//	// override the function to make the disabling and enabling by itself.
+//	public void updateMemCount(int c){
+//		m_memSize += c;
+//	}
 	
 	// Functions used in MMB model.
 	public void updateEdgeCount(int e, int c){
 		m_edgeSize[e] += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
 	}
 	
 	// Get the edge count for i->j falls in the current theta.
