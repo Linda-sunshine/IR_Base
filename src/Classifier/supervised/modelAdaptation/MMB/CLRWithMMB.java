@@ -410,7 +410,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
 			
 		int k = -1;
-		double newLogSum = m_pNew[e];
+		// [fixed bug], the prob for new cluster should consider the gamma too.
+//		double newLogSum = m_pNew[e];
+		double newLogSum = Math.log(m_eta*m_gamma_e) + m_pNew[e];
 		do {
 			if (newLogSum>=logSum)
 				break;
@@ -509,7 +511,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(int h=0; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
 				// \int_{B_gh}\int_{B_hg} m_rho * m_rho * (1 - b_gh) * (1 - b_hg)d_{B_gh}d_{B_hg}
-				// m_rho * m_rho * [(b+e_0+1)/(a+e_1+b+e_0+1)]*[(b+e_0'+1)/(a+e_1'+b+e_0'+1]
 //				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
 				m_cache[g][h] = 2 * Math.log(m_rho) + calcLogPostPredictiveBgh(theta_g, theta_h) + calcLogPostPredictiveBgh(theta_h, theta_g);
 			}
