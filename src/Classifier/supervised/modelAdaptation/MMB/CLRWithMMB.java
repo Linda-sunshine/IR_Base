@@ -15,6 +15,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
+
+import com.sun.accessibility.internal.resources.accessibility;
+import com.sun.swing.internal.plaf.basic.resources.basic;
+
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
 import structures._Review;
@@ -32,7 +36,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
 	private double[] m_abcd = new double[]{2, 2, 2, 2}; 
 	// The probability for the new cluster in the joint probabilities.
-	private double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]+1) - Math.log(m_abcd[0]+m_abcd[1]+1));
+	private double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0]+m_abcd[1]));
 	// Me: total number of edges eij=0;Ne: total number of edges eij=1 from mmb; Le: total number of edges eij=0 from background model.
 	private double[] m_MNL = new double[3];
 	// two-dim array for storing probs used in sampling zero edge.
@@ -69,10 +73,10 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// calculate the probability for generating new clusters in sampling edges.
 	private void calcProbNew(){
-		for(int e=0; e<2; e++){
-			m_pNew[e] = Utils.lgamma(m_abcd[0] + e) + Utils.lgamma(m_abcd[1] + 1 - e)
-					- Math.log(m_abcd[0] + m_abcd[1]) - Utils.lgamma(m_abcd[0]) - Utils.lgamma(m_abcd[1]);
-		}
+		// if e_ij = 0, p = b/(a+b)
+		m_pNew[0] = Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
+		// if e_ij = 1, p = a/(a+b)
+		m_pNew[1] = Math.log(m_abcd[0]) - Math.log(m_abcd[0] + m_abcd[1]);
 	}
 
 	@Override
@@ -87,18 +91,18 @@ public class CLRWithMMB extends CLRWithHDP {
 	protected double calcLogLikelihoodE(_MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
 		double likelihood = 0, e_1 = 0, e_0 = 0;
 		_HDPThetaStar theta_g, theta_h;
-		// Likelihood for e=0: 1/(a+b+e_0+e_1+1)*(b+e_0+1)
-		// Likelihood for e=1: 1/(a+b+e_0+e_1+1)*(a+e_1+1)
+		// Likelihood for e=0: 1/(a+b+e_0+e_1)*(b+e_0)
+		// Likelihood for e=1: 1/(a+b+e_0+e_1)*(a+e_1)
 		if(ui.hasEdge(uj)){
 			theta_g = ui.getOneNeighbor(uj).getHDPThetaStar();
 			theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
 			e_0 = theta_g.getConnectionSize(theta_h, 0);
 			e_1 = theta_g.getConnectionSize(theta_h, 1);
-			likelihood = 1/(m_abcd[0] + m_abcd[1] + e_0 + e_1 + 1);
+			likelihood = 1/(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 			if(ui.getEdge(uj) == 0){
-				likelihood *= (m_abcd[1] + e_0 + 1);
+				likelihood *= (m_abcd[1] + e_0);
 			} else if(ui.getEdge(uj) == 1){
-				likelihood *= (m_abcd[0] + e_1 + 1);
+				likelihood *= (m_abcd[0] + e_1);
 			}
 			return Math.log(likelihood);
 		} else{
@@ -107,11 +111,16 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// posterior predictive distribution: \int_{B_gh} (1-B_{gh}*prior d_{B_{gh}}
-	public double calcPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h){
+	// prior is Beta(a+e_1, b+e_0)
+	// \gamma(a+b)\gamma(a+e_1)\gamma(b+e_0+1) / \gamma(a)\gamma(b)\gamma(a+b+e_0+e_1+1)
+	public double calcLogPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h){
+		double prob = 0;
 		double e_0 = 0, e_1 = 0;
 		e_0 = theta_g.getConnectionSize(theta_h, 0);
 		e_1 = theta_g.getConnectionSize(theta_h, 1);
-		return (m_abcd[1]+e_0+1)/(m_abcd[0]+m_abcd[1]+e_0+e_1+1);
+		prob = Utils.lgamma(m_abcd[0]+m_abcd[1])+Utils.lgamma(m_abcd[0]+e_1)+Utils.lgamma(m_abcd[1]+e_0+1)
+				-Utils.lgamma(m_abcd[0])-Utils.lgamma(m_abcd[1])-Utils.lgamma(m_abcd[0]+m_abcd[1]+e_0+e_1+1);
+		return prob;
 	}
 	
 	protected void calculate_E_step_Edge(){
@@ -146,11 +155,11 @@ public class CLRWithMMB extends CLRWithHDP {
 						updateEdgeMembership(ui, uj, 0);
 						updateEdgeMembership(uj, ui, 0);
 					}
-					// Decide whether it belongs to mmb or background model.
-					// If Bij and Bji exist
+					// Decide edge eij = 0 with indicator z_i->j belongs to mmb or background model.
+					// Calculate the prob first: p_mmb_0 = \rho*(1-B_gh)
 					if(isBijValid(i, j)){
-						m_p_mmb_0 = m_rho * calcPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i]);
-						// sample i->j
+						m_p_mmb_0 = m_rho * Math.exp(calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i]));
+						// init the bernoulli distribution first with normalized parameter to sample the edge indicator i->j
 						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
 						// put the edge(two nodes) in the background model.
 						if(m_bernoulli.sample() == 1){
@@ -168,7 +177,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		System.out.print(String.format("\n[Info]kBar: %d, eij=1: %.1f, eij=0(mmb):%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
+		System.out.print(String.format("\n[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
 		System.out.print(String.format("[Info]mmb_0 prob: %.5f, background prob: %.5f\n",m_p_mmb_0, m_p_bk));
 		checkClusters();
 	}
@@ -227,9 +236,9 @@ public class CLRWithMMB extends CLRWithHDP {
 			mmb_0 += theta.getEdgeSize(0);
 			mmb_1 += theta.getEdgeSize(1);
 		}
-		if(mmb_0 != m_MNL[1])
+		if(mmb_0 != m_MNL[0])
 			System.out.println("Zero edges sampled from mmb is not correct!");
-		if(mmb_1 != m_MNL[0])
+		if(mmb_1 != m_MNL[1])
 			System.out.println("One edges sampled from mmb is not correct!");
 	}
 
@@ -331,7 +340,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
 		m_indicator[i][j] = m_hdpThetaStars[k];
 	}
-	
 
 	// remove the connection between ui and uj, where i->j \in g, j->i \in h.
 	public void rmConnection(_MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
@@ -503,7 +511,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				// \int_{B_gh}\int_{B_hg} m_rho * m_rho * (1 - b_gh) * (1 - b_hg)d_{B_gh}d_{B_hg}
 				// m_rho * m_rho * [(b+e_0+1)/(a+e_1+b+e_0+1)]*[(b+e_0'+1)/(a+e_1'+b+e_0'+1]
 //				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
-				m_cache[g][h] = 2 * Math.log(m_rho) + Math.log(calcPostPredictiveBgh(theta_g, theta_h)) + Math.log(calcPostPredictiveBgh(theta_h, theta_g));
+				m_cache[g][h] = 2 * Math.log(m_rho) + calcLogPostPredictiveBgh(theta_g, theta_h) + calcLogPostPredictiveBgh(theta_h, theta_g);
 			}
 		}
 		// case 2: either one is from new cluster.

@@ -194,23 +194,17 @@ public class CLRWithHDP extends CLRWithDP {
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
 			
-//		System.out.println(k);
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
 			
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
-		incUserHDPThetaStarMemSize(user, r);
+		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), 1);
 			
 		if(k >= m_kBar)
 			sampleNewCluster(k, r.getLMSparse());
 		
 		r.getHDPThetaStar().addLMStat(r.getLMSparse());
-	}
-	
-	// Write this as an independent function for overriding purpose.
-	public void incUserHDPThetaStarMemSize(_HDPAdaptStruct user, _Review r){
-		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), 1);//-->3		
 	}
 	
 	// Current implementation, sample psi based on posterior.
