@@ -68,10 +68,10 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// calculate the probability for generating new clusters in sampling edges.
 	private void calcProbNew(){
-		// if e_ij = 0, p = b/(a+b)
-		m_pNew[0] = Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
-		// if e_ij = 1, p = a/(a+b)
-		m_pNew[1] = Math.log(m_abcd[0]) - Math.log(m_abcd[0] + m_abcd[1]);
+		// if e_ij = 0, p = \rho*b/(a+b)
+		m_pNew[0] = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
+		// if e_ij = 1, p = \rho*a/(a+b)
+		m_pNew[1] = Math.log(m_rho) + Math.log(m_abcd[0]) - Math.log(m_abcd[0] + m_abcd[1]);
 	}
 
 	@Override
@@ -83,21 +83,21 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// The function calculates the likelihood given by one edge from mmb model.
-	protected double calcLogLikelihoodE(_MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
+	protected double calcLogLikelihoodE(int k, _MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
 		double likelihood = 0, e_1 = 0, e_0 = 0;
-		_HDPThetaStar theta_g, theta_h;
-		// Likelihood for e=0: 1/(a+b+e_0+e_1)*(b+e_0)
-		// Likelihood for e=1: 1/(a+b+e_0+e_1)*(a+e_1)
+		_HDPThetaStar theta_s, theta_h;
+		// Likelihood for e=0: \rho*(b+e_1)/(a+b+e_0+e_1)
+		// Likelihood for e=1: \rho*(a+e_0)/(a+b+e_0+e_1)
 		if(ui.hasEdge(uj)){
-			theta_g = ui.getOneNeighbor(uj).getHDPThetaStar();
+			theta_s = m_hdpThetaStars[k];
 			theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
-			e_0 = theta_g.getConnectionSize(theta_h, 0);
-			e_1 = theta_g.getConnectionSize(theta_h, 1);
-			likelihood = 1/(m_abcd[0] + m_abcd[1] + e_0 + e_1);
-			if(ui.getEdge(uj) == 0){
-				likelihood *= (m_abcd[1] + e_0);
-			} else if(ui.getEdge(uj) == 1){
-				likelihood *= (m_abcd[0] + e_1);
+			e_0 = theta_s.getConnectionSize(theta_h, 0);
+			e_1 = theta_s.getConnectionSize(theta_h, 1);
+			likelihood = m_rho /(m_abcd[0] + m_abcd[1] + e_0 + e_1);
+			if(e == 0){
+				likelihood *= (m_abcd[1] + e_1);
+			} else if(e == 1){
+				likelihood *= (m_abcd[0] + e_0);
 			}
 			return Math.log(likelihood);
 		} else{
@@ -363,7 +363,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
-			likelihood = calcLogLikelihoodE(ui, uj, e);
+			likelihood = calcLogLikelihoodE(k, ui, uj, e);
 						
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
