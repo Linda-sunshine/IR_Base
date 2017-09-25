@@ -14,6 +14,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.commons.math3.distribution.BinomialDistribution;
+
+import com.sun.swing.internal.plaf.basic.resources.basic;
+
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
 import structures._Review;
@@ -30,8 +33,6 @@ public class CLRWithMMB extends CLRWithHDP {
 	private double[] m_pNew = new double[2]; 
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
 	private double[] m_abcd = new double[]{2, 2, 2, 2}; 
-	// The probability for the new cluster in the joint probabilities.
-	private double m_pNewJoint = 2*(Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0]+m_abcd[1]));
 	// Me: total number of edges eij=0;Ne: total number of edges eij=1 from mmb; Le: total number of edges eij=0 from background model.
 	private double[] m_MNL = new double[3];
 	// two-dim array for storing probs used in sampling zero edge.
@@ -84,37 +85,32 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// The function calculates the likelihood given by one edge from mmb model.
 	protected double calcLogLikelihoodE(int k, _MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
-		double likelihood = 0, e_1 = 0, e_0 = 0;
 		_HDPThetaStar theta_s, theta_h;
-		// Likelihood for e=0: \rho*(b+e_1)/(a+b+e_0+e_1)
-		// Likelihood for e=1: \rho*(a+e_0)/(a+b+e_0+e_1)
-		if(ui.hasEdge(uj)){
-			theta_s = m_hdpThetaStars[k];
-			theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
-			e_0 = theta_s.getConnectionSize(theta_h, 0);
-			e_1 = theta_s.getConnectionSize(theta_h, 1);
-			likelihood = m_rho /(m_abcd[0] + m_abcd[1] + e_0 + e_1);
-			if(e == 0){
-				likelihood *= (m_abcd[1] + e_1);
-			} else if(e == 1){
-				likelihood *= (m_abcd[0] + e_0);
-			}
-			return Math.log(likelihood);
-		} else{
-			return m_pNew[e];
-		}
+		
+		// fix me: do we need to judge whether we have an edge between ui and uj.
+//		if(ui.hasEdge(uj)){
+		theta_s = m_hdpThetaStars[k];
+		theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
+		return calcLogPostPredictiveBgh(theta_s, theta_h, e);
+//		} else{
+//			return m_pNew[e];
+//		}
 	}
 	
-	// posterior predictive distribution: \int_{B_gh} (1-B_{gh}*prior d_{B_{gh}}
-	// prior is Beta(a+e_1, b+e_0)
-	// \gamma(a+b)\gamma(a+e_1)\gamma(b+e_0+1) / \gamma(a)\gamma(b)\gamma(a+b+e_0+e_1+1)
-	public double calcLogPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h){
+	/**posterior predictive distribution: 
+	/* e=0: \int_{B_gh} \rho*(1-B_{gh})*prior d_{B_{gh}} 
+	/* e=1: \int_{B_gh} \rho*B_{gh}*prior d_{B_{gh}} 
+	/* prior is Beta(a+e_1, b+e_0)
+	/* corresponding predictive posterior distribution is:
+	/* e=0: \rho*(b+e_0)/(a+b+e_0+e_1)
+	/* e=1: \rho*(a+e_1)/(a+b+e_0+e_1) **/
+	public double calcLogPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		double prob = 0;
 		double e_0 = 0, e_1 = 0;
 		e_0 = theta_g.getConnectionSize(theta_h, 0);
 		e_1 = theta_g.getConnectionSize(theta_h, 1);
-		prob = Utils.lgamma(m_abcd[0]+m_abcd[1])+Utils.lgamma(m_abcd[0]+e_1)+Utils.lgamma(m_abcd[1]+e_0+1)
-				-Utils.lgamma(m_abcd[0])-Utils.lgamma(m_abcd[1])-Utils.lgamma(m_abcd[0]+m_abcd[1]+e_0+e_1+1);
+		prob = (e == 0) ? Math.log(m_abcd[0] + e_0) : Math.log(m_abcd[1] + e_1);
+		prob += Math.log(m_rho) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return prob;
 	}
 	
@@ -133,39 +129,44 @@ public class CLRWithMMB extends CLRWithHDP {
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
 					rmConnection(ui, uj, 1);
 					// update membership from ui->uj, remove the edge
-					updateEdgeMembership(ui, uj, 1);					
+					updateEdgeMembership(ui, uj, 1);	
+					// sample new cluster for the edge
+					sampleEdge(i, j, 1);
 					// update membership from uj->ui, remove the edge
 					updateEdgeMembership(uj, ui, 1);
 					// sample new clusters for the two edges
-					sampleEdges(i, j, 1);
+					sampleEdge(j, i, 1);
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, 1);
 					// update the sample size with the specified index and value
 					updateSampleSize(1, 2);
 
 				}else{
-					// eij = 0 from mmb， remove the membership first.
-					if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
-						rmConnection(ui, uj, 0);
-						updateEdgeMembership(ui, uj, 0);
-						updateEdgeMembership(uj, ui, 0);
-					}
 					// Decide edge eij = 0 with indicator z_i->j belongs to mmb or background model.
 					// Calculate the prob first: p_mmb_0 = \rho*(1-B_gh)
-					if(isBijValid(i, j)){
-						m_p_mmb_0 = m_rho * Math.exp(calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i]));
-						// init the bernoulli distribution first with normalized parameter to sample the edge indicator i->j
-						m_bernoulli = new BinomialDistribution(1, m_p_bk/(m_p_bk+m_p_mmb_0));
-						// put the edge(two nodes) in the background model.
-						if(m_bernoulli.sample() == 1){
-							updateSampleSize(2, 2);
-							continue; // their cluster assignment keep the same.
+					m_p_mmb_0 = Math.exp(calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i], 0));
+					// init the bernoulli distribution first with normalized parameter to sample the edge indicator i->j
+					m_bernoulli = new BinomialDistribution(1, m_p_mmb_0/(m_p_bk+m_p_mmb_0));
+					// put the edge(two nodes) in the background model.
+					if(m_bernoulli.sample() == 0){
+						// if the edge is from mmb previously
+						if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+							rmConnection(ui, uj, 0);
+							updateEdgeMembership(ui, uj, 0);
+							updateEdgeMembership(uj, ui, 0);
 						}
-						// sample from mmb for zero edges.
-						sampleEdges(i, j, 0);
-						// add the connection information to thetas.
+						updateSampleSize(2, 2);
+					// bernoulli == 1 && we can sample directly
+					} else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0 && isBijValid(i, j)){
+						rmConnection(ui, uj, 0);
+						updateEdgeMembership(ui, uj, 0);
+						sampleEdge(i, j, 0);
+						updateEdgeMembership(uj, ui, 0);
+						sampleEdge(j, i, 0);
 						addConnection(ui, uj, 0);
 						updateSampleSize(0, 2);
+					} else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0 && !isBijValid(i, j)){
+						System.out.println("bug");
 					} else{
 						sampleZeroEdgeJoint(i, j);
 					}
@@ -345,11 +346,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		theta_h.rmConnection(theta_g, e);
 	}
 	
-	private void sampleEdges(int i, int j, int e){
-		sampleEdge(i, j, e);
-		sampleEdge(j, i, e);
-	}
-	
 	// Sample one edge from mmb and e represents the edge value.
 	public void sampleEdge(int i,int j, int e){
 		int k;
@@ -406,7 +402,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			
 		int k = -1;
 		// [fixed bug], the prob for new cluster should consider the gamma too.
-//		double newLogSum = m_pNew[e];
 		double newLogSum = Math.log(m_eta*m_gamma_e) + m_pNew[e];
 		do {
 			if (newLogSum>=logSum)
@@ -424,7 +419,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	protected int sampleIn2DimArrayLogSpace(double logSum, double back_prob){
 		double sum = back_prob;
 		for(int i=0; i<m_kBar+1; i++){
-			for(int j=0; j<m_kBar+1; j++){
+			for(int j=i; j<m_kBar+1; j++){
 				sum = Utils.logSum(sum, m_cache[i][j]);
 			}
 		}
@@ -486,16 +481,19 @@ public class CLRWithMMB extends CLRWithHDP {
 
 	// sample eij = 0 from the joint probabilities of cij, zij and zji.
 	public void sampleZeroEdgeJoint(int i, int j){
-		/***we will consider all possible combinations of different memberships.
-		 * 1.cij=0, cji=0, prob: (1-\rho)(1-\rho), 1 case
-		 * 2.cij=1, cji=1, known (Bgh, Bhg), prob: \rho\rho(1-Bgh)(1-Bhg), k^2 possible cases
-		 * 3.cij=1, cji=1, unknows (Bgh Bhg), prob: \Gamma(a)\Gamma(b+1)/\Gamma(a+b+1), 2k+1 possible cases */
+		/**we will consider all possible combinations of different memberships.
+		 * 1.cij=0, cji=0, prob: (1-\rho), 1 case
+		 * 2.cij=1, cji=1, known (Bgh, Bhg), prob: \rho(1-Bgh), k(k+1)/2 possible cases
+		 * posterior prob: \rho*(b+e_0)/(a+b+e_0+e_1)
+		 * 3.cij=1, cji=1, unknows (Bgh, Bhg), prob: \rho*b/(a+b), k+1 possible cases 
+		 * In total, we have (k+1)*(k+2)/2+1 possible cases. **/
 		
 		double logSum = 0, prob = 0;
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 
-		// If the matrix does not change (no new clusters added.)
+		/**We maintain a matrix for storing probability. As the matrix is 
+		 * symmetric, we only calculate upper-triangle. **/
 		m_cache = new double[m_kBar+1][m_kBar+1];
 		
 		// Step 1: calc prob for different cases of cij, cji.
@@ -503,26 +501,24 @@ public class CLRWithMMB extends CLRWithHDP {
 		// case 1: existing thetas.
 		for(int g=0; g<m_kBar; g++){
 			theta_g = m_hdpThetaStars[g];
-			for(int h=0; h<m_kBar; h++){
+			for(int h=g; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
-				// \int_{B_gh}\int_{B_hg} m_rho * m_rho * (1 - b_gh) * (1 - b_hg)d_{B_gh}d_{B_hg}
-//				prob = Math.log(m_rho)+Math.log(m_rho)+Math.log(1-b_gh)+Math.log(1-b_hg);
-				m_cache[g][h] = 2 * Math.log(m_rho) + calcLogPostPredictiveBgh(theta_g, theta_h) + calcLogPostPredictiveBgh(theta_h, theta_g);
+				m_cache[g][h] = calcLogPostPredictiveBgh(theta_g, theta_h, 0);
 			}
 		}
 		// case 2: either one is from new cluster.
+		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
 		for(int k=0; k<=m_kBar; k++){
-			m_cache[k][m_kBar] = m_pNewJoint;
-			m_cache[m_kBar][k] = m_pNewJoint;
+			m_cache[k][m_kBar] = pNew;
 		}
-		// Accumulate the log sum
+		// Accumulate the log sum and only upper-triangle has non-zero values.
 		for(int g=0; g<m_cache.length; g++){
-			for(int h=0; h<m_cache[0].length; h++){
+			for(int h=g; h<m_cache[0].length; h++){
 				logSum = Utils.logSum(logSum, m_cache[g][h]);
 			}
 		}
 		// case 3: background model while the prob is not stored in the two-dim array.
-		prob = Math.log(1 - m_rho) + Math.log(1 - m_rho);
+		prob = Math.log(1 - m_rho);
 		logSum = Utils.logSum(logSum, prob);
 		
 		// Step 2: sample one pair from the prob matrix./*-
@@ -743,7 +739,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
