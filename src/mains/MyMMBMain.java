@@ -9,6 +9,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Analyzer.UserAnalyzer;
+import Classifier.supervised.modelAdaptation.MultiTaskSVM;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
@@ -63,7 +64,13 @@ public class MyMMBMain {
 		analyzer.buildFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-	
+		
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
+		
 //		// This part tries to pre-process the data in order to perform chi-square test.
 //		Preprocess process = new Preprocess(analyzer.getUsers());
 //		process.getRestaurantsStat();
@@ -86,25 +93,33 @@ public class MyMMBMain {
 //		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		mmb.setR2TradeOffs(eta3, eta4);
 		
+		double alpha = 2, eta = 0.1, beta = 0.01;
+
 		mmb.setsdA(0.0425);//0.2
 		mmb.setsdB(0.0425);
-		double alpha = 2, eta = 0.1, beta = 0.01;
-		mmb.setConcentrationParams(alpha, eta, beta);
+				
 		mmb.setR1TradeOffs(eta1, eta2);
+		mmb.setConcentrationParams(alpha, eta, beta);
 
 		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(30);
+		mmb.setNumberOfIterations(50);
+		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
 		
 		mmb.train();
 		mmb.test();
-//		String size = "10k";
-//		mmb.printStat("./data/yelp_stat_" + size + ".txt");
-//		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
-//		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
+		
+		mmb.saveClusterSentimentModels("./data/mmb_sentiment_models");
+		mmb.saveClusterLanguageModels("./data/mmb_lm_models");
+		
+		String size = "1k";
+		mmb.printStat("./data/yelp_stat_" + size + ".txt");
+		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
+		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
+ 
 	}
 }

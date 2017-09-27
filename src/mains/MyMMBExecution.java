@@ -97,6 +97,7 @@ public class MyMMBExecution {
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
+		
 		adaptation.train();
 		adaptation.test();
 	}

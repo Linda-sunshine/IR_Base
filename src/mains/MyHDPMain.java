@@ -59,7 +59,7 @@ public class MyHDPMain {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 1000; // topK for language model.
+		int lmTopK = 5000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -68,7 +68,7 @@ public class MyHDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -130,13 +130,13 @@ public class MyHDPMain {
 //				
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		double alpha = 0.6, eta = 0.1, beta = 0.01, sdA = 0.1, sdB = 0.1; 
 		
 		// best parameter for yelp so far.
-		alpha = 0.01; sdA = 0.05; sdB = 0.05;
+		alpha = 0.1; sdA = 0.0425; sdB = 0.0425;
 		
-		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(sdA);//0.2
@@ -145,7 +145,7 @@ public class MyHDPMain {
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		
-		hdp.setBurnIn(20);
+		hdp.setBurnIn(10);
 //		hdp.setThinning(5);// default 3
 //		hdp.setNumberOfIterations(100);// default 50
 		hdp.loadUsers(analyzer.getUsers());

@@ -3,19 +3,19 @@ package structures;
 public class DPParameter {
 	
 	public String m_prefix = "/zf8/lg5bt/DataSigir";//"./data/CoLinAdapt"
-	public String m_data = "Amazon";
-	public String m_model = "mtclinhdpconfm";
+	public String m_data = "YelpNew";
+	public String m_model = "mtclinmmb";
 	public double m_adaptRatio = 0.5;
 
 	public int m_nuOfIterations = 50;
 	public int m_M = 6;
-	public int m_burnin = 20;
+	public int m_burnin = 10;
 	public int m_thinning = 3;
-	public double m_sdA = 0.1;
-	public double m_sdB = 0.1;
+	public double m_sdA = 0.0425;
+	public double m_sdB = 0.0425;
 	
 	// Concentration parameter
-	public double m_alpha = 1;
+	public double m_alpha = 2;
 	public double m_eta = 0.1;
 	public double m_beta = 0.01;
 	
@@ -45,7 +45,7 @@ public class DPParameter {
 	public int m_threshold = 15;
 	
 	// used in mmb model, sparsity parameter
-	public double m_rho = 0.01;
+	public double m_rho = 0.001;
 	
 	public DPParameter(String argv[]){
 		

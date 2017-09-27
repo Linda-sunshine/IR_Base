@@ -3,6 +3,7 @@ package structures;
 import java.util.HashMap;
 
 public class _Review extends _Doc {
+
 	public enum rType {
 		TRAIN, // for training the global model
 		ADAPTATION, // for training the personalized model

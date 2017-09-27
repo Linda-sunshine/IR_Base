@@ -151,7 +151,7 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 				if(lm[i] == 0)
 					lm[i] = 0.0001;
 		}
-			return lm;
+		return lm;
 	}
 	
 	public int getLMFeatureSize(){

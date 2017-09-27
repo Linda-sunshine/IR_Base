@@ -3,6 +3,7 @@ package Classifier.supervised.modelAdaptation.MMB;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tfloat.FloatUniform;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
@@ -15,12 +16,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 
-import com.sun.swing.internal.plaf.basic.resources.basic;
-
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
 import structures._Review;
 import structures._User;
+import structures._thetaStar;
 import utils.Utils; 
 
 public class CLRWithMMB extends CLRWithHDP {
@@ -165,8 +165,6 @@ public class CLRWithMMB extends CLRWithHDP {
 						sampleEdge(j, i, 0);
 						addConnection(ui, uj, 0);
 						updateSampleSize(0, 2);
-					} else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0 && !isBijValid(i, j)){
-						System.out.println("bug");
 					} else{
 						sampleZeroEdgeJoint(i, j);
 					}
@@ -555,6 +553,37 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 
+	// Save the language models of thetaStars
+	public void saveClusterLanguageModels(String model){
+		PrintWriter writer;
+		String filename;
+		File dir = new File(model);
+		_HDPThetaStar theta;
+		double[] lm;
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				theta = (_HDPThetaStar) m_thetaStars[i];
+				filename = String.format("%s/%d.lm", model, theta.getIndex());
+				writer = new PrintWriter(new File(filename));
+				lm = theta.getLMStat();
+				for(int v=0; v<lm.length; v++){
+					if(v == lm.length-1)
+						writer.write(Double.toString(lm[v]));
+					else
+						writer.write(lm[v]+",");
+				}
+				writer.close();
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	// Save the sentiment models of thetaStars
+	public void saveClusterSentimentModels(String model){
+		super.saveClusterModels(model);
+	}
 	// Set the sparsity parameter
 	public void setRho(double v){
 		m_rho = v;
