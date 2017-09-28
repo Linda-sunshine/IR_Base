@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import org.hamcrest.core.IsInstanceOf;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
@@ -718,35 +720,30 @@ public class CLRWithDP extends LinAdapt {
 		System.out.print("[Info]Clusters:");
 		for(int i=0; i<m_kBar; i++)
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
-		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
-//		System.out.print(String.format("\n[Info]%d Clusters are found in total! And the highligt is as follows\n", m_kBar));
-//
-//		for(_RankItem it:clusterRanker)
-//				printTopWords(m_thetaStars[it.m_index]);			
-		
+		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));			
 	}
 
-void printTopWords(_thetaStar cluster) {
-	MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
-	double[] phi = cluster.getModel();
+	void printTopWords(_thetaStar cluster) {
+		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
+		double[] phi = cluster.getModel();
 	
-	//we will skip the bias term!
-	System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
-	for(int i=1; i<phi.length; i++) 
-		wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+		//we will skip the bias term!
+		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
 
-	for(_RankItem it:wordRanker)
-		System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
 	
-	System.out.format("\n[negative]: ");
-	wordRanker.clear();
-	for(int i=1; i<phi.length; i++) 
-		wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+		System.out.format("\n[negative]: ");
+		wordRanker.clear();
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
 
-	for(_RankItem it:wordRanker)
-		System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);	
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);	
+	}
 	
-}
 	public void setGlobalModel(int fvSize){
 		m_gWeights = new double[fvSize+1];
 	}
@@ -765,7 +762,7 @@ void printTopWords(_thetaStar cluster) {
 			if(!dir.exists())
 				dir.mkdirs();
 			for(int i=0; i<m_kBar; i++){
-				theta = m_thetaStars[i];
+				theta = m_thetaStars[i]; 
 				filename = String.format("%s/%d.classifier", model, theta.getIndex());
 				writer = new PrintWriter(new File(filename));
 				weight = theta.getModel();
@@ -788,59 +785,4 @@ void printTopWords(_thetaStar cluster) {
 		}
 		
 	}
-	
-	// added by Lin for model performance comparison.
-	// print out each user's test review's performance.
-//	public void printUserPerformance(String filename){
-//		PrintWriter writer;
-//		try{
-//			writer = new PrintWriter(new File(filename));
-//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-//				@Override
-//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-//				}
-//			});
-//			
-//			for(_AdaptStruct u: m_userList){
-//				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.TEST){
-//						writer.write(String.format("%s\t%d\t%d\t%d\t%s\n", u.getUserID(), u.getUser().getReviewSize(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-//					}
-//				}
-//			}
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
-	
-//	// added by Lin for model performance comparison.
-//	// print out each user's test review's performance.
-//	public void printUserPerformance(String filename){
-//		PrintWriter writer;
-//		try{
-//			writer = new PrintWriter(new File(filename));
-//			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
-//				@Override
-//				public int compare(_AdaptStruct u1, _AdaptStruct u2){
-//					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
-//				}
-//			});
-//			
-//			for(_AdaptStruct u: m_userList){
-//				writer.write("-----\n");
-//				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
-//				for(_Review r: u.getReviews()){
-//					if(r.getType() == rType.ADAPTATION)
-//						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
-//					if(r.getType() == rType.TEST){
-//						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
-//					}
-//				}
-//			}
-//			writer.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//	}
 }

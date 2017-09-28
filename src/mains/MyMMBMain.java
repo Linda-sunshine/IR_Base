@@ -4,18 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 
-import StatTests.Preprocess;
 import opennlp.tools.util.InvalidFormatException;
-import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.UserAnalyzer;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMBDocFirst;
 
 
 public class MyMMBMain {
@@ -113,7 +104,8 @@ public class MyMMBMain {
 		mmb.train();
 		mmb.test();
 		
-		mmb.saveClusterSentimentModels("./data/mmb_sentiment_models");
+		mmb.saveClusterModels("./data/mmb_sentiment_models");
+		mmb.saveUserMembership("./data/");
 		mmb.saveClusterLanguageModels("./data/mmb_lm_models");
 		
 		String size = "1k";

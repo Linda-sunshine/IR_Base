@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
@@ -16,6 +17,7 @@ import structures._Doc;
 import structures._HDPThetaStar;
 import structures._RankItem;
 import structures._Review;
+import structures._thetaStar;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
@@ -787,6 +789,7 @@ public class CLRWithHDP extends CLRWithDP {
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
 	}
+	
 	PrintWriter m_writer;
 	public void initWriter(){
 		try{

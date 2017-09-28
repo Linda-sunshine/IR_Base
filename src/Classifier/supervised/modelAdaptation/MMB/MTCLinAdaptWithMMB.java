@@ -1,9 +1,12 @@
 package Classifier.supervised.modelAdaptation.MMB;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -202,6 +205,64 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		for(int i=sizes.length-1; i>=0; i--)
 			System.out.print(sizes[i]+"\t");
 		System.out.println();
+	}
+	
+	// Save the sentiment models of thetaStars
+	@Override
+	public void saveClusterModels(String clusterdir){
+	
+		PrintWriter writer;
+		String filename;
+		File dir = new File(clusterdir);
+		double[] Ac;
+		int ki, ks;
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				Ac = m_hdpThetaStars[i].getModel();
+				m_pWeights = new double[m_gWeights.length];
+				for(int n=0; n<=m_featureSize; n++){
+					ki = m_featureGroupMap[n];
+					ks = m_featureGroupMap4SupUsr[n];
+					m_pWeights[n] = Ac[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+Ac[ki+m_dim];
+				}
+				filename = String.format("%s/%d.classifier", clusterdir, m_hdpThetaStars[i].getIndex());
+				writer = new PrintWriter(new File(filename));
+				for(int v=0; v<m_pWeights.length; v++){
+					if(v == m_pWeights.length-1)
+						writer.write(Double.toString(m_pWeights[v]));
+					else
+						writer.write(m_pWeights[v]+",");
+				}
+				writer.close();
+			}
+		} catch (IOException e){
+				e.printStackTrace();
+		}
+	}
+
+	// save the user mixture membership into a file
+	public void saveUserMembership(String clusterdir){
+		PrintWriter writer;
+		File dir = new File(clusterdir);
+		if(!dir.exists())
+			dir.mkdirs();
+		
+		try {
+			writer = new PrintWriter(new File(clusterdir+"/UserMembership.txt"));
+			for(_AdaptStruct u: m_userList){
+				_MMBAdaptStruct user = (_MMBAdaptStruct) u;
+				writer.write(String.format("%s\n", u.getUserID()));
+				for(_HDPThetaStar theta: user.getHDPTheta()){
+					writer.write(String.format("(%d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaEdgeSize(theta)));
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 }
 
