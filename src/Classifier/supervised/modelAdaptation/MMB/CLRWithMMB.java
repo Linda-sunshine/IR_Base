@@ -78,22 +78,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// calculate the group popularity in sampling documents and edges.
 	protected double calcGroupPopularity(_HDPAdaptStruct u, int k, double gamma_k){
 		_MMBAdaptStruct user= (_MMBAdaptStruct) u;
-//		System.out.print(String.format("%d/%d, %.5f, %d/%d\n", user.getHDPThetaMemSize(m_hdpThetaStars[k]), m_hdpThetaStars[k].getMemSize(), m_eta*gamma_k, user.getHDPThetaEdgeSize(m_hdpThetaStars[k]), m_hdpThetaStars[k].getTotalEdgeSize()));
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
-	}
-	
-	// The function calculates the likelihood given by one edge from mmb model.
-	protected double calcLogLikelihoodE(int k, _MMBAdaptStruct ui, _MMBAdaptStruct uj, int e){
-		_HDPThetaStar theta_s, theta_h;
-		
-		// fix me: do we need to judge whether we have an edge between ui and uj.
-//		if(ui.hasEdge(uj)){
-		theta_s = m_hdpThetaStars[k];
-		theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
-		return calcLogPostPredictiveBgh(theta_s, theta_h, e);
-//		} else{
-//			return m_pNew[e];
-//		}
 	}
 	
 	/**posterior predictive distribution: 
@@ -110,7 +95,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		double e_0 = 0, e_1 = 0;
 		e_0 = theta_g.getConnectionSize(theta_h, 0);
 		e_1 = theta_g.getConnectionSize(theta_h, 1);
-		prob = (e == 0) ? Math.log(m_abcd[0] + e_0) : Math.log(m_abcd[1] + e_1);
+		prob = (e == 0) ? Math.log(m_abcd[0] + e_1) : Math.log(m_abcd[1] + e_0);
 		prob += Math.log(m_rho) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return prob;
 	}
@@ -346,15 +331,15 @@ public class CLRWithMMB extends CLRWithHDP {
 		int k;
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
+		_HDPThetaStar theta_s, theta_h;
 
 		double likelihood, logNew, gamma_k, logSum = 0;
-		for(k=0; k<m_kBar; k++){
-			// In the initial states, we have to create new clusters.
-			ui.setThetaStar(m_hdpThetaStars[k]);
-			
+		for(k=0; k<m_kBar; k++){			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
-			likelihood = calcLogLikelihoodE(k, ui, uj, e);
+			theta_s = m_hdpThetaStars[k];
+			theta_h = uj.getOneNeighbor(ui).getHDPThetaStar();
+			likelihood = calcLogPostPredictiveBgh(theta_s, theta_h, e);
 						
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
@@ -486,7 +471,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * 3.cij=1, cji=1, unknows (Bgh, Bhg), prob: \rho*b/(a+b), k+1 possible cases 
 		 * In total, we have (k+1)*(k+2)/2+1 possible cases. **/
 		
-		double logSumB = 0, logSum = 0, prob = 0;
+		double logSum = 0, prob = 0;
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 
@@ -502,7 +487,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(int h=g; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
 				m_cache[g][h] = calcLogPostPredictiveBgh(theta_g, theta_h, 0);
-				logSumB = Utils.logSum(logSumB, m_cache[g][h]);
+				logSum = Utils.logSum(logSum, m_cache[g][h]);
 //				System.out.print(String.format("%.5f\t%.5f\n", m_cache[g][h], logSum));
 			}
 		}
@@ -510,17 +495,17 @@ public class CLRWithMMB extends CLRWithHDP {
 		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
 		for(int k=0; k<=m_kBar; k++){
 			m_cache[k][m_kBar] = pNew;
-			logSumB = Utils.logSum(logSumB, m_cache[k][m_kBar]);
+			logSum = Utils.logSum(logSum, m_cache[k][m_kBar]);
 //			System.out.print(String.format("%.5f\t%.5f\n", m_cache[k][m_kBar], logSum));
 		}
-		// Normalize the probability of c_{ij}=1 to sums up to \rho.
-		// only upper-triangle has non-zero values.
-		for(int g=0; g<m_cache.length; g++){
-			for(int h=g; h<m_cache.length; h++){
-				m_cache[g][h] += Math.log(m_rho) - logSumB;
-				logSum = Utils.logSum(logSum, m_cache[g][h]);
-			}
-		}
+//		// Normalize the probability of c_{ij}=1 to sums up to \rho.
+//		// only upper-triangle has non-zero values.
+//		for(int g=0; g<m_cache.length; g++){
+//			for(int h=g; h<m_cache.length; h++){
+//				m_cache[g][h] += Math.log(m_rho) - logSumB;
+//				logSum = Utils.logSum(logSum, m_cache[g][h]);
+//			}
+//		}
 		// case 3: background model while the prob is not stored in the two-dim array.
 		prob = Math.log(1 - m_rho);
 		logSum = Utils.logSum(logSum, prob);
@@ -669,6 +654,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				break;
 			lastLikelihood = curLikelihood;
 		}
+		
 
 		printClusterInfo();
 		evaluateModel(); // we do not want to miss the last sample?!
