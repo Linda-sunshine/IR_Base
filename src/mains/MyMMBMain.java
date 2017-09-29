@@ -84,7 +84,7 @@ public class MyMMBMain {
 //		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		mmb.setR2TradeOffs(eta3, eta4);
 		
-		double alpha = 2, eta = 0.1, beta = 0.01;
+		double alpha = 0.5, eta = 0.001, beta = 0.01;
 
 		mmb.setsdA(0.0425);//0.2
 		mmb.setsdB(0.0425);

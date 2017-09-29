@@ -31,7 +31,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// prob for the new cluster in sampling mmb edges.
 	private final double[] m_pNew = new double[2]; 
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
-	private final double[] m_abcd = new double[]{1, 3, 2, 2}; 
+	private final double[] m_abcd = new double[]{0.1, 0.0001, 2, 2}; 
 	// Me: total number of edges eij=0;Ne: total number of edges eij=1 from mmb; Le: total number of edges eij=0 from background model.
 	private final double[] m_MNL = new double[3];
 	// two-dim array for storing probs used in sampling zero edge.
@@ -95,21 +95,30 @@ public class CLRWithMMB extends CLRWithHDP {
 		double e_0 = 0, e_1 = 0;
 		e_0 = theta_g.getConnectionSize(theta_h, 0);
 		e_1 = theta_g.getConnectionSize(theta_h, 1);
-		prob = (e == 0) ? Math.log(m_abcd[0] + e_1) : Math.log(m_abcd[1] + e_0);
+		prob = (e == 0) ? Math.log(m_abcd[1] + e_0) : Math.log(m_abcd[0] + e_1);
 		prob += Math.log(m_rho) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return prob;
 	}
 	
+	int mmb = 0, joint = 0;
 	protected void calculate_E_step_Edge(){
 		Arrays.fill(m_MNL, 0);
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
+		int sampleSize = 0;
 		double m_p_bk = 1-m_rho, m_p_mmb_0 = 0;
+		// for debug purpose
+		mmb = 0; joint = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
 				uj = (_MMBAdaptStruct) m_userList.get(j);
-
+				// print out the process of sampling edges
+				if (++sampleSize%2000==0) {
+					System.out.print('.');
+					if (sampleSize%100000==0)
+						System.out.print(String.format("kBar:%d,mmb:%d,joint:%d,gamma_e:%.8f\n", m_kBar, mmb, joint,m_gamma_e));
+				}
 				// eij = 1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
@@ -242,7 +251,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// init thetas for edges at the beginning
 	public void initThetaStars4Edges(){
 		_MMBAdaptStruct ui, uj;
-		
+		int sampleSize = 0;
 		m_userMap = new HashMap<String, _MMBAdaptStruct>();
 		
 		// add the friends one by one.
@@ -251,6 +260,12 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_userMap.put(ui.getUserID(), ui);
 
 			for(int j=i+1; j<m_userList.size(); j++){
+				if (++sampleSize%2000==0) {
+					System.out.print('.');
+					sampleGamma();//will this help sampling?
+					if (sampleSize%100000==0)
+						System.out.print(m_kBar+"\n");
+				}
 				uj = (_MMBAdaptStruct) m_userList.get(j);
 				// if ui and uj are friends, random sample clusters for the two connections
 				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
@@ -265,12 +280,14 @@ public class CLRWithMMB extends CLRWithHDP {
 					updateSampleSize(1, 2);
 				} else{
 				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
+//					sampleZeroEdgeJoint(i, j);
 					randomSampleEdges(i, j, 0);
 					addConnection(ui, uj, 0);
 					updateSampleSize(0, 2);
 				}
 			}
 		}
+		System.out.println();
 	}
 	
 	// If both of them exist, then it is valid.
@@ -362,6 +379,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(k == -1){
 			sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
 			k = m_kBar - 1;
+			mmb++;
 		}
 		// update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
@@ -397,14 +415,9 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	//Sample hdpThetaStar with likelihood.
 	protected int sampleIn2DimArrayLogSpace(double logSum, double back_prob){
-//		double sum = back_prob;
-//		for(int i=0; i<m_kBar+1; i++){
-//			for(int j=i; j<m_kBar+1; j++){
-//				sum = Utils.logSum(sum, m_cache[i][j]);
-//			}
-//		}
+
 		double rnd = FloatUniform.staticNextFloat();
-		System.out.print(String.format("%.5f\t%.5f\n", rnd, Math.log(rnd)));
+//		System.out.print(String.format("%.5f\t%.5f\n", rnd, Math.log(rnd)));
 		logSum += Math.log(rnd);//we might need a better random number generator
 		
 		int k = -1;
@@ -421,7 +434,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			newLogSum = Utils.logSum(newLogSum, m_cache[k/(m_kBar+1)][k%(m_kBar+1)]);
 			
 		} while (k<(m_kBar+1)*(m_kBar+1));
-		System.out.print(String.format("%.5f\tk:%d\n", logSum, k));
 		return k;
 	}
 	
@@ -470,8 +482,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * posterior prob: \rho*(b+e_0)/(a+b+e_0+e_1)
 		 * 3.cij=1, cji=1, unknows (Bgh, Bhg), prob: \rho*b/(a+b), k+1 possible cases 
 		 * In total, we have (k+1)*(k+2)/2+1 possible cases. **/
-		
-		double logSum = 0, prob = 0;
+		// Step 1: calc prob for different cases of cij, cji.
+		// case 0: background model while the prob is not stored in the two-dim array.
+		double logSum = Math.log(1-m_rho);
 		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 
@@ -479,7 +492,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * symmetric, we only calculate upper-triangle. **/
 		m_cache = new double[m_kBar+1][m_kBar+1];
 		
-		// Step 1: calc prob for different cases of cij, cji.
 		_HDPThetaStar theta_g, theta_h;
 		// case 1: existing thetas.
 		for(int g=0; g<m_kBar; g++){
@@ -496,22 +508,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		for(int k=0; k<=m_kBar; k++){
 			m_cache[k][m_kBar] = pNew;
 			logSum = Utils.logSum(logSum, m_cache[k][m_kBar]);
-//			System.out.print(String.format("%.5f\t%.5f\n", m_cache[k][m_kBar], logSum));
 		}
-//		// Normalize the probability of c_{ij}=1 to sums up to \rho.
-//		// only upper-triangle has non-zero values.
-//		for(int g=0; g<m_cache.length; g++){
-//			for(int h=g; h<m_cache.length; h++){
-//				m_cache[g][h] += Math.log(m_rho) - logSumB;
-//				logSum = Utils.logSum(logSum, m_cache[g][h]);
-//			}
-//		}
-		// case 3: background model while the prob is not stored in the two-dim array.
-		prob = Math.log(1 - m_rho);
-		logSum = Utils.logSum(logSum, prob);
-		System.out.println(logSum);
+
 		// Step 2: sample one pair from the prob matrix./*-
-		int k = sampleIn2DimArrayLogSpace(logSum, prob);
+		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho));
 		
 		// Step 3: Analyze the sampled cluster results.
 		// case 1: k == -1, sample from the background model;
@@ -523,6 +523,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if(g == m_kBar || h == m_kBar){
 				// we need to sample the new cluster
 				sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
+				joint++;
 			}
 			
 			// Update the thetaStar and user info after getting z_ij.

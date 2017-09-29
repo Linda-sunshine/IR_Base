@@ -6,22 +6,21 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-import cern.jet.random.tdouble.Beta;
-import cern.jet.random.tdouble.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
+
 import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._RankItem;
 import structures._Review;
-import structures._thetaStar;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
+import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
 
 public class CLRWithHDP extends CLRWithDP {
 
@@ -215,7 +214,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
 				
-		double rnd = Beta.staticNextDouble(2, m_alpha);
+		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
 			
@@ -301,6 +300,7 @@ public class CLRWithHDP extends CLRWithDP {
 		return res;
 	}
 	// The main MCMC algorithm, assign each review to clusters.
+	@Override
 	protected void calculate_E_step(){
 		_HDPAdaptStruct user;
 		int sampleSize=0;
@@ -469,6 +469,7 @@ public class CLRWithHDP extends CLRWithDP {
 		return fValue;
 	}
 
+	@Override
 	protected double logLikelihood_MultiThread() {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();		
@@ -786,6 +787,7 @@ public class CLRWithHDP extends CLRWithDP {
 		m_beta = beta;
 	}
 	
+	@Override
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
 	}
