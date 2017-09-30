@@ -103,6 +103,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	int mmb = 0, joint = 0;
 	protected void calculate_E_step_Edge(){
 		Arrays.fill(m_MNL, 0);
+		calcProbNew();
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
 		int sampleSize = 0;
@@ -262,7 +263,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(int j=i+1; j<m_userList.size(); j++){
 				if (++sampleSize%2000==0) {
 					System.out.print('.');
-					sampleGamma();//will this help sampling?
+//					sampleGamma();//will this help sampling?
 					if (sampleSize%100000==0)
 						System.out.print(m_kBar+"\n");
 				}
@@ -290,6 +291,45 @@ public class CLRWithMMB extends CLRWithHDP {
 		System.out.println();
 	}
 	
+	// init thetas for edges at the beginning
+	public void initThetaStars4EdgesDebug(){
+		_MMBAdaptStruct ui, uj;
+		int sampleSize = 0;
+		m_userMap = new HashMap<String, _MMBAdaptStruct>();
+		
+		// add the friends one by one.
+		for(int i=0; i< m_userList.size(); i++){
+			ui = (_MMBAdaptStruct) m_userList.get(i);
+			m_userMap.put(ui.getUserID(), ui);
+
+			for(int j=i+1; j<m_userList.size(); j++){
+				if (++sampleSize%2000==0) {
+					System.out.print('.');
+//					sampleGamma();//will this help sampling?
+					if (sampleSize%100000==0)
+						System.out.print(m_kBar+"\n");
+				}
+				uj = (_MMBAdaptStruct) m_userList.get(j);
+				// if ui and uj are friends, random sample clusters for the two connections
+				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
+				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
+					// sample two edges between i and j
+					randomSampleEdges(i, j, 1);
+					// add the edge assignment to corresponding cluster
+					// we have to add connections after we know the two edge assignment (the clusters for i->j and j->i)
+					addConnection(ui, uj, 1);
+					// update the sample size with the specified index and value
+					// index 0 : e_ij = 0 from mmb; index 1 : e_ij = 1 from mmb; index 2 : 0 from background model
+					updateSampleSize(1, 2);
+				} else{
+					sampleZeroEdgeJoint(i, j);
+				}
+			}
+		}
+		System.out.println();
+	}
+	
+
 	// If both of them exist, then it is valid.
 	// In case the previously assigned cluster is removed, we use the joint sampling to get it.*/
 	public boolean isBijValid(int i, int j){
@@ -622,8 +662,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		// assign each edge to one cluster
-		initThetaStars4Edges();
-		
+//		initThetaStars4Edges();
+		initThetaStars4EdgesDebug();
+
 		checkEdges();
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
