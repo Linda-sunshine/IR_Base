@@ -16,7 +16,7 @@ public class DPParameter {
 	
 	// Concentration parameter
 	public double m_alpha = 2;
-	public double m_eta = 0.1;
+	public double m_eta = 0.001;
 	public double m_beta = 0.01;
 	
 	public double m_eta1 = 0.05;
@@ -45,7 +45,7 @@ public class DPParameter {
 	public int m_threshold = 15;
 	
 	// used in mmb model, sparsity parameter
-	public double m_rho = 0.001;
+	public double m_rho = 0.7;
 	
 	public DPParameter(String argv[]){
 		

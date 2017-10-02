@@ -5,29 +5,23 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 
-import org.hamcrest.core.IsInstanceOf;
-
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
-import cern.jet.random.tfloat.FloatUniform;
+import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
+import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
-import structures.MyPriorityQueue;
-import structures._HDPThetaStar;
-import structures._RankItem;
 import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tfloat.FloatUniform;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
@@ -385,6 +379,7 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	// The main EM algorithm to optimize cluster assignment and distribution parameters.
+	@Override
 	public double train(){
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -412,7 +407,7 @@ public class CLRWithDP extends LinAdapt {
 				evaluateModel();
 			
 			printInfo();
-			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.6f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
 			lastLikelihood = curLikelihood;
@@ -643,6 +638,7 @@ public class CLRWithDP extends LinAdapt {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_DPAdaptStruct user;
 					try {

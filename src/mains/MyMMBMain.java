@@ -28,7 +28,7 @@ public class MyMMBMain {
 		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
-		int lmTopK = 5000; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 
 		String fs = "DF";//"IG_CHI"
@@ -84,7 +84,7 @@ public class MyMMBMain {
 //		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		mmb.setR2TradeOffs(eta3, eta4);
 		
-		double alpha = 0.5, eta = 0.001, beta = 0.01;
+		double alpha = 2, eta = 0.001, beta = 0.01;
 
 		mmb.setsdA(0.0425);//0.2
 		mmb.setsdB(0.0425);
@@ -92,10 +92,11 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.001);
+		mmb.setRho(0.7);
 		mmb.setBurnIn(10);
+//		mmb.setInitMMB(false);// init zero edges to background model
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(50);
+		mmb.setNumberOfIterations(500);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
@@ -104,14 +105,14 @@ public class MyMMBMain {
 		mmb.train();
 		mmb.test();
 		
-		mmb.saveClusterModels("./data/mmb_sentiment_models");
-		mmb.saveUserMembership("./data/");
-		mmb.saveClusterLanguageModels("./data/mmb_lm_models");
-		
-		String size = "1k";
-		mmb.printStat("./data/yelp_stat_" + size + ".txt");
-		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
-		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
+//		mmb.saveClusterModels("./data/mmb_sentiment_models");
+//		mmb.saveUserMembership("./data/");
+//		mmb.saveClusterLanguageModels("./data/mmb_lm_models");
+//		
+//		String size = "1k";
+//		mmb.printStat("./data/yelp_stat_" + size + ".txt");
+//		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
+//		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
  
 	}
 }

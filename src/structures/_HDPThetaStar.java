@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import sun.reflect.generics.tree.VoidDescriptor;
 import utils.Utils;
 
 /**
@@ -118,6 +117,7 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_gamma;
 	}
 	
+	@Override
 	public String showStat() {
 		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
 	}

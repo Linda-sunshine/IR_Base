@@ -3,24 +3,14 @@ package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
+
 import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMBDocFirst;
 
 public class MyMMBExecution {
 	
@@ -49,7 +39,7 @@ public class MyMMBExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/Friends.txt", param.m_prefix,param.m_data);
+		String friendFile = String.format("%s/%s/yelpFriends.txt", param.m_prefix,param.m_data);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -73,10 +63,6 @@ public class MyMMBExecution {
 			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
 		} else if(param.m_model.equals("mtclinmmb")){
 			adaptation = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
-			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
-		} else if(param.m_model.equals("mtclinmmbdoc")){
-			adaptation = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
 			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
 		} else
