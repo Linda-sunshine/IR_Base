@@ -103,7 +103,7 @@ public class CLRWithMMB extends CLRWithHDP {
 
 	int mmb = 0, joint = 0;
 	int mmb2bk = 0, mmb2mmb = 0, bk2bk = 0, bk2mmb = 0;
-
+	double total = 0, debug = 0;
 	protected void calculate_E_step_Edge(){
 		Arrays.fill(m_MNL, 0);
 		calcProbNew();
@@ -115,7 +115,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		// for debug purpose
 		mmb = 0; joint = 0; mmb2bk = 0; 
 		mmb2mmb = 0; bk2bk = 0; bk2mmb = 0;
-		
+
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -171,8 +171,8 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		System.out.print(String.format("\n[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
-		System.out.print(String.format("[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", m_p_bk, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("\n[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", m_p_bk, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
 		checkClusters();
 	}
 
@@ -296,8 +296,8 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		System.out.print(String.format("\n[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
-		System.out.print(String.format("[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", 1-m_rho, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("\n[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", 1-m_rho, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	
 	// init thetas for edges at the beginning
@@ -339,8 +339,8 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		System.out.print(String.format("\n[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
-		System.out.print(String.format("[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", 1-m_rho, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("\n[Info]background prob: %.5f, mmb2mmb:%d, mmb2bk:%d, bk2mmb:%d,bk2bk:%d\n", 1-m_rho, mmb2mmb, mmb2bk, bk2mmb, bk2bk));
+		System.out.print(String.format("[Info]kBar: %d, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	
 
@@ -466,12 +466,11 @@ public class CLRWithMMB extends CLRWithHDP {
 			k--; // we might hit the very last
 		return k;
 	}
-	
+
 	//Sample hdpThetaStar with likelihood.
 	protected int sampleIn2DimArrayLogSpace(double logSum, double back_prob){
 
 		double rnd = FloatUniform.staticNextFloat();
-//		System.out.print(String.format("%.5f\t%.5f\n", rnd, Math.log(rnd)));
 		logSum += Math.log(rnd);//we might need a better random number generator
 		
 		int k = -1;
@@ -564,12 +563,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			logSum = Utils.logSum(logSum, m_cache[k][m_kBar]);
 		}
 
-		for(int g=0; g<=m_kBar; g++){
-			for(int h=g; h<=m_kBar; h++)
-				m_cache[g][h] -= logSum;
-		}
+		double norm = Math.log(m_kBar+2) + Math.log(m_kBar + 1) - Math.log(2);
+		logSum = Utils.logSum(logSum, norm);
 		// Step 2: sample one pair from the prob matrix./*-
-		int k = sampleIn2DimArrayLogSpace(logSum-logSum, Math.log(1-m_rho)-logSum);
+		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho) + norm);
 		
 		// Step 3: Analyze the sampled cluster results.
 		// case 1: k == -1, sample from the background model;

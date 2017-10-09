@@ -92,9 +92,9 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.7);
+		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
-//		mmb.setInitMMB(false);// init zero edges to background model
+		mmb.setInitMMB(false);// init zero edges to background model
 //		mmb.setThinning(5);// default 3
 		mmb.setNumberOfIterations(500);
 		
