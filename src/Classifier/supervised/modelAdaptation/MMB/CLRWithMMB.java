@@ -239,7 +239,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
-		m_rho = (m_MNL[0]+m_MNL[1]+m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
+		m_rho = (m_MNL[1] + m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
 		return 0;
 	}
 	
@@ -563,10 +563,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			logSum = Utils.logSum(logSum, m_cache[k][m_kBar]);
 		}
 
-		double norm = Math.log(m_kBar+2) + Math.log(m_kBar + 1) - Math.log(2);
-		logSum = Utils.logSum(logSum, norm);
+//		double norm = Math.log(m_kBar+2) + Math.log(m_kBar + 1) - Math.log(2);
+//		logSum = Utils.logSum(logSum, norm);
 		// Step 2: sample one pair from the prob matrix./*-
-		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho) + norm);
+		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho));
 		
 		// Step 3: Analyze the sampled cluster results.
 		// case 1: k == -1, sample from the background model;
