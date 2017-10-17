@@ -33,11 +33,11 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/zf8/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -47,7 +47,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/yelpFriends_1000.txt", prefix, dataset);
+		String friendFile = String.format("%s/%s/yelpFriends.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -92,7 +92,7 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.06);
+		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
 		mmb.setNumberOfIterations(500);
