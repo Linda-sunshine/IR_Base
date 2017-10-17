@@ -28,11 +28,11 @@ public class CLRWithMMB extends CLRWithHDP {
 	protected _HDPThetaStar[][] m_indicator;
 	
 	// how we init the zero edges: mmb or background model
-	protected boolean m_initMMB = true;
+	protected boolean m_preMMB = false;
 	// prob for the new cluster in sampling mmb edges.
 	protected double[] m_pNew = new double[2]; 
 	// parameters used in the gamma function in mmb model, prior of B~beta(a, b), prior of \rho~Beta(c, d)
-	protected double[] m_abcd = new double[]{0.1, 0.0001, 2, 2}; 
+	protected double[] m_abcd = new double[]{0.1, 0.001, 2, 2}; 
 	// Me: total number of edges eij=0;Ne: total number of edges eij=1 from mmb; Le: total number of edges eij=0 from background model.
 	protected double[] m_MNL = new double[3];
 	// two-dim array for storing probs used in sampling zero edge.
@@ -143,31 +143,39 @@ public class CLRWithMMB extends CLRWithHDP {
 					// update the sample size with the specified index and value
 					updateSampleSize(1, 2);
 
-				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
-		
-					m_p_mmb_0 = Math.exp(calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i], 0));
-					// init the bernoulli distribution first with normalized parameter to sample the edge indicator i->j
-					m_bernoulli = new BinomialDistribution(1, m_p_mmb_0/(m_p_bk+m_p_mmb_0));
-					if(m_bernoulli.sample() == 0){
-						mmb2bk += 2;
-						// put the edge in the background model.
-						rmConnection(ui, uj, 0);
-						updateEdgeMembership(i, j, 0);
-						updateEdgeMembership(j, i, 0);
-						updateSampleSize(2, 2);
-					} else{
-						// put the edge in mmb model and re-sample cluster indicator
-						rmConnection(ui, uj, 0);
-						updateEdgeMembership(i, j, 0);
-						sampleEdge(i, j, 0);
-						updateEdgeMembership(j, i, 0);
-						sampleEdge(j, i, 0);
-						addConnection(ui, uj, 0);
-						updateSampleSize(0, 2);
-						mmb2mmb += 2;
-					} 
+//				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+//		
+//					m_p_mmb_0 = Math.exp(calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i], 0));
+//					// init the bernoulli distribution first with normalized parameter to sample the edge indicator i->j
+//					m_bernoulli = new BinomialDistribution(1, m_p_mmb_0/(m_p_bk+m_p_mmb_0));
+//					if(m_bernoulli.sample() == 0){
+//						mmb2bk += 2;
+//						// put the edge in the background model.
+//						rmConnection(ui, uj, 0);
+//						updateEdgeMembership(i, j, 0);
+//						updateEdgeMembership(j, i, 0);
+//						updateSampleSize(2, 2);
+//					} else{
+//						// put the edge in mmb model and re-sample cluster indicator
+//						rmConnection(ui, uj, 0);
+//						updateEdgeMembership(i, j, 0);
+//						sampleEdge(i, j, 0);
+//						updateEdgeMembership(j, i, 0);
+//						sampleEdge(j, i, 0);
+//						addConnection(ui, uj, 0);
+//						updateSampleSize(0, 2);
+//						mmb2mmb += 2;
+//					} 
 				}else{
-					sampleZeroEdgeJoint(i, j);
+					m_preMMB = false;
+					// if it is zero edge from mmb, remove the connection first.
+					if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+						m_preMMB = true;
+						rmConnection(ui, uj, 0);
+						updateEdgeMembership(i, j, 0);
+						updateEdgeMembership(j, i, 0);
+					}
+					sampleZeroEdgeJoint(i, j, m_preMMB);
 				}
 			}
 		}
@@ -239,7 +247,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
-		m_rho = (m_MNL[1] + m_abcd[2]-1)/(m_MNL[0]+m_MNL[1]+m_MNL[2]+m_abcd[2]+m_abcd[3]-2);
+		m_rho = m_MNL[1] / (m_MNL[0] + m_MNL[1] + m_MNL[2]);
 		return 0;
 	}
 	
@@ -335,7 +343,7 @@ public class CLRWithMMB extends CLRWithHDP {
 					// index 0 : e_ij = 0 from mmb; index 1 : e_ij = 1 from mmb; index 2 : 0 from background model
 					updateSampleSize(1, 2);
 				} else{
-					sampleZeroEdgeJoint(i, j);
+					sampleZeroEdgeJoint(i, j, false);
 				}
 			}
 		}
@@ -528,7 +536,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 
 	// sample eij = 0 from the joint probabilities of cij, zij and zji.
-	public void sampleZeroEdgeJoint(int i, int j){
+	public void sampleZeroEdgeJoint(int i, int j, boolean mmb){
 		/**we will consider all possible combinations of different memberships.
 		 * 1.cij=0, cji=0, prob: (1-\rho), 1 case
 		 * 2.cij=1, cji=1, known (Bgh, Bhg), prob: \rho(1-Bgh), k(k+1)/2 possible cases
@@ -551,20 +559,24 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta_g = m_hdpThetaStars[g];
 			for(int h=g; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
+				// rho*(b+e_0)*gamma_g*gamma_h/(a+b+e_0+e_1)
 				m_cache[g][h] = calcLogPostPredictiveBgh(theta_g, theta_h, 0);
+				m_cache[g][h] += Math.log(theta_g.getGamma()) + Math.log(theta_h.getGamma());
 				logSum = Utils.logSum(logSum, m_cache[g][h]);
-//				System.out.print(String.format("%.5f\t%.5f\n", m_cache[g][h], logSum));
+				if(Double.isNaN(logSum))
+					System.out.println("Nan!");
 			}
 		}
 		// case 2: either one is from new cluster.
-		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
+		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]) ;
 		for(int k=0; k<=m_kBar; k++){
 			m_cache[k][m_kBar] = pNew;
+			m_cache[k][m_kBar] += Math.log(m_gamma_e);
+			m_cache[k][m_kBar] += (k == m_kBar) ? Math.log(m_gamma_e) : Math.log(m_hdpThetaStars[k].getGamma());
 			logSum = Utils.logSum(logSum, m_cache[k][m_kBar]);
+			if(Double.isNaN(logSum))
+				System.out.println("Nan!");
 		}
-
-//		double norm = Math.log(m_kBar+2) + Math.log(m_kBar + 1) - Math.log(2);
-//		logSum = Utils.logSum(logSum, norm);
 		// Step 2: sample one pair from the prob matrix./*-
 		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho));
 		
@@ -595,10 +607,16 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_indicator[j][i] = m_hdpThetaStars[h];
 			updateSampleSize(0, 1);
 			addConnection(ui, uj, 0);
-			bk2mmb += 2;
+			if(m_preMMB)
+				mmb2mmb += 2;
+			else
+				bk2mmb += 2;
 		} else{
 			updateSampleSize(2, 2);
-			bk2bk += 2;
+			if(m_preMMB)
+				mmb2bk += 2;
+			else
+				bk2bk += 2;
 		}
 	}
 
@@ -661,10 +679,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	public void setRho(double v){
 		m_rho = v;
 	}
-	// Set how we init the zero edges in the initial step
-	public void setInitMMB(boolean b){
-		m_initMMB = b;
-	}
+
 	@Override
 	public String toString() {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_rho, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
@@ -681,13 +696,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
-		
-		// random assign zero edge to one cluster (mmb)
-		if(m_initMMB)
-			initThetaStars4EdgesMMB();
-		// assign zero edges based on joint sampling
-		else
-			initThetaStars4EdgesJoint();
+		initThetaStars4EdgesJoint();
 		
 		checkEdges();
 		// Burn in period for doc.
@@ -721,13 +730,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			lastLikelihood = curLikelihood;
 		}
 		
-
-		printClusterInfo();
 		evaluateModel(); // we do not want to miss the last sample?!
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
-		
 	
 	private void updateSampleSize(int index, int val){
 		if(index <0 || index > m_MNL.length)
@@ -844,10 +850,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 	
-	private void printClusterInfo(){
+	public void printClusterInfo(String filename){
 		try {
 			_HDPThetaStar theta;
-			PrintWriter writer = new PrintWriter(new File("cluster.txt"));
+			PrintWriter writer = new PrintWriter(new File(filename));
 			for(int k=0; k<m_kBar; k++){
 				theta = m_hdpThetaStars[k];
 				writer.write(String.format("%d,%d,%d\n", theta.getMemSize(), theta.getEdgeSize(0), theta.getEdgeSize(1)));
