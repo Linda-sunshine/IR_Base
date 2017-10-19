@@ -22,7 +22,7 @@ import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tfloat.FloatUniform;
 public class CLRWithMMB extends CLRWithHDP {
 	// sparsity parameter
-	protected double m_rho = 0.1; 
+	protected double m_rho = 0.001; 
 	// As we store all the indicators for all the edges(even edges from background model), we maintain a matrix for indexing.
 	protected _HDPThetaStar[][] m_indicator;
 	
@@ -223,10 +223,10 @@ public class CLRWithMMB extends CLRWithHDP {
 
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
-	public double estRho(){
-		m_rho = (m_MNL[0] + m_MNL[1] + m_abcd[2] - 1) / (m_MNL[0] + m_MNL[1] + m_MNL[2] + m_abcd[2] + m_abcd[3] - 2);
-		return 0;
-	}
+//	public double estRho(){
+//		m_rho = (m_MNL[0] + m_MNL[1] + m_abcd[2] - 1) / (m_MNL[0] + m_MNL[1] + m_MNL[2] + m_abcd[2] + m_abcd[3] - 2);
+//		return 0;
+//	}
 	
 	public boolean hasFriend(String[] arr, String str){
 		for(String a: arr){
@@ -564,6 +564,22 @@ public class CLRWithMMB extends CLRWithHDP {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_rho, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
+	public void initMMB(){
+		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
+		for(_AdaptStruct user:m_userList){			
+			if (user.getAdaptationSize()>0) 				
+				m_userSize ++;	
+			user.getPerfStat().clear(); // clear accumulate performance statistics
+		}
+		initPriorG0();
+		//init the structures for multi-threading
+		if (m_multiThread) {
+			int numberOfCores = Runtime.getRuntime().availableProcessors();
+			m_fValues = new double[numberOfCores];
+			m_gradients = new double[numberOfCores][]; 
+		}
+	}
+	
 	// In the training process, we sample documents first, then sample edges.
 	@Override
 	public double train(){
@@ -574,29 +590,33 @@ public class CLRWithMMB extends CLRWithHDP {
 		/**We want to sample documents first without knowing edges,
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
 		// clear user performance, init cluster assignment, assign each review to one cluster
-		init();	
+//		init();	
+		initMMB();
+		
+		// sample one cluster first
+		sampleNewCluster4Edge();
 		initThetaStars4EdgesMMB();
-		estRho();
+//		estRho();
 		
 		checkEdges();
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
-			super.calculate_E_step();
+//			super.calculate_E_step();
 			calculate_E_step_Edge();
 			checkEdges();
 			lastLikelihood = calculate_M_step();
-			lastLikelihood += estRho();
+//			lastLikelihood += estRho();
 		}
 		
 		// EM iteration.
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.
-			calculate_E_step();
+//			calculate_E_step();
 			calculate_E_step_Edge();
 
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
-			curLikelihood += estRho();
+//			curLikelihood += estRho();
 
 			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			
@@ -784,4 +804,5 @@ public class CLRWithMMB extends CLRWithHDP {
 			e.printStackTrace();
 		}
 	}
+
 }

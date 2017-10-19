@@ -33,11 +33,11 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/zf8/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -47,7 +47,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/yelpFriends.txt", prefix, dataset);
+		String friendFile = String.format("%s/%s/yelpFriends_1000.txt", prefix, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -67,35 +67,55 @@ public class MyMMBMain {
 //		process.getRestaurantsStat();
 //		process.printRestaurantStat("./data/yelp_chi_test.txt");
 		
+		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
+		double alpha =0.01, eta = 0.1, beta = 0.01;
+		double sdA = 0.0425, sdB = 0.0425;
 		
+//		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+//		hdp.setAlpha(alpha);
+//		
+//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		hdp.setR2TradeOffs(eta3, eta4);
+//		
+//		hdp.setsdB(sdA);//0.2
+//		hdp.setsdA(sdB);//0.2
+//		
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		
+//		hdp.setBurnIn(10);
+//		hdp.setNumberOfIterations(50);
+//		
+//		hdp.loadLMFeatures(analyzer.getLMFeatures());
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//		
+//		hdp.train();
+//		hdp.test();
+//		
 //		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		mmb.setsdA(0.2);
 		
 //		MTCLRWithMMB mmb = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		mmb.setQ(0.1);
-		
+//		
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-//		mmb.setsdB(0.1);//0.2
-
+//		mmb.setsdB(0.1);
+//
 		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
-//
-//		MTCLinAdaptWithMMBDocFirst mmb = new MTCLinAdaptWithMMBDocFirst(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		mmb.setR2TradeOffs(eta3, eta4);
 		
-		double alpha = 0.1, eta = 0.001, beta = 0.01;
-
-		mmb.setsdA(0.0425);//0.2
-		mmb.setsdB(0.0425);
+		mmb.setsdA(sdA);
+		mmb.setsdB(sdB);
 				
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.001);
+		mmb.setRho(0.005);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(500);
+		mmb.setNumberOfIterations(50);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
@@ -104,14 +124,11 @@ public class MyMMBMain {
 		mmb.train();
 		mmb.test();
 		
-//		mmb.saveClusterModels("./data/mmb_sentiment_models");
-//		mmb.saveUserMembership("./data/");
-//		mmb.saveClusterLanguageModels("./data/mmb_lm_models");
-//		
-//		String size = "1k";
-//		mmb.printStat("./data/yelp_stat_" + size + ".txt");
-//		mmb.printEdgeAssignment("./data/yelp_edge_" + size + ".txt");
-//		mmb.printBMatrix("./data/yelp_B_" + size + ".txt");
- 
+		// Print out the current related models
+		long current = System.currentTimeMillis();
+//		String saveDir = "./data/mmb";
+//		String saveDir = "../hdpExp/mmb";
+//		mmb.saveEverything(current, saveDir);
+		
 	}
 }

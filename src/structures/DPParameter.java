@@ -1,5 +1,6 @@
 package structures;
 
+
 public class DPParameter {
 	
 	public String m_prefix = "/zf8/lg5bt/DataSigir";//"./data/CoLinAdapt"
@@ -45,8 +46,10 @@ public class DPParameter {
 	public int m_threshold = 15;
 	
 	// used in mmb model, sparsity parameter
-	public double m_rho = 0.7;
+	public double m_rho = 0.001;
 	
+	public boolean m_saveModel = false;
+	public String m_saveDir = "../hdpExp/mmb";
 	public DPParameter(String argv[]){
 		
 		int i;
@@ -120,6 +123,8 @@ public class DPParameter {
 				m_prefix = argv[i];
 			else if(argv[i-1].equals("-rho"))
 				m_rho = Double.parseDouble(argv[i]);
+			else if(argv[i-1].equals("-saveModel"))
+				m_saveModel = Boolean.valueOf(argv[i]);
 			else
 				exit_with_help();
 		}

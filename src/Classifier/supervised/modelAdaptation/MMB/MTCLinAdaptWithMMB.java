@@ -243,7 +243,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	}
 
 	// save the user mixture membership into a file
-	public void saveUserMembership(String clusterdir){
+	public void saveUserMembership(String clusterdir, String filename){
 		PrintWriter writer;
 		File dir = new File(clusterdir);
 		if(!dir.exists())
@@ -261,6 +261,37 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 			}
 			writer.close();
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	// print out related information for analysis
+	public void saveEverything(long current, String folder){
+		String dir = String.format("%s/%d", folder, current);
+		String sentimentDir = String.format("%s/sentiment_models/", dir);
+		String lmDir = String.format("%s/lm_models/", dir);
+		String userMemFile = String.format("%s/UserMembership.txt", dir);
+		
+		// save cluster information: sentiment model, language model, user membership
+		saveClusterModels(sentimentDir);
+		saveUserMembership(dir, userMemFile);
+		saveClusterLanguageModels(lmDir);
+		
+		String statFile = String.format("%s/stat.txt", dir);
+		String edgeFile = String.format("%s/edge_assignment.txt", dir);
+		String BFile = String.format("%s/B.txt", dir);
+
+		printStat(statFile);
+		printEdgeAssignment(edgeFile);
+		printBMatrix(BFile);
+
+		// print out the param as a tile of a file
+		String paramFile = String.format("%s/%d/rho_%.4f_alpha_%.3f_eta_%.3f_beta_%.3f_sdA_%.4f_sdB_%.4f_nuI_%d.txt", 
+				folder, current, m_rho, m_alpha, m_eta, m_beta, m_abNuA[1], m_abNuB[1], m_numberOfIterations);
+		try{
+			PrintWriter writer = new PrintWriter(new File(paramFile));
+			writer.close();
+		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}

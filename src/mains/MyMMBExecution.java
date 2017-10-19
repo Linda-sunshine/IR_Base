@@ -86,5 +86,11 @@ public class MyMMBExecution {
 		
 		adaptation.train();
 		adaptation.test();
+		
+		long current = System.currentTimeMillis();
+		if(param.m_saveModel){
+			String saveDir = param.m_saveDir;
+			((MTCLinAdaptWithMMB) adaptation).saveEverything(current, saveDir);
+		}
 	}
 }
