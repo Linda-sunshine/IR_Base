@@ -17,17 +17,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
-import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
-import structures._SparseFeature;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
+import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.BaseClassifier;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 /**
  * @author Hongning Wang
@@ -269,6 +269,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_AdaptStruct user;
 					_PerformanceStat userPerfStat;
@@ -334,7 +335,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			
 			userPerfStat = user.getPerfStat();
 			for(int i=0; i<m_classNo; i++){
-				if(userPerfStat.getTrueClassNo(i)!=0)
+				if(userPerfStat.getTrueClassNo(i) > 0)
 					macroF1.get(i).add(userPerfStat.getF1(i));
 			}
 			m_microStat.accumulateConfusionMat(userPerfStat);
@@ -351,9 +352,19 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			double[] avgStd = calcAvgStd(macroF1.get(i));
 			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
 		}
+//		printPerformance();
 		return 0;
 	}
 
+	public void printPerformance(){
+		_PerformanceStat perf;
+		for(_AdaptStruct user:m_userList){
+			perf = user.getPerfStat();
+			System.out.print(String.format("pos:%d\tneg:%d\tposF1:%.4f\tnegF1:%.4f\n",
+					perf.getTrueClassNo(1), perf.getTrueClassNo(0), perf.getF1(1), perf.getF1(0)));
+			
+		}
+	}
 	public double[] calcAvgStd(ArrayList<Double> fs){
 		double avg = 0, std = 0;
 		for(double f: fs)

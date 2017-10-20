@@ -280,11 +280,13 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		String statFile = String.format("%s/stat.txt", dir);
 		String edgeFile = String.format("%s/edge_assignment.txt", dir);
 		String BFile = String.format("%s/B.txt", dir);
-
+		String perfFile = String.format("%s/mmb_perf.txt", dir);
+		
 		printStat(statFile);
 		printEdgeAssignment(edgeFile);
 		printBMatrix(BFile);
-
+		printUserPerformance(perfFile);
+		
 		// print out the param as a tile of a file
 		String paramFile = String.format("%s/%d/rho_%.4f_alpha_%.3f_eta_%.3f_beta_%.3f_sdA_%.4f_sdB_%.4f_nuI_%d.txt", 
 				folder, current, m_rho, m_alpha, m_eta, m_beta, m_abNuA[1], m_abNuB[1], m_numberOfIterations);

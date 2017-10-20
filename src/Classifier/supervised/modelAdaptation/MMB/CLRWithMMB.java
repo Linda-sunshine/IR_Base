@@ -710,8 +710,12 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	public void printBMatrix(String filename){
 		// Get the B matrix
+		int idx = filename.indexOf("txt");
+		String zerofile = filename.substring(0, idx-1)+"_0.txt";
+		String onefile = filename.substring(0, idx-1)+"_1.txt";
+
 		int[] eij;
-		int[][] B = new int[m_kBar][m_kBar];
+		int[][][] B = new int[m_kBar][m_kBar][2];
 		_HDPThetaStar theta1;
 		int index1 = 0, index2 = 0;
 		for(int i=0; i<m_kBar; i++){
@@ -721,16 +725,31 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(_HDPThetaStar theta2: connectionMap.keySet()){
 				index2 = theta2.getIndex();
 				eij = connectionMap.get(theta2);
-				B[index1][index2] = eij[1];
+				B[index1][index2][0] = eij[0];
+				B[index1][index2][1] = eij[1];
+
 			}
 		}
-		// print out the B matrix
 		try{
-			PrintWriter writer = new PrintWriter(new File(filename), "UTF-8");
+			// print out the zero edges in B matrix
+			PrintWriter writer = new PrintWriter(new File(zerofile), "UTF-8");
 			for(int i=0; i<B.length; i++){
-				int[] row = B[i];
+				int[][] row = B[i];
 				for(int j=0; j<row.length; j++){
-					writer.write(String.format("%d", B[i][j]));
+					writer.write(String.format("%d", B[i][j][0]));
+					if(j != row.length - 1){
+						writer.write("\t");
+					}
+				}
+				writer.write("\n");
+			}
+			writer.close();
+			// print out the one edges in B matrix
+			writer = new PrintWriter(new File(onefile), "UTF-8");
+			for(int i=0; i<B.length; i++){
+				int[][] row = B[i];
+				for(int j=0; j<row.length; j++){
+					writer.write(String.format("%d", B[i][j][1]));
 					if(j != row.length - 1){
 						writer.write("\t");
 					}
