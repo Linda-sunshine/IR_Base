@@ -8,7 +8,7 @@ public class DPParameter {
 	public String m_model = "mtclinmmb";
 	public double m_adaptRatio = 0.5;
 
-	public int m_nuOfIterations = 50;
+	public int m_nuOfIterations = 30;
 	public int m_M = 6;
 	public int m_burnin = 10;
 	public int m_thinning = 3;
@@ -49,7 +49,7 @@ public class DPParameter {
 	public double m_rho = 0.001;
 	
 	public boolean m_saveModel = false;
-	public String m_saveDir = "../hdpExp/mmb";
+	public String m_saveDir = "/zf8/lg5bt/hdpExp/mmb";
 	public DPParameter(String argv[]){
 		
 		int i;

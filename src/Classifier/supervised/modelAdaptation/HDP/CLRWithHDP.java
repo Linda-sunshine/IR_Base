@@ -107,6 +107,7 @@ public class CLRWithHDP extends CLRWithDP {
 	// Randomly assign user reviews to k user groups.
 	@Override
 	public void initThetaStars(){
+		initPriorG0();
 		_HDPAdaptStruct user;		
 		double L = 0, beta_sum = Utils.sumOfArray(m_betas), betaSum_lgamma = Utils.lgamma(beta_sum), sum = 0;
 		int index;

@@ -111,11 +111,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		prob += Math.log(m_rho) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return prob;
 	}
-//	int mmb = 0, joint = 0;
-//	int mmb2bk = 0, mmb2mmb = 0, bk2bk = 0, bk2mmb = 0;
-//	double total = 0, debug = 0;
+
 	protected void calculate_E_step_Edge(){
-//		Arrays.fill(m_MNL, 0);
 		calcProbNew();
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
@@ -564,21 +561,21 @@ public class CLRWithMMB extends CLRWithHDP {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_rho, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 	
-	public void initMMB(){
-		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
-		for(_AdaptStruct user:m_userList){			
-			if (user.getAdaptationSize()>0) 				
-				m_userSize ++;	
-			user.getPerfStat().clear(); // clear accumulate performance statistics
-		}
-		initPriorG0();
-		//init the structures for multi-threading
-		if (m_multiThread) {
-			int numberOfCores = Runtime.getRuntime().availableProcessors();
-			m_fValues = new double[numberOfCores];
-			m_gradients = new double[numberOfCores][]; 
-		}
-	}
+//	public void initMMB(){
+//		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
+//		for(_AdaptStruct user:m_userList){			
+//			if (user.getAdaptationSize()>0) 				
+//				m_userSize ++;	
+//			user.getPerfStat().clear(); // clear accumulate performance statistics
+//		}
+//		initPriorG0();
+//		//init the structures for multi-threading
+//		if (m_multiThread) {
+//			int numberOfCores = Runtime.getRuntime().availableProcessors();
+//			m_fValues = new double[numberOfCores];
+//			m_gradients = new double[numberOfCores][]; 
+//		}
+//	}
 	
 	// In the training process, we sample documents first, then sample edges.
 	@Override
@@ -590,18 +587,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		/**We want to sample documents first without knowing edges,
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
 		// clear user performance, init cluster assignment, assign each review to one cluster
-//		init();	
-		initMMB();
-		
-		// sample one cluster first
-		sampleNewCluster4Edge();
+		init();	
 		initThetaStars4EdgesMMB();
-//		estRho();
 		
 		checkEdges();
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
-//			super.calculate_E_step();
+			super.calculate_E_step();
 			calculate_E_step_Edge();
 			checkEdges();
 			lastLikelihood = calculate_M_step();
@@ -611,7 +603,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		// EM iteration.
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.
-//			calculate_E_step();
+			calculate_E_step();
 			calculate_E_step_Edge();
 
 			// Optimize the parameters
@@ -623,7 +615,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-//			printInfo(i%5==0);//no need to print out the details very often
+			printInfo(i%10==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
