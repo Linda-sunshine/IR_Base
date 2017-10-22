@@ -13,7 +13,6 @@ import structures._HDPThetaStar;
 import structures._MMBNeighbor;
 import structures._Review;
 import structures._User;
-import structures._thetaStar;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
@@ -523,34 +522,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			e.printStackTrace();
 		}
 	}
-	@Override
-	public void saveClusterModels(String model){
-		PrintWriter writer;
-		String filename;
-		File dir = new File(model);
-		_thetaStar theta;
-		double[] weight;
-		try{
-			if(!dir.exists())
-				dir.mkdirs();
-			for(int i=0; i<m_kBar; i++){
-				theta = m_hdpThetaStars[i]; 
-				filename = String.format("%s/%d.classifier", model, theta.getIndex());
-				writer = new PrintWriter(new File(filename));
-				weight = theta.getModel();
-				for(int v=0; v<weight.length; v++){
-					if(v == weight.length-1)
-						writer.write(Double.toString(weight[v]));
-					else
-						writer.write(weight[v]+",");
-				}
-				writer.close();
-			}
-		} catch (IOException e){
-			e.printStackTrace();
-		}
-		
-	}
+
 	// Set the sparsity parameter
 	public void setRho(double v){
 		m_rho = v;

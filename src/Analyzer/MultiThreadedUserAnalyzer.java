@@ -4,11 +4,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,13 +13,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.MyPriorityQueue;
 import structures.TokenizeResult;
 import structures._Doc;
@@ -275,6 +273,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	//convert the input token sequence into a sparse vector (docWordMap cannot be changed)
 	// Since multiple threads access the featureStat, we need lock for this variable.
+	@Override
 	protected HashMap<Integer, Double> constructSpVct(String[] tokens, int y, HashMap<Integer, Double> docWordMap) {
 		int index = 0;
 		double value = 0;
@@ -559,5 +558,17 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		} catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	public void checkFriendship(){
+		double sum = 0, miss = 0;
+		for(String uid: m_neighborsMap.keySet()){
+			for(String frd: m_neighborsMap.get(uid)){
+				sum++;
+				if(!m_neighborsMap.containsKey(frd))
+					miss++;
+			}
+		}
+		System.out.println("The avg friend size is: " + (sum-miss)/m_neighborsMap.size());
 	}
 }

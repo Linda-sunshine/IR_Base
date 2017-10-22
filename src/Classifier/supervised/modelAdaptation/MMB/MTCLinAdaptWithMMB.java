@@ -241,7 +241,6 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 				e.printStackTrace();
 		}
 	}
-
 	// save the user mixture membership into a file
 	public void saveUserMembership(String clusterdir, String filename){
 		PrintWriter writer;

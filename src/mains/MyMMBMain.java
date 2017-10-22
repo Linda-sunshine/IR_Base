@@ -53,6 +53,7 @@ public class MyMMBMain {
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(friendFile);
+//		analyzer.checkFriendship();
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
@@ -115,7 +116,7 @@ public class MyMMBMain {
 		mmb.setRho(0.001);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(30);
+		mmb.setNumberOfIterations(1);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
@@ -128,7 +129,7 @@ public class MyMMBMain {
 		long current = System.currentTimeMillis();
 		String saveDir = "./data/mmb";
 //		String saveDir = "../hdpExp/mmb";
-//		mmb.saveEverything(current, saveDir);
+		mmb.saveEverything(current, saveDir);
 		
 	}
 }
