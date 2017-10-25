@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.MMB;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import structures._Doc;
@@ -10,9 +11,6 @@ import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
 public class _MMBAdaptStruct extends _HDPAdaptStruct {
@@ -39,6 +37,10 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	
 	
 	/********Functions used in MMB model.********/
+	public Collection<_HDPThetaStar> getHDPTheta4Edge(){
+		return m_hdpThetaEdgeSizeMap.keySet();
+	}
+	
 	// Return the number of edges in the given thetaStar.
 	public int getHDPThetaEdgeSize(_HDPThetaStar s){
 		if(m_hdpThetaEdgeSizeMap.containsKey(s))

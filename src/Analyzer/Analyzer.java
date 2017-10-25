@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import structures._Corpus;
 import structures._Doc;
@@ -527,5 +526,9 @@ public abstract class Analyzer {
 	
 	public HashMap<String, _stat> getFeatureStat(){
 		return m_featureStat;
+	}
+	
+	public ArrayList<String> getFeatures(){
+		return m_featureNames;
 	}
 }

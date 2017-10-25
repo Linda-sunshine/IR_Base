@@ -253,8 +253,14 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 			for(_AdaptStruct u: m_userList){
 				_MMBAdaptStruct user = (_MMBAdaptStruct) u;
 				writer.write(String.format("%s\n", u.getUserID()));
-				for(_HDPThetaStar theta: user.getHDPTheta()){
+				// write the clusters with edges first
+				for(_HDPThetaStar theta: user.getHDPTheta4Edge()){
 					writer.write(String.format("(%d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaEdgeSize(theta)));
+				}
+				// write the clusters with members then
+				for(_HDPThetaStar theta: user.getHDPTheta4Rvw()){
+					if(!user.getHDPTheta4Edge().contains(theta))
+						writer.write(String.format("(%d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaEdgeSize(theta)));
 				}
 				writer.write("\n");
 			}
@@ -266,7 +272,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	
 	// print out related information for analysis
 	public void saveEverything(long current, String folder){
-		String dir = String.format("%s/%d", folder, current);
+		String dir = String.format("%s/%d_%s", folder, current, m_dataset);
 		String sentimentDir = String.format("%s/sentiment_models/", dir);
 		String lmDir = String.format("%s/lm_models/", dir);
 		String userMemFile = String.format("%s/UserMembership.txt", dir);
@@ -290,7 +296,9 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		String paramFile = String.format("%s/%d/rho_%.4f_alpha_%.3f_eta_%.3f_beta_%.3f_sdA_%.4f_sdB_%.4f_nuI_%d.txt", 
 				folder, current, m_rho, m_alpha, m_eta, m_beta, m_abNuA[1], m_abNuB[1], m_numberOfIterations);
 		try{
-			PrintWriter writer = new PrintWriter(new File(paramFile));
+			PrintWriter writer = new PrintWriter(new File(paramFile));			
+			for(int i=0; i<m_classNo; i++)
+				writer.write(String.format("Class %d: %.4f\t\t", i, m_microStat.getF1(i)));
 			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();

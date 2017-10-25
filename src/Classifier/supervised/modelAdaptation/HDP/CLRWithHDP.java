@@ -158,7 +158,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, logSum = 0, gamma_k;
+		double likelihood, likelihoodPop, logSum = 0, gamma_k;
 		int k;
 			
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
@@ -170,31 +170,32 @@ public class CLRWithHDP extends CLRWithDP {
 			r.setHDPThetaStar(m_hdpThetaStars[k]);
 				
 			//log likelihood of y, i.e., p(y|x,\phi)
-//			double likelihoodY = calcLogLikelihoodY(r);
 			likelihood = calcLogLikelihoodY(r);
-		
-//			double likelihoodX = calcLogLikelihoodX(r);
+			if(Double.isInfinite(likelihood))
+				System.out.println("Infinite!");
+			
 			//log likelihood of x, i.e., p(x|\psi)
 			likelihood += calcLogLikelihoodX(r);
-	
+			if(Double.isInfinite(likelihood))
+				System.out.println("Infinite!");
+			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
-//			double likelihoodPop = Math.log(calcGroupPopularity(user, k, gamma_k));
-			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));
+			likelihood += Math.log(calcGroupPopularity(user, k, gamma_k));;
 
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
 			
-//			System.out.println(String.format("k:%d, X:%.4f, Y:%.4f, pop:%.4f, all:%.4f", k, likelihoodX, likelihoodY, likelihoodPop, likelihood));
 			if(k==0) 
 				logSum = likelihood;
 			else 
 				logSum = Utils.logSum(logSum, likelihood);
-			if(Double.isNaN(logSum))
-				System.out.println("NaN!");
+			
+			if(Double.isInfinite(logSum))
+				System.out.println("Infinite!");
 			}
 		//Sample group k with likelihood.
 		k = sampleInLogSpace(logSum);
-//		System.out.println("-----");
+
 		//Step 3: update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateMemCount(1);//-->1
 		r.setHDPThetaStar(m_hdpThetaStars[k]);//-->2
@@ -202,9 +203,9 @@ public class CLRWithHDP extends CLRWithDP {
 		//Step 4: Update the user info with the newly sampled hdpThetaStar.
 		user.incHDPThetaStarMemSize(r.getHDPThetaStar(), 1);
 			
-		if(k >= m_kBar)
+		if(k >= m_kBar){
 			sampleNewCluster(k, r.getLMSparse());
-		
+		}
 		r.getHDPThetaStar().addLMStat(r.getLMSparse());
 	}
 	
@@ -318,7 +319,7 @@ public class CLRWithHDP extends CLRWithDP {
 				
 				if (++sampleSize%2000==0) {
 					System.out.print('.');
-					sampleGamma();//will this help sampling?
+//					sampleGamma();//will this help sampling?
 					if (sampleSize%100000==0)
 						System.out.println();
 				}
@@ -425,7 +426,7 @@ public class CLRWithHDP extends CLRWithDP {
 		_HDPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);			
-			for(_HDPThetaStar s:user.getHDPTheta())
+			for(_HDPThetaStar s:user.getHDPTheta4Rvw())
 				s.m_hSize += sampleH(user, s);
 		}		
 		

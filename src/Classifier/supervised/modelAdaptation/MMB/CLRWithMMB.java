@@ -73,6 +73,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// calculate the group popularity in sampling documents and edges.
 	protected double calcGroupPopularity(_HDPAdaptStruct u, int k, double gamma_k){
 		_MMBAdaptStruct user= (_MMBAdaptStruct) u;
+//		System.out.print(String.format("%d\t%d\n",  user.getHDPThetaMemSize(m_hdpThetaStars[k]), user.getHDPThetaEdgeSize(m_hdpThetaStars[k])));
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
 	}
 	
@@ -142,7 +143,6 @@ public class CLRWithMMB extends CLRWithHDP {
 					sampleEdge(j, i, eij);
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, eij);
-		
 				// edges from background
 				}else{
 					// remove the two edges from background model
@@ -154,7 +154,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			}
 		}
 		sampleC();
-		checkClusters();
 	}
 
 	private void check(){
@@ -215,6 +214,18 @@ public class CLRWithMMB extends CLRWithHDP {
 			System.out.println("Zero edges sampled from mmb is not correct!");
 		if(mmb_1 != m_MNL[1])
 			System.out.println("One edges sampled from mmb is not correct!");
+	}
+	
+	protected void checkMMBEdges(){
+		int mmb = 0;
+		for(_AdaptStruct u: m_userList){
+			_MMBAdaptStruct user = (_MMBAdaptStruct) u;
+			for(_HDPThetaStar th: user.getHDPTheta4Edge()){
+				mmb += user.getHDPThetaEdgeSize(th);
+			}
+		}
+		if(mmb != m_MNL[0] + m_MNL[1])
+			System.out.println("mmb edges is not correct!");
 	}
 
 	// Estimate the sparsity parameter.
@@ -277,7 +288,6 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		checkEdges();
 		// assign part of the zero edges to background model
 		sampleC();
 	}
@@ -370,7 +380,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 		_HDPThetaStar theta_s, theta_h;
 
-		double likelihood, logNew, gamma_k, logSum = 0;
+		double likelihood, likelihoodPop, logNew, gamma_k, logSum = 0;
 		for(k=0; k<m_kBar; k++){			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
@@ -379,9 +389,12 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta_h = m_indicator[j][i];
 		
 			likelihood = calcLogPostPredictiveBgh(theta_s, theta_h, e);
-						
+			if(Double.isInfinite(likelihood))
+				System.out.println("Infinite!");
+			
 			//p(z=k|\gamma,\eta)
 			gamma_k = m_hdpThetaStars[k].getGamma();
+			
 			likelihood += Math.log(calcGroupPopularity(ui, k, gamma_k));
 			
 			m_hdpThetaStars[k].setProportion(likelihood);//this is in log space!
@@ -549,6 +562,11 @@ public class CLRWithMMB extends CLRWithHDP {
 //		}
 //	}
 	
+	private void sanityCheck(){
+		checkClusters();
+		checkEdges();
+		checkMMBEdges();
+	}
 	// In the training process, we sample documents first, then sample edges.
 	@Override
 	public double train(){
@@ -561,13 +579,15 @@ public class CLRWithMMB extends CLRWithHDP {
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars4EdgesMMB();
+		sanityCheck();
 		
-		checkEdges();
+		
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			super.calculate_E_step();
 			calculate_E_step_Edge();
-			checkEdges();
+			sanityCheck();
+
 			lastLikelihood = calculate_M_step();
 //			lastLikelihood += estRho();
 		}

@@ -39,7 +39,7 @@ public class MyMMBExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/yelpFriends.txt", param.m_prefix,param.m_data);
+		String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix,param.m_data,param.m_data);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -88,6 +88,7 @@ public class MyMMBExecution {
 		adaptation.test();
 		
 		long current = System.currentTimeMillis();
+		System.out.println(current);
 		if(param.m_saveModel){
 			String saveDir = param.m_saveDir;
 			((MTCLinAdaptWithMMB) adaptation).saveEverything(current, saveDir);
