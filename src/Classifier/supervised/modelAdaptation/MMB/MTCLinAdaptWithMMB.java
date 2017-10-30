@@ -271,8 +271,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	}
 	
 	// print out related information for analysis
-	public void saveEverything(long current, String folder){
-		String dir = String.format("%s/%d_%s", folder, current, m_dataset);
+	public void saveEverything(String dir){
 		String sentimentDir = String.format("%s/sentiment_models/", dir);
 		String lmDir = String.format("%s/lm_models/", dir);
 		String userMemFile = String.format("%s/UserMembership.txt", dir);
@@ -291,18 +290,6 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		printEdgeAssignment(edgeFile);
 		printBMatrix(BFile);
 		printUserPerformance(perfFile);
-		
-		// print out the param as a tile of a file
-		String paramFile = String.format("%s/%d/rho_%.4f_alpha_%.3f_eta_%.3f_beta_%.3f_sdA_%.4f_sdB_%.4f_nuI_%d.txt", 
-				folder, current, m_rho, m_alpha, m_eta, m_beta, m_abNuA[1], m_abNuB[1], m_numberOfIterations);
-		try{
-			PrintWriter writer = new PrintWriter(new File(paramFile));			
-			for(int i=0; i<m_classNo; i++)
-				writer.write(String.format("Class %d: %.4f\t\t", i, m_microStat.getF1(i)));
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
 	}
 }
 

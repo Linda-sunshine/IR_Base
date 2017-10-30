@@ -6,11 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 import opennlp.tools.tokenize.Tokenizer;
@@ -21,10 +19,8 @@ import opennlp.tools.util.InvalidFormatException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
-import structures.MyPriorityQueue;
 import structures.TokenizeResult;
 import structures._Doc;
-import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
@@ -70,8 +66,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	public void loadUserDir(String folder){
 		if(folder == null || folder.isEmpty())
 			return;
-		
-		loadCategory();
+
+//		loadCategory();
 		File dir = new File(folder);
 		final File[] files=dir.listFiles();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -145,7 +141,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				ylabel = Integer.valueOf(reader.readLine());
 				timestamp = Long.valueOf(reader.readLine());
 			
-				m_ctgNames.add(category);
+//				m_ctgNames.add(category);
 				
 				// Construct the new review.
 				if(ylabel != 3){
@@ -157,19 +153,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					}
 				}
 			}
-
-//			if(reviews.size() > 10){//at least one for adaptation and one for testing
-//				synchronized (m_allocReviewLock) {
-//					allocateReviews(reviews);				
-//					m_users.add(new _User(userID, m_classNo, reviews)); //create new user from the file.
-//				}
-//			} else{// added by Lin, for those users with fewer than 2 reviews, ignore them.
-//				for(_Review r: reviews){			
-//					synchronized (m_rollbackLock) {
-//						rollBack(Utils.revertSpVct(r.getSparse()), r.getYLabel());
-//					}
-//				}
-//			}
 			if(reviews.size() > 1){//at least one for adaptation and one for testing
 				synchronized (m_allocReviewLock) {
 					allocateReviews(reviews);	
@@ -444,96 +427,97 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	}
 	
 	
-	/***Category related information.***/
-	HashSet<String> m_ctgNames = new HashSet<String>();
-	HashMap<String, Integer> m_ctgIndex = new HashMap<String, Integer>();
-	String m_ctgFile = "./data/category_Amazon.txt";
-	
-	public void setCtgFile(String fv){
-		m_ctgFile = fv;
-	}
-	//Load category information.
-	public void loadCategory(){
-		try{
-			File file = new File(m_ctgFile);
-			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
-			String line;
-			while((line = reader.readLine()) != null){
-				m_ctgIndex.put(line, m_ctgIndex.size());
-			}
-			reader.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		System.out.println(m_ctgIndex.size() + " categories are loaded!");
-	}
-		
-	// Get the number of reviews each category has.
-	public void printCategoryInfo(){
-		String[] names = new String[m_ctgIndex.size()];
-		for(String s: m_ctgIndex.keySet())
-			names[m_ctgIndex.get(s)] = s;
-		
-		int[] ctgStat = new int[m_ctgIndex.size()];
-		for(_User u: m_users){
-			for(_Review r: u.getReviews())
-				ctgStat[m_ctgIndex.get(r.getCategory())]++;
-		}
-		MyPriorityQueue<_RankItem> q = new MyPriorityQueue<_RankItem>(m_ctgNames.size());
-		for(int i=0; i<ctgStat.length; i++)
-			q.add(new _RankItem(i, ctgStat[i]));
-		
-		for(_RankItem it: q)
-			System.out.println(names[it.m_index] + "\t" + it.m_value);
-	}
-	
-	public void saveCategory(String filename){
-		try{
-			PrintWriter writer = new PrintWriter(new File(filename));
-			for(String c: m_ctgNames)
-				writer.write(c+"\n");
-			writer.close();
-			System.out.println(m_ctgNames.size() + " categories are saved.\n");
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-			
-	}
-	int[][] m_ctgStat = new int[2][2]; // global variable to record the ctg info.
-	HashSet<String> train = new HashSet<String>();
-	HashSet<String> test = new HashSet<String>();
-	// Correglation analysis of the review categories.
-	public void CtgCorrelation(){
-		for(_User u: m_users){
-			train.clear();
-			test.clear();
-			for(_Review r: u.getReviews()){
-				if(r.getType() == rType.ADAPTATION){
-					train.add(r.getCategory());
-				} else{
-					test.add(r.getCategory());
-				}
-			}
-			for(_Review r: u.getReviews()){
-				if(r.getType() == rType.ADAPTATION){
-					if(test.contains(r.getCategory()))
-						m_ctgStat[0][0]++;
-					else
-						m_ctgStat[0][1]++;
-				} else{
-					if(train.contains(r.getCategory()))
-						m_ctgStat[0][0]++;
-					else
-						m_ctgStat[1][0]++;
-				}
-			}
-		}
-		
-		for(int[] c: m_ctgStat){
-			System.out.print(String.format("%d\t%d\n", c[0], c[1]));
-		}
-	}
-	
+//	/***Category related information.***/
+//	HashSet<String> m_ctgNames = new HashSet<String>();
+//	HashMap<String, Integer> m_ctgIndex = new HashMap<String, Integer>();
+//	String m_ctgFile = "./data/category_Amazon.txt";
+//	
+//	public void setCtgFile(String fv){
+//		m_ctgFile = fv;
+//	}
+//	//Load category information.
+//	public void loadCategory(){
+//		try{
+//			File file = new File(m_ctgFile);
+//			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+//			String line;
+//			while((line = reader.readLine()) != null){
+//				m_ctgIndex.put(line, m_ctgIndex.size());
+//			}
+//			reader.close();
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//		System.out.println(m_ctgIndex.size() + " categories are loaded!");
+//	}
+//		
+//	// Get the number of reviews each category has.
+//	public void printCategoryInfo(){
+//		String[] names = new String[m_ctgIndex.size()];
+//		for(String s: m_ctgIndex.keySet())
+//			names[m_ctgIndex.get(s)] = s;
+//		
+//		int[] ctgStat = new int[m_ctgIndex.size()];
+//		for(_User u: m_users){
+//			for(_Review r: u.getReviews())
+//				ctgStat[m_ctgIndex.get(r.getCategory())]++;
+//		}
+//		MyPriorityQueue<_RankItem> q = new MyPriorityQueue<_RankItem>(m_ctgNames.size());
+//		for(int i=0; i<ctgStat.length; i++)
+//			q.add(new _RankItem(i, ctgStat[i]));
+//		
+//		for(_RankItem it: q)
+//			System.out.println(names[it.m_index] + "\t" + it.m_value);
+//	}
+//	
+//	public void saveCategory(String filename){
+//		try{
+//			PrintWriter writer = new PrintWriter(new File(filename));
+//			for(String c: m_ctgNames)
+//				writer.write(c+"\n");
+//			writer.close();
+//			System.out.println(m_ctgNames.size() + " categories are saved.\n");
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//			
+//	}
+//	int[][] m_ctgStat = new int[2][2]; // global variable to record the ctg info.
+//	HashSet<String> train = new HashSet<String>();
+//	HashSet<String> test = new HashSet<String>();
+//	// Correglation analysis of the review categories.
+//	public void CtgCorrelation(){
+//		for(_User u: m_users){
+//			train.clear();
+//			test.clear();
+//			for(_Review r: u.getReviews()){
+//				if(r.getType() == rType.ADAPTATION){
+//					train.add(r.getCategory());
+//				} else{
+//					test.add(r.getCategory());
+//				}
+//			}
+//			for(_Review r: u.getReviews()){
+//				if(r.getType() == rType.ADAPTATION){
+//					if(test.contains(r.getCategory()))
+//						m_ctgStat[0][0]++;
+//					else
+//						m_ctgStat[0][1]++;
+//				} else{
+//					if(train.contains(r.getCategory()))
+//						m_ctgStat[0][0]++;
+//					else
+//						m_ctgStat[1][0]++;
+//				}
+//			}
+//		}
+//		
+//		for(int[] c: m_ctgStat){
+//			System.out.print(String.format("%d\t%d\n", c[0], c[1]));
+//		}
+//	}
+//	
+	/** Construct user network for analysis****/
 	// key: user id; value: friends array.
 	HashMap<String, String[]> m_neighborsMap = new HashMap<String, String[]>();
 	public void buildFriendship(String filename){
@@ -558,6 +542,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		} catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	// return the friendship map
+	public HashMap<String, String[]> getFriendship(){
+		return m_neighborsMap;
 	}
 	
 	public void checkFriendship(){

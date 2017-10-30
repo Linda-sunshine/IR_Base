@@ -16,8 +16,8 @@ public class DPParameter {
 	public double m_sdB = 0.0425;
 	
 	// Concentration parameter
-	public double m_alpha = 2;
-	public double m_eta = 0.001;
+	public double m_alpha = 0.01;
+	public double m_eta = 0.05;
 	public double m_beta = 0.01;
 	
 	public double m_eta1 = 0.05;
@@ -46,10 +46,15 @@ public class DPParameter {
 	public int m_threshold = 15;
 	
 	// used in mmb model, sparsity parameter
-	public double m_rho = 0.001;
+	public double m_rho = 0.005;
 	
 	public boolean m_saveModel = false;
 	public String m_saveDir = "/zf8/lg5bt/hdpExp/mmb";
+	
+	// used in testing a separate set of users
+	public int m_testSize = 2000;
+	public int m_trainSize = 8000;
+	
 	public DPParameter(String argv[]){
 		
 		int i;
@@ -125,6 +130,10 @@ public class DPParameter {
 				m_rho = Double.parseDouble(argv[i]);
 			else if(argv[i-1].equals("-saveModel"))
 				m_saveModel = Boolean.valueOf(argv[i]);
+			else if(argv[i-1].equals("-testSize")){
+				m_testSize = Integer.parseInt(argv[i]);
+				m_trainSize = 10000 - m_testSize;
+			}
 			else
 				exit_with_help();
 		}

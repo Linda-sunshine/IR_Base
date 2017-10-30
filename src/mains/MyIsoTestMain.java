@@ -9,15 +9,8 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.IsoUserAnalyzer;
-import Analyzer.MultiThreadedUserAnalyzer;
 import Classifier.supervised.IndSVMColdStart;
-import Classifier.supervised.modelAdaptation.MTSVMColdStart;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdaptColdStart;
-import Classifier.supervised.modelAdaptation.DirichletProcess.IsoCLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.IsoCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.IsoMTCLRWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.IsoMTCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 
 public class MyIsoTestMain {
 
@@ -73,24 +66,24 @@ public class MyIsoTestMain {
 			for(int k: ks){
 			System.out.print(String.format("***********test user size: %d, nu of rvw for cluster assignment: %d********\n", userTestThreshold, k));
 
-//			/***our algorithm: MTCLinAdaptWithDP***/
-//			IsoMTCLinAdaptWithDP adaptation = new IsoMTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
-//			adaptation.loadUsers(analyzer.getUsers());
-//			adaptation.setDisplayLv(displayLv);
-//			adaptation.setLNormFlag(false);
-//			adaptation.setClusterAssignThreshold(k);
-//			adaptation.setsdA(sdA);
-//			adaptation.setsdB(sdB);
-//			adaptation.setAlpha(1);
-//			adaptation.setNumberOfIterations(5);
-//			adaptation.setR1TradeOffs(eta1, eta2);
-//			adaptation.setR2TradeOffs(eta3, eta4);
-//			adaptation.train();
-//			adaptation.test();
-//			adaptation.printInfo();
-//			perf[0] = adaptation.getPerf();
-//			for(_User u: analyzer.getUsers())
-//				u.getPerfStat().clear();
+			/***our algorithm: MTCLinAdaptWithDP***/
+			IsoMTCLinAdaptWithDP adaptation = new IsoMTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+			adaptation.loadUsers(analyzer.getUsers());
+			adaptation.setDisplayLv(displayLv);
+			adaptation.setLNormFlag(false);
+			adaptation.setClusterAssignThreshold(k);
+			adaptation.setsdA(sdA);
+			adaptation.setsdB(sdB);
+			adaptation.setAlpha(1);
+			adaptation.setNumberOfIterations(5);
+			adaptation.setR1TradeOffs(eta1, eta2);
+			adaptation.setR2TradeOffs(eta3, eta4);
+			adaptation.train();
+			adaptation.test();
+			adaptation.printInfo();
+			perf[0] = adaptation.getPerf();
+			for(_User u: analyzer.getUsers())
+				u.getPerfStat().clear();
 //			
 //			//clrdp
 //			IsoCLRWithDP clrdp = new IsoCLRWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);

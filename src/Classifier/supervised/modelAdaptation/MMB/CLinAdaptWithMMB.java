@@ -45,6 +45,7 @@ public class CLinAdaptWithMMB extends CLRWithMMB {
 		return m_kBar*m_dim*2;
 	}
 	
+	@Override
 	protected void initPriorG0() {
 		m_G0 = new DoubleNormalPrior(m_abNuB[0], m_abNuB[1], m_abNuA[0], m_abNuA[1]);
 	}
@@ -99,9 +100,9 @@ public class CLinAdaptWithMMB extends CLRWithMMB {
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
 		// Init each user.
-		for(_User user:userList)
+		for(_User user:userList){
 			m_userList.add(new _MMBAdaptStruct(user, m_dim));
-
+		}
 		m_pWeights = new double[m_gWeights.length];	
 		m_indicator = new _HDPThetaStar[m_userList.size()][m_userList.size()];
 	}

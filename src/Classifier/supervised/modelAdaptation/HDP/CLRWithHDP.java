@@ -31,7 +31,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	protected double[] m_betas;//concentration vector for the prior of psi.
 	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[10000];//phi+psi
-	double[] m_cache = new double[10000]; // shared cache space to avoid repeatedly creating new space
+	protected double[] m_cache = new double[10000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e = 1.0;
 	protected double m_nBetaDir = 0; // normalization constant for Dir(\psi)
@@ -158,9 +158,11 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	//Assign cluster to each review.
 	protected void sampleOneInstance(_HDPAdaptStruct user, _Review r){
-		double likelihood, likelihoodPop, logSum = 0, gamma_k;
+		double likelihood, logSum = 0, gamma_k;
 		int k;
 			
+		if(user.getAdaptationSize() == 0)
+			System.out.println("Wrong users for sampling!");
 		//Step 1: reset thetaStars for the auxiliary thetaStars.
 		sampleThetaStars();
 		
@@ -307,6 +309,8 @@ public class CLRWithHDP extends CLRWithDP {
 		int sampleSize=0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;//do not touch testing reviews!
@@ -425,7 +429,9 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		_HDPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
-			user = (_HDPAdaptStruct) m_userList.get(i);			
+			user = (_HDPAdaptStruct) m_userList.get(i);	
+			if(user.getAdaptationSize() == 0)
+				continue;
 			for(_HDPThetaStar s:user.getHDPTheta4Rvw())
 				s.m_hSize += sampleH(user, s);
 		}		
@@ -490,7 +496,9 @@ public class CLRWithHDP extends CLRWithDP {
 					try {						
 						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
 							user = (_HDPAdaptStruct)m_userList.get(i+core);
-							
+							// skip users without training reviews
+							if(user.getAdaptationSize() == 0)
+								continue;
 							for(_Review review:user.getReviews()){
 								if (review.getType() != rType.ADAPTATION )//&& review.getType() != rType.TEST)
 
@@ -664,6 +672,8 @@ public class CLRWithHDP extends CLRWithDP {
 
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_HDPAdaptStruct) m_userList.get(i);
+			if(user.getTestSize() == 0)
+				continue;
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
 					continue;				
@@ -671,7 +681,7 @@ public class CLRWithHDP extends CLRWithDP {
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
-					prob = calcLogLikelihoodX(r) + Math.log(user.getHDPThetaMemSize(curTheta) + m_eta*curTheta.getGamma());//this proportion includes the user's current cluster assignment
+					prob = calcLogLikelihoodX(r) + Math.log(calcGroupPopularity(user, k, curTheta.getGamma()));
 					probs[k] = prob;
 				}
 			
@@ -811,4 +821,16 @@ public class CLRWithHDP extends CLRWithDP {
 			m_writer.write(sizes[i]+",");
 		m_writer.write("\n");
 	}	
+	
+	// sanity check, how many testing users we have
+	public void checkTestReviewSize(){
+		int test = 0, userCount = 0;
+		for(_AdaptStruct u: m_userList){
+			if(u.getAdaptationSize() == 0){
+				test += u.getTestSize();
+				userCount++;
+			}
+		}
+		System.out.print(String.format("[Info]test user: %d, test review: %d\n", userCount, test));
+	}
 }

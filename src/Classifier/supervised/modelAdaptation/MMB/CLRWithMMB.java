@@ -31,12 +31,9 @@ public class CLRWithMMB extends CLRWithHDP {
 	protected double[] m_abcd = new double[]{0.1, 0.01, 2, 2}; 
 	// Me: total number of edges eij=0;Ne: total number of edges eij=1 from mmb; Le: total number of edges eij=0 from background model.
 	protected double[] m_MNL = new double[3];
-	// two-dim array for storing probs used in sampling zero edge.
-	private double[][] m_cache; 
 	// Bernoulli distribution used in deciding whether the edge belongs to mmb or background model.
-	private BinomialDistribution m_bernoulli;
-	// key: userID, value: _AdaptStruct
-	private HashMap<String, _MMBAdaptStruct> m_userMap;
+	protected BinomialDistribution m_bernoulli;
+	
 	// for debug purpose
 	protected HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
 
@@ -62,7 +59,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// calculate the probability for generating new clusters in sampling edges.
-	private void calcProbNew(){
+	protected void calcProbNew(){
 		// if e_ij = 0, p = \rho*b/(a+b)
 		m_pNew[0] = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
 		// if e_ij = 1, p = (1-\rho*a/(a+b))
@@ -155,34 +152,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		sampleC();
 	}
-
-	private void check(){
-		double graphEdgeCount = 0, edgeCount = 0;
-		m_userMap = new HashMap<String, _MMBAdaptStruct>();
-		// construct the map.
-		for(_AdaptStruct ui: m_userList)
-			m_userMap.put(ui.getUserID(), (_MMBAdaptStruct) ui);
-		
-		// add the friends one by one.
-		for(_AdaptStruct ui: m_userList){
-			graphEdgeCount += ui.getUser().getFriends().length;
-			for(String nei: ui.getUser().getFriends()){
-				if(!m_userMap.containsKey(nei)){
-					System.out.print("o");
-				} else{
-					String[] frds = m_userMap.get(nei).getUser().getFriends();
-					if(hasFriend(frds, ui.getUserID())){
-						System.out.print("y");
-						edgeCount++;
-					}
-					else
-						System.out.print("x");
-				}
-			}
-			System.out.println();
-		}
-		System.out.print(String.format("[Info]Graph avg edge size: %.4f, avg edge size: %.4f, user size: %d\n", graphEdgeCount/m_userList.size(), edgeCount/m_userList.size(), m_userList.size()));
-	}
 	
 	private void checkClusters(){
 		int index = 0;
@@ -255,12 +224,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		calcProbNew();
 		_MMBAdaptStruct ui, uj;
 		int sampleSize = 0;
-		m_userMap = new HashMap<String, _MMBAdaptStruct>();
 		// add the friends one by one.
 		for(int i=0; i< m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
-			m_userMap.put(ui.getUserID(), ui);
-
 			for(int j=i+1; j<m_userList.size(); j++){
 				// print out the process of sampling edges
 				if (++sampleSize%100000==0) {
@@ -309,7 +275,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// if ui and uj are friends, random sample clusters for the two connections
 	// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
-	private void randomSampleEdges(int i, int j, int e){
+	protected void randomSampleEdges(int i, int j, int e){
 		randomSampleEdge(i, j, e);
 		randomSampleEdge(j, i, e);
 	}
@@ -347,7 +313,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// we assume all zero edges are from mmb first
 	// then utilize bernoulli to sample edges from background model
-	private void sampleC(){
+	protected void sampleC(){
 		_MMBAdaptStruct ui, uj;
 		double p_mmb_0 = 0, p_bk = 1-m_rho;
 		for(int i=0; i<m_userList.size(); i++){
@@ -380,7 +346,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
 		_HDPThetaStar theta_s, theta_h;
 
-		double likelihood, likelihoodPop, logNew, gamma_k, logSum = 0;
+		double likelihood, logNew, gamma_k, logSum = 0;
 		for(k=0; k<m_kBar; k++){			
 			//log likelihood of the edge p(e_{ij}, z, B)
 			// p(eij|z_{i->j}, z_{j->i}, B)*p(z_{i->j}|\pi_i)*p(z_{j->i|\pj_j})
@@ -445,29 +411,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			
 		if (k==m_kBar)
 			k--; // we might hit the very last
-		return k;
-	}
-
-	//Sample hdpThetaStar with likelihood.
-	protected int sampleIn2DimArrayLogSpace(double logSum, double back_prob){
-
-		double rnd = FloatUniform.staticNextFloat();
-		logSum += Math.log(rnd);//we might need a better random number generator
-		
-		int k = -1;
-		// we start from the background model.
-		double newLogSum = back_prob;
-		do {
-			if (newLogSum>=logSum)
-				break;
-			k++;
-			if (k==(m_kBar+1)*(m_kBar+1)){
-				k--; // we might hit the very last
-				return k;
-			}
-			newLogSum = Utils.logSum(newLogSum, m_cache[k/(m_kBar+1)][k%(m_kBar+1)]);
-			
-		} while (k<(m_kBar+1)*(m_kBar+1));
 		return k;
 	}
 	
@@ -545,23 +488,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	public String toString() {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_rho, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
-	
-//	public void initMMB(){
-//		m_userSize = 0;//need to get the total number of valid users to construct feature vector for MT-SVM
-//		for(_AdaptStruct user:m_userList){			
-//			if (user.getAdaptationSize()>0) 				
-//				m_userSize ++;	
-//			user.getPerfStat().clear(); // clear accumulate performance statistics
-//		}
-//		initPriorG0();
-//		//init the structures for multi-threading
-//		if (m_multiThread) {
-//			int numberOfCores = Runtime.getRuntime().availableProcessors();
-//			m_fValues = new double[numberOfCores];
-//			m_gradients = new double[numberOfCores][]; 
-//		}
-//	}
-	
+
 	private void sanityCheck(){
 		checkClusters();
 		checkEdges();
@@ -580,7 +507,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		init();	
 		initThetaStars4EdgesMMB();
 		sanityCheck();
-		
 		
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
@@ -619,7 +545,68 @@ public class CLRWithMMB extends CLRWithHDP {
 		return curLikelihood;
 	}
 	
-	private void updateSampleSize(int index, int val){
+	@Override
+	public double trainTrace(String tracefile){
+		m_numberOfIterations = 50;
+		m_burnIn = 1;
+		m_thinning = 1;
+			
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+			
+		// clear user performance, init cluster assignment, assign each review to one cluster
+		init();	
+		initThetaStars4EdgesMMB();
+		sanityCheck();
+			
+		
+		// Burn in period for doc.
+		while(count++ < m_burnIn){
+			super.calculate_E_step();
+			calculate_E_step_Edge();
+			sanityCheck();
+
+			lastLikelihood = calculate_M_step();
+//			lastLikelihood += estRho();
+		}
+		
+		try{
+			PrintWriter writer = new PrintWriter(new File(tracefile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+				calculate_E_step_Edge();
+
+				// Optimize the parameters
+				curLikelihood = calculate_M_step();
+				
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[0], m_perf[1]));
+
+//				printInfo();
+				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+		}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+//		setPersonalizedModel();
+		return curLikelihood;
+	}
+	
+	protected void updateSampleSize(int index, int val){
 		if(index <0 || index > m_MNL.length)
 			System.err.println("[Error]Wrong index!");
 		m_MNL[index] += val;

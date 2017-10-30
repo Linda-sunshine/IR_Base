@@ -1,39 +1,15 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.HashSet;
 
-import clustering.KMeansAlg4Profile;
 import opennlp.tools.util.InvalidFormatException;
-import structures._Review;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.GlobalSVM;
 import Classifier.supervised.IndividualSVM;
-import Classifier.supervised.modelAdaptation.Base;
-import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation.MultiTaskLR;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.ReTrain;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithKmeans;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp2;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPKMeans;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPLR;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
+import clustering.KMeansAlg4Vct;
 
 public class MyDPMain {
 	
@@ -102,7 +78,7 @@ public class MyDPMain {
 
 		//Yelp parameters.
 //		double eta1 = 0.09, eta2 = 0.02, eta3 = 0.07, eta4 = 0.03;
-
+//		
 //		/***baseline 0: base***/
 //		Base base = new Base(classNumber, analyzer.getFeatureSize(), featureMap, globalModel);
 //		base.loadUsers(analyzer.getUsers());
@@ -116,19 +92,19 @@ public class MyDPMain {
 //		gsvm.loadUsers(analyzer.getUsers());
 //		gsvm.train();
 //		gsvm.test();
-//		gsvm.printUserPerformance(String.format("./data/gsvm_perf_0.%d.txt", i));
-//		}
-//		gsvm.saveSupModel("./data/gsvm_weights.txt");
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+//		//gsvm.printUserPerformance(String.format("./data/gsvm_perf_0.%d.txt", i));
 //		
-//		/***baseline 2: individual svm***/
-//		IndividualSVM indsvm = new IndividualSVM(classNumber, analyzer.getFeatureSize());
-//		indsvm.loadUsers(analyzer.getUsers());
-//		indsvm.train();
-//		indsvm.test();
+//		//gsvm.saveSupModel("./data/gsvm_weights.txt");
 //		for(_User u: analyzer.getUsers())
 //			u.getPerfStat().clear();
+//	
+		/***baseline 2: individual svm***/
+		IndividualSVM indsvm = new IndividualSVM(classNumber, analyzer.getFeatureSize());
+		indsvm.loadUsers(analyzer.getUsers());
+		indsvm.train();
+		indsvm.test();
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 //		
 //		/***baseline 3: LinAdapt***/
 //		//Create an instances of LinAdapt model.
@@ -142,25 +118,25 @@ public class MyDPMain {
 //		for(_User u: analyzer.getUsers())
 //		u.getPerfStat().clear();
 //
-//		/***baseline 4: CLinAdaptWithKmeans***/
-//		// We perform kmeans over user weights learned from individual svms.
-//		int kmeans = 200;
-//		int[] clusters;
-//		KMeansAlg4Profile alg = new KMeansAlg4Profile(classNumber, analyzer.getFeatureSize(), kmeans);
-//		alg.train(analyzer.getUsers());
-//		clusters = alg.getClusters();// The returned clusters contain the corresponding cluster index of each user.
-//		
-//		CLinAdaptWithKmeans clinkmeans = new CLinAdaptWithKmeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, kmeans, clusters);
-//		clinkmeans.loadUsers(analyzer.getUsers());
-//		clinkmeans.setDisplayLv(displayLv);
-//		clinkmeans.setLNormFlag(false);
-//		clinkmeans.setR1TradeOffs(eta1, eta1);
-//		clinkmeans.train();
-//		clinkmeans.test();
-//		clinkmeans.setParameters(0, 1, 1);
-////		clinkmeans.saveModel(String.format("./data/%s_clinkmeans_0.5_1/", dataset));
-//		for(_User u: analyzer.getUsers())
-//			u.getPerfStat().clear();
+		/***baseline 4: CLinAdaptWithKmeans***/
+		// We perform kmeans over user weights learned from individual svms.
+		int kmeans = 200;
+		int[] clusters;
+		KMeansAlg4Vct alg = new KMeansAlg4Vct(analyzer.getUsers(), kmeans, analyzer.getFeatureSize());
+		alg.train();
+		clusters = alg.getClusters();// The returned clusters contain the corresponding cluster index of each user.
+		
+		CLinAdaptWithKmeans clinkmeans = new CLinAdaptWithKmeans(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, kmeans, clusters);
+		clinkmeans.loadUsers(analyzer.getUsers());
+		clinkmeans.setDisplayLv(displayLv);
+		clinkmeans.setLNormFlag(false);
+		clinkmeans.setR1TradeOffs(eta1, eta1);
+		clinkmeans.train();
+		clinkmeans.test();
+		clinkmeans.setParameters(0, 1, 1);
+//		clinkmeans.saveModel(String.format("./data/%s_clinkmeans_0.5_1/", dataset));
+		for(_User u: analyzer.getUsers())
+			u.getPerfStat().clear();
 //
 //		/***baseline 5: CLinAdaptWithDP***/
 //		// Create an instance of CLinAdaptWithDP
@@ -244,11 +220,11 @@ public class MyDPMain {
 //		adaptation.test();
 		//adaptation.printUserPerformance("dp_exp_10k.xls");
 		
-		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
-		mtsvm.loadUsers(analyzer.getUsers());
-		mtsvm.setBias(true);
-		mtsvm.train();
-		mtsvm.test();
+//		MultiTaskSVM mtsvm = new MultiTaskSVM(classNumber, analyzer.getFeatureSize());
+//		mtsvm.loadUsers(analyzer.getUsers());
+//		mtsvm.setBias(true);
+//		mtsvm.train();
+//		mtsvm.test();
 //		mtsvm.saveSupModel("./data/mtsvm_global.txt");
 //		mtsvm.saveModel("./data/mtsvm_models");
 		

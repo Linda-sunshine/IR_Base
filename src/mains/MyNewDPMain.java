@@ -2,21 +2,9 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.MultiThreadedUserAnalyzer;
-import Classifier.supervised.GlobalSVM;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
 
 public class MyNewDPMain {
 	
@@ -65,14 +53,14 @@ public class MyNewDPMain {
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, fvFile, fvFile4LM, Ngram, lengthThreshold, numberOfCores, true);
 		String ctgFile = "./data/category_AmazonNew.txt";
-		analyzer.setCtgFile(ctgFile);
+//		analyzer.setCtgFile(ctgFile);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userDir);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		
 		double[] globalLM = analyzer.estimateGlobalLM();
 //		//analyzer.saveCategory(ctgFile);
-		analyzer.printCategoryInfo();
+//		analyzer.printCategoryInfo();
 		
 //		double[] globalLM = analyzer.estimateGlobalLM();
 //		CLRWithHDP hdp = new CLRWithHDP(classNumber, analyzer.getFeatureSize(), globalModel, globalLM);

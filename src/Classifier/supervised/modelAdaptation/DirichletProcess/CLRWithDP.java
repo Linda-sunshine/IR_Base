@@ -78,7 +78,8 @@ public class CLRWithDP extends LinAdapt {
 
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			
+			if(user.getTestSize() == 0)
+				continue;
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
@@ -182,6 +183,10 @@ public class CLRWithDP extends LinAdapt {
 	
 	// Sample one instance's cluster assignment.
 	protected void sampleOneInstance(_DPAdaptStruct user){
+		// sanity check
+		if(user.getAdaptationSize() == 0)
+			System.out.println("The user does not have adaptation data!");
+		
 		double likelihood, logSum = 0;
 		int k;
 		
@@ -243,7 +248,8 @@ public class CLRWithDP extends LinAdapt {
 		
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			if(user.getAdaptationSize() < 1) continue;
+			if(user.getAdaptationSize() == 0) 
+				continue;
 			curThetaStar = user.getThetaStar();
 			curThetaStar.updateMemCount(-1);
 			
@@ -288,6 +294,8 @@ public class CLRWithDP extends LinAdapt {
 					try {						
 						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
 							user = (_DPAdaptStruct)m_userList.get(i+core);
+							if(user.getAdaptationSize() == 0)
+								continue;
 							m_fValue[core] -= calcLogLikelihood(user);
 							
 							for(_Review review:user.getReviews()){
@@ -528,6 +536,8 @@ public class CLRWithDP extends LinAdapt {
 		_DPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
 			sampleOneInstance(user);
 		}		
 	}

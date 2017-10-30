@@ -48,7 +48,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	// Decide if we will normalize the likelihood.
 	protected boolean m_LNormFlag = true;
-	protected String m_dataset = "Amazon"; // Default dataset.
+//	protected String m_dataset = "Amazon"; // Default dataset.
 	protected double[] m_perf = new double[2]; // added by Lin for retrieving performance after each test.
 	
 	// added by Lin.
@@ -350,6 +350,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		System.out.println("\nMacro F1:");
 		for(int i=0; i<m_classNo; i++){
 			double[] avgStd = calcAvgStd(macroF1.get(i));
+			m_perf[i] = avgStd[0];
 			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
 		}
 //		printPerformance();

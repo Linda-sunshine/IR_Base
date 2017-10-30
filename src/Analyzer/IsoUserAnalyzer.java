@@ -5,19 +5,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-
 import opennlp.tools.util.InvalidFormatException;
 import structures._Review;
-import structures._thetaStar;
 import structures._Review.rType;
-import utils.Utils;
 
 public class IsoUserAnalyzer extends MultiThreadedUserAnalyzer {
 
 	int m_count = 0;// controls how many users will be used for training.
 	Object m_countLock = new Object();
-	int m_testThreshold = 100;
+	int m_testThreshold = 1000;
 	public IsoUserAnalyzer(String tokenModel, int classNo, String providedCV,
 			int Ngram, int threshold, int numberOfCores, boolean b)
 			throws InvalidFormatException, FileNotFoundException, IOException {
@@ -27,6 +23,7 @@ public class IsoUserAnalyzer extends MultiThreadedUserAnalyzer {
 		m_testThreshold = t;
 	}
 	
+	@Override
 	void allocateReviews(ArrayList<_Review> reviews) {
 		Collections.sort(reviews);// sort the reviews by timestamp
 		// Collect testing users.

@@ -6,13 +6,13 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 /**
  * The modified version of MT-SVM since it cannot be performed in online mode.
  * @author Lin
@@ -107,7 +107,7 @@ public class asyncMTRegLR extends MTRegLR {//asyncRegLR
 		initLBFGS();
 		init();
 		try{			
-			m_writer = new PrintWriter(new File(String.format("%s_online_MTRegLR.txt", m_dataset)));
+			m_writer = new PrintWriter(new File(String.format("train_online_MTRegLR.txt")));
 			for(int i=0; i<m_userList.size(); i++) {
 				user = m_userList.get(i);
 			

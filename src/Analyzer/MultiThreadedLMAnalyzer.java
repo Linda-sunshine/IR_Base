@@ -16,7 +16,6 @@ import java.util.HashSet;
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
-
 import opennlp.tools.util.InvalidFormatException;
 import structures.TokenizeResult;
 import structures._Doc;
@@ -26,7 +25,6 @@ import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
-import structures._stat;
 import utils.Utils;
 
 public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
@@ -208,6 +206,7 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	}
 	
 	//Load a document and analyze it.
+	@Override
 	public void LoadJsonDoc(String filename) {
 		_Product prod = null;
 		JSONArray jarray = null;
@@ -293,5 +292,10 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 		} catch (IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	// get the current user size, used in iso mmb as we load training users first
+	public int getCurrentUserSize(){
+		return m_users.size();
 	}
 }

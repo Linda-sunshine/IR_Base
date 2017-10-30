@@ -120,7 +120,10 @@ public class _AdaptStruct {
 	}
 	
 	public int getTestSize() {
-		return m_user.getReviewSize() - m_adaptEndPos;
+		if(m_adaptEndPos == -1)
+			return m_user.getReviewSize();
+		else
+			return m_user.getReviewSize() - m_adaptEndPos;
 	}
 	
 	//already utilized adaptation reviews

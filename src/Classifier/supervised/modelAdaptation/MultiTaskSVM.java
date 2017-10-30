@@ -4,9 +4,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
+import structures._Review;
+import structures._Review.rType;
+import structures._SparseFeature;
+import structures._User;
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
 import Classifier.supervised.liblinear.FeatureNode;
@@ -15,13 +19,6 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-import structures._PerformanceStat;
-import structures._PerformanceStat.TestMode;
-import structures._Review;
-import structures._Review.rType;
-import structures._SparseFeature;
-import structures._User;
 
 public class MultiTaskSVM extends ModelAdaptation {
 	double m_u = 1; // trade-off parameter between global model and individual model.
@@ -71,6 +68,8 @@ public class MultiTaskSVM extends ModelAdaptation {
 		//Two for loop to access the reviews, indexed by users.
 		ArrayList<_Review> reviews;
 		for(_AdaptStruct user:m_userList){
+			if(user.getAdaptationSize() == 0)
+				continue;
 			reviews = user.getReviews();		
 			boolean validUser = false;
 			for(_Review r:reviews) {				

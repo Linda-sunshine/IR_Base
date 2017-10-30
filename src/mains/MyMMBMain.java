@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
 
 public class MyMMBMain {
@@ -33,8 +33,8 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-		String prefix = "./data/CoLinAdapt";
-//		String prefix = "/zf8/lg5bt/DataSigir";
+//		String prefix = "./data/CoLinAdapt";
+		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -49,7 +49,6 @@ public class MyMMBMain {
 		
 		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(friendFile);
@@ -82,32 +81,32 @@ public class MyMMBMain {
 		
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 1, eta = 0.01, beta = 0.01;
-		double sdA = 0.2, sdB = 0.2;
-		
-		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-		hdp.setAlpha(alpha);
-		
+		double alpha = 0.1, eta = 0.01, beta = 0.01;
+		double sdA = 0.0425, sdB = 0.0425;
+//		
+////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+////		hdp.setAlpha(alpha);
+////		
 //		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //		hdp.setR2TradeOffs(eta3, eta4);
-		
-		hdp.setsdB(sdA);//0.2
-		hdp.setsdA(sdB);//0.2
-		
-		hdp.setR1TradeOffs(eta1, eta2);
+//		
+//		hdp.setsdB(sdA);//0.2
+//		hdp.setsdA(sdB);//0.2
+//		
+//		hdp.setR1TradeOffs(eta1, eta2);
 //		hdp.setConcentrationParams(alpha, eta, beta);
-		
-		hdp.setBurnIn(10);
-		hdp.setNumberOfIterations(30);
-		
+//		
+//		hdp.setBurnIn(10);
+//		hdp.setNumberOfIterations(30);
+//		
 //		hdp.loadLMFeatures(analyzer.getLMFeatures());
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-		
-		hdp.train();
-		hdp.test();
-		
-		hdp.printUserPerformance("./data/dp_perf.txt");
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//		
+//		hdp.train();
+//		hdp.test();
+//		
+//		hdp.printUserPerformance("./data/hdp_perf.txt");
 //		
 //		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		mmb.setsdA(0.2);
@@ -117,34 +116,34 @@ public class MyMMBMain {
 //		
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		mmb.setsdB(0.1);
-//
-//		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		mmb.setR2TradeOffs(eta3, eta4);
-//		
-//		mmb.setsdA(sdA);
-//		mmb.setsdB(sdB);
-//				
-//		mmb.setR1TradeOffs(eta1, eta2);
-//		mmb.setConcentrationParams(alpha, eta, beta);
-//
-//		mmb.setRho(0.01);
-//		mmb.setBurnIn(10);
-////		mmb.setThinning(5);// default 3
-//		mmb.setNumberOfIterations(10);
-//		
-//		mmb.loadLMFeatures(analyzer.getLMFeatures());
-//		mmb.loadUsers(analyzer.getUsers());
-//		mmb.setDisplayLv(displayLv);					
-//		
+
+		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		mmb.setR2TradeOffs(eta3, eta4);
+		
+		mmb.setsdA(sdA);
+		mmb.setsdB(sdB);
+				
+		mmb.setR1TradeOffs(eta1, eta2);
+		mmb.setConcentrationParams(alpha, eta, beta);
+
+		mmb.setRho(0.01);
+		mmb.setBurnIn(10);
+//		mmb.setThinning(5);// default 3
+		mmb.setNumberOfIterations(30);
+		
+		mmb.loadLMFeatures(analyzer.getLMFeatures());
+		mmb.loadUsers(analyzer.getUsers());
+		mmb.setDisplayLv(displayLv);					
+		
+		mmb.trainTrace(dataset+"_trace.txt");
 //		mmb.train();
 //		mmb.test(); 
-//		
+		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
 //		System.out.println(current);
-//		String saveDir = "./data/mmb";
-////		String saveDir = "../hdpExp/mmb";
-//		mmb.saveEverything(current, saveDir);
+//		String dir = String.format("./data/mmb/%d_%s", current, dataset);
+//		mmb.saveEverything(dir);
 		
 	}
 }

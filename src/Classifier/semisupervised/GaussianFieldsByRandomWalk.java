@@ -383,6 +383,7 @@ public class GaussianFieldsByRandomWalk extends GaussianFields {
 	
 	// Added by Lin to test if clustering works for l2r.
 	//The test for random walk algorithm.
+	@Override
 	public double test(){
 		/***Construct the nearest neighbor graph****/
 		constructGraph(false);

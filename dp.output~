@@ -1,0 +1,1535 @@
+Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+3000 users are loaded from ./data/CoLinAdapt/Amazon/Users_3000...
+6760 users are loaded from ./data/CoLinAdapt/Amazon/Users_7000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 43402(0.73), and testing size: 99744(0.74)
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+oxooxoxooxoooxoooxoooxoxoxoooxooxoxoooxooxoxxoxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxooxooxooxooxooxooooxoooxoxooxoooxoooxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxoxoxoxooxoxoooxoxoxoooxoxoxoxooxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxoxoxooxoxooxoxxooxoxoxxoxxxxxoxxxxxxxxoxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+ooxoxoxoooxooxoxooxoxoxooxooxooxooooxooooxooxoooxoxooooxoxoxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxooxooxoxooxoxoxxoxxoxxoxoxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxoxooxooxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxooxooxooxooxoxoxxoxxoxxxxxxxxxxxxxxxoxxoxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxooxoxooxoxooxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxooxooxooxooxooxoxoxoxoxxooxxxxxxxxoxxxxxoxxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxooxooxooxooxooxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:372(0.71,15.2)	20(0.61,14.6)	2098(0.74,14.6)	325(0.70,13.8)	131(0.70,12.5)	3(0.75,4.0)	49(0.67,15.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 0: likelihood: 3755.0222, Delta_likelihood: 0.022100
+oxooxooxooxooxoxoxoxooxooxxxxoxxxxxxxxxxxoxxoxxoxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:370(0.70,13.5)	14(0.65,10.0)	2128(0.74,15.2)	265(0.71,13.0)	161(0.71,11.7)	9(0.47,10.7)	51(0.63,10.9)	
+[Info]7 Clusters are found in total!
+[Info]Step 1: likelihood: 3740.5901, Delta_likelihood: 0.003858
+oxoooxooxooxooxooxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:381(0.69,13.3)	10(0.71,9.3)	2148(0.74,15.0)	242(0.71,12.6)	176(0.68,13.8)	4(0.66,7.3)	36(0.70,11.7)	1(0.60,70.0)	
+[Info]8 Clusters are found in total!
+[Info]Step 2: likelihood: 61252.8929, Delta_likelihood: -0.938932
+oxoooxoxoxooxooxoxoxoxoxxoxooxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:365(0.71,13.2)	2(0.64,5.5)	2153(0.73,15.0)	233(0.72,11.9)	202(0.71,13.7)	4(0.76,23.8)	37(0.73,14.8)	2(0.62,38.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 3: likelihood: 3814.2576, Delta_likelihood: 15.058929
+oxooxooxooxoxooxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:387(0.71,12.7)	2(0.72,68.0)	2135(0.73,15.0)	216(0.72,11.9)	192(0.73,14.9)	6(0.70,9.0)	59(0.68,13.6)	1(0.71,17.0)	
+[Info]8 Clusters are found in total!
+[Info]Step 4: likelihood: 61226.9354, Delta_likelihood: -0.937703
+oxoooxooxoxooxooxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:382(0.72,13.3)	3(0.59,30.3)	2160(0.73,14.9)	197(0.69,12.5)	211(0.71,14.2)	3(0.45,3.7)	42(0.74,15.8)	
+[Info]7 Clusters are found in total!
+[Info]Step 5: likelihood: 3737.4034, Delta_likelihood: 15.382212
+oxoooxooxooxooxooxoxoxoxxooxoxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:352(0.73,14.0)	44(0.64,11.0)	2189(0.74,14.8)	214(0.68,13.6)	197(0.71,13.2)	1(0.75,4.0)	1(0.60,70.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 6: likelihood: 3766.8593, Delta_likelihood: -0.007820
+oxoooxooxooxooxooxooxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:348(0.72,13.6)	83(0.75,16.2)	2126(0.73,14.8)	222(0.71,12.6)	209(0.72,14.1)	10(0.62,14.6)	
+[Info]6 Clusters are found in total!
+[Info]Step 7: likelihood: 61169.8828, Delta_likelihood: -0.938420
+oxoooxooxooxooxooxooxooxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:352(0.73,13.5)	51(0.62,11.3)	2144(0.73,14.9)	207(0.73,14.4)	234(0.71,12.4)	10(0.70,20.3)	
+[Info]6 Clusters are found in total!
+[Info]Step 8: likelihood: 3710.6541, Delta_likelihood: 15.484933
+oxoooxooxooxooxooxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:323(0.71,13.3)	60(0.72,10.8)	2162(0.73,14.9)	185(0.73,13.1)	258(0.70,14.0)	9(0.75,23.4)	1(0.67,3.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 9: likelihood: 3756.2948, Delta_likelihood: -0.012150
+oxoooxooxooxooxoxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:284(0.71,14.0)	61(0.72,14.3)	2169(0.73,14.8)	178(0.73,12.0)	289(0.73,14.1)	11(0.70,16.0)	4(0.37,16.3)	1(0.50,4.0)	1(0.75,4.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 10: likelihood: 3813.9332, Delta_likelihood: -0.015113
+oxoooxooxoxooxooxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:312(0.71,13.7)	61(0.71,9.8)	2121(0.73,15.1)	172(0.69,9.6)	311(0.73,14.4)	12(0.72,16.9)	1(0.50,8.0)	5(0.79,18.4)	3(0.61,6.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 11: likelihood: 3792.2055, Delta_likelihood: 0.005730
+oxoooxoxooxooxooxoxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:369(0.71,13.2)	66(0.77,15.1)	2040(0.74,15.1)	167(0.68,11.8)	336(0.71,13.2)	9(0.72,20.7)	2(0.67,4.5)	3(0.73,31.3)	6(0.74,13.7)	
+[Info]9 Clusters are found in total!
+[Info]Step 12: likelihood: 3790.7050, Delta_likelihood: 0.000396
+oxoooxooxooxooxooxoxooxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:385(0.71,13.0)	49(0.71,12.0)	2014(0.74,15.0)	193(0.69,13.5)	336(0.70,14.0)	6(0.74,11.3)	7(0.65,12.0)	3(0.74,6.3)	5(0.52,21.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 13: likelihood: 61267.5121, Delta_likelihood: -0.938129
+oxooxooxooxooxoxoxoxooxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:367(0.69,13.6)	43(0.77,11.1)	2020(0.74,15.0)	211(0.70,12.8)	335(0.70,13.1)	9(0.66,32.9)	3(0.83,17.3)	3(0.69,10.7)	6(0.72,17.3)	1(0.25,4.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 14: likelihood: 3849.3714, Delta_likelihood: 14.916238
+oxooxoxooxooxoxooxooxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:310(0.72,13.8)	55(0.73,14.2)	2019(0.73,14.8)	185(0.70,13.2)	409(0.73,14.0)	5(0.68,22.8)	1(0.60,5.0)	1(0.29,7.0)	12(0.74,15.8)	1(0.78,9.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 15: likelihood: 3891.4849, Delta_likelihood: -0.010822
+oxoooxooxooxoxoxoxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:320(0.73,12.6)	65(0.72,15.8)	1978(0.73,15.0)	155(0.73,12.9)	445(0.71,13.7)	9(0.68,20.9)	3(0.38,7.0)	1(0.64,11.0)	21(0.74,12.7)	1(0.60,5.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 16: likelihood: 61319.0274, Delta_likelihood: -0.936537
+oxoooxooxooxoxooxoxxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:327(0.74,14.3)	60(0.75,12.2)	2019(0.74,14.9)	123(0.66,11.8)	438(0.70,13.6)	7(0.71,9.9)	1(0.69,29.0)	2(0.56,4.5)	20(0.69,15.0)	1(0.80,5.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 17: likelihood: 3852.9990, Delta_likelihood: 14.914623
+oxoooxooxoxooxooxooxoxoxxoxoxxoxxoxxoxxoxxxxxxxxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:360(0.74,12.7)	75(0.69,14.0)	2036(0.73,15.2)	76(0.69,10.3)	428(0.70,13.7)	6(0.65,21.0)	13(0.69,6.8)	4(0.67,7.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 18: likelihood: 3768.0008, Delta_likelihood: 0.022558
+oxoooxooxooxooxooxoxxoxoxoxooxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:318(0.73,12.8)	63(0.70,11.0)	2047(0.74,14.8)	77(0.71,12.1)	470(0.71,15.0)	10(0.76,18.6)	3(0.50,2.0)	10(0.70,21.6)	
+[Info]8 Clusters are found in total!
+[Info]Step 19: likelihood: 3800.1865, Delta_likelihood: -0.008470
+oxoooxooxooxoxooxoxoxxoxoxxoxxoxoxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:283(0.70,13.3)	59(0.67,10.3)	2015(0.74,15.0)	53(0.75,13.3)	558(0.71,13.5)	7(0.81,14.1)	10(0.69,21.6)	13(0.83,14.2)	
+[Info]8 Clusters are found in total!
+[Info]Step 20: likelihood: 3777.7621, Delta_likelihood: 0.005936
+oxoooxooxooxooxooxoxoxxoxxoxxoxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:296(0.71,14.0)	61(0.64,13.4)	1959(0.73,14.7)	59(0.71,12.6)	575(0.74,14.4)	13(0.59,18.7)	19(0.66,12.4)	15(0.67,6.8)	1(0.71,7.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 21: likelihood: 3854.4040, Delta_likelihood: -0.019884
+oxooxooxooxooxooxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:297(0.73,15.3)	73(0.71,11.3)	1907(0.74,14.4)	53(0.77,13.3)	630(0.70,14.9)	3(0.72,6.0)	19(0.78,14.7)	16(0.67,10.8)	
+[Info]8 Clusters are found in total!
+[Info]Step 22: likelihood: 3758.2432, Delta_likelihood: 0.025587
+oxoooxooxooxooxoxooxoxxooxoxoxxoxxxxxxxxoxxxxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:277(0.73,12.7)	83(0.70,12.6)	1987(0.73,14.9)	28(0.71,15.3)	586(0.73,14.0)	2(0.33,31.5)	24(0.77,16.7)	10(0.77,19.7)	1(0.73,15.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 23: likelihood: 3835.1390, Delta_likelihood: -0.020050
+oxoooxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:285(0.73,13.5)	107(0.69,13.5)	1906(0.74,15.1)	34(0.78,15.3)	629(0.71,13.0)	2(0.87,34.0)	24(0.75,17.5)	11(0.61,17.4)	
+[Info]8 Clusters are found in total!
+[Info]Step 24: likelihood: 61239.0773, Delta_likelihood: -0.937374
+oxoxoxxoxxoxxoxxoxxoxxoxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:266(0.72,14.2)	123(0.68,12.2)	1883(0.74,14.3)	42(0.72,13.4)	640(0.73,15.6)	23(0.63,16.3)	19(0.74,15.7)	2(0.71,3.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 25: likelihood: 61240.5721, Delta_likelihood: -0.000024
+oxoxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:310(0.70,12.7)	117(0.74,13.6)	1931(0.74,15.0)	33(0.64,9.5)	561(0.72,13.8)	25(0.70,19.9)	19(0.67,18.8)	2(0.75,30.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 26: likelihood: 61258.1184, Delta_likelihood: -0.000286
+oxoxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:313(0.74,14.2)	146(0.72,12.2)	1895(0.73,14.9)	32(0.80,16.8)	555(0.72,13.7)	25(0.64,14.4)	32(0.70,13.3)	
+[Info]7 Clusters are found in total!
+[Info]Step 27: likelihood: 61229.3248, Delta_likelihood: 0.000470
+oxoxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:290(0.71,12.5)	128(0.72,15.5)	1894(0.73,15.0)	34(0.69,10.6)	593(0.74,13.9)	27(0.62,12.0)	32(0.73,15.3)	
+[Info]7 Clusters are found in total!
+[Info]Step 28: likelihood: 61188.1406, Delta_likelihood: 0.000673
+oxoxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:262(0.72,13.0)	118(0.73,12.0)	1945(0.73,15.0)	39(0.69,11.2)	568(0.72,14.0)	27(0.71,14.0)	36(0.70,12.0)	1(0.86,14.0)	1(0.50,4.0)	1(0.86,83.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 29: likelihood: 61357.0981, Delta_likelihood: -0.002754
+[Info]Accumulating evaluation results during sampling...
+neg users: 6714	pos users: 6742
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	19635	13331
+1	6273	60505
+Micro F1:
+Class 0: 0.6670		Class 1: 0.8606		
+Macro F1:
+Class 0: 0.6532+0.3083	Class 1: 0.8360+0.1808	Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+4000 users are loaded from ./data/CoLinAdapt/Amazon/Users_4000...
+5760 users are loaded from ./data/CoLinAdapt/Amazon/Users_6000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 57745(0.74), and testing size: 85401(0.74)
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+oooxoxoooxooxoxooxooxoxooxoooxooooxoooxoooxooxooxoxooxooooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxooxooxoxxoxoxoxoxoxoxoxxoxxoxxoxxoxoxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxoxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxooxooxoxoxoxxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxooxooxooxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxoxoxxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxooxooxooxoxxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxooxooxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooooooxoxooxoxxoxxoxxxoxxoxxoxxoxxoxxxxxoxxxxxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1387(0.73,14.7)	2092(0.74,14.6)	373(0.71,12.5)	4(0.62,17.0)	100(0.74,14.0)	19(0.70,21.3)	1(0.75,4.0)	15(0.75,10.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 0: likelihood: 6473.2290, Delta_likelihood: -0.004475
+oxoooxoxooxooxoxxoxoxoxooxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1378(0.74,14.2)	2058(0.73,14.6)	374(0.73,14.5)	6(0.72,18.0)	123(0.76,15.2)	38(0.69,16.2)	13(0.70,8.1)	1(0.93,14.0)	
+[Info]8 Clusters are found in total!
+[Info]Step 1: likelihood: 63929.2050, Delta_likelihood: -0.898744
+oxoooxooxooxooxoxxoxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1343(0.75,14.9)	2146(0.73,14.2)	325(0.73,14.2)	8(0.67,5.8)	120(0.68,15.7)	37(0.74,14.4)	12(0.57,20.6)	
+[Info]7 Clusters are found in total!
+[Info]Step 2: likelihood: 6383.6621, Delta_likelihood: 9.014503
+oxoooxoxooxooxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1283(0.74,14.2)	2173(0.74,15.0)	327(0.70,12.9)	1(0.75,4.0)	159(0.74,12.3)	35(0.76,12.4)	13(0.57,15.9)	
+[Info]7 Clusters are found in total!
+[Info]Step 3: likelihood: 6420.2413, Delta_likelihood: -0.005697
+oxooxooxooxooxoxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1235(0.74,14.8)	2213(0.74,14.4)	338(0.72,13.3)	10(0.63,14.7)	158(0.73,14.8)	35(0.68,14.1)	1(0.80,89.0)	1(0.83,30.0)	
+[Info]8 Clusters are found in total!
+[Info]Step 4: likelihood: 63958.3275, Delta_likelihood: -0.899618
+oxoooxooxooxoxoxxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1275(0.73,14.3)	2204(0.74,14.6)	290(0.72,14.3)	6(0.52,16.8)	180(0.73,14.9)	35(0.73,12.3)	1(0.83,6.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 5: likelihood: 6412.3817, Delta_likelihood: 8.974192
+oxoooxooxooxoxoxxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1310(0.73,14.6)	2205(0.74,14.4)	217(0.73,15.1)	6(0.67,24.7)	193(0.73,12.7)	60(0.71,14.6)	
+[Info]6 Clusters are found in total!
+[Info]Step 6: likelihood: 63838.7929, Delta_likelihood: -0.899554
+oxoooxoxooxooxooxoxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1348(0.74,13.7)	2159(0.74,15.1)	218(0.73,13.2)	7(0.82,19.3)	205(0.72,15.0)	54(0.67,11.4)	
+[Info]6 Clusters are found in total!
+[Info]Step 7: likelihood: 6384.0318, Delta_likelihood: 8.999761
+oxoooxooxooooxoxxoxoxoxxoxxxoxxxxxxxxoxxxxxoxxxxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1400(0.74,14.6)	2091(0.73,14.6)	219(0.72,11.7)	10(0.61,20.0)	220(0.74,14.9)	51(0.77,14.9)	
+[Info]6 Clusters are found in total!
+[Info]Step 8: likelihood: 6383.4660, Delta_likelihood: 0.000089
+oxooxoxoxooxoxooxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1355(0.75,14.3)	2154(0.73,14.6)	188(0.71,14.7)	10(0.84,14.8)	198(0.74,14.0)	86(0.73,13.8)	
+[Info]6 Clusters are found in total!
+[Info]Step 9: likelihood: 6383.6043, Delta_likelihood: -0.000022
+oxoooxoxooxooxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1331(0.74,14.8)	2106(0.74,14.1)	199(0.72,14.6)	5(0.59,17.6)	228(0.73,14.9)	121(0.75,16.4)	1(0.50,2.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 10: likelihood: 6392.8699, Delta_likelihood: -0.001449
+oxoooxoxoxooxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1313(0.74,14.7)	2075(0.73,14.4)	178(0.72,14.9)	2(0.57,3.5)	253(0.73,13.6)	170(0.75,14.4)	
+[Info]6 Clusters are found in total!
+[Info]Step 11: likelihood: 6353.9186, Delta_likelihood: 0.006130
+oxooxooxooxooxoxoxxoxxoxxoxxxxxxxxoxxoxxoxxoxxxxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1300(0.74,14.2)	2053(0.74,14.6)	205(0.70,13.3)	2(0.57,3.5)	246(0.74,14.6)	184(0.73,15.7)	1(0.80,5.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 12: likelihood: 6380.3209, Delta_likelihood: -0.004138
+oxoooxooxooxoxxoxxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1319(0.74,14.1)	1995(0.74,15.0)	218(0.71,12.6)	5(0.69,6.4)	253(0.72,15.3)	201(0.73,13.0)	
+[Info]6 Clusters are found in total!
+[Info]Step 13: likelihood: 6395.3112, Delta_likelihood: -0.002344
+oxoooxooxooxoxxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1372(0.73,13.7)	2025(0.74,15.1)	177(0.73,13.8)	6(0.81,12.3)	247(0.74,14.8)	164(0.72,14.0)	
+[Info]6 Clusters are found in total!
+[Info]Step 14: likelihood: 6376.3168, Delta_likelihood: 0.002979
+oxoooxooxooxooxoxxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1332(0.74,15.0)	2048(0.73,14.3)	205(0.74,13.7)	3(0.79,6.3)	223(0.72,13.7)	180(0.71,14.4)	
+[Info]6 Clusters are found in total!
+[Info]Step 15: likelihood: 63849.5695, Delta_likelihood: -0.900135
+oxoooxoxooxooxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1268(0.74,14.3)	2053(0.73,14.9)	230(0.71,13.7)	5(0.52,5.0)	257(0.75,13.2)	178(0.72,14.1)	
+[Info]6 Clusters are found in total!
+[Info]Step 16: likelihood: 6378.4783, Delta_likelihood: 9.010157
+oxoooxoxooxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1310(0.73,14.5)	2011(0.74,14.5)	215(0.73,13.6)	5(0.74,3.8)	256(0.73,15.2)	194(0.73,14.3)	
+[Info]6 Clusters are found in total!
+[Info]Step 17: likelihood: 6402.1486, Delta_likelihood: -0.003697
+oxoooxooxooxooxoxxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1324(0.74,14.0)	2015(0.73,14.9)	210(0.76,13.7)	7(0.76,13.4)	228(0.73,14.3)	203(0.73,14.8)	4(0.67,7.5)	
+[Info]7 Clusters are found in total!
+[Info]Step 18: likelihood: 6407.3426, Delta_likelihood: -0.000811
+oxoooxooxooxooxoxxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1361(0.74,14.8)	2009(0.73,14.4)	163(0.71,12.3)	13(0.73,9.3)	193(0.75,16.5)	250(0.73,13.5)	1(0.43,7.0)	1(0.71,7.0)	
+[Info]8 Clusters are found in total!
+[Info]Step 19: likelihood: 6447.0564, Delta_likelihood: -0.006160
+oxoooxooxooxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1376(0.74,14.7)	1941(0.73,14.2)	156(0.74,13.2)	9(0.63,7.4)	188(0.74,17.7)	308(0.74,14.2)	4(0.80,11.5)	5(0.70,10.0)	4(0.77,11.8)	
+[Info]9 Clusters are found in total!
+[Info]Step 20: likelihood: 6476.7996, Delta_likelihood: -0.004592
+oxoooxooxooxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1396(0.73,14.1)	1901(0.74,15.0)	164(0.74,13.9)	16(0.72,12.1)	205(0.73,14.5)	295(0.73,13.6)	2(0.69,33.5)	6(0.75,9.2)	1(0.89,27.0)	5(0.73,9.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 21: likelihood: 64027.7905, Delta_likelihood: -0.898844
+oxoooxooxooxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1321(0.74,14.7)	1951(0.74,14.6)	167(0.71,12.9)	16(0.73,13.8)	217(0.73,15.6)	301(0.71,13.0)	6(0.75,11.2)	3(0.67,5.0)	9(0.56,6.8)	
+[Info]9 Clusters are found in total!
+[Info]Step 22: likelihood: 63953.7252, Delta_likelihood: 0.001158
+oxoooxooxooxoxoxxoxoxoxxoxxxxxoxxxxxxxxxoxxoxxxxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1299(0.74,14.3)	1999(0.74,15.0)	185(0.71,12.6)	4(0.70,5.8)	194(0.73,13.3)	299(0.73,13.9)	1(0.43,7.0)	4(0.84,23.0)	6(0.66,5.3)	
+[Info]9 Clusters are found in total!
+[Info]Step 23: likelihood: 6459.8918, Delta_likelihood: 8.900123
+oxoooxoxooxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1252(0.74,14.1)	1988(0.73,14.9)	188(0.74,13.9)	1(0.75,4.0)	227(0.72,13.3)	325(0.73,14.6)	7(0.67,14.4)	3(0.86,18.7)	
+[Info]8 Clusters are found in total!
+[Info]Step 24: likelihood: 6423.5095, Delta_likelihood: 0.005664
+oxoooxooxooxooxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1251(0.74,14.6)	1987(0.73,14.3)	171(0.74,15.0)	2(0.75,6.0)	276(0.75,14.2)	297(0.73,15.2)	4(0.80,5.0)	1(0.75,4.0)	2(0.74,17.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 25: likelihood: 6531.6952, Delta_likelihood: -0.016563
+oxoooxooxooxooxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1232(0.74,14.8)	1952(0.74,14.7)	170(0.75,11.9)	10(0.81,13.4)	331(0.74,13.5)	270(0.71,14.3)	22(0.69,10.4)	4(0.82,11.3)	
+[Info]8 Clusters are found in total!
+[Info]Step 26: likelihood: 6441.9087, Delta_likelihood: 0.013938
+oxoooxooxooxoxxoxooxoxxoxxoxxoxxxxxoxxoxxoxxxxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1283(0.75,14.8)	1944(0.73,14.6)	114(0.73,13.7)	5(0.66,7.0)	332(0.74,14.4)	299(0.71,13.1)	5(0.77,17.4)	9(0.74,9.3)	
+[Info]8 Clusters are found in total!
+[Info]Step 27: likelihood: 6461.1232, Delta_likelihood: -0.002974
+oxoooxooxooxooxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1299(0.73,14.5)	1916(0.74,14.8)	129(0.73,12.8)	4(0.78,6.8)	325(0.75,14.2)	309(0.73,13.6)	7(0.52,4.7)	1(0.90,29.0)	1(0.84,32.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 28: likelihood: 6487.6407, Delta_likelihood: -0.004087
+oxooxoxooxoxoxxoxoxoxxooxoxxxoxxxxxoxxxxxxxxoxxoxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1362(0.74,14.8)	1895(0.74,14.3)	133(0.71,12.8)	1(0.75,4.0)	310(0.73,17.2)	279(0.75,12.2)	9(0.61,6.3)	2(0.73,7.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 29: likelihood: 6453.7321, Delta_likelihood: 0.005254
+[Info]Accumulating evaluation results during sampling...
+neg users: 5725	pos users: 5749
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	16672	9829
+1	5734	53166
+Micro F1:
+Class 0: 0.6818		Class 1: 0.8723		
+Macro F1:
+Class 0: 0.6604+0.3084	Class 1: 0.8444+0.1748	Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+6760 users are loaded from ./data/CoLinAdapt/Amazon/Users_7000...
+3000 users are loaded from ./data/CoLinAdapt/Amazon/Users_3000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 99744(0.74), and testing size: 43402(0.73)
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+oxooxoxoxoxoxoooxxoxoxooxooxoooxooxooxooxooxoooxooxoooxooxooxooooxooxooxoxoooooxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxooxooxooxooxoooxooxooxooooxooxoooxooxoxoxooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxxooxoxoxoxoxxoxooxoxxoxoooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxxoxoxoxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxooxooxooxooxooxooooxoooxooxoooxoooxoxoxxoxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxoxoxoxoxoooxoxoxoxoxoxxoxxoxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoxooxoooxooxoxoooxooxooxooxooxoooxooxooooxooxooxoxooxoxoooxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxxoxoxoxoxoxoxoxoxoxoxoxooooooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3080(0.74,15.0)	1502(0.74,14.6)	1309(0.74,14.1)	92(0.69,18.1)	456(0.76,16.3)	26(0.75,9.6)	171(0.71,13.7)	5(0.77,7.8)	96(0.75,15.3)	5(0.76,14.0)	1(0.47,15.0)	1(0.85,13.0)	
+[Info]12 Clusters are found in total!
+[Info]Step 0: likelihood: 310806.3863, Delta_likelihood: 1.109182
+oxooxxoxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3122(0.74,14.7)	1472(0.74,15.8)	1215(0.74,14.6)	125(0.76,13.2)	494(0.73,13.0)	22(0.68,22.0)	139(0.71,12.1)	2(0.67,9.0)	148(0.76,16.6)	4(0.80,12.8)	1(0.67,6.0)	
+[Info]11 Clusters are found in total!
+[Info]Step 1: likelihood: 310748.8659, Delta_likelihood: 0.000185
+oxoxoxooxooxoxooooxooxoxoooxoooxooxooxoxoooxooooxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3034(0.74,14.7)	1494(0.74,14.8)	1294(0.74,14.8)	90(0.71,15.0)	478(0.75,15.9)	30(0.70,18.6)	164(0.72,14.4)	3(0.79,4.7)	150(0.70,11.4)	7(0.77,9.3)	
+[Info]10 Clusters are found in total!
+[Info]Step 2: likelihood: 310663.3626, Delta_likelihood: 0.000275
+oxooxooxooxoxooxooxooxooxooxoooxooooooxoxoooxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3107(0.74,15.6)	1364(0.74,14.8)	1318(0.74,13.7)	143(0.75,11.9)	450(0.75,14.7)	12(0.58,13.4)	163(0.71,14.6)	1(0.84,73.0)	176(0.71,11.6)	10(0.82,10.3)	
+[Info]10 Clusters are found in total!
+[Info]Step 3: likelihood: 310700.8255, Delta_likelihood: -0.000121
+oxooxooxooxooxoooxoooxoooxooxooxooxooxooxooxoxooxooxooxooooxooooxoxooxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3138(0.74,15.2)	1354(0.74,14.2)	1354(0.75,14.7)	101(0.74,10.9)	427(0.75,14.7)	13(0.58,11.5)	184(0.70,14.4)	2(0.68,9.5)	168(0.72,16.5)	3(0.58,24.0)	
+[Info]10 Clusters are found in total!
+[Info]Step 4: likelihood: 537945.8674, Delta_likelihood: -0.422431
+oxooxooxooxooxooxoooxooxoooxoooooxooxoxooxoxoxooxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3147(0.75,15.1)	1360(0.74,15.5)	1375(0.73,13.4)	127(0.73,14.1)	403(0.74,14.7)	17(0.64,15.8)	145(0.72,13.5)	1(0.75,4.0)	167(0.72,15.6)	1(0.76,67.0)	1(0.75,8.0)	
+[Info]11 Clusters are found in total!
+[Info]Step 5: likelihood: 310699.1116, Delta_likelihood: 0.731405
+oxooxoxoxxoxoxoxooooxoxooxoxooxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3424(0.75,15.3)	1240(0.73,14.3)	1246(0.74,14.1)	117(0.70,13.0)	422(0.72,15.3)	17(0.74,14.2)	126(0.70,12.7)	1(0.50,2.0)	151(0.73,13.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 6: likelihood: 435690.2953, Delta_likelihood: -0.286881
+oxooxxoxoxoxoxoxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3525(0.74,14.9)	1137(0.73,14.6)	1185(0.75,15.1)	159(0.72,12.7)	421(0.75,15.7)	19(0.76,14.5)	127(0.67,11.3)	171(0.76,14.2)	
+[Info]8 Clusters are found in total!
+[Info]Step 7: likelihood: 310573.9721, Delta_likelihood: 0.402855
+oxooxoxooxoxoxxoxxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3616(0.74,14.9)	1127(0.74,15.6)	1077(0.74,13.8)	167(0.73,13.4)	465(0.73,14.6)	15(0.78,13.8)	98(0.70,14.1)	177(0.75,15.7)	2(0.68,49.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 8: likelihood: 435638.1477, Delta_likelihood: -0.287083
+oxoooxooxoxoxxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3622(0.74,15.1)	1089(0.74,13.8)	1107(0.74,14.0)	169(0.70,17.3)	482(0.75,15.1)	3(0.86,9.3)	93(0.70,12.3)	178(0.75,16.2)	1(0.25,4.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 9: likelihood: 435664.8383, Delta_likelihood: -0.000061
+oxoooxooxoxoxoxoxoxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3753(0.74,14.8)	1035(0.74,15.1)	1008(0.73,14.6)	143(0.76,15.4)	511(0.75,15.6)	2(0.50,11.0)	107(0.67,11.8)	179(0.74,12.8)	4(0.68,4.8)	1(0.80,5.0)	1(0.83,12.0)	
+[Info]11 Clusters are found in total!
+[Info]Step 10: likelihood: 310712.6085, Delta_likelihood: 0.402147
+oxoooxoxoxxoxoxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3770(0.74,14.5)	1072(0.74,15.8)	932(0.74,14.7)	144(0.74,14.4)	480(0.73,15.0)	1(0.50,2.0)	128(0.70,15.0)	210(0.73,15.6)	7(0.60,11.4)	
+[Info]9 Clusters are found in total!
+[Info]Step 11: likelihood: 435640.2944, Delta_likelihood: -0.286768
+oxooxoxxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3789(0.75,15.4)	1056(0.73,14.5)	980(0.74,13.8)	167(0.75,14.3)	456(0.73,13.3)	2(0.55,25.5)	117(0.69,13.7)	169(0.72,15.2)	8(0.72,8.9)	
+[Info]9 Clusters are found in total!
+[Info]Step 12: likelihood: 310622.9844, Delta_likelihood: 0.402473
+oxoxoxoxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3713(0.74,14.8)	1045(0.75,15.1)	1021(0.74,14.5)	215(0.72,13.6)	463(0.74,14.6)	1(0.64,11.0)	122(0.67,14.1)	155(0.76,15.8)	9(0.81,33.8)	
+[Info]9 Clusters are found in total!
+[Info]Step 13: likelihood: 435594.5500, Delta_likelihood: -0.286899
+oxoxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3717(0.75,15.3)	1052(0.73,14.4)	1022(0.74,14.4)	226(0.74,14.4)	456(0.73,13.9)	21(0.77,17.0)	110(0.65,12.1)	140(0.74,13.3)	
+[Info]8 Clusters are found in total!
+[Info]Step 14: likelihood: 435597.5122, Delta_likelihood: -0.000007
+oxoxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:3781(0.74,15.0)	1047(0.75,14.3)	1036(0.74,14.8)	236(0.75,13.1)	421(0.74,14.9)	18(0.79,20.7)	82(0.65,12.2)	123(0.75,15.5)	
+[Info]8 Clusters are found in total!
+[Info]Step 15: likelihood: 435591.1029, Delta_likelihood: 0.000015
+oxoxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3902(0.75,15.0)	1003(0.74,15.7)	1018(0.73,13.8)	233(0.72,13.1)	376(0.73,14.1)	25(0.73,14.4)	80(0.68,12.3)	107(0.69,16.4)	
+[Info]8 Clusters are found in total!
+[Info]Step 16: likelihood: 435594.7759, Delta_likelihood: -0.000008
+oxooxooxoxooxooxooxooxooxoooxooooxooxoxoxoxoxoooxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3904(0.75,15.0)	945(0.74,14.7)	1055(0.73,13.9)	233(0.75,13.6)	380(0.72,14.7)	17(0.69,20.9)	92(0.71,15.0)	118(0.75,16.7)	
+[Info]8 Clusters are found in total!
+[Info]Step 17: likelihood: 310614.2643, Delta_likelihood: 0.402366
+oxoxooxooxoooxooxoxoxoxxoxxxoxxxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:4046(0.75,15.0)	955(0.73,14.5)	981(0.74,14.4)	176(0.75,13.8)	334(0.72,14.7)	14(0.71,9.4)	127(0.70,13.0)	110(0.73,18.4)	1(0.50,2.0)	
+[Info]9 Clusters are found in total!
+[Info]Step 18: likelihood: 310667.6620, Delta_likelihood: -0.000172
+oxoooxoxoxxooxoxooxoxoxoxxoxoxoxxoxxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:4094(0.74,14.7)	970(0.74,15.4)	940(0.74,14.8)	121(0.75,14.1)	327(0.73,14.9)	2(0.28,16.0)	176(0.70,12.8)	114(0.75,16.9)	
+[Info]8 Clusters are found in total!
+[Info]Step 19: likelihood: 435593.9840, Delta_likelihood: -0.286795
+oxoooxoxoxxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3986(0.74,15.0)	995(0.73,14.5)	940(0.74,14.1)	142(0.74,15.3)	377(0.76,14.3)	119(0.71,16.4)	185(0.66,14.6)	
+[Info]7 Clusters are found in total!
+[Info]Step 20: likelihood: 435539.9031, Delta_likelihood: 0.000124
+oxoooxoxoxxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:4049(0.74,15.2)	948(0.74,14.6)	985(0.74,14.1)	140(0.71,12.8)	325(0.73,14.9)	141(0.76,15.5)	156(0.67,10.6)	
+[Info]7 Clusters are found in total!
+[Info]Step 21: likelihood: 435566.4764, Delta_likelihood: -0.000061
+oxooxoxoxxoxxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3976(0.74,15.1)	1059(0.74,14.4)	995(0.73,14.4)	154(0.77,15.7)	264(0.73,14.1)	114(0.72,17.0)	182(0.71,12.0)	
+[Info]7 Clusters are found in total!
+[Info]Step 22: likelihood: 310562.2947, Delta_likelihood: 0.402509
+oxoooxoxoxoxxoxoxoxoxoxoxxoxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:3915(0.74,15.3)	1135(0.75,14.7)	942(0.73,13.4)	157(0.73,12.0)	279(0.76,15.1)	133(0.69,14.7)	183(0.69,12.5)	
+[Info]7 Clusters are found in total!
+[Info]Step 23: likelihood: 310562.5327, Delta_likelihood: -0.000001
+[Info]Accumulating evaluation results during sampling...
+neg users: 2988	pos users: 2997
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	8591	3760
+1	3175	27876
+Micro F1:
+Class 0: 0.7124		Class 1: 0.8894		
+Macro F1:
+Class 0: 0.6760+0.3163	Class 1: 0.8610+0.1688	Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+7760 users are loaded from ./data/CoLinAdapt/Amazon/Users_8000...
+2000 users are loaded from ./data/CoLinAdapt/Amazon/Users_2000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 114027(0.74), and testing size: 29119(0.74)
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+ooxooxoooxoxoooxooxooxoxooooooooxoxoxoxoxxoxoxoxxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxooxooxooxoxooxooooxoooxoooxooxooxooxoxoooxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxxoxooxoooxoxoxoxoxoxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxoxxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxoxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooxoxxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1808(0.73,14.6)	1564(0.75,15.6)	2163(0.74,14.3)	916(0.72,14.6)	1025(0.72,14.6)	69(0.72,17.2)	91(0.72,12.5)	22(0.73,12.0)	2(0.83,6.0)	65(0.73,13.0)	23(0.69,23.1)	
+[Info]11 Clusters are found in total!
+[Info]Step 0: likelihood: 315744.5976, Delta_likelihood: 0.000500
+oxooxoxxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1729(0.74,14.1)	1567(0.74,14.6)	2224(0.74,15.2)	980(0.71,15.1)	1007(0.73,14.2)	45(0.74,17.2)	84(0.67,18.1)	16(0.78,12.9)	1(0.67,3.0)	60(0.73,13.3)	35(0.69,15.3)	
+[Info]11 Clusters are found in total!
+[Info]Step 1: likelihood: 315852.6110, Delta_likelihood: -0.000342
+oxooxooxooxoxooxooxooxoooxooxooxooxoooxoooxoxooxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1667(0.73,14.7)	1612(0.75,15.3)	2277(0.74,14.8)	949(0.72,13.8)	957(0.73,14.5)	28(0.66,9.8)	113(0.69,13.3)	21(0.74,27.2)	34(0.73,17.8)	90(0.74,14.4)	
+[Info]10 Clusters are found in total!
+[Info]Step 2: likelihood: 815802.4532, Delta_likelihood: -0.612832
+oxooxooxooxooxoxoooooxooxooxooxoxooxxoxoxoxoxxoxooxoxxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1655(0.73,14.4)	1671(0.75,14.9)	2292(0.74,15.4)	893(0.73,14.4)	887(0.72,14.1)	35(0.71,13.3)	139(0.69,14.1)	43(0.74,15.1)	31(0.68,14.4)	102(0.69,10.3)	
+[Info]10 Clusters are found in total!
+[Info]Step 3: likelihood: 497505.3512, Delta_likelihood: 0.639786
+oxoooxoxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1744(0.74,15.5)	1651(0.74,14.4)	2105(0.74,14.8)	920(0.71,14.3)	907(0.73,14.5)	41(0.67,10.3)	185(0.73,12.7)	60(0.76,16.2)	26(0.73,15.8)	108(0.72,14.2)	1(0.50,2.0)	
+[Info]11 Clusters are found in total!
+[Info]Step 4: likelihood: 497623.0706, Delta_likelihood: -0.000237
+oxoooxoxoxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1792(0.73,15.1)	1702(0.74,14.3)	2121(0.74,14.7)	905(0.73,14.3)	762(0.75,15.7)	42(0.75,12.2)	189(0.73,13.2)	71(0.74,15.7)	35(0.78,14.4)	117(0.70,13.8)	6(0.64,7.0)	3(0.77,22.0)	2(0.48,11.5)	1(0.50,2.0)	
+[Info]14 Clusters are found in total!
+[Info]Step 5: likelihood: 315921.4328, Delta_likelihood: 0.575148
+oxooxooxooxoxooxooxooxooxooooxooxooooxooxoooxoxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1797(0.72,14.6)	1657(0.75,14.4)	2186(0.74,15.1)	921(0.74,14.9)	728(0.72,14.3)	28(0.76,11.2)	199(0.72,15.1)	67(0.72,14.2)	40(0.77,13.1)	109(0.69,15.0)	5(0.74,25.4)	7(0.62,13.0)	4(0.66,11.8)	
+[Info]13 Clusters are found in total!
+[Info]Step 6: likelihood: 315863.1239, Delta_likelihood: 0.000185
+oxooxooxoxooxooxooxooxoooxooooxoooxooooxoxooxoxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1730(0.74,15.1)	1633(0.74,14.9)	2258(0.74,14.6)	897(0.73,14.5)	700(0.72,14.7)	29(0.72,16.1)	225(0.70,13.1)	95(0.74,16.7)	39(0.68,13.3)	131(0.72,13.2)	5(0.57,15.2)	4(0.71,17.0)	2(0.71,24.0)	
+[Info]13 Clusters are found in total!
+[Info]Step 7: likelihood: 411098.8102, Delta_likelihood: -0.231661
+oxooxoxoxoxxoxooxxoxxoxxoxxoxxoxxxxxxxxoxxoxxxxxxxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1769(0.74,15.5)	1671(0.73,14.7)	2145(0.74,14.6)	880(0.72,14.5)	682(0.75,14.6)	35(0.68,10.5)	213(0.69,13.4)	125(0.73,13.0)	66(0.72,12.9)	143(0.73,14.4)	13(0.67,20.0)	2(0.71,3.5)	4(0.80,12.3)	
+[Info]13 Clusters are found in total!
+[Info]Step 8: likelihood: 315836.6541, Delta_likelihood: 0.301618
+oxooxoxooxooxooxoooxooxooxooxoooxooxoooxoooxoxooooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1725(0.74,15.1)	1629(0.73,14.3)	2160(0.74,15.4)	861(0.74,14.6)	714(0.71,13.7)	44(0.75,9.1)	224(0.73,13.8)	148(0.74,12.9)	46(0.65,14.3)	157(0.73,14.4)	39(0.77,17.2)	1(0.86,14.0)	
+[Info]12 Clusters are found in total!
+[Info]Step 9: likelihood: 315710.2655, Delta_likelihood: 0.000400
+oxooxooxooxooxoxooxooxoooxooxooooxooxooxooxoooxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1730(0.73,14.9)	1610(0.75,14.6)	2118(0.73,15.1)	838(0.74,13.6)	791(0.73,14.2)	38(0.68,13.6)	248(0.73,15.0)	147(0.77,15.8)	36(0.67,14.9)	161(0.75,15.2)	31(0.69,14.4)	
+[Info]11 Clusters are found in total!
+[Info]Step 10: likelihood: 315713.4826, Delta_likelihood: -0.000010
+oxooxooxooxooxoxooxooxoxooxoooxoxooooxoxoxoxoxooxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1947(0.74,14.9)	1570(0.74,15.3)	1979(0.75,14.8)	842(0.73,14.8)	782(0.73,13.8)	29(0.74,9.9)	263(0.69,12.5)	135(0.73,13.6)	25(0.63,15.2)	133(0.72,15.3)	40(0.76,15.3)	3(0.85,8.7)	
+[Info]12 Clusters are found in total!
+[Info]Step 11: likelihood: 315777.3775, Delta_likelihood: -0.000202
+oxooxoxooxooxooxooxooxooxooxoxoooxooxoooxoooxoxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:2048(0.73,14.5)	1562(0.75,15.4)	1945(0.75,14.9)	841(0.72,14.8)	680(0.73,14.3)	32(0.62,18.8)	255(0.72,13.8)	136(0.74,12.6)	34(0.65,15.5)	164(0.72,13.5)	49(0.75,12.5)	1(0.81,32.0)	1(0.49,37.0)	
+[Info]13 Clusters are found in total!
+[Info]Step 12: likelihood: 315783.0474, Delta_likelihood: -0.000018
+oxooxxooxoxooooxoxoxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:2037(0.74,15.1)	1625(0.74,14.5)	1890(0.74,15.0)	849(0.74,14.7)	670(0.74,14.4)	24(0.70,19.5)	261(0.71,12.3)	138(0.73,13.3)	52(0.66,14.1)	121(0.72,15.5)	70(0.74,15.8)	1(0.58,12.0)	4(0.76,35.0)	6(0.76,11.7)	
+[Info]14 Clusters are found in total!
+[Info]Step 13: likelihood: 2815749.9337, Delta_likelihood: -0.887851
+oxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxoxoxoxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:2155(0.73,14.2)	1545(0.75,14.5)	1911(0.74,15.3)	798(0.73,15.0)	687(0.72,13.9)	26(0.70,10.9)	240(0.71,15.7)	150(0.77,16.8)	42(0.72,15.6)	99(0.70,13.1)	86(0.75,17.7)	1(0.59,44.0)	2(0.81,8.0)	5(0.80,17.6)	1(0.82,121.0)	
+[Info]15 Clusters are found in total!
+[Info]Step 14: likelihood: 315895.0608, Delta_likelihood: 7.913561
+oxooxoxoxoxoxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:2199(0.74,15.4)	1442(0.75,13.8)	1974(0.74,14.5)	742(0.72,14.9)	620(0.72,14.6)	17(0.79,15.8)	277(0.72,12.2)	195(0.75,16.0)	73(0.64,15.6)	93(0.73,17.8)	101(0.75,17.4)	3(0.82,20.3)	12(0.76,10.0)	
+[Info]13 Clusters are found in total!
+[Info]Step 15: likelihood: 315640.6054, Delta_likelihood: 0.000806
+oxooxooxooxooxooxooooxooxooooxoooxoooxoxoxoxxoxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:2107(0.74,15.3)	1383(0.74,14.9)	2010(0.74,15.1)	786(0.73,13.6)	668(0.72,14.6)	13(0.69,7.5)	256(0.73,13.8)	210(0.73,13.3)	65(0.68,11.3)	124(0.71,13.0)	95(0.72,12.4)	1(0.78,9.0)	30(0.80,14.2)	
+[Info]13 Clusters are found in total!
+[Info]Step 16: likelihood: 2815686.4930, Delta_likelihood: -0.887899
+oxooxooxooxooxooxooxooxooooxoooxoooxooxoxoxxoxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1966(0.73,15.0)	1389(0.74,14.5)	2069(0.74,15.0)	734(0.74,14.8)	688(0.73,14.2)	16(0.67,11.4)	304(0.72,14.2)	200(0.76,15.5)	55(0.67,9.2)	145(0.75,13.1)	144(0.76,14.6)	3(0.68,17.7)	34(0.70,18.1)	1(0.88,65.0)	
+[Info]14 Clusters are found in total!
+[Info]Step 17: likelihood: 315684.9248, Delta_likelihood: 7.919293
+oxooxooxooxooxooxoxooxooxooxooxoooxooxoooxoxoooxooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1858(0.73,15.2)	1347(0.74,15.2)	2085(0.74,14.5)	772(0.72,14.4)	692(0.72,14.2)	14(0.74,17.1)	322(0.72,14.0)	214(0.74,15.2)	34(0.71,16.2)	171(0.73,15.2)	196(0.76,13.0)	2(0.60,10.0)	36(0.67,12.4)	2(0.50,5.0)	3(0.70,18.7)	
+[Info]15 Clusters are found in total!
+[Info]Step 18: likelihood: 315713.4173, Delta_likelihood: -0.000090
+oxooxooxooxooxooxooxoooxooooxooxooooxooxooxooxooxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1731(0.74,14.5)	1375(0.74,15.4)	2061(0.73,15.0)	853(0.73,14.9)	660(0.73,14.3)	20(0.66,14.4)	271(0.71,13.2)	287(0.75,14.7)	36(0.69,12.5)	191(0.74,13.1)	218(0.76,13.9)	1(0.60,5.0)	33(0.72,12.8)	2(0.80,45.5)	9(0.67,8.8)	
+[Info]15 Clusters are found in total!
+[Info]Step 19: likelihood: 315728.5214, Delta_likelihood: -0.000048
+oxoxoxoxooxooxooxooxoooxooxooxooxooxooxoooxoooxoooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1661(0.74,15.1)	1293(0.74,15.4)	2132(0.74,14.7)	856(0.73,14.7)	641(0.72,12.7)	12(0.67,14.1)	265(0.72,14.4)	388(0.75,14.8)	21(0.67,15.6)	224(0.74,14.6)	206(0.74,14.8)	1(0.57,7.0)	32(0.75,13.8)	1(0.85,13.0)	15(0.68,7.1)	
+[Info]15 Clusters are found in total!
+[Info]Step 20: likelihood: 315705.3863, Delta_likelihood: 0.000073
+oxooxooxoxooxooxoxoooxoxoxooooxoooxooxooooxooxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1553(0.74,15.4)	1274(0.75,15.3)	2057(0.74,14.7)	899(0.71,13.4)	624(0.71,14.2)	26(0.68,10.0)	285(0.73,14.0)	526(0.75,15.0)	16(0.66,16.9)	209(0.74,15.3)	236(0.74,14.0)	24(0.76,12.5)	17(0.70,12.8)	2(0.85,44.0)	
+[Info]14 Clusters are found in total!
+[Info]Step 21: likelihood: 445465.0653, Delta_likelihood: -0.291290
+oxooxooxooxooxooxooxoooooxooooxooxoxoooxoxoxoxoxoxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1550(0.74,15.8)	1233(0.75,14.3)	2016(0.74,15.5)	853(0.74,13.1)	678(0.72,13.7)	19(0.69,9.9)	310(0.70,13.2)	566(0.74,15.3)	16(0.66,15.9)	201(0.72,12.7)	258(0.75,15.0)	29(0.72,11.4)	17(0.72,16.3)	1(0.80,5.0)	1(0.50,2.0)	
+[Info]15 Clusters are found in total!
+[Info]Step 22: likelihood: 482331.6851, Delta_likelihood: -0.076434
+oxooxoxooxooxooxoooxooxoooxooxooxooooxooxooxooxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1462(0.74,15.2)	1154(0.74,14.7)	2136(0.74,15.1)	884(0.72,14.4)	682(0.73,13.8)	35(0.69,9.8)	323(0.72,14.6)	512(0.76,12.9)	17(0.62,16.4)	210(0.72,16.0)	273(0.75,14.6)	38(0.74,17.8)	12(0.70,19.2)	4(0.82,18.0)	3(0.68,27.3)	3(0.71,9.3)	
+[Info]16 Clusters are found in total!
+[Info]Step 23: likelihood: 528423.5318, Delta_likelihood: -0.087225
+oxooxooxooxooxooxooxooxooxooooooxooxooxoxooxooxoooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1466(0.75,15.2)	1108(0.75,16.2)	2029(0.73,14.3)	910(0.71,14.3)	726(0.73,14.3)	26(0.71,11.3)	347(0.73,14.6)	574(0.74,13.9)	11(0.69,19.7)	230(0.74,12.9)	274(0.72,15.1)	26(0.75,11.5)	12(0.75,5.8)	4(0.84,41.8)	3(0.77,30.3)	1(0.86,7.0)	1(0.81,67.0)	
+[Info]17 Clusters are found in total!
+[Info]Step 24: likelihood: 315701.6097, Delta_likelihood: 0.673807
+oxooxooxooxooxooxooxooxoooxooxoooooxooxooooooooxoxxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1507(0.73,14.5)	1026(0.75,15.5)	2048(0.74,15.4)	942(0.73,14.4)	747(0.73,14.5)	20(0.74,9.4)	342(0.68,13.6)	578(0.75,14.1)	19(0.70,24.3)	219(0.71,13.3)	258(0.74,13.6)	18(0.76,13.9)	13(0.82,9.2)	11(0.80,11.5)	
+[Info]14 Clusters are found in total!
+[Info]Step 25: likelihood: 315533.7328, Delta_likelihood: 0.000532
+oxooxooxooxooxoooxoxooxooxoooxoooxoooxoooxoooxooooxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1495(0.74,15.2)	1021(0.74,14.7)	1900(0.74,14.7)	1009(0.72,14.5)	745(0.73,15.2)	21(0.67,9.8)	420(0.73,13.8)	529(0.75,14.6)	27(0.69,16.8)	215(0.75,15.9)	323(0.73,14.1)	13(0.72,10.7)	22(0.65,7.3)	8(0.70,13.5)	
+[Info]14 Clusters are found in total!
+[Info]Step 26: likelihood: 315577.3482, Delta_likelihood: -0.000138
+oxooxoxooxoxoxxoxxoxxoxxoxxxxxxxxoxxxxxxoxxxoxxxxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:1527(0.74,14.8)	878(0.73,14.9)	1916(0.74,15.0)	967(0.73,15.2)	763(0.73,14.4)	16(0.67,15.5)	435(0.74,14.2)	564(0.74,13.2)	40(0.65,10.8)	220(0.73,15.8)	383(0.75,15.0)	12(0.71,5.5)	19(0.75,15.4)	8(0.66,8.9)	
+[Info]14 Clusters are found in total!
+[Info]Step 27: likelihood: 315523.3821, Delta_likelihood: 0.000171
+oxoxooxooxooxooooxooxooxooxooxooxooxooxoooxoooxooxooxooxoxooxoxoxoxLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1517(0.74,15.4)	853(0.74,14.9)	1932(0.75,14.9)	843(0.73,14.6)	759(0.72,14.3)	14(0.68,17.2)	479(0.72,14.2)	627(0.74,13.1)	46(0.63,13.9)	222(0.71,14.3)	417(0.74,15.4)	11(0.70,18.5)	27(0.77,13.9)	1(0.43,7.0)	
+[Info]14 Clusters are found in total!
+[Info]Step 28: likelihood: 315437.9575, Delta_likelihood: 0.000271
+oxooxxoxoxoxoxooxoxooxoxoxoxoxoxxoxooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:410)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+[Info]Clusters:1594(0.74,14.4)	803(0.73,15.4)	2014(0.74,15.0)	755(0.73,14.3)	682(0.72,14.6)	24(0.64,17.8)	496(0.71,13.8)	651(0.76,14.4)	57(0.72,11.0)	190(0.73,14.5)	453(0.73,15.9)	6(0.67,9.7)	23(0.68,14.7)	
+[Info]13 Clusters are found in total!
+[Info]Step 29: likelihood: 700007.6611, Delta_likelihood: -0.549379
+[Info]Accumulating evaluation results during sampling...
+neg users: 1985	pos users: 1994
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.5000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	5186	3222
+1	2365	18346
+Micro F1:
+Class 0: 0.6499		Class 1: 0.8679		
+Macro F1:
+Class 0: 0.6115+0.3340	Class 1: 0.8344+0.1796	

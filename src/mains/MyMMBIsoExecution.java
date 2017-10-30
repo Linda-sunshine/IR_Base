@@ -1,5 +1,6 @@
 package mains;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
@@ -7,13 +8,11 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
-public class MyMMBExecution {
-	
+public class MyMMBIsoExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		DPParameter param = new DPParameter(args);
 
@@ -26,10 +25,11 @@ public class MyMMBExecution {
 
 		boolean enforceAdapt = true;
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
-
-//		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data); // CV.
-		String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
+		String trainFolder = String.format("%s/%s/Users_%d", param.m_prefix, param.m_data, param.m_trainSize);
+		String testFolder = String.format("%s/%s/Users_%d", param.m_prefix, param.m_data, param.m_testSize);
+		
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fv);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fvSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", param.m_prefix, param.m_data);
@@ -41,8 +41,16 @@ public class MyMMBExecution {
 		
 		String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix,param.m_data,param.m_data);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		analyzer.config(trainRatio, param.m_adaptRatio, enforceAdapt);
-		analyzer.loadUserDir(userFolder);
+		analyzer.setReleaseContent(false);
+		analyzer.config(trainRatio, 1, true);
+		
+		// load training users with (adaptRatio=1, testRatio=0)
+		analyzer.loadUserDir(trainFolder);
+				
+		// load testing users with (adaptaRatio=0, testRatio=1)
+		analyzer.config(trainRatio, 0, false);
+		analyzer.loadUserDir(testFolder);
+		
 		analyzer.buildFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -52,21 +60,20 @@ public class MyMMBExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		CLRWithMMB adaptation = null;
+		CLRWithHDP adaptation = null;
 		
-		if(param.m_model.equals("mtmmb")){
-			adaptation = new MTCLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
-			adaptation.setQ(param.m_q);
-			adaptation.setC(param.m_c);
-		} else if(param.m_model.equals("clinmmb")){
-			adaptation = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
-			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+		if(param.m_model.equals("mtclinhdp")){
+			adaptation = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+			((MTCLinAdaptWithHDP) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
+			((MTCLinAdaptWithHDP) adaptation).setsdB(param.m_sdB);
 		} else if(param.m_model.equals("mtclinmmb")){
 			adaptation = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 			((MTCLinAdaptWithMMB) adaptation).setR2TradeOffs(param.m_eta3, param.m_eta4);
-			((CLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+			((MTCLinAdaptWithMMB) adaptation).setsdB(param.m_sdB);
+			((MTCLinAdaptWithMMB) adaptation).setRho(param.m_rho);
+
 		} else
-			adaptation = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);			
+			System.out.println("The model is under development....");
 		
 		// commonly shared parameters.
 		adaptation.setR1TradeOffs(param.m_eta1, param.m_eta2);
@@ -74,7 +81,6 @@ public class MyMMBExecution {
 		adaptation.setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
 		adaptation.setsdA(param.m_sdA);
 		
-		adaptation.setRho(param.m_rho);
 		adaptation.setBurnIn(param.m_burnin);
 		adaptation.setThinning(param.m_thinning);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
@@ -82,6 +88,7 @@ public class MyMMBExecution {
 		// training testing operations.
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.checkTestReviewSize();
 		adaptation.setDisplayLv(displayLv);
 		
 		adaptation.train();
@@ -90,8 +97,15 @@ public class MyMMBExecution {
 		long current = System.currentTimeMillis();
 		System.out.println(current);
 		if(param.m_saveModel){
-			String dir = String.format("%s/%d_%s", param.m_saveDir, current, param.m_data);
-			((MTCLinAdaptWithMMB) adaptation).saveEverything(dir);
+			String dir = String.format("%s/%d_%s_%d", param.m_saveDir, current, param.m_data, param.m_testSize);
+			File fileDir = new File(dir);
+			if(!fileDir.exists())
+				fileDir.mkdirs();
+			if(param.m_model.equals("mtclinmmb"))
+				((MTCLinAdaptWithMMB) adaptation).saveEverything(dir);
+			else {
+				adaptation.printUserPerformance(String.format("%s/hdp_perf.txt", dir));
+			}
 		}
 	}
 }

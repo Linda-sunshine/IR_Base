@@ -8,10 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
@@ -19,6 +15,10 @@ import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation.ModelAdaptation;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 
 /**
  * @author Hongning Wang
@@ -110,11 +110,11 @@ public class RegLR extends ModelAdaptation {
 					L -= Utils.MAX_VALUE;
 			}
 		}
-		
-		if (m_LNormFlag)
-			return L/getAdaptationSize(user);
-		else
-			return L;
+		if(getAdaptationSize(user) == 0)
+			return 0;
+		else {
+			return m_LNormFlag ? L/getAdaptationSize(user) : L;
+		}
 	}
 	
 	//Calculate the function value of the new added instance.

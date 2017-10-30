@@ -3,16 +3,13 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-
-import cern.jet.random.tfloat.FloatUniform;
-
 import structures._PerformanceStat;
-import structures._Review;
-import structures._thetaStar;
 import structures._PerformanceStat.TestMode;
+import structures._Review;
 import structures._Review.rType;
+import structures._thetaStar;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 	
@@ -32,65 +29,44 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 		m_allFlag = b;
 	}
 	
-	// The main MCMC algorithm, assign each user to clusters.
-	protected void calculate_E_step() {
-		_thetaStar curThetaStar;
-		_DPAdaptStruct user;
-
-		for (int i = 0; i < m_userList.size(); i++) {
-			user = (_DPAdaptStruct) m_userList.get(i);
-			if(user.getAdaptationSize() == 0)
-				continue;
-			curThetaStar = user.getThetaStar();
-			curThetaStar.updateMemCount(-1);
-
-			if (curThetaStar.getMemSize() == 0) {// No data associated with the
-													// cluster.
-				swapTheta(m_kBar - 1, findThetaStar(curThetaStar)); 
-				m_kBar--;
-			}
-			sampleOneInstance(user);
-		}
-	}
-	
-	protected void assignCluster(){
-		_DPAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_DPAdaptStruct) m_userList.get(i);
-			if(user.getAdaptationSize() == 0)
-				assignOneCluster(user);
-		}
-	}
-	protected void assignOneCluster(_DPAdaptStruct u){
-		_DPAdaptStruct user = u;
-		double likelihood, logSum = 0;
-		int k;
-		for (k = 0; k < m_kBar; k++) {
-			user.setThetaStar(m_thetaStars[k]);
-			likelihood = calcLogLikelihood(user, m_threshold);
-			
-			likelihood += Math.log(m_thetaStars[k].getMemSize());
-			m_thetaStars[k].setProportion(likelihood);// this is in log space!
-		
-			if (k == 0)
-				logSum = likelihood;
-			else
-				logSum = Utils.logSum(logSum, likelihood);
-		}
-
-		logSum += Math.log(FloatUniform.staticNextFloat());
-
-		k = 0;
-		double newLogSum = m_thetaStars[0].getProportion();
-		do {
-			if (newLogSum >= logSum)
-				break;
-			k++;
-			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
-		} while (k < m_kBar);
-
-		user.setThetaStar(m_thetaStars[k]);
-	}
+//	protected void assignCluster(){
+//		_DPAdaptStruct user;
+//		for(int i=0; i<m_userList.size(); i++){
+//			user = (_DPAdaptStruct) m_userList.get(i);
+//			if(user.getAdaptationSize() == 0)
+//				assignOneCluster(user);
+//		}
+//	}
+//	protected void assignOneCluster(_DPAdaptStruct u){
+//		_DPAdaptStruct user = u;
+//		double likelihood, logSum = 0;
+//		int k;
+//		for (k = 0; k < m_kBar; k++) {
+//			user.setThetaStar(m_thetaStars[k]);
+//			likelihood = calcLogLikelihood(user, m_threshold);
+//			
+//			likelihood += Math.log(m_thetaStars[k].getMemSize());
+//			m_thetaStars[k].setProportion(likelihood);// this is in log space!
+//		
+//			if (k == 0)
+//				logSum = likelihood;
+//			else
+//				logSum = Utils.logSum(logSum, likelihood);
+//		}
+//
+//		logSum += Math.log(FloatUniform.staticNextFloat());
+//
+//		k = 0;
+//		double newLogSum = m_thetaStars[0].getProportion();
+//		do {
+//			if (newLogSum >= logSum)
+//				break;
+//			k++;
+//			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
+//		} while (k < m_kBar);
+//
+//		user.setThetaStar(m_thetaStars[k]);
+//	}
 	
 	protected double calcLogLikelihood(_AdaptStruct user, int k){
 		double L = 0; //log likelihood.
@@ -141,10 +117,11 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 		}
 	}
 	// Sample one instance's cluster assignment.
+	@Override
 	protected void sampleOneInstance(_DPAdaptStruct user){
 		if(user.getAdaptationSize() != 0){
 			super.sampleOneInstance(user);
-		}	
+		} 
 	}
 	
 	@Override
@@ -157,6 +134,7 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_AdaptStruct user;
 					_PerformanceStat userPerfStat;
@@ -240,6 +218,7 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 	
 	
 	//apply current model in the assigned clusters to users
+		@Override
 		protected void evaluateModel() {
 			System.out.println("[Info]Accumulating evaluation results during sampling...");
 			//apply current model in the assigned clusters to users
@@ -255,6 +234,7 @@ public class IsoMTCLinAdaptWithDP extends MTCLinAdaptWithDP {
 			for(int k=0; k<numberOfCores; ++k){
 				threads.add((new Thread() {
 					int core, numOfCores;
+					@Override
 					public void run() {
 						_DPAdaptStruct user;
 						try {

@@ -1,0 +1,84 @@
+Load 5000 2-gram old features from ./data/CoLinAdapt/Amazon/SelectedVocab.csv...
+1000 features for language model are loaded from ./data/CoLinAdapt/Amazon/fv_lm_DF_1000.txt...
+5760 users are loaded from ./data/CoLinAdapt/Amazon/Users_6000...
+4000 users are loaded from ./data/CoLinAdapt/Amazon/Users_4000...
+No normalizaiton is adopted here or wrong parameters in setFeatureValues()!
+Text feature generated for 143161 documents...
+[Info]Feature group size 801
+[Info]Training size: 0(0.00), adaptation size: 85401(0.74), and testing size: 57745(0.74)
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.1000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+ooxooxooxooxoxoooooooooooooooooooxooooooooxoooooooooooxooooooooxooooooxoooxoooooooooxoooooxooooooooo
+ooooxoooooxooooxoooooxooooooooooooooxoooooooxooxooooooooooxooooooooooooooooooooooooxoooxooooooxooooo
+ooooxooooooooooooooxooooooooooooooooooooooooooooxooooxoooooooooooooxoooxoooxooxooxxoxoxxoxxoxxxoxxox
+xxxxoxxoxxoxxxoxxoxxxoxxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 3 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxoooooooooooooxoxooxooxooxooooxooooooxooxoxooxoooxoLBFGS fails!!!!
+Line search failed. See documentation of routine mcsrch. Error return of line search: info = 6 Possible causes: function or gradient are incorrect, or incorrect tolerances. (iflag == -1)
+	at LBFGS.LBFGS.lbfgs(LBFGS.java:458)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.estPhi(CLRWithDP.java:370)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.calculate_M_step(CLRWithDP.java:386)
+	at Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP.train(CLRWithDP.java:401)
+	at mains.MyMMBIsoMain.main(MyMMBIsoMain.java:108)
+oxooooooooxoooooooxooooooxooooooooooooooooooooooooooooooooooooxooooxooooxoooooooooooooxooooooooooooo
+ooooooooooooooooooooooooooxoooooooooxoooxoooooooooooooxoooooooooooooooooxoooooxooooxoooooooooxoooooo
+oxooooooooxoooooxooooooooxooxooooooooxoooxooooooooooooooxoooooooooxooooxooooxooooooooxooooxooooxoooo
+xooooxoooooxooooxoooooooooxoooooooxooooooooooooooooooooooooooooooxooxooooxooooooxooooooooxooooxooooo
+ooooooooooxoooooxooooxooooooooooxoooooxooooooooooxooooooxooooooooooxoxoooooooxoo
+oxooooooooooooooxooooooooooooooxoooooooxooxoooooxooooxoooooxooooxoooooooooxooooooxooxooooooxoooooooo
+xoooooooxooooooooxooxooooooxooooooxoxoooxoooooxoooxoooooooooxooooooooxoooooooxooxoooooxoooooooooxooo
+oooooooooooooooooooooxooooooooxooooooooooooooooooooooooooxoooooooooxooooooooooooooooxoooooxooooooooo
+ooooooooooxooooooooxoooooooooooooxooooxooooxooooooooooooooxoooxooxoooooxoooooooooooxooooxooooooooxoo
+oooooxoooooooooooooooxooooooooxooooxooooooxooooooooooxoooxooooooxooooooooxoooooo
+oxooooooooxoooooooxooooooxoxooooooooxooooooooxoooooxooooooooxooooooxooxoooooooooooxooooooooxoooxoooo
+ooooooooooxooooooooxoooooxooooooooxoooooooooooooooxooxoooooxooooooooxooooooxoxooooxooooooooooooooooo
+ooooxoooxoooooxoooooooxoooooooxooooooooooooooooooooxoooooooxooooooxooooooooxooooxoooooooxooxoooooooo
+ooxoooxoooooooooooooxoxoooooooxooo
+oxoooooooooooooooxoooooooxoxoooooooxooooooooooooxooooxooooxooooooooxoooooxoooooooooxoooooxooooxooooo
+xooooxoooooooooooooooxoooxoooooooooxooooooooxooooxooooooooxoooooooooooooooxooooooooxoooooxooooooooxo
+xooooxoooooxoooooxooooooooooxoooooooooooooooooooooooooooxoooxooooooooxoooooooooooooooooxooooooooxooo
+oooxooooooooxooooooooxo
+oxoooooooooxooooooooxoooooooxoooooxooooooooooxoxoooooooxoooooooooooooxooooxoooooooooxooooooooooooooo
+xoooooooxoooooooxooooxoooooxoooooxoooooooooooooooxooxoooooooooooooxooooooooooxoooooxoooooxoooooooooo
+oxooooxoooooooooxoooooxoooxoooooxooxoooooooooxooooxoooooooooxooooooooxooooooooxoooooooooxooooxooo
+oxooooooooooxoooooooxoooooooxoooooooxooxoooooxooooooxoxoooxoooooxooooxooooxoooooooxooooooooooooooxoo
+oooooxoooooooxoooooooxooxoooooxooooooooxoooooooooooxoooooxooooxoooooxooooooooooxoooooooooooxoooooxoo
+oooooooxooooooxooooxoooooooooxoooooooooooooooooxooooxoooooxooxooooooooooooooooooooooxoxoooooxooooooo
+oooooxooooooxooooxooooooooooooooooooooooxooooooooooxooooooooooooooooooooooxoooooooooooooxoooooooooox
+ooooooooxooooooooxooooxooooooooooooxooo
+oxoxooooooooxoooooooxoooooxoooooooooxoxooooooooooooxoooxoooooxooxooooooxoooooxooooooooooooooooooooox
+ooooooooooooooooxoooxooooooooooxooooooooooooxoooooooooooooooooooooooxoooooooooooooxooxoooooxoooooooo
+ooooooooxoooooooooooooooxoooooooxooooooxoxooo
+oxooooooooxooooxooooxooooooooooooooxooooooooxoxoooooooooooooxoooooxoooooooooxoooooooooooooooooxoooox
+ooooooooooxooooxooooooooxooooxooooxooooooooxooooxooooxooooxooooooooooooooxooxoooooooooooooxoooxooooo
+xoooooooxooooxoooooooooxooooooxooooooxoooxooooooxooooo
+oxooooooooooxoooooooxooooooxoxooooooooooooxooxooooooooxooooxooooooooooooooxoooooxoooooooooxoooooooox
+ooooxooooxooooooooxooooxoooooxooooxooooooooooxooooxooooooooooooooxooooooooooxooooooooooooooooxooooox
+oooooooooxooo
+[Info]Accumulating evaluation results during sampling...
+[Info]Clusters:5750(0.74,14.8)	1(0.72,18.0)	
+[Info]2 Clusters are found in total!
+[Info]Step 0: likelihood: 2079.2452, Delta_likelihood: -0.000251
+oxoooooooooooooxooooxoooooxooxooooooxoooooooooooooooxoxoooooooooooooxooooo
+[Info]Clusters:5751(0.74,14.8)	
+[Info]1 Clusters are found in total!
+[Info]Step 1: likelihood: 2079.3334, Delta_likelihood: -0.000042
+oxooooo
+[Info]Clusters:5751(0.74,14.8)	
+[Info]1 Clusters are found in total!
+[Info]Step 2: likelihood: 2079.3334, Delta_likelihood: 0.000000
+[Info]Accumulating evaluation results during sampling...
+neg users: 3977	pos users: 3990
+MTCLinAdaptWithDP[dim:801,supDim:5001,M:6,alpha:0.1000,#Iter:30,N1(0.000,0.200),N2(1.000,0.200)]
+Micro confusion matrix:
+	0	1
+0	10702	3705
+1	4566	38772
+Micro F1:
+Class 0: 0.7213		Class 1: 0.9036		
+Macro F1:
+Class 0: 0.6745+0.3358	Class 1: 0.8810+0.1500	
