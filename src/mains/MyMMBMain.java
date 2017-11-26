@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
+import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 
 
 public class MyMMBMain {
@@ -33,8 +33,8 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/zf8/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String userFolder = String.format("%s/%s/Users", prefix, dataset);
@@ -87,26 +87,26 @@ public class MyMMBMain {
 ////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 ////		hdp.setAlpha(alpha);
 ////		
-//		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-//		hdp.setR2TradeOffs(eta3, eta4);
-//		
-//		hdp.setsdB(sdA);//0.2
-//		hdp.setsdA(sdB);//0.2
-//		
-//		hdp.setR1TradeOffs(eta1, eta2);
-//		hdp.setConcentrationParams(alpha, eta, beta);
-//		
-//		hdp.setBurnIn(10);
-//		hdp.setNumberOfIterations(30);
-//		
-//		hdp.loadLMFeatures(analyzer.getLMFeatures());
-//		hdp.loadUsers(analyzer.getUsers());
-//		hdp.setDisplayLv(displayLv);
-//		
-//		hdp.train();
-//		hdp.test();
-//		
-//		hdp.printUserPerformance("./data/hdp_perf.txt");
+		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		hdp.setR2TradeOffs(eta3, eta4);
+		
+		hdp.setsdB(sdA);//0.2
+		hdp.setsdA(sdB);//0.2
+		
+		hdp.setR1TradeOffs(eta1, eta2);
+		hdp.setConcentrationParams(alpha, eta, beta);
+		
+		hdp.setBurnIn(10);
+		hdp.setNumberOfIterations(30);
+		
+		hdp.loadLMFeatures(analyzer.getLMFeatures());
+		hdp.loadUsers(analyzer.getUsers());
+		hdp.setDisplayLv(displayLv);
+		
+		hdp.train();
+		hdp.test();
+		
+		hdp.printUserPerformance("./data/yelp_hdp_perf.txt");
 //		
 //		CLRWithMMB mmb = new CLRWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, globalLM);
 //		mmb.setsdA(0.2);
@@ -117,25 +117,25 @@ public class MyMMBMain {
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		mmb.setsdB(0.1);
 
-		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		mmb.setR2TradeOffs(eta3, eta4);
-		
-		mmb.setsdA(sdA);
-		mmb.setsdB(sdB);
-				
-		mmb.setR1TradeOffs(eta1, eta2);
-		mmb.setConcentrationParams(alpha, eta, beta);
-
-		mmb.setRho(0.01);
-		mmb.setBurnIn(10);
-//		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(30);
-		
-		mmb.loadLMFeatures(analyzer.getLMFeatures());
-		mmb.loadUsers(analyzer.getUsers());
-		mmb.setDisplayLv(displayLv);					
-		
-		mmb.trainTrace(dataset+"_trace.txt");
+//		MTCLinAdaptWithMMB mmb = new MTCLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		mmb.setR2TradeOffs(eta3, eta4);
+//		
+//		mmb.setsdA(sdA);
+//		mmb.setsdB(sdB);
+//				
+//		mmb.setR1TradeOffs(eta1, eta2);
+//		mmb.setConcentrationParams(alpha, eta, beta);
+//
+//		mmb.setRho(0.01);
+//		mmb.setBurnIn(10);
+////		mmb.setThinning(5);// default 3
+//		mmb.setNumberOfIterations(30);
+//		
+//		mmb.loadLMFeatures(analyzer.getLMFeatures());
+//		mmb.loadUsers(analyzer.getUsers());
+//		mmb.setDisplayLv(displayLv);					
+//		
+//		mmb.trainTrace(dataset+"_trace.txt");
 //		mmb.train();
 //		mmb.test(); 
 		
