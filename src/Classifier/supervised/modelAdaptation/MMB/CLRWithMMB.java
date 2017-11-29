@@ -8,11 +8,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
-
+import structures.MyPriorityQueue;
 import structures._HDPThetaStar;
 import structures._MMBNeighbor;
+import structures._RankItem;
 import structures._Review;
 import structures._User;
+import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
@@ -393,6 +395,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Put the reference to the matrix for later usage.
 		// Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
 		m_indicator[i][j] = m_hdpThetaStars[k];
+		
+		// for tracking purpose of likelihood given by edges
+		m_likelihoodE += calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i], e);
+
 	}
 	
 	//Sample hdpThetaStar with likelihood.
@@ -515,7 +521,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			sanityCheck();
 
 			lastLikelihood = calculate_M_step();
-//			lastLikelihood += estRho();
 		}
 		
 		// EM iteration.
@@ -526,8 +531,6 @@ public class CLRWithMMB extends CLRWithHDP {
 
 			// Optimize the parameters
 			curLikelihood = calculate_M_step();
-//			curLikelihood += estRho();
-
 			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			
 			if (i%m_thinning==0)
@@ -545,12 +548,18 @@ public class CLRWithMMB extends CLRWithHDP {
 		return curLikelihood;
 	}
 	
+	// decompose the likelihood into three parts:
+	// likelihood of y, likelihood of x and likelihood of edge
+	// in order to avoid repetitive computation, we set the likelihood variables as class member variables
+	double m_likelihoodY = 0, m_likelihoodX = 0, m_likelihoodE = 0;
+
 	@Override
 	public double trainTrace(String tracefile){
 		m_numberOfIterations = 50;
 		m_burnIn = 1;
 		m_thinning = 1;
 			
+	
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		int count = 0;
@@ -567,20 +576,25 @@ public class CLRWithMMB extends CLRWithHDP {
 			calculate_E_step_Edge();
 			sanityCheck();
 
-			lastLikelihood = calculate_M_step();
-//			lastLikelihood += estRho();
+			calculate_M_step();
 		}
 		
 		try{
 			PrintWriter writer = new PrintWriter(new File(tracefile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
+				m_likelihoodY = 0;
+				m_likelihoodX = 0;
+				m_likelihoodE = 0;
+				
 				// Cluster assignment, thinning to reduce auto-correlation.
 				calculate_E_step();
 				calculate_E_step_Edge();
 
 				// Optimize the parameters
 				curLikelihood = calculate_M_step();
+				m_likelihoodY = curLikelihood;
+				accumulateLikelihoodX();
 				
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
 				if (i%m_thinning==0){
@@ -589,9 +603,7 @@ public class CLRWithMMB extends CLRWithHDP {
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
-				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[0], m_perf[1]));
-
-//				printInfo();
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, m_likelihoodX, m_likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 				if(Math.abs(delta) < m_converge)
 					break;
@@ -606,6 +618,21 @@ public class CLRWithMMB extends CLRWithHDP {
 		return curLikelihood;
 	}
 	
+	// accumulate the likelihood given by review content
+	protected void accumulateLikelihoodX(){
+		_MMBAdaptStruct user;
+	
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_MMBAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
+			for(_Review r: user.getReviews()){
+				if (r.getType() == rType.TEST)
+					continue;//do not touch testing reviews!
+				m_likelihoodX += calcLogLikelihoodX(r);
+			}
+		}
+	}
 	protected void updateSampleSize(int index, int val){
 		if(index <0 || index > m_MNL.length)
 			System.err.println("[Error]Wrong index!");
@@ -794,5 +821,82 @@ public class CLRWithMMB extends CLRWithHDP {
 			e.printStackTrace();
 		}
 	}
-
+	
+	// define a friend matrix for evaluating link prediction
+	private int[][] m_frdMtx;
+	// link prediction
+	public void linkPrediction(String sim){
+		calculateClusterProbPerUser();
+		m_frdMtx = new int[m_userList.size()][m_userList.size()-1];
+		double similarity = 0;
+		_MMBAdaptStruct ui, uj;
+		MyPriorityQueue<_RankItem> neighbors;
+		double[][] simMtx = new double[m_userList.size()][m_userList.size()];
+		// for each testing user, rank their neighbors.
+		for(int i=0; i<m_userList.size(); i++){
+			ui = (_MMBAdaptStruct) m_userList.get(i);
+			neighbors = new MyPriorityQueue<_RankItem>(m_userList.size()-1);
+			for(int j=0; j<m_userList.size(); j++){
+				uj = (_MMBAdaptStruct) m_userList.get(j);
+				if(j == i) continue;
+				// calculate sim; rank sim;
+				similarity = j < i ? simMtx[j][i] : calcSimilarity(ui, uj, sim);
+				simMtx[i][j] = similarity;
+				neighbors.add(new _RankItem(j, similarity));
+			}
+			m_frdMtx[i] = rankFriends(ui, neighbors);
+		}
+	}
+	
+	// calculate the similarity between two users.
+	protected double calcSimilarity(_MMBAdaptStruct ui, _MMBAdaptStruct uj, String sim){
+		double[] vctI = new double[m_kBar];
+		double[] vctJ = new double[m_kBar];
+ 		for(int k=0; k<m_kBar; k++){
+ 			vctI[k] = ui.getHDPThetaMemSize(m_hdpThetaStars[k]) + ui.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
+ 			vctJ[k] = uj.getHDPThetaMemSize(m_hdpThetaStars[k]) + uj.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
+ 		}
+ 		return sim.equals("cos") ? Utils.cosine(vctI, vctJ) : Utils.euclideanDistance(vctI, vctJ);
+	}
+	// decide if the neighbors based on similarity are real friends
+	protected int[] rankFriends(_MMBAdaptStruct ui, MyPriorityQueue<_RankItem> neighbors){
+		if(neighbors.size() != m_userList.size()-1)
+			System.out.println("Dimension not correct!");
+		int[] frds = new int[neighbors.size()];
+		_RankItem item;
+		_MMBAdaptStruct uj;
+		for(int i=0; i<neighbors.size(); i++){
+			item = neighbors.get(i);
+			uj = (_MMBAdaptStruct) m_userList.get(item.m_index);
+			if(hasFriend(ui.getUser().getFriends(), uj.getUserID()))
+				frds[i] = 1;	
+		}
+		return frds;
+	}
+	// print out the results of link prediction
+	public void printLinkPrediction(String dir, int testSize){
+		_MMBAdaptStruct user;
+		int[] frd;
+		try{
+			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, 10000-testSize));
+			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, testSize));
+			for(int i=0; i<m_userList.size(); i++){
+				user = (_MMBAdaptStruct) m_userList.get(i);
+				frd = m_frdMtx[i];
+				if(user.getTestSize() == 0){
+					for(int f:frd)
+						trainWriter.write(f+"\t");
+					trainWriter.write("\n");
+				} else{
+					for(int f: frd)
+						testWriter.write(f+"\t");
+					testWriter.write("\n");
+				}
+			}
+			trainWriter.close();
+			testWriter.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 }
