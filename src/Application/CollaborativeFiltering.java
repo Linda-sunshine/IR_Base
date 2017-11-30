@@ -12,14 +12,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
-
 import structures.MyPriorityQueue;
 import structures._RankItem;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 /***
  * @author lin
@@ -152,8 +151,8 @@ public class CollaborativeFiltering {
 		m_avgMAP = 0;
 	}
 	
-	public void loadWeights(String weightFile, String suffix){
-		loadUserWeights(weightFile, suffix);
+	public void loadWeights(String weightFile, String suffix1, String suffix2){
+		loadUserWeights(weightFile, suffix1, suffix2);
 		constructNeighborhood();
 		checkSimi();
 	}
@@ -235,6 +234,7 @@ public class CollaborativeFiltering {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					double[] ui, uj;
 					try {
@@ -275,7 +275,7 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users.\n", m_sType, m_users.size());
 	}	
 	
-	public void loadUserWeights(String folder, final String suffix){
+	public void loadUserWeights(String folder, final String suffix1, final String suffix2){
 		m_userWeights = new double[m_users.size()][];
 		final File dir = new File(folder);
 		final File[] files;
@@ -291,6 +291,7 @@ public class CollaborativeFiltering {
 			for(int k=0; k<numberOfCores; ++k){
 				threads.add((new Thread() {
 					int core, numOfCores;
+					@Override
 					public void run() {
 						double[] weights;
 						String userID;
@@ -298,7 +299,7 @@ public class CollaborativeFiltering {
 						try {
 							for (int i = 0; i + core <dir.listFiles().length; i += numOfCores) {
 								File f = files[i+core];
-								if(f.isFile() && f.getName().endsWith(suffix)){
+								if(f.isFile() && (f.getName().endsWith(suffix1) || f.getName().endsWith(suffix2))){
 									int endIndex = f.getName().lastIndexOf(".");
 									userID = f.getName().substring(0, endIndex);
 									if(m_userIDIndex.containsKey(userID)){
@@ -591,6 +592,7 @@ public class CollaborativeFiltering {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_User u;
 					try {

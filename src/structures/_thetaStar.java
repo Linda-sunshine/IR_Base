@@ -75,4 +75,14 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	public ArrayList<double[]> getAllModels(){
 		return m_betas;
 	}
+	
+	// pWeights is the model weights of sentiment model
+	// while model is just for linear transformation parameters
+	private double[] m_pWeights;
+	public void setWeights(double[] ws){
+		m_pWeights = ws;
+	}
+	public double[] getWeights(){
+		return m_pWeights;
+	}
 }

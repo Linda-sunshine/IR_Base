@@ -2,40 +2,11 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import cern.jet.random.Beta;
+
 import opennlp.tools.util.InvalidFormatException;
-import structures._Review;
-import structures._User;
-import structures._Review.rType;
-import topicmodels.LDA.LDA_Gibbs;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Analyzer.MultiThreadedUserAnalyzer;
-import Analyzer.UserAnalyzer;
-import Classifier.supervised.GlobalSVM;
-import Classifier.supervised.modelAdaptation.Base;
-import Classifier.supervised.modelAdaptation.ModelAdaptation;
-import Classifier.supervised.modelAdaptation.MultiTaskSVM;
-import Classifier.supervised.modelAdaptation.ReTrain;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDPExp;
-import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.CLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeans;
-import Classifier.supervised.modelAdaptation.HDP.IndSVMWithKmeansExp;
-import Classifier.supervised.modelAdaptation.HDP.MTCLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPConfidence;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPDualConfidence;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPExp;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPLR;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDPMultipleE;
 
 public class MyHDPMain {
 	
@@ -68,7 +39,7 @@ public class MyHDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -134,7 +105,7 @@ public class MyHDPMain {
 		double alpha = 0.6, eta = 0.1, beta = 0.01, sdA = 0.1, sdB = 0.1; 
 		
 		// best parameter for yelp so far.
-		alpha = 0.1; sdA = 0.0425; sdB = 0.0425;
+		alpha = 1; sdA = 0.0425; sdB = 0.0425;
 		
 //		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
@@ -153,6 +124,8 @@ public class MyHDPMain {
 		
 		hdp.train();
 		hdp.test();
+		hdp.saveModel("./data/mtclinhdp_models");
+		
 //		hdp.printUserPerformance("./data/hdp_perf_train.txt");
 //		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
 	}

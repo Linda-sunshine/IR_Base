@@ -9,6 +9,7 @@ import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.IndividualSVM;
 import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithKmeans;
+import Classifier.supervised.modelAdaptation.DirichletProcess.MTCLinAdaptWithDP;
 import clustering.KMeansAlg4Vct;
 
 public class MyDPMain {
@@ -198,7 +199,7 @@ public class MyDPMain {
 		
 		/***our algorithm: MTCLinAdaptWithDP***/
 //		MTCLinAdaptWithDPExp2 adaptation = new MTCLinAdaptWithDPExp2(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
-//		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
+		MTCLinAdaptWithDP adaptation = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 
 //		MTCLinAdaptWithDPExp adaptation = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
 

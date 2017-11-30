@@ -611,7 +611,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 
 		evaluateModel(); // we do not want to miss the last sample?!
-//		setPersonalizedModel();
+		setPersonalizedModel();
 		return curLikelihood;
 	}
 	
