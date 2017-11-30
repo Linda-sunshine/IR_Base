@@ -67,7 +67,7 @@ public class CFExecution {
 			performance[m][1] = cf.getAvgMAP();
 		}
 //		String filename = String.format("./data/%s_cf_time_%d_tok%d.txt", dataset, param.m_t, param.m_k);
-		String filename = String.format("./%s_cf_time_%d_topK_%d.txt", param.m_data, param.m_data, param.m_t, param.m_k);
+		String filename = String.format("./%s_cf_time_%d_topK_%d.txt", param.m_data, param.m_t, param.m_k);
 		PrintWriter writer = new PrintWriter(new File(filename));
 		writer.write("\t\tNDCG\tMAP\n");
 
