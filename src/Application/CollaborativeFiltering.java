@@ -285,7 +285,7 @@ public class CollaborativeFiltering {
 		
 		if(!dir.exists()){
 			System.err.print("[Info]BoW is used as user weights.");
-			loadVSMWeights();
+			loadSVMWeights();
 		} else{
 			files = dir.listFiles();
 			for(int k=0; k<numberOfCores; ++k){
@@ -338,7 +338,7 @@ public class CollaborativeFiltering {
 	}
 	
 	//If not weights provided, use BoW weights.
-	public void loadVSMWeights(){
+	public void loadSVMWeights(){
 		
 		_User u;
 		m_userWeights = new double[m_users.size()][];
