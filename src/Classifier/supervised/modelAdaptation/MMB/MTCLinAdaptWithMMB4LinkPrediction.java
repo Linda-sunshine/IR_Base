@@ -230,14 +230,14 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
 	}
 	
-	protected void MLEB(){
-		m_B = new double[m_kBar][m_kBar];
-		for(int k=0; k<m_kBar; k++){
-			for(int l=0; l<m_kBar; l++){
-				m_B[k][l] = 
-			}
-		}
-	}
+//	protected void MLEB(){
+//		m_B = new double[m_kBar][m_kBar];
+//		for(int k=0; k<m_kBar; k++){
+//			for(int l=0; l<m_kBar; l++){
+//				m_B[k][l] = 
+//			}
+//		}
+//	}
 
 	// calculate the similarity between two users based on mixture
 	// sim(i,j)=\sum_{k,l}\pi_{i,k}\pi_{j,l}B_{kl}
