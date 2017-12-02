@@ -1,30 +1,34 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Random;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
-import cern.jet.random.tfloat.FloatUniform;
+import structures.MyPriorityQueue;
 import structures._Doc;
 import structures._PerformanceStat.TestMode;
+import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import structures._thetaStar;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
+import cern.jet.random.tfloat.FloatUniform;
 
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
 	protected int m_numberOfIterations = 50;
-	protected int m_burnIn = 10, m_thinning = 5;// burn in time, thinning time.
+	protected int m_burnIn = 20, m_thinning = 3;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
-	protected double m_alpha = 0.25; // Scaling parameter of DP.
+	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
 	protected NormalPrior m_G0; // prior distribution
 	protected boolean m_vctMean = true; // flag to determine whether we should use w_0 as prior for w_u
@@ -43,8 +47,6 @@ public class CLRWithDP extends LinAdapt {
 	protected double[] m_models; // model parameters for clusters to be used in l-bfgs optimization
 	public static _thetaStar[] m_thetaStars = new _thetaStar[1000];//to facilitate prediction in each user 
 
-	protected Random m_rand = new Random();
-	
 	public CLRWithDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel){
 		super(classNo, featureSize, featureMap, globalModel, null);
 		m_dim = m_featureSize + 1; // to add the bias term
@@ -55,6 +57,9 @@ public class CLRWithDP extends LinAdapt {
 		m_dim = m_featureSize + 1; // to add the bias term
 	}	
 	
+	public void setThinning(int t){
+		m_thinning = t;
+	}
 	public void setMultiTheadFlag(boolean b){
 		m_multiThread = b;
 	}
@@ -73,7 +78,8 @@ public class CLRWithDP extends LinAdapt {
 
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
-			
+			if(user.getTestSize() == 0)
+				continue;
 			oldTheta = user.getThetaStar();
 			for(int k=0; k<m_kBar; k++){
 				user.setThetaStar(m_thetaStars[k]);
@@ -94,8 +100,8 @@ public class CLRWithDP extends LinAdapt {
 		double Pi = 0;
 			
 		for(_Review review:user.getReviews()){
-			if (review.getType() != rType.ADAPTATION && review.getType() != rType.TEST)
-				continue; // only touch the adaptation data, so this will be only for training data? What's the purpose of this function?
+			if (review.getType() != rType.ADAPTATION  && review.getType() != rType.TEST)
+					continue; // only touch the adaptation data
 				
 			Pi = logit(review.getSparse(), user);
 			if(review.getYLabel() == 1) {
@@ -115,7 +121,6 @@ public class CLRWithDP extends LinAdapt {
 		else
 			return L;
 	}
-	
 	public int predict(_AdaptStruct user, _thetaStar theta){
 		double[] As;
 		double sum;
@@ -163,15 +168,11 @@ public class CLRWithDP extends LinAdapt {
 		return -1;// impossible to hit here!
 	}
 	
-	protected boolean isTransformationBased() {
-		return false;
-	}
-	
 	// Sample thetaStars.
 	protected void sampleThetaStars(){
 		for(int m=m_kBar; m<m_kBar+m_M; m++){
 			if (m_thetaStars[m] == null) {
-				if (isTransformationBased())// this should include all the inherited classes for adaptation based models
+				if (this instanceof CLinAdaptWithDP)// this should include all the inherited classes for adaptation based models
 					m_thetaStars[m] = new _thetaStar(2*m_dim);
 				else
 					m_thetaStars[m] = new _thetaStar(m_dim);
@@ -182,6 +183,10 @@ public class CLRWithDP extends LinAdapt {
 	
 	// Sample one instance's cluster assignment.
 	protected void sampleOneInstance(_DPAdaptStruct user){
+		// sanity check
+		if(user.getAdaptationSize() == 0)
+			System.out.println("The user does not have adaptation data!");
+		
 		double likelihood, logSum = 0;
 		int k;
 		
@@ -190,7 +195,6 @@ public class CLRWithDP extends LinAdapt {
 		for(k=0; k<m_kBar+m_M; k++){
 			user.setThetaStar(m_thetaStars[k]);
 			likelihood = calcLogLikelihood(user);
-			
 			if (k<m_kBar)
 				likelihood += Math.log(m_thetaStars[k].getMemSize());
 			else
@@ -202,6 +206,8 @@ public class CLRWithDP extends LinAdapt {
 				logSum = likelihood;
 			else
 				logSum = Utils.logSum(logSum, likelihood);
+//			System.out.print(String.format("%.4f\t%.4f\n",likelihood, logSum));
+
 		}
 		
 		logSum += Math.log(FloatUniform.staticNextFloat());//we might need a better random number generator
@@ -214,7 +220,7 @@ public class CLRWithDP extends LinAdapt {
 			k++;
 			newLogSum = Utils.logSum(newLogSum, m_thetaStars[k].getProportion());
 		} while (k<m_kBar+m_M);
-		
+//		System.out.print(String.format("------kBar:%d, k:%d-----------", m_kBar, k));
 
 		if (k==m_kBar+m_M) {
 			System.err.println("[Warning]Hit the very last element in theatStar!");
@@ -235,28 +241,15 @@ public class CLRWithDP extends LinAdapt {
 		m_thetaStars[b] = cTheta;// kBar starts from 0, the size decides how many are valid.
 	}
 	
-	protected void permutateUsers() {		
-		_AdaptStruct user;
-		int s;
-		
-		for(int i=m_userList.size()-1; i>1; i--) {
-			s = m_rand.nextInt(i);
-			
-			//swap the user
-			user = m_userList.get(s);
-			m_userList.set(s, m_userList.get(i));
-			m_userList.set(i, user);
-		}		
-	}
-	
 	// The main MCMC algorithm, assign each user to clusters.
 	protected void calculate_E_step(){
 		_thetaStar curThetaStar;
 		_DPAdaptStruct user;
 		
-		permutateUsers();
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0) 
+				continue;
 			curThetaStar = user.getThetaStar();
 			curThetaStar.updateMemCount(-1);
 			
@@ -301,6 +294,8 @@ public class CLRWithDP extends LinAdapt {
 					try {						
 						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
 							user = (_DPAdaptStruct)m_userList.get(i+core);
+							if(user.getAdaptationSize() == 0)
+								continue;
 							m_fValue[core] -= calcLogLikelihood(user);
 							
 							for(_Review review:user.getReviews()){
@@ -337,7 +332,7 @@ public class CLRWithDP extends LinAdapt {
 		}
 		
 		for(int k=0;k<numberOfCores;++k)
-			Utils.add2Array(m_g, m_gradients[k], 1);
+			Utils.scaleArray(m_g, m_gradients[k], 1);
 		return Utils.sumOfArray(m_fValues);
 	}
 	
@@ -372,7 +367,7 @@ public class CLRWithDP extends LinAdapt {
 						System.out.println();
 				} 
 				
-				LBFGS.lbfgs(m_g.length, 5, m_models, fValue, m_g, false, m_diag, iprint, 1e-2, 1e-16, iflag);//In the training process, A is updated.
+				LBFGS.lbfgs(m_g.length, 6, m_models, fValue, m_g, false, m_diag, iprint, 1e-3, 1e-16, iflag);//In the training process, A is updated.
 				setThetaStars();
 				oldFValue = fValue;
 				
@@ -420,7 +415,7 @@ public class CLRWithDP extends LinAdapt {
 				evaluateModel();
 			
 			printInfo();
-			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.6f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
 			lastLikelihood = curLikelihood;
@@ -430,58 +425,58 @@ public class CLRWithDP extends LinAdapt {
 //		setPersonalizedModel();
 		return curLikelihood;
 	}
-	
-//	// added by Lin for tracking trace. 
-//	public double trainTrace(String tracefile){
-//		m_numberOfIterations = 50;
-//		m_burnIn = 1;
-//		m_thinning = 1;
-//		
-//		System.out.println(toString());
-//		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-//		int count = 0;
-//		
-//		init(); // clear user performance and init cluster assignment		
-//		
-//		// Burn in period.
-//		while(count++ < m_burnIn){
-//			calculate_E_step();
-//			calculate_M_step();
-//		}
-//		try{
-//			PrintWriter writer = new PrintWriter(new File(tracefile));
-//			// EM iteration.
-//			for(int i=0; i<m_numberOfIterations; i++){
-//				// Cluster assignment, thinning to reduce auto-correlation.
-//				calculate_E_step();
-//			
-//				// Optimize the parameters
-//				curLikelihood = calculate_M_step();
-//			
-//				delta = (lastLikelihood - curLikelihood)/curLikelihood;
-//				if (i%m_thinning==0){
-//					evaluateModel();
-//					test();
-//					for(_AdaptStruct u: m_userList)
-//						u.getPerfStat().clear();
-//				}
-//				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[2], m_perf[3]));
-//
-//				printInfo();
-//				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-//				if(Math.abs(delta) < m_converge)
-//					break;
-//				lastLikelihood = curLikelihood;
-//		}
-//		writer.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//		evaluateModel(); // we do not want to miss the last sample?!
-//		setPersonalizedModel();
-//		return curLikelihood;
-//	}
 
+	// added by Lin for tracking trace. 
+	public double trainTrace(String tracefile){
+		m_numberOfIterations = 50;
+		m_burnIn = 1;
+		m_thinning = 1;
+			
+		System.out.println(toString());
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		int count = 0;
+			
+		init(); // clear user performance and init cluster assignment		
+			
+		// Burn in period.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			lastLikelihood = calculate_M_step();
+		}
+		try{
+			PrintWriter writer = new PrintWriter(new File(tracefile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+				
+				// Optimize the parameters
+				curLikelihood = calculate_M_step();
+				
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				writer.write(String.format("%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, delta, m_kBar, m_perf[0], m_perf[1]));
+
+				printInfo();
+				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+		}
+		writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+		setPersonalizedModel();
+		return curLikelihood;
+	}
+		
 	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim;
@@ -541,6 +536,8 @@ public class CLRWithDP extends LinAdapt {
 		_DPAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_DPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
 			sampleOneInstance(user);
 		}		
 	}
@@ -548,6 +545,7 @@ public class CLRWithDP extends LinAdapt {
 	@Override
 	protected void init(){
 		super.init();
+		Arrays.fill(m_thetaStars, null);
 		initThetaStars();
 		
 		//init the structures for multi-threading
@@ -650,7 +648,6 @@ public class CLRWithDP extends LinAdapt {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
-				
 				@Override
 				public void run() {
 					_DPAdaptStruct user;
@@ -701,9 +698,14 @@ public class CLRWithDP extends LinAdapt {
 	}
 	
 	public void printInfo(){
+		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(5);		
+
 		//clear the statistics
-		for(int i=0; i<m_kBar; i++) 
+		for(int i=0; i<m_kBar; i++){ 
 			m_thetaStars[i].resetCount();
+			clusterRanker.add(new _RankItem(i, m_thetaStars[i].getMemSize()));
+		}
 
 		//collect statistics across users in adaptation data
 		_thetaStar theta = null;
@@ -724,7 +726,28 @@ public class CLRWithDP extends LinAdapt {
 		System.out.print("[Info]Clusters:");
 		for(int i=0; i<m_kBar; i++)
 			System.out.format("%s\t", m_thetaStars[i].showStat());	
-		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));
+		System.out.print(String.format("\n[Info]%d Clusters are found in total!\n", m_kBar));			
+	}
+
+	void printTopWords(_thetaStar cluster) {
+		MyPriorityQueue<_RankItem> wordRanker = new MyPriorityQueue<_RankItem>(10);
+		double[] phi = cluster.getModel();
+	
+		//we will skip the bias term!
+		System.out.format("Cluster %d (%d)\n[positive]: ", cluster.getIndex(), cluster.getMemSize());
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, phi[i]));//top positive words with expected polarity
+
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);
+	
+		System.out.format("\n[negative]: ");
+		wordRanker.clear();
+		for(int i=1; i<phi.length; i++) 
+			wordRanker.add(new _RankItem(i, -phi[i]));//top negative words
+
+		for(_RankItem it:wordRanker)
+			System.out.format("%s:%.3f\t", m_features[it.m_index], phi[it.m_index]);	
 	}
 	
 	public void setGlobalModel(int fvSize){
@@ -733,5 +756,39 @@ public class CLRWithDP extends LinAdapt {
 	
 	public void setQ(double q){
 		m_q = q;
+	}
+	
+	public void saveClusterModels(String model){
+		PrintWriter writer;
+		String filename;
+		File dir = new File(model);
+		_thetaStar theta;
+		double[] weight;
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				theta = m_thetaStars[i]; 
+				filename = String.format("%s/%d.classifier", model, theta.getIndex());
+				writer = new PrintWriter(new File(filename));
+				weight = theta.getModel();
+				for(int v=0; v<weight.length; v++){
+					if(v == weight.length-1)
+						writer.write(Double.toString(weight[v]));
+					else
+						writer.write(weight[v]+",");
+				}
+				writer.close();
+			}
+			writer = new PrintWriter(new File(model+"/ClusterMember.txt"));
+			for(_AdaptStruct u: m_userList){
+				_DPAdaptStruct user = (_DPAdaptStruct) u;
+				writer.write(user.getUserID()+"\t"+user.getThetaStar().getIndex()+"\n");
+			}
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+		
 	}
 }
