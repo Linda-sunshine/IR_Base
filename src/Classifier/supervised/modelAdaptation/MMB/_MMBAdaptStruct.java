@@ -22,7 +22,8 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	// This is the uj and neighbor map.
 	// key: uj; val: group parameter-_HDPThetaStar.
 	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
-	
+	// the mixture over global components
+	protected double[] m_mixture; 
 	public _MMBAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
@@ -140,5 +141,11 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		return prob;
 	}	
 	
+	protected void setMixture(double[] m){
+		m_mixture = m;
+	}
 	
+	protected double[] getMixture(){
+		return m_mixture;
+	}
 }

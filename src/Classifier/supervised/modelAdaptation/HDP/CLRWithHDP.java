@@ -662,7 +662,7 @@ public class CLRWithHDP extends CLRWithDP {
 			probs = new double[m_kBar];
 		
 		_HDPAdaptStruct user;
-		_HDPThetaStar oldTheta, curTheta;
+		_HDPThetaStar curTheta;
 		
 		//sample a new cluster parameter first.
 		if(m_newCluster) {
@@ -677,7 +677,6 @@ public class CLRWithHDP extends CLRWithDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
 					continue;				
-				oldTheta = r.getHDPThetaStar();
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
@@ -688,8 +687,8 @@ public class CLRWithHDP extends CLRWithDP {
 				logSum = Utils.logSumOfExponentials(probs);
 				for(int k=0; k<probs.length; k++)
 					probs[k] -= logSum;
-				r.setClusterPosterior(probs);//posterior in log space
-				r.setHDPThetaStar(oldTheta);
+				// posterior in log space
+				r.setClusterPosterior(probs);
 			}
 		}
 	}

@@ -39,7 +39,7 @@ public class MyHDPMain {
 //		String prefix = "/if15/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -118,13 +118,13 @@ public class MyHDPMain {
 		
 		hdp.setBurnIn(10);
 //		hdp.setThinning(5);// default 3
-//		hdp.setNumberOfIterations(100);// default 50
+		hdp.setNumberOfIterations(10);// default 50
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		
 		hdp.train();
 		hdp.test();
-		hdp.saveModel("./data/mtclinhdp_models");
+//		hdp.saveModel("./data/mtclinhdp_models");
 		
 //		hdp.printUserPerformance("./data/hdp_perf_train.txt");
 //		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
