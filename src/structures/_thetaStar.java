@@ -13,29 +13,14 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	double m_pCount, m_nCount; // number of positive and negative documents in this cluster
 	ArrayList<double[]> m_betas = new ArrayList<double[]>();
 	
-	
-	/***
-	 * This variable is used to decide whether the theta star is valid or not.
-	 */
-	boolean m_isValid = false;
-	public void enable(){
-		m_isValid = true;
-	}
-	
-	public void disable(){
-		m_isValid = false;
-	}
-	
-	public boolean isValid(){
-		return m_isValid;
-	}
-	public void addOneBeta(double[] b){
-		m_betas.add(b);
-	}
 	public _thetaStar(int dim){
 		m_dim = dim;
 		m_memSize = 0;
 		m_beta = new double[m_dim];
+	}
+	
+	public void addOneBeta(double[] b){
+		m_betas.add(b);
 	}
 	
 	public int getMemSize(){
@@ -89,5 +74,15 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	
 	public ArrayList<double[]> getAllModels(){
 		return m_betas;
+	}
+	
+	// pWeights is the model weights of sentiment model
+	// while model is just for linear transformation parameters
+	private double[] m_pWeights;
+	public void setWeights(double[] ws){
+		m_pWeights = ws;
+	}
+	public double[] getWeights(){
+		return m_pWeights;
 	}
 }
