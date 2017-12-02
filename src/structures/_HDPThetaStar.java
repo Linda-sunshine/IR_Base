@@ -9,14 +9,14 @@ import utils.Utils;
 /**
  * The structure wraps both \phi(_thetaStar) and \psi.
  * @author lin
- *
  */
 public class _HDPThetaStar extends _thetaStar {
 	// beta in _thetaStar is \phi used in HDP.
 	
-	//this will be in log space!
-	public int m_hSize; //total number of local groups in the component.
-	protected double m_gamma;
+	private double m_gamma;
+	
+	// This variable is used to decide whether the theta star is valid or not.
+	private boolean m_isValid = false;
 	
 	/****edge is indicator for one direction, i->j \in g (current theta),
 	 ****connection contains two indicators: i->j \in g and j->i \in h.****/
@@ -24,9 +24,15 @@ public class _HDPThetaStar extends _thetaStar {
 	protected int m_edgeSize[];//0: zero-edge count;1: one-edge count.
 	
 	// The count of the features inside clusters.
-	double[] m_lmStat = null;
+	protected double[] m_lmStat = null;
+	
 	// key: theta, value: corresponding edge counts.
-	HashMap<_HDPThetaStar, int[]> m_connectionCount;
+	protected HashMap<_HDPThetaStar, int[]> m_connectionCount;
+	
+	protected ArrayList<String> m_reviewNames = new ArrayList<String>();
+
+	// Total number of local groups in the component, in log space.
+	public int m_hSize; 
 	
 	public _HDPThetaStar(int dim) {
 		super(dim);
@@ -34,11 +40,26 @@ public class _HDPThetaStar extends _thetaStar {
 		m_edgeSize = new int[2];
 		m_connectionCount = new HashMap<_HDPThetaStar, int[]>();
 	}
+	
 	public _HDPThetaStar(int dim, double gamma) {
 		super(dim);
 		m_gamma = gamma;
 		m_edgeSize = new int[2];
 		m_connectionCount = new HashMap<_HDPThetaStar, int[]>();
+	}
+	
+	public void enable(){
+		m_isValid = true;
+	}
+	
+	public void disable(){
+		m_isValid = false;
+		m_lmStat = null;
+		m_gamma = 0;
+	}
+	
+	public boolean isValid(){
+		return m_isValid;
 	}
 	
 	public void initLMStat(int lmDim){
@@ -48,6 +69,10 @@ public class _HDPThetaStar extends _thetaStar {
 			Arrays.fill(m_lmStat, 0);
 	}
 	
+	// reset lmStat to null, for likelihoodX calculation.
+	public void resetLMStat(){
+		m_lmStat = null;
+	}
 	public void clearLMStat(){
 		Arrays.fill(m_lmStat, 0);
 	}
@@ -62,7 +87,7 @@ public class _HDPThetaStar extends _thetaStar {
 		for(_SparseFeature fv: fvs){
 			m_lmStat[fv.getIndex()] -= fv.getValue();
 			if(m_lmStat[fv.getIndex()] < 0)
-				System.err.println("Negative sufficient statistics for \\psi!");
+				System.out.println("Bug");
 		}
 	}
 	
@@ -81,6 +106,9 @@ public class _HDPThetaStar extends _thetaStar {
 		return sum;
 	}
 
+	public void resetGamma(){
+		setGamma(0);
+	}
 	public void setGamma(double g){
 		m_gamma = g;
 	}
@@ -89,11 +117,11 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_gamma;
 	}
 	
+	@Override
 	public String showStat() {
 		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
 	}
 	
-	ArrayList<String> m_reviewNames = new ArrayList<String>();
 	public void resetReviewNames(){
 		m_reviewNames.clear();
 	}
@@ -109,21 +137,15 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_reviewNames;
 	}
 	
-	@Override
-	// override the function to make the disabling and enabling by itself.
-	public void updateMemCount(int c){
-		m_memSize += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
-	}
+//	@Override
+//	// override the function to make the disabling and enabling by itself.
+//	public void updateMemCount(int c){
+//		m_memSize += c;
+//	}
 	
 	// Functions used in MMB model.
 	public void updateEdgeCount(int e, int c){
 		m_edgeSize[e] += c;
-		// auto check whenever the count changes
-		if(m_memSize == 0 && getTotalEdgeSize() == 0)
-			m_isValid = false;
 	}
 	
 	// Get the edge count for i->j falls in the current theta.
@@ -161,4 +183,9 @@ public class _HDPThetaStar extends _thetaStar {
 		
 		m_connectionCount.get(theta)[e]++;
 	}
+	
+	public HashMap<_HDPThetaStar, int[]> getConnectionMap(){
+		return m_connectionCount;
+	}
+
 }
