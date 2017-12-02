@@ -11,8 +11,6 @@ import Classifier.supervised.modelAdaptation.MMB.CLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.CLinAdaptWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLRWithMMB;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMBDocFirst;
-
 
 public class MyMMBMain {
 	
