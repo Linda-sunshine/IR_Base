@@ -1,18 +1,21 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 /***
  * This class implements the MTCLinAdapt with HDP added.
@@ -222,4 +225,86 @@ public class MTCLinAdaptWithHDP extends CLinAdaptWithHDP {
 			System.out.print(sizes[i]+"\t");
 		System.out.println();
 	}
+	
+	// set each cluster's model weights
+	public void setClusterModels(){
+		double[] Ac;
+		int ki, ks;
+	
+		for(int i=0; i<m_kBar; i++){
+			Ac = m_hdpThetaStars[i].getModel();
+			m_pWeights = new double[m_gWeights.length];
+			for(int n=0; n<=m_featureSize; n++){
+				ki = m_featureGroupMap[n];
+				ks = m_featureGroupMap4SupUsr[n];
+				m_pWeights[n] = Ac[ki]*(m_supModel[ks]*m_gWeights[n] + m_supModel[ks+m_dimSup])+Ac[ki+m_dim];
+			}
+			m_hdpThetaStars[i].setWeights(m_pWeights);
+		}
+	}
+	@Override
+	public void saveClusterModels(String clusterdir){
+		
+		setClusterModels();
+		PrintWriter writer;
+		String filename;
+		double[] weights;
+		File dir = new File(clusterdir);
+		try{
+			if(!dir.exists())
+				dir.mkdirs();
+			for(int i=0; i<m_kBar; i++){
+				filename = String.format("%s/%d.classifier", clusterdir, m_thetaStars[i].getIndex());
+				writer = new PrintWriter(new File(filename));
+				weights = m_hdpThetaStars[i].getWeights();
+				for(int v=0; v<weights.length; v++){
+					if(v == weights.length-1)
+						writer.write(Double.toString(weights[v]));
+					else
+						writer.write(weights[v]+",");
+				}
+				writer.close();
+			}
+		} catch (IOException e){
+				e.printStackTrace();
+		}
+	}
+	
+	@Override
+	protected void setPersonalizedModel() {
+		double[] prob;
+		_HDPAdaptStruct user;
+		Collection<_HDPThetaStar> thetas;
+		
+		setClusterModels();
+		for(_AdaptStruct u:m_userList) {
+			// we set each user's personalized weights based on the review's cluster assignment
+			user = (_HDPAdaptStruct) u;
+	        thetas = user.getHDPTheta4Rvw();
+	        prob = new double[user.getHDPTheta4Rvw().size()];
+	        int count = 0; double sum = 0;
+	        for(_HDPThetaStar theta: thetas){
+	        	double clusterAssignment = getClusterAssignment(user, theta);
+	        	prob[count++] = clusterAssignment;
+	            sum += clusterAssignment;
+	        }
+	        // normalize the probability for each cluster
+	        for(int i=0; i<prob.length; i++){
+	        	prob[i] /= sum;
+	        }
+	        // construct the personalized weights by weighted cluster models
+	        double[] pWeights = new double[m_gWeights.length];
+	        count = 0;
+	        for(_HDPThetaStar theta: thetas){
+	            Utils.add2Array(pWeights, theta.getWeights(), prob[count++]);
+	        }
+	        user.setPersonalizedModel(pWeights);
+		}
+	}
+	
+	// get the assigned review number to one specific cluster
+	protected double getClusterAssignment(_HDPAdaptStruct user, _HDPThetaStar theta){
+		return user.getHDPThetaMemSize(theta);
+	}
+
 }

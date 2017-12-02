@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -23,6 +24,17 @@ public class CLinAdaptWithDP extends CLRWithDP {
 		loadFeatureGroupMap(featureGroupMap);
 		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
 		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
+		Arrays.fill(m_thetaStars, null);
+
+	}
+	
+	public CLinAdaptWithDP(int classNo, int featureSize, String globalModel, String featureGroupMap) {
+		super(classNo, featureSize, globalModel);
+		loadFeatureGroupMap(featureGroupMap);
+		_DPAdaptStruct.m_featureGroupMap = m_featureGroupMap;//this is really an ugly solution
+		m_supWeights = m_gWeights;// this design is for evaluate purpose since we don't need to rewrite evaluate.
+		Arrays.fill(m_thetaStars, null);
+
 	}
 	
 	@Override
@@ -114,8 +126,21 @@ public class CLinAdaptWithDP extends CLRWithDP {
 	}
 	
 	@Override
-	protected boolean isTransformationBased() {
-		return true;
+	protected void setPersonalizedModel() {
+		double[] As;
+		int ki;
+		_DPAdaptStruct user;
+
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_DPAdaptStruct) m_userList.get(i);
+			As = user.getThetaStar().getModel();
+			m_pWeights = new double[m_gWeights.length];
+			for(int n=0; n<=m_featureSize; n++){
+				ki = m_featureGroupMap[n];
+				m_pWeights[n] = As[ki]*m_gWeights[n] + As[ki+m_dim];
+			}
+			user.setPersonalizedModel(m_pWeights);
+		}
 	}
 	
 	// Assign the optimized models to the clusters.

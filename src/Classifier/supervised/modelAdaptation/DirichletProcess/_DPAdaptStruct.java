@@ -10,7 +10,7 @@ import utils.Utils;
 public class _DPAdaptStruct extends _LinAdaptStruct {
 
 	private _thetaStar m_thetaStar = null;
-	protected double[] m_cluPosterior;
+	protected double[] m_cluPosterior, m_cluPosterior_orc;
 	
 	public static int[] m_featureGroupMap;
 	
@@ -34,6 +34,12 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		if (m_cluPosterior==null || m_cluPosterior.length != posterior.length)
 			m_cluPosterior = new double[posterior.length];
 		System.arraycopy(posterior, 0, m_cluPosterior, 0, posterior.length);
+	}
+	
+	public void setClusterPosterior_orc(double[] posterior) {
+		if (m_cluPosterior_orc==null || m_cluPosterior_orc.length != posterior.length)
+			m_cluPosterior_orc = new double[posterior.length];
+		System.arraycopy(posterior, 0, m_cluPosterior_orc, 0, posterior.length);
 	}
 	
 	@Override
@@ -67,7 +73,6 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 					m = m_featureGroupMap[n];
 					sum += (As[m]*CLinAdaptWithDP.m_supWeights[n] + As[m_dim+m]) * fv.getValue();
 				}
-				
 				prob += m_cluPosterior[k] * Utils.logistic(sum); 
 			}
 		}
@@ -75,17 +80,25 @@ public class _DPAdaptStruct extends _LinAdaptStruct {
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += prob; //>0.5?1:0;
-		
 		return prob;
 	}
-	
+
 	@Override
-	public int predict(_Doc doc) {
+	public int predict(_Doc doc){
 		double prob = 0;
 		if (doc.m_pCount==0)//this document has not been tested yet??
 			prob = evaluate(doc);
 		else
 			prob = doc.m_prob/doc.m_pCount;
+		return prob>=0.5 ? 1:0;
+	}	
+	
+	public int predictG(_Doc doc){
+		double prob = 0;
+		if (doc.m_pCount_g == 0)
+			System.err.println("Not accumulated!");
+		else
+			prob = doc.m_prob_g/doc.m_pCount_g;
 		return prob>=0.5 ? 1:0;
 	}
 }

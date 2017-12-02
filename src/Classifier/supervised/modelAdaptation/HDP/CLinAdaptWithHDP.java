@@ -40,18 +40,21 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 	}
 	
 	@Override
+	protected void accumulateClusterModels(){
+		if (m_models==null || m_models.length!=getVSize())
+			m_models = new double[getVSize()];
+		
+		for(int i=0; i<m_kBar; i++)
+			System.arraycopy(m_hdpThetaStars[i].getModel(), 0, m_models, m_dim*2*i, m_dim*2);
+	}
+	
+	@Override
 	protected int getVSize() {
 		return m_kBar*m_dim*2;
 	}
 	
-	@Override
 	protected void initPriorG0() {
 		m_G0 = new DoubleNormalPrior(m_abNuB[0], m_abNuB[1], m_abNuA[0], m_abNuA[1]);
-	}
-	
-	@Override
-	protected boolean isTransformationBased() {
-		return true;
 	}
 	
 	@Override
@@ -82,7 +85,7 @@ public class CLinAdaptWithHDP extends CLRWithHDP {
 		int n, k; // feature index
 		int cIndex = r.getHDPThetaStar().getIndex();
 		if(cIndex <0 || cIndex >= m_kBar)
-			System.err.println("Error, cannot find the theta star!");
+			System.err.println("Error,cannot find the theta star!");
 		int offset = m_dim*2*cIndex;
 		
 		double delta = (review.getYLabel() - logit(review.getSparse(), r)) * weight;
