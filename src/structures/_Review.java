@@ -1,7 +1,15 @@
 package structures;
 
+<<<<<<< HEAD
 import java.util.HashMap;
 
+||||||| merged common ancestors
+=======
+import java.util.HashMap;
+
+import utils.Utils;
+
+>>>>>>> master
 public class _Review extends _Doc {
 
 	public enum rType {
@@ -69,6 +77,7 @@ public class _Review extends _Doc {
 		m_hdpThetaStar = s;
 	}
 	
+<<<<<<< HEAD
 	// key: hdpThetaStar, value: count
 	HashMap<_HDPThetaStar, Integer> m_thetaCountMap = new HashMap<_HDPThetaStar, Integer>();
 	
@@ -88,6 +97,30 @@ public class _Review extends _Doc {
 	public void clearThetaCountMap(){
 		m_thetaCountMap.clear();
 	}
+||||||| merged common ancestors
+=======
+	// key: hdpThetaStar, value: count
+	HashMap<_HDPThetaStar, Integer> m_thetaCountMap = new HashMap<_HDPThetaStar, Integer>();
+	
+	// Increase the current hdpThetaStar count.
+	public void updateThetaCountMap(int c){
+		if(!m_thetaCountMap.containsKey(m_hdpThetaStar)){
+			m_thetaCountMap.put(m_hdpThetaStar, c);
+		} else{
+			int v = m_thetaCountMap.get(m_hdpThetaStar);
+			m_thetaCountMap.put(m_hdpThetaStar, v+c);
+		}
+	}
+	
+	public HashMap<_HDPThetaStar, Integer> getThetaCountMap(){
+		return m_thetaCountMap;
+	}
+	
+	public void clearThetaCountMap(){
+		m_thetaCountMap.clear();
+	}
+	
+>>>>>>> master
 	public _HDPThetaStar getHDPThetaStar(){
 		return m_hdpThetaStar;
 	}
@@ -104,6 +137,7 @@ public class _Review extends _Doc {
 	public double[] getCluPosterior(){
 		return m_cluPosterior;
 	}
+	
 	double m_L4New = 0;
 	public void setL4NewCluster(double l){
 		m_L4New = l;
@@ -112,6 +146,7 @@ public class _Review extends _Doc {
 	public double getL4NewCluster(){
 		return m_L4New;
 	}
+<<<<<<< HEAD
 	// total count of words of the review represented in language model.
 	double m_lmSum = -1;
 	public double getLMSum(){
@@ -133,4 +168,27 @@ public class _Review extends _Doc {
 	public double getConfidence(){
 		return m_confidence;
 	}
+||||||| merged common ancestors
+=======
+	// total count of words of the review represented in language model.
+	double m_lmSum = -1;
+	public double getLMSum(){
+		if(m_lmSum != -1)
+			return m_lmSum;
+		else{
+			m_lmSum = Utils.sumOfArray(m_lm_x_sparse);
+			return m_lmSum;
+		}
+	}
+	
+	// Assign each review a confidence, used in hdp model.
+	protected double m_confidence = 1;
+	public void setConfidence(double conf){
+		m_confidence = conf;
+	}
+	
+	public double getConfidence(){
+		return m_confidence;
+	}
+>>>>>>> master
 }

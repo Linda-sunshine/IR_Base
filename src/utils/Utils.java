@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import cern.jet.random.tdouble.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
 
 public class Utils {
 	
@@ -431,7 +431,7 @@ public class Utils {
 		int i = 0;
 		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
 		while(it.hasNext()){
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			Map.Entry<Integer, Double> pairs = it.next();
 			spVct[i] = new _SparseFeature(pairs.getKey(), pairs.getValue());
 			i++;
 		}
@@ -476,7 +476,7 @@ public class Utils {
 			//iterate through all the features in this section
 			Iterator<Entry<Integer, Double>> it = vPtr.entrySet().iterator();
 			while(it.hasNext()){
-				Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+				Map.Entry<Integer, Double> pairs = it.next();
 				int index = pairs.getKey();
 				double value = pairs.getValue();
 				if (spVcts.containsKey(index)) {
@@ -535,7 +535,7 @@ public class Utils {
 	public static void mergeVectors(HashMap<Integer, Double> src, HashMap<Integer, Double> dst) {
 		Iterator<Entry<Integer, Double>> it = src.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			Map.Entry<Integer, Double> pairs = it.next();
 			int index = pairs.getKey();
 			if (dst.containsKey(index)==false) 
 				dst.put(index, pairs.getValue());

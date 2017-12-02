@@ -155,7 +155,7 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	public int getLMFeatureSize(){
 		return m_lmFeatureNames.size();
 	}
-	
+
 	public void getStat(){
 		ArrayList<Integer> medians = new ArrayList<Integer>();
 		double pos = 0, total = 0;
@@ -292,10 +292,5 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 		} catch (IOException e){
 			e.printStackTrace();
 		}
-	}
-	
-	// get the current user size, used in iso mmb as we load training users first
-	public int getCurrentUserSize(){
-		return m_users.size();
 	}
 }

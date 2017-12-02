@@ -85,7 +85,7 @@ public class LogisticRegression extends BaseClassifier {
 			prob[i] = Utils.dotProduct(m_beta, spXi, offset);			
 		}
 		
-		double logSum = Utils.logSumOfExponentials(prob);
+		double logSum = Utils.logSum(prob);
 		for(int i = 0; i < m_classNo; i++)
 			prob[i] = Math.exp(prob[i] - logSum);
 	}
@@ -141,7 +141,7 @@ public class LogisticRegression extends BaseClassifier {
 		_SparseFeature[] fv = doc.getSparse();
 		for(int i = 0; i < m_classNo; i++)
 			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
-		return Utils.maxOfArrayIndex(m_cache);
+		return Utils.argmax(m_cache);
 	}
 	
 	@Override
@@ -149,7 +149,7 @@ public class LogisticRegression extends BaseClassifier {
 		_SparseFeature[] fv = d.getSparse();
 		for(int i = 0; i < m_classNo; i++)
 			m_cache[i] = Utils.dotProduct(m_beta, fv, i * (m_featureSize + 1));
-		return m_cache[label] - Utils.logSumOfExponentials(m_cache);//in log space
+		return m_cache[label] - Utils.logSum(m_cache);//in log space
 	}
 	
 	protected void debug(_Doc d) {

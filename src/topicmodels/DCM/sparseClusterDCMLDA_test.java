@@ -9,24 +9,25 @@ import java.util.Arrays;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
+import structures._Doc4SparseDCMLDA;
 import structures._RankItem;
 import structures._Word;
 import utils.Utils;
 
-public class DCMLDA_test extends DCMLDA {
-	public DCMLDA_test(int number_of_iteration, double converge, double beta,
+public class sparseClusterDCMLDA_test extends sparseClusterDCMLDA{
+	public sparseClusterDCMLDA_test(int number_of_iteration, double converge,
+			double beta,
 			_Corpus c, double lambda, int number_of_topics, double alpha,
-			double burnIn, int lag, int newtonIter, double newtonConverge) {
+			double burnIn, int lag, int newtonIter, double newtonConverge, double tParam, double sParam, int clusterNum, double gammaParam) {
 		super(number_of_iteration, converge, beta, c, lambda, number_of_topics,
-				alpha, burnIn, lag, newtonIter, newtonConverge);
+				alpha, burnIn, lag, newtonIter, newtonConverge, tParam, sParam, clusterNum, gammaParam);
 
 	}
-	
+
 	public void printTopWords(int k, String betaFile) {
 		double logLikelihood = calculate_log_likelihood();
 		System.out.format("final log likelihood %.3f\t", logLikelihood);
-		
+
 		String filePrefix = betaFile.replace("topWords.txt", "");
 		debugOutput(k, filePrefix);
 
@@ -39,7 +40,7 @@ public class DCMLDA_test extends DCMLDA {
 		System.out.println("print top words");
 		String betaFile = filePrefix + "/topBeta.txt";
 		printTopBeta(topK, betaFile);
-		
+
 		String topWordFile = filePrefix + "/topWords.txt";
 		printTopWord(topK, topWordFile);
 
@@ -60,14 +61,35 @@ public class DCMLDA_test extends DCMLDA {
 
 		for (_Doc d : m_trainSet) {
 			printParentTopicAssignment(d, topicFolder);
-			printWordTopicDistribution(d, wordTopicDistributionFolder, topK);
+			printSparsity(d, topicFolder);
+		}
+		
+		for(int c=0; c<m_clusterNum; c++){
+			printWordTopicDistribution(c, wordTopicDistributionFolder, topK);
 		}
 
 		String parentParameterFile = filePrefix + "parentParameter.txt";
 		String childParameterFile = filePrefix + "childParameter.txt";
 
 		printParameter(parentParameterFile, childParameterFile, m_trainSet);
+		printSparsityRatio(filePrefix);
+	}
+	
+	protected void printSparsityRatio(String filePrefix){
+		String sparsityRatioFile = filePrefix+"sparsityRatio.txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(sparsityRatioFile));
+			
+			for(_Doc d:m_trainSet){
+				_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+				pw.print(DCMDoc.m_topicIndicator_distribution + "\n");
+			}
 
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void printTopBeta(int k, String topBetaFile) {
@@ -135,20 +157,44 @@ public class DCMLDA_test extends DCMLDA {
 			System.err.print("File Not Found");
 		}
 	}
-	
+
 	protected void printParentTopicAssignment(_Doc d, File topicFolder) {
-		String topicAssignmentFile = d.getName() + ".txt";
+		_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+		String topicAssignmentFile = DCMDoc.getName() + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(topicFolder,
 					topicAssignmentFile));
-
-			for (_Word w : d.getWords()) {
+			pw.println("cluster\t" + DCMDoc.m_clusterIndicator);
+			for (_Word w : DCMDoc.getWords()) {
 				int index = w.getIndex();
 				int topic = w.getTopic();
 
 				String featureName = m_corpus.getFeature(index);
 				pw.print(featureName + ":" + topic + "\t");
 			}
+
+			pw.flush();
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	protected void printSparsity(_Doc d, File topicFolder) {
+		String topicAssignmentFile = d.getName() + "sparsity.txt";
+		try {
+			PrintWriter pw = new PrintWriter(new File(topicFolder,
+					topicAssignmentFile));
+
+			_Doc4SparseDCMLDA DCMDoc = (_Doc4SparseDCMLDA) d;
+			pw.print(DCMDoc.m_indicatorTrue_stat + "\t");
+			for (int k = 0; k < number_of_topics; k++) {
+				pw.print(DCMDoc.m_topicIndicator[k] + ":"
+						+ DCMDoc.m_topicIndicator_prob[k] + "\t");
+			}
+
+			pw.print(DCMDoc.m_topicIndicator_distribution);
 
 			pw.flush();
 			pw.close();
@@ -187,25 +233,24 @@ public class DCMLDA_test extends DCMLDA {
 		}
 	}
 
-	protected void printWordTopicDistribution(_Doc d,
+	protected void printWordTopicDistribution(int cID,
 			File wordTopicDistributionFolder, int k) {
-		String wordTopicDistributionFile = d.getName() + ".txt";
+		String wordTopicDistributionFile = cID  + ".txt";
 		try {
 			PrintWriter pw = new PrintWriter(new File(
 					wordTopicDistributionFolder, wordTopicDistributionFile));
 
-			_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
 			for (int i = 0; i < number_of_topics; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						k);
 				for (int v = 0; v < vocabulary_size; v++) {
 					String featureName = m_corpus.getFeature(v);
-					double wordProb = DCMDoc.m_wordTopic_prob[i][v];
+					double wordProb = m_clusterTopicWordProb[cID][i][v];
 					_RankItem ri = new _RankItem(featureName, wordProb);
 					fVector.add(ri);
 				}
 
-				pw.format("Topic %d(%.5f):\t", i, d.m_topics[i]);
+				pw.format("Topic %d(%.5f):\t", i, m_clusterTopicProb[cID][i]);
 				for (_RankItem it : fVector)
 					pw.format("%s(%.5f)\t", it.m_name,
 							m_logSpace ? Math.exp(it.m_value) : it.m_value);
@@ -219,5 +264,4 @@ public class DCMLDA_test extends DCMLDA {
 			e.printStackTrace();
 		}
 	}
-
 }

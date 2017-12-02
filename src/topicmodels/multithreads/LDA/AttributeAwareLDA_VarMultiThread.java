@@ -84,7 +84,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 				for(int i=0; i<number_of_topics; i++) 
 					d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(0.1);
 				
-				logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+				logSum = Utils.logSum(d.m_phi[n]);
 				for(int i=0; i<number_of_topics; i++)
 					d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
 			}
@@ -122,7 +122,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 						}
 					}
 					
-					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+					logSum = Utils.logSum(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
 						d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
 				}
@@ -187,7 +187,7 @@ public class AttributeAwareLDA_VarMultiThread extends LDA_Variational_multithrea
 						d.m_phi[n][i] = v*topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					}
 					
-					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
+					logSum = Utils.logSum(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
 						d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
 					
