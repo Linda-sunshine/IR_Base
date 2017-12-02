@@ -5,25 +5,29 @@ package Classifier.supervised.modelAdaptation;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
-import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
+import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.BaseClassifier;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 /**
  * @author Hongning Wang
@@ -44,8 +48,9 @@ public abstract class ModelAdaptation extends BaseClassifier {
 
 	// Decide if we will normalize the likelihood.
 	protected boolean m_LNormFlag = true;
-	protected String m_dataset = "Amazon"; // Default dataset.
-
+//	protected String m_dataset = "Amazon"; // Default dataset.
+	protected double[] m_perf = new double[2]; // added by Lin for retrieving performance after each test.
+	
 	// added by Lin.
 	public ModelAdaptation(int classNo, int featureSize) {
 		super(classNo, featureSize);
@@ -120,6 +125,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 			System.err.format("[Error]Fail to open file %s.\n", filename);
 		}
 	}
+
 	//Load global model from file.
 	public void loadGlobalModel(String filename){
 		if (filename==null)
@@ -244,6 +250,17 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	
 	abstract protected void setPersonalizedModel();
 	
+	// Used for sanity check for personalization.
+	public int predictG(_Doc doc) {
+		_SparseFeature[] fv = doc.getSparse();
+
+		double maxScore = Utils.dotProduct(m_gWeights, fv, 0);
+		if (m_classNo==2) {
+			return maxScore>0?1:0;
+		} 
+		System.err.print("Wrong classification task!");
+		return -1;
+	}
 	@Override
 	public double test(){
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
@@ -252,6 +269,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_AdaptStruct user;
 					_PerformanceStat userPerfStat;
@@ -271,6 +289,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 										continue;
 									int trueL = r.getYLabel();
 									int predL = user.predict(r); // evoke user's own model
+									r.setPredictLabel(predL);
 									userPerfStat.addOnePredResult(predL, trueL);
 								}
 							}							
@@ -300,9 +319,14 @@ public abstract class ModelAdaptation extends BaseClassifier {
 		}
 		
 		int count = 0;
-		double[] macroF1 = new double[m_classNo];
+		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
+		
+		//init macroF1
+		for(int i=0; i<m_classNo; i++)
+			macroF1.add(new ArrayList<Double>());
+		
 		_PerformanceStat userPerfStat;
-
+		m_microStat.clear();
 		for(_AdaptStruct user:m_userList) {
 			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
 				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
@@ -310,28 +334,57 @@ public abstract class ModelAdaptation extends BaseClassifier {
 				continue;
 			
 			userPerfStat = user.getPerfStat();
-			for(int i=0; i<m_classNo; i++)
-				macroF1[i] += userPerfStat.getF1(i);
+			for(int i=0; i<m_classNo; i++){
+				if(userPerfStat.getTrueClassNo(i) > 0)
+					macroF1.get(i).add(userPerfStat.getF1(i));
+			}
 			m_microStat.accumulateConfusionMat(userPerfStat);
 			count ++;
 		}
-		
+		System.out.print("neg users: " + macroF1.get(0).size());
+		System.out.print("\tpos users: " + macroF1.get(1).size()+"\n");
+
 		System.out.println(toString());
 		calcMicroPerfStat();
-		
-		// macro average
+		// macro average and standard deviation.
 		System.out.println("\nMacro F1:");
-		for(int i=0; i<m_classNo; i++)
-			System.out.format("Class %d: %.4f\t", i, macroF1[i]/count);
-		System.out.println("\n");
-		return Utils.sumOfArray(macroF1);
+		for(int i=0; i<m_classNo; i++){
+			double[] avgStd = calcAvgStd(macroF1.get(i));
+			m_perf[i] = avgStd[0];
+			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
+		}
+//		printPerformance();
+		return 0;
 	}
 
+	public void printPerformance(){
+		_PerformanceStat perf;
+		for(_AdaptStruct user:m_userList){
+			perf = user.getPerfStat();
+			System.out.print(String.format("pos:%d\tneg:%d\tposF1:%.4f\tnegF1:%.4f\n",
+					perf.getTrueClassNo(1), perf.getTrueClassNo(0), perf.getF1(1), perf.getF1(0)));
+			
+		}
+	}
+	public double[] calcAvgStd(ArrayList<Double> fs){
+		double avg = 0, std = 0;
+		for(double f: fs)
+			avg += f;
+		avg /= fs.size();
+		for(double f: fs)
+			std += (f - avg) * (f - avg);
+		std = Math.sqrt(std/fs.size());
+		return new double[]{avg, std};
+	}
+	
 	@Override
 	public void saveModel(String modelLocation) {	
+		File dir = new File(modelLocation);
+		if(!dir.exists())
+			dir.mkdirs();
 		for(_AdaptStruct user:m_userList) {
 			try {
-	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".classifer"));
+	            BufferedWriter writer = new BufferedWriter(new FileWriter(modelLocation+"/"+user.getUserID()+".txt"));
 	            StringBuilder buffer = new StringBuilder(512);
 	            double[] pWeights = user.getPWeights();
 	            for(int i=0; i<pWeights.length; i++) {
@@ -345,7 +398,7 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	            e.printStackTrace(); 
 	        } 
 		}
-		System.out.format("[Info]Save personalized models to %s.", modelLocation);
+		System.out.format("\n[Info]Save personalized models to %s.", modelLocation);
 	}
 	
 	@Override
@@ -373,5 +426,57 @@ public abstract class ModelAdaptation extends BaseClassifier {
 	protected void debug(_Doc d) {
 		System.err.println("[Error]debug(_Doc d) is not implemented in ModelAdaptation family!");
 		System.exit(-1);
+	}
+	
+	
+	public void savePerf(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			for(_AdaptStruct u: m_userList){
+				writer.write(String.format("%s\t%.5f\t%.5f\n", u.getUserID(), u.getPerfStat().getF1(0), u.getPerfStat().getF1(1)));
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	public double[] getPerf(){
+		return m_perf;
+	}
+	
+	// added by Lin for model performance comparison.
+	// print out each user's test review's performance.
+	public void printUserPerformance(String filename){
+		PrintWriter writer;
+		try{
+			writer = new PrintWriter(new File(filename));
+			Collections.sort(m_userList, new Comparator<_AdaptStruct>(){
+				@Override
+				public int compare(_AdaptStruct u1, _AdaptStruct u2){
+					return String.CASE_INSENSITIVE_ORDER.compare(u1.getUserID(), u2.getUserID());
+				}
+			});
+			for(_AdaptStruct u: m_userList){
+				writer.write("-----\n");
+				writer.write(String.format("%s\t%d\n", u.getUserID(), u.getReviews().size()));
+				for(_Review r: u.getReviews()){
+					if(r.getType() == rType.ADAPTATION)
+						writer.write(String.format("%s\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getSource()));
+					if(r.getType() == rType.TEST){
+						writer.write(String.format("%s\t%d\t%d\t%s\n", r.getCategory(), r.getYLabel(), r.getPredictLabel(), r.getSource()));
+					}
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public ArrayList<_AdaptStruct> getUsers(){
+		return m_userList;
 	}
 }
