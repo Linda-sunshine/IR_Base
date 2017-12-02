@@ -241,7 +241,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 			gid = m_featureGroupMap4SupUsr[1+n];
 			m_sWeights[n+1] = As[gid] * m_gWeights[1+n] + As[gid+ m_dimSup];
 		}
-		return Utils.euclideanDistance(m_gWeights, m_sWeights);
+		return Utils.EuclideanDistance(m_gWeights, m_sWeights);
 	}
 	
 	public double calcDiffWsWi(_AdaptStruct user){
@@ -255,6 +255,6 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 			gid = m_featureGroupMap[1+n];
 			m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
 		}
-		return Utils.euclideanDistance(m_pWeights, m_sWeights);
+		return Utils.EuclideanDistance(m_pWeights, m_sWeights);
 	}
 }

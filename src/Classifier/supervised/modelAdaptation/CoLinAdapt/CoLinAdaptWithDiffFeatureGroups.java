@@ -360,7 +360,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		else{
 			_SparseFeature[] fvs = review.getSparse();
 			calcPosterior(fvs, user);
-			return Utils.argmax(m_cache);
+			return Utils.maxOfArrayIndex(m_cache);
 		}
 	}
 	

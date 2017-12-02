@@ -12,7 +12,6 @@ public class _ChildDoc extends _Doc {
 	public double[] m_xProportion; // proportion of x
 
 	protected double m_docLenWithXVal;
-	public double m_zeta;// used for variational inference
 	
 	public _ParentDoc m_parentDoc;
 	
@@ -26,10 +25,9 @@ public class _ChildDoc extends _Doc {
 		m_name = name;
 		m_title = title;
 		m_docLenWithXVal = 0;
-		m_zeta = 0.01;
 		
 	}
-
+	
 	public void setParentDoc(_ParentDoc pDoc){
 		m_parentDoc = pDoc;
 	}
@@ -46,7 +44,7 @@ public class _ChildDoc extends _Doc {
 //		m_stnSimMap = new HashMap<Integer, Double>();
 		super.setTopics4Gibbs(k, alpha);
 	}
-
+	
 	@Override
 	public void setTopics4Gibbs(int k, double alpha){		
 		createSpace(k, alpha);

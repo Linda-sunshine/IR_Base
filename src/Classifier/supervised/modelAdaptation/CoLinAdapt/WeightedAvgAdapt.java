@@ -76,7 +76,7 @@ public class WeightedAvgAdapt extends WeightedAvgTransAdapt {
 		// Likelihood of the user.
 		double L = calcLogLikelihood(user); //log likelihood.
 		// regularization between the personal weighs and global weights.
-		double R1 = m_eta1 * Utils.euclideanDistance(user.getPWeights(), m_gWeights);// 0.5*(a[i]-1)^2
+		double R1 = m_eta1 * Utils.EuclideanDistance(user.getPWeights(), m_gWeights);// 0.5*(a[i]-1)^2
 		return R1 - L;
 	}
 	

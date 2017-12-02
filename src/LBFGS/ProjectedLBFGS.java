@@ -98,7 +98,7 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		int m = Math.min(k, m_M), j=(k+m-1)%m;//the latest step
 		for(int i=0; i<m; i++) {			
 			m_alphas[j] = Utils.dotProduct(m_ss[j], m_sd) * m_rhos[j]; 
-			Utils.add2Array(m_sd, m_ys[j], -m_alphas[j]);
+			Utils.scaleArray(m_sd, m_ys[j], -m_alphas[j]);
 			
 			j = (j+m-1)%m; // go backward
 		}
@@ -116,7 +116,7 @@ public class ProjectedLBFGS extends ProjectedGradient {
 		double beta;
 		for(int i=0; i<m; i++) {
 			beta = m_rhos[j] * Utils.dotProduct(m_sd, m_ys[j]);
-			Utils.add2Array(m_sd, m_ss[j], m_alphas[j] - beta);
+			Utils.scaleArray(m_sd, m_ss[j], m_alphas[j] - beta);
 			j = (j+1)%m; // go forward
 		}
 		

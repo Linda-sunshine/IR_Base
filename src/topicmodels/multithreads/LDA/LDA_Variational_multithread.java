@@ -39,7 +39,7 @@ public class LDA_Variational_multithread extends LDA_Variational {
 					for(int i=0; i<number_of_topics; i++)
 						d.m_phi[n][i] = topic_term_probabilty[i][wid] + Utils.digamma(d.m_sstat[i]);
 					
-					logSum = Utils.logSum(d.m_phi[n]);
+					logSum = Utils.logSumOfExponentials(d.m_phi[n]);
 					for(int i=0; i<number_of_topics; i++)
 						d.m_phi[n][i] = Math.exp(d.m_phi[n][i] - logSum);
 				}

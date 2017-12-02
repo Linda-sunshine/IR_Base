@@ -9,7 +9,6 @@ import java.util.Arrays;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
-import structures._Doc4DCMLDA;
 import structures._RankItem;
 import structures._Word;
 import utils.Utils;
@@ -194,13 +193,13 @@ public class DCMLDA_test extends DCMLDA {
 			PrintWriter pw = new PrintWriter(new File(
 					wordTopicDistributionFolder, wordTopicDistributionFile));
 
-			_Doc4DCMLDA DCMDoc = (_Doc4DCMLDA) d;
+			int docID = d.getID();
 			for (int i = 0; i < number_of_topics; i++) {
 				MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(
 						k);
 				for (int v = 0; v < vocabulary_size; v++) {
 					String featureName = m_corpus.getFeature(v);
-					double wordProb = DCMDoc.m_wordTopic_prob[i][v];
+					double wordProb = m_docWordTopicProb[docID][i][v];
 					_RankItem ri = new _RankItem(featureName, wordProb);
 					fVector.add(ri);
 				}
