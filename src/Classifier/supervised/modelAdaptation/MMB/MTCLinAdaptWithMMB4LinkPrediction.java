@@ -7,6 +7,7 @@ package Classifier.supervised.modelAdaptation.MMB;
  */
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -17,14 +18,14 @@ import structures._Review;
 import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 
 public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 
 	// define a friend matrix for evaluating link prediction
-	private int[][] m_frdTrainMtx, m_frdTestMtx;
-	private int m_trainSize = 0, m_testSize = 0;
-	private double[][] m_simMtx; 
+	protected int[][] m_frdTrainMtx, m_frdTestMtx;
+	protected int m_trainSize = 0, m_testSize = 0;
+	protected double[][] m_simMtx; 
+	protected ArrayList<_MMBAdaptStruct> m_trainSet, m_testSet;
 	
 	// we use MAP for parameter estimation of B
 	// In order to calculate the similarity, we need to use MLE to calculate the value of B
@@ -33,50 +34,36 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	public MTCLinAdaptWithMMB4LinkPrediction(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			String globalModel, String featureGroupMap, String featureGroup4Sup, double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, featureGroup4Sup, betas);
-		
 	}
 	
-	// we calculat the mixture of each user based on their review assignment and edge assignment
-	// this function is used in link prediction: 
-	// train users only have training reviews; test users only have testing reviews.
-	protected void calculateMixturePerUser(){
-		double prob, logSum;
-		double[] probs = new double[m_kBar];
+	// calculate training/testing size, construct training set/testing set
+	public void initLinkPred(){
+		m_trainSet = new ArrayList<_MMBAdaptStruct>();
+		m_testSet = new ArrayList<_MMBAdaptStruct>();
 		
-		_HDPAdaptStruct user;
-		_HDPThetaStar oldTheta, curTheta;
-		
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_HDPAdaptStruct) m_userList.get(i);
-//			if(user.getTestSize() == 0)
-//				calculateTrainUserMixture();
-//			if(user.getTrainSize() == 0)
-//				calculateTestUserMixture();
-			
-			for(_Review r: user.getReviews()){
-				if (r.getType() != rType.TEST)
-					continue;				
-				oldTheta = r.getHDPThetaStar();
-				for(int k=0; k<probs.length; k++){
-					curTheta = m_hdpThetaStars[k];
-					r.setHDPThetaStar(curTheta);
-					prob = calcLogLikelihoodX(r) + Math.log(calcGroupPopularity(user, k, curTheta.getGamma()));
-					probs[k] = prob;
-				}
-			
-				logSum = Utils.logSumOfExponentials(probs);
-				for(int k=0; k<probs.length; k++)
-					probs[k] -= logSum;
-				r.setClusterPosterior(probs);//posterior in log space
-				r.setHDPThetaStar(oldTheta);
+		for(_AdaptStruct user: m_userList){
+			if(user.getTestSize() != 0){
+				m_testSize++;
+				m_testSet.add((_MMBAdaptStruct) user);
+			}
+			else{
+				m_trainSize++;
+				m_trainSet.add((_MMBAdaptStruct) user);
 			}
 		}
+		
+		// The train user and test user may not exist in order, thus we still set the friend 
+		// matrix's size as the total number of users for convenient indexing. As their dim 
+		// is different, we cannot put them in one array
+		m_frdTrainMtx = new int[m_trainSize][m_trainSize-1];
+		m_frdTestMtx = new int[m_testSize][m_userList.size()-1];
+		m_simMtx = new double[m_userList.size()][m_userList.size()];
 	}
 	
-	// In hdp or mmb, we don't assign a review to a specific cluster as we user prob vector for prediction
-	// While in link prediction, we need to assign each review of testing user to one cluster 
-	// as we need to compute the mixture of each user based on review assignment.
-	protected void calculateGlobalMixturePerUser(){	
+	// we calculate the mixture of each user based on their review assignment and edge assignment
+	// this function is used in link prediction: 
+	// train users only have training reviews; test users only have testing reviews.
+	protected void calculateMixturePerUser(){	
 		
 		_MMBAdaptStruct user;
 
@@ -153,39 +140,26 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		user.setMixture(probs);
 	}
 	
-	private void calcTrainSize(){
-		for(_AdaptStruct user: m_userList){
-			if(user.getTestSize() == 0)
-				m_testSize++;
-			else
-				m_trainSize++;
-				
-		}
-	}
 	public void linkPrediction(){
+		initLinkPred();
 		// calculate the global mixture for each user
-		calculateGlobalMixturePerUser();
-		calcTrainSize();
+		MLEB();
+		calculateMixturePerUser();
 		
 		if(m_trainSize + m_testSize != m_userList.size())
 			System.err.println("Bug in calculating train and test size!");
 			
 		_MMBAdaptStruct ui;
-		// The train user and test user may not exist in order, thus we still set the friend 
-		// matrix's size as the total number of users for convenient indexing. As their dim 
-		// is different, we cannot put them in one array
-		m_frdTrainMtx = new int[m_userList.size()][m_trainSize-1];
-		m_frdTestMtx = new int[m_userList.size()][m_userList.size()-1];
-		m_simMtx = new double[m_userList.size()][m_userList.size()];
-		
+	
+		// for each training user, rank their neighbors.
+		for(int i=0; i<m_trainSize; i++){
+			ui = m_trainSet.get(i);
+			linkPrediction4TrainUsers(i, ui);
+		}
 		// for each testing user, rank their neighbors.
-		for(int i=0; i<m_userList.size(); i++){
-			ui = (_MMBAdaptStruct) m_userList.get(i);
-			// if it is train users
-			if(ui.getTestSize() == 0)
-				linkPrediction4TrainUsers(i, ui);
-			else
-				linkPrediction4TestUsers(i, ui);
+		for(int i=0; i<m_testSize; i++){
+			ui = m_testSet.get(i);
+			linkPrediction4TestUsers(i, ui);
 		}
 	}
 	
@@ -194,10 +168,9 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		double sim = 0;
 		_MMBAdaptStruct uj;
 		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_trainSize-1);
-		for(int j=0; j<m_userList.size(); j++){
-			uj = (_MMBAdaptStruct) m_userList.get(j);
-			if(uj.getTestSize() != 0 || j == i)
-				continue;
+		for(int j=0; j<m_trainSize; j++){
+			uj = m_trainSet.get(j);
+			if(j == i) continue;
 			// calculate sim
 			if(j > i){
 				sim = calcSimilarity(ui, uj);
@@ -210,34 +183,49 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
 	}
 		
+	// for testing user, construct user pair among all the users
 	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
 		_MMBAdaptStruct uj;
 		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_userList.size()-1);
-		for(int j=0; j<m_userList.size(); j++){
-			uj = (_MMBAdaptStruct) m_userList.get(j);
-			if(j == i)
-				continue;
+		// go through all the train users first
+		for(int j=0; j<m_trainSize; j++){
+			uj = m_trainSet.get(j);
 			// calculate sim for the pair we have not computed yet
-			if(j > i && m_simMtx[j][i]  == 0) {
-				sim = calcSimilarity(ui, uj);
-				m_simMtx[i][j] = sim;
-				m_simMtx[j][i] = sim;
-			}
+			sim = calcSimilarity(ui, uj);
+			m_simMtx[m_trainSize+i][j] = sim;
 			// rank sim
-			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
+			neighbors.add(new _RankItem(j, sim));
 		}
-		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
+		for(int j=0; j<m_testSize; j++){
+			uj = m_testSet.get(j);
+			if(j == i || j < i) continue;
+			sim = calcSimilarity(ui, uj);
+			m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
+			m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
+			neighbors.add(new _RankItem(m_trainSize+j, sim));
+		}
+		m_frdTestMtx[i] = rankFriends(ui, neighbors);
 	}
 	
-//	protected void MLEB(){
-//		m_B = new double[m_kBar][m_kBar];
-//		for(int k=0; k<m_kBar; k++){
-//			for(int l=0; l<m_kBar; l++){
-//				m_B[k][l] = 
-//			}
-//		}
-//	}
+	// MLE of B matrix
+	protected void MLEB(){
+		int e_0 = 0, e_1 = 0;
+		double b = 0;
+		m_B = new double[m_kBar][m_kBar];
+		_HDPThetaStar theta_g, theta_h;
+		for(int g=0; g<m_kBar; g++){
+			theta_g = m_hdpThetaStars[g];
+			for(int h=0; h<m_kBar; h++){
+				theta_h = m_hdpThetaStars[h];
+				e_0 = theta_g.getConnectionSize(theta_h, 0);
+				e_1 = theta_g.getConnectionSize(theta_h, 1);
+				b = (e_1 + m_abcd[0] -1)/(e_0 + e_1 + m_abcd[0] + m_abcd[1] -2);
+				m_B[g][h] = b;
+				m_B[h][g] = b;
+			}
+		}
+	}
 
 	// calculate the similarity between two users based on mixture
 	// sim(i,j)=\sum_{k,l}\pi_{i,k}\pi_{j,l}B_{kl}
@@ -264,7 +252,7 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		_MMBAdaptStruct uj;
 		for(int i=0; i<neighbors.size(); i++){
 			item = neighbors.get(i);
-			uj = (_MMBAdaptStruct) m_userList.get(item.m_index);
+			uj = item.m_index >= m_trainSize ? m_testSet.get(item.m_index-m_trainSize) : m_trainSet.get(item.m_index);
 			if(hasFriend(ui.getUser().getFriends(), uj.getUserID()))
 				frds[i] = 1;	
 		}
@@ -272,25 +260,24 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	}
 	
 	// print out the results of link prediction
-	public void printLinkPrediction(String dir, int testSize){
-		_MMBAdaptStruct user;
+	public void printLinkPrediction(String dir){
 		int[] frd;
 		try{
-			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, 10000-testSize));
-			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, testSize));
-			for(int i=0; i<m_userList.size(); i++){
-				user = (_MMBAdaptStruct) m_userList.get(i);
-				if(user.getTestSize() == 0){
-					frd = m_frdTrainMtx[i];
-					for(int f:frd)
-						trainWriter.write(f+"\t");
-					trainWriter.write("\n");
-				} else{
-					frd = m_frdTestMtx[i];
-					for(int f: frd)
-						testWriter.write(f+"\t");
-					testWriter.write("\n");
-				}
+			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, 10000-m_testSize));
+			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, m_testSize));
+			// print friends for train users
+			for(int i=0; i<m_trainSize; i++){
+				frd = m_frdTrainMtx[i];
+				for(int f:frd)
+					trainWriter.write(f+"\t");
+				trainWriter.write("\n");	
+			} 
+			// print friends for test users
+			for(int i=0; i<m_testSize; i++){
+				frd = m_frdTestMtx[i];
+				for(int f: frd)
+					testWriter.write(f+"\t");
+				testWriter.write("\n");
 			}
 			trainWriter.close();
 			testWriter.close();
@@ -298,4 +285,6 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 			e.printStackTrace();
 		}
 	}
+	
+
 }

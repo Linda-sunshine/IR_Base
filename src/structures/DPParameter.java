@@ -7,7 +7,8 @@ public class DPParameter {
 	public String m_data = "YelpNew";
 	public String m_model = "mtclinmmb";
 	public double m_adaptRatio = 0.5;
-
+	public String m_dir = "./";
+	
 	public int m_nuOfIterations = 30;
 	public int m_M = 6;
 	public int m_burnin = 10;
@@ -133,8 +134,9 @@ public class DPParameter {
 			else if(argv[i-1].equals("-testSize")){
 				m_testSize = Integer.parseInt(argv[i]);
 				m_trainSize = 10000 - m_testSize;
-			}
-			else
+			} else if(argv[i-1].equals("-dir")){
+				m_dir = argv[i];
+			} else
 				exit_with_help();
 		}
 	}

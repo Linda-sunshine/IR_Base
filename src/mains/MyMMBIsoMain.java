@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB4LinkPrediction;
+import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPrediction;
 
 
 public class MyMMBIsoMain {
@@ -25,22 +25,22 @@ public class MyMMBIsoMain {
 
 		boolean enforceAdapt = true;
  
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/zf8/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/zf8/lg5bt/DataSigir";
 
 //		int testSize = 2000;
 //		int trainSize = 10000 - testSize;
 		
 		int trainSize = 0;
-		for(int testSize: new int[]{7000}){
-			trainSize = 10000 - testSize;
+		for(int testSize: new int[]{2000}){
+			trainSize = 1000 - testSize;
 		
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String trainFolder = String.format("%s/%s/Users_%d", prefix, dataset, trainSize);
@@ -123,7 +123,8 @@ public class MyMMBIsoMain {
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		mmb.setsdB(0.1);
 
-		MTCLinAdaptWithMMB4LinkPrediction mmb = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		MTCLinAdaptWithMMB4LinkPrediction mmb = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		SVMBasedLinkPrediction mmb = new SVMBasedLinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
 		
 		mmb.setsdA(sdA);
@@ -133,19 +134,19 @@ public class MyMMBIsoMain {
 		mmb.setConcentrationParams(alpha, eta, beta);
 
 		mmb.setRho(0.01);
-		mmb.setBurnIn(10);
+		mmb.setBurnIn(1);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(30);
+		mmb.setNumberOfIterations(5);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.checkTestReviewSize();
-		mmb.setDisplayLv(displayLv);					
+		mmb.setDisplayLv(displayLv);
 		
-//		mmb.train();
-//		mmb.linkPrediction("cos");
-//		mmb.printLinkPrediction("./", testSize);
-//		
+		mmb.train();
+		mmb.linkPrediction();
+		mmb.printLinkPrediction("./");		
+		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
 //		System.out.println(current);
