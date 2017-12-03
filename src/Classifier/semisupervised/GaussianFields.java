@@ -5,6 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Random;
 
+import structures._Corpus;
+import structures._Doc;
+import structures._Edge;
+import structures._Node;
+import utils.Utils;
 import Classifier.BaseClassifier;
 import Classifier.semisupervised.PairwiseSimCalculator.ActionType;
 import Classifier.supervised.LogisticRegression;
@@ -13,11 +18,6 @@ import Classifier.supervised.SVM;
 import cern.colt.matrix.tdouble.DoubleMatrix2D;
 import cern.colt.matrix.tdouble.algo.DenseDoubleAlgebra;
 import cern.colt.matrix.tdouble.impl.SparseDoubleMatrix2D;
-import structures._Corpus;
-import structures._Doc;
-import structures._Edge;
-import structures._Node;
-import utils.Utils;
 
 public class GaussianFields extends BaseClassifier {
 	
@@ -106,6 +106,7 @@ public class GaussianFields extends BaseClassifier {
 	}
 	
 	//Train the data set.
+	@Override
 	public double train(Collection<_Doc> trainSet){
 		init();
 		
@@ -431,14 +432,14 @@ public class GaussianFields extends BaseClassifier {
 	int getLabel3(double pred){
 		for(int i = 0; i < m_classNo; i++)			
 			m_cProbs[i] = m_pY[i] * Math.exp(-Math.abs(i-pred)) / m_pYSum[i];
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	//exp(-|c-f(u_i)|)/sum_j{exp(-|c-f(u_j))} j represents all unlabeled data, without class probabilities.
 	int getLabel4(double pred) {		
 		for (int i = 0; i < m_classNo; i++)
 			m_cProbs[i] = Math.exp(-Math.abs(i - pred)) / m_pYSum[i];
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	@Override

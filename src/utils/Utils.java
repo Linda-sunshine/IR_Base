@@ -8,14 +8,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
-import Classifier.supervised.liblinear.Feature;
-import Classifier.supervised.liblinear.FeatureNode;
-import cern.jet.random.tdouble.Gamma;
-import cern.jet.random.tfloat.FloatUniform;
 import json.JSONException;
 import json.JSONObject;
 import structures._Doc;
 import structures._SparseFeature;
+import Classifier.supervised.liblinear.Feature;
+import Classifier.supervised.liblinear.FeatureNode;
+import cern.jet.random.tdouble.Gamma;
+import cern.jet.random.tfloat.FloatUniform;
 
 public class Utils {
 	
@@ -231,6 +231,14 @@ public class Utils {
 		return sum;
 	}
 	
+	//The function defines the sum of an array.
+	public static double sumOfArray(_SparseFeature[] fv) {
+		double sum = 0;
+		for (_SparseFeature f : fv)
+			sum += f.getValue();
+		return sum;
+	}
+		
 	//sum_i a[i] - b[i]
 	public static double[] diff(double[] a, double[] b) {
 		if (a.length != b.length)
@@ -431,7 +439,7 @@ public class Utils {
 		int i = 0;
 		Iterator<Entry<Integer, Double>> it = vct.entrySet().iterator();
 		while(it.hasNext()){
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			Map.Entry<Integer, Double> pairs = it.next();
 			spVct[i] = new _SparseFeature(pairs.getKey(), pairs.getValue());
 			i++;
 		}
@@ -476,7 +484,7 @@ public class Utils {
 			//iterate through all the features in this section
 			Iterator<Entry<Integer, Double>> it = vPtr.entrySet().iterator();
 			while(it.hasNext()){
-				Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+				Map.Entry<Integer, Double> pairs = it.next();
 				int index = pairs.getKey();
 				double value = pairs.getValue();
 				if (spVcts.containsKey(index)) {
@@ -535,7 +543,7 @@ public class Utils {
 	public static void mergeVectors(HashMap<Integer, Double> src, HashMap<Integer, Double> dst) {
 		Iterator<Entry<Integer, Double>> it = src.entrySet().iterator();
 		while (it.hasNext()) {
-			Map.Entry<Integer, Double> pairs = (Map.Entry<Integer, Double>)it.next();
+			Map.Entry<Integer, Double> pairs = it.next();
 			int index = pairs.getKey();
 			if (dst.containsKey(index)==false) 
 				dst.put(index, pairs.getValue());
@@ -961,10 +969,6 @@ public class Utils {
 		}
 		return Utils.createSpVct(vct);
 	}
-	//Find the max value's index of an array, return Index of the maximum.
-	public static int maxOfArrayIndex(double[] probs){
-		return maxOfArrayIndex(probs, probs.length);
-	}
 	
 	public static int maxOfArrayIndex(double[] probs, int length){
 		int maxIndex = 0;
@@ -977,17 +981,7 @@ public class Utils {
 		}
 		return maxIndex;
 	}
-	//The Euclidean distance for two arrays of the same length.
-	public static double EuclideanDistance(double[] t1, double[] t2){
-		double sum = 0;
-		if(t1.length == t2.length){
-			for(int i=0; i < t1.length; i++){
-				sum += (t1[i] - t2[i]) * (t1[i] - t2[i]);
-			}	
-		}
-		return sum;
-	}
-	
+
 	//scale array a by array b
 	public static void scaleArray(double[] a, double[] b, double scale) {
 		for (int i=0; i<a.length; i++)

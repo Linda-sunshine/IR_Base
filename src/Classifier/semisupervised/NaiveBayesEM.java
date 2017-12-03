@@ -5,11 +5,11 @@ package Classifier.semisupervised;
 
 import java.util.Collection;
 
-import Classifier.supervised.NaiveBayes;
 import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
+import Classifier.supervised.NaiveBayes;
 
 /**
  * @author hongning
@@ -55,7 +55,7 @@ public class NaiveBayesEM extends NaiveBayes {
 			score(doc, 0);//to compute p(x|y)p(y) and store it in m_cProbs
 			
 			if (doc.getSourceType()==1) {//unlabeled data
-				double sumY = Utils.logSumOfExponentials(m_cProbs);
+				double sumY = Utils.logSum(m_cProbs);
 				for(int i=0; i<m_classNo; i++) {
 					doc.m_sstat[i] = Math.exp(m_cProbs[i] - sumY); // p(y|x)
 					likelihood += doc.m_sstat[i] * m_cProbs[i]; // p(x)
@@ -98,6 +98,7 @@ public class NaiveBayesEM extends NaiveBayes {
 	}
 	
 	//EM-training on the data set.
+	@Override
 	public double train(Collection<_Doc> trainSet){
 		init();
 		

@@ -9,13 +9,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._Review.rType;
 import structures._UserReviewPair;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.RegLR.asyncRegLR;
 
 public class asyncMTLinAdapt extends MTLinAdapt {
 
@@ -47,6 +47,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 		return String.format("asyncMTLinAdapt[dim:%d,SupDim:%d, eta1:%.3f,eta2:%.3f, lambda1:%.3f, lambda2:%.3f]", m_dim, m_dimSup, m_eta1, m_eta2, m_eta3, m_eta4);
 	}
 
+	@Override
 	protected void calculateGradients(_AdaptStruct u){
 		gradientByFunc(u);
 		gradientByR1(u);
@@ -241,7 +242,7 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 			gid = m_featureGroupMap4SupUsr[1+n];
 			m_sWeights[n+1] = As[gid] * m_gWeights[1+n] + As[gid+ m_dimSup];
 		}
-		return Utils.EuclideanDistance(m_gWeights, m_sWeights);
+		return Utils.euclideanDistance(m_gWeights, m_sWeights);
 	}
 	
 	public double calcDiffWsWi(_AdaptStruct user){
@@ -255,6 +256,6 @@ public class asyncMTLinAdapt extends MTLinAdapt {
 			gid = m_featureGroupMap[1+n];
 			m_pWeights[1+n] = ui.getScaling(gid) * m_sWeights[1+n] + ui.getShifting(gid);
 		}
-		return Utils.EuclideanDistance(m_pWeights, m_sWeights);
+		return Utils.euclideanDistance(m_pWeights, m_sWeights);
 	}
 }

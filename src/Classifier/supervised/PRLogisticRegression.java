@@ -3,8 +3,6 @@ package Classifier.supervised;
 import java.util.Arrays;
 import java.util.Collection;
 
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 import optimization.gradientBasedMethods.ProjectedGradientDescent;
 import optimization.gradientBasedMethods.stats.OptimizerStats;
 import optimization.linesearch.ArmijoLineSearchMinimizationAlongProjectionArc;
@@ -18,6 +16,8 @@ import structures._Corpus;
 import structures._Doc;
 import structures._SparseFeature;
 import utils.Utils;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class PRLogisticRegression extends LogisticRegression {
 
@@ -40,7 +40,7 @@ public class PRLogisticRegression extends LogisticRegression {
 			m_cProbs[i] = Utils.dotProduct(m_beta, spXi, offset);
 		}
 		
-		double logSum = Utils.logSumOfExponentials(m_cProbs);
+		double logSum = Utils.logSum(m_cProbs);
 		for(int i = 0; i < m_classNo; i++) {
 			prob[i] = Math.exp(m_cProbs[i]-logSum);
 			if (scaler != null)

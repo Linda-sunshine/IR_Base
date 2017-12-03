@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Random;
 
-import Classifier.BaseClassifier;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import utils.Utils;
+import Classifier.BaseClassifier;
 
 public class KNN extends BaseClassifier{
 	int m_k;
@@ -40,6 +40,7 @@ public class KNN extends BaseClassifier{
 	}
 
 	//Initialize the random vectors.
+	@Override
 	protected void init() {		
 		m_buckets.clear();
 		Random r = new Random();
@@ -106,7 +107,7 @@ public class KNN extends BaseClassifier{
 		for(_RankItem rt:neighbors)
 			m_cProbs[rt.m_index] ++;//why don't we consider the similarity?
 		
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	@Override

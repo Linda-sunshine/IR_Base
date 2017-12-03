@@ -8,9 +8,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import LBFGS.LBFGS;
-import LBFGS.LBFGS.ExceptionWithIflag;
 import structures._Doc;
 import structures._RankItem;
 import structures._Review;
@@ -18,6 +15,9 @@ import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import LBFGS.LBFGS;
+import LBFGS.LBFGS.ExceptionWithIflag;
 
 public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	
@@ -145,6 +145,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	}
 	
 	//Calculate the function value of the new added instance.
+	@Override
 	protected double calcLogLikelihood(_AdaptStruct user){
 		double L = 0; //log likelihood.
 		double Pi = 0;
@@ -248,6 +249,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 	}
 	
 	//Calculate the gradients for the use in LBFGS.
+	@Override
 	protected void gradientByR2(_AdaptStruct user){
 		// Part 1, gradients from class 0.
 		super.gradientByR2(user);
@@ -360,7 +362,7 @@ public class CoLinAdaptWithDiffFeatureGroups extends CoLinAdapt{
 		else{
 			_SparseFeature[] fvs = review.getSparse();
 			calcPosterior(fvs, user);
-			return Utils.maxOfArrayIndex(m_cache);
+			return Utils.argmax(m_cache);
 		}
 	}
 	

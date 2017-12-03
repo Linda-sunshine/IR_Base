@@ -3,13 +3,13 @@ package Classifier.supervised;
 import java.util.Arrays;
 import java.util.Collection;
 
-import Classifier.BaseClassifier;
 import structures.MyPriorityQueue;
 import structures._Corpus;
 import structures._Doc;
 import structures._RankItem;
 import structures._SparseFeature;
 import utils.Utils;
+import Classifier.BaseClassifier;
 
 public class NaiveBayes extends BaseClassifier {
 	// both quantities in log space
@@ -95,7 +95,7 @@ public class NaiveBayes extends BaseClassifier {
 			for(_SparseFeature f:d.getSparse())
 				m_cProbs[i] += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue());
 		}
-		return Utils.maxOfArrayIndex(m_cProbs);
+		return Utils.argmax(m_cProbs);
 	}
 	
 	@Override
@@ -105,7 +105,7 @@ public class NaiveBayes extends BaseClassifier {
 			for(_SparseFeature f:d.getSparse())
 				m_cProbs[i] += m_Pxy[i][f.getIndex()] * (m_presence?1.0:f.getValue()); // in log space
 		}
-		return m_cProbs[label] - Utils.logSumOfExponentials(m_cProbs);
+		return m_cProbs[label] - Utils.logSum(m_cProbs);
 	}
 	
 	//Save the parameters for classification.
