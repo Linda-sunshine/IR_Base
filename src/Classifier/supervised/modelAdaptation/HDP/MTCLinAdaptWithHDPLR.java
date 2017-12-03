@@ -4,14 +4,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import structures._Doc;
-import structures._Review;
-import structures._SparseFeature;
 import structures._PerformanceStat.TestMode;
+import structures._Review;
 import structures._Review.rType;
+import structures._SparseFeature;
 import utils.Utils;
 import Classifier.supervised.LogisticRegression4DP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLRWithDP;
-import Classifier.supervised.modelAdaptation.DirichletProcess.CLinAdaptWithDP;
 import Classifier.supervised.modelAdaptation.DirichletProcess._DPAdaptStruct;
 
 public class MTCLinAdaptWithHDPLR extends MTCLinAdaptWithHDP{
@@ -70,6 +68,7 @@ public class MTCLinAdaptWithHDPLR extends MTCLinAdaptWithHDP{
 		for(int k=0; k<numberOfCores; ++k){
 			threads.add((new Thread() {
 				int core, numOfCores;
+				@Override
 				public void run() {
 					_HDPAdaptStruct user;
 					try {
@@ -117,7 +116,7 @@ public class MTCLinAdaptWithHDPLR extends MTCLinAdaptWithHDP{
 	int m_same = 0, m_diff = 0;
 	void evaluate(_Review r){
 		double[] cProbs = m_lr.calcCProbs(r);
-		if(Utils.maxOfArrayIndex(cProbs) == r.getHDPThetaStar().getIndex())
+		if(Utils.argmax(cProbs) == r.getHDPThetaStar().getIndex())
 			m_same++;
 		else
 			m_diff++;

@@ -142,9 +142,9 @@ public class MyMMBIsoMain {
 		mmb.checkTestReviewSize();
 		mmb.setDisplayLv(displayLv);					
 		
-		mmb.train();
-		mmb.linkPrediction("cos");
-		mmb.printLinkPrediction("./", testSize);
+//		mmb.train();
+//		mmb.linkPrediction("cos");
+//		mmb.printLinkPrediction("./", testSize);
 //		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();

@@ -134,7 +134,7 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 				probs[k] -= logSum;
 			
 			// take the cluster that has maximum prob as the review's cluster assignment
-			curTheta = m_hdpThetaStars[Utils.maxOfArrayIndex(probs)];
+			curTheta = m_hdpThetaStars[Utils.argmax(probs)];
 			r.setHDPThetaStar(curTheta);
 			// update the cluster assignment for the user
 			user.incHDPThetaStarMemSize(r.getHDPThetaStar(), 1);

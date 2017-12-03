@@ -3,13 +3,9 @@ package Classifier.supervised.modelAdaptation.DirichletProcess;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
-import structures._PerformanceStat;
-import structures._Review;
+
 import structures._thetaStar;
-import structures._PerformanceStat.TestMode;
-import structures._Review.rType;
 import utils.Utils;
 
 public class MTCLinAdaptWithDPExp2 extends MTCLinAdaptWithDP {
@@ -21,6 +17,7 @@ public class MTCLinAdaptWithDPExp2 extends MTCLinAdaptWithDP {
 	}
 	PrintWriter m_writer;
 	int m_count = 0;
+	@Override
 	protected void calculateClusterProbPerUser(){
 		try{
 			m_writer = new PrintWriter(new File(String.format("compare_%d.txt", m_count++)));
@@ -45,7 +42,7 @@ public class MTCLinAdaptWithDPExp2 extends MTCLinAdaptWithDP {
 				}
 				Utils.L1Normalization(probs);
 				Utils.L1Normalization(probs_orc);
-				dist = Utils.EuclideanDistance(probs, probs_orc);				
+				dist = Utils.euclideanDistance(probs, probs_orc);				
 				System.out.print(String.format("%d\t%d\t%.4f\t[", user.getUser().getReviewSize(), user.getUser().getCtgSize(), dist));
 				
 				double adaPosRatio = user.getUser().getAdaptationPos()/user.getAdaptationSize();
