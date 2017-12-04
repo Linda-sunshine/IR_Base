@@ -115,7 +115,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
-
 	// Load one file as a user here. 
 	private void loadUser(String filename, int core){
 		try {
@@ -135,6 +134,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			long timestamp=0;
 			while((line = reader.readLine()) != null){
 				productID = line;
+				
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
