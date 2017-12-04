@@ -64,6 +64,7 @@ public class MyHDPMain {
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		analyzer.select();
 		
 //		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;

@@ -39,6 +39,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	protected Object m_corpusLock=null;
 	protected Object m_rollbackLock=null;
 	private Object m_featureStatLock=null;
+	private Object m_mapLock = null;
 	
 	public MultiThreadedUserAnalyzer(String tokenModel, int classNo,
 			String providedCV, int Ngram, int threshold, int numberOfCores, boolean b)
@@ -59,6 +60,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		m_corpusLock = new Object(); // lock when collecting class statistics 
 		m_rollbackLock = new Object(); // lock when revising corpus statistics
 		m_featureStatLock = new Object();
+		m_mapLock = new Object();
 	}
 	
 	//Load all the users.
@@ -115,6 +117,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("%d users are loaded from %s...\n", count, folder);
 	}
 	
+	HashMap<String, Integer> map = new HashMap<String, Integer>();
 	// Load one file as a user here. 
 	private void loadUser(String filename, int core){
 		try {
@@ -134,7 +137,12 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			long timestamp=0;
 			while((line = reader.readLine()) != null){
 				productID = line;
-				
+				synchronized (m_allocReviewLock) {
+					if(map.containsKey(productID))
+						map.put(productID, map.get(productID)+1);
+					else
+						map.put(productID, 1);
+				}
 				source = reader.readLine(); // review content
 				category = reader.readLine(); // review category
 				ylabel = Integer.valueOf(reader.readLine());
@@ -164,6 +172,20 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		} catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	public void select(){
+		int max = 0;
+		String item = "";
+		for(String i: map.keySet()){
+			if(map.get(i) > max){
+				max = map.get(i);
+				item = i;
+			}
+		}
+		System.out.println(map.size());
+		System.out.println(item);
+		System.out.println(max);
 	}
 	
 	//Tokenizing input text string
