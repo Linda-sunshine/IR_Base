@@ -1,5 +1,6 @@
 package Classifier.supervised.modelAdaptation.MMB;
 
+import java.io.File;
 /***
  * The class inherits from MTCLinAdaptWithMMB to achieve link prediction.
  * In link prediction, the train users only have train reviews and test users only have test reivews.
@@ -10,6 +11,8 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import org.tartarus.snowball.ext.frenchStemmer;
 
 import structures.MyPriorityQueue;
 import structures._HDPThetaStar;
@@ -51,6 +54,9 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 				m_trainSet.add((_MMBAdaptStruct) user);
 			}
 		}
+		
+		if(m_trainSize + m_testSize != m_userList.size())
+			System.out.println("The user size does not match!!");
 		
 		// The train user and test user may not exist in order, thus we still set the friend 
 		// matrix's size as the total number of users for convenient indexing. As their dim 
@@ -199,11 +205,13 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		}
 		for(int j=0; j<m_testSize; j++){
 			uj = m_testSet.get(j);
-			if(j == i || j < i) continue;
-			sim = calcSimilarity(ui, uj);
-			m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
-			m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
-			neighbors.add(new _RankItem(m_trainSize+j, sim));
+			if(j == i) continue;
+			if(j > i){
+				sim = calcSimilarity(ui, uj);
+				m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
+				m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
+			}
+			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
 		}
 		m_frdTestMtx[i] = rankFriends(ui, neighbors);
 	}
@@ -262,8 +270,11 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	// print out the results of link prediction
 	public void printLinkPrediction(String dir){
 		int[] frd;
+		File dirFile = new File(dir);
+		if(!dirFile.exists())
+			dirFile.mkdirs();
 		try{
-			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, 10000-m_testSize));
+			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, m_trainSize));
 			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, m_testSize));
 			// print friends for train users
 			for(int i=0; i<m_trainSize; i++){
@@ -275,6 +286,7 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 			// print friends for test users
 			for(int i=0; i<m_testSize; i++){
 				frd = m_frdTestMtx[i];
+//				System.out.println(frd.length);
 				for(int f: frd)
 					testWriter.write(f+"\t");
 				testWriter.write("\n");

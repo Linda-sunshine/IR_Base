@@ -39,9 +39,9 @@ public class MyMMBIsoMain {
 //		int trainSize = 10000 - testSize;
 		
 		int trainSize = 0;
-		for(int testSize: new int[]{2000}){
-			trainSize = 1000 - testSize;
-		
+		for(int testSize: new int[]{800}){
+//			trainSize = 1000 - testSize;
+			trainSize = 200;
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
 		String trainFolder = String.format("%s/%s/Users_%d", prefix, dataset, trainSize);
 		String testFolder =  String.format("%s/%s/Users_%d", prefix, dataset, testSize);
@@ -55,7 +55,7 @@ public class MyMMBIsoMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		adaptRatio = 1; enforceAdapt = true;
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
