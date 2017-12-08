@@ -92,7 +92,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			e_1 = theta_g.getConnectionSize(theta_h, 1);
 		}
 		prob = Math.log(m_rho) + Math.log(m_abcd[0] + e_1) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
-		return e_0 == 1 ? prob : Math.log(1 - Math.exp(prob));
+		return e == 1 ? prob : Math.log(1 - Math.exp(prob));
 	}
 
 	public double calcLogPostPredictiveBghWithZeroEdge(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
