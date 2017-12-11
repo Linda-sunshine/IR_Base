@@ -74,14 +74,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
 	}
 	
-	/**posterior predictive distribution: 
+	/**posterior predictive distribution for eij=1(\rho*Bgh) and eij=0(1-\rho*Bgh)
 	/* e=0: \int_{B_gh} \rho*(1-B_{gh})*prior d_{B_{gh}} 
 	/* e=1: \int_{B_gh} \rho*B_{gh}*prior d_{B_{gh}} 
 	/* prior is Beta(a+e_1, b+e_0)
 	/* corresponding predictive posterior distribution is:
 	/* e=1: \rho*(a+e_1)/(a+b+e_0+e_1)
 	/* e=0: 1-\rho*(a+e_1)/(a+b+e_0+e_1) **/
-
 	public double calcLogPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		double prob = 0;
@@ -95,6 +94,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		return e == 1 ? prob : Math.log(1 - Math.exp(prob));
 	}
 
+	// eij=1(mmb): p=\rho*Bgh; eij=0(mmb): p=\rho(1-Bgh), used in sampling C for sampling mmb zero edges
 	public double calcLogPostPredictiveBghWithZeroEdge(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		double prob = 0;
