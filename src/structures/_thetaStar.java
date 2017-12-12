@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class _thetaStar implements Comparable<_thetaStar> {
 	int m_index;
@@ -84,5 +85,17 @@ public class _thetaStar implements Comparable<_thetaStar> {
 	}
 	public double[] getWeights(){
 		return m_pWeights;
+	}
+	// reset the thetaStar
+	public void reset(){
+		m_index = -1;
+		m_memSize = 0;
+		m_proportion = 0;
+		m_pCount = 0;
+		m_nCount = 0;
+		m_betas.clear();
+		// keep the beta or not?
+		Arrays.fill(m_beta, 0);
+
 	}
 }

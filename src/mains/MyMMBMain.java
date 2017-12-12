@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
 
@@ -34,11 +33,11 @@ public class MyMMBMain {
 
 		String fs = "DF";//"IG_CHI"
 		
-//		String prefix = "./data/CoLinAdapt";
-		String prefix = "/zf8/lg5bt/DataSigir";
+		String prefix = "./data/CoLinAdapt";
+//		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -48,7 +47,7 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
@@ -82,7 +81,7 @@ public class MyMMBMain {
 		
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.1, eta = 0.01, beta = 0.01;
+		double alpha = 0.01, eta = 0.01, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 //		
 ////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
@@ -136,9 +135,10 @@ public class MyMMBMain {
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
 		
-		mmb.trainTrace(dataset+"_trace.txt");
+		mmb.trainTrace(dataset+"_1000_trace.txt");
 //		mmb.train();
 //		mmb.test(); 
+//		mmb.printEdgeCount("./edge_count.txt");
 		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();

@@ -1,18 +1,11 @@
 package Classifier.supervised.modelAdaptation.MMB;
 
 import java.io.File;
-/***
- * The class inherits from MTCLinAdaptWithMMB to achieve link prediction.
- * In link prediction, the train users only have train reviews and test users only have test reivews.
- * We need to calculate the mixture of each user based on review assignment and edge assignment.
- */
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-
-import org.tartarus.snowball.ext.frenchStemmer;
 
 import structures.MyPriorityQueue;
 import structures._HDPThetaStar;
@@ -21,6 +14,11 @@ import structures._Review;
 import structures._Review.rType;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
+/***
+ * The class inherits from MTCLinAdaptWithMMB to achieve link prediction.
+ * In link prediction, the train users only have train reviews and test users only have test reivews.
+ * We need to calculate the mixture of each user based on review assignment and edge assignment.
+ */
 
 public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 
@@ -226,8 +224,8 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 			theta_g = m_hdpThetaStars[g];
 			for(int h=0; h<m_kBar; h++){
 				theta_h = m_hdpThetaStars[h];
-				e_0 = theta_g.getConnectionSize(theta_h, 0);
-				e_1 = theta_g.getConnectionSize(theta_h, 1);
+				e_0 = theta_g.getConnectionEdgeCount(theta_h, 0);
+				e_1 = theta_g.getConnectionEdgeCount(theta_h, 1);
 				b = (e_1 + m_abcd[0] -1)/(e_0 + e_1 + m_abcd[0] + m_abcd[1] -2);
 				m_B[g][h] = b;
 				m_B[h][g] = b;

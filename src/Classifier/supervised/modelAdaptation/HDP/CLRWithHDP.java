@@ -352,15 +352,14 @@ public class CLRWithHDP extends CLRWithDP {
 
 			// recycle the gamma
 			m_gamma_e += curThetaStar.getGamma();
-			curThetaStar.resetGamma();
+//			curThetaStar.resetGamma();
 			
 			// swap the disabled theta to the last for later use
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
 			
-			// in case we forget to init some variable, we set it to null
-			curThetaStar = null;
-//			curThetaStar.disable();
+			// reset the thetaStar for later use
+			curThetaStar.reset();
 			m_kBar --;
 		}
 	}

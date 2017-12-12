@@ -10,6 +10,7 @@ import java.util.HashMap;
 import org.apache.commons.math3.distribution.BinomialDistribution;
 
 import structures._HDPThetaStar;
+import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
 import structures._Review;
 import structures._Review.rType;
@@ -74,35 +75,36 @@ public class CLRWithMMB extends CLRWithHDP {
 		return user.getHDPThetaMemSize(m_hdpThetaStars[k]) + m_eta*gamma_k + user.getHDPThetaEdgeSize(m_hdpThetaStars[k]);
 	}
 	
-	/**posterior predictive distribution for eij=1(\rho*Bgh) and eij=0(1-\rho*Bgh)
-	/* e=0: \int_{B_gh} \rho*(1-B_{gh})*prior d_{B_{gh}} 
-	/* e=1: \int_{B_gh} \rho*B_{gh}*prior d_{B_{gh}} 
-	/* prior is Beta(a+e_1, b+e_0)
+	/*** p(e=1)=\rho*B_gh, p(e=0)=1-\rho*B_gh
 	/* corresponding predictive posterior distribution is:
 	/* e=1: \rho*(a+e_1)/(a+b+e_0+e_1)
 	/* e=0: 1-\rho*(a+e_1)/(a+b+e_0+e_1) **/
-	public double calcLogPostPredictiveBgh(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
+	public double calcLogLikelihoodE(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		double prob = 0;
 		double e_0 = 0, e_1 = 0;
 		// some background model may have non-existing cluster
-		if(theta_g != null && theta_h != null){
-			e_0 = theta_g.getConnectionSize(theta_h, 0);
-			e_1 = theta_g.getConnectionSize(theta_h, 1);
+		if(theta_g.isValid() && theta_h.isValid()){
+			e_0 = theta_g.getConnectionEdgeCount(theta_h, 0);
+			e_1 = theta_g.getConnectionEdgeCount(theta_h, 1);
+		} else{
+			System.err.println("[Bug]Invalid thetas!");
 		}
 		prob = Math.log(m_rho) + Math.log(m_abcd[0] + e_1) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return e == 1 ? prob : Math.log(1 - Math.exp(prob));
 	}
-
-	// eij=1(mmb): p=\rho*Bgh; eij=0(mmb): p=\rho(1-Bgh), used in sampling C for sampling mmb zero edges
-	public double calcLogPostPredictiveBghWithZeroEdge(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
+	
+	/**e=0: \int_{B_gh} \rho*(1-B_{gh})*prior d_{B_{gh}} 
+	/* e=1: \int_{B_gh} \rho*B_{gh}*prior d_{B_{gh}} 
+	/* prior is Beta(a+e_1, b+e_0)***/
+	public double calcLogLikelihoodEinC(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		double prob = 0;
 		double e_0 = 0, e_1 = 0;
 		// some background model may have non-existing cluster
-		if(theta_g != null && theta_h != null){
-			e_0 = theta_g.getConnectionSize(theta_h, 0);
-			e_1 = theta_g.getConnectionSize(theta_h, 1);
+		if(theta_g.isValid() && theta_h.isValid()){
+			e_0 = theta_g.getConnectionEdgeCount(theta_h, 0);
+			e_1 = theta_g.getConnectionEdgeCount(theta_h, 1);
 		}
 		prob = e == 0 ? Math.log(m_abcd[1] + e_0) : Math.log(m_abcd[0] + e_1);
 		prob += Math.log(m_rho) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
@@ -199,10 +201,10 @@ public class CLRWithMMB extends CLRWithHDP {
 
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
-//	public double estRho(){
-//		m_rho = (m_MNL[0] + m_MNL[1] + m_abcd[2] - 1) / (m_MNL[0] + m_MNL[1] + m_MNL[2] + m_abcd[2] + m_abcd[3] - 2);
-//		return 0;
-//	}
+	public double estRho(){
+		m_rho = (m_MNL[0] + m_MNL[1] + m_abcd[2] - 1) / (m_MNL[0] + m_MNL[1] + m_MNL[2] + m_abcd[2] + m_abcd[3] - 2);
+		return 0;
+	}
 	
 	public boolean hasFriend(String[] arr, String str){
 		for(String a: arr){
@@ -310,7 +312,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		theta_g.rmConnection(theta_h, e);
 		theta_h.rmConnection(theta_g, e);
 	}
-	
+	ArrayList<Integer> mmb_0 = new ArrayList<Integer>();
+	ArrayList<Integer> mmb_1 = new ArrayList<Integer>();
+	ArrayList<Integer> bk_0 = new ArrayList<Integer>();
 	// we assume all zero edges are from mmb first
 	// then utilize bernoulli to sample edges from background model
 	protected void sampleC(){
@@ -323,7 +327,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				// eij = 0 from mmb ( should be all zero edges)
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 					// bernoulli distribution to decide whether it is background or mmb
-					p_mmb_0 = Math.exp(calcLogPostPredictiveBghWithZeroEdge(m_indicator[i][j], m_indicator[j][i], 0));
+					p_mmb_0 = Math.exp(calcLogLikelihoodEinC(m_indicator[i][j], m_indicator[j][i], 0));
 					m_bernoulli = new BinomialDistribution(1, p_mmb_0/(p_bk + p_mmb_0));
 					// the edge belongs to bk
 					if(m_bernoulli.sample() == 0){
@@ -336,6 +340,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
+		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
 		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	
@@ -353,8 +358,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta_s = m_hdpThetaStars[k];
 			// we record all the 
 			theta_h = m_indicator[j][i];
-		
-			likelihood = calcLogPostPredictiveBgh(theta_s, theta_h, e);
+			if(!theta_h.isValid())
+				System.err.println("Invalid theta!!");
+			
+			likelihood = calcLogLikelihoodE(theta_s, theta_h, e);
 			if(Double.isInfinite(likelihood))
 				System.out.println("Infinite!");
 			
@@ -393,10 +400,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Put the reference to the matrix for later usage.
 		// Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
 		m_indicator[i][j] = m_hdpThetaStars[k];
-		
-		// for tracking purpose of likelihood given by edges
-		m_likelihoodE += calcLogPostPredictiveBgh(m_indicator[i][j], m_indicator[j][i], e);
-
 	}
 	
 	//Sample hdpThetaStar with likelihood.
@@ -493,7 +496,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		return String.format("CLRWithMMB[dim:%d,lmDim:%d,M:%d,rho:%.5f,alpha:%.4f,eta:%.4f,beta:%.4f,nScale:%.3f,#Iter:%d,N(%.3f,%.3f)]", m_dim,m_lmDim,m_M, m_rho, m_alpha, m_eta, m_beta, m_eta1, m_numberOfIterations, m_abNuA[0], m_abNuA[1]);
 	}
 
-	private void sanityCheck(){
+	protected void sanityCheck(){
 		checkClusters();
 		checkEdges();
 		checkMMBEdges();
@@ -534,7 +537,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-			printInfo(i%10==0);//no need to print out the details very often
+//			printInfo(i%10==0);//no need to print out the details very often
 			System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -544,28 +547,23 @@ public class CLRWithMMB extends CLRWithHDP {
 		evaluateModel(); // we do not want to miss the last sample?!
 		return curLikelihood;
 	}
-	
-	/***decompose the likelihood into three parts:
-	 *likelihood of y, likelihood of x and likelihood of edge
-	 *in order to avoid repetitive computation, we set the likelihood variables as class member variables.*/
-	private double m_likelihoodX = 0, m_likelihoodE = 0;
 
 	@Override
 	public double trainTrace(String tracefile){
 		m_numberOfIterations = 50;
-		m_burnIn = 1;
+		m_burnIn = 10;
 		m_thinning = 1;
 			
 	
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		double likelihoodY = 0, likelihoodX = 0, likelihoodE = 0;
 		int count = 0;
 			
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars4EdgesMMB();
 		sanityCheck();
-			
 		
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
@@ -574,38 +572,39 @@ public class CLRWithMMB extends CLRWithHDP {
 			sanityCheck();
 
 			calculate_M_step();
+			estRho();
 		}
 		
 		try{
 			PrintWriter writer = new PrintWriter(new File(tracefile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
-				m_likelihoodX = 0;
-				m_likelihoodE = 0;
 				
 				// Cluster assignment, thinning to reduce auto-correlation.
 				calculate_E_step();
 				calculate_E_step_Edge();
 
-				// curLikelihood only contains likelihood givne by y
-				curLikelihood = calculate_M_step();
-				// accumulate the likelihood given by x
-				accumulateLikelihoodX();
-				// the likelihood given by edge is accumulated in the E step
-				
+				likelihoodY = calculate_M_step();
+				estRho();
+				likelihoodX = accumulateLikelihoodX();
+				likelihoodE = (m_MNL[0] + m_MNL[1])*Math.log(m_rho) + m_MNL[2]*Math.log(1-m_rho);
+//				likelihoodE += m_MNL[2]*Math.log(1-m_rho);
+				curLikelihood = likelihoodE + likelihoodX + likelihoodY;
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				
 				if (i%m_thinning==0){
 					evaluateModel();
 					test();
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
-				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", curLikelihood, m_likelihoodX, m_likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
+				
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 				if(Math.abs(delta) < m_converge)
 					break;
 				lastLikelihood = curLikelihood;
-		}
+			}
 			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -615,9 +614,9 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// accumulate the likelihood given by review content
-	protected void accumulateLikelihoodX(){
+	protected double accumulateLikelihoodX(){
 		_MMBAdaptStruct user;
-	
+		double likelihoodX = 0;
 		for(int i=0; i<m_userList.size(); i++){
 			user = (_MMBAdaptStruct) m_userList.get(i);
 			if(user.getAdaptationSize() == 0)
@@ -625,9 +624,10 @@ public class CLRWithMMB extends CLRWithHDP {
 			for(_Review r: user.getReviews()){
 				if (r.getType() == rType.TEST)
 					continue;//do not touch testing reviews!
-				m_likelihoodX += calcLogLikelihoodX(r);
+				likelihoodX += calcLogLikelihoodX(r);
 			}
 		}
+		return likelihoodX;
 	}
 	
 	protected void updateSampleSize(int index, int val){
@@ -656,20 +656,19 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// No data associated with the cluster
 		if(curThetaStar.getMemSize() == 0 && curThetaStar.getTotalEdgeSize() == 0) {
-			// check if every dim gets 0 count in language model
+			System.out.println("[Info]Zero cluster detected in updating doc!");
+			// check if every dim gets 0 count in language mode
 			LMStatSanityCheck(curThetaStar);
 			
 			// recycle the gamma
 			m_gamma_e += curThetaStar.getGamma();
-			curThetaStar.resetGamma();	
+//			curThetaStar.resetGamma();	
 			
 			// swap the disabled theta to the last for later use
 			index = findHDPThetaStar(curThetaStar);
 			swapTheta(m_kBar-1, index); // move it back to \theta*
 			
-			// in case we forget to init some variable, we set it to null
-			curThetaStar = null;
-//			curThetaStar.disable();
+			curThetaStar.reset();
 			m_kBar --;
 		}
 	}
@@ -692,10 +691,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		m_MNL[e]--;
 		// No data associated with the cluster
-		if(thetai.getMemSize() == 0 && thetai.getTotalEdgeSize() == 0){			
+		if(thetai.getMemSize() == 0 && thetai.getTotalEdgeSize() == 0){		
+			System.out.println("[Info]Zero cluster detected in updating doc!");
 			// recycle the gamma
 			m_gamma_e += thetai.getGamma();
-			thetai.resetGamma();
 			
 			// swap the disabled theta to the last for later use
 			index = findHDPThetaStar(thetai);
@@ -703,9 +702,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				System.out.println("Bug");
 			swapTheta(m_kBar-1, index); // move it back to \theta*
 			
-			// in case we forget to init some variable, we set it to null
-			thetai = null;
-//			thetai.disable();
+			thetai.reset();
 			m_kBar --;
 		}
 	}
@@ -723,10 +720,10 @@ public class CLRWithMMB extends CLRWithHDP {
 		for(int i=0; i<m_kBar; i++){
 			theta1 = m_hdpThetaStars[i];
 			index1 = theta1.getIndex();
-			HashMap<_HDPThetaStar, int[]> connectionMap = theta1.getConnectionMap();
+			HashMap<_HDPThetaStar, _Connection> connectionMap = theta1.getConnectionMap();
 			for(_HDPThetaStar theta2: connectionMap.keySet()){
 				index2 = theta2.getIndex();
-				eij = connectionMap.get(theta2);
+				eij = connectionMap.get(theta2).getEdge();
 				B[index1][index2][0] = eij[0];
 				B[index1][index2][1] = eij[1];
 
@@ -814,6 +811,24 @@ public class CLRWithMMB extends CLRWithHDP {
 			}
 			writer.close();
 		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void printEdgeCount(String filename){
+		try{
+			PrintWriter writer = new PrintWriter(filename);
+			for(int v: mmb_0)
+				writer.write(v+"\t");
+			writer.write("\n");
+			for(int v: mmb_1)
+				writer.write(v+"\t");
+			writer.write("\n");
+			for(int v: bk_0)
+				writer.write(v+"\t");
+			writer.write("\n");
+			writer.close();
+		} catch (IOException e){
 			e.printStackTrace();
 		}
 	}

@@ -12,7 +12,7 @@ import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.DirichletProcess.DoubleNormalPrior;
 
-public class CLinAdaptWithMMB extends CLRWithMMB {
+public class CLinAdaptWithMMB extends CLRWithMMBMLE {
 
 	protected double[] m_abNuB = new double[]{1, 0.1}; // prior for scaling
 	public static double[] m_supWeights; // newly learned global model, dummy variable in CLinAdaptWithDP
