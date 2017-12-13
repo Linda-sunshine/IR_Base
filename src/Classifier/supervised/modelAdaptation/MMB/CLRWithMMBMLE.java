@@ -34,6 +34,8 @@ public class CLRWithMMBMLE extends CLRWithMMB {
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars4EdgesMMB();
+		estRho();
+		estB();
 		sanityCheck();
 		
 		// Burn in period for doc.
@@ -89,6 +91,8 @@ public class CLRWithMMBMLE extends CLRWithMMB {
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars4EdgesMMB();
+		estRho();
+		estB();
 		sanityCheck();
 		
 		// Burn in period for doc.

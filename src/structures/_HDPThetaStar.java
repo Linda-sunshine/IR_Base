@@ -225,6 +225,10 @@ public class _HDPThetaStar extends _thetaStar {
 		return m_connectionMap;
 	}
 	
+	public boolean hasConnection(_HDPThetaStar theta){
+		return m_connectionMap.containsKey(theta);
+	}
+	
 	public _Connection getConnection(_HDPThetaStar theta){
 		if(m_connectionMap.containsKey(theta))
 			return m_connectionMap.get(theta);

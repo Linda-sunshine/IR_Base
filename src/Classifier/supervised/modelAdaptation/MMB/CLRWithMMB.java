@@ -587,6 +587,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				likelihoodY = calculate_M_step();
 				estRho();
 				likelihoodX = accumulateLikelihoodX();
+				
 				likelihoodE = (m_MNL[0] + m_MNL[1])*Math.log(m_rho) + m_MNL[2]*Math.log(1-m_rho);
 //				likelihoodE += m_MNL[2]*Math.log(1-m_rho);
 				curLikelihood = likelihoodE + likelihoodX + likelihoodY;
