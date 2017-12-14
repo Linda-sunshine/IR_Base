@@ -180,7 +180,7 @@ public class CLRWithMMBMLE extends CLRWithMMB {
 	
 	@Override
 	// we use B estimated by MLE to calculate the likelihood
-	public double calcLogLikelihoodE(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
+	public double calcLogLikelihoodEMarginal(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		double prob = 0;
 		_Connection connection;
@@ -206,7 +206,7 @@ public class CLRWithMMBMLE extends CLRWithMMB {
 				// eij = 0 from mmb ( should be all zero edges)
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 					// bernoulli distribution to decide whether it is background or mmb
-					p_mmb_0 = Math.exp(calcLogLikelihoodEinC(m_indicator[i][j], m_indicator[j][i], 0));
+					p_mmb_0 = Math.exp(calcLogLikelihoodE(m_indicator[i][j], m_indicator[j][i], 0));
 					m_bernoulli = new BinomialDistribution(1, p_mmb_0/(p_bk + p_mmb_0));
 					// the edge belongs to bk
 					if(m_bernoulli.sample() == 0){
@@ -227,7 +227,7 @@ public class CLRWithMMBMLE extends CLRWithMMB {
 	/* e=1: \int_{B_gh} \rho*B_{gh}*prior d_{B_{gh}} 
 	/* prior is Beta(a+e_1, b+e_0)***/
 	@Override
-	public double calcLogLikelihoodEinC(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
+	public double calcLogLikelihoodE(_HDPThetaStar theta_g, _HDPThetaStar theta_h, int e){
 		
 		_Connection connection;
 		// some background model may have non-existing cluster

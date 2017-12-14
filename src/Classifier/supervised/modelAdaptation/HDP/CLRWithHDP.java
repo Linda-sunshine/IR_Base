@@ -40,7 +40,6 @@ public class CLRWithHDP extends CLRWithDP {
 	protected boolean m_newCluster = false; // whether to create new cluster for testing
 	protected int m_lmDim = -1; // dimension for language model
 	double m_betaSum = 0;
-
 	protected ArrayList<String> m_lmFeatures;
 	
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
@@ -84,13 +83,15 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	public void setBetas(double[] lm){
 		m_betas = lm;// this is in real space!
-		
+		// Gamma(\sum betas)/\prod Gamma(betas_v)
 		m_lmDim = lm.length;
 		for(int i=0; i<m_lmDim; i++) {
 			m_betas[i] = m_c * m_betas[i] + m_beta;
-			m_nBetaDir -= Utils.lgamma(m_betas[i]);
+			m_nBetaDir -= logGammaDivision((int) m_betas[i], 0, 0);
+//			m_nBetaDir -= Utils.lgamma(m_betas[i]);
 		}
-		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
+//		m_nBetaDir += Utils.lgamma(Utils.sumOfArray(m_betas));
+		m_nBetaDir += logGammaDivision((int) Utils.sumOfArray(m_betas), 0, 0);
 		m_betaSum = Utils.sumOfArray(m_betas);
 
 	}
@@ -108,30 +109,30 @@ public class CLRWithHDP extends CLRWithDP {
 	@Override
 	public void initThetaStars(){
 		initPriorG0();
-		_HDPAdaptStruct user;		
-		double L = 0, beta_sum = Utils.sumOfArray(m_betas), betaSum_lgamma = Utils.lgamma(beta_sum), sum = 0;
+		_HDPAdaptStruct user;	
 		int index;
+		// beta_sum is \sum beta_v, m is \sum mij_v
+		double L = 0, beta_sum = Utils.sumOfArray(m_betas), m = 0;
 		for(_AdaptStruct u: m_userList){
 			user = (_HDPAdaptStruct) u;
 			for(_Review r: user.getReviews()){
-				// for all reviews pre-compute the likelihood of being generated from a random language model				
 				L = 0;
-				// sum = v*beta+\sum \pi_v(global language model)
-				sum = beta_sum;
+				m = 0;
 				// for those v with mij,v=0, frac = \gamma(beta_v)/\gamma(beta_v)=1, log frac = 0				
 				for(_SparseFeature fv: r.getLMSparse()) {
 					index = fv.getIndex();
-					sum += fv.getValue();	
+					m += fv.getValue();	
 					// log \gamma(m_v+\pi_v+beta)/\gamma(\pi_v+beta)
-					// logGamma(\beta_i) is pre-computed for efficiency
-					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
+					L += logGammaDivision((int) fv.getValue(), m_betas[index], 0);
+//					L += Utils.lgamma(fv.getValue() + m_betas[index]) - Utils.lgamma(m_betas[index]);
 				}
-				L += betaSum_lgamma - Utils.lgamma(sum);
+				// log[\Gamma(beta)/\Gamma(beta+n)]
+				L -= logGammaDivision((int) m, beta_sum, 0);
+//				L += betaSum_lgamma - Utils.lgamma(sum);
 				r.setL4NewCluster(L);
 				
 				if (r.getType() == rType.TEST)
 					continue;
-				
 				sampleOneInstance(user, r);
 			} 
 		}
@@ -285,7 +286,8 @@ public class CLRWithHDP extends CLRWithDP {
 			double N = Utils.sumOfArray(Ns);
 			double n = r.getLMSum();
 			_SparseFeature[] fvs = r.getLMSparse();
-			double L = Utils.lgamma(m_betaSum+N) - Utils.lgamma(m_betaSum+N+n);
+			double L = -logGammaDivision((int) n, m_betaSum, N);
+//			double L = Utils.lgamma(m_betaSum+N) - Utils.lgamma(m_betaSum+N+n);
 			for(_SparseFeature fv: fvs){
 				L += logGammaDivision((int)fv.getValue(), m_betas[fv.getIndex()], Ns[fv.getIndex()]);
 			}
@@ -293,11 +295,11 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 	}
 	
-	// \Gamma(n_v+beta_v+N_v)/\Gamma(beta_v+N_v) = \prod_{i=1}^{n_v}(i+beta_v+N_v)
+	// \Gamma(n_v+beta_v+N_v)/\Gamma(beta_v+N_v) = \prod_{i=0}^{n_v-1}(i+beta_v+N_v)
 	// In log space, it is addition.
 	protected double logGammaDivision(int n, double beta_v, double N_v){
 		double res = 0;
-		for(int i=1; i<=n; i++){
+		for(int i=0; i<=n-1; i++){
 			res += Math.log(i+beta_v+N_v);
 		}
 		return res;
@@ -323,13 +325,13 @@ public class CLRWithHDP extends CLRWithDP {
 				
 				if (++sampleSize%2000==0) {
 					System.out.print('.');
-//					sampleGamma();//will this help sampling?
-					if (sampleSize%100000==0)
+					if (sampleSize%100000==0){
 						System.out.println();
+					}
 				}
+				
 			}
 		}
-//		sampleGamma();//will this help sampling?
 		System.out.println(m_kBar);
 	}
 	

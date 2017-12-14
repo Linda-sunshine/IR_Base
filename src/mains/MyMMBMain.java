@@ -135,10 +135,10 @@ public class MyMMBMain {
 		mmb.loadUsers(analyzer.getUsers());
 		mmb.setDisplayLv(displayLv);					
 		
-		mmb.trainTrace(dataset+"_1000_trace.txt");
+		mmb.trainTrace(dataset+"_trace_1k_3.txt");
 //		mmb.train();
 //		mmb.test(); 
-//		mmb.printEdgeCount("./edge_count.txt");
+		mmb.printEdgeCount("./edge_count_3.txt");
 		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
