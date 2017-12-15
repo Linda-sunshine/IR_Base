@@ -22,7 +22,6 @@ public class MyMMBMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
-
 		boolean enforceAdapt = true;
  
 		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
@@ -126,20 +125,30 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.01);
-		mmb.setBurnIn(10);
-//		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(30);
+		double rho = 1; 
+		int burnin = 10, iter = 30, thin = 2;
+		boolean estRho = true, jointSmp = true;
+		mmb.setRho(rho);
+		mmb.setBurnIn(burnin);
+		mmb.setThinning(thin);// default 3
+		mmb.setNumberOfIterations(iter);
+		
+		mmb.setEstRho(estRho);
+		mmb.setJointSampling(jointSmp);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
-		mmb.setDisplayLv(displayLv);					
+		mmb.setDisplayLv(displayLv);
 		
-		mmb.trainTrace(dataset+"_trace_1k_3.txt");
-//		mmb.train();
-//		mmb.test(); 
-		mmb.printEdgeCount("./edge_count_3.txt");
-		
+		boolean trace = false;
+		if(trace){
+			iter = 50; burnin = 10; thin = 1;
+			mmb.trainTrace(dataset, iter, burnin,thin);
+			mmb.printEdgeCount(dataset+"_edge_count.txt");
+		} else{
+			mmb.train();
+			mmb.test(); 
+		}
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
 //		System.out.println(current);

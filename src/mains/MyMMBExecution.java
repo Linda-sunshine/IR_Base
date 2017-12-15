@@ -79,16 +79,21 @@ public class MyMMBExecution {
 		adaptation.setThinning(param.m_thinning);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
 	
+		adaptation.setEstRho(param.m_estRho);
+		adaptation.setJointSampling(param.m_jointSmp);
 		// training testing operations.
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		
-		adaptation.train();
-		adaptation.test();
-		
+		if(param.m_trace)
+			adaptation.trainTrace(param.m_data, param.m_nuOfIterations, param.m_burnin, param.m_thinning);
+		else{
+			adaptation.train();
+			adaptation.test();
+		}
 		long current = System.currentTimeMillis();
-		System.out.println(current);
+		System.out.println("\n[Info] Current time: " + current);
 		if(param.m_saveModel){
 			String dir = String.format("%s/%d_%s", param.m_saveDir, current, param.m_data);
 			((MTCLinAdaptWithMMB) adaptation).saveEverything(dir);
