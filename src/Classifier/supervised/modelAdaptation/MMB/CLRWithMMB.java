@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
+import org.netlib.util.doubleW;
+import org.tartarus.snowball.ext.norwegianStemmer;
 
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
@@ -258,14 +260,17 @@ public class CLRWithMMB extends CLRWithHDP {
 //		}
 //		sampleC();
 //	}
-	
+	// variable used to record the sampling time for different edges
+	// [0]: mmb_0; [1]: mmb_1; 
+	double[] m_time = new double[3];
 	// for all zero edges, we apply joint sampling
 	protected void calculate_E_step_Edge_joint_all(){
 //		calcProbNew();
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
 		int sampleSize = 0, eij = 0;
-
+		Arrays.fill(m_time, 0);
+		
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -278,6 +283,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 				// eij=1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
+					long start = System.currentTimeMillis();
 					eij = 1;
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
 					rmConnection(ui, uj, eij);
@@ -291,8 +297,11 @@ public class CLRWithMMB extends CLRWithHDP {
 					sampleEdge(j, i, eij);
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, eij);
+					long end = System.currentTimeMillis();
+					m_time[1] += (end - start)/1000;
 				// eij = 0
 				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+					long start = System.currentTimeMillis();
 					eij = 0;
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
 					rmConnection(ui, uj, eij);
@@ -300,14 +309,21 @@ public class CLRWithMMB extends CLRWithHDP {
 					updateEdgeMembership(i, j, eij);
 					updateEdgeMembership(j, i, eij);
 					sampleZeroEdgeJoint(i, j);
+					long end = System.currentTimeMillis();
+					m_time[0] += (end - start)/1000;
 				} else{
 					// remove the two edges from background model
+					long start = System.currentTimeMillis();
 					updateSampleSize(2, -2);
 					sampleZeroEdgeJoint(i, j);
+					long end = System.currentTimeMillis();
+					m_time[2] += (end - start) / 1000;
+					
 				}
 			}
 		}
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
+		System.out.print(String.format("\n[Time]Sampling: mmb_0: %d secs, mmb_1: %d secs, bk_0: %d secs\n", m_time[0], m_time[1], m_time[2]));
 		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	protected void calculate_E_step_Edge_joint_bk(){
@@ -746,18 +762,28 @@ public class CLRWithMMB extends CLRWithHDP {
  				cacheB[g][h] = calcLogLikelihoodE(theta_g, theta_h, 0);
  				cacheB[g][h] += Math.log(theta_g.getGamma()) + Math.log(theta_h.getGamma());
  				logSum = Utils.logSum(logSum, cacheB[g][h]);
+ 				// add the symmetric case
+ 				if(h != g){
+ 					cacheB[h][g] = cacheB[g][h];
+ 					logSum = Utils.logSum(logSum, cacheB[h][g]);
+ 				}
  			}
  		}
  		// case 2: either one is from new cluster.
  		// pre-calculate \rho*(b/(a+b))*\gamma_e
  		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]) + Math.log(m_gamma_e);
- 		for(int k=0; k<=m_kBar; k++){
+ 		for(int k=0; k<m_kBar; k++){
  			cacheB[k][m_kBar] = pNew;
+ 			cacheB[m_kBar][k] = pNew;
  			if(!Double.isInfinite(pNew)){
- 				cacheB[k][m_kBar] += (k == m_kBar) ? Math.log(m_gamma_e) : Math.log(m_hdpThetaStars[k].getGamma());
- 				logSum = Utils.logSum(logSum, cacheB[k][m_kBar]);
+ 				cacheB[k][m_kBar] += Math.log(m_hdpThetaStars[k].getGamma());
+ 				cacheB[m_kBar][k] += Math.log(m_hdpThetaStars[k].getGamma());
+ 				logSum = Utils.logSum(logSum, cacheB[k][m_kBar]+Math.log(2));
  			}
   		}
+ 		// both are from new clusters.
+ 		cacheB[m_kBar][m_kBar] = pNew + Math.log(m_gamma_e);
+ 		logSum = Utils.logSum(logSum, cacheB[m_kBar][m_kBar]);
  		
   		// Step 2: sample one pair from the prob matrix.
  		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho), cacheB);
