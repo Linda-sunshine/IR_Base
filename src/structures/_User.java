@@ -104,6 +104,7 @@ public class _User {
 		return m_userID;
 	}
 	
+	@Override
 	public String toString() {
 		return String.format("%s-R:%d", m_userID, getReviewSize());
 	}
@@ -270,7 +271,7 @@ public class _User {
 	// added by Lin for CF.
 	
 	/**added by Lin for cf.**/
-	private HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
+	private final HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
 	private double m_nDCG;
 	private double m_MAP;
 	
@@ -344,6 +345,18 @@ public class _User {
 	}
 	public String[] getFriends(){
 		return m_friends;
+	}
+	// check if a user is a friend of the current user
+	public boolean hasFriend(String str){
+		if(m_friends.length == 0){
+			System.out.println("[Debug]No friends!");
+			return false;
+		}
+		for(String f: m_friends){
+			if(str.equals(f))
+				return true;
+		}
+		return false;
 	}
 	
 	// The function is used for finding friends from Amazon data set.

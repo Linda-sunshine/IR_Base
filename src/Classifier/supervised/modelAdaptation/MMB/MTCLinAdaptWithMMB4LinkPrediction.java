@@ -31,10 +31,16 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	// we use MAP for parameter estimation of B
 	// In order to calculate the similarity, we need to use MLE to calculate the value of B
 	private double[][] m_B;
-	
+	int m_numberOfCores;
+	protected Object m_simMtxLock = null;
+	protected Object m_frdMtxLock = null;
+
+
 	public MTCLinAdaptWithMMB4LinkPrediction(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			String globalModel, String featureGroupMap, String featureGroup4Sup, double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, featureGroup4Sup, betas);
+		m_simMtxLock = new Object();
+		m_frdMtxLock = new Object();
 	}
 	
 	// calculate training/testing size, construct training set/testing set
@@ -91,7 +97,7 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		// The set of clusters for review and edge could be different, just iterate over kBar
 		for(int k=0; k<m_kBar; k++){
 			theta = m_hdpThetaStars[k];
-			probs[k] = user.getHDPThetaMemSize(theta) + user.getHDPThetaMemSize(theta);
+			probs[k] = user.getHDPThetaMemSize(theta) + user.getHDPThetaEdgeSize(theta);
 			sum += probs[k];
 		}
 		for(int k=0; k<m_kBar; k++){
@@ -167,6 +173,67 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		}
 	}
 	
+	// perform link prediction in multi-threading
+	public void linkPrediction_MultiThread(){
+		initLinkPred();
+		// calculate the global mixture for each user
+		MLEB();
+		calculateMixturePerUser();
+		
+		if(m_trainSize + m_testSize != m_userList.size())
+			System.err.println("Bug in calculating train and test size!");
+			
+		// use a boolean flag to decide whether it is training set or testing set
+		linkPrediction_MultiThread_Split(m_trainSet, true);
+		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
+
+		linkPrediction_MultiThread_Split(m_testSet, false);
+		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
+	}		
+	
+	// perform multi-thread on training users/testing users
+	protected void linkPrediction_MultiThread_Split(ArrayList<_MMBAdaptStruct> userSet, boolean train){
+		
+		final boolean trainFlag = train;
+		final ArrayList<_MMBAdaptStruct> users = userSet;
+		final int userSize = users.size();
+
+		m_numberOfCores = Runtime.getRuntime().availableProcessors();
+		// for each training user, rank their neighbors.
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		for(int i=0;i<m_numberOfCores;++i){
+			threads.add((new Thread() {
+				int core;
+				@Override
+				public void run() {
+					try {
+						for(int j=0; j+core <userSize; j+= m_numberOfCores){
+							_MMBAdaptStruct uj = users.get(j);
+							if(trainFlag)
+								linkPrediction4TrainUsers_MultiThread(j, uj);
+							else {
+								linkPrediction4TestUsers_MultiThread(j, uj);
+							}
+						}
+					} catch(Exception ex){
+						ex.printStackTrace();
+					}
+				}
+				private Thread initialize(int core) {
+					this.core = core;
+					return this;
+				}
+			}).initialize(i));
+			threads.get(i).start();
+		}
+		for(int i=0;i<m_numberOfCores;++i){
+			try {
+				threads.get(i).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		} 		
+	}
 	// for train users, we only consider train users as their friends.
 	protected void linkPrediction4TrainUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
@@ -187,6 +254,31 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
 	}
 		
+	// for train users, we only consider train users as their friends.
+	protected void linkPrediction4TrainUsers_MultiThread(int i, _MMBAdaptStruct ui){
+		double sim = 0;
+		_MMBAdaptStruct uj;
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_trainSize-1);
+		for(int j=0; j<m_trainSize; j++){
+			uj = m_trainSet.get(j);
+			if(j == i) continue;
+			// calculate sim
+			if(j > i){
+				sim = calcSimilarity(ui, uj);
+				synchronized (m_simMtxLock) {
+					m_simMtx[i][j] = sim;
+					m_simMtx[j][i] = sim;
+				}
+			}
+			// rank sim
+			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
+		}
+		int[] frds = rankFriends(ui, neighbors);
+		synchronized (m_frdMtxLock) {
+			m_frdTrainMtx[i] = frds;
+		}
+	}
+	
 	// for testing user, construct user pair among all the users
 	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
@@ -212,6 +304,40 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
 		}
 		m_frdTestMtx[i] = rankFriends(ui, neighbors);
+	}
+	
+	// for testing user, construct user pair among all the users
+	protected void linkPrediction4TestUsers_MultiThread(int i, _MMBAdaptStruct ui){
+		double sim = 0;
+		_MMBAdaptStruct uj;
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_userList.size()-1);
+		// go through all the train users first
+		for(int j=0; j<m_trainSize; j++){
+			uj = m_trainSet.get(j);
+			// calculate sim for the pair we have not computed yet
+			sim = calcSimilarity(ui, uj);
+			synchronized (m_simMtxLock) {
+				m_simMtx[m_trainSize+i][j] = sim;
+			}
+			// rank sim
+			neighbors.add(new _RankItem(j, sim));
+		}
+		for(int j=0; j<m_testSize; j++){
+			uj = m_testSet.get(j);
+			if(j == i) continue;
+			if(j > i){
+				sim = calcSimilarity(ui, uj);
+				synchronized (m_simMtxLock) {
+					m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
+					m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
+				}
+			}
+			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
+		}
+		int[] frds = rankFriends(ui, neighbors);
+		synchronized (m_frdMtxLock) {
+			m_frdTestMtx[i] = frds;
+		}
 	}
 	
 	// MLE of B matrix
@@ -259,7 +385,7 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 		for(int i=0; i<neighbors.size(); i++){
 			item = neighbors.get(i);
 			uj = item.m_index >= m_trainSize ? m_testSet.get(item.m_index-m_trainSize) : m_trainSet.get(item.m_index);
-			if(hasFriend(ui.getUser().getFriends(), uj.getUserID()))
+			if(ui.getUser().hasFriend(uj.getUserID()))
 				frds[i] = 1;	
 		}
 		return frds;

@@ -30,7 +30,7 @@ public class CLRWithHDP extends CLRWithDP {
 	protected double m_c = 1;//the constant in front of probabilities of language model.
 	
 	protected double[] m_betas;//concentration vector for the prior of psi.
-	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[10000];//phi+psi
+	public static _HDPThetaStar[] m_hdpThetaStars = new _HDPThetaStar[100];//phi+psi
 	protected double[] m_cache = new double[10000]; // shared cache space to avoid repeatedly creating new space
 	protected DirichletPrior m_D0; //generic Dirichlet prior.
 	protected double m_gamma_e = 1.0;

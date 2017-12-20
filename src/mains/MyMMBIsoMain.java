@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPrediction;
+import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB4LinkPrediction;
 
 
 public class MyMMBIsoMain {
@@ -74,8 +74,8 @@ public class MyMMBIsoMain {
 	
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.5, eta = 0.05, beta = 0.01;
-		double sdA = 0.2, sdB = 0.2;
+		double alpha = 0.01, eta = 0.01, beta = 0.01;
+		double sdA = 0.0425, sdB = 0.0425;
 
 //		String model = "dp"; // "dp"
 //		String perfFile = String.format("./data/%s_%s_perf_%d.txt", dataset, model, testSize);
@@ -123,8 +123,8 @@ public class MyMMBIsoMain {
 //		CLinAdaptWithMMB mmb = new CLinAdaptWithMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, globalLM);
 //		mmb.setsdB(0.1);
 
-//		MTCLinAdaptWithMMB4LinkPrediction mmb = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		SVMBasedLinkPrediction mmb = new SVMBasedLinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		MTCLinAdaptWithMMB4LinkPrediction mmb = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+//		SVMBasedLinkPrediction mmb = new SVMBasedLinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
 		
 		mmb.setsdA(sdA);
@@ -133,18 +133,23 @@ public class MyMMBIsoMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		mmb.setRho(0.01);
-		mmb.setBurnIn(1);
+		mmb.setRho(0.1);
+		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(5);
+		mmb.setNumberOfIterations(10);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
+		mmb.calculateFrdStat();
 		mmb.checkTestReviewSize();
 		mmb.setDisplayLv(displayLv);
 		
+		boolean linkPredMultiThread = true;
 		mmb.train();
-		mmb.linkPrediction();
+		if(linkPredMultiThread)
+			mmb.linkPrediction_MultiThread();
+		else
+			mmb.linkPrediction();
 		mmb.printLinkPrediction("./");		
 		
 //		// Print out the current related models

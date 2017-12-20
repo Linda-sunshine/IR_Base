@@ -56,9 +56,11 @@ public class DPParameter {
 	public int m_testSize = 2000;
 	public int m_trainSize = 8000;
 	
-	public boolean m_estRho = false;
-	public boolean m_jointSmp = false;
+	public boolean m_jointAll = true;
 	public boolean m_trace = false;
+	
+	// whether we perform multi-threading in link prediction
+	public boolean m_linkMulti = true;
 	
 	public DPParameter(String argv[]){
 		
@@ -140,12 +142,12 @@ public class DPParameter {
 				m_trainSize = 10000 - m_testSize;
 			} else if(argv[i-1].equals("-dir")){
 				m_dir = argv[i];
-			} else if(argv[i-1].equals("-estRho")){
-				m_estRho = Boolean.valueOf(argv[i]);
-			} else if(argv[i-1].equals("-joint")){
-				m_jointSmp = Boolean.valueOf(argv[i]);
+			} else if(argv[i-1].equals("-jointAll")){
+				m_jointAll = Boolean.valueOf(argv[i]);
 			} else if(argv[i-1].equals("-trace")){
 				m_trace = Boolean.valueOf(argv[i]);
+			} else if(argv[i-1].equals("-multi")){
+				m_linkMulti = Boolean.valueOf(argv[i]);
 			} else
 				exit_with_help();
 		}

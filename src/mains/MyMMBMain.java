@@ -13,7 +13,7 @@ public class MyMMBMain {
 	
 	//In the main function, we want to input the data and do adaptation 
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
-
+		
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
@@ -125,30 +125,37 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 
-		double rho = 1; 
-		int burnin = 10, iter = 30, thin = 2;
-		boolean estRho = true, jointSmp = true;
+		double rho = 0.1; 
+		int burnin = 10, iter = 50, thin = 3;
+		boolean jointAll = true;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);
 		mmb.setThinning(thin);// default 3
 		mmb.setNumberOfIterations(iter);
 		
-		mmb.setEstRho(estRho);
-		mmb.setJointSampling(jointSmp);
-		
+		mmb.setJointSampling(jointAll);
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
+//		mmb.calculateFrdStat();
 		mmb.setDisplayLv(displayLv);
-		
-		boolean trace = false;
+		long start = System.currentTimeMillis();
+
+		boolean trace = true;
 		if(trace){
-			iter = 50; burnin = 10; thin = 1;
+			iter = 100; burnin = 20; thin = 1;
 			mmb.trainTrace(dataset, iter, burnin,thin);
-			mmb.printEdgeCount(dataset+"_edge_count.txt");
+			mmb.printEdgeCount(dataset+"_edge_count_joint_all_iter100.txt");
+			mmb.printBMatrix("B.txt");
 		} else{
 			mmb.train();
 			mmb.test(); 
+//			mmb.printBMatrix("./B.txt");
 		}
+		long end = System.currentTimeMillis();
+		System.out.println("\n[Info] Current time: " + end);
+		// the total time of training and testing in the unit of hours
+		double hours = (end - start)/(1000*60*60);
+		System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
 //		System.out.println(current);

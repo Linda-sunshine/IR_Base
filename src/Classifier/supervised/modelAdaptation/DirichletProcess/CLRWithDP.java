@@ -531,6 +531,7 @@ public class CLRWithDP extends LinAdapt {
 	
 	// Assign cluster assignment to each user.
 	protected void initThetaStars(){
+		Arrays.fill(m_thetaStars, null);
 		initPriorG0();
 		
 		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
@@ -546,7 +547,6 @@ public class CLRWithDP extends LinAdapt {
 	@Override
 	protected void init(){
 		super.init();
-		Arrays.fill(m_thetaStars, null);
 		initThetaStars();
 		
 		//init the structures for multi-threading

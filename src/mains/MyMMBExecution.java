@@ -79,23 +79,27 @@ public class MyMMBExecution {
 		adaptation.setThinning(param.m_thinning);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
 	
-		adaptation.setEstRho(param.m_estRho);
-		adaptation.setJointSampling(param.m_jointSmp);
+		adaptation.setJointSampling(param.m_jointAll);
 		// training testing operations.
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
-		
-		if(param.m_trace)
+		long start = System.currentTimeMillis();
+		if(param.m_trace){
+			param.m_nuOfIterations = 100; param.m_burnin = 10; param.m_thinning = 1;
 			adaptation.trainTrace(param.m_data, param.m_nuOfIterations, param.m_burnin, param.m_thinning);
-		else{
+		} else{
 			adaptation.train();
 			adaptation.test();
 		}
-		long current = System.currentTimeMillis();
-		System.out.println("\n[Info] Current time: " + current);
+		// record the time
+		long end = System.currentTimeMillis();
+		System.out.println("\n[Info] Current time: " + end);
+		// the total time of training and testing in the unit of hours
+		double hours = (end - start)/(1000*60*60);
+		System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
 		if(param.m_saveModel){
-			String dir = String.format("%s/%d_%s", param.m_saveDir, current, param.m_data);
+			String dir = String.format("%s/%d_%s", param.m_saveDir, end, param.m_data);
 			((MTCLinAdaptWithMMB) adaptation).saveEverything(dir);
 		}
 	}

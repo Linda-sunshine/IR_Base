@@ -84,11 +84,18 @@ public class MyLinkPredExecution {
 		// training testing operations.
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
+		adaptation.calculateFrdStat();
+
 		adaptation.checkTestReviewSize();
 		adaptation.setDisplayLv(displayLv);
 		
 		adaptation.train();
-		adaptation.linkPrediction();
+		System.out.println("[Info]Finish model training and start link prediction...");
+		
+		if(param.m_linkMulti)
+			adaptation.linkPrediction_MultiThread();
+		else
+			adaptation.linkPrediction();
 		adaptation.printLinkPrediction(param.m_dir);
 	}
 }

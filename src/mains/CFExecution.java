@@ -41,7 +41,7 @@ public class CFExecution {
 		String model, dir;
 		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), param.m_t);
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
-		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5"};
+		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5", "mmb_mixture"};
 
 		String suffix1 = "txt", suffix2 = "classifer";
 		
@@ -58,6 +58,12 @@ public class CFExecution {
 //				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s", dataset, dataset, model);
 				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s", param.m_data, param.m_data, model);
 				cf.loadWeights(dir, suffix1, suffix2);
+			}
+			
+			if(model.equals("mmb_mixture")){
+				int kBar = 10;
+				cf.calcMLEB("B_0.txt", "B_1.txt", kBar);
+				cf.setMixtureFlag(true);
 			}
 			cf.calculatAllNDCGMAP();
 			cf.calculateAvgNDCGMAP();

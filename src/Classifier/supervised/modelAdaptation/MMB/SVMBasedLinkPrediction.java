@@ -41,8 +41,23 @@ public class SVMBasedLinkPrediction extends MTCLinAdaptWithMMB4LinkPrediction{
 			linkPrediction4TestUsers(i, ui);
 		}
 	}
-
 	
+	// perform link prediction in multi-threading
+	@Override
+	public void linkPrediction_MultiThread(){
+		initLinkPred();
+		calculateMixturePerUser();
+			
+		trainSVM();
+				
+		// use a boolean flag to decide whether it is training set or testing set
+		linkPrediction_MultiThread_Split(m_trainSet, true);
+		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
+
+		linkPrediction_MultiThread_Split(m_testSet, false);
+		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
+	}		
+		
 	// we construct user pair as training instances and input into svm for training
 	public void trainSVM(){
 		// train svm model
@@ -79,7 +94,7 @@ public class SVMBasedLinkPrediction extends MTCLinAdaptWithMMB4LinkPrediction{
 			for(int j=i+1; j<m_trainSize; j++){
 				uj = m_trainSet.get(j);
 				fvs[index] = constructOneX(ui, uj);
-				eij = hasFriend(ui.getUser().getFriends(), uj.getUserID()) ? 1 : 0;
+				eij = ui.getUser().hasFriend(uj.getUserID()) ? 1 : 0;
 				ys[index] = eij;
 				index++;
 			}

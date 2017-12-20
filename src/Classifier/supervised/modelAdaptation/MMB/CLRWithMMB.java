@@ -5,7 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
 
@@ -35,10 +38,8 @@ public class CLRWithMMB extends CLRWithHDP {
 	protected double[] m_MNL = new double[3];
 	// Bernoulli distribution used in deciding whether the edge belongs to mmb or background model.
 	protected BinomialDistribution m_bernoulli;
-	// whether we estimate rho or not
-	protected boolean m_estRho = false;
-	// whether we utilize the joint sampling for zero edges or not
-	protected boolean m_jointSmp = false;
+	// whether we perform joint sampling for all zero edges or just background edges
+	protected boolean m_jointAll = true;
 	
 	// for debug purpose
 	protected HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
@@ -109,12 +110,43 @@ public class CLRWithMMB extends CLRWithHDP {
 		return likelihoodE;
 	}
 	
+	// traverse all the clusters to get the decomposed likelihood
+	// 0: m*log(rho*zBz); 1: n*log(1-rho*zBz); 2:n*log(rho(1-zBz))
+	protected double[] accumulateDecomposedLikelihoodEMMB(){
+		double likelihoodE[] = new double[4];
+		_Connection connection;
+		int e_0, e_1;
+		double logRho = Math.log(m_rho), log_zBz = 0, zBz = 0;
+		_HDPThetaStar theta_g, theta_h;
+		for(int g=0; g<m_kBar; g++){
+			theta_g = m_hdpThetaStars[g];
+			for(int h=g; h<m_kBar; h++){
+				theta_h = m_hdpThetaStars[h];
+				if(!theta_g.hasConnection(theta_h)) continue;
+				connection = theta_g.getConnection(theta_h);
+				e_1 = connection.getEdge()[1];
+				e_0 = connection.getEdge()[0];
+				log_zBz = Math.log(m_abcd[0]+e_1) - Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+				zBz = (m_abcd[0] + e_1)/(m_abcd[0]+m_abcd[1]+e_0+e_1);
+				likelihoodE[0] += e_1*(logRho + log_zBz);
+				likelihoodE[1] += e_0*(Math.log(1-m_rho * zBz));
+				likelihoodE[2] += e_0*(logRho + Math.log(1-zBz));
+				//likelihoodE: m*log(rho*(a+e_1))/(a+b+e_0+e_1))+n*log(rho*(b+e_0))/(a+b+e_0+e_1))
+//				likelihoodE += (e_0+e_1)*Math.log(m_rho)+e_1*Math.log(m_abcd[0]+e_1)+
+//						e_0*Math.log(m_abcd[1]+e_0)-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+//				likelihoodE += e_1*Math.log(m_abcd[0]+e_1)+e_0*Math.log(m_abcd[1]+e_0)
+//						-(e_0+e_1)*Math.log(m_abcd[0]+m_abcd[1]+e_0+e_1);
+			}
+		}
+		return likelihoodE;
+	}
+	
 	// calculate the probability for generating new clusters in sampling edges.
 	protected void calcProbNew(){
-		// if e_ij = 0, p = \rho*b/(a+b)
-		m_pNew[0] = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
-		// if e_ij = 1, p = (1-\rho*a/(a+b))
-		m_pNew[1] = Math.log(1 - m_rho * m_abcd[0] /(m_abcd[0] + m_abcd[1]));
+		// if e_ij = 1, p = \rho*a/(a+b)
+		m_pNew[1] = Math.log(m_rho) + Math.log(m_abcd[0]) - Math.log(m_abcd[0] + m_abcd[1]);
+		// if e_ij = 0, p = (1-\rho*a/(a+b))
+		m_pNew[0] = Math.log(1 - m_rho * m_abcd[0] /(m_abcd[0] + m_abcd[1]));
 	}
 
 	@Override
@@ -137,7 +169,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			e_0 = theta_g.getConnectionEdgeCount(theta_h, 0);
 			e_1 = theta_g.getConnectionEdgeCount(theta_h, 1);
 		} else{
-			System.err.println("[Bug]Invalid thetas!");
+			System.out.println("[Error]Invalid thetas inside calcLogLikelihoodEMarginal()!");
 		}
 		prob = Math.log(m_rho) + Math.log(m_abcd[0] + e_1) - Math.log(m_abcd[0] + m_abcd[1] + e_0 + e_1);
 		return e == 1 ? prob : Math.log(1 - Math.exp(prob));
@@ -172,64 +204,64 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// Decide which sampling method to take
 	public void calculate_E_step_Edge(){
-		if(m_jointSmp)
-			calculate_E_step_Edge_joint();
+		if(m_jointAll)
+			calculate_E_step_Edge_joint_all();
 		else
-			calculate_E_step_Edge_2round();
+			calculate_E_step_Edge_joint_bk();
 	}
 	
-	protected void calculate_E_step_Edge_2round(){
-		calcProbNew();
-		// sample z_{i->j}
-		_MMBAdaptStruct ui, uj;
-		int sampleSize = 0, eij = 0;
-
-		for(int i=0; i<m_userList.size(); i++){
-			ui = (_MMBAdaptStruct) m_userList.get(i);
-			for(int j=i+1; j<m_userList.size(); j++){
-				uj = (_MMBAdaptStruct) m_userList.get(j);
-				// print out the process of sampling edges
-				if (++sampleSize%100000==0) {
-					System.out.print('.');
-					if (sampleSize%50000000==0)
-						System.out.println();
-				}
-				// eij from mmb
-				if(ui.hasEdge(uj)){
-					eij = ui.getEdge(uj);
-					// remove the connection for B_gh, i->j \in g, j->i \in h.
-					rmConnection(ui, uj, eij);
-					// update membership from ui->uj, remove the edge
-					updateEdgeMembership(i, j, eij);	
-					// sample new cluster for the edge
-					sampleEdge(i, j, eij);
-					// update membership from uj->ui, remove the edge
-					updateEdgeMembership(j, i, eij);
-					// sample new clusters for the two edges
-					sampleEdge(j, i, eij);
-					// add the new connection for B_g'h', i->j \in g', j->i \in h'
-					addConnection(ui, uj, eij);
-				// edges from background
-				}else{
-					// remove the two edges from background model
-					updateSampleSize(2, -2);
-					// if the theta is no longer valid (removed during the sampling of c)
-					if(!m_indicator[j][i].isValid()){
-						System.err.println("Invalid theta!!");
-						sampleZeroEdgeJoint(i, j);
-					} else{
-						sampleEdge(i, j, 0);
-						sampleEdge(j, i, 0);
-						addConnection(ui, uj, 0);
-					}
-				}
-			}
-		}
-		sampleC();
-	}
+//	protected void calculate_E_step_Edge_2round(){
+//		// sample z_{i->j}
+//		_MMBAdaptStruct ui, uj;
+//		int sampleSize = 0, eij = 0;
+//
+//		for(int i=0; i<m_userList.size(); i++){
+//			ui = (_MMBAdaptStruct) m_userList.get(i);
+//			for(int j=i+1; j<m_userList.size(); j++){
+//				uj = (_MMBAdaptStruct) m_userList.get(j);
+//				// print out the process of sampling edges
+//				if (++sampleSize%100000==0) {
+//					System.out.print('.');
+//					if (sampleSize%50000000==0)
+//						System.out.println();
+//				}
+//				// eij from mmb
+//				if(ui.hasEdge(uj)){
+//					eij = ui.getEdge(uj);
+//					// remove the connection for B_gh, i->j \in g, j->i \in h.
+//					rmConnection(ui, uj, eij);
+//					// update membership from ui->uj, remove the edge
+//					updateEdgeMembership(i, j, eij);	
+//					// sample new cluster for the edge
+//					sampleEdge(i, j, eij);
+//					// update membership from uj->ui, remove the edge
+//					updateEdgeMembership(j, i, eij);
+//					// sample new clusters for the two edges
+//					sampleEdge(j, i, eij);
+//					// add the new connection for B_g'h', i->j \in g', j->i \in h'
+//					addConnection(ui, uj, eij);
+//				// edges from background
+//				}else{
+//					// remove the two edges from background model
+//					updateSampleSize(2, -2);
+//					// if the theta is no longer valid (removed during the sampling of c)
+//					if(!m_indicator[j][i].isValid()){
+//						System.out.println("[Info]Invalid theta!Joint sampling for background edge!");
+//						sampleZeroEdgeJoint(i, j);
+//					} else{
+//						sampleEdge(i, j, 0);
+//						sampleEdge(j, i, 0);
+//						addConnection(ui, uj, 0);
+//					}
+//				}
+//			}
+//		}
+//		sampleC();
+//	}
 	
-	protected void calculate_E_step_Edge_joint(){
-		calcProbNew();
+	// for all zero edges, we apply joint sampling
+	protected void calculate_E_step_Edge_joint_all(){
+//		calcProbNew();
 		// sample z_{i->j}
 		_MMBAdaptStruct ui, uj;
 		int sampleSize = 0, eij = 0;
@@ -259,16 +291,14 @@ public class CLRWithMMB extends CLRWithHDP {
 					sampleEdge(j, i, eij);
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, eij);
-				// edges from background
+				// eij = 0
 				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 					eij = 0;
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
 					rmConnection(ui, uj, eij);
-					// update membership from ui->uj, remove the edge
-					updateEdgeMembership(i, j, eij);	
-					// update membership from uj->ui, remove the edge
+					// update membership from ui->uj, uj->ui
+					updateEdgeMembership(i, j, eij);
 					updateEdgeMembership(j, i, eij);
-					// sample cij and cluster assignmetn for the edges
 					sampleZeroEdgeJoint(i, j);
 				} else{
 					// remove the two edges from background model
@@ -279,6 +309,103 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
 		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
+	}
+	protected void calculate_E_step_Edge_joint_bk(){
+//		calcProbNew();
+		// sample z_{i->j}
+		_MMBAdaptStruct ui, uj;
+		int sampleSize = 0, eij = 0;
+		double p_mmb_0 = 0, p_bk = 1-m_rho;
+
+		for(int i=0; i<m_userList.size(); i++){
+			ui = (_MMBAdaptStruct) m_userList.get(i);
+			for(int j=i+1; j<m_userList.size(); j++){
+				uj = (_MMBAdaptStruct) m_userList.get(j);
+				// print out the process of sampling edges
+				if (++sampleSize%100000==0) {
+					System.out.print('.');
+					if (sampleSize%50000000==0)
+						System.out.println();
+				}
+				// eij=1
+				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
+					eij = 1;
+					// remove the connection for B_gh, i->j \in g, j->i \in h.
+					rmConnection(ui, uj, eij);
+					// update membership from ui->uj, remove the edge
+					updateEdgeMembership(i, j, eij);	
+					// sample new cluster for the edge
+					sampleEdge(i, j, eij);
+					// update membership from uj->ui, remove the edge
+					updateEdgeMembership(j, i, eij);
+					// sample new clusters for the two edges
+					sampleEdge(j, i, eij);
+					// add the new connection for B_g'h', i->j \in g', j->i \in h'
+					addConnection(ui, uj, eij);
+				// eij = 0
+				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+					eij = 0;
+					// use bernoulli distribution to decide whether it is background or mmb
+					p_bk = 1-m_rho;
+					p_mmb_0 = Math.exp(calcLogLikelihoodE(m_indicator[i][j], m_indicator[j][i], 0));
+					m_bernoulli = new BinomialDistribution(1, p_mmb_0/(p_bk + p_mmb_0));
+					// the edge belongs to bk
+					if(m_bernoulli.sample() == 0){
+						// remove the connection for B_gh, i->j \in g, j->i \in h.
+						rmConnection(ui, uj, eij);
+						// update membership from ui->uj, uj->ui
+						updateEdgeMembership(i, j, eij);
+						updateEdgeMembership(j, i, eij);
+						updateSampleSize(2, 2);
+					} else{
+						rmConnection(ui, uj, eij);
+						updateEdgeMembership(i, j, eij);	
+						sampleEdge(i, j, eij);
+						// update membership from uj->ui, remove the edge
+						updateEdgeMembership(j, i, eij);
+						sampleEdge(j, i, eij);
+						addConnection(ui, uj, eij);
+					}
+				} else{
+					// remove the two edges from background model
+					updateSampleSize(2, -2);
+					sampleZeroEdgeJoint(i, j);
+				}
+			}
+		}
+		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
+		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
+	}
+	
+	// calculate the average friend number of training users, testing users.
+	// it only applies to the two set of training and testing users.
+	public void calculateFrdStat(){
+		Set<String> trainUsers = new HashSet<String>();
+		Set<String> testUsers = new HashSet<String>();
+		for(_AdaptStruct u:	m_userList){
+			if(u.getTestSize() == 0){
+				trainUsers.add(u.getUserID());
+			} else {
+				testUsers.add(u.getUserID());
+			}
+		}
+		double trainSum = 0, testSum = 0;
+		for(_AdaptStruct u: m_userList){
+			// training users
+			if(u.getTestSize() == 0){
+				for(String f: u.getUser().getFriends()){
+					if(trainUsers.contains(f))
+						trainSum++;
+				}
+			} else{
+				for(String f: u.getUser().getFriends()){
+					if(trainUsers.contains(f) || testUsers.contains(f)){
+						testSum++;
+					}
+				}
+			}
+		}
+		System.out.println(String.format("[Stat]Avg friends for training users is %.2f; avg friends for testing users is %.2f.\n", trainSum/trainUsers.size(), testSum/testUsers.size()));	
 	}
 	
 	private void checkClusters(){
@@ -332,13 +459,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		return 0;
 	}
 	
-	public boolean hasFriend(String[] arr, String str){
-		for(String a: arr){
-			if(str.equals(a))
-				return true;
-		}
-		return false;
-	}
+
 	
 	private void initStat(){
 		stat.put("onlyedges", new ArrayList<Integer>());
@@ -348,43 +469,43 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// init thetas for edges at the beginning
 	// assign all zero edges to mmb
-	public void initThetaStars_Edges_2round(){
-		calcProbNew();
-		_MMBAdaptStruct ui, uj;
-		int sampleSize = 0;
-		// add the friends one by one.
-		for(int i=0; i< m_userList.size(); i++){
-			ui = (_MMBAdaptStruct) m_userList.get(i);
-			for(int j=i+1; j<m_userList.size(); j++){
-				// print out the process of sampling edges
-				if (++sampleSize%100000==0) {
-					System.out.print('.');
-					if (sampleSize%50000000==0)
-						System.out.println();
-				}
-				uj = (_MMBAdaptStruct) m_userList.get(j);
-				// if ui and uj are friends, random sample clusters for the two connections
-				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
-				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
-					// sample two edges between i and j
-					randomSampleEdges(i, j, 1);
-					// add the edge assignment to corresponding cluster
-					// we have to add connections after we know the two edge assignment (the clusters for i->j and j->i)
-					addConnection(ui, uj, 1);
-					// update the sample size with the specified index and value
-					// index 0 : e_ij = 0 from mmb; index 1 : e_ij = 1 from mmb; index 2 : 0 from background model
-					updateSampleSize(1, 2);
-				} else{
-				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
-					randomSampleEdges(i, j, 0);
-					addConnection(ui, uj, 0);
-					updateSampleSize(0, 2);
-				}
-			}
-		}
-		// assign part of the zero edges to background model
-		sampleC();
-	}
+//	public void initThetaStars_Edges_2round(){
+//		calcProbNew();
+//		_MMBAdaptStruct ui, uj;
+//		int sampleSize = 0;
+//		// add the friends one by one.
+//		for(int i=0; i< m_userList.size(); i++){
+//			ui = (_MMBAdaptStruct) m_userList.get(i);
+//			for(int j=i+1; j<m_userList.size(); j++){
+//				// print out the process of sampling edges
+//				if (++sampleSize%100000==0) {
+//					System.out.print('.');
+//					if (sampleSize%50000000==0)
+//						System.out.println();
+//				}
+//				uj = (_MMBAdaptStruct) m_userList.get(j);
+//				// if ui and uj are friends, random sample clusters for the two connections
+//				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
+//				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
+//					// sample two edges between i and j
+//					randomSampleEdges(i, j, 1);
+//					// add the edge assignment to corresponding cluster
+//					// we have to add connections after we know the two edge assignment (the clusters for i->j and j->i)
+//					addConnection(ui, uj, 1);
+//					// update the sample size with the specified index and value
+//					// index 0 : e_ij = 0 from mmb; index 1 : e_ij = 1 from mmb; index 2 : 0 from background model
+//					updateSampleSize(1, 2);
+//				} else{
+//				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
+//					randomSampleEdges(i, j, 0);
+//					addConnection(ui, uj, 0);
+//					updateSampleSize(0, 2);
+//				}
+//			}
+//		}
+//		// assign part of the zero edges to background model
+//		sampleC();
+//	}
 	
 	public void initThetaStars_Edges_Joint(){
 		calcProbNew();
@@ -403,7 +524,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				uj = (_MMBAdaptStruct) m_userList.get(j);
 				// if ui and uj are friends, random sample clusters for the two connections
 				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
-				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
+				if(ui.getUser().hasFriend(uj.getUserID())){
 					// sample two edges between i and j
 					randomSampleEdges(i, j, 1);
 					// add the edge assignment to corresponding cluster
@@ -420,6 +541,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
 		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
+
 	@Override
 	public void loadUsers(ArrayList<_User> userList) {
 		m_userList = new ArrayList<_AdaptStruct>();
@@ -509,7 +631,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			theta_s = m_hdpThetaStars[k];
 			// we record all the 
 			if(!theta_h.isValid())
-				System.err.println("Invalid theta!!");
+				System.out.println("[Error]Invalid theta inside sampleEdge()!!");
 		
 			likelihood = calcLogLikelihoodEMarginal(theta_s, theta_h, e);
 			if(Double.isInfinite(likelihood))
@@ -609,6 +731,9 @@ public class CLRWithMMB extends CLRWithHDP {
  		/**We maintain a matrix for storing probability. As the matrix is 
  		 * symmetric, we only calculate upper-triangle. **/
  		double[][] cacheB = new double[m_kBar+1][m_kBar+1];
+ 		for(double[] b: cacheB)
+ 			Arrays.fill(b, Double.NEGATIVE_INFINITY);
+ 		
  		_MMBAdaptStruct ui = (_MMBAdaptStruct) m_userList.get(i);
  		_MMBAdaptStruct uj = (_MMBAdaptStruct) m_userList.get(j);
  
@@ -628,11 +753,13 @@ public class CLRWithMMB extends CLRWithHDP {
  		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]) + Math.log(m_gamma_e);
  		for(int k=0; k<=m_kBar; k++){
  			cacheB[k][m_kBar] = pNew;
- 			cacheB[k][m_kBar] += (k == m_kBar) ? Math.log(m_gamma_e) : Math.log(m_hdpThetaStars[k].getGamma());
-  			logSum = Utils.logSum(logSum, cacheB[k][m_kBar]);
+ 			if(!Double.isInfinite(pNew)){
+ 				cacheB[k][m_kBar] += (k == m_kBar) ? Math.log(m_gamma_e) : Math.log(m_hdpThetaStars[k].getGamma());
+ 				logSum = Utils.logSum(logSum, cacheB[k][m_kBar]);
+ 			}
   		}
  		
-  		// Step 2: sample one pair from the prob matrix./*-
+  		// Step 2: sample one pair from the prob matrix.
  		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho), cacheB);
   		
   		// Step 3: Analyze the sampled cluster results.
@@ -729,12 +856,9 @@ public class CLRWithMMB extends CLRWithHDP {
 			e.printStackTrace();
 		}
 	}
-	
-	public void setEstRho(boolean b){
-		m_estRho = b;
-	}
+
 	public void setJointSampling(boolean b){
-		m_jointSmp = b;
+		m_jointAll = b;
 	}
 	// Set the sparsity parameter
 	public void setRho(double v){
@@ -755,7 +879,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// In the training process, we sample documents first, then sample edges.
 	@Override
 	public double train(){
-		System.out.print(String.format("[Info]Estimate rho: %b, Joint Sampling: %b\n", m_estRho, m_jointSmp));
+		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		double likelihoodX = 0, likelihoodY = 0, likelihoodE = 0;
@@ -765,17 +889,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
-		if(m_jointSmp)
-			initThetaStars_Edges_Joint();
-		else
-			initThetaStars_Edges_2round();
+		initThetaStars_Edges_Joint();
 		sanityCheck();
 		
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			calculate_E_step();
 			calculate_M_step();
-			if(m_estRho) estRho();
 		}
 		
 		// EM iteration.
@@ -783,7 +903,6 @@ public class CLRWithMMB extends CLRWithHDP {
 			// Cluster assignment, thinning to reduce auto-correlation.			
 			calculate_E_step();
 			likelihoodY = calculate_M_step();
-			if(m_estRho) estRho();
 			
 			likelihoodX = accumulateLikelihoodX();
 			likelihoodE = accumulateLikelihoodEMMB();
@@ -811,30 +930,28 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_burnIn = burnin;
 		m_thinning = thin;
 			
-		System.out.print(String.format("[Info]Estimate rho: %b, Joint Sampling: %b\n", m_estRho, m_jointSmp));
+		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
 		
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-		double likelihoodX = 0, likelihoodY = 0, likelihoodE = 0;
+		double likelihoodX = 0, likelihoodY = 0;
 		int count = 0;
-			
+		
+		double likelihoodE = 0;
+//		double[] likelihoodE;
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
-		if(m_jointSmp)
-			initThetaStars_Edges_Joint();
-		else
-			initThetaStars_Edges_2round();
+		initThetaStars_Edges_Joint();
 		sanityCheck();
 		
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			calculate_E_step();
 			calculate_M_step();
-			if(m_estRho) estRho();
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d.txt", data, iter, burnin, thin); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, burnin, thin, m_jointAll, System.currentTimeMillis()); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
@@ -842,12 +959,16 @@ public class CLRWithMMB extends CLRWithHDP {
 				// Cluster assignment, thinning to reduce auto-correlation.
 				calculate_E_step();
 				likelihoodY = calculate_M_step();
-				if(m_estRho) estRho();
 				
 				// accumulate the likelihood
 				likelihoodX = accumulateLikelihoodX();
+//				likelihoodE = accumulateDecomposedLikelihoodEMMB();
+//				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
+				
 				likelihoodE = accumulateLikelihoodEMMB();
 				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
+				
+//				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
 				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
 				
@@ -858,11 +979,11 @@ public class CLRWithMMB extends CLRWithHDP {
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
-				
+//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
 				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-				if(Math.abs(delta) < m_converge)
-					break;
+//				if(Math.abs(delta) < m_converge)
+//					break;
 				lastLikelihood = curLikelihood;
 			}
 			writer.close();
@@ -899,7 +1020,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// No data associated with the cluster
 		if(curThetaStar.getMemSize() == 0 && curThetaStar.getTotalEdgeSize() == 0) {
-			System.err.println("[Info]Zero cluster detected in updating doc!");
+			System.out.println("[Debug]Zero cluster detected in updating doc!");
 			// check if every dim gets 0 count in language mode
 			LMStatSanityCheck(curThetaStar);
 			
@@ -935,7 +1056,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_MNL[e]--;
 		// No data associated with the cluster
 		if(thetai.getMemSize() == 0 && thetai.getTotalEdgeSize() == 0){		
-			System.err.println("[Info]Zero cluster detected in updating doc!");
+			System.out.println("[Info]Zero cluster detected in updating doc!");
 			// recycle the gamma
 			m_gamma_e += thetai.getGamma();
 			

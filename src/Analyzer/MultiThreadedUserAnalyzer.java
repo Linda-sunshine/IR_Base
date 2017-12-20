@@ -469,7 +469,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			e.printStackTrace();
 		}
 	}
-	
+
 	// return the friendship map
 	public HashMap<String, String[]> getFriendship(){
 		return m_neighborsMap;
