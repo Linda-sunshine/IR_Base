@@ -140,10 +140,10 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = false;
+		boolean trace = true; 
 		if(trace){
 			iter = 100; burnin = 0; thin = 1;
-			mmb.trainTrace(dataset, iter, burnin,thin);
+			mmb.trainTrace(dataset, iter, burnin, thin);
 			mmb.printEdgeCount(dataset+"_edge_count_joint_all_iter100.txt");
 			mmb.printBMatrix("B.txt");
 		} else{
@@ -154,8 +154,8 @@ public class MyMMBMain {
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info] Current time: " + end);
 		// the total time of training and testing in the unit of hours
-		double hours = (end - start)/(1000*60*60);
-		System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
+		double hours = (end - start)/(1000*60);
+		System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
 //		System.out.println(current);

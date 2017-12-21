@@ -11,8 +11,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.math3.distribution.BinomialDistribution;
-import org.netlib.util.doubleW;
-import org.tartarus.snowball.ext.norwegianStemmer;
 
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
@@ -978,8 +976,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		double likelihoodX = 0, likelihoodY = 0;
 		int count = 0;
 		
-		double likelihoodE = 0;
-//		double[] likelihoodE;
+//		double likelihoodE = 0;
+		double[] likelihoodE;
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars_Edges_Joint();
@@ -1003,14 +1001,14 @@ public class CLRWithMMB extends CLRWithHDP {
 				
 				// accumulate the likelihood
 				likelihoodX = accumulateLikelihoodX();
-//				likelihoodE = accumulateDecomposedLikelihoodEMMB();
-//				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
+				likelihoodE = accumulateDecomposedLikelihoodEMMB();
+				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
 				
-				likelihoodE = accumulateLikelihoodEMMB();
-				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
+//				likelihoodE = accumulateLikelihoodEMMB();
+//				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
 				
-//				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
-				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
+				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
+//				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
 				
 				// evaluate the model
@@ -1020,8 +1018,8 @@ public class CLRWithMMB extends CLRWithHDP {
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
-//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
-				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
+//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 //				if(Math.abs(delta) < m_converge)
 //					break;
