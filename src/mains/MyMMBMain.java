@@ -142,7 +142,7 @@ public class MyMMBMain {
 
 		boolean trace = false;
 		if(trace){
-			iter = 100; burnin = 20; thin = 1;
+			iter = 100; burnin = 0; thin = 1;
 			mmb.trainTrace(dataset, iter, burnin,thin);
 			mmb.printEdgeCount(dataset+"_edge_count_joint_all_iter100.txt");
 			mmb.printBMatrix("B.txt");

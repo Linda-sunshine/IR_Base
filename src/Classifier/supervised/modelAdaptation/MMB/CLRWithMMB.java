@@ -45,7 +45,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	// for debug purpose
 	protected HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
-
+	protected static double m_log2 = Math.log(2);
 	ArrayList<Integer> mmb_0 = new ArrayList<Integer>();
 	ArrayList<Integer> mmb_1 = new ArrayList<Integer>();
 	ArrayList<Integer> bk_0 = new ArrayList<Integer>();
@@ -196,12 +196,12 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	@Override
 	public void calculate_E_step(){
-		long start = System.currentTimeMillis()/1000;
+		long start = System.currentTimeMillis();
 		super.calculate_E_step();
 		calculate_E_step_Edge();
 		sanityCheck();
-		long end = System.currentTimeMillis()/1000;
-		System.out.println("[Time]The sampling iteration took " + (end-start) + " secs.");
+		long end = System.currentTimeMillis();
+		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
 	}
 	
 	// Decide which sampling method to take
@@ -298,7 +298,7 @@ public class CLRWithMMB extends CLRWithHDP {
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, eij);
 					long end = System.currentTimeMillis();
-					m_time[1] += (end - start)/1000;
+					m_time[1] += (end - start);
 				// eij = 0
 				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
 					long start = System.currentTimeMillis();
@@ -310,21 +310,21 @@ public class CLRWithMMB extends CLRWithHDP {
 					updateEdgeMembership(j, i, eij);
 					sampleZeroEdgeJoint(i, j);
 					long end = System.currentTimeMillis();
-					m_time[0] += (end - start)/1000;
+					m_time[0] += (end - start);
 				} else{
 					// remove the two edges from background model
 					long start = System.currentTimeMillis();
 					updateSampleSize(2, -2);
 					sampleZeroEdgeJoint(i, j);
 					long end = System.currentTimeMillis();
-					m_time[2] += (end - start) / 1000;
+					m_time[2] += (end - start);
 					
 				}
 			}
 		}
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
-		System.out.print(String.format("\n[Time]Sampling: mmb_0: %d secs, mmb_1: %d secs, bk_0: %d secs\n", m_time[0], m_time[1], m_time[2]));
-		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
+		System.out.print(String.format("\n[Time]Sampling: mmb_0: %.3f secs, mmb_1: %.3f secs, bk_0: %.3f secs\n", (double)m_time[0]/1000, (double)m_time[1]/1000, (double)m_time[2]/1000));
+		System.out.print(String.format("[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	protected void calculate_E_step_Edge_joint_bk(){
 //		calcProbNew();
@@ -333,6 +333,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		int sampleSize = 0, eij = 0;
 		double p_mmb_0 = 0, p_bk = 1-m_rho;
 
+		Arrays.fill(m_time, 0);
 		for(int i=0; i<m_userList.size(); i++){
 			ui = (_MMBAdaptStruct) m_userList.get(i);
 			for(int j=i+1; j<m_userList.size(); j++){
@@ -345,6 +346,7 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 				// eij=1
 				if(ui.hasEdge(uj) && ui.getEdge(uj) == 1){
+					long start = System.currentTimeMillis();
 					eij = 1;
 					// remove the connection for B_gh, i->j \in g, j->i \in h.
 					rmConnection(ui, uj, eij);
@@ -358,8 +360,11 @@ public class CLRWithMMB extends CLRWithHDP {
 					sampleEdge(j, i, eij);
 					// add the new connection for B_g'h', i->j \in g', j->i \in h'
 					addConnection(ui, uj, eij);
+					long end = System.currentTimeMillis();
+					m_time[1] += (end - start);
 				// eij = 0
 				}else if(ui.hasEdge(uj) && ui.getEdge(uj) == 0){
+					long start = System.currentTimeMillis();
 					eij = 0;
 					// use bernoulli distribution to decide whether it is background or mmb
 					p_bk = 1-m_rho;
@@ -382,14 +387,20 @@ public class CLRWithMMB extends CLRWithHDP {
 						sampleEdge(j, i, eij);
 						addConnection(ui, uj, eij);
 					}
+					long end = System.currentTimeMillis();
+					m_time[0] += (end - start);
 				} else{
+					long start = System.currentTimeMillis();
 					// remove the two edges from background model
 					updateSampleSize(2, -2);
 					sampleZeroEdgeJoint(i, j);
+					long end = System.currentTimeMillis();
+					m_time[2] += (end - start);
 				}
 			}
 		}
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
+		System.out.print(String.format("\n[Time]Sampling: mmb_0: %.3f secs, mmb_1: %.3f secs, bk_0: %.3f secs\n", (double)m_time[0]/1000, (double)m_time[1]/1000, (double)m_time[2]/1000));
 		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	
@@ -761,29 +772,33 @@ public class CLRWithMMB extends CLRWithHDP {
  				theta_h = m_hdpThetaStars[h];
  				cacheB[g][h] = calcLogLikelihoodE(theta_g, theta_h, 0);
  				cacheB[g][h] += Math.log(theta_g.getGamma()) + Math.log(theta_h.getGamma());
- 				logSum = Utils.logSum(logSum, cacheB[g][h]);
- 				// add the symmetric case
- 				if(h != g){
+ 				if(g == h){
+ 					logSum = Utils.logSum(logSum, cacheB[g][h]);
+ 				} else{
  					cacheB[h][g] = cacheB[g][h];
- 					logSum = Utils.logSum(logSum, cacheB[h][g]);
+ 					// we need to add twice of logp.
+ 					logSum = Utils.logSum(logSum, cacheB[h][g]+m_log2);
  				}
  			}
  		}
  		// case 2: either one is from new cluster.
  		// pre-calculate \rho*(b/(a+b))*\gamma_e
- 		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]) + Math.log(m_gamma_e);
+ 		double pNew = Math.log(m_rho) + Math.log(m_abcd[1]) - Math.log(m_abcd[0] + m_abcd[1]);
+ 		double gamma_g = 0;
  		for(int k=0; k<m_kBar; k++){
- 			cacheB[k][m_kBar] = pNew;
- 			cacheB[m_kBar][k] = pNew;
- 			if(!Double.isInfinite(pNew)){
- 				cacheB[k][m_kBar] += Math.log(m_hdpThetaStars[k].getGamma());
- 				cacheB[m_kBar][k] += Math.log(m_hdpThetaStars[k].getGamma());
- 				logSum = Utils.logSum(logSum, cacheB[k][m_kBar]+Math.log(2));
+ 			gamma_g = m_hdpThetaStars[k].getGamma();
+ 			// if either one is 0, then prob is 0 -> log prob = -Infinity
+ 			if(m_gamma_e != 0 && gamma_g != 0){
+ 	 			cacheB[k][m_kBar] = pNew + Math.log(m_gamma_e) + Math.log(gamma_g);
+ 	 			cacheB[m_kBar][k] = cacheB[k][m_kBar];
+ 	 			logSum = Utils.logSum(logSum, cacheB[k][m_kBar]+m_log2);
  			}
   		}
  		// both are from new clusters.
- 		cacheB[m_kBar][m_kBar] = pNew + Math.log(m_gamma_e);
- 		logSum = Utils.logSum(logSum, cacheB[m_kBar][m_kBar]);
+ 		if(m_gamma_e != 0){
+ 	 		cacheB[m_kBar][m_kBar] = pNew + Math.log(m_gamma_e) + m_log2;
+ 	 		logSum = Utils.logSum(logSum, cacheB[m_kBar][m_kBar]);
+ 		} 	
  		
   		// Step 2: sample one pair from the prob matrix.
  		int k = sampleIn2DimArrayLogSpace(logSum, Math.log(1-m_rho), cacheB);
