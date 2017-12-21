@@ -262,7 +262,7 @@ public class CLRWithMMB extends CLRWithHDP {
 //	}
 	// variable used to record the sampling time for different edges
 	// [0]: mmb_0; [1]: mmb_1; 
-	double[] m_time = new double[3];
+	long[] m_time = new long[3];
 	// for all zero edges, we apply joint sampling
 	protected void calculate_E_step_Edge_joint_all(){
 //		calcProbNew();
