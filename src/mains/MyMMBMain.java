@@ -140,7 +140,7 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = true;
+		boolean trace = false;
 		if(trace){
 			iter = 100; burnin = 20; thin = 1;
 			mmb.trainTrace(dataset, iter, burnin,thin);
@@ -149,7 +149,7 @@ public class MyMMBMain {
 		} else{
 			mmb.train();
 			mmb.test(); 
-//			mmb.printBMatrix("./B.txt");
+			mmb.printBMatrix("./B.txt");
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info] Current time: " + end);
