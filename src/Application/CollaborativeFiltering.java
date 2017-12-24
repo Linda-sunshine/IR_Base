@@ -405,8 +405,9 @@ public class CollaborativeFiltering {
 								if (j == i+core)
 									continue;
 								uj = m_userWeights[j];
+								double simi = m_mixFlag ? calcMixtureSimi(ui, uj):Utils.cosine(ui, uj);
 								synchronized(m_similarityLock){
-									m_similarity[getIndex(i+core, j)] = m_mixFlag ? calcMixtureSimi(ui, uj):Utils.cosine(ui, uj);
+									m_similarity[getIndex(i+core, j)] = simi;
 								}
 							}
 						}
@@ -536,12 +537,18 @@ public class CollaborativeFiltering {
 	}
 	
 	// load B_0 and B_1 and calculate the MLE of B
-	public void calcMLEB(String fileB0, String fileB1, int kBar){
+	public void calcMLEB(String fileB0, String fileB1){
 		double b = 0;
 		// store B_0
-		double[][] m_B_0 = loadBFile(fileB0, kBar);
+		double[][] m_B_0 = loadBFile(fileB0);
 		// store B_1 first, later on store MLE_B
-		double[][] m_B = loadBFile(fileB1, kBar);
+		m_B = loadBFile(fileB1);
+		if(m_B_0.length != m_B.length){
+			System.out.println("[Error]The dimension of B_0 and B_1 does not match!");
+			return;
+		}
+		int kBar = m_B.length;
+		m_featureSize = kBar;
 		for(int i=0; i<kBar; i++){
 			for(int j=i; j<kBar; j++){
 				if(m_B[i][j] == 0) continue;
@@ -552,16 +559,22 @@ public class CollaborativeFiltering {
 		}
 	}
 
-	public double[][] loadBFile(String fileName, int kBar){
-		double[][] weights = new double[kBar][kBar];
+	public double[][] loadBFile(String fileName){
+		int kBar = -1;
+		double[][] weights = null;
 		try{
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), "UTF-8"));
 			String line;
 			int index = 0;
 			while((line = reader.readLine()) != null){
 				String[] ws = line.split("\t");
+				// get the kBar
+				if(kBar == -1 && ws.length > 0){
+					kBar = ws.length;
+					weights = new double[kBar][kBar];
+				}
 				if(ws.length != kBar)
-					System.out.println("[error]Wrong dimension of the user's weights!");
+					System.out.println("[error]The dimension of B does not match kBar!");
 				else{
 					for(int i=0; i<ws.length; i++){
 						weights[index][i] = Double.valueOf(ws[i]);
@@ -574,13 +587,14 @@ public class CollaborativeFiltering {
 			System.err.format("[Error]Failed to open file %s!!", fileName);
 			e.printStackTrace();
 		}
+		System.out.println("[Info]Finish loading B file " + fileName);
 		return weights;
 	}
 	
 	public void loadWeights(String weightFile, String suffix1, String suffix2){
 		loadUserWeights(weightFile, suffix1, suffix2);
 		constructNeighborhood();
-		checkSimi();
+//		checkSimi();
 	}
 	
 	public void loadUserWeights(String folder, final String suffix1, final String suffix2){
