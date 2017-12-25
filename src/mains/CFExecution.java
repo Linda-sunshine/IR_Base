@@ -41,10 +41,10 @@ public class CFExecution {
 		String model, dir;
 		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), param.m_t);
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
-		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5", "mmb_mixture"};
+		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmm_0.5_new", "mmb_mixture"};
 
 		String suffix1 = "txt", suffix2 = "classifer";
-		
+		long start = System.currentTimeMillis();
 		double[][] performance = new double[models.length][2];
 		for(int m=0; m<models.length; m++){
 			model = models[m];
@@ -83,5 +83,8 @@ public class CFExecution {
 			writer.write("\n");
 		}
 		writer.close();
+		long end = System.currentTimeMillis();
+		long mins = (end - start)/1000*60;
+		System.out.println("[Info]The collaborative filtering took " + mins + " mins to finish!");
 	}
 }

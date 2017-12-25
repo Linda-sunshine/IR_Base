@@ -57,7 +57,7 @@ public class SVMBasedLinkPrediction extends MTCLinAdaptWithMMB4LinkPrediction{
 		linkPrediction_MultiThread_Split(m_testSet, false);
 		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
 	}		
-		
+	
 	// we construct user pair as training instances and input into svm for training
 	public void trainSVM(){
 		// train svm model

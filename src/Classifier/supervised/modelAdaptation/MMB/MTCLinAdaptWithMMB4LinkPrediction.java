@@ -45,9 +45,19 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	
 	// calculate training/testing size, construct training set/testing set
 	public void initLinkPred(){
+		
+		calcTrainTestSize();
+		// The train user and test user may not exist in order, thus we still set the friend 
+		// matrix's size as the total number of users for convenient indexing. As their dim 
+		// is different, we cannot put them in one array
+		m_frdTrainMtx = new int[m_trainSize][m_trainSize-1];
+		m_frdTestMtx = new int[m_testSize][m_userList.size()-1];
+		m_simMtx = new double[m_userList.size()][m_userList.size()];
+	}
+	
+	public void calcTrainTestSize(){
 		m_trainSet = new ArrayList<_MMBAdaptStruct>();
 		m_testSet = new ArrayList<_MMBAdaptStruct>();
-		
 		for(_AdaptStruct user: m_userList){
 			if(user.getTestSize() != 0){
 				m_testSize++;
@@ -58,18 +68,10 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 				m_trainSet.add((_MMBAdaptStruct) user);
 			}
 		}
-		
+	
 		if(m_trainSize + m_testSize != m_userList.size())
 			System.out.println("The user size does not match!!");
-		
-		// The train user and test user may not exist in order, thus we still set the friend 
-		// matrix's size as the total number of users for convenient indexing. As their dim 
-		// is different, we cannot put them in one array
-		m_frdTrainMtx = new int[m_trainSize][m_trainSize-1];
-		m_frdTestMtx = new int[m_testSize][m_userList.size()-1];
-		m_simMtx = new double[m_userList.size()][m_userList.size()];
 	}
-	
 	// we calculate the mixture of each user based on their review assignment and edge assignment
 	// this function is used in link prediction: 
 	// train users only have training reviews; test users only have testing reviews.
@@ -392,14 +394,14 @@ public class MTCLinAdaptWithMMB4LinkPrediction extends MTCLinAdaptWithMMB{
 	}
 	
 	// print out the results of link prediction
-	public void printLinkPrediction(String dir){
+	public void printLinkPrediction(String dir, int trainSize, int testSize){
 		int[] frd;
 		File dirFile = new File(dir);
 		if(!dirFile.exists())
 			dirFile.mkdirs();
 		try{
-			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, m_trainSize));
-			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, m_testSize));
+			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%d_link.txt", dir, trainSize));
+			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%d_link.txt", dir, testSize));
 			// print friends for train users
 			for(int i=0; i<m_trainSize; i++){
 				frd = m_frdTrainMtx[i];

@@ -139,7 +139,7 @@ public class DPParameter {
 				m_saveModel = Boolean.valueOf(argv[i]);
 			else if(argv[i-1].equals("-testSize")){
 				m_testSize = Integer.parseInt(argv[i]);
-				m_trainSize = 10000 - m_testSize;
+				m_trainSize = (m_testSize/100)<10 ? (1000-m_testSize):(10000-m_testSize);
 			} else if(argv[i-1].equals("-dir")){
 				m_dir = argv[i];
 			} else if(argv[i-1].equals("-jointAll")){

@@ -8,7 +8,7 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB4LinkPrediction;
-import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPrediction;
+import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPredictionSplit;
 
 public class MyLinkPredExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -60,12 +60,10 @@ public class MyLinkPredExecution {
 		
 		MTCLinAdaptWithMMB4LinkPrediction adaptation = null;
 		
-		
-		if(param.m_model.equals("svm")){
-			adaptation = new SVMBasedLinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		if(param.m_model.equals("svm_prep")){
+			adaptation = new SVMBasedLinkPredictionSplit(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		} else if(param.m_model.equals("mmb")){
 			adaptation = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-			
 		}
 		
 		adaptation.setR2TradeOffs(param.m_eta3, param.m_eta4);
@@ -92,10 +90,17 @@ public class MyLinkPredExecution {
 		adaptation.train();
 		System.out.println("[Info]Finish model training and start link prediction...");
 		
-		if(param.m_linkMulti)
-			adaptation.linkPrediction_MultiThread();
-		else
-			adaptation.linkPrediction();
-		adaptation.printLinkPrediction(param.m_dir);
+		if(param.m_model.equals("svm_prep")){
+			String trainFile = String.format("./trainFile_%d.txt", param.m_trainSize);
+			String testFile = String.format("./testFile_%d.txt", param.m_testSize);
+			((SVMBasedLinkPredictionSplit) adaptation).linkPrediction_Prep(trainFile, testFile);
+		} else{
+		
+			if(param.m_linkMulti)
+				adaptation.linkPrediction_MultiThread();
+			else
+				adaptation.linkPrediction();
+			adaptation.printLinkPrediction(param.m_dir, param.m_trainSize, param.m_testSize);
+		}
 	}
 }

@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPrediction;
+import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPredictionSplit;
 
 
 public class MyMMBIsoMain {
@@ -124,7 +124,7 @@ public class MyMMBIsoMain {
 //		mmb.setsdB(0.1);
 
 //		MTCLinAdaptWithMMB4LinkPrediction mmb = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		SVMBasedLinkPrediction mmb = new SVMBasedLinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		SVMBasedLinkPredictionSplit mmb = new SVMBasedLinkPredictionSplit(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		mmb.setR2TradeOffs(eta3, eta4);
 		
 		mmb.setsdA(sdA);
@@ -136,7 +136,7 @@ public class MyMMBIsoMain {
 		mmb.setRho(0.1);
 		mmb.setBurnIn(10);
 //		mmb.setThinning(5);// default 3
-		mmb.setNumberOfIterations(10);
+		mmb.setNumberOfIterations(1);
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
@@ -146,11 +146,14 @@ public class MyMMBIsoMain {
 		
 		boolean linkPredMultiThread = true;
 		mmb.train();
-		if(linkPredMultiThread)
-			mmb.linkPrediction_MultiThread();
-		else
-			mmb.linkPrediction();
-		mmb.printLinkPrediction("./");		
+		String trainFile = String.format("./data/trainFile_%d.txt", trainSize);
+		String testFile = String.format("./data/testFile_%d.txt", testSize);
+		mmb.linkPrediction_Prep(trainFile, testFile);
+//		if(linkPredMultiThread)
+//			mmb.linkPrediction_MultiThread();
+//		else
+//			mmb.linkPrediction();
+//		mmb.printLinkPrediction("./");		
 		
 //		// Print out the current related models
 //		long current = System.currentTimeMillis();
