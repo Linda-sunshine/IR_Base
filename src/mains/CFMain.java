@@ -43,8 +43,8 @@ public class CFMain {
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
 		
 		String suffix1 = "txt", suffix2 = "classifer";
-//		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5"};
-		String[] models = new String[]{"mmb_mixture"};
+		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5"};
+//		String[] models = new String[]{"mmb_mixture"};
 
 		double[][] performance = new double[models.length][2];
 		for(int m=0; m<models.length; m++){
@@ -55,13 +55,15 @@ public class CFMain {
 			
 			if(model.equals("avg"))
 				cf.setAvgFlag(true);
-			else if(model.equals("mmb_mixture")){
+			else{
 				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
-				cf.calcMLEB(dir + "B_0.txt", dir + "B_1.txt");
-				cf.setMixtureFlag(true);
+				// if it is mmb mixture, load B files
+				if(model.equals("mmb_mixture")){
+					cf.calcMLEB(dir + "B_0.txt", dir + "B_1.txt");
+					cf.setMixtureFlag(true);
+				}
 				cf.loadWeights(dir, suffix1, suffix2);
 			}
-
 			cf.calculatAllNDCGMAP();
 			String perf = String.format("./data/perf_%s_time_%d_top_%d.txt", model, t, k);
 			cf.savePerf(perf);

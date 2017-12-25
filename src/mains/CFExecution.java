@@ -54,14 +54,15 @@ public class CFExecution {
 			
 			if(model.equals("avg"))
 				cf.setAvgFlag(true);
-			
-			else if(model.equals("mmb_mixture")){
+			else{
 				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", param.m_data, param.m_data, model);
-				cf.calcMLEB(dir+"B_0.txt", dir+"B_1.txt");
-				cf.setMixtureFlag(true);
+				// if it is mmb mixture, load B files
+				if(model.equals("mmb_mixture")){
+					cf.calcMLEB(dir + "B_0.txt", dir + "B_1.txt");
+					cf.setMixtureFlag(true);
+				}
 				cf.loadWeights(dir, suffix1, suffix2);
 			}
-			
 			cf.calculatAllNDCGMAP();
 			cf.calculateAvgNDCGMAP();
 			String perf = String.format("./perf_%s_time_%d_top_%d.txt", model, param.m_t, param.m_k);
