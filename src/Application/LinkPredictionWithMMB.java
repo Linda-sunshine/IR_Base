@@ -102,7 +102,7 @@ public class LinkPredictionWithMMB {
 			ui = m_testSet.get(i);
 			linkPrediction4TestUsers(i, ui);
 		}
-		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
+		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
 
 	}
 	
