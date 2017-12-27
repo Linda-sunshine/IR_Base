@@ -33,7 +33,7 @@ public class _AdaptStruct {
 	protected int m_cacheSize = 3;
 	protected int m_adaptPtr, m_adaptStartPos, m_adaptEndPos;		
 	protected double m_updateCount;
-		
+	
 	public _AdaptStruct(_User user) {
 		m_user = user;
 		
@@ -41,19 +41,21 @@ public class _AdaptStruct {
 		//we assume the instances are ordered and then separate into [train, adapt, test]
 		m_adaptStartPos = -1;
 		m_adaptEndPos = -1;
-		ArrayList<_Review> reviews = user.getReviews();
-		for(int i=0; i<reviews.size(); i++) {
-			if (reviews.get(i).getType() == rType.ADAPTATION) {
-				if (m_adaptStartPos==-1)
-					m_adaptStartPos = i;
-				m_adaptEndPos = i;
+		if(user.getReviewSize() > 0){
+			ArrayList<_Review> reviews = user.getReviews();
+			for(int i=0; i<reviews.size(); i++) {
+				if (reviews.get(i).getType() == rType.ADAPTATION) {
+					if (m_adaptStartPos==-1)
+						m_adaptStartPos = i;
+					m_adaptEndPos = i;
+				}
 			}
+		
+			if (m_adaptEndPos!=-1)
+				m_adaptEndPos ++;//point to the next testing data or the end of reviews
+		
+			resetAdaptPtr();
 		}
-		
-		if (m_adaptEndPos!=-1)
-			m_adaptEndPos ++;//point to the next testing data or the end of reviews
-		
-		resetAdaptPtr();
 	}
 	
 	public int getId() {

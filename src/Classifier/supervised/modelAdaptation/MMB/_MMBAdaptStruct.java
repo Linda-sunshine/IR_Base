@@ -24,6 +24,8 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	protected HashMap<_HDPAdaptStruct, _MMBNeighbor> m_neighborMap;
 	// the mixture over global components
 	protected double[] m_mixture; 
+	
+
 	public _MMBAdaptStruct(_User user) {
 		super(user);
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
@@ -34,6 +36,11 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		super(user, dim);
 		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
+	}
+	// used in link prediction
+	public _MMBAdaptStruct(_User user, double[] mix){
+		super(user);
+		m_mixture = mix;
 	}
 	
 	
@@ -145,7 +152,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		m_mixture = m;
 	}
 	
-	protected double[] getMixture(){
+	public double[] getMixture(){
 		return m_mixture;
 	}
 }

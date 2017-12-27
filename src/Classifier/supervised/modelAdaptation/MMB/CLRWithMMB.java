@@ -39,7 +39,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	// Bernoulli distribution used in deciding whether the edge belongs to mmb or background model.
 	protected BinomialDistribution m_bernoulli;
 	// whether we perform joint sampling for all zero edges or just background edges
-	protected boolean m_jointAll = true;
+	protected boolean m_jointAll = false;
 	
 	// for debug purpose
 	protected HashMap<String, ArrayList<Integer>> stat = new HashMap<>();
@@ -210,54 +210,86 @@ public class CLRWithMMB extends CLRWithHDP {
 			calculate_E_step_Edge_joint_bk();
 	}
 	
-//	protected void calculate_E_step_Edge_2round(){
-//		// sample z_{i->j}
-//		_MMBAdaptStruct ui, uj;
-//		int sampleSize = 0, eij = 0;
-//
-//		for(int i=0; i<m_userList.size(); i++){
-//			ui = (_MMBAdaptStruct) m_userList.get(i);
-//			for(int j=i+1; j<m_userList.size(); j++){
-//				uj = (_MMBAdaptStruct) m_userList.get(j);
-//				// print out the process of sampling edges
-//				if (++sampleSize%100000==0) {
-//					System.out.print('.');
-//					if (sampleSize%50000000==0)
-//						System.out.println();
-//				}
-//				// eij from mmb
-//				if(ui.hasEdge(uj)){
-//					eij = ui.getEdge(uj);
-//					// remove the connection for B_gh, i->j \in g, j->i \in h.
-//					rmConnection(ui, uj, eij);
-//					// update membership from ui->uj, remove the edge
-//					updateEdgeMembership(i, j, eij);	
-//					// sample new cluster for the edge
-//					sampleEdge(i, j, eij);
-//					// update membership from uj->ui, remove the edge
-//					updateEdgeMembership(j, i, eij);
-//					// sample new clusters for the two edges
-//					sampleEdge(j, i, eij);
-//					// add the new connection for B_g'h', i->j \in g', j->i \in h'
-//					addConnection(ui, uj, eij);
-//				// edges from background
-//				}else{
-//					// remove the two edges from background model
-//					updateSampleSize(2, -2);
-//					// if the theta is no longer valid (removed during the sampling of c)
-//					if(!m_indicator[j][i].isValid()){
-//						System.out.println("[Info]Invalid theta!Joint sampling for background edge!");
-//						sampleZeroEdgeJoint(i, j);
-//					} else{
-//						sampleEdge(i, j, 0);
-//						sampleEdge(j, i, 0);
-//						addConnection(ui, uj, 0);
-//					}
-//				}
-//			}
-//		}
-//		sampleC();
-//	}
+	
+	// we calculate the mixture of each user based on their review assignment and edge assignment
+	// this function is used in link prediction: 
+	// train users only have training reviews; test users only have testing reviews.
+	public void calculateMixturePerUser(){	
+		
+		_MMBAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_MMBAdaptStruct) m_userList.get(i);
+			// if it is train user
+			if(user.getTestSize() == 0){
+				calculateMixture4TrainUser(user);
+			// if it is test user
+			} else{
+				calculateMixture4TestUser(user);
+			}
+		}
+	}
+
+	// calculate the mixture for train user based on review assignment and edge assignment
+	public void calculateMixture4TrainUser(_MMBAdaptStruct user){
+		double sum = 0;
+		double[] probs = new double[m_kBar];
+		_HDPThetaStar theta;
+		// The set of clusters for review and edge could be different, just iterate over kBar
+		for(int k=0; k<m_kBar; k++){
+			theta = m_hdpThetaStars[k];
+			probs[k] = user.getHDPThetaMemSize(theta) + user.getHDPThetaEdgeSize(theta);
+			sum += probs[k];
+		}
+		for(int k=0; k<m_kBar; k++){
+			probs[k] /= sum;
+		}
+		user.setMixture(probs);
+	}
+	
+	// calculate the mixture for test user based on review assignment
+	public void calculateMixture4TestUser(_MMBAdaptStruct user){
+		int cIndex = 0;
+		double prob, logSum, sum = 0;
+		double[] probs = new double[m_kBar];
+		_HDPThetaStar curTheta;
+		
+		// calculate the cluster assignment for each review first
+		for(_Review r: user.getReviews()){
+			// suppose all reviews are test review in this setting
+			if (r.getType() != rType.TEST)
+				continue;
+			
+			for(int k=0; k<probs.length; k++){
+				curTheta = m_hdpThetaStars[k];
+				r.setHDPThetaStar(curTheta);
+				prob = calcLogLikelihoodX(r) + Math.log(calcGroupPopularity(user, k, curTheta.getGamma()));
+				probs[k] = prob;
+			}
+			// normalize the prob 
+			logSum = Utils.logSumOfExponentials(probs);
+			for(int k=0; k<probs.length; k++)
+				probs[k] -= logSum;
+			
+			// take the cluster that has maximum prob as the review's cluster assignment
+			curTheta = m_hdpThetaStars[Utils.argmax(probs)];
+			r.setHDPThetaStar(curTheta);
+			// update the cluster assignment for the user
+			user.incHDPThetaStarMemSize(r.getHDPThetaStar(), 1);
+		}
+		// calculate the mixture: get the review assignment and normalize it
+		Arrays.fill(probs, 0);
+		// calculate the sum first
+		for(_HDPThetaStar theta: user.getHDPTheta4Rvw()){
+			sum += user.getHDPThetaMemSize(theta);
+		}
+		// calculate the prob for each dim
+		for(_HDPThetaStar theta: user.getHDPTheta4Rvw()){
+			cIndex = theta.getIndex();
+			probs[cIndex] = user.getHDPThetaMemSize(theta)/sum;
+		}
+		user.setMixture(probs);
+	}
+
 	// variable used to record the sampling time for different edges
 	// [0]: mmb_0; [1]: mmb_1; 
 	long[] m_time = new long[3];
@@ -476,7 +508,13 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(mmb != m_MNL[0] + m_MNL[1])
 			System.out.println("mmb edges is not correct!");
 	}
-
+	public int getKBar(){
+		return m_kBar;
+	}
+	
+	public int getUserSize(){
+		return m_userList.size();
+	}
 	// Estimate the sparsity parameter.
 	// \rho = (M+N+c-1)/(M+N+L+c+d-2)
 	public double estRho(){
@@ -484,53 +522,11 @@ public class CLRWithMMB extends CLRWithHDP {
 		return 0;
 	}
 	
-
-	
 	private void initStat(){
 		stat.put("onlyedges", new ArrayList<Integer>());
 		stat.put("onlydocs", new ArrayList<Integer>());
 		stat.put("mixture", new ArrayList<Integer>());
 	}
-	
-	// init thetas for edges at the beginning
-	// assign all zero edges to mmb
-//	public void initThetaStars_Edges_2round(){
-//		calcProbNew();
-//		_MMBAdaptStruct ui, uj;
-//		int sampleSize = 0;
-//		// add the friends one by one.
-//		for(int i=0; i< m_userList.size(); i++){
-//			ui = (_MMBAdaptStruct) m_userList.get(i);
-//			for(int j=i+1; j<m_userList.size(); j++){
-//				// print out the process of sampling edges
-//				if (++sampleSize%100000==0) {
-//					System.out.print('.');
-//					if (sampleSize%50000000==0)
-//						System.out.println();
-//				}
-//				uj = (_MMBAdaptStruct) m_userList.get(j);
-//				// if ui and uj are friends, random sample clusters for the two connections
-//				// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
-//				if(hasFriend(ui.getUser().getFriends(), uj.getUserID())){
-//					// sample two edges between i and j
-//					randomSampleEdges(i, j, 1);
-//					// add the edge assignment to corresponding cluster
-//					// we have to add connections after we know the two edge assignment (the clusters for i->j and j->i)
-//					addConnection(ui, uj, 1);
-//					// update the sample size with the specified index and value
-//					// index 0 : e_ij = 0 from mmb; index 1 : e_ij = 1 from mmb; index 2 : 0 from background model
-//					updateSampleSize(1, 2);
-//				} else{
-//				// else sample indicators for zero edge, we treat all zero edges sampled from mmb at beginning.
-//					randomSampleEdges(i, j, 0);
-//					addConnection(ui, uj, 0);
-//					updateSampleSize(0, 2);
-//				}
-//			}
-//		}
-//		// assign part of the zero edges to background model
-//		sampleC();
-//	}
 	
 	public void initThetaStars_Edges_Joint(){
 		calcProbNew();
@@ -576,6 +572,26 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_indicator = new _HDPThetaStar[m_userList.size()][m_userList.size()];
 	}
 	
+	// MLE of B matrix
+	public double[][] MLEB(){
+		int e_0 = 0, e_1 = 0;
+		double b = 0;
+		double[][] B = new double[m_kBar][m_kBar];
+		_HDPThetaStar theta_g, theta_h;
+		for(int g=0; g<m_kBar; g++){
+			theta_g = m_hdpThetaStars[g];
+			for(int h=0; h<m_kBar; h++){
+				theta_h = m_hdpThetaStars[h];
+				e_0 = theta_g.getConnectionEdgeCount(theta_h, 0);
+				e_1 = theta_g.getConnectionEdgeCount(theta_h, 1);
+				b = (e_1 + m_abcd[0] -1)/(e_0 + e_1 + m_abcd[0] + m_abcd[1] -2);
+				B[g][h] = b;
+				B[h][g] = b;
+			}
+		}
+		return B;
+	}
+
 	// if ui and uj are friends, random sample clusters for the two connections
 	// e_ij = 1, z_{i->j}, e_ji = 1, z_{j -> i} = 1
 	protected void randomSampleEdges(int i, int j, int e){

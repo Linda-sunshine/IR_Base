@@ -30,21 +30,39 @@ public class _User {
 	protected int m_featureSize;
 	protected ArrayList<Integer> m_category;
 	protected double[] m_svmWeights;
-	
 	protected double m_sim; // Similarity of itself.
-	
-	public void setSVMWeights(double[] weights){
-		m_svmWeights = new double[weights.length];
-		m_svmWeights = Arrays.copyOf(weights, weights.length);
-	}
-	
-	public double[] getSVMWeights(){
-		return m_svmWeights;
-	}
+
 	// performance statistics
 	_PerformanceStat m_perfStat;
 	
 	int m_cIndex = 0; // added by Lin, cluster number.
+	double m_posRatio = 0;
+	double m_avgIDF = 0;
+	
+	double m_adaPos = 0;
+	double m_testPos = 0;
+	
+	/**added by Lin for cf.**/
+	private final HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
+	private double m_nDCG;
+	private double m_MAP;
+	
+	// added by Lin for sanity check.
+	int m_ctgSize = 0;
+	
+	// added by Lin for friendship.
+	String[] m_friends;
+	
+	// The function is used for finding friends from Amazon data set.
+	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
+	
+	public _User(String userID){
+		m_userID = userID;
+		m_reviews = null;		
+		m_lowDimProfile = null;
+		m_BoWProfile = null;
+		m_pWeight = null;
+	}
 	
 	public _User(int cindex, int classNo){
 		m_cIndex = cindex;
@@ -61,8 +79,9 @@ public class _User {
 	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
 		m_userID = userID;
-		m_reviews = reviews;
 		m_classNo = classNo;
+
+		m_reviews = reviews;
 
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
@@ -91,14 +110,29 @@ public class _User {
 		calcCtgSize();
 		calcAdpatTestPosRatio();
 	}
-	// added by Lin for setting the index of user cluster.
-	public void setClusterIndex(int i) {
-		m_cIndex = i;
+	
+	public void addOnePredResult(int predL, int trueL){
+		m_perfStat.addOnePredResult(predL, trueL);
 	}
+	
+	public void constructSparseVector(){
+		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
+
+		for(_Review r: m_reviews) 
+			reviews.add(r.getSparse());
+		
+		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
+	}
+	
 	// added by Lin for accessing the index of user cluster.
 	public int getClusterIndex() {
 		return m_cIndex;
 	}
+	// added by Lin for setting the index of user cluster.
+	public void setClusterIndex(int i) {
+		m_cIndex = i;
+	}
+
 	// Get the user ID.
 	public String getUserID(){
 		return m_userID;
@@ -132,15 +166,6 @@ public class _User {
 		return m_pWeight;
 	}
 	
-	public void constructSparseVector(){
-		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-
-		for(_Review r: m_reviews) 
-			reviews.add(r.getSparse());
-		
-		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
-	}
-	
 	//Get the sparse vector of the user.
 	public _SparseFeature[] getBoWProfile(){
 		return m_BoWProfile;
@@ -164,6 +189,10 @@ public class _User {
 	
 	public double getSVDSim(_User u) {
 		return Utils.cosine(u.m_lowDimProfile, m_lowDimProfile);
+	}
+	
+	public double[] getSVMWeights(){
+		return m_svmWeights;
 	}
 	
 	public double linearFunc(_SparseFeature[] fvs, int classid) {
@@ -191,10 +220,7 @@ public class _User {
 		}
 	}
 
-	public void addOnePredResult(int predL, int trueL){
-		m_perfStat.addOnePredResult(predL, trueL);
-	}
-	
+
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
 	}
@@ -218,7 +244,6 @@ public class _User {
 		return count/m_reviews.size();
 	}
 
-	double m_avgIDF = 0;
 	// Set average IDF value.
 	public void setAvgIDF(double v){
 		m_avgIDF = v;
@@ -233,7 +258,6 @@ public class _User {
 			m_reviews.add(r);
 	}
 	
-	double m_posRatio = 0;
 	public void calcPosRatio(){
 		double pos = 0;
 		for(_Review r: m_reviews){
@@ -270,11 +294,6 @@ public class _User {
 	
 	// added by Lin for CF.
 	
-	/**added by Lin for cf.**/
-	private final HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
-	private double m_nDCG;
-	private double m_MAP;
-	
 	/***added by Lin for cf***/
 	public void setNDCG(double d){
 		m_nDCG = d;
@@ -305,9 +324,7 @@ public class _User {
 		}
 		m_reviews.remove(index);
 	}
-	
-	// added by Lin for sanity check.
-	int m_ctgSize = 0;
+
 	public void calcCtgSize(){
 		HashSet<String> ctg = new HashSet<String>();
 		for(_Review r: m_reviews)
@@ -321,8 +338,7 @@ public class _User {
 	public int getCtgSize(){
 		return m_ctgSize;
 	}
-	double m_adaPos = 0;
-	double m_testPos = 0;
+
 	public void calcAdpatTestPosRatio(){
 		for(_Review r: m_reviews){
 			if(r.getType() == rType.ADAPTATION && r.getYLabel() == 1)
@@ -338,8 +354,11 @@ public class _User {
 		return m_testPos;
 	}
 	
-	// added by Lin for friendship.
-	String[] m_friends;
+	public void setSVMWeights(double[] weights){
+		m_svmWeights = new double[weights.length];
+		m_svmWeights = Arrays.copyOf(weights, weights.length);
+	}
+	
 	public void setFriends(String[] fs){
 		m_friends = Arrays.copyOf(fs, fs.length);
 	}
@@ -359,8 +378,6 @@ public class _User {
 		return false;
 	}
 	
-	// The function is used for finding friends from Amazon data set.
-	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
 	public void addAmazonFriend(String s){
 		m_amazonFriends.add(s);
 	}

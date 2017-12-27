@@ -7,8 +7,9 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB4LinkPrediction;
-import Classifier.supervised.modelAdaptation.MMB.SVMBasedLinkPredictionSplit;
+import Application.LinkPredictionWithMMB;
+import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMSplit;
 
 public class MyLinkPredExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -58,49 +59,59 @@ public class MyLinkPredExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		MTCLinAdaptWithMMB4LinkPrediction adaptation = null;
+		LinkPredictionWithMMB linkPred = null;
+		String trainFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/trainFile_%s_%d.txt", param.m_model, param.m_trainSize);
+		String testFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/testFile_%s_%d.txt", param.m_model, param.m_testSize);
 		
-		if(param.m_model.equals("svm_prep")){
-			adaptation = new SVMBasedLinkPredictionSplit(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		} else if(param.m_model.equals("mmb")){
-			adaptation = new MTCLinAdaptWithMMB4LinkPrediction(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		//link_pred_svm_alpha_0.005
+		if(param.m_model.equals("svm_pred")){
+			trainFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/trainFile_svm_prep_%d.txt", param.m_trainSize);
+			testFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/testFile_svm_prep_%d.txt", param.m_testSize);
+		}
+		if(param.m_model.equals("svm_pred")){
+			linkPred = new LinkPredictionWithSVMSplit(param.m_c);
+			((LinkPredictionWithSVMSplit) linkPred).loadData(trainFile, testFile, friendFile);
+		}else if(param.m_model.equals("mmb"))
+			linkPred = new LinkPredictionWithMMB();
+		else if(param.m_model.equals("svm"))
+			linkPred = new LinkPredictionWithSVM(param.m_c);
+		else if(param.m_model.equals("svm_prep"))
+			linkPred = new LinkPredictionWithSVMSplit(param.m_c);
+		
+		if(!param.m_model.equals("svm_pred")){
+			linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+			linkPred.getMMB().setR2TradeOffs(param.m_eta3, param.m_eta4);
+			linkPred.getMMB().setsdB(param.m_sdB);
+			linkPred.getMMB().setRho(param.m_rho);
+			// commonly shared parameters.
+			linkPred.getMMB().setR1TradeOffs(param.m_eta1, param.m_eta2);
+			linkPred.getMMB().setM(param.m_M);
+			linkPred.getMMB().setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
+			linkPred.getMMB().setsdA(param.m_sdA);
+		
+			linkPred.getMMB().setBurnIn(param.m_burnin);
+			linkPred.getMMB().setThinning(param.m_thinning);
+			linkPred.getMMB().setNumberOfIterations(param.m_nuOfIterations);
+	
+			// training testing operations.
+			linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
+			linkPred.getMMB().loadUsers(analyzer.getUsers());
+			linkPred.getMMB().calculateFrdStat();
+
+			linkPred.getMMB().checkTestReviewSize();
+			linkPred.getMMB().setDisplayLv(displayLv);
+		
+			linkPred.getMMB().train();
 		}
 		
-		adaptation.setR2TradeOffs(param.m_eta3, param.m_eta4);
-		adaptation.setsdB(param.m_sdB);
-		adaptation.setRho(param.m_rho);
-		// commonly shared parameters.
-		adaptation.setR1TradeOffs(param.m_eta1, param.m_eta2);
-		adaptation.setM(param.m_M);
-		adaptation.setConcentrationParams(param.m_alpha, param.m_eta, param.m_beta);
-		adaptation.setsdA(param.m_sdA);
-		
-		adaptation.setBurnIn(param.m_burnin);
-		adaptation.setThinning(param.m_thinning);
-		adaptation.setNumberOfIterations(param.m_nuOfIterations);
-	
-		// training testing operations.
-		adaptation.loadLMFeatures(analyzer.getLMFeatures());
-		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.calculateFrdStat();
-
-		adaptation.checkTestReviewSize();
-		adaptation.setDisplayLv(displayLv);
-		
-		adaptation.train();
-		System.out.println("[Info]Finish model training and start link prediction...");
-		
-		if(param.m_model.equals("svm_prep")){
-			String trainFile = String.format("./trainFile_%d.txt", param.m_trainSize);
-			String testFile = String.format("./testFile_%d.txt", param.m_testSize);
-			((SVMBasedLinkPredictionSplit) adaptation).linkPrediction_Prep(trainFile, testFile);
-		} else{
-		
+		if(!param.m_model.equals("svm_prep")){
 			if(param.m_linkMulti)
-				adaptation.linkPrediction_MultiThread();
+				linkPred.linkPrediction_MultiThread();
 			else
-				adaptation.linkPrediction();
-			adaptation.printLinkPrediction(param.m_dir, param.m_trainSize, param.m_testSize);
+				linkPred.linkPrediction();
+			linkPred.printLinkPrediction("./", param.m_model, param.m_trainSize, param.m_testSize);
+		} else{
+			((LinkPredictionWithSVMSplit) linkPred).linkPrediction_Prep(trainFile, testFile);
 		}
 	}
 }

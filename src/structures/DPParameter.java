@@ -56,11 +56,11 @@ public class DPParameter {
 	public int m_testSize = 2000;
 	public int m_trainSize = 8000;
 	
-	public boolean m_jointAll = true;
+	public boolean m_jointAll = false;
 	public boolean m_trace = false;
 	
 	// whether we perform multi-threading in link prediction
-	public boolean m_linkMulti = true;
+	public boolean m_linkMulti = false;
 	
 	public DPParameter(String argv[]){
 		

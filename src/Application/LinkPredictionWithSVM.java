@@ -1,7 +1,6 @@
-package Classifier.supervised.modelAdaptation.MMB;
+package Application;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import Classifier.supervised.SVM;
 import Classifier.supervised.liblinear.Feature;
@@ -11,22 +10,20 @@ import Classifier.supervised.liblinear.Model;
 import Classifier.supervised.liblinear.Parameter;
 import Classifier.supervised.liblinear.Problem;
 import Classifier.supervised.liblinear.SolverType;
+import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
-public class SVMBasedLinkPrediction extends MTCLinAdaptWithMMB4LinkPrediction{
+public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
 
-	double m_C = 1;
+	double m_C = 0;
 	Model m_libModel;
 	
-	public SVMBasedLinkPrediction(int classNo, int featureSize,
-			HashMap<String, Integer> featureMap, String globalModel,
-			String featureGroupMap, String featureGroup4Sup, double[] betas) {
-		super(classNo, featureSize, featureMap, globalModel, featureGroupMap,
-				featureGroup4Sup, betas);
+	public LinkPredictionWithSVM(double c){
+		m_C = c;
 	}
 	@Override
 	public void linkPrediction(){
 		initLinkPred();
-		calculateMixturePerUser();
+		m_mmbModel.calculateMixturePerUser();
 
 		trainSVM();
 		_MMBAdaptStruct ui;
@@ -46,7 +43,7 @@ public class SVMBasedLinkPrediction extends MTCLinAdaptWithMMB4LinkPrediction{
 	@Override
 	public void linkPrediction_MultiThread(){
 		initLinkPred();
-		calculateMixturePerUser();
+		m_mmbModel.calculateMixturePerUser();
 			
 		trainSVM();
 				

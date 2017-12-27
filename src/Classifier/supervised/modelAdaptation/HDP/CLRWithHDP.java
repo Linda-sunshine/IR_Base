@@ -68,6 +68,10 @@ public class CLRWithHDP extends CLRWithDP {
 		setBetas(betas);
 	}
 	
+	public _HDPThetaStar[] getHDPThetaStars(){
+		return m_hdpThetaStars;
+	}
+	
 	public void loadLMFeatures(ArrayList<String> lmFvs){
 		m_lmFeatures = lmFvs;
 	}
