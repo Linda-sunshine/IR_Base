@@ -43,7 +43,7 @@ public class CFMain {
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
 		
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5"};
+		String[] models = new String[]{"mtsvm_0.5_1"};
 //		String[] models = new String[]{"mmb_mixture"};
 
 		double[][] performance = new double[models.length][2];
