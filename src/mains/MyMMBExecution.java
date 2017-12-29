@@ -86,8 +86,10 @@ public class MyMMBExecution {
 		adaptation.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 		if(param.m_trace){
-			param.m_nuOfIterations = 100; param.m_burnin = 10; param.m_thinning = 1;
-			adaptation.trainTrace(param.m_data, param.m_nuOfIterations, param.m_burnin, param.m_thinning);
+			param.m_nuOfIterations = 100;
+//			adaptation.trainTrace(param.m_data, param.m_nuOfIterations);
+			adaptation.trainTraceMultipleE(param.m_data, param.m_nuOfIterations, 3);
+			adaptation.test();
 		} else{
 			adaptation.train();
 			adaptation.test();
