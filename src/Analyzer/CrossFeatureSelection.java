@@ -88,6 +88,7 @@ public class CrossFeatureSelection {
 		KMeansAlg4Vct kmeans = new KMeansAlg4Vct(m_weights, m_kMeans);
 		kmeans.init();
 		kmeans.train();
+		System.out.print(String.format("%d clusters are generated.\n", kmeans.getClusterSize()));
 		writeResults(filename, kmeans.getClusters(), kmeans.getClusterSize());
 	}
 
