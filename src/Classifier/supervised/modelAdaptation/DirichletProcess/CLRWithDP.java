@@ -26,7 +26,7 @@ import cern.jet.random.tfloat.FloatUniform;
 public class CLRWithDP extends LinAdapt {
 	protected int m_M = 6, m_kBar = 0; // The number of auxiliary components.
 	protected int m_numberOfIterations = 50;
-	protected int m_burnIn = 20, m_thinning = 3;// burn in time, thinning time.
+	protected int m_burnIn = 10, m_thinning = 3;// burn in time, thinning time.
 	protected double m_converge = 1e-6;
 	protected double m_alpha = 1; // Scaling parameter of DP.
 	protected double m_pNewCluster; // proportion of sampling a new cluster, to be assigned before EM starts
@@ -427,10 +427,8 @@ public class CLRWithDP extends LinAdapt {
 	}
 
 	// added by Lin for tracking trace. 
-	public double trainTrace(String tracefile){
-		m_numberOfIterations = 50;
-		m_burnIn = 1;
-		m_thinning = 1;
+	public double trainTrace(String data, int iter){
+		m_numberOfIterations = iter;
 			
 		System.out.println(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -444,7 +442,8 @@ public class CLRWithDP extends LinAdapt {
 			lastLikelihood = calculate_M_step();
 		}
 		try{
-			PrintWriter writer = new PrintWriter(new File(tracefile));
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d.txt", data, iter, m_burnIn, m_thinning); 
+			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
 				// Cluster assignment, thinning to reduce auto-correlation.
@@ -530,6 +529,7 @@ public class CLRWithDP extends LinAdapt {
 	
 	// Assign cluster assignment to each user.
 	protected void initThetaStars(){
+		Arrays.fill(m_thetaStars, null);
 		initPriorG0();
 		
 		m_pNewCluster = Math.log(m_alpha) - Math.log(m_M);//to avoid repeated computation
@@ -545,7 +545,6 @@ public class CLRWithDP extends LinAdapt {
 	@Override
 	protected void init(){
 		super.init();
-		Arrays.fill(m_thetaStars, null);
 		initThetaStars();
 		
 		//init the structures for multi-threading
