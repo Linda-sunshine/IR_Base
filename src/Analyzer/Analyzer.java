@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 import structures._Corpus;
 import structures._Doc;
@@ -199,7 +198,7 @@ public abstract class Analyzer {
 				for (_SparseFeature sf : sfs) {
 					String featureName = m_featureNames.get(sf.getIndex());
 					_stat stat = m_featureStat.get(featureName);
-//					sf.setTF(sf.getValue());
+					sf.setTF(sf.getValue());
 					
 					double TF = sf.getValue() / temp.getTotalDocLength();// normalized TF
 					double DF = Utils.sumOfArray(stat.getDF());
@@ -527,5 +526,9 @@ public abstract class Analyzer {
 	
 	public HashMap<String, _stat> getFeatureStat(){
 		return m_featureStat;
+	}
+	
+	public ArrayList<String> getFeatures(){
+		return m_featureNames;
 	}
 }

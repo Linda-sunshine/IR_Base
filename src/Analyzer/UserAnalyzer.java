@@ -15,7 +15,6 @@ import opennlp.tools.util.InvalidFormatException;
 import structures._Doc;
 import structures._Review;
 import structures._Review.rType;
-import structures._SparseFeature;
 import structures._User;
 import structures._stat;
 import utils.Utils;
@@ -66,7 +65,6 @@ public class UserAnalyzer extends DocAnalyzer {
 			return loadOldCV(filename);
 		
 	}
-	
 	protected boolean loadOldCV(String filename){
 		if (filename==null || filename.isEmpty())
 			return false;
@@ -87,7 +85,7 @@ public class UserAnalyzer extends DocAnalyzer {
 					DFs[1] = (int)(Double.parseDouble(stats[4]));
 					setVocabStat(stats[1], DFs);
 					
-					ngram = 1+Utils.count(stats[1], "-");
+					ngram = 1+Utils.countOccurrencesOf(stats[1], "-");
 					if (m_Ngram<ngram)
 						m_Ngram = ngram;
 				}
@@ -146,7 +144,7 @@ public class UserAnalyzer extends DocAnalyzer {
 			return;
 		File dir = new File(folder);
 		for(File f: dir.listFiles()){
-			if(f.isFile()){
+			if(f.isFile()){// && f.getAbsolutePath().endsWith("txt")){
 				loadUser(f.getAbsolutePath());
 				count++;
 			} else if (f.isDirectory())
@@ -242,7 +240,44 @@ public class UserAnalyzer extends DocAnalyzer {
 			}
 		}
 	}
-
+//	// Allocate the reviews by specific number
+//	void allocateReviews(ArrayList<_Review> reviews) {
+//		Collections.sort(reviews);// sort the reviews by timestamp
+//		int train = (int)(reviews.size() * m_trainRatio), adapt;
+//		if (m_enforceAdapt)
+//			adapt = Math.max(1, (int)(reviews.size() * (m_trainRatio + m_adaptRatio)));
+//		else
+//			adapt = (int)(reviews.size() * (m_trainRatio + m_adaptRatio));
+////		adapt = 1;
+////		adapt = reviews.size() >= 2? 2:reviews.size();
+//		_Review r;
+//		for(int i=0; i<reviews.size(); i++) {
+//			r = reviews.get(i);
+//			if (i<train) {
+//				r.setType(rType.TRAIN);
+//				if (r.getYLabel()==1)
+//					m_pCount[0] ++;
+//				
+//				m_trainSize ++;
+//			} else if (i<adapt) {
+//				r.setType(rType.ADAPTATION);
+//				if (r.getYLabel()==1)
+//					m_pCount[1] ++;
+//				
+//				m_adaptSize ++;
+//			// in case the adaptation ratio is smaller than 0.5, ignore the middle part.
+//			} else if (i<(int)(0.5*reviews.size()))
+//				continue; 
+//			else{
+//				r.setType(rType.TEST);
+//				if (r.getYLabel()==1)
+//					m_pCount[2] ++;
+//				
+//				m_testSize ++;
+//			}
+//		}
+//	}
+	
 	//Return all the users.
 	public ArrayList<_User> getUsers(){
 		System.out.format("[Info]Training size: %d(%.2f), adaptation size: %d(%.2f), and testing size: %d(%.2f)\n", 
