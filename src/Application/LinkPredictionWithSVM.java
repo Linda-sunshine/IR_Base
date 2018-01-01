@@ -70,7 +70,8 @@ public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
 		libProblem.n = m_kBar*m_kBar+1;
 		libProblem.bias = 1;// bias term in liblinear.
 
-		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
+//		SolverType type = SolverType.L2R_L1LOSS_SVC_DUAL;//solver type: SVM
+		SolverType type = SolverType.L2R_L2LOSS_SVC;// solver type: prime
 		m_libModel = Linear.train(libProblem, new Parameter(type, m_C, SVM.EPS));
 
 	}

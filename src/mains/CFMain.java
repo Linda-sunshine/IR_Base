@@ -10,6 +10,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
+import Application.CollaborativeFilteringWithMMB;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -50,23 +51,22 @@ public class CFMain {
 		for(int m=0; m<models.length; m++){
 			model = models[m];
 			System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
-			CollaborativeFiltering cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t, model);
-			cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
+			
+			CollaborativeFiltering cf = null;
+			if(model.equals("mmb_mixture")){
+				cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
+				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
+			} else 
+				cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
 			
 			if(model.equals("avg"))
 				cf.setAvgFlag(true);
-			else{
-				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
-				// if it is mmb mixture, load B files
-				if(model.equals("mmb_mixture")){
-					cf.calcMLEB(dir + "B_0.txt", dir + "B_1.txt");
-					cf.setMixtureFlag(true);
-				}
-				cf.loadWeights(dir, suffix1, suffix2);
-			}
-			cf.calculatAllNDCGMAP();
-			String perf = String.format("./data/perf_%s_time_%d_top_%d.txt", model, t, k);
-			cf.savePerf(perf);
+			
+			cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
+			cf.calculateAllNDCGMAP();
+//			String perf = String.format("./data/perf_%s_time_%d_top_%d.txt", model, t, k);
+//			cf.savePerf(perf);
 			cf.calculateAvgNDCGMAP();
 			performance[m][0] = cf.getAvgNDCG();
 			performance[m][1] = cf.getAvgMAP();
