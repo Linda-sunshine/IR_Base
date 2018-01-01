@@ -28,25 +28,28 @@ import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 public class CollaborativeFiltering {
 	// k is the number of neighbors
 	protected int m_k;
-	// time is the number of random reviews = m_time*(reviews.size()-1) 
-	protected int m_time; 
+
 	protected int m_featureSize;
 
 	protected ArrayList<_User> m_users;
 	// All the reviews for ranking
-	protected ArrayList<_Review> m_totalReviews; 
+	protected ArrayList<_Review> m_totalReviews;
+	
 	//Given a user index, access ID of the user.
 	protected String[] m_userIDs;
+	//Given a review, find its index in total reviews
+	HashMap<_Review, Integer> m_reviewIndexMap;
 	//Given a user ID, access the index of the user.
 	HashMap<String, Integer> m_userIDIndex;
+	//Given a itemID, find all the users who have purchased this item.
 	HashMap<String, ArrayList<Integer>> m_itemIDUserIndex;
+	//Given a userID, find his/her neighbors
 	HashMap<String, ArrayList<Integer>> m_userIDRdmNeighbors;
 	
 	protected double m_avgNDCG, m_avgMAP;
 	//Assume we have a cache containing all the similarities of all pairs of users.
 	protected double[] m_similarity, m_NDCGs, m_MAPs;
 	// the group affinity matrix for similarity calculation
-	protected double[][] m_B;
 	protected double[][] m_userWeights;
 	
 	protected int[][] m_ranks;
@@ -56,7 +59,6 @@ public class CollaborativeFiltering {
 	boolean m_avgFlag = false;
 	// The flag used to decide whether we perform weighted score or not in calculating ranking score.
 	boolean m_equalWeight = false; 
-
 	// default neighborhood by BoW
 	SimType m_sType = SimType.ST_BoW;
 	
@@ -65,11 +67,10 @@ public class CollaborativeFiltering {
 	private Object m_similarityLock = null;
 	private Object m_NDCGMAPLock = null;
 	
-	public CollaborativeFiltering(ArrayList<_User> users, int time){
+	public CollaborativeFiltering(ArrayList<_User> users){
 		m_users = users;
-		m_featureSize = 0;
 		
-		m_time = time;
+		m_featureSize = 0;
 		m_totalReviews = new ArrayList<_Review>();
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
@@ -77,12 +78,11 @@ public class CollaborativeFiltering {
 		init();
 	}
 	
-	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k, int time){
+	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k){
 		m_users = users;
 		m_featureSize = fs;
-		
 		m_k = k;
-		m_time = time;
+		
 		m_totalReviews = new ArrayList<_Review>();
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
@@ -155,6 +155,8 @@ public class CollaborativeFiltering {
 			
 		_Review review;
 		int totalReviewSize = reviewSize*m_time;
+		
+		
 		int[] rank = new int[totalReviewSize];
 		Pair[] realRank = new Pair[totalReviewSize];
 		ArrayList<Integer> rdmIndexes = m_userIDRdmNeighbors.get(u.getUserID());
@@ -193,7 +195,7 @@ public class CollaborativeFiltering {
 			}
 		}
 		
-		// put the caclulated nDCG into the array for average calculation
+		// put the calculated nDCG into the array for average calculation
 		synchronized(m_NDCGMAPLock){
 			m_NDCGs[userIndex] = DCG/iDCG;
 			m_MAPs[userIndex] = AP/count;
@@ -275,15 +277,15 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]%d products in total before removal/", m_itemIDUserIndex.size());
 		ArrayList<String> prodIDs = new ArrayList<String>();
 		ArrayList<Integer> rmUserIndexes = new ArrayList<Integer>();
+		
 		// Remove the items that are only purchased by one user.
 		for (String prodID : m_itemIDUserIndex.keySet()) {
 			userIndexes = m_itemIDUserIndex.get(prodID);
 			if (userIndexes.size() == 1) {
-				for (int index : userIndexes){
-					m_users.get(index).removeOneReview(prodID);
-					if(m_users.get(index).getReviewSize() == 0)
-						rmUserIndexes.add(index);
-				}
+				int index = userIndexes.get(0);
+				m_users.get(index).removeOneReview(prodID);
+				if(m_users.get(index).getReviewSize() == 0)
+					rmUserIndexes.add(index);
 				prodIDs.add(prodID);
 			}
 		}
@@ -297,8 +299,13 @@ public class CollaborativeFiltering {
 			m_users.remove(rmUserIndex);
 		
 		// Collect all the reviews of all the users.
-		for (_User u : m_users)
-			m_totalReviews.addAll(u.getReviews());
+		int index = 0;
+		for (_User u : m_users){
+			for(_Review r: u.getReviews()){
+				m_totalReviews.add(r);
+				m_reviewIndexMap.put(r, index++);
+			}
+		}
 		System.out.format("%d are left after removal.\n", m_itemIDUserIndex.size());
 	}
 	
@@ -354,28 +361,6 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users.\n", m_sType, m_users.size());
 	}	
 	
-	// For each user, construct neighbors.
-	public HashMap<String, ArrayList<Integer>> constructRandomNeighbors(){
-		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = new HashMap<String, ArrayList<Integer>>();
-		for(_User u: m_users)
-			userIDRdmNeighbors.put(u.getUserID(), getRandomNeighbors(u));
-		return userIDRdmNeighbors;
-	}
-	
-	//If the euclidean distance is small, then the pair is similar.
-	public double Euclidean(double[] a, double[] b){
-		double res = 0;
-		if(a.length != b.length)
-			return res;
-		else{
-			for(int i=0; i<a.length; i++){
-				res += (a[i]-b[i])*(a[i]-b[i]);
-			}
-		}
-		if(1/Math.sqrt(res) == 0)
-			System.out.println("Sim 0 in Euclidean!");
-		return 1/Math.sqrt(res);
-	}
 
 	//Access the index of similarity.
 	int getIndex(int i, int j) {
@@ -395,22 +380,6 @@ public class CollaborativeFiltering {
 		if(index == 47516626)
 			System.out.println("bug here.");
 		return m_similarity[index];
-	}
-	
-	// Get neighbor indexes of the users.
-	public ArrayList<Integer> getRandomNeighbors(_User u){
-		ArrayList<Integer> indexes = new ArrayList<Integer>();
-		_Review review;
-		for(int i=u.getReviewSize(); i<u.getReviewSize()*m_time; i++){
-			int randomIndex = (int) (Math.random() * m_totalReviews.size());
-			review = m_totalReviews.get(randomIndex);
-			while(u.getReviews().contains(review)){
-				randomIndex = (int) (Math.random() * m_totalReviews.size());
-				review = m_totalReviews.get(randomIndex);
-			}
-			indexes.add(randomIndex);
-		}
-		return indexes;
 	}
 	
 	public double getAvgNDCG(){

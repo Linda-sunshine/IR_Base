@@ -38,31 +38,39 @@ public class CFMain {
 				
 		/***Collaborative filtering starts here.***/
 		// Construct the rdmNeighbors first.
-		String model, dir;
 		int t = 2, k = 4;
-		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), t);
-		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = cfInit.constructRandomNeighbors();
+		boolean neiAll = false;
+		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers());
+		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = new HashMap<String, ArrayList<Integer>>();
 		
+		if(!neiAll)
+			cfInit.constructRandomNeighbors(t, userIDRdmNeighbors);
+		else
+			cfInit.constructRandomNeighborsAll(userIDRdmNeighbors);
+		
+		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
+
 		String[] models = new String[]{"mtsvm_0.5_1"};
 //		String[] models = new String[]{"mmb_mixture"};
 
 		double[][] performance = new double[models.length][2];
 		for(int m=0; m<models.length; m++){
 			model = models[m];
+			dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 			System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 			
 			CollaborativeFiltering cf = null;
 			if(model.equals("mmb_mixture")){
-				cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
-				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
 				((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 			} else 
-				cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
-			
+				cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
+			// utilize the average as ranking score
 			if(model.equals("avg"))
 				cf.setAvgFlag(true);
 			
+			cf.loadWeights(dir, suffix1, suffix2);
 			cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 			cf.calculateAllNDCGMAP();
 //			String perf = String.format("./data/perf_%s_time_%d_top_%d.txt", model, t, k);

@@ -9,10 +9,10 @@ import java.util.ArrayList;
 import structures._User;
 
 public class CollaborativeFilteringWithMMB extends CollaborativeFiltering {
+	protected double[][] m_B;
 
-	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs, int k,
-			int time) {
-		super(users, fs, k, time);
+	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs, int k) {
+		super(users, fs, k);
 	}
 	
 	// load B_0 and B_1 and calculate the MLE of B
