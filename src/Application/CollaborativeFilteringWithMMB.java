@@ -10,7 +10,11 @@ import structures._User;
 
 public class CollaborativeFilteringWithMMB extends CollaborativeFiltering {
 	protected double[][] m_B;
-
+	
+	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs) {
+		super(users, fs);
+	}
+	
 	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs, int k) {
 		super(users, fs, k);
 	}

@@ -1,10 +1,12 @@
 package structures;
 
+
 public class CFParameter {
 	
 	public String m_data = "Amazon";
 	public int m_t = 2;
 	public int m_k = 6;
+	public boolean m_neiAll = false;
 	
 	public CFParameter(String argv[]){
 		
@@ -22,6 +24,8 @@ public class CFParameter {
 				m_k = Integer.valueOf(argv[i]);
 			else if (argv[i-1].equals("-data"))
 				m_data = argv[i];
+			else if (argv[i-1].equals("-neiAll"))
+				m_neiAll = Boolean.valueOf(argv[i]);
 			else
 				exit_with_help();
 		}

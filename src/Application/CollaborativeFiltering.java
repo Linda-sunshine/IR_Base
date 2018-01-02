@@ -27,7 +27,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
  */
 public class CollaborativeFiltering {
 	// k is the number of neighbors
-	protected int m_k;
+	protected int m_k, m_time;
 
 	protected int m_featureSize;
 
@@ -71,6 +71,17 @@ public class CollaborativeFiltering {
 		m_users = users;
 		
 		m_featureSize = 0;
+		m_totalReviews = new ArrayList<_Review>();
+		m_similarityLock = new Object();
+		m_userWeightsLock = new Object();
+		m_NDCGMAPLock = new Object();
+		init();
+	}
+	
+	public CollaborativeFiltering(ArrayList<_User> users, int fs) {
+		m_users = users;
+		m_featureSize = fs;
+		
 		m_totalReviews = new ArrayList<_Review>();
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
@@ -154,12 +165,11 @@ public class CollaborativeFiltering {
 		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
 			
 		_Review review;
-		int totalReviewSize = reviewSize*m_time;
-		
+		ArrayList<Integer> rdmIndexes = m_userIDRdmNeighbors.get(u.getUserID());
+		int totalReviewSize = rdmIndexes.size() + reviewSize;
 		
 		int[] rank = new int[totalReviewSize];
 		Pair[] realRank = new Pair[totalReviewSize];
-		ArrayList<Integer> rdmIndexes = m_userIDRdmNeighbors.get(u.getUserID());
 			
 		//Calculate the ideal rank and real rank.
 		for(int i=0; i<totalReviewSize; i++){
@@ -259,7 +269,8 @@ public class CollaborativeFiltering {
 		String itemID;
 		ArrayList<Integer> userIndexes;
 		m_itemIDUserIndex = new HashMap<String, ArrayList<Integer>>();
-			
+		m_reviewIndexMap = new HashMap<_Review, Integer>();
+		
 		// Traverse all users and set the item-userID map.
 		for (_User u : m_users) {
 			userIndex = m_userIDIndex.get(u.getUserID());
@@ -274,7 +285,6 @@ public class CollaborativeFiltering {
 			}
 		}
 			
-		System.out.format("[Info]%d products in total before removal/", m_itemIDUserIndex.size());
 		ArrayList<String> prodIDs = new ArrayList<String>();
 		ArrayList<Integer> rmUserIndexes = new ArrayList<Integer>();
 		
@@ -289,10 +299,13 @@ public class CollaborativeFiltering {
 				prodIDs.add(prodID);
 			}
 		}
+		
+		System.out.format("[Info]%d/%d products are left after removal.\n", m_itemIDUserIndex.size()-prodIDs.size(), m_itemIDUserIndex.size());
 		// Remove products with <=1 purchases.
 		for(String prodID: prodIDs)
 			m_itemIDUserIndex.remove(prodID);
 		
+		System.out.format("[Info]%d/%d users are left.\n", m_users.size() - rmUserIndexes.size(), m_users.size());
 		// Remove users with no reviews.
 		Collections.sort(rmUserIndexes, Collections.reverseOrder());
 		for(int rmUserIndex: rmUserIndexes)
@@ -306,7 +319,6 @@ public class CollaborativeFiltering {
 				m_reviewIndexMap.put(r, index++);
 			}
 		}
-		System.out.format("%d are left after removal.\n", m_itemIDUserIndex.size());
 	}
 	
 	// calculate the similarity between each pair of users
@@ -361,6 +373,51 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]Neighborhood graph based on %s constructed for %d users.\n", m_sType, m_users.size());
 	}	
 	
+	// For each user, construct candidate items for ranking
+	// candidate size = time * review size
+	public void constructRandomNeighbors(int t, HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+		m_time = t;
+		_Review review;
+		ArrayList<Integer> indexes;
+		for(_User u: m_users){
+			indexes = new ArrayList<Integer>();
+			for(int i=u.getReviewSize(); i<u.getReviewSize()*m_time; i++){
+				int randomIndex = (int) (Math.random() * m_totalReviews.size());
+				review = m_totalReviews.get(randomIndex);
+				while(u.getReviews().contains(review)){
+					randomIndex = (int) (Math.random() * m_totalReviews.size());
+					review = m_totalReviews.get(randomIndex);
+				}
+				indexes.add(randomIndex);
+			}
+			userIDRdmNeighbors.put(u.getUserID(), indexes);
+		}
+	}
+
+	// for one item of a user, find the other users who have reviewed this item.
+	// collection their other purchased items for ranking.
+	public void constructRandomNeighborsAll(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+		_User nei;
+		String itemID;
+		ArrayList<Integer> indexes;
+		for(_User u: m_users){
+			indexes = new ArrayList<Integer>();
+			for(int i=0; i<u.getReviewSize(); i++){
+				itemID = u.getReviews().get(i).getItemID();
+				// access all the users who have purchased this item
+				for(int userIndex: m_itemIDUserIndex.get(itemID)){
+					nei = m_users.get(userIndex);
+					// the users' other purchased items will be considered as candidate item for ranking
+					for(_Review r: nei.getReviews()){
+						if(!r.getItemID().equals(itemID)){
+							indexes.add(m_reviewIndexMap.get(r));
+						}
+					}
+				}
+			}
+			userIDRdmNeighbors.put(u.getUserID(), indexes);
+		}
+	}
 
 	//Access the index of similarity.
 	int getIndex(int i, int j) {
@@ -407,7 +464,12 @@ public class CollaborativeFiltering {
 			m_userIDIndex.put(userID, i);
 		}
 		
+		sanityCheck();
+		
 		constructItemUserIndex();
+		
+		sanityCheck();
+
 		m_userIDs = new String[m_users.size()];
 		for(int i=0; i<m_users.size(); i++){
 			m_userIDs[i] = m_users.get(i).getUserID();
@@ -525,6 +587,18 @@ public class CollaborativeFiltering {
 			e.printStackTrace();
 		}
 		return weights;
+	}
+	
+	public void sanityCheck(){
+		int counter3 = 0;
+		int counter2 = 0;
+		for (_User u : m_users) {
+			if(u.getReviewSize() == 3)
+				counter3++;
+			else if(u.getReviewSize() == 2)
+				counter2++;
+		}
+		System.out.format("[Info]%d users have 1 review, %d users have 2 reviews.\n", counter1, counter2);
 	}
 	
 	public void sortPrimitivesDescending(int[] rank){

@@ -10,7 +10,9 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
+import Application.CollaborativeFilteringWithAllNeighbors;
 import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -38,58 +40,92 @@ public class CFMain {
 				
 		/***Collaborative filtering starts here.***/
 		// Construct the rdmNeighbors first.
-		int t = 2, k = 4;
-		boolean neiAll = false;
+		boolean neiAll = true;
 		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers());
 		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = new HashMap<String, ArrayList<Integer>>();
 		
-		if(!neiAll)
-			cfInit.constructRandomNeighbors(t, userIDRdmNeighbors);
-		else
-			cfInit.constructRandomNeighborsAll(userIDRdmNeighbors);
-		
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-
 		String[] models = new String[]{"mtsvm_0.5_1"};
-//		String[] models = new String[]{"mmb_mixture"};
-
-		double[][] performance = new double[models.length][2];
-		for(int m=0; m<models.length; m++){
-			model = models[m];
-			dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
-			System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
+		// if we select time*review_size as candidate reviews 
+		if(!neiAll){
+			int t = 2, k = 4;
+			// construct random neighbors
+			cfInit.constructRandomNeighbors(t, userIDRdmNeighbors);
+//			String[] models = new String[]{"mmb_mixture"};
+			double[][] performance = new double[models.length][2];
+			for(int m=0; m<models.length; m++){
+				model = models[m];
+				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
+				
+				CollaborativeFiltering cf = null;
+				if(model.equals("mmb_mixture")){
+					cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
+					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
+				} else 
+					cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
+				// utilize the average as ranking score
+				if(model.equals("avg"))
+					cf.setAvgFlag(true);
+				
+				cf.loadWeights(dir, suffix1, suffix2);
+				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
+				cf.calculateAllNDCGMAP();
+				cf.calculateAvgNDCGMAP();
+				performance[m][0] = cf.getAvgNDCG();
+				performance[m][1] = cf.getAvgMAP();
+			}
 			
-			CollaborativeFiltering cf = null;
-			if(model.equals("mmb_mixture")){
-				cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
-				((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
-			} else 
-				cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
-			// utilize the average as ranking score
-			if(model.equals("avg"))
-				cf.setAvgFlag(true);
-			
-			cf.loadWeights(dir, suffix1, suffix2);
-			cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
-			cf.calculateAllNDCGMAP();
-//			String perf = String.format("./data/perf_%s_time_%d_top_%d.txt", model, t, k);
-//			cf.savePerf(perf);
-			cf.calculateAvgNDCGMAP();
-			performance[m][0] = cf.getAvgNDCG();
-			performance[m][1] = cf.getAvgMAP();
-		}
-		
-		String filename = String.format("./data/%s_cf_%d_top%d.txt", dataset, t, k);
-		PrintWriter writer = new PrintWriter(new File(filename));
-		writer.write("\t\tNDCG\tMAP\n");
+			String filename = String.format("./data/%s_cf_%d_top%d.txt", dataset, t, k);
+			PrintWriter writer = new PrintWriter(new File(filename));
+			writer.write("\t\tNDCG\tMAP\n");
 
-		for(int m=0; m<models.length; m++){
-			writer.write(models[m]+"\t");
-			for(double p: performance[m])
-				writer.write(p+"\t");
-			writer.write("\n");
+			for(int m=0; m<models.length; m++){
+				writer.write(models[m]+"\t");
+				for(double p: performance[m])
+					writer.write(p+"\t");
+				writer.write("\n");
+			}
+			writer.close();
+			
+		} else{
+			cfInit.constructRandomNeighborsAll(userIDRdmNeighbors);
+			
+			double[][] performance = new double[models.length][2];
+			for(int m=0; m<models.length; m++){
+				model = models[m];
+				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				System.out.format("\n-----------------run %s with all neighbors-------------------------\n", model);
+			
+				CollaborativeFiltering cf = null;
+				if(model.equals("mmb_mixture")){
+					cf = new CollaborativeFilteringWithMMBWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize()+1);
+					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
+				} else 
+					cf = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize()+1);
+				// utilize the average as ranking score
+				if(model.equals("avg"))
+					cf.setAvgFlag(true);
+			
+				cf.loadWeights(dir, suffix1, suffix2);
+				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
+				cf.calculateAllNDCGMAP();
+				cf.calculateAvgNDCGMAP();
+				performance[m][0] = cf.getAvgNDCG();
+				performance[m][1] = cf.getAvgMAP();
+			}
+			String filename = String.format("./data/%s_cf_all_nei.txt", dataset);
+			PrintWriter writer = new PrintWriter(new File(filename));
+			writer.write("\t\tNDCG\tMAP\n");
+
+			for(int m=0; m<models.length; m++){
+				writer.write(models[m]+"\t");
+				for(double p: performance[m])
+					writer.write(p+"\t");
+				writer.write("\n");
+			}
+			writer.close();
 		}
-		writer.close();
 	}
 }
