@@ -12,7 +12,7 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 	}
 	
 	public CollaborativeFilteringWithAllNeighbors(ArrayList<_User> users, int fs) {
-		super(users);
+		super(users, fs);
 	}
 
 	//calculate the ranking score for each review of each user.
