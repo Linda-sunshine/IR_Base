@@ -69,9 +69,10 @@ public class CFExecution {
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
+				else{
+					cf.loadWeights(dir, suffix1, suffix2);
+				}
 				
-				cf.loadWeights(dir, suffix1, suffix2);
-				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
 				performance[m][0] = cf.getAvgNDCG();
@@ -108,8 +109,10 @@ public class CFExecution {
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
-			
-				cf.loadWeights(dir, suffix1, suffix2);
+				else{
+					cf.loadWeights(dir, suffix1, suffix2);
+				}
+
 				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
@@ -130,7 +133,7 @@ public class CFExecution {
 		}
 		
 		long end = System.currentTimeMillis();
-		long mins = (end - start)/1000*60;
+		long mins = (end - start)/(1000*60);
 		System.out.println("[Info]The collaborative filtering took " + mins + " mins to finish!");
 	}
 }

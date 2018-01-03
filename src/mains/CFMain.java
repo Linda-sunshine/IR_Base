@@ -46,7 +46,7 @@ public class CFMain {
 		
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"mtsvm_0.5_1"};
+		String[] models = new String[]{"avg", "mtsvm_0.5_1"};
 		// if we select time*review_size as candidate reviews 
 		if(!neiAll){
 			int t = 2, k = 4;
@@ -56,7 +56,7 @@ public class CFMain {
 			double[][] performance = new double[models.length][2];
 			for(int m=0; m<models.length; m++){
 				model = models[m];
-				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 				System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 				
 				CollaborativeFiltering cf = null;
@@ -68,8 +68,9 @@ public class CFMain {
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
-				
-				cf.loadWeights(dir, suffix1, suffix2);
+				else{
+					cf.loadWeights(dir, suffix1, suffix2);
+				}
 				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
@@ -107,8 +108,9 @@ public class CFMain {
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
-			
-				cf.loadWeights(dir, suffix1, suffix2);
+				else
+					cf.loadWeights(dir, suffix1, suffix2);
+				
 				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();

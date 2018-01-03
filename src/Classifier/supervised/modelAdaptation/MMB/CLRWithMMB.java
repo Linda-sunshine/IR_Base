@@ -939,6 +939,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		double likelihoodX = 0, likelihoodY = 0, likelihoodE = 0;
 		int count = 0;
+//		int ecount = 0;
 		
 		/**We want to sample documents first without knowing edges,
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
@@ -955,7 +956,16 @@ public class CLRWithMMB extends CLRWithHDP {
 		
 		// EM iteration.
 		for(int i=0; i<m_numberOfIterations; i++){
-			// Cluster assignment, thinning to reduce auto-correlation.			
+			// Cluster assignment, thinning to reduce auto-correlation.	
+			
+//			while(ecount++ < 3){
+//				calculate_E_step();
+//				assignClusterIndex();
+//				sampleGamma();
+//			}
+//			likelihoodY = estPhi();
+//			ecount = 0;
+//			
 			calculate_E_step();
 			likelihoodY = calculate_M_step();
 			

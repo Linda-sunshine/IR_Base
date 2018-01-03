@@ -26,8 +26,8 @@ public class MyLinkPredExecution {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data); // CV.
-		String trainFolder = String.format("%s/%s/Users_%d", param.m_prefix, param.m_data, param.m_trainSize);
-		String testFolder = String.format("%s/%s/Users_%d", param.m_prefix, param.m_data, param.m_testSize);
+		String trainFolder = String.format("%s/%s/Users_%d_train", param.m_prefix, param.m_data, param.m_trainSize);
+		String testFolder = String.format("%s/%s/Users_%d_test", param.m_prefix, param.m_data, param.m_testSize);
 		
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fv);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fvSup);
