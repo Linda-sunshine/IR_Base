@@ -403,6 +403,7 @@ public class CollaborativeFiltering {
 	// for one item of a user, find the other users who have reviewed this item.
 	// collection their other purchased items for ranking.
 	public void constructRandomNeighborsAll(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+		double sum = 0;
 		for(int index: m_userMap.keySet()){
 			_User user = m_userMap.get(index);
 			ArrayList<Integer> indexes = new ArrayList<Integer>();
@@ -420,7 +421,9 @@ public class CollaborativeFiltering {
 				}
 			}
 			userIDRdmNeighbors.put(user.getUserID(), indexes);
+			sum += indexes.size();
 		}
+		System.out.format("avg candidate item is %.2f.\n", sum/m_userMap.size());
 	}
 	
 	protected void convert2UserMap(ArrayList<_User> users){
