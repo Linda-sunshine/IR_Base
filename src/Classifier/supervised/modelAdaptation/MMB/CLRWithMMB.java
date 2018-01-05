@@ -69,23 +69,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		theta_h.addConnection(theta_g, e);
 	}
 	
-	// accumulate the likelihood given by review content
-	protected double accumulateLikelihoodX(){
-		_MMBAdaptStruct user;
-		double likelihoodX = 0;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_MMBAdaptStruct) m_userList.get(i);
-			if(user.getAdaptationSize() == 0)
-				continue;
-			for(_Review r: user.getReviews()){
-				if (r.getType() == rType.TEST)
-					continue;//do not touch testing reviews!
-				likelihoodX += calcLogLikelihoodX(r);
-			}
-		}
-		return likelihoodX;
-	}
-	
 	// traverse all the clusters to get the likelihood given by mmb edges
 	protected double accumulateLikelihoodEMMB(){
 		double likelihoodE = 0;

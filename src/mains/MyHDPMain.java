@@ -26,7 +26,7 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -64,7 +64,6 @@ public class MyHDPMain {
 		analyzer.loadUserDir(userFolder);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
-		analyzer.select();
 		
 //		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;
@@ -103,12 +102,11 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		double alpha = 0.6, eta = 0.1, beta = 0.01, sdA = 0.1, sdB = 0.1; 
 		
-		// best parameter for yelp so far.
-		alpha = 1; sdA = 0.0425; sdB = 0.0425;
+		//default setting: alpha=0.01, eta=0.05, beta=0.01
+		double alpha = 1, eta = 1, beta = 0.01;
+		double sdA = 0.0425, sdB = 0.0425;
 		
-//		MTCLinAdaptWithHDPMultipleE hdp = new MTCLinAdaptWithHDPMultipleE(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
 		hdp.setR2TradeOffs(eta3, eta4);
 		hdp.setsdB(sdA);//0.2
@@ -117,13 +115,12 @@ public class MyHDPMain {
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		
-		hdp.setBurnIn(10);
-//		hdp.setThinning(5);// default 3
-		hdp.setNumberOfIterations(10);// default 50
+		hdp.setBurnIn(0);
+		hdp.setNumberOfIterations(30);// default 50
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		
-		hdp.train();
+		hdp.trainTrace(dataset, 100);
 		hdp.test();
 //		hdp.saveModel("./data/mtclinhdp_models");
 		

@@ -80,7 +80,7 @@ public class MyMMBMain {
 		
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.01, eta = 0.01, beta = 0.01;
+		double alpha = 0.01, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 //		
 ////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
@@ -124,7 +124,7 @@ public class MyMMBMain {
 				
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
-
+		
 		double rho = 0.1; 
 		int burnin = 10, iter = 50, thin = 3;
 		boolean jointAll = true;
@@ -156,11 +156,6 @@ public class MyMMBMain {
 		// the total time of training and testing in the unit of hours
 		double hours = (end - start)/(1000*60);
 		System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
-//		// Print out the current related models
-//		long current = System.currentTimeMillis();
-//		System.out.println(current);
-//		String dir = String.format("./data/mmb/%d_%s", current, dataset);
-//		mmb.saveEverything(dir);
 		
 	}
 }

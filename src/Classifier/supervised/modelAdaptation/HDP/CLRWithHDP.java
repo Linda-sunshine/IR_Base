@@ -68,6 +68,23 @@ public class CLRWithHDP extends CLRWithDP {
 		setBetas(betas);
 	}
 	
+	// accumulate the likelihood given by review content
+	protected double accumulateLikelihoodX(){
+		_HDPAdaptStruct user;
+		double likelihoodX = 0;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_HDPAdaptStruct) m_userList.get(i);
+			if(user.getAdaptationSize() == 0)
+				continue;
+			for(_Review r: user.getReviews()){
+				if (r.getType() == rType.TEST)
+					continue;//do not touch testing reviews!
+				likelihoodX += calcLogLikelihoodX(r);
+			}
+		}
+		return likelihoodX;
+	}
+	
 	public _HDPThetaStar[] getHDPThetaStars(){
 		return m_hdpThetaStars;
 	}
@@ -617,6 +634,64 @@ public class CLRWithHDP extends CLRWithDP {
 
 		evaluateModel(); // we do not want to miss the last sample?!
 		setPersonalizedModel();
+		return curLikelihood;
+	}
+	
+	@Override
+	public double trainTrace(String data, int iter){
+		m_numberOfIterations = iter;
+		m_thinning = 1;
+			
+		System.out.print(toString());
+		
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		double likelihoodX = 0, likelihoodY = 0;
+		int count = 0;
+		
+		// clear user performance, init cluster assignment, assign each review to one cluster
+		init();	
+		
+		// Burn in period for doc.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			calculate_M_step();
+		}
+		
+		try{
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, iter, m_burnIn, m_thinning, System.currentTimeMillis()); 
+			PrintWriter writer = new PrintWriter(new File(traceFile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				
+				// Cluster assignment, thinning to reduce auto-correlation.
+				calculate_E_step();
+				likelihoodY = calculate_M_step();
+
+				// accumulate the likelihood
+				likelihoodX = accumulateLikelihoodX();
+								
+				curLikelihood = likelihoodY + likelihoodX;
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				
+				// evaluate the model
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, delta, m_kBar, m_perf[0], m_perf[1]));
+				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
 		return curLikelihood;
 	}
 	

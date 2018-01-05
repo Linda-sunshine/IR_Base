@@ -412,6 +412,7 @@ public class CollaborativeFiltering {
 			Set<String> items = new HashSet<String>();
 			for(int i=0; i<user.getReviewSize(); i++){
 				String itemID = user.getReviews().get(i).getItemID();
+				items.clear();
 				items.add(itemID);
 				// access all the users who have purchased this item
 				for(int userIndex: m_itemIDUserIndex.get(itemID)){

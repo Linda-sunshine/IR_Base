@@ -87,8 +87,8 @@ public class MyMMBExecution {
 		long start = System.currentTimeMillis();
 		if(param.m_trace){
 			param.m_nuOfIterations = 100;
-//			adaptation.trainTrace(param.m_data, param.m_nuOfIterations);
-			adaptation.trainTraceMultipleE(param.m_data, param.m_nuOfIterations, 3);
+			adaptation.trainTrace(param.m_data, param.m_nuOfIterations);
+//			adaptation.trainTraceMultipleE(param.m_data, param.m_nuOfIterations, 3);
 			adaptation.test();
 		} else{
 			adaptation.train();
