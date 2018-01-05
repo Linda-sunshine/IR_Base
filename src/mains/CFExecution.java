@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.CFParameter;

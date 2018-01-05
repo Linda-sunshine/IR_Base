@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import structures.MyPriorityQueue;
 import structures.Pair;
@@ -407,16 +409,19 @@ public class CollaborativeFiltering {
 		for(int index: m_userMap.keySet()){
 			_User user = m_userMap.get(index);
 			ArrayList<Integer> indexes = new ArrayList<Integer>();
+			Set<String> items = new HashSet<String>();
 			for(int i=0; i<user.getReviewSize(); i++){
 				String itemID = user.getReviews().get(i).getItemID();
+				items.add(itemID);
 				// access all the users who have purchased this item
 				for(int userIndex: m_itemIDUserIndex.get(itemID)){
 					_User nei = m_userMap.get(userIndex);
 					// the users' other purchased items will be considered as candidate item for ranking
 					for(_Review r: nei.getReviews()){
-						if(!r.getItemID().equals(itemID)){
+						if(!items.contains(r.getItemID())){
 							indexes.add(m_reviewIndexMap.get(r));
 						}
+						items.add(r.getItemID());
 					}
 				}
 			}
@@ -449,8 +454,8 @@ public class CollaborativeFiltering {
 	
 	public double getSimilarity(int i, int j){
 		int index = getIndex(i, j);
-		if(index == 47516626)
-			System.out.println("bug here.");
+//		if(index == 47516626)
+//			System.out.println("bug here.");
 		return m_similarity[index];
 	}
 	
