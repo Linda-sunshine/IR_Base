@@ -5,10 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._CFUser;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
@@ -40,21 +39,20 @@ public class CFMain {
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
 				
 		/***Collaborative filtering starts here.***/
-		// Construct the rdmNeighbors first.
 		boolean neiAll = true;
-		CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers());
-		HashMap<String, ArrayList<Integer>> userIDRdmNeighbors = new HashMap<String, ArrayList<Integer>>();
-		
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"avg", "mtsvm_0.5_1"};
-		// if we select time*review_size as candidate reviews 
+		String[] models = new String[]{"mtclinmmb_0.5"};
+		
 		if(!neiAll){
 			int t = 2, k = 4;
-			// construct random neighbors
-			cfInit.constructRandomNeighbors(t, userIDRdmNeighbors);
-//			String[] models = new String[]{"mmb_mixture"};
+			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
+			// construct ranking neighbors
+			cfInit.constructRankingNeighbors();
+			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
+			
 			for(int m=0; m<models.length; m++){
 				model = models[m];
 				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
@@ -62,17 +60,18 @@ public class CFMain {
 				
 				CollaborativeFiltering cf = null;
 				if(model.equals("mmb_mixture")){
-					cf = new CollaborativeFilteringWithMMB(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
+					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
-					cf = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k);
+					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
+				
+				cf.setValidUserSize(validUser);
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
 				else{
 					cf.loadWeights(dir, suffix1, suffix2);
 				}
-				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
 				performance[m][0] = cf.getAvgNDCG();
@@ -92,27 +91,33 @@ public class CFMain {
 			writer.close();
 			
 		} else{
-			cfInit.constructRandomNeighborsAll(userIDRdmNeighbors);
 			
+			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
+			// construct ranking neighbors
+			cfInit.constructRankingNeighbors();
+			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			int validUser = cfInit.getValidUserSize();
+
 			double[][] performance = new double[models.length][2];
 			for(int m=0; m<models.length; m++){
 				model = models[m];
-				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 				System.out.format("\n-----------------run %s with all neighbors-------------------------\n", model);
 			
 				CollaborativeFiltering cf = null;
 				if(model.equals("mmb_mixture")){
-					cf = new CollaborativeFilteringWithMMBWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFilteringWithMMBWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
-					cf = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFilteringWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
+				
+				cf.setValidUserSize(validUser);
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
 				else
 					cf.loadWeights(dir, suffix1, suffix2);
 				
-				cf.setUserIDRdmNeighbors(userIDRdmNeighbors);
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
 				performance[m][0] = cf.getAvgNDCG();

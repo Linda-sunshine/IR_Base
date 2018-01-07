@@ -15,12 +15,15 @@ import java.util.Set;
 
 import structures.MyPriorityQueue;
 import structures.Pair;
+import structures._CFUser;
 import structures._RankItem;
 import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
+//import structures._User;
 
 /***
  * @author lin
@@ -28,23 +31,15 @@ import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
  */
 public class CollaborativeFiltering {
 	// k is the number of neighbors
-	protected int m_k, m_time;
-
-	protected int m_featureSize;
-
-	protected ArrayList<_User> m_users;
-	protected HashMap<Integer, _User> m_userMap;
+	protected int m_k, m_time, m_featureSize;
+	protected int m_validUser = 0;
+	protected ArrayList<_CFUser> m_users;
+	protected HashMap<String, _CFUser> m_userMap;
 	// All the reviews for ranking
-	protected ArrayList<_Review> m_totalReviews;
+	protected ArrayList<_Review> m_trainReviews;
 	
-	//Given a review, find its index in total reviews
-	HashMap<_Review, Integer> m_reviewIndexMap;
 	//Given a user ID, access the index of the user.
-	HashMap<String, Integer> m_userIDIndex;
-	//Given a itemID, find all the users who have purchased this item.
-	HashMap<String, ArrayList<Integer>> m_itemIDUserIndex;
-	//Given a userID, find his/her neighbors
-	HashMap<String, ArrayList<Integer>> m_userIDRdmNeighbors;
+	protected HashMap<String, Integer> m_userIDIndex;
 	
 	protected double m_avgNDCG, m_avgMAP;
 	//Assume we have a cache containing all the similarities of all pairs of users.
@@ -62,39 +57,72 @@ public class CollaborativeFiltering {
 	// default neighborhood by BoW
 	SimType m_sType = SimType.ST_BoW;
 	
+	// key: item id, value: train user id
+	HashMap<String, ArrayList<String>> m_trainMap;
+	// key: item id, value: test user id
+
+	HashMap<String, ArrayList<String>> m_testMap;
+	
 	// lock when collecting review statistics
 	private Object m_userWeightsLock = null;
 	private Object m_similarityLock = null;
 	private Object m_NDCGMAPLock = null;
 	
-	public CollaborativeFiltering(ArrayList<_User> users){
-		convert2UserMap(users);
+	// constructor for cf with all neighbors
+	public CollaborativeFiltering(ArrayList<_CFUser> users, int fs){
+		m_userMap = new HashMap<String, _CFUser>();
+		for(int i=0; i<users.size(); i++){
+			_CFUser user = users.get(i);
+			m_userMap.put(user.getUserID(), user);
+		}
 		
-		m_featureSize = 0;
-		m_totalReviews = new ArrayList<_Review>();
-		m_similarityLock = new Object();
-		m_userWeightsLock = new Object();
-		m_NDCGMAPLock = new Object();
-		init();
-	}
-	
-	public CollaborativeFiltering(ArrayList<_User> users, int fs) {
-		convert2UserMap(users);
+		m_users = users;		
 		m_featureSize = fs;
 		
-		m_totalReviews = new ArrayList<_Review>();
+		m_trainReviews = new ArrayList<_Review>();
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
 		m_NDCGMAPLock = new Object();
 		init();
 	}
-	
-	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k){
-		convert2UserMap(users);
+	// constructor for cf with topK neighbors
+	public CollaborativeFiltering(ArrayList<_CFUser> users, int fs, int k){
+		m_userMap = new HashMap<String, _CFUser>();
+		for(int i=0; i<users.size(); i++){
+			_CFUser user = users.get(i);
+			m_userMap.put(user.getUserID(), user);
+		}
+		
+		m_users = users;		
 		m_featureSize = fs;
 		m_k = k;
 		
-		m_totalReviews = new ArrayList<_Review>();
+		m_trainReviews = new ArrayList<_Review>();
+		m_similarityLock = new Object();
+		m_userWeightsLock = new Object();
+		m_NDCGMAPLock = new Object();
+		init();
+	}
+	
+	// constructor for getting ranking items
+	public CollaborativeFiltering(ArrayList<_User> users, int fs, int k, int t){
+		convert2UserMap(users);
+		m_featureSize = fs;
+		m_k = k;
+		m_time = t;
+		
+		m_trainReviews = new ArrayList<_Review>();
+		m_similarityLock = new Object();
+		m_userWeightsLock = new Object();
+		m_NDCGMAPLock = new Object();
+		init();
+	}
+		
+	// constructor for getting ranking items with all neighbors
+	public CollaborativeFiltering(ArrayList<_User> users){
+		convert2UserMap(users);
+		
+		m_trainReviews = new ArrayList<_Review>();
 		m_similarityLock = new Object();
 		m_userWeightsLock = new Object();
 		m_NDCGMAPLock = new Object();
@@ -112,12 +140,12 @@ public class CollaborativeFiltering {
 				int core, numOfCores;
 				@Override
 				public void run() {
-					_User u;
+					_CFUser u;
 					try {
 						for (int i = 0; i + core <m_users.size(); i += numOfCores) {
 							if(i%500==0) System.out.print(".");
 							u = m_users.get(i+core);
-							if(m_userMap.containsKey(i+core))
+							if(u.isValid())
 								calculateNDCGMAP(u);
 						}
 					} catch(Exception ex) {
@@ -153,36 +181,28 @@ public class CollaborativeFiltering {
 			if(Double.isNaN(m_MAPs[i]))
 				System.out.print("*");
 		}
-		m_avgNDCG = sumNDCG/m_userMap.size();
-		m_avgMAP = sumMAP/m_userMap.size();
+		m_avgNDCG = sumNDCG/m_validUser;
+		m_avgMAP = sumMAP/m_validUser;
 	}
 	
 	// calculate the nDCG and MAP for each user
-	public void calculateNDCGMAP(_User u){
-			
-		int rdmIndex = 0;
-		int reviewSize = u.getReviewSize();
+	public void calculateNDCGMAP(_CFUser u){
 		int userIndex = m_userIDIndex.get(u.getUserID());
 		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
 			
-		_Review review;
-		ArrayList<Integer> rdmIndexes = m_userIDRdmNeighbors.get(u.getUserID());
-		int totalReviewSize = rdmIndexes.size() + reviewSize;
-		
-		int[] rank = new int[totalReviewSize];
-		Pair[] realRank = new Pair[totalReviewSize];
+		String[] items = u.getRankingItems();
+		int[] rank = new int[items.length];
+		Pair[] realRank = new Pair[items.length];
 			
 		//Calculate the ideal rank and real rank.
-		for(int i=0; i<totalReviewSize; i++){
-			if(i < reviewSize){
-				review = u.getReviews().get(i);
-				rank[i] = review.getYLabel() + 1;
-				realRank[i]=new Pair(rank[i], calculateRankScore(u, review));
+		for(int i=0; i<items.length; i++){
+			String item = items[i];
+			if(u.containsRvw(item)){
+				rank[i] = u.getItemRating(item) + 1;
+				realRank[i]=new Pair(rank[i], calculateRankScore(u, item));
 			} else{
-				rdmIndex = rdmIndexes.get(i-reviewSize);
-				review = m_totalReviews.get(rdmIndex);
 				rank[i] = 0;
-				realRank[i] = new Pair(rank[i], calculateRankScore(u, review));
+				realRank[i] = new Pair(rank[i], calculateRankScore(u, item));
 			}
 		}
 		// sort the array in descending order
@@ -197,7 +217,6 @@ public class CollaborativeFiltering {
 					return -1;
 				else 
 					return 0;
-				
 			}
 		});
 					
@@ -220,42 +239,41 @@ public class CollaborativeFiltering {
 			m_ranks[userIndex] = rank;
 			m_realRanks[userIndex] = realRank;
 		}
-		u.setNDCG(m_NDCGs[userIndex]);	
-		u.setMAP(m_MAPs[userIndex]);
 	}
 
 	// calculate the ranking score for each review of each user.
 	// The ranking score is calculated based on the set of users who have reviewed the item
-	public double calculateRankScore(_User u, _Review r){
+	public double calculateRankScore(_CFUser u, String item){
 		int userIndex = m_userIDIndex.get(u.getUserID());
 		double rankSum = 0;
 		double simSum = 0;
-		String itemID = r.getItemID();
 			
 		//select top k users who have purchased this item.
-		ArrayList<Integer> candidates = m_itemIDUserIndex.get(itemID);
+		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
-			for(int c: candidates){
-				if(!m_userMap.containsKey(c)) continue;
-				double label = m_userMap.get(c).getItemIDRating().get(itemID)+1;
+			for(String nei: neighbors){
+				int index = m_userIDIndex.get(nei);
+				double label = m_users.get(index).getItemIDRating().get(item)+1;
 				rankSum += label;
 				simSum++;
 			}
 			return rankSum/ simSum;
 		} else{
-			MyPriorityQueue<_RankItem> neighbors;
-			if(candidates.size() < m_k)
-				neighbors = new MyPriorityQueue<_RankItem>(candidates.size());
+			MyPriorityQueue<_RankItem> topKNeighbors;
+			if(neighbors.size() < m_k)
+				topKNeighbors = new MyPriorityQueue<_RankItem>(neighbors.size());
 			else
-				neighbors = new MyPriorityQueue<_RankItem>(m_k);
+				topKNeighbors = new MyPriorityQueue<_RankItem>(m_k);
 			//collect k nearest neighbors for each item of the user.
-			for(int c: candidates){
-				if(c != userIndex)
-					neighbors.add(new _RankItem(c, getSimilarity(userIndex, c)));
+			for(String nei: neighbors){
+				if(!nei.equals(u.getUserID())){
+					int neiIndex = m_userIDIndex.get(nei);
+					topKNeighbors.add(new _RankItem(neiIndex, getSimilarity(userIndex, neiIndex)));
+				} 
 			}
 			//Calculate the value given by the neighbors and similarity;
-			for(_RankItem ri: neighbors){
-				int label = m_userMap.get(ri.m_index).getItemIDRating().get(itemID)+1;
+			for(_RankItem ri: topKNeighbors){
+				int label = m_users.get(ri.m_index).getItemIDRating().get(item)+1;
 				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
 				simSum += m_equalWeight ? 1: ri.m_value;
 			}
@@ -268,63 +286,6 @@ public class CollaborativeFiltering {
 	
 	protected double calculateSimilarity(double[] ui, double[] uj){
 		return Utils.cosine(ui, uj);
-	}
-
-	//<Item, <UserIndex>>, inside each user, <item, rating>
-	public void constructItemUserIndex(){
-			
-		ArrayList<Integer> userIndexes;
-		m_itemIDUserIndex = new HashMap<String, ArrayList<Integer>>();
-		m_reviewIndexMap = new HashMap<_Review, Integer>();
-		
-		// Traverse all users and set the item-userID map.
-		for (int index: m_userMap.keySet()) {
-			_User user = m_userMap.get(index);
-			for (_Review r : user.getReviews()) {
-				String itemID = r.getItemID();
-				user.addOneItemIDRatingPair(itemID, r.getYLabel());
-				// If the product is in the hashmap.
-				if (!m_itemIDUserIndex.containsKey(itemID))
-					m_itemIDUserIndex.put(itemID, new ArrayList<Integer>());
-
-				m_itemIDUserIndex.get(itemID).add(index);
-			}
-		}
-			
-		System.out.format("[Info]%d users before removal.\n", m_userMap.size());
-		ArrayList<String> prodIDs = new ArrayList<String>();
-		// Remove the items that are only purchased by one user.
-		for (String prodID : m_itemIDUserIndex.keySet()) {
-			userIndexes = m_itemIDUserIndex.get(prodID);
-			if (userIndexes.size() == 1) {
-				int index = userIndexes.get(0);
-				m_userMap.get(index).removeOneReview(prodID);
-				if(m_userMap.get(index).getReviewSize() == 0)
-					m_userMap.remove(index);
-				prodIDs.add(prodID);
-			}
-		}
-		// remove zero-reivew users in user map.
-		for(int i=0; i<m_users.size(); i++){
-			if(m_users.get(i).getReviewSize() == 0)
-				m_userMap.remove(i);
-				
-		}
-		System.out.format("[Info]%d/%d products are left after removal.\n", m_itemIDUserIndex.size()-prodIDs.size(), m_itemIDUserIndex.size());
-		
-		// Remove products with <=1 purchases.
-		for(String prodID: prodIDs)
-			m_itemIDUserIndex.remove(prodID);
-		System.out.format("[Info]%d users are left after removal.\n", m_userMap.size());
-	
-		// Collect all the reviews of all the users.
-		for (int index: m_userMap.keySet()){
-			_User user = m_userMap.get(index);
-			for(_Review r: user.getReviews()){
-				m_totalReviews.add(r);
-				m_reviewIndexMap.put(r, index++);
-			}
-		}
 	}
 	
 	// calculate the similarity between each pair of users
@@ -342,10 +303,9 @@ public class CollaborativeFiltering {
 					double[] ui, uj;
 					try {
 						for (int i = 0; i + core <m_users.size(); i += numOfCores) {
-							if(!m_userMap.containsKey(i+core)) continue;
 							ui = m_userWeights[i+core];
 							for(int j=0; j<i+core; j++) {
-								if (j == i+core || !m_userMap.containsKey(j))
+								if (j == i+core)
 									continue;
 								uj = m_userWeights[j];
 								double simi = calculateSimilarity(ui, uj);
@@ -382,64 +342,98 @@ public class CollaborativeFiltering {
 	
 	// For each user, construct candidate items for ranking
 	// candidate size = time * review size
-	public void constructRandomNeighbors(int t, HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
-		m_time = t;
-		_Review review;
-		ArrayList<Integer> indexes;
-		for(int index: m_userMap.keySet()){
-			_User user = m_userMap.get(index);
-			indexes = new ArrayList<Integer>();
-			for(int i=user.getReviewSize(); i<user.getReviewSize()*m_time; i++){
-				int randomIndex = (int) (Math.random() * m_totalReviews.size());
-				review = m_totalReviews.get(randomIndex);
-				while(user.getReviews().contains(review)){
-					randomIndex = (int) (Math.random() * m_totalReviews.size());
-					review = m_totalReviews.get(randomIndex);
-				}
-				indexes.add(randomIndex);
-			}
-			userIDRdmNeighbors.put(user.getUserID(), indexes);
-		}
-	}
-
-	// for one item of a user, find the other users who have reviewed this item.
-	// collection their other purchased items for ranking.
-	public void constructRandomNeighborsAll(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
+	public void constructRankingNeighbors(){
 		double sum = 0;
-		for(int index: m_userMap.keySet()){
-			_User user = m_userMap.get(index);
-			ArrayList<Integer> indexes = new ArrayList<Integer>();
+		for(_CFUser user: m_users){
 			Set<String> items = new HashSet<String>();
-			for(int i=0; i<user.getReviewSize(); i++){
-				String itemID = user.getReviews().get(i).getItemID();
-				items.clear();
-				items.add(itemID);
-				// access all the users who have purchased this item
-				for(int userIndex: m_itemIDUserIndex.get(itemID)){
-					_User nei = m_userMap.get(userIndex);
-					// the users' other purchased items will be considered as candidate item for ranking
-					for(_Review r: nei.getReviews()){
-						if(!items.contains(r.getItemID())){
-							indexes.add(m_reviewIndexMap.get(r));
-						}
-						items.add(r.getItemID());
+			for(int i=0; i<user.getTestReviewSize()*m_time; i++){
+				if(i< user.getTestReviewSize()){
+					_Review r = user.getTestReviews().get(i);
+					if(!m_trainMap.containsKey(r.getItemID()))
+						continue;
+					items.add(r.getItemID());
+				} else if(items.size() > 0){
+					int randomIndex = (int) (Math.random() * m_trainReviews.size());
+					_Review review = m_trainReviews.get(randomIndex);
+					while(items.contains(review.getItemID())){
+						randomIndex = (int) (Math.random() * m_trainReviews.size());
+						review = m_trainReviews.get(randomIndex);
 					}
+					items.add(review.getItemID());
 				}
 			}
-			userIDRdmNeighbors.put(user.getUserID(), indexes);
-			sum += indexes.size();
+			user.setRankingItems(items);
+			sum += items.size();
+			m_validUser += items.size() == 0 ? 0 : 1;
 		}
-		System.out.format("avg candidate item is %.2f.\n", sum/m_userMap.size());
+		System.out.format("[Stat]Avg candidate item is %.2f.\n", sum/m_validUser);
 	}
 	
-	protected void convert2UserMap(ArrayList<_User> users){
-		m_userMap = new HashMap<Integer, _User>();
-		for(int i=0; i<users.size(); i++){
-			m_userMap.put(i, users.get(i));
+	// we want to get the basic statistics of user-item statistic in training/testing
+	//<Item, <UserIndex>>, inside each user, <item, rating>
+	public void constructItemUserIndex(){
+		m_trainMap = new HashMap<String, ArrayList<String>>();
+		m_testMap = new HashMap<String, ArrayList<String>>();
+		for(_CFUser u: m_users){
+			for(_Review r: u.getReviews()){
+				// if it is adaptation review
+				if(r.getType() == rType.ADAPTATION){
+					String itemID = r.getItemID();
+					if(!m_trainMap.containsKey(itemID)){
+						m_trainMap.put(itemID, new ArrayList<String>());
+					}
+					m_trainMap.get(itemID).add(u.getUserID());
+				// if it is testing review
+				} else{
+					String itemID = r.getItemID();
+					if(!m_testMap.containsKey(itemID)){
+						m_testMap.put(itemID, new ArrayList<String>());
+					}
+					m_testMap.get(itemID).add(u.getUserID());
+				}
+				u.addOneItemIDRatingPair(r.getItemID(), r.getYLabel());
+			}
 		}
-		m_users = users;
+		int trainMiss = 0, testMiss = 0;
+		for(String itemID: m_trainMap.keySet()){
+			if(!m_testMap.containsKey(itemID))
+				testMiss++;
+		}
+		for(String itemID: m_testMap.keySet()){
+			if(!m_trainMap.containsKey(itemID))
+				trainMiss++;
+		}
+		for(_CFUser u: m_users){
+			for(_Review r: u.getTrainReviews()){
+				m_trainReviews.add(r);
+			}
+		}
+		System.out.format("There are %d items in training set.\n", m_trainMap.size());
+		System.out.format("There are %d items in testing set.\n", m_testMap.size());
+		System.out.format("There are %d items in training while not in testing.\n", testMiss);
+		System.out.format("There are %d items in testing while not in training.\n", trainMiss);
+
 	}
 
+	// pass the users from analyzer into cf for later use
+	protected void convert2UserMap(ArrayList<_User> users){
+		m_userMap = new HashMap<String, _CFUser>();
+		m_users = new ArrayList<_CFUser>();
+		for(int i=0; i<users.size(); i++){
+			_User user = users.get(i);
+			_CFUser cfUser = new _CFUser(user);
+			m_userMap.put(user.getUserID(), cfUser);
+			m_users.add(cfUser);
+		}
+	}
+	
+	public ArrayList<_CFUser> getUsers(){
+		return m_users;
+	}
+
+	public int getValidUserSize(){
+		return m_validUser;
+	}
 	//Access the index of similarity.
 	int getIndex(int i, int j) {
 		if (i<j) {//swap
@@ -467,19 +461,9 @@ public class CollaborativeFiltering {
 	public double getAvgMAP(){
 		return m_avgMAP;
 	}
-	
-	public double getItemStat(){
-		double avg = 0;
-		for(String itemID: m_itemIDUserIndex.keySet()){
-			avg += m_itemIDUserIndex.get(itemID).size();
-		}
-		return avg/ m_itemIDUserIndex.size();
-	}
 
 	public void init(){
-		
-		sanityCheck();
-		
+				
 		m_userIDIndex = new HashMap<String, Integer>();
 		for(int i=0; i<m_users.size(); i++){
 			m_userIDIndex.put(m_users.get(i).getUserID(), i);
@@ -509,7 +493,7 @@ public class CollaborativeFiltering {
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		
 		if(!dir.exists()){
-			System.err.print("[Info]BoW is used as user weights.");
+			System.err.format("[error] %s does not exist! BoW is used as user weights.\n", dir);
 			loadSVMWeights();
 		} else{
 			files = dir.listFiles();
@@ -533,6 +517,9 @@ public class CollaborativeFiltering {
 										synchronized(m_userWeightsLock){
 											m_userWeights[userIndex] = weights;
 										}
+									} else{
+										System.err.format("[error]Bug in loading weights.");
+										System.err.println("[error]"+f.getName());
 									}
 								}
 							}
@@ -565,7 +552,7 @@ public class CollaborativeFiltering {
 	//If not weights provided, use BoW weights.
 	public void loadSVMWeights(){
 		
-		_User u;
+		_CFUser u;
 		m_userWeights = new double[m_users.size()][];
 		
 		for(int i=0; i<m_users.size(); i++){
@@ -600,22 +587,6 @@ public class CollaborativeFiltering {
 		return weights;
 	}
 	
-	public void sanityCheck(){
-		int counter1 = 0;
-		int counter2 = 0;
-		int counter3 = 0;
-		for (int index: m_userMap.keySet()) {
-			_User u = m_userMap.get(index);
-			if(u.getReviewSize() == 1)
-				counter1++;
-			if(u.getReviewSize() == 2)
-				counter2++;
-			else if(u.getReviewSize() == 3)
-				counter3++;
-		}
-		System.out.format("[Info]%d users have 1 reviews, %d users have 2 review, %d users have 3 reviews.\n", counter1, counter2, counter3);
-	}
-	
 	public void sortPrimitivesDescending(int[] rank){
 		Arrays.sort(rank);
 		// then reverse the array
@@ -631,7 +602,6 @@ public class CollaborativeFiltering {
 		try{
 			writer = new PrintWriter(new File(filename));
 			for(int i=0; i<m_NDCGs.length; i++){
-				if(!m_userMap.containsKey(i)) continue;
 				writer.write(String.format("%s\t%.4f\t%.4f\n", m_users.get(i).getUserID(), m_NDCGs[i], m_MAPs[i]));
 			}
 			writer.close();
@@ -640,13 +610,12 @@ public class CollaborativeFiltering {
 			e.printStackTrace();
 		}
 	}
-	
-	public void setUserIDRdmNeighbors(HashMap<String, ArrayList<Integer>> userIDRdmNeighbors){
-		m_userIDRdmNeighbors = userIDRdmNeighbors;
-	}
 
 	public void setAvgFlag(boolean b){
 		m_avgFlag = b;
+	}
+	public void setValidUserSize(int sz){
+		m_validUser = sz;
 	}
 	public void setEqualWeightFlag(boolean a){
 		m_equalWeight = a;

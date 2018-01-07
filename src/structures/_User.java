@@ -2,7 +2,6 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 
 import structures._Review.rType;
@@ -42,10 +41,6 @@ public class _User {
 	double m_adaPos = 0;
 	double m_testPos = 0;
 	
-	/**added by Lin for cf.**/
-	private final HashMap<String, Integer> m_itemIDRating = new HashMap<String, Integer>(); //This hashmap contains all the items the user purchased and corresponding ratings.
-	private double m_nDCG;
-	private double m_MAP;
 	
 	// added by Lin for sanity check.
 	int m_ctgSize = 0;
@@ -162,6 +157,10 @@ public class _User {
 		m_featureSize = weight.length;
 	}
 
+	public int getClassNo(){
+		return m_classNo;
+	}
+	
 	public double[] getPersonalizedModel() {
 		return m_pWeight;
 	}
@@ -292,27 +291,7 @@ public class _User {
 		return values;
 	}
 	
-	// added by Lin for CF.
-	
-	/***added by Lin for cf***/
-	public void setNDCG(double d){
-		m_nDCG = d;
-	}
-	public void setMAP(double m){
-		m_MAP = m;
-	}
-	public double getNDCG(){
-		return m_nDCG;
-	}
-	public double getMAP(){
-		return m_MAP;
-	}
-	public void addOneItemIDRatingPair(String item, int r){
-		m_itemIDRating.put(item, r);
-	}
-	public HashMap<String, Integer> getItemIDRating(){
-		return m_itemIDRating;
-	}
+
 	
 	public void removeOneReview(String prodID){
 		int index = 0;
