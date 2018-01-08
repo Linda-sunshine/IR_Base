@@ -1,0 +1,109 @@
+package Application;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class SVDPreProcess {
+	ArrayList<String> m_userIDs, m_itemIDs;
+	HashMap<String, Integer> m_userMap;
+	HashMap<String, Integer> m_itemMap;
+	int m_nuEntry = 0;
+	
+	// low-rank representation of users 
+	double[][] m_U;
+	// low-rank representation of items 
+	double[][] m_V;
+	
+	public SVDPreProcess(){
+		m_userMap = new HashMap<String, Integer>();
+		m_itemMap = new HashMap<String, Integer>();
+		m_userIDs = new ArrayList<String>();
+		m_itemIDs = new ArrayList<String>();
+	}
+	
+	// load the user-item data and get the size of users and items
+	public void buildUserItemMap(String filename){
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			// skip the first line
+			line = reader.readLine();
+			while ((line = reader.readLine()) != null) {
+				String[] strs = line.split(",");
+				String userID = strs[0];
+				String itemID = strs[1];
+				if(!m_userMap.containsKey(userID)){
+					m_userMap.put(userID, m_userMap.size());
+					m_userIDs.add(userID);
+				}
+				if(!m_itemMap.containsKey(itemID)){
+					m_itemMap.put(itemID, m_itemMap.size());
+					m_itemIDs.add(itemID);
+				}
+				m_nuEntry++;
+			}
+			reader.close();
+			System.out.format("(%d, %d) users/items are loaded from %s...\n", m_userIDs.size(), m_itemIDs.size(), filename);
+			
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
+	
+	// transfer the user-item matrix to mm file for graphchi
+	public void transfer2MMFile(String filename, String outputfile){
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			PrintWriter writer = new PrintWriter(new File(outputfile));
+			writer.write("%%MatrixMarket matrix coordinate real general\n% Generated Jan, 2018\n");
+			writer.write(String.format("%d\t%d\t%d\n", m_userIDs.size(), m_itemIDs.size(), m_nuEntry));
+			// skip the first line
+			int count = 0;
+			line = reader.readLine();
+			count++;
+			while ((line = reader.readLine()) != null) {
+				count++;
+				String[] strs = line.split(",");
+				String userID = strs[0];
+				String itemID = strs[1];
+				int userIdx = m_userMap.get(userID)+1;
+				int itemIdx = m_itemMap.get(itemID)+1;
+				int rating = Integer.valueOf(strs[2]);
+				writer.write(String.format("%d\t%d\t%d\n", userIdx, itemIdx, rating));
+			}
+			reader.close();
+			writer.close();
+			System.out.format("[Info]Finish transferring %d lines to MM File.\n", count);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
+	
+	public static void main(String[] args){
+		SVDPreProcess process = new SVDPreProcess();
+		String trainFile = "./data/train_all.csv";
+		String trainMMFile = "./data/train_all.mm";
+		String testFile = "./data/test_all.csv";
+		String testMMFile = "./data/test_all.mm";
+		
+		// transfer csv data to mm data
+		process.buildUserItemMap(trainFile);
+		process.transfer2MMFile(trainFile, trainMMFile);
+		process.transfer2MMFile(testFile, testMMFile);
+	
+	}
+	
+}

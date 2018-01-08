@@ -10,13 +10,13 @@ import java.util.HashMap;
 
 import structures.Pair;
 
-public class PostProcess {
+public class FMPostProcess {
 	HashMap<String, ArrayList<String>> m_userPairMap;
 	ArrayList<ArrayList<String>> m_users;
 	double[] m_NDCGs, m_MAPs;
 	Object m_NDCGMAPLock = new Object();
 	
-	public PostProcess(){
+	public FMPostProcess(){
 		m_userPairMap = new HashMap<String, ArrayList<String>>();
 	}
 	
@@ -44,20 +44,6 @@ public class PostProcess {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
-	
-	
-	
-//	public void calculateAllNDCGMAP(){
-//		m_NDCGs = new double[m_userPairMap.size()];
-//		m_MAPs = new double[m_userPairMap.size()];
-//		int count = 0;
-//		for(String uid: m_userPairMap.keySet()){
-//			double[] vals = calculateNDCGMAP(m_userPairMap.get(uid));
-//			m_NDCGs[count] = vals[0];
-//			m_MAPs[count] = vals[1];
-//			count++;
-//		}
-//	}
 	
 	// The function for calculating all NDCGs and MAPs.
 	public void calculateAllNDCGMAP(){
@@ -154,6 +140,38 @@ public class PostProcess {
 		return new double[]{DCG/iDCG, AP/count};
 	}
 	
+	// load the true label and predicted label of testing pairs after svd
+	public void loadTruePredFiles(String testFile, String predFile){
+		if(testFile == null || predFile == null)
+			return;
+		try {
+			// load the testFile first
+			BufferedReader testReader = new BufferedReader(new InputStreamReader(new FileInputStream(testFile), "UTF-8"));
+			BufferedReader predReader = new BufferedReader(new InputStreamReader(new FileInputStream(predFile), "UTF-8"));
+			String testLine, predLine;
+			// skip the first three lines 
+			int skip = 0;
+			while(skip++ < 3){
+				testReader.readLine();
+				predReader.readLine();
+			}
+			while ((testLine = testReader.readLine()) != null &&(predLine = predReader.readLine()) != null) {
+				String[] testStrs = testLine.split("\\s+");
+				String[] predStrs = predLine.split("\\s+");
+				String userID = testStrs[0];
+				String pair = String.format("%s,%s,%s\n", testStrs[1], testStrs[2], predStrs[2]);
+				if(!m_userPairMap.containsKey(userID)){
+					m_userPairMap.put(userID, new ArrayList<String>());
+				}
+				m_userPairMap.get(userID).add(pair);
+			}
+			testReader.close();
+			predReader.close();
+			System.out.format("%d users' testing results are loaded.\n", m_userPairMap.size());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	public Pair[] mergeSort(Pair[] rank){
 		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
 		for(int i=0; i<rank.length; i=i+2){
@@ -216,8 +234,16 @@ public class PostProcess {
 	}
 	
 	public static void main(String[] args){
-		PostProcess process = new PostProcess();
-		process.loadData("./data/test_output.txt");
+		// post process for fm
+		FMPostProcess process = new FMPostProcess();
+//		process.loadData("./data/test_output.txt");
+//		process.calculateAllNDCGMAP();
+//		process.calculateAvgNDCGMAP();
+		
+		// post proces for svd
+		String testFile = "./data/test_all.mm";
+		String predFile = "./data/test_all.mm.predict";
+		process.loadTruePredFiles(testFile, predFile);
 		process.calculateAllNDCGMAP();
 		process.calculateAvgNDCGMAP();
 	}
