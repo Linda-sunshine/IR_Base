@@ -49,7 +49,11 @@ public class _CFUser extends _User {
 		}
 	}
 	public int getItemRating(String item){
-		return m_itemIDRating.get(item);
+		// rating is 0 or 1, thus non-existing is -1
+		if(m_itemIDRating.containsKey(item))
+			return m_itemIDRating.get(item);
+		else
+			return -1;
 	}
 	
 	public boolean isValid(){

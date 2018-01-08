@@ -33,10 +33,15 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 			for(String nei: neighbors){
 				if(!nei.equals(u.getUserID())){
 					int neiIndex = m_userIDIndex.get(nei);
-					int label = m_users.get(neiIndex).getItemIDRating().get(item)+1;
-					double sim = getSimilarity(userIndex, neiIndex); 
-					rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
-					simSum += m_equalWeight ? 1 : sim;
+					int label = m_users.get(neiIndex).getItemRating(item);
+					if(label == -1)
+						System.out.println("[error]Wrong neighbor!");
+					else{
+						label++;
+						double sim = getSimilarity(userIndex, neiIndex); 
+						rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
+						simSum += m_equalWeight ? 1 : sim;
+					}				
 				}
 			}
 		}

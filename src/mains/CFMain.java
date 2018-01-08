@@ -12,7 +12,6 @@ import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
 import Application.CollaborativeFilteringWithMMB;
-import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -42,8 +41,9 @@ public class CFMain {
 		boolean neiAll = true;
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"mtclinmmb_0.5"};
-		
+		String[] models = new String[]{"fm"};
+//		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+
 		if(!neiAll){
 			int t = 2, k = 4;
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
@@ -95,6 +95,8 @@ public class CFMain {
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			// construct ranking neighbors
 			cfInit.constructRankingNeighbors();
+			cfInit.saveUserItemPairs("./");
+			/***
 			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 
@@ -134,6 +136,7 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
+			***/
 		}
 	}
 }

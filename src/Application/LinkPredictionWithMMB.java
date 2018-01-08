@@ -310,8 +310,8 @@ public class LinkPredictionWithMMB {
 		if(!dirFile.exists())
 			dirFile.mkdirs();
 		try{
-			PrintWriter trainWriter = new PrintWriter(String.format("%s/train_%s_%d_link.txt", dir, model, trainSize));
-			PrintWriter testWriter = new PrintWriter(String.format("%s/test_%s_%d_link.txt", dir, model, testSize));
+			PrintWriter trainWriter = new PrintWriter(String.format("%s/%s_train_%d_test_%d_trainPerf.txt", dir, model, trainSize, testSize));
+			PrintWriter testWriter = new PrintWriter(String.format("%s/%s_train_%d_test_%d_testPerf.txt", dir, model, trainSize, testSize));
 			// print friends for train users
 			for(int i=0; i<m_trainSize; i++){
 				frd = m_frdTrainMtx[i];

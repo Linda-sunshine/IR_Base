@@ -8,7 +8,6 @@ import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
 import Application.LinkPredictionWithSVM;
-import Application.LinkPredictionWithSVMSplit;
 
 public class MyLinkPredMain {
 	
@@ -69,60 +68,45 @@ public class MyLinkPredMain {
 		double[] globalLM = analyzer.estimateGlobalLM();
 		double alpha = 0.01, eta = 0.01, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
-		double c = 1;
+		double c = 1, rho = 0.05;
 		
-		String model = "svm_pred"; // "svm", "svm_prep", "svm_pred"
+		String model = "svm"; // "svm", "mmb"
 		LinkPredictionWithMMB linkPred = null;
 
 		String trainFile = String.format("./data/trainFile_%s_%d.txt", model, trainSize);
 		String testFile = String.format("./data/testFile_%s_%d.txt", model, testSize);
-		//link_pred_svm_alpha_0.005
-		if(model.equals("svm_pred")){
-			trainFile = String.format("./data/trainFile_svm_prep_%d.txt", trainSize);
-			testFile = String.format("./data/testFile_svm_prep_%d.txt", testSize);
-		}
-		if(model.equals("svm_pred")){
-			linkPred = new LinkPredictionWithSVMSplit(c);
-			((LinkPredictionWithSVMSplit) linkPred).loadData(trainFile, testFile, friendFile);
-		} else if(model.equals("mmb"))
+		
+		if(model.equals("mmb"))
 			linkPred = new LinkPredictionWithMMB();
 		else if(model.equals("svm"))
-			linkPred = new LinkPredictionWithSVM(c);
-		else if(model.equals("svm_prep"))
-			linkPred = new LinkPredictionWithSVMSplit(c);
+			linkPred = new LinkPredictionWithSVM(c, rho);
 		
-		if(!model.equals("svm_pred")){
-			linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-			linkPred.getMMB().setR2TradeOffs(eta3, eta4);
-			linkPred.getMMB().setsdA(sdA);
-			linkPred.getMMB().setsdB(sdB);
-				
-			linkPred.getMMB().setR1TradeOffs(eta1, eta2);
-			linkPred.getMMB().setConcentrationParams(alpha, eta, beta);
+		linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
+		linkPred.getMMB().setR2TradeOffs(eta3, eta4);
+		linkPred.getMMB().setsdA(sdA);
+		linkPred.getMMB().setsdB(sdB);
+			
+		linkPred.getMMB().setR1TradeOffs(eta1, eta2);
+		linkPred.getMMB().setConcentrationParams(alpha, eta, beta);
 
-			linkPred.getMMB().setRho(0.1);
-			linkPred.getMMB().setBurnIn(10);
-//			linkPred.getMMB().setThinning(5);// default 3
-			linkPred.getMMB().setNumberOfIterations(5);
+		linkPred.getMMB().setRho(0.1);
+		linkPred.getMMB().setBurnIn(10);
+//		linkPred.getMMB().setThinning(5);// default 3
+		linkPred.getMMB().setNumberOfIterations(5);
 		
-			linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
-			linkPred.getMMB().loadUsers(analyzer.getUsers());
-			linkPred.getMMB().calculateFrdStat();
-			linkPred.getMMB().checkTestReviewSize();
-			linkPred.getMMB().setDisplayLv(displayLv);
+		linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
+		linkPred.getMMB().loadUsers(analyzer.getUsers());
+		linkPred.getMMB().calculateFrdStat();
+		linkPred.getMMB().checkTestReviewSize();
+		linkPred.getMMB().setDisplayLv(displayLv);
 		
-			linkPred.getMMB().train();
-		}
+		linkPred.getMMB().train();
 		
-		if(!model.equals("svm_prep")){
-			boolean linkPredMultiThread = false;
-			if(linkPredMultiThread)
-				linkPred.linkPrediction_MultiThread();
-			else
-				linkPred.linkPrediction();
-			linkPred.printLinkPrediction("./", model, trainSize, testSize);	
-		} else {
-			((LinkPredictionWithSVMSplit) linkPred).linkPrediction_Prep(trainFile, testFile);
-		}
+		boolean linkPredMultiThread = false;
+		if(linkPredMultiThread)
+			linkPred.linkPrediction_MultiThread();
+		else
+			linkPred.linkPrediction();
+		linkPred.printLinkPrediction("./", model, trainSize, testSize);	
 	}
 }

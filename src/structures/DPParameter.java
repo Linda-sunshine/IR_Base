@@ -7,7 +7,6 @@ public class DPParameter {
 	public String m_data = "YelpNew";
 	public String m_model = "mtclinmmb";
 	public double m_adaptRatio = 0.5;
-	public String m_dir = "./";
 	
 	public int m_nuOfIterations = 30;
 	public int m_M = 6;
@@ -47,7 +46,7 @@ public class DPParameter {
 	public int m_threshold = 15;
 	
 	// used in mmb model, sparsity parameter
-	public double m_rho = 0.005;
+	public double m_rho = 0.05;
 	
 	public boolean m_saveModel = false;
 	public String m_saveDir = "/zf8/lg5bt/hdpExp/mmb";
@@ -137,11 +136,8 @@ public class DPParameter {
 				m_rho = Double.parseDouble(argv[i]);
 			else if(argv[i-1].equals("-saveModel"))
 				m_saveModel = Boolean.valueOf(argv[i]);
-			else if(argv[i-1].equals("-testSize")){
-				m_testSize = Integer.parseInt(argv[i]);
-				m_trainSize = (m_testSize/100)<10 ? (1000-m_testSize):(10000-m_testSize);
-			} else if(argv[i-1].equals("-dir")){
-				m_dir = argv[i];
+			else if(argv[i-1].equals("-trainSize")){
+				m_trainSize = Integer.parseInt(argv[i]);
 			} else if(argv[i-1].equals("-jointAll")){
 				m_jointAll = Boolean.valueOf(argv[i]);
 			} else if(argv[i-1].equals("-trace")){

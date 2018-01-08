@@ -19,8 +19,8 @@ public class LinkPredictionWithSVMSplit extends LinkPredictionWithSVM {
 
 	HashMap<String, _MMBAdaptStruct> m_userMap;
 	
-	public LinkPredictionWithSVMSplit(double c){
-		super(c);
+	public LinkPredictionWithSVMSplit(double c, double rho){
+		super(c, rho);
 		m_userMap = new HashMap<String, _MMBAdaptStruct>();
 	}
 	

@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -208,17 +207,19 @@ public class CollaborativeFiltering {
 		// sort the array in descending order
 		sortPrimitivesDescending(rank);
 		// sort the calculated rank based on each pair's value
-		Arrays.sort(realRank, new Comparator<Pair>(){
-			@Override
-			public int compare(Pair p1, Pair p2){
-				if(p1.getValue() < p2.getValue())
-					return 1;
-				else if(p1.getValue() > p2.getValue())
-					return -1;
-				else 
-					return 0;
-			}
-		});
+		realRank = mergeSort(realRank);
+		
+//		Arrays.sort(realRank, new Comparator<Pair>(){
+//			@Override
+//			public int compare(Pair p1, Pair p2){
+//				if(p1.getValue() < p2.getValue())
+//					return 1;
+//				else if(p1.getValue() > p2.getValue())
+//					return -1;
+//				else 
+//					return 0;
+//			}
+//		});
 					
 		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
 		for(int i=0; i<rank.length; i++){
@@ -273,9 +274,14 @@ public class CollaborativeFiltering {
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: topKNeighbors){
-				int label = m_users.get(ri.m_index).getItemIDRating().get(item)+1;
-				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
-				simSum += m_equalWeight ? 1: ri.m_value;
+				int label = m_users.get(ri.m_index).getItemRating(item);
+				if(label == -1)
+					System.out.println("[error]Wrong neighbor!");
+				else{
+					label++;
+					rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
+					simSum += m_equalWeight ? 1: ri.m_value;
+				}
 			}
 		}
 		if( simSum == 0) 
@@ -344,7 +350,9 @@ public class CollaborativeFiltering {
 	// candidate size = time * review size
 	public void constructRankingNeighbors(){
 		double sum = 0;
+		double avgRvwSize = 0, rvwSize = 0;
 		for(_CFUser user: m_users){
+			rvwSize = 0;
 			Set<String> items = new HashSet<String>();
 			for(int i=0; i<user.getTestReviewSize()*m_time; i++){
 				if(i< user.getTestReviewSize()){
@@ -352,6 +360,7 @@ public class CollaborativeFiltering {
 					if(!m_trainMap.containsKey(r.getItemID()))
 						continue;
 					items.add(r.getItemID());
+					rvwSize++;
 				} else if(items.size() > 0){
 					int randomIndex = (int) (Math.random() * m_trainReviews.size());
 					_Review review = m_trainReviews.get(randomIndex);
@@ -364,9 +373,12 @@ public class CollaborativeFiltering {
 			}
 			user.setRankingItems(items);
 			sum += items.size();
-			m_validUser += items.size() == 0 ? 0 : 1;
+			if(items.size()!= 0){
+				m_validUser++;
+				avgRvwSize += rvwSize;
+			}
 		}
-		System.out.format("[Stat]Avg candidate item is %.2f.\n", sum/m_validUser);
+		System.out.format("[Stat]Valid user: %s, avg candidate item: %.2f, avg rvw size: %.2f.\n", m_validUser, sum/m_validUser, avgRvwSize/m_validUser);
 	}
 	
 	// we want to get the basic statistics of user-item statistic in training/testing
@@ -586,6 +598,57 @@ public class CollaborativeFiltering {
 		}
 		return weights;
 	}
+	
+	public Pair[] mergeSort(Pair[] rank){
+		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
+		for(int i=0; i<rank.length; i=i+2){
+			//If the list has odd members.
+			if((i+1)>(rank.length-1)){
+				Pair[] tmp = new Pair[]{rank[i]};
+				collection.add(tmp);
+			} else{
+				Pair v1 = rank[i], v2 = rank[i+1];
+				if(v1.getValue() < v2.getValue()){
+					Pair[] tmp = new Pair[]{v2, v1};
+					collection.add(tmp);
+				} else{
+					Pair[] tmp = new Pair[]{v1, v2};
+					collection.add(tmp);
+				}
+			}
+		}
+		while(collection.size()>1){
+			ArrayList<Pair[]> current = new ArrayList<Pair[]>();
+			for(int i=0; i<collection.size();i+=2){
+				if((i+1) <= collection.size()-1){
+					Pair[] merge = merge(collection.get(i), collection.get(i+1));
+					current.add(merge);
+				} else
+					current.add(collection.get(i));
+			}
+			collection.clear();
+			collection.addAll(current);
+		}
+		return collection.get(0);
+	}
+	
+	public Pair[] merge(Pair[] a, Pair[] b){
+		Pair[] res = new Pair[a.length + b.length];
+		int pointer1 = 0, pointer2 = 0, count = 0;
+		while(pointer1 < a.length && pointer2 < b.length){
+			if(a[pointer1].getValue() < b[pointer2].getValue()){
+				res[count++] = b[pointer2++];
+			} else{
+				res[count++] = a[pointer1++];
+			}
+		}
+		while(pointer1 < a.length)
+			res[count++] = a[pointer1++];
+			
+		while(pointer2 < b.length)
+			res[count++] = b[pointer2++];
+		return res;
+	}	
 	
 	public void sortPrimitivesDescending(int[] rank){
 		Arrays.sort(rank);
