@@ -38,7 +38,8 @@ public class CFExecution {
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);			
-		
+		analyzer.rmMultipleReviews4OneItem();
+
 		/***Collaborative filtering starts here.***/
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
@@ -65,6 +66,7 @@ public class CFExecution {
 				} else 
 					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 				
+				cf.setEqualWeightFlag(param.m_equalWeight);
 				cf.setValidUserSize(validUser);
 				// utilize the average as ranking score
 				if(model.equals("avg"))
@@ -75,12 +77,14 @@ public class CFExecution {
 				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_time_%d_top_%d.txt", model, param.m_equalWeight, param.m_t, param.m_k));
+				
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
 				System.err.format("\n----------------finish running %s with topk neighbors-------------------------\n", model);
 			}
 			
-			String filename = String.format("./data/%s_cf_%d_top%d.txt", param.m_data, param.m_t, param.m_k);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_time_%d_top_%d.txt", param.m_data, param.m_t, param.m_k);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 
@@ -111,6 +115,7 @@ public class CFExecution {
 				} else 
 					cf = new CollaborativeFilteringWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
 				
+				cf.setEqualWeightFlag(param.m_equalWeight);
 				cf.setValidUserSize(validUser);
 				// utilize the average as ranking score
 				if(model.equals("avg"))
@@ -121,11 +126,13 @@ public class CFExecution {
 
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_all.txt", model, param.m_equalWeight));
+
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
-				System.err.format("\n----------------finish running %s with all neighbors-------------------------\n", model);
+				System.out.format("\n----------------finish running %s with all neighbors-------------------------\n", model);
 			}
-			String filename = String.format("./data/%s_cf_all_nei.txt", param.m_data);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_all_nei.txt", param.m_data, param.m_equalWeight);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 

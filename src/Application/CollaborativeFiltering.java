@@ -186,6 +186,8 @@ public class CollaborativeFiltering {
 	
 	// calculate the nDCG and MAP for each user
 	public void calculateNDCGMAP(_CFUser u){
+		if(u.getUserID().equals("8l3psjdJO7twdMQGB4MTmw"))
+			System.out.println("debug!");
 		int userIndex = m_userIDIndex.get(u.getUserID());
 		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
 			
@@ -204,11 +206,18 @@ public class CollaborativeFiltering {
 				realRank[i] = new Pair(rank[i], calculateRankScore(u, item));
 			}
 		}
+	
 		// sort the array in descending order
 		sortPrimitivesDescending(rank);
 		// sort the calculated rank based on each pair's value
 		realRank = mergeSort(realRank);
-		
+		if(u.getUserID().equals("8l3psjdJO7twdMQGB4MTmw")){
+			for(int r: rank)
+				System.out.println(r);
+			for(Pair p: realRank){
+				System.out.println(p.getLabel()+","+p.getValue());
+			}
+		}
 //		Arrays.sort(realRank, new Comparator<Pair>(){
 //			@Override
 //			public int compare(Pair p1, Pair p2){
@@ -253,12 +262,18 @@ public class CollaborativeFiltering {
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				int index = m_userIDIndex.get(nei);
-				double label = m_users.get(index).getItemIDRating().get(item)+1;
-				rankSum += label;
-				simSum++;
+				if(!nei.equals(u.getUserID())){
+					int index = m_userIDIndex.get(nei);
+					double label = m_users.get(index).getItemRating(item)+1;
+					rankSum += label;
+					simSum++;
+				}
 			}
-			return rankSum/ simSum;
+			if(simSum == 0){
+				System.err.println("bug in candidate!");
+				return 0;
+			} else
+			return rankSum/simSum;
 		} else{
 			MyPriorityQueue<_RankItem> topKNeighbors;
 			if(neighbors.size() < m_k)
@@ -284,9 +299,10 @@ public class CollaborativeFiltering {
 				}
 			}
 		}
-		if( simSum == 0) 
+		if(simSum == 0){
+			System.err.println("bug in candidate!");
 			return 0;
-		else
+		} else
 			return rankSum/simSum;
 	}
 	
@@ -348,7 +364,7 @@ public class CollaborativeFiltering {
 	
 	// For each user, construct candidate items for ranking
 	// candidate size = time * review size
-	public void constructRankingNeighbors(){
+	public void constructRankingNeighbors(){		
 		double sum = 0;
 		double avgRvwSize = 0, rvwSize = 0;
 		for(_CFUser user: m_users){
@@ -381,6 +397,40 @@ public class CollaborativeFiltering {
 		System.out.format("[Stat]Valid user: %s, avg candidate item: %.2f, avg rvw size: %.2f.\n", m_validUser, sum/m_validUser, avgRvwSize/m_validUser);
 	}
 	
+//	// For each user, construct candidate items for ranking
+//	// candidate size = time * review size
+//	public void constructRankingNeighbors(){
+//		double sum = 0;
+//		double avgRvwSize = 0, rvwSize = 0;
+//		for(_CFUser user: m_users){
+//			rvwSize = 0;
+//			Set<String> items = new HashSet<String>();
+//			for(int i=0; i<user.getTrainReviewSize()*m_time; i++){
+//				if(i< user.getTrainReviewSize()){
+//					_Review r = user.getTrainReviews().get(i);
+//					if(!m_trainMap.containsKey(r.getItemID()))
+//						continue;
+//					items.add(r.getItemID());
+//					rvwSize++;
+//				} else if(items.size() > 0){
+//					int randomIndex = (int) (Math.random() * m_trainReviews.size());
+//					_Review review = m_trainReviews.get(randomIndex);
+//					while(items.contains(review.getItemID())){
+//						randomIndex = (int) (Math.random() * m_trainReviews.size());
+//						review = m_trainReviews.get(randomIndex);
+//					}
+//					items.add(review.getItemID());
+//				}
+//			}
+//			user.setRankingItems(items);
+//			sum += items.size();
+//			if(items.size()!= 0){
+//				m_validUser++;
+//				avgRvwSize += rvwSize;
+//			}
+//		}
+//		System.out.format("[Stat]Valid user: %s, avg candidate item: %.2f, avg rvw size: %.2f.\n", m_validUser, sum/m_validUser, avgRvwSize/m_validUser);
+//	}
 	// we want to get the basic statistics of user-item statistic in training/testing
 	//<Item, <UserIndex>>, inside each user, <item, rating>
 	public void constructItemUserIndex(){
@@ -665,7 +715,7 @@ public class CollaborativeFiltering {
 		try{
 			writer = new PrintWriter(new File(filename));
 			for(int i=0; i<m_NDCGs.length; i++){
-				writer.write(String.format("%s\t%.4f\t%.4f\n", m_users.get(i).getUserID(), m_NDCGs[i], m_MAPs[i]));
+				writer.write(String.format("%s\t%d\t%d\t%.4f\t%.4f\n", m_users.get(i).getUserID(), m_users.get(i).getTestReviewSize(), m_users.get(i).getRankingItemSize(), m_NDCGs[i], m_MAPs[i]));
 			}
 			writer.close();
 			

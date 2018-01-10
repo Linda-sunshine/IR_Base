@@ -182,6 +182,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		calculate_E_step_Edge();
 		sanityCheck();
 		long end = System.currentTimeMillis();
+		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
 		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
 	}
 	
@@ -597,7 +598,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		// update the neighbor information to the neighbor hashmap 
 		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 		// update the user info with the newly sampled hdpThetaStar
-		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
+		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1, e);//-->3	
 			
 		// Step 5: Put the cluster info in the matrix for later use
 		// Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
@@ -683,6 +684,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		if(k == -1){
 			sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
 			k = m_kBar - 1;
+			// for getting stat
+			System.out.println("[Info]Sampling edges generally generates one new cluster!");
+			m_newCluster4Edge++;
 		}
 		// update the setting after sampling z_ij.
 		m_hdpThetaStars[k].updateEdgeCount(e, 1);//first 1 means edge 1, the second one mean increase by 1.
@@ -691,7 +695,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		// update the user info with the newly sampled hdpThetaStar.
 		ui.addNeighbor(uj, m_hdpThetaStars[k], e);
 	
-		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1);//-->3	
+		ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[k], 1, e);//-->3	
 	
 		// Put the reference to the matrix for later usage.
 		// Since we have all the info, we don't need to put the theta info in the _MMBNeighbor structure.
@@ -810,18 +814,21 @@ public class CLRWithMMB extends CLRWithHDP {
  			if(g == m_kBar || h == m_kBar){
  				// we need to sample the new cluster
  				sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
+ 				// for getting stat
+ 				System.out.println("[Info]Sampling edges jointly generates one new cluster!");
+ 				m_newCluster4EdgeJoint++;
  			}
  			// Update the thetaStar and user info after getting z_ij.
  			m_hdpThetaStars[g].updateEdgeCount(0, 1);//-->1
  			ui.addNeighbor(uj, m_hdpThetaStars[g], 0);
- 			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1);	
+ 			ui.incHDPThetaStarEdgeSize(m_hdpThetaStars[g], 1, 0);	
  			m_indicator[i][j] = m_hdpThetaStars[g];
  			updateSampleSize(0, 1);
  			
  			// Update the thetaStar and user info after getting z_ji.
  			m_hdpThetaStars[h].updateEdgeCount(0, 1);
  			uj.addNeighbor(ui, m_hdpThetaStars[h], 0);
- 			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1);
+ 			uj.incHDPThetaStarEdgeSize(m_hdpThetaStars[h], 1, 0);
   			m_indicator[j][i] = m_hdpThetaStars[h];
   			updateSampleSize(0, 1);
   			addConnection(ui, uj, 0);
@@ -847,6 +854,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[m_kBar].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
+		
 		m_kBar++;
 	}
 	
@@ -1165,7 +1173,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		ui.rmNeighbor(uj);
 		
 		// update the edge information inside the user
-		ui.incHDPThetaStarEdgeSize(thetai, -1);
+		ui.incHDPThetaStarEdgeSize(thetai, -1, e);
 		
 		// update the edge count for the thetastar
 		thetai.updateEdgeCount(e, -1);

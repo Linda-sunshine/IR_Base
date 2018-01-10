@@ -17,7 +17,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	
 	// This is cluster and edge size map.
 	// key: global component parameter; val: edge size.
-	protected HashMap<_HDPThetaStar, Integer> m_hdpThetaEdgeSizeMap;
+	protected HashMap<_HDPThetaStar, int[]> m_hdpThetaEdgeSizeMap;
 	
 	// This is the uj and neighbor map.
 	// key: uj; val: group parameter-_HDPThetaStar.
@@ -28,13 +28,13 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 
 	public _MMBAdaptStruct(_User user) {
 		super(user);
-		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, int[]>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 
 	public _MMBAdaptStruct(_User user, int dim){
 		super(user, dim);
-		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, Integer>();
+		m_hdpThetaEdgeSizeMap = new HashMap<_HDPThetaStar, int[]>();
 		m_neighborMap = new HashMap<_HDPAdaptStruct, _MMBNeighbor>();
 	}
 	// used in link prediction
@@ -49,25 +49,38 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		return m_hdpThetaEdgeSizeMap.keySet();
 	}
 	
-	// Return the number of edges in the given thetaStar.
+	// Return the total number of edges (0 and 1) in the given thetaStar.
 	public int getHDPThetaEdgeSize(_HDPThetaStar s){
 		if(m_hdpThetaEdgeSizeMap.containsKey(s))
-			return m_hdpThetaEdgeSizeMap.get(s);
+			return Utils.sumOfArray(m_hdpThetaEdgeSizeMap.get(s));
 		else 
 			return 0;
 	}
+
+	// Return the number of one type of edges in the given thetaStar
+	public int getHDPThetaOneEdgeSize(_HDPThetaStar s, int e){
+		if(m_hdpThetaEdgeSizeMap.containsKey(s))
+			return m_hdpThetaEdgeSizeMap.get(s)[e];
+		else 
+		return 0;
+	}
+	
 	// Update the size of the edges belong to the group.
-	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v){
+	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v, int e){
 		if (v==0)
 			return;
 		
-		if(m_hdpThetaEdgeSizeMap.containsKey(s))
-			v += m_hdpThetaEdgeSizeMap.get(s);
-		
-		if (v>0)
-			m_hdpThetaEdgeSizeMap.put(s, v);
-		else
-			m_hdpThetaEdgeSizeMap.remove(s);
+		if(m_hdpThetaEdgeSizeMap.containsKey(s)){
+			m_hdpThetaEdgeSizeMap.get(s)[e] += v;
+			if(m_hdpThetaEdgeSizeMap.get(s)[e] < 0)
+				System.err.println("[Error]The edge count is not valid!!");
+		} else{
+			System.err.println("[Error]This theta does not exist!");
+		}
+//		if (v>0)
+//			m_hdpThetaEdgeSizeMap.put(s, v);
+//		else
+//			m_hdpThetaEdgeSizeMap.remove(s);
 	}
 	
 	// Check if the user has connection with another user, uj.

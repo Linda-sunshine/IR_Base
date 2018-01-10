@@ -8,8 +8,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
@@ -464,5 +467,38 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			}
 		}
 		System.out.println("The avg friend size is: " + (sum-miss)/m_neighborsMap.size());
+	}
+	
+	public void rmMultipleReviews4OneItem(){
+		Set<String> items = new HashSet<String>();
+		ArrayList<Integer> indexes = new ArrayList<Integer>();
+		int uCount = 0, rCount = 0;
+		boolean flag = false;
+		for(_User u: m_users){
+			ArrayList<_Review> reviews = u.getReviews();
+			items.clear();
+			indexes.clear();
+			for(int i=0; i<reviews.size(); i++){
+				_Review r = reviews.get(i);
+				if(items.contains(r.getItemID())){
+					indexes.add(i);
+					rCount++;
+					flag = true;
+				} else {
+					items.add(r.getItemID());
+				}
+			}
+			// record the user number
+			if(flag){
+				uCount++;
+				flag = false;
+			}
+			// remove the reviews.
+			Collections.sort(indexes, Collections.reverseOrder());
+			for(int idx: indexes){
+				reviews.remove(idx);
+			}
+		}
+		System.out.format("%d users have %d duplicate reviews for items.\n", uCount, rCount);
 	}
 }

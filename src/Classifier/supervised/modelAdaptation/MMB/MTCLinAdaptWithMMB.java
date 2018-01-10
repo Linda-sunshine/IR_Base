@@ -255,12 +255,12 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 				writer.write(String.format("%s\n", u.getUserID()));
 				// write the clusters with edges first
 				for(_HDPThetaStar theta: user.getHDPTheta4Edge()){
-					writer.write(String.format("(%d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaEdgeSize(theta)));
+					writer.write(String.format("(%d, %d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaOneEdgeSize(theta, 0), user.getHDPThetaOneEdgeSize(theta, 1)));
 				}
 				// write the clusters with members then
 				for(_HDPThetaStar theta: user.getHDPTheta4Rvw()){
 					if(!user.getHDPTheta4Edge().contains(theta))
-						writer.write(String.format("(%d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaEdgeSize(theta)));
+						writer.write(String.format("(%d, %d, %d, %d)\t", theta.getIndex(), user.getHDPThetaMemSize(theta), user.getHDPThetaOneEdgeSize(theta, 0), user.getHDPThetaOneEdgeSize(theta, 1)));
 				}
 				writer.write("\n");
 			}

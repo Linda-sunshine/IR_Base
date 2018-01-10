@@ -12,6 +12,7 @@ import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
 import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -36,13 +37,15 @@ public class CFMain {
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
-				
+		analyzer.rmMultipleReviews4OneItem();
+		
 		/***Collaborative filtering starts here.***/
 		boolean neiAll = true;
+		boolean equalWeight = false;
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"fm"};
-//		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+//		String[] models = new String[]{"fm"};
+		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
 
 		if(!neiAll){
 			int t = 2, k = 4;
@@ -66,6 +69,8 @@ public class CFMain {
 					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
 				
 				cf.setValidUserSize(validUser);
+				cf.setEqualWeightFlag(equalWeight);
+				
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
@@ -74,11 +79,13 @@ public class CFMain {
 				}
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_time_%d_top_%d.txt", model, equalWeight, t, k));
+
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
 			}
 			
-			String filename = String.format("./data/%s_cf_%d_top%d.txt", dataset, t, k);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_%d_top%d.txt", dataset, equalWeight, t, k);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 
@@ -95,8 +102,8 @@ public class CFMain {
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			// construct ranking neighbors
 			cfInit.constructRankingNeighbors();
-			cfInit.saveUserItemPairs("./");
-			/***
+//			cfInit.saveUserItemPairs("./");
+			
 			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 
@@ -114,6 +121,8 @@ public class CFMain {
 					cf = new CollaborativeFilteringWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
 				
 				cf.setValidUserSize(validUser);
+				cf.setEqualWeightFlag(equalWeight);
+				
 				// utilize the average as ranking score
 				if(model.equals("avg"))
 					cf.setAvgFlag(true);
@@ -122,10 +131,13 @@ public class CFMain {
 				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_all.txt", model, equalWeight));
+
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
+				System.out.format("\n----------------finish running %s with all neighbors-------------------------\n", model);
 			}
-			String filename = String.format("./data/%s_cf_all_nei.txt", dataset);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_all_nei.txt", dataset, equalWeight);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 
@@ -136,7 +148,6 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
-			***/
 		}
 	}
 }

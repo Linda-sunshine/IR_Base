@@ -39,27 +39,27 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 					simSum++;
 				}
 			}
+			if(simSum == 0){
+				System.err.println("bug in candidate!");
+				return 0;
+			}
 			return rankSum/ simSum;
 		} else{
 			//Calculate the ranking value given by all neighbors and similarity;
 			for(String nei: neighbors){
 				if(!nei.equals(u.getUserID())){
 					int neiIndex = m_userIDIndex.get(nei);
-					int label = m_users.get(neiIndex).getItemRating(item);
-					if(label == -1)
-						System.out.println("[error]Wrong neighbor!");
-					else{
-						label++;
-						double sim = getSimilarity(userIndex, neiIndex); 
-						rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
-						simSum += m_equalWeight ? 1 : sim;
-					}				
+					int label = m_users.get(neiIndex).getItemRating(item)+1;
+					double sim = getSimilarity(userIndex, neiIndex); 
+					rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
+					simSum += m_equalWeight ? 1 : sim;				
 				}
 			}
 		}
-		if(simSum == 0) 
+		if(simSum == 0){
+			System.err.println("bug in candidate!");
 			return 0;
-		else
+		} else
 			return rankSum/simSum;
 	}
 	
@@ -98,7 +98,7 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 			}
 			user.setRankingItems(items);
 			sum += items.size();
-			if(items.size()!= 0){
+			if(items.size()>=1){
 				m_validUser++;
 				avgRvwSize += rvwSize;
 			}

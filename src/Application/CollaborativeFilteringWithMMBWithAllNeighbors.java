@@ -22,12 +22,18 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				int index = m_userIDIndex.get(nei);
-				double label = m_users.get(index).getItemIDRating().get(item)+1;
-				rankSum += label;
-				simSum++;
+				if(!nei.equals(u.getUserID())){
+					int index = m_userIDIndex.get(nei);
+					double label = m_users.get(index).getItemIDRating().get(item)+1;
+					rankSum += label;
+					simSum++;
+				}
 			}
-			return rankSum/ simSum;
+			if(simSum == 0){
+				System.err.println("bug in candidate!");
+				return 0;
+			} else
+				return rankSum/ simSum;
 		} else{
 			//Calculate the ranking value given by all neighbors and similarity;
 			for(String nei: neighbors){
@@ -45,9 +51,10 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 				}
 			}
 		}
-		if(simSum == 0) 
+		if(simSum == 0){
+			System.err.println("bug in candidate!");
 			return 0;
-		else
+		} else
 			return rankSum/simSum;
 	}
 }

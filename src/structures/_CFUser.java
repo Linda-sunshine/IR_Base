@@ -60,6 +60,12 @@ public class _CFUser extends _User {
 		return m_isValid;
 	}
 
+	public int getRankingItemSize(){
+		if(m_rankingItems == null)
+			return 0;
+		else 
+			return m_rankingItems.length;
+	}
 	public String[] getRankingItems(){
 		return m_rankingItems;
 	}

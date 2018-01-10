@@ -42,6 +42,10 @@ public class CLRWithHDP extends CLRWithDP {
 	double m_betaSum = 0;
 	protected ArrayList<String> m_lmFeatures;
 	
+	protected int m_newCluster4Doc = 0;
+	protected int m_newCluster4Edge = 0;
+	protected int m_newCluster4EdgeJoint = 0;
+	
 	public CLRWithHDP(int classNo, int featureSize, HashMap<String, Integer> featureMap, String globalModel, 
 			double[] betas, double alpha, double beta, double eta) {
 		super(classNo, featureSize, featureMap, globalModel);
@@ -245,6 +249,9 @@ public class CLRWithHDP extends CLRWithDP {
 			
 		swapTheta(m_kBar, k);
 		m_kBar++;
+		// for getting stat
+		System.out.println("[Info]Sampling documents generates one new cluster!");
+		m_newCluster4Doc++;
 	}
 	
 	// For later overwritten methods.
