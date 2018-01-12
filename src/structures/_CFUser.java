@@ -22,7 +22,7 @@ public class _CFUser extends _User {
 	}
 	
 	public _CFUser(_User u){
-		super(u.getUserID(), u.getClassNo(), u.getReviews(), u.getCategory());
+		super(u.getUserID(), u.getClassNo(), u.getReviews());
 		m_isValid = true;
 		m_itemIDRating = new HashMap<String, Integer>();
 		constructTrainTestReviews();
@@ -31,11 +31,19 @@ public class _CFUser extends _User {
 	public void addOneItemIDRatingPair(String item, int r){
 		if(!m_itemIDRating.containsKey(item))
 			m_itemIDRating.put(item, r);
-//			System.out.format("%s user reviewed the product %s more than once.\n", m_userID, item);
 	}
 	
 	public boolean containsRvw(String item){
 		return m_itemIDRating.containsKey(item);
+	}
+	
+	// whether this user has rated this item in the testing set
+	public boolean containsTestRvw(String item){
+		for(_Review r: m_testReviews){
+			if(r.getItemID().equals(item))
+				return true;
+		}
+		return false;
 	}
 	
 	public void constructTrainTestReviews(){
@@ -74,6 +82,7 @@ public class _CFUser extends _User {
 		return m_trainReviews;
 	}
 	
+	@Override
 	public int getTrainReviewSize(){
 		return m_trainReviews.size();
 	}
@@ -82,6 +91,7 @@ public class _CFUser extends _User {
 		return m_testReviews;
 	}
 	
+	@Override
 	public int getTestReviewSize(){
 		return m_testReviews.size();
 	}

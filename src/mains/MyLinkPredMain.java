@@ -8,6 +8,7 @@ import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
 import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	
@@ -33,10 +34,10 @@ public class MyLinkPredMain {
 		String fs = "DF";//"IG_CHI"
 		String prefix = "./data/CoLinAdapt";
 
-		int trainSize = 200, testSize = 800;
+		int trainSize = 2000, testSize = 2000;
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String trainFolder = String.format("%s/%s/Users_%d", prefix, dataset, trainSize);
-		String testFolder =  String.format("%s/%s/Users_%d", prefix, dataset, testSize);
+		String trainFolder = String.format("%s/%s/Users_%d_train", prefix, dataset, trainSize);
+		String testFolder =  String.format("%s/%s/Users_%d_test", prefix, dataset, testSize);
 		
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
@@ -47,7 +48,7 @@ public class MyLinkPredMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		adaptRatio = 1; enforceAdapt = true;
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -70,16 +71,15 @@ public class MyLinkPredMain {
 		double sdA = 0.0425, sdB = 0.0425;
 		double c = 1, rho = 0.05;
 		
-		String model = "svm"; // "svm", "mmb"
+		String model = "svm+text"; // "svm", "mmb"
 		LinkPredictionWithMMB linkPred = null;
 
-		String trainFile = String.format("./data/trainFile_%s_%d.txt", model, trainSize);
-		String testFile = String.format("./data/testFile_%s_%d.txt", model, testSize);
-		
 		if(model.equals("mmb"))
 			linkPred = new LinkPredictionWithMMB();
 		else if(model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(c, rho);
+		else if(model.equals("svm+text"))
+			linkPred = new LinkPredictionWithSVMWithText(c, rho, lmTopK);
 		
 		linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		linkPred.getMMB().setR2TradeOffs(eta3, eta4);
@@ -101,12 +101,8 @@ public class MyLinkPredMain {
 		linkPred.getMMB().setDisplayLv(displayLv);
 		
 		linkPred.getMMB().train();
-		
-		boolean linkPredMultiThread = false;
-		if(linkPredMultiThread)
-			linkPred.linkPrediction_MultiThread();
-		else
-			linkPred.linkPrediction();
+	
+		linkPred.linkPrediction();
 		linkPred.printLinkPrediction("./", model, trainSize, testSize);	
 	}
 }

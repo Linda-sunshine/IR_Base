@@ -9,6 +9,7 @@ import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
 import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -59,14 +60,14 @@ public class MyLinkPredExecution {
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
 		LinkPredictionWithMMB linkPred = null;
-		String trainFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/trainFile_%s_%d.txt", param.m_model, param.m_trainSize);
-		String testFile = String.format("/zf8/lg5bt/DataSigir/YelpNew/LinkPredSVM/testFile_%s_%d.txt", param.m_model, param.m_testSize);
 		
 		if(param.m_model.equals("mmb"))
 			linkPred = new LinkPredictionWithMMB();
 		else if(param.m_model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(param.m_c, param.m_rho);
-	
+		else if(param.m_model.equals("svm+text"))
+			linkPred = new LinkPredictionWithSVMWithText(param.m_c, param.m_rho, param.m_lmTopK);
+		
 		linkPred.initMMB(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		linkPred.getMMB().setR2TradeOffs(param.m_eta3, param.m_eta4);
 		linkPred.getMMB().setsdB(param.m_sdB);
@@ -91,11 +92,7 @@ public class MyLinkPredExecution {
 		
 		linkPred.getMMB().train();
 
-		
-		if(param.m_linkMulti)
-			linkPred.linkPrediction_MultiThread();
-		else
-			linkPred.linkPrediction();
+		linkPred.linkPrediction();
 		linkPred.printLinkPrediction("./", param.m_model, param.m_trainSize, param.m_testSize);
 	}
 }

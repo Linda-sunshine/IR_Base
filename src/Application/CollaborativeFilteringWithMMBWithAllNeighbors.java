@@ -22,12 +22,12 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int index = m_userIDIndex.get(nei);
 					double label = m_users.get(index).getItemIDRating().get(item)+1;
 					rankSum += label;
 					simSum++;
-				}
+//				}
 			}
 			if(simSum == 0){
 				System.err.println("bug in candidate!");
@@ -37,7 +37,7 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 		} else{
 			//Calculate the ranking value given by all neighbors and similarity;
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int neiIndex = m_userIDIndex.get(nei);
 					int label = m_users.get(neiIndex).getItemRating(item);
 					if(label == -1)
@@ -48,7 +48,7 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 						rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
 						simSum += m_equalWeight ? 1 : sim;
 					}				
-				}
+//				}
 			}
 		}
 		if(simSum == 0){

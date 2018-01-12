@@ -156,7 +156,7 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = true; 
+		boolean trace = false; 
 		if(trace){
 			iter = 100;
 			mmb.trainTrace(dataset, iter);

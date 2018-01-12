@@ -46,7 +46,7 @@ public class MyIsoTestMain {
 			analyzer.setUserTestThreshold(userTestThreshold);//userTestThreshold); // has to be set before load user dir.
 			analyzer.loadUserDir(userFolder);
 			analyzer.setFeatureValues("TFIDF-sublinear", 0);
-			analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
+//			analyzer.constructSparseVector4Users(); // The profiles are based on the TF-IDF with different DF schemes.
 			HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 
 			//Yelp best parameter: 0.23 0.1 0.04 0.01

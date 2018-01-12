@@ -40,8 +40,8 @@ public class CFMain {
 		analyzer.rmMultipleReviews4OneItem();
 		
 		/***Collaborative filtering starts here.***/
-		boolean neiAll = true;
-		boolean equalWeight = false;
+		boolean neiAll = false;
+		boolean equalWeight = true;
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
@@ -102,7 +102,7 @@ public class CFMain {
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			// construct ranking neighbors
 			cfInit.constructRankingNeighbors();
-//			cfInit.saveUserItemPairs("./");
+			cfInit.saveUserItemPairs("./");
 			
 			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();

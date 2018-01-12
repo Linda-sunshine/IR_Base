@@ -2,7 +2,6 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -41,12 +40,11 @@ public class _User {
 	double m_adaPos = 0;
 	double m_testPos = 0;
 	
-	
-	// added by Lin for sanity check.
-	int m_ctgSize = 0;
-	
 	// added by Lin for friendship.
 	String[] m_friends;
+	
+	protected int m_trainReviewSize = -1;
+	protected int m_testReviewSize = -1;
 	
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
@@ -84,25 +82,9 @@ public class _User {
 
 		m_perfStat = new _PerformanceStat(classNo);
 		
-		constructSparseVector();
+//		constructSparseVector();
 		calcPosRatio();
-		calcCtgSize();
-		calcAdpatTestPosRatio();
-	}
-	
-	public _User(String userID, int classNo, ArrayList<_Review> reviews, ArrayList<Integer> category){
-		m_userID = userID;
-		m_reviews = reviews;
-		m_classNo = classNo;
-
-		m_lowDimProfile = null;
-		m_BoWProfile = null;
-		m_pWeight = null;
-
-		m_perfStat = new _PerformanceStat(classNo);
-		m_category = category;
-		constructSparseVector();
-		calcCtgSize();
+//		calcCtgSize();
 		calcAdpatTestPosRatio();
 	}
 	
@@ -110,15 +92,45 @@ public class _User {
 		m_perfStat.addOnePredResult(predL, trueL);
 	}
 	
-	public void constructSparseVector(){
+	// construct the sparse vectors based on the feature used for sentiment model
+	public void constructLRSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-
 		for(_Review r: m_reviews) 
 			reviews.add(r.getSparse());
 		
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
 	}
 	
+	// construct the sparse vectors based on the feature used for language model
+	public void constructLMSparseVector(){
+		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
+		for(_Review r: m_reviews) 
+			reviews.add(r.getLMSparse());
+		
+		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
+	}
+	
+	// build the profile for the user
+	public void buildProfile(String model){
+		if(model.equals("lm"))
+			constructLMSparseVector();
+		else
+			constructLRSparseVector();
+	}
+	
+	public void normalizeProfile(){
+		double sum = 0;
+		for(_SparseFeature fv: m_BoWProfile){
+			sum += fv.getValue();
+		}
+		for(_SparseFeature fv: m_BoWProfile){
+			double val = fv.getValue() / sum;
+			fv.setValue(val);
+		}
+	}
+	public _SparseFeature[] getProfile(){
+		return m_BoWProfile;
+	}
 	// added by Lin for accessing the index of user cluster.
 	public int getClusterIndex() {
 		return m_cIndex;
@@ -219,7 +231,6 @@ public class _User {
 		}
 	}
 
-
 	public _PerformanceStat getPerfStat() {
 		return m_perfStat;
 	}
@@ -304,19 +315,19 @@ public class _User {
 		m_reviews.remove(index);
 	}
 
-	public void calcCtgSize(){
-		HashSet<String> ctg = new HashSet<String>();
-		for(_Review r: m_reviews)
-			ctg.add(r.getCategory());
-		m_ctgSize = ctg.size();
-	}
-	
-	public ArrayList<Integer> getCategory(){
-		return m_category;
-	}
-	public int getCtgSize(){
-		return m_ctgSize;
-	}
+//	public void calcCtgSize(){
+//		HashSet<String> ctg = new HashSet<String>();
+//		for(_Review r: m_reviews)
+//			ctg.add(r.getCategory());
+//		m_ctgSize = ctg.size();
+//	}
+//	
+//	public ArrayList<Integer> getCategory(){
+//		return m_category;
+//	}
+//	public int getCtgSize(){
+//		return m_ctgSize;
+//	}
 
 	public void calcAdpatTestPosRatio(){
 		for(_Review r: m_reviews){
@@ -363,5 +374,25 @@ public class _User {
 	
 	public ArrayList<String> getAmazonFriends(){
 		return m_amazonFriends;
+	}
+	
+	public void calculateTrainTestReview(){
+		if(m_trainReviewSize !=-1 && m_testReviewSize != -1)
+			return;
+		m_trainReviewSize = 0;
+		m_testReviewSize = 0;
+		for(_Review r: m_reviews){
+			if(r.getType() == rType.ADAPTATION)
+				m_trainReviewSize++;
+			else if(r.getType() == rType.TEST)
+				m_testReviewSize++;
+		}
+	}
+	
+	public int getTrainReviewSize(){
+		return m_trainReviewSize;
+	}
+	public int getTestReviewSize(){
+		return m_testReviewSize;
 	}
  }

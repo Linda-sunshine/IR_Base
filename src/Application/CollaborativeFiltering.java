@@ -198,7 +198,7 @@ public class CollaborativeFiltering {
 		//Calculate the ideal rank and real rank.
 		for(int i=0; i<items.length; i++){
 			String item = items[i];
-			if(u.containsRvw(item)){
+			if(u.containsTestRvw(item)){
 				rank[i] = u.getItemRating(item) + 1;
 				realRank[i]=new Pair(rank[i], calculateRankScore(u, item));
 			} else{
@@ -262,18 +262,19 @@ public class CollaborativeFiltering {
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int index = m_userIDIndex.get(nei);
 					double label = m_users.get(index).getItemRating(item)+1;
 					rankSum += label;
 					simSum++;
-				}
+//				}
 			}
 			if(simSum == 0){
-				System.err.println("bug in candidate!");
+				if(u.containsTestRvw(neighbors.get(0)))
+					System.err.println("bug in candidate!");
 				return 0;
 			} else
-			return rankSum/simSum;
+				return rankSum/simSum;
 		} else{
 			MyPriorityQueue<_RankItem> topKNeighbors;
 			if(neighbors.size() < m_k)
@@ -282,21 +283,16 @@ public class CollaborativeFiltering {
 				topKNeighbors = new MyPriorityQueue<_RankItem>(m_k);
 			//collect k nearest neighbors for each item of the user.
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int neiIndex = m_userIDIndex.get(nei);
 					topKNeighbors.add(new _RankItem(neiIndex, getSimilarity(userIndex, neiIndex)));
-				} 
+//				} 
 			}
 			//Calculate the value given by the neighbors and similarity;
 			for(_RankItem ri: topKNeighbors){
-				int label = m_users.get(ri.m_index).getItemRating(item);
-				if(label == -1)
-					System.out.println("[error]Wrong neighbor!");
-				else{
-					label++;
-					rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
-					simSum += m_equalWeight ? 1: ri.m_value;
-				}
+				int label = m_users.get(ri.m_index).getItemRating(item)+1;
+				rankSum += m_equalWeight ? label:ri.m_value*label;//If equal weight, add label, otherwise, add weighted label.
+				simSum += m_equalWeight ? 1: ri.m_value;
 			}
 		}
 		if(simSum == 0){
@@ -375,6 +371,8 @@ public class CollaborativeFiltering {
 					_Review r = user.getTestReviews().get(i);
 					if(!m_trainMap.containsKey(r.getItemID()))
 						continue;
+					if(m_trainMap.get(r.getItemID()).size() == 1 && m_trainMap.get(r.getItemID()).get(0).equals(user.getUserID()))
+						System.out.println("debug here!!!");
 					items.add(r.getItemID());
 					rvwSize++;
 				} else if(items.size() > 0){

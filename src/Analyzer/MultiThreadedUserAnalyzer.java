@@ -335,11 +335,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		else
 			return m_stemmerPool[index];
 	}
-	// Added by Lin for constructing the bow profile for each user.
-	public void constructSparseVector4Users() {
-		for (_User u : m_users)
-			u.constructSparseVector();
-	}
 
 	protected HashMap<String, Integer> m_userIDIndex;
 	// Added by Lin. Load user weights from learned models to construct neighborhood.

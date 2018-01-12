@@ -32,12 +32,12 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int index = m_userIDIndex.get(nei);
 					double label = m_users.get(index).getItemIDRating().get(item)+1;
 					rankSum += label;
 					simSum++;
-				}
+//				}
 			}
 			if(simSum == 0){
 				System.err.println("bug in candidate!");
@@ -47,13 +47,13 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 		} else{
 			//Calculate the ranking value given by all neighbors and similarity;
 			for(String nei: neighbors){
-				if(!nei.equals(u.getUserID())){
+//				if(!nei.equals(u.getUserID())){
 					int neiIndex = m_userIDIndex.get(nei);
 					int label = m_users.get(neiIndex).getItemRating(item)+1;
 					double sim = getSimilarity(userIndex, neiIndex); 
 					rankSum += m_equalWeight ? label : sim * label;//If equal weight, add label, otherwise, add weighted label.
 					simSum += m_equalWeight ? 1 : sim;				
-				}
+//				}
 			}
 		}
 		if(simSum == 0){
@@ -110,8 +110,8 @@ public class CollaborativeFilteringWithAllNeighbors extends CollaborativeFilteri
 	public void saveUserItemPairs(String dir){
 		int trainUser = 0, testUser = 0, trainPair = 0, testPair = 0;
 		try{
-			PrintWriter trainWriter = new PrintWriter(new File(dir+"/train_all.csv"));
-			PrintWriter testWriter = new PrintWriter(new File(dir+"/test_all.csv"));
+			PrintWriter trainWriter = new PrintWriter(new File(dir+"/train_item_rcdm.csv"));
+			PrintWriter testWriter = new PrintWriter(new File(dir+"/test_item_rcmd.csv"));
 			trainWriter.write("user_id,item_id,rating\n");
 			testWriter.write("user_id,item_id,rating\n");
 			for(_CFUser u: m_users){

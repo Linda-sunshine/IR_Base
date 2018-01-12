@@ -84,7 +84,7 @@ public class CFExecution {
 				System.err.format("\n----------------finish running %s with topk neighbors-------------------------\n", model);
 			}
 			
-			String filename = String.format("./data/%s_cf_equalWeight_%b_time_%d_top_%d.txt", param.m_data, param.m_t, param.m_k);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_time_%d_top_%d.txt", param.m_data, param.m_equalWeight, param.m_t, param.m_k);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 

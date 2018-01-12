@@ -69,14 +69,23 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	public void incHDPThetaStarEdgeSize(_HDPThetaStar s, int v, int e){
 		if (v==0)
 			return;
-		
-		if(m_hdpThetaEdgeSizeMap.containsKey(s)){
+		else if(v > 0){
+			if(!m_hdpThetaEdgeSizeMap.containsKey(s)){
+				m_hdpThetaEdgeSizeMap.put(s, new int[]{0, 0});
+			}
 			m_hdpThetaEdgeSizeMap.get(s)[e] += v;
-			if(m_hdpThetaEdgeSizeMap.get(s)[e] < 0)
-				System.err.println("[Error]The edge count is not valid!!");
 		} else{
-			System.err.println("[Error]This theta does not exist!");
+			if(!m_hdpThetaEdgeSizeMap.containsKey(s)){
+				System.err.println("[Error]This theta does not exist!");
+			}
+			int[] edgeSize = m_hdpThetaEdgeSizeMap.get(s);
+			edgeSize[e] += v;
+			if(edgeSize[e] < 0)
+				System.err.println("[Error]Invalid value in updating theta!");
+			else if(edgeSize[e] == 0 && Utils.sumOfArray(edgeSize) == 0)
+				m_hdpThetaEdgeSizeMap.remove(s);
 		}
+		
 //		if (v>0)
 //			m_hdpThetaEdgeSizeMap.put(s, v);
 //		else
