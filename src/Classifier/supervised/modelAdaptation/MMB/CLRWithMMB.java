@@ -982,8 +982,8 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	int m_multipleE = 3;
 	
-	@Override
-	public double trainTrace(String data, int iter){
+//	@Override
+	public double trainTrace(String data, int iter, long start){
 		m_numberOfIterations = iter;
 		m_thinning = 1;
 			
@@ -1008,7 +1008,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, m_burnIn, m_thinning, m_jointAll, System.currentTimeMillis()); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, m_burnIn, m_thinning, m_jointAll, start); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
@@ -1181,7 +1181,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_MNL[e]--;
 		// No data associated with the cluster
 		if(thetai.getMemSize() == 0 && thetai.getTotalEdgeSize() == 0){		
-			System.out.println("[Info]Zero cluster detected in updating doc!");
+			System.out.println("[Info]Zero cluster detected in updating edge!");
 			// recycle the gamma
 			m_gamma_e += thetai.getGamma();
 			

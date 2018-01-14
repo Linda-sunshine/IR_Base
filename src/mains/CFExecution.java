@@ -8,7 +8,7 @@ import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.CFParameter;
-import structures._CFUser;
+import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
@@ -50,7 +50,7 @@ public class CFExecution {
 		if(!param.m_neiAll){
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, param.m_k, param.m_t);
 			cfInit.constructRankingNeighbors();
-			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			ArrayList<_User> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
@@ -99,7 +99,7 @@ public class CFExecution {
 		} else{
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			cfInit.constructRankingNeighbors();
-			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			ArrayList<_User> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 			
 			double[][] performance = new double[models.length][2];

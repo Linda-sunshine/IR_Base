@@ -2,6 +2,8 @@ package structures;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Set;
 
 import structures._Review.rType;
 import utils.Utils;
@@ -43,8 +45,13 @@ public class _User {
 	// added by Lin for friendship.
 	String[] m_friends;
 	
+	private ArrayList<_Review> m_trainReviews;
+	private ArrayList<_Review> m_testReviews;
 	protected int m_trainReviewSize = -1;
 	protected int m_testReviewSize = -1;
+	
+	private final HashMap<String, Integer> m_itemIDRating;
+	private String[] m_rankingItems;
 	
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
@@ -55,6 +62,8 @@ public class _User {
 		m_lowDimProfile = null;
 		m_BoWProfile = null;
 		m_pWeight = null;
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
 	}
 	
 	public _User(int cindex, int classNo){
@@ -68,6 +77,9 @@ public class _User {
 		m_pWeight = null;
 		
 		m_perfStat = new _PerformanceStat(classNo);
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
+
 	}
 	
 	public _User(String userID, int classNo, ArrayList<_Review> reviews){
@@ -81,11 +93,18 @@ public class _User {
 		m_pWeight = null;
 
 		m_perfStat = new _PerformanceStat(classNo);
-		
+		m_itemIDRating = new HashMap<String, Integer>();
+		constructTrainTestReviews();
+
 //		constructSparseVector();
-		calcPosRatio();
+//		calcPosRatio();
 //		calcCtgSize();
-		calcAdpatTestPosRatio();
+//		calcAdpatTestPosRatio();
+	}
+	
+	public void addOneItemIDRatingPair(String item, int r){
+		if(!m_itemIDRating.containsKey(item))
+			m_itemIDRating.put(item, r);
 	}
 	
 	public void addOnePredResult(int predL, int trueL){
@@ -302,8 +321,6 @@ public class _User {
 		return values;
 	}
 	
-
-	
 	public void removeOneReview(String prodID){
 		int index = 0;
 		for(_Review r: m_reviews){
@@ -314,20 +331,6 @@ public class _User {
 		}
 		m_reviews.remove(index);
 	}
-
-//	public void calcCtgSize(){
-//		HashSet<String> ctg = new HashSet<String>();
-//		for(_Review r: m_reviews)
-//			ctg.add(r.getCategory());
-//		m_ctgSize = ctg.size();
-//	}
-//	
-//	public ArrayList<Integer> getCategory(){
-//		return m_category;
-//	}
-//	public int getCtgSize(){
-//		return m_ctgSize;
-//	}
 
 	public void calcAdpatTestPosRatio(){
 		for(_Review r: m_reviews){
@@ -376,23 +379,71 @@ public class _User {
 		return m_amazonFriends;
 	}
 	
-	public void calculateTrainTestReview(){
-		if(m_trainReviewSize !=-1 && m_testReviewSize != -1)
-			return;
-		m_trainReviewSize = 0;
-		m_testReviewSize = 0;
+	public void constructTrainTestReviews(){
+		m_trainReviews = new ArrayList<>();
+		m_testReviews = new ArrayList<>();
 		for(_Review r: m_reviews){
 			if(r.getType() == rType.ADAPTATION)
-				m_trainReviewSize++;
-			else if(r.getType() == rType.TEST)
-				m_testReviewSize++;
+				m_trainReviews.add(r);
+			else
+				m_testReviews.add(r);
 		}
+		m_trainReviewSize = m_trainReviews.size();
+		m_testReviewSize = m_testReviews.size();
+	}
+	
+	public ArrayList<_Review> getTrainReviews(){
+		return m_trainReviews;
+	}
+	public ArrayList<_Review> getTestReviews(){
+		return m_testReviews;
 	}
 	
 	public int getTrainReviewSize(){
 		return m_trainReviewSize;
 	}
+	
 	public int getTestReviewSize(){
 		return m_testReviewSize;
 	}
- }
+	
+	public int getItemRating(String item){
+		// rating is 0 or 1, thus non-existing is -1
+		if(m_itemIDRating.containsKey(item))
+			return m_itemIDRating.get(item);
+		else{
+//			System.out.println("The item does not exist!");
+			return -1;
+		}
+	}
+	// whether this user has rated this item in the testing set
+	public boolean containsTestRvw(String item){
+		for(_Review r: m_testReviews){
+			if(r.getItemID().equals(item))
+				return true;
+		}
+		return false;
+	}
+	public int getRankingItemSize(){
+		if(m_rankingItems == null)
+			return 0;
+		else 
+			return m_rankingItems.length;
+	}
+	
+	public String[] getRankingItems(){
+		return m_rankingItems;
+	}
+	
+	public void setRankingItems(Set<String> items){
+		if(items.size() == 0)
+			m_rankingItems = null; 
+		else{
+			m_rankingItems = new String[items.size()];
+			int index = 0;
+			for(String item: items){
+				m_rankingItems[index++] = item;
+			}
+		}
+	}
+}

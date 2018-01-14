@@ -143,7 +143,7 @@ public class MyMMBMain {
 		
 		double rho = 0.1; 
 		int burnin = 10, iter = 50, thin = 3;
-		boolean jointAll = true;
+		boolean jointAll = false;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);
 		mmb.setThinning(thin);// default 3
@@ -156,16 +156,14 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = false; 
+		boolean trace = true; 
 		if(trace){
 			iter = 100;
-			mmb.trainTrace(dataset, iter);
-			mmb.printEdgeCount(dataset+"_edge_count_joint_bk_iter100.txt");
-			mmb.printBMatrix("B.txt");
+			mmb.trainTrace(dataset, iter, start);
+			mmb.printEdgeCount(String.format("%s_edge_count_jointAll_%b_iter_%d_%d.txt", dataset, jointAll, iter, start));
 		} else{
 			mmb.train();
 			mmb.test(); 
-			mmb.printBMatrix("./B.txt");
 		}
 		long end = System.currentTimeMillis();
 		System.out.println("\n[Info] Current time: " + end);

@@ -6,16 +6,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
-import structures._CFUser;
+import structures._User;
+
 
 public class CollaborativeFilteringWithMMB extends CollaborativeFiltering {
 	protected double[][] m_B;
 	
-	public CollaborativeFilteringWithMMB(ArrayList<_CFUser> users, int fs) {
+	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs) {
 		super(users, fs);
 	}
 	
-	public CollaborativeFilteringWithMMB(ArrayList<_CFUser> users, int fs, int k) {
+	public CollaborativeFilteringWithMMB(ArrayList<_User> users, int fs, int k) {
 		super(users, fs, k);
 	}
 	

@@ -15,6 +15,11 @@ public class SVDPreProcess {
 	HashMap<String, Integer> m_itemMap;
 	int m_nuEntry = 0;
 	
+	// low-rank representation of users 
+	double[][] m_U;
+	// low-rank representation of items 
+	double[][] m_V;
+	
 	public SVDPreProcess(){
 		m_userMap = new HashMap<String, Integer>();
 		m_itemMap = new HashMap<String, Integer>();

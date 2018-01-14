@@ -2,19 +2,19 @@ package Application;
 
 import java.util.ArrayList;
 
-import structures._CFUser;
+import structures._User;
 
 public class CollaborativeFilteringWithMMBWithAllNeighbors extends CollaborativeFilteringWithMMB{
 
 	public CollaborativeFilteringWithMMBWithAllNeighbors(
-			ArrayList<_CFUser> users, int fs) {
+			ArrayList<_User> users, int fs) {
 		super(users, fs);
 	}
 	
 	//calculate the ranking score for each review of each user.
 	//The ranking score is calculated based on all the users who have reviewed the item
 	@Override
-	public double calculateRankScore(_CFUser u, String item){
+	public double calculateRankScore(_User u, String item){
 		int userIndex = m_userIDIndex.get(u.getUserID());
 		double rankSum = 0;
 		double simSum = 0;
@@ -24,7 +24,7 @@ public class CollaborativeFilteringWithMMBWithAllNeighbors extends Collaborative
 			for(String nei: neighbors){
 //				if(!nei.equals(u.getUserID())){
 					int index = m_userIDIndex.get(nei);
-					double label = m_users.get(index).getItemIDRating().get(item)+1;
+					double label = m_users.get(index).getItemRating(item)+1;
 					rankSum += label;
 					simSum++;
 //				}

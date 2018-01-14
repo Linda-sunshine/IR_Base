@@ -87,8 +87,8 @@ public class MyMMBExecution {
 		long start = System.currentTimeMillis();
 		if(param.m_trace){
 			param.m_nuOfIterations = 100;
-			adaptation.trainTrace(param.m_data, param.m_nuOfIterations);
-//			adaptation.trainTraceMultipleE(param.m_data, param.m_nuOfIterations, 3);
+			adaptation.trainTrace(param.m_data, param.m_nuOfIterations, start);
+			adaptation.printEdgeCount(String.format("%s_edge_count_jointAll_%b_iter_%d_%d.txt", param.m_data, param.m_jointAll, param.m_nuOfIterations, start));
 			adaptation.test();
 		} else{
 			adaptation.train();

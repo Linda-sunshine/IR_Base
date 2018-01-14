@@ -1,18 +1,11 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures._CFUser;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
-import Application.CollaborativeFilteringWithAllNeighbors;
-import Application.CollaborativeFilteringWithMMB;
-import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -41,18 +34,25 @@ public class CFMain {
 		
 		/***Collaborative filtering starts here.***/
 		boolean neiAll = false;
-		boolean equalWeight = true;
+		boolean equalWeight = false;
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
-		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+//		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+		String[] models = new String[]{"avg", "mmb_mixture"};
 
 		if(!neiAll){
-			int t = 2, k = 4;
+			for(int t: new int[]{2,3,4,5}){
+				for(int k: new int[]{4,6,8,10}){
+			
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
 			// construct ranking neighbors
 			cfInit.constructRankingNeighbors();
-			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			String cfFile = String.format("./%s_cf_time_%d_topk_%d_", dataset, t, k);
+			cfInit.saveUserItemPairs(cfFile);
+		}}}
+			/***
+			ArrayList<_User> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
@@ -67,7 +67,6 @@ public class CFMain {
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
 					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
-				
 				cf.setValidUserSize(validUser);
 				cf.setEqualWeightFlag(equalWeight);
 				
@@ -104,7 +103,7 @@ public class CFMain {
 			cfInit.constructRankingNeighbors();
 			cfInit.saveUserItemPairs("./");
 			
-			ArrayList<_CFUser> cfUsers = cfInit.getUsers();
+			ArrayList<_User> cfUsers = cfInit.getUsers();
 			int validUser = cfInit.getValidUserSize();
 
 			double[][] performance = new double[models.length][2];
@@ -148,6 +147,6 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
-		}
+		}***/
 	}
 }

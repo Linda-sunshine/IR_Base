@@ -493,6 +493,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			for(int idx: indexes){
 				reviews.remove(idx);
 			}
+			u.constructTrainTestReviews();
 		}
 		System.out.format("%d users have %d duplicate reviews for items.\n", uCount, rCount);
 	}
