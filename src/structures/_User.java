@@ -446,4 +446,18 @@ public class _User {
 			}
 		}
 	}
+	
+	// load the candidates from file instead of constructing online
+	ArrayList<String> m_candidates = new ArrayList<String>();
+	public void addOneCandidate(String item){
+		m_candidates.add(item);
+	}
+	
+	public void setRankingItems(){
+		m_rankingItems = new String[m_candidates.size()];
+		int index = 0;
+		for(String item: m_candidates){
+			m_rankingItems[index++] = item;
+		}	
+	}
 }

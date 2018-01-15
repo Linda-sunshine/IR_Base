@@ -80,6 +80,8 @@ public class SVDPreProcess {
 				String userID = strs[0];
 				String itemID = strs[1];
 				int userIdx = m_userMap.get(userID)+1;
+				if(!m_itemMap.containsKey(itemID))
+					continue;
 				int itemIdx = m_itemMap.get(itemID)+1;
 				int rating = Integer.valueOf(strs[2]);
 				writer.write(String.format("%d\t%d\t%d\n", userIdx, itemIdx, rating));
@@ -93,17 +95,20 @@ public class SVDPreProcess {
 	}
 	
 	public static void main(String[] args){
+		String dataset = "YelpNew";
 		SVDPreProcess process = new SVDPreProcess();
-		String trainFile = "./data/train_all.csv";
-		String trainMMFile = "./data/train_all.mm";
-		String testFile = "./data/test_all.csv";
-		String testMMFile = "./data/test_all.mm";
-		
-		// transfer csv data to mm data
-		process.buildUserItemMap(trainFile);
-		process.transfer2MMFile(trainFile, trainMMFile);
-		process.transfer2MMFile(testFile, testMMFile);
-	
+		for(int t: new int[]{2,3,4,5}){
+			for(int k: new int[]{4, 6, 8}){
+				String trainFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_train.csv", dataset, t, k);
+				String testFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_test.csv", dataset, t, k);
+				String trainMMFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_train.mm", dataset, t, k);
+				String testMMFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+				// transfer csv data to mm data
+				process.buildUserItemMap(trainFile);
+				process.transfer2MMFile(trainFile, trainMMFile);
+				process.transfer2MMFile(testFile, testMMFile);
+			}
+		}	
 	}
 	
 }

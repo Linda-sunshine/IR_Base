@@ -49,8 +49,12 @@ public class CFExecution {
 		// if we select time*review_size as candidate reviews 
 		if(!param.m_neiAll){
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, param.m_k, param.m_t);
-			cfInit.constructRankingNeighbors();
+//			cfInit.constructRankingNeighbors();
+			String cfFile = String.format("/zf8/lg5bt/DataSigir/%s/cfData/%s_cf_time_%d_topk_%d_test.csv", param.m_data, param.m_data, param.m_t, param.m_k);
+
 			ArrayList<_User> cfUsers = cfInit.getUsers();
+			cfInit.loadRankingCandidates(cfFile);
+
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			

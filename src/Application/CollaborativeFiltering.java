@@ -509,6 +509,33 @@ public class CollaborativeFiltering {
 		m_avgNDCG = 0;
 		m_avgMAP = 0;
 	}
+	
+	// load pre-selected ranking candidates
+	public void loadRankingCandidates(String filename){
+		try{
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			// skip the first line
+			reader.readLine();
+			while((line = reader.readLine()) != null){
+				String[] ws = line.split(",");
+				String uid = ws[0];
+				String item = ws[1];
+				int userIndex = m_userIDIndex.get(uid);
+				if(!m_userMap.containsKey(userIndex))
+					System.err.println("The user does not exist!");
+				m_userMap.get(userIndex).addOneCandidate(item);
+			}
+			reader.close();
+			for(_User u: m_users){
+				u.setRankingItems();
+			}
+			System.out.format("Finish loading ranking candidates for %d users.", m_users.size());
+		} catch(IOException e){
+			System.err.format("[Error]Failed to open file %s!!", filename);
+			e.printStackTrace();
+		}
+	}
 
 	public void loadWeights(String weightFile, String suffix1, String suffix2){
 		loadUserWeights(weightFile, suffix1, suffix2);

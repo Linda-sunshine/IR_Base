@@ -1,11 +1,18 @@
 package mains;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._User;
 import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
+import Application.CollaborativeFilteringWithAllNeighbors;
+import Application.CollaborativeFilteringWithMMB;
+import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -38,8 +45,8 @@ public class CFMain {
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
-//		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
-		String[] models = new String[]{"avg", "mmb_mixture"};
+		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+//		String[] models = new String[]{"avg", "mmb_mixture"};
 
 		if(!neiAll){
 			for(int t: new int[]{2,3,4,5}){
@@ -47,12 +54,12 @@ public class CFMain {
 			
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
 			// construct ranking neighbors
-			cfInit.constructRankingNeighbors();
-			String cfFile = String.format("./%s_cf_time_%d_topk_%d_", dataset, t, k);
-			cfInit.saveUserItemPairs(cfFile);
-		}}}
-			/***
+//			cfInit.constructRankingNeighbors();
+			String cfFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_test.csv", dataset, t, k);
+//			cfInit.saveUserItemPairs(cfFile);
+			
 			ArrayList<_User> cfUsers = cfInit.getUsers();
+			cfInit.loadRankingCandidates(cfFile);
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
@@ -96,7 +103,7 @@ public class CFMain {
 			}
 			writer.close();
 			
-		} else{
+		}}} else{
 			
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			// construct ranking neighbors
@@ -147,6 +154,6 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
-		}***/
+		}
 	}
 }

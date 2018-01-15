@@ -241,9 +241,11 @@ public class FMPostProcess {
 //		process.calculateAvgNDCGMAP();
 		
 		// post proces for svd
-		String testFile = "./data/test_all.mm";
-		String predFile = "./data/test_all.mm.predict";
-		process.loadTruePredFiles(testFile, predFile);
+		String dataset = "YelpNew";
+		int t = 2, k = 4;
+		String testMMFile = String.format("./data/cfData/svdData/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+		String predFile = String.format("./data/cfData/svdData/%s_cf_time_%d_topk_%d_test.mm.predict", dataset, t, k);
+		process.loadTruePredFiles(testMMFile, predFile);
 		process.calculateAllNDCGMAP();
 		process.calculateAvgNDCGMAP();
 	}
