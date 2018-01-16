@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
+
 import structures.MyPriorityQueue;
 import structures.Pair;
 import structures._RankItem;
@@ -46,8 +48,8 @@ public class CollaborativeFiltering {
 	// the group affinity matrix for similarity calculation
 	protected double[][] m_userWeights;
 	
-	protected int[][] m_ranks;
-	protected Pair[][] m_realRanks; 
+//	protected int[][] m_ranks;
+//	protected Pair[][] m_realRanks; 
 
 	//The flag is used to decide whether we take all users' average as ranking score or not.
 	boolean m_avgFlag = false;
@@ -171,7 +173,7 @@ public class CollaborativeFiltering {
 		double sumNDCG = 0, sumMAP = 0;
 		int valid = 0;
 		for(int i=0; i < m_users.size(); i++){
-			if(Double.isNaN(m_NDCGs[i]) || Double.isNaN(m_MAPs[i]))
+			if(Double.isNaN(m_NDCGs[i]) || Double.isNaN(m_MAPs[i]) || m_NDCGs[i] == -1 || m_MAPs[i] == -1)
 				continue;
 			else{
 				sumNDCG += m_NDCGs[i];
@@ -189,6 +191,9 @@ public class CollaborativeFiltering {
 		int userIndex = m_userIDIndex.get(u.getUserID());
 		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
 			
+		if(u.getRankingItems() == null)
+			return;
+		
 		String[] items = u.getRankingItems();
 		int[] rank = new int[items.length];
 		Pair[] realRank = new Pair[items.length];
@@ -237,8 +242,8 @@ public class CollaborativeFiltering {
 			m_NDCGs[userIndex] = DCG/iDCG;
 			m_MAPs[userIndex] = AP/count;
 			
-			m_ranks[userIndex] = rank;
-			m_realRanks[userIndex] = realRank;
+//			m_ranks[userIndex] = rank;
+//			m_realRanks[userIndex] = realRank;
 		}
 	}
 	
@@ -503,8 +508,9 @@ public class CollaborativeFiltering {
 				
 		m_NDCGs = new double[m_users.size()];
 		m_MAPs = new double[m_users.size()];
-		m_ranks = new int[m_users.size()][];
-		m_realRanks = new Pair[m_users.size()][];
+		
+		Arrays.fill(m_NDCGs, -1);
+		Arrays.fill(m_MAPs, -1);
 		
 		m_avgNDCG = 0;
 		m_avgMAP = 0;
@@ -528,7 +534,7 @@ public class CollaborativeFiltering {
 			}
 			reader.close();
 			for(_User u: m_users){
-				u.setRankingItems();
+				u.setRankingItems(m_trainMap);
 			}
 			System.out.format("Finish loading ranking candidates for %d users.", m_users.size());
 		} catch(IOException e){
@@ -757,6 +763,30 @@ public class CollaborativeFiltering {
 			trainWriter.close();
 			testWriter.close();
 			System.out.format("[Info]Finish writing (%d,%d) training users/pairs, (%d,%d) testing users/pairs.\n", trainUser, trainPair, testUser, testPair);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
+	
+	// since svd cannot predict items not in training, we only record the items in training set.
+	public void saveValidUsers(String dir){
+		int testUser = 0, testPair = 0;
+		try{
+			PrintWriter testWriter = new PrintWriter(new File(dir+"test_valid.csv"));
+			testWriter.write("user_id,item_id,rating\n");
+			for(_User u: m_users){
+				String[] rankingItems = u.getRankingItems();
+				if(rankingItems == null)
+					continue;
+				testUser++;
+				for(String item: rankingItems){
+					testPair++;
+					testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), item, u.getItemRating(item)+1));
+				}
+			}
+			testWriter.close();
+			System.out.format("[Info]Finish writing (%d,%d) valid testing users/pairs.\n", testUser, testPair);
 		} catch(IOException e){
 			e.printStackTrace();
 		}

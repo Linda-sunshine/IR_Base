@@ -19,6 +19,7 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
+import org.omg.CORBA.SystemException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
 
@@ -429,12 +430,16 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line;
 			String[] users, friends;
+			int count = 0;
 			while((line = reader.readLine()) != null){
 				users = line.trim().split("\t");
 				friends = Arrays.copyOfRange(users, 1, users.length);
+				if(friends.length == 0)
+					count++;
 				m_neighborsMap.put(users[0], friends);
 			}
 			reader.close();
+			System.out.format("%d users don't have friends!", count);
 			// map friends to users.
 			for(_User u: m_users){
 				if(m_neighborsMap.containsKey(u.getUserID()))

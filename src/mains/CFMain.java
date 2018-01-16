@@ -45,8 +45,8 @@ public class CFMain {
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
-		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
-//		String[] models = new String[]{"avg", "mmb_mixture"};
+//		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+		String[] models = new String[]{"avg", "mmb_mixture"};
 
 		if(!neiAll){
 			for(int t: new int[]{2,3,4,5}){
@@ -55,17 +55,21 @@ public class CFMain {
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
 			// construct ranking neighbors
 //			cfInit.constructRankingNeighbors();
-			String cfFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_test.csv", dataset, t, k);
+			String cfFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test.csv", dataset, t, k);
 //			cfInit.saveUserItemPairs(cfFile);
 			
 			ArrayList<_User> cfUsers = cfInit.getUsers();
 			cfInit.loadRankingCandidates(cfFile);
+			dir = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_", dataset, t, k);
+//			cfInit.saveValidUsers(dir);
+		
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
 			for(int m=0; m<models.length; m++){
 				model = models[m];
-				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+				dir = String.format("./data/CoLinAdapt/%s/models/%s_%s/", dataset, dataset, model);
+//				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 				System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 				
 				CollaborativeFiltering cf = null;

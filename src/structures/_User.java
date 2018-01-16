@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
+import com.sun.org.apache.xerces.internal.impl.RevalidationHandler;
+
 import structures._Review.rType;
 import utils.Utils;
 
@@ -361,7 +363,7 @@ public class _User {
 	// check if a user is a friend of the current user
 	public boolean hasFriend(String str){
 		if(m_friends.length == 0){
-			System.out.println("[Debug]No friends!");
+//			System.out.println("[Debug]No friends!");
 			return false;
 		}
 		for(String f: m_friends){
@@ -453,11 +455,31 @@ public class _User {
 		m_candidates.add(item);
 	}
 	
-	public void setRankingItems(){
-		m_rankingItems = new String[m_candidates.size()];
-		int index = 0;
+	public void setRankingItems(HashMap<String, ArrayList<String>> itemMap){
+		// check if it is a valid user or not
+		int relevant = 0;
+		ArrayList<String> validItems = new ArrayList<>();
 		for(String item: m_candidates){
-			m_rankingItems[index++] = item;
-		}	
+			if(containsTestRvw(item)){
+				if(itemMap.containsKey(item)){
+					relevant++;
+					validItems.add(item);
+				}
+			} else{
+				if(!itemMap.containsKey(item))
+					System.out.println("[error] Bug in ranking candidates!");
+				else{
+					validItems.add(item);
+				}
+			}
+		}
+		// if the user has at least one relevant item
+		if(relevant > 0){
+			m_rankingItems = new String[validItems.size()];
+			int index = 0;
+			for(String item: validItems){
+				m_rankingItems[index++] = item;
+			}
+		}
 	}
 }

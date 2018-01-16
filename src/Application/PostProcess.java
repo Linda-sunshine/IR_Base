@@ -10,13 +10,13 @@ import java.util.HashMap;
 
 import structures.Pair;
 
-public class FMPostProcess {
+public class PostProcess {
 	HashMap<String, ArrayList<String>> m_userPairMap;
 	ArrayList<ArrayList<String>> m_users;
 	double[] m_NDCGs, m_MAPs;
 	Object m_NDCGMAPLock = new Object();
 	
-	public FMPostProcess(){
+	public PostProcess(){
 		m_userPairMap = new HashMap<String, ArrayList<String>>();
 	}
 	
@@ -50,7 +50,7 @@ public class FMPostProcess {
 		m_NDCGs = new double[m_userPairMap.size()];
 		m_MAPs = new double[m_userPairMap.size()];
 		
-		System.out.println("[Info]Start calculating NDCG and MAP...\n");
+		System.out.print("[Info]Start calculating NDCG and MAP...\n");
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		m_users = new ArrayList<ArrayList<String>>();
@@ -106,7 +106,7 @@ public class FMPostProcess {
 		}
 		avgNDCG /= m_NDCGs.length;
 		avgMAP /= m_MAPs.length;
-		System.out.format("\n[Info]Avg NDCG: %.5f, Avg MAP: %.5f\n", avgNDCG, avgMAP);
+		System.out.format("\n[Info]Avg NDCG, MAP -- %.5f\t%.5f\n\n", avgNDCG, avgMAP);
 	}
 	// calculate the nDCG and MAP for each user
 	public double[] calculateNDCGMAP(ArrayList<String> pairs){
@@ -235,18 +235,27 @@ public class FMPostProcess {
 	
 	public static void main(String[] args){
 		// post process for fm
-		FMPostProcess process = new FMPostProcess();
-//		process.loadData("./data/test_output.txt");
-//		process.calculateAllNDCGMAP();
-//		process.calculateAvgNDCGMAP();
-		
-		// post proces for svd
+		String model = "fm";
 		String dataset = "YelpNew";
-		int t = 2, k = 4;
-		String testMMFile = String.format("./data/cfData/svdData/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
-		String predFile = String.format("./data/cfData/svdData/%s_cf_time_%d_topk_%d_test.mm.predict", dataset, t, k);
-		process.loadTruePredFiles(testMMFile, predFile);
-		process.calculateAllNDCGMAP();
-		process.calculateAvgNDCGMAP();
+		// post proces for svd
+//		int t = 2, k = 4;
+		int d = 32;
+		for(int t: new int[]{2,3,4, 5}){
+			for(int k: new int[]{4,6,8,10}){
+		PostProcess process = new PostProcess();
+		if(model.equals("fm")){
+			String predFile = String.format("./data/cfData/fm_%d/%s_cf_time_%d_topk_%d_fm.txt", d, dataset, t, k);
+			process.loadData(predFile);
+			System.out.format("-----time-%d--topk--%d----\n", t, k);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		} else if(model.equals("svd")){
+			String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+			String predFile = String.format("./data/cfData/svd_predict_%d/%s_cf_time_%d_topk_%d_test.mm.predict", d, dataset, t, k);
+			process.loadTruePredFiles(testMMFile, predFile);
+			System.out.format("-----time-%d--topk--%d----\n", t, k);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		}}}
 	}
 }
