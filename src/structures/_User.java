@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 
-import com.sun.org.apache.xerces.internal.impl.RevalidationHandler;
-
 import structures._Review.rType;
 import utils.Utils;
 
@@ -54,6 +52,7 @@ public class _User {
 	
 	private final HashMap<String, Integer> m_itemIDRating;
 	private String[] m_rankingItems;
+	private HashMap<String, _Review> m_testReviewMap;
 	
 	// The function is used for finding friends from Amazon data set.
 	protected ArrayList<String> m_amazonFriends = new ArrayList<String>();
@@ -384,11 +383,14 @@ public class _User {
 	public void constructTrainTestReviews(){
 		m_trainReviews = new ArrayList<>();
 		m_testReviews = new ArrayList<>();
+		m_testReviewMap = new HashMap<String, _Review>();
 		for(_Review r: m_reviews){
 			if(r.getType() == rType.ADAPTATION)
 				m_trainReviews.add(r);
-			else
+			else{
 				m_testReviews.add(r);
+				m_testReviewMap.put(r.getItemID(), r);
+			}
 		}
 		m_trainReviewSize = m_trainReviews.size();
 		m_testReviewSize = m_testReviews.size();
@@ -401,6 +403,9 @@ public class _User {
 		return m_testReviews;
 	}
 	
+	public _Review getTestReview(String item){
+		return m_testReviewMap.get(item);
+	}
 	public int getTrainReviewSize(){
 		return m_trainReviewSize;
 	}
@@ -420,11 +425,7 @@ public class _User {
 	}
 	// whether this user has rated this item in the testing set
 	public boolean containsTestRvw(String item){
-		for(_Review r: m_testReviews){
-			if(r.getItemID().equals(item))
-				return true;
-		}
-		return false;
+		return m_testReviewMap.containsKey(item);
 	}
 	public int getRankingItemSize(){
 		if(m_rankingItems == null)

@@ -13,8 +13,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
-
 import structures.MyPriorityQueue;
 import structures.Pair;
 import structures._RankItem;
@@ -791,5 +789,90 @@ public class CollaborativeFiltering {
 			e.printStackTrace();
 		}
 		
+	}
+	
+	// incorporate text information for matrix factorization
+	public void saveUsersWithText(String dir, int topk){
+		int trainUser = 0, testUser = 0, trainPair = 0, testPair = 0;
+		String zeroStr = "";
+		for(int i=0; i<topk; i++){
+			if(i == topk -1)
+				zeroStr += "0";
+			else 
+				zeroStr += "0,";
+		}
+		try{
+			PrintWriter trainWriter = new PrintWriter(new File(dir+"train.csv"));
+			PrintWriter testWriter = new PrintWriter(new File(dir+"test.csv"));
+			// construct the string for annotation
+			String note = "user_id,item_id,rating,";
+			for(int i=0; i<topk-1; i++){
+				note += String.format("f_%d,", i);
+			}
+			note += String.format("f_%d\n", topk-1);
+			
+			trainWriter.write(note);
+			testWriter.write(note);
+			for(_User u: m_users){
+				trainUser++;
+				// print out the training pairs
+				for(_Review r: u.getTrainReviews()){
+					trainPair++;
+					trainWriter.write(String.format("%s,%s,%d,", u.getUserID(), r.getItemID(), u.getItemRating(r.getItemID())+1));
+					double[] vct = normalize(r.getLMSparse(), topk);
+					// print the lm feature value
+					for(int i=0; i<vct.length; i++){
+						if(i != vct.length-1)
+							trainWriter.write(vct[i]+",");
+						else {
+							trainWriter.write(vct[i]+"\n");
+						}
+					}
+				}
+				String[] rankingItems = u.getRankingItems();
+				if(rankingItems == null)
+					continue;
+				testUser++;
+				for(String item: rankingItems){
+					testPair++;
+					// if it is a relevant item
+					if(u.containsTestRvw(item)){
+						_Review r = u.getTestReview(item);
+						testWriter.write(String.format("%s,%s,%d,", u.getUserID(), item, u.getItemRating(item)+1));
+						double[] vct = normalize(r.getLMSparse(), topk);
+						// print the lm feature value
+						for(int i=0; i<vct.length; i++){
+							if(i != vct.length-1)
+								testWriter.write(vct[i]+",");
+							else {
+								testWriter.write(vct[i]+"\n");
+							}
+						}
+					// if it is an irrelevant item
+					} else{
+						testWriter.write(String.format("%s,%s,%d,%s\n", u.getUserID(), item, u.getItemRating(item)+1, zeroStr));
+					}
+					
+				}
+			}
+			trainWriter.close();
+			testWriter.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	// normalize the lm feature vector
+	public double[] normalize(_SparseFeature[] fvs, int topk){
+		double sum = 0;
+		double[] vct = new double[topk];
+		for(_SparseFeature fv: fvs){
+			vct[fv.getIndex()] = fv.getValue();
+			sum += fv.getValue();
+		}
+		for(_SparseFeature fv: fvs){
+			vct[fv.getIndex()] = fv.getValue()/sum;
+		}
+		return vct;
 	}
 }

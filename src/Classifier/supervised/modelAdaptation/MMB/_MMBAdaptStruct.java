@@ -167,7 +167,7 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 		//accumulate the prediction results during sampling procedure
 		doc.m_pCount ++;
 		doc.m_prob += Math.exp(prob); //>0.5?1:0;
-		return prob;
+		return Math.exp(prob);
 	}	
 	
 	protected void setMixture(double[] m){
@@ -177,4 +177,10 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 	public double[] getMixture(){
 		return m_mixture;
 	}
+//	
+//	@Override
+//	public int predict(_Doc doc){
+//		double prob = evaluate(doc);
+//		return prob>=0.5 ? 1:0;
+//	}	
 }

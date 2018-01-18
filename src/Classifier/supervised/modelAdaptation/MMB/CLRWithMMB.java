@@ -985,7 +985,7 @@ public class CLRWithMMB extends CLRWithHDP {
 //	@Override
 	public double trainTrace(String data, int iter, long start){
 		m_numberOfIterations = iter;
-//		m_thinning = 1;
+		m_thinning = 1;
 			
 		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());

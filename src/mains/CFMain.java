@@ -1,18 +1,13 @@
 package mains;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
-import Analyzer.MultiThreadedUserAnalyzer;
+import Analyzer.MultiThreadedLMAnalyzer;
 import Application.CollaborativeFiltering;
-import Application.CollaborativeFilteringWithAllNeighbors;
-import Application.CollaborativeFilteringWithMMB;
-import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -32,8 +27,12 @@ public class CFMain {
 		
 //		String providedCV = String.format("/zf8/lg5bt/DataSigir/%s/SelectedVocab.csv", dataset); // CV.
 //		String userFolder = String.format("/zf8/lg5bt/DataSigir/%s/Users", dataset);
+		
+		String fs = "DF";//"IG_CHI"
+		int lmTopK = 1000; // topK for language model.
+		String lmFvFile = String.format("./data/CoLinAdapt/%s/fv_lm_%s_%d.txt", dataset, fs, lmTopK);
 
-		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, false);
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);	
@@ -49,20 +48,20 @@ public class CFMain {
 		String[] models = new String[]{"avg", "mmb_mixture"};
 
 		if(!neiAll){
-			for(int t: new int[]{2,3,4,5}){
+			for(int t: new int[]{5}){
 				for(int k: new int[]{4,6,8,10}){
 			
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
 			// construct ranking neighbors
 //			cfInit.constructRankingNeighbors();
-			String cfFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test.csv", dataset, t, k);
+			String cfFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
 //			cfInit.saveUserItemPairs(cfFile);
 			
 			ArrayList<_User> cfUsers = cfInit.getUsers();
 			cfInit.loadRankingCandidates(cfFile);
-			dir = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_", dataset, t, k);
-//			cfInit.saveValidUsers(dir);
-		
+			dir = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_text_", dataset, t, k);
+			cfInit.saveUsersWithText(dir, lmTopK);}}
+			/***
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
@@ -157,7 +156,7 @@ public class CFMain {
 					writer.write(p+"\t");
 				writer.write("\n");
 			}
-			writer.close();
+			writer.close();***/
 		}
 	}
 }

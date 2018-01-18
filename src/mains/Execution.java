@@ -1,24 +1,11 @@
-/**
- * 
- */
 package mains;
+
+import influence.PageRank;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
-import Analyzer.Analyzer;
-import Analyzer.DocAnalyzer;
-import Analyzer.VctAnalyzer;
-import Classifier.BaseClassifier;
-import Classifier.metricLearning.LinearSVMMetricLearning;
-import Classifier.semisupervised.GaussianFields;
-import Classifier.semisupervised.GaussianFieldsByRandomWalk;
-import Classifier.supervised.LogisticRegression;
-import Classifier.supervised.NaiveBayes;
-import Classifier.supervised.PRLogisticRegression;
-import Classifier.supervised.SVM;
-import influence.PageRank;
 import structures.Parameter;
 import structures._Corpus;
 import topicmodels.TopicModel;
@@ -30,6 +17,17 @@ import topicmodels.markovmodel.LRHTMM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
+import Analyzer.Analyzer;
+import Analyzer.DocAnalyzer;
+import Analyzer.VctAnalyzer;
+import Classifier.BaseClassifier;
+import Classifier.metricLearning.LinearSVMMetricLearning;
+import Classifier.semisupervised.GaussianFields;
+import Classifier.semisupervised.GaussianFieldsByRandomWalk;
+import Classifier.supervised.LogisticRegression;
+import Classifier.supervised.NaiveBayes;
+import Classifier.supervised.PRLogisticRegression;
+import Classifier.supervised.SVM;
 
 /**
  * @author hongning

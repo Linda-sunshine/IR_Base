@@ -1,6 +1,5 @@
 package Application;
 
-
 public class LinkPredPreprocess {
 	
 	// save the user-item pair to graphlab for model training.

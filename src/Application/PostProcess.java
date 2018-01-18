@@ -1,5 +1,5 @@
+//package Application;
 package Application;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -240,11 +240,11 @@ public class PostProcess {
 		// post proces for svd
 //		int t = 2, k = 4;
 		int d = 32;
-		for(int t: new int[]{2,3,4, 5}){
-			for(int k: new int[]{4,6,8,10}){
+		for(int t: new int[]{3}){
+			for(int k: new int[]{4}){
 		PostProcess process = new PostProcess();
 		if(model.equals("fm")){
-			String predFile = String.format("./data/cfData/fm_%d/%s_cf_time_%d_topk_%d_fm.txt", d, dataset, t, k);
+			String predFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_d_%d_fm_text.txt", dataset, t, k, d);
 			process.loadData(predFile);
 			System.out.format("-----time-%d--topk--%d----\n", t, k);
 			process.calculateAllNDCGMAP();

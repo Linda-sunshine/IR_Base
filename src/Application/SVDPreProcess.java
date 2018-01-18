@@ -119,21 +119,71 @@ public class SVDPreProcess {
 		}
 	}
 	
+	// transfer the user-item matrix to mm file for graphchi
+	public void transfer2MMFileWithText(String filename, String outputfile, int pairSize){
+		if (filename==null || filename.isEmpty())
+			return;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			PrintWriter writer = new PrintWriter(new File(outputfile));
+			writer.write("%%MatrixMarket matrix coordinate real general\n% Generated Jan, 2018\n");
+			writer.write(String.format("%d\t%d\t%d\n", m_userIDs.size(), m_itemIDs.size(), pairSize));
+			// skip the first line
+			int count = 0;
+			line = reader.readLine();
+			count++;
+			while ((line = reader.readLine()) != null) {
+				count++;
+				String[] strs = line.split(",");
+				String userID = strs[0];
+				String itemID = strs[1];
+				int userIdx = m_userMap.get(userID)+1;
+				if(!m_itemMap.containsKey(itemID))
+					continue;
+				int itemIdx = m_itemMap.get(itemID)+1;
+				int rating = Integer.valueOf(strs[2]);
+				writer.write(String.format("%d\t%d\t%d,", userIdx, itemIdx, rating));
+				int start = strs[0].length() + strs[1].length() + strs[2].length() + 3;
+				writer.write(line.substring(start));
+			}
+			reader.close();
+			writer.close();
+			System.out.format("[Info]Finish transferring %d lines to MM File.\n", count);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
+	
 	public static void main(String[] args){
 		String dataset = "YelpNew";
-		for(int t: new int[]{2,3,4,5}){
-			for(int k: new int[]{4,6,8,10}){
+		for(int t: new int[]{2}){
+			for(int k: new int[]{4,6,8}){
+//				SVDPreProcess process = new SVDPreProcess();
+//				String trainFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_train.csv", dataset, t, k);
+//				String testFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
+//				String trainMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_train.mm", dataset, t, k);
+//				String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+//				// transfer csv data to mm data
+//				process.buildUserItemMap(trainFile);
+//				process.calcTestPairSize(testFile);
+//				
+//				process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+//				process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+				
 				SVDPreProcess process = new SVDPreProcess();
-				String trainFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_train.csv", dataset, t, k);
-				String testFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
-				String trainMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_train.mm", dataset, t, k);
-				String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+				String trainFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_train.csv", dataset, t, k);
+				String testFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_test.csv", dataset, t, k);
+				String trainMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_train.mm", dataset, t, k);
+				String testMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_test.mm", dataset, t, k);
+				
 				// transfer csv data to mm data
 				process.buildUserItemMap(trainFile);
 				process.calcTestPairSize(testFile);
+				process.transfer2MMFileWithText(trainFile, trainMMFile, process.getTrainPairSize());
+				process.transfer2MMFileWithText(testFile, testMMFile, process.getTestPairSize());
 				
-				process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
-				process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
 			}
 		}	
 	}
