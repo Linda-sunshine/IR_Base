@@ -159,6 +159,14 @@ public class _HDPThetaStar extends _thetaStar {
 		return String.format("%d(%.2f/%.3f)", m_memSize, m_pCount/(m_pCount+m_nCount), m_gamma);
 	}
 	
+	public double getPosCount(){
+		return m_pCount;
+	}
+	
+	public double getNegCount(){
+		return m_nCount;
+	}
+	
 	public void resetReviewNames(){
 		m_reviewNames.clear();
 	}

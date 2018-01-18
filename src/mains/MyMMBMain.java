@@ -142,7 +142,7 @@ public class MyMMBMain {
 		mmb.setConcentrationParams(alpha, eta, beta);
 		
 		double rho = 0.1; 
-		int burnin = 0, iter = 50, thin = 3;
+		int burnin = 10, iter = 40, thin = 3;
 		boolean jointAll = false;
 		mmb.setRho(rho);
 		mmb.setBurnIn(burnin);
@@ -155,18 +155,22 @@ public class MyMMBMain {
 //		mmb.calculateFrdStat();
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
+		System.out.println("\n[Info]Start time: " + start);
 
-		boolean trace = true; 
+		boolean trace = false; 
 		if(trace){
-			iter = 100;
-			mmb.trainTrace(dataset, iter, start);
-			mmb.printEdgeCount(String.format("%s_edge_count_jointAll_%b_iter_%d_%d.txt", dataset, jointAll, iter, start));
+			iter = 100; thin = 1;burnin = 0;
+			mmb.setNumberOfIterations(iter);
+			mmb.setThinning(thin);
+			mmb.setBurnIn(burnin);
+			mmb.trainTrace(dataset, start);
+			mmb.printEdgeCount(String.format("%s_edge_count_%b_iter_%d_%d.txt", dataset, jointAll, iter, start));
 		} else{
 			mmb.train();
 			mmb.test(); 
 		}
 		long end = System.currentTimeMillis();
-		System.out.println("\n[Info] Current time: " + end);
+		System.out.println("\n[Info]End time: " + end);
 		// the total time of training and testing in the unit of hours
 		double hours = (end - start)/(1000*60);
 		System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));

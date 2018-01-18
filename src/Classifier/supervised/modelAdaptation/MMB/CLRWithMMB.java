@@ -9,12 +9,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.apache.commons.math3.distribution.BinomialDistribution;
-
+import structures.MyPriorityQueue;
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
+import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
 import structures._User;
@@ -23,6 +23,7 @@ import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 public class CLRWithMMB extends CLRWithHDP {
 	// sparsity parameter
@@ -874,7 +875,60 @@ public class CLRWithMMB extends CLRWithHDP {
 			m_G0.sampling(m_hdpThetaStars[m].getModel());//getModel-> get \phi.
 		}
 	}
+	
+	//Sample the global mixture proportion, \gamma~Dir(m1, m2,..,\alpha)
+	@Override
+	protected void sampleGamma(){
 
+		for(int k=0; k<m_kBar; k++)
+			m_hdpThetaStars[k].m_hSize = 0;
+		
+		_MMBAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++){
+			user = (_MMBAdaptStruct) m_userList.get(i);	
+			if(user.getAdaptationSize() == 0)
+				continue;
+			// collect the thetas for docs and edges
+			Set<_HDPThetaStar> thetas = new HashSet<_HDPThetaStar>();
+			thetas.addAll(user.getHDPTheta4Rvw());
+			thetas.addAll(user.getHDPTheta4Edge());
+			for(_HDPThetaStar s: thetas){
+				s.m_hSize += sampleH(user, s);
+			}
+		}		
+		
+		m_cache[m_kBar] = Gamma.staticNextDouble(m_alpha, 1);//for gamma_e
+		
+		double sum = m_cache[m_kBar];
+		for(int k=0; k<m_kBar; k++){
+			m_cache[k] = Gamma.staticNextDouble(m_hdpThetaStars[k].m_hSize+m_alpha, 1);
+			sum += m_cache[k];
+		}
+		
+		for(int k=0; k<m_kBar; k++) 
+			m_hdpThetaStars[k].setGamma(m_cache[k]/sum);
+		
+		m_gamma_e = m_cache[m_kBar]/sum;//\gamma_e.
+	}
+	
+	//Sample how many local groups inside user reviews.
+	protected int sampleH(_MMBAdaptStruct user, _HDPThetaStar s){
+			int n = user.getHDPThetaMemSize(s);
+			n += user.getHDPThetaEdgeSize(s);
+			if(n==1)
+				return 1;//s(1,1)=1		
+
+			double etaGammak = Math.log(m_eta) + Math.log(s.getGamma());
+			//the number of local groups lies in the range [1, n];
+			for(int h=1; h<=n; h++){
+				double stir = stirling(n, h);
+				m_cache[h-1] = h*etaGammak + Math.log(stir);
+			}
+			
+			//h starts from 0, we want the number of tables here.	
+			return Utils.sampleInLogArray(m_cache, n) + 1;
+		}
+	
 	// Save the language models of thetaStars
 	public void saveClusterLanguageModels(String model){
 		PrintWriter writer;
@@ -920,6 +974,42 @@ public class CLRWithMMB extends CLRWithHDP {
 		checkClusters();
 		checkEdges();
 		checkMMBEdges();
+	}
+	
+	public void printInfo(boolean printDetails){
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(10);		
+		
+		//clear the statistics
+		for(int i=0; i<m_kBar; i++) {
+			m_hdpThetaStars[i].resetCount();
+			clusterRanker.add(new _RankItem(i, m_hdpThetaStars[i].getMemSize()));//get the most popular clusters
+		}
+
+		//collect statistics across users in adaptation data
+//		_HDPThetaStar theta = null;
+		_MMBAdaptStruct user;
+		for(int i=0; i<m_userList.size(); i++) {
+			user = (_MMBAdaptStruct)m_userList.get(i);
+			
+			for(_Review r: user.getReviews()){
+				if (r.getType() != rType.ADAPTATION)
+					continue; // only touch the adaptation data
+				else{
+					_HDPThetaStar theta = r.getHDPThetaStar();
+					if(r.getYLabel() == 1) 
+						theta.incPosCount(); 
+					else 
+						theta.incNegCount();
+				}
+			}
+		}
+		
+		System.out.print("[Info]Clusters:");
+		for(int i=0; i<m_kBar; i++){
+			double ratio = (m_hdpThetaStars[i].getEdgeSize(0)+m_hdpThetaStars[i].getEdgeSize(1))/(m_hdpThetaStars[i].getPosCount()+m_hdpThetaStars[i].getNegCount());
+			System.out.format("%s-(e_0:%d,e_1:%d,r/e:%.4f)\t", m_hdpThetaStars[i].showStat(), m_hdpThetaStars[i].getEdgeSize(0), m_hdpThetaStars[i].getEdgeSize(1), ratio);	
+		}
+		System.out.println();
 	}
 	
 	// In the training process, we sample documents first, then sample edges.
@@ -969,7 +1059,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			if (i%m_thinning==0)
 				evaluateModel();
 			
-//			printInfo(i%10==0);//no need to print out the details very often
+			printInfo(i%10==0);//no need to print out the details very often
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -982,10 +1072,10 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	int m_multipleE = 3;
 	
-//	@Override
-	public double trainTrace(String data, int iter, long start){
-		m_numberOfIterations = iter;
-		m_thinning = 1;
+	@Override
+	public double trainTrace(String data, long start){
+//		m_numberOfIterations = iter;
+//		m_thinning = 1;
 			
 		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
@@ -995,7 +1085,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		int count = 0;
 		
 		double likelihoodE = 0;
-//		double[] likelihoodE;
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars_Edges_Joint();
@@ -1008,7 +1097,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, m_burnIn, m_thinning, m_jointAll, start); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, start); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){

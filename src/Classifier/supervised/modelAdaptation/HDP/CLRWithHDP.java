@@ -437,7 +437,7 @@ public class CLRWithHDP extends CLRWithDP {
 	
 	// n is the total number of observation under group k for the user.
 	// h is the number of tables in group k for the user.
-	int stirling(int n, int h){
+	protected int stirling(int n, int h){
 		if(n==h) return 1;
 		if(h==0 || h>n) return 0;
 		String key = n+"@"+h;
@@ -645,12 +645,9 @@ public class CLRWithHDP extends CLRWithDP {
 	}
 	
 	@Override
-	public double trainTrace(String data, int iter){
-		m_numberOfIterations = iter;
-		m_thinning = 1;
+	public double trainTrace(String data, long start){
 			
 		System.out.print(toString());
-		
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		double likelihoodX = 0, likelihoodY = 0;
 		int count = 0;
@@ -665,7 +662,7 @@ public class CLRWithHDP extends CLRWithDP {
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, iter, m_burnIn, m_thinning, System.currentTimeMillis()); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, start); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
