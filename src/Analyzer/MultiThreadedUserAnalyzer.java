@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,9 +20,13 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
+import org.netlib.util.intW;
 import org.omg.CORBA.SystemException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
+import org.tartarus.snowball.ext.norwegianStemmer;
+
+import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
 
 import structures.TokenizeResult;
 import structures._Doc;
@@ -439,13 +444,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_neighborsMap.put(users[0], friends);
 			}
 			reader.close();
-			System.out.format("%d users don't have friends!", count);
+			System.out.format("%d users don't have friends!\n", count);
 			// map friends to users.
 			for(_User u: m_users){
 				if(m_neighborsMap.containsKey(u.getUserID()))
 					u.setFriends(m_neighborsMap.get(u.getUserID()));
-				else
-					System.out.println("The user does not have any friends.");
 			}
 		} catch(IOException e){
 			e.printStackTrace();
@@ -457,16 +460,60 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		return m_neighborsMap;
 	}
 	
-	public void checkFriendship(){
-		double sum = 0, miss = 0;
+	public HashMap<String, ArrayList<String>> checkFriendship(){
+		double sum = 0;
+		HashMap<String, ArrayList<String>> frdMap = new HashMap<String, ArrayList<String>>();
 		for(String uid: m_neighborsMap.keySet()){
+			ArrayList<String> frds = new ArrayList<>();
 			for(String frd: m_neighborsMap.get(uid)){
-				sum++;
-				if(!m_neighborsMap.containsKey(frd))
-					miss++;
+				if(m_neighborsMap.containsKey(frd) && hasFriend((String[]) m_neighborsMap.get(frd), uid)){
+					frds.add(frd);
+				}
+			}
+			if(frds.size() > 0){
+				frdMap.put(uid, frds);
+				sum += frds.size();
 			}
 		}
-		System.out.println("The avg friend size is: " + (sum-miss)/m_neighborsMap.size());
+		System.out.format("%d users' friends are recorded, avg friends: %.2f.\n", frdMap.size(), sum/frdMap.size());
+		int miss = 0;
+		for(String uid: frdMap.keySet()){
+			ArrayList<String> frds = frdMap.get(uid);
+			for(String frd: frds){
+				if(!frdMap.containsKey(frd) || !frdMap.get(frd).contains(uid)){
+					miss++;
+				}
+			}
+		}
+		System.out.format("%d connections are missing.\n", miss);
+		return frdMap;
+	}
+	
+	public void writeFriends(String filename, HashMap<String, ArrayList<String>> frdMap){
+		try{
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(String uid: frdMap.keySet()){
+				writer.write(uid+"\t");
+				ArrayList<String> frds = frdMap.get(uid);
+				for(int i=0; i<frds.size(); i++){
+					if(i != frds.size()-1){
+						writer.write(frds.get(i)+"\t");
+					} else
+						writer.write(frds.get(i)+"\n");
+				}
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public boolean hasFriend(String[] frds, String frd){
+		for(String f: frds){
+			if(f.equals(frd))
+				return true;
+		}
+		return false;
 	}
 	
 	public void rmMultipleReviews4OneItem(){

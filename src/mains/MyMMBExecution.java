@@ -85,12 +85,10 @@ public class MyMMBExecution {
 		adaptation.loadUsers(analyzer.getUsers());
 		adaptation.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
-		System.out.println("\n[Info]Start time: " + start);
 
 		if(param.m_trace){
-//			param.m_nuOfIterations = 100;
 			adaptation.trainTrace(param.m_data, start);
-			adaptation.printEdgeCount(String.format("%s_edge_count_jointAll_%b_iter_%d_%d.txt", param.m_data, param.m_jointAll, param.m_nuOfIterations, start));
+			adaptation.printEdgeCount(String.format("%s_edge_count_iter_%d_%d.txt", param.m_data, param.m_nuOfIterations, start));
 			adaptation.test();
 		} else{
 			adaptation.train();
@@ -98,7 +96,8 @@ public class MyMMBExecution {
 		}
 		// record the time
 		long end = System.currentTimeMillis();
-		System.out.println("\n[Info]End time: " + end);
+		System.out.println("\n[Info]Start time: " + start);
+		System.out.println("[Info]End time: " + end);
 		// the total time of training and testing in the unit of hours
 		double hours = (end - start)/(1000*60*60);
 		System.out.print(String.format("[Time]This training+testing process took %.2f hours.\n", hours));
@@ -106,5 +105,6 @@ public class MyMMBExecution {
 			String dir = String.format("%s/%d_%s", param.m_saveDir, end, param.m_data);
 			((MTCLinAdaptWithMMB) adaptation).saveEverything(dir);
 		}
+		
 	}
 }

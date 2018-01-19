@@ -39,7 +39,7 @@ public class MyMMBMain {
 //		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -49,12 +49,13 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends_filter.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(friendFile);
-//		analyzer.checkFriendship();
+//		analyzer.writeFriends(friendFile+".filter", analyzer.checkFriendship());
+		/***
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
@@ -163,7 +164,7 @@ public class MyMMBMain {
 			mmb.setThinning(thin);
 			mmb.setBurnIn(burnin);
 			mmb.trainTrace(dataset, start);
-			mmb.printEdgeCount(String.format("%s_edge_count_%b_iter_%d_%d.txt", dataset, jointAll, iter, start));
+			mmb.printEdgeCount(String.format("%s_edge_count_iter_%d_%d.txt", dataset, iter, start));
 		} else{
 			mmb.train();
 			mmb.test(); 
@@ -174,6 +175,6 @@ public class MyMMBMain {
 		// the total time of training and testing in the unit of hours
 		double hours = (end - start)/(1000*60);
 		System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
-		
+		***/
 	}
 }
