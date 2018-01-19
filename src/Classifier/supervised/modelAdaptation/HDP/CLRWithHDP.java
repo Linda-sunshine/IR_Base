@@ -242,7 +242,8 @@ public class CLRWithHDP extends CLRWithDP {
 		
 		m_hdpThetaStars[k].enable();
 		m_hdpThetaStars[k].initLMStat(m_lmDim);
-				
+		m_hdpThetaStars[k].setPerfStat(m_classNo);
+		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[k].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
@@ -250,7 +251,7 @@ public class CLRWithHDP extends CLRWithDP {
 		swapTheta(m_kBar, k);
 		m_kBar++;
 		// for getting stat
-		System.out.println("[Info]Sampling documents generates one new cluster!");
+		System.out.print("d*");
 		m_newCluster4Doc++;
 	}
 	
@@ -760,7 +761,7 @@ public class CLRWithHDP extends CLRWithDP {
 				continue;
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.TEST)
-					continue;				
+					continue;		
 				for(int k=0; k<probs.length; k++){
 					curTheta = m_hdpThetaStars[k];
 					r.setHDPThetaStar(curTheta);
@@ -773,6 +774,8 @@ public class CLRWithHDP extends CLRWithDP {
 					probs[k] -= logSum;
 				// posterior in log space
 				r.setClusterPosterior(probs);
+				int index = Utils.maxOfArrayIndex(probs, probs.length);
+				r.setHDPThetaStar(m_hdpThetaStars[index]);
 			}
 		}
 	}

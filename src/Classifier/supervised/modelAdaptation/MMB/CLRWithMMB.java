@@ -9,11 +9,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.apache.commons.math3.distribution.BinomialDistribution;
+
 import structures.MyPriorityQueue;
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
+import structures._PerformanceStat.TestMode;
 import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
@@ -183,7 +186,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		calculate_E_step_Edge();
 		sanityCheck();
 		long end = System.currentTimeMillis();
-		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
+		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
 		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
 	}
 	
@@ -416,7 +419,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 		mmb_0.add((int) m_MNL[0]); mmb_1.add((int) m_MNL[1]);bk_0.add((int) m_MNL[2]);
 		System.out.print(String.format("\n[Time]Sampling: mmb_0: %.3f secs, mmb_1: %.3f secs, bk_0: %.3f secs\n", (double)m_time[0]/1000, (double)m_time[1]/1000, (double)m_time[2]/1000));
-		System.out.print(String.format("\n[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
+		System.out.print(String.format("[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
 	
 	// calculate the average friend number of training users, testing users.
@@ -686,7 +689,7 @@ public class CLRWithMMB extends CLRWithHDP {
 			sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
 			k = m_kBar - 1;
 			// for getting stat
-			System.out.println("[Info]Sampling edges generally generates one new cluster!");
+			System.out.print("em*");
 			m_newCluster4Edge++;
 		}
 		// update the setting after sampling z_ij.
@@ -816,7 +819,7 @@ public class CLRWithMMB extends CLRWithHDP {
  				// we need to sample the new cluster
  				sampleNewCluster4Edge();// shall we consider the current edge?? posterior sampling??
  				// for getting stat
- 				System.out.println("[Info]Sampling edges jointly generates one new cluster!");
+ 				System.out.print("ej*");
  				m_newCluster4EdgeJoint++;
  			}
  			// Update the thetaStar and user info after getting z_ij.
@@ -851,7 +854,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_hdpThetaStars[m_kBar].enable();
 		m_G0.sampling(m_hdpThetaStars[m_kBar].getModel());
 		m_hdpThetaStars[m_kBar].initLMStat(m_lmDim);
-
+		m_hdpThetaStars[m_kBar].setPerfStat(m_classNo);
+		
 		double rnd = Beta.staticNextDouble(1, m_alpha);
 		m_hdpThetaStars[m_kBar].setGamma(rnd*m_gamma_e);
 		m_gamma_e = (1-rnd)*m_gamma_e;
@@ -976,7 +980,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		checkMMBEdges();
 	}
 	
-	public void printInfo(boolean printDetails){
+	@Override
+	public void printInfo(){
 		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(10);		
 		
 		//clear the statistics
@@ -986,10 +991,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 
 		//collect statistics across users in adaptation data
-//		_HDPThetaStar theta = null;
-		_MMBAdaptStruct user;
 		for(int i=0; i<m_userList.size(); i++) {
-			user = (_MMBAdaptStruct)m_userList.get(i);
+			_MMBAdaptStruct user = (_MMBAdaptStruct)m_userList.get(i);
 			
 			for(_Review r: user.getReviews()){
 				if (r.getType() != rType.ADAPTATION)
@@ -1003,19 +1006,81 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 		}
-		
-		System.out.print("[Info]Clusters:");
+		System.out.println("[Info]Clusters:");
 		for(int i=0; i<m_kBar; i++){
-			double ratio = (m_hdpThetaStars[i].getEdgeSize(0)+m_hdpThetaStars[i].getEdgeSize(1))/(m_hdpThetaStars[i].getPosCount()+m_hdpThetaStars[i].getNegCount());
-			System.out.format("%s-(e_0:%d,e_1:%d,r/e:%.4f)\t", m_hdpThetaStars[i].showStat(), m_hdpThetaStars[i].getEdgeSize(0), m_hdpThetaStars[i].getEdgeSize(1), ratio);	
+			_HDPThetaStar theta = m_hdpThetaStars[i];
+			double edgeSize = theta.getEdgeSize(0) + theta.getEdgeSize(1);
+			double ratio = edgeSize == 0 ? 0: edgeSize/(theta.getPosCount()+theta.getNegCount());
+			System.out.format("%s-(e_0:%d,e_1:%d,e/r:%.4f)-(pos_f1:%.4f,neg_f1:%.4f)\n", theta.showStat(), 
+			theta.getEdgeSize(0), theta.getEdgeSize(1), ratio, theta.getPerfStat().getF1(1), theta.getPerfStat().getF1(0));	
 		}
 		System.out.println();
+	}
+	// go over all the reviews and calculate the performance of each cluster
+	public void evaluateClusterPerformance(){
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+			
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				@Override
+				public void run() {
+					_AdaptStruct user;
+					_HDPThetaStar theta;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+									
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									int trueL = r.getYLabel();
+									int predL = user.predict(r); // evoke user's own model
+									r.setPredictLabel(predL);
+									theta = r.getHDPThetaStar();
+									theta.getPerfStat().addOnePredResult(predL, trueL);
+								}
+							}							
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+					
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			threads.get(k).start();
+		}
+			
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+			
+		// calculate the F1 for each cluster
+		for(int k=0; k<m_kBar; k++){
+			m_hdpThetaStars[k].getPerfStat().calculatePRF();	
+		}
 	}
 	
 	// In the training process, we sample documents first, then sample edges.
 	@Override
 	public double train(){
-		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
+//		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		double likelihoodX = 0, likelihoodY = 0, likelihoodE = 0;
@@ -1039,14 +1104,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		for(int i=0; i<m_numberOfIterations; i++){
 			// Cluster assignment, thinning to reduce auto-correlation.	
 			
-//			while(ecount++ < 3){
-//				calculate_E_step();
-//				assignClusterIndex();
-//				sampleGamma();
-//			}
-//			likelihoodY = estPhi();
-//			ecount = 0;
-//			
 			calculate_E_step();
 			likelihoodY = calculate_M_step();
 			
@@ -1056,10 +1113,17 @@ public class CLRWithMMB extends CLRWithHDP {
 			curLikelihood = likelihoodY + likelihoodX + likelihoodE;
 			delta = (lastLikelihood - curLikelihood)/curLikelihood;
 			
-			if (i%m_thinning==0)
+			if (i%m_thinning==0){
 				evaluateModel();
-			
-			printInfo(i%10==0);//no need to print out the details very often
+				evaluateClusterPerformance();
+				printInfo();
+				// clear the performance data for each cluster
+				for(int k=0; k<m_kBar; k++){
+					m_hdpThetaStars[k].getPerfStat().clear();
+				}
+			}
+
+//			printInfo(i%10==0);//no need to print out the details very often
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
