@@ -235,12 +235,12 @@ public class PostProcess {
 	
 	public static void main(String[] args){
 		// post process for fm
-		String model = "fm";
+		String model = "svd";
 		String dataset = "YelpNew";
 		// post proces for svd
 //		int t = 2, k = 4;
-		int d = 32;
-		for(int t: new int[]{3}){
+		int d = 10;
+		for(int t: new int[]{2}){
 			for(int k: new int[]{4}){
 		PostProcess process = new PostProcess();
 		if(model.equals("fm")){
