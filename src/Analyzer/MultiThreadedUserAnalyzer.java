@@ -20,13 +20,8 @@ import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
 
-import org.netlib.util.intW;
-import org.omg.CORBA.SystemException;
 import org.tartarus.snowball.SnowballStemmer;
 import org.tartarus.snowball.ext.englishStemmer;
-import org.tartarus.snowball.ext.norwegianStemmer;
-
-import com.sun.org.apache.xml.internal.resolver.helpers.PublicId;
 
 import structures.TokenizeResult;
 import structures._Doc;

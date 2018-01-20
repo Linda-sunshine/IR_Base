@@ -982,7 +982,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	
 	@Override
 	public void printInfo(){
-		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(10);		
+		MyPriorityQueue<_RankItem> clusterRanker = new MyPriorityQueue<_RankItem>(m_kBar);		
 		
 		//clear the statistics
 		for(int i=0; i<m_kBar; i++) {
@@ -1007,8 +1007,8 @@ public class CLRWithMMB extends CLRWithHDP {
 			}
 		}
 		System.out.println("[Info]Clusters:");
-		for(int i=0; i<m_kBar; i++){
-			_HDPThetaStar theta = m_hdpThetaStars[i];
+		for(_RankItem it: clusterRanker){
+			_HDPThetaStar theta = m_hdpThetaStars[it.m_index];
 			double edgeSize = theta.getEdgeSize(0) + theta.getEdgeSize(1);
 			double ratio = edgeSize == 0 ? 0: edgeSize/(theta.getPosCount()+theta.getNegCount());
 			System.out.format("%s-(e_0:%d,e_1:%d,e/r:%.4f)-(pos_f1:%.4f,neg_f1:%.4f)\n", theta.showStat(), 
@@ -1123,7 +1123,6 @@ public class CLRWithMMB extends CLRWithHDP {
 				}
 			}
 
-//			printInfo(i%10==0);//no need to print out the details very often
 			System.out.print(String.format("[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 			if(Math.abs(delta) < m_converge)
 				break;
@@ -1185,10 +1184,18 @@ public class CLRWithMMB extends CLRWithHDP {
 				// evaluate the model
 				if (i%m_thinning==0){
 					evaluateModel();
+					evaluateClusterPerformance();
+					printInfo();
+					// clear the performance data for each cluster
+					for(int k=0; k<m_kBar; k++){
+						m_hdpThetaStars[k].getPerfStat().clear();
+					}
+					// test each user's performance and clear it
 					test();
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
+				
 //				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
 				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
