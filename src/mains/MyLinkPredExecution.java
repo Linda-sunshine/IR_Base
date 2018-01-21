@@ -8,10 +8,13 @@ import opennlp.tools.util.InvalidFormatException;
 import structures.DPParameter;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
+import Application.LinkPredictionWithMMBPerEdge;
 import Application.LinkPredictionWithSVM;
 import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredExecution {
+	
+	
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
 		DPParameter param = new DPParameter(args);
 
@@ -26,8 +29,7 @@ public class MyLinkPredExecution {
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", param.m_prefix, param.m_data); // CV.
-		String trainFolder = String.format("%s/%s/Users_%d_train", param.m_prefix, param.m_data, param.m_trainSize);
-		String testFolder = String.format("%s/%s/Users_%d_test", param.m_prefix, param.m_data, param.m_testSize);
+		String userFolder = String.format("%s/%s/Users", param.m_prefix, param.m_data);
 		
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fv);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", param.m_prefix, param.m_data, param.m_fvSup);
@@ -38,31 +40,28 @@ public class MyLinkPredExecution {
 		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
 		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends.txt", param.m_prefix,param.m_data,param.m_data);
+		String trainFriendFile = String.format("%s/%s/%sFriends_train.txt", param.m_prefix,param.m_data,param.m_data);
+		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", param.m_prefix,param.m_data,param.m_data);
+
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
-		analyzer.config(trainRatio, 1, true);
+		analyzer.config(trainRatio, param.m_adaptRatio, true);
+		analyzer.loadUserDir(userFolder);
+		analyzer.buildFriendship(trainFriendFile);
+		analyzer.loadTestFriendship(testFriendFile);
+		analyzer.checkFriendSize();
 		
-		// load training users with (adaptRatio=1, testRatio=0)
-		analyzer.loadUserDir(trainFolder);
-				
-		// load testing users with (adaptaRatio=0, testRatio=1)
-		analyzer.config(trainRatio, 0, false);
-		analyzer.loadUserDir(testFolder);
-		
-		analyzer.buildFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
 		double[] globalLM = analyzer.estimateGlobalLM();
-		if(param.m_fv == 5000 || param.m_fv == 3071) featureGroupFile = null;
-		if(param.m_fvSup == 5000 || param.m_fv == 3071) featureGroupFileSup = null;
-		if(param.m_lmTopK == 5000 || param.m_lmTopK == 3071) lmFvFile = null;
 		
 		LinkPredictionWithMMB linkPred = null;
 		
-		if(param.m_model.equals("mmb"))
+		if(param.m_model.equals("mmb_node"))
 			linkPred = new LinkPredictionWithMMB();
+		else if(param.m_model.equals("mmb_edge"))
+			linkPred = new LinkPredictionWithMMBPerEdge();
 		else if(param.m_model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(param.m_c, param.m_rho);
 		else if(param.m_model.equals("svm+text"))
@@ -85,14 +84,11 @@ public class MyLinkPredExecution {
 		// training testing operations.
 		linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
 		linkPred.getMMB().loadUsers(analyzer.getUsers());
-		linkPred.getMMB().calculateFrdStat();
-
-		linkPred.getMMB().checkTestReviewSize();
 		linkPred.getMMB().setDisplayLv(displayLv);
 		
 		linkPred.getMMB().train();
-
 		linkPred.linkPrediction();
-		linkPred.printLinkPrediction("./", param.m_model, param.m_trainSize, param.m_testSize);
+		linkPred.calculateAllNDCGMAP();
+		linkPred.calculateAvgNDCGMAP();
 	}
 }

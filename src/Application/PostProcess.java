@@ -234,28 +234,50 @@ public class PostProcess {
 	}
 	
 	public static void main(String[] args){
-		// post process for fm
-		String model = "svd";
-		String dataset = "YelpNew";
-		// post proces for svd
-//		int t = 2, k = 4;
+		
 		int d = 10;
-		for(int t: new int[]{2}){
-			for(int k: new int[]{4}){
-		PostProcess process = new PostProcess();
-		if(model.equals("fm")){
-			String predFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_d_%d_fm_text.txt", dataset, t, k, d);
-			process.loadData(predFile);
-			System.out.format("-----time-%d--topk--%d----\n", t, k);
-			process.calculateAllNDCGMAP();
-			process.calculateAvgNDCGMAP();
-		} else if(model.equals("svd")){
-			String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
-			String predFile = String.format("./data/cfData/svd_predict_%d/%s_cf_time_%d_topk_%d_test.mm.predict", d, dataset, t, k);
-			process.loadTruePredFiles(testMMFile, predFile);
-			System.out.format("-----time-%d--topk--%d----\n", t, k);
-			process.calculateAllNDCGMAP();
-			process.calculateAvgNDCGMAP();
-		}}}
+		String model = "fm";
+		String dataset = "YelpNew";
+		String setting = "all_nei"; // "all_nei"
+		
+		if(setting.equals("topk")){
+			for(int t: new int[]{2}){
+				for(int k: new int[]{4}){
+					PostProcess process = new PostProcess();
+					if(model.equals("fm")){
+						String predFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_d_%d_fm_text.txt", dataset, t, k, d);
+						process.loadData(predFile);
+						System.out.format("-----time-%d--topk--%d----\n", t, k);
+						process.calculateAllNDCGMAP();
+						process.calculateAvgNDCGMAP();
+					} else if(model.equals("svd")){
+						String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+						String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_time_%d_topk_%d_test.mm.predict", setting, d, dataset, t, k);
+						process.loadTruePredFiles(testMMFile, predFile);
+						System.out.format("-----time-%d--topk--%d----\n", t, k);
+						process.calculateAllNDCGMAP();
+						process.calculateAvgNDCGMAP();
+					}
+				}
+			}
+		} else if(setting.equals("all_nei")){
+			for(int p: new int[]{10, 20, 30, 40, 50}){
+				PostProcess process = new PostProcess();
+				if(model.equals("fm")){
+					String predFile = String.format("./data/cfData/fm_%s_%d/%s_cf_all_nei_pop_%d_d_%d_fm.txt", setting, d, dataset, p, d);
+					process.loadData(predFile);
+					System.out.format("----all nei--pop--%d----\n", p);
+					process.calculateAllNDCGMAP();
+					process.calculateAvgNDCGMAP();
+				} else if(model.equals("svd")){
+					String testMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_test.mm", dataset, p);
+					String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_all_nei_pop_%d_test.mm.predict", setting, d, dataset, p);
+					process.loadTruePredFiles(testMMFile, predFile);
+					System.out.format("----all nei--pop--%d----\n", p);
+					process.calculateAllNDCGMAP();
+					process.calculateAvgNDCGMAP();
+				}
+			}
+		}
 	}
 }

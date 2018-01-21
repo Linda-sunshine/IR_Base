@@ -139,8 +139,6 @@ public class MyMMBIsoMain {
 		
 		mmb.loadLMFeatures(analyzer.getLMFeatures());
 		mmb.loadUsers(analyzer.getUsers());
-		mmb.calculateFrdStat();
-		mmb.checkTestReviewSize();
 		mmb.setDisplayLv(displayLv);
 		
 		mmb.train();

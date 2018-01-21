@@ -197,28 +197,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		else
 			calculate_E_step_Edge_joint_bk();
 	}
-	
-	
-	// we calculate the mixture of each user based on their review assignment and edge assignment
-	// this function is used in link prediction: 
-	// train users only have training reviews; test users only have testing reviews.
-	public void calculateMixturePerUser(){	
-		
-		_MMBAdaptStruct user;
-		for(int i=0; i<m_userList.size(); i++){
-			user = (_MMBAdaptStruct) m_userList.get(i);
-			// if it is train user
-			if(user.getTestSize() == 0){
-				calculateMixture4TrainUser(user);
-			// if it is test user
-			} else{
-				calculateMixture4TestUser(user);
-			}
-		}
-	}
 
 	// calculate the mixture for train user based on review assignment and edge assignment
-	public void calculateMixture4TrainUser(_MMBAdaptStruct user){
+	public void calcMix4UsersWithAdaptReviews(_MMBAdaptStruct user){
 		double sum = 0;
 		double[] probs = new double[m_kBar];
 		_HDPThetaStar theta;
@@ -234,8 +215,8 @@ public class CLRWithMMB extends CLRWithHDP {
 		user.setMixture(probs);
 	}
 	
-	// calculate the mixture for test user based on review assignment
-	public void calculateMixture4TestUser(_MMBAdaptStruct user){
+	// calculate the mixture for test user based on review content and group popularity
+	public void calcMix4UsersNoAdaptReviews(_MMBAdaptStruct user){
 		int cIndex = 0;
 		double prob, logSum, sum = 0;
 		double[] probs = new double[m_kBar];
@@ -421,38 +402,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		System.out.print(String.format("\n[Time]Sampling: mmb_0: %.3f secs, mmb_1: %.3f secs, bk_0: %.3f secs\n", (double)m_time[0]/1000, (double)m_time[1]/1000, (double)m_time[2]/1000));
 		System.out.print(String.format("[Info]kBar: %d, background prob: %.5f, eij=0(mmb): %.1f, eij=1:%.1f, eij=0(background):%.1f\n", m_kBar, 1-m_rho, m_MNL[0], m_MNL[1],m_MNL[2]));
 	}
-	
-	// calculate the average friend number of training users, testing users.
-	// it only applies to the two set of training and testing users.
-	public void calculateFrdStat(){
-		Set<String> trainUsers = new HashSet<String>();
-		Set<String> testUsers = new HashSet<String>();
-		for(_AdaptStruct u:	m_userList){
-			if(u.getTestSize() == 0){
-				trainUsers.add(u.getUserID());
-			} else {
-				testUsers.add(u.getUserID());
-			}
-		}
-		double trainSum = 0, testSum = 0;
-		for(_AdaptStruct u: m_userList){
-			// training users
-			if(u.getTestSize() == 0){
-				for(String f: u.getUser().getFriends()){
-					if(trainUsers.contains(f))
-						trainSum++;
-				}
-			} else{
-				for(String f: u.getUser().getFriends()){
-					if(trainUsers.contains(f) || testUsers.contains(f)){
-						testSum++;
-					}
-				}
-			}
-		}
-		System.out.println(String.format("[Stat]Avg friends for training users is %.2f; avg friends for testing users is %.2f.\n", trainSum/trainUsers.size(), testSum/testUsers.size()));	
-	}
-	
+
 	private void checkClusters(){
 		int index = 0;
 		int zeroDoc = 0, zeroEdge = 0;

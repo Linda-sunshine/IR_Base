@@ -92,17 +92,13 @@ public class _MMBAdaptStruct extends _HDPAdaptStruct {
 //			m_hdpThetaEdgeSizeMap.remove(s);
 	}
 	
-	// Check if the user has connection with another user, uj.
-	public boolean hasEdge(_HDPAdaptStruct uj){
-		if(m_neighborMap.containsKey(uj))
-			return true;
-		else
-			return false;
-	}
 	public int getEdge(_HDPAdaptStruct uj){
 		return m_neighborMap.get(uj).getEdge();
 	}
 	
+	public boolean hasEdge(_HDPAdaptStruct uj){
+		return m_neighborMap.containsKey(uj);
+	}
 	// Add a neighbor, update the <Neighbor, ThetaStar> map and <Neighbor, edge_value> map.
 	public void addNeighbor(_HDPAdaptStruct uj, _HDPThetaStar theta, int e){
 		m_neighborMap.put(uj, new _MMBNeighbor(uj, theta, e));

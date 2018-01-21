@@ -1,13 +1,17 @@
 package mains;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.CollaborativeFiltering;
+import Application.CollaborativeFilteringWithAllNeighbors;
+import Application.CollaborativeFilteringWithMMB;
 
 public class CFMain {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -39,9 +43,9 @@ public class CFMain {
 		analyzer.rmMultipleReviews4OneItem();
 		
 		/***Collaborative filtering starts here.***/
-		boolean neiAll = false;
+		boolean neiAll = true;
 		boolean equalWeight = false;
-		String dir, model;
+		String dir, model, cfFile;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
 //		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
@@ -51,17 +55,17 @@ public class CFMain {
 			for(int t: new int[]{5}){
 				for(int k: new int[]{4,6,8,10}){
 			
+			dir = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_", dataset, t, k);
 			CollaborativeFiltering cfInit = new CollaborativeFiltering(analyzer.getUsers(), analyzer.getFeatureSize()+1, k, t);
+			
 			// construct ranking neighbors
 //			cfInit.constructRankingNeighbors();
-			String cfFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
-//			cfInit.saveUserItemPairs(cfFile);
+//			cfInit.saveUserItemPairs(dir);
 			
+			cfFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
 			ArrayList<_User> cfUsers = cfInit.getUsers();
 			cfInit.loadRankingCandidates(cfFile);
-			dir = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_text_", dataset, t, k);
-			cfInit.saveUsersWithText(dir, lmTopK);}}
-			/***
+			
 			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
 			
@@ -105,29 +109,37 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
+			}}
+		} else{
+			for(int k: new int[]{4}){
+				for(int pop: new int[]{10, 20, 30, 40, 50}){
+
+			dir = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_", dataset, pop);
+			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize(), pop);
 			
-		}}} else{
-			
-			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
 			// construct ranking neighbors
 			cfInit.constructRankingNeighbors();
-			cfInit.saveUserItemPairs("./");
-			
+			cfInit.saveUserItemPairs(dir);
+			/***
+			cfFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_test.csv", dataset, pop);
 			ArrayList<_User> cfUsers = cfInit.getUsers();
+//			cfInit.calculatePopularity();
+			cfInit.loadRankingCandidates(cfFile);
+			
 			int validUser = cfInit.getValidUserSize();
-
 			double[][] performance = new double[models.length][2];
+			
 			for(int m=0; m<models.length; m++){
 				model = models[m];
 				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
-				System.out.format("\n-----------------run %s with all neighbors-------------------------\n", model);
+				System.out.format("\n-----------------run %s with all neighbors pop %d-------------------------\n", model, pop);
 			
 				CollaborativeFiltering cf = null;
 				if(model.equals("mmb_mixture")){
-					cf = new CollaborativeFilteringWithMMBWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
-					cf = new CollaborativeFilteringWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
 				
 				cf.setValidUserSize(validUser);
 				cf.setEqualWeightFlag(equalWeight);
@@ -140,13 +152,13 @@ public class CFMain {
 				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_all.txt", model, equalWeight));
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_topk_%d_all.txt", model, equalWeight, k));
 
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
-				System.out.format("\n----------------finish running %s with all neighbors-------------------------\n", model);
+				System.out.format("\n----------------finish running %s with all neighbors pop %d-------------------------\n", model, pop);
 			}
-			String filename = String.format("./data/%s_cf_equalWeight_%b_all_nei.txt", dataset, equalWeight);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_topk_%d_pop_%d_all_nei.txt", dataset, equalWeight, k, pop);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 
@@ -156,7 +168,8 @@ public class CFMain {
 					writer.write(p+"\t");
 				writer.write("\n");
 			}
-			writer.close();***/
-		}
+			writer.close();
+			***/
+		}}}
 	}
 }

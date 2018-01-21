@@ -1,9 +1,7 @@
 package Application;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import structures.MyPriorityQueue;
@@ -28,16 +26,20 @@ public class LinkPredictionWithMMB {
 	
 	// we use MAP for parameter estimation of B
 	// In order to calculate the similarity, we need to use MLE to calculate the value of B
-	private double[][] m_B;
+	protected double[][] m_B;
 	protected int m_numberOfCores;
 	protected Object m_simMtxLock = null;
 	protected Object m_frdMtxLock = null;
-
+	protected Object m_NDCGMAPLock = null;
+	
 	MTCLinAdaptWithMMB m_mmbModel = null;
+	
+	double[] m_NDCGs, m_MAPs;
 	
 	public LinkPredictionWithMMB(){
 		m_simMtxLock = new Object();
 		m_frdMtxLock = new Object();
+		m_NDCGMAPLock = new Object();
 	}
 	
 	public void calcTrainTestSize(){
@@ -58,6 +60,30 @@ public class LinkPredictionWithMMB {
 		
 		if(m_trainSize + m_testSize != m_allUserSize)
 			System.out.println("The user size does not match!!");
+		
+		calculateFrdStat();
+	}
+
+	// calculate the average friend number of training users, testing users.
+	// it only applies to the two set of training and testing users.
+	public void calculateFrdStat(){
+
+		double trainSum = 0, testSum = 0, trainMiss = 0, testMiss = 0;
+		for(_AdaptStruct u: m_mmbModel.getUsers()){
+			// training users
+			if(u.getUser().getFriendSize() == 0)
+				trainMiss++;
+			else
+				trainSum += u.getUser().getFriendSize();
+			if(u.getUser().getTestFriendSize() == 0)
+				testMiss++;
+			else
+				testSum += u.getUser().getTestFriendSize();
+		}
+		System.out.println(String.format("[Stat]%d training users don't have friends, %d testing users don't have friends.", 
+				(m_allUserSize-trainMiss), (m_allUserSize-testMiss)));	
+		System.out.println(String.format("[Stat]Avg training friend size is %.2f; avg testing friend size is %.2f.\n",
+				trainSum/(m_allUserSize-trainMiss), testSum/(m_allUserSize-testMiss)));	
 	}
 	
 	public MTCLinAdaptWithMMB getMMB(){
@@ -81,15 +107,29 @@ public class LinkPredictionWithMMB {
 		m_simMtx = new double[m_allUserSize][m_allUserSize];
 	}
 	
+	// calculate the global mixture of each user:
+	// we calculate the mixture of each user based on their review assignment and edge assignment
+	// train users only have training reviews; test users only have testing reviews.
+	public void calculateMixturePerUser(){
+		ArrayList<_AdaptStruct> userList = m_mmbModel.getUsers();
+		for(int i=0; i<userList.size(); i++){
+			_MMBAdaptStruct user = (_MMBAdaptStruct) userList.get(i);
+			// if it is train user
+			if(user.getTestSize() == 0){
+				m_mmbModel.calcMix4UsersWithAdaptReviews(user);
+			// if it is test user
+			} else{
+				m_mmbModel.calcMix4UsersNoAdaptReviews(user);
+			}
+		}
+	}
 	public void linkPrediction(){
 		initLinkPred();
 		
-		// calculate the global mixture for each user
 		m_B = m_mmbModel.MLEB();
-		m_mmbModel.calculateMixturePerUser();
-		
+		calculateMixturePerUser();
+			
 		_MMBAdaptStruct ui;
-	
 		// for each training user, rank their neighbors.
 		for(int i=0; i<m_trainSize; i++){
 			ui = m_trainSet.get(i);
@@ -106,64 +146,6 @@ public class LinkPredictionWithMMB {
 
 	}
 	
-	// perform link prediction in multi-threading
-	public void linkPrediction_MultiThread(){
-		initLinkPred();
-		// calculate the global mixture for each user
-		m_B = m_mmbModel.MLEB();
-		m_mmbModel.calculateMixturePerUser();
-		
-		// use a boolean flag to decide whether it is training set or testing set
-		linkPrediction_MultiThread_Split(m_trainSet, true);
-		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
-
-		linkPrediction_MultiThread_Split(m_testSet, false);
-		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
-	}		
-	
-	// perform multi-thread on training users/testing users
-	protected void linkPrediction_MultiThread_Split(ArrayList<_MMBAdaptStruct> userSet, boolean train){
-		
-		final boolean trainFlag = train;
-		final ArrayList<_MMBAdaptStruct> users = userSet;
-		final int userSize = users.size();
-
-		m_numberOfCores = Runtime.getRuntime().availableProcessors();
-		// for each training user, rank their neighbors.
-		ArrayList<Thread> threads = new ArrayList<Thread>();
-		for(int i=0;i<m_numberOfCores;++i){
-			threads.add((new Thread() {
-				int core;
-				@Override
-				public void run() {
-					try {
-						for(int j=0; j+core <userSize; j+= m_numberOfCores){
-							_MMBAdaptStruct uj = users.get(j+core);
-							if(trainFlag)
-								linkPrediction4TrainUsers_MultiThread(j+core, uj);
-							else {
-								linkPrediction4TestUsers_MultiThread(j+core, uj);
-							}
-						}
-					} catch(Exception ex){
-						ex.printStackTrace();
-					}
-				}
-				private Thread initialize(int core) {
-					this.core = core;
-					return this;
-				}
-			}).initialize(i));
-			threads.get(i).start();
-		}
-		for(int i=0;i<m_numberOfCores;++i){
-			try {
-				threads.get(i).join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			} 
-		} 		
-	}
 	// for train users, we only consider train users as their friends.
 	protected void linkPrediction4TrainUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
@@ -181,6 +163,8 @@ public class LinkPredictionWithMMB {
 			// rank sim
 			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
 		}
+		if(ui.getUser().getTestFriendSize() == 0)
+			return;
 		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
 	}
 		
@@ -264,12 +248,12 @@ public class LinkPredictionWithMMB {
 			}
 			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
 		}
+		
 		int[] frds = rankFriends(ui, neighbors);
 		synchronized (m_frdMtxLock) {
 			m_frdTestMtx[i] = frds;
 		}
 	}
-	
 	
 	// calculate the similarity between two users based on mixture
 	// sim(i,j)=\sum_{k,l}\pi_{i,k}\pi_{j,l}B_{kl}
@@ -303,36 +287,102 @@ public class LinkPredictionWithMMB {
 		return frds;
 	}
 	
-	// print out the results of link prediction
-	public void printLinkPrediction(String dir, String model, int trainSize, int testSize){
-		int[] frd;
-		File dirFile = new File(dir);
-		if(!dirFile.exists())
-			dirFile.mkdirs();
-		try{
-			PrintWriter trainWriter = new PrintWriter(String.format("%s/%s_train_%d_test_%d_trainPerf.txt", dir, model, trainSize, testSize));
-			PrintWriter testWriter = new PrintWriter(String.format("%s/%s_train_%d_test_%d_testPerf.txt", dir, model, trainSize, testSize));
-			// print friends for train users
-			for(int i=0; i<m_trainSize; i++){
-				frd = m_frdTrainMtx[i];
-				for(int f:frd)
-					trainWriter.write(f+"\t");
-				trainWriter.write("\n");	
-			} 
-			// print friends for test users
-			for(int i=0; i<m_testSize; i++){
-				frd = m_frdTestMtx[i];
-//				System.out.println(frd.length);
-				for(int f: frd)
-					testWriter.write(f+"\t");
-				testWriter.write("\n");
-			}
-			trainWriter.close();
-			testWriter.close();
-		} catch(IOException e){
-			e.printStackTrace();
+	// The function for calculating all NDCGs and MAPs.
+	public void calculateAllNDCGMAP(){
+		m_NDCGs = new double[m_testSize];
+		m_MAPs = new double[m_testSize];
+		Arrays.fill(m_NDCGs, -1);
+		Arrays.fill(m_MAPs, -1);
+			
+		System.out.print("[Info]Start calculating NDCG and MAP...\n");
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+	
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				@Override
+				public void run() {
+					try {
+						for (int i = 0; i + core <m_frdTestMtx.length; i += numOfCores) {
+							if(i%500==0) System.out.print(".");
+							int[] frds = m_frdTestMtx[i+core];
+							if(frds == null) continue;
+							double[] vals = calculateNDCGMAP(frds);
+							// put the calculated nDCG into the array for average calculation
+							synchronized(m_NDCGMAPLock){
+								m_NDCGs[i+core] = vals[0];
+								m_MAPs[i+core] = vals[1];
+							}
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+						
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			threads.get(k).start();
 		}
+				
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+					e.printStackTrace();
+				} 
+			}
+		}
+		
+	public void calculateAvgNDCGMAP(){
+		double avgNDCG = 0, avgMAP = 0;
+		int valid = 0;
+		for(int i=0; i<m_NDCGs.length; i++){
+			if(m_NDCGs[i] == -1 || m_MAPs[i] == -1 || Double.isNaN(m_NDCGs[i]) || Double.isNaN(m_MAPs[i]))
+				continue;
+			valid++;
+			avgNDCG += m_NDCGs[i];
+			avgMAP += m_MAPs[i];
+		}
+		avgNDCG /= valid;
+		avgMAP /= valid;
+		System.out.format("\n[Info]Valid user size: %d, Avg NDCG, MAP -- %.5f\t%.5f\n\n", valid, avgNDCG, avgMAP);
+	}
+		
+	// calculate the nDCG and MAP for each user
+	public double[] calculateNDCGMAP(int[] rank){
+		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
+				
+		// sorted friend array based on the similarity
+		int[] realRank = Arrays.copyOf(rank, rank.length);
+		sortPrimitivesDescending(rank);
+		
+		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
+		for(int i=0; i<rank.length; i++){
+			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
+			DCG += (Math.pow(2, realRank[i])-1)/(Math.log(i+2));
+			if(realRank[i] >= 1){
+				PatK = (count+1)/((double)i+1);
+				AP += PatK;
+				count++;
+			}
+		}
+		if(Double.isNaN(DCG/iDCG))
+			System.out.println("debug here!!");
+		return new double[]{DCG/iDCG, AP/count};
 	}
 	
-
+	public void sortPrimitivesDescending(int[] rank){
+		Arrays.sort(rank);
+		// then reverse the array
+		for(int i=0; i<rank.length/2; i++){
+			int tmp = rank[rank.length-1-i];
+			rank[rank.length-i-1] = rank[i];
+			rank[i] = tmp;
+		}
+	}
 }

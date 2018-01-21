@@ -7,6 +7,7 @@ import java.util.HashMap;
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
+import Application.LinkPredictionWithMMBPerEdge;
 import Application.LinkPredictionWithSVM;
 import Application.LinkPredictionWithSVMWithText;
 
@@ -18,12 +19,11 @@ public class MyLinkPredMain {
 		int classNumber = 2;
 		int Ngram = 2; // The default value is unigram.
 		int lengthThreshold = 5; // Document length threshold
-		double trainRatio = 0, adaptRatio = 1;
+		double trainRatio = 0, adaptRatio = 0.5;
 		int displayLv = 1;
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
-
 		boolean enforceAdapt = true;
  
 		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
@@ -34,10 +34,8 @@ public class MyLinkPredMain {
 		String fs = "DF";//"IG_CHI"
 		String prefix = "./data/CoLinAdapt";
 
-		int trainSize = 2000, testSize = 2000;
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String trainFolder = String.format("%s/%s/Users_%d_train", prefix, dataset, trainSize);
-		String testFolder =  String.format("%s/%s/Users_%d_test", prefix, dataset, testSize);
+		String userFolder = String.format("%s/%s/Users", prefix, dataset);
 		
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
@@ -48,20 +46,17 @@ public class MyLinkPredMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+//		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+		String trainFriendFile = String.format("%s/%s/%sFriends_train.txt", prefix, dataset, dataset);
+		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", prefix, dataset, dataset);
+
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
-		adaptRatio = 1; enforceAdapt = true;
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
+		analyzer.loadUserDir(userFolder);
+		analyzer.buildFriendship(trainFriendFile);
+		analyzer.loadTestFriendship(testFriendFile);
+		analyzer.checkFriendSize();
 		
-		// load training users with (adaptRatio=1, testRatio=0)
-		analyzer.loadUserDir(trainFolder);
-		
-		// load testing users with (adaptaRatio=0, testRatio=1)
-		adaptRatio = 0; enforceAdapt = false;
-		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
-		analyzer.loadUserDir(testFolder);
-		
-		analyzer.buildFriendship(friendFile);
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
@@ -71,11 +66,13 @@ public class MyLinkPredMain {
 		double sdA = 0.0425, sdB = 0.0425;
 		double c = 1, rho = 0.05;
 		
-		String model = "svm+text"; // "svm", "mmb"
+		String model = "mmb_edge";
 		LinkPredictionWithMMB linkPred = null;
 
-		if(model.equals("mmb"))
+		if(model.equals("mmb_node"))
 			linkPred = new LinkPredictionWithMMB();
+		else if(model.equals("mmb_edge"))
+			linkPred = new LinkPredictionWithMMBPerEdge();
 		else if(model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(c, rho);
 		else if(model.equals("svm+text"))
@@ -90,19 +87,18 @@ public class MyLinkPredMain {
 		linkPred.getMMB().setConcentrationParams(alpha, eta, beta);
 
 		linkPred.getMMB().setRho(0.1);
-		linkPred.getMMB().setBurnIn(10);
+		linkPred.getMMB().setBurnIn(1);
 //		linkPred.getMMB().setThinning(5);// default 3
-		linkPred.getMMB().setNumberOfIterations(5);
+		linkPred.getMMB().setNumberOfIterations(0);
 		
 		linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
 		linkPred.getMMB().loadUsers(analyzer.getUsers());
-		linkPred.getMMB().calculateFrdStat();
-		linkPred.getMMB().checkTestReviewSize();
 		linkPred.getMMB().setDisplayLv(displayLv);
 		
 		linkPred.getMMB().train();
-	
 		linkPred.linkPrediction();
-		linkPred.printLinkPrediction("./", model, trainSize, testSize);	
+		linkPred.calculateAllNDCGMAP();
+		linkPred.calculateAvgNDCGMAP();
+//		linkPred.printLinkPrediction("./", model);	
 	}
 }

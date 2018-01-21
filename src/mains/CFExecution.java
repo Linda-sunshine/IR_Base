@@ -13,7 +13,6 @@ import Analyzer.MultiThreadedUserAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
 import Application.CollaborativeFilteringWithMMB;
-import Application.CollaborativeFilteringWithMMBWithAllNeighbors;
 
 public class CFExecution {
 	public static void main(String[] args) throws InvalidFormatException, FileNotFoundException, IOException{
@@ -101,23 +100,27 @@ public class CFExecution {
 			writer.close();
 			
 		} else{
-			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers());
-			cfInit.constructRankingNeighbors();
-			ArrayList<_User> cfUsers = cfInit.getUsers();
-			int validUser = cfInit.getValidUserSize();
+			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize(), param.m_pop);
+//			cfInit.constructRankingNeighbors();
+			String cfFile = String.format("/zf8/lg5bt/DataSigir/%s/cfData/%s_cf_all_nei_pop_%d_test.csv", param.m_data, param.m_data, param.m_pop);
 			
+			ArrayList<_User> cfUsers = cfInit.getUsers();
+			cfInit.loadRankingCandidates(cfFile);
+			
+			int validUser = cfInit.getValidUserSize();
 			double[][] performance = new double[models.length][2];
+			
 			for(int m=0; m<models.length; m++){
 				model = models[m];
 				dir = String.format("/zf8/lg5bt/DataSigir/%s/models/%s_%s/", param.m_data, param.m_data, model);
-				System.out.format("\n-----------------run %s with all neighbors-------------------------\n", model);
+				System.out.format("\n-----------------run %s with all neighbors pop: %d-------------------------\n", model, param.m_pop);
 			
 				CollaborativeFiltering cf = null;
 				if(model.equals("mmb_mixture")){
-					cf = new CollaborativeFilteringWithMMBWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
-					cf = new CollaborativeFilteringWithAllNeighbors(cfUsers, analyzer.getFeatureSize()+1);
+					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 				
 				cf.setEqualWeightFlag(param.m_equalWeight);
 				cf.setValidUserSize(validUser);
@@ -130,13 +133,13 @@ public class CFExecution {
 
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_all.txt", model, param.m_equalWeight));
+				cf.savePerf(String.format("perf_%s_equalWeight_%b_topk_%d_pop_%d_all_nei.txt", model, param.m_equalWeight, param.m_k, param.m_pop));
 
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
-				System.out.format("\n----------------finish running %s with all neighbors-------------------------\n", model);
+				System.out.format("\n----------------finish running %s with all neighbors pop %d-------------------------\n", model, param.m_pop);
 			}
-			String filename = String.format("./data/%s_cf_equalWeight_%b_all_nei.txt", param.m_data, param.m_equalWeight);
+			String filename = String.format("./data/%s_cf_equalWeight_%b_topk_%d_pop_%d_all_nei.txt", param.m_data, param.m_equalWeight, param.m_k, param.m_pop);
 			PrintWriter writer = new PrintWriter(new File(filename));
 			writer.write("\t\tNDCG\tMAP\n");
 

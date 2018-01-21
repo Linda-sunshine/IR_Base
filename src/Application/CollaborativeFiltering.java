@@ -113,16 +113,16 @@ public class CollaborativeFiltering {
 		init();
 	}
 		
-	// constructor for getting ranking items with all neighbors
-	public CollaborativeFiltering(ArrayList<_User> users){
-		convert2UserMap(users);
-		
-		m_trainReviews = new ArrayList<_Review>();
-		m_similarityLock = new Object();
-		m_userWeightsLock = new Object();
-		m_NDCGMAPLock = new Object();
-		init();
-	}
+//	// constructor for getting ranking items with all neighbors
+//	public CollaborativeFiltering(ArrayList<_User> users){
+//		convert2UserMap(users);
+//		
+//		m_trainReviews = new ArrayList<_Review>();
+//		m_similarityLock = new Object();
+//		m_userWeightsLock = new Object();
+//		m_NDCGMAPLock = new Object();
+//		init();
+//	}
 		
 	// The function for calculating all NDCGs and MAPs.
 	public void calculateAllNDCGMAP(){
@@ -167,6 +167,13 @@ public class CollaborativeFiltering {
 		}
 	}
 	
+	public void calculatePopularity(){
+		double pop = 0;
+		for(String item: m_trainMap.keySet()){
+			pop += m_trainMap.get(item).size();
+		}
+		System.out.println("Avg pop is : " + pop/m_trainMap.size());
+	}
 	public void calculateAvgNDCGMAP(){
 		double sumNDCG = 0, sumMAP = 0;
 		int valid = 0;
@@ -181,7 +188,7 @@ public class CollaborativeFiltering {
 		}
 		m_avgNDCG = sumNDCG/valid;
 		m_avgMAP = sumMAP/valid;
-		System.out.format("pre-calculated %d valid users, real %d valid user.", m_validUser, valid);
+		System.out.format("\n[Info]Pre-calculated %d valid users, real %d valid user.", m_validUser, valid);
 	}
 	
 	// calculate the nDCG and MAP for each user
@@ -259,8 +266,9 @@ public class CollaborativeFiltering {
 		ArrayList<String> neighbors = m_trainMap.get(item);
 		if(m_avgFlag){
 			for(String nei: neighbors){
-				int index = m_userIDIndex.get(nei);
-				double label = m_users.get(index).getItemRating(item)+1;
+				int neiIndex = m_userIDIndex.get(nei);
+				if(neiIndex == userIndex) continue;
+				double label = m_users.get(neiIndex).getItemRating(item)+1;
 				rankSum += label;
 				simSum++;
 			}
@@ -277,6 +285,7 @@ public class CollaborativeFiltering {
 			//collect k nearest neighbors for each item of the user.
 			for(String nei: neighbors){
 				int neiIndex = m_userIDIndex.get(nei);
+				if(neiIndex == userIndex) continue;
 				topKNeighbors.add(new _RankItem(neiIndex, getSimilarity(userIndex, neiIndex)));
 			}
 			//Calculate the value given by the neighbors and similarity;
@@ -477,7 +486,7 @@ public class CollaborativeFiltering {
 			i = j;
 			j = t;
 		} else if(i == j){
-			System.out.println("The pair has the same indexes!");
+//			System.out.println("The pair has the same indexes!");
 			return 0;
 		} 
 		return i*(i-1)/2+j;//lower triangle for the square matrix, index starts from 1 in liblinear
@@ -767,29 +776,29 @@ public class CollaborativeFiltering {
 		
 	}
 	
-	// since svd cannot predict items not in training, we only record the items in training set.
-	public void saveValidUsers(String dir){
-		int testUser = 0, testPair = 0;
-		try{
-			PrintWriter testWriter = new PrintWriter(new File(dir+"test_valid.csv"));
-			testWriter.write("user_id,item_id,rating\n");
-			for(_User u: m_users){
-				String[] rankingItems = u.getRankingItems();
-				if(rankingItems == null)
-					continue;
-				testUser++;
-				for(String item: rankingItems){
-					testPair++;
-					testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), item, u.getItemRating(item)+1));
-				}
-			}
-			testWriter.close();
-			System.out.format("[Info]Finish writing (%d,%d) valid testing users/pairs.\n", testUser, testPair);
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		
-	}
+//	// since svd cannot predict items not in training, we only record the items in training set.
+//	public void saveValidUsers(String dir){
+//		int testUser = 0, testPair = 0;
+//		try{
+//			PrintWriter testWriter = new PrintWriter(new File(dir+"test_valid.csv"));
+//			testWriter.write("user_id,item_id,rating\n");
+//			for(_User u: m_users){
+//				String[] rankingItems = u.getRankingItems();
+//				if(rankingItems == null)
+//					continue;
+//				testUser++;
+//				for(String item: rankingItems){
+//					testPair++;
+//					testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), item, u.getItemRating(item)+1));
+//				}
+//			}
+//			testWriter.close();
+//			System.out.format("[Info]Finish writing (%d,%d) valid testing users/pairs.\n", testUser, testPair);
+//		} catch(IOException e){
+//			e.printStackTrace();
+//		}
+//		
+//	}
 	
 	// incorporate text information for matrix factorization
 	public void saveUsersWithText(String dir, int topk){

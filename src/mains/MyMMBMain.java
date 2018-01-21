@@ -5,9 +5,6 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
-import structures._Review;
-import structures._Review.rType;
-import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 
@@ -49,28 +46,27 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends_filter.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(friendFile);
-//		analyzer.writeFriends(friendFile+".filter", analyzer.checkFriendship());
-		/***
+//		analyzer.writeFriends(friendFile+".filter", analyzer.filterFriends(analyzer.getFriendship()));
+		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 		
-		double trainAvg = 0, testAvg = 0;
-		double totalSize = analyzer.getUsers().size();
-		for(_User u: analyzer.getUsers()){
-			for(_Review r: u.getReviews()){
-				if(r.getType() == rType.ADAPTATION)
-					trainAvg++;
-				else
-					testAvg++;
-			}
-		}
-		
-		System.out.format("Train avg: %.4f, test avg: %.4f\n", trainAvg/totalSize, testAvg/totalSize);
+//		double trainAvg = 0, testAvg = 0;
+//		double totalSize = analyzer.getUsers().size();
+//		for(_User u: analyzer.getUsers()){
+//			for(_Review r: u.getReviews()){
+//				if(r.getType() == rType.ADAPTATION)
+//					trainAvg++;
+//				else
+//					testAvg++;
+//			}
+//		}
+//		System.out.format("Train avg: %.4f, test avg: %.4f\n", trainAvg/totalSize, testAvg/totalSize);
 		
 //		PrintWriter writer = new PrintWriter(new File("yelp_features.txt"));
 //		ArrayList<String> fvs = analyzer.getFeatures();
@@ -175,6 +171,6 @@ public class MyMMBMain {
 		// the total time of training and testing in the unit of hours
 		double hours = (end - start)/(1000*60);
 		System.out.print(String.format("[Time]This training+testing process took %.2f mins.\n", hours));
-		***/
+
 	}
 }

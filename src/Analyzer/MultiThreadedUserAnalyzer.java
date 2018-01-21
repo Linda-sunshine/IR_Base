@@ -424,30 +424,78 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	/** Construct user network for analysis****/
 	// key: user id; value: friends array.
 	HashMap<String, String[]> m_neighborsMap = new HashMap<String, String[]>();
+	HashMap<String, _User> m_userMap = new HashMap<>();
 	public void buildFriendship(String filename){
 		try{
+			m_neighborsMap.clear();
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line;
 			String[] users, friends;
-			int count = 0;
 			while((line = reader.readLine()) != null){
 				users = line.trim().split("\t");
 				friends = Arrays.copyOfRange(users, 1, users.length);
-				if(friends.length == 0)
-					count++;
+				if(friends.length == 0){
+					System.out.println("No friends!");
+					continue;
+				}
 				m_neighborsMap.put(users[0], friends);
 			}
 			reader.close();
-			System.out.format("%d users don't have friends!\n", count);
+			System.out.format("%d users have friends!\n", m_neighborsMap.size());
 			// map friends to users.
+			int count = 0;
 			for(_User u: m_users){
-				if(m_neighborsMap.containsKey(u.getUserID()))
+				if(m_neighborsMap.containsKey(u.getUserID())){
+					count++;
 					u.setFriends(m_neighborsMap.get(u.getUserID()));
+				}
 			}
+			System.out.format("%d users' friends are set!", count);
 		} catch(IOException e){
 			e.printStackTrace();
 		}
+	}
+	
+	// load the test user friends, for link prediction only
+	public void loadTestFriendship(String filename){
+		try{
+			m_neighborsMap.clear();
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, friends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				friends = Arrays.copyOfRange(users, 1, users.length);
+				if(friends.length == 0){
+					System.out.println("No friends!");
+					continue;
+				}
+				m_neighborsMap.put(users[0], friends);
+			}
+			reader.close();
+//			System.out.format("%d users have test friends!\n",  (m_neighborsMap.size()));
+			// map friends to users.
+			for(_User u: m_users){
+				if(m_neighborsMap.containsKey(u.getUserID()))
+					u.setTestFriends(m_neighborsMap.get(u.getUserID()));
+			}
+			checkFriendSize();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void checkFriendSize(){
+		int train = 0, test = 0;
+		for(_User u: m_users){
+			if(u.getFriendSize() != 0)
+				train++;
+			if(u.getTestFriendSize() != 0)
+				test++;
+		}
+		System.out.format("[Check]%d users have train friends, %d users have test friends.\n", train, test);
 	}
 
 	// return the friendship map
@@ -455,14 +503,26 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		return m_neighborsMap;
 	}
 	
-	public HashMap<String, ArrayList<String>> checkFriendship(){
+	public HashMap<String, ArrayList<String>> filterFriends(HashMap<String, String[]> neighborsMap){
 		double sum = 0;
+		HashMap<String, _User> userMap = new HashMap<String, _User>();
+		for(_User u: m_users){
+			userMap.put(u.getUserID(), u);
+		}
 		HashMap<String, ArrayList<String>> frdMap = new HashMap<String, ArrayList<String>>();
-		for(String uid: m_neighborsMap.keySet()){
+		for(String uid: neighborsMap.keySet()){
+			if(!userMap.containsKey(uid)){
+				System.out.println("The user does not exist in user set!");
+				continue;
+			}
 			ArrayList<String> frds = new ArrayList<>();
-			for(String frd: m_neighborsMap.get(uid)){
-				if(m_neighborsMap.containsKey(frd) && hasFriend((String[]) m_neighborsMap.get(frd), uid)){
+			for(String frd: neighborsMap.get(uid)){
+				if(!neighborsMap.containsKey(frd))
+					continue;
+				if(contains(neighborsMap.get(frd), uid)){
 					frds.add(frd);
+				} else {
+					System.out.println("asymmetric");
 				}
 			}
 			if(frds.size() > 0){
@@ -471,19 +531,18 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			}
 		}
 		System.out.format("%d users' friends are recorded, avg friends: %.2f.\n", frdMap.size(), sum/frdMap.size());
-		int miss = 0;
-		for(String uid: frdMap.keySet()){
-			ArrayList<String> frds = frdMap.get(uid);
-			for(String frd: frds){
-				if(!frdMap.containsKey(frd) || !frdMap.get(frd).contains(uid)){
-					miss++;
-				}
-			}
-		}
-		System.out.format("%d connections are missing.\n", miss);
 		return frdMap;
 	}
-	
+	public boolean contains(String[] strs, String str){
+		if(strs == null || strs.length == 0)
+			return false;
+		for(String s: strs){
+			if(str.equals(s))
+				return true;
+		}
+		return false;
+	}
+
 	public void writeFriends(String filename, HashMap<String, ArrayList<String>> frdMap){
 		try{
 			PrintWriter writer = new PrintWriter(new File(filename));

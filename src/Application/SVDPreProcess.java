@@ -158,34 +158,33 @@ public class SVDPreProcess {
 	
 	public static void main(String[] args){
 		String dataset = "YelpNew";
-		for(int t: new int[]{2}){
-			for(int k: new int[]{4,6,8}){
-//				SVDPreProcess process = new SVDPreProcess();
-//				String trainFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_train.csv", dataset, t, k);
-//				String testFile = String.format("./data/cfData/fm/%s_cf_time_%d_topk_%d_test_valid.csv", dataset, t, k);
-//				String trainMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_train.mm", dataset, t, k);
-//				String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
-//				// transfer csv data to mm data
-//				process.buildUserItemMap(trainFile);
-//				process.calcTestPairSize(testFile);
-//				
-//				process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
-//				process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
-				
+		for(int p: new int[]{10, 20, 30, 40, 50}){
+//			for(int k: new int[]{4,6,8}){
 				SVDPreProcess process = new SVDPreProcess();
-				String trainFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_train.csv", dataset, t, k);
-				String testFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_test.csv", dataset, t, k);
-				String trainMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_train.mm", dataset, t, k);
-				String testMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_test.mm", dataset, t, k);
-				
+				String trainFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_train.csv", dataset, p);
+				String testFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_test.csv", dataset, p);
+				String trainMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_train.mm", dataset, p);
+				String testMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_test.mm", dataset, p);
 				// transfer csv data to mm data
 				process.buildUserItemMap(trainFile);
 				process.calcTestPairSize(testFile);
-				process.transfer2MMFileWithText(trainFile, trainMMFile, process.getTrainPairSize());
-				process.transfer2MMFileWithText(testFile, testMMFile, process.getTestPairSize());
 				
-			}
+				process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+				process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+				
+//				SVDPreProcess process = new SVDPreProcess();
+//				String trainFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_train.csv", dataset, t, k);
+//				String testFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_test.csv", dataset, t, k);
+//				String trainMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_train.mm", dataset, t, k);
+//				String testMMFile = String.format("./data/cfData/svd_text/%s_cf_time_%d_topk_%d_text_test.mm", dataset, t, k);
+//				
+//				// transfer csv data to mm data
+//				process.buildUserItemMap(trainFile);
+//				process.calcTestPairSize(testFile);
+//				process.transfer2MMFileWithText(trainFile, trainMMFile, process.getTrainPairSize());
+//				process.transfer2MMFileWithText(testFile, testMMFile, process.getTestPairSize());
+				
+//			}
 		}	
 	}
-	
 }

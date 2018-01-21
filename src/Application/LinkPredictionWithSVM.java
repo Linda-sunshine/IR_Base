@@ -25,7 +25,7 @@ public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
 	@Override
 	public void linkPrediction(){
 		initLinkPred();
-		m_mmbModel.calculateMixturePerUser();
+		calculateMixturePerUser();
 
 		trainSVM();
 		_MMBAdaptStruct ui;
@@ -37,25 +37,11 @@ public class LinkPredictionWithSVM extends LinkPredictionWithMMB{
 		// for each testing user, rank their neighbors.
 		for(int i=0; i<m_testSize; i++){
 			ui = m_testSet.get(i);
+			if(ui.getUser().getTestFriendSize() == 0)
+				continue;
 			linkPrediction4TestUsers(i, ui);
 		}
 	}
-	
-	// perform link prediction in multi-threading
-	@Override
-	public void linkPrediction_MultiThread(){
-		initLinkPred();
-		m_mmbModel.calculateMixturePerUser();
-			
-		trainSVM();
-				
-		// use a boolean flag to decide whether it is training set or testing set
-		linkPrediction_MultiThread_Split(m_trainSet, true);
-		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
-
-		linkPrediction_MultiThread_Split(m_testSet, false);
-		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testSize);
-	}		
 	
 	// we construct user pair as training instances and input into svm for training
 	public void trainSVM(){

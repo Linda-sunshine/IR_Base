@@ -44,6 +44,7 @@ public class _User {
 	
 	// added by Lin for friendship.
 	String[] m_friends;
+	String[] m_testFriends;
 	
 	private ArrayList<_Review> m_trainReviews;
 	private ArrayList<_Review> m_testReviews;
@@ -356,13 +357,35 @@ public class _User {
 	public void setFriends(String[] fs){
 		m_friends = Arrays.copyOf(fs, fs.length);
 	}
+	
+	public void setTestFriends(String[] fs){
+		m_testFriends = Arrays.copyOf(fs, fs.length);
+	}
+	
 	public String[] getFriends(){
 		return m_friends;
 	}
+	
+	public int getFriendSize(){
+		if(m_friends == null)
+			return 0;
+		else
+			return m_friends.length;
+	}
+	
+	public String[] getTestFriends(){
+		return m_testFriends;
+	}
+	
+	public int getTestFriendSize(){
+		if(m_testFriends == null)
+			return 0;
+		else
+			return m_testFriends.length;
+	}
 	// check if a user is a friend of the current user
 	public boolean hasFriend(String str){
-		if(m_friends.length == 0){
-//			System.out.println("[Debug]No friends!");
+		if(m_friends == null || m_friends.length == 0){
 			return false;
 		}
 		for(String f: m_friends){
@@ -372,6 +395,16 @@ public class _User {
 		return false;
 	}
 	
+	public boolean hasTestFriend(String str){
+		if(m_testFriends.length == 0){
+			return false;
+		}
+		for(String f: m_testFriends){
+			if(str.equals(f))
+				return true;
+		}
+		return false;
+	}
 	public void addAmazonFriend(String s){
 		m_amazonFriends.add(s);
 	}

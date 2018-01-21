@@ -88,7 +88,6 @@ public class MyMMBIsoExecution {
 		// training testing operations.
 		adaptation.loadLMFeatures(analyzer.getLMFeatures());
 		adaptation.loadUsers(analyzer.getUsers());
-		adaptation.checkTestReviewSize();
 		adaptation.setDisplayLv(displayLv);
 		
 		adaptation.train();

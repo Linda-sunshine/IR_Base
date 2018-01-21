@@ -907,16 +907,5 @@ public class CLRWithHDP extends CLRWithDP {
 			m_writer.write(sizes[i]+",");
 		m_writer.write("\n");
 	}	
-	
-	// sanity check, how many testing users we have
-	public void checkTestReviewSize(){
-		int test = 0, userCount = 0;
-		for(_AdaptStruct u: m_userList){
-			if(u.getAdaptationSize() == 0){
-				test += u.getTestSize();
-				userCount++;
-			}
-		}
-		System.out.print(String.format("[Info]test user: %d, test review: %d\n", userCount, test));
-	}
+
 }
