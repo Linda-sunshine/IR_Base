@@ -52,7 +52,7 @@ public class SVDPreProcess {
 				m_trainPairSize++;
 			}
 			reader.close();
-			System.out.format("(%d, %d) users/items are loaded from %s...\n", m_userIDs.size(), m_itemIDs.size(), filename);
+			System.out.format("(%d, %d) users/items are loaded from %s...\n", m_userMap.size(), m_itemIDs.size(), filename);
 			
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
@@ -104,6 +104,8 @@ public class SVDPreProcess {
 				String[] strs = line.split(",");
 				String userID = strs[0];
 				String itemID = strs[1];
+				if(!m_userMap.containsKey(userID))
+					System.out.println("bug");
 				int userIdx = m_userMap.get(userID)+1;
 				if(!m_itemMap.containsKey(itemID))
 					continue;
@@ -158,6 +160,7 @@ public class SVDPreProcess {
 	
 	public static void main(String[] args){
 		String dataset = "YelpNew";
+		/***
 		for(int p: new int[]{10, 20, 30, 40, 50}){
 //			for(int k: new int[]{4,6,8}){
 				SVDPreProcess process = new SVDPreProcess();
@@ -183,8 +186,21 @@ public class SVDPreProcess {
 //				process.calcTestPairSize(testFile);
 //				process.transfer2MMFileWithText(trainFile, trainMMFile, process.getTrainPairSize());
 //				process.transfer2MMFileWithText(testFile, testMMFile, process.getTestPairSize());
-				
 //			}
-		}	
+		}
+		***/	
+		SVDPreProcess process = new SVDPreProcess();
+		String trainFile = String.format("./data/linkPredData/fm/%s_link_pred_train.csv", dataset);
+		String testFile = String.format("./data/linkPredData/fm/%s_link_pred_test.csv", dataset);
+		
+		String trainMMFile = String.format("./data/linkPredData/svd/%s_link_pred_train.mm", dataset);
+		String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_test.mm", dataset);
+		
+		process.buildUserItemMap(trainFile);
+		process.calcTestPairSize(testFile);
+		
+		process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+		process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+
 	}
 }

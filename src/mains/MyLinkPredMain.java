@@ -2,14 +2,9 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.LinkPredictionWithMMB;
-import Application.LinkPredictionWithMMBPerEdge;
-import Application.LinkPredictionWithSVM;
-import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	
@@ -57,6 +52,10 @@ public class MyLinkPredMain {
 		analyzer.loadTestFriendship(testFriendFile);
 		analyzer.checkFriendSize();
 		
+		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
+		analyzer.saveUserUserPairs(linkDir);
+		
+		/***
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
@@ -100,5 +99,6 @@ public class MyLinkPredMain {
 		linkPred.calculateAllNDCGMAP();
 		linkPred.calculateAvgNDCGMAP();
 //		linkPred.printLinkPrediction("./", model);	
+		***/
 	}
 }
