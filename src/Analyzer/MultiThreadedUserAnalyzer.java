@@ -423,11 +423,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	
 	/** Construct user network for analysis****/
 	// key: user id; value: friends array.
-	HashMap<String, String[]> m_neighborsMap = new HashMap<String, String[]>();
-	HashMap<String, _User> m_userMap = new HashMap<>();
+	HashMap<String, String[]> m_trainMap = new HashMap<String, String[]>();
+	HashMap<String, String[]> m_testMap = new HashMap<String, String[]>();
+
 	public void buildFriendship(String filename){
 		try{
-			m_neighborsMap.clear();
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line;
@@ -436,19 +436,18 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				users = line.trim().split("\t");
 				friends = Arrays.copyOfRange(users, 1, users.length);
 				if(friends.length == 0){
-					System.out.println("No friends!");
 					continue;
 				}
-				m_neighborsMap.put(users[0], friends);
+				m_trainMap.put(users[0], friends);
 			}
 			reader.close();
-			System.out.format("%d users have friends!\n", m_neighborsMap.size());
+			System.out.format("%d users have friends!\n", m_trainMap.size());
 			// map friends to users.
 			int count = 0;
 			for(_User u: m_users){
-				if(m_neighborsMap.containsKey(u.getUserID())){
+				if(m_trainMap.containsKey(u.getUserID())){
 					count++;
-					u.setFriends(m_neighborsMap.get(u.getUserID()));
+					u.setFriends(m_trainMap.get(u.getUserID()));
 				}
 			}
 			System.out.format("%d users' friends are set!", count);
@@ -460,7 +459,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 	// load the test user friends, for link prediction only
 	public void loadTestFriendship(String filename){
 		try{
-			m_neighborsMap.clear();
+			m_testMap.clear();
 			File file = new File(filename);
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
 			String line;
@@ -469,17 +468,16 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				users = line.trim().split("\t");
 				friends = Arrays.copyOfRange(users, 1, users.length);
 				if(friends.length == 0){
-					System.out.println("No friends!");
 					continue;
 				}
-				m_neighborsMap.put(users[0], friends);
+				m_testMap.put(users[0], friends);
 			}
 			reader.close();
 //			System.out.format("%d users have test friends!\n",  (m_neighborsMap.size()));
 			// map friends to users.
 			for(_User u: m_users){
-				if(m_neighborsMap.containsKey(u.getUserID()))
-					u.setTestFriends(m_neighborsMap.get(u.getUserID()));
+				if(m_testMap.containsKey(u.getUserID()))
+					u.setTestFriends(m_testMap.get(u.getUserID()));
 			}
 			checkFriendSize();
 		} catch(IOException e){
@@ -487,6 +485,55 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 	}
 	
+	public HashMap<String, String[]>  getTrainMap(){
+		return m_trainMap;
+	}
+	
+	public HashMap<String, String[]> getTestMap(){
+		return m_testMap;
+	}
+	
+	// save the user-user pairs to graphlab for model training.
+	public void saveUserUserPairs(String dir){
+		int trainUser = 0, testUser = 0, trainPair = 0, testPair = 0;
+		try{
+			PrintWriter trainWriter = new PrintWriter(new File(dir+"train.csv"));
+			PrintWriter testWriter = new PrintWriter(new File(dir+"test.csv"));
+			trainWriter.write("user_id,item_id,rating\n");
+			testWriter.write("user_id,item_id,rating\n");
+			for(_User u: m_users){
+				if(u.getFriendSize() != 0){
+					trainUser++;
+					for(String frd: u.getFriends()){
+						trainPair++;
+						trainWriter.write(String.format("%s,%s,%d\n", u.getUserID(), frd, 1));
+					}
+				}
+				// for test users, we also need to write out non-friends
+				if(u.getTestFriendSize() != 0){
+					testUser++;
+					for(_User nei: m_users){
+						String neiID = nei.getUserID();
+						if(u.hasFriend(neiID) || u.getUserID().equals(neiID))
+							continue;
+						else if(u.hasTestFriend(neiID)){
+							testPair++;
+							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 1));
+						} else if(m_trainMap.containsKey(neiID)){
+							testPair++;
+							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 0));
+						}
+					}
+				}
+			}
+			trainWriter.close();
+			testWriter.close();
+			System.out.format("[Info]Finish writing (%d,%d) training users/pairs, (%d,%d) testing users/pairs.\n", trainUser, trainPair, testUser, testPair);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
 	public void checkFriendSize(){
 		int train = 0, test = 0;
 		for(_User u: m_users){
@@ -498,10 +545,10 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		System.out.format("[Check]%d users have train friends, %d users have test friends.\n", train, test);
 	}
 
-	// return the friendship map
-	public HashMap<String, String[]> getFriendship(){
-		return m_neighborsMap;
-	}
+//	// return the friendship map
+//	public HashMap<String, String[]> getFriendship(){
+//		return m_neighborsMap;
+//	}
 	
 	public HashMap<String, ArrayList<String>> filterFriends(HashMap<String, String[]> neighborsMap){
 		double sum = 0;

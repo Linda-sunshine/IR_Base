@@ -8,6 +8,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SVDPreProcess {
 	ArrayList<String> m_userIDs, m_itemIDs;
@@ -62,17 +64,28 @@ public class SVDPreProcess {
 	public void calcTestPairSize(String filename){
 		if (filename==null || filename.isEmpty())
 			return;
-		
+		Set<String> userSet = new HashSet<>();
+		Set<String> itemSet = new HashSet<>();
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
 			String line;
 			// skip the first line
 			line = reader.readLine();
 			while ((line = reader.readLine()) != null) {
+				String[] strs = line.split(",");
+				String userID = strs[0];
+				String itemID = strs[1];
+				userSet.add(userID);
+				itemSet.add(itemID);
 				m_testPairSize++;
 			}
+			for(String item: itemSet){
+				if(!m_userMap.containsKey(item)){
+					System.out.println(item);
+				}
+			}
 			reader.close();
-			System.out.format("There are %d total testing pairs.", m_testPairSize);
+			System.out.format("There are %d total testing pairs, %d users, %d items.", m_testPairSize, userSet.size(), itemSet.size());
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}

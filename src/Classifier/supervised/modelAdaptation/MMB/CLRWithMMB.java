@@ -875,8 +875,8 @@ public class CLRWithMMB extends CLRWithHDP {
 			double etaGammak = Math.log(m_eta) + Math.log(s.getGamma());
 			//the number of local groups lies in the range [1, n];
 			for(int h=1; h<=n; h++){
-				double stir = stirling(n, h);
-				m_cache[h-1] = h*etaGammak + Math.log(stir);
+				double logStir = logStirling(n, h);
+				m_cache[h-1] = h*etaGammak + logStir;
 			}
 			
 			//h starts from 0, we want the number of tables here.	

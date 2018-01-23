@@ -71,7 +71,7 @@ public class MyTransductiveMain {
 		GaussianFieldsByRandomWalkWithFriends walk = new GaussianFieldsByRandomWalkWithFriends(c, multipleLearner, C,
 			learningRatio, k, kPrime, tAlpha, tBeta, tDelta, tEta, weightedAvg);
 		walk.constructTrainTestDocs(analyzer.getUsers());
-		walk.setFriendship(analyzer.getFriendship());
+//		walk.setFriendship(analyzer.getFriendship());
 		walk.train();
 		walk.test();
 		walk.printUserPerformance("./data/random_walk_perf.txt");

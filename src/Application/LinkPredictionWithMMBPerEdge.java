@@ -1,6 +1,7 @@
 package Application;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import structures.MyPriorityQueue;
 import structures._RankItem;
@@ -9,7 +10,13 @@ import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
 public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 
+	HashMap<String, String[]> m_trainMap = new HashMap<>();
+	HashMap<String, String[]> m_testMap = new HashMap<>();
 	// calculate training/testing size, construct training set/testing set
+	public LinkPredictionWithMMBPerEdge(HashMap<String, String[]> trainMap, HashMap<String, String[]> testMap){
+		m_trainMap = trainMap;
+		m_testMap = testMap;
+	}
 	@Override
 	public void calcTrainTestSize(){
 		
@@ -76,51 +83,54 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 		m_B = m_mmbModel.MLEB();
 		calculateMixturePerUser();
 		
-		_MMBAdaptStruct ui;
-	
-		// for each user, rank their neighbors.
+		// calculate the symmetric similarity between user pairs
 		for(int i=0; i<m_testSize; i++){
-			ui = m_testSet.get(i);
-			linkPrediction4TestUsers(i, ui);
-		}
-		System.out.format("[Info]Finish link prediction on %d testing users.\n", m_testCount);
-	}
-	
-	int m_testCount = 0;
-	// for testing user, construct user pair among all the users
-	@Override
-	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
-		int count = 0;
-		double sim = 0;
-		int rankSize = m_allUserSize - 1 - ui.getUser().getFriendSize();
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(rankSize);
-		int skip = 0;
-		for(int j=0; j<m_testSize; j++){
-			_MMBAdaptStruct uj = m_testSet.get(j);
-			
-			if(j == i){
-				skip++;
-				continue;
-			}
-			if(j > i){
-				sim = calcSimilarity(ui, uj);
+			_MMBAdaptStruct ui = m_testSet.get(i);
+			for(int j=i+1; j<m_testSize; j++){
+				_MMBAdaptStruct uj = m_testSet.get(j);
+				double sim = calcSimilarity(ui, uj);
 				m_simMtx[i][j] = sim;
 				m_simMtx[j][i] = sim;
 			}
-			// if uj is ui's training friend
-			if(ui.getUser().hasFriend(uj.getUserID())){
-				skip++;
-				continue;
-			}
-			count++;
-			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
 		}
-		if(count != rankSize)
-			System.out.format("rank: %d, count: %d, skip: %d\n", rankSize, count, skip);
-		if(ui.getUser().getTestFriendSize() == 0)
-			return;
+	
+		// for each user, rank their neighbors.
+		int testUser = 0;
+		for(int i=0; i<m_testSize; i++){
+			_MMBAdaptStruct ui = m_testSet.get(i);
+			if(m_testMap.containsKey(ui.getUserID()) && ui.getUser().getTestFriendSize() != 0){
+				linkPrediction4TestUsers(i, ui);
+				testUser++;
+			}
+		}
+		System.out.format("[Info]Finish link prediction on (%d,%d) testing users/pairs.\n", testUser, m_testPair);
+	}
+	
+	public ArrayList<Integer> calcRankSize(int i, _MMBAdaptStruct ui){
+		ArrayList<Integer> neiIndexes = new ArrayList<>();
+		for(int j=0; j<m_testSize; j++){
+			_MMBAdaptStruct uj = m_testSet.get(j);
+			if(!m_trainMap.containsKey(uj.getUserID()))
+				continue;
+			if(j == i) 
+				continue;
+			if(ui.getUser().hasFriend(uj.getUserID()))
+				continue;
+			neiIndexes.add(j);
+		}
+		m_testPair += neiIndexes.size();
+		return neiIndexes;
+	}
+	int m_testPair = 0;
+	// for testing user, construct user pair among all the users
+	@Override
+	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
+		ArrayList<Integer> neiIndexes = calcRankSize(i, ui);
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(neiIndexes.size());
+		for(int neiIndex: neiIndexes){
+			neighbors.add(new _RankItem(neiIndex, m_simMtx[i][neiIndex]));
+		}
 		m_frdTestMtx[i] = rankFriends(ui, neighbors);
-		m_testCount++;
 	}
 	
 	// decide if the neighbors based on similarity are real friends

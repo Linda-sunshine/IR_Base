@@ -235,11 +235,26 @@ public class PostProcess {
 	
 	public static void main(String[] args){
 		
-		int d = 10;
-		String model = "fm";
+		for(int d: new int[]{5, 10}){
+		String model = "svd";
 		String dataset = "YelpNew";
 		String setting = "all_nei"; // "all_nei"
+		PostProcess process = new PostProcess();
+		if(model.equals("fm")){
+			String predFile = String.format("./data/linkPredData/fm_predict_%d/%s_link_pred_d_%d_fm.txt", d, dataset, d);
+			process.loadData(predFile);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		} else if(model.equals("svd")){
+			String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_test.mm", dataset);
+			String predFile = String.format("./data/linkPredData/svd_predict_%d/%s_link_pred_test.mm.predict", d, dataset);
+			process.loadTruePredFiles(testMMFile, predFile);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		}}
 		
+		/***cf*
+		// cf post processing
 		if(setting.equals("topk")){
 			for(int t: new int[]{2}){
 				for(int k: new int[]{4}){
@@ -279,5 +294,6 @@ public class PostProcess {
 				}
 			}
 		}
+		***/
 	}
 }

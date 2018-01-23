@@ -906,13 +906,23 @@ public class Utils {
 		return N * ( A * D - B * C ) * ( A * D - B * C ) / cDF / ( B + D ) / DF / ( C + D );
 	}
 	
-	//Sample with a given log array.
+//	//Sample with a given log array.
+//	public static int sampleInLogArray(double[] logP, int length){
+//		double sum = logP[0], rnd = Math.log(FloatUniform.staticNextFloat());
+//		int i = 0;
+//		while(sum<rnd && i<length){
+//			i++;
+//			sum = logSum(sum, logP[i]);
+//		}
+//		return i;
+//	}
+	
 	public static int sampleInLogArray(double[] logP, int length){
-		double sum = logP[0], rnd = Math.log(FloatUniform.staticNextFloat());
-		int i = 0;
-		while(sum<rnd && i<length){
+		double sum = Utils.logSum(logP, length), rnd = FloatUniform.staticNextFloat();
+		int i = -1;
+		while(rnd>0 && i<length){
 			i++;
-			sum = logSum(sum, logP[i]);
+			rnd -= Math.exp(logP[i]-sum);
 		}
 		return i;
 	}

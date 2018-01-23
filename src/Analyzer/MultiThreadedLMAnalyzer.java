@@ -298,46 +298,5 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	public int getCurrentUserSize(){
 		return m_users.size();
 	}
-	
-	// save the user-user pairs to graphlab for model training.
-	public void saveUserUserPairs(String dir){
-		int trainUser = 0, testUser = 0, trainPair = 0, testPair = 0;
-		try{
-			PrintWriter trainWriter = new PrintWriter(new File(dir+"train.csv"));
-			PrintWriter testWriter = new PrintWriter(new File(dir+"test.csv"));
-			trainWriter.write("user_id,item_id,rating\n");
-			testWriter.write("user_id,item_id,rating\n");
-			for(_User u: m_users){
-				if(u.getFriendSize() != 0){
-					trainUser++;
-					for(String frd: u.getFriends()){
-						trainPair++;
-						trainWriter.write(String.format("%s,%s,%d\n", u.getUserID(), frd, 1));
-					}
-				}
-				// for test users, we also need to write out non-friends
-				if(u.getTestFriendSize() != 0){
-					testUser++;
-					for(_User nei: m_users){
-						String neiID = nei.getUserID();
-						if(u.hasFriend(neiID) || u.getUserID().equals(neiID))
-							continue;
-						else if(u.hasTestFriend(neiID)){
-							testPair++;
-							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 1));
-						} else{
-							testPair++;
-							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 0));
-						}
-					}
-				}
-			}
-			trainWriter.close();
-			testWriter.close();
-			System.out.format("[Info]Finish writing (%d,%d) training users/pairs, (%d,%d) testing users/pairs.\n", trainUser, trainPair, testUser, testPair);
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		
-	}
+
 }

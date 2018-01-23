@@ -10,6 +10,7 @@ import Analyzer.MultiThreadedLMAnalyzer;
 import Application.LinkPredictionWithMMB;
 import Application.LinkPredictionWithMMBPerEdge;
 import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMPerEdge;
 import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredExecution {
@@ -61,9 +62,11 @@ public class MyLinkPredExecution {
 		if(param.m_model.equals("mmb_node"))
 			linkPred = new LinkPredictionWithMMB();
 		else if(param.m_model.equals("mmb_edge"))
-			linkPred = new LinkPredictionWithMMBPerEdge();
+			linkPred = new LinkPredictionWithMMBPerEdge(analyzer.getTrainMap(), analyzer.getTestMap());
 		else if(param.m_model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(param.m_c, param.m_rho);
+		else if(param.m_model.equals("svm_edge"))
+			linkPred = new LinkPredictionWithSVMPerEdge(param.m_c, param.m_rho, analyzer.getTrainMap(), analyzer.getTestMap());
 		else if(param.m_model.equals("svm+text"))
 			linkPred = new LinkPredictionWithSVMWithText(param.m_c, param.m_rho, param.m_lmTopK);
 		

@@ -2,9 +2,15 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
+import Application.LinkPredictionWithMMB;
+import Application.LinkPredictionWithMMBPerEdge;
+import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMPerEdge;
+import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	
@@ -55,7 +61,6 @@ public class MyLinkPredMain {
 		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
 		analyzer.saveUserUserPairs(linkDir);
 		
-		/***
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
@@ -71,9 +76,11 @@ public class MyLinkPredMain {
 		if(model.equals("mmb_node"))
 			linkPred = new LinkPredictionWithMMB();
 		else if(model.equals("mmb_edge"))
-			linkPred = new LinkPredictionWithMMBPerEdge();
+			linkPred = new LinkPredictionWithMMBPerEdge(analyzer.getTrainMap(), analyzer.getTestMap());
 		else if(model.equals("svm"))
 			linkPred = new LinkPredictionWithSVM(c, rho);
+		else if(model.equals("svm_edge"))
+			linkPred = new LinkPredictionWithSVMPerEdge(c, rho, analyzer.getTrainMap(), analyzer.getTestMap());
 		else if(model.equals("svm+text"))
 			linkPred = new LinkPredictionWithSVMWithText(c, rho, lmTopK);
 		
@@ -99,6 +106,6 @@ public class MyLinkPredMain {
 		linkPred.calculateAllNDCGMAP();
 		linkPred.calculateAvgNDCGMAP();
 //		linkPred.printLinkPrediction("./", model);	
-		***/
+	
 	}
 }
