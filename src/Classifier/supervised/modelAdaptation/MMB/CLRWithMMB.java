@@ -185,20 +185,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		m_multipleE = e;
 	}
 	
-	@Override
-	public void calculate_E_step(){
-		int stepCount = 0;
-		long start = System.currentTimeMillis();
-		while(stepCount++ < m_multipleE){
-			super.calculate_E_step();
-		}
-		calculate_E_step_Edge();
-		sanityCheck();
-		long end = System.currentTimeMillis();
-		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
-		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
-	}
-	
 	// Decide which sampling method to take
 	public void calculate_E_step_Edge(){
 		if(m_jointAll)
@@ -1036,15 +1022,19 @@ public class CLRWithMMB extends CLRWithHDP {
 		}
 	}
 	
+	public void printClusterInfo(long start, long end){
+		System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
+		System.out.println("[Time]The sampling iteration took " + (end-start)/1000 + " secs.");
+	}
+	
 	// In the training process, we sample documents first, then sample edges.
 	@Override
 	public double train(){
-//		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
+		
 		System.out.print(toString());
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
 		double likelihoodX = 0, likelihoodY = 0, likelihoodE = 0;
 		int count = 0;
-//		int ecount = 0;
 		
 		/**We want to sample documents first without knowing edges,
 		 * So we have to rewrite the init function to split init thetastar for docs and edges.**/
@@ -1056,14 +1046,25 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			calculate_E_step();
+			calculate_E_step_Edge();
 			calculate_M_step();
 		}
 		
 		// EM iteration.
 		for(int i=0; i<m_numberOfIterations; i++){
-			// Cluster assignment, thinning to reduce auto-correlation.	
 			
-			calculate_E_step();
+			// E step
+			int stepCount = 0;
+			long start = System.currentTimeMillis();
+			// multiple E steps of sampling docs
+			while(stepCount++ < m_multipleE){
+				calculate_E_step();
+			}
+			calculate_E_step_Edge();
+			long end = System.currentTimeMillis();
+			printClusterInfo(start, end);
+			
+			// M step
 			likelihoodY = calculate_M_step();
 			
 			likelihoodX = accumulateLikelihoodX();
@@ -1093,9 +1094,8 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 
 	@Override
-	public double trainTrace(String data, long start){
+	public double trainTrace(String data, long time){
 			
-		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
 		
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -1103,7 +1103,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		int count = 0;
 		
 		double likelihoodE = 0;
-//		double[] likelihoodE;
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars_Edges_Joint();
@@ -1112,17 +1111,28 @@ public class CLRWithMMB extends CLRWithHDP {
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			calculate_E_step();
+			calculate_E_step_Edge();
 			calculate_M_step();
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, start); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, time); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
 				
-				// Cluster assignment, thinning to reduce auto-correlation.
-				calculate_E_step();
+				// E step
+				int stepCount = 0;
+				long start = System.currentTimeMillis();
+				// multiple E steps of sampling docs
+				while(stepCount++ < m_multipleE){
+					calculate_E_step();
+				}
+				calculate_E_step_Edge();
+				long end = System.currentTimeMillis();
+				printClusterInfo(start, end);
+				
+				// M step
 				likelihoodY = calculate_M_step();
 
 				// accumulate the likelihood
@@ -1159,74 +1169,6 @@ public class CLRWithMMB extends CLRWithHDP {
 		return curLikelihood;
 	}
 	
-	public double trainTraceMultipleE(String data, int iter, int multipleE){
-		m_numberOfIterations = iter;
-		m_thinning = 1;
-
-		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
-		System.out.print(toString());
-		
-		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-		double likelihoodX = 0, likelihoodY = 0;
-		int count = 0, ecount = 0;
-		
-		double likelihoodE = 0;
-		// clear user performance, init cluster assignment, assign each review to one cluster
-		init();	
-		initThetaStars_Edges_Joint();
-		sanityCheck();
-		
-		// Burn in period for doc.
-		while(count++ < m_burnIn){
-			calculate_E_step();
-			calculate_M_step();
-		}
-		
-		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, m_burnIn, m_thinning, m_jointAll, System.currentTimeMillis()); 
-			PrintWriter writer = new PrintWriter(new File(traceFile));
-			// EM iteration.
-			for(int i=0; i<m_numberOfIterations; i++){
-				
-				// Cluster assignment, thinning to reduce auto-correlation.
-				while(ecount++ < multipleE){
-					calculate_E_step();
-					assignClusterIndex();
-					sampleGamma();
-				}
-				likelihoodY = estPhi();
-				
-				ecount = 0;
-				// accumulate the likelihood
-				likelihoodX = accumulateLikelihoodX();
-				likelihoodE = accumulateLikelihoodEMMB();
-				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
-				
-				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
-				delta = (lastLikelihood - curLikelihood)/curLikelihood;
-				
-				// evaluate the model
-				if (i%m_thinning==0){
-					evaluateModel();
-					test();
-					for(_AdaptStruct u: m_userList)
-						u.getPerfStat().clear();
-				}
-				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
-				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-				if(Math.abs(delta) < m_converge)
-					break;
-				lastLikelihood = curLikelihood;
-			}
-			writer.close();
-		} catch(IOException e){
-			e.printStackTrace();
-		}
-		evaluateModel(); // we do not want to miss the last sample?!
-		return curLikelihood;
-	}
-
-
 	protected void updateSampleSize(int index, int val){
 		if(index <0 || index > m_MNL.length)
 			System.err.println("[Error]Wrong index!");

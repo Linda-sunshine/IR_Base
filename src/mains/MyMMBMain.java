@@ -158,12 +158,11 @@ public class MyMMBMain {
 
 		boolean trace = true; 
 		if(trace){
-			iter = 10; thin = 1; burnin = 0;
+			iter = 5; thin = 1; burnin = 0;
 			mmb.setNumberOfIterations(iter);
 			mmb.setThinning(thin);
 			mmb.setBurnIn(burnin);
 			mmb.trainTrace(dataset, start);
-//			mmb.printEdgeCount(String.format("%s_edge_count_iter_%d_%d.txt", dataset, iter, start));
 		} else{
 			mmb.train();
 			mmb.test(); 

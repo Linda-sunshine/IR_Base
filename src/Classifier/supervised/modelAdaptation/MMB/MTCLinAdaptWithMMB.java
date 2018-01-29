@@ -300,7 +300,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	HashMap<String, ArrayList<Double[]>> m_perfMap = new HashMap<>();
 	String[] m_keys;
 	@Override
-	public double trainTrace(String data, long start){
+	public double trainTrace(String data, long time){
 		
 		m_perfMap.clear();
 		m_keys = new String[]{"doc", "edge", "m", "exp", "doc_all", "edge_all", "m_all", "exp_all"};
@@ -314,8 +314,6 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		m_perfMap.put("m_all", new ArrayList<Double[]>());
 		m_perfMap.put("exp_all", new ArrayList<Double[]>());
 		
-		
-		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
 		
 		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
@@ -331,47 +329,39 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		// Burn in period for doc.
 		while(count++ < m_burnIn){
 			calculate_E_step();
+			calculate_E_step_Edge();
 			calculate_M_step();
 		}
 		
 		try{
-			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, start); 
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, time); 
 			PrintWriter writer = new PrintWriter(new File(traceFile));
 			// EM iteration.
 			for(int i=0; i<m_numberOfIterations; i++){
 				
-				// Cluster assignment, thinning to reduce auto-correlation.
-//				calculate_E_step();
-				
-				long oneStart = System.currentTimeMillis();
+				// E step
+				long start = System.currentTimeMillis();
 				
 				// record the performance after sampling documents
-				super.calculate_E_step();
+				calculate_E_step();
 				recordPerformance("doc");
-				
+			
 				// record the performance after sampling edges
 				calculate_E_step_Edge();
-				
 				recordPerformance("edge");
+
+				long end = System.currentTimeMillis();
+				printClusterInfo(start, end);
 				
-				sanityCheck();
-				long oneEnd = System.currentTimeMillis();
-				System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
-				System.out.println("[Time]The sampling iteration took " + (oneEnd-oneStart)/1000 + " secs.");
-				
-				// record the performance after 
+				// M step
 				likelihoodY = calculate_M_step();
 				recordPerformance("m");
 				
 				// accumulate the likelihood
-				likelihoodX = accumulateLikelihoodX();
-//				likelihoodE = accumulateDecomposedLikelihoodEMMB();
-//				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
-				
+				likelihoodX = accumulateLikelihoodX();				
 				likelihoodE = accumulateLikelihoodEMMB();
 				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
 				
-//				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
 				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
 				delta = (lastLikelihood - curLikelihood)/curLikelihood;
 				
@@ -386,14 +376,13 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 				// record the expectation of all the predictions too for comparison
 				m_perfMap.get("exp").add(new Double[]{m_perf[0], m_perf[1]});
 				m_perfMap.get("exp_all").add(new Double[]{m_microStat.getF1(0), m_microStat.getF1(1)});
-//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
 				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
 				if(Math.abs(delta) < m_converge)
 					break;
 				lastLikelihood = curLikelihood;
 			}
-			saveDetailPerformance(data);
+			saveDetailPerformance(data, time);
 			writer.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -412,7 +401,6 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 
 		// predict the label for each review in real time
 		testUserClusterPerf();
-		printInfo();
 		
 		m_perfMap.get(key).add(new Double[]{m_perf[0], m_perf[1]});
 		m_perfMap.get(key+"_all").add(new Double[]{m_microStat.getF1(0), m_microStat.getF1(1)});
@@ -425,6 +413,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		for(_AdaptStruct u: m_userList){
 			u.getPerfStat().clear();
 		}
+		System.out.format("-----------Finish recording performance after %s !-----------\n\n", key);
 	}
 
 	// test the model performance with independent prediction for each review.
@@ -521,9 +510,9 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		System.out.println();
 	}
 
-	public void saveDetailPerformance(String data){
+	public void saveDetailPerformance(String data, long time){
 		try{
-			String perfFile = String.format("%s_iter_%d_burnin_%d_thin_%d_detail.txt", data, m_numberOfIterations, m_burnIn, m_thinning); 
+			String perfFile = String.format("%s_iter_%d_burnin_%d_thin_%d_detail_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, time); 
 			PrintWriter writer = new PrintWriter(new File(perfFile));
 			// EM iteration.
 			writer.write("doc_neg doc_pos edge_neg edge_pos m_neg m_pos exp_neg exp_pos ");
