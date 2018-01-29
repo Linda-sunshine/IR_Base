@@ -35,14 +35,14 @@ public class LinkPredictionWithSVMWithText extends LinkPredictionWithSVM{
 		}
 		int offset = m_kBar * m_kBar;
 		// construct the feature with polynomial kernal
-		for(_SparseFeature fi: ui.getUser().getProfile()){
-			for(_SparseFeature fj: uj.getUser().getProfile()){
+		for(_SparseFeature fi: ui.getUser().getBoWProfile()){
+			for(_SparseFeature fj: uj.getUser().getBoWProfile()){
 				fv.add(new FeatureNode(offset + fi.getIndex()*m_lmFvSize+fj.getIndex()+1, fi.getValue()*fj.getValue()));
 			}
 		}
 		// construct the feature with (vi - vj)
-		_SparseFeature[] pro_i = ui.getUser().getProfile();
-		_SparseFeature[] pro_j = uj.getUser().getProfile();
+		_SparseFeature[] pro_i = ui.getUser().getBoWProfile();
+		_SparseFeature[] pro_j = uj.getUser().getBoWProfile();
  		int pi = 0, pj = 0;
  		_SparseFeature fi, fj;
 		while(pi < pro_i.length && pj < pro_j.length){

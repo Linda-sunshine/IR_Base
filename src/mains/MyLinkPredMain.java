@@ -2,15 +2,9 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
-import Application.LinkPredictionWithMMB;
-import Application.LinkPredictionWithMMBPerEdge;
-import Application.LinkPredictionWithSVM;
-import Application.LinkPredictionWithSVMPerEdge;
-import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	
@@ -27,7 +21,7 @@ public class MyLinkPredMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
  
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 1000; // topK for language model.
@@ -61,6 +55,7 @@ public class MyLinkPredMain {
 		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
 		analyzer.saveUserUserPairs(linkDir);
 		
+		/***
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
@@ -106,6 +101,6 @@ public class MyLinkPredMain {
 		linkPred.calculateAllNDCGMAP();
 		linkPred.calculateAvgNDCGMAP();
 //		linkPred.printLinkPrediction("./", model);	
-	
+		***/
 	}
 }

@@ -252,10 +252,10 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 	protected boolean hasCoPurchase(_User ui, _User uj){
 		int count = 0;
 		HashSet<String> item_i = new HashSet<String>();
-		for(_Review r: ui.getReviews()){
+		for(_Review r: ui.getTrainReviews()){
 			item_i.add(r.getItemID());
 		}
-		for(_Review r: uj.getReviews()){
+		for(_Review r: uj.getTrainReviews()){
 			if(item_i.contains(r.getItemID())){
 				count++;
 				if(count == 1)
@@ -264,7 +264,26 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 		}
 		return false;
 	}
-	public void findFriends(String filename){
+	
+	// Check if two users have the co-purchase 
+	protected boolean hasCoPurchaseInTest(_User ui, _User uj){
+		int count = 0;
+		HashSet<String> item_i = new HashSet<String>();
+		for(_Review r: ui.getTestReviews()){
+			item_i.add(r.getItemID());
+		}
+		for(_Review r: uj.getTestReviews()){
+			if(item_i.contains(r.getItemID())){
+				count++;
+				if(count == 1)
+					return true;
+			}
+		}
+		return false;
+	}
+	
+	HashMap<String, Integer> m_validUserMap = new HashMap<String, Integer>();
+	public void findtrainFriends(String filename){
 		_User ui, uj;
 		// Detect all co-purchase.
 		for(int i=0; i<m_users.size(); i++){
@@ -278,16 +297,58 @@ public class MultiThreadedLMAnalyzer extends MultiThreadedUserAnalyzer {
 			}
 		}
 		try{
-			double avg = 0;
+			double avg = 0, count = 0;
 			PrintWriter writer = new PrintWriter(new File(filename));
 			for(_User u: m_users){
+				if(u.getAmazonFriends().size() == 0)
+					continue;
+				m_validUserMap.put(u.getUserID(), m_validUserMap.size());
+				count++;
 				avg += u.getAmazonFriends().size();
 				writer.write(u.getUserID()+"\t");
 				for(String frd: u.getAmazonFriends())
 					writer.write(frd+"\t");
 				writer.write("\n");
 			}
-			System.out.println("[Info] Avg friends: "+ avg/m_users.size());
+			System.out.format("[Info]%.1f users have friends and avg friend size: %.2f\n", count, avg/count);
+			writer.close();
+		} catch (IOException e){
+			e.printStackTrace();
+		}
+	}
+	
+	public void findTestFriends(String filename){
+		_User ui, uj;
+		// Detect all co-purchase.
+		for(int i=0; i<m_users.size(); i++){
+			ui = m_users.get(i);
+			if(!m_validUserMap.containsKey(ui.getUserID()))
+				continue;
+			for(int j=i+1; j<m_users.size(); j++){
+				uj = m_users.get(j);
+				if(!m_validUserMap.containsKey(uj.getUserID()))
+					continue;
+				if(hasCoPurchaseInTest(ui, uj)){
+					ui.addAmazonTestFriend(uj.getUserID());
+					uj.addAmazonTestFriend(ui.getUserID());
+				}
+			}
+		}
+		try{
+			double avg = 0, count = 0;
+			PrintWriter writer = new PrintWriter(new File(filename));
+			for(_User u: m_users){
+				if(u.getAmazonTestFriends().size() == 0)
+					continue;
+				
+				count++;
+				avg += u.getAmazonFriends().size();
+				writer.write(u.getUserID()+"\t");
+				for(String frd: u.getAmazonFriends())
+					writer.write(frd+"\t");
+				writer.write("\n");
+			}
+			System.out.format("[Info]%.1f users have friends in test set and avg test friend size: %.2f\n", count, avg/count);
 			writer.close();
 		} catch (IOException e){
 			e.printStackTrace();

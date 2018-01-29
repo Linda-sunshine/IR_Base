@@ -7,12 +7,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
 import structures._Doc;
 import structures._HDPThetaStar;
+import structures._PerformanceStat;
+import structures._PerformanceStat.TestMode;
 import structures._Review;
+import structures._Review.rType;
 import structures._SparseFeature;
 import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
@@ -292,74 +296,252 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 		printUserPerformance(perfFile);
 	}
 	
-//	@Override
-//	public double trainTrace(String data, int iter, long start){
-//		m_numberOfIterations = iter;
-//		m_thinning = 1;
-//			
-//		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
-//		System.out.print(toString());
-//		
-//		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
-//		double likelihoodX = 0, likelihoodY = 0;
-//		int count = 0;
-//		
-//		double likelihoodE = 0;
-////		double[] likelihoodE;
-//		// clear user performance, init cluster assignment, assign each review to one cluster
-//		init();	
-//		initThetaStars_Edges_Joint();
-//		sanityCheck();
-//		
-//		// Burn in period for doc.
-//		while(count++ < m_burnIn){
-//			calculate_E_step();
-//			calculate_M_step();
-//		}
-//		
-//		try{
-//			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, iter, m_burnIn, m_thinning, m_jointAll, start); 
-//			PrintWriter writer = new PrintWriter(new File(traceFile));
-//			// EM iteration.
-//			for(int i=0; i<m_numberOfIterations; i++){
-//				
-//				// Cluster assignment, thinning to reduce auto-correlation.
+	
+	HashMap<String, ArrayList<Double[]>> m_perfMap = new HashMap<>();
+	String[] m_keys;
+	@Override
+	public double trainTrace(String data, long start){
+		
+		m_perfMap.clear();
+		m_keys = new String[]{"doc", "edge", "m", "exp", "doc_all", "edge_all", "m_all", "exp_all"};
+		m_perfMap.put("doc", new ArrayList<Double[]>());
+		m_perfMap.put("edge", new ArrayList<Double[]>());
+		m_perfMap.put("m", new ArrayList<Double[]>());
+		m_perfMap.put("exp", new ArrayList<Double[]>());
+		
+		m_perfMap.put("doc_all", new ArrayList<Double[]>());
+		m_perfMap.put("edge_all", new ArrayList<Double[]>());
+		m_perfMap.put("m_all", new ArrayList<Double[]>());
+		m_perfMap.put("exp_all", new ArrayList<Double[]>());
+		
+		
+		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
+		System.out.print(toString());
+		
+		double delta = 0, lastLikelihood = 0, curLikelihood = 0;
+		double likelihoodX = 0, likelihoodY = 0;
+		int count = 0;
+		
+		double likelihoodE = 0;
+		// clear user performance, init cluster assignment, assign each review to one cluster
+		init();	
+		initThetaStars_Edges_Joint();
+		sanityCheck();
+		
+		// Burn in period for doc.
+		while(count++ < m_burnIn){
+			calculate_E_step();
+			calculate_M_step();
+		}
+		
+		try{
+			String traceFile = String.format("%s_iter_%d_burnin_%d_thin_%d_%b_%d.txt", data, m_numberOfIterations, m_burnIn, m_thinning, m_jointAll, start); 
+			PrintWriter writer = new PrintWriter(new File(traceFile));
+			// EM iteration.
+			for(int i=0; i<m_numberOfIterations; i++){
+				
+				// Cluster assignment, thinning to reduce auto-correlation.
 //				calculate_E_step();
-//				likelihoodY = calculate_M_step();
-//
-//				// accumulate the likelihood
-//				likelihoodX = accumulateLikelihoodX();
-////				likelihoodE = accumulateDecomposedLikelihoodEMMB();
-////				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
-//				
-//				likelihoodE = accumulateLikelihoodEMMB();
-//				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
-//				
-////				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
-//				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
-//				delta = (lastLikelihood - curLikelihood)/curLikelihood;
-//				
-//				// evaluate the model
-//				if (i%m_thinning==0){
-//					evaluateModel();
-//					test();
-//					for(_AdaptStruct u: m_userList)
-//						u.getPerfStat().clear();
-//				}
-////				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
-//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
-//				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
-//				if(Math.abs(delta) < m_converge)
-//					break;
-//				lastLikelihood = curLikelihood;
-//			}
-//			writer.close();
-//		} catch(IOException e){
-//			e.printStackTrace();
-//		}
-//		evaluateModel(); // we do not want to miss the last sample?!
-//		return curLikelihood;
-//	}
+				
+				long oneStart = System.currentTimeMillis();
+				
+				// record the performance after sampling documents
+				super.calculate_E_step();
+				recordPerformance("doc");
+				
+				// record the performance after sampling edges
+				calculate_E_step_Edge();
+				
+				recordPerformance("edge");
+				
+				sanityCheck();
+				long oneEnd = System.currentTimeMillis();
+				System.out.format("[Cluster]Sampling (docs/edges generaly/edges jointly) generates (%d, %d, %d) new clusters.\n", m_newCluster4Doc, m_newCluster4Edge, m_newCluster4EdgeJoint);
+				System.out.println("[Time]The sampling iteration took " + (oneEnd-oneStart)/1000 + " secs.");
+				
+				// record the performance after 
+				likelihoodY = calculate_M_step();
+				recordPerformance("m");
+				
+				// accumulate the likelihood
+				likelihoodX = accumulateLikelihoodX();
+//				likelihoodE = accumulateDecomposedLikelihoodEMMB();
+//				likelihoodE[3] = (m_MNL[2]/2)*Math.log(1-m_rho);
+				
+				likelihoodE = accumulateLikelihoodEMMB();
+				likelihoodE += (m_MNL[2]/2)*Math.log(1-m_rho);
+				
+//				curLikelihood = likelihoodY + likelihoodX + likelihoodE[0] + likelihoodE[1] + likelihoodE[3];
+				curLikelihood = likelihoodY + likelihoodX + likelihoodE;
+				delta = (lastLikelihood - curLikelihood)/curLikelihood;
+				
+				// evaluate the model
+				if (i%m_thinning==0){
+					evaluateModel();
+					test();
+					for(_AdaptStruct u: m_userList)
+						u.getPerfStat().clear();
+				}
+				
+				// record the expectation of all the predictions too for comparison
+				m_perfMap.get("exp").add(new Double[]{m_perf[0], m_perf[1]});
+				m_perfMap.get("exp_all").add(new Double[]{m_microStat.getF1(0), m_microStat.getF1(1)});
+//				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
+				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
+				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));
+				if(Math.abs(delta) < m_converge)
+					break;
+				lastLikelihood = curLikelihood;
+			}
+			saveDetailPerformance(data);
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		evaluateModel(); // we do not want to miss the last sample?!
+		return curLikelihood;
+	}
+	
+	// record the performance of one step (sample docs, sample edges, optimize models)
+	public void recordPerformance(String key){
+		
+		for(int i=0; i<m_featureSize+1; i++)
+			m_supWeights[i] = getSupWeights(i);
+		// calculate the posterior probabilit for each user
+		calculateClusterProbPerUser();
+
+		// predict the label for each review in real time
+		testUserClusterPerf();
+		printInfo();
+		
+		m_perfMap.get(key).add(new Double[]{m_perf[0], m_perf[1]});
+		m_perfMap.get(key+"_all").add(new Double[]{m_microStat.getF1(0), m_microStat.getF1(1)});
+
+		// clear the performance data for each cluster
+		for(int k=0; k<m_kBar; k++){
+			m_hdpThetaStars[k].getPerfStat().clear();
+		}
+		// clear the performance data for each user
+		for(_AdaptStruct u: m_userList){
+			u.getPerfStat().clear();
+		}
+	}
+
+	// test the model performance with independent prediction for each review.
+	public void testUserClusterPerf(){
+		int numberOfCores = Runtime.getRuntime().availableProcessors();
+		ArrayList<Thread> threads = new ArrayList<Thread>();
+		
+		for(int k=0; k<numberOfCores; ++k){
+			threads.add((new Thread() {
+				int core, numOfCores;
+				@Override
+				public void run() {
+					_MMBAdaptStruct user;
+					_PerformanceStat userPerfStat;
+					try {
+						for (int i = 0; i + core <m_userList.size(); i += numOfCores) {
+							user = (_MMBAdaptStruct) m_userList.get(i+core);
+							if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+								|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+								|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+								continue;
+								
+							userPerfStat = user.getPerfStat();								
+							if (m_testmode==TestMode.TM_batch || m_testmode==TestMode.TM_hybrid) {				
+								//record prediction results
+								for(_Review r:user.getReviews()) {
+									if (r.getType() != rType.TEST)
+										continue;
+									int trueL = r.getYLabel();
+									int predL = user.predictIndependently(r); // evoke user's own model
+									r.setPredictLabel(predL);
+									r.getHDPThetaStar().getPerfStat().addOnePredResult(predL, trueL);
+									userPerfStat.addOnePredResult(predL, trueL);
+								}
+							}							
+							userPerfStat.calculatePRF();	
+						}
+					} catch(Exception ex) {
+						ex.printStackTrace(); 
+					}
+				}
+				
+				private Thread initialize(int core, int numOfCores) {
+					this.core = core;
+					this.numOfCores = numOfCores;
+					return this;
+				}
+			}).initialize(k, numberOfCores));
+			
+			threads.get(k).start();
+		}
+		
+		for(int k=0;k<numberOfCores;++k){
+			try {
+				threads.get(k).join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} 
+		}
+		
+		// calculate the F1 for each cluster
+		for(int k=0; k<m_kBar; k++){
+			m_hdpThetaStars[k].getPerfStat().calculatePRF();	
+		}
+		ArrayList<ArrayList<Double>> macroF1 = new ArrayList<ArrayList<Double>>();
+		
+		//init macroF1
+		for(int i=0; i<m_classNo; i++)
+			macroF1.add(new ArrayList<Double>());
+		
+		_PerformanceStat userPerfStat;
+		m_microStat.clear();
+		for(_AdaptStruct user:m_userList) {
+			if ( (m_testmode==TestMode.TM_batch && user.getTestSize()<1) // no testing data
+				|| (m_testmode==TestMode.TM_online && user.getAdaptationSize()<1) // no adaptation data
+				|| (m_testmode==TestMode.TM_hybrid && user.getAdaptationSize()<1) && user.getTestSize()<1) // no testing and adaptation data 
+				continue;
+			
+			userPerfStat = user.getPerfStat();
+			for(int i=0; i<m_classNo; i++){
+				if(userPerfStat.getTrueClassNo(i) > 0)
+					macroF1.get(i).add(userPerfStat.getF1(i));
+			}
+			m_microStat.accumulateConfusionMat(userPerfStat);
+		}
+		calcMicroPerfStat();
+		System.out.println("\nMacro F1:");
+		// macro average and standard deviation.
+		for(int i=0; i<m_classNo; i++){
+			double[] avgStd = calcAvgStd(macroF1.get(i));
+			m_perf[i] = avgStd[0];
+			System.out.format("Class %d: %.4f+%.4f\t", i, avgStd[0], avgStd[1]);
+		}
+		System.out.println();
+	}
+
+	public void saveDetailPerformance(String data){
+		try{
+			String perfFile = String.format("%s_iter_%d_burnin_%d_thin_%d_detail.txt", data, m_numberOfIterations, m_burnIn, m_thinning); 
+			PrintWriter writer = new PrintWriter(new File(perfFile));
+			// EM iteration.
+			writer.write("doc_neg doc_pos edge_neg edge_pos m_neg m_pos exp_neg exp_pos ");
+			writer.write("doc_all_neg doc_all_pos edge_all_neg edge_all_pos m_all_neg m_all_pos exp_all_neg exp_all_pos\n");
+			int step = m_perfMap.get("doc").size();
+			for(int i=0; i<step; i++){
+				for(String key: m_keys){
+					Double[] perf = m_perfMap.get(key).get(i);
+					writer.write(String.format("%.5f\t%.5f\t",perf[0], perf[1]));
+				}
+				writer.write("\n");
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
+
 //	@Override
 //	public void evaluateModel(){
 //		for(int i=0; i<m_featureSize+1; i++)

@@ -48,14 +48,22 @@ public class SVDPreProcess {
 					m_userIDs.add(userID);
 				}
 				if(!m_itemMap.containsKey(itemID)){
-					m_itemMap.put(itemID, m_itemMap.size());
+					m_itemMap.put(itemID, 1);
 					m_itemIDs.add(itemID);
+				} else{
+					int val = m_itemMap.get(itemID);
+					m_itemMap.put(itemID, val+1);
 				}
 				m_trainPairSize++;
 			}
 			reader.close();
 			System.out.format("(%d, %d) users/items are loaded from %s...\n", m_userMap.size(), m_itemIDs.size(), filename);
-			
+			double sum = 0;
+			for(String item: m_itemMap.keySet()){
+				sum += m_itemMap.get(item);
+			}
+			sum /= m_itemMap.size();
+			System.out.println("avg pop: " + sum);
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
@@ -79,13 +87,13 @@ public class SVDPreProcess {
 				itemSet.add(itemID);
 				m_testPairSize++;
 			}
-			for(String item: itemSet){
-				if(!m_userMap.containsKey(item)){
-					System.out.println(item);
-				}
-			}
+//			for(String item: itemSet){
+//				if(!m_userMap.containsKey(item)){
+//					System.out.println(item);
+//				}
+//			}
 			reader.close();
-			System.out.format("There are %d total testing pairs, %d users, %d items.", m_testPairSize, userSet.size(), itemSet.size());
+			System.out.format("There are %d total testing pairs, %d users, %d items.\n", m_testPairSize, userSet.size(), itemSet.size());
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
@@ -172,21 +180,23 @@ public class SVDPreProcess {
 	}
 	
 	public static void main(String[] args){
-		String dataset = "YelpNew";
-		/***
-		for(int p: new int[]{10, 20, 30, 40, 50}){
-//			for(int k: new int[]{4,6,8}){
+		String dataset = "Amazon";
+		
+		for(int p: new int[]{3, 5, 10}){
+			for(int k: new int[]{4}){
 				SVDPreProcess process = new SVDPreProcess();
 				String trainFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_train.csv", dataset, p);
 				String testFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_test.csv", dataset, p);
 				String trainMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_train.mm", dataset, p);
 				String testMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_test.mm", dataset, p);
 				// transfer csv data to mm data
+				
 				process.buildUserItemMap(trainFile);
 				process.calcTestPairSize(testFile);
 				
-				process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
-				process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+				//process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+				//process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+				System.out.println("---------------------------");
 				
 //				SVDPreProcess process = new SVDPreProcess();
 //				String trainFile = String.format("./data/cfData/fm_text/%s_cf_time_%d_topk_%d_text_train.csv", dataset, t, k);
@@ -199,21 +209,21 @@ public class SVDPreProcess {
 //				process.calcTestPairSize(testFile);
 //				process.transfer2MMFileWithText(trainFile, trainMMFile, process.getTrainPairSize());
 //				process.transfer2MMFileWithText(testFile, testMMFile, process.getTestPairSize());
-//			}
+			}
 		}
-		***/	
-		SVDPreProcess process = new SVDPreProcess();
-		String trainFile = String.format("./data/linkPredData/fm/%s_link_pred_train.csv", dataset);
-		String testFile = String.format("./data/linkPredData/fm/%s_link_pred_test.csv", dataset);
-		
-		String trainMMFile = String.format("./data/linkPredData/svd/%s_link_pred_train.mm", dataset);
-		String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_test.mm", dataset);
-		
-		process.buildUserItemMap(trainFile);
-		process.calcTestPairSize(testFile);
-		
-		process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
-		process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+			
+//		SVDPreProcess process = new SVDPreProcess();
+//		String trainFile = String.format("./data/linkPredData/fm/%s_link_pred_train.csv", dataset);
+//		String testFile = String.format("./data/linkPredData/fm/%s_link_pred_test.csv", dataset);
+//		
+//		String trainMMFile = String.format("./data/linkPredData/svd/%s_link_pred_train.mm", dataset);
+//		String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_test.mm", dataset);
+//		
+//		process.buildUserItemMap(trainFile);
+//		process.calcTestPairSize(testFile);
+//		
+//		process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+//		process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
 
 	}
 }

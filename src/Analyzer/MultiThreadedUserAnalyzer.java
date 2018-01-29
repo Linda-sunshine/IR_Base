@@ -165,6 +165,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					rollBack(Utils.revertSpVct(review.getSparse()), review.getYLabel());
 				}
 			}
+
 			reader.close();
 		} catch(IOException e){
 			e.printStackTrace();
@@ -456,6 +457,30 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 	}
 	
+	// load a friendship file 
+	public HashMap<String, String[]> loadFriendFile(String filename){
+		HashMap<String, String[]> neighborsMap = new HashMap<String, String[]>();
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, friends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				friends = Arrays.copyOfRange(users, 1, users.length);
+				if(friends.length == 0){
+					continue;
+				}
+				neighborsMap.put(users[0], friends);
+			}
+			reader.close();
+			System.out.format("%d users' friends are loaded!\n", neighborsMap.size());
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		return neighborsMap;
+	}
+	
 	// load the test user friends, for link prediction only
 	public void loadTestFriendship(String filename){
 		try{
@@ -473,7 +498,6 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_testMap.put(users[0], friends);
 			}
 			reader.close();
-//			System.out.format("%d users have test friends!\n",  (m_neighborsMap.size()));
 			// map friends to users.
 			for(_User u: m_users){
 				if(m_testMap.containsKey(u.getUserID()))
@@ -507,6 +531,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					for(String frd: u.getFriends()){
 						trainPair++;
 						trainWriter.write(String.format("%s,%s,%d\n", u.getUserID(), frd, 1));
+						trainWriter.write(String.format("%s,%s,%d\n", frd, u.getUserID(), 1));
+
 					}
 				}
 				// for test users, we also need to write out non-friends
@@ -519,9 +545,11 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 						else if(u.hasTestFriend(neiID)){
 							testPair++;
 							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 1));
+							testWriter.write(String.format("%s,%s,%d\n", neiID, u.getUserID(), 1));
 						} else if(m_trainMap.containsKey(neiID)){
 							testPair++;
 							testWriter.write(String.format("%s,%s,%d\n", u.getUserID(), neiID, 0));
+							testWriter.write(String.format("%s,%s,%d\n", neiID, u.getUserID(), 0));
 						}
 					}
 				}
@@ -544,12 +572,8 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 		}
 		System.out.format("[Check]%d users have train friends, %d users have test friends.\n", train, test);
 	}
-
-//	// return the friendship map
-//	public HashMap<String, String[]> getFriendship(){
-//		return m_neighborsMap;
-//	}
 	
+	// filter the friends who are not in the list and return a neat hashmap
 	public HashMap<String, ArrayList<String>> filterFriends(HashMap<String, String[]> neighborsMap){
 		double sum = 0;
 		HashMap<String, _User> userMap = new HashMap<String, _User>();

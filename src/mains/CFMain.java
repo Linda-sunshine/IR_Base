@@ -48,8 +48,7 @@ public class CFMain {
 		String dir, model, cfFile;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
-//		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
-		String[] models = new String[]{"avg", "mmb_mixture"};
+		String[] models = new String[]{"lr", "lm", "mmb_lr"};
 
 		if(!neiAll){
 			for(int t: new int[]{5}){
@@ -85,14 +84,18 @@ public class CFMain {
 				cf.setEqualWeightFlag(equalWeight);
 				
 				// utilize the average as ranking score
-				if(model.equals("avg"))
+				if(model.equals("avg")){
 					cf.setAvgFlag(true);
-				else{
-					cf.loadWeights(dir, suffix1, suffix2);
+				}else if(model.equals("lm") || model.equals("mmb_lm")){
+					cf.setFeatureSize(lmTopK);
+					cf.loadWeights(dir, model, suffix1, suffix2);
+				} else{
+					cf.loadWeights(dir, model, suffix1, suffix2);
 				}
+				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_time_%d_top_%d.txt", model, equalWeight, t, k));
+				cf.savePerf(String.format("%s_perf_%s_equalWeight_%b_time_%d_top_%d.txt", dataset, model, equalWeight, t, k));
 
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
@@ -112,15 +115,15 @@ public class CFMain {
 			}}
 		} else{
 			for(int k: new int[]{4}){
-				for(int pop: new int[]{10, 20, 30, 40, 50}){
+				for(int pop: new int[]{10}){
 
 			dir = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_", dataset, pop);
 			CollaborativeFilteringWithAllNeighbors cfInit = new CollaborativeFilteringWithAllNeighbors(analyzer.getUsers(), analyzer.getFeatureSize(), pop);
 			
 			// construct ranking neighbors
-			cfInit.constructRankingNeighbors();
-			cfInit.saveUserItemPairs(dir);
-			/***
+//			cfInit.constructRankingNeighbors();
+//			cfInit.saveUserItemPairs(dir);
+			
 			cfFile = String.format("./data/cfData/fm/%s_cf_all_nei_pop_%d_test.csv", dataset, pop);
 			ArrayList<_User> cfUsers = cfInit.getUsers();
 //			cfInit.calculatePopularity();
@@ -145,14 +148,18 @@ public class CFMain {
 				cf.setEqualWeightFlag(equalWeight);
 				
 				// utilize the average as ranking score
-				if(model.equals("avg"))
+				if(model.equals("avg")){
 					cf.setAvgFlag(true);
-				else
-					cf.loadWeights(dir, suffix1, suffix2);
+				}else if(model.equals("lm") || model.equals("mmb_lm")){
+					cf.setFeatureSize(lmTopK);
+					cf.loadWeights(dir, model, suffix1, suffix2);
+				} else{
+					cf.loadWeights(dir, model, suffix1, suffix2);
+				}
 				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_topk_%d_all.txt", model, equalWeight, k));
+				cf.savePerf(String.format("%s_perf_%s_equalWeight_%b_topk_%d_all.txt", dataset, model, equalWeight, k));
 
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
@@ -169,7 +176,6 @@ public class CFMain {
 				writer.write("\n");
 			}
 			writer.close();
-			***/
 		}}}
 	}
 }

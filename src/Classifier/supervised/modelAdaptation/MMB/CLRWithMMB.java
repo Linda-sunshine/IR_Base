@@ -179,10 +179,19 @@ public class CLRWithMMB extends CLRWithHDP {
 		return prob;
 	}
 	
+	
+	int m_multipleE = 1;
+	public void setMultipleE(int e){
+		m_multipleE = e;
+	}
+	
 	@Override
 	public void calculate_E_step(){
+		int stepCount = 0;
 		long start = System.currentTimeMillis();
-		super.calculate_E_step();
+		while(stepCount++ < m_multipleE){
+			super.calculate_E_step();
+		}
 		calculate_E_step_Edge();
 		sanityCheck();
 		long end = System.currentTimeMillis();
@@ -1082,13 +1091,9 @@ public class CLRWithMMB extends CLRWithHDP {
 		evaluateModel(); // we do not want to miss the last sample?!
 		return curLikelihood;
 	}
-	
-	int m_multipleE = 3;
-	
+
 	@Override
 	public double trainTrace(String data, long start){
-//		m_numberOfIterations = iter;
-//		m_thinning = 1;
 			
 		System.out.print(String.format("[Info]Joint Sampling for all zero edges: %b\n", m_jointAll));
 		System.out.print(toString());
@@ -1098,6 +1103,7 @@ public class CLRWithMMB extends CLRWithHDP {
 		int count = 0;
 		
 		double likelihoodE = 0;
+//		double[] likelihoodE;
 		// clear user performance, init cluster assignment, assign each review to one cluster
 		init();	
 		initThetaStars_Edges_Joint();
@@ -1134,18 +1140,10 @@ public class CLRWithMMB extends CLRWithHDP {
 				// evaluate the model
 				if (i%m_thinning==0){
 					evaluateModel();
-					evaluateClusterPerformance();
-					printInfo();
-					// clear the performance data for each cluster
-					for(int k=0; k<m_kBar; k++){
-						m_hdpThetaStars[k].getPerfStat().clear();
-					}
-					// test each user's performance and clear it
 					test();
 					for(_AdaptStruct u: m_userList)
 						u.getPerfStat().clear();
 				}
-				
 //				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodE[0], likelihoodE[1], likelihoodE[2], likelihoodE[3], m_kBar, m_perf[0], m_perf[1]));
 				writer.write(String.format("%.5f\t%.5f\t%.5f\t%.5f\t%d\t%.5f\t%.5f\n", likelihoodY, likelihoodX, likelihoodE, delta, m_kBar, m_perf[0], m_perf[1]));
 				System.out.print(String.format("\n[Info]Step %d: likelihood: %.4f, Delta_likelihood: %.3f\n", i, curLikelihood, delta));

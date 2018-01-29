@@ -1,6 +1,7 @@
 package mains;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
 
@@ -17,7 +18,7 @@ public class MyFriendshipMain {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 1000; // topK for language model.
@@ -33,14 +34,16 @@ public class MyFriendshipMain {
 
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/Co_Review_Friends_1.txt", prefix, dataset);
+		String trainFriendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		
 		// Build friendship for amazon dataset
-		analyzer.findFriends(friendFile);
+		analyzer.findtrainFriends(trainFriendFile);
+		analyzer.findTestFriends(testFriendFile);
 
 	}
 }	

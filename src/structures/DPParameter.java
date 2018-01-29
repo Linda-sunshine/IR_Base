@@ -57,7 +57,7 @@ public class DPParameter {
 	
 	public boolean m_jointAll = false;
 	public boolean m_trace = false;
-	
+	public int m_multipleE = 1;
 //	// whether we perform multi-threading in link prediction
 //	public boolean m_linkMulti = false;
 	
@@ -142,6 +142,8 @@ public class DPParameter {
 				m_jointAll = Boolean.valueOf(argv[i]);
 			} else if(argv[i-1].equals("-trace")){
 				m_trace = Boolean.valueOf(argv[i]);
+			} else if(argv[i-1].equals("-e")){
+				m_multipleE = Integer.valueOf(argv[i]);
 //			} else if(argv[i-1].equals("-multi")){
 //				m_linkMulti = Boolean.valueOf(argv[i]);
 			} else

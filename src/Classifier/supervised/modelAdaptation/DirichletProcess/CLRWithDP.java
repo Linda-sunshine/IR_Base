@@ -734,6 +734,7 @@ public class CLRWithDP extends LinAdapt {
 		}
 
 		evaluateModel(); // we do not want to miss the last sample?!
+		setPersonalizedModel();
 		return curLikelihood;
 	}
 

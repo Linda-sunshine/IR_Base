@@ -296,7 +296,6 @@ public class CollaborativeFiltering {
 			}
 		}
 		if(simSum == 0){
-			System.err.println("bug in candidate!");
 			return 0;
 		} else
 			return rankSum/simSum;
@@ -550,12 +549,13 @@ public class CollaborativeFiltering {
 		}
 	}
 
-	public void loadWeights(String weightFile, String suffix1, String suffix2){
-		loadUserWeights(weightFile, suffix1, suffix2);
+	// load user weights and construct the neighborhood
+	public void loadWeights(String weightFile, String model, String suffix1, String suffix2){
+		loadUserWeights(weightFile, model, suffix1, suffix2);
 		constructNeighborhood();
 	}
 	
-	public void loadUserWeights(String folder, final String suffix1, final String suffix2){
+	public void loadUserWeights(String folder, String model, final String suffix1, final String suffix2){
 		m_userWeights = new double[m_users.size()][];
 		final File dir = new File(folder);
 		final File[] files;
@@ -563,9 +563,10 @@ public class CollaborativeFiltering {
 		int numberOfCores = Runtime.getRuntime().availableProcessors();
 		ArrayList<Thread> threads = new ArrayList<Thread>();
 		
+		// if the directory does not exist, then we load the bow weight of each user
 		if(!dir.exists()){
 			System.err.format("[error] %s does not exist! BoW is used as user weights.\n", dir);
-			loadSVMWeights();
+			loadBoWWeights(model);
 		} else{
 			files = dir.listFiles();
 			for(int k=0; k<numberOfCores; ++k){
@@ -620,15 +621,17 @@ public class CollaborativeFiltering {
 		System.out.format("[Info]%d users weights are loaded from %s.", m_userWeights.length, folder);
 	}
 	
-	//If not weights provided, use BoW weights.
-	public void loadSVMWeights(){
-		
+	//If not weights provided, use BoW weights, we can choose bow based on LR features or LM features
+	public void loadBoWWeights(String model){
+		System.out.format("[Info]The BoW is based on %s features.\n", model);
 		_User u;
 		m_userWeights = new double[m_users.size()][];
 		
 		for(int i=0; i<m_users.size(); i++){
 			m_userWeights[i] = new double[m_featureSize];
 			u = m_users.get(i);
+			u.buildProfile(model);
+			u.normalizeProfile();
 			for(_SparseFeature fv: u.getBoWProfile())
 				m_userWeights[i][fv.getIndex()] = fv.getValue();
 		}
@@ -733,6 +736,9 @@ public class CollaborativeFiltering {
 		}
 	}
 
+	public void setFeatureSize(int fs){
+		m_featureSize = fs;
+	}
 	public void setAvgFlag(boolean b){
 		m_avgFlag = b;
 	}

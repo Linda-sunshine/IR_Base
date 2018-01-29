@@ -24,7 +24,7 @@ public class MyMMBMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
  
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "YelpNew"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 1000; // topK for language model.
@@ -36,7 +36,7 @@ public class MyMMBMain {
 //		String prefix = "/zf8/lg5bt/DataSigir";
 
 		String providedCV = String.format("%s/%s/SelectedVocab.csv", prefix, dataset); // CV.
-		String userFolder = String.format("%s/%s/Users", prefix, dataset);
+		String userFolder = String.format("%s/%s/Users_1000", prefix, dataset);
 		String featureGroupFile = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSize);
 		String featureGroupFileSup = String.format("%s/%s/CrossGroups_%d.txt", prefix, dataset, fvGroupSizeSup);
 		String globalModel = String.format("%s/%s/GlobalWeights.txt", prefix, dataset);
@@ -46,12 +46,15 @@ public class MyMMBMain {
 		if(fvGroupSizeSup == 5000 || fvGroupSizeSup == 3071) featureGroupFileSup = null;
 		if(lmTopK == 5000 || lmTopK == 3071) lmFvFile = null;
 		
-		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
+		String friendFile = String.format("%s/%s/%sFriends_1000.txt", prefix, dataset, dataset);
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(friendFile);
-//		analyzer.writeFriends(friendFile+".filter", analyzer.filterFriends(analyzer.getFriendship()));
+		
+		// the following two lines are used to filter friends that are not in the whole user set
+//		HashMap<String, ArrayList<String>> frds = analyzer.filterFriends(analyzer.loadFriendFile(friendFile));
+//		analyzer.writeFriends(friendFile+".filter", frds);
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
@@ -93,7 +96,7 @@ public class MyMMBMain {
 		
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.01, eta = 0.05, beta = 0.01;
+		double alpha = 0.001, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 //		
 ////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
@@ -138,7 +141,7 @@ public class MyMMBMain {
 		mmb.setR1TradeOffs(eta1, eta2);
 		mmb.setConcentrationParams(alpha, eta, beta);
 		
-		double rho = 0.1; 
+		double rho = 0.2; 
 		int burnin = 10, iter = 30, thin = 3;
 		boolean jointAll = false;
 		mmb.setRho(rho);
@@ -153,14 +156,14 @@ public class MyMMBMain {
 		mmb.setDisplayLv(displayLv);
 		long start = System.currentTimeMillis();
 
-		boolean trace = false; 
+		boolean trace = true; 
 		if(trace){
-			iter = 100; thin = 1; burnin = 0;
+			iter = 10; thin = 1; burnin = 0;
 			mmb.setNumberOfIterations(iter);
 			mmb.setThinning(thin);
 			mmb.setBurnIn(burnin);
 			mmb.trainTrace(dataset, start);
-			mmb.printEdgeCount(String.format("%s_edge_count_iter_%d_%d.txt", dataset, iter, start));
+//			mmb.printEdgeCount(String.format("%s_edge_count_iter_%d_%d.txt", dataset, iter, start));
 		} else{
 			mmb.train();
 			mmb.test(); 

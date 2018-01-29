@@ -78,6 +78,7 @@ public class MyMMBExecution {
 		adaptation.setBurnIn(param.m_burnin);
 		adaptation.setThinning(param.m_thinning);
 		adaptation.setNumberOfIterations(param.m_nuOfIterations);
+		adaptation.setMultipleE(param.m_multipleE);
 	
 		adaptation.setJointSampling(param.m_jointAll);
 		// training testing operations.

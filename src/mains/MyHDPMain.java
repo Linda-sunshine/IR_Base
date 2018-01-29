@@ -26,11 +26,11 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
-		int lmTopK = 5000; // topK for language model.
+		int lmTopK = 1000; // topK for language model.
 		int fvGroupSize = 800, fvGroupSizeSup = 5000;
 		String fs = "DF";//"IG_CHI"
 		int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -76,19 +76,22 @@ public class MyHDPMain {
 //		
 //		MTCLinAdaptWithDP dp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //
-//		MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
+////		MTCLinAdaptWithDPExp dp = new MTCLinAdaptWithDPExp(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, null);
 //		dp.loadUsers(analyzer.getUsers());
+//		dp.setAlpha(1);
 //		dp.setLNormFlag(false);
 //		dp.setDisplayLv(displayLv);
-//		dp.setNumberOfIterations(30);
+//		dp.setNumberOfIterations(10);
 //		dp.setsdA(0.2);
 //		dp.setsdB(0.2);
 //		dp.setR1TradeOffs(eta1, eta2);
 //		dp.setR2TradeOffs(eta3, eta4);
 //		dp.train();
 //		dp.test();
+//		dp.saveModel("./data/Amazon_mtclindp_0.5_1");
+		
 //		dp.printUserPerformance("./data/dp_exp_full_10k.xls");
-//		
+		
 //		/*****hdp related models.****/
 		double[] globalLM = analyzer.estimateGlobalLM();
 //		
@@ -104,25 +107,27 @@ public class MyHDPMain {
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 		
 		//default setting: alpha=0.01, eta=0.05, beta=0.01
-		double alpha = 1, eta = 1, beta = 0.01;
+		double alpha = 0.01, eta = 1, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 		
 		hdp.loadLMFeatures(analyzer.getLMFeatures());
 		hdp.setR2TradeOffs(eta3, eta4);
+//		sdA = 0.2; sdB = 0.2;
 		hdp.setsdB(sdA);//0.2
 
 		hdp.setsdA(sdB);//0.2
 		hdp.setConcentrationParams(alpha, eta, beta);
 		hdp.setR1TradeOffs(eta1, eta2);
 		
-		hdp.setBurnIn(0);
+		hdp.setBurnIn(10);
 		hdp.setNumberOfIterations(30);// default 50
 		hdp.loadUsers(analyzer.getUsers());
 		hdp.setDisplayLv(displayLv);
 		
-		hdp.trainTrace(dataset, 100);
+//		hdp.trainTrace(dataset, 100);
+		hdp.train();
 		hdp.test();
-//		hdp.saveModel("./data/mtclinhdp_models");
+		hdp.saveModel("./data/Amazon_mtclinhdp_0.5");
 		
 //		hdp.printUserPerformance("./data/hdp_perf_train.txt");
 //		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");

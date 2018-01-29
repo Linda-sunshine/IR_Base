@@ -116,7 +116,7 @@ public class _User {
 	// construct the sparse vectors based on the feature used for sentiment model
 	public void constructLRSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-		for(_Review r: m_reviews) 
+		for(_Review r: m_trainReviews) 
 			reviews.add(r.getSparse());
 		
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
@@ -125,7 +125,7 @@ public class _User {
 	// construct the sparse vectors based on the feature used for language model
 	public void constructLMSparseVector(){
 		ArrayList<_SparseFeature[]> reviews = new ArrayList<_SparseFeature[]>();
-		for(_Review r: m_reviews) 
+		for(_Review r: m_trainReviews) 
 			reviews.add(r.getLMSparse());
 		
 		m_BoWProfile = Utils.MergeSpVcts(reviews);// this BoW representation is not normalized?!
@@ -149,9 +149,9 @@ public class _User {
 			fv.setValue(val);
 		}
 	}
-	public _SparseFeature[] getProfile(){
-		return m_BoWProfile;
-	}
+//	public _SparseFeature[] getProfile(){
+//		return m_BoWProfile;
+//	}
 	// added by Lin for accessing the index of user cluster.
 	public int getClusterIndex() {
 		return m_cIndex;
@@ -413,6 +413,15 @@ public class _User {
 		return m_amazonFriends;
 	}
 	
+	// In order to construct the friends for testing
+	ArrayList<String> m_amazonTestFriends = new ArrayList<String>();
+	public void addAmazonTestFriend(String s){
+		m_amazonTestFriends.add(s);
+	}
+	
+	public ArrayList<String> getAmazonTestFriends(){
+		return m_amazonTestFriends;
+	}
 	public void constructTrainTestReviews(){
 		m_trainReviews = new ArrayList<>();
 		m_testReviews = new ArrayList<>();

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import opennlp.tools.util.InvalidFormatException;
 import structures.CFParameter;
 import structures._User;
-import Analyzer.MultiThreadedUserAnalyzer;
+import Analyzer.MultiThreadedLMAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
 import Application.CollaborativeFilteringWithMMB;
@@ -33,7 +33,11 @@ public class CFExecution {
 		String providedCV = String.format("/zf8/lg5bt/DataSigir/%s/SelectedVocab.csv", param.m_data); // CV.
 		String userFolder = String.format("/zf8/lg5bt/DataSigir/%s/Users", param.m_data);
 
-		MultiThreadedUserAnalyzer analyzer = new MultiThreadedUserAnalyzer(tokenModel, classNumber, providedCV, Ngram, lengthThreshold, numberOfCores, false);
+		String fs = "DF";//"IG_CHI"
+		int lmTopK = 1000; // topK for language model.
+		String lmFvFile = String.format("/zf8/lg5bt/DataSigir/%s/fv_lm_%s_%d.txt", param.m_data, fs, lmTopK);
+		
+		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder); // load user and reviews
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);			
@@ -42,7 +46,7 @@ public class CFExecution {
 		/***Collaborative filtering starts here.***/
 		String dir, model;
 		String suffix1 = "txt", suffix2 = "classifer";
-		String[] models = new String[]{"avg", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mtclinmmb_0.5_old", "mtclinmmb_0.5_new", "mmb_mixture"};
+		String[] models = new String[]{"avg", "lr", "lm", "mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mmb_lm", "mmb_lr", "mmb_mixture"};
 		long start = System.currentTimeMillis();
 
 		// if we select time*review_size as candidate reviews 
@@ -71,16 +75,20 @@ public class CFExecution {
 				
 				cf.setEqualWeightFlag(param.m_equalWeight);
 				cf.setValidUserSize(validUser);
+				
 				// utilize the average as ranking score
-				if(model.equals("avg"))
+				if(model.equals("avg")){
 					cf.setAvgFlag(true);
-				else{
-					cf.loadWeights(dir, suffix1, suffix2);
+				}else if(model.equals("lm") || model.equals("mmb_lm")){
+					cf.setFeatureSize(lmTopK);
+					cf.loadWeights(dir, model, suffix1, suffix2);
+				} else{
+					cf.loadWeights(dir, model, suffix1, suffix2);
 				}
 				
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_time_%d_top_%d.txt", model, param.m_equalWeight, param.m_t, param.m_k));
+				cf.savePerf(String.format("%s_perf_%s_equalWeight_%b_time_%d_top_%d.txt", param.m_data, model, param.m_equalWeight, param.m_t, param.m_k));
 				
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
@@ -124,16 +132,20 @@ public class CFExecution {
 				
 				cf.setEqualWeightFlag(param.m_equalWeight);
 				cf.setValidUserSize(validUser);
+				
 				// utilize the average as ranking score
-				if(model.equals("avg"))
+				if(model.equals("avg")){
 					cf.setAvgFlag(true);
-				else{
-					cf.loadWeights(dir, suffix1, suffix2);
+				}else if(model.equals("lm") || model.equals("mmb_lm")){
+					cf.setFeatureSize(lmTopK);
+					cf.loadWeights(dir, model, suffix1, suffix2);
+				} else{
+					cf.loadWeights(dir, model, suffix1, suffix2);
 				}
 
 				cf.calculateAllNDCGMAP();
 				cf.calculateAvgNDCGMAP();
-				cf.savePerf(String.format("perf_%s_equalWeight_%b_topk_%d_pop_%d_all_nei.txt", model, param.m_equalWeight, param.m_k, param.m_pop));
+				cf.savePerf(String.format("%s_perf_%s_equalWeight_%b_topk_%d_pop_%d_all_nei.txt", param.m_data, model, param.m_equalWeight, param.m_k, param.m_pop));
 
 				performance[m][0] = cf.getAvgNDCG();
 				performance[m][1] = cf.getAvgMAP();
