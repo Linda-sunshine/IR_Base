@@ -43,6 +43,7 @@ public class MyLinkPredExecution {
 		
 		String trainFriendFile = String.format("%s/%s/%sFriends_train.txt", param.m_prefix,param.m_data,param.m_data);
 		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", param.m_prefix,param.m_data,param.m_data);
+		String nonFriendFile = String.format("%s/%s/%sNonFriends_%d.txt", param.m_prefix, param.m_data, param.m_data, param.m_time);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.setReleaseContent(false);
@@ -50,6 +51,7 @@ public class MyLinkPredExecution {
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(trainFriendFile);
 		analyzer.loadTestFriendship(testFriendFile);
+		analyzer.buildNonFriendship(nonFriendFile);
 		analyzer.checkFriendSize();
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);

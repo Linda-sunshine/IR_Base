@@ -58,8 +58,9 @@ public class DPParameter {
 	public boolean m_jointAll = false;
 	public boolean m_trace = false;
 	public int m_multipleE = 1;
-//	// whether we perform multi-threading in link prediction
-//	public boolean m_linkMulti = false;
+	
+	// time*friend is used as non-friend in link prediction
+	public int m_time = 3;
 	
 	public DPParameter(String argv[]){
 		
@@ -144,8 +145,8 @@ public class DPParameter {
 				m_trace = Boolean.valueOf(argv[i]);
 			} else if(argv[i-1].equals("-e")){
 				m_multipleE = Integer.valueOf(argv[i]);
-//			} else if(argv[i-1].equals("-multi")){
-//				m_linkMulti = Boolean.valueOf(argv[i]);
+			} else if(argv[i-1].equals("-t")){
+				m_time = Integer.valueOf(argv[i]);
 			} else
 				exit_with_help();
 		}

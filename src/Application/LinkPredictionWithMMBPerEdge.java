@@ -12,6 +12,7 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 
 	HashMap<String, String[]> m_trainMap = new HashMap<>();
 	HashMap<String, String[]> m_testMap = new HashMap<>();
+	HashMap<String, Integer> m_userIDIndexMap = new HashMap<>();
 	// calculate training/testing size, construct training set/testing set
 	public LinkPredictionWithMMBPerEdge(HashMap<String, String[]> trainMap, HashMap<String, String[]> testMap){
 		m_trainMap = trainMap;
@@ -23,9 +24,13 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 		m_kBar = m_mmbModel.getKBar();
 		m_allUserSize = m_mmbModel.getUserSize();
 		m_testSet = new ArrayList<_MMBAdaptStruct>();
-		for(_AdaptStruct user: m_mmbModel.getUsers()){
+		ArrayList<_AdaptStruct> users = m_mmbModel.getUsers();
+		
+		for(int i= 0; i<users.size(); i++){
+			_MMBAdaptStruct user = (_MMBAdaptStruct) users.get(i);
+			m_testSet.add(user);
+			m_userIDIndexMap.put(user.getUserID(), i);
 			m_testSize++;
-			m_testSet.add((_MMBAdaptStruct) user);
 		}
 		calculateFrdStat();
 	}
@@ -75,6 +80,8 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 		m_simMtx = new double[m_allUserSize][m_allUserSize];
 	}
 	
+	int m_testUser = 0, m_testPair = 0;
+
 	@Override
 	public void linkPrediction(){
 		initLinkPred();
@@ -95,39 +102,46 @@ public class LinkPredictionWithMMBPerEdge extends LinkPredictionWithMMB{
 		}
 	
 		// for each user, rank their neighbors.
-		int testUser = 0;
+		m_testUser = 0; m_testPair = 0;
 		for(int i=0; i<m_testSize; i++){
 			_MMBAdaptStruct ui = m_testSet.get(i);
 			if(m_testMap.containsKey(ui.getUserID()) && ui.getUser().getTestFriendSize() != 0){
 				linkPrediction4TestUsers(i, ui);
-				testUser++;
+				m_testUser++;
 			}
 		}
-		System.out.format("[Info]Finish link prediction on (%d,%d) testing users/pairs.\n", testUser, m_testPair);
+		System.out.format("[Info]Finish link prediction on (%d,%d) testing users/pairs.\n", m_testUser, m_testPair);
 	}
 	
-	public ArrayList<Integer> calcRankSize(int i, _MMBAdaptStruct ui){
-		ArrayList<Integer> neiIndexes = new ArrayList<>();
-		for(int j=0; j<m_testSize; j++){
-			_MMBAdaptStruct uj = m_testSet.get(j);
-			if(!m_trainMap.containsKey(uj.getUserID()))
-				continue;
-			if(j == i) 
-				continue;
-			if(ui.getUser().hasFriend(uj.getUserID()))
-				continue;
-			neiIndexes.add(j);
-		}
-		m_testPair += neiIndexes.size();
-		return neiIndexes;
-	}
-	int m_testPair = 0;
+//	public ArrayList<Integer> calcRankSize(int i, _MMBAdaptStruct ui){
+//		ArrayList<Integer> neiIndexes = new ArrayList<>();
+//		for(int j=0; j<m_testSize; j++){
+//			_MMBAdaptStruct uj = m_testSet.get(j);
+//			if(!m_trainMap.containsKey(uj.getUserID()))
+//				continue;
+//			if(j == i) 
+//				continue;
+//			if(ui.getUser().hasFriend(uj.getUserID()))
+//				continue;
+//			neiIndexes.add(j);
+//		}
+//		m_testPair += neiIndexes.size();
+//		return neiIndexes;
+//	}
+	
 	// for testing user, construct user pair among all the users
 	@Override
 	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
-		ArrayList<Integer> neiIndexes = calcRankSize(i, ui);
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(neiIndexes.size());
-		for(int neiIndex: neiIndexes){
+		String[] nonFriends = ui.getUser().getNonFriends();
+		String[] testFriends = ui.getUser().getTestFriends();
+		m_testPair += testFriends.length + nonFriends.length;
+		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(nonFriends.length + testFriends.length);
+		for(String frd: testFriends){
+			int neiIndex = m_userIDIndexMap.get(frd);
+			neighbors.add(new _RankItem(neiIndex, m_simMtx[i][neiIndex]));
+		}
+		for(String nonfrd: nonFriends){
+			int neiIndex = m_userIDIndexMap.get(nonfrd);
 			neighbors.add(new _RankItem(neiIndex, m_simMtx[i][neiIndex]));
 		}
 		m_frdTestMtx[i] = rankFriends(ui, neighbors);

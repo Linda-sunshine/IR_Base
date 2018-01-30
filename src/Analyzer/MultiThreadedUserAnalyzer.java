@@ -456,7 +456,37 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			e.printStackTrace();
 		}
 	}
-	
+	public void buildNonFriendship(String filename){
+		HashMap<String, String[]> nonFriendMap = new HashMap<String, String[]>();
+
+		try{
+			File file = new File(filename);
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"));
+			String line;
+			String[] users, nonFriends;
+			while((line = reader.readLine()) != null){
+				users = line.trim().split("\t");
+				nonFriends = Arrays.copyOfRange(users, 1, users.length);
+				if(nonFriends.length == 0){
+					continue;
+				}
+				nonFriendMap.put(users[0], nonFriends);
+			}
+			reader.close();
+			System.out.format("%d users have non-friends!\n", nonFriendMap.size());
+			// map friends to users.
+			int count = 0;
+			for(_User u: m_users){
+				if(nonFriendMap.containsKey(u.getUserID())){
+					count++;
+					u.setNonFriends(nonFriendMap.get(u.getUserID()));
+				}
+			}
+			System.out.format("%d users' non-friends are set!", count);
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+	}
 	// load a friendship file 
 	public HashMap<String, String[]> loadFriendFile(String filename){
 		HashMap<String, String[]> neighborsMap = new HashMap<String, String[]>();
@@ -526,7 +556,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 			trainWriter.write("user_id,item_id,rating\n");
 			testWriter.write("user_id,item_id,rating\n");
 			for(_User u: m_users){
-				if(u.getFriendSize() != 0){
+				if(u.getFriendSize() != 0){                
 					trainUser++;
 					for(String frd: u.getFriends()){
 						trainPair++;

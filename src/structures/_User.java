@@ -45,6 +45,7 @@ public class _User {
 	// added by Lin for friendship.
 	String[] m_friends;
 	String[] m_testFriends;
+	String[] m_nonFriends;
 	
 	private ArrayList<_Review> m_trainReviews;
 	private ArrayList<_Review> m_testReviews;
@@ -362,6 +363,9 @@ public class _User {
 		m_testFriends = Arrays.copyOf(fs, fs.length);
 	}
 	
+	public void setNonFriends(String[] nonfs){
+		m_nonFriends = Arrays.copyOf(nonfs, nonfs.length);
+	}
 	public String[] getFriends(){
 		return m_friends;
 	}
@@ -371,6 +375,10 @@ public class _User {
 			return 0;
 		else
 			return m_friends.length;
+	}
+	
+	public String[] getNonFriends(){
+		return m_nonFriends;
 	}
 	
 	public String[] getTestFriends(){

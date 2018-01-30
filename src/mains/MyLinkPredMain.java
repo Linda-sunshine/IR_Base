@@ -2,9 +2,15 @@ package mains;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
 import Analyzer.MultiThreadedLMAnalyzer;
+import Application.LinkPredictionWithMMB;
+import Application.LinkPredictionWithMMBPerEdge;
+import Application.LinkPredictionWithSVM;
+import Application.LinkPredictionWithSVMPerEdge;
+import Application.LinkPredictionWithSVMWithText;
 
 public class MyLinkPredMain {
 	
@@ -44,18 +50,20 @@ public class MyLinkPredMain {
 //		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
 		String trainFriendFile = String.format("%s/%s/%sFriends_train.txt", prefix, dataset, dataset);
 		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", prefix, dataset, dataset);
+		int time = 3;
+		String nonFriendFile = String.format("%s/%s/%sNonFriends_%d.txt", prefix, dataset, dataset, time);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
 		analyzer.buildFriendship(trainFriendFile);
 		analyzer.loadTestFriendship(testFriendFile);
+		analyzer.buildNonFriendship(nonFriendFile);
 		analyzer.checkFriendSize();
 		
-		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
-		analyzer.saveUserUserPairs(linkDir);
+//		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
+//		analyzer.saveUserUserPairs(linkDir);
 		
-		/***
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
@@ -101,6 +109,5 @@ public class MyLinkPredMain {
 		linkPred.calculateAllNDCGMAP();
 		linkPred.calculateAvgNDCGMAP();
 //		linkPred.printLinkPrediction("./", model);	
-		***/
 	}
 }
