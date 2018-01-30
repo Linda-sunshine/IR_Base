@@ -442,7 +442,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 				m_trainMap.put(users[0], friends);
 			}
 			reader.close();
-			System.out.format("%d users have friends!\n", m_trainMap.size());
+			System.out.format("%d users have friends!", m_trainMap.size());
 			// map friends to users.
 			int count = 0;
 			for(_User u: m_users){
@@ -451,12 +451,14 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					u.setFriends(m_trainMap.get(u.getUserID()));
 				}
 			}
-			System.out.format("%d users' friends are set!", count);
+			System.out.format("%d users' friends are set!\n", count);
 		} catch(IOException e){
 			e.printStackTrace();
 		}
 	}
 	public void buildNonFriendship(String filename){
+		
+		System.out.println("[Info]Non-friendship file is loaded from " + filename);
 		HashMap<String, String[]> nonFriendMap = new HashMap<String, String[]>();
 
 		try{
@@ -482,7 +484,7 @@ public class MultiThreadedUserAnalyzer extends UserAnalyzer {
 					u.setNonFriends(nonFriendMap.get(u.getUserID()));
 				}
 			}
-			System.out.format("%d users' non-friends are set!", count);
+			System.out.format("%d users' non-friends are set!\n", count);
 		} catch(IOException e){
 			e.printStackTrace();
 		}

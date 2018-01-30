@@ -98,7 +98,8 @@ public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
 				uj = m_testSet.get(j);
 				eij = ui.getUser().hasFriend(uj.getUserID()) ? 1 : 0;
 				// we only pick some of the zero edges for training
-				if(eij == 1 || (eij == 0 && Math.random() <= m_rho)){
+				// we reserve some zero edges for testing, don't touch them in training
+				if(eij == 1 || (eij == 0 && Math.random() <= m_rho && !ui.getUser().hasNonFriend(uj.getUserID()))){
 					fvsArr.add(constructOneX(ui, uj));
 					ysArr.add(eij);
 				}

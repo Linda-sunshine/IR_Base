@@ -403,6 +403,18 @@ public class _User {
 		return false;
 	}
 	
+	// check if a user is a friend of the current user
+	public boolean hasNonFriend(String str){
+		if(m_nonFriends == null || m_nonFriends.length == 0){
+			return false;
+		}
+		for(String f: m_nonFriends){
+			if(str.equals(f))
+				return true;
+		}
+		return false;
+	}
+	
 	public boolean hasTestFriend(String str){
 		if(m_testFriends.length == 0){
 			return false;

@@ -52,7 +52,7 @@ public class MyLinkPredExecution {
 		analyzer.buildFriendship(trainFriendFile);
 		analyzer.loadTestFriendship(testFriendFile);
 		analyzer.buildNonFriendship(nonFriendFile);
-		analyzer.checkFriendSize();
+		//analyzer.checkFriendSize();
 		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
