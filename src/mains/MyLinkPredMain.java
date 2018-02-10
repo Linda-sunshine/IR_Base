@@ -27,7 +27,7 @@ public class MyLinkPredMain {
 		double eta1 = 0.05, eta2 = 0.05, eta3 = 0.05, eta4 = 0.05;
 		boolean enforceAdapt = true;
  
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		int lmTopK = 1000; // topK for language model.
@@ -50,8 +50,8 @@ public class MyLinkPredMain {
 //		String friendFile = String.format("%s/%s/%sFriends.txt", prefix, dataset, dataset);
 		String trainFriendFile = String.format("%s/%s/%sFriends_train.txt", prefix, dataset, dataset);
 		String testFriendFile = String.format("%s/%s/%sFriends_test.txt", prefix, dataset, dataset);
-		int time = 3;
-		String nonFriendFile = String.format("%s/%s/%sNonFriends_%d.txt", prefix, dataset, dataset, time);
+		int order = 1;
+		String nonFriendFile = String.format("%s/%s/%sNonFriends_order_%d.txt", prefix, dataset, dataset, order);
 
 		MultiThreadedLMAnalyzer analyzer = new MultiThreadedLMAnalyzer(tokenModel, classNumber, providedCV, lmFvFile, Ngram, lengthThreshold, numberOfCores, false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
@@ -61,15 +61,12 @@ public class MyLinkPredMain {
 		analyzer.buildNonFriendship(nonFriendFile);
 		analyzer.checkFriendSize();
 		
-//		String linkDir = String.format("./data/linkPredData/fm/%s_link_pred_", dataset);
-//		analyzer.saveUserUserPairs(linkDir);
-		
 		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
 	
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.01, eta = 0.01, beta = 0.01;
+		double alpha = 0.001, eta = 0.01, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 		double c = 1, rho = 0.05;
 		
@@ -95,10 +92,10 @@ public class MyLinkPredMain {
 		linkPred.getMMB().setR1TradeOffs(eta1, eta2);
 		linkPred.getMMB().setConcentrationParams(alpha, eta, beta);
 
-		linkPred.getMMB().setRho(0.1);
-		linkPred.getMMB().setBurnIn(1);
+		linkPred.getMMB().setRho(0.09);
+		linkPred.getMMB().setBurnIn(0);
 //		linkPred.getMMB().setThinning(5);// default 3
-		linkPred.getMMB().setNumberOfIterations(0);
+		linkPred.getMMB().setNumberOfIterations(1);
 		
 		linkPred.getMMB().loadLMFeatures(analyzer.getLMFeatures());
 		linkPred.getMMB().loadUsers(analyzer.getUsers());

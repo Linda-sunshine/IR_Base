@@ -26,7 +26,7 @@ public class MTCLinAdaptWithMMB extends CLinAdaptWithMMB {
 	protected int[] m_featureGroupMap4SupUsr; // bias term is at position 0
 	protected double[] m_supModel; // linear transformation for super user
 	
-	protected double m_eta3 = 1.0, m_eta4 = 1.0; // will be used to scale regularization term
+	protected double m_eta3 = 0.05, m_eta4 = 0.05; // will be used to scale regularization term
 	public MTCLinAdaptWithMMB(int classNo, int featureSize, HashMap<String, Integer> featureMap, 
 			String globalModel, String featureGroupMap, String featureGroup4Sup, double[] betas) {
 		super(classNo, featureSize, featureMap, globalModel, featureGroupMap, betas);

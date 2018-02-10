@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import structures._User;
-
 public class PreProcess {
 	class _LinkFriend{
 		String m_uid;
@@ -43,6 +41,12 @@ public class PreProcess {
 			return m_testNonFriends;
 		}
 		
+		public int getTestNonFrinedSize(){
+			if(m_testNonFriends == null)
+				return 0;
+			else
+				return m_testNonFriends.length;
+		}
 		public boolean hasTestFriends(){
 			return m_testFriends != null;
 		}
@@ -67,6 +71,7 @@ public class PreProcess {
 	
 	// load the user-item data and get the size of users and items
 	public void buildUserItemMap(String filename){
+		m_trainPairSize = 0;
 		if (filename==null || filename.isEmpty())
 			return;
 		
@@ -185,13 +190,14 @@ public class PreProcess {
 				testNonFriendSize += strs.length - 1;
 			}
 			reader.close();
-				System.out.format("(%d, %d) test users/friend-pairs are loaded from %s...\n", testSize, testNonFriendSize, filename);
+			System.out.format("(%d, %d) test users/friend-pairs are loaded from %s...\n", testSize, testNonFriendSize, filename);
 			} catch (IOException e) {
 				System.err.format("[Error]Failed to open file %s!!", filename);
 			}
 		}
 	
 	public void calcTestPairSize(String filename){
+		m_testPairSize = 0;
 		if (filename==null || filename.isEmpty())
 			return;
 		Set<String> userSet = new HashSet<>();
@@ -210,7 +216,7 @@ public class PreProcess {
 				m_testPairSize++;
 			}
 			reader.close();
-			System.out.format("There are %d total testing pairs, %d users, %d items.\n", m_testPairSize, userSet.size(), itemSet.size());
+			System.out.format("There are %d total testing pairs, %d test users, %d items.\n", m_testPairSize, userSet.size(), itemSet.size());
 		} catch (IOException e) {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
@@ -225,6 +231,7 @@ public class PreProcess {
 	
 	// save the user-user pairs to graphlab for model training.
 	public void saveTrainTestFiles(String trainFile, String testFile){
+		int testMiss = 0, testNonMiss = 0, test = 0;
 		try{
 			PrintWriter trainWriter = new PrintWriter(new File(trainFile));
 			PrintWriter testWriter = new PrintWriter(new File(testFile));
@@ -236,20 +243,25 @@ public class PreProcess {
 					trainWriter.write(String.format("%s,%s,%d\n", uid, frd, 1));
 				}
 				// for test users, we also need to write out non-friends
-				if(linkFriend.hasTestFriends() != linkFriend.hasTestNonFriends()){
-					System.out.format("*");
-				} else{
-					for(String frd: linkFriend.getTestFriends()){
-						testWriter.write(String.format("%s,%s,%d\n", uid, frd, 1));
-					}
-					for(String nonfrd: linkFriend.getTestNonFriends()){
-						testWriter.write(String.format("%s,%s,%d\n", uid, nonfrd, 0));
-					}
+				if(!linkFriend.hasTestFriends()){
+					testMiss++;
+					continue;
+				}
+				if(!linkFriend.hasTestNonFriends()){
+					testNonMiss++;
+					continue;
+				}
+				test++;
+				for(String frd: linkFriend.getTestFriends()){
+					testWriter.write(String.format("%s,%s,%d\n", uid, frd, 1));
+				}
+				for(String nonfrd: linkFriend.getTestNonFriends()){
+					testWriter.write(String.format("%s,%s,%d\n", uid, nonfrd, 0));
 				}
 			}
 			trainWriter.close();
 			testWriter.close();
-			System.out.format("[Info]Finish writing training users/pairs, testing users/pairs.\n");
+			System.out.format("\n[Info]%d users don't have testing friends, %d users don't have non-friends, %d users are recorded. \n", testMiss, testNonMiss, test);
 		} catch(IOException e){
 			e.printStackTrace();
 		}	
@@ -290,7 +302,44 @@ public class PreProcess {
 			System.err.format("[Error]Failed to open file %s!!", filename);
 		}
 	}
-	
+	// transfer the user-item matrix to mm file for graphchi
+	public void transfer2MMFil4Link(String filename, String outputfile, int pairSize){
+		if (filename==null || filename.isEmpty())
+			return;
+			
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename), "UTF-8"));
+			String line;
+			PrintWriter writer = new PrintWriter(new File(outputfile));
+			writer.write("%%MatrixMarket matrix coordinate real general\n% Generated Jan, 2018\n");
+			writer.write(String.format("%d\t%d\t%d\n", m_userIDs.size(), m_itemIDs.size(), pairSize));
+			// skip the first line
+			int count = 0;
+			line = reader.readLine();
+			count++;
+			while ((line = reader.readLine()) != null) {
+				count++;
+				String[] strs = line.split(",");
+				String userID = strs[0];
+				String itemID = strs[1];// user_2 too
+				if(!m_userMap.containsKey(userID))
+					System.out.println("bug");
+				int userIdx = m_userMap.get(userID)+1;
+				if(!m_userMap.containsKey(itemID)){
+					System.out.println("bug");
+					continue;
+				}
+				int itemIdx = m_userMap.get(itemID)+1;
+				int rating = Integer.valueOf(strs[2]);
+				writer.write(String.format("%d\t%d\t%d\n", userIdx, itemIdx, rating));
+			}
+			reader.close();
+			writer.close();
+			System.out.format("[Info]Finish transferring %d lines to MM File.\n", count);
+		} catch (IOException e) {
+			System.err.format("[Error]Failed to open file %s!!", filename);
+		}
+	}
 	// transfer the user-item matrix to mm file for graphchi
 	public void transfer2MMFileWithText(String filename, String outputfile, int pairSize){
 		if (filename==null || filename.isEmpty())
@@ -329,7 +378,7 @@ public class PreProcess {
 	}
 	
 	public static void main(String[] args){
-		String dataset = "Amazon";
+		String dataset = "YelpNew";
 		
 //		for(int p: new int[]{3, 5, 10}){
 //			SVDPreProcess process = new SVDPreProcess();
@@ -360,14 +409,14 @@ public class PreProcess {
 //			****/
 //		}
 			
-		for(int t: new int[]{3, 5, 10}){
+		for(int t: new int[]{3}) {
 		PreProcess process = new PreProcess();
 		String trainFriend = String.format("./data/linkPredData/%sFriends_train.txt", dataset);
 		String testFriend = String.format("./data/linkPredData/%sFriends_test.txt", dataset);
-		String testNonFriend = String.format("./data/linkPredData/%sNonFriends_%d.txt", dataset, t);
+		String testNonFriend = String.format("./data/linkPredData/%sNonFriends_order_%d.txt", dataset, t);
 		
 		String trainFile = String.format("./data/linkPredData/%s_link_pred_train.csv", dataset);
-		String testFile = String.format("./data/linkPredData/%s_link_pred_%d_test.csv", dataset, t);
+		String testFile = String.format("./data/linkPredData/%s_link_pred_order_%d_test.csv", dataset, t);
 		
 		// load the train/test matrix 
 		process.loadTrainFriends(trainFriend);
@@ -377,13 +426,16 @@ public class PreProcess {
 		process.saveTrainTestFiles(trainFile, testFile);
 		
 		String trainMMFile = String.format("./data/linkPredData/%s_link_pred_train.mm", dataset);
-		String testMMFile = String.format("./data/linkPredData/%s_link_pred_%d_test.mm", dataset, t);
+		String testMMFile = String.format("./data/linkPredData/%s_link_pred_order_%d_test.mm", dataset, t);
 		
 		process.buildUserItemMap(trainFile);
 		process.calcTestPairSize(testFile);
 		
-		process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
-		process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
+		process.transfer2MMFil4Link(trainFile, trainMMFile, process.getTrainPairSize());
+		process.transfer2MMFil4Link(testFile, testMMFile, process.getTestPairSize());
+		
+//		process.transfer2MMFile(trainFile, trainMMFile, process.getTrainPairSize());
+//		process.transfer2MMFile(testFile, testMMFile, process.getTestPairSize());
 		}
 	}
 }

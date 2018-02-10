@@ -2,9 +2,10 @@ package Application;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 
-import structures.MyPriorityQueue;
 import structures._RankItem;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
@@ -75,10 +76,12 @@ public class LinkPredictionWithMMB {
 				trainMiss++;
 			else
 				trainSum += u.getUser().getFriendSize();
+			
 			if(u.getUser().getTestFriendSize() == 0)
 				testMiss++;
-			else
+			else{
 				testSum += u.getUser().getTestFriendSize();
+			}
 		}
 		System.out.println(String.format("[Stat]%d training users don't have friends, %d testing users don't have friends.", 
 				(m_allUserSize-trainMiss), (m_allUserSize-testMiss)));	
@@ -149,8 +152,9 @@ public class LinkPredictionWithMMB {
 	// for train users, we only consider train users as their friends.
 	protected void linkPrediction4TrainUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
+		int label = 0;
 		_MMBAdaptStruct uj;
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_trainSize-1);
+		ArrayList<_RankItem> neighbors = new ArrayList<_RankItem>();
 		for(int j=0; j<m_trainSize; j++){
 			uj = m_trainSet.get(j);
 			if(j == i) continue;
@@ -160,44 +164,35 @@ public class LinkPredictionWithMMB {
 				m_simMtx[i][j] = sim;
 				m_simMtx[j][i] = sim;
 			}
+			if(ui.getUser().hasFriend(uj.getUserID()))
+				label = 1;
 			// rank sim
-			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
+			neighbors.add(new _RankItem(j, m_simMtx[i][j], label));
 		}
 		if(ui.getUser().getTestFriendSize() == 0)
 			return;
-		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
-	}
-		
-	// for train users, we only consider train users as their friends.
-	protected void linkPrediction4TrainUsers_MultiThread(int i, _MMBAdaptStruct ui){
-		double sim = 0;
-		_MMBAdaptStruct uj;
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_trainSize-1);
-		for(int j=0; j<m_trainSize; j++){
-			uj = m_trainSet.get(j);
-			if(j == i) continue;
-			// calculate sim
-			if(j > i){
-				sim = calcSimilarity(ui, uj);
-				synchronized (m_simMtxLock) {
-					m_simMtx[i][j] = sim;
-					m_simMtx[j][i] = sim;
+		Collections.sort(neighbors, new Comparator<_RankItem>(){
+			@Override
+			public int compare(_RankItem p1, _RankItem p2){
+				if(p1.m_value  < p2.m_value)
+					return 1;
+				else if(p1.m_value > p2.m_value)
+					return -1;
+				else{
+					return -(p1.m_label + p2.m_label);
 				}
 			}
-			// rank sim
-			neighbors.add(new _RankItem(j, m_simMtx[i][j]));
-		}
-		int[] frds = rankFriends(ui, neighbors);
-		synchronized (m_frdMtxLock) {
-			m_frdTrainMtx[i] = frds;
-		}
+		});			
+		m_frdTrainMtx[i] = rankFriends(ui, neighbors);
 	}
 	
 	// for testing user, construct user pair among all the users
 	protected void linkPrediction4TestUsers(int i, _MMBAdaptStruct ui){
 		double sim = 0;
 		_MMBAdaptStruct uj;
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_allUserSize-1);
+		ArrayList<_RankItem> neighbors = new ArrayList<_RankItem>();
+		int label = 0;
+
 		// go through all the train users first
 		for(int j=0; j<m_trainSize; j++){
 			uj = m_trainSet.get(j);
@@ -205,7 +200,9 @@ public class LinkPredictionWithMMB {
 			sim = calcSimilarity(ui, uj);
 			m_simMtx[m_trainSize+i][j] = sim;
 			// rank sim
-			neighbors.add(new _RankItem(j, sim));
+			if(ui.getUser().hasFriend(uj.getUserID()))
+				label = 1;
+			neighbors.add(new _RankItem(j, sim, label));
 		}
 		for(int j=0; j<m_testSize; j++){
 			uj = m_testSet.get(j);
@@ -215,44 +212,23 @@ public class LinkPredictionWithMMB {
 				m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
 				m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
 			}
-			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
+			if(ui.getUser().hasFriend(uj.getUserID()))
+				label = 1;
+			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j], label));
 		}
-		m_frdTestMtx[i] = rankFriends(ui, neighbors);
-	}
-	
-	// for testing user, construct user pair among all the users
-	protected void linkPrediction4TestUsers_MultiThread(int i, _MMBAdaptStruct ui){
-		double sim = 0;
-		_MMBAdaptStruct uj;
-		MyPriorityQueue<_RankItem> neighbors = new MyPriorityQueue<_RankItem>(m_allUserSize-1);
-		// go through all the train users first
-		for(int j=0; j<m_trainSize; j++){
-			uj = m_trainSet.get(j);
-			// calculate sim for the pair we have not computed yet
-			sim = calcSimilarity(ui, uj);
-			synchronized (m_simMtxLock) {
-				m_simMtx[m_trainSize+i][j] = sim;
-			}
-			// rank sim
-			neighbors.add(new _RankItem(j, sim));
-		}
-		for(int j=0; j<m_testSize; j++){
-			uj = m_testSet.get(j);
-			if(j == i) continue;
-			if(j > i){
-				sim = calcSimilarity(ui, uj);
-				synchronized (m_simMtxLock) {
-					m_simMtx[m_trainSize+i][m_trainSize+j] = sim;
-					m_simMtx[m_trainSize+j][m_trainSize+i] = sim;
+		Collections.sort(neighbors, new Comparator<_RankItem>(){
+			@Override
+			public int compare(_RankItem p1, _RankItem p2){
+				if(p1.m_value  < p2.m_value)
+					return 1;
+				else if(p1.m_value > p2.m_value)
+					return -1;
+				else{
+					return -(p1.m_label + p2.m_label);
 				}
 			}
-			neighbors.add(new _RankItem(m_trainSize+j, m_simMtx[m_trainSize+i][m_trainSize+j]));
-		}
-		
-		int[] frds = rankFriends(ui, neighbors);
-		synchronized (m_frdMtxLock) {
-			m_frdTestMtx[i] = frds;
-		}
+		});			
+		m_frdTestMtx[i] = rankFriends(ui, neighbors);
 	}
 	
 	// calculate the similarity between two users based on mixture
@@ -274,15 +250,18 @@ public class LinkPredictionWithMMB {
 	}
 	
 	// decide if the neighbors based on similarity are real friends
-	protected int[] rankFriends(_MMBAdaptStruct ui, MyPriorityQueue<_RankItem> neighbors){
+	protected int[] rankFriends(_MMBAdaptStruct ui, ArrayList<_RankItem> neighbors){
 		int[] frds = new int[neighbors.size()];
 		_RankItem item;
 		_MMBAdaptStruct uj;
 		for(int i=0; i<neighbors.size(); i++){
 			item = neighbors.get(i);
 			uj = item.m_index >= m_trainSize ? m_testSet.get(item.m_index-m_trainSize) : m_trainSet.get(item.m_index);
-			if(ui.getUser().hasFriend(uj.getUserID()))
-				frds[i] = 1;	
+			if(ui.getUser().hasFriend(uj.getUserID())){
+				if(item.m_label != 1)
+					System.out.println("Bug!!");
+				frds[i] = 1;
+			}
 		}
 		return frds;
 	}

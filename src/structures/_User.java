@@ -150,9 +150,7 @@ public class _User {
 			fv.setValue(val);
 		}
 	}
-//	public _SparseFeature[] getProfile(){
-//		return m_BoWProfile;
-//	}
+
 	// added by Lin for accessing the index of user cluster.
 	public int getClusterIndex() {
 		return m_cIndex;
@@ -390,6 +388,13 @@ public class _User {
 			return 0;
 		else
 			return m_testFriends.length;
+	}
+	
+	public int getNonFriendSize(){
+		if(m_nonFriends == null)
+			return 0;
+		else
+			return m_nonFriends.length;
 	}
 	// check if a user is a friend of the current user
 	public boolean hasFriend(String str){

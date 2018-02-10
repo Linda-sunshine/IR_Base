@@ -15,6 +15,7 @@ import java.util.Set;
 
 import structures.MyPriorityQueue;
 import structures.Pair;
+import structures._Item;
 import structures._RankItem;
 import structures._Review;
 import structures._Review.rType;
@@ -59,8 +60,9 @@ public class CollaborativeFiltering {
 	// key: item id, value: train user id
 	HashMap<String, ArrayList<String>> m_trainMap;
 	// key: item id, value: test user id
-
 	HashMap<String, ArrayList<String>> m_testMap;
+	// key: item id, value: corresponding item
+	HashMap<String, _Item> m_itemMap;
 	
 	// lock when collecting review statistics
 	private Object m_userWeightsLock = null;
@@ -302,7 +304,8 @@ public class CollaborativeFiltering {
 	}
 	
 	protected double calculateSimilarity(double[] ui, double[] uj){
-		return Utils.cosine(ui, uj);
+//		return Utils.cosine(ui, uj);
+		return Utils.euclideanDistance(ui, uj);
 	}
 	
 	// calculate the similarity between each pair of users
@@ -421,6 +424,7 @@ public class CollaborativeFiltering {
 	public void constructItemUserIndex(){
 		m_trainMap = new HashMap<String, ArrayList<String>>();
 		m_testMap = new HashMap<String, ArrayList<String>>();
+		m_itemMap = new HashMap<String, _Item>();
 		for(_User u: m_users){
 			for(_Review r: u.getReviews()){
 				// if it is adaptation review
@@ -428,8 +432,10 @@ public class CollaborativeFiltering {
 					String itemID = r.getItemID();
 					if(!m_trainMap.containsKey(itemID)){
 						m_trainMap.put(itemID, new ArrayList<String>());
+						m_itemMap.put(itemID, new _Item(itemID));
 					}
 					m_trainMap.get(itemID).add(u.getUserID());
+					m_itemMap.get(itemID).addOneReview(r);
 				// if it is testing review
 				} else{
 					String itemID = r.getItemID();
@@ -471,6 +477,13 @@ public class CollaborativeFiltering {
 		m_users = users;	
 	}
 	
+	public void constructItems(String model){
+		for(String itemID: m_itemMap.keySet()){
+			_Item item = m_itemMap.get(itemID);
+			item.buildProfile(model);
+			item.normalizeProfile();
+		}
+	}
 	public ArrayList<_User> getUsers(){
 		return m_users;
 	}
@@ -553,8 +566,21 @@ public class CollaborativeFiltering {
 	public void loadWeights(String weightFile, String model, String suffix1, String suffix2){
 		loadUserWeights(weightFile, model, suffix1, suffix2);
 		constructNeighborhood();
+		printSimilarity(model);
 	}
 	
+	public void printSimilarity(String model){
+		try{
+			PrintWriter writer = new PrintWriter(new File(model+"_sim.txt"));
+			for(int i=0; i<m_similarity.length; i++){
+				writer.format("%.3f\t", m_similarity[i]);
+			}
+			writer.close();
+		} catch(IOException e){
+			e.printStackTrace();
+		}
+		
+	}
 	public void loadUserWeights(String folder, String model, final String suffix1, final String suffix2){
 		m_userWeights = new double[m_users.size()][];
 		final File dir = new File(folder);
@@ -661,38 +687,38 @@ public class CollaborativeFiltering {
 		return weights;
 	}
 	
-	public Pair[] mergeSort(Pair[] rank){
-		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
-		for(int i=0; i<rank.length; i=i+2){
-			//If the list has odd members.
-			if((i+1)>(rank.length-1)){
-				Pair[] tmp = new Pair[]{rank[i]};
-				collection.add(tmp);
-			} else{
-				Pair v1 = rank[i], v2 = rank[i+1];
-				if(v1.getValue() < v2.getValue()){
-					Pair[] tmp = new Pair[]{v2, v1};
-					collection.add(tmp);
-				} else{
-					Pair[] tmp = new Pair[]{v1, v2};
-					collection.add(tmp);
-				}
-			}
-		}
-		while(collection.size()>1){
-			ArrayList<Pair[]> current = new ArrayList<Pair[]>();
-			for(int i=0; i<collection.size();i+=2){
-				if((i+1) <= collection.size()-1){
-					Pair[] merge = merge(collection.get(i), collection.get(i+1));
-					current.add(merge);
-				} else
-					current.add(collection.get(i));
-			}
-			collection.clear();
-			collection.addAll(current);
-		}
-		return collection.get(0);
-	}
+//	public Pair[] mergeSort(Pair[] rank){
+//		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
+//		for(int i=0; i<rank.length; i=i+2){
+//			//If the list has odd members.
+//			if((i+1)>(rank.length-1)){
+//				Pair[] tmp = new Pair[]{rank[i]};
+//				collection.add(tmp);
+//			} else{
+//				Pair v1 = rank[i], v2 = rank[i+1];
+//				if(v1.getValue() < v2.getValue()){
+//					Pair[] tmp = new Pair[]{v2, v1};
+//					collection.add(tmp);
+//				} else{
+//					Pair[] tmp = new Pair[]{v1, v2};
+//					collection.add(tmp);
+//				}
+//			}
+//		}
+//		while(collection.size()>1){
+//			ArrayList<Pair[]> current = new ArrayList<Pair[]>();
+//			for(int i=0; i<collection.size();i+=2){
+//				if((i+1) <= collection.size()-1){
+//					Pair[] merge = merge(collection.get(i), collection.get(i+1));
+//					current.add(merge);
+//				} else
+//					current.add(collection.get(i));
+//			}
+//			collection.clear();
+//			collection.addAll(current);
+//		}
+//		return collection.get(0);
+//	}
 	
 	public Pair[] merge(Pair[] a, Pair[] b){
 		Pair[] res = new Pair[a.length + b.length];

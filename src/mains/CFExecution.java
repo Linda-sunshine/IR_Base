@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures.CFParameter;
@@ -12,6 +13,7 @@ import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
+import Application.CollaborativeFilteringWithItem;
 import Application.CollaborativeFilteringWithMMB;
 
 public class CFExecution {
@@ -67,7 +69,7 @@ public class CFExecution {
 				System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, param.m_k);
 				
 				CollaborativeFiltering cf = null;
-				if(model.equals("mmb_mixture")){
+				if(Pattern.matches("mmb_mixture.*", model)){
 					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
 				} else 
@@ -124,10 +126,12 @@ public class CFExecution {
 				System.out.format("\n-----------------run %s with all neighbors pop: %d-------------------------\n", model, param.m_pop);
 			
 				CollaborativeFiltering cf = null;
-				if(model.equals("mmb_mixture")){
+				if(Pattern.matches("mmb_mixture.*", model)){
 					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
-				} else 
+				} else if(model.equals("item_lm") || model.equals("item_lr")){
+					cf = new CollaborativeFilteringWithItem(cfUsers, analyzer.getFeatureSize()+1);
+				} else
 					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, param.m_k);
 				
 				cf.setEqualWeightFlag(param.m_equalWeight);
@@ -139,6 +143,12 @@ public class CFExecution {
 				}else if(model.equals("lm") || model.equals("mmb_lm")){
 					cf.setFeatureSize(lmTopK);
 					cf.loadWeights(dir, model, suffix1, suffix2);
+				} else if(model.equals("item_lm") || model.equals("item_lr")){
+					String lmModel = model.split("_")[1];
+					if(lmModel.equals("lm"))
+						cf.setFeatureSize(lmTopK);
+					cf.loadUserWeights(dir, lmModel, suffix1, suffix2);
+					cf.constructItems(lmModel);
 				} else{
 					cf.loadWeights(dir, model, suffix1, suffix2);
 				}

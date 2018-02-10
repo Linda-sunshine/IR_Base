@@ -5,12 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import opennlp.tools.util.InvalidFormatException;
 import structures._User;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Application.CollaborativeFiltering;
 import Application.CollaborativeFilteringWithAllNeighbors;
+import Application.CollaborativeFilteringWithItem;
 import Application.CollaborativeFilteringWithMMB;
 
 public class CFMain {
@@ -48,7 +50,7 @@ public class CFMain {
 		String dir, model, cfFile;
 		String suffix1 = "txt", suffix2 = "classifer";
 //		String[] models = new String[]{"fm"};
-		String[] models = new String[]{"lr", "lm", "mmb_lr"};
+		String[] models = new String[]{"mtsvm_0.5_1", "mtclindp_0.5_1", "mtclinhdp_0.5", "mmb_lm", "mmb_lr", "mmb_mixture"};
 
 		if(!neiAll){
 			for(int t: new int[]{5}){
@@ -70,8 +72,8 @@ public class CFMain {
 			
 			for(int m=0; m<models.length; m++){
 				model = models[m];
-				dir = String.format("./data/CoLinAdapt/%s/models/%s_%s/", dataset, dataset, model);
-//				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
+//				dir = String.format("./data/CoLinAdapt/%s/models/%s_%s/", dataset, dataset, model);
+				dir = String.format("/home/lin/DataSigir/%s/models/%s_%s/", dataset, dataset, model);
 				System.out.format("\n-----------------run %s %d neighbors-------------------------\n", model, k);
 				
 				CollaborativeFiltering cf = null;
@@ -138,9 +140,11 @@ public class CFMain {
 				System.out.format("\n-----------------run %s with all neighbors pop %d-------------------------\n", model, pop);
 			
 				CollaborativeFiltering cf = null;
-				if(model.equals("mmb_mixture")){
+				if(Pattern.matches("mmb_mixture.*", model)){
 					cf = new CollaborativeFilteringWithMMB(cfUsers, analyzer.getFeatureSize()+1, k);
 					((CollaborativeFilteringWithMMB) cf).calculateMLEB(dir+"B_0.txt", dir+"B_1.txt");
+				} else if(model.equals("item_lm") || model.equals("item_lr")){
+					cf = new CollaborativeFilteringWithItem(cfUsers, analyzer.getFeatureSize()+1);
 				} else 
 					cf = new CollaborativeFiltering(cfUsers, analyzer.getFeatureSize()+1, k);
 				
@@ -152,7 +156,13 @@ public class CFMain {
 					cf.setAvgFlag(true);
 				}else if(model.equals("lm") || model.equals("mmb_lm")){
 					cf.setFeatureSize(lmTopK);
-					cf.loadWeights(dir, model, suffix1, suffix2);
+					cf.loadWeights(dir, model, suffix1, suffix2); 
+				} else if(model.equals("item_lm") || model.equals("item_lr")){
+					String lmModel = model.split("_")[1];
+					if(lmModel.equals("lm"))
+						cf.setFeatureSize(lmTopK);
+					cf.loadUserWeights(dir, lmModel, suffix1, suffix2);
+					cf.constructItems(lmModel);
 				} else{
 					cf.loadWeights(dir, model, suffix1, suffix2);
 				}

@@ -45,7 +45,7 @@ public class LinkPredictionWithSVMPerEdge extends LinkPredictionWithMMBPerEdge {
 		int testUser = 0;
 		for(int i=0; i<m_testSize; i++){
 			_MMBAdaptStruct ui = m_testSet.get(i);
-			if(m_testMap.containsKey(ui.getUserID()) && ui.getUser().getTestFriendSize() != 0){
+			if(m_testMap.containsKey(ui.getUserID()) && ui.getUser().getTestFriendSize() != 0 && ui.getUser().getNonFriendSize() !=0){
 				linkPrediction4TestUsers(i, ui);
 				testUser++;
 			}
