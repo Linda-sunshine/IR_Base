@@ -216,8 +216,8 @@ public class PostProcess {
 	public static void main(String[] args){
 		for(int d: new int[]{5, 10}){
 			for(String dataset: new String[]{"YelpNew"}){
-				for(int t: new int[]{3}){
-		String model = "fm";
+				for(int t: new int[]{6}){
+		String model = "svd";
 		String setting = "all_nei"; // "all_nei"
 		
 		PostProcess process = new PostProcess();
