@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 
 import structures.Pair;
@@ -108,6 +109,17 @@ public class PostProcess {
 		avgMAP /= m_MAPs.length;
 		System.out.format("\n[Info]Avg NDCG, MAP -- %.5f\t%.5f\n\n", avgNDCG, avgMAP);
 	}
+	
+	public void reverse(Pair[] rank){
+		int p1 = 0, p2 = rank.length-1;
+		while(p1 < p2){
+			Pair tmp = rank[p2];
+			rank[p2] = rank[p1];
+			rank[p1] = tmp;
+			p1++;
+			p2--;
+		}
+	}
 	// calculate the nDCG and MAP for each user
 	public double[] calculateNDCGMAP(ArrayList<String> pairs){
 		double iDCG = 0, DCG = 0, PatK = 0, AP = 0, count = 0;
@@ -118,15 +130,32 @@ public class PostProcess {
 		//Calculate the ideal rank and real rank.
 		for(int i=0; i<pairs.size(); i++){
 			String[] strs = pairs.get(i).split(",");
+			if(strs.length != 3){
+				System.out.println(pairs.get(i));
+				continue;
+			}
 			rank[i] = Integer.valueOf(strs[1]);
 			realRank[i] = new Pair(rank[i], Double.valueOf(strs[2]));
 		}
 		
 		// sort the array in descending order
 		sortPrimitivesDescending(rank);
+		reverse(realRank);
 		// sort the calculated rank based on each pair's value
-		realRank = mergeSort(realRank);
-					
+		// sort the calculated rank based on each pair's value
+		Arrays.sort(realRank, new Comparator<Pair>(){
+			@Override
+			public int compare(Pair p1, Pair p2){
+				if(p1.getValue() < p2.getValue())
+					return 1;
+				else if(p1.getValue() > p2.getValue())
+					return -1;
+				else{
+//					return 0;
+					return (int) (-p1.getLabel() + p2.getLabel());
+				}
+			}
+		});					
 		//Calculate DCG and iDCG, nDCG = DCG/iDCG.
 		for(int i=0; i<rank.length; i++){
 			iDCG += (Math.pow(2, rank[i])-1)/(Math.log(i+2));//log(i+1), since i starts from 0, add 1 more.
@@ -173,56 +202,6 @@ public class PostProcess {
 			e.printStackTrace();
 		}
 	}
-	public Pair[] mergeSort(Pair[] rank){
-		ArrayList<Pair[]> collection = new ArrayList<Pair[]>();
-		for(int i=0; i<rank.length; i=i+2){
-			//If the list has odd members.
-			if((i+1)>(rank.length-1)){
-				Pair[] tmp = new Pair[]{rank[i]};
-				collection.add(tmp);
-			} else{
-				Pair v1 = rank[i], v2 = rank[i+1];
-				if(v1.getValue() < v2.getValue()){
-					Pair[] tmp = new Pair[]{v2, v1};
-					collection.add(tmp);
-				} else{
-					Pair[] tmp = new Pair[]{v1, v2};
-					collection.add(tmp);
-				}
-			}
-		}
-		while(collection.size()>1){
-			ArrayList<Pair[]> current = new ArrayList<Pair[]>();
-			for(int i=0; i<collection.size();i+=2){
-				if((i+1) <= collection.size()-1){
-					Pair[] merge = merge(collection.get(i), collection.get(i+1));
-					current.add(merge);
-				} else
-					current.add(collection.get(i));
-			}
-			collection.clear();
-			collection.addAll(current);
-		}
-		return collection.get(0);
-	}
-	
-	public Pair[] merge(Pair[] a, Pair[] b){
-		Pair[] res = new Pair[a.length + b.length];
-		int pointer1 = 0, pointer2 = 0, count = 0;
-		while(pointer1 < a.length && pointer2 < b.length){
-			if(a[pointer1].getValue() < b[pointer2].getValue()){
-				res[count++] = b[pointer2++];
-			} else{
-				res[count++] = a[pointer1++];
-			}
-		}
-		while(pointer1 < a.length)
-			res[count++] = a[pointer1++];
-			
-		while(pointer2 < b.length)
-			res[count++] = b[pointer2++];
-		return res;
-	}	
 	
 	public void sortPrimitivesDescending(int[] rank){
 		Arrays.sort(rank);
@@ -235,65 +214,67 @@ public class PostProcess {
 	}
 	
 	public static void main(String[] args){
-		
 		for(int d: new int[]{5, 10}){
-		String model = "fm";
-		String dataset = "Amazon";
+			for(String dataset: new String[]{"YelpNew"}){
+				for(int t: new int[]{6}){
+		String model = "svd";
 		String setting = "all_nei"; // "all_nei"
 		
-//		PostProcess process = new PostProcess();
-//		if(model.equals("fm")){
-//			String predFile = String.format("./data/linkPredData/%s_link_pred_d_%d_fm.txt", dataset, d);
-//			process.loadData(predFile);
-//			process.calculateAllNDCGMAP();
-//			process.calculateAvgNDCGMAP();
-//		} else if(model.equals("svd")){
-//			String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_test.mm", dataset);
-//			String predFile = String.format("./data//linkPredData/svd_%d/%s_link_pred_test.mm.predict", d, dataset);
-//			process.loadTruePredFiles(testMMFile, predFile);
-//			process.calculateAllNDCGMAP();
-//			process.calculateAvgNDCGMAP();
-//		}}}
-		
-		// cf post processing
-		if(setting.equals("topk")){
-			for(int t: new int[]{2}){
-				for(int k: new int[]{4}){
-					PostProcess process = new PostProcess();
-					if(model.equals("fm")){
-						String predFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_d_%d_fm_text.txt", dataset, t, k, d);
-						process.loadData(predFile);
-						System.out.format("-----time-%d--topk--%d----\n", t, k);
-						process.calculateAllNDCGMAP();
-						process.calculateAvgNDCGMAP();
-					} else if(model.equals("svd")){
-						String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
-						String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_time_%d_topk_%d_test.mm.predict", setting, d, dataset, t, k);
-						process.loadTruePredFiles(testMMFile, predFile);
-						System.out.format("-----time-%d--topk--%d----\n", t, k);
-						process.calculateAllNDCGMAP();
-						process.calculateAvgNDCGMAP();
-					}
-				}
-			}
-		} else if(setting.equals("all_nei")){
-			for(int p: new int[]{3, 5, 10}){
-				PostProcess process = new PostProcess();
-				if(model.equals("fm")){
-					String predFile = String.format("./data/cfData/fm_%s_%d/%s_cf_all_nei_pop_%d_d_%d_fm_ials.txt", setting, d, dataset, p, d);
-					process.loadData(predFile);
-					System.out.format("----all nei--pop--%d----\n", p);
-					process.calculateAllNDCGMAP();
-					process.calculateAvgNDCGMAP();
-				} else if(model.equals("svd")){
-					String testMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_test.mm", dataset, p);
-					String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_all_nei_pop_%d_test.mm.predict", setting, d, dataset, p);
-					process.loadTruePredFiles(testMMFile, predFile);
-					System.out.format("----all nei--pop--%d----\n", p);
-					process.calculateAllNDCGMAP();
-					process.calculateAvgNDCGMAP();
-				}
-			}
-		}
-	}}
+		PostProcess process = new PostProcess();
+		if(model.equals("fm")){
+			System.out.format("-----------%s, order:%d, d:%d------------\n", dataset, t, d);
+			String predFile = String.format("./data/linkPredData/link_d_%d/%s_link_pred_order_%d_d_%d_fm_ials.txt", d, dataset, t, d);
+			process.loadData(predFile);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		} else if(model.equals("svd")){
+			System.out.format("-----------%s, order:%d, d:%d------------\n", dataset, t, d);
+			String testMMFile = String.format("./data/linkPredData/svd/%s_link_pred_order_%d_test.mm", dataset, t);
+			String predFile = String.format("./data/linkPredData/link_d_%d/%s_link_pred_order_%d_test.mm.predict", d, dataset, t);
+			process.loadTruePredFiles(testMMFile, predFile);
+			process.calculateAllNDCGMAP();
+			process.calculateAvgNDCGMAP();
+		}}}}}
+//		
+//		// cf post processing
+//		if(setting.equals("topk")){
+//			for(int t: new int[]{2}){
+//				for(int k: new int[]{4}){
+//					PostProcess process = new PostProcess();
+//					if(model.equals("fm")){
+//						String predFile = String.format("./data/cfData/%s_cf_time_%d_topk_%d_d_%d_fm_text.txt", dataset, t, k, d);
+//						process.loadData(predFile);
+//						System.out.format("-----time-%d--topk--%d----\n", t, k);
+//						process.calculateAllNDCGMAP();
+//						process.calculateAvgNDCGMAP();
+//					} else if(model.equals("svd")){
+//						String testMMFile = String.format("./data/cfData/svd/%s_cf_time_%d_topk_%d_test.mm", dataset, t, k);
+//						String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_time_%d_topk_%d_test.mm.predict", setting, d, dataset, t, k);
+//						process.loadTruePredFiles(testMMFile, predFile);
+//						System.out.format("-----time-%d--topk--%d----\n", t, k);
+//						process.calculateAllNDCGMAP();
+//						process.calculateAvgNDCGMAP();
+//					}
+//				}
+//			}
+//		} else if(setting.equals("all_nei")){
+//			for(int p: new int[]{3, 5, 10}){
+//				PostProcess process = new PostProcess();
+//				if(model.equals("fm")){
+//					String predFile = String.format("./data/cfData/fm_%s_%d/%s_cf_all_nei_pop_%d_d_%d_fm_ials.txt", setting, d, dataset, p, d);
+//					process.loadData(predFile);
+//					System.out.format("----all nei--pop--%d----\n", p);
+//					process.calculateAllNDCGMAP();
+//					process.calculateAvgNDCGMAP();
+//				} else if(model.equals("svd")){
+//					String testMMFile = String.format("./data/cfData/svd/%s_cf_all_nei_pop_%d_test.mm", dataset, p);
+//					String predFile = String.format("./data/cfData/svd_%s_%d/%s_cf_all_nei_pop_%d_test.mm.predict", setting, d, dataset, p);
+//					process.loadTruePredFiles(testMMFile, predFile);
+//					System.out.format("----all nei--pop--%d----\n", p);
+//					process.calculateAllNDCGMAP();
+//					process.calculateAvgNDCGMAP();
+//				}
+//			}
+//		}
+//	}}
 }

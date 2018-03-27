@@ -30,7 +30,7 @@ import cern.jet.random.tdouble.Gamma;
 import cern.jet.random.tfloat.FloatUniform;
 public class CLRWithMMB extends CLRWithHDP {
 	// sparsity parameter
-	protected double m_rho = 0.001; 
+	protected double m_rho = 0.01; 
 	// As we store all the indicators for all the edges(even edges from background model), we maintain a matrix for indexing.
 	protected _HDPThetaStar[][] m_indicator;
 	
@@ -211,6 +211,7 @@ public class CLRWithMMB extends CLRWithHDP {
 	}
 	
 	// calculate the mixture for test user based on review content and group popularity
+	// we cannot touch friendship, thus, only review assignment is utilized for mixture
 	public void calcMix4UsersNoAdaptReviews(_MMBAdaptStruct user){
 		int cIndex = 0;
 		double prob, logSum, sum = 0;

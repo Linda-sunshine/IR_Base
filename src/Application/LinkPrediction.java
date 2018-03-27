@@ -7,17 +7,17 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 import structures._RankItem;
+import utils.Utils;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.MMB.MTCLinAdaptWithMMB;
 import Classifier.supervised.modelAdaptation.MMB._MMBAdaptStruct;
 
 /***
- * The class inherits from MTCLinAdaptWithMMB to achieve link prediction.
+ * The class utilizes BoW of each user to achieve link prediction.
  * In link prediction, the train users only have train reviews and test users only have test reivews.
- * We need to calculate the mixture of each user based on review assignment and edge assignment.
  */
 
-public class LinkPredictionWithMMB {
+public class LinkPrediction {
 
 	// define a friend matrix for evaluating link prediction
 	protected double[][] m_simMtx; 
@@ -27,7 +27,7 @@ public class LinkPredictionWithMMB {
 	
 	// we use MAP for parameter estimation of B
 	// In order to calculate the similarity, we need to use MLE to calculate the value of B
-	protected double[][] m_B;
+//	protected double[][] m_B;
 	protected int m_numberOfCores;
 	protected Object m_simMtxLock = null;
 	protected Object m_frdMtxLock = null;
@@ -37,18 +37,20 @@ public class LinkPredictionWithMMB {
 	
 	double[] m_NDCGs, m_MAPs;
 	
-	public LinkPredictionWithMMB(){
+	public LinkPrediction(){
 		m_simMtxLock = new Object();
 		m_frdMtxLock = new Object();
 		m_NDCGMAPLock = new Object();
 	}
 	
 	public void calcTrainTestSize(){
-		m_kBar = m_mmbModel.getKBar();
+//		m_kBar = m_mmbModel.getKBar();
 		m_allUserSize = m_mmbModel.getUserSize();
 		m_trainSet = new ArrayList<_MMBAdaptStruct>();
 		m_testSet = new ArrayList<_MMBAdaptStruct>();
 		for(_AdaptStruct user: m_mmbModel.getUsers()){
+			user.getUser().buildProfile("lr");
+			user.getUser().normalizeProfile();
 			if(user.getTestSize() != 0){
 				m_testSize++;
 				m_testSet.add((_MMBAdaptStruct) user);
@@ -72,19 +74,21 @@ public class LinkPredictionWithMMB {
 		double trainSum = 0, testSum = 0, trainMiss = 0, testMiss = 0;
 		for(_AdaptStruct u: m_mmbModel.getUsers()){
 			// training users
-			if(u.getUser().getFriendSize() == 0)
-				trainMiss++;
-			else
-				trainSum += u.getUser().getFriendSize();
-			
-			if(u.getUser().getTestFriendSize() == 0)
-				testMiss++;
-			else{
-				testSum += u.getUser().getTestFriendSize();
+			if(u.getUser().getTestReviewSize() == 0){
+				if(u.getUser().getFriendSize() == 0)
+					trainMiss++;
+				else
+					trainSum += u.getUser().getFriendSize();
+			} else{
+				if(u.getUser().getFriendSize() == 0)
+					testMiss++;
+				else{
+					testSum += u.getUser().getFriendSize();
+				}
 			}
 		}
 		System.out.println(String.format("[Stat]%d training users don't have friends, %d testing users don't have friends.", 
-				(m_allUserSize-trainMiss), (m_allUserSize-testMiss)));	
+				(int)(m_trainSize-trainMiss), (int)(m_testSize-testMiss)));	
 		System.out.println(String.format("[Stat]Avg training friend size is %.2f; avg testing friend size is %.2f.\n",
 				trainSum/(m_allUserSize-trainMiss), testSum/(m_allUserSize-testMiss)));	
 	}
@@ -129,16 +133,16 @@ public class LinkPredictionWithMMB {
 	public void linkPrediction(){
 		initLinkPred();
 		
-		m_B = m_mmbModel.MLEB();
-		calculateMixturePerUser();
+//		m_B = m_mmbModel.MLEB();
+//		calculateMixturePerUser();
 			
 		_MMBAdaptStruct ui;
-		// for each training user, rank their neighbors.
-		for(int i=0; i<m_trainSize; i++){
-			ui = m_trainSet.get(i);
-			linkPrediction4TrainUsers(i, ui);
-		}
-		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
+//		// for each training user, rank their neighbors.
+//		for(int i=0; i<m_trainSize; i++){
+//			ui = m_trainSet.get(i);
+//			linkPrediction4TrainUsers(i, ui);
+//		}
+//		System.out.format("[Info]Finish link prediction on %d training users.\n", m_trainSize);
 
 		// for each testing user, rank their neighbors.
 		for(int i=0; i<m_testSize; i++){
@@ -227,25 +231,12 @@ public class LinkPredictionWithMMB {
 					return -(p1.m_label + p2.m_label);
 				}
 			}
-		});			
+		});		
 		m_frdTestMtx[i] = rankFriends(ui, neighbors);
 	}
 	
-	// calculate the similarity between two users based on mixture
-	// sim(i,j)=\sum_{k,l}\pi_{i,k}\pi_{j,l}B_{kl}
 	protected double calcSimilarity(_MMBAdaptStruct ui, _MMBAdaptStruct uj){
-		double sim = 0; 
-		double[] mixI = ui.getMixture(), mixJ = uj.getMixture();
-		
- 		for(int k=0; k<m_kBar; k++){
- 			for(int l=0; l<m_kBar; l++){
- 				if(mixI[k] == 0 || mixJ[l] == 0)
- 					continue;
- 				else {
-					sim += mixI[k] * mixJ[l] * m_B[k][l];
-				}
- 			}
- 		}
+		double sim = Utils.cosine(ui.getUser().getBoWProfile(), uj.getUser().getBoWProfile());
  		return sim;
 	}
 	
@@ -350,8 +341,8 @@ public class LinkPredictionWithMMB {
 				count++;
 			}
 		}
-		if(Double.isNaN(DCG/iDCG))
-			System.out.println("debug here!!");
+//		if(Double.isNaN(DCG/iDCG))
+//			System.out.println("debug here!!");
 		return new double[]{DCG/iDCG, AP/count};
 	}
 	

@@ -96,7 +96,7 @@ public class MyMMBMain {
 		
 		// best parameter for yelp so far.
 		double[] globalLM = analyzer.estimateGlobalLM();
-		double alpha = 0.001, eta = 0.05, beta = 0.01;
+		double alpha = 0.1, eta = 0.05, beta = 0.01;
 		double sdA = 0.0425, sdB = 0.0425;
 //		
 ////		MTCLinAdaptWithDP hdp = new MTCLinAdaptWithDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup);
@@ -158,7 +158,7 @@ public class MyMMBMain {
 
 		boolean trace = true; 
 		if(trace){
-			iter = 5; thin = 1; burnin = 0;
+			iter = 200; thin = 1; burnin = 0;
 			mmb.setNumberOfIterations(iter);
 			mmb.setThinning(thin);
 			mmb.setBurnIn(burnin);
