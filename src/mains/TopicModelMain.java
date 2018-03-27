@@ -51,7 +51,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "DCMCorrLDA_multi_E_test";
+		String topicmodel = "LDA_Gibbs";
 
 
 		String category = "tablet";
