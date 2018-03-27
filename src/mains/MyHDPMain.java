@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.util.HashMap;
 
 import opennlp.tools.util.InvalidFormatException;
+import structures._Corpus;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 import Analyzer.MultiThreadedLMAnalyzer;
 import Classifier.supervised.modelAdaptation.HDP.MTCLinAdaptWithHDP;
 
@@ -26,7 +31,7 @@ public class MyHDPMain {
 
 		boolean enforceAdapt = true;
 
-		String dataset = "Amazon"; // "Amazon", "AmazonNew", "Yelp"
+		String dataset = "YelpNew"; // "Amazon", "AmazonNew", "Yelp"
 		String tokenModel = "./data/Model/en-token.bin"; // Token model.
 		
 		//int maxDF = -1, minDF = 20; // Filter the features with DFs smaller than this threshold.
@@ -62,8 +67,40 @@ public class MyHDPMain {
 		analyzer.setReleaseContent(false);
 		analyzer.config(trainRatio, adaptRatio, enforceAdapt);
 		analyzer.loadUserDir(userFolder);
-		analyzer.setFeatureValues("TFIDF-sublinear", 0);
+//		analyzer.setFeatureValues("TFIDF-sublinear", 0);
 		HashMap<String, Integer> featureMap = analyzer.getFeatureMap();
+		
+		String topicmodel = "LDA_Gibbs";
+		String fvStatFile = String.format("./data/Features/fv_%dgram_stat_topicmodel.txt", Ngram);
+	
+		int number_of_topics = 30;
+		double alpha = 1.0 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
+		double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+		int number_of_iteration = 100;
+
+		analyzer.setFeatureValues("TF", 0);		
+		_Corpus c = analyzer.returnCorpus(fvStatFile); // Get the collection of all the documents.
+
+		pLSA tModel = null;
+		if (topicmodel.equals("pLSA")) {			
+			tModel = new pLSA_multithread(number_of_iteration, converge, beta, c, 
+					lambda, number_of_topics, alpha);
+		} else if (topicmodel.equals("LDA_Gibbs")) {		
+			tModel = new LDA_Gibbs(number_of_iteration, converge, beta, c, 
+				lambda, number_of_topics, alpha, 0.4, 50);
+		}  else if (topicmodel.equals("LDA_Variational")) {		
+			tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, c, 
+					lambda, number_of_topics, alpha, 10, -1);
+		} else {
+			System.out.println("The selected topic model has not developed yet!");
+			return;
+		}
+		
+		tModel.setDisplayLap(0);
+//		tModel.setSentiAspectPrior(aspectSentiPrior);
+//		tModel.LoadPrior(aspectSentiPrior?aspectSentiList:aspectList, eta);
+		tModel.EMonCorpus();
+		tModel.printTopWords(50);
 		
 //		/***Analyzer used for the sanity check of splitting the users.***/
 //		adaptRatio = 1; int k = 400;
@@ -105,30 +142,30 @@ public class MyHDPMain {
 //		MTCLinAdaptWithHDPLR hdp = new MTCLinAdaptWithHDPLR(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
 //
 		MTCLinAdaptWithHDP hdp = new MTCLinAdaptWithHDP(classNumber, analyzer.getFeatureSize(), featureMap, globalModel, featureGroupFile, featureGroupFileSup, globalLM);
-		
-		//default setting: alpha=0.01, eta=0.05, beta=0.01
-		double alpha = 0.01, eta = 1, beta = 0.01;
-		double sdA = 0.0425, sdB = 0.0425;
-		
-		hdp.loadLMFeatures(analyzer.getLMFeatures());
-		hdp.setR2TradeOffs(eta3, eta4);
-//		sdA = 0.2; sdB = 0.2;
-		hdp.setsdB(sdA);//0.2
-
-		hdp.setsdA(sdB);//0.2
-		hdp.setConcentrationParams(alpha, eta, beta);
-		hdp.setR1TradeOffs(eta1, eta2);
-		
-		hdp.setBurnIn(10);
-		hdp.setNumberOfIterations(30);// default 50
-		hdp.loadUsers(analyzer.getUsers());
-		hdp.setDisplayLv(displayLv);
-		
-//		hdp.trainTrace(dataset, 100);
-		hdp.train();
-		hdp.test();
-		hdp.saveModel("./data/Amazon_mtclinhdp_0.5");
-		
+//		
+//		//default setting: alpha=0.01, eta=0.05, beta=0.01
+//		double alpha = 0.01, eta = 1, beta = 0.01;
+//		double sdA = 0.0425, sdB = 0.0425;
+//		
+//		hdp.loadLMFeatures(analyzer.getLMFeatures());
+//		hdp.setR2TradeOffs(eta3, eta4);
+////		sdA = 0.2; sdB = 0.2;
+//		hdp.setsdB(sdA);//0.2
+//
+//		hdp.setsdA(sdB);//0.2
+//		hdp.setConcentrationParams(alpha, eta, beta);
+//		hdp.setR1TradeOffs(eta1, eta2);
+//		
+//		hdp.setBurnIn(10);
+//		hdp.setNumberOfIterations(30);// default 50
+//		hdp.loadUsers(analyzer.getUsers());
+//		hdp.setDisplayLv(displayLv);
+//		
+////		hdp.trainTrace(dataset, 100);
+//		hdp.train();
+//		hdp.test();
+//		hdp.saveModel("./data/Amazon_mtclinhdp_0.5");
+//		
 //		hdp.printUserPerformance("./data/hdp_perf_train.txt");
 //		hdp.printGlobalUserPerformance("./data/hdp_global_perf_train.txt");
 	}

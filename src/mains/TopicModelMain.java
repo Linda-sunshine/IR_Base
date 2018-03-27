@@ -8,7 +8,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import Analyzer.ParentChildAnalyzer;
 import structures._Corpus;
 import structures._Doc;
 import topicmodels.twoTopic;
@@ -29,6 +28,7 @@ import topicmodels.markovmodel.LRHTSM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
+import Analyzer.ParentChildAnalyzer;
 
 public class TopicModelMain {
 
@@ -51,7 +51,7 @@ public class TopicModelMain {
 		// correspondence_LDA_Gibbs, LDA_Gibbs_Debug, LDA_Variational_multithread
 		// 2topic, pLSA, HTMM, LRHTMM, Tensor, LDA_Gibbs, LDA_Variational, HTSM, LRHTSM,
 		
-		String topicmodel = "LDA_Gibbs";
+		String topicmodel = "DCMCorrLDA_multi_E_test";
 
 
 		String category = "tablet";
