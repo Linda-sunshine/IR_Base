@@ -136,8 +136,9 @@ public class ETBIR {
                 m_beta[k][v] = val;
             }
 
+            sum = Math.log(sum);
             for(int v = 0; v < vocabulary_size; v++){
-                m_beta[k][v] = Math.log(m_beta[k][v]) - Math.log(sum);
+                m_beta[k][v] = Math.log(m_beta[k][v]) - sum;
             }
         }
 
@@ -145,7 +146,7 @@ public class ETBIR {
         this.m_word_topic_stats = new double[number_of_topics][vocabulary_size];
     }
 
-    public void initDoc(_Doc doc){
+    protected void initDoc(_Doc doc){
         doc.m_zeta = 1.0;
         doc.m_mu = new double[number_of_topics];
         doc.m_Sigma = new double[number_of_topics];
@@ -157,7 +158,7 @@ public class ETBIR {
         }
     }
 
-    public void initUser(_User user){
+    protected void initUser(_User user){
         user.m_nuP = new double[number_of_topics][number_of_topics];
         user.m_SigmaP = new double[number_of_topics][number_of_topics][number_of_topics];
         for(int k = 0; k < number_of_topics; k++){
@@ -167,20 +168,18 @@ public class ETBIR {
                 user.m_SigmaP[k][l][l] = 0.1;
             }
         }
-
     }
 
-    public void initItem(_Product item){
+    protected void initItem(_Product item){
         item.m_eta = new double[number_of_topics];
         Arrays.fill(item.m_eta, dAlpha);
-
     }
 
     protected void initStats(){
         Arrays.fill(m_etaStats, 0.0);
-        for(int k = 0; k < number_of_topics; k++){
+        for(int k = 0; k < number_of_topics; k++)
             Arrays.fill(m_word_topic_stats[k], 0);
-        }
+        
         m_pStats = 0.0;
         m_thetaStats = 0.0;
         m_eta_p_Stats = 0.0;
@@ -188,9 +187,9 @@ public class ETBIR {
     }
 
     protected void updateStatsForItem(_Product item){
-        for(int k = 0; k < number_of_topics;k++){
-            m_etaStats[k] += Utils.digamma(item.m_eta[k]) - Utils.digamma(Utils.sumOfArray(item.m_eta));
-        }
+    	double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
+        for(int k = 0; k < number_of_topics;k++)
+            m_etaStats[k] += Utils.digamma(item.m_eta[k]) - digammaSum;
     }
 
     protected void updateStatsForUser(_User user){
@@ -341,9 +340,9 @@ public class ETBIR {
 
         do {
             update_phi(d);
-            update_zeta(d);
+            //update_zeta(d);
             update_mu(d, u ,i);
-            update_zeta(d);
+            //update_zeta(d);
             update_SigmaTheta(d);
             update_zeta(d);
 
@@ -368,15 +367,13 @@ public class ETBIR {
 
         for (int n = 0; n < fv.length; n++) {
             wid = fv[n].getIndex();
-            v = fv[n].getValue();
-            for (int k = 0; k < number_of_topics; k++) {
+            for (int k = 0; k < number_of_topics; k++) 
                 d.m_phi[n][k] = m_beta[k][wid] + d.m_mu[k];
-            }
+            
             // normalize
             logSum = Utils.logSum(d.m_phi[n]);
-            for (int k = 0; k < number_of_topics; k++) {
+            for (int k = 0; k < number_of_topics; k++) 
                 d.m_phi[n][k] = Math.exp(d.m_phi[n][k] - logSum);
-            }
         }
     }
 
@@ -403,11 +400,9 @@ public class ETBIR {
         int N = doc.getTotalDocLength();
 
         double[] m_phiStat = new double[number_of_topics];
-        Arrays.fill(m_phiStat, 0.0);
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0;k < number_of_topics; k++) {
             for (int n = 0; n < fv.length; n++) {
-                int wid = fv[n].getIndex();
                 double v = fv[n].getValue();
                 m_phiStat[k] += v * doc.m_phi[n][k];
             }
@@ -419,12 +414,13 @@ public class ETBIR {
         do {
             //update gradient of mu
             last = 0.0;
+            double etaSum = Utils.sumOfArray(item.m_eta);
             for (int k = 0; k < number_of_topics; k++) {
                 moment = Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
-                m_muG[k] = -(-m_rho * (doc.m_mu[k] - Utils.dotProduct(item.m_eta, user.m_nuP[k]) / Utils.sumOfArray(item.m_eta))
+                m_muG[k] = -(-m_rho * (doc.m_mu[k] - Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
                         + m_phiStat[k] - N * zeta_stat * moment);//-1 because LBFGS is minimization
                 last += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k]
-                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / Utils.sumOfArray(item.m_eta))
+                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
                         + doc.m_mu[k] * m_phiStat[k] - N * zeta_stat * moment);
             }
 
@@ -461,7 +457,7 @@ public class ETBIR {
                 doc.m_mu[k] = doc.m_mu[k] - stepsize * m_muG[k];
                 moment = Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 fValue += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k]
-                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / Utils.sumOfArray(item.m_eta))
+                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
                         + doc.m_mu[k] * m_phiStat[k] - N * zeta_stat * moment);
             }
 //            LBFGS.lbfgs(number_of_topics,4, doc.m_mu, fValue, m_muG,false, mu_diag, iprint, 1e-6, 1e-16, iflag);
@@ -495,7 +491,7 @@ public class ETBIR {
             //update gradient of sigma
             last = 0.0;
             for (int k = 0; k < number_of_topics; k++) {
-                sigma = Math.pow(m_sigmaSqrt[k], 2);
+                sigma = m_sigmaSqrt[k] * m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
                 m_SigmaG[k] = -(-m_rho * m_sigmaSqrt[k] - N * m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / m_sigmaSqrt[k]); //-1 because LBFGS is minimization
                 last += -(-0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma));
@@ -748,11 +744,9 @@ public class ETBIR {
 
         //maximize likelihood for \beta
         for(int k = 0 ;k < number_of_topics; k++){
-            double sum = Utils.sumOfArray(m_word_topic_stats[k]);
-            for(int v = 0; v < vocabulary_size; v++){
-                m_beta[k][v] = Math.log(m_word_topic_stats[k][v]) - Math.log(sum);
-//                m_beta[k][v] = m_word_topic_stats[k][v] / sum;
-            }
+            double sum = Math.log(Utils.sumOfArray(m_word_topic_stats[k]));
+            for(int v = 0; v < vocabulary_size; v++)
+                m_beta[k][v] = Math.log(m_word_topic_stats[k][v]) - sum;
         }
 
         //maximize likelihood for \alpha using Newton
@@ -882,17 +876,16 @@ public class ETBIR {
         initModel();
 
         System.out.println("Initializing documents...");
-        for(_Doc doc : m_corpus.getCollection()){
+        for(_Doc doc : m_corpus.getCollection())
             initDoc(doc);
-        }
+        
         System.out.println("Initializing users...");
-        for(_User user : m_users){
+        for(_User user : m_users)
             initUser(user);
-        }
+        
         System.out.println("Initializing items...");
-        for(_Product item : m_items){
+        for(_Product item : m_items)
             initItem(item);
-        }
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
