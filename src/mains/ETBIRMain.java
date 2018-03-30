@@ -60,7 +60,7 @@ public class ETBIRMain {
         ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
         analyzer.LoadDirectory(reviewFolder, suffix);
 
-        ArrayList<_Doc4ETBIR> corpus = analyzer.getCorpusCollection();
+        _Corpus corpus = analyzer.getCorpus();
 //        corpus.save2File("./myData/byUser/top20_byUser20.dat");
 
         int topic_number = 10;

@@ -17,16 +17,9 @@ import java.util.HashMap;
  */
 public class ReviewAnalyzer extends DocAnalyzer{
 
-    protected ArrayList<_Doc4ETBIR> m_corpus_collection;
-
     public ReviewAnalyzer(String tokenModel, int classNo, String providedCV, int Ngram, int threshold)
                         throws IOException{
         super( tokenModel,  classNo,  providedCV,  Ngram,  threshold);
-        m_corpus_collection = new ArrayList<_Doc4ETBIR>();
-    }
-
-    public ArrayList<_Doc4ETBIR> getCorpusCollection(){
-        return m_corpus_collection;
     }
 
     @Override
@@ -61,34 +54,11 @@ public class ReviewAnalyzer extends DocAnalyzer{
                 userID = obj.getString("user_id");
                 productID = obj.getString("business_id");
                 ylabel = obj.getInt("stars");
-                review = new _Doc4ETBIR(m_corpus_collection.size(), name, productID, userID, source, ylabel, timestamp);
+                review = new _Doc4ETBIR(m_corpus.getSize(), name, productID, userID, source, ylabel, timestamp);
                 AnalyzeDoc(review);
             }catch (JSONException e){
                 System.out.println("!FAIL to parse a json object...");
             }
-        }
-    }
-
-    protected boolean AnalyzeDoc(_Doc4ETBIR doc) {
-        TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
-        String[] tokens = result.getTokens();
-        int y = doc.getYLabel();
-
-        // Construct the sparse vector.
-        HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
-        if (spVct.size()>m_lengthThreshold) {
-            doc.createSpVct(spVct);
-            doc.setStopwordProportion(result.getStopwordProportion());
-
-            m_corpus_collection.add(doc);
-            m_classMemberNo[y]++;
-            if (m_releaseContent)
-                doc.clearSource();
-            return true;
-        } else {
-            /****Roll back here!!******/
-            rollBack(spVct, y);
-            return false;
         }
     }
 
