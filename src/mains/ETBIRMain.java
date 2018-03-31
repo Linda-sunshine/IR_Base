@@ -71,7 +71,7 @@ public class ETBIRMain {
         int emMaxIter = 20;
         double emConverge = 1e-3;
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0;//these two parameters must be larger than 1!!!
+        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=1+1e-2;//these two parameters must be larger than 1!!!
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
@@ -103,8 +103,8 @@ public class ETBIRMain {
 //        tModel.printTopWords(50, reviewFolder + topicmodel + "_topWords.txt");
 
         // my model
-        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, varMaxIter, varConverge,
-                topic_number, corpus, alpha, sigma, rho, beta);
+        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
+                topic_number, alpha, varMaxIter, varConverge, sigma, rho);
         etbirModel.loadCorpus();
         etbirModel.EM();
     }

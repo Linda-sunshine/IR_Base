@@ -1,5 +1,6 @@
 package topicmodels.embeddingModel;
 
+import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -541,47 +542,51 @@ public class ETBIR extends LDA_Variational {
 //            LBFGS.lbfgs(number_of_topics,4, d.m_Sigma, fValue, m_SigmaG,false, sigma_diag, iprint, 1e-6, 1e-32, iflag);
 
             diff = (lastFValue - fValue) / lastFValue;
-//            System.out.println("---- update thetaSigma cur: " + fValue + "; diff: " + diff + "; gradient: "
-//                    + Utils.dotProduct(m_SigmaG, m_SigmaG));
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
 
         for(int k=0; k < number_of_topics; k++){
             d.m_Sigma[k] = Math.pow(m_sigmaSqrt[k], 2);
         }
-//        System.out.println("sigmasum: " + Utils.sumOfArray(d.m_Sigma));
 
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
     public void update_SigmaP(_User4ETBIR u){
+        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
         RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
-        for (int item_i = 0; item_i < number_of_items; item_i++) {
-            RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(m_items[item_i].m_eta);
-            double eta_0 = Utils.sumOfArray(m_items[item_i].m_eta);
-            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(m_items[item_i].m_eta).add(eta_vec.multiply(eta_vec.transpose()));
+
+        for (Integer itemIdx : Iu) {
+            _Product4ETBIR item = m_items[itemIdx];
+
+            RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(item.m_eta);
+            double eta_0 = Utils.sumOfArray(item.m_eta);
+            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(item.m_eta).add(
+                    eta_vec.multiply(eta_vec.transpose()));
+
             eta_stat_sigma = eta_stat_sigma.add(eta_stat_i.scalarMultiply(m_rho / (eta_0 * (eta_0 + 1.0))));
         }
-//        System.out.println("-- sigmaP before inverse: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
         eta_stat_sigma = new LUDecomposition(eta_stat_sigma).getSolver().getInverse();
-//        System.out.println("-- update sigmaP: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
         for (int k = 0; k < number_of_topics; k++) {
             u.m_SigmaP[k] = eta_stat_sigma.getData();
         }
-//        System.out.println("-- update sigmaP: now: " + Arrays.toString(u.m_SigmaP[0][0]));
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
     public void update_nu(_User4ETBIR u){
+        ArrayList<Integer> Iu = m_mapByUser.get(m_usersIndex.get(u.getUserID()));
         RealMatrix eta_stat_sigma = MatrixUtils.createRealMatrix(u.m_SigmaP[0]);
 
 //        System.out.println("-- update nuP: origin: " + Arrays.toString(u.m_nuP[0]));
         for (int k = 0; k < number_of_topics; k++) {
             RealMatrix eta_stat_nu = MatrixUtils.createColumnRealMatrix(new double[number_of_topics]);
-            for (int item_i = 0; item_i < number_of_items; item_i++) {
-                RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(m_items[item_i].m_eta);
-                double eta_0 = Utils.sumOfArray(m_items[item_i].m_eta);
-                _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(item_i + "_"
+
+            for (Integer itemIdx : Iu) {
+                _Product4ETBIR item = m_items[itemIdx];
+                _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIdx + "_"
                         + m_usersIndex.get(u.getUserID())));
+
+                RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(item.m_eta);
+                double eta_0 = Utils.sumOfArray(item.m_eta);
                 eta_stat_nu = eta_stat_nu.add(eta_vec.scalarMultiply(d.m_mu[k] / eta_0));
             }
             u.m_nuP[k] = eta_stat_sigma.multiply(eta_stat_nu).scalarMultiply(m_rho).getColumn(0);
@@ -590,6 +595,8 @@ public class ETBIR extends LDA_Variational {
     }
 
     public void update_eta(_Product4ETBIR i){
+        ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
+
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
         double last = 1.0;
         double cur = 0.0, check = 0;
@@ -616,30 +623,32 @@ public class ETBIR extends LDA_Variational {
                 double gTerm4 = 0.0;
                 double term1 = 0.0;
                 double term2 = 0.0;
-                for (int uid = 0; uid < number_of_users; uid++) {
+                for (Integer userIdx : Ui) {
+                    _User4ETBIR user = m_users[userIdx];
                     _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
-                            m_itemsIndex.get(i.getID()) + "_" + uid));
+                            m_itemsIndex.get(i.getID()) + "_" + userIdx));
+
                     for (int j = 0; j < number_of_topics; j++) {
-                        gTerm1 += m_users[uid].m_nuP[j][k] * d.m_mu[j];
-                        term1 += i.m_eta[k] * m_users[uid].m_nuP[j][k] * d.m_mu[j];
+                        gTerm1 += user.m_nuP[j][k] * d.m_mu[j];
+                        term1 += i.m_eta[k] * user.m_nuP[j][k] * d.m_mu[j];
 
                         for (int l = 0; l < number_of_topics; l++) {
-                            gTerm2 += i.m_eta[l] * m_users[uid].m_nuP[j][l] * d.m_mu[j];
+                            gTerm2 += i.m_eta[l] * user.m_nuP[j][l] * d.m_mu[j];
 
-                            gTerm3 += i.m_eta[l] * (m_users[uid].m_SigmaP[j][l][k] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][k]);
+                            gTerm3 += i.m_eta[l] * (user.m_SigmaP[j][l][k] + user.m_nuP[j][l] * user.m_nuP[j][k]);
                             if (l == k) {
-                                gTerm3 += (i.m_eta[l] + 1.0) * (m_users[uid].m_SigmaP[j][l][k] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][k]);
+                                gTerm3 += (i.m_eta[l] + 1.0) * (user.m_SigmaP[j][l][k] + user.m_nuP[j][l] * user.m_nuP[j][k]);
                             }
 
-                            term2 += i.m_eta[l] * i.m_eta[k] * (m_users[uid].m_SigmaP[j][l][k] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][k]);
+                            term2 += i.m_eta[l] * i.m_eta[k] * (user.m_SigmaP[j][l][k] + user.m_nuP[j][l] * user.m_nuP[j][k]);
                             if (l == k) {
-                                term2 += i.m_eta[k] * (m_users[uid].m_SigmaP[j][k][k] + m_users[uid].m_nuP[j][k] * m_users[uid].m_nuP[j][k]);
+                                term2 += i.m_eta[k] * (user.m_SigmaP[j][k][k] + user.m_nuP[j][k] * user.m_nuP[j][k]);
                             }
 
                             for (int p = 0; p < number_of_topics; p++) {
-                                gTerm4 += i.m_eta[l] * i.m_eta[p] * (m_users[uid].m_SigmaP[j][l][p] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][p]);
+                                gTerm4 += i.m_eta[l] * i.m_eta[p] * (user.m_SigmaP[j][l][p] + user.m_nuP[j][l] * user.m_nuP[j][p]);
                                 if (p == l) {
-                                    gTerm4 += i.m_eta[p] * (m_users[uid].m_SigmaP[j][l][p] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][p]);
+                                    gTerm4 += i.m_eta[p] * (user.m_SigmaP[j][l][p] + user.m_nuP[j][l] * user.m_nuP[j][p]);
                                 }
                             }
                         }
@@ -713,15 +722,17 @@ public class ETBIR extends LDA_Variational {
             for(int k = 0; k < number_of_topics; k++) {
                 double term1_diag = 0.0;
                 double term2_diag = 0.0;
-                for (int uid = 0; uid < number_of_users; uid++) {
+                for (Integer userIdx : Ui) {
+                    _User4ETBIR user = m_users[userIdx];
                     _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
-                            m_itemsIndex.get(i.getID()) + "_" + uid));
+                            m_itemsIndex.get(i.getID()) + "_" + userIdx));
+
                     for (int j = 0; j < number_of_topics; j++) {
-                        term1_diag += i.m_eta[k] * m_users[uid].m_nuP[j][k] * d.m_mu[j];
+                        term1_diag += i.m_eta[k] * user.m_nuP[j][k] * d.m_mu[j];
                         for (int l = 0; l < number_of_topics; l++) {
-                            term2_diag += i.m_eta[l] * i.m_eta[k] * (m_users[uid].m_SigmaP[j][l][k] + m_users[uid].m_nuP[j][l] * m_users[uid].m_nuP[j][k]);
+                            term2_diag += i.m_eta[l] * i.m_eta[k] * (user.m_SigmaP[j][l][k] + user.m_nuP[j][l] * user.m_nuP[j][k]);
                             if (l == k) {
-                                term2_diag += i.m_eta[k] * (m_users[uid].m_SigmaP[j][k][k] + m_users[uid].m_nuP[j][k] * m_users[uid].m_nuP[j][k]);
+                                term2_diag += i.m_eta[k] * (user.m_SigmaP[j][k][k] + user.m_nuP[j][k] * user.m_nuP[j][k]);
                             }
                         }
                     }
