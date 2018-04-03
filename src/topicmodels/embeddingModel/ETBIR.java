@@ -328,7 +328,7 @@ public class ETBIR extends LDA_Variational {
         int iter = 0;
 
         do{
-            update_eta(i);
+//            update_eta(i);
 
             current = calc_log_likelihood_per_item(i);
             if (iter > 0){
@@ -349,9 +349,9 @@ public class ETBIR extends LDA_Variational {
 
         do {
             update_phi(d);
-            //update_zeta(d);
+            update_zeta(d);
             update_mu(d, u ,i);
-            //update_zeta(d);
+//            update_zeta(d);
             update_SigmaTheta(d);
             update_zeta(d);
 
@@ -466,7 +466,7 @@ public class ETBIR extends LDA_Variational {
                 doc.m_mu[k] = doc.m_mu[k] - stepsize * m_muG[k];
                 moment = Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 fValue += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k]
-                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
+                        - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k])/ etaSum)
                         + doc.m_mu[k] * m_phiStat[k] - N * zeta_stat * moment);
             }
 //            LBFGS.lbfgs(number_of_topics,4, doc.m_mu, fValue, m_muG,false, mu_diag, iprint, 1e-6, 1e-16, iflag);
@@ -660,7 +660,7 @@ public class ETBIR extends LDA_Variational {
                         - m_rho * gTerm3 / (2 * eta_0 * (eta_0 + 1.0))
                         + m_rho * (2 * eta_0 + 1.0) * gTerm4 / (2 * Math.pow(eta_0, 2) * Math.pow(eta_0 + 1.0, 2)));
                 if(k == 0) {
-                    double eps = 1e-6;
+                    double eps = 1e-12;
                     i.m_eta[k] = i.m_eta[k] + eps;
                     double post = -((m_alpha[k] - i.m_eta[k]) * (Utils.digamma(i.m_eta[k]) - Utils.digamma(eta_0))
                             - Utils.lgamma(eta_0) + Utils.lgamma(i.m_eta[k])
@@ -671,7 +671,6 @@ public class ETBIR extends LDA_Variational {
                             + m_rho * term1 / eta_0 - m_rho * term2 / (2 * eta_0 * (eta_0 + 1.0)));
                     check = (post - pre) / eps;
                 }
-
 
                 last += -((m_alpha[k] - i.m_eta[k]) * (Utils.digamma(i.m_eta[k]) - Utils.digamma(eta_0))
                         - Utils.lgamma(eta_0) + Utils.lgamma(i.m_eta[k])
@@ -714,9 +713,6 @@ public class ETBIR extends LDA_Variational {
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
                 i.m_eta[k] = i.m_eta[k] - stepsize * m_etaG[k];
-                if (i.m_eta[k] <= 0) {
-                    monitorNeg += i.m_eta[k];
-                }
             }
             double eta0_diag = Utils.sumOfArray(i.m_eta);
             for(int k = 0; k < number_of_topics; k++) {
@@ -744,12 +740,6 @@ public class ETBIR extends LDA_Variational {
 
             fValue = cur;
             diff = (lastFValue - fValue) / lastFValue;
-            System.out.println("----- update eta cur: " + cur + "; diff: " + diff + "; gradient: " + m_etaG[0]
-                    + "; gradient check: " + check + "; nonnegative: " + monitorNeg);
-
-//            System.out.println("-- update eta: fValue: " + fValue + "; diff: " + diff
-//                    + "; gradient: " + Utils.dotProduct(m_etaG, m_etaG) + "; eta: " + Utils.sumOfArray(i.m_eta)
-//                    + "; monitor: " + monitorNeg);
 //            LBFGS.lbfgs(number_of_topics,4, i.m_eta, fValue, m_etaG,false, eta_diag, iprint, 1e-6, 1e-32, iflag);
         }while(iter++ < iterMax && Math.abs(diff) > cvg);
     }

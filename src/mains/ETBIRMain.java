@@ -65,7 +65,7 @@ public class ETBIRMain {
 
         int topic_number = 10;
 
-        int varMaxIter = 5;
+        int varMaxIter = 20;
         double varConverge = 1e-6;
 
         int emMaxIter = 20;
