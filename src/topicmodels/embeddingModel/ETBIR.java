@@ -381,10 +381,8 @@ public class ETBIR {
     public void update_zeta(_Doc d){
         //estimate zeta
         d.m_zeta = 0;
-        for (int k = 0; k < number_of_topics; k++) {
+        for (int k = 0; k < number_of_topics; k++) 
             d.m_zeta += Math.exp(d.m_mu[k] + 0.5 * d.m_Sigma[k]);
-        }
-
     }
 
     // alternative: line search / fixed-stepsize gradient descent
@@ -469,7 +467,25 @@ public class ETBIR {
         } while (iter++ < iterMax && Math.abs(diff) > cvg);
     }
 
-    public void update_SigmaTheta(_Doc d){
+    //variational inference for p(P|\nu,\Sigma) for each user
+	    public void update_SigmaP(_User u){
+	        RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
+	        for (int item_i = 0; item_i < number_of_items; item_i++) {
+	            RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(m_items[item_i].m_eta);
+	            double eta_0 = Utils.sumOfArray(m_items[item_i].m_eta);
+	            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(m_items[item_i].m_eta).add(eta_vec.multiply(eta_vec.transpose()));
+	            eta_stat_sigma = eta_stat_sigma.add(eta_stat_i.scalarMultiply(m_rho / (eta_0 * (eta_0 + 1.0))));
+	        }
+	//        System.out.println("-- sigmaP before inverse: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
+	        eta_stat_sigma = new LUDecomposition(eta_stat_sigma).getSolver().getInverse();
+	//        System.out.println("-- update sigmaP: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
+	        for (int k = 0; k < number_of_topics; k++) {
+	            u.m_SigmaP[k] = eta_stat_sigma.getData();
+	        }
+	//        System.out.println("-- update sigmaP: now: " + Arrays.toString(u.m_SigmaP[0][0]));
+	    }
+
+	public void update_SigmaTheta(_Doc d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
         double last = 1.0;
         double cur = 0.0;
@@ -493,6 +509,7 @@ public class ETBIR {
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = m_sigmaSqrt[k] * m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
+                //this gradient is inconsistent with the derivation
                 m_SigmaG[k] = -(-m_rho * m_sigmaSqrt[k] - N * m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / m_sigmaSqrt[k]); //-1 because LBFGS is minimization
                 last += -(-0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma));
             }
@@ -542,24 +559,6 @@ public class ETBIR {
         }
 //        System.out.println("sigmasum: " + Utils.sumOfArray(d.m_Sigma));
 
-    }
-
-    //variational inference for p(P|\nu,\Sigma) for each user
-    public void update_SigmaP(_User u){
-        RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
-        for (int item_i = 0; item_i < number_of_items; item_i++) {
-            RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(m_items[item_i].m_eta);
-            double eta_0 = Utils.sumOfArray(m_items[item_i].m_eta);
-            RealMatrix eta_stat_i = MatrixUtils.createRealDiagonalMatrix(m_items[item_i].m_eta).add(eta_vec.multiply(eta_vec.transpose()));
-            eta_stat_sigma = eta_stat_sigma.add(eta_stat_i.scalarMultiply(m_rho / (eta_0 * (eta_0 + 1.0))));
-        }
-//        System.out.println("-- sigmaP before inverse: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
-        eta_stat_sigma = new LUDecomposition(eta_stat_sigma).getSolver().getInverse();
-//        System.out.println("-- update sigmaP: " + Arrays.toString(eta_stat_sigma.getColumn(1)));
-        for (int k = 0; k < number_of_topics; k++) {
-            u.m_SigmaP[k] = eta_stat_sigma.getData();
-        }
-//        System.out.println("-- update sigmaP: now: " + Arrays.toString(u.m_SigmaP[0][0]));
     }
 
     //variational inference for p(P|\nu,\Sigma) for each user
