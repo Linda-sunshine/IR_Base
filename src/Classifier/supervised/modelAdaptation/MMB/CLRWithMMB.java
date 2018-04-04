@@ -10,8 +10,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.math3.distribution.BinomialDistribution;
-
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
+import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
+import cern.jet.random.tdouble.Beta;
+import cern.jet.random.tfloat.FloatUniform;
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
@@ -19,11 +22,6 @@ import structures._Review;
 import structures._Review.rType;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
-import cern.jet.random.tdouble.Beta;
-import cern.jet.random.tfloat.FloatUniform;
 public class CLRWithMMB extends CLRWithHDP {
 	// sparsity parameter
 	protected double m_rho = 0.001; 

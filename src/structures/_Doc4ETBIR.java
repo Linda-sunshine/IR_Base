@@ -10,6 +10,6 @@ public class _Doc4ETBIR extends _Doc{
     public double m_zeta; //Taylor expansion parameter \zeta related to p(\theta|\mu,\Sigma)
 
     public _Doc4ETBIR(int ID, String name, String prodID, String title, String source, int ylabel, long timeStamp){
-        super(  ID,  name,  prodID,  title,  source,  ylabel,  timeStamp);
+        super(ID,  name,  prodID,  title,  source,  ylabel,  timeStamp);
     }
 }
