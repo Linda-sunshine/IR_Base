@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.apache.commons.math3.linear.LUDecomposition;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
 import structures._Corpus;
 import structures._Doc;
 import structures._Doc4ETBIR;
@@ -548,7 +551,7 @@ public class ETBIR extends LDA_Variational {
         } while(iter++ < iterMax && Math.abs(diff) > cvg);
 
         for(int k=0; k < number_of_topics; k++){
-            d.m_Sigma[k] = Math.pow(m_sigmaSqrt[k], 2);
+            d.m_Sigma[k] = Math.pow(sigmaSqrt[k], 2);
         }
 
     }
@@ -823,7 +826,6 @@ public class ETBIR extends LDA_Variational {
             log_likelihood -= Utils.lgamma(m_alpha[k]) - Utils.lgamma(i.m_eta[k]);
         }
         log_likelihood += lgammaAlphaSum - lgammaEtaSum;
-        log_likelihood += log_likelihood;
 
         return log_likelihood;
     }
@@ -856,7 +858,7 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - 2 * term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
+        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
                 + 0.5 * term4;
         log_likelihood += part3;
 
@@ -879,7 +881,7 @@ public class ETBIR extends LDA_Variational {
             }
             term2 += Math.exp(doc.m_mu[k] + doc.m_Sigma[k]/2.0);
         }
-        part4 += term1 - term2 / doc.m_zeta + 1.0 - Math.log(doc.m_zeta) - term3;
+        part4 += term1 - doc.getTotalDocLength() * ( term2 / doc.m_zeta - 1.0 + Math.log(doc.m_zeta)) - term3;
         log_likelihood += part4;
         log_likelihood += part5;
 
@@ -936,5 +938,7 @@ public class ETBIR extends LDA_Variational {
             System.out.println(Utils.sumOfArray(word_topic_sstat[0]));
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
+
+    
 
 }
