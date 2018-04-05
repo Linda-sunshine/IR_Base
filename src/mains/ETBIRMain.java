@@ -54,7 +54,7 @@ public class ETBIRMain {
          * model training
          */
         String fvFile = "./data/Features/fv_2gram_IG_byUser_20.txt";
-        String reviewFolder = "./myData/byUser_1/";
+        String reviewFolder = "./myData/byItem_1/";
         String suffix = ".json";
 
         ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
@@ -66,7 +66,7 @@ public class ETBIRMain {
         int topic_number = 10;
 
         int varMaxIter = 20;
-        double varConverge = 1e-6;
+        double varConverge = 1e-5;
 
         int emMaxIter = 20;
         double emConverge = 1e-3;
@@ -109,5 +109,8 @@ public class ETBIRMain {
                 topic_number, alpha, varMaxIter, varConverge, sigma, rho);
         etbirModel.loadCorpus();
         etbirModel.EM();
+        etbirModel.printTopWords(topic_number, "./myData/byItem_1/topwords-10.txt");
+        etbirModel.printEta("./myData/byItem_1/eta-10.txt");
+        etbirModel.printP("./myData/byItem_1/P-10.txt");
     }
 }

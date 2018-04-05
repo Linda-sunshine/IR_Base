@@ -8,6 +8,8 @@ import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.*;
 
 /**
@@ -612,7 +614,7 @@ public class ETBIR extends LDA_Variational {
             lastFValue = fValue;
             last = 0.0;
             monitorNeg = 0.0;
-            stepsize = 1e-3;
+            stepsize = 1e-2;
             for(int k = 0; k < number_of_topics; k++) {
 
                 //might be optimized using global stats
@@ -746,10 +748,10 @@ public class ETBIR extends LDA_Variational {
 
     public void M_step() {
         //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
+//        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
 
         //maximize likelihood for \sigma
-        m_sigma = number_of_topics / m_pStats;
+//        m_sigma = number_of_topics / m_pStats;
 
         //maximize likelihood for \beta
         for(int k = 0 ;k < number_of_topics; k++){
@@ -797,7 +799,7 @@ public class ETBIR extends LDA_Variational {
                 temp1 += u.m_SigmaP[k][l][l] + u.m_nuP[k][l] * u.m_nuP[k][l];
             }
             double det = new LUDecomposition(MatrixUtils.createRealMatrix(u.m_SigmaP[k])).getDeterminant();
-            log_likelihood += -0.5 * (temp1 * m_sigma - number_of_topics)
+            log_likelihood += 0.5 * (-m_sigma * temp1 + number_of_topics)
                     + 0.5 * (number_of_topics * Math.log(m_sigma) + Math.log(det));
         }
 
@@ -817,7 +819,6 @@ public class ETBIR extends LDA_Variational {
             log_likelihood -= Utils.lgamma(m_alpha[k]) - Utils.lgamma(i.m_eta[k]);
         }
         log_likelihood += lgammaAlphaSum - lgammaEtaSum;
-        log_likelihood += log_likelihood;
 
         return log_likelihood;
     }
@@ -850,7 +851,7 @@ public class ETBIR extends LDA_Variational {
             }
             term4 += Math.log(m_rho * doc.m_Sigma[k]);
         }
-        part3 += -m_rho * (0.5 * term1 - 2 * term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
+        part3 += -m_rho * (0.5 * term1 - term2 / eta0 + term3 / (eta0 * (eta0 + 1.0))) + number_of_topics/2.0
                 + 0.5 * term4;
         log_likelihood += part3;
 
@@ -873,7 +874,7 @@ public class ETBIR extends LDA_Variational {
             }
             term2 += Math.exp(doc.m_mu[k] + doc.m_Sigma[k]/2.0);
         }
-        part4 += term1 - term2 / doc.m_zeta + 1.0 - Math.log(doc.m_zeta) - term3;
+        part4 += term1 - doc.getTotalDocLength() * ( term2 / doc.m_zeta - 1.0 + Math.log(doc.m_zeta)) - term3;
         log_likelihood += part4;
         log_likelihood += part5;
 
@@ -930,4 +931,75 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
+    public void printEta(String etafile){
+        try{
+            PrintWriter etaWriter = new PrintWriter(new File(etafile));
+
+            for(int idx = 0; idx < m_items.length; idx++) {
+                etaWriter.write("item " + idx + "*************\n");
+                _Product4ETBIR item = (_Product4ETBIR) m_items[idx];
+                etaWriter.format("-- eta: \n");
+                for (int i = 0; i < number_of_topics; i++) {
+                    etaWriter.format("%.8f\t", item.m_eta[i]);
+                }
+                etaWriter.write("\n");
+            }
+            etaWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
+    public void printP(String pfile){
+        try{
+            PrintWriter pWriter = new PrintWriter(new File(pfile));
+
+            for(int idx = 0; idx < m_users.length; idx++) {
+                pWriter.write("user " + idx + "*************\n");
+                _User4ETBIR user = (_User4ETBIR) m_users[idx];
+                for (int i = 0; i < number_of_topics; i++) {
+                    pWriter.format("-- mu " + i + ": \n");
+                    for(int k = 0; k < number_of_topics; k++) {
+                        pWriter.format("%.5f\t", user.m_nuP[i][k]);
+                    }
+                    pWriter.write("\n");
+                }
+            }
+            pWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
+    public void printTopWords(int k, String topWordPath) {
+        System.out.println("TopWord FilePath:" + topWordPath);
+        Arrays.fill(m_sstat, 0);
+        for(int d = 0; d < m_corpus.getCollection().size(); d++) {
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(d);
+            for(int i=0; i<number_of_topics; i++)
+                m_sstat[i] += Math.exp(doc.m_mu[i]);
+        }
+        Utils.L1Normalization(m_sstat);
+
+        try{
+            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+
+            for(int i=0; i<topic_term_probabilty.length; i++) {
+                MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+                for(int j = 0; j < vocabulary_size; j++)
+                    fVector.add(new _RankItem(m_corpus.getFeature(j), m_beta[i][j]));
+
+                topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+                for(_RankItem it:fVector)
+                    topWordWriter.format("%s(%.5f)\t", it.m_name, Math.exp(it.m_value));
+                topWordWriter.write("\n");
+            }
+            topWordWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
 }
+
+
