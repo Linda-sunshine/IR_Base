@@ -1,5 +1,7 @@
 package topicmodels.embeddingModel;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,14 +11,7 @@ import java.util.Random;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
-import structures._Corpus;
-import structures._Doc;
-import structures._Doc4ETBIR;
-import structures._Product;
-import structures._Product4ETBIR;
-import structures._SparseFeature;
-import structures._User;
-import structures._User4ETBIR;
+import structures.*;
 import topicmodels.LDA.LDA_Variational;
 import utils.Utils;
 
@@ -939,6 +934,74 @@ public class ETBIR extends LDA_Variational {
         }while(iter < number_of_iteration && (converge < 0 || converge > m_converge));
     }
 
-    
+    public void printEta(String etafile){
+        try{
+            PrintWriter etaWriter = new PrintWriter(new File(etafile));
+
+            for(int idx = 0; idx < m_items.length; idx++) {
+                etaWriter.write("item " + idx + "*************\n");
+                _Product4ETBIR item = (_Product4ETBIR) m_items[idx];
+                etaWriter.format("-- eta: \n");
+                for (int i = 0; i < number_of_topics; i++) {
+                    etaWriter.format("%.8f\t", item.m_eta[i]);
+                }
+                etaWriter.write("\n");
+            }
+            etaWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
+    public void printP(String pfile){
+        try{
+            PrintWriter pWriter = new PrintWriter(new File(pfile));
+
+            for(int idx = 0; idx < m_users.length; idx++) {
+                pWriter.write("user " + idx + "*************\n");
+                _User4ETBIR user = (_User4ETBIR) m_users[idx];
+                for (int i = 0; i < number_of_topics; i++) {
+                    pWriter.format("-- mu " + i + ": \n");
+                    for(int k = 0; k < number_of_topics; k++) {
+                        pWriter.format("%.5f\t", user.m_nuP[i][k]);
+                    }
+                    pWriter.write("\n");
+                }
+            }
+            pWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
+    public void printTopWords(int k, String topWordPath) {
+        System.out.println("TopWord FilePath:" + topWordPath);
+        Arrays.fill(m_sstat, 0);
+        for(int d = 0; d < m_corpus.getCollection().size(); d++) {
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(d);
+            for(int i=0; i<number_of_topics; i++)
+                m_sstat[i] += Math.exp(doc.m_mu[i]);
+        }
+        Utils.L1Normalization(m_sstat);
+
+        try{
+            PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+
+            for(int i=0; i<topic_term_probabilty.length; i++) {
+                MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+                for(int j = 0; j < vocabulary_size; j++)
+                    fVector.add(new _RankItem(m_corpus.getFeature(j), m_beta[i][j]));
+
+                topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
+                for(_RankItem it:fVector)
+                    topWordWriter.format("%s(%.5f)\t", it.m_name, Math.exp(it.m_value));
+                topWordWriter.write("\n");
+            }
+            topWordWriter.close();
+        } catch(Exception ex){
+            System.err.print("File Not Found");
+        }
+    }
+
 
 }
