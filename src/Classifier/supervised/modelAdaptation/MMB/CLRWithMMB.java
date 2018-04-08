@@ -15,6 +15,7 @@ import Classifier.supervised.modelAdaptation.HDP.CLRWithHDP;
 import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import cern.jet.random.tdouble.Beta;
 import cern.jet.random.tfloat.FloatUniform;
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import structures._HDPThetaStar;
 import structures._HDPThetaStar._Connection;
 import structures._MMBNeighbor;
