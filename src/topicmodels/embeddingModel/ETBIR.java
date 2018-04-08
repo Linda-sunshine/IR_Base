@@ -520,7 +520,7 @@ public class ETBIR extends LDA_Variational {
 //        System.out.println("-- update nuP: origin: " + Arrays.toString(u.m_nuP[0]));
     }
 
-    public void update_eta(_Product4ETBIR i){
+    public void update_eta_no_constraint(_Product4ETBIR i){
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
@@ -616,7 +616,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     // update eta with non-negative constraint using fix step graident descent
-    public void update_eta_nonneg(_Product4ETBIR i){
+    public void update_eta(_Product4ETBIR i){
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
