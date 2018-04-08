@@ -25,8 +25,8 @@ public class LDA_Variational extends pLSA {
 	
 	protected double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
 	protected double[] m_alphaStat; // statistics for alpha estimation
-	double[] m_alphaG; // gradient for alpha
-	double[] m_alphaH; // Hessian for alpha
+	protected double[] m_alphaG; // gradient for alpha
+	protected double[] m_alphaH; // Hessian for alpha
 	
 	public LDA_Variational(int number_of_iteration, double converge,
 			double beta, _Corpus c, double lambda, 

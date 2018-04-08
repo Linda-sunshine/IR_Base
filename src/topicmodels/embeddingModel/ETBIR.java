@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import LBFGS.LBFGS;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RealMatrix;
@@ -23,7 +24,9 @@ import LBFGS.LBFGS.ExceptionWithIflag;
  */
 public class ETBIR extends LDA_Variational {
 
-    //variables defined by base class
+    /**
+     * variables defined by base class
+     */
 //    protected int number_of_topics;
 //    protected double m_converge;//relative change in log-likelihood to terminate EM
 //    protected int vocabulary_size;
@@ -35,11 +38,11 @@ public class ETBIR extends LDA_Variational {
 //
 //    protected int m_varMaxIter;
 //    protected double m_varConverge;
+//	
 //    protected double[] m_alpha; // we can estimate a vector of alphas as in p(\theta|\alpha)
 //    protected double[] m_alphaStat; // statistics for alpha estimation
-
-    protected double d_rho;
-    protected double d_sigma;
+//    protected double[] m_alphaG; // gradient for alpha
+//    protected double[] m_alphaH; // Hessian for alpha	
 
     protected int number_of_users;
     protected int number_of_items;
@@ -50,16 +53,13 @@ public class ETBIR extends LDA_Variational {
     protected HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
 
-    protected HashMap<Integer,ArrayList<Integer>>  m_mapByUser; //adjacent list for user
+    protected HashMap<Integer, ArrayList<Integer>>  m_mapByUser; //adjacent list for user
     protected HashMap<Integer, ArrayList<Integer>> m_mapByItem;
     protected HashMap<String, Integer> m_reviewIndex; //(itemIndex_userIndex, index in m_corpus.m_collection)
 
     protected double m_rho;
     protected double m_sigma;
-    protected double[][] m_beta; //topic_term_probability
 
-    double[] m_alphaG; // gradient for alpha
-    double[] m_alphaH; // Hessian for alpha
     double[] m_etaStats;
     double m_pStats;
     double m_thetaStats;
@@ -70,15 +70,16 @@ public class ETBIR extends LDA_Variational {
                  double beta, _Corpus corpus, double lambda,
                  int number_of_topics, double alpha, int varMaxIter, double varConverge, //LDA_variational
                  double sigma, double rho) {
-        super( emMaxIter,  emConverge, beta,  corpus,  lambda, number_of_topics,
-                alpha,  varMaxIter,  varConverge);
+        super(emMaxIter, emConverge,
+        	beta, corpus, lambda, 
+        	number_of_topics, alpha, varMaxIter, varConverge);
 
-        this.d_sigma = sigma;
-        this.d_rho = rho;
+        this.m_sigma = sigma;
+        this.m_rho = rho;
     }
 
-    public void loadCorpus(){
-        System.out.println("Loading data to model...");
+    public void analyzeCorpus(){
+        System.out.print("Analzying review data in corpus");
 
         m_usersIndex = new HashMap<String, Integer>();
         m_itemsIndex = new HashMap<String, Integer>();
@@ -86,8 +87,8 @@ public class ETBIR extends LDA_Variational {
         m_mapByUser = new HashMap<Integer, ArrayList<Integer>>();
         m_mapByItem = new HashMap<Integer, ArrayList<Integer>>();
 
-        int u_index = -1, i_index = -1;
-        for(int d = 0; d < m_corpus.getCollection().size(); d++){
+        int u_index = -1, i_index = -1, size = m_corpus.getCollection().size();
+        for(int d = 0; d < size; d++){
             _Doc doc = m_corpus.getCollection().get(d);
             String userID = doc.getTitle();
             String itemID = doc.getItemID();
@@ -108,7 +109,10 @@ public class ETBIR extends LDA_Variational {
             m_mapByItem.get(iIdx).add(uIdx);
 
             m_reviewIndex.put(iIdx + "_" + uIdx, d);
+            if ( (100 * d/size) % 10 == 0 )
+            	System.out.print(".");//every 10%
         }
+        System.out.println("Done!");//every 10%
 
         m_users = new _User4ETBIR[m_usersIndex.size()];
         for(Map.Entry<String, Integer> entry: m_usersIndex.entrySet()){
@@ -124,23 +128,21 @@ public class ETBIR extends LDA_Variational {
         this.number_of_users = m_mapByUser.size();
         this.vocabulary_size = m_corpus.getFeatureSize();
 
-        System.out.println("-- vocabulary size: " + vocabulary_size);
-        System.out.println("-- corpus size: " + m_reviewIndex.size());
-        System.out.println("-- item number: " + number_of_items);
-        System.out.println("-- user number: " + number_of_users);
+        System.out.format("-- vocabulary size: %d\n -- corpus size: %d\n -- item size: %d\n-- user number: %d\n", 
+        		vocabulary_size, size, number_of_items, number_of_users);
+    }
+    
+    @Override
+    protected void createSpace() {
+    	super.createSpace();
+    	
+    	this.m_etaStats = new double[number_of_topics];
     }
 
-    //create space; initial parameters
-    public void initModel(){
-        this.m_alpha = new double[number_of_topics];
-        this.m_beta = new double[number_of_topics][vocabulary_size];
-        this.m_alphaG = new double[number_of_topics];
-        this.m_alphaH = new double[number_of_topics];
-
+    @Override
+    protected void init(){
         //initialize parameters
         Random r = new Random();
-        m_rho = d_rho;
-        m_sigma = d_sigma;
         Arrays.fill(m_alpha, d_alpha);
         double val = 0.0;
         for(int k = 0; k < number_of_topics; k++){
@@ -148,17 +150,14 @@ public class ETBIR extends LDA_Variational {
             for(int v = 0; v < vocabulary_size; v++){
                 val = r.nextDouble() + d_beta;
                 sum += val;
-                m_beta[k][v] = val;
+                topic_term_probabilty[k][v] = val;
             }
 
             sum = Math.log(sum);
             for(int v = 0; v < vocabulary_size; v++){
-                m_beta[k][v] = Math.log(m_beta[k][v]) - sum;
+                topic_term_probabilty[k][v] = Math.log(topic_term_probabilty[k][v]) - sum;
             }
         }
-
-        this.m_etaStats = new double[number_of_topics];
-        this.word_topic_sstat = new double[number_of_topics][vocabulary_size];
     }
 
     protected void initDoc(_Doc4ETBIR doc){
@@ -200,13 +199,13 @@ public class ETBIR extends LDA_Variational {
         m_eta_mean_Stats = 0.0;
     }
 
-    protected void updateStatsForItem(_Product4ETBIR item){
-        double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
+    protected void updateStats4Item(_Product4ETBIR item){
+    	double digammaSum = Utils.digamma(Utils.sumOfArray(item.m_eta));
         for(int k = 0; k < number_of_topics;k++)
             m_etaStats[k] += Utils.digamma(item.m_eta[k]) - digammaSum;
     }
 
-    protected void updateStatsForUser(_User4ETBIR user){
+    protected void updateStats4User(_User4ETBIR user){
         for(int k = 0; k < number_of_topics; k++){
             for(int l = 0; l < number_of_topics; l++){
                 m_pStats += user.m_SigmaP[k][l][l] + user.m_nuP[k][l] * user.m_nuP[k][l];
@@ -214,7 +213,7 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
-    protected void updateStatsForDoc(_Doc4ETBIR doc){
+    protected void updateStats4Doc(_Doc4ETBIR doc){
         // update m_word_topic_stats for updating beta
         double delta = 1e-6;
         _SparseFeature[] fv = doc.getSparse();
@@ -264,7 +263,6 @@ public class ETBIR extends LDA_Variational {
             totalLikelihood = 0.0;
             for (int i = 0; i < m_corpus.getCollection().size(); i++) {
                 _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(i);
-//                System.out.println("***************** doc " + i + " ****************");
                 String userID = doc.getTitle();
                 String itemID = doc.getItemID();
                 _User4ETBIR currentU = m_users[m_usersIndex.get(userID)];
@@ -272,25 +270,23 @@ public class ETBIR extends LDA_Variational {
 
                 double cur = varInferencePerDoc(doc, currentU, currentI);
                 totalLikelihood += cur;
-                updateStatsForDoc(doc);
+                updateStats4Doc(doc);
             }
 
             for (int i = 0; i < m_users.length; i++) {
-//                System.out.println("***************** user " + i + " ****************");
                 _User4ETBIR user = m_users[i];
 
                 double cur = varInferencePerUser(user);
                 totalLikelihood += cur;
-                updateStatsForUser(user);
+                updateStats4User(user);
             }
 
             for (int i = 0; i < m_items.length; i++) {
-//                System.out.println("***************** item " + i + " ****************");
                 _Product4ETBIR item = m_items[i];
 
                 double cur = varInferencePerItem(item);
                 totalLikelihood += cur;
-                updateStatsForItem(item);
+                updateStats4Item(item);
             }
 
             if(iter > 0)
@@ -315,11 +311,11 @@ public class ETBIR extends LDA_Variational {
             update_nu(u);
 
             current = calc_log_likelihood_per_user(u);
-            if(iter > 0){
+            if(iter > 0)
                 converge = (last - current) / last;
-            }else{
+            else
                 converge = 1.0;
-            }
+            
             last = current;
 //            System.out.println("-- varInferencePerUser cur: " + current + "; converge: " + converge);
         } while(++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
@@ -360,11 +356,11 @@ public class ETBIR extends LDA_Variational {
             update_zeta(d);
 
             current = calc_log_likelihood_per_doc(d, u, i);
-            if (iter > 0) {
+            if (iter > 0) 
                 converge = (last-current) / last;
-            }else{
+            else
                 converge = 1.0;
-            }
+            
             last = current;
 //            System.out.println("-- varInferencePerDoc cur: " + current + "; converge: " + converge);
         } while (++iter < m_varMaxIter && Math.abs(converge) > m_varConverge);
@@ -380,8 +376,8 @@ public class ETBIR extends LDA_Variational {
 
         for (int n = 0; n < fv.length; n++) {
             wid = fv[n].getIndex();
-            for (int k = 0; k < number_of_topics; k++)
-                d.m_phi[n][k] = m_beta[k][wid] + d.m_mu[k];
+            for (int k = 0; k < number_of_topics; k++) 
+                d.m_phi[n][k] = topic_term_probabilty[k][wid] + d.m_mu[k];
 
             // normalize
             logSum = Utils.logSum(d.m_phi[n]);
@@ -409,12 +405,11 @@ public class ETBIR extends LDA_Variational {
         _SparseFeature[] fv = doc.getSparse();
         for(int k = 0;k < number_of_topics; k++) {
             for (int n = 0; n < fv.length; n++) {
-                double v = fv[n].getValue();
-                m_phiStat[k] += v * doc.m_phi[n][k];
+                m_phiStat[k] += fv[n].getValue() * doc.m_phi[n][k];
             }
         }
 
-        double moment, zeta_stat = 1.0 / doc.m_zeta;
+        double moment, zeta_stat = 1.0 / doc.m_zeta, norm;
         double etaSum = Utils.sumOfArray(item.m_eta);
 
         do {
@@ -423,8 +418,10 @@ public class ETBIR extends LDA_Variational {
             fValue = 0.0;
             for (int k = 0; k < number_of_topics; k++) {
                 moment = Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
-                muG[k] = -(-m_rho * (doc.m_mu[k] - Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
+                norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
+                muG[k] = -(-m_rho * (doc.m_mu[k] - norm)
                         + m_phiStat[k] - N * zeta_stat * moment);//-1 because LBFGS is minimization
+
                 fValue += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k]
                         - 2 * doc.m_mu[k] * Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum)
                         + doc.m_mu[k] * m_phiStat[k] - N * zeta_stat * moment);
@@ -682,8 +679,8 @@ public class ETBIR extends LDA_Variational {
                         }
                     }
                 }
-                etaG[k] = -(Utils.trigamma(eta_temp[k]) * (m_alpha[k] * eta_temp[k] - eta_temp[k] * eta_temp[k])
-                        - triGammaEta * (Utils.sumOfArray(m_alpha) - eta0)
+                etaG[k] = -(Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
+                        - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
                         + m_rho * eta_temp[k] * gTerm1 / eta0
                         - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
                         - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
@@ -714,8 +711,7 @@ public class ETBIR extends LDA_Variational {
         int[] iflag = {0}, iprint = {-1,3};
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
-        double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize;
+        double fValue, iterMax = 20, iter = 0;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -730,10 +726,6 @@ public class ETBIR extends LDA_Variational {
         try {
             do {
                 fValue = 0.0;
-                double eta_square = 0.0;
-                for (int k = 0; k < number_of_topics; k++) {
-                    eta_square += eta_temp[k] * eta_temp[k];
-                }
 
                 double eta0 = Utils.sumOfArray(eta_temp);
                 double lgGammaEta = Utils.lgamma(eta0);
@@ -784,8 +776,8 @@ public class ETBIR extends LDA_Variational {
                         }
                     }
 
-                    etaG[k] = -(Utils.trigamma(eta_temp[k]) * (m_alpha[k] * eta_temp[k] - eta_temp[k] * eta_temp[k])
-                            - triGammaEta * (Utils.sumOfArray(m_alpha) - eta_square)
+                    etaG[k] = -(Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
+                            - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
                             + m_rho * eta_temp[k] * gTerm1 / eta0
                             - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
                             - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
@@ -817,10 +809,11 @@ public class ETBIR extends LDA_Variational {
 //        m_sigma = number_of_topics / m_pStats;
 
         //maximize likelihood for \beta
+        double sum;
         for(int k = 0 ;k < number_of_topics; k++){
-            double sum = Math.log(Utils.sumOfArray(word_topic_sstat[k]));
+            sum = Math.log(Utils.sumOfArray(word_topic_sstat[k]));
             for(int v = 0; v < vocabulary_size; v++)
-                m_beta[k][v] = Math.log(word_topic_sstat[k][v]) - sum;
+                topic_term_probabilty[k][v] = Math.log(word_topic_sstat[k][v]) - sum;
         }
 
         //maximize likelihood for \alpha using Newton
@@ -933,7 +926,7 @@ public class ETBIR extends LDA_Variational {
                 v = fv[n].getValue();
                 term1 += v * doc.m_phi[n][k] * doc.m_mu[k];
                 term3 += v * doc.m_phi[n][k] * Math.log(doc.m_phi[n][k]);
-                part5 += v * doc.m_phi[n][k] * m_beta[k][wid];
+                part5 += v * doc.m_phi[n][k] * topic_term_probabilty[k][wid];
             }
             term2 += Math.exp(doc.m_mu[k] + doc.m_Sigma[k]/2.0);
         }
@@ -947,7 +940,7 @@ public class ETBIR extends LDA_Variational {
     @Override
     public void EM(){
         System.out.println("Initializing model...");
-        initModel();
+        init();
 
         System.out.println("Initializing documents...");
         for(_Doc doc : m_corpus.getCollection())
@@ -1035,6 +1028,7 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    @Override
     public void printTopWords(int k, String topWordPath) {
         System.out.println("TopWord FilePath:" + topWordPath);
         Arrays.fill(m_sstat, 0);
@@ -1051,7 +1045,7 @@ public class ETBIR extends LDA_Variational {
             for(int i=0; i<topic_term_probabilty.length; i++) {
                 MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
                 for(int j = 0; j < vocabulary_size; j++)
-                    fVector.add(new _RankItem(m_corpus.getFeature(j), m_beta[i][j]));
+                    fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
 
                 topWordWriter.format("Topic %d(%.5f):\t", i, m_sstat[i]);
                 for(_RankItem it:fVector)

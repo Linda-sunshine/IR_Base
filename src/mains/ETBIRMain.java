@@ -107,7 +107,7 @@ public class ETBIRMain {
 
         ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
                 topic_number, alpha, varMaxIter, varConverge, sigma, rho);
-        etbirModel.loadCorpus();
+        etbirModel.analyzeCorpus();
         etbirModel.EM();
         etbirModel.printTopWords(topic_number, reviewFolder + "topwords-10.txt");
         etbirModel.printEta(reviewFolder + "eta-10.txt");
