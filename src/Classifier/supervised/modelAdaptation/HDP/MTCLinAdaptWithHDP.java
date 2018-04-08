@@ -10,12 +10,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._HDPThetaStar;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 
 /***
  * This class implements the MTCLinAdapt with HDP added.

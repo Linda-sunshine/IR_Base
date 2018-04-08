@@ -1,16 +1,11 @@
 package Analyzer;
 
+import java.io.IOException;
+
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
-import structures.TokenizeResult;
-import structures._Doc;
 import structures._Doc4ETBIR;
-import structures._Product;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by lulin on 3/28/18.

@@ -6,12 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
 import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.HDP._HDPAdaptStruct;
 import structures._Doc;
 import structures._SparseFeature;
 import structures._thetaStar;

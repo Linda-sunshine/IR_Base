@@ -17,6 +17,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import Classifier.BaseClassifier;
+import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
@@ -26,8 +28,6 @@ import structures._Review.rType;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.BaseClassifier;
-import Classifier.supervised.modelAdaptation._AdaptStruct.SimType;
 
 /**
  * @author Hongning Wang

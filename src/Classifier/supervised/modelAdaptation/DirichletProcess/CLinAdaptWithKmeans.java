@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import structures._Doc;
-import structures._SparseFeature;
-import structures._User;
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import Classifier.supervised.modelAdaptation.CoLinAdapt.LinAdapt;
 import Classifier.supervised.modelAdaptation.CoLinAdapt._LinAdaptStruct;
 import LBFGS.LBFGS;
 import LBFGS.LBFGS.ExceptionWithIflag;
+import structures._Doc;
+import structures._SparseFeature;
+import structures._User;
 
 /***
  * In this class, we would like to incorporate the cluster information 

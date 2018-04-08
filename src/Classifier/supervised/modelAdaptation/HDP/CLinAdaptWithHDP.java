@@ -2,13 +2,14 @@ package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import Classifier.supervised.modelAdaptation._AdaptStruct;
+import Classifier.supervised.modelAdaptation.DirichletProcess.DoubleNormalPrior;
 import structures._Doc;
 import structures._Review;
 import structures._SparseFeature;
 import structures._User;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
-import Classifier.supervised.modelAdaptation.DirichletProcess.DoubleNormalPrior;
 /***
  * In this class, we utilize HDP to do automatic grouping based on each review.
  * The method does not involve global model learning.

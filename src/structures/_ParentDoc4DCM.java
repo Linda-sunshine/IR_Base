@@ -1,10 +1,10 @@
 package structures;
 
-import utils.Utils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import utils.Utils;
 
 public class _ParentDoc4DCM extends _ParentDoc {
 	

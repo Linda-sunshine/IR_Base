@@ -166,7 +166,7 @@ public class LDA_Variational extends pLSA {
 			return;
 		
 		//we need to estimate p(\theta|\alpha) as well later on
-		int docSize = m_trainSet.size(), i = 0;
+		int docSize = getCorpusSize(), i = 0;
 		double alphaSum, diAlphaSum, z, c, c1, c2, diff, deltaAlpha;
 		do {
 			alphaSum = Utils.sumOfArray(m_alpha);
@@ -191,6 +191,10 @@ public class LDA_Variational extends pLSA {
 			}
 			diff /= number_of_topics;
 		} while(++i<m_varMaxIter && diff>m_varConverge);
+	}
+	
+	protected int getCorpusSize() {
+		return m_trainSet.size();
 	}
 	
 	@Override

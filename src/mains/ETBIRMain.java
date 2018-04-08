@@ -1,14 +1,11 @@
 package mains;
 
-import Analyzer.DocAnalyzer;
-import Analyzer.ReviewAnalyzer;
-import structures._Corpus;
-import structures._Doc4ETBIR;
-import topicmodels.embeddingModel.ETBIR;
-
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
+
+import Analyzer.ReviewAnalyzer;
+import structures._Corpus;
+import topicmodels.embeddingModel.ETBIR;
 
 
 /**

@@ -1,14 +1,23 @@
 package topicmodels.correspondenceModels;
 
-import structures.*;
-import utils.Utils;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+
+import structures.MyPriorityQueue;
+import structures._ChildDoc;
+import structures._Corpus;
+import structures._Doc;
+import structures._ParentDoc;
+import structures._ParentDoc4DCM;
+import structures._RankItem;
+import structures._SparseFeature;
+import structures._Stn;
+import structures._Word;
+import utils.Utils;
 
 /**
  * Created by jetcai1900 on 12/19/16.
