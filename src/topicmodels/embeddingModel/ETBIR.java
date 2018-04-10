@@ -2,10 +2,7 @@ package topicmodels.embeddingModel;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.MatrixUtils;
@@ -54,8 +51,8 @@ public class ETBIR extends LDA_Variational {
     protected int number_of_users;
     protected int number_of_items;
 
-    protected _User4ETBIR[] m_users;
-    protected _Product4ETBIR[] m_items;
+    protected List<_User4ETBIR> m_users;
+    protected List<_Product4ETBIR> m_items;
 
     protected HashMap<String, Integer> m_usersIndex; //(userID, index in m_users)
     protected HashMap<String, Integer> m_itemsIndex; //(itemID, index in m_items)
@@ -90,26 +87,32 @@ public class ETBIR extends LDA_Variational {
     public void analyzeCorpus(){
         System.out.print("Analzying review data in corpus");
 
+        m_users = new ArrayList<>();
+        m_items = new ArrayList<>();
         m_usersIndex = new HashMap<String, Integer>();
         m_itemsIndex = new HashMap<String, Integer>();
         m_reviewIndex = new HashMap<String, Integer>();
         m_mapByUser = new HashMap<Integer, ArrayList<Integer>>();
         m_mapByItem = new HashMap<Integer, ArrayList<Integer>>();
 
-        int u_index = -1, i_index = -1, size = m_corpus.getCollection().size();
+        int u_index = 0, i_index = 0, size = m_corpus.getCollection().size();
         for(int d = 0; d < size; d++){
             _Doc doc = m_corpus.getCollection().get(d);
             String userID = doc.getTitle();
             String itemID = doc.getItemID();
 
             if(!m_usersIndex.containsKey(userID)){
-                m_usersIndex.put(userID, ++u_index);
+                m_users.add(new _User4ETBIR(userID));
+                m_usersIndex.put(userID, u_index);
                 m_mapByUser.put(u_index, new ArrayList<Integer>());
+                u_index++;
             }
 
             if(!m_itemsIndex.containsKey(itemID)){
-                m_itemsIndex.put(itemID, ++i_index);
+                m_items.add(new _Product4ETBIR(itemID));
+                m_itemsIndex.put(itemID, i_index);
                 m_mapByItem.put(i_index, new ArrayList<Integer>());
+                i_index++;
             }
 
             int uIdx = m_usersIndex.get(userID);
@@ -122,16 +125,6 @@ public class ETBIR extends LDA_Variational {
             	System.out.print(".");//every 10%
         }
         System.out.println("Done!");//finish
-
-        m_users = new _User4ETBIR[m_usersIndex.size()];
-        for(Map.Entry<String, Integer> entry: m_usersIndex.entrySet()){
-            m_users[entry.getValue()] = new _User4ETBIR(entry.getKey());
-        }
-
-        m_items = new _Product4ETBIR[m_itemsIndex.size()];
-        for(Map.Entry<String, Integer> entry: m_itemsIndex.entrySet()){
-            m_items[entry.getValue()] = new _Product4ETBIR(entry.getKey());
-        }
 
         this.number_of_items = m_mapByItem.size();
         this.number_of_users = m_mapByUser.size();
@@ -182,8 +175,8 @@ public class ETBIR extends LDA_Variational {
 
         // update m_eta_p_stats for updating rho
         // update m_eta_mean_stats for updating rho
-        _Product4ETBIR item = m_items[m_itemsIndex.get(doc.getItemID())];
-        _User4ETBIR user = m_users[m_usersIndex.get(doc.getTitle())];
+        _Product4ETBIR item = m_items.get(m_itemsIndex.get(doc.getItemID()));
+        _User4ETBIR user = m_users.get(m_usersIndex.get(doc.getTitle()));
         for (int k = 0; k < number_of_topics; k++) {
             for (int l = 0; l < number_of_topics; l++) {
                 m_eta_mean_Stats += item.m_eta[l] * user.m_nuP[k][l] * doc.m_mu[k];
@@ -211,8 +204,8 @@ public class ETBIR extends LDA_Variational {
     	
     	String userID = doc.getTitle();
         String itemID = doc.getItemID();
-        _User4ETBIR currentU = m_users[m_usersIndex.get(userID)];
-        _Product4ETBIR currentI = m_items[m_itemsIndex.get(itemID)];
+        _User4ETBIR currentU = m_users.get(m_usersIndex.get(userID));
+        _Product4ETBIR currentI = m_items.get(m_itemsIndex.get(itemID));
 
         double cur = varInference4Doc(doc, currentU, currentI);        
         updateStats4Doc(doc);
@@ -413,7 +406,7 @@ public class ETBIR extends LDA_Variational {
         RealMatrix eta_stat_sigma = MatrixUtils.createRealIdentityMatrix(number_of_topics).scalarMultiply(m_sigma);
 
         for (Integer itemIdx : Iu) {
-            _Product4ETBIR item = m_items[itemIdx];
+            _Product4ETBIR item = m_items.get(itemIdx);
 
             RealMatrix eta_vec = MatrixUtils.createColumnRealMatrix(item.m_eta);
             double eta_0 = Utils.sumOfArray(item.m_eta);
@@ -438,7 +431,7 @@ public class ETBIR extends LDA_Variational {
             RealMatrix eta_stat_nu = MatrixUtils.createColumnRealMatrix(new double[number_of_topics]);
 
             for (Integer itemIdx : Iu) {
-                _Product4ETBIR item = m_items[itemIdx];
+                _Product4ETBIR item = m_items.get(itemIdx);
                 _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(itemIdx + "_"
                         + m_usersIndex.get(u.getUserID())));
 
@@ -476,7 +469,7 @@ public class ETBIR extends LDA_Variational {
                 double term1 = 0.0;
                 double term2 = 0.0;
                 for (Integer userIdx : Ui) {
-                    _User4ETBIR user = m_users[userIdx];
+                    _User4ETBIR user = m_users.get(userIdx);
                     _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
                             m_itemsIndex.get(i.getID()) + "_" + userIdx));
 
@@ -577,7 +570,7 @@ public class ETBIR extends LDA_Variational {
                 double term1 = 0.0;
                 double term2 = 0.0;
                 for (Integer userIdx : Ui) {
-                    _User4ETBIR user = m_users[userIdx];
+                    _User4ETBIR user = m_users.get(userIdx);
                     _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
                             m_itemsIndex.get(i.getID()) + "_" + userIdx));
 
@@ -673,7 +666,7 @@ public class ETBIR extends LDA_Variational {
                     double term1 = 0.0;
                     double term2 = 0.0;
                     for (Integer userIdx : Ui) {
-                        _User4ETBIR user = m_users[userIdx];
+                        _User4ETBIR user = m_users.get(userIdx);
                         _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
                                 m_itemsIndex.get(i.getID()) + "_" + userIdx));
 
@@ -844,20 +837,24 @@ public class ETBIR extends LDA_Variational {
 
     @Override
     public void EM(){
+
         System.out.println("Initializing model...");
-        init();
+        initialize_probability(m_corpus.getCollection());
 
         System.out.println("Initializing documents...");
         for(_Doc doc : m_corpus.getCollection())
-            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);;
+            ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
+
 
         System.out.println("Initializing users...");
         for(_User user : m_users)
-            ((_User4ETBIR) user).setTopics4Variational(number_of_topics, d_nu, d_sigma_P);;
+            ((_User4ETBIR) user).setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
+
 
         System.out.println("Initializing items...");
         for(_Product item : m_items)
-            ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha);;
+            ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha);
+        
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
@@ -892,9 +889,9 @@ public class ETBIR extends LDA_Variational {
         try{
             PrintWriter etaWriter = new PrintWriter(new File(etafile));
 
-            for(int idx = 0; idx < m_items.length; idx++) {
+            for(int idx = 0; idx < m_items.size(); idx++) {
                 etaWriter.write("item " + idx + "*************\n");
-                _Product4ETBIR item = (_Product4ETBIR) m_items[idx];
+                _Product4ETBIR item = (_Product4ETBIR) m_items.get(idx);
                 etaWriter.format("-- eta: \n");
                 for (int i = 0; i < number_of_topics; i++) {
                     etaWriter.format("%.8f\t", item.m_eta[i]);
@@ -911,9 +908,9 @@ public class ETBIR extends LDA_Variational {
         try{
             PrintWriter pWriter = new PrintWriter(new File(pfile));
 
-            for(int idx = 0; idx < m_users.length; idx++) {
+            for(int idx = 0; idx < m_users.size(); idx++) {
                 pWriter.write("user " + idx + "*************\n");
-                _User4ETBIR user = (_User4ETBIR) m_users[idx];
+                _User4ETBIR user = (_User4ETBIR) m_users.get(idx);
                 for (int i = 0; i < number_of_topics; i++) {
                     pWriter.format("-- mu " + i + ": \n");
                     for(int k = 0; k < number_of_topics; k++) {
