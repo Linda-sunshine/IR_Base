@@ -15,9 +15,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
-import org.tartarus.snowball.SnowballStemmer;
-import org.tartarus.snowball.ext.englishStemmer;
-
 import json.JSONArray;
 import json.JSONException;
 import json.JSONObject;
@@ -29,6 +26,10 @@ import opennlp.tools.tokenize.Tokenizer;
 import opennlp.tools.tokenize.TokenizerME;
 import opennlp.tools.tokenize.TokenizerModel;
 import opennlp.tools.util.InvalidFormatException;
+
+import org.tartarus.snowball.SnowballStemmer;
+import org.tartarus.snowball.ext.englishStemmer;
+
 import structures.SentiWordNet;
 import structures.TokenizeResult;
 import structures._Doc;
@@ -355,6 +356,26 @@ public class DocAnalyzer extends Analyzer {
 		}
 	}
 	
+//	//Load a document and analyze it.
+//	protected void LoadJsonDoc(String filename) {
+//		JSONArray jarray = null;
+//		
+//		try {
+//			JSONObject json = LoadJSON(filename);
+//			jarray = json.getJSONArray("Reviews");
+//			for(int i=0; i<jarray.length(); i++) {
+//				_Post post = new _Post(jarray.getJSONObject(i));
+//				int ylabel = post.getLabel() < 4 ? 0: 1;
+//				_Doc review = new _Doc(m_corpus.getSize(), post.getContent(), ylabel);
+//				AnalyzeDoc(review);
+//			}
+//		} catch (Exception e) {
+//			System.err.print('X');//fail to parse a json document
+//			return;
+//		}	
+//		
+//	}
+	
 	//convert the input token sequence into a sparse vector (docWordMap cannot be changed)
 	protected HashMap<Integer, Double> constructSpVct(String[] tokens, int y, HashMap<Integer, Double> docWordMap) {
 		int index = 0;
@@ -456,6 +477,16 @@ public class DocAnalyzer extends Analyzer {
 			return false;
 		}
 	}
+//	/*Analyze a document and add the analyzed document back to corpus.*/
+//	protected boolean AnalyzeDoc(_Doc doc) {
+//		TokenizeResult result = TokenizerNormalizeStemmer(doc.getSource());// Three-step analysis.
+//		String[] tokens = result.getTokens();
+//		int y = doc.getYLabel();
+//		
+//		HashMap<Integer, Double> spVct = constructSpVct(tokens, y, null);
+//		m_corpus.addDoc(doc);
+//		return true;
+//	}
 	
 	protected boolean AnalyzeDocByStn(_Doc doc, String[] sentences) {
 		TokenizeResult result;
