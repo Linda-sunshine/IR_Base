@@ -838,22 +838,23 @@ public class ETBIR extends LDA_Variational {
     @Override
     public void EM(){
 
+        System.out.println("Initializing model...");
         initialize_probability(m_corpus.getCollection());
 
         System.out.println("Initializing documents...");
-        for(_Doc doc : m_corpus.getCollection()) {
+        for(_Doc doc : m_corpus.getCollection())
             ((_Doc4ETBIR) doc).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);
-        }
+
 
         System.out.println("Initializing users...");
-        for(_User user : m_users) {
+        for(_User user : m_users)
             ((_User4ETBIR) user).setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
-        }
+
 
         System.out.println("Initializing items...");
-        for(_Product item : m_items) {
+        for(_Product item : m_items)
             ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha);
-        }
+        
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
