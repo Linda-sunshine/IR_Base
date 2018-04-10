@@ -55,7 +55,7 @@ public class ETBIRMain {
          * model training
          */
         String fvFile = "./data/Features/fv_2gram_IG_byUser_20.txt";
-        String reviewFolder = "./myData/byItem_1/";
+        String reviewFolder = "./myData/byUser_1/";
         String suffix = ".json";
 
         ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
@@ -73,7 +73,7 @@ public class ETBIRMain {
         double emConverge = 1e-3;
 
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=0.7;//these two parameters must be larger than 1!!!
+        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=1e-3;//these two parameters must be larger than 1!!!
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
