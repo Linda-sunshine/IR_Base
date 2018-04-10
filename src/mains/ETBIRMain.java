@@ -1,14 +1,15 @@
 package mains;
 
-import Analyzer.DocAnalyzer;
-import Analyzer.ReviewAnalyzer;
-import structures._Corpus;
-import structures._Doc4ETBIR;
-import topicmodels.embeddingModel.ETBIR;
-
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
+
+import Analyzer.ReviewAnalyzer;
+import structures._Corpus;
+import topicmodels.LDA.LDA_Gibbs;
+import topicmodels.embeddingModel.ETBIR;
+import topicmodels.multithreads.LDA.LDA_Variational_multithread;
+import topicmodels.multithreads.pLSA.pLSA_multithread;
+import topicmodels.pLSA.pLSA;
 
 
 /**
@@ -54,7 +55,7 @@ public class ETBIRMain {
          * model training
          */
         String fvFile = "./data/Features/fv_2gram_IG_byUser_20.txt";
-        String reviewFolder = "./myData/byUser_1/";
+        String reviewFolder = "./myData/byItem_1/";
         String suffix = ".json";
 
         ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFile, Ngram, lengthThreshold);
@@ -72,7 +73,7 @@ public class ETBIRMain {
         double emConverge = 1e-3;
 
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=1e-3;//these two parameters must be larger than 1!!!
+        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=0.7;//these two parameters must be larger than 1!!!
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
@@ -80,7 +81,7 @@ public class ETBIRMain {
 //        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
 //
 //        int number_of_topics = 15;
-//        double converge = -1, lambda = 0.7; // negative converge means do need to check likelihood convergency
+//        double converge = -1; // negative converge means do need to check likelihood convergency
 //        int number_of_iteration = 100;
 //        boolean aspectSentiPrior = true;
 //        pLSA tModel = null;

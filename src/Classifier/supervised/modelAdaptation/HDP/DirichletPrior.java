@@ -2,9 +2,8 @@ package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.Arrays;
 
-import structures._SparseFeature;
-
 import cern.jet.random.tdouble.Gamma;
+import structures._SparseFeature;
 /**
  * Dirichlet distribution, implemented by gamma function.
  * Referal: https://en.wikipedia.org/wiki/Dirichlet_distribution#Random_number_generation

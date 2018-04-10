@@ -28,7 +28,7 @@ import topicmodels.correspondenceModels.DCMCorrLDA_test;
 import topicmodels.correspondenceModels.DCMLDA4AC_test;
 import topicmodels.correspondenceModels.LDAGibbs4AC_test;
 import topicmodels.correspondenceModels.corrLDA_Gibbs;
-import topicmodels.correspondenceModels.corrLDA_Gibbs_test;
+import topicmodels.correspondenceModels.weightedCorrespondenceModel_test;
 import topicmodels.markovmodel.HTMM;
 import topicmodels.markovmodel.HTSM;
 import topicmodels.markovmodel.LRHTMM;
@@ -36,7 +36,6 @@ import topicmodels.markovmodel.LRHTSM;
 import topicmodels.multithreads.LDA.LDA_Variational_multithread;
 import topicmodels.multithreads.pLSA.pLSA_multithread;
 import topicmodels.pLSA.pLSA;
-import topicmodels.correspondenceModels.weightedCorrespondenceModel_test;
 
 public class TopicModelMain {
 

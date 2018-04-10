@@ -6,13 +6,13 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._PerformanceStat;
 import structures._PerformanceStat.TestMode;
 import structures._Review;
 import structures._SparseFeature;
 import utils.Utils;
-import Classifier.supervised.modelAdaptation._AdaptStruct;
 /**
  * The modified version of MT-SVM since it cannot be performed in online mode.
  * @author Lin

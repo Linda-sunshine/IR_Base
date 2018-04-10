@@ -1,6 +1,7 @@
 package Classifier.supervised.modelAdaptation.HDP;
 
 import java.util.HashMap;
+
 import Classifier.supervised.modelAdaptation._AdaptStruct;
 import structures._Doc;
 import structures._Review;
