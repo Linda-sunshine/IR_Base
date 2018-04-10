@@ -69,8 +69,8 @@ public class ETBIR extends LDA_Variational {
     double m_eta_p_Stats;
     double m_eta_mean_Stats;
     
-    double d_mu = 0.0, d_sigma_theta = 1.0;
-    double d_nu = 0.0, d_sigma_P = 1.0;
+    double d_mu = 1.0, d_sigma_theta = 0.1;
+    double d_nu = 1.0, d_sigma_P = 0.1;
     
     public ETBIR(int emMaxIter, double emConverge,
                  double beta, _Corpus corpus, double lambda,
@@ -344,7 +344,7 @@ public class ETBIR extends LDA_Variational {
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 60, iter = 0;
-        double stepsize = 1e-3, muG; // gradient for mu
+        double stepsize = 1e-2, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
         double moment, zeta_stat = 1.0 / doc.m_zeta, norm;
@@ -373,7 +373,7 @@ public class ETBIR extends LDA_Variational {
 
     void update_SigmaTheta(_Doc4ETBIR d){
         double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
-        double stepsize = 1e-3, moment, sigma, SigmaG; // gradient for Sigma
+        double stepsize = 1e-2, moment, sigma, SigmaG; // gradient for Sigma
         int N = d.getTotalDocLength();
 
         for(int k=0; k < number_of_topics; k++)
@@ -544,7 +544,7 @@ public class ETBIR extends LDA_Variational {
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize=1e-3;
+        double stepsize=1e-2;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -835,11 +835,33 @@ public class ETBIR extends LDA_Variational {
         return log_likelihood;
     }
 
+    //create space; initial parameters
+    public void initModel(){
+
+        //initialize parameters
+        Random r = new Random();
+        double val = 0.0;
+        for(int k = 0; k < number_of_topics; k++){
+            double sum = 0.0;
+            for(int v = 0; v < vocabulary_size; v++){
+                val = r.nextDouble() + d_beta;
+                sum += val;
+                topic_term_probabilty[k][v] = val;
+            }
+
+            for(int v = 0; v < vocabulary_size; v++){
+                topic_term_probabilty[k][v] = Math.log(topic_term_probabilty[k][v]) - Math.log(sum);
+            }
+        }
+    }
+
     @Override
     public void EM(){
 
         System.out.println("Initializing model...");
         initialize_probability(m_corpus.getCollection());
+
+//        initModel();
 
         System.out.println("Initializing documents...");
         for(_Doc doc : m_corpus.getCollection())
