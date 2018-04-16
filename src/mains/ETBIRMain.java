@@ -77,41 +77,40 @@ public class ETBIRMain {
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
-//        /*****parameters for the two-topic topic model*****/
-//        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
-//
-//        int number_of_topics = 15;
-//        double converge = -1; // negative converge means do need to check likelihood convergency
-//        int number_of_iteration = 100;
-//        boolean aspectSentiPrior = true;
-//        pLSA tModel = null;
-//        if (topicmodel.equals("pLSA")) {
-//            tModel = new pLSA_multithread(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha);
-//        } else if (topicmodel.equals("LDA_Gibbs")) {
-//            tModel = new LDA_Gibbs(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha, 0.4, 50);
-//        }  else if (topicmodel.equals("LDA_Variational")) {
-//            tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, corpus,
-//                    lambda, number_of_topics, alpha, 10, -1);
-//        } else {
-//            System.out.println("The selected topic model has not developed yet!");
-//            return;
-//        }
-//
-//        tModel.setDisplayLap(0);
-//        tModel.setInforWriter(reviewFolder + topicmodel + "_info.txt");
-//        tModel.EMonCorpus();
-//        tModel.printTopWords(50, reviewFolder + topicmodel + "_topWords.txt");
+        /*****parameters for the two-topic topic model*****/
+        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
+
+        int number_of_topics = 15;
+        double converge = -1; // negative converge means do need to check likelihood convergency
+        int number_of_iteration = 100;
+        boolean aspectSentiPrior = true;
+        pLSA tModel = null;
+        if (topicmodel.equals("pLSA")) {
+            tModel = new pLSA_multithread(number_of_iteration, converge, beta, corpus,
+                    lambda, number_of_topics, alpha);
+        } else if (topicmodel.equals("LDA_Gibbs")) {
+            tModel = new LDA_Gibbs(number_of_iteration, converge, beta, corpus,
+                    lambda, number_of_topics, alpha, 0.4, 50);
+        }  else if (topicmodel.equals("LDA_Variational")) {
+            tModel = new LDA_Variational_multithread(number_of_iteration, converge, beta, corpus,
+                    lambda, number_of_topics, alpha, 10, -1);
+        } else {
+            System.out.println("The selected topic model has not developed yet!");
+            return;
+        }
+
+        tModel.setDisplayLap(0);
+        tModel.setInforWriter(reviewFolder + topicmodel + "_info.txt");
+        tModel.EMonCorpus();
+        tModel.printTopWords(50, reviewFolder + topicmodel + "_topWords.txt");
 
         // my model
-
-        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
-                topic_number, alpha, varMaxIter, varConverge, sigma, rho);
-        etbirModel.analyzeCorpus();
-        etbirModel.EM();
-        etbirModel.printTopWords(topic_number, reviewFolder + "topwords-10.txt");
-        etbirModel.printEta(reviewFolder + "eta-10.txt");
-        etbirModel.printP(reviewFolder + "P-10.txt");
+//        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
+//                topic_number, alpha, varMaxIter, varConverge, sigma, rho);
+//        etbirModel.analyzeCorpus();
+//        etbirModel.EM();
+//        etbirModel.printTopWords(topic_number, reviewFolder + "topwords-10.txt");
+//        etbirModel.printEta(reviewFolder + "eta-10.txt");
+//        etbirModel.printP(reviewFolder + "P-10.txt");
     }
 }

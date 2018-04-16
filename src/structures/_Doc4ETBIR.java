@@ -1,6 +1,7 @@
 package structures;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  * Created by lulin on 3/28/18.
@@ -26,8 +27,11 @@ public class _Doc4ETBIR extends _Doc{
         m_Sigma = new double[k];
         m_sigmaSqrt = new double[k];
         m_phiStat = new double[k];
-        
-        Arrays.fill(m_mu, mu);
-        Arrays.fill(m_Sigma, sigma);
+
+        Random r = new Random();
+        for(int i = 0; i < k; i++){
+            m_mu[i] = r.nextDouble() + mu;
+            m_Sigma[i] = r.nextDouble() + sigma;
+        }
   	}
 }

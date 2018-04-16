@@ -133,6 +133,7 @@ public class iterFilterReview {
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inFileName), "UTF-8"));
             StringBuffer buffer = new StringBuffer(1024);
             String line;
+            int size=0;
 
             int userNum = 0, itemNum = 0;
             while ((line = reader.readLine()) != null) {
@@ -144,11 +145,13 @@ public class iterFilterReview {
                     if (userIDMap.containsKey(userID) && itemIDMap.containsKey(itemID)) {
                         file.write(obj.toString());
                         file.write('\n');
+                        size++;
                     }
                 }
             }
             file.flush();
             file.close();
+            System.out.println("-- contains: " + size + "reviews;");
         }catch(Exception e) {
             System.err.println("! FAIL to load review json file or open new file...");//fail to parse a json document
         }
@@ -271,9 +274,9 @@ public class iterFilterReview {
                 Object user = temp[i];
                 String userID = ((Map.Entry<String, Integer>) user).getKey();
                 int reviewCount = ((Map.Entry<String, Integer>) user).getValue();
-                if(reviewCount > 50){
-                    continue;
-                }
+//                if(reviewCount > 50){
+//                    continue;
+//                }
 
                 FileWriter file = new FileWriter(outFileName + reviewCount + "_" + userID + ".json");
 
@@ -298,7 +301,6 @@ public class iterFilterReview {
                 file.flush();
                 file.close();
                 System.out.println(i + " user has: " + reviewCount + "reviews.");
-                break;
             }
 
 
@@ -309,9 +311,9 @@ public class iterFilterReview {
 
     public static void main(String[] args) throws FileNotFoundException {
 
-        int userMinCount = 20;
+        int userMinCount = 40;
         int itemMinCount = 50;
-        int filtIterNum = 25;
+        int filtIterNum = 15;
 
         String itemFileName = "./myData/business.json";
         String userFileName = "./myData/user.json";
@@ -319,11 +321,11 @@ public class iterFilterReview {
         String denseFileName = "./myData/denseReview_" + userMinCount + "_" + itemMinCount + ".json";
 
         iterFilterReview preprocessor = new iterFilterReview();
-//        preprocessor.iterFiltering(userFileName, itemFileName, reviewFileName,
-//                userMinCount, itemMinCount, filtIterNum);
-//        preprocessor.saveFilterdData(reviewFileName, denseFileName);
+        preprocessor.iterFiltering(userFileName, itemFileName, reviewFileName,
+                userMinCount, itemMinCount, filtIterNum);
+        preprocessor.saveFilterdData(reviewFileName, denseFileName);
 
-        preprocessor.clusterDataByUser(denseFileName, "./myData/byUser/");
+        preprocessor.clusterDataByUser(denseFileName, "./myData/byUser_" + userMinCount + "_" + itemMinCount + "/");
 //        etbirModel.readData(dataFileName);
 //        etbirModel.readVocabulary(vocFileName);
 //        etbirModel.EM();
