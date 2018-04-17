@@ -12,10 +12,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 
 import structures.MyPriorityQueue;
 import structures._Corpus;
@@ -312,6 +309,67 @@ public class pLSA extends twoTopic {
 		} catch(Exception ex){
 			System.err.print("File Not Found");
 		}
+	}
+
+	public void printTopWords(int k, String topWordPath, HashMap<String, List<_Doc>> docCluster) {
+		try{
+			PrintWriter topWordWriter = new PrintWriter(new File(topWordPath));
+
+			for(Map.Entry<String, List<_Doc>> entryU : docCluster.entrySet()) {
+				double[] gamma = new double[number_of_topics];
+				Arrays.fill(gamma, 0);
+				for(_Doc d:entryU.getValue()) {
+					for (int i = 0; i < number_of_topics; i++)
+						gamma[i] += m_logSpace ? Math.exp(d.m_topics[i]):d.m_topics[i];
+				}
+				Utils.L1Normalization(gamma);
+
+				topWordWriter.format("ID %s(%d reviews)\n", entryU.getKey(), entryU.getValue().size());
+				for (int i = 0; i < topic_term_probabilty.length; i++) {
+					MyPriorityQueue<_RankItem> fVector = new MyPriorityQueue<_RankItem>(k);
+					for (int j = 0; j < vocabulary_size; j++)
+						fVector.add(new _RankItem(m_corpus.getFeature(j), topic_term_probabilty[i][j]));
+
+					topWordWriter.format("-- Topic %d(%.5f):\t", i, gamma[i]);
+					for (_RankItem it : fVector)
+						topWordWriter.format("%s(%.5f)\t", it.m_name, m_logSpace ? Math.exp(it.m_value) : it.m_value);
+					topWordWriter.write("\n");
+				}
+			}
+			topWordWriter.close();
+		} catch(Exception ex){
+			System.err.println("File Not Found: " + topWordPath);
+		}
+	}
+
+
+	public void printParameterAggregation(int k, String folderName){
+		String gammaPathByUser = folderName + "gammaByUser.txt";
+		String gammaPathByItem = folderName + "gammaByItem.txt";
+		String phiPathByUser = folderName + "phiByUser.txt";
+		String phiPathByItem = folderName + "phiByItem.txt";
+		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
+		System.out.println("Phi filePath: " + phiPathByUser + "; " + phiPathByItem);
+
+		// aggregate doc by user/item
+		HashMap<String, List<_Doc>> docByUser = new HashMap<>();
+		HashMap<String, List<_Doc>> docByItem = new HashMap<>();
+		for(_Doc d:m_trainSet) {
+			String userName = d.getTitle();
+			String itemName = d.getItemID();
+			if(!docByUser.containsKey(userName)){
+				docByUser.put(userName, new ArrayList<>());
+			}
+			if(!docByItem.containsKey(itemName)){
+				docByItem.put(itemName, new ArrayList<>());
+			}
+			docByUser.get(userName).add(d);
+			docByItem.get(itemName).add(d);
+		}
+
+		//aggregate parameter \gamma by user/item
+		printTopWords(k, gammaPathByUser, docByUser);
+		printTopWords(k, gammaPathByItem, docByItem);
 	}
 	
 	//print all the quantities in real space

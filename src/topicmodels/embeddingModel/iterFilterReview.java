@@ -270,6 +270,8 @@ public class iterFilterReview {
                 }
             });
 
+
+            new File(outFileName).mkdirs();
             for (int i = 0; i < temp.length; i++) {
                 Object user = temp[i];
                 String userID = ((Map.Entry<String, Integer>) user).getKey();
@@ -313,7 +315,7 @@ public class iterFilterReview {
 
         int userMinCount = 40;
         int itemMinCount = 50;
-        int filtIterNum = 15;
+        int filtIterNum = 12;
 
         String itemFileName = "./myData/business.json";
         String userFileName = "./myData/user.json";
@@ -325,7 +327,7 @@ public class iterFilterReview {
                 userMinCount, itemMinCount, filtIterNum);
         preprocessor.saveFilterdData(reviewFileName, denseFileName);
 
-        preprocessor.clusterDataByUser(denseFileName, "./myData/byUser_" + userMinCount + "_" + itemMinCount + "/");
+        preprocessor.clusterDataByUser(denseFileName, "./myData/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
 //        etbirModel.readData(dataFileName);
 //        etbirModel.readVocabulary(vocFileName);
 //        etbirModel.EM();
