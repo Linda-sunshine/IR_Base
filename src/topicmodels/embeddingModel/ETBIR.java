@@ -544,7 +544,7 @@ public class ETBIR extends LDA_Variational {
         ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize=1e-2;
+        double stepsize=1e-3;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -581,10 +581,10 @@ public class ETBIR extends LDA_Variational {
                         for (int l = 0; l < number_of_topics; l++) {
                             gTerm2 += eta_temp[l] * user.m_nuP[j][l] * d.m_mu[j];
 
-                            gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k]
-                                    + user.m_nuP[j][l] * user.m_nuP[j][k]);
+                            gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k] + user.m_SigmaP[j][k][l]
+                                    + 2 * user.m_nuP[j][l] * user.m_nuP[j][k]);
                             if (l == k) {
-                                gTerm3 += (eta_temp[l] + 1) * (user.m_SigmaP[j][l][k]
+                                gTerm3 += (user.m_SigmaP[j][l][k]
                                         + user.m_nuP[j][l] * user.m_nuP[j][k]);
                             }
 
@@ -606,22 +606,21 @@ public class ETBIR extends LDA_Variational {
                         }
                     }
                 }
-                etaG[k] = -(Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
+                etaG[k] = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
                         - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
                         + m_rho * eta_temp[k] * gTerm1 / eta0
                         - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
                         - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
                         + m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0
-                        * (eta0 + 1.0) * (eta0 + 1.0)));
+                        * (eta0 + 1.0) * (eta0 + 1.0));
 
-                fValue += -((m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
+                fValue += (m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
                         -  lgGammaEta + Utils.lgamma(eta_temp[k])
-                        + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0)));
-
+                        + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0));
             }
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
-                eta_log[k] = eta_log[k] - stepsize * etaG[k];
+                eta_log[k] = eta_log[k] + stepsize * etaG[k];
                 eta_temp[k] = Math.exp(eta_log[k]);
             }
 
