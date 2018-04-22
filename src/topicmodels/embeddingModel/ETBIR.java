@@ -615,9 +615,10 @@ public class ETBIR extends LDA_Variational {
                         * (eta0 + 1.0) * (eta0 + 1.0));
 
                 fValue += (m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
-                        -  lgGammaEta + Utils.lgamma(eta_temp[k])
+                        + Utils.lgamma(eta_temp[k])
                         + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0));
             }
+            fValue -=  lgGammaEta;
             // fix stepsize
             for(int k = 0; k < number_of_topics; k++) {
                 eta_log[k] = eta_log[k] + stepsize * etaG[k];
@@ -652,6 +653,9 @@ public class ETBIR extends LDA_Variational {
         try {
             do {
                 fValue = 0.0;
+                for(int k = 0; k < number_of_topics; k++){
+                    eta_temp[k] = Math.exp(eta_log[k]);
+                }
 
                 double eta0 = Utils.sumOfArray(eta_temp);
                 double lgGammaEta = Utils.lgamma(eta0);
@@ -676,10 +680,10 @@ public class ETBIR extends LDA_Variational {
                             for (int l = 0; l < number_of_topics; l++) {
                                 gTerm2 += eta_temp[l] * user.m_nuP[j][l] * d.m_mu[j];
 
-                                gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][k]);
+                                gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k] + user.m_SigmaP[j][k][l]
+                                        + 2 * user.m_nuP[j][l] * user.m_nuP[j][k]);
                                 if (l == k) {
-                                    gTerm3 += (eta_temp[l] + 1.0) * (user.m_SigmaP[j][l][k]
+                                    gTerm3 += (user.m_SigmaP[j][l][k]
                                             + user.m_nuP[j][l] * user.m_nuP[j][k]);
                                 }
 
@@ -711,10 +715,11 @@ public class ETBIR extends LDA_Variational {
                             * (eta0 + 1.0) * (eta0 + 1.0)));
 
                     fValue += -((m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
-                            - lgGammaEta + Utils.lgamma(eta_temp[k])
+                            + Utils.lgamma(eta_temp[k])
                             + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0)));
 
                 }
+                fValue -= lgGammaEta;
                 LBFGS.lbfgs(number_of_topics, 4, eta_log, fValue, etaG, false, eta_diag, iprint, 1e-6, 1e-32, iflag);
 
             } while (iter++ < iterMax && iflag[0] != 0);
