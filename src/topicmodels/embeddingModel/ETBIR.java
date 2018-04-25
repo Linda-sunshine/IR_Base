@@ -68,6 +68,10 @@ public class ETBIR extends LDA_Variational {
     double m_thetaStats;
     double m_eta_p_Stats;
     double m_eta_mean_Stats;
+
+    double[] m_pNuStates;
+    double[][] m_pSumStates;
+
     
     double d_mu = 1.0, d_sigma_theta = 0.1;
     double d_nu = 1.0, d_sigma_P = 0.1;
@@ -82,6 +86,9 @@ public class ETBIR extends LDA_Variational {
 
         this.m_sigma = sigma;
         this.m_rho = rho;
+
+        this.m_pNuStates = new double[this.number_of_topics];
+        this.m_pSumStates = new double[this.number_of_topics][this.number_of_topics];
     }
 
     public void analyzeCorpus(){
@@ -142,6 +149,11 @@ public class ETBIR extends LDA_Variational {
         m_thetaStats = 0.0;
         m_eta_p_Stats = 0.0;
         m_eta_mean_Stats = 0.0;
+
+        Arrays.fill(m_pNuStates, 0.0);
+        for(int k = 0; k < number_of_topics; k++)
+            Arrays.fill(m_pSumStates[k], 0.0);
+
     }
 
     protected void updateStats4Item(_Product4ETBIR item){
@@ -233,7 +245,7 @@ public class ETBIR extends LDA_Variational {
                 updateStats4Item(item);
             }
 
-            if(iter > 0)
+             if(iter > 0)
                 converge = Math.abs((totalLikelihood - last) / last);
             else
                 converge = 1.0;
@@ -270,6 +282,26 @@ public class ETBIR extends LDA_Variational {
     protected double varInference4Item(_Product4ETBIR i){
         double current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
+
+        Arrays.fill(m_pNuStates, 0.0);
+        for(int k = 0; k < number_of_topics; k++)
+            Arrays.fill(m_pSumStates[k], 0.0);
+
+        ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
+        for (Integer userIdx : Ui) {
+            _User4ETBIR user = m_users.get(userIdx);
+            _Doc4ETBIR doc = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
+                    m_itemsIndex.get(i.getID()) + "_" + userIdx));
+            for(int k = 0; k < number_of_topics; k++){
+                for(int j = 0; j < number_of_topics; j++){
+                    m_pNuStates[k] += user.m_nuP[j][k] * doc.m_mu[j];
+
+                    for(int l = 0; l < number_of_topics; l++){
+                        m_pSumStates[k][l] += user.m_nuP[j][k] * user.m_nuP[j][l] + user.m_SigmaP[j][l][k];
+                    }
+                }
+            }
+        }
 
         do{
             update_eta(i);
@@ -343,7 +375,7 @@ public class ETBIR extends LDA_Variational {
 
     // alternative: line search / fixed-stepsize gradient descent
     void update_mu(_Doc4ETBIR doc, _User4ETBIR user, _Product4ETBIR item){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 60, iter = 0;
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 30, iter = 0;
         double stepsize = 1e-2, muG; // gradient for mu
         int N = doc.getTotalDocLength();
 
@@ -358,13 +390,13 @@ public class ETBIR extends LDA_Variational {
                 moment = N * zeta_stat * Math.exp(doc.m_mu[k] + 0.5 * doc.m_Sigma[k]);
                 norm = Utils.dotProduct(item.m_eta, user.m_nuP[k]) / etaSum;
                 
-                muG = -(-m_rho * (doc.m_mu[k] - norm)
-                        + doc.m_phiStat[k] - moment);//-1 because LBFGS is minimization
+                muG = -m_rho * (doc.m_mu[k] - norm)
+                        + doc.m_phiStat[k] - moment;//-1 because LBFGS is minimization
 
-                fValue += -(-0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
-                        + doc.m_mu[k] * doc.m_phiStat[k] - moment);
+                fValue += -0.5 * m_rho * (doc.m_mu[k] * doc.m_mu[k] - 2 * doc.m_mu[k] * norm)
+                        + doc.m_mu[k] * doc.m_phiStat[k] - moment;
                 
-                doc.m_mu[k] -= stepsize * muG;//fixed stepsize
+                doc.m_mu[k] += stepsize * muG;//fixed stepsize
             }                
             
             diff = (lastFValue - fValue) / lastFValue;
@@ -541,10 +573,9 @@ public class ETBIR extends LDA_Variational {
 
     // update eta with non-negative constraint using fix step graident descent
     void update_eta(_Product4ETBIR i){
-        ArrayList<Integer> Ui = m_mapByItem.get(m_itemsIndex.get(i.getID()));
 
         double fValue = 1.0, lastFValue, cvg = 1e-4, diff, iterMax = 20, iter = 0;
-        double stepsize=1e-3;
+        double stepsize=1e-2;
 
         double[] etaG = new double[number_of_topics];
         double[] eta_log = new double[number_of_topics];
@@ -563,52 +594,24 @@ public class ETBIR extends LDA_Variational {
             double diGammaEta = Utils.digamma(eta0);
             double triGammaEta = Utils.trigamma(eta0);
             for(int k = 0; k < number_of_topics; k++) {
-                double gTerm1 = 0.0;
                 double gTerm2 = 0.0;
                 double gTerm3 = 0.0;
                 double gTerm4 = 0.0;
-                double term1 = 0.0;
-                double term2 = 0.0;
-                for (Integer userIdx : Ui) {
-                    _User4ETBIR user = m_users.get(userIdx);
-                    _Doc4ETBIR d = (_Doc4ETBIR) m_corpus.getCollection().get(m_reviewIndex.get(
-                            m_itemsIndex.get(i.getID()) + "_" + userIdx));
-
-                    for (int j = 0; j < number_of_topics; j++) {
-                        gTerm1 += user.m_nuP[j][k] * d.m_mu[j];
-                        term1 += eta_temp[k] * user.m_nuP[j][k] * d.m_mu[j];
-
-                        for (int l = 0; l < number_of_topics; l++) {
-                            gTerm2 += eta_temp[l] * user.m_nuP[j][l] * d.m_mu[j];
-
-                            gTerm3 += eta_temp[l] * (user.m_SigmaP[j][l][k] + user.m_SigmaP[j][k][l]
-                                    + 2 * user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            if (l == k) {
-                                gTerm3 += (user.m_SigmaP[j][l][k]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            }
-
-                            term2 += eta_temp[l] * eta_temp[k] * (user.m_SigmaP[j][l][k]
-                                    + user.m_nuP[j][l] * user.m_nuP[j][k]);
-                            if (l == k) {
-                                term2 += eta_temp[k] * (user.m_SigmaP[j][k][k]
-                                        + user.m_nuP[j][k] * user.m_nuP[j][k]);
-                            }
-
-                            for (int p = 0; p < number_of_topics; p++) {
-                                gTerm4 += eta_temp[l] * eta_temp[p] * (user.m_SigmaP[j][l][p]
-                                        + user.m_nuP[j][l] * user.m_nuP[j][p]);
-                                if (p == l) {
-                                    gTerm4 += eta_temp[p] * (user.m_SigmaP[j][l][p]
-                                            + user.m_nuP[j][l] * user.m_nuP[j][p]);
-                                }
-                            }
-                        }
-                    }
+                double term3 = 0.0;
+                for(int l = 0; l < number_of_topics; l++){
+                    gTerm2 += m_pNuStates[l] * eta_temp[l];
+                    gTerm3 += 2 * m_pSumStates[l][k] * eta_temp[l];
+                    for(int p = 0; p < number_of_topics; p++)
+                        gTerm4 += eta_temp[l] * eta_temp[p] * m_pSumStates[l][p];
+                    gTerm4 += eta_temp[l] * m_pSumStates[l][l];
+                    term3 += eta_temp[l] * m_pSumStates[l][k];
                 }
+                gTerm3 += m_pSumStates[k][k];
+                term3 += m_pSumStates[k][k];
+
                 etaG[k] = Utils.trigamma(eta_temp[k]) * eta_temp[k] * (m_alpha[k] - eta_temp[k])
                         - triGammaEta * eta_temp[k] * (Utils.sumOfArray(m_alpha) - eta0)
-                        + m_rho * eta_temp[k] * gTerm1 / eta0
+                        + m_rho * eta_temp[k] * m_pNuStates[k] / eta0
                         - m_rho * eta_temp[k] * gTerm2 / (eta0 * eta0)
                         - m_rho * eta_temp[k] * gTerm3 / (2 * eta0 * (eta0 + 1.0))
                         + m_rho * (2 * eta0 + 1.0) * eta_temp[k] * gTerm4 / (2 * eta0 * eta0
@@ -616,7 +619,7 @@ public class ETBIR extends LDA_Variational {
 
                 fValue += (m_alpha[k] - eta_temp[k]) * (Utils.digamma(eta_temp[k]) - diGammaEta)
                         + Utils.lgamma(eta_temp[k])
-                        + m_rho * term1 / eta0 - m_rho * term2 / (2 * eta0 * (eta0 + 1.0));
+                        + m_rho * eta_temp[k] * m_pNuStates[k] / eta0 - m_rho * eta_temp[k] * term3 / (2 * eta0 * (eta0 + 1.0));
             }
             fValue -=  lgGammaEta;
             // fix stepsize
@@ -736,10 +739,10 @@ public class ETBIR extends LDA_Variational {
 	public void calculate_M_step(int iter) {
     	super.calculate_M_step(iter);
         //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-//        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
+        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
 
         //maximize likelihood for \sigma
-//        m_sigma = number_of_topics / m_pStats;
+        m_sigma = number_of_topics / m_pStats;
     }
     
     @Override
