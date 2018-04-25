@@ -172,14 +172,7 @@ public class ETBIR extends LDA_Variational {
 
     protected void updateStats4Doc(_Doc4ETBIR doc){
         // update m_word_topic_stats for updating beta
-        _SparseFeature[] fv = doc.getSparse();
-        for(int k = 0; k < number_of_topics; k++){
-            for(int n = 0; n < fv.length; n++){
-                int wid = fv[n].getIndex();
-                double v = fv[n].getValue();
-                word_topic_sstat[k][wid] += v * doc.m_phi[n][k];
-            }
-        }
+        collectStats(doc);
 
         // update m_thetaStats for updating rho
         for(int k = 0; k < number_of_topics; k++)
@@ -404,7 +397,7 @@ public class ETBIR extends LDA_Variational {
     }
 
     void update_SigmaTheta(_Doc4ETBIR d){
-        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-6, diff, iterMax = 20, iter = 0;
+        double fValue = 1.0, lastFValue = 1.0, cvg = 1e-4, diff, iterMax = 20, iter = 0;
         double stepsize = 1e-2, moment, sigma, SigmaG; // gradient for Sigma
         int N = d.getTotalDocLength();
 
@@ -419,10 +412,10 @@ public class ETBIR extends LDA_Variational {
             for (int k = 0; k < number_of_topics; k++) {
                 sigma = d.m_sigmaSqrt[k] * d.m_sigmaSqrt[k];
                 moment = Math.exp(d.m_mu[k] + 0.5 * sigma);
-                SigmaG = -(-m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / d.m_sigmaSqrt[k]); //-1 because LBFGS is minimization
-                fValue += -(-0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma));
+                SigmaG = -m_rho * d.m_sigmaSqrt[k] - N * d.m_sigmaSqrt[k] * moment / d.m_zeta + 1.0 / d.m_sigmaSqrt[k]; //-1 because LBFGS is minimization
+                fValue += -0.5 * m_rho * sigma - N * moment / d.m_zeta + 0.5 * Math.log(sigma);
                 
-                d.m_sigmaSqrt[k] -= stepsize * SigmaG;//fixed stepsize
+                d.m_sigmaSqrt[k] += stepsize * SigmaG;//fixed stepsize
             }
 
             diff = (lastFValue - fValue) / lastFValue;
@@ -739,10 +732,10 @@ public class ETBIR extends LDA_Variational {
 	public void calculate_M_step(int iter) {
     	super.calculate_M_step(iter);
         //maximize likelihood for \rho of p(\theta|P\gamma, \rho)
-        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
+//        m_rho = number_of_topics / (m_thetaStats + m_eta_p_Stats - 2 * m_eta_mean_Stats);
 
         //maximize likelihood for \sigma
-        m_sigma = number_of_topics / m_pStats;
+//        m_sigma = number_of_topics / m_pStats;
     }
     
     @Override
@@ -862,13 +855,31 @@ public class ETBIR extends LDA_Variational {
         }
     }
 
+    protected void initialize_probability(List<_Doc> docs, List<_User4ETBIR> users, List<_Product4ETBIR> items) {
+        // initialize with all smoothing terms
+        init();
+
+        // initialize topic-word allocation, p(w|z)
+        for(_Doc d:docs) {
+            ((_Doc4ETBIR) d).setTopics4Variational(number_of_topics, d_alpha, d_mu, d_sigma_theta);//allocate memory and randomize it
+            updateStats4Doc((_Doc4ETBIR) d);
+        }
+
+        for(_User u:users) {
+            ((_User4ETBIR) u).setTopics4Variational(number_of_topics, d_nu, d_sigma_P);
+            updateStats4User((_User4ETBIR) u);
+        }
+
+        for(_Product i:items){
+            ((_Product4ETBIR) i).setTopics4Variational(number_of_topics, d_alpha);
+            updateStats4Item((_Product4ETBIR) i);
+        }
+
+        calculate_M_step(0);
+    }
+
     @Override
     public void EM(){
-
-        System.out.println("Initializing model...");
-        initialize_probability(m_corpus.getCollection());
-
-//        initModel();
 
         System.out.println("Initializing documents...");
         for(_Doc doc : m_corpus.getCollection())
@@ -883,7 +894,9 @@ public class ETBIR extends LDA_Variational {
         System.out.println("Initializing items...");
         for(_Product item : m_items)
             ((_Product4ETBIR) item).setTopics4Variational(number_of_topics, d_alpha);
-        
+
+        System.out.println("Initializing model...");
+        initialize_probability(m_corpus.getCollection(), m_users, m_items);
 
         int iter = 0;
         double lastAllLikelihood = 1.0;
