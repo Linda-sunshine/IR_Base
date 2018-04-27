@@ -17,9 +17,11 @@ public class _Product4ETBIR extends _Product {
   	public void setTopics4Variational(int k, double eta) {
   		m_eta = new double[k];
 
-        Random r = new Random();
+        long seed = k * 100000;
         for(int i = 0; i < k; i++){
+            Random r = new Random(seed);
             m_eta[i] = r.nextDouble() + eta;
+            seed -= 130;
         }
   	}
 }

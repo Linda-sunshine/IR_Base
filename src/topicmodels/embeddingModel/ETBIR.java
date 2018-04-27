@@ -91,6 +91,13 @@ public class ETBIR extends LDA_Variational {
         this.m_pSumStates = new double[this.number_of_topics][this.number_of_topics];
     }
 
+    @Override
+    public void EMonCorpus() {
+        m_trainSet = m_corpus.getCollection();
+        analyzeCorpus();
+        EM();
+    }
+
     public void analyzeCorpus(){
         System.out.print("Analzying review data in corpus");
 
@@ -222,6 +229,7 @@ public class ETBIR extends LDA_Variational {
         double totalLikelihood = 0.0, last = -1.0, converge = 0.0;
 
         do {
+            infoWriter.write("-- E-step iter: " + iter + "\n");
             init();
             
             totalLikelihood = 0.0;
@@ -316,7 +324,13 @@ public class ETBIR extends LDA_Variational {
         double current = 0.0, last = 1.0, converge = 0.0;
         int iter = 0;
 
+        infoWriter.write("---- doc " + d.getName() + "\n");
         do {
+            infoWriter.write("\t iter: " + iter);
+            infoWriter.write("\t -- mu: " + Arrays.toString(d.m_mu) + "\n");
+            infoWriter.write("\t -- sigma: " + Arrays.toString(d.m_Sigma) + "\n");
+            infoWriter.write("\t -- likelihood: " + String.valueOf(current) + "\n");
+
             update_phi(d);
             update_zeta(d);
             update_mu(d, u ,i);
@@ -903,6 +917,7 @@ public class ETBIR extends LDA_Variational {
         double currentAllLikelihood;
         double converge = 0.0;
         do{
+            infoWriter.write("EM iter: " + iter + "\n");
             currentAllLikelihood = E_step();
 
             if(iter > 0)

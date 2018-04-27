@@ -28,10 +28,12 @@ public class _Doc4ETBIR extends _Doc{
         m_sigmaSqrt = new double[k];
         m_phiStat = new double[k];
 
-        Random r = new Random();
+        long seed = k * 1000;
         for(int i = 0; i < k; i++){
+            Random r = new Random(seed);
             m_mu[i] = r.nextDouble() + mu;
-            m_Sigma[i] = r.nextDouble() + sigma;
+            m_Sigma[i] = r.nextDouble() * 0.2 + sigma;
+            seed -= 20;
         }
   	}
 }
