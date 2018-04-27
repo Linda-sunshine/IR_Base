@@ -404,8 +404,11 @@ public class Utils {
 	
 	static public void randomize(double[] pros, double beta) {
         double total = 0;
+        long seed = pros.length * 20;
         for (int i = 0; i < pros.length; i++) {
-            pros[i] = beta + Math.random();//to avoid zero probability
+        	Random r = new Random(seed);
+            pros[i] = beta + r.nextDouble();//to avoid zero probability
+			seed -= 10;
             total += pros[i];
         }
 
