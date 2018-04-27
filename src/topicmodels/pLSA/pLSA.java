@@ -343,9 +343,9 @@ public class pLSA extends twoTopic {
 	}
 
 
-	public void printParameterAggregation(int k, String folderName){
-		String gammaPathByUser = folderName + "gammaByUser.txt";
-		String gammaPathByItem = folderName + "gammaByItem.txt";
+	public void printParameterAggregation(int k, String folderName, String topicmodel){
+		String gammaPathByUser = folderName + topicmodel + "_gammaByUser.txt";
+		String gammaPathByItem = folderName + topicmodel + "_gammaByItem.txt";
 		String phiPathByUser = folderName + "phiByUser.txt";
 		String phiPathByItem = folderName + "phiByItem.txt";
 		System.out.println("Gamma filePath: " + gammaPathByUser + "; " + gammaPathByItem);
@@ -358,10 +358,10 @@ public class pLSA extends twoTopic {
 			String userName = d.getTitle();
 			String itemName = d.getItemID();
 			if(!docByUser.containsKey(userName)){
-				docByUser.put(userName, new ArrayList<>());
+				docByUser.put(userName, new ArrayList<_Doc>());
 			}
 			if(!docByItem.containsKey(itemName)){
-				docByItem.put(itemName, new ArrayList<>());
+				docByItem.put(itemName, new ArrayList<_Doc>());
 			}
 			docByUser.get(userName).add(d);
 			docByItem.get(itemName).add(d);
