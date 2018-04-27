@@ -57,13 +57,14 @@ public class ETBIRMain {
          * model training
          */
         String[] fvFiles = new String[3];
-        fvFiles[0] = "./data/Features/fv_2gram_IG1_byUser_30_50_25.txt";
+//        fvFiles[0] = "./data/Features/fv_2gram_IG1_byUser_30_50_25.txt";
+        fvFiles[0] = "./data/Features/fv_2gram_IG_byUser_20.txt";
         fvFiles[1] = "./data/Features/fv_2gram_IG2_byUser_30_50_25.txt";
         fvFiles[2] = "./data/Features/yelp_features.txt";
         int fvFile_point = 0;
         String dataset = "./myData/byUser_40_50_12";
         String reviewFolder = dataset + "/data/";
-        String outputFolder = dataset + "/output/feature_" + fvFile_point + "/";
+        String outputFolder = dataset + "/output/feature2_" + fvFile_point + "/";
         String suffix = ".json";
 
         ReviewAnalyzer analyzer = new ReviewAnalyzer(tokenModel, classNumber, fvFiles[fvFile_point], Ngram, lengthThreshold);
@@ -74,50 +75,50 @@ public class ETBIRMain {
 
         int number_of_topics = 20;
 
-        int varMaxIter = 20;
-        double varConverge = 1e-5;
+        int varMaxIter = 10;
+        double varConverge = 1e-4;
 
         int emMaxIter = 100;
-        double emConverge = 1e-9;
+        double emConverge = 1e-6;
 
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda=1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1 + 1e-2, beta = 1 + 1e-3, eta = 5.0, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
-//        /*****parameters for the two-topic topic model*****/
-//        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
-//
-//        pLSA tModel = null;
-//        if (topicmodel.equals("pLSA")) {
-//            tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
-//                    lambda, number_of_topics, alpha);
-//        } else if (topicmodel.equals("LDA_Gibbs")) {
-//            tModel = new LDA_Gibbs(emMaxIter, emConverge, beta, corpus,
-//                    lambda, number_of_topics, alpha, 0.4, 50);
-//        }  else if (topicmodel.equals("LDA_Variational")) {
-//            tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
-//                    lambda, number_of_topics, alpha, varMaxIter, varConverge);
-//        } else {
-//            System.out.println("The selected topic model has not developed yet!");
-//            return;
-//        }
-//
-//        tModel.setDisplayLap(5);
-//        new File(outputFolder).mkdirs();
-//        tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
-//        tModel.EMonCorpus();
-//        tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
-//        tModel.printParameterAggregation(50, outputFolder);
-//        tModel.closeWriter();
+        /*****parameters for the two-topic topic model*****/
+        String topicmodel = "LDA_Variational"; // pLSA, LDA_Gibbs, LDA_Variational
+
+        pLSA tModel = null;
+        if (topicmodel.equals("pLSA")) {
+            tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha);
+        } else if (topicmodel.equals("LDA_Gibbs")) {
+            tModel = new LDA_Gibbs(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, 0.4, 50);
+        }  else if (topicmodel.equals("LDA_Variational")) {
+            tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
+                    lambda, number_of_topics, alpha, 10, -1); //set this negative!! or likelihood will not change
+        } else {
+            System.out.println("The selected topic model has not developed yet!");
+            return;
+        }
+
+        tModel.setDisplayLap(1);
+        new File(outputFolder).mkdirs();
+        tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
+        tModel.EMonCorpus();
+        tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
+        tModel.printParameterAggregation(50, outputFolder, topicmodel);
+        tModel.closeWriter();
 
         // my model
-        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
-                number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
-        etbirModel.analyzeCorpus();
-        etbirModel.EM();
-        etbirModel.printTopWords(number_of_topics, outputFolder + "topwords.txt");
-        etbirModel.printEta(outputFolder + "eta.txt");
-        etbirModel.printP(outputFolder + "P.txt");
+//        ETBIR etbirModel = new ETBIR(emMaxIter, emConverge, beta, corpus, lambda,
+//                number_of_topics, alpha, varMaxIter, varConverge, sigma, rho);
+//        etbirModel.analyzeCorpus();
+//        etbirModel.EM();
+//        etbirModel.printTopWords(number_of_topics, outputFolder + "topwords.txt");
+//        etbirModel.printEta(outputFolder + "eta.txt");
+//        etbirModel.printP(outputFolder + "P.txt");
     }
 }
