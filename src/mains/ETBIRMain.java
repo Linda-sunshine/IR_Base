@@ -79,17 +79,19 @@ public class ETBIRMain {
         int number_of_topics = 20;
 
         int varMaxIter = 10;
-        double varConverge = 1e-5;
 
-        int emMaxIter = 50;
-        double emConverge = 1e-9;
+        double varConverge = 1e-4;
+
+        int emMaxIter = 100;
+        double emConverge = 1e-6;
 
 
-        double alpha =1 + 1e-2, beta = 1.0 + 1e-3, eta = 5.0, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
+        double alpha = 1 + 1e-2, beta = 1 + 1e-3, eta = 5.0, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
         double  sigma = 1.0 + 1e-2, rho = 1.0 + 1e-2;
 
         // LDA
         /*****parameters for the two-topic topic model*****/
+
         pLSA tModel = null;
         if (topicmodel.equals("pLSA")) {
             tModel = new pLSA_multithread(emMaxIter, emConverge, beta, corpus,
@@ -113,10 +115,10 @@ public class ETBIRMain {
         tModel.setInforWriter(outputFolder + topicmodel + "_info.txt");
         tModel.EMonCorpus();
         tModel.printTopWords(50, outputFolder + topicmodel + "_topWords.txt");
-        tModel.printParameterAggregation(50, outputFolder);
+        tModel.printParameterAggregation(50, outputFolder, topicmodel);
         tModel.closeWriter();
 
-//        tModel.printEta(outputFolder + "eta.txt");
-//        tModel.printP(outputFolder + "P.txt");
+//        etbirModel.printEta(outputFolder + "eta.txt");
+//        etbirModel.printP(outputFolder + "P.txt");
     }
 }
