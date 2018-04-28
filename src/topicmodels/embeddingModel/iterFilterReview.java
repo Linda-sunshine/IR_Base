@@ -4,6 +4,7 @@ import json.JSONArray;
 import json.JSONObject;
 
 import java.io.*;
+import java.nio.file.Paths;
 import java.util.*;
 
 /**
@@ -11,12 +12,18 @@ import java.util.*;
  */
 public class iterFilterReview {
 
-    public HashMap<String, int[]> userIDMap;
+    String source;
+
+    public HashMap<String, int[]> userIDMap; // int[]=[userIndex, reviewNum]
     public HashMap<String, int[]> itemIDMap;
 
     public iterFilterReview(){
         this.userIDMap = new HashMap<String, int[]>();
         this.itemIDMap = new HashMap<String, int[]>();
+    }
+
+    public void setDataSource(String src){
+        this.source = src;
     }
 
     //load data from json file to model, object = {user, item, review}
@@ -27,26 +34,22 @@ public class iterFilterReview {
             StringBuffer buffer = new StringBuffer(1024);
             String line;
 
-            int userNum = 0, itemNum = 0;
+            int userNum = 0, itemNum = 0, reviewNum = 0;
             while((line=reader.readLine())!=null) {
                 JSONObject obj = new JSONObject(line.toString());
 
                 if(object == "user" && obj.has("user_id")){
                     String userID = obj.getString("user_id");
                     int review_count = obj.getInt("review_count");
-                    if (review_count >= threshold) {
-                        int[] value = {userNum++, 0};
-                        userIDMap.put(userID, value);
-                    }
+                    int[] value = {userNum++, 0};
+                    userIDMap.put(userID, value);
                 }
 
                 if(object == "item" && obj.has("business_id")){
                     String itemID = obj.getString("business_id");
                     int review_count = obj.getInt("review_count");
-                    if(review_count >= threshold){
-                        int[] value = {itemNum++, 0};
-                        itemIDMap.put(itemID, value);
-                    }
+                    int[] value = {itemNum++, 0};
+                    itemIDMap.put(itemID, value);
                 }
 
                 if(object == "review" && obj.has("review_id")){
@@ -58,13 +61,96 @@ public class iterFilterReview {
                         int[] iValue = {itemIDMap.get(itemID)[0], itemIDMap.get(itemID)[1] + 1};
                         userIDMap.put(userID, uValue);
                         itemIDMap.put(itemID, iValue);
+                        reviewNum++;
+                    }
+                }
+
+                if(object == "amazon_new" && obj.has("reviewerID")){
+                    String userID = obj.getString("reviewerID");
+                    String itemID = obj.getString("asin");
+                    String reviewID = String.valueOf(reviewNum++);
+                    if(!userIDMap.containsKey(userID)){
+                        int[] value = {userNum++, 0};
+                        userIDMap.put(userID, value);
+                    }
+                    if(!itemIDMap.containsKey(itemID)){
+                        int[] value = {itemNum++, 0};
+                        itemIDMap.put(itemID, value);
+                    }
+                    int[] uValue = {userIDMap.get(userID)[0], userIDMap.get(userID)[1] + 1};
+                    int[] iValue = {itemIDMap.get(itemID)[0], itemIDMap.get(itemID)[1] + 1};
+                    userIDMap.put(userID, uValue);
+                    itemIDMap.put(itemID, iValue);
+                }
+
+                if(object == "amazon_update" && obj.has("reviewerID")){
+                    String userID = obj.getString("reviewerID");
+                    String itemID = obj.getString("asin");
+                    if(userIDMap.containsKey(userID) && itemIDMap.containsKey(itemID)) {
+                        int[] uValue = {userIDMap.get(userID)[0], userIDMap.get(userID)[1] + 1};
+                        int[] iValue = {itemIDMap.get(itemID)[0], itemIDMap.get(itemID)[1] + 1};
+                        userIDMap.put(userID, uValue);
+                        itemIDMap.put(itemID, iValue);
+                        reviewNum++;
                     }
                 }
             }
             reader.close();
+            if(object.equals("user")){
+                System.out.println( "maintain " + userIDMap.size() + " users;");
+            } else if(object.equals("item")){
+                System.out.println( "maintain " + itemIDMap.size() + " items;");
+            }else {
+                System.out.println("maintain " + userIDMap.size() + " users; " + itemIDMap.size() + " items; " + reviewNum + " reviews;");
+            }
         } catch (Exception e) {
             System.out.print("! FAIL to load " + object + " json file...");
         }
+    }
+
+    public void iterFiltering(String dataFileName, int userThreshold, int itemThreshold, int filterIterNum){
+        userIDMap = new HashMap<String, int[]>();
+        itemIDMap = new HashMap<String, int[]>();
+        System.out.println("Loading data from " + source + " ");
+        loadData(dataFileName, 1, "amazon_new");
+        //iteratively filter user/item with too few reviews to get a dense bipartite
+        int i;
+        for(i = 0; i < filterIterNum; i++){
+            int userNum = userIDMap.size();
+            int itemNum = itemIDMap.size();
+
+            //delete user with too few reviews by setting all its row elements to be 0
+            Iterator<Map.Entry<String, int[]>> it = userIDMap.entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry<String, int[]> entry = it.next();
+                if(entry.getValue()[1] < userThreshold){
+                    it.remove();
+                }
+            }
+
+            //delete item with too few reviews by setting all its column elements to be 0
+            it = itemIDMap.entrySet().iterator();
+            while(it.hasNext()){
+                Map.Entry<String, int[]> entry = it.next();
+                if(entry.getValue()[1] < itemThreshold){
+                    it.remove();
+                }
+            }
+
+            // renew their count by parse review.json
+            for(Map.Entry<String, int[]> entry: userIDMap.entrySet()){
+                int[] value = {entry.getValue()[0], 0};
+                entry.setValue(value);
+            }
+            for(Map.Entry<String, int[]> entry: itemIDMap.entrySet()){
+                int[] value = {entry.getValue()[0], 0};
+                entry.setValue(value);
+            }
+            System.out.print("-- after " + i + " iterations: ");
+            loadData(dataFileName,1 ,"amazon_update");
+        }
+
+        System.out.println("Filtering finished");
     }
 
     public void iterFiltering(String userFileName, String itemFileName, String reviewFileName,
@@ -72,13 +158,12 @@ public class iterFilterReview {
 
         //load user and item data with review_count no less than threshold
         userIDMap = new HashMap<String, int[]>();
-        loadData(userFileName, userThreshold, "user");
         itemIDMap = new HashMap<String, int[]>();
+        System.out.println("Loading data from " + source + " ");
+        loadData(userFileName, userThreshold, "user");
+        System.out.println("Loading data from " + source + " ");
         loadData(itemFileName, itemThreshold, "item");
-
-        System.out.println("Loading data finished: " + userIDMap.size()
-                + " users; " + itemIDMap.size() + " items.");
-
+        System.out.println("Loading data from " + source + " ");
         loadData(reviewFileName, 1, "review");
 
 
@@ -105,8 +190,6 @@ public class iterFilterReview {
                     it.remove();
                 }
             }
-            System.out.println("-- after " + i + " iterations: remain "
-                    + userIDMap.size() + " users; " + itemIDMap.size() + " items.");
 
             // renew their count by parse review.json
             for(Map.Entry<String, int[]> entry: userIDMap.entrySet()){
@@ -117,13 +200,11 @@ public class iterFilterReview {
                 int[] value = {entry.getValue()[0], 0};
                 entry.setValue(value);
             }
+            System.out.print("-- after " + i + " iterations: ");
             loadData(reviewFileName,1 ,"review");
         }
 
-        System.out.println("Filtering finished: after " + i + " iterations");
-
-        //save dense sub bipartite graph
-        System.out.println("-- contains: " + userIDMap.size() + " users; " + itemIDMap.size() + " items.");
+        System.out.println("Filtering finished");
     }
 
     public void saveFilterdData(String inFileName, String outFileName){
@@ -139,13 +220,25 @@ public class iterFilterReview {
             while ((line = reader.readLine()) != null) {
                 JSONObject obj = new JSONObject(line.toString());
 
-                if(obj.has("review_id")) {
-                    String userID = obj.getString("user_id");
-                    String itemID = obj.getString("business_id");
-                    if (userIDMap.containsKey(userID) && itemIDMap.containsKey(itemID)) {
-                        file.write(obj.toString());
-                        file.write('\n');
-                        size++;
+                if(source == "yelp") {
+                    if (obj.has("review_id")) {
+                        String userID = obj.getString("user_id");
+                        String itemID = obj.getString("business_id");
+                        if (userIDMap.containsKey(userID) && itemIDMap.containsKey(itemID)) {
+                            file.write(obj.toString());
+                            file.write('\n');
+                            size++;
+                        }
+                    }
+                } else{
+                    if(obj.has("reviewerID")){
+                        String userID = obj.getString("reviewerID");
+                        String itemID = obj.getString("asin");
+                        if (userIDMap.containsKey(userID) && itemIDMap.containsKey(itemID)) {
+                            file.write(obj.toString());
+                            file.write('\n');
+                            size++;
+                        }
                     }
                 }
             }
@@ -168,9 +261,16 @@ public class iterFilterReview {
             while ((line = reader.readLine()) != null) {
                 JSONObject obj = new JSONObject(line.toString());
 
-                if(obj.has("review_id")) {
-                    String itemID = obj.getString("business_id");
-                    itemMap.put(itemID, 0);
+                if(this.source == "yelp") {
+                    if (obj.has("review_id")) {
+                        String itemID = obj.getString("business_id");
+                        itemMap.put(itemID, 0);
+                    }
+                } else{
+                    if (obj.has("reviewerID")){
+                        String itemID = obj.getString("asin");
+                        itemMap.put(itemID, 0);
+                    }
                 }
             }
             reader.close();
@@ -242,9 +342,17 @@ public class iterFilterReview {
             while ((line = reader.readLine()) != null) {
                 JSONObject obj = new JSONObject(line.toString());
 
-                if(obj.has("review_id")) {
-                    String userID = obj.getString("user_id");
-                    userMap.put(userID, 0);
+
+                if(source == "yelp") {
+                    if (obj.has("review_id")) {
+                        String userID = obj.getString("user_id");
+                        userMap.put(userID, 0);
+                    }
+                } else{
+                    if(obj.has("reviewerID")){
+                        String userID = obj.getString("reviewerID");
+                        userMap.put(userID, 0);
+                    }
                 }
             }
             reader.close();
@@ -255,9 +363,16 @@ public class iterFilterReview {
             while((line = reader.readLine()) != null){
                 JSONObject obj = new JSONObject(line.toString());
 
-                if(obj.has("review_id")){
-                    String userID = obj.getString("user_id");
-                    userMap.put(userID, userMap.get(userID)+1);
+                if(source == "yelp") {
+                    if (obj.has("review_id")) {
+                        String userID = obj.getString("user_id");
+                        userMap.put(userID, userMap.get(userID) + 1);
+                    }
+                } else{
+                    if(obj.has("reviewerID")){
+                        String userID = obj.getString("reviewerID");
+                        userMap.put(userID, userMap.get(userID) + 1);
+                    }
                 }
             }
             reader.close();
@@ -288,11 +403,21 @@ public class iterFilterReview {
                 while((line = reader.readLine()) != null){
                     JSONObject obj = new JSONObject(line.toString());
 
-                    if(obj.has("review_id")){
-                        String iID = obj.getString("user_id");
+                    if(source.equals("yelp")) {
+                        if (obj.has("review_id")) {
+                            String iID = obj.getString("user_id");
 
-                        if(iID.equals(userID)){
-                            jarry.put(obj);
+                            if (iID.equals(userID)) {
+                                jarry.put(obj);
+                            }
+                        }
+                    } else{
+                        if (obj.has("reviewerID")) {
+                            String iID = obj.getString("reviewerID");
+
+                            if (iID.equals(userID)) {
+                                jarry.put(obj);
+                            }
                         }
                     }
                 }
@@ -302,7 +427,7 @@ public class iterFilterReview {
                 file.write(thisItem.toString());
                 file.flush();
                 file.close();
-                System.out.println(i + " user has: " + reviewCount + "reviews.");
+//                System.out.println(i + " user has: " + reviewCount + "reviews.");
             }
 
 
@@ -315,21 +440,30 @@ public class iterFilterReview {
 
         int userMinCount = 40;
         int itemMinCount = 50;
-        int filtIterNum = 12;
+        int filtIterNum = 13;
 
-        String itemFileName = "./myData/business.json";
-        String userFileName = "./myData/user.json";
-        String reviewFileName = "./myData/review.json";
-        String denseFileName = "./myData/denseReview_" + userMinCount + "_" + itemMinCount + ".json";
+        //yelp
+        String itemFileName = "../myData/yelp/business.json";
+        String userFileName = "../myData/yelp/user.json";
+        String reviewFileName = "../myData/yelp/review.json";
+        String denseFileName = "../myData/yelp/denseReview_" + userMinCount + "_" + itemMinCount + ".json";
 
+        System.out.println(String.format("Thresholds: user %d, item %d, iterNum %d", userMinCount, itemMinCount, filtIterNum));
         iterFilterReview preprocessor = new iterFilterReview();
+        preprocessor.setDataSource("yelp");
         preprocessor.iterFiltering(userFileName, itemFileName, reviewFileName,
                 userMinCount, itemMinCount, filtIterNum);
         preprocessor.saveFilterdData(reviewFileName, denseFileName);
 
-        preprocessor.clusterDataByUser(denseFileName, "./myData/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
-//        etbirModel.readData(dataFileName);
-//        etbirModel.readVocabulary(vocFileName);
-//        etbirModel.EM();
+        preprocessor.clusterDataByUser(denseFileName, "../myData/yelp/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/data/");
+
+        //amazon
+//        String dataFileName = "../myData/amazon/reviews_Movies_and_TV.json";
+//        String denseFileName = "../myData/amazon/denseReview_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + ".json";
+//        iterFilterReview preprocessor = new iterFilterReview();
+//        preprocessor.setDataSource("amazon");
+//        preprocessor.iterFiltering(dataFileName, userMinCount, itemMinCount, filtIterNum);
+//        preprocessor.saveFilterdData(dataFileName, denseFileName);
+//        preprocessor.clusterDataByUser(denseFileName, "../myData/amazon/byUser_" + userMinCount + "_" + itemMinCount + "_" + filtIterNum + "/");
     }
 }

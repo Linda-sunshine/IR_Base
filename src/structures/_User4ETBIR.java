@@ -18,13 +18,15 @@ public class _User4ETBIR extends _User{
     	m_nuP = new double[k][k];
         m_SigmaP = new double[k][k][k];
 
-        Random r = new Random();
+        long seed = k * 10000;
         for(int i = 0; i < k; i++){
+            Random r = new Random(seed);
             for(int j = 0; j < k; j++){
                 m_nuP[i][j] = r.nextDouble() + nu;
                 for(int l = 0; l < k; l++){
-                    m_SigmaP[i][j][l] = r.nextDouble() + sigma;
+                    m_SigmaP[i][j][l] = r.nextDouble() * 0.2 + sigma;
                 }
+                seed -= 30;
             }
         }
     }
