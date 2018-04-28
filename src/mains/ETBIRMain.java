@@ -79,7 +79,7 @@ public class ETBIRMain {
         double varConverge = 1e-4;
 
         int emMaxIter = 100;
-        double emConverge = 1e-6;
+        double emConverge = -1;
 
 
         double alpha = 1 + 1e-2, beta = 1 + 1e-3, eta = 5.0, lambda = 1 + 1e-3;//these two parameters must be larger than 1!!!
@@ -98,7 +98,7 @@ public class ETBIRMain {
                     lambda, number_of_topics, alpha, 0.4, 50);
         }  else if (topicmodel.equals("LDA_Variational")) {
             tModel = new LDA_Variational_multithread(emMaxIter, emConverge, beta, corpus,
-                    lambda, number_of_topics, alpha, 10, -1); //set this negative!! or likelihood will not change
+                    lambda, number_of_topics, alpha, varMaxIter, varConverge); //set this negative!! or likelihood will not change
         } else {
             System.out.println("The selected topic model has not developed yet!");
             return;
